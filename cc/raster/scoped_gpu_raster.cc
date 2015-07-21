@@ -27,7 +27,7 @@ void ScopedGpuRaster::BeginGpuRaster() {
   // TODO(alokp): Use a trace macro to push/pop markers.
   // Using push/pop functions directly incurs cost to evaluate function
   // arguments even when tracing is disabled.
-  gl->PushGroupMarkerEXT(0, "GpuRasterization");
+  gl->TraceBeginCHROMIUM("ScopedGpuRaster", "GpuRasterization");
 
   class GrContext* gr_context = context_provider_->GrContext();
   gr_context->resetContext();
@@ -45,7 +45,7 @@ void ScopedGpuRaster::EndGpuRaster() {
   // TODO(alokp): Use a trace macro to push/pop markers.
   // Using push/pop functions directly incurs cost to evaluate function
   // arguments even when tracing is disabled.
-  gl->PopGroupMarkerEXT();
+  gl->TraceEndCHROMIUM();
 }
 
 }  // namespace cc

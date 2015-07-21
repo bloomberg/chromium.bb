@@ -83,7 +83,7 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 
   InitializeCapabilities();
 
-  std::string unique_context_name =
+  const std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
   context3d_->traceBeginCHROMIUM("gpu_toplevel",
                                  unique_context_name.c_str());

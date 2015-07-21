@@ -227,7 +227,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
 
   void DoTraceTest(bool tracing_service, bool tracing_device) {
     // Expected results
-    const GpuTracerSource tracer_source = kTraceGroupMarker;
+    const GpuTracerSource tracer_source = kTraceCHROMIUM;
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const int64 offset_time = 3231;
@@ -766,11 +766,11 @@ TEST_F(GPUTracerTest, TraceDuringDecodeTest) {
   const std::string trace_name("trace_test");
 
   EXPECT_FALSE(
-      tracer_tester_->Begin(category_name, trace_name, kTraceGroupMarker));
+      tracer_tester_->Begin(category_name, trace_name, kTraceCHROMIUM));
 
   ASSERT_TRUE(tracer_tester_->BeginDecoding());
   EXPECT_TRUE(
-      tracer_tester_->Begin(category_name, trace_name, kTraceGroupMarker));
+      tracer_tester_->Begin(category_name, trace_name, kTraceCHROMIUM));
   ASSERT_TRUE(tracer_tester_->EndDecoding());
 }
 

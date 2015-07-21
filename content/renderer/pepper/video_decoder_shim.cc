@@ -312,8 +312,7 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
     return false;
   }
 
-  gl_->PushGroupMarkerEXT(0, "YUVConverterContext");
-
+  gl_->TraceBeginCHROMIUM("YUVConverter", "YUVConverterContext");
   gl_->GenFramebuffers(1, &frame_buffer_);
 
   y_texture_ = CreateTexture();
@@ -332,7 +331,7 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
 
   program_ = CreateShader();
 
-  gl_->PopGroupMarkerEXT();
+  gl_->TraceEndCHROMIUM();
 
   context_provider_->InvalidateGrContext(kGrInvalidateState);
 
@@ -414,7 +413,7 @@ void VideoDecoderShim::YUVConverter::Convert(
     y_width_ = y_height_ = 0;
   }
 
-  gl_->PushGroupMarkerEXT(0, "YUVConverterContext");
+  gl_->TraceBeginCHROMIUM("YUVConverter", "YUVConverterContext");
 
   uint32_t ywidth = frame->coded_size().width();
   uint32_t yheight = frame->coded_size().height();
@@ -565,7 +564,7 @@ void VideoDecoderShim::YUVConverter::Convert(
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
-  gl_->PopGroupMarkerEXT();
+  gl_->TraceEndCHROMIUM();
 
   context_provider_->InvalidateGrContext(kGrInvalidateState);
 }

@@ -33,7 +33,6 @@ class GPUTrace;
 enum GpuTracerSource {
   kTraceGroupInvalid = -1,
 
-  kTraceGroupMarker,
   kTraceCHROMIUM,
   kTraceDecoder,
   kTraceDisjoint, // Used internally.

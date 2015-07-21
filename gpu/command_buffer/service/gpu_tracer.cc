@@ -26,10 +26,9 @@ namespace gles2 {
 
 static const unsigned int kProcessInterval = 16;
 static const char* kGpuTraceSourceNames[] = {
-  "GroupMarker", // kTraceGroupMarker = 0,
-  "TraceCHROMIUM", // kTraceCHROMIUM = 1,
-  "TraceCmd", // kTraceDecoder = 2,
-  "Disjoint", // kTraceDisjoint = 3, // Used internally.
+  "TraceCHROMIUM", // kTraceCHROMIUM,
+  "TraceCmd", // kTraceDecoder,
+  "Disjoint", // kTraceDisjoint, // Used internally.
 };
 static_assert(NUM_TRACER_SOURCES == arraysize(kGpuTraceSourceNames),
               "Trace source names must match enumeration.");
