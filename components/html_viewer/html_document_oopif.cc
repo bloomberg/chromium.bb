@@ -14,9 +14,9 @@
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/devtools_agent_impl.h"
 #include "components/html_viewer/document_resource_waiter.h"
-#include "components/html_viewer/frame.h"
-#include "components/html_viewer/frame_tree_manager.h"
 #include "components/html_viewer/global_state.h"
+#include "components/html_viewer/html_frame.h"
+#include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/test_html_viewer_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/view_manager/ids.h"
@@ -139,8 +139,8 @@ void HTMLDocumentOOPIF::Load() {
   view->RemoveObserver(this);
 
   frame_tree_manager_.reset(
-      new FrameTreeManager(global_state_, html_document_app_, connection_,
-                           view->id(), frame_tree_server.Pass()));
+      new HTMLFrameTreeManager(global_state_, html_document_app_, connection_,
+                               view->id(), frame_tree_server.Pass()));
   frame_tree_manager_->set_delegate(this);
   frame_tree_manager_binding_.reset(
       new mojo::Binding<mandoline::FrameTreeClient>(
@@ -152,7 +152,7 @@ void HTMLDocumentOOPIF::Load() {
   // cannot enable remote debugging (which is required by Telemetry tests) on
   // the bots.
   if (EnableRemoteDebugging()) {
-    Frame* frame = frame_tree_manager_->GetLocalFrame();
+    HTMLFrame* frame = frame_tree_manager_->GetLocalFrame();
     if (!frame->parent()) {
       devtools_agent_.reset(new DevToolsAgentImpl(
           frame->web_frame()->toWebLocalFrame(), html_document_app_->shell()));
@@ -208,7 +208,7 @@ bool HTMLDocumentOOPIF::ShouldNavigateLocallyInMainFrame() {
   return devtools_agent_ && devtools_agent_->handling_page_navigate_request();
 }
 
-void HTMLDocumentOOPIF::OnFrameDidFinishLoad(Frame* frame) {
+void HTMLDocumentOOPIF::OnFrameDidFinishLoad(HTMLFrame* frame) {
   // TODO(msw): Notify AxProvider clients of updates on child frame loads.
   if (frame_tree_manager_ &&
       frame != frame_tree_manager_->GetLocalFrame()) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HTML_VIEWER_FRAME_TREE_MANAGER_H_
-#define COMPONENTS_HTML_VIEWER_FRAME_TREE_MANAGER_H_
+#ifndef COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_
+#define COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,28 +34,28 @@ class View;
 
 namespace html_viewer {
 
-class Frame;
-class FrameTreeManagerDelegate;
+class HTMLFrame;
+class HTMLFrameTreeManagerDelegate;
 class GlobalState;
 
-// FrameTreeManager is responsible for managing the frames that comprise a
-// document. Some of the frames may be remote. FrameTreeManager updates its
+// HTMLFrameTreeManager is responsible for managing the frames that comprise a
+// document. Some of the frames may be remote. HTMLFrameTreeManager updates its
 // state in response to changes from the FrameTreeServer, as well as changes
 // from the underlying frames. The frame tree has at least one local frame
 // that is backed by a mojo::View.
-class FrameTreeManager : public mandoline::FrameTreeClient {
+class HTMLFrameTreeManager : public mandoline::FrameTreeClient {
  public:
-  FrameTreeManager(GlobalState* global_state,
-                   mojo::ApplicationImpl* app,
-                   mojo::ApplicationConnection* app_connection,
-                   uint32_t local_frame_id,
-                   mandoline::FrameTreeServerPtr server);
-  ~FrameTreeManager() override;
+  HTMLFrameTreeManager(GlobalState* global_state,
+                       mojo::ApplicationImpl* app,
+                       mojo::ApplicationConnection* app_connection,
+                       uint32_t local_frame_id,
+                       mandoline::FrameTreeServerPtr server);
+  ~HTMLFrameTreeManager() override;
 
   void Init(mojo::View* local_view,
             mojo::Array<mandoline::FrameDataPtr> frame_data);
 
-  void set_delegate(FrameTreeManagerDelegate* delegate) {
+  void set_delegate(HTMLFrameTreeManagerDelegate* delegate) {
     delegate_ = delegate;
   }
 
@@ -64,7 +64,7 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
 
   // Returns the Frame/WebFrame that is rendering to the supplied view.
   // TODO(sky): we need to support more than one local frame.
-  Frame* GetLocalFrame();
+  HTMLFrame* GetLocalFrame();
   blink::WebLocalFrame* GetLocalWebFrame();
 
   blink::WebView* GetWebView();
@@ -74,24 +74,24 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
   void ProgressChanged(double progress);
 
  private:
-  friend class Frame;
+  friend class HTMLFrame;
 
   // Returns the navigation policy for the specified frame.
   blink::WebNavigationPolicy DecidePolicyForNavigation(
-      Frame* frame,
+      HTMLFrame* frame,
       const blink::WebFrameClient::NavigationPolicyInfo& info);
 
   // Invoked when a Frame finishes loading.
-  void OnFrameDidFinishLoad(Frame* frame);
+  void OnFrameDidFinishLoad(HTMLFrame* frame);
 
   // Invoked when a Frame navigates.
-  void OnFrameDidNavigateLocally(Frame* frame, const std::string& url);
+  void OnFrameDidNavigateLocally(HTMLFrame* frame, const std::string& url);
 
   // Invoked when a Frame is destroye.
-  void OnFrameDestroyed(Frame* frame);
+  void OnFrameDestroyed(HTMLFrame* frame);
 
   // Invoked when the name of a frame changes.
-  void OnFrameDidChangeName(Frame* frame, const blink::WebString& name);
+  void OnFrameDidChangeName(HTMLFrame* frame, const blink::WebString& name);
 
   // mandoline::FrameTreeClient:
   void OnConnect(mandoline::FrameTreeServerPtr server,
@@ -104,7 +104,7 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
 
   mojo::ApplicationImpl* app_;
 
-  FrameTreeManagerDelegate* delegate_;
+  HTMLFrameTreeManagerDelegate* delegate_;
 
   // Frame id of the frame we're rendering to.
   const uint32_t local_frame_id_;
@@ -113,11 +113,11 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
 
   mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
 
-  Frame* root_;
+  HTMLFrame* root_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameTreeManager);
+  DISALLOW_COPY_AND_ASSIGN(HTMLFrameTreeManager);
 };
 
 }  // namespace html_viewer
 
-#endif  // COMPONENTS_HTML_VIEWER_FRAME_TREE_MANAGER_H_
+#endif  // COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_

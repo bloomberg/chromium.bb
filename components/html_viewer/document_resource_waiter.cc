@@ -4,9 +4,9 @@
 
 #include "components/html_viewer/document_resource_waiter.h"
 
-#include "components/html_viewer/frame_tree_manager.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document_oopif.h"
+#include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/view_manager/public/cpp/view.h"
 
 namespace html_viewer {

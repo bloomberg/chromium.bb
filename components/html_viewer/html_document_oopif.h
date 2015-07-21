@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/html_viewer/ax_provider_impl.h"
-#include "components/html_viewer/frame_tree_manager_delegate.h"
+#include "components/html_viewer/html_frame_tree_manager_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
@@ -38,9 +38,8 @@ namespace html_viewer {
 class AxProviderImpl;
 class DevToolsAgentImpl;
 class DocumentResourceWaiter;
-class Frame;
-class FrameTreeManager;
 class GlobalState;
+class HTMLFrameTreeManager;
 class TestHTMLViewerImpl;
 class WebLayerTreeViewImpl;
 
@@ -52,7 +51,7 @@ class WebLayerTreeViewImpl;
 class HTMLDocumentOOPIF
     : public mojo::ViewManagerDelegate,
       public mojo::ViewObserver,
-      public FrameTreeManagerDelegate,
+      public HTMLFrameTreeManagerDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
       public mojo::InterfaceFactory<mandoline::FrameTreeClient>,
       public mojo::InterfaceFactory<TestHTMLViewer> {
@@ -103,9 +102,9 @@ class HTMLDocumentOOPIF
       const mojo::ViewportMetrics& new_metrics) override;
   void OnViewDestroyed(mojo::View* view) override;
 
-  // FrameTreeManagerDelegate:
+  // HTMLFrameTreeManagerDelegate:
   bool ShouldNavigateLocallyInMainFrame() override;
-  void OnFrameDidFinishLoad(Frame* frame) override;
+  void OnFrameDidFinishLoad(HTMLFrame* frame) override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>:
   void Create(mojo::ApplicationConnection* connection,
@@ -135,7 +134,7 @@ class HTMLDocumentOOPIF
 
   GlobalState* global_state_;
 
-  scoped_ptr<FrameTreeManager> frame_tree_manager_;
+  scoped_ptr<HTMLFrameTreeManager> frame_tree_manager_;
   scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>
       frame_tree_manager_binding_;
 

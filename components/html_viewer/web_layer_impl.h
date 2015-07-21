@@ -11,11 +11,11 @@
 
 namespace html_viewer {
 
-class Frame;
+class HTMLFrame;
 
 class WebLayerImpl : public cc_blink::WebLayerImpl {
  public:
-  explicit WebLayerImpl(Frame* frame);
+  explicit WebLayerImpl(HTMLFrame* frame);
   ~WebLayerImpl() override;
 
   // WebLayer implementation.
@@ -23,7 +23,7 @@ class WebLayerImpl : public cc_blink::WebLayerImpl {
   void setPosition(const blink::WebFloatPoint& position) override;
 
  private:
-  Frame* frame_;
+  HTMLFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerImpl);
 };
