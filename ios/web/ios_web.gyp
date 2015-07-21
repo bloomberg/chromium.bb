@@ -144,6 +144,8 @@
         'public/browser_state.h',
         'public/browser_url_rewriter.h',
         'public/browsing_data_partition.h',
+        'public/browsing_data_partition_client.h',
+        'public/browsing_data_partition_client.cc',
         'public/cert_policy.h',
         'public/cert_store.h',
         'public/certificate_policy_cache.h',

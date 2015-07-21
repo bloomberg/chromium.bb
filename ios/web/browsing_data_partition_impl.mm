@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/browsing_data_partition_client.h"
 #import "ios/web/public/crw_browsing_data_store.h"
 #include "ios/web/public/web_thread.h"
 
@@ -84,8 +85,11 @@
 
   DCHECK_GE(self.outOfSyncStoreCount, 1U);
   --self.outOfSyncStoreCount;
-  // TODO(shreyasv): Have a BrowsingDataPartitionClient be informed when
-  // |self.outOfSyncStoreCount| goes down to 0. crbug.com/480654.
+  web::BrowsingDataPartitionClient* client =
+      web::GetBrowsingDataPartitionClient();
+  if (client) {
+    client->DidBecomeSynchronized();
+  }
 }
 
 @end
