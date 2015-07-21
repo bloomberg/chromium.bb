@@ -22,7 +22,6 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/message_filter.h"
 
 namespace content {
