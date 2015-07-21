@@ -90,7 +90,7 @@ private:
             if (element->hasClass() && element->classNames().contains(m_className))
                 return element;
         }
-        return 0;
+        return nullptr;
     }
 
     const AtomicString& m_className;
@@ -122,7 +122,7 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
     SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
     SelectorChecker::SelectorCheckingContext selectorCheckingContext(&element, SelectorChecker::VisitedMatchDisabled);
     selectorCheckingContext.selector = &selector;
-    selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : 0;
+    selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : nullptr;
     if (selectorCheckingContext.scope)
         selectorCheckingContext.scopeContainsLastMatchedElement = true;
     return selectorChecker.match(selectorCheckingContext);
@@ -166,7 +166,7 @@ PassRefPtrWillBeRawPtr<StaticElementList> SelectorDataList::queryAll(ContainerNo
 
 PassRefPtrWillBeRawPtr<Element> SelectorDataList::queryFirst(ContainerNode& rootNode) const
 {
-    Element* matchedElement = 0;
+    Element* matchedElement = nullptr;
     execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
     return matchedElement;
 }
@@ -263,7 +263,7 @@ void SelectorDataList::findTraverseRootsAndExecute(ContainerNode& rootNode, type
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
                 adjustedNode = element;
             else if (!element || isRightmostSelector)
-                adjustedNode = 0;
+                adjustedNode = nullptr;
             if (isRightmostSelector) {
                 executeForTraverseRoot<SelectorQueryTrait>(*m_selectors[0], adjustedNode, MatchesTraverseRoots, rootNode, output);
                 return;
@@ -383,7 +383,7 @@ void SelectorDataList::executeSlow(ContainerNode& rootNode, typename SelectorQue
 static ShadowRoot* authorShadowRootOf(const ContainerNode& node)
 {
     if (!node.isElementNode() || !isShadowHost(&node))
-        return 0;
+        return nullptr;
 
     ElementShadow* shadow = toElement(node).shadow();
     ASSERT(shadow);
@@ -391,7 +391,7 @@ static ShadowRoot* authorShadowRootOf(const ContainerNode& node)
         if (shadowRoot->type() == ShadowRootType::Open)
             return shadowRoot;
     }
-    return 0;
+    return nullptr;
 }
 
 static ContainerNode* firstWithinTraversingShadowTree(const ContainerNode& rootNode)
@@ -412,11 +412,11 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node, const 
             return next;
 
         if (!current->isInShadowTree())
-            return 0;
+            return nullptr;
 
         ShadowRoot* shadowRoot = current->containingShadowRoot();
         if (shadowRoot == rootNode)
-            return 0;
+            return nullptr;
         if (ShadowRoot* youngerShadowRoot = shadowRoot->youngerShadowRoot()) {
             // Should not obtain any elements in user-agent shadow root.
             ASSERT(youngerShadowRoot->type() == ShadowRootType::Open);
@@ -425,7 +425,7 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node, const 
 
         current = shadowRoot->host();
     }
-    return 0;
+    return nullptr;
 }
 
 template <typename SelectorQueryTrait>
@@ -448,7 +448,7 @@ const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector& firs
         if (selector->relation() != CSSSelector::SubSelector)
             break;
     }
-    return 0;
+    return nullptr;
 }
 
 template <typename SelectorQueryTrait>
@@ -551,17 +551,17 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
         return it->value.get();
 
     CSSSelectorList selectorList;
-    CSSParser::parseSelector(CSSParserContext(document, 0), selectors, selectorList);
+    CSSParser::parseSelector(CSSParserContext(document, nullptr), selectors, selectorList);
 
     if (!selectorList.first()) {
         exceptionState.throwDOMException(SyntaxError, "'" + selectors + "' is not a valid selector.");
-        return 0;
+        return nullptr;
     }
 
     // throw a NamespaceError if the selector includes any namespace prefixes.
     if (selectorList.selectorsNeedNamespaceResolution()) {
         exceptionState.throwDOMException(NamespaceError, "'" + selectors + "' contains namespaces, which are not supported.");
-        return 0;
+        return nullptr;
     }
 
     const unsigned maximumSelectorQueryCacheSize = 256;
