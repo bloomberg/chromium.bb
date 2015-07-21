@@ -49,7 +49,9 @@ public class RoundedIconGeneratorTest extends NativeLibraryTestBase {
         assertEquals("google-chrome", getIconTextForUrl("https://google-chrome/", false));
         assertEquals("127.0.0.1", getIconTextForUrl("http://127.0.0.1/", false));
 
-        // Verify that file:// URLs will still return NULL.
-        assertNull(getIconTextForUrl("file:///home/chrome/test.html", false));
+        // Verify that the fallback is the the URL itself.
+        assertEquals("file:///home/chrome/test.html",
+                getIconTextForUrl("file:///home/chrome/test.html", false));
+        assertEquals("data:image", getIconTextForUrl("data:image", false));
     }
 }

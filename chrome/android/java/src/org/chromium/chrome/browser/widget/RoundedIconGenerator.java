@@ -187,6 +187,6 @@ public class RoundedIconGenerator {
             Log.w(TAG, "Unable to parse the URL for generating an icon: " + url);
         }
 
-        return null;
+        return url;
     }
 }
