@@ -60,6 +60,8 @@ class GCContext(object):
 
     cmd: The command to run.
     project: The project to use. Defaults to using self.project.
+    quiet: Suppress user prompts from the gcloud cli.
+    zone: The zone to use. Elided by default.
     kwargs: See cros_build_lib.RunCommand.
     """
     cmd = self._GetBaseComputeCommand() + cmd
@@ -207,8 +209,8 @@ class GCContext(object):
                                % (instance, description))
 
   def CreateInstance(self, instance, image=None, machine_type=None,
-                     address=None, wait_until_sshable=True,
-                     scopes=None, tags=None, **kwargs):
+                     network=None, address=None, wait_until_sshable=True,
+                     scopes=None, **kwargs):
     """Creates an |instance|.
 
     Additionally, if an image is provided, adds a custom metadata pair to
@@ -218,11 +220,11 @@ class GCContext(object):
       instance: The name of the instance to create.
       image: The source image to create |instance| from.
       machine_type: The machine type to use.
+      network: An existing network to create the instance in.
       address: The external IP address to assign to |instance|.
       wait_until_sshable: After creating |instance|, wait until
         we can ssh into |instance|.
       scopes: The list (or tuple) of service account scopes.
-      tags: List of tags to be assigned to the instance.
       kwargs: See DoZoneSpecificCommand.
     """
     cmd = ['instances', 'create', instance]
@@ -230,14 +232,14 @@ class GCContext(object):
       cmd += ['--image', image]
       cmd += ['--metadata',
               '%s="%s"' % (compute_configs.METADATA_IMAGE_NAME, image)]
-    if address:
+    if network is not None:
+      cmd += ['--network', network]
+    if address is not None:
       cmd += ['--address', address]
-    if machine_type:
+    if machine_type is not None:
       cmd += ['--machine-type', machine_type]
-    if scopes:
-      cmd += ['--scopes'] + list(scopes)
-    if tags:
-      cmd += ['--tags'] + list(tags)
+    if scopes is not None:
+      cmd += ['--scopes', ','.join(list(scopes))]
 
     ret = self.DoZoneSpecificCommand(cmd, **kwargs)
     if wait_until_sshable:
