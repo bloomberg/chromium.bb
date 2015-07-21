@@ -1148,6 +1148,7 @@
         'base/android/media_codec_decoder_unittest.cc',
         'base/android/media_codec_player_unittest.cc',
         'base/android/media_drm_bridge_unittest.cc',
+        'base/android/media_player_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
         'base/android/test_data_factory.cc',
         'base/android/test_data_factory.h',

@@ -99,13 +99,17 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual base::android::ScopedJavaLocalRef<jobject> GetAllowedOperations();
 
  private:
+  friend class MediaPlayerBridgeTest;
+
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
 
   // Functions that implements media player control.
   void StartInternal();
   void PauseInternal();
-  void SeekInternal(base::TimeDelta time);
+
+  // Returns true if the Java MediaPlayerBridge's seekTo method is called
+  bool SeekInternal(base::TimeDelta current_time, base::TimeDelta time);
 
   // Called when |time_update_timer_| fires.
   void OnTimeUpdateTimerFired();
