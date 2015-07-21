@@ -155,7 +155,6 @@ public class AccountManagerHelper {
      * @return an array of accounts.
      */
     public Account[] getGoogleAccounts() {
-        if (!hasGetAccountsPermission()) return new Account[]{};
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
 

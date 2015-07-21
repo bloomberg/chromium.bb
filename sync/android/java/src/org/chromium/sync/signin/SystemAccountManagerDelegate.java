@@ -20,13 +20,18 @@ import android.os.Handler;
 public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     private final AccountManager mAccountManager;
+    private final Context mApplicationContext;
 
     public SystemAccountManagerDelegate(Context context) {
+        mApplicationContext = context.getApplicationContext();
         mAccountManager = AccountManager.get(context.getApplicationContext());
     }
 
     @Override
     public Account[] getAccountsByType(String type) {
+        if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
+            return new Account[]{};
+        }
         return mAccountManager.getAccountsByType(type);
     }
 
