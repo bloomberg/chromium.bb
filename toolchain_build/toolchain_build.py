@@ -51,7 +51,7 @@ GIT_REVISIONS = {
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
     'glibc': {
-        'rev': 'c9328a5c4c5d87f007d115754d55b4b2857d1542',
+        'rev': '0b24551cf3a62e0dbbe7577f63b43969f8dfc1fb',
         'upstream-branch': 'upstream/master',
         'upstream-name': 'glibc-2.21',
         # Upstream tag glibc-2.21:
@@ -1003,6 +1003,9 @@ CFLAGS-doasin.c = -mtune=generic-armv7-a
                                'STRIP=%(cwd)s/strip_for_target',
                            ],
                            MakeCommand(host) + [minisdk_root],
+                           # TODO(mcgrathr): Can drop check-abi when
+                           # check is enabled; check includes check-abi.
+                           MakeCommand(host) + [minisdk_root, 'check-abi'],
                            # TODO(mcgrathr): Enable test suite later.
                            #MakeCommand(host) + [minisdk_root, 'check'],
                            ['make', 'install', minisdk_root,
