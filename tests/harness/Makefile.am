@@ -16,6 +16,7 @@ harness_TESTS =					\
 	hu-hu-g1_harness.txt			\
 	iu-ca-g1_harness.txt			\
 	ko-g2_harness.txt			\
+	ko-2006-g2_harness.txt			\
 	letterDefTest_harness.txt		\
 	nocross_harness.txt			\
 	ta-ta-g1_harness.txt			\
@@ -26,7 +27,8 @@ harness_TESTS =					\
 	fr-bfu-g2_harness.txt		\
 	en-ueb-g1_harness.txt		\
 	hr-8dots_harness.txt		\
-	sr-g1_harness.txt
+	sr-g1_harness.txt		\
+	eo-g1_harness.txt
 
 EXTRA_DIST = $(harness_TESTS)			\
 	     runHarness.py
