@@ -101,11 +101,7 @@ def CommandGypBuild(context):
 def CommandGypGenerate(context):
   Command(
           context,
-          cmd=[
-              sys.executable,
-              'native_client/build/gyp_nacl',
-              'native_client/build/all.gyp',
-              ],
+          cmd=[sys.executable, 'native_client/build/gyp_nacl'],
           cwd='..')
 
 

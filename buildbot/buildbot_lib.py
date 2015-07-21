@@ -124,7 +124,6 @@ def SetupWindowsEnvironment(context):
 
 
 def SetupGyp(context, extra_vars=[]):
-  context.SetEnv('GYP_GENERATORS', 'ninja')
   if RunningOnBuildbot():
     goma_opts = [
         'use_goma=1',
@@ -146,7 +145,6 @@ def SetupMacEnvironment(context):
 
 def SetupAndroidEnvironment(context):
   SetupGyp(context, ['OS=android', 'target_arch='+context['gyp_arch']])
-  context.SetEnv('GYP_GENERATORS', 'ninja')
   context.SetEnv('GYP_CROSSCOMPILE', '1')
 
 

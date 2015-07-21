@@ -28,7 +28,7 @@ def main():
   args = sys.argv[1:]
 
   # If we didn't get a file, check an env var, and then fall back to
-  # assuming 'src/build/all.gyp'
+  # assuming 'native_client/build/all.gyp'
   if len(args) == 0:
     args += shlex.split(os.environ.get('NACL_GYP_FILE',
                                        'native_client/build/all.gyp'))

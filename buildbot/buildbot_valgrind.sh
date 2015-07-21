@@ -50,7 +50,7 @@ export GYP_DEFINES=target_arch=x64
 gclient runhooks --force
 
 echo @@@BUILD_STEP gyp_compile@@@
-make -C .. -k -j12 V=1 BUILDTYPE=Debug
+ninja -C ../out/Debug -v
 
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 "$@"
