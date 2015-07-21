@@ -5052,9 +5052,11 @@ void WebGLRenderingContextBase::setFilterQuality(SkFilterQuality filterQuality)
 
 Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil()
 {
-    ASSERT(!isContextLost());
-    if (!m_extensionsUtil)
+    if (!m_extensionsUtil) {
         m_extensionsUtil = Extensions3DUtil::create(webContext());
+        // The only reason the ExtensionsUtil should be invalid is if the webContext is lost.
+        ASSERT(m_extensionsUtil->isValid() || webContext()->isContextLost());
+    }
     return m_extensionsUtil.get();
 }
 

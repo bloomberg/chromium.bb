@@ -22,6 +22,8 @@ public:
     static PassOwnPtr<Extensions3DUtil> create(WebGraphicsContext3D*);
     ~Extensions3DUtil();
 
+    bool isValid() { return m_isValid; }
+
     bool supportsExtension(const String& name);
     bool ensureExtensionEnabled(const String& name);
     bool isExtensionEnabled(const String& name);
@@ -30,11 +32,12 @@ public:
 
 private:
     Extensions3DUtil(WebGraphicsContext3D*);
-    bool initializeExtensions();
+    void initializeExtensions();
 
     WebGraphicsContext3D* m_context;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;
+    bool m_isValid;
 };
 
 } // namespace blink

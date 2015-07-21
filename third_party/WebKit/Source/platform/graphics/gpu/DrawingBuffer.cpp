@@ -91,7 +91,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
     }
 
     OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
-    if (!extensionsUtil) {
+    if (!extensionsUtil->isValid()) {
         // This might be the first time we notice that the WebGraphicsContext3D is lost.
         return nullptr;
     }
@@ -469,6 +469,12 @@ bool DrawingBuffer::initialize(const IntSize& size)
         m_actualAttributes.stencil = stencilBits > 0;
     }
     m_actualAttributes.antialias = multisample();
+
+    if (m_context->isContextLost()) {
+        // It's possible that the drawing buffer allocation provokes a context loss, so check again just in case. http://crbug.com/512302
+        return false;
+    }
+
     return true;
 }
 

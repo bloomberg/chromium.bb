@@ -26,13 +26,13 @@ void splitStringHelper(const String& str, HashSet<String>& set)
 PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(WebGraphicsContext3D* context)
 {
     OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(context));
-    if (!out->initializeExtensions())
-        return nullptr;
+    out->initializeExtensions();
     return out.release();
 }
 
 Extensions3DUtil::Extensions3DUtil(WebGraphicsContext3D* context)
     : m_context(context)
+    , m_isValid(true)
 {
 }
 
@@ -40,11 +40,13 @@ Extensions3DUtil::~Extensions3DUtil()
 {
 }
 
-bool Extensions3DUtil::initializeExtensions()
+void Extensions3DUtil::initializeExtensions()
 {
     if (m_context->isContextLost()) {
-        // Need to try to restore the context again later.
-        return false;
+        // If the context is lost don't initialize the extension strings.
+        // This will cause supportsExtension, ensureExtensionEnabled, and isExtensionEnabled to always return false.
+        m_isValid = false;
+        return;
     }
 
     String extensionsString = m_context->getString(GL_EXTENSIONS);
@@ -52,8 +54,6 @@ bool Extensions3DUtil::initializeExtensions()
 
     String requestableExtensionsString = m_context->getRequestableExtensionsCHROMIUM();
     splitStringHelper(requestableExtensionsString, m_requestableExtensions);
-
-    return true;
 }
 
 
