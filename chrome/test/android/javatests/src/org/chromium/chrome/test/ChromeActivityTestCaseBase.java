@@ -178,7 +178,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
     /** Convenience function for {@link ApplicationTestUtils#clearAppData(Context)}. */
     protected void clearAppData() throws Exception {
-        ApplicationTestUtils.clearAppData(getInstrumentation().getContext());
+        ApplicationTestUtils.clearAppData(getInstrumentation().getTargetContext());
     }
 
     /**
