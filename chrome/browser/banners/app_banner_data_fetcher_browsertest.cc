@@ -63,6 +63,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   }
 
   void SetUpOnMainThread() override {
+    AppBannerSettingsHelper::SetEngagementWeights(1, 1);
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -73,10 +74,6 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
     non_web_platform_ = platform;
     return false;
-  }
-
-  void SetUp() override {
-    AppBannerSettingsHelper::SetEngagementWeights(1, 1);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
