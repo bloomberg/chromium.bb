@@ -239,8 +239,10 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   // New media segments must begin with a keyframe.
   // TODO(wolenetz): Relax this requirement. See http://crbug.com/229412.
   if (new_media_segment_ && !buffers.front()->is_key_frame()) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Media segment did not begin with key frame.";
+    MEDIA_LOG(ERROR, media_log_) << "Media segment did not begin with key "
+                                    "frame. Support for such segments will be "
+                                    "available in a future version. Please see "
+                                    "https://crbug.com/229412.";
     return false;
   }
 
