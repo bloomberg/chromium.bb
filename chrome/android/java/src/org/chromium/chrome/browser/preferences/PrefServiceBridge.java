@@ -42,7 +42,7 @@ public final class PrefServiceBridge {
     public static final int SUPERVISED_USER_FILTERING_BLOCK = 2;
 
     private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
-    private static final int MIGRATION_CURRENT_VERSION = 3;
+    private static final int MIGRATION_CURRENT_VERSION = 4;
 
     private static final String HTTPS_SCHEME = "https";
 
@@ -127,6 +127,12 @@ public final class PrefServiceBridge {
         if (currentVersion < 3) {
             nativeMigrateLocationPreference();
             nativeMigrateProtectedMediaPreference();
+        }
+        if (currentVersion < 4) {
+            // For a brief period (M44 Beta), it was possible for users to disable images via Site
+            // Settings. Now that this option has been removed, ensure that users are not stuck with
+            // images disabled.
+            setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES, true);
         }
         preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).commit();
     }
