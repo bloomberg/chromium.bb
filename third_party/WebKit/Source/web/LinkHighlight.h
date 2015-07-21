@@ -31,6 +31,8 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/Path.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
+#include "public/platform/WebCompositorAnimationPlayer.h"
+#include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebLayer.h"
@@ -44,7 +46,7 @@ class Node;
 struct WebRect;
 class WebViewImpl;
 
-class LinkHighlight final : public WebContentLayerClient, public WebCompositorAnimationDelegate, LinkHighlightClient {
+class LinkHighlight final : public WebContentLayerClient, public WebCompositorAnimationDelegate, LinkHighlightClient, WebCompositorAnimationPlayerClient {
 public:
     static PassOwnPtr<LinkHighlight> create(Node*, WebViewImpl*);
     ~LinkHighlight() override;
@@ -67,6 +69,9 @@ public:
     WebLayer* layer() override;
     void clearCurrentGraphicsLayer() override;
 
+    // WebCompositorAnimationPlayerClient implementation.
+    WebCompositorAnimationPlayer* compositorPlayer() const override;
+
     GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
 
 private:
@@ -88,6 +93,7 @@ private:
     RefPtrWillBePersistent<Node> m_node;
     WebViewImpl* m_owningWebViewImpl;
     GraphicsLayer* m_currentGraphicsLayer;
+    OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
 
     bool m_geometryNeedsUpdate;
     bool m_isAnimating;

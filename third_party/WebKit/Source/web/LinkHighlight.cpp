@@ -37,6 +37,7 @@
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/style/ShadowData.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
@@ -76,12 +77,21 @@ LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
     ASSERT(m_node);
     ASSERT(owningWebViewImpl);
     WebCompositorSupport* compositorSupport = Platform::current()->compositorSupport();
+    ASSERT(compositorSupport);
     m_contentLayer = adoptPtr(compositorSupport->createContentLayer(this));
-    owningWebViewImpl->registerForAnimations(m_contentLayer->layer());
     m_clipLayer = adoptPtr(compositorSupport->createLayer());
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
-    m_contentLayer->layer()->setAnimationDelegate(this);
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
+        m_compositorPlayer = adoptPtr(compositorSupport->createAnimationPlayer());
+        ASSERT(m_compositorPlayer);
+        m_compositorPlayer->setAnimationDelegate(this);
+        m_owningWebViewImpl->linkHighlightsTimeline()->playerAttached(*this);
+        m_compositorPlayer->attachLayer(m_contentLayer->layer());
+    } else {
+        owningWebViewImpl->registerForAnimations(m_contentLayer->layer());
+        m_contentLayer->layer()->setAnimationDelegate(this);
+    }
     m_contentLayer->layer()->setDrawsContent(true);
     m_contentLayer->layer()->setOpacity(1);
     m_geometryNeedsUpdate = true;
@@ -90,6 +100,13 @@ LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
 
 LinkHighlight::~LinkHighlight()
 {
+    if (m_compositorPlayer) {
+        m_compositorPlayer->detachLayer();
+        m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
+        m_compositorPlayer->setAnimationDelegate(nullptr);
+    }
+    m_compositorPlayer.clear();
+
     clearGraphicsLayerLinkHighlightPointer();
     releaseResources();
 }
@@ -292,7 +309,10 @@ void LinkHighlight::startHighlightAnimationIfNeeded()
     OwnPtr<WebCompositorAnimation> animation = adoptPtr(compositorSupport->createAnimation(*curve, WebCompositorAnimation::TargetPropertyOpacity));
 
     m_contentLayer->layer()->setDrawsContent(true);
-    m_contentLayer->layer()->addAnimation(animation.leakPtr());
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled())
+        m_compositorPlayer->addAnimation(animation.leakPtr());
+    else
+        m_contentLayer->layer()->addAnimation(animation.leakPtr());
 
     invalidate();
     m_owningWebViewImpl->scheduleAnimation();
@@ -359,6 +379,11 @@ void LinkHighlight::invalidate()
 WebLayer* LinkHighlight::layer()
 {
     return clipLayer();
+}
+
+WebCompositorAnimationPlayer* LinkHighlight::compositorPlayer() const
+{
+    return m_compositorPlayer.get();
 }
 
 } // namespace blink

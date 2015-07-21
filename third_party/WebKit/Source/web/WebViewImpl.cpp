@@ -118,6 +118,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
+#include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebGestureCurve.h"
@@ -2673,6 +2674,11 @@ bool WebViewImpl::isAcceleratedCompositingActive() const
 
 void WebViewImpl::willCloseLayerTreeView()
 {
+    if (m_linkHighlightsTimeline) {
+        detachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
+        m_linkHighlightsTimeline.clear();
+    }
+
     setRootGraphicsLayer(nullptr);
     m_layerTreeView = 0;
 }
@@ -4162,6 +4168,12 @@ void WebViewImpl::initializeLayerTreeView()
     // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
     ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
+
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && m_layerTreeView) {
+        ASSERT(Platform::current()->compositorSupport());
+        m_linkHighlightsTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
+        attachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
+    }
 }
 
 void WebViewImpl::applyViewportDeltas(
