@@ -109,8 +109,9 @@ def IsDevicePortUsed(device, device_port, state=''):
   Returns:
     True if the port on device is already used, otherwise returns False.
   """
-  base_url = '127.0.0.1:%d' % device_port
-  netstat_results = device.RunShellCommand('netstat')
+  base_urls = ('127.0.0.1:%d' % device_port, 'localhost:%d' % device_port)
+  netstat_results = device.RunShellCommand(
+      ['netstat', '-a'], check_return=True, large_output=True)
   for single_connect in netstat_results:
     # Column 3 is the local address which we want to check with.
     connect_results = single_connect.split()
@@ -120,7 +121,7 @@ def IsDevicePortUsed(device, device_port, state=''):
       raise Exception('Unexpected format while parsing netstat line: ' +
                       single_connect)
     is_state_match = connect_results[5] == state if state else True
-    if connect_results[3] == base_url and is_state_match:
+    if connect_results[3] in base_urls and is_state_match:
       return True
   return False
 
