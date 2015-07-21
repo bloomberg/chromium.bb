@@ -28,6 +28,7 @@
 #include "core/dom/PseudoElement.h"
 
 #include "core/dom/FirstLetterPseudoElement.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutQuote.h"
@@ -89,6 +90,8 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     parent->treeScope().adoptIfNeeded(*this);
     setParentOrShadowHostNode(parent);
     setHasCustomStyleCallbacks();
+    if ((pseudoId == BEFORE || pseudoId == AFTER) && parent->hasTagName(HTMLNames::inputTag))
+        UseCounter::count(parent->document(), UseCounter::PseudoBeforeAfterForInputElement);
 }
 
 PassRefPtr<ComputedStyle> PseudoElement::customStyleForLayoutObject()
