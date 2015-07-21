@@ -449,6 +449,7 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
             box().setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
         else
             box().setShouldDoFullPaintInvalidation();
+        frameView->setFrameTimingRequestsDirty(true);
     }
 
     // Schedule the scroll DOM event.

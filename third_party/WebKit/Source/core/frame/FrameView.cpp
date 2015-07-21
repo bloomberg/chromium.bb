@@ -137,6 +137,8 @@ FrameView::FrameView(LocalFrame* frame)
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
     , m_clipsRepaints(true)
+    , m_frameTimingRequestsDirty(true)
+
 {
     ASSERT(m_frame);
     init();
@@ -1034,6 +1036,8 @@ void FrameView::layout()
 
     if (!inSubtreeLayout && !document->printing())
         adjustViewSize();
+
+    m_frameTimingRequestsDirty = true;
 
     // FIXME: Could find the common ancestor layer of all dirty subtrees and mark from there. crbug.com/462719
     layoutView()->enclosingLayer()->updateLayerPositionsAfterLayout();
@@ -3922,6 +3926,9 @@ void FrameView::collectAnnotatedRegions(LayoutObject& layoutObject, Vector<Annot
 
 void FrameView::collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests& graphicsLayerTimingRequests)
 {
+    if (!m_frameTimingRequestsDirty)
+        return;
+
     collectFrameTimingRequests(graphicsLayerTimingRequests);
 
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
@@ -3930,6 +3937,7 @@ void FrameView::collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequ
 
         toLocalFrame(child)->view()->collectFrameTimingRequestsRecursive(graphicsLayerTimingRequests);
     }
+    m_frameTimingRequestsDirty = false;
 }
 
 void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& graphicsLayerTimingRequests)

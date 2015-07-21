@@ -356,4 +356,31 @@ TEST_F(DocumentTest, referrerPolicyParsing)
     }
 }
 
+// This tests that we mark Frame Timing requests as dirty correctly when we
+// update style.
+TEST_F(DocumentTest, FrameTimingRelayout)
+{
+    setHtmlInnerHTML(
+        "<style>"
+        "    #div1 {"
+        "        width: 100px;"
+        "        height: 100px;"
+        "    }"
+        "</style>"
+        "<p><div id='div1'><span>test</span></div></p>");
+
+    EXPECT_FALSE(document().view()->frameTimingRequestsDirty());
+
+    // Just calling update should have no effect.
+    document().updateLayoutTreeIfNeeded();
+    EXPECT_FALSE(document().view()->frameTimingRequestsDirty());
+
+    // Calling update with a style change should flag Frame Timing as dirty.
+    document().setChildNeedsStyleRecalc();
+    document().updateLayoutTreeIfNeeded();
+    EXPECT_TRUE(document().view()->frameTimingRequestsDirty());
+}
+
+
+
 } // namespace blink

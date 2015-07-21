@@ -426,6 +426,8 @@ void DeprecatedPaintLayerCompositor::updateIfNeeded()
     for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++)
         forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(layersNeedingPaintInvalidation[i]->layoutObject());
 
+    m_layoutView.frameView()->setFrameTimingRequestsDirty(true);
+
     // Inform the inspector that the layer tree has changed.
     if (m_layoutView.frame()->isMainFrame())
         InspectorInstrumentation::layerTreeDidChange(m_layoutView.frame());

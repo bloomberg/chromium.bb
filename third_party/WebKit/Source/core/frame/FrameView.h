@@ -561,6 +561,9 @@ public:
     // Returns true if the document's writing mode is right-to-left or bottom-to-top.
     bool isFlippedDocument() const;
 
+    void setFrameTimingRequestsDirty(bool isDirty) { m_frameTimingRequestsDirty = isDirty; }
+    bool frameTimingRequestsDirty() { return m_frameTimingRequestsDirty; }
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -833,6 +836,10 @@ private:
     bool m_clipsRepaints;
 
     OwnPtr<LayoutAnalyzer> m_analyzer;
+
+    // Mark if something has changed in the mapping from Frame to GraphicsLayer
+    // and the Frame Timing regions should be recalculated.
+    bool m_frameTimingRequestsDirty;
 
     // Exists only on root frame.
     // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
