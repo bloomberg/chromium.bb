@@ -67,7 +67,7 @@ base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
     // normally would mean that a few omnibox searches might not send the RLZ
     // data but this is not really a problem (as the value will eventually be
     // set and cached).
-    rlz::RLZTracker::GetAccessPointRLZ(rlz::RLZTracker::ChromeOmnibox(),
+    rlz::RLZTracker::GetAccessPointRlz(rlz::RLZTracker::ChromeOmnibox(),
                                        &rlz_string);
   }
 #endif
