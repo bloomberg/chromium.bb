@@ -66,6 +66,18 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   DISALLOW_COPY_AND_ASSIGN(X11Window);
 };
 
+namespace test {
+
+// Sets the value of the |override_redirect| flag when creating an X11 window.
+// It is necessary to set this flag on for various tests, otherwise the call to
+// X11Window::Show() blocks because it never receives the MapNotify event. It is
+// unclear why this is necessary, but might be related to calls to
+// XInitThreads().
+X11_WINDOW_EXPORT void SetUseOverrideRedirectWindowByDefault(
+    bool override_redirect);
+
+}  // namespace test
+
 }  // namespace ui
 
 #endif  // UI_PLATFORM_WINDOW_X11_X11_WINDOW_H_

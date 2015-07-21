@@ -13,6 +13,7 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#include "ui/platform_window/x11/x11_window.h"
 #endif
 
 namespace gfx {
@@ -23,6 +24,7 @@ void GLSurfaceTestSupport::InitializeOneOff() {
 
 #if defined(USE_X11)
   XInitThreads();
+  ui::test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
 
   bool use_osmesa = true;

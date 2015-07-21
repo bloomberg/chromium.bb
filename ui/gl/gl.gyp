@@ -310,6 +310,7 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../gfx/x/gfx_x11.gyp:gfx_x11',
+            '../platform_window/x11/x11_window.gyp:x11_window',
           ],
         }],
       ],

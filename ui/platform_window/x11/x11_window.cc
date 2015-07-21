@@ -38,6 +38,8 @@ XID FindXEventTarget(XEvent* xevent) {
   return target;
 }
 
+bool g_override_redirect = false;
+
 }  // namespace
 
 X11Window::X11Window(PlatformWindowDelegate* delegate)
@@ -123,7 +125,7 @@ void X11Window::Show() {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
-  swa.override_redirect = False;
+  swa.override_redirect = g_override_redirect;
   xwindow_ = XCreateWindow(xdisplay_,
                            xroot_window_,
                            requested_bounds_.x(),
@@ -365,4 +367,11 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
+namespace test {
+
+void SetUseOverrideRedirectWindowByDefault(bool override_redirect) {
+  g_override_redirect = override_redirect;
+}
+
+}  // namespace test
 }  // namespace ui
