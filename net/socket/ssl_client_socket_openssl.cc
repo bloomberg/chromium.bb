@@ -954,11 +954,6 @@ int SSLClientSocketOpenSSL::Init() {
   if (cert_verifier_->SupportsOCSPStapling())
     SSL_enable_ocsp_stapling(ssl_);
 
-  // Enable fastradio padding.
-  SSL_enable_fastradio_padding(ssl_,
-                               ssl_config_.fastradio_padding_enabled &&
-                                   ssl_config_.fastradio_padding_eligible);
-
   // By default, renegotiations are rejected. After the initial handshake
   // completes, some application protocols may re-enable it.
   SSL_set_reject_peer_renegotiations(ssl_, 1);

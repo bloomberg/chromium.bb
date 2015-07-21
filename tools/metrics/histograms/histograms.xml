@@ -23542,6 +23542,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SSL_Connection_Error_FastRadioPadding"
     enum="NetErrorCodes">
+  <obsolete>
+    Removed 7/21/2015. No longer tracked.
+  </obsolete>
   <owner>jeremyim@chromium.org</owner>
   <summary>
     Counts of specific error codes returned when opening an SSL connection for

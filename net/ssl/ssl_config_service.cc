@@ -77,10 +77,6 @@ void SSLConfigService::NotifySSLConfigChange() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnSSLConfigChanged());
 }
 
-bool SSLConfigService::SupportsFastradioPadding(const GURL& url) {
-  return false;
-}
-
 SSLConfigService::~SSLConfigService() {
 }
 

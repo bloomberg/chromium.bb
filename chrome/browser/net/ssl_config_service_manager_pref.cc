@@ -19,20 +19,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
-#include "url/gurl.h"
 
 using content::BrowserThread;
 
 namespace {
-
-// Field trial for ClientHello padding.
-const char kClientHelloFieldTrialName[] = "FastRadioPadding";
-const char kClientHelloFieldTrialEnabledGroupName[] = "Enabled";
 
 // Converts a ListValue of StringValues into a vector of strings. Any Values
 // which cannot be converted will be skipped.
@@ -100,8 +94,6 @@ class SSLConfigServicePref : public net::SSLConfigService {
   // Store SSL config settings in |config|. Must only be called from IO thread.
   void GetSSLConfig(net::SSLConfig* config) override;
 
-  bool SupportsFastradioPadding(const GURL& url) override;
-
  private:
   // Allow the pref watcher to update our internal state.
   friend class SSLConfigServiceManagerPref;
@@ -121,11 +113,6 @@ class SSLConfigServicePref : public net::SSLConfigService {
 void SSLConfigServicePref::GetSSLConfig(net::SSLConfig* config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *config = cached_config_;
-}
-
-bool SSLConfigServicePref::SupportsFastradioPadding(const GURL& url) {
-  return google_util::IsGoogleHostname(url.host(),
-                                       google_util::ALLOW_SUBDOMAIN);
 }
 
 void SSLConfigServicePref::SetNewSSLConfig(
@@ -293,12 +280,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->disabled_cipher_suites = disabled_cipher_suites_;
   // disabling False Start also happens to disable record splitting.
   config->false_start_enabled = !ssl_record_splitting_disabled_.GetValue();
-
-  base::StringPiece group =
-      base::FieldTrialList::FindFullName(kClientHelloFieldTrialName);
-  if (group.starts_with(kClientHelloFieldTrialEnabledGroupName)) {
-    config->fastradio_padding_enabled = true;
-  }
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(

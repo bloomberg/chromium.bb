@@ -195,12 +195,6 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   if (request_->privacy_mode == PRIVACY_MODE_ENABLED)
     server_ssl_config_.channel_id_enabled = false;
 
-  if (server_ssl_config_.fastradio_padding_enabled) {
-    server_ssl_config_.fastradio_padding_eligible =
-        session_->ssl_config_service()->SupportsFastradioPadding(
-            request_info->url);
-  }
-
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
