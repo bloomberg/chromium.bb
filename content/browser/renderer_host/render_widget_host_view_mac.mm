@@ -2101,6 +2101,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // Clear them here so that we can know whether they have changed afterwards.
   textToBeInserted_.clear();
   markedText_.clear();
+  markedTextSelectedRange_ = NSMakeRange(NSNotFound, 0);
   underlines_.clear();
   unmarkTextCalled_ = NO;
   hasEditCommands_ = NO;
@@ -2184,11 +2185,11 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (hasMarkedText_ && markedText_.length()) {
     // Sends the updated marked text to the renderer so it can update the
     // composition node in WebKit.
-    // When marked text is available, |selectedRange_| will be the range being
-    // selected inside the marked text.
+    // When marked text is available, |markedTextSelectedRange_| will be the
+    // range being selected inside the marked text.
     widgetHost->ImeSetComposition(markedText_, underlines_,
-                                  selectedRange_.location,
-                                  NSMaxRange(selectedRange_));
+                                  markedTextSelectedRange_.location,
+                                  NSMaxRange(markedTextSelectedRange_));
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
     if (unmarkTextCalled_) {
       widgetHost->ImeConfirmComposition(
@@ -2920,6 +2921,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // input method calls this method.
   hasMarkedText_ = NO;
   markedText_.clear();
+  markedTextSelectedRange_ = NSMakeRange(NSNotFound, 0);
   underlines_.clear();
 
   // If we are handling a key down event, then ConfirmComposition() will be
@@ -2944,7 +2946,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   int length = [im_text length];
 
   // |markedRange_| will get set on a callback from ImeSetComposition().
-  selectedRange_ = newSelRange;
+  markedTextSelectedRange_ = newSelRange;
   markedText_ = base::SysNSStringToUTF16(im_text);
   hasMarkedText_ = (length > 0);
 
