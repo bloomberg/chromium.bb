@@ -70,8 +70,12 @@ void WebAudioCapturerSource::Start(WebRtcLocalAudioTrack* track) {
 
 void WebAudioCapturerSource::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
-  track_ = NULL;
+  {
+    base::AutoLock auto_lock(lock_);
+    track_ = NULL;
+  }
+  // removeFromBlinkSource() should not be called while |lock_| is acquired,
+  // as it could result in a deadlock.
   removeFromBlinkSource();
 }
 
