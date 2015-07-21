@@ -2682,6 +2682,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.RequestDevice.Outcome"
+    enum="BluetoothRequestDeviceOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the result of a navigator.bluetooth.requestDevice() call. Used to
+    understand what errors developers are getting so we can target efforts
+    toward the most common ones.
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.LaunchDepth">
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -51354,6 +51366,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="Authentication timed out"/>
   <int value="7" label="Unsupported device"/>
   <int value="8" label="Unknown or unhandler error"/>
+</enum>
+
+<enum name="BluetoothRequestDeviceOutcome" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="No Bluetooth adapter"/>
+  <int value="2" label="No RenderFrameHost for message source"/>
+  <int value="3" label="Discovery start failed"/>
+  <int value="4" label="Discovery stop failed"/>
+  <int value="5" label="No matching devices found"/>
 </enum>
 
 <enum name="BookmarksExperimentState" type="int">

@@ -42,6 +42,24 @@ enum class BluetoothGATTError {
   MAX_ERROR,
 };
 
+enum class UMARequestDeviceOutcome {
+  SUCCESS = 0,
+  NO_BLUETOOTH_ADAPTER = 1,
+  NO_RENDER_FRAME = 2,
+  DISCOVERY_START_FAILED = 3,
+  DISCOVERY_STOP_FAILED = 4,
+  NO_MATCHING_DEVICES_FOUND = 5,
+  // NOTE: Add new requestDevice() outcomes immediately above this line. Make
+  // sure to update the enum list in tools/histogram/histograms.xml accordingly.
+  COUNT
+};
+
+void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.RequestDevice.Outcome",
+                            static_cast<int>(outcome),
+                            static_cast<int>(UMARequestDeviceOutcome::COUNT));
+}
+
 // TODO(ortuno): Once we have a chooser for scanning and the right
 // callback for discovered services we should delete these constants.
 // https://crbug.com/436280 and https://crbug.com/484504
@@ -239,6 +257,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     DLOG(WARNING)
         << "Got a requestDevice IPC without a matching RenderFrameHost: "
         << render_process_id_ << ", " << frame_routing_id;
+    RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_RENDER_FRAME);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
   }
@@ -265,6 +284,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
                    weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
   } else {
     DLOG(WARNING) << "No BluetoothAdapter. Can't serve requestDevice.";
+    RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_BLUETOOTH_ADAPTER);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
   }
@@ -512,6 +532,7 @@ void BluetoothDispatcherHost::OnDiscoverySessionStartedError(int thread_id,
                                                              int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DLOG(WARNING) << "BluetoothDispatcherHost::OnDiscoverySessionStartedError";
+  RecordRequestDeviceOutcome(UMARequestDeviceOutcome::DISCOVERY_START_FAILED);
   Send(new BluetoothMsg_RequestDeviceError(
       thread_id, request_id, WebBluetoothError::DiscoverySessionStartFailed));
   request_device_sessions_.erase(std::make_pair(thread_id, request_id));
@@ -549,12 +570,15 @@ void BluetoothDispatcherHost::OnDiscoverySessionStopped(int thread_id,
           device->IsPaired(),           // paired
           content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
               device->GetUUIDs()));  // uuids
+      RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);
       Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
                                                  device_ipc));
       request_device_sessions_.erase(session);
       return;
     }
   }
+  RecordRequestDeviceOutcome(
+      UMARequestDeviceOutcome::NO_MATCHING_DEVICES_FOUND);
   Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
                                            WebBluetoothError::NoDevicesFound));
   request_device_sessions_.erase(session);
@@ -564,6 +588,7 @@ void BluetoothDispatcherHost::OnDiscoverySessionStoppedError(int thread_id,
                                                              int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DLOG(WARNING) << "BluetoothDispatcherHost::OnDiscoverySessionStoppedError";
+  RecordRequestDeviceOutcome(UMARequestDeviceOutcome::DISCOVERY_STOP_FAILED);
   Send(new BluetoothMsg_RequestDeviceError(
       thread_id, request_id, WebBluetoothError::DiscoverySessionStopFailed));
   request_device_sessions_.erase(std::make_pair(thread_id, request_id));
