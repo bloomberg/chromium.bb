@@ -501,9 +501,14 @@ __gCrWeb.autofill['fillActiveFormField'] = function(data) {
  * Fills a number of fields in the same named form.
  *
  * @param {Object<AutofillFormData>} data The data to fill in.
+ * @param {boolean} onlyFillEmpty Only fill empty fields. Otherwise fill all
+ *     fields.
+ * @param {string} forceFillFieldName Named field will always be filled,
+ *     regardless of value of |onlyFillEmpty|. May be null.
  * @param {boolean} styleElements Apply Autofill CSS style to filled elements.
  */
-__gCrWeb.autofill['fillForm'] = function(data, styleElements) {
+__gCrWeb.autofill['fillForm'] = function(data, onlyFillEmpty,
+    forceFillFieldName, styleElements) {
   // Inject CSS to style the autofilled elements with a yellow background.
   if (styleElements && !__gCrWeb.autofill.styleInjected) {
     var style = document.createElement('style');
@@ -519,6 +524,7 @@ __gCrWeb.autofill['fillForm'] = function(data, styleElements) {
   // Remove Autofill styling when control element is edited.
   var controlElementInputListener = function(evt) {
     evt.target.removeAttribute('chrome-autofilled');
+    evt.target.isAutofilled = false;
     evt.target.removeEventListener('input', controlElementInputListener);
   };
 
@@ -529,11 +535,23 @@ __gCrWeb.autofill['fillForm'] = function(data, styleElements) {
     if (!__gCrWeb.autofill.isAutofillableElement(element)) {
       continue;
     }
-    var value = data.fields[__gCrWeb['common'].nameForAutofill(element)];
+    var fieldName = __gCrWeb['common'].nameForAutofill(element);
+
+    // If directed, skip non-empty fields unless this is the forceFillFieldName
+    // or it's a 'select-one' element. 'select-one' elements are always
+    // autofilled even if non-empty; see
+    // AutofillManager::FillOrPreviewDataModelForm().
+    if (onlyFillEmpty && element.value && element.value.length > 0 &&
+        !__gCrWeb.autofill.isSelectElement(element) &&
+        fieldName !== forceFillFieldName) {
+      continue;
+    }
+    var value = data.fields[fieldName];
     if (value) {
       element.value = value;
       if (styleElements) {
         element.setAttribute('chrome-autofilled');
+        element.isAutofilled = true;
         element.addEventListener('input', controlElementInputListener);
       }
     }
@@ -547,6 +565,7 @@ __gCrWeb.autofill['fillForm'] = function(data, styleElements) {
       var controlElements = __gCrWeb.common.getFormControlElements(evt.target);
       for (var i = 0; i < controlElements.length; ++i) {
         controlElements[i].removeAttribute('chrome-autofilled');
+        controlElements[i].isAutofilled = false;
       }
       evt.target.removeEventListener('reset', formResetListener);
     };

@@ -78,12 +78,19 @@
 }
 
 - (void)fillForm:(NSString*)dataString
-        styleElements:(BOOL)styleElements
-    completionHandler:(ProceduralBlock)completionHandler {
+         onlyFillEmpty:(BOOL)onlyFillEmpty
+    forceFillFieldName:(NSString*)forceFillFieldName
+         styleElements:(BOOL)styleElements
+     completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);
-  NSString* fillFormJS =
-      [NSString stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s);",
-                                 dataString, styleElements ? "true" : "false"];
+  std::string fieldName =
+      forceFillFieldName
+          ? base::GetQuotedJSONString([forceFillFieldName UTF8String])
+          : "null";
+  NSString* fillFormJS = [NSString
+      stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s, %s, %s);",
+                       dataString, onlyFillEmpty ? "true" : "false",
+                       fieldName.c_str(), styleElements ? "true" : "false"];
   id stringResultHandler = ^(NSString*, NSError*) {
     completionHandler();
   };

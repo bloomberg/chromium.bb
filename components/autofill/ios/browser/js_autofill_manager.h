@@ -47,13 +47,19 @@
           completionHandler:(ProceduralBlock)completionHandler;
 
 // Fills a number of fields in the same named form.
+// If |onlyFillEmpty| is true then only empty fields will be filled. Otherwise
+// all fields will be filled.
+// Field named |forceFillFieldName| will always be filled, regardless of value
+// of |onlyFillEmpty|. May be null.
 // Applies Autofill CSS (i.e. yellow background) to filled elements if
 // |styleElements| is true.
 // |completionHandler| is called after the forms are filled. |completionHandler|
 // cannot be nil.
 - (void)fillForm:(NSString*)dataString
-        styleElements:(BOOL)styleElements
-    completionHandler:(ProceduralBlock)completionHandler;
+         onlyFillEmpty:(BOOL)onlyFillEmpty
+    forceFillFieldName:(NSString*)forceFillFieldName
+         styleElements:(BOOL)styleElements
+     completionHandler:(ProceduralBlock)completionHandler;
 
 // Dispatches the autocomplete event to the form element with the given
 // |formName|.
