@@ -2307,9 +2307,11 @@ bool CSSPropertyParser::isColorKeyword(CSSValueID id)
     //   '-internal-inactive-list-box-selection'
     //   '-internal-inactive-list-box-selection-text'
     //   '-webkit-focus-ring-color'
+    //   '-webkit-text'
     //
-    // TODO(fs): The "extended color keywords" are not included.
-    return (id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu;
+    return (id >= CSSValueAqua && id <= CSSValueWebkitText)
+        || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen)
+        || id == CSSValueMenu;
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)

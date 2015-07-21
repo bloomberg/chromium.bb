@@ -112,7 +112,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
     if (string.isEmpty())
         return false;
 
-    // The regular color parsers don't resolve all named colors, so explicitly
+    // The regular color parsers don't resolve named colors, so explicitly
     // handle these first.
     Color namedColor;
     if (namedColor.setNamedColor(string)) {

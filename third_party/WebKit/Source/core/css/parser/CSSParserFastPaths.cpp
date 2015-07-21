@@ -454,13 +454,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::parseColor(const String& st
         parseResult = fastParseColorInternal(color, string.characters8(), string.length(), quirksMode);
     else
         parseResult = fastParseColorInternal(color, string.characters16(), string.length(), quirksMode);
-    if (parseResult)
-        return cssValuePool().createColorValue(color);
-
-    Color namedColor;
-    if (!namedColor.setNamedColor(string))
+    if (!parseResult)
         return nullptr;
-    return cssValuePool().createColorValue(namedColor.rgb());
+    return cssValuePool().createColorValue(color);
 }
 
 bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID)
