@@ -58,6 +58,9 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # pylint: disable=W0212
     self._run.GetArchive().SetupArchivePath()
     stage = test_stages.VMTestStage(self._run, self._current_board)
+    image_dir = stage.GetImageDirSymlink()
+    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
+                  makedirs=True)
     return stage
 
   def testFullTests(self):

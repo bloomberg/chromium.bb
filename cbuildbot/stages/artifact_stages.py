@@ -128,6 +128,11 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         if basename != constants.VM_IMAGE_BIN:
           info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
           artifacts.append(info)
+      # Archive test keys.
+      for key in (constants.TEST_KEY_PRIVATE, constants.TEST_KEY_PUBLIC):
+        if os.path.isfile(os.path.join(image_dir, key)):
+          info = {'input': [key]}
+          artifacts.append(info)
 
     for artifact in artifacts:
       # Resolve the (possible) globs in the input list, and store
