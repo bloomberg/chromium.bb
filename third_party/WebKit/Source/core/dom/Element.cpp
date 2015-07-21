@@ -1089,7 +1089,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
     if (newValue != existingAttributeValue)
         ensureUniqueElementData().attributes().at(index).setValue(newValue);
     if (!inSynchronizationOfLazyAttribute)
-        didModifyAttribute(existingAttributeName, newValue);
+        didModifyAttribute(existingAttributeName, existingAttributeValue, newValue);
 }
 
 static inline AtomicString makeIdForStyleResolution(const AtomicString& value, bool inQuirksMode)
@@ -2150,7 +2150,7 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
     attributes.remove(index);
 
     if (!inSynchronizationOfLazyAttribute)
-        didRemoveAttribute(name);
+        didRemoveAttribute(name, valueBeingRemoved);
 }
 
 void Element::appendAttributeInternal(const QualifiedName& name, const AtomicString& value, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
@@ -2991,9 +2991,7 @@ inline void Element::updateId(TreeScope& scope, const AtomicString& oldId, const
 
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (name == HTMLNames::idAttr) {
-        updateId(oldValue, newValue);
-    } else if (name == HTMLNames::nameAttr) {
+    if (name == HTMLNames::nameAttr) {
         updateName(oldValue, newValue);
     }
 
@@ -3015,20 +3013,26 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
 
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)
 {
+    if (name == HTMLNames::idAttr)
+        updateId(nullAtom, value);
     attributeChanged(name, value);
     InspectorInstrumentation::didModifyDOMAttr(this, name, value);
     dispatchSubtreeModifiedEvent();
 }
 
-void Element::didModifyAttribute(const QualifiedName& name, const AtomicString& value)
+void Element::didModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    attributeChanged(name, value);
-    InspectorInstrumentation::didModifyDOMAttr(this, name, value);
+    if (name == HTMLNames::idAttr)
+        updateId(oldValue, newValue);
+    attributeChanged(name, newValue);
+    InspectorInstrumentation::didModifyDOMAttr(this, name, newValue);
     // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
 
-void Element::didRemoveAttribute(const QualifiedName& name)
+void Element::didRemoveAttribute(const QualifiedName& name, const AtomicString& oldValue)
 {
+    if (name == HTMLNames::idAttr)
+        updateId(oldValue, nullAtom);
     attributeChanged(name, nullAtom);
     InspectorInstrumentation::didRemoveDOMAttr(this, name);
     dispatchSubtreeModifiedEvent();

@@ -200,6 +200,15 @@ owner = document.getElementById('thirdOwner');
 var option3 = document.getElementById('thirdOption');
 shouldBe('option3.form', 'owner');
 
+debug('');
+debug('- Checks if updating form[id] correctly works');
+container.innerHTML = '<form id="a"></form><form id="a"><select form="a"></select></form>';
+form1 = document.querySelectorAll('form')[0];
+form2 = document.querySelectorAll('form')[1];
+var control = document.querySelector('select');
+shouldBe('control.form', 'form1');
+shouldBe('form1.setAttribute("id", "b"); control.form', 'form2');
+
 container.remove();
 </script>
 </body>

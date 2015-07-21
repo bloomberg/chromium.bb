@@ -72,6 +72,10 @@ PASS owner.elements.length is 0
 PASS option1.form is null
 PASS option2.form is null
 PASS option3.form is owner
+
+- Checks if updating form[id] correctly works
+PASS control.form is form1
+PASS form1.setAttribute("id", "b"); control.form is form2
 PASS successfullyParsed is true
 
 TEST COMPLETE
