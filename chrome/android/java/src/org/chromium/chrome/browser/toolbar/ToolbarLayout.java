@@ -26,8 +26,8 @@ import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.SmoothProgressBar;
 import org.chromium.chrome.browser.widget.TintedImageButton;
-import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -50,7 +50,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     private ToolbarDataProvider mToolbarDataProvider;
     private ToolbarTabController mToolbarTabController;
-    private ToolbarProgressBar mProgressBar;
+    private SmoothProgressBar mProgressBar;
 
     private boolean mNativeLibraryReady;
     private boolean mUrlHasFocus;
@@ -74,11 +74,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mProgressBar = (ToolbarProgressBar) findViewById(R.id.progress);
+        mProgressBar = (SmoothProgressBar) findViewById(R.id.progress);
         if (mProgressBar != null) {
             removeView(mProgressBar);
+            Drawable progressDrawable = mProgressBar.getProgressDrawable();
             getFrameLayoutParams(mProgressBar).topMargin = mToolbarHeightWithoutShadow
-                    - getFrameLayoutParams(mProgressBar).height;
+                    - progressDrawable.getIntrinsicHeight();
         }
 
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
@@ -107,6 +108,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             @Override
             public NewTabPage getNewTabPageForCurrentTab() {
                 return null;
+            }
+
+            @Override
+            public int getLoadProgress() {
+                return 0;
             }
 
             @Override
@@ -180,7 +186,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * @return The {@link ProgressBar} this layout uses.
      */
-    ToolbarProgressBar getProgressBar() {
+    SmoothProgressBar getProgressBar() {
         return mProgressBar;
     }
 
@@ -497,33 +503,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
-     * Starts load progress.
-     */
-    protected void startLoadProgress() {
-        if (mProgressBar != null) {
-            mProgressBar.start();
-        }
-    }
-
-    /**
      * Sets load progress.
-     * @param progress The load progress between 0 and 1.
+     * @param progress The load progress between 0 and 100.
      */
-    protected void setLoadProgress(float progress) {
-        if (mProgressBar != null) {
-            mProgressBar.setProgress(progress);
-        }
-    }
-
-    /**
-     * Finishes load progress.
-     * @param delayed Whether hiding progress bar should be delayed to give enough time for user to
-     *                        recognize the last state.
-     */
-    protected void finishLoadProgress(boolean delayed) {
-        if (mProgressBar != null) {
-            mProgressBar.finish(delayed);
-        }
+    protected void setLoadProgress(int progress) {
+        if (mProgressBar != null) mProgressBar.setProgress(progress);
     }
 
     /**

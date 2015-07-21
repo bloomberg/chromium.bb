@@ -8,7 +8,6 @@
 
 <org.chromium.chrome.shell.TabManager android:id="@+id/tab_manager"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -63,10 +62,11 @@
         </LinearLayout>
         <org.chromium.chrome.browser.widget.ToolbarProgressBar
             android:id="@+id/progress"
+            style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+            android:progressDrawable="@drawable/shell_progress_bar"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            chrome:progressBarColor="@color/material_deep_teal_500"
-            chrome:backgroundColor="@android:color/transparent" />
+            android:progress="0" />
     </org.chromium.chrome.shell.ChromeShellToolbar>
     <FrameLayout android:id="@+id/content_container"
         android:layout_width="match_parent"

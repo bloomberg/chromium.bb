@@ -118,13 +118,6 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
     }
 
     /**
-     * @return Dirty rect that will be drawn on capture.
-     */
-    protected Rect getDirtyRect() {
-        return mDirtyRect;
-    }
-
-    /**
      * Called before {@link #capture(Canvas)} is called.
      * @param canvas    The {@link Canvas} that will be drawn to.
      * @param dirtyRect The dirty {@link Rect} or {@code null} if the entire area is being redrawn.

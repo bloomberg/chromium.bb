@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
-import org.chromium.chrome.browser.widget.ToolbarProgressBar;
+import org.chromium.chrome.browser.widget.SmoothProgressBar;
 import org.chromium.chrome.shell.omnibox.SuggestionPopup;
 import org.chromium.content.common.ContentSwitches;
 
@@ -34,25 +34,31 @@ import org.chromium.content.common.ContentSwitches;
  * A Toolbar {@link View} that shows the URL and navigation buttons.
  */
 public class ChromeShellToolbar extends LinearLayout {
+    private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;
+
+    private final Runnable mClearProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mProgressBar.setProgress(0);
+        }
+    };
 
     private final Runnable mUpdateProgressRunnable = new Runnable() {
         @Override
         public void run() {
-            mStopReloadButton.setImageResource(
-                    mLoading ? R.drawable.btn_close : R.drawable.btn_toolbar_reload);
-
-            if (mProgress == 100.0f) {
-                if (mProgressBar.getProgress() != 1.0f) mProgressBar.setProgress(1.0f);
-                mProgressBar.finish(true);
+            mProgressBar.setProgress(mProgress);
+            if (mLoading) {
+                mStopReloadButton.setImageResource(
+                        R.drawable.btn_close);
             } else {
-                mProgressBar.start();
-                mProgressBar.setProgress(mProgress / 100.0f);
+                mStopReloadButton.setImageResource(R.drawable.btn_toolbar_reload);
+                postOnAnimationDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
             }
         }
     };
 
     private EditText mUrlTextView;
-    private ToolbarProgressBar mProgressBar;
+    private SmoothProgressBar mProgressBar;
 
     private ChromeShellTab mTab;
     private final TabObserver mTabObserver;
@@ -115,6 +121,7 @@ public class ChromeShellToolbar extends LinearLayout {
     }
 
     private void onLoadProgressChanged(int progress) {
+        removeCallbacks(mClearProgressRunnable);
         removeCallbacks(mUpdateProgressRunnable);
         mProgress = progress;
         mLoading = progress != 100;
@@ -132,7 +139,7 @@ public class ChromeShellToolbar extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mProgressBar = (ToolbarProgressBar) findViewById(R.id.progress);
+        mProgressBar = (SmoothProgressBar) findViewById(R.id.progress);
         initializeUrlField();
         initializeTabSwitcherButton();
         initializeMenuButton();

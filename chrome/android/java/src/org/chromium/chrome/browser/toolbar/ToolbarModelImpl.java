@@ -22,6 +22,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
 
     private ChromeTab mTab;
     private boolean mIsIncognito;
+    private int mLoadProgress;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
 
@@ -73,6 +74,22 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     @Override
     public boolean isIncognito() {
         return mIsIncognito;
+    }
+
+    /**
+     * Set the load progress for the current tab.
+     * @param progress The loading progress for the tab.
+     */
+    public void setLoadProgress(int progress) {
+        assert progress >= 0;
+        assert progress <= 100;
+
+        mLoadProgress = progress;
+    }
+
+    @Override
+    public int getLoadProgress() {
+        return mLoadProgress;
     }
 
     /**

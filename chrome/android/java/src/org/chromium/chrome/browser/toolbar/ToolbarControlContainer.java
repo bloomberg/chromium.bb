@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,9 +19,9 @@ import android.widget.FrameLayout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
-import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.InvalidationListener;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.chrome.browser.widget.ToolbarProgressBar;
+import org.chromium.chrome.browser.widget.SmoothProgressBar;
+import org.chromium.chrome.browser.widget.SmoothProgressBar.ProgressChangeListener;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -77,7 +79,7 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
         // TODO(yusufo): Get rid of the calls below and avoid casting to the layout without making
         // the interface bigger.
-        ToolbarProgressBar progressView = ((ToolbarLayout) mToolbar).getProgressBar();
+        SmoothProgressBar progressView = ((ToolbarLayout) mToolbar).getProgressBar();
         if (progressView != null) {
             mProgressResourceAdapter = new ProgressViewResourceAdapter(progressView);
         }
@@ -134,54 +136,94 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     }
 
     private static class ProgressViewResourceAdapter extends ViewResourceAdapter
-            implements InvalidationListener {
+            implements ProgressChangeListener {
 
-        private final ToolbarProgressBar mProgressView;
-        private final Rect mAlphaDrawRegion = new Rect();
+        private final SmoothProgressBar mProgressView;
+        private final Rect mPreviousDrawBounds = new Rect();
+        private int mProgressVisibility;
+        private int mProgress;
 
-        ProgressViewResourceAdapter(ToolbarProgressBar progressView) {
+        ProgressViewResourceAdapter(SmoothProgressBar progressView) {
             super(progressView);
 
             mProgressView = progressView;
-            progressView.setInvalidationListener(this);
+            mProgressVisibility = mProgressView.getVisibility();
+            progressView.addProgressChangeListener(this);
+        }
+
+        @Override
+        public void onProgressChanged(int progress) {
+            if (mProgressVisibility != View.VISIBLE) return;
+            if (progress < mProgress) {
+                mPreviousDrawBounds.setEmpty();
+            }
+            mProgress = progress;
+            invalidate(null);
+        }
+
+        @Override
+        public void onProgressVisibilityChanged(int visibility) {
+            if (mProgressVisibility == visibility) return;
+
+            if (visibility == View.VISIBLE || mProgressVisibility == View.VISIBLE) {
+                invalidate(null);
+                mPreviousDrawBounds.setEmpty();
+            }
+            mProgressVisibility = visibility;
+        }
+
+        @Override
+        protected void onCaptureStart(Canvas canvas, Rect dirtyRect) {
+            canvas.save();
+            canvas.clipRect(
+                    mPreviousDrawBounds.right, 0,
+                    mProgressView.getWidth(), mProgressView.getHeight());
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+            canvas.restore();
+
+            super.onCaptureStart(canvas, dirtyRect);
         }
 
         @Override
         protected void capture(Canvas canvas) {
-            if (mProgressView.getVisibility() != View.VISIBLE) {
+            if (mProgressVisibility != View.VISIBLE) {
                 canvas.drawColor(0, PorterDuff.Mode.CLEAR);
             } else {
-                // If we're drawing alpha somewhere, we need to clear that part of the canvas to
-                // avoid undesired accumulation (getting darker).
-                canvas.save();
-                mProgressView.getAlphaDrawRegion(mAlphaDrawRegion);
-                mAlphaDrawRegion.intersect(getDirtyRect());
-                canvas.clipRect(mAlphaDrawRegion);
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                canvas.restore();
-
                 super.capture(canvas);
+            }
+        }
+
+        @Override
+        protected void onCaptureEnd() {
+            super.onCaptureEnd();
+            // If we are unable to get accurate draw bounds, then set the draw bounds to
+            // ensure the entire view is cleared.
+            mPreviousDrawBounds.setEmpty();
+
+            // The secondary drawable has an alpha component, so track the bounds of the
+            // primary drawable.  This will allow the subsequent draw call to clear the secondary
+            // portion not overlapped by the primary to prevent the alpha components from
+            // stacking and getting progressively darker.
+            Drawable progressDrawable = mProgressView.getProgressDrawable();
+            if (progressDrawable instanceof LayerDrawable) {
+                LayerDrawable progressLayerDrawable = (LayerDrawable) progressDrawable;
+                for (int i = 0; i < progressLayerDrawable.getNumberOfLayers(); i++) {
+                    if (progressLayerDrawable.getId(i) != android.R.id.progress) continue;
+                    Drawable primaryProgressDrawable = progressLayerDrawable.getDrawable(i);
+                    if (!(primaryProgressDrawable instanceof ScaleDrawable)) continue;
+
+                    ((ScaleDrawable) primaryProgressDrawable).getDrawable().copyBounds(
+                            mPreviousDrawBounds);
+                }
             }
         }
 
         @Override
         protected void computeContentPadding(Rect outContentPadding) {
             super.computeContentPadding(outContentPadding);
-            MarginLayoutParams layoutParams = (MarginLayoutParams) mProgressView.getLayoutParams();
+            MarginLayoutParams layoutParams =
+                    (MarginLayoutParams) mProgressView.getLayoutParams();
             outContentPadding.offset(0, layoutParams.topMargin);
-        }
-
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-                int oldTop, int oldRight, int oldBottom) {
-            // Purposefully ignore as invalidation listener handles it.
-        }
-
-        // InvalidationListener implementation.
-
-        @Override
-        public void onInvalidation(Rect dirtyRect) {
-            invalidate(dirtyRect);
         }
     }
 
