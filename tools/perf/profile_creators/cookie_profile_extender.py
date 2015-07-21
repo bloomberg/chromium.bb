@@ -56,7 +56,7 @@ class CookieProfileExtender(
     return self._IsCookieDBFull()
 
   def WebPageReplayArchivePath(self):
-    return self._page_set.WprFilePathForUserStory(
+    return self._page_set.WprFilePathForStory(
         self._page_set.stories[0])
 
   def FetchWebPageReplayArchives(self):
