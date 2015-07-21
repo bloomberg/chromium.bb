@@ -85,7 +85,7 @@ KeyboardEventKey status=test
 LangAttributeAwareFormControlUI
 LinkPreconnect status=experimental
 LinkPreload status=experimental
-LinkHeader status=experimental
+LinkHeader status=stable
 FractionalScrollOffsets status=experimental
 Media status=stable
 MediaCapture
