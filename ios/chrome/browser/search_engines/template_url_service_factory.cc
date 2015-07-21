@@ -29,8 +29,8 @@ namespace {
 
 base::Closure GetDefaultSearchProviderChangedCallback() {
 #if defined(ENABLE_RLZ)
-  return base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
-                    rlz_lib::CHROME, RLZTracker::ChromeOmnibox(),
+  return base::Bind(base::IgnoreResult(&rlz::RLZTracker::RecordProductEvent),
+                    rlz_lib::CHROME, rlz::RLZTracker::ChromeOmnibox(),
                     rlz_lib::SET_TO_GOOGLE);
 #else
   return base::Closure();
