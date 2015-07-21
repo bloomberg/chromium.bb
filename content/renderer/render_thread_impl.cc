@@ -624,7 +624,6 @@ RenderThreadImpl::RenderThreadImpl(
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(ShouldUseMojoChannel())
-                          .ListenerTaskRunner(scheduler->DefaultTaskRunner())
                           .Build()),
       renderer_scheduler_(scheduler.Pass()),
       raster_worker_pool_(new RasterWorkerPool()) {
@@ -638,7 +637,6 @@ RenderThreadImpl::RenderThreadImpl(
     scoped_ptr<scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(Options::Builder()
                           .UseMojoChannel(ShouldUseMojoChannel())
-                          .ListenerTaskRunner(scheduler->DefaultTaskRunner())
                           .Build()),
       renderer_scheduler_(scheduler.Pass()),
       main_message_loop_(main_message_loop.Pass()),

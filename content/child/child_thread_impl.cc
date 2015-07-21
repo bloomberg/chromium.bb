@@ -292,13 +292,6 @@ ChildThreadImpl::Options::Builder::AddStartupFilter(
   return *this;
 }
 
-ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::ListenerTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  options_.listener_task_runner = task_runner;
-  return *this;
-}
-
 ChildThreadImpl::Options ChildThreadImpl::Options::Builder::Build() {
   return options_;
 }
@@ -442,10 +435,6 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  // Set listener task runner before connect channel to avoid data race.
-  if (options.listener_task_runner) {
-    channel_->SetListenerTaskRunner(options.listener_task_runner);
-  }
   ConnectChannel(options.use_mojo_channel);
 
   int connection_timeout = kConnectionTimeoutS;
