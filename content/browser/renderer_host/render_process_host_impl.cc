@@ -2219,10 +2219,8 @@ void RenderProcessHostImpl::OnShutdownRequest() {
 
   // Notify any contents that might have swapped out renderers from this
   // process. They should not attempt to swap them back in.
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDERER_PROCESS_CLOSING,
-      Source<RenderProcessHost>(this),
-      NotificationService::NoDetails());
+  FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
+                    RenderProcessWillExit(this));
 
   mojo_application_host_->WillDestroySoon();
 

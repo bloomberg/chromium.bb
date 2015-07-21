@@ -17,9 +17,21 @@ class RenderProcessHost;
 // in RenderProcessHost lifecycle events.
 class CONTENT_EXPORT RenderProcessHostObserver {
  public:
+  // This method is invoked when the process is going to exit and should not be
+  // used for further navigations. Note that this is a COURTESY callback, not
+  // guaranteed to be called for any particular process. Because this is the
+  // first step in an orderly shutdown of a render process, do not expect that
+  // a new render process will be hosted with this RenderProcessHost.
+  virtual void RenderProcessWillExit(RenderProcessHost* host) {}
+
   // This method is invoked when the process of the observed RenderProcessHost
   // exits (either normally or with a crash). To determine if the process closed
   // normally or crashed, examine the |status| parameter.
+  //
+  // A new render process may be spawned for this RenderProcessHost, but there
+  // are no guarantees (e.g. if shutdown is occurring, the HostDestroyed
+  // callback will happen soon and that will be it, but if the renderer crashed
+  // and the user clicks 'reload', a new render process will be spawned).
   //
   // This will cause a call to WebContentsObserver::RenderProcessGone() for the
   // active renderer process for the top-level frame; for code that needs to be
@@ -30,7 +42,9 @@ class CONTENT_EXPORT RenderProcessHostObserver {
                                    int exit_code) {}
 
   // This method is invoked when the observed RenderProcessHost itself is
-  // destroyed. This is guaranteed to be the last call made to the observer.
+  // destroyed. This is guaranteed to be the last call made to the observer, so
+  // if the observer is tied to the observed RenderProcessHost, it is safe to
+  // delete it.
   virtual void RenderProcessHostDestroyed(RenderProcessHost* host) {}
 
  protected:

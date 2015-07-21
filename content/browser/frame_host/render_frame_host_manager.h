@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
 
 #include <list>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -15,8 +16,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/deprecated_serialized_origin.h"
@@ -94,7 +93,7 @@ struct FrameReplicationState;
 //   RenderFrameProxyHost, to be used (for example) if the user goes back. The
 //   process only stays live if another tab is using it, but if so, the existing
 //   frame relationships will be maintained.
-class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
+class CONTENT_EXPORT RenderFrameHostManager {
  public:
   // Functions implemented by our owner that we need.
   //
@@ -199,7 +198,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   static bool IsSwappedOutStateForbidden();
 
   // All three delegate pointers must be non-NULL and are not owned by this
-  // class.  They must outlive this class. The RenderViewHostDelegate and
+  // class. They must outlive this class. The RenderViewHostDelegate and
   // RenderWidgetHostDelegate are what will be installed into all
   // RenderViewHosts that are created.
   //
@@ -210,7 +209,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       RenderViewHostDelegate* render_view_delegate,
       RenderWidgetHostDelegate* render_widget_delegate,
       Delegate* delegate);
-  ~RenderFrameHostManager() override;
+  ~RenderFrameHostManager();
 
   // For arguments, see WebContentsImpl constructor.
   void Init(BrowserContext* browser_context,
@@ -388,20 +387,16 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // showing.
   InterstitialPageImpl* interstitial_page() const { return interstitial_page_; }
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
-
   // Returns whether the given RenderFrameHost (or its associated
   // RenderViewHost) is on the list of swapped out RenderFrameHosts.
   bool IsRVHOnSwappedOutList(RenderViewHostImpl* rvh) const;
   bool IsOnSwappedOutList(RenderFrameHostImpl* rfh) const;
 
-  // Returns the swapped out RenderViewHost or RenderFrameHost for the given
-  // SiteInstance, if any. This method is *deprecated* and
-  // GetRenderFrameProxyHost should be used.
+  // Returns the swapped out RenderViewHost for the given SiteInstance, if any.
+  // This method is *deprecated* and GetRenderFrameProxyHost should be used.
   RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance) const;
+
+  // Returns the RenderFrameProxyHost for the given SiteInstance, if any.
   RenderFrameProxyHost* GetRenderFrameProxyHost(
       SiteInstance* instance) const;
 
@@ -486,8 +481,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // an inner WebContents.
   void SetRWHViewForInnerContents(RenderWidgetHostView* child_rwhv);
 
+  // Returns a copy of the map of proxy hosts. The keys are SiteInstance IDs,
+  // the values are RenderFrameProxyHosts.
+  std::map<int, RenderFrameProxyHost*> GetAllProxyHostsForTesting();
+
  private:
-  friend class FrameTreeVisualizer;
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
@@ -718,10 +716,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // schedule new navigations in its swapped out RenderFrameHosts after this.
   void RendererProcessClosing(RenderProcessHost* render_process_host);
 
-  // Helper method to delete a RenderFrameProxyHost from the list, if one exists
-  // for the given |instance|.
-  void DeleteRenderFrameProxyHost(SiteInstance* instance);
-
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
 
@@ -768,9 +762,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   scoped_ptr<WebUIImpl> pending_web_ui_;
   base::WeakPtr<WebUIImpl> pending_and_current_web_ui_;
 
-  // A map of site instance ID to RenderFrameProxyHosts.
-  typedef base::hash_map<int32, RenderFrameProxyHost*> RenderFrameProxyHostMap;
-  RenderFrameProxyHostMap proxy_hosts_;
+  class RenderFrameProxyHostMap;
+  scoped_ptr<RenderFrameProxyHostMap> proxy_hosts_;
 
   // A list of RenderFrameHosts waiting to shut down after swapping out.  We use
   // a linked list since we expect frequent deletes and no indexed access, and
@@ -781,8 +774,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).
   InterstitialPageImpl* interstitial_page_;
-
-  NotificationRegistrar registrar_;
 
   // PlzNavigate
   // These members store a speculative RenderFrameHost and WebUI. They are

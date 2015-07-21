@@ -66,8 +66,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     }
 
     RenderFrameHost* pending = node->render_manager()->pending_frame_host();
-    RenderFrameHost* spec =
-        node->render_manager()->speculative_render_frame_host_.get();
+    RenderFrameHost* spec = node->render_manager()->speculative_frame_host();
     if (pending)
       legend[GetName(pending->GetSiteInstance())] = pending->GetSiteInstance();
     if (spec)
@@ -84,10 +83,8 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     }
 
     // Sort the proxies by SiteInstance ID to avoid hash_map ordering.
-    std::map<int, RenderFrameProxyHost*> sorted_proxy_hosts;
-    for (auto& proxy_pair : node->render_manager()->proxy_hosts_) {
-      sorted_proxy_hosts.insert(proxy_pair);
-    }
+    std::map<int, RenderFrameProxyHost*> sorted_proxy_hosts =
+        node->render_manager()->GetAllProxyHostsForTesting();
     for (auto& proxy_pair : sorted_proxy_hosts) {
       RenderFrameProxyHost* proxy = proxy_pair.second;
       legend[GetName(proxy->GetSiteInstance())] = proxy->GetSiteInstance();
@@ -141,8 +138,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     // pending or speculative RenderFrameHost.
     RenderFrameHost* current = node->render_manager()->current_frame_host();
     RenderFrameHost* pending = node->render_manager()->pending_frame_host();
-    RenderFrameHost* spec =
-        node->render_manager()->speculative_render_frame_host_.get();
+    RenderFrameHost* spec = node->render_manager()->speculative_frame_host();
     base::StringAppendF(&line, "Site %s",
                         GetName(current->GetSiteInstance()).c_str());
     if (pending) {
@@ -155,7 +151,9 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     }
 
     // Show the SiteInstances of the RenderFrameProxyHosts of this node.
-    if (!node->render_manager()->proxy_hosts_.empty()) {
+    std::map<int, RenderFrameProxyHost*> sorted_proxy_host_map =
+        node->render_manager()->GetAllProxyHostsForTesting();
+    if (!sorted_proxy_host_map.empty()) {
       // Show a dashed line of variable length before the proxy list. Always at
       // least two dashes.
       line.append(" --");
@@ -174,7 +172,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
 
       // Sort these alphabetically, to avoid hash_map ordering dependency.
       std::vector<std::string> sorted_proxy_hosts;
-      for (auto& proxy_pair : node->render_manager()->proxy_hosts_) {
+      for (auto& proxy_pair : sorted_proxy_host_map) {
         sorted_proxy_hosts.push_back(
             GetName(proxy_pair.second->GetSiteInstance()));
       }
