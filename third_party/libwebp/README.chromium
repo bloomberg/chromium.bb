@@ -22,3 +22,4 @@ Local changes:
  * Merged COPYING/PATENTS to LICENSE
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
+  0250dfc msvc: fix pointer type warning in BitsLog2Floor
