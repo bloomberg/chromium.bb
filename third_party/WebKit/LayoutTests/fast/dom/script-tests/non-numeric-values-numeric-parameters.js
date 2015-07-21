@@ -218,7 +218,7 @@ shouldBe("nonNumericPolicy('document.body.scrollTop = x')", "'any type allowed'"
 
 // HTMLCollection
 
-shouldBe("nonNumericPolicy('document.images.item(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.images.item(x)')", "'any type allowed (but not omitted)'");
 
 // HTMLInputElement
 
@@ -282,7 +282,7 @@ shouldBe("nonNumericPolicy('document.createNodeIterator(document, x, null, false
 
 // NodeList
 
-shouldBe("nonNumericPolicy('document.getElementsByTagName(\"div\").item(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.getElementsByTagName(\"div\").item(x)')", "'any type allowed (but not omitted)'");
 
 // Range
 

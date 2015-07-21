@@ -27,7 +27,6 @@
     WillBeGarbageCollected,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
-    // FIXME: The index argument should not be optional.
-    getter Element? item([Default=Undefined] optional unsigned long index);
+    getter Element? item(unsigned long index);
     getter Element? namedItem(DOMString name);
 };
