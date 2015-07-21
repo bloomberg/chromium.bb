@@ -4,13 +4,13 @@ NAME_MIDDLE | _1_middleName | Middle Name(optional) |  | _1_personTitle_1-defaul
 NAME_LAST | _1_lastName | Last Name |  | _1_personTitle_1-default
 UNKNOWN_TYPE | _1_gender | Male | M | _1_personTitle_1-default
 UNKNOWN_TYPE | _1_gender | Female | F | _1_personTitle_1-default
-ADDRESS_HOME_COUNTRY | _1_country | Country USA & Territories | USA | _1_personTitle_1-default
-ADDRESS_HOME_ZIP | _1_JPNPostal | Postal Code |  | _1_personTitle_1-default
-UNKNOWN_TYPE | _1_JPNPrefecture | Prefecture |  | _1_personTitle_1-default
-ADDRESS_HOME_CITY | _1_JPNCity | City |  | _1_personTitle_1-default
-ADDRESS_HOME_LINE1 | _1_address1 | Address |  | _1_personTitle_1-default
-ADDRESS_HOME_LINE2 | _1_address2 | Address Line 2 (optional) |  | _1_personTitle_1-default
-ADDRESS_HOME_LINE3 | _1_address3 | Address Line 3 (optional) |  | _1_personTitle_1-default
+ADDRESS_HOME_COUNTRY | _1_country | Country USA & Territories | USA | _1_country_1-default
+ADDRESS_HOME_ZIP | _1_JPNPostal | Postal Code |  | _1_country_1-default
+UNKNOWN_TYPE | _1_JPNPrefecture | Prefecture |  | _1_country_1-default
+ADDRESS_HOME_CITY | _1_JPNCity | City |  | _1_country_1-default
+ADDRESS_HOME_LINE1 | _1_address1 | Address |  | _1_country_1-default
+ADDRESS_HOME_LINE2 | _1_address2 | Address Line 2 (optional) |  | _1_country_1-default
+ADDRESS_HOME_LINE3 | _1_address3 | Address Line 3 (optional) |  | _1_country_1-default
 ADDRESS_HOME_ZIP | _1_zipCode | Enter Zip for City and State |  | _1_zipCode_1-default
 ADDRESS_HOME_CITY | _1_city | City |  | _1_zipCode_1-default
 ADDRESS_HOME_STATE | _1_state |  |  | _1_zipCode_1-default

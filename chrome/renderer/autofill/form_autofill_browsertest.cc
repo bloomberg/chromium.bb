@@ -1563,6 +1563,38 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelect) {
   EXPECT_EQ(ASCIIToUTF16("Texas"), result3.option_contents[1]);
 }
 
+// We copy extra attributes for the select field.
+TEST_F(FormAutofillTest,
+       WebFormControlElementToFormFieldSelect_ExtraAttributes) {
+  LoadHTML("<SELECT id='element' autocomplete='off'/>"
+           "  <OPTION value='CA'>California</OPTION>"
+           "  <OPTION value='TX'>Texas</OPTION>"
+           "</SELECT>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormControlElement element = GetFormControlElementById("element");
+  element.setAutofilled(true);
+
+  FormFieldData result1;
+  WebFormControlElementToFormField(element, EXTRACT_VALUE, &result1);
+
+  FormFieldData expected;
+  expected.name = ASCIIToUTF16("element");
+  expected.max_length = 0;
+  expected.form_control_type = "select-one";
+  // We check that the extra attributes have been copied to |result1|.
+  expected.is_autofilled = true;
+  expected.autocomplete_attribute = "off";
+  expected.should_autocomplete = false;
+  expected.is_focusable = true;
+  expected.text_direction = base::i18n::LEFT_TO_RIGHT;
+
+  expected.value = ASCIIToUTF16("CA");
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result1);
+}
+
 // When faced with <select> field with *many* options, we should trim them to a
 // reasonable number.
 TEST_F(FormAutofillTest, WebFormControlElementToFormFieldLongSelect) {

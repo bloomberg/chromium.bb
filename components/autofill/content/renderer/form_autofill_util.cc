@@ -1190,7 +1190,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
 
   const WebInputElement* input_element = toWebInputElement(&element);
   if (IsAutofillableInputElement(input_element) ||
-      IsTextAreaElement(element)) {
+      IsTextAreaElement(element) ||
+      IsSelectElement(element)) {
     field->is_autofilled = element.isAutofilled();
     field->is_focusable = element.isFocusable();
     field->should_autocomplete = element.autoComplete();
