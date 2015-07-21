@@ -1430,6 +1430,8 @@ void ServiceWorkerStorage::OnResourcePurged(int64 id, int rv) {
   DCHECK(is_purge_pending_);
   is_purge_pending_ = false;
 
+  ServiceWorkerMetrics::RecordPurgeResourceResult(rv);
+
   database_task_manager_->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(
@@ -1437,6 +1439,7 @@ void ServiceWorkerStorage::OnResourcePurged(int64 id, int rv) {
           base::Unretained(database_.get()),
           std::set<int64>(&id, &id + 1)));
 
+  // Continue purging resources regardless of the previous result.
   ContinuePurgingResources();
 }
 

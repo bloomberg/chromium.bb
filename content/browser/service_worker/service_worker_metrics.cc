@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,6 +82,11 @@ void ServiceWorkerMetrics::RecordDestroyDatabaseResult(
     ServiceWorkerDatabase::Status status) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.DestroyDatabaseResult",
                             status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
+}
+
+void ServiceWorkerMetrics::RecordPurgeResourceResult(int net_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("ServiceWorker.Storage.PurgeResourceResult",
+                              std::abs(net_error));
 }
 
 void ServiceWorkerMetrics::RecordDiskCacheMigrationResult(

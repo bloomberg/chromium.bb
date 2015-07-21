@@ -95,6 +95,7 @@ class ServiceWorkerMetrics {
   static void RecordDestroyDatabaseResult(ServiceWorkerDatabase::Status status);
 
   // Used for ServiceWorkerStorage.
+  static void RecordPurgeResourceResult(int net_error);
   static void RecordDeleteAndStartOverResult(DeleteAndStartOverResult result);
   static void RecordDiskCacheMigrationResult(DiskCacheMigrationResult result);
 

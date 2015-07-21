@@ -38389,6 +38389,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.Storage.PurgeResourceResult"
+    enum="NetErrorCodes">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records successes and failures of purging a stale resource in
+    ServiceWorkerStorage.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.UnhandledEventRatio" units="percent">
   <owner>kinuko@chromium.org</owner>
   <obsolete>
