@@ -13,31 +13,10 @@
 - (void)fetchFormsWithMinimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                                completionHandler:
                                    (void (^)(NSString*))completionHandler {
-  [self fetchFormsWithRequirements:autofill::REQUIRE_NONE
-        minimumRequiredFieldsCount:requiredFieldsCount
-                 completionHandler:completionHandler];
-}
-
-- (void)fetchFormsWithRequirements:(autofill::RequirementsMask)requirements
-        minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
-                 completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  // Convert from C++ enum to JS enum.
-  NSString* requirementsJS = nil;
-  switch (requirements) {
-    case autofill::REQUIRE_NONE:
-      requirementsJS = @"__gCrWeb.autofill.REQUIREMENTS_MASK_NONE";
-      break;
-    case autofill::REQUIRE_AUTOCOMPLETE:
-      requirementsJS =
-          @"__gCrWeb.autofill.REQUIREMENTS_MASK_REQUIRE_AUTOCOMPLETE";
-      break;
-  }
-  DCHECK(requirementsJS);
-
   NSString* extractFormsJS = [NSString
-      stringWithFormat:@"__gCrWeb.autofill.extractForms(%" PRIuNS ", %@);",
-                       requiredFieldsCount, requirementsJS];
+      stringWithFormat:@"__gCrWeb.autofill.extractForms(%" PRIuNS ");",
+                       requiredFieldsCount];
   [self evaluate:extractFormsJS
       stringResultHandler:^(NSString* result, NSError*) {
         completionHandler(result);

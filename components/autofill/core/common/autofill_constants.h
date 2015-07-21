@@ -11,13 +11,6 @@
 
 namespace autofill {
 
-// A bit field mask for form or form element requirements.
-// TODO(estade): remove after iOS no longer uses it. See crbug.com/459456
-enum RequirementsMask {
-  REQUIRE_NONE = 0,          // No requirements.
-  REQUIRE_AUTOCOMPLETE = 1,  // Require that autocomplete != off.
-};
-
 // Help URL for the Autofill dialog.
 extern const char kHelpURL[];
 
