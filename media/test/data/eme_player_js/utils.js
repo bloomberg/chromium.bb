@@ -79,7 +79,7 @@ Utils.createJWKData = function(keyId, key) {
   return Utils.convertToUint8Array(createJWKSet(createJWK(keyId, key)));
 };
 
-Utils.extractFirstLicenseKey = function(message) {
+Utils.extractFirstLicenseKeyId = function(message) {
   // Decodes data (Uint8Array) from base64url string.
   function base64urlDecode(data) {
     return atob(data.replace(/\-/g, "+").replace(/\_/g, "/"));
@@ -172,21 +172,6 @@ Utils.getHexString = function(uintArray) {
     hex_str += hex;
   }
   return hex_str;
-};
-
-Utils.getInitDataFromMessage = function(message, mediaType, decodeJSONMessage) {
-  var initData;
-  if (mediaType.indexOf('mp4') != -1) {
-    // Temporary hack for Clear Key in v0.1.
-    // If content uses mp4, then message.message is PSSH data. Instead of
-    // parsing that data we hard code the initData.
-    initData = Utils.convertToUint8Array(KEY_ID);
-  } else if (decodeJSONMessage) {
-    initData = Utils.extractFirstLicenseKey(message.message);
-  } else {
-    initData = Utils.convertToUint8Array(message.message);
-  }
-  return initData;
 };
 
 Utils.hasPrefix = function(msg, prefix) {

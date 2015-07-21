@@ -21,10 +21,9 @@ ClearKeyPlayer.prototype.registerEventListeners = function() {
 
 ClearKeyPlayer.prototype.onMessage = function(message) {
   Utils.timeLog('MediaKeySession onMessage', message);
-  var initData =
-      Utils.getInitDataFromMessage(message, this.testConfig.mediaType, true);
+  var keyId = Utils.extractFirstLicenseKeyId(message.message);
   var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
-  var jwkSet = Utils.createJWKData(initData, key);
+  var jwkSet = Utils.createJWKData(keyId, key);
   message.target.update(jwkSet).catch(function(error) {
     // Ignore the error if a crash is expected. This ensures that the decoder
     // actually detects and reports the error.

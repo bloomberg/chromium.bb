@@ -20,8 +20,7 @@ PrefixedClearKeyPlayer.prototype.registerEventListeners = function() {
 };
 
 PrefixedClearKeyPlayer.prototype.onWebkitKeyMessage = function(message) {
-  var initData =
-      Utils.getInitDataFromMessage(message, this.testConfig.mediaType, false);
+  var initData = Utils.convertToUint8Array(message.message);
   var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
   Utils.timeLog('Adding key to sessionID: ' + message.sessionId);
   message.target.webkitAddKey(this.testConfig.keySystem, key, initData,
