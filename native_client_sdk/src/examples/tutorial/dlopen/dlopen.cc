@@ -41,8 +41,7 @@ class DlOpenInstance : public pp::Instance {
         eightball_so_(NULL),
         reverse_so_(NULL),
         eightball_(NULL),
-        reverse_(NULL),
-        tid_(NULL) {}
+        reverse_(NULL) {}
 
   virtual ~DlOpenInstance() {}
 
@@ -61,9 +60,16 @@ class DlOpenInstance : public pp::Instance {
     // server.
     mount("", "/http", "httpfs", 0, "");
 
+    pthread_t thread;
     logmsg("Spawning thread to cache .so files...");
-    if (pthread_create(&tid_, NULL, LoadLibrariesOnWorker, this)) {
+    int rtn = pthread_create(&thread, NULL, LoadLibrariesOnWorker, this);
+    if (rtn != 0) {
       logmsg("ERROR; pthread_create() failed.");
+      return false;
+    }
+    rtn = pthread_detach(thread);
+    if (rtn != 0) {
+      logmsg("ERROR; pthread_detach() failed.");
       return false;
     }
     return true;
@@ -160,7 +166,6 @@ class DlOpenInstance : public pp::Instance {
   void* reverse_so_;
   TYPE_eightball eightball_;
   TYPE_reverse reverse_;
-  pthread_t tid_;
 };
 
 class DlOpenModule : public pp::Module {
