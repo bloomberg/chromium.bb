@@ -28,7 +28,7 @@ class DesktopThemeProvider : public ui::ThemeProvider {
     return delegate_->UsingSystemTheme();
   }
   gfx::ImageSkia* GetImageSkiaNamed(int id) const override {
-    if (delegate_->UsingSystemTheme())
+    if (delegate_->UsingSystemTheme() && delegate_->HasCustomImage(id))
       return delegate_->GetImageSkiaNamed(id);
 
     return delegate_->GetImageSkiaNamed(
