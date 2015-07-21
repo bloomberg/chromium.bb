@@ -13,19 +13,26 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 # TODO(mfoltz): Fix problem that requires explicitly listing //skia
 static_library("router") {
   deps = [
-    ":mojo_bindings",
     "//base",
     "//chrome/common:constants",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
-    "//extensions/browser",
     "//skia",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
   sources = rebase_path(gypi_values.media_router_sources,
                         ".",
                         "//chrome/browser/media/router")
+  if (!is_android) {
+    deps += [
+      ":mojo_bindings",
+      "//extensions/browser",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
+    sources += rebase_path(gypi_values.media_router_non_android_sources,
+                           ".",
+                           "//chrome/browser/media/router")
+  }
 }
 
 mojom("mojo_bindings") {

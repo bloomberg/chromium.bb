@@ -2,45 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_IMPL_H_
+#define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_IMPL_H_
 
 #include "base/macros.h"
-#include "chrome/browser/media/router/create_presentation_session_request.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace media_router {
 
-// An instance of this class is tied to a WebContents known as the initiator,
-// and is lazily created when a Media Router dialog needs to be shown.
-// The MediaRouterDialogController allows creating, querying, and removing a
-// Media Router dialog modal to the initiator WebContents.
+// A desktop implementation of MediaRouterDialogController.
 // This class is not thread safe and must be called on the UI thread.
-class MediaRouterDialogController
-    : public content::WebContentsUserData<MediaRouterDialogController> {
+class MediaRouterDialogControllerImpl
+    : public content::WebContentsUserData<MediaRouterDialogControllerImpl>,
+      public MediaRouterDialogController {
  public:
-  ~MediaRouterDialogController() override;
+  ~MediaRouterDialogControllerImpl() override;
 
-  // Gets a reference to the MediaRouterDialogController associated with
-  // |web_contents|, creating one if it does not exist. The returned pointer is
-  // guaranteed to be non-null.
-  static MediaRouterDialogController* GetOrCreateForWebContents(
+  static MediaRouterDialogControllerImpl* GetOrCreateForWebContents(
       content::WebContents* web_contents);
+
+  // SuperClass:
+  bool ShowMediaRouterDialogForPresentation(
+      scoped_ptr<CreatePresentationSessionRequest> request) override;
 
   // Shows the media router dialog modal to the initiator WebContents.
   // Creates the dialog if it did not exist prior to this call.
   // If the dialog already exists, brings the dialog to the front.
   // Returns WebContents for the media router dialog.
   content::WebContents* ShowMediaRouterDialog();
-
-  // Creates a Media Router modal dialog using the initiator and parameters
-  // specified in |request|. If the dialog already exists, brings the dialog
-  // to the front, but does not change the dialog with |request|.
-  // Returns WebContents for the media router dialog if a dialog was created.
-  // Otherwise returns nullptr and |request| is deleted.
-  content::WebContents* ShowMediaRouterDialogForPresentation(
-      scoped_ptr<CreatePresentationSessionRequest> request);
 
   // Returns the media router dialog WebContents.
   // Returns nullptr if there is no dialog.
@@ -53,11 +44,11 @@ class MediaRouterDialogController
  private:
   class DialogWebContentsObserver;
   class InitiatorWebContentsObserver;
-  friend class content::WebContentsUserData<MediaRouterDialogController>;
+  friend class content::WebContentsUserData<MediaRouterDialogControllerImpl>;
 
-  // Use MediaRouterDialogController::CreateForWebContents() to create an
+  // Use MediaRouterDialogControllerImpl::CreateForWebContents() to create an
   // instance.
-  explicit MediaRouterDialogController(content::WebContents* web_contents);
+  explicit MediaRouterDialogControllerImpl(content::WebContents* web_contents);
 
   // Creates a new media router dialog modal to |initiator_|.
   void CreateMediaRouterDialog();
@@ -86,9 +77,9 @@ class MediaRouterDialogController
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogController);
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerImpl);
 };
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_IMPL_H_

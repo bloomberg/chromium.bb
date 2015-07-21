@@ -10,7 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/media/router/media_router_mojo_impl_factory.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
@@ -100,8 +100,8 @@ void MediaRouterMojoImpl::BindToRequest(
     const std::string& extension_id,
     content::BrowserContext* context,
     mojo::InterfaceRequest<interfaces::MediaRouter> request) {
-  MediaRouterMojoImpl* impl =
-      MediaRouterMojoImplFactory::GetApiForBrowserContext(context);
+  MediaRouterMojoImpl* impl = static_cast<MediaRouterMojoImpl*>(
+      MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);
 
   impl->BindToMojoRequest(request.Pass(), extension_id);

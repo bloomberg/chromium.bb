@@ -444,7 +444,7 @@ source_set("ui") {
             ".",
             "//chrome")
   }
-  if (enable_media_router) {
+  if (enable_media_router && !is_android && !is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_ui_media_router_sources,
                            ".",
                            "//chrome")

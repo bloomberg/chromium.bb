@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/presentation_session_message.h"
 
 namespace media_router {
@@ -37,13 +38,13 @@ const int kInvalidTabId = -1;
 // Responsible for registering observers for receiving sink availability
 // updates, handling route requests/responses, and operating on routes (e.g.
 // posting messages or closing).
-class MediaRouter {
+class MediaRouter : public KeyedService {
  public:
   using PresentationSessionMessageCallback = base::Callback<void(
       scoped_ptr<ScopedVector<content::PresentationSessionMessage>>)>;
   using SendRouteMessageCallback = base::Callback<void(bool sent)>;
 
-  virtual ~MediaRouter() {}
+  ~MediaRouter() override = default;
 
   // Creates a media route from |source_id| to |sink_id|.
   // |origin| is the URL of requestor's page.

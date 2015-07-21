@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -39,9 +39,9 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
 
     initiator_ = browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(initiator_);
-    MediaRouterDialogController::CreateForWebContents(initiator_);
+    MediaRouterDialogControllerImpl::CreateForWebContents(initiator_);
     dialog_controller_ =
-        MediaRouterDialogController::FromWebContents(initiator_);
+        MediaRouterDialogControllerImpl::FromWebContents(initiator_);
     ASSERT_TRUE(dialog_controller_);
 
     // Get the media router dialog for the initiator.
@@ -49,7 +49,7 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(media_router_dialog_);
   }
 
-  MediaRouterDialogController* dialog_controller_;
+  MediaRouterDialogControllerImpl* dialog_controller_;
   WebContents* initiator_;
   WebContents* media_router_dialog_;
 

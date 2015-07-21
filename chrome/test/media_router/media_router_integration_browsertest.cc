@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -73,8 +73,8 @@ void MediaRouterIntegrationBrowserTest::OpenTestPage(
 void MediaRouterIntegrationBrowserTest::ChooseSink(
     content::WebContents* web_contents,
     const std::string& sink_id) {
-  MediaRouterDialogController* controller =
-      MediaRouterDialogController::GetOrCreateForWebContents(web_contents);
+  MediaRouterDialogControllerImpl* controller =
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
   content::WebContents* dialog_contents = controller->GetMediaRouterDialog();
   ASSERT_TRUE(dialog_contents);
   std::string script = base::StringPrintf(

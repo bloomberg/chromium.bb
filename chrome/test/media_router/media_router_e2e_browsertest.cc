@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
-#include "chrome/browser/media/router/media_router_mojo_impl_factory.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,7 +53,7 @@ MediaRouterE2EBrowserTest::~MediaRouterE2EBrowserTest() {
 void MediaRouterE2EBrowserTest::SetUpOnMainThread() {
   MediaRouterBaseBrowserTest::SetUpOnMainThread();
   media_router_ =
-      MediaRouterMojoImplFactory::GetApiForBrowserContext(browser()->profile());
+      MediaRouterFactory::GetApiForBrowserContext(browser()->profile());
   DCHECK(media_router_);
 }
 

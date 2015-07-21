@@ -871,7 +871,7 @@
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
     ],
     'chrome_browser_tests_media_router_sources': [
-      'browser/ui/webui/media_router/media_router_dialog_controller_browsertest.cc',
+      'browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc',
       'test/data/webui/media_router/media_router_elements_browsertest.js',
       'test/media_router/media_router_base_browsertest.cc',
       'test/media_router/media_router_base_browsertest.h',

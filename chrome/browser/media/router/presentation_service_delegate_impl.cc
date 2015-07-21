@@ -14,14 +14,13 @@
 #include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
-#include "chrome/browser/media/router/media_router_mojo_impl_factory.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_state_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/presentation_session.h"
 #include "content/public/browser/render_frame_host.h"
@@ -414,7 +413,7 @@ PresentationServiceDelegateImpl::GetOrCreateForWebContents(
 PresentationServiceDelegateImpl::PresentationServiceDelegateImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
-      router_(MediaRouterMojoImplFactory::GetApiForBrowserContext(
+      router_(MediaRouterFactory::GetApiForBrowserContext(
           web_contents_->GetBrowserContext())),
       frame_manager_(new PresentationFrameManager(web_contents, router_)),
       weak_factory_(this) {
@@ -571,9 +570,8 @@ void PresentationServiceDelegateImpl::StartSession(
   // NOTE: Currently this request is ignored if a dialog is already open, e.g.
   // via browser action. In practice, this should rarely happen, but log
   // an error message in case it does.
-  MediaRouterDialogController::CreateForWebContents(web_contents_);
   MediaRouterDialogController* controller =
-      MediaRouterDialogController::FromWebContents(web_contents_);
+      MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
 
   if (!controller->ShowMediaRouterDialogForPresentation(context.Pass())) {
     LOG(ERROR) << "Media router dialog already exists. Ignoring StartSession.";

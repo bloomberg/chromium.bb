@@ -11,7 +11,7 @@ class Browser;
 class MediaRouterActionPlatformDelegate;
 
 namespace media_router {
-class MediaRouterDialogController;
+class MediaRouterDialogControllerImpl;
 }  // namespace media_router
 
 // The class for the Media Router component action that will be shown in
@@ -46,7 +46,8 @@ class MediaRouterAction : public ToolbarActionViewController {
   // Returns a reference to the MediaRouterDialogController associated with
   // |delegate_|'s current WebContents. Guaranteed to be non-null.
   // |delegate_| and its current WebContents must not be null.
-  media_router::MediaRouterDialogController* GetMediaRouterDialogController();
+  media_router::MediaRouterDialogControllerImpl*
+      GetMediaRouterDialogController();
 
   const std::string id_;
   const base::string16 name_;

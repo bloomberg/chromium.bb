@@ -21,7 +21,6 @@
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -36,8 +35,7 @@ namespace media_router {
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
 class MediaRouterMojoImpl : public MediaRouter,
-                            public interfaces::MediaRouter,
-                            public KeyedService {
+                            public interfaces::MediaRouter {
  public:
   ~MediaRouterMojoImpl() override;
 
@@ -90,7 +88,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   }
 
  private:
-  friend class MediaRouterMojoImplFactory;
+  friend class MediaRouterFactory;
   friend class MediaRouterMojoTest;
 
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,

@@ -7,14 +7,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-using media_router::MediaRouterDialogController;
+using media_router::MediaRouterDialogControllerImpl;
 
 MediaRouterAction::MediaRouterAction(Browser* browser)
     : id_("media_router_action"),
@@ -97,12 +97,13 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
 void MediaRouterAction::UpdateState() {
 }
 
-MediaRouterDialogController*
+MediaRouterDialogControllerImpl*
 MediaRouterAction::GetMediaRouterDialogController() {
   DCHECK(delegate_);
   content::WebContents* web_contents = delegate_->GetCurrentWebContents();
   DCHECK(web_contents);
-  return MediaRouterDialogController::GetOrCreateForWebContents(web_contents);
+  return MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+      web_contents);
 }
 
 bool MediaRouterAction::DisabledClickOpensMenu() const {

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_test.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "content/public/test/browser_test_utils.h"
@@ -14,22 +14,22 @@ using content::WebContents;
 
 namespace media_router {
 
-class MediaRouterDialogControllerTest : public MediaRouterTest {
+class MediaRouterDialogControllerImplTest : public MediaRouterTest {
  public:
-  MediaRouterDialogControllerTest() {}
-  ~MediaRouterDialogControllerTest() override {}
+  MediaRouterDialogControllerImplTest() {}
+  ~MediaRouterDialogControllerImplTest() override {}
   void OpenMediaRouterDialog();
 
  protected:
   WebContents* initiator_ = nullptr;
-  MediaRouterDialogController* dialog_controller_ = nullptr;
+  MediaRouterDialogControllerImpl* dialog_controller_ = nullptr;
   WebContents* media_router_dialog_ = nullptr;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerImplTest);
 };
 
-void MediaRouterDialogControllerTest::OpenMediaRouterDialog() {
+void MediaRouterDialogControllerImplTest::OpenMediaRouterDialog() {
   // Start with one window with one tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
@@ -39,8 +39,9 @@ void MediaRouterDialogControllerTest::OpenMediaRouterDialog() {
   // Create a reference to initiator contents.
   initiator_ = browser()->tab_strip_model()->GetActiveWebContents();
 
-  MediaRouterDialogController::CreateForWebContents(initiator_);
-  dialog_controller_ = MediaRouterDialogController::FromWebContents(initiator_);
+  MediaRouterDialogControllerImpl::CreateForWebContents(initiator_);
+  dialog_controller_ =
+      MediaRouterDialogControllerImpl::FromWebContents(initiator_);
   ASSERT_TRUE(dialog_controller_);
 
   // Get the media router dialog for the initiator.
@@ -55,7 +56,7 @@ void MediaRouterDialogControllerTest::OpenMediaRouterDialog() {
 }
 
 // Create/Get a media router dialog for initiator.
-TEST_F(MediaRouterDialogControllerTest, ShowMediaRouterDialog) {
+TEST_F(MediaRouterDialogControllerImplTest, ShowMediaRouterDialog) {
   OpenMediaRouterDialog();
 
   // Show media router dialog for the same initiator again.
@@ -73,7 +74,7 @@ TEST_F(MediaRouterDialogControllerTest, ShowMediaRouterDialog) {
 // Tests multiple media router dialogs exist in the same browser for different
 // initiators. If a dialog already exists for an initiator, that initiator
 // gets focused.
-TEST_F(MediaRouterDialogControllerTest, MultipleMediaRouterDialogs) {
+TEST_F(MediaRouterDialogControllerImplTest, MultipleMediaRouterDialogs) {
   // Let's start with one window and two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -93,9 +94,9 @@ TEST_F(MediaRouterDialogControllerTest, MultipleMediaRouterDialogs) {
 
 
   // Create media router dialog for |web_contents_1|.
-  MediaRouterDialogController::CreateForWebContents(web_contents_1);
-  MediaRouterDialogController* dialog_controller_1 =
-      MediaRouterDialogController::FromWebContents(web_contents_1);
+  MediaRouterDialogControllerImpl::CreateForWebContents(web_contents_1);
+  MediaRouterDialogControllerImpl* dialog_controller_1 =
+      MediaRouterDialogControllerImpl::FromWebContents(web_contents_1);
   ASSERT_TRUE(dialog_controller_1);
 
   WebContents* media_router_dialog_1 =
@@ -106,9 +107,9 @@ TEST_F(MediaRouterDialogControllerTest, MultipleMediaRouterDialogs) {
   EXPECT_EQ(2, tab_strip_model->count());
 
   // Create media router dialog for |web_contents_2|.
-  MediaRouterDialogController::CreateForWebContents(web_contents_2);
-  MediaRouterDialogController* dialog_controller_2 =
-      MediaRouterDialogController::FromWebContents(web_contents_2);
+  MediaRouterDialogControllerImpl::CreateForWebContents(web_contents_2);
+  MediaRouterDialogControllerImpl* dialog_controller_2 =
+      MediaRouterDialogControllerImpl::FromWebContents(web_contents_2);
   ASSERT_TRUE(dialog_controller_2);
 
   WebContents* media_router_dialog_2 =
@@ -148,7 +149,7 @@ TEST_F(MediaRouterDialogControllerTest, MultipleMediaRouterDialogs) {
   EXPECT_EQ(tab_2_index, tab_strip_model->active_index());
 }
 
-TEST_F(MediaRouterDialogControllerTest, CloseDialogFromWebUI) {
+TEST_F(MediaRouterDialogControllerImplTest, CloseDialogFromWebUI) {
   OpenMediaRouterDialog();
 
   // Close the dialog.
@@ -180,7 +181,7 @@ TEST_F(MediaRouterDialogControllerTest, CloseDialogFromWebUI) {
   EXPECT_EQ(media_router_dialog_2, dialog_controller_->GetMediaRouterDialog());
 }
 
-TEST_F(MediaRouterDialogControllerTest, CloseDialogFromDialogController) {
+TEST_F(MediaRouterDialogControllerImplTest, CloseDialogFromDialogController) {
   OpenMediaRouterDialog();
 
   // Close the dialog.
@@ -198,7 +199,7 @@ TEST_F(MediaRouterDialogControllerTest, CloseDialogFromDialogController) {
   EXPECT_FALSE(dialog_controller_->GetMediaRouterDialog());
 }
 
-TEST_F(MediaRouterDialogControllerTest, CloseInitiator) {
+TEST_F(MediaRouterDialogControllerImplTest, CloseInitiator) {
   OpenMediaRouterDialog();
 
   // Close the initiator. This should also close the dialog WebContents.

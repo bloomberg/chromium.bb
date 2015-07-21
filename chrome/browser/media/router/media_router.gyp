@@ -13,23 +13,34 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
-        '<(DEPTH)/third_party/mojo/src',
       ],
       'dependencies': [
-        # media_router_type_converters.h needs the generated file.
-        'media_router_mojo_gen',
-        'media_router_mojo',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/chrome/common_constants.gyp:common_constants',
         '<(DEPTH)/components/components.gyp:keyed_service_content',
         '<(DEPTH)/components/components.gyp:keyed_service_core',
-        '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
         '<@(media_router_sources)',
       ],
+      'conditions': [
+        [ 'OS!="android" and OS!="ios"', {
+          'include_dirs': [
+            '<(DEPTH)/third_party/mojo/src',
+          ],
+          'dependencies': [
+            # media_router_type_converters.h needs the generated file.
+            'media_router_mojo_gen',
+            'media_router_mojo',
+            '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
+          ],
+          'sources': [
+            '<@(media_router_non_android_sources)',
+          ]
+        }],
+      ]     
     },
     {
       # Mojo compiler for the Media Router internal API.

@@ -1478,8 +1478,8 @@
       'browser/ui/views/toolbar/media_router_action_platform_delegate_views.h',
       'browser/ui/webui/media_router/media_cast_mode.cc',
       'browser/ui/webui/media_router/media_cast_mode.h',
-      'browser/ui/webui/media_router/media_router_dialog_controller.cc',
-      'browser/ui/webui/media_router/media_router_dialog_controller.h',
+      'browser/ui/webui/media_router/media_router_dialog_controller_impl.cc',
+      'browser/ui/webui/media_router/media_router_dialog_controller_impl.h',
       'browser/ui/webui/media_router/media_router_localized_strings_provider.cc',
       'browser/ui/webui/media_router/media_router_localized_strings_provider.h',
       'browser/ui/webui/media_router/media_router_resources_provider.cc',
@@ -3172,7 +3172,7 @@
         ['enable_google_now==1 and OS!="android"', {
           'sources': [ '<@(chrome_browser_ui_google_now_non_android_sources)' ],
         }],
-        ['enable_media_router==1', {
+        ['enable_media_router==1 and OS!="android" and OS!="ios"', {
           'dependencies': [
             'browser/media/router/media_router.gyp:media_router',
           ],

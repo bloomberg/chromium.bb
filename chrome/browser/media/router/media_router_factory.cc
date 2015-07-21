@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/media_router_mojo_impl_factory.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#if defined(OS_ANDROID)
+#include "chrome/browser/media/android/router/media_router_android.h"
+#else
+#include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
+#endif
 
 using content::BrowserContext;
 
@@ -15,40 +19,47 @@ namespace media_router {
 
 namespace {
 
-base::LazyInstance<MediaRouterMojoImplFactory> service_factory =
+base::LazyInstance<MediaRouterFactory> service_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
-MediaRouterMojoImpl* MediaRouterMojoImplFactory::GetApiForBrowserContext(
+MediaRouter* MediaRouterFactory::GetApiForBrowserContext(
     BrowserContext* context) {
   DCHECK(context);
-
-  return static_cast<MediaRouterMojoImpl*>(
+  // GetServiceForBrowserContext returns a KeyedService hence the static_cast<>
+  // to return a pointer to MediaRouter.
+  return static_cast<MediaRouter*>(
       service_factory.Get().GetServiceForBrowserContext(context, true));
 }
 
-MediaRouterMojoImplFactory::MediaRouterMojoImplFactory()
+MediaRouterFactory::MediaRouterFactory()
     : BrowserContextKeyedServiceFactory(
-          "MediaRouterMojoImpl",
+          "MediaRouter",
           BrowserContextDependencyManager::GetInstance()) {
-  // MediaRouterMojoImpl depends on ProcessManager.
+#if !defined(OS_ANDROID)
+  // On desktop platforms, MediaRouter depends on ProcessManager.
   DependsOn(extensions::ProcessManagerFactory::GetInstance());
+#endif
 }
 
-MediaRouterMojoImplFactory::~MediaRouterMojoImplFactory() {
+MediaRouterFactory::~MediaRouterFactory() {
 }
 
-KeyedService* MediaRouterMojoImplFactory::BuildServiceInstanceFor(
+KeyedService* MediaRouterFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
+#if defined(OS_ANDROID)
+  return new MediaRouterAndroid(context);
+#else
   return new MediaRouterMojoImpl(extensions::ProcessManager::Get(context));
+#endif
 }
 
-BrowserContext* MediaRouterMojoImplFactory::GetBrowserContextToUse(
+BrowserContext* MediaRouterFactory::GetBrowserContextToUse(
     BrowserContext* context) const {
   // Always use the input context. This means that an incognito context will
-  // have its own MediaRouterMojoImpl service, rather than sharing it with its
+  // have its own MediaRouter service, rather than sharing it with its
   // original non-incognito context.
   return context;
 }

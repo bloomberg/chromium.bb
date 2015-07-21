@@ -12,8 +12,8 @@
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
-#include "chrome/browser/media/router/media_router_mojo_impl_factory.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
@@ -22,7 +22,7 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_resources_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
@@ -116,7 +116,7 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
   content::WebContents* wc = web_ui->GetWebContents();
   DCHECK(wc);
 
-  router_ = MediaRouterMojoImplFactory::GetApiForBrowserContext(
+  router_ = MediaRouterFactory::GetApiForBrowserContext(
       wc->GetBrowserContext());
   DCHECK(router_);
 

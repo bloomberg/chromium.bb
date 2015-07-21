@@ -876,6 +876,7 @@
           'enable_supervised_users%': 0,
           'enable_task_manager%': 0,
           'use_system_libcxx%': 1,
+          'enable_media_router%': 0,
         }],
 
         # Use GPU accelerated cross process image transport by default
@@ -947,10 +948,8 @@
 
         ['OS=="android" or OS=="ios"', {
           'enable_captive_portal_detection%': 0,
-          'enable_media_router%': 0,
         }, {
           'enable_captive_portal_detection%': 1,
-          'enable_media_router%': 1,
         }],
 
         # Enable Skia UI text drawing incrementally on different platforms.

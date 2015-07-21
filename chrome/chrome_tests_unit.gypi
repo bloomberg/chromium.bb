@@ -1462,16 +1462,18 @@
       'browser/media/router/issue_manager_unittest.cc',
       'browser/media/router/issue_unittest.cc',
       'browser/media/router/media_route_unittest.cc',
-      'browser/media/router/media_router_mojo_impl_unittest.cc',
-      'browser/media/router/media_router_type_converters_unittest.cc',
       'browser/media/router/media_sink_unittest.cc',
       'browser/media/router/media_source_helper_unittest.cc',
       'browser/media/router/media_source_unittest.cc',
       'browser/media/router/presentation_media_sinks_observer_unittest.cc',
       'browser/media/router/presentation_service_delegate_impl_unittest.cc',
       'browser/media/router/presentation_session_state_observer_unittest.cc',
+    ],
+    'chrome_unit_tests_media_router_non_android_sources': [
+      'browser/media/router/media_router_mojo_impl_unittest.cc',
+      'browser/media/router/media_router_type_converters_unittest.cc',
       'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
-      'browser/ui/webui/media_router/media_router_dialog_controller_unittest.cc',
+      'browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc',
       'browser/ui/webui/media_router/media_router_test.cc',
       'browser/ui/webui/media_router/media_router_test.h',
       'browser/ui/webui/media_router/media_router_webui_message_handler_unittest.cc',
@@ -2432,6 +2434,11 @@
         ['enable_media_router==1', {
           'sources': [ '<@(chrome_unit_tests_media_router_sources)' ],
           'dependencies': [ 'browser/media/router/media_router.gyp:media_router_test_support' ],
+          'conditions': [
+            ['OS!="android"', {
+              'sources': [ '<@(chrome_unit_tests_media_router_non_android_sources)' ],
+            }],
+          ],
         }],
         ['enable_captive_portal_detection==1', {
           'sources': [ '<@(chrome_unit_tests_captive_portal_sources)' ],

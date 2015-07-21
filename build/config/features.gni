@@ -51,7 +51,7 @@ declare_args() {
   enable_webrtc = !is_ios && !is_mac && !is_android
 
   # Enables the Media Router.
-  enable_media_router = !is_ios && !is_android
+  enable_media_router = !is_ios
 
   # Enables proprietary codecs and demuxers; e.g. H264, MOV, AAC, and MP3.
   # Android OS includes support for proprietary codecs regardless of building
