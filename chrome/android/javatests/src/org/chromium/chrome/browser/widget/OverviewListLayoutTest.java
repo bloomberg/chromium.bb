@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelLis
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -37,6 +39,12 @@ import java.util.concurrent.TimeoutException;
  * Tests accessibility UI.
  */
 public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
+
+    private static final String PAGE_1_HTML = "data:text/html;charset=utf-8,"
+            + "<html><head><title>Page%201<%2Ftitle><%2Fhead><body><%2Fbody><%2Fhtml>";
+    private static final String PAGE_2_HTML = "data:text/html;charset=utf-8,"
+            + "<html><head><title>Page%202<%2Ftitle><%2Fhead><body><%2Fbody><%2Fhtml>";
+
     private static final int SWIPE_START_X_OFFSET = 10;
     private static final int SWIPE_START_Y_OFFSET = 10;
     private static final int SWIPE_END_X = 20;
@@ -116,6 +124,25 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         AccessibilityTabModelListItem item =
                 (AccessibilityTabModelListItem) getList().getChildAt(index);
         return item;
+    }
+
+    private CharSequence getTabTitleOfListItem(int index) {
+        View childView = getListItem(index);
+        TextView childTextView =
+                (TextView) childView.findViewById(org.chromium.chrome.R.id.tab_title);
+        return childTextView.getText();
+    }
+
+    private void toggleTabSwitcher(final boolean expectVisible) throws Exception {
+        TestTouchUtils.performClickOnMainSync(
+                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                boolean isVisible = (getContainer() != null && getContainer().getParent() != null);
+                return isVisible == expectVisible;
+            }
+        }));
     }
 
     @Restriction(RESTRICTION_TYPE_PHONE)
@@ -361,5 +388,33 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
 
         assertTrue(
                 "Wrong number of tabs", CriteriaHelper.pollForCriteria(new ChildCountCriteria(4)));
+    }
+
+    /**
+     * Tests that the TabObserver of the {@link AccessibilityTabModelListItem} is added back
+     * to the Tab after the View is hidden.  This requires bringing the tab switcher back twice
+     * because the TabObserver is removed/added when the tab switcher's View is detached from/
+     * attached to the window.
+     */
+    @MediumTest
+    @Feature({"Accessibility"})
+    public void testObservesTitleChanges() throws Exception {
+        loadUrl(PAGE_1_HTML);
+
+        // Bring the tab switcher forward and send it away twice.
+        toggleTabSwitcher(true);
+        assertEquals("Page 1", getTabTitleOfListItem(0));
+        toggleTabSwitcher(false);
+        toggleTabSwitcher(true);
+        toggleTabSwitcher(false);
+
+        // Load another URL.
+        final TabLoadObserver observer =
+                new TabLoadObserver(getActivity().getActivityTab(), PAGE_2_HTML);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
+
+        // Bring the tab switcher forward and check the title.
+        toggleTabSwitcher(true);
+        assertEquals("Page 2", getTabTitleOfListItem(0));
     }
 }
