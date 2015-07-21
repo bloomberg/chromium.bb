@@ -237,7 +237,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                 if (mManagementDelegate.isRunningInCompatibilityMode()) {
                     mManagementDelegate.openResolvedSearchUrlInNewTab();
                 } else {
-                    expandPanel(StateChangeReason.SEARCH_BAR_TAP);
+                    if (isFullscreenSizePanel()) {
+                        expandPanel(StateChangeReason.SEARCH_BAR_TAP);
+                    } else {
+                        maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
+                    }
                 }
             } else if (isExpanded()) {
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);
