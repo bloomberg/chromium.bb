@@ -391,6 +391,8 @@ struct NetErrorHelperCore::ErrorPageInfo {
         needs_load_navigation_corrections(false),
         reload_button_in_page(false),
         show_saved_copy_button_in_page(false),
+        show_cached_page_button_in_page(false),
+        show_cached_copy_button_in_page(false),
         is_finished_loading(false),
         auto_reload_triggered(false) {
   }
@@ -424,6 +426,8 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // Track if specific buttons are included in an error page, for statistics.
   bool reload_button_in_page;
   bool show_saved_copy_button_in_page;
+  bool show_cached_page_button_in_page;
+  bool show_cached_copy_button_in_page;
 
   // True if a page has completed loading, at which point it can receive
   // updates.
@@ -610,6 +614,13 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
     chrome_common_net::RecordEvent(
         chrome_common_net::NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN);
   }
+  if (committed_error_page_info_->show_cached_copy_button_in_page) {
+    chrome_common_net::RecordEvent(
+        chrome_common_net::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
+  } else if (committed_error_page_info_->show_cached_page_button_in_page) {
+    chrome_common_net::RecordEvent(
+        chrome_common_net::NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN);
+  }
 
   delegate_->EnablePageHelperFunctions();
 
@@ -655,10 +666,13 @@ void NetErrorHelperCore::GetErrorHTML(
     // These values do not matter, as error pages in iframes hide the buttons.
     bool reload_button_in_page;
     bool show_saved_copy_button_in_page;
+    bool show_cached_copy_button_in_page;
+    bool show_cached_page_button_in_page;
 
     delegate_->GenerateLocalizedErrorPage(
         error, is_failed_post, scoped_ptr<ErrorPageParams>(),
         &reload_button_in_page, &show_saved_copy_button_in_page,
+        &show_cached_copy_button_in_page, &show_cached_page_button_in_page,
         error_html);
   }
 }
@@ -720,6 +734,8 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
       scoped_ptr<ErrorPageParams>(),
       &pending_error_page_info->reload_button_in_page,
       &pending_error_page_info->show_saved_copy_button_in_page,
+      &pending_error_page_info->show_cached_copy_button_in_page,
+      &pending_error_page_info->show_cached_page_button_in_page,
       error_html);
 }
 
@@ -781,6 +797,8 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
         params.Pass(),
         &pending_error_page_info_->reload_button_in_page,
         &pending_error_page_info_->show_saved_copy_button_in_page,
+        &pending_error_page_info_->show_cached_copy_button_in_page,
+        &pending_error_page_info_->show_cached_page_button_in_page,
         &error_html);
   } else {
     // Since |navigation_correction_params| in |pending_error_page_info_| is
@@ -963,6 +981,14 @@ void NetErrorHelperCore::ExecuteButtonPress(bool is_error_page, Button button) {
     case EASTER_EGG:
       chrome_common_net::RecordEvent(
           chrome_common_net::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
+      return;
+    case SHOW_CACHED_COPY_BUTTON:
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);
+      return;
+    case SHOW_CACHED_PAGE_BUTTON:
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED);
       return;
     case BUTTON_MAX:
     case NO_BUTTON:

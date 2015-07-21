@@ -10,30 +10,36 @@ namespace chrome_common_net {
 
 // Network error page events.  Used for UMA statistics.
 enum NetworkErrorPageEvent {
-  NETWORK_ERROR_PAGE_SHOWN,                      // Error pages shown.
+  NETWORK_ERROR_PAGE_SHOWN = 0,                    // Error pages shown.
 
-  NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN,        // Reload buttons shown.
-  NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED,      // Reload button clicked.
-  NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR,        // Reload button clicked
-                                                 // -> error.
+  NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN = 1,      // Reload buttons shown.
+  NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED = 2,    // Reload button clicked.
+  NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR = 3,      // Reload button clicked
+                                                   // -> error.
 
   // Same for the "Show saved copy" button.
-  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN,
-  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED,
-  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR,
+  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN = 4,
+  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED = 5,
+  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR = 6,
 
-  NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED,        // More button clicked.
+  NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED = 7,      // More button clicked.
 
-  NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD,   // Reload from browser.
+  NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8, // Reload from browser.
 
   // Keep track of which button the user chooses when both are shown.
-  NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN,
-  NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED,
-  NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED,
+  NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN = 9,
+  NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED = 10,
+  NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED = 11,
 
-  NETWORK_ERROR_EASTER_EGG_ACTIVATED,            // Easter egg activated.
+  NETWORK_ERROR_EASTER_EGG_ACTIVATED = 12,         // Easter egg activated.
 
-  NETWORK_ERROR_PAGE_EVENT_MAX,
+  // For "Google cached copy" label experiment button.
+  NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN = 13,
+  NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED = 14,
+  NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN = 15,
+  NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED = 16,
+
+  NETWORK_ERROR_PAGE_EVENT_MAX = 17,
 };
 
 // The status of a DNS probe.

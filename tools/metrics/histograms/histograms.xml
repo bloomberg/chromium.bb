@@ -54870,6 +54870,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="SHOW_SAVED_COPY_BUTTON"/>
   <int value="3" label="MORE_BUTTON"/>
   <int value="4" label="EASTER_EGG"/>
+  <int value="5" label="SHOW_CACHED_COPY_BUTTON"/>
+  <int value="6" label="SHOW_CACHED_PAGE_BUTTON"/>
 </enum>
 
 <enum name="ErrorPageUnexpectedStates" type="int">
@@ -63016,6 +63018,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Both Buttons Shown, Reload Clicked"/>
   <int value="11" label="Both Buttons Shown, Show Saved Copy Clicked"/>
   <int value="12" label="Easter egg activated"/>
+  <int value="13" label="Show Cached Copy button shown"/>
+  <int value="14" label="Show Cached Copy button clicked"/>
+  <int value="15" label="Show Cached Page button shown"/>
+  <int value="16" label="Show Cached Page button clicked"/>
 </enum>
 
 <enum name="NetInternalsUiFeature" type="int">

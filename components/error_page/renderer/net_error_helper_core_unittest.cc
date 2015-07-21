@@ -311,10 +311,14 @@ class NetErrorHelperCoreTest : public testing::Test,
                                   scoped_ptr<ErrorPageParams> params,
                                   bool* reload_button_shown,
                                   bool* show_saved_copy_button_shown,
+                                  bool* show_cached_copy_button_shown,
+                                  bool* show_cached_page_button_shown,
                                   std::string* html) const override {
     last_error_page_params_.reset(params.release());
     *reload_button_shown = false;
     *show_saved_copy_button_shown = false;
+    *show_cached_copy_button_shown = false;
+    *show_cached_page_button_shown = false;
     *html = ErrorToString(error, is_failed_post);
   }
 

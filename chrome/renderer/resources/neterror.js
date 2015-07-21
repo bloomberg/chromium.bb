@@ -125,6 +125,10 @@ function setUpCachedButton(buttonStrings) {
   reloadButton.onclick = function(e) {
     e.preventDefault();
     trackClick(trackingId);
+    if (window.errorPageController) {
+      errorPageController.trackCachedCopyButtonClick(
+          buttonStrings.defaultLabel);
+    }
     location = url;
   };
   reloadButton.style.display = '';

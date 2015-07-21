@@ -48,6 +48,8 @@ class NetErrorHelperCore {
     SHOW_SAVED_COPY_BUTTON,
     MORE_BUTTON,
     EASTER_EGG,
+    SHOW_CACHED_COPY_BUTTON,  // "Google cached copy" button label experiment.
+    SHOW_CACHED_PAGE_BUTTON,  // "Google cached page" button label experiment.
     BUTTON_MAX,
   };
 
@@ -62,6 +64,8 @@ class NetErrorHelperCore {
         scoped_ptr<error_page::ErrorPageParams> params,
         bool* reload_button_shown,
         bool* show_saved_copy_button_shown,
+        bool* show_cached_copy_button_shown,
+        bool* show_cached_page_button_shown,
         std::string* html) const = 0;
 
     // Loads the given HTML in the main frame for use as an error page.

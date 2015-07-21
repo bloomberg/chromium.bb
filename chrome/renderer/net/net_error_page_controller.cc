@@ -52,6 +52,12 @@ bool NetErrorPageController::TrackEasterEgg() {
   return ButtonClick(error_page::NetErrorHelperCore::EASTER_EGG);
 }
 
+bool NetErrorPageController::TrackCachedCopyButtonClick(bool is_default_label) {
+  return is_default_label ?
+      ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_PAGE_BUTTON) :
+      ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_COPY_BUTTON);
+}
+
 bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
   if (!render_frame())
     return false;
@@ -98,7 +104,9 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
       .SetMethod("trackClick",
                  &NetErrorPageController::TrackClick)
       .SetMethod("trackEasterEgg",
-                 &NetErrorPageController::TrackEasterEgg);
+                 &NetErrorPageController::TrackEasterEgg)
+      .SetMethod("trackCachedCopyButtonClick",
+                 &NetErrorPageController::TrackCachedCopyButtonClick);
 }
 
 void NetErrorPageController::OnDestruct() {}

@@ -43,6 +43,9 @@ class NetErrorPageController
   // Track easter egg plays.
   bool TrackEasterEgg();
 
+  // Track "Show cached copy/page" button clicks.
+  bool TrackCachedCopyButtonClick(bool is_default_label);
+
   // Track a click when the page has suggestions from the navigation correction
   // service.
   bool TrackClick(const gin::Arguments& args);
