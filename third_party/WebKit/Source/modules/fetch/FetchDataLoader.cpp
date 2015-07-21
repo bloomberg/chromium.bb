@@ -5,7 +5,9 @@
 #include "config.h"
 #include "modules/fetch/FetchDataLoader.h"
 
+#include "core/html/parser/TextResourceDecoder.h"
 #include "wtf/ArrayBufferBuilder.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -83,13 +85,12 @@ private:
 
             case WebDataConsumerHandle::Busy:
             case WebDataConsumerHandle::ResourceExhausted:
-            case WebDataConsumerHandle::UnexpectedError: {
+            case WebDataConsumerHandle::UnexpectedError:
                 m_reader.clear();
                 m_blobData.clear();
                 m_client->didFetchDataLoadFailed();
                 m_client.clear();
                 return;
-            }
             }
         }
     }
@@ -108,18 +109,12 @@ private:
     OwnPtr<BlobData> m_blobData;
 };
 
-class FetchDataLoaderAsArrayBufferOrString
+class FetchDataLoaderAsArrayBuffer
     : public FetchDataLoader
     , public WebDataConsumerHandle::Client {
 public:
-    enum LoadType {
-        LoadAsArrayBuffer,
-        LoadAsString
-    };
-
-    explicit FetchDataLoaderAsArrayBufferOrString(LoadType loadType)
-        : m_client(nullptr)
-        , m_loadType(loadType) { }
+    FetchDataLoaderAsArrayBuffer()
+        : m_client(nullptr) { }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -163,20 +158,12 @@ protected:
                 m_reader->endRead(available);
                 break;
 
-            case WebDataConsumerHandle::Done: {
+            case WebDataConsumerHandle::Done:
                 m_reader.clear();
-                switch (m_loadType) {
-                case LoadAsArrayBuffer:
-                    m_client->didFetchDataLoadedArrayBuffer(DOMArrayBuffer::create(m_rawData->toArrayBuffer()));
-                    break;
-                case LoadAsString:
-                    m_client->didFetchDataLoadedString(m_rawData->toString());
-                    break;
-                }
+                m_client->didFetchDataLoadedArrayBuffer(DOMArrayBuffer::create(m_rawData->toArrayBuffer()));
                 m_rawData.clear();
                 m_client.clear();
                 return;
-            }
 
             case WebDataConsumerHandle::ShouldWait:
                 return;
@@ -208,8 +195,94 @@ protected:
     OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
     Member<FetchDataLoader::Client> m_client;
 
-    LoadType m_loadType;
     OwnPtr<ArrayBufferBuilder> m_rawData;
+};
+
+class FetchDataLoaderAsString
+    : public FetchDataLoader
+    , public WebDataConsumerHandle::Client {
+public:
+    FetchDataLoaderAsString()
+        : m_client(nullptr) { }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        FetchDataLoader::trace(visitor);
+        visitor->trace(m_client);
+    }
+
+protected:
+    void start(FetchDataConsumerHandle* handle, FetchDataLoader::Client* client) override
+    {
+        ASSERT(!m_client);
+        ASSERT(!m_decoder);
+        ASSERT(!m_reader);
+        m_client = client;
+        m_decoder = TextResourceDecoder::create("text/plain", UTF8Encoding());
+        m_reader = handle->obtainReader(this);
+    }
+
+    void didGetReadable() override
+    {
+        ASSERT(m_client);
+        ASSERT(m_decoder);
+        ASSERT(m_reader);
+
+        while (true) {
+            const void* buffer;
+            size_t available;
+            WebDataConsumerHandle::Result result = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &available);
+
+            switch (result) {
+            case WebDataConsumerHandle::Ok:
+                if (available > 0)
+                    m_builder.append(m_decoder->decode(static_cast<const char*>(buffer), available));
+                m_reader->endRead(available);
+                break;
+
+            case WebDataConsumerHandle::Done:
+                m_reader.clear();
+                m_builder.append(m_decoder->flush());
+                m_client->didFetchDataLoadedString(m_builder.toString());
+                m_builder.clear();
+                m_decoder.clear();
+                m_client.clear();
+                return;
+
+            case WebDataConsumerHandle::ShouldWait:
+                return;
+
+            case WebDataConsumerHandle::Busy:
+            case WebDataConsumerHandle::ResourceExhausted:
+            case WebDataConsumerHandle::UnexpectedError:
+                error();
+                return;
+            }
+        }
+    }
+
+    void error()
+    {
+        m_reader.clear();
+        m_builder.clear();
+        m_decoder.clear();
+        m_client->didFetchDataLoadFailed();
+        m_client.clear();
+    }
+
+    void cancel() override
+    {
+        m_reader.clear();
+        m_builder.clear();
+        m_decoder.clear();
+        m_client.clear();
+    }
+
+    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    Member<FetchDataLoader::Client> m_client;
+
+    OwnPtr<TextResourceDecoder> m_decoder;
+    StringBuilder m_builder;
 };
 
 class FetchDataLoaderAsStream
@@ -313,12 +386,12 @@ FetchDataLoader* FetchDataLoader::createLoaderAsBlobHandle(const String& mimeTyp
 
 FetchDataLoader* FetchDataLoader::createLoaderAsArrayBuffer()
 {
-    return new FetchDataLoaderAsArrayBufferOrString(FetchDataLoaderAsArrayBufferOrString::LoadAsArrayBuffer);
+    return new FetchDataLoaderAsArrayBuffer();
 }
 
 FetchDataLoader* FetchDataLoader::createLoaderAsString()
 {
-    return new FetchDataLoaderAsArrayBufferOrString(FetchDataLoaderAsArrayBufferOrString::LoadAsString);
+    return new FetchDataLoaderAsString();
 }
 
 FetchDataLoader* FetchDataLoader::createLoaderAsStream(Stream* outStream)

@@ -117,6 +117,16 @@ sequential_promise_test(function(test) {
     }, 'TextTest');
 
 sequential_promise_test(function(test) {
+    return fetch('/fetch/resources/non-ascii.txt')
+      .then(function(response) {
+          return response.text();
+        })
+      .then(function(text) {
+          assert_equals(text, '\u4e2d\u6587 Gem\u00fcse\n');
+        })
+    }, 'NonAsciiTextTest');
+
+sequential_promise_test(function(test) {
     var expected = '';
     for (var i = 0; i < 100; ++i)
         expected += i;
