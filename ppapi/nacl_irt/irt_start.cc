@@ -11,7 +11,7 @@
 #include "base/at_exit.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/irt_core.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/irt_interfaces.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 
 void nacl_irt_start(uint32_t* info) {
