@@ -17,12 +17,14 @@ namespace content {
 // |WebContentsObserver::AccessibilityEventReceived| method.
 struct CONTENT_EXPORT AXEventNotificationDetails {
  public:
-  AXEventNotificationDetails(int node_id_to_clear,
-                             const std::vector<ui::AXNodeData>& nodes,
-                             ui::AXEvent event_type,
-                             int id,
-                             int process_id,
-                             int routing_id);
+  AXEventNotificationDetails(
+      int node_id_to_clear,
+      const std::vector<ui::AXNodeData>& nodes,
+      ui::AXEvent event_type,
+      int id,
+      std::map<int32, int> node_to_browser_plugin_instance_id_map,
+      int process_id,
+      int routing_id);
 
   ~AXEventNotificationDetails();
 
@@ -30,6 +32,7 @@ struct CONTENT_EXPORT AXEventNotificationDetails {
   std::vector<ui::AXNodeData> nodes;
   ui::AXEvent event_type;
   int id;
+  std::map<int32, int> node_to_browser_plugin_instance_id_map;
   int process_id;
   int routing_id;
 };

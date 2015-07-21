@@ -1374,12 +1374,14 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
     details.reserve(params.size());
     for (size_t i = 0; i < params.size(); ++i) {
       const AccessibilityHostMsg_EventParams& param = params[i];
-      AXEventNotificationDetails detail(param.update.node_id_to_clear,
-                                        param.update.nodes,
-                                        param.event_type,
-                                        param.id,
-                                        GetProcess()->GetID(),
-                                        routing_id_);
+      AXEventNotificationDetails detail(
+          param.update.node_id_to_clear,
+          param.update.nodes,
+          param.event_type,
+          param.id,
+          param.node_to_browser_plugin_instance_id_map,
+          GetProcess()->GetID(),
+          routing_id_);
       details.push_back(detail);
     }
 

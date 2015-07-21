@@ -278,6 +278,7 @@ class TreeSerializationState {
                                                update.nodes,
                                                event,
                                                node_id,
+                                               std::map<int32, int>(),
                                                kPid,
                                                routing_id);
     std::vector<content::AXEventNotificationDetails> details;

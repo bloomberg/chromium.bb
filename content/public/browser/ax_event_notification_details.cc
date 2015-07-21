@@ -11,12 +11,15 @@ AXEventNotificationDetails::AXEventNotificationDetails(
     const std::vector<ui::AXNodeData>& nodes,
     ui::AXEvent event_type,
     int id,
+    std::map<int32, int> node_to_browser_plugin_instance_id_map,
     int process_id,
     int routing_id)
     : node_id_to_clear(node_id_to_clear),
       nodes(nodes),
       event_type(event_type),
       id(id),
+      node_to_browser_plugin_instance_id_map(
+          node_to_browser_plugin_instance_id_map),
       process_id(process_id),
       routing_id(routing_id) {
 }

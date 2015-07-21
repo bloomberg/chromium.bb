@@ -140,6 +140,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   // TODO(dtseng): Would idealy define these special desktop constants in idl.
   content::AXEventNotificationDetails detail(
       update.node_id_to_clear, update.nodes, event_type, aura_obj->GetID(),
+      std::map<int32, int>(),
       0, /* process_id */
       0 /* routing_id */);
   std::vector<content::AXEventNotificationDetails> details;
