@@ -176,7 +176,7 @@ int RsaMethodEncrypt(RSA* rsa,
                      size_t in_len,
                      int padding) {
   NOTIMPLEMENTED();
-  OPENSSL_PUT_ERROR(RSA, encrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  OPENSSL_PUT_ERROR(RSA, RSA_R_UNKNOWN_ALGORITHM_TYPE);
   return 0;
 }
 
@@ -196,7 +196,7 @@ int RsaMethodSignRaw(RSA* rsa,
     // the same Android version as the "NONEwithRSA"
     // java.security.Signature algorithm, so the same version checks
     // for GetRsaLegacyKey should work.
-    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_UNKNOWN_PADDING_TYPE);
+    OPENSSL_PUT_ERROR(RSA, RSA_R_UNKNOWN_PADDING_TYPE);
     return 0;
   }
 
@@ -204,7 +204,7 @@ int RsaMethodSignRaw(RSA* rsa,
   const KeyExData *ex_data = RsaGetExData(rsa);
   if (!ex_data || !ex_data->private_key) {
     LOG(WARNING) << "Null JNI reference passed to RsaMethodSignRaw!";
-    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
     return 0;
   }
 
@@ -221,7 +221,7 @@ int RsaMethodSignRaw(RSA* rsa,
       // if there were some way to convince Java to do it. (Without going
       // through Java, it's difficult to get a handle on a system OpenSSL
       // function; dlopen loads a second copy.)
-      OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+      OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
       return 0;
     }
     *out_len = ret;
@@ -234,7 +234,7 @@ int RsaMethodSignRaw(RSA* rsa,
   // PKCS#1 padding.
   if (!RawSignDigestWithPrivateKey(ex_data->private_key, from_piece, &result)) {
     LOG(WARNING) << "Could not sign message in RsaMethodSignRaw!";
-    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
     return 0;
   }
 
@@ -242,12 +242,12 @@ int RsaMethodSignRaw(RSA* rsa,
   if (result.size() > expected_size) {
     LOG(ERROR) << "RSA Signature size mismatch, actual: "
                <<  result.size() << ", expected <= " << expected_size;
-    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
     return 0;
   }
 
   if (max_out < expected_size) {
-    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_DATA_TOO_LARGE);
+    OPENSSL_PUT_ERROR(RSA, RSA_R_DATA_TOO_LARGE);
     return 0;
   }
 
@@ -269,7 +269,7 @@ int RsaMethodDecrypt(RSA* rsa,
                      size_t in_len,
                      int padding) {
   NOTIMPLEMENTED();
-  OPENSSL_PUT_ERROR(RSA, decrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  OPENSSL_PUT_ERROR(RSA, RSA_R_UNKNOWN_ALGORITHM_TYPE);
   return 0;
 }
 
@@ -281,7 +281,7 @@ int RsaMethodVerifyRaw(RSA* rsa,
                        size_t in_len,
                        int padding) {
   NOTIMPLEMENTED();
-  OPENSSL_PUT_ERROR(RSA, verify_raw, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  OPENSSL_PUT_ERROR(RSA, RSA_R_UNKNOWN_ALGORITHM_TYPE);
   return 0;
 }
 
@@ -485,7 +485,7 @@ int EcdsaMethodVerify(const uint8_t* digest,
                       size_t sig_len,
                       EC_KEY* ec_key) {
   NOTIMPLEMENTED();
-  OPENSSL_PUT_ERROR(ECDSA, ECDSA_do_verify, ECDSA_R_NOT_IMPLEMENTED);
+  OPENSSL_PUT_ERROR(ECDSA, ECDSA_R_NOT_IMPLEMENTED);
   return 0;
 }
 

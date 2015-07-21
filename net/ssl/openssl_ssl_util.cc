@@ -179,7 +179,7 @@ void OpenSSLPutNetError(const tracked_objects::Location& location, int err) {
     NOTREACHED();
     err = ERR_INVALID_ARGUMENT;
   }
-  ERR_put_error(OpenSSLNetErrorLib(), 0, err,
+  ERR_put_error(OpenSSLNetErrorLib(), err, location.function_name(),
                 location.file_name(), location.line_number());
 }
 
