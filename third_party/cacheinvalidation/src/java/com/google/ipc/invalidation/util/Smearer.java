@@ -30,12 +30,11 @@ public class Smearer {
 
   private final Random random;
 
-  /** The percentage (0, 1.0] for smearing the delay. */
+  /** The percentage [0, 1.0] for smearing the delay. */
   private double smearFraction;
 
   /**
-   * Creates a smearer with the given random number generator. If {@code smearPercent} is 0, uses an
-   * internal default for smearing.
+   * Creates a smearer with the given random number generator.
    * <p>
    * REQUIRES: 0 < smearPercent <= 100
    */

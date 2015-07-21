@@ -27,7 +27,7 @@ import com.google.ipc.invalidation.util.Marshallable;
 public class RunState implements Marshallable<RunStateP> {
   /** Current run state ({@link RunStateP}). */
   private Integer currentState;
-  private Object lock = new Object();
+  private final Object lock = new Object();
 
   /** Constructs a new instance in the {@code NOT_STARTED} state. */
   public RunState() {

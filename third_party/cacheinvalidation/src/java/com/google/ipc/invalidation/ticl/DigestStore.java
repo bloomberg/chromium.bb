@@ -22,16 +22,16 @@ import java.util.Collection;
  * Interface for a store that allows objects to be added/removed along with
  * the ability to get the digest for the whole or partial set of those objects.
  *
- * @param <ElementType> the type of the element stored in this
+ * @param <T> the type of the element stored in this
  *
  */
-public interface DigestStore<ElementType> {
+public interface DigestStore<T> {
 
   /** Returns the number of elements. */
   int size();
 
   /** Returns whether {@code element} is in the store. */
-  boolean contains(ElementType element);
+  boolean contains(T element);
 
   /**
    * Returns a digest of the desired objects.
@@ -48,34 +48,34 @@ public interface DigestStore<ElementType> {
    * than what has been specified by {@code digestPrefix}, e.g., it could return all the objects
    * in the store.
    */
-  Collection<ElementType> getElements(byte[] digestPrefix, int prefixLen);
+  Collection<T> getElements(byte[] digestPrefix, int prefixLen);
 
   /**
    * Adds {@code element} to the store. No-op if {@code element} is already present.
    * @return whether the element was added
    */
-  boolean add(ElementType element);
+  boolean add(T element);
 
   /**
    * Adds {@code elements} to the store. If any element in {@code elements} is already present,
    * the addition is a no-op for that element.
    * @return the elements that were added
    */
-  Collection<ElementType> add(Collection<ElementType> elements);
+  Collection<T> add(Collection<T> elements);
 
   /**
    * Removes {@code element} from the store. No-op if {@code element} is not present.
    * @return whether the element was removed
    */
-  boolean remove(ElementType element);
+  boolean remove(T element);
 
   /**
    * Remove {@code elements} to the store. If any element in {@code elements} is not present, the
    * removal is a no-op for that element.
    * @return the elements that were removed
    */
-  Collection<ElementType> remove(Collection<ElementType> elements);
+  Collection<T> remove(Collection<T> elements);
 
   /** Removes all elements in this and returns them. */
-  Collection<ElementType> removeAll();
+  Collection<T> removeAll();
 }

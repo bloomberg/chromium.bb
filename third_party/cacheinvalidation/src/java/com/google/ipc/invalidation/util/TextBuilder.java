@@ -107,8 +107,12 @@ public class TextBuilder {
    * Appends the toString representation of {@code object} to this builder.
    */
   public TextBuilder append(Object object) {
-    builder.append(object);
-    return this;
+    if (object instanceof InternalBase) {
+      return append((InternalBase) object);
+    } else {
+      builder.append(object);
+      return this;
+    }
   }
 
   /**

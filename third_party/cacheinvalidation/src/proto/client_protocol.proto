@@ -211,11 +211,6 @@ message InvalidationP {
 
   // Optional payload associated with this invalidation.
   optional bytes payload = 4;
-
-  // DEPRECATED: bridge arrival time is now maintained by
-  // InvalidationMetadataP in the SourcedInvalidation, InvalidationContents and
-  // ClientInvalidation containers.
-  optional int64 bridge_arrival_time_ms_deprecated = 5  [deprecated=true];
 }
 
 // Specifies the intention to change a registration on a specific object.  To

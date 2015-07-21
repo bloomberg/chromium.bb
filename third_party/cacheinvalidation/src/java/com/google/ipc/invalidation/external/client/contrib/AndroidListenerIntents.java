@@ -146,7 +146,11 @@ class AndroidListenerIntents {
     // Schedule the pending intent after the appropriate delay.
     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     long executeMs = clock.nowMs() + delayMs;
-    alarmManager.set(AlarmManager.RTC, executeMs, pendingIntent);
+    try {
+      alarmManager.set(AlarmManager.RTC, executeMs, pendingIntent);
+    } catch (SecurityException exception) {
+      logger.warning("Unable to schedule delayed registration: %s", exception);
+    }
   }
 
   /** Creates a 'start-client' intent. */

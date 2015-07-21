@@ -31,7 +31,7 @@ option java_package = "com.google.protos.ipc.invalidation";
 
 
 message ChannelMessageEncoding {
-    // What kind of encoding is used for network_message
+  // What kind of encoding is used for network_message
   enum MessageEncoding {
     // Raw proto encoding
     PROTOBUF_BINARY_FORMAT = 1;
@@ -40,6 +40,7 @@ message ChannelMessageEncoding {
 }
 
 message NetworkEndpointId {
+  // Identifies which sender/receiver the gateway uses.
   enum NetworkAddress {
     TEST = 1;  // A delivery service for testing
 

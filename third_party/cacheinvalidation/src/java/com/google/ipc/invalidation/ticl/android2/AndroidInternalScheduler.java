@@ -125,7 +125,11 @@ public final class AndroidInternalScheduler implements Scheduler {
     // Schedule the pending intent after the appropriate delay.
     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     long executeMs = clock.nowMs() + delayMs;
-    alarmManager.set(AlarmManager.RTC, executeMs, sender);
+    try {
+      alarmManager.set(AlarmManager.RTC, executeMs, sender);
+    } catch (SecurityException exception) {
+      logger.warning("Unable to schedule delayed registration: %s", exception);
+    }
   }
 
   /**

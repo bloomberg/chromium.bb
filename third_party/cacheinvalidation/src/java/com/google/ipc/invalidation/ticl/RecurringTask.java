@@ -211,6 +211,7 @@ public abstract class RecurringTask extends InternalBase
   private void ensureScheduled(boolean isRetry, String debugReason) {
     Preconditions.checkState(scheduler.isRunningOnThread());
     if (isScheduled) {
+      logger.fine("[%s] Not scheduling task that is already scheduled", debugReason);
       return;
     }
     final int delayMs;

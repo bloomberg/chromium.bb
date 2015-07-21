@@ -11,3 +11,5 @@ This is the API to talk to the Google Cache Invalidation service, used by the
 invalidations consumed by Sync, Enterprise Policy, and other services. It was
 previously hosted at http://code.google.com/p/google-cache-invalidation-api/
 but was merged into the Chromium repository at r342.
+
+2015-07-21: merging client library version 20150720

@@ -7,7 +7,6 @@
   Merger manifest:
     java/com/google/ipc/invalidation/examples/android2/AndroidManifest.xml
   Mergee manifests:
-    blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml
   -->
   <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14"/>
   <!-- Declare and use permission allowing this application to receive GCM
@@ -37,13 +36,10 @@
         <action android:name="com.google.ipc.invalidation.AUTH_TOKEN_REQUEST"/>
       </intent-filter>
     </service>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- Receiver for scheduler alarms. -->
     <receiver android:exported="false" android:name="com.google.ipc.invalidation.external.client.contrib.AndroidListener$AlarmReceiver"/>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- Receiver for scheduler alarms. -->
     <receiver android:exported="false" android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"/>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- GCM Broadcast Receiver -->
     <receiver android:exported="true" android:name="com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener$GCMReceiver" android:permission="com.google.android.c2dm.permission.SEND">
       <intent-filter>
@@ -52,41 +48,31 @@
         <category android:name="com.google.ipc.invalidation.ticl.android2"/>
       </intent-filter>
     </receiver>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- Merged from file: java/com/google/ipc/invalidation/external/client/android2/AndroidManifest.xml -->
     <receiver android:exported="false" android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageReceiverService$Receiver">
       <intent-filter>
         <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT"/>
       </intent-filter>
     </receiver>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- Ticl service. -->
     <service android:exported="false" android:name="com.google.ipc.invalidation.ticl.android2.TiclService"/>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- Ticl sender. -->
     <service android:exported="false" android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageSenderService"/>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- GCM multiplexer -->
     <service android:exported="false" android:name="com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener">
       <meta-data android:name="sender_ids" android:value="ipc.invalidation@gmail.com"/>
     </service>
-    <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
     <!-- Invalidation service multiplexed GCM receiver -->
     <service android:enabled="true" android:exported="false" android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageReceiverService"/>
   </application>
-  <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
   <!-- App receives GCM messages. -->
   <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
-  <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
   <!-- GCM connects to Google Services. -->
   <uses-permission android:name="android.permission.INTERNET"/>
-  <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
   <!-- GCM requires a Google account. -->
   <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-  <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
   <!-- Merged from file: java/com/google/ipc/invalidation/external/client/android2/AndroidManifest.xml -->
   <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-  <!-- Merged from file: blaze-out/gcc-4.X.Y-crosstool-v17-hybrid-grtev3-k8-opt/bin/java/com/google/ipc/invalidation/external/client/contrib/android_listener_manifest/AndroidManifest.xml -->
   <!-- Keeps the processor from sleeping when a message is received. -->
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
 </manifest>

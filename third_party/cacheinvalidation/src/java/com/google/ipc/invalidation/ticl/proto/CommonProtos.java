@@ -85,14 +85,13 @@ public class CommonProtos {
   public static InvalidationP newInvalidationP(ObjectIdP objectId, long version,
       boolean isTrickleRestart, byte[] payload) {
     return InvalidationP.create(objectId, /* isKnownVersion */ true,
-        version, Bytes.fromByteArray(payload), /* bridgeArrivalTimeMsDeprecated */ null,
-        isTrickleRestart);
+        version, Bytes.fromByteArray(payload), isTrickleRestart);
   }
 
   public static InvalidationP newInvalidationPForUnknownVersion(ObjectIdP oid,
       long sequenceNumber) {
     return InvalidationP.create(oid, /* isKnownVersion */ false, sequenceNumber, /* payload */ null,
-    /* bridgeArrivalTimeMsDeprecated */ null, /* isTrickleRestart */ true);
+        /* isTrickleRestart */ true);
   }
 
   public static RegistrationP newRegistrationP(ObjectIdP oid, boolean isReg) {

@@ -17,7 +17,6 @@
 package com.google.ipc.invalidation.ticl.android2;
 
 import com.google.ipc.invalidation.external.client.InvalidationClient;
-import com.google.ipc.invalidation.external.client.SystemResources.Logger;
 import com.google.ipc.invalidation.external.client.types.AckHandle;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.ipc.invalidation.ticl.ProtoWrapperConverter;
@@ -43,13 +42,9 @@ class AndroidInvalidationClientStub implements InvalidationClient {
   /** Class implementing the Ticl service. */
   private final String serviceClass;
 
-  /**  logger. */
-  private final Logger logger;
-
-  /** Creates an instance from {@code context} and {@code logger}. */
-  AndroidInvalidationClientStub(Context context, Logger logger) {
+  /** Creates an instance from {@code context}. */
+  AndroidInvalidationClientStub(Context context) {
     this.context = Preconditions.checkNotNull(context.getApplicationContext());
-    this.logger = Preconditions.checkNotNull(logger);
     this.serviceClass = new AndroidTiclManifest(context).getTiclServiceClass();
   }
 

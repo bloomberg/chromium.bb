@@ -33,7 +33,6 @@ public interface ChannelCommon {
   public static final class ChannelMessageEncoding extends ProtoWrapper {
     public interface MessageEncoding {
       public static final int PROTOBUF_BINARY_FORMAT = 1;
-      public static final int PROTOBUF_JSON_FORMAT = 2;
     }
 
     public static ChannelMessageEncoding create() {
@@ -92,11 +91,8 @@ public interface ChannelCommon {
   public static final class NetworkEndpointId extends ProtoWrapper {
     public interface NetworkAddress {
       public static final int TEST = 1;
-      public static final int BUZZ = 111;
-      public static final int STUBBY = 112;
       public static final int ANDROID = 113;
       public static final int LCS = 114;
-      public static final int TIPS_STUBBY = 115;
     }
 
     public static NetworkEndpointId create(Integer networkAddress,

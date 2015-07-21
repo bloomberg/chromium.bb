@@ -60,7 +60,7 @@ public final class AndroidInvalidationListenerIntentMapper {
    * @param context the context used by the listener to issue downcalls to the TICL
    */
   public AndroidInvalidationListenerIntentMapper(InvalidationListener listener, Context context) {
-    client = new AndroidInvalidationClientStub(context, logger);
+    client = new AndroidInvalidationClientStub(context);
     this.listener = listener;
   }
 

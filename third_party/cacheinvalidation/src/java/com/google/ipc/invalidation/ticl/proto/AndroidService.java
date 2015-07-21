@@ -355,20 +355,14 @@ public interface AndroidService {
       this.registrations = registrations;
       this.__hazzerBits = hazzerBits;
       String existingOneOfField = null;
-      if (hasStop()) {
-        existingOneOfField = "stop";
-      }
-      if (hasStart()) {
-        if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "start");
-        }
-        existingOneOfField = "start";
-      }
       if (hasSerial()) {
-        if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "serial");
-        }
         existingOneOfField = "serial";
+      }
+      if (this.ack != null) {
+        if (existingOneOfField != null) {
+          oneOfViolation(existingOneOfField, "ack");
+        }
+        existingOneOfField = "ack";
       }
       if (this.registrations != null) {
         if (existingOneOfField != null) {
@@ -376,11 +370,17 @@ public interface AndroidService {
         }
         existingOneOfField = "registrations";
       }
-      if (this.ack != null) {
+      if (hasStart()) {
         if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "ack");
+          oneOfViolation(existingOneOfField, "start");
         }
-        existingOneOfField = "ack";
+        existingOneOfField = "start";
+      }
+      if (hasStop()) {
+        if (existingOneOfField != null) {
+          oneOfViolation(existingOneOfField, "stop");
+        }
+        existingOneOfField = "stop";
       }
       if (existingOneOfField == null) { oneOfViolation(); }
     }
@@ -748,26 +748,26 @@ public interface AndroidService {
       this.createClient = createClient;
       this.__hazzerBits = hazzerBits;
       String existingOneOfField = null;
-      if (hasNetworkAddrChange()) {
-        existingOneOfField = "network_addr_change";
-      }
       if (this.networkStatus != null) {
-        if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "network_status");
-        }
         existingOneOfField = "network_status";
-      }
-      if (this.createClient != null) {
-        if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "create_client");
-        }
-        existingOneOfField = "create_client";
       }
       if (this.serverMessage != null) {
         if (existingOneOfField != null) {
           oneOfViolation(existingOneOfField, "server_message");
         }
         existingOneOfField = "server_message";
+      }
+      if (hasNetworkAddrChange()) {
+        if (existingOneOfField != null) {
+          oneOfViolation(existingOneOfField, "network_addr_change");
+        }
+        existingOneOfField = "network_addr_change";
+      }
+      if (this.createClient != null) {
+        if (existingOneOfField != null) {
+          oneOfViolation(existingOneOfField, "create_client");
+        }
+        existingOneOfField = "create_client";
       }
       if (existingOneOfField == null) { oneOfViolation(); }
     }
@@ -958,7 +958,13 @@ public interface AndroidService {
         }
         this.__hazzerBits = hazzerBits;
         String existingOneOfField = null;
+        if (hasInvalidateAll()) {
+          existingOneOfField = "invalidate_all";
+        }
         if (this.invalidateUnknown != null) {
+          if (existingOneOfField != null) {
+            oneOfViolation(existingOneOfField, "invalidate_unknown");
+          }
           existingOneOfField = "invalidate_unknown";
         }
         if (this.invalidation != null) {
@@ -966,12 +972,6 @@ public interface AndroidService {
             oneOfViolation(existingOneOfField, "invalidation");
           }
           existingOneOfField = "invalidation";
-        }
-        if (hasInvalidateAll()) {
-          if (existingOneOfField != null) {
-            oneOfViolation(existingOneOfField, "invalidate_all");
-          }
-          existingOneOfField = "invalidate_all";
         }
         if (existingOneOfField == null) { oneOfViolation(); }
       }
@@ -1436,26 +1436,14 @@ public interface AndroidService {
       this.error = error;
       this.__hazzerBits = hazzerBits;
       String existingOneOfField = null;
-      if (this.reissueRegistrations != null) {
-        existingOneOfField = "reissue_registrations";
-      }
       if (hasSerial()) {
-        if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "serial");
-        }
         existingOneOfField = "serial";
       }
-      if (this.registrationFailure != null) {
+      if (this.error != null) {
         if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "registration_failure");
+          oneOfViolation(existingOneOfField, "error");
         }
-        existingOneOfField = "registration_failure";
-      }
-      if (hasReady()) {
-        if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "ready");
-        }
-        existingOneOfField = "ready";
+        existingOneOfField = "error";
       }
       if (this.invalidate != null) {
         if (existingOneOfField != null) {
@@ -1463,17 +1451,29 @@ public interface AndroidService {
         }
         existingOneOfField = "invalidate";
       }
+      if (hasReady()) {
+        if (existingOneOfField != null) {
+          oneOfViolation(existingOneOfField, "ready");
+        }
+        existingOneOfField = "ready";
+      }
+      if (this.registrationFailure != null) {
+        if (existingOneOfField != null) {
+          oneOfViolation(existingOneOfField, "registration_failure");
+        }
+        existingOneOfField = "registration_failure";
+      }
       if (this.registrationStatus != null) {
         if (existingOneOfField != null) {
           oneOfViolation(existingOneOfField, "registration_status");
         }
         existingOneOfField = "registration_status";
       }
-      if (this.error != null) {
+      if (this.reissueRegistrations != null) {
         if (existingOneOfField != null) {
-          oneOfViolation(existingOneOfField, "error");
+          oneOfViolation(existingOneOfField, "reissue_registrations");
         }
-        existingOneOfField = "error";
+        existingOneOfField = "reissue_registrations";
       }
       if (existingOneOfField == null) { oneOfViolation(); }
     }

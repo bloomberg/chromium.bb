@@ -22,11 +22,11 @@ package com.google.ipc.invalidation.external.client.types;
  * accessed using the {@link #getFirst} and {@link #getSecond} methods. Equality
  * and hashing are defined in the natural way.
  *
- * @param <FirstType> The type of the first element
- * @param <SecondType> The type of the second element
+ * @param <T1> The type of the first element
+ * @param <T2> The type of the second element
  *
  */
-public final class SimplePair<FirstType, SecondType> {
+public final class SimplePair<T1, T2> {
   /**
    * Creates a new pair containing the given elements in order.
    */
@@ -38,17 +38,17 @@ public final class SimplePair<FirstType, SecondType> {
   /**
    * The first element of the pair; see also {@link #getFirst}.
    */
-  public final FirstType first;
+  public final T1 first;
 
   /**
    * The second element of the pair; see also {@link #getSecond}.
    */
-  public final SecondType second;
+  public final T2 second;
 
   /**
    * Constructor.  It is usually easier to call {@link #of}.
    */
-  public SimplePair(FirstType first, SecondType second) {
+  public SimplePair(T1 first, T2 second) {
     this.first = first;
     this.second = second;
   }
@@ -56,14 +56,14 @@ public final class SimplePair<FirstType, SecondType> {
   /**
    * Returns the first element of this pair; see also {@link #first}.
    */
-  public FirstType getFirst() {
+  public T1 getFirst() {
     return first;
   }
 
   /**
    * Returns the second element of this pair; see also {@link #second}.
    */
-  public SecondType getSecond() {
+  public T2 getSecond() {
     return second;
   }
 
