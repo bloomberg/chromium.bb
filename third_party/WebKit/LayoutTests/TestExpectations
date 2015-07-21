@@ -3166,7 +3166,7 @@ crbug.com/509025 [ Yosemite ] fast/text/caps-lock-indicator-enabled.html [ Missi
 crbug.com/509025 [ Yosemite ] paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/caps-lock-indicator-disabled.html [ Missing ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/caps-lock-indicator-enabled.html [ Missing ]
-crbug.com/509025 [ Yosemite ] compositing/color-matching/image-color-matching.html [ Failure ]
+crbug.com/509025 compositing/color-matching/image-color-matching.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] compositing/geometry/vertical-scroll-composited.html [ Failure ]
 crbug.com/509025 [ Yosemite ] compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 crbug.com/509025 [ Yosemite ] css1/box_properties/acid_test.html [ Failure ]
