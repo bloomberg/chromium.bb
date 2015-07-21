@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/focus/widget_focus_manager.h"
 
 template <typename T>
@@ -26,6 +27,7 @@ class View;
 
 // Manages a tree of automation nodes.
 class AutomationManagerAura : public extensions::AutomationActionAdapter,
+                              public aura::WindowObserver,
                               public views::WidgetFocusChangeListener {
  public:
   // Get the single instance of this class.
@@ -65,6 +67,9 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
   void SendEvent(content::BrowserContext* context,
                  views::AXAuraObjWrapper* aura_obj,
                  ui::AXEvent event_type);
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
 
   // views::WidgetFocusChangeListener:
   void OnNativeFocusChanged(aura::Window* focused_now) override;

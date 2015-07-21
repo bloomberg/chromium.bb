@@ -150,4 +150,13 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
 
 void AutomationManagerAura::OnNativeFocusChanged(aura::Window* focused_now) {
   focused_window_ = focused_now;
+  if (focused_now && !focused_now->HasObserver(this))
+    focused_now->AddObserver(this);
+}
+
+void AutomationManagerAura::OnWindowDestroying(aura::Window* window) {
+  if (focused_window_ == window) {
+    window->RemoveObserver(this);
+    focused_window_ = nullptr;
+  }
 }
