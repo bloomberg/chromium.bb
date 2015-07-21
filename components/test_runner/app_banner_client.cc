@@ -25,7 +25,8 @@ void AppBannerClient::registerBannerCallbacks(
 void AppBannerClient::ResolvePromise(int request_id,
                                      const std::string& resolve_platform) {
   blink::WebAppBannerCallbacks* callbacks = callbacks_map_.Lookup(request_id);
-  DCHECK(callbacks);
+  if (!callbacks)
+    return;
 
   scoped_ptr<blink::WebAppBannerPromptResult> result(
       new blink::WebAppBannerPromptResult(
