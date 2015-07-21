@@ -64,8 +64,7 @@ SchedulerHelper::SchedulerHelper(
         i, TaskQueueIdToString(static_cast<QueueId>(i)));
   }
 
-  // TODO(skyostil): Increase this to 4 (crbug.com/444764).
-  task_queue_manager_->SetWorkBatchSize(1);
+  task_queue_manager_->SetWorkBatchSize(4);
 
   main_task_runner_->SetDefaultTaskRunner(
       task_queue_manager_->TaskRunnerForQueue(QueueId::DEFAULT_TASK_QUEUE));
