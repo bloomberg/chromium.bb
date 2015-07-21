@@ -841,10 +841,6 @@
     'windows_sandboxing': {
       'filepath': 'sandbox/win/',
     },
-    'worker': {
-      'filepath': 'chrome/browser/worker_host/|chrome/worker/|'\
-        'chrome/common/worker_messages',
-    },
     'x11': {
       'filepath': 'content/browser/renderer_host/backing_store_x\.' \
                   '|chrome/browser/chromeos/input_method/xkeyboard\.' \
@@ -956,7 +952,8 @@
     'content_shell': ['jochen+watch@chromium.org',
                       'mkwst+moarreviews-shell@chromium.org',
                       'mlamouri+watch-content@chromium.org'],
-    'content_worker': ['kinuko+watch@chromium.org'],
+    'content_worker': ['blink-worker-reviews@chromium.org',
+                       'kinuko+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'custom_handlers': ['vabr+watchlist@chromium.org'],
     'custom_tabs': ['ianwen+watch@chromium.org'],
@@ -1146,7 +1143,6 @@
     'website_settings': ['markusheintz@chromium.org',
                          'raymes+watch@chromium.org'],
     'windows_sandboxing': ['wfh+watch@chromium.org'],
-    'worker': ['jam@chromium.org'],
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
