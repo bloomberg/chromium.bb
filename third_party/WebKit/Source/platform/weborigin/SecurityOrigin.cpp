@@ -526,7 +526,7 @@ bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
 
 bool SecurityOrigin::isSameSchemeHostPortAndSuborigin(const SecurityOrigin* other) const
 {
-    return isSameSchemeHostPort(other) && (!hasSuborigin() || suboriginName() == other->suboriginName());
+    return isSameSchemeHostPort(other) && (suboriginName() == other->suboriginName());
 }
 
 const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin()

@@ -208,6 +208,42 @@ SuboriginXHRTest.prototype.execute = function() {
     xhr.send();
 };
 
+// Fetch tests
+var SuboriginFetchTest = function(pass, name, src, crossoriginValue) {
+    SuboriginTest.call(this, pass, "Fetch: " + name, src, crossoriginValue);
+}
+
+SuboriginFetchTest.prototype.execute = function() {
+    var test = async_test(this.name);
+    var options = {};
+
+    if (this.crossoriginValue === 'same-origin') {
+        options.mode = 'same-origin';
+    } else if (this.crossoriginValue === 'anonymous') {
+        options.mode = 'cors';
+    } else if (this.crossoriginValue === 'use-credentials') {
+        options.mode = 'cors';
+        options.credentials = 'include';
+    }
+
+    var pass = this.pass;
+    fetch(this.src, options)
+        .then(function(response) {
+            if (pass) {
+                test.step(function() { test.done(); });
+            } else {
+                test.step(function() { assert_unreached("Bad Fetch succeeded."); test.done(); });
+            }
+        })
+        .catch(function(error) {
+            if (pass) {
+                test.step(function() { assert_unreached("Good Fetch failed."); test.done(); });
+            } else {
+                test.step(function() { test.done(); });
+            }
+        });
+};
+
 // FontFace tests
 var SuboriginFontFaceTest = function(pass, name, src) {
     SuboriginTest.call(this, pass, "FontFace: " + name, src, false);
@@ -216,7 +252,6 @@ var SuboriginFontFaceTest = function(pass, name, src) {
 SuboriginFontFaceTest.prototype.execute = function() {
     var test = async_test(this.name);
     var url = "url('" + this.src + "')";
-    console.log("url = " + url);
     var fontFace = new FontFace("ahem", url);
 
     if (this.pass) {
@@ -351,6 +386,37 @@ new SuboriginXHRTest(
     "<crossorigin='anonymous'>, CORS-ineligible resource",
     xoriginIneligibleScript(),
     "anonymous").execute();
+
+// Fetch tests
+new SuboriginFetchTest(
+    false,
+    "anonymous, ACAO: " + server,
+    xoriginAnonScript(),
+    "anonymous").execute();
+
+new SuboriginFetchTest(
+    true,
+    "anonymous, ACAO: *",
+    xoriginAnonScript('*'),
+    "anonymous").execute();
+
+new SuboriginFetchTest(
+    false,
+    "use-credentials, ACAO: " + server,
+    xoriginCredsScript(),
+    "use-credentials").execute();
+
+new SuboriginFetchTest(
+    false,
+    "anonymous, CORS-ineligible resource",
+    xoriginIneligibleScript(),
+    "anonymous").execute();
+
+new SuboriginFetchTest(
+    false,
+    "same-origin, ACAO: * ",
+    xoriginAnonScript('*'),
+    "same-origin").execute();
 
 // CSS FontFace tests
 new SuboriginFontFaceTest(

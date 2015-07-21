@@ -225,7 +225,7 @@ void FetchManager::Loader::start()
     //    URL flag is set"
     // "- |request|'s url's scheme is 'about'"
     // Note we don't support to call this method with |CORS flag|.
-    if ((SecurityOrigin::create(m_request->url())->isSameSchemeHostPort(m_request->origin().get()))
+    if ((SecurityOrigin::create(m_request->url())->isSameSchemeHostPortAndSuborigin(m_request->origin().get()))
         || (m_request->url().protocolIsData() && m_request->sameOriginDataURLFlag())
         || (m_request->url().protocolIsAbout())) {
         // "The result of performing a basic fetch using request."
