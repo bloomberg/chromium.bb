@@ -8,7 +8,7 @@
     'gles2_conform.gypi',
   ],
   'target_defaults': {
-    'msvs_disabled_warnings': [4005, 4013, 4101, 4716],
+    'msvs_disabled_warnings': [4005, 4013, 4018, 4101, 4716],
      'include_dirs': [
        '<(SHARED_INTERMEDIATE_DIR)/gles2_conform_test_embedded_data',
        '../../third_party/gles2_conform/GTF_ES/glsl/GTF/Source',
@@ -134,6 +134,7 @@
                 'EGLAPIENTRY=',
               ],
               'msvs_disabled_warnings': [
+                4018,  # signed/unsigned mismatch
                 4101,  # unreferenced local variable
                 4715,  # not all control paths return a value
                 4267,  # size_t/unsigned int conversion
