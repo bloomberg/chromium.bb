@@ -235,6 +235,18 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizeTypes) {
   EXPECT_EQ(kWidth * kHeight * 8, size);
   EXPECT_EQ(kWidth * 8, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RGBA, GL_HALF_FLOAT,
+      1, &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 8, size);
+  EXPECT_EQ(kWidth * 8, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RGBA, GL_HALF_FLOAT_OES,
+      1, &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 8, size);
+  EXPECT_EQ(kWidth * 8, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
 }
 
 TEST_F(GLES2UtilTest, ComputeImageDataSizesUnpackAlignment) {

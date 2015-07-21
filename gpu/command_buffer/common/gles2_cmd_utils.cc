@@ -447,6 +447,7 @@ int BytesPerElement(int type) {
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
       return 4;
+    case GL_HALF_FLOAT:
     case GL_HALF_FLOAT_OES:
     case GL_UNSIGNED_SHORT:
     case GL_SHORT:
