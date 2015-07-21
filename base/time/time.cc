@@ -144,7 +144,7 @@ Time Time::FromTimeT(time_t tt) {
     return Time();  // Preserve 0 so we can tell it doesn't exist.
   if (tt == std::numeric_limits<time_t>::max())
     return Max();
-  return Time(kTimeTToMicrosecondsOffset) + TimeDelta::FromSeconds(tt);
+  return Time((tt * kMicrosecondsPerSecond) + kTimeTToMicrosecondsOffset);
 }
 
 time_t Time::ToTimeT() const {
@@ -166,7 +166,11 @@ time_t Time::ToTimeT() const {
 Time Time::FromDoubleT(double dt) {
   if (dt == 0 || std::isnan(dt))
     return Time();  // Preserve 0 so we can tell it doesn't exist.
-  return Time(kTimeTToMicrosecondsOffset) + TimeDelta::FromSecondsD(dt);
+  if (dt == std::numeric_limits<double>::infinity())
+    return Max();
+  return Time(static_cast<int64>((dt *
+                                  static_cast<double>(kMicrosecondsPerSecond)) +
+                                 kTimeTToMicrosecondsOffset));
 }
 
 double Time::ToDoubleT() const {
@@ -193,8 +197,10 @@ Time Time::FromTimeSpec(const timespec& ts) {
 Time Time::FromJsTime(double ms_since_epoch) {
   // The epoch is a valid time, so this constructor doesn't interpret
   // 0 as the null time.
-  return Time(kTimeTToMicrosecondsOffset) +
-         TimeDelta::FromMillisecondsD(ms_since_epoch);
+  if (ms_since_epoch == std::numeric_limits<double>::infinity())
+    return Max();
+  return Time(static_cast<int64>(ms_since_epoch * kMicrosecondsPerMillisecond) +
+              kTimeTToMicrosecondsOffset);
 }
 
 double Time::ToJsTime() const {
