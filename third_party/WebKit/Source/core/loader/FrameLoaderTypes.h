@@ -64,6 +64,11 @@ enum ShouldSendReferrer {
     NeverSendReferrer
 };
 
+enum CreateWindowReason {
+    CreatedFromWindowOpen,
+    CreatedFromLoadRequest
+};
+
 enum ReasonForCallingAllowPlugins {
     AboutToInstantiatePlugin,
     NotAboutToInstantiatePlugin

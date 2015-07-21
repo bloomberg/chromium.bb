@@ -47,7 +47,7 @@
 
 namespace blink {
 
-static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
+static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, CreateWindowReason createWindowReason)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
     ASSERT(request.resourceRequest().requestorOrigin() || openerFrame.document()->url().isEmpty());
@@ -81,7 +81,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (!oldHost)
         return nullptr;
 
-    Page* page = oldHost->chromeClient().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
+    Page* page = oldHost->chromeClient().createWindow(&openerFrame, request, features, policy, shouldSendReferrer, createWindowReason);
     if (!page)
         return nullptr;
     FrameHost* host = &page->frameHost();
@@ -111,7 +111,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
     host->chromeClient().setWindowRectWithAdjustment(windowRect);
-    host->chromeClient().show(policy);
+    host->chromeClient().show(policy, createWindowReason);
 
     // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate
     // to the real frame in a different process. See crbug.com/483584.
@@ -151,7 +151,7 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
 
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
-    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer);
+    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, CreatedFromWindowOpen);
     if (!newFrame)
         return nullptr;
 
@@ -179,7 +179,7 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
         policy = NavigationPolicyNewForegroundTab;
 
     WindowFeatures features;
-    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer);
+    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, CreatedFromLoadRequest);
     if (!newFrame)
         return;
     if (shouldSendReferrer == MaybeSendReferrer) {
