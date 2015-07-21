@@ -291,8 +291,6 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
-crbug.com/484953 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-004.html [ Failure ]
-
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
@@ -949,8 +947,6 @@ crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure 
 crbug.com/345646 fast/repaint/selection-after-remove.html [ Pass Failure ]
 
 crbug.com/345767 fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failure ]
-
-crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Pass Timeout ]
 
