@@ -74,7 +74,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     target_name = base::UTF8ToUTF16(content::IsOriginSecure(origin) ?
         net::GetHostAndOptionalPort(origin) : origin.spec());
 
-    if (!params->target_tab->id) {
+    if (!params->target_tab->id ||
+        *params->target_tab->id == api::tabs::TAB_ID_NONE) {
       error_ = kNoTabIdError;
       return false;
     }

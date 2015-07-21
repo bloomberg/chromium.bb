@@ -315,6 +315,9 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser && !ExtensionTabUtil::BrowserSupportsTabs(browser))
+    return -1;
   return SessionTabHelper::IdForTab(web_contents);
 }
 
@@ -489,6 +492,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
                                   TabStripModel** tab_strip,
                                   WebContents** contents,
                                   int* tab_index) {
+  if (tab_id == api::tabs::TAB_ID_NONE)
+    return false;
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
@@ -636,6 +641,11 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
   params.url = url_to_navigate;
   chrome::ShowSingletonTabOverwritingNTP(browser, params);
   return true;
+}
+
+// static
+bool ExtensionTabUtil::BrowserSupportsTabs(Browser* browser) {
+  return browser && browser->tab_strip_model() && !browser->is_devtools();
 }
 
 }  // namespace extensions

@@ -16,6 +16,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -35,6 +35,8 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/test_util.h"
+#include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -44,7 +46,7 @@ namespace keys = tabs_constants;
 namespace utils = extension_function_test_utils;
 
 namespace {
-using ExtensionTabsTest = InProcessBrowserTest;
+using ExtensionTabsTest = ExtensionApiTest;
 
 class ExtensionWindowCreateTest : public InProcessBrowserTest {
  public:
@@ -741,6 +743,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   // The test empty extension has no permissions, therefore |duplicate_result|
   // should not contain url, title, and faviconUrl in the function result.
   EXPECT_FALSE(utils::HasPrivacySensitiveFields(duplicate_result.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsEventOnDevTools) {
+  extensions::ResultCatcher catcher;
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("tabs/no_events")));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+
+  listener.Reply("stop");
+
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 // Tester class for the tabs.zoom* api functions.
