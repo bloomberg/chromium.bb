@@ -356,7 +356,8 @@ class GSContext(object):
     self.retries = self.DEFAULT_RETRIES if retries is None else int(retries)
     self._sleep_time = self.DEFAULT_SLEEP_TIME if sleep is None else int(sleep)
 
-    if init_boto:
+    if init_boto and not dry_run:
+      # We can't really expect gsutil to even be present in dry_run mode.
       self._InitBoto()
 
   @property
