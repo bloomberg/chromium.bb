@@ -75,8 +75,9 @@ bool CameraDetector::CheckPresence() {
     std::string v4l_capabilities;
     if (storage_monitor::GetUdevDevicePropertyValueByPath(
             path, kV4LCapabilities, &v4l_capabilities)) {
-      std::vector<std::string> caps;
-      base::SplitString(v4l_capabilities, kV4LCapabilitiesDelim, &caps);
+      std::vector<std::string> caps = base::SplitString(
+          v4l_capabilities, std::string(1, kV4LCapabilitiesDelim),
+          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if (find(caps.begin(), caps.end(), kV4LCaptureCapability) != caps.end()) {
         return true;
       }

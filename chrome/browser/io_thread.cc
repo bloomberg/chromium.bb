@@ -314,16 +314,14 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
   static const char kDisableAltProtocols[] = "no-alt-protocols";
   static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
 
-  std::vector<std::string> spdy_options;
-  base::SplitString(mode, ',', &spdy_options);
-
-  for (const std::string& element : spdy_options) {
-    std::vector<std::string> name_value;
-    base::SplitString(element, '=', &name_value);
-    const std::string& option =
-        name_value.size() > 0 ? name_value[0] : std::string();
-    const std::string value =
-        name_value.size() > 1 ? name_value[1] : std::string();
+  for (const base::StringPiece& element : base::SplitStringPiece(
+           mode, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::vector<base::StringPiece> name_value = base::SplitStringPiece(
+        element, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    const base::StringPiece option =
+        name_value.size() > 0 ? name_value[0] : base::StringPiece();
+    const base::StringPiece value =
+        name_value.size() > 1 ? name_value[1] : base::StringPiece();
 
     if (option == kOff) {
       net::HttpStreamFactory::set_spdy_enabled(false);
@@ -335,7 +333,7 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
     }
     if (option == kExclude) {
       globals->forced_spdy_exclusions.insert(
-          net::HostPortPair::FromURL(GURL(value)));
+          net::HostPortPair::FromURL(GURL(value.as_string())));
       continue;
     }
     if (option == kDisableCompression) {
@@ -353,7 +351,7 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
         continue;
       }
     }
-    LOG(DFATAL) << "Unrecognized spdy option: " << option;
+    LOG(DFATAL) << "Unrecognized spdy option: " << option.as_string();
   }
 }
 
@@ -688,13 +686,10 @@ void IOThread::Init() {
   if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
     std::string switch_value = command_line.GetSwitchValueASCII(
         switches::kCertificateTransparencyLog);
-    std::vector<std::string> logs;
-    base::SplitString(switch_value, ',', &logs);
-    for (std::vector<std::string>::iterator it = logs.begin(); it != logs.end();
-         ++it) {
-      const std::string& curr_log = *it;
-      std::vector<std::string> log_metadata;
-      base::SplitString(curr_log, ':', &log_metadata);
+    for (const base::StringPiece& curr_log : base::SplitStringPiece(
+             switch_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      std::vector<std::string> log_metadata = base::SplitString(
+          curr_log, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       CHECK_GE(log_metadata.size(), 3u)
           << "CT log metadata missing: Switch format is "
           << "'description:base64_key:url_without_schema'.";

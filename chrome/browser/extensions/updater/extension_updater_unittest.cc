@@ -557,11 +557,10 @@ static const int kUpdateFrequencySecs = 15;
 // "foo", and "c" to "".
 static void ExtractParameters(const std::string& params,
                               std::map<std::string, std::string>* result) {
-  std::vector<std::string> pairs;
-  base::SplitString(params, '&', &pairs);
-  for (size_t i = 0; i < pairs.size(); i++) {
-    std::vector<std::string> key_val;
-    base::SplitString(pairs[i], '=', &key_val);
+  for (const std::string& pair : base::SplitString(
+           params, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::vector<std::string> key_val = base::SplitString(
+        pair, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (!key_val.empty()) {
       std::string key = key_val[0];
       EXPECT_TRUE(result->find(key) == result->end());

@@ -420,8 +420,8 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
       if (tags_list->GetString(index, &tag) &&
           base::StartsWith(tag, kCloudPrintServiceTagsHashTagName,
                            base::CompareCase::INSENSITIVE_ASCII)) {
-        std::vector<std::string> tag_parts;
-        base::SplitStringDontTrim(tag, '=', &tag_parts);
+        std::vector<std::string> tag_parts = base::SplitString(
+            tag, "=", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
         DCHECK_EQ(tag_parts.size(), 2U);
         if (tag_parts.size() == 2)
           printer_info_cloud.tags_hash = tag_parts[1];

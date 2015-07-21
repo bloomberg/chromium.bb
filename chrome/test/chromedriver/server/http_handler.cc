@@ -742,10 +742,10 @@ bool MatchesCommand(const std::string& method,
   if (!MatchesMethod(command.method, method))
     return false;
 
-  std::vector<std::string> path_parts;
-  base::SplitString(path, '/', &path_parts);
-  std::vector<std::string> command_path_parts;
-  base::SplitString(command.path_pattern, '/', &command_path_parts);
+  std::vector<std::string> path_parts = base::SplitString(
+      path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> command_path_parts = base::SplitString(
+      command.path_pattern, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (path_parts.size() != command_path_parts.size())
     return false;
 

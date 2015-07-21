@@ -58,12 +58,8 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
 
     // Pull off the TLD and the preceeding dot.
     host.erase(tld_start - 1);
-    std::vector<std::string> host_tokens;
-    base::SplitStringDontTrim(host, '.', &host_tokens);
-    // Get rid of any empty components.
-    std::vector<std::string>::iterator new_end =
-        std::remove(host_tokens.begin(), host_tokens.end(), "");
-    host_tokens.erase(new_end, host_tokens.end());
+    std::vector<std::string> host_tokens = base::SplitString(
+        host, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (host_tokens.empty()) {
       DVLOG(1) << "Could not find domain for host: " << host;
       return false;

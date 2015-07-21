@@ -193,16 +193,17 @@ void GeneratedCreditCardBubbleController::SetupAndShow(
 
   // Split the full text on '|' to highlight certain parts. For example, "sly"
   // and "jumped" would be bolded in "The |sly| fox |jumped| over the lazy dog".
-  std::vector<base::string16> pieces;
-  base::SplitStringDontTrim(to_split, kRangeSeparator, &pieces);
+  std::vector<base::string16> pieces = base::SplitString(
+      to_split, base::string16(1, kRangeSeparator),
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 
   while (!pieces.empty()) {
     base::string16 piece = pieces.front();
 
-    // Every second piece should be bolded. Because |base::SplitString*()|
-    // leaves an empty "" even if '|' is the first character, this is guaranteed
-    // to work for "|highlighting| starts here". Ignore empty pieces because
-    // there's nothing to highlight.
+    // Every second piece should be bolded. Because SPLIT_WANT_ALL makes
+    // SplitString leave an empty "" even if '|' is the first character, this
+    // is guaranteed to work for "|highlighting| starts here". Ignore empty
+    // pieces because there's nothing to highlight.
     if (!piece.empty() && pieces.size() % 2 == 0) {
       const size_t start = contents_text_.size();
       TextRange bold_text;

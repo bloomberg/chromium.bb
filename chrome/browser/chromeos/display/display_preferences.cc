@@ -121,8 +121,8 @@ void LoadDisplayLayouts() {
     }
 
     if (it.key().find(",") != std::string::npos) {
-      std::vector<std::string> ids;
-      base::SplitString(it.key(), ',', &ids);
+      std::vector<std::string> ids = base::SplitString(
+          it.key(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       int64 id1 = gfx::Display::kInvalidDisplayID;
       int64 id2 = gfx::Display::kInvalidDisplayID;
       if (!base::StringToInt64(ids[0], &id1) ||

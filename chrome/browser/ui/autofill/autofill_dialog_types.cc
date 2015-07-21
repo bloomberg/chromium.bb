@@ -28,8 +28,9 @@ DialogNotification::DialogNotification(Type type,
       display_text_(display_text),
       checked_(false) {
   // If there's a range separated by bars, mark that as the anchor text.
-  std::vector<base::string16> pieces;
-  base::SplitStringDontTrim(display_text, kRangeSeparator, &pieces);
+  std::vector<base::string16> pieces = base::SplitString(
+      display_text, base::string16(1, kRangeSeparator),
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (pieces.size() > 1) {
     size_t start = pieces[0].size();
     size_t end = start + pieces[1].size();

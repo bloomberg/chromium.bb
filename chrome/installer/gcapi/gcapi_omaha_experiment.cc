@@ -42,9 +42,10 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   }
 
   // Split the original labels by the label separator.
-  std::vector<base::string16> entries;
-  base::SplitString(original_labels, google_update::kExperimentLabelSeparator,
-                    &entries);
+  std::vector<base::string16> entries = base::SplitString(
+      original_labels,
+      base::string16(1, google_update::kExperimentLabelSeparator),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Keep all labels, but the one we want to add/replace.
   base::string16 label_and_separator(label);

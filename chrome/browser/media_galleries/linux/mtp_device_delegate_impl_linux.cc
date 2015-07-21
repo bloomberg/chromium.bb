@@ -1832,8 +1832,8 @@ base::FilePath MTPDeviceDelegateImplLinux::NextUncachedPathComponent(
   std::string device_relpath = GetDeviceRelativePath(device_path_, path);
   if (!device_relpath.empty() && device_relpath != kRootPath) {
     uncached_path = device_path_;
-    std::vector<std::string> device_relpath_components;
-    base::SplitString(device_relpath, '/', &device_relpath_components);
+    std::vector<std::string> device_relpath_components = base::SplitString(
+        device_relpath, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     DCHECK(!device_relpath_components.empty());
     bool all_components_cached = true;
     const MTPFileNode* current_node = root_node_.get();
@@ -1879,8 +1879,10 @@ bool MTPDeviceDelegateImplLinux::CachedPathToId(const base::FilePath& path,
   if (device_relpath.empty())
     return false;
   std::vector<std::string> device_relpath_components;
-  if (device_relpath != kRootPath)
-    base::SplitString(device_relpath, '/', &device_relpath_components);
+  if (device_relpath != kRootPath) {
+    device_relpath_components = base::SplitString(
+        device_relpath, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
   const MTPFileNode* current_node = root_node_.get();
   for (size_t i = 0; i < device_relpath_components.size(); ++i) {
     current_node = current_node->GetChild(device_relpath_components[i]);

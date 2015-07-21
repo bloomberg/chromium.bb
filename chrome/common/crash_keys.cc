@@ -433,8 +433,8 @@ void SetActiveExtensions(const std::set<std::string>& extensions) {
 }
 
 ScopedPrinterInfo::ScopedPrinterInfo(const base::StringPiece& data) {
-  std::vector<std::string> info;
-  base::SplitString(data.as_string(), ';', &info);
+  std::vector<std::string> info = base::SplitString(
+      data.as_string(), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t i = 0; i < kPrinterInfoCount; ++i) {
     std::string key = base::StringPrintf(kPrinterInfo, i + 1);
     std::string value;

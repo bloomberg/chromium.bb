@@ -606,8 +606,8 @@ void InputMethodManagerImpl::StateImpl::SetInputMethodLoginDefaultFromVPD(
   if (layout.empty())
     return;
 
-  std::vector<std::string> layouts;
-  base::SplitString(layout, ',', &layouts);
+  std::vector<std::string> layouts = base::SplitString(
+      layout, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   manager_->MigrateInputMethods(&layouts);
 
   PrefService* prefs = g_browser_process->local_state();

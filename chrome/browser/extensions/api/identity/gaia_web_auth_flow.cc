@@ -52,8 +52,8 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
 
   std::vector<std::string> scopes(token_key->scopes.begin(),
                                   token_key->scopes.end());
-  std::vector<std::string> client_id_parts;
-  base::SplitString(oauth2_client_id, '.', &client_id_parts);
+  std::vector<std::string> client_id_parts = base::SplitString(
+      oauth2_client_id, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::reverse(client_id_parts.begin(), client_id_parts.end());
   redirect_scheme_ = base::JoinString(client_id_parts, ".");
   std::string signin_scoped_device_id;

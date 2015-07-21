@@ -484,9 +484,9 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
 
     if (test.pref_value_before) {
       base::ListValue list_value;
-      std::vector<std::string> list_components;
-      base::SplitString(test.pref_value_before, ',', &list_components);
-      for (const std::string& component : list_components)
+      for (const std::string& component : base::SplitString(
+               test.pref_value_before, ",",
+               base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
         list_value.AppendString(component);
       prefs.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
     }
@@ -500,9 +500,9 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
                                          base::Version(test.version), seed));
 
     base::ListValue expected_list_value;
-    std::vector<std::string> list_components;
-    base::SplitString(test.expected_pref_value_after, ',', &list_components);
-    for (const std::string& component : list_components)
+    for (const std::string& component : base::SplitString(
+             test.expected_pref_value_after, ",",
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
       expected_list_value.AppendString(component);
     EXPECT_TRUE(expected_list_value.Equals(
         prefs.GetList(prefs::kVariationsPermanentConsistencyCountry)));

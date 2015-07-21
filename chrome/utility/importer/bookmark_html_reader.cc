@@ -96,8 +96,8 @@ void ImportBookmarksFile(
     favicon_base::FaviconUsageDataList* favicons) {
   std::string content;
   base::ReadFileToString(file_path, &content);
-  std::vector<std::string> lines;
-  base::SplitString(content, '\n', &lines);
+  std::vector<std::string> lines = base::SplitString(
+      content, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   base::string16 last_folder;
   bool last_folder_on_toolbar = false;

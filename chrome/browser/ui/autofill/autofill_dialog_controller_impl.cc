@@ -295,11 +295,9 @@ const wallet::Address* FindDuplicateAddress(
 }
 
 bool IsCardHolderNameValidForWallet(const base::string16& name) {
-  base::string16 whitespace_collapsed_name =
-      base::CollapseWhitespace(name, true);
-  std::vector<base::string16> split_name;
-  base::SplitString(whitespace_collapsed_name, ' ', &split_name);
-  return split_name.size() >= 2;
+  return base::SplitStringPiece(name, base::string16(1, ' '),
+                                base::KEEP_WHITESPACE,
+                                base::SPLIT_WANT_NONEMPTY).size() >= 2;
 }
 
 DialogSection SectionFromLocation(wallet::FormFieldError::Location location) {

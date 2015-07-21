@@ -150,8 +150,9 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   ASSERT_EQ(std::string::npos, exec_value.find('"'));
   ASSERT_EQ(std::string::npos, exec_value.find('\''));
 
-  base::CommandLine::StringVector argv;
-  base::SplitString(exec_value, ' ', &argv);
+  base::CommandLine::StringVector argv = base::SplitString(
+      exec_value, base::CommandLine::StringType(1, ' '),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   ASSERT_GE(argv.size(), 2U)
       << "Expected at least one command-line option in: " << exec_value;
   autorun_command_line.reset(new base::CommandLine(argv));

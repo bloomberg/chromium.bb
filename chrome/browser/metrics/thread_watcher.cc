@@ -492,11 +492,10 @@ void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
     uint32 default_crash_seconds,
     CrashOnHangThreadMap* crash_on_hang_threads) {
   base::StringTokenizer tokens(crash_on_hang_thread_names, ",");
-  std::vector<std::string> values;
   while (tokens.GetNext()) {
-    const std::string& token = tokens.token();
-    base::SplitString(token, ':', &values);
-    std::string thread_name = values[0];
+    std::vector<base::StringPiece> values = base::SplitStringPiece(
+        tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::string thread_name = values[0].as_string();
 
     uint32 live_threads_threshold = default_live_threads_threshold;
     uint32 crash_seconds = default_crash_seconds;

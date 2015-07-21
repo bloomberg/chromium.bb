@@ -137,9 +137,9 @@ void GetSupportedCodecsForPepperCdm(
         DLOG(WARNING) << "Non-UTF-8 codecs string.";
         // Continue using the best effort conversion.
       }
-      base::SplitString(codecs_string,
-                        kCdmSupportedCodecsValueDelimiter,
-                        codecs);
+      *codecs = base::SplitString(
+          codecs_string, std::string(1, kCdmSupportedCodecsValueDelimiter),
+          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       break;
     }
   }

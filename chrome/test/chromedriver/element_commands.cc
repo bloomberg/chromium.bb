@@ -334,11 +334,11 @@ Status ExecuteSendKeysToElement(
     }
 
     // Separate the string into separate paths, delimited by '\n'.
-    std::vector<base::FilePath::StringType> path_strings;
-    base::SplitString(paths_string, '\n', &path_strings);
     std::vector<base::FilePath> paths;
-    for (size_t i = 0; i < path_strings.size(); ++i)
-      paths.push_back(base::FilePath(path_strings[i]));
+    for (const auto& path_piece : base::SplitStringPiece(
+             paths_string, base::FilePath::StringType(1, '\n'),
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+      paths.push_back(base::FilePath(path_piece));
 
     bool multiple = false;
     status = IsElementAttributeEqualToIgnoreCase(

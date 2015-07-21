@@ -46,10 +46,11 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
   const base::string16 recipient_name =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, Name);
 
-  std::vector<base::string16> address_lines;
   const base::string16 street_address =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, StreetAddress);
-  base::SplitString(street_address, base::char16('\n'), &address_lines);
+  std::vector<base::string16> address_lines = base::SplitString(
+      street_address, base::string16(1, '\n'),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   const base::string16 locality_name =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, Locality);

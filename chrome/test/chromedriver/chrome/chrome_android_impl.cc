@@ -37,8 +37,9 @@ std::string ChromeAndroidImpl::GetOperatingSystemName() {
 bool ChromeAndroidImpl::HasTouchScreen() const {
   const BrowserInfo* browser_info = GetBrowserInfo();
   if (browser_info->browser_name == "webview") {
-    std::vector<std::string> version_parts;
-    base::SplitString(browser_info->browser_version, '.', &version_parts);
+    std::vector<base::StringPiece> version_parts = base::SplitStringPiece(
+        browser_info->browser_version, ".",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     int major_version;
     if (version_parts.size() != 4 ||
         !base::StringToInt(version_parts[0], &major_version)) {

@@ -78,10 +78,9 @@ int LanguageList::GetIndexFromLocale(const std::string& locale) const {
 
 void LanguageList::CopySpecifiedLanguagesUp(const std::string& locale_codes) {
   DCHECK(!locale_names_.empty());
-  std::vector<std::string> locale_codes_vector;
-  base::SplitString(locale_codes, ',', &locale_codes_vector);
-  for (size_t i = 0; i != locale_codes_vector.size(); ++i) {
-    const int locale_index = GetIndexFromLocale(locale_codes_vector[i]);
+  for (const std::string& code : base::SplitString(
+           locale_codes, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    const int locale_index = GetIndexFromLocale(code);
     CHECK_NE(locale_index, -1);
     locale_names_.insert(locale_names_.begin(), locale_names_[locale_index]);
   }

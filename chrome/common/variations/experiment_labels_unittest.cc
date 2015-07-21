@@ -57,8 +57,9 @@ TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     // Parse the input groups.
     base::FieldTrial::ActiveGroups groups;
-    std::vector<std::string> group_data;
-    base::SplitString(test_cases[i].active_group_pairs, '#', &group_data);
+    std::vector<std::string> group_data = base::SplitString(
+        test_cases[i].active_group_pairs, "#",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     ASSERT_EQ(0U, group_data.size() % 2);
     for (size_t j = 0; j < group_data.size(); j += 2) {
       base::FieldTrial::ActiveGroup group;
@@ -68,26 +69,26 @@ TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
     }
 
     // Parse the expected output.
-    std::vector<std::string> expected_ids_list;
-    base::SplitString(test_cases[i].expected_ids, '#', &expected_ids_list);
+    std::vector<std::string> expected_ids_list = base::SplitString(
+        test_cases[i].expected_ids, "#",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     std::string experiment_labels_string = base::UTF16ToUTF8(
         BuildGoogleUpdateExperimentLabel(groups));
 
     // Split the VariationIDs from the labels for verification below.
-    std::vector<std::string> split_labels;
     std::set<std::string> parsed_ids;
-    base::SplitString(experiment_labels_string, ';', &split_labels);
-    for (std::vector<std::string>::const_iterator it = split_labels.begin();
-         it != split_labels.end(); ++it) {
+    for (const std::string& label : base::SplitString(
+             experiment_labels_string, ";",
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       // The ID is precisely between the '=' and '|' characters in each label.
-      size_t index_of_equals = it->find('=');
-      size_t index_of_pipe = it->find('|');
+      size_t index_of_equals = label.find('=');
+      size_t index_of_pipe = label.find('|');
       ASSERT_NE(std::string::npos, index_of_equals);
       ASSERT_NE(std::string::npos, index_of_pipe);
       ASSERT_GT(index_of_pipe, index_of_equals);
-      parsed_ids.insert(it->substr(index_of_equals + 1,
-                                   index_of_pipe - index_of_equals - 1));
+      parsed_ids.insert(label.substr(index_of_equals + 1,
+                                     index_of_pipe - index_of_equals - 1));
     }
 
     // Verify that the resulting string contains each of the expected labels,

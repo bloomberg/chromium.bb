@@ -39,7 +39,7 @@ namespace {
 
 // Sizes a single size (the width or height) from a 'sizes' attribute. A size
 // matches must match the following regex: [1-9][0-9]*.
-int ParseSingleIconSize(const base::string16& text) {
+int ParseSingleIconSize(const base::StringPiece16& text) {
   // Size must not start with 0, and be between 0 and 9.
   if (text.empty() || !(text[0] >= L'1' && text[0] <= L'9'))
     return 0;
@@ -59,8 +59,9 @@ int ParseSingleIconSize(const base::string16& text) {
 // [1-9][0-9]*x[1-9][0-9]*.
 // If the input couldn't be parsed, a size with a width/height == 0 is returned.
 gfx::Size ParseIconSize(const base::string16& text) {
-  std::vector<base::string16> sizes;
-  base::SplitStringDontTrim(text, L'x', &sizes);
+  std::vector<base::StringPiece16> sizes = base::SplitStringPiece(
+      text, base::string16(1, 'x'),
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (sizes.size() != 2)
     return gfx::Size();
 
@@ -99,8 +100,9 @@ bool ParseIconSizes(const base::string16& text,
                     std::vector<gfx::Size>* sizes,
                     bool* is_any) {
   *is_any = false;
-  std::vector<base::string16> size_strings;
-  base::SplitStringAlongWhitespace(text, &size_strings);
+  std::vector<base::string16> size_strings = base::SplitString(
+      text, base::kWhitespaceASCIIAs16,
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (size_t i = 0; i < size_strings.size(); ++i) {
     if (base::EqualsASCII(size_strings[i], "any")) {
       *is_any = true;

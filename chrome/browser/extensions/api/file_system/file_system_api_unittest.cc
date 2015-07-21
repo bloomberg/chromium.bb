@@ -61,13 +61,15 @@ AcceptOption* BuildAcceptOption(const std::string& description,
     option->description.reset(new std::string(description));
 
   if (!mime_types.empty()) {
-    option->mime_types.reset(new std::vector<std::string>());
-    base::SplitString(mime_types, ',', option->mime_types.get());
+    option->mime_types.reset(new std::vector<std::string>(
+        base::SplitString(mime_types, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)));
   }
 
   if (!extensions.empty()) {
-    option->extensions.reset(new std::vector<std::string>());
-    base::SplitString(extensions, ',', option->extensions.get());
+    option->extensions.reset(new std::vector<std::string>(
+        base::SplitString(extensions, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)));
   }
 
   return option;

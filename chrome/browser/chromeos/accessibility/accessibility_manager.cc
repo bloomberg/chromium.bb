@@ -827,10 +827,9 @@ void AccessibilityManager::UpdateBrailleImeState() {
   if (!profile_)
     return;
   PrefService* pref_service = profile_->GetPrefs();
-  std::vector<std::string> preload_engines;
-  base::SplitString(pref_service->GetString(prefs::kLanguagePreloadEngines),
-                    ',',
-                    &preload_engines);
+  std::vector<std::string> preload_engines =
+      base::SplitString(pref_service->GetString(prefs::kLanguagePreloadEngines),
+                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::vector<std::string>::iterator it =
       std::find(preload_engines.begin(),
                 preload_engines.end(),

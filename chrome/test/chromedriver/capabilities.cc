@@ -294,8 +294,8 @@ Status ParseUseRemoteBrowser(const base::Value& option,
   if (!option.GetAsString(&server_addr))
     return Status(kUnknownError, "must be 'host:port'");
 
-  std::vector<std::string> values;
-  base::SplitString(server_addr, ':', &values);
+  std::vector<std::string> values = base::SplitString(
+      server_addr, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (values.size() != 2)
     return Status(kUnknownError, "must be 'host:port'");
 

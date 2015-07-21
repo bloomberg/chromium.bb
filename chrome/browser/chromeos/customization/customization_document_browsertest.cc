@@ -215,8 +215,8 @@ class CustomizationVPDTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(CustomizationVPDTest, GetUILanguageList) {
-  std::vector<std::string> locales;
-  base::SplitString(GetParam(), ',', &locales);
+  std::vector<std::string> locales = base::SplitString(
+      GetParam(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (std::string& l : locales) {
     base::TrimString(l, " ", &l);

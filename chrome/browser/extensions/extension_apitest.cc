@@ -94,11 +94,9 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
   std::string cookie_value =
       request.relative_url.substr(query_string_pos + 1);
 
-  std::vector<std::string> cookies;
-  base::SplitString(cookie_value, '&', &cookies);
-
-  for (size_t i = 0; i < cookies.size(); i++)
-    http_response->AddCustomHeader("Set-Cookie", cookies[i]);
+  for (const std::string& cookie : base::SplitString(
+           cookie_value, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+    http_response->AddCustomHeader("Set-Cookie", cookie);
 
   return http_response.Pass();
 }

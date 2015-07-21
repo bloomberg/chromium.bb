@@ -177,19 +177,17 @@ SkColor TintForUnderline(SkColor input) {
 
 // static
 int ThemeProperties::StringToAlignment(const std::string& alignment) {
-  std::vector<std::string> split;
-  base::SplitStringAlongWhitespace(alignment, &split);
-
   int alignment_mask = 0;
-  for (std::vector<std::string>::iterator component(split.begin());
-       component != split.end(); ++component) {
-    if (base::LowerCaseEqualsASCII(*component, kAlignmentTop))
+  for (const std::string& component : base::SplitString(
+           alignment, base::kWhitespaceASCII,
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    if (base::LowerCaseEqualsASCII(component, kAlignmentTop))
       alignment_mask |= ALIGN_TOP;
-    else if (base::LowerCaseEqualsASCII(*component, kAlignmentBottom))
+    else if (base::LowerCaseEqualsASCII(component, kAlignmentBottom))
       alignment_mask |= ALIGN_BOTTOM;
-    else if (base::LowerCaseEqualsASCII(*component, kAlignmentLeft))
+    else if (base::LowerCaseEqualsASCII(component, kAlignmentLeft))
       alignment_mask |= ALIGN_LEFT;
-    else if (base::LowerCaseEqualsASCII(*component, kAlignmentRight))
+    else if (base::LowerCaseEqualsASCII(component, kAlignmentRight))
       alignment_mask |= ALIGN_RIGHT;
   }
   return alignment_mask;

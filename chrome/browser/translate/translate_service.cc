@@ -107,9 +107,9 @@ bool TranslateService::IsTranslateBubbleEnabled() {
 
 // static
 std::string TranslateService::GetTargetLanguage(PrefService* prefs) {
-  std::vector<std::string> accept_languages_list;
-  base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ',',
-                    &accept_languages_list);
+  std::vector<std::string> accept_languages_list = base::SplitString(
+      prefs->GetString(prefs::kAcceptLanguages), ",",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   return translate::TranslateManager::GetTargetLanguage(accept_languages_list);
 }
 

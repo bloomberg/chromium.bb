@@ -156,12 +156,11 @@ bool CheckForCompatibleVersion(const base::DictionaryValue& manifest,
   DLOG_IF(WARNING, versions_string.empty())
       << "Widevine CDM component manifest has empty " << version_name;
 
-  std::vector<std::string> versions;
-  base::SplitString(versions_string, kCdmValueDelimiter, &versions);
-
-  for (size_t i = 0; i < versions.size(); ++i) {
+  for (const base::StringPiece& ver_str : base::SplitStringPiece(
+           versions_string, std::string(1, kCdmValueDelimiter),
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     int version = 0;
-    if (base::StringToInt(versions[i], &version))
+    if (base::StringToInt(ver_str, &version))
       if (version_check_func(version))
         return true;
   }

@@ -45,8 +45,8 @@ bool I18nGetAcceptLanguagesFunction::RunSync() {
     return false;
   }
 
-  std::vector<std::string> languages;
-  base::SplitString(accept_languages, ',', &languages);
+  std::vector<std::string> languages = base::SplitString(
+      accept_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   languages.erase(std::remove(languages.begin(), languages.end(), ""),
                   languages.end());
 

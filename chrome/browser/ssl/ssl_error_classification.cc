@@ -319,9 +319,8 @@ size_t SSLErrorClassification::FindSubDomainDifference(
 
 SSLErrorClassification::Tokens SSLErrorClassification::
 Tokenize(const std::string& name) {
-  Tokens name_tokens;
-  base::SplitStringDontTrim(name, '.', &name_tokens);
-  return name_tokens;
+  return base::SplitString(
+      name, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 }
 
 // We accept the inverse case for www for historical reasons.

@@ -149,15 +149,13 @@ void TermsOfServiceScreenHandler::OnLanguageChangedCallback(
 
 void TermsOfServiceScreenHandler::DoShow() {
   // Determine the user's most preferred input method.
-  std::vector<std::string> input_methods;
-  base::SplitString(
+  std::vector<std::string> input_methods = base::SplitString(
       ProfileHelper::Get()
           ->GetProfileByUserUnsafe(
               user_manager::UserManager::Get()->GetActiveUser())
           ->GetPrefs()
           ->GetString(prefs::kLanguagePreloadEngines),
-      ',',
-      &input_methods);
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (!input_methods.empty()) {
     // If the user has a preferred input method, enable it and switch to it.

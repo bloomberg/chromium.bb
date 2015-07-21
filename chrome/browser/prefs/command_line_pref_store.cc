@@ -176,23 +176,19 @@ void CommandLinePrefStore::ApplyProxyMode() {
 
 void CommandLinePrefStore::ApplySSLSwitches() {
   if (command_line_->HasSwitch(switches::kCipherSuiteBlacklist)) {
-    std::string cipher_suites =
-        command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist);
-    std::vector<std::string> cipher_strings;
-    base::SplitString(cipher_suites, ',', &cipher_strings);
     scoped_ptr<base::ListValue> list_value(new base::ListValue());
-    for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
-         it != cipher_strings.end(); ++it) {
-      list_value->AppendString(*it);
-    }
+    list_value->AppendStrings(base::SplitString(
+        command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
+        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
     SetValue(prefs::kCipherSuiteBlacklist, list_value.Pass(),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
-  if (command_line_->HasSwitch(switches::kDisableExtensions))
+  if (command_line_->HasSwitch(switches::kDisableExtensions)) {
     SetValue(prefs::kBackgroundModeEnabled,
              make_scoped_ptr(new base::FundamentalValue(false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  }
 }

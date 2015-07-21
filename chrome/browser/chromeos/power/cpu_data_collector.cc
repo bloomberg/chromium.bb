@@ -232,22 +232,21 @@ void SampleCpuFreqData(
 
       freq_sample.time = now;
 
-      std::vector<std::string> lines;
-      base::SplitString(time_in_state_string, '\n', &lines);
+      std::vector<base::StringPiece> lines =
+          base::SplitStringPiece(time_in_state_string, "\n",
+                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       // The last line could end with '\n'. Ignore the last empty string in
       // such cases.
       size_t state_count = lines.size();
       if (state_count > 0 && lines.back().empty())
         state_count -= 1;
       for (size_t state = 0; state < state_count; ++state) {
-        std::vector<std::string> pair;
         int freq_in_khz;
         int64 occupancy_time_centisecond;
 
         // Occupancy of each state is in the format "<state> <time>"
-        base::SplitString(lines[state], ' ', &pair);
-        for (size_t s = 0; s < pair.size(); ++s)
-          base::TrimWhitespace(pair[s], base::TRIM_ALL, &pair[s]);
+        std::vector<base::StringPiece> pair = base::SplitStringPiece(
+            lines[state], " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
         if (pair.size() == 2 &&
             base::StringToInt(pair[0], &freq_in_khz) &&
             base::StringToInt64(pair[1], &occupancy_time_centisecond)) {

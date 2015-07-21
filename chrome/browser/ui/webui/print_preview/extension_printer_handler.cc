@@ -103,8 +103,8 @@ std::string GenerateProvisionalUsbPrinterId(const Extension* extension,
 bool ParseProvisionalUsbPrinterId(const std::string& printer_id,
                                   std::string* extension_id,
                                   std::string* device_guid) {
-  std::vector<std::string> components;
-  base::SplitString(printer_id, ':', &components);
+  std::vector<std::string> components = base::SplitString(
+      printer_id, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (components.size() != 3)
     return false;

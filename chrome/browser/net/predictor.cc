@@ -501,8 +501,8 @@ struct RightToLeftStringSorter {
   // "http://com.google.www/xyz".
   static std::string ReverseComponents(const GURL& url) {
     // Reverse the components in the hostname.
-    std::vector<std::string> parts;
-    base::SplitString(url.host(), '.', &parts);
+    std::vector<std::string> parts = base::SplitString(
+        url.host(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::reverse(parts.begin(), parts.end());
     std::string reversed_host = base::JoinString(parts, ".");
 

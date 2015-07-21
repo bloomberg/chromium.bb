@@ -83,17 +83,14 @@ bool ParsePhishingUrls(const std::string& data,
   if (data.empty())
     return false;
 
-  std::vector<std::string> urls;
-  base::SplitString(data, '\n', &urls);
-  for (size_t i = 0; i < urls.size(); ++i) {
-    if (urls[i].empty())
-      continue;
+  for (const base::StringPiece& url_str : base::SplitStringPiece(
+           data, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     PhishingUrl phishing_url;
-    std::vector<std::string> record_parts;
-    base::SplitString(urls[i], '\t', &record_parts);
+    std::vector<std::string> record_parts = base::SplitString(
+        url_str, "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (record_parts.size() != 3) {
       LOG(ERROR) << "Unexpected URL format in phishing URL list: "
-                 << urls[i];
+                 << url_str.as_string();
       return false;
     }
     phishing_url.url = std::string(url::kHttpScheme) + "://" + record_parts[0];
@@ -103,7 +100,7 @@ bool ParsePhishingUrls(const std::string& data,
     } else if (record_parts[2] == "no") {
       phishing_url.is_phishing = false;
     } else {
-      LOG(ERROR) << "Unrecognized expectation in " << urls[i]
+      LOG(ERROR) << "Unrecognized expectation in " << url_str.as_string()
                  << ": " << record_parts[2];
       return false;
     }

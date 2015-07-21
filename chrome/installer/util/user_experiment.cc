@@ -355,13 +355,10 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
     if (experiment_locale != locale && experiment_locale != L"*")
       continue;
 
-    std::vector<base::string16> brand_codes;
-    base::SplitString(kExperiments[i].brands, L',', &brand_codes);
-    if (brand_codes.empty())
-      return false;
-    for (std::vector<base::string16>::iterator it = brand_codes.begin();
-         it != brand_codes.end(); ++it) {
-      if (*it != brand && *it != L"*")
+    for (const base::string16& cur : base::SplitString(
+             kExperiments[i].brands, L",",
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      if (cur != brand && cur != L"*")
         continue;
       // We have found our match.
       const UserExperimentSpecs& match = kExperiments[i];

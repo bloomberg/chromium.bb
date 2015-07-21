@@ -71,17 +71,17 @@ void SupervisedUserWhitelistService::Init() {
       base::CommandLine::ForCurrentProcess();
   std::string command_line_whitelists = command_line->GetSwitchValueASCII(
       switches::kInstallSupervisedUserWhitelists);
-  std::vector<std::string> split_whitelists;
-  base::SplitString(command_line_whitelists, ',', &split_whitelists);
-  for (const std::string& whitelist : split_whitelists) {
+  for (const base::StringPiece& whitelist : base::SplitStringPiece(
+           command_line_whitelists, ",",
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     std::string id;
     std::string name;
     size_t separator = whitelist.find(':');
-    if (separator != std::string::npos) {
-      id = whitelist.substr(0, separator);
-      name = whitelist.substr(separator + 1);
+    if (separator != base::StringPiece::npos) {
+      whitelist.substr(0, separator).CopyToString(&id);
+      whitelist.substr(separator + 1).CopyToString(&name);
     } else {
-      id = whitelist;
+      whitelist.CopyToString(&id);
     }
 
     // Skip whitelists that were already registered.

@@ -76,8 +76,8 @@ void UploadList::ParseLogEntries(
     const std::vector<std::string>& log_entries) {
   std::vector<std::string>::const_reverse_iterator i;
   for (i = log_entries.rbegin(); i != log_entries.rend(); ++i) {
-    std::vector<std::string> components;
-    base::SplitString(*i, ',', &components);
+    std::vector<std::string> components = base::SplitString(
+        *i, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     // Skip any blank (or corrupted) lines.
     if (components.size() != 2 && components.size() != 3)
       continue;

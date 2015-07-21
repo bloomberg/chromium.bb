@@ -256,10 +256,9 @@ std::string DeriveCommandLine(const GURL& start_url,
 // Simulates a session manager restart by launching give command line
 // and exit current process.
 void ReLaunch(const std::string& command_line) {
-  std::vector<std::string> argv;
-
   // This is not a proper way to get |argv| but it's good enough for debugging.
-  base::SplitString(command_line, ' ', &argv);
+  std::vector<std::string> argv = base::SplitString(
+      command_line, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   base::LaunchProcess(argv, base::LaunchOptions());
   chrome::AttemptUserExit();

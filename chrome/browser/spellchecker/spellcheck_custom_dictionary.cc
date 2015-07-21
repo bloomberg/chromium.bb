@@ -68,9 +68,10 @@ ChecksumStatus LoadFile(const base::FilePath& file_path,
     if (checksum != base::MD5String(contents))
       return INVALID_CHECKSUM;
   }
-  base::TrimWhitespaceASCII(contents, base::TRIM_ALL, &contents);
-  std::vector<std::string> word_list;
-  base::SplitString(contents, '\n', &word_list);
+
+  std::vector<std::string> word_list = base::SplitString(
+      base::TrimWhitespaceASCII(contents, base::TRIM_ALL), "\n",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   words->insert(word_list.begin(), word_list.end());
   return VALID_CHECKSUM;
 }

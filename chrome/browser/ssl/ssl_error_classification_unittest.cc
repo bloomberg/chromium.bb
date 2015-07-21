@@ -44,9 +44,8 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
   WebContents* contents = web_contents();
   {
     GURL origin("https://google.com");
-    std::string host_name = origin.host();
-    std::vector<std::string> host_name_tokens;
-    base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
+    std::vector<std::string> host_name_tokens = base::SplitString(
+        origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     SSLErrorClassification ssl_error(contents,
                                      time,
                                      origin,
@@ -64,9 +63,8 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
 
   {
     GURL origin("https://foo.blah.google.com");
-    std::string host_name = origin.host();
-    std::vector<std::string> host_name_tokens;
-    base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
+    std::vector<std::string> host_name_tokens = base::SplitString(
+        origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     SSLErrorClassification ssl_error(contents,
                                      time,
                                      origin,
@@ -82,9 +80,8 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
 
   {
     GURL origin("https://foo.www.google.com");
-    std::string host_name = origin.host();
-    std::vector<std::string> host_name_tokens;
-    base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
+    std::vector<std::string> host_name_tokens = base::SplitString(
+        origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     SSLErrorClassification ssl_error(contents,
                                      time,
                                      origin,
@@ -100,9 +97,8 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
 
   {
      GURL origin("https://www.google.com.foo");
-     std::string host_name = origin.host();
-     std::vector<std::string> host_name_tokens;
-     base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
+     std::vector<std::string> host_name_tokens = base::SplitString(
+         origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
      SSLErrorClassification ssl_error(contents,
                                       time,
                                       origin,
@@ -118,9 +114,8 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
 
   {
     GURL origin("https://www.foogoogle.com.");
-    std::string host_name = origin.host();
-    std::vector<std::string> host_name_tokens;
-    base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
+    std::vector<std::string> host_name_tokens = base::SplitString(
+        origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     SSLErrorClassification ssl_error(contents,
                                      time,
                                      origin,
@@ -145,9 +140,8 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
   dns_name_tokens_webkit.push_back(dns_names_webkit);
   {
     GURL origin("https://a.b.webkit.org");
-    std::string host_name = origin.host();
-    std::vector<std::string> host_name_tokens;
-    base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
+    std::vector<std::string> host_name_tokens = base::SplitString(
+        origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     SSLErrorClassification ssl_error(contents,
                                      time,
                                      origin,

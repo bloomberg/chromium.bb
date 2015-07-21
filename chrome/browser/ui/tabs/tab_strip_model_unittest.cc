@@ -246,11 +246,11 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
       model->SetTabPinned(i, true);
 
     ui::ListSelectionModel selection_model;
-    std::vector<std::string> selection;
-    base::SplitStringAlongWhitespace(selected_tabs, &selection);
-    for (size_t i = 0; i < selection.size(); ++i) {
+    for (const base::StringPiece& sel : base::SplitStringPiece(
+             selected_tabs, base::kWhitespaceASCII,
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
       int value;
-      ASSERT_TRUE(base::StringToInt(selection[i], &value));
+      ASSERT_TRUE(base::StringToInt(sel, &value));
       selection_model.AddIndexToSelection(value);
     }
     selection_model.set_active(selection_model.selected_indices()[0]);

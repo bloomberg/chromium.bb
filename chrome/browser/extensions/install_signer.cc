@@ -293,8 +293,8 @@ ExtensionIdSet InstallSigner::GetForcedNotFromWebstore() {
   if (value.empty())
     return ExtensionIdSet();
 
-  std::vector<std::string> ids;
-  base::SplitString(value, ',', &ids);
+  std::vector<std::string> ids = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   return ExtensionIdSet(ids.begin(), ids.end());
 }
 

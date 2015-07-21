@@ -125,9 +125,9 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
                                     kTestCases[i].allow_contraction));
     EXPECT_TRUE(iterator.SetText(input.c_str(), input.length()));
 
-    std::vector<base::string16> expected_words;
-    base::SplitString(
-        base::WideToUTF16(kTestCases[i].expected_words), ' ', &expected_words);
+    std::vector<base::string16> expected_words = base::SplitString(
+        base::WideToUTF16(kTestCases[i].expected_words),
+        base::string16(1, ' '), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     base::string16 actual_word;
     int actual_start, actual_end;

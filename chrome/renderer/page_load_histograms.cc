@@ -165,9 +165,9 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
   // separated by a comma corresponds to a proxy. The value added by a proxy is
   // not expected to contain any commas.
   // Example., Via: 1.0 Compression proxy, 1.1 Google Instant Proxy Preview
-  base::SplitString(
+  values = base::SplitString(
       frame->dataSource()->response().httpHeaderField(kViaHeaderName).utf8(),
-      ',', &values);
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   return std::find(values.begin(), values.end(), via_value) != values.end();
 }
 

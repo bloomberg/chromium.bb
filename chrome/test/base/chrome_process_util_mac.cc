@@ -35,16 +35,12 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
   if (!base::GetAppOutput(base::CommandLine(cmdline), &ps_output))
     return result;  // All the pids might have exited
 
-  // Process the results
-  std::vector<std::string> ps_output_lines;
-  base::SplitString(ps_output, '\n', &ps_output_lines);
-  std::vector<std::string>::const_iterator line_iter;
-  for (line_iter = ps_output_lines.begin();
-       line_iter != ps_output_lines.end();
-       ++line_iter) {
-    std::string line(base::CollapseWhitespaceASCII(*line_iter, false));
-    std::vector<std::string> values;
-    base::SplitString(line, ' ', &values);
+  // Process the results.
+  for (const std::string& raw_line : base::SplitString(
+           ps_output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::string line(base::CollapseWhitespaceASCII(raw_line, false));
+    std::vector<base::StringPiece> values = base::SplitStringPiece(
+        line, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (values.size() == 3) {
       MacChromeProcessInfo proc_info;
       int pid;

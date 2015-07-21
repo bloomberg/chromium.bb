@@ -684,8 +684,9 @@ void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
   }
 
   std::string str(buf_, bytes_read_);
-  std::vector<std::string> tokens;
-  base::SplitString(str, kTokenDelimiter, &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      str, std::string(1, kTokenDelimiter),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (tokens.size() < 3 || tokens[0] != kStartToken) {
     LOG(ERROR) << "Wrong message format: " << str;

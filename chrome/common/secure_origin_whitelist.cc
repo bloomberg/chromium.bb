@@ -18,10 +18,10 @@ void GetSecureOriginWhitelist(std::set<GURL>* origins) {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure) &&
       command_line.HasSwitch(switches::kUserDataDir)) {
-    std::vector<std::string> given_origins;
-    base::SplitString(command_line.GetSwitchValueASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure), ',', &given_origins);
-    for (const auto& origin : given_origins)
+    std::string origins_str = command_line.GetSwitchValueASCII(
+        switches::kUnsafelyTreatInsecureOriginAsSecure);
+    for (const std::string& origin : base::SplitString(
+             origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
       origins->insert(GURL(origin));
   }
 }

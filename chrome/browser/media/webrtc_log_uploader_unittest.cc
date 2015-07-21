@@ -35,8 +35,8 @@ class WebRtcLogUploaderTest : public testing::Test {
     std::string last_line = GetLastLineFromListFile();
     if (last_line.empty())
       return false;
-    std::vector<std::string> line_parts;
-    base::SplitString(last_line, ',', &line_parts);
+    std::vector<std::string> line_parts = base::SplitString(
+        last_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     EXPECT_EQ(3u, line_parts.size());
     if (3u != line_parts.size())
       return false;
@@ -52,8 +52,8 @@ class WebRtcLogUploaderTest : public testing::Test {
     std::string last_line = GetLastLineFromListFile();
     if (last_line.empty())
       return false;
-    std::vector<std::string> line_parts;
-    base::SplitString(last_line, ',', &line_parts);
+    std::vector<std::string> line_parts = base::SplitString(
+        last_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     EXPECT_EQ(3u, line_parts.size());
     if (3u != line_parts.size())
       return false;
@@ -67,8 +67,8 @@ class WebRtcLogUploaderTest : public testing::Test {
     std::string last_line = GetLastLineFromListFile();
     if (last_line.empty())
       return false;
-    std::vector<std::string> line_parts;
-    base::SplitString(last_line, ',', &line_parts);
+    std::vector<std::string> line_parts = base::SplitString(
+        last_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     EXPECT_EQ(3u, line_parts.size());
     if (3u != line_parts.size())
       return false;
@@ -111,8 +111,8 @@ class WebRtcLogUploaderTest : public testing::Test {
     // Since every line should end with '\n', the last line should be empty. So
     // we expect at least two lines including the final empty. Remove the empty
     // line before returning.
-    std::vector<std::string> lines;
-    base::SplitString(contents, '\n', &lines);
+    std::vector<std::string> lines = base::SplitString(
+        contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     EXPECT_GT(lines.size(), 1u);
     if (lines.size() < 2)
       return std::vector<std::string>();

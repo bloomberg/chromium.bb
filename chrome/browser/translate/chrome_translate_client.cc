@@ -152,8 +152,8 @@ void ChromeTranslateClient::GetTranslateLanguages(
   }
 
   std::string accept_languages_str = prefs->GetString(prefs::kAcceptLanguages);
-  std::vector<std::string> accept_languages_list;
-  base::SplitString(accept_languages_str, ',', &accept_languages_list);
+  std::vector<std::string> accept_languages_list = base::SplitString(
+      accept_languages_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   *target =
       translate::TranslateManager::GetTargetLanguage(accept_languages_list);
 }

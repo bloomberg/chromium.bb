@@ -41,11 +41,9 @@ class PicasaINIParser : public INIParser {
     if (section.find(kAlbumSectionHeader) == 0)
       return;
 
-    std::vector<std::string> containing_albums;
-    base::SplitString(value, ',', &containing_albums);
-    for (std::vector<std::string>::iterator it = containing_albums.begin();
-         it != containing_albums.end(); ++it) {
-      AlbumImagesMap::iterator album_map_it = albums_images_->find(*it);
+    for (const std::string& album : base::SplitString(
+              value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      AlbumImagesMap::iterator album_map_it = albums_images_->find(album);
 
       // Ignore entry if the album uid is not listed among in |album_uids|
       // in the constructor. Happens if the PMP and INI files are inconsistent.

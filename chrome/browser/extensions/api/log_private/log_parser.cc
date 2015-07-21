@@ -28,9 +28,9 @@ void LogParser::Parse(
     const string& input,
     std::vector<linked_ptr<api::log_private::LogEntry> >* output,
     FilterHandler* filter_handler) const {
-  std::vector<string> entries;
   // Assume there is no newline in the log entry
-  base::SplitString(input, '\n', &entries);
+  std::vector<string> entries = base::SplitString(
+      input, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (size_t i = 0; i < entries.size(); i++) {
     ParseEntry(entries[i], output, filter_handler);

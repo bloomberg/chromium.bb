@@ -156,14 +156,14 @@ base::string16 ElideUrl(const GURL& url,
   // domain is now C: - this is a nice hack for eliding to work pleasantly.
   if (url.SchemeIsFile()) {
     // Split the path string using ":"
-    std::vector<base::string16> file_path_split;
-    base::SplitString(url_path, ':', &file_path_split);
+    const base::string16 kColon(1, ':');
+    std::vector<base::string16> file_path_split = base::SplitString(
+        url_path, kColon, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (file_path_split.size() > 1) {  // File is of type "file:///C:/.."
       url_host.clear();
       url_domain.clear();
       url_subdomain.clear();
 
-      const base::string16 kColon = UTF8ToUTF16(":");
       url_host = url_domain = file_path_split.at(0).substr(1) + kColon;
       url_path_query_etc = url_path = file_path_split.at(1);
     }
@@ -201,8 +201,9 @@ base::string16 ElideUrl(const GURL& url,
   }
 
   // Parse url_path using '/'.
-  std::vector<base::string16> url_path_elements;
-  base::SplitString(url_path, kForwardSlash, &url_path_elements);
+  std::vector<base::string16> url_path_elements = base::SplitString(
+      url_path, base::string16(1, kForwardSlash),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Get filename - note that for a path ending with /
   // such as www.google.com/intl/ads/, the file name is ads/.

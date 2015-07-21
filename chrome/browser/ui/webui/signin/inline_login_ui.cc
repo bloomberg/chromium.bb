@@ -34,8 +34,8 @@ namespace {
 bool HandleTestFileRequestCallback(
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
-  std::vector<std::string> url_substr;
-  base::SplitString(path, '/', &url_substr);
+  std::vector<std::string> url_substr = base::SplitString(
+      path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (url_substr.size() != 2 || url_substr[0] != "test")
     return false;
 

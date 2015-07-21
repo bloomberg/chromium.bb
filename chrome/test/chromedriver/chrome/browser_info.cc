@@ -77,8 +77,8 @@ Status ParseBrowserString(bool has_android_package,
   int build_no = 0;
   if (browser_string.find(kVersionPrefix) == 0u) {
     std::string version = browser_string.substr(kVersionPrefix.length());
-    std::vector<std::string> version_parts;
-    base::SplitString(version, '.', &version_parts);
+    std::vector<base::StringPiece> version_parts = base::SplitStringPiece(
+        version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     if (version_parts.size() != 4 ||
         !base::StringToInt(version_parts[2], &build_no)) {

@@ -58,8 +58,8 @@ std::string CheckAndResolveLocales(const std::string& languages) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   if (languages.empty())
     return languages;
-  std::vector<std::string> values;
-  base::SplitString(languages, ',', &values);
+  std::vector<std::string> values = base::SplitString(
+      languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();
 
@@ -191,27 +191,33 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   std::vector<std::string> new_tokens;
 
   // First, set the syncable prefs to the union of the local and synced prefs.
-  base::SplitString(
-      preferred_languages_syncable_.GetValue(), ',', &synced_tokens);
-  base::SplitString(preferred_languages_.GetValue(), ',', &new_tokens);
+  synced_tokens =
+      base::SplitString(preferred_languages_syncable_.GetValue(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  new_tokens = base::SplitString(preferred_languages_.GetValue(), ",",
+                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Append the synced values to the current values.
   MergeLists(&new_tokens, synced_tokens);
   preferred_languages_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
-  base::SplitString(
-      enabled_extension_imes_syncable_.GetValue(), ',', &synced_tokens);
-  base::SplitString(enabled_extension_imes_.GetValue(), ',', &new_tokens);
+  synced_tokens =
+      base::SplitString(enabled_extension_imes_syncable_.GetValue(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  new_tokens = base::SplitString(enabled_extension_imes_.GetValue(), ",",
+                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   MergeLists(&new_tokens, synced_tokens);
   enabled_extension_imes_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
   // Revert preload engines to legacy component IDs.
-  base::SplitString(preload_engines_.GetValue(), ',', &new_tokens);
+  new_tokens = base::SplitString(preload_engines_.GetValue(), ",",
+                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::transform(new_tokens.begin(), new_tokens.end(), new_tokens.begin(),
                  extension_ime_util::GetComponentIDByInputMethodID);
-  base::SplitString(
-      preload_engines_syncable_.GetValue(), ',', &synced_tokens);
+  synced_tokens =
+      base::SplitString(preload_engines_syncable_.GetValue(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   MergeLists(&new_tokens, synced_tokens);
   preload_engines_syncable_.SetValue(base::JoinString(new_tokens, ","));
@@ -243,10 +249,10 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
     const std::string& pref,
     const std::string& synced_pref,
     const char* pref_name) {
-  std::vector<std::string> old_tokens;
-  std::vector<std::string> new_tokens;
-  base::SplitString(pref, ',', &old_tokens);
-  base::SplitString(synced_pref, ',', &new_tokens);
+  std::vector<std::string> old_tokens =
+      base::SplitString(pref, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> new_tokens = base::SplitString(
+      synced_pref, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Check and convert the new tokens.
   if (pref_name == prefs::kLanguagePreloadEngines ||
@@ -307,8 +313,9 @@ void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
 
   // For preload engines, use legacy xkb IDs so the preference can sync
   // across Chrome OS and Chromium OS.
-  std::vector<std::string> engines;
-  base::SplitString(preload_engines_.GetValue(), ',', &engines);
+  std::vector<std::string> engines =
+      base::SplitString(preload_engines_.GetValue(), ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL);
   std::transform(engines.begin(), engines.end(), engines.begin(),
                  extension_ime_util::GetComponentIDByInputMethodID);
   preload_engines_syncable_.SetValue(base::JoinString(engines, ","));

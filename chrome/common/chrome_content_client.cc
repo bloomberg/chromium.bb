@@ -239,13 +239,10 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   plugin.path = path;
   plugin.permissions = chrome::kPepperFlashPermissions;
 
-  std::vector<std::string> flash_version_numbers;
-  base::SplitString(version, '.', &flash_version_numbers);
+  std::vector<std::string> flash_version_numbers = base::SplitString(
+      version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (flash_version_numbers.size() < 1)
     flash_version_numbers.push_back("11");
-  // |SplitString()| puts in an empty string given an empty string. :(
-  else if (flash_version_numbers[0].empty())
-    flash_version_numbers[0] = "11";
   if (flash_version_numbers.size() < 2)
     flash_version_numbers.push_back("2");
   if (flash_version_numbers.size() < 3)

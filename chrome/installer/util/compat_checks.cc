@@ -26,9 +26,10 @@ std::wstring GetSEPVersion() {
 // The product version should be a string like "11.0.3001.2224". This function
 // returns as params the first 3 values. Return value is false if anything
 // does not fit the format.
-bool ParseSEPVersion(const std::wstring& version, int* v0, int* v1, int* v2) {
-  std::vector<std::wstring> v;
-  base::SplitString(version, L'.', &v);
+bool ParseSEPVersion(const base::string16& version,
+                     int* v0, int* v1, int* v2) {
+  std::vector<base::StringPiece16> v = base::SplitStringPiece(
+      version, L".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (v.size() != 4)
     return false;
   if (!base::StringToInt(v[0], v0))

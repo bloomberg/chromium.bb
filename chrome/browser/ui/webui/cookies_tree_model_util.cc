@@ -317,17 +317,15 @@ void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
 const CookieTreeNode* CookiesTreeModelUtil::GetTreeNodeFromPath(
     const CookieTreeNode* root,
     const std::string& path) {
-  std::vector<std::string> node_ids;
-  base::SplitString(path, ',', &node_ids);
-
   const CookieTreeNode* child = NULL;
   const CookieTreeNode* parent = root;
   int child_index = -1;
 
   // Validate the tree path and get the node pointer.
-  for (size_t i = 0; i < node_ids.size(); ++i) {
+  for (const base::StringPiece& cur_node : base::SplitStringPiece(
+           path, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     int32 node_id = 0;
-    if (!base::StringToInt(node_ids[i], &node_id))
+    if (!base::StringToInt(cur_node, &node_id))
       break;
 
     child = id_map_.Lookup(node_id);

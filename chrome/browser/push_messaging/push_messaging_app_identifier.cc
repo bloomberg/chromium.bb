@@ -37,8 +37,9 @@ std::string MakePrefValue(const GURL& origin,
 bool GetOriginAndSWRFromPrefValue(
     const std::string& pref_value, GURL* origin,
     int64_t* service_worker_registration_id) {
-  std::vector<std::string> parts;
-  base::SplitString(pref_value, kSeparator, &parts);
+  std::vector<std::string> parts = base::SplitString(
+      pref_value, std::string(1, kSeparator),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 2)
     return false;
 

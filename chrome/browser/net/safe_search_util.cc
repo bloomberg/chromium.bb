@@ -50,14 +50,11 @@ std::string AddSafeSearchParameters(const std::string& query) {
   std::string safe_parameter = chrome::kSafeSearchSafeParameter;
   std::string ssui_parameter = chrome::kSafeSearchSsuiParameter;
 
-  std::vector<std::string> parameters;
-  base::SplitString(query, '&', &parameters);
-
-  std::vector<std::string>::iterator it;
-  for (it = parameters.begin(); it < parameters.end(); ++it) {
-    if (!HasSameParameterKey(*it, safe_parameter) &&
-        !HasSameParameterKey(*it, ssui_parameter)) {
-      new_parameters.push_back(*it);
+  for (const std::string& param : base::SplitString(
+           query, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    if (!HasSameParameterKey(param, safe_parameter) &&
+        !HasSameParameterKey(param, ssui_parameter)) {
+      new_parameters.push_back(param);
     }
   }
 

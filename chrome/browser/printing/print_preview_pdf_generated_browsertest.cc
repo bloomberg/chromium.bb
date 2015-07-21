@@ -618,8 +618,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewPdfGeneratedBrowserTest,
     // Splits the command sent by the layout test framework. The first command
     // is always the file path to use for the test. The rest isn't relevant,
     // so it can be ignored. The separator for the commands is an apostrophe.
-    std::vector<base::FilePath::StringType> cmd_arguments;
-    base::SplitString(cmd, '\'', &cmd_arguments);
+    std::vector<base::FilePath::StringType> cmd_arguments = base::SplitString(
+        cmd, base::FilePath::StringType(1, '\''),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     ASSERT_GE(cmd_arguments.size(), 1U);
     base::FilePath::StringType test_name(cmd_arguments[0]);

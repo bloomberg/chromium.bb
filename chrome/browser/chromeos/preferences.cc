@@ -553,9 +553,10 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     std::string value(enabled_extension_imes_.GetValue());
 
     std::vector<std::string> split_values;
-    if (!value.empty())
-      base::SplitString(value, ',', &split_values);
-
+    if (!value.empty()) {
+      split_values = base::SplitString(value, ",", base::TRIM_WHITESPACE,
+                                       base::SPLIT_WANT_ALL);
+    }
     ime_state_->SetEnabledExtensionImes(&split_values);
   }
 
@@ -622,8 +623,10 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
   VLOG(1) << "Setting " << name << " to '" << value << "'";
 
   std::vector<std::string> split_values;
-  if (!value.empty())
-    base::SplitString(value, ',', &split_values);
+  if (!value.empty()) {
+    split_values = base::SplitString(value, ",", base::TRIM_WHITESPACE,
+                                     base::SPLIT_WANT_ALL);
+  }
 
   // Transfers the xkb id to extension-xkb id.
   if (input_method_manager_->MigrateInputMethods(&split_values))

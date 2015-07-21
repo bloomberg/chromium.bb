@@ -130,8 +130,8 @@ std::string HashesToBase64String(const net::HashValueVector& hashes) {
 bool Base64StringToHashes(const std::string& hashes_str,
                           net::HashValueVector* hashes) {
   hashes->clear();
-  std::vector<std::string> vector_hash_str;
-  base::SplitString(hashes_str, ',', &vector_hash_str);
+  std::vector<std::string> vector_hash_str = base::SplitString(
+      hashes_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (size_t i = 0; i != vector_hash_str.size(); ++i) {
     std::string hash_str;

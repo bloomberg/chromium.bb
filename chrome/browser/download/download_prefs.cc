@@ -159,10 +159,10 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   // download completion in this pref.
   std::string extensions_to_open =
       prefs->GetString(prefs::kDownloadExtensionsToOpen);
-  std::vector<std::string> extensions;
-  base::SplitString(extensions_to_open, ':', &extensions);
 
-  for (const auto& extension_string : extensions) {
+  for (const auto& extension_string : base::SplitString(
+           extensions_to_open, ":",
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
 #if defined(OS_POSIX)
     base::FilePath::StringType extension = extension_string;
 #elif defined(OS_WIN)

@@ -129,8 +129,8 @@ bool HandleRequestCallback(
 
   // Print Preview data.
   scoped_refptr<base::RefCountedBytes> data;
-  std::vector<std::string> url_substr;
-  base::SplitString(path, '/', &url_substr);
+  std::vector<std::string> url_substr = base::SplitString(
+      path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   int preview_ui_id = -1;
   int page_index = 0;
   if (url_substr.size() == 3 &&

@@ -135,8 +135,8 @@ bool ChromeCrashReporterClient::ShouldShowRestartDialog(base::string16* title,
   // The CHROME_RESTART var contains the dialog strings separated by '|'.
   // See ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment()
   // for details.
-  std::vector<std::string> dlg_strings;
-  base::SplitString(restart_info, '|', &dlg_strings);
+  std::vector<std::string> dlg_strings = base::SplitString(
+      restart_info, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (dlg_strings.size() < 3)
     return false;

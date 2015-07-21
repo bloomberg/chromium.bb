@@ -229,8 +229,8 @@ void AffReader::AddAffix(std::string* rule) {
           // To make hunspell work more happily, replace this morph rule with
           // a compound flag as listed below.
           //   AFX D   0 d/M e
-          std::vector<std::string> tokens;
-          base::SplitString(part, ' ', &tokens);
+          std::vector<std::string> tokens = base::SplitString(
+              part, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
           if (tokens.size() >= 5) {
             part = base::StringPrintf("%s %s/%s %s",
                                       tokens[0].c_str(),
@@ -257,8 +257,9 @@ void AffReader::AddAffix(std::string* rule) {
 
           // After the slash are both the flags, then whitespace, then the part
           // that tells us what to strip.
-          std::vector<std::string> after_slash;
-          base::SplitString(part.substr(slash_index + 1), ' ', &after_slash);
+          std::vector<std::string> after_slash = base::SplitString(
+              part.substr(slash_index + 1), " ",
+              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
           if (after_slash.size() == 0) {
             Panic("Found 0 terms after slash in affix rule '%s', "
                       "but need at least 2.",

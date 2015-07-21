@@ -121,8 +121,9 @@ size_t SpellcheckService::GetSpellCheckLanguages(
   StringPrefMember accept_languages_pref;
   accept_languages_pref.Init(prefs::kAcceptLanguages, prefs);
 
-  std::vector<std::string> accept_languages;
-  base::SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
+  std::vector<std::string> accept_languages = base::SplitString(
+      accept_languages_pref.GetValue(), ",",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   StringListPrefMember dictionaries_pref;
   dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);

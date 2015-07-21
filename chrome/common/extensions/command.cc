@@ -74,8 +74,8 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
     return ui::Accelerator();
   }
 
-  std::vector<std::string> tokens;
-  base::SplitString(accelerator, '+', &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      accelerator, "+", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (tokens.size() == 0 ||
       (tokens.size() == 1 && DoesRequireModifier(accelerator)) ||
       tokens.size() > kMaxTokenSize) {
@@ -264,8 +264,8 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
   if (!normalize)
     return suggestion;
 
-  std::vector<std::string> tokens;
-  base::SplitString(suggestion, '+', &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      suggestion, "+", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t i = 0; i < tokens.size(); i++) {
     if (tokens[i] == values::kKeyCtrl)
       tokens[i] = values::kKeyCommand;

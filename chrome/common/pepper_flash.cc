@@ -56,10 +56,10 @@ bool SupportsPepperInterface(const char* interface_name) {
 // Returns true if this browser implements one of the interfaces given in
 // |interface_string|, which is a '|'-separated string of interface names.
 bool CheckPepperFlashInterfaceString(const std::string& interface_string) {
-  std::vector<std::string> interface_names;
-  base::SplitString(interface_string, '|', &interface_names);
-  for (size_t i = 0; i < interface_names.size(); i++) {
-    if (SupportsPepperInterface(interface_names[i].c_str()))
+  for (const std::string& name : base::SplitString(
+           interface_string, "|",
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    if (SupportsPepperInterface(name.c_str()))
       return true;
   }
   return false;

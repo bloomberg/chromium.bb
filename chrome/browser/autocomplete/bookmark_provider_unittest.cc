@@ -461,14 +461,14 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     const AutocompleteMatch& match = matches[0];
     EXPECT_EQ(base::ASCIIToUTF16(query_data[i].expected_contents),
               match.contents) << description;
-    std::vector<std::string> class_strings;
-    base::SplitString(
-        query_data[i].expected_contents_class, ',', &class_strings);
+    std::vector<std::string> class_strings = base::SplitString(
+        query_data[i].expected_contents_class, ",",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     ASSERT_EQ(class_strings.size(), match.contents_class.size())
         << description;
     for (size_t i = 0; i < class_strings.size(); ++i) {
-      std::vector<std::string> chunks;
-      base::SplitString(class_strings[i], ':', &chunks);
+      std::vector<std::string> chunks = base::SplitString(
+          class_strings[i], ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2U, chunks.size()) << description;
       size_t offset;
       EXPECT_TRUE(base::StringToSizeT(chunks[0], &offset)) << description;

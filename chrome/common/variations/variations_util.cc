@@ -34,21 +34,21 @@ void SetChildProcessLoggingVariationList() {
 
 bool AssociateParamsFromString(const std::string& varations_string) {
   // Format: Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k1/v1/k2/v2
-  std::vector<std::string> experiment_groups;
-  base::SplitString(varations_string, ',', &experiment_groups);
-  for (const auto& experiment_group : experiment_groups) {
-    std::vector<std::string> experiment;
-    base::SplitString(experiment_group, ':', &experiment);
+  for (const base::StringPiece& experiment_group : base::SplitStringPiece(
+           varations_string, ",",
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::vector<base::StringPiece> experiment = base::SplitStringPiece(
+        experiment_group, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (experiment.size() != 2)
       return false;
 
-    std::vector<std::string> group_parts;
-    base::SplitString(experiment[0], '.', &group_parts);
+    std::vector<std::string> group_parts = base::SplitString(
+        experiment[0], ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (group_parts.size() != 2)
       return false;
 
-    std::vector<std::string> key_values;
-    base::SplitString(experiment[1], '/', &key_values);
+    std::vector<std::string> key_values = base::SplitString(
+        experiment[1], "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (key_values.size() % 2 != 0)
       return false;
 

@@ -329,8 +329,8 @@ void StartupCustomizationDocument::Init(
                                            &initial_timezone_);
   statistics_provider->GetMachineStatistic(kKeyboardLayoutAttr,
                                            &keyboard_layout_);
-  configured_locales_.resize(0);
-  base::SplitString(initial_locale_, ',', &configured_locales_);
+  configured_locales_ = base::SplitString(
+      initial_locale_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Convert ICU locale to chrome ("en_US" to "en-US", etc.).
   std::for_each(configured_locales_.begin(), configured_locales_.end(),

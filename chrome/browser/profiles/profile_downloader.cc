@@ -74,8 +74,9 @@ const int kPhotoVersionPathComponentIndex = 3;
 //   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c/photo.jpg
 bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
   DCHECK(new_url);
-  std::vector<std::string> components;
-  base::SplitString(old_url.path(), kURLPathSeparator, &components);
+  std::vector<std::string> components = base::SplitString(
+      old_url.path(), std::string(1, kURLPathSeparator),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (components.size() == 0)
     return false;
 
@@ -123,10 +124,9 @@ bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
   GURL image_url_object(url);
   DCHECK(image_url_object.is_valid());
   VLOG(1) << "URL to check for default image: " << image_url_object.spec();
-  std::vector<std::string> path_components;
-  base::SplitString(image_url_object.path(),
-                    kURLPathSeparator,
-                    &path_components);
+  std::vector<std::string> path_components = base::SplitString(
+      image_url_object.path(), std::string(1, kURLPathSeparator),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (path_components.size() < kProfileImageURLPathComponentsCount)
     return false;

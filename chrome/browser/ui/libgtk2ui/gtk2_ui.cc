@@ -1390,8 +1390,9 @@ void Gtk2UI::UpdateDefaultFont(const PangoFontDescription* desc) {
   // Use gfx::FontRenderParams to select a family and determine the rendering
   // settings.
   gfx::FontRenderParamsQuery query;
-  base::SplitString(pango_font_description_get_family(desc), ',',
-                    &query.families);
+  query.families = base::SplitString(pango_font_description_get_family(desc),
+                                     ",", base::TRIM_WHITESPACE,
+                                     base::SPLIT_WANT_ALL);
 
   if (pango_font_description_get_size_is_absolute(desc)) {
     // If the size is absolute, it's specified in Pango units. There are

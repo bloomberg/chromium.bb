@@ -389,12 +389,12 @@ Command CommandService::FindCommandByName(const std::string& extension_id,
     bool global = false;
     item->GetBoolean(kGlobal, &global);
 
-    std::vector<std::string> tokens;
-    base::SplitString(shortcut, ':', &tokens);
+    std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+        shortcut, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK(tokens.size() >= 2);
-    shortcut = tokens[1];
 
-    return Command(command_name, base::string16(), shortcut, global);
+    return Command(command_name, base::string16(), tokens[1].as_string(),
+           global);
   }
 
   return Command();

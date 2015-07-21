@@ -352,11 +352,10 @@ TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
 
   // Verify the data.
   base::StringTokenizer tokens(crash_on_hang_thread_names, ",");
-  std::vector<std::string> values;
   while (tokens.GetNext()) {
-    const std::string& token = tokens.token();
-    base::SplitString(token, ':', &values);
-    std::string thread_name = values[0];
+    std::vector<base::StringPiece> values = base::SplitStringPiece(
+        tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::string thread_name = values[0].as_string();
 
     ThreadWatcherList::CrashOnHangThreadMap::iterator it =
         crash_on_hang_threads.find(thread_name);
@@ -382,11 +381,10 @@ TEST_F(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs) {
 
   // Verify the data.
   base::StringTokenizer tokens(thread_names_and_live_threshold, ",");
-  std::vector<std::string> values;
   while (tokens.GetNext()) {
-    const std::string& token = tokens.token();
-    base::SplitString(token, ':', &values);
-    std::string thread_name = values[0];
+    std::vector<base::StringPiece> values = base::SplitStringPiece(
+        tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::string thread_name = values[0].as_string();
 
     ThreadWatcherList::CrashOnHangThreadMap::iterator it =
         crash_on_hang_threads.find(thread_name);
@@ -412,11 +410,10 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
 
   // Verify the data.
   base::StringTokenizer tokens(crash_on_hang_thread_data, ",");
-  std::vector<std::string> values;
   while (tokens.GetNext()) {
-    const std::string& token = tokens.token();
-    base::SplitString(token, ':', &values);
-    std::string thread_name = values[0];
+    std::vector<base::StringPiece> values = base::SplitStringPiece(
+        tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::string thread_name = values[0].as_string();
 
     ThreadWatcherList::CrashOnHangThreadMap::iterator it =
         crash_on_hang_threads.find(thread_name);

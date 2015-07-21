@@ -34,17 +34,15 @@ const char kSpeculativePrefetchingTrialName[] =
  * The function below extracts the value corresponding to a key provided from
  * the SpeculativeResourcePrefetching field trial.
  */
-string GetFiledTrialSpecValue(string key) {
-  vector<string> elements;
-  base::SplitString(
-      FieldTrialList::FindFullName(kSpeculativePrefetchingTrialName),
-      ':',
-      &elements);
-  for (int i = 0; i < static_cast<int>(elements.size()); i++) {
-    vector<string> key_value;
-    base::SplitString(elements[i], '=', &key_value);
+std::string GetFiledTrialSpecValue(string key) {
+  std::string trial_name =
+      FieldTrialList::FindFullName(kSpeculativePrefetchingTrialName);
+  for (const base::StringPiece& element : base::SplitStringPiece(
+           trial_name, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::vector<base::StringPiece> key_value = base::SplitStringPiece(
+        element, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (key_value.size() == 2 && key_value[0] == key)
-      return key_value[1];
+      return key_value[1].as_string();
   }
   return string();
 }

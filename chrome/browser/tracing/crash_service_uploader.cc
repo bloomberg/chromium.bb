@@ -150,9 +150,9 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
   // VersionInfo::ProductNameAndVersionForUserAgent() returns a string like
   // "Chrome/aa.bb.cc.dd", split out the part before the "/".
   chrome::VersionInfo version_info;
-  std::vector<std::string> product_components;
-  base::SplitString(version_info.ProductNameAndVersionForUserAgent(), '/',
-                    &product_components);
+  std::vector<std::string> product_components = base::SplitString(
+      version_info.ProductNameAndVersionForUserAgent(), "/",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(2U, product_components.size());
   std::string version;
   if (product_components.size() == 2U) {

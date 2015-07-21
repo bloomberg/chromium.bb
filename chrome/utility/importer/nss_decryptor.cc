@@ -121,8 +121,8 @@ void NSSDecryptor::ParseSignons(
   forms->clear();
 
   // Splits the file content into lines.
-  std::vector<std::string> lines;
-  base::SplitString(content, '\n', &lines);
+  std::vector<std::string> lines = base::SplitString(
+      content, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // The first line is the file version. We skip the unknown versions.
   if (lines.empty())
