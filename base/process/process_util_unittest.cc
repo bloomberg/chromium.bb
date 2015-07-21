@@ -59,6 +59,9 @@
 #include <malloc/malloc.h>
 #include "base/mac/mac_util.h"
 #endif
+#if defined(OS_ANDROID)
+#include "third_party/lss/linux_syscall_support.h"
+#endif
 
 using base::FilePath;
 
@@ -226,7 +229,19 @@ const char kSignalFileCrash[] = "CrashingChildProcess.die";
 
 MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
   WaitToDie(ProcessUtilTest::GetSignalFilePath(kSignalFileCrash).c_str());
-#if defined(OS_POSIX)
+#if defined(OS_ANDROID)
+  // Android L+ expose signal and sigaction symbols that override the system
+  // ones. There is a bug in these functions where a request to set the handler
+  // to SIG_DFL is ignored. In that case, an infinite loop is entered as the
+  // signal is repeatedly sent to the crash dump signal handler.
+  // To work around this, directly call the system's sigaction.
+  struct kernel_sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sys_sigemptyset(&sa.sa_mask);
+  sa.sa_handler_ = SIG_DFL;
+  sa.sa_flags = SA_RESTART;
+  sys_rt_sigaction(SIGSEGV, &sa, NULL, sizeof(kernel_sigset_t));
+#elif defined(OS_POSIX)
   // Have to disable to signal handler for segv so we can get a crash
   // instead of an abnormal termination through the crash dump handler.
   ::signal(SIGSEGV, SIG_DFL);
