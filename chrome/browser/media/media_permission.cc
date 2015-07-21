@@ -87,7 +87,7 @@ ContentSetting MediaPermission::GetStoredContentSetting() const {
   // reality we shouldn't really need to check this here as we should respect
   // the user's content setting. The problem is that pepper requests allow
   // insecure origins to be persisted. We should stop allowing this, do some
-  // sort of migration and remove this check.
+  // sort of migration and remove this check. See crbug.com/512301.
   if (!ShouldPersistContentSetting(setting, origin_, request_type_) &&
       !origin_.SchemeIs(extensions::kExtensionScheme) &&
       !origin_.SchemeIs(content::kChromeUIScheme) &&
