@@ -487,9 +487,6 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         // Create the text mask layer.
         context->beginLayer(1, SkXfermode::kDstIn_Mode);
 
-        // FIXME: Workaround for https://code.google.com/p/skia/issues/detail?id=1291.
-        context->clearRect(maskRect);
-
         // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
         PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorNormal, 0);
