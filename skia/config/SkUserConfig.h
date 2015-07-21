@@ -230,10 +230,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
 #endif
 
-#ifndef    SK_LEGACY_IMAGE_FILTER_CROP_RECT_EDGES
-#   define SK_LEGACY_IMAGE_FILTER_CROP_RECT_EDGES
-#endif
-
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
