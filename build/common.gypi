@@ -702,6 +702,7 @@
       # Control Flow Integrity for virtual calls and casts.
       # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
       'cfi_vptr%': 0,
+      'cfi_diag%': 0,
 
       'cfi_blacklist%': '<(PRODUCT_DIR)/../../tools/cfi/blacklist.txt',
 
@@ -1240,6 +1241,7 @@
     'video_hole%': '<(video_hole)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
+    'cfi_diag%': '<(cfi_diag)',
     'cfi_blacklist%': '<(cfi_blacklist)',
     'mac_views_browser%': '<(mac_views_browser)',
     'android_app_version_name%': '<(android_app_version_name)',
@@ -6095,6 +6097,44 @@
             'ldflags': [
               '-flto',
             ],
+          }],
+        ],
+      },
+    }],
+    ['cfi_diag==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fno-sanitize-trap=cfi',
+              '-fsanitize-recover=cfi',
+            ],
+            'ldflags': [
+              '-fno-sanitize-trap=cfi',
+              '-fsanitize-recover=cfi',
+            ],
+            'xcode_settings': {
+              'OTHER_CFLAGS': [
+                '-fno-sanitize-trap=cfi',
+                '-fsanitize-recover=cfi',
+              ],
+            },
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '-fno-sanitize-trap=cfi',
+                  '-fsanitize-recover=cfi',
+                ],
+              },
+            },
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-fno-sanitize-trap=cfi',
+                '-fsanitize-recover=cfi',
+              ],
+            },
           }],
         ],
       },
