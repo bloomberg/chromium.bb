@@ -352,7 +352,7 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
       return;
     }
     /** @type {string} */
-    var hostId = config['host_id'];
+    var hostId = base.getStringAttr(config, 'host_id');
     that.hostDaemonFacade_.getPinHash(hostId, newPin).then(
         updateDaemonConfigWithHash, remoting.Error.handler(onError));
   }

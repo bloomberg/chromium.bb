@@ -108,6 +108,7 @@
       'webapp/base/js/xmpp_login_handler_unittest.js',
       'webapp/base/js/xmpp_stream_parser_unittest.js',
       'webapp/crd/js/apps_v2_migration_unittest.js',
+      'webapp/crd/js/combined_host_list_api_unittest.js',
       'webapp/crd/js/gcd_client_unittest.js',
       'webapp/crd/js/gcd_client_with_mock_xhr_unittest.js',
       'webapp/crd/js/host_controller_unittest.js',
@@ -286,6 +287,7 @@
       # JSCompiler.  If an implementation of an interface occurs in a
       # file processed before the interface itself, the @override tag
       # doesn't always work correctly.
+      'webapp/crd/js/combined_host_list_api.js',
       'webapp/crd/js/gcd_host_list_api.js',
       'webapp/crd/js/legacy_host_list_api.js',
     ],

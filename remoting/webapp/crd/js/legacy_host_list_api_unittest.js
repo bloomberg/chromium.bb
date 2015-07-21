@@ -66,7 +66,7 @@ QUnit.test('register', function(assert) {
       FAKE_HOST_NAME,
       FAKE_PUBLIC_KEY,
       FAKE_HOST_CLIENT_ID
-  ). then(function(regResult) {
+  ).then(function(regResult) {
     assert.equal(regResult.authCode, FAKE_AUTH_CODE);
     assert.equal(regResult.email, '');
   });

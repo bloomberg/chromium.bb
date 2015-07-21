@@ -25,6 +25,22 @@ remoting.LegacyHostListApi = function() {
 remoting.LegacyHostListApi.prototype.register = function(
     hostName, publicKey, hostClientId) {
   var newHostId = base.generateUuid();
+  return remoting.LegacyHostListApi.registerWithHostId(
+      newHostId, hostName, publicKey, hostClientId);
+};
+
+/**
+ * Registers a host with the Chromoting directory using a specified
+ * host ID, which should not be equal to the ID of any existing host.
+ *
+ * @param {string} newHostId The host ID of the new host.
+ * @param {string} hostName The user-visible name of the new host.
+ * @param {string} publicKey The public half of the host's key pair.
+ * @param {?string} hostClientId The OAuth2 client ID of the host.
+ * @return {!Promise<remoting.HostListApi.RegisterResult>}
+ */
+remoting.LegacyHostListApi.registerWithHostId = function(
+    newHostId, hostName, publicKey, hostClientId) {
   var newHostDetails = { data: {
     hostId: newHostId,
     hostName: hostName,
@@ -44,7 +60,9 @@ remoting.LegacyHostListApi.prototype.register = function(
     if (response.status == 200) {
       var result = /** @type {!Object} */ (response.getJson());
       var data = base.getObjectAttr(result, 'data');
-      var authCode = base.getStringAttr(data, 'authorizationCode');
+      var authCode = hostClientId ?
+          base.getStringAttr(data, 'authorizationCode') :
+          '';
       return {
         authCode: authCode,
         email: '',

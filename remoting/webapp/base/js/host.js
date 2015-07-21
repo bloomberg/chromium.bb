@@ -27,7 +27,10 @@ remoting.Host = function(hostId) {
   this.hostId = hostId;
   /** @type {string} */
   this.hostName = '';
-  /** @type {string} */
+  /**
+   * Either 'ONLINE' or 'OFFLINE'.
+   * @type {string}
+   */
   this.status = '';
   /** @type {string} */
   this.jabberId = '';
