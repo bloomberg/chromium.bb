@@ -90,7 +90,10 @@ style this element.
         name$="[[name]]"
         placeholder$="[[placeholder]]"
         readonly$="[[readonly]]"
-        size$="[[size]]">
+        list$="[[list]]"
+        size$="[[size]]"
+        autocapitalize$="[[autocapitalize]]"
+        autocorrect$="[[autocorrect]]">
 
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>
@@ -115,8 +118,9 @@ style this element.
     is: 'paper-input',
 
     behaviors: [
+      Polymer.IronFormElementBehavior,
       Polymer.PaperInputBehavior,
-      Polymer.IronFormElementBehavior
+      Polymer.IronControlState
     ]
 
   })

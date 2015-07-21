@@ -1,6 +1,6 @@
 {
   "name": "neon-animation",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "authors": [
     "The Polymer Authors"
   ],
@@ -11,12 +11,12 @@
     "web-animations"
   ],
   "main": [
+    "neon-animated-pages.html",
     "neon-animatable-behavior.html",
     "neon-animation-behavior.html",
     "neon-animation-runner-behavior.html",
     "neon-shared-element-animatable-behavior.html",
     "neon-shared-element-animation-behavior.html",
-    "neon-animated-pages.html",
     "neon-animatable.html",
     "neon-animations.html"
   ],
@@ -34,7 +34,7 @@
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0",
     "iron-selector": "PolymerElements/iron-selector#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
-    "web-animations-js": "web-animations/web-animations-js#^2.0.0"
+    "web-animations-js": "web-animations/web-animations-js#2.1.2"
   },
   "devDependencies": {
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",

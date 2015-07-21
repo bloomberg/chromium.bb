@@ -17,10 +17,10 @@ progress, such as the buffer level during a streaming playback progress bar.
 Example:
 
 ```html
-<paper-progress value="10" secondaryProgress="30"></paper-progress>
+<paper-progress value="10" secondary-progress="30"></paper-progress>
 ```
 
-Styling progress bar:
+### Styling progress bar:
 
 To change the active progress bar color:
 
@@ -43,5 +43,16 @@ To change the progress bar background color:
 ```css
 paper-progress {
   --paper-progress-container-color: #64ffda;
+}
+```
+
+Add the class `transiting` to a `<paper-progress>` to animate the progress bar when
+the value changed. You can also customize the transition:
+
+```css
+paper-progress {
+  --paper-progress-transition-duration: 0.08s;
+  --paper-progress-transition-timing-function: ease;
+  --paper-progress-transition-transition-delay: 0s;
 }
 ```

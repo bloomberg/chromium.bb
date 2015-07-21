@@ -72,29 +72,31 @@ To position the drawer to the right, add `right-drawer` attribute.
       <div main> Main panel... </div>
     </paper-drawer-panel>
 
-Styling paper-drawer-panel:
+Styling `paper-drawer-panel`
 
 To change the main container:
-  paper-drawer-panel {
-    --paper-drawer-panel-main-container: {
-      background-color: gray;
-    };
-  }
+
+    paper-drawer-panel {
+      --paper-drawer-panel-main-container: {
+        background-color: gray;
+      };
+    }
 
 To change the drawer container when it's in the left side:
-  paper-drawer-panel {
-    --paper-drawer-panel-left-drawer-container: {
-      background-color: white;
-    };
-  }
+
+    paper-drawer-panel {
+      --paper-drawer-panel-left-drawer-container: {
+        background-color: white;
+      };
+    }
 
 To change the drawer container when it's in the right side:
 
-  paper-drawer-panel {
-    --paper-drawer-panel-right-drawer-container: {
-      background-color: white;
-    };
-  }
+    paper-drawer-panel {
+      --paper-drawer-panel-right-drawer-container: {
+        background-color: white;
+      };
+    }
 
 @group Paper elements
 @element paper-drawer-panel
@@ -109,7 +111,7 @@ To change the drawer container when it's in the right side:
     <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
     </iron-media-query>
 
-    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer)]]" activate-event="" selected="[[selected]]">
+    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
 
       <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
         <content select="[main]"></content>

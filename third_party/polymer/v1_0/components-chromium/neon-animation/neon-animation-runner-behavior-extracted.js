@@ -2,9 +2,10 @@
 
   /**
    * `Polymer.NeonAnimationRunnerBehavior` adds a method to run animations.
-   * @polymerBehavior
+   *
+   * @polymerBehavior Polymer.NeonAnimationRunnerBehavior
    */
-  Polymer.NeonAnimationRunnerBehavior = [Polymer.NeonAnimatableBehavior, {
+  Polymer.NeonAnimationRunnerBehaviorImpl = {
 
     properties: {
 
@@ -15,6 +16,7 @@
         }
       },
 
+      /** @type {?Object} */
       _player: {
         type: Object
       }
@@ -45,7 +47,7 @@
     },
 
     _runAnimationEffects: function(allEffects) {
-      return player = document.timeline.play(new GroupEffect(allEffects));
+      return document.timeline.play(new GroupEffect(allEffects));
     },
 
     _completeAnimations: function(allAnimations) {
@@ -56,6 +58,8 @@
 
     /**
      * Plays an animation with an optional `type`.
+     * @param {string=} type
+     * @param {!Object=} cookie
      */
     playAnimation: function(type, cookie) {
       var allConfigs = this.getAnimationConfig(type);
@@ -93,5 +97,10 @@
         this._player.cancel();
       }
     }
+  };
 
-  }];
+  /** @polymerBehavior Polymer.NeonAnimationRunnerBehavior */
+  Polymer.NeonAnimationRunnerBehavior = [
+    Polymer.NeonAnimatableBehavior,
+    Polymer.NeonAnimationRunnerBehaviorImpl
+  ];

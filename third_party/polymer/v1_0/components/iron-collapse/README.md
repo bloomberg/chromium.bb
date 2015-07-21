@@ -4,7 +4,7 @@
 will be collapsed.  Use `opened` or `toggle()` to show/hide the content.
 
 ```html
-<button on-click="{{toggle}}">toggle collapse</button>
+<button on-click="toggle">toggle collapse</button>
 
 <iron-collapse id="collapse">
   <div>Content goes here...</div>

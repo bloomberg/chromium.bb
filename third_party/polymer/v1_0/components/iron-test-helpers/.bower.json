@@ -32,6 +32,6 @@
     "commit": "4c5d28f58adda0d076850321582cfe86359f95fb"
   },
   "_source": "git://github.com/PolymerElements/iron-test-helpers.git",
-  "_target": "^1.0.0",
+  "_target": "~1.0.0",
   "_originalSource": "PolymerElements/iron-test-helpers"
 }

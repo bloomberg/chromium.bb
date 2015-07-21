@@ -11,7 +11,7 @@
     configure: function(config) {
       var shared = this.findSharedElements(config);
       if (!shared) {
-        return null;
+        return;
       }
 
       var fromRect = shared.from.getBoundingClientRect();

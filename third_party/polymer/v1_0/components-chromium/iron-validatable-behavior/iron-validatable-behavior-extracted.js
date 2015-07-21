@@ -78,7 +78,11 @@
      * @return {boolean} True if `values` is valid.
      */
     validate: function(values) {
-      var valid = this._validator && this._validator.validate(values);
+      var valid = true;
+      if (this.hasValidator()) {
+        valid = this._validator.validate(values);
+      }
+
       this.invalid = !valid;
       return valid;
     }

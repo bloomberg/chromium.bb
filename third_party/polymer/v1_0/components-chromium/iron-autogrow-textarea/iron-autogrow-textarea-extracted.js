@@ -5,7 +5,9 @@
     is: 'iron-autogrow-textarea',
 
     behaviors: [
-      Polymer.IronValidatableBehavior
+      Polymer.IronFormElementBehavior,
+      Polymer.IronValidatableBehavior,
+      Polymer.IronControlState
     ],
 
     properties: {
@@ -76,6 +78,15 @@
       },
 
       /**
+       * The value for this input, same as `bindValue`
+       */
+      value: {
+        notify: true,
+        type: String,
+        computed: '_computeValue(bindValue)'
+      },
+
+      /**
        * Bound to the textarea's `placeholder` attribute.
        */
       placeholder: {
@@ -111,9 +122,34 @@
 
     /**
      * Returns the underlying textarea.
+     * @type HTMLTextAreaElement
      */
     get textarea() {
       return this.$.textarea;
+    },
+
+    /**
+     * Returns true if `value` is valid. The validator provided in `validator`
+     * will be used first, if it exists; otherwise, the `textarea`'s validity
+     * is used.
+     * @return {boolean} True if the value is valid.
+     */
+    validate: function() {
+      // Empty, non-required input is valid.
+      if (!this.required && this.value == '') {
+        this.invalid = false;
+        return true;
+      }
+
+      var valid;
+      if (this.hasValidator()) {
+        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
+      } else {
+        valid = this.$.textarea.validity.valid;
+        this.invalid = !valid;
+      }
+      this.fire('iron-input-validate');
+      return valid;
     },
 
     _update: function() {
@@ -170,5 +206,9 @@
 
     _updateCached: function() {
       this.$.mirror.innerHTML = this._constrain(this.tokens);
+    },
+
+    _computeValue: function() {
+      return this.bindValue;
     }
   })

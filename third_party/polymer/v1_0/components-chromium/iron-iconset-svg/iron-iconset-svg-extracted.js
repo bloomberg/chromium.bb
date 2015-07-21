@@ -11,7 +11,7 @@
    *
    * Example:
    *
-   *     <iron-iconset-svg id="my-svg-icons" iconSize="24">
+   *     <iron-iconset-svg name="my-svg-icons" size="24">
    *       <svg>
    *         <defs>
    *           <g id="shape">

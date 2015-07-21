@@ -1,13 +1,14 @@
 <!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
-The complete set of authors may be found at http://polymer.github.io/AUTHORS
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
@@ -28,7 +29,7 @@ Example:
 
     <paper-progress value="10" secondary-progress="30"></paper-progress>
 
-Styling progress bar:
+### Styling progress bar:
 
 To change the active progress bar color:
 
@@ -48,6 +49,15 @@ To change the progress bar background color:
       --paper-progress-container-color: #64ffda;
     }
 
+Add the class `transiting` to a paper-progress to animate the progress bar when
+the value changed. You can also customize the transition:
+
+    paper-progress {
+      --paper-progress-transition-duration: 0.08s;
+      --paper-progress-transition-timing-function: ease;
+      --paper-progress-transition-transition-delay: 0s;
+    }
+    
 @group Paper Elements
 @element paper-progress
 @hero hero.svg
@@ -60,6 +70,24 @@ To change the progress bar background color:
       display: inline-block;
       width: 200px;
       height: 4px;
+    }
+
+    :host(.transiting) #activeProgress,
+    :host(.transiting) #secondaryProgress {
+      -webkit-transition-property: -webkit-transform;
+      transition-property: transform;
+
+      /* Duration */
+      -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
+      transition-duration: var(--paper-progress-transition-duration, 0.08s);
+
+      /* Timing function */
+      -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+      transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+
+      /* Delay */
+      -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
+      transition-delay: var(--paper-progress-transition-delay, 0s);
     }
 
     #progressContainer {

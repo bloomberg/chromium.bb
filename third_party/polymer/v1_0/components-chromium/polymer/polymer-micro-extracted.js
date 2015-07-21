@@ -51,7 +51,11 @@ document.registerElement(prototype.is, options);
 return ctor;
 };
 var desugar = function (prototype) {
-prototype = Polymer.Base.chainObject(prototype, Polymer.Base);
+var base = Polymer.Base;
+if (prototype.extends) {
+base = Polymer.Base._getExtendedPrototype(prototype.extends);
+}
+prototype = Polymer.Base.chainObject(prototype, base);
 prototype.registerCallback();
 return prototype.constructor;
 };
@@ -84,6 +88,7 @@ return (document._currentScript || document.currentScript).ownerDocument;
 }
 });
 Polymer.Base = {
+__isPolymerInstance__: true,
 _addFeature: function (feature) {
 this.extend(this, feature);
 },
@@ -117,6 +122,12 @@ this.copyOwnProperty(n, api, prototype);
 }
 return prototype || api;
 },
+mixin: function (target, source) {
+for (var i in source) {
+target[i] = source[i];
+}
+return target;
+},
 copyOwnProperty: function (name, source, target) {
 var pd = Object.getOwnPropertyDescriptor(source, name);
 if (pd) {
@@ -147,6 +158,16 @@ object.__proto__ = inherited;
 return object;
 };
 Polymer.Base = Polymer.Base.chainObject(Polymer.Base, HTMLElement.prototype);
+if (window.CustomElements) {
+Polymer.instanceof = CustomElements.instanceof;
+} else {
+Polymer.instanceof = function (obj, ctor) {
+return obj instanceof ctor;
+};
+}
+Polymer.isInstance = function (obj) {
+return Boolean(obj && obj.__isPolymerInstance__);
+};
 Polymer.telemetry.instanceCount = 0;
 (function () {
 var modules = {};
@@ -275,11 +296,6 @@ this._marshalBehavior(this);
 }
 });
 Polymer.Base._addFeature({
-_prepExtends: function () {
-if (this.extends) {
-this.__proto__ = this._getExtendedPrototype(this.extends);
-}
-},
 _getExtendedPrototype: function (tag) {
 return this._getExtendedNativePrototype(tag);
 },
@@ -492,13 +508,12 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.3';
+Polymer.version = '1.0.7';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
 this._prepAttributes();
 this._prepBehaviors();
-this._prepExtends();
 this._prepConstructor();
 },
 _prepBehavior: function (b) {

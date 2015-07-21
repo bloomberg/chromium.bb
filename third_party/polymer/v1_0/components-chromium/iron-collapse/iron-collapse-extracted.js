@@ -33,8 +33,7 @@
 
     hostAttributes: {
       role: 'group',
-      'aria-expanded': 'false',
-      tabindex: 0
+      'aria-expanded': 'false'
     },
 
     listeners: {

@@ -114,9 +114,9 @@
 
       _computeBarClassName: function(barJustify) {
         var classObj = {
-          center: true,
-          horizontal: true,
-          layout: true,
+          'center': true,
+          'horizontal': true,
+          'layout': true,
           'toolbar-tools': true
         };
 

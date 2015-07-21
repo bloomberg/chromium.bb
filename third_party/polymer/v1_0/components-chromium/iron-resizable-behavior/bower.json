@@ -1,6 +1,6 @@
 {
   "name": "iron-resizable-behavior",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Coordinates the flow of resizeable elements",
   "private": true,
@@ -14,6 +14,10 @@
     "iron",
     "behavior"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-resizable-behavior.git"
+  },
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0"
   },

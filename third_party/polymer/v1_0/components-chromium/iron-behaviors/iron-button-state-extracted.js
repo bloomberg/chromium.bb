@@ -2,7 +2,7 @@
 
   /**
    * @demo demo/index.html
-   * @polymerBehavior
+   * @polymerBehavior Polymer.IronButtonState
    */
   Polymer.IronButtonStateImpl = {
 
@@ -163,7 +163,7 @@
 
   };
 
-  /** @polymerBehavior Polymer.IronButtonState */
+  /** @polymerBehavior */
   Polymer.IronButtonState = [
     Polymer.IronA11yKeysBehavior,
     Polymer.IronButtonStateImpl

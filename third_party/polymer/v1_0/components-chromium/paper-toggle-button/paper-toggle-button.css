@@ -105,4 +105,5 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   width: 48px;
   height: 48px;
   opacity: 0.5;
+  pointer-events: none;
 }

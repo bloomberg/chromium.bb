@@ -1,11 +1,11 @@
 <!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
-The complete set of authors may be found at http://polymer.github.io/AUTHORS
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
 <link rel="import" href="../polymer/polymer.html">
@@ -15,6 +15,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 
 <!--
@@ -33,49 +34,21 @@ Example:
 
     <paper-slider min="10" max="200" value="110"></paper-slider>
 
-Styling slider:
+### Styling
 
-To change the slider progress bar color:
+The following custom properties and mixins are available for styling:
 
-    paper-slider {
-      --paper-slider-active-color: #0f9d58;
-    }
-
-To change the slider knob color:
-
-    paper-slider {
-      --paper-slider-knob-color: #0f9d58;
-    }
-
-To change the slider pin color:
-
-    paper-slider {
-      --paper-slider-pin-color: #0f9d58;
-    }
-
-To change the slider pin's font color:
-
-    paper-slider {
-      --paper-slider-pin-font-color: #0f9d58;
-    }
-
-To change the slider secondary progress bar color:
-
-    paper-slider {
-      --paper-slider-secondary-color: #0f9d58;
-    }
-
-To change the slider disabled active color:
-
-    paper-slider {
-      --paper-slider-disabled-active-color: #ccc;
-    }
-
-To change the slider disabled secondary progress bar color:
-
-    paper-slider {
-      --paper-slider-disabled-secondary-color: #ccc;
-    }
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-slider-bar-color` | The background color of the slider | `transparent`
+`--paper-slider-active-color` | The progress bar color | `--google-blue-700`
+`--paper-slider-secondary-color` | The secondary progress bar color | `--google-blue-300`
+`--paper-slider-knob-color` | The knob color | `--google-blue-700`
+`--paper-slider-disabled-knob-color` | The disabled knob color | `--google-grey-500`
+`--paper-slider-pin-color` | The pin color | `--google-blue-700`
+`--paper-slider-font-color` | The pin's text color | `#fff`
+`--paper-slider-disabled-active-color` | The disabled progress bar color | `--google-grey-500`
+`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--google-grey-300`
 
 @group Paper Elements
 @element paper-slider
@@ -120,7 +93,7 @@ To change the slider disabled secondary progress bar color:
         on-up="_resetKnob"
         on-track="_onTrack"
         on-transitionend="_knobTransitionEnd">
-          <paper-ripple id="ink" class="circle" center></paper-ripple>
+          <paper-ripple id="ink" class="circle" center hidden$="[[!receivedFocusFromKeyboard]]"></paper-ripple>
           <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
@@ -138,38 +111,19 @@ To change the slider disabled secondary progress bar color:
 </dom-module>
 
 <script>
-  /**
-   * Fired when the slider's value changes.
-   *
-   * @event value-change
-   */
-
-  /**
-   * Fired when the slider's immediateValue changes.
-   *
-   * @event immediate-value-change
-   */
-
-  /**
-   * Fired when the slider's value changes due to user interaction.
-   *
-   * Changes to the slider's value due to changes in an underlying
-   * bound variable will not trigger this event.
-   *
-   * @event change
-   */
 
   Polymer({
     is: 'paper-slider',
 
     behaviors: [
-      Polymer.IronRangeBehavior,
       Polymer.IronA11yKeysBehavior,
+      Polymer.PaperInkyFocusBehavior,
       Polymer.IronFormElementBehavior,
-      Polymer.PaperInkyFocusBehavior
+      Polymer.IronRangeBehavior
     ],
 
     properties: {
+
       /**
        * If true, the slider thumb snaps to tick marks evenly spaced based
        * on the `step` property value.
@@ -280,7 +234,6 @@ To change the slider disabled secondary progress bar color:
 
     ready: function() {
       // issue polymer/polymer#1305
-
       this.async(function() {
         this._updateKnob(this.value);
         this._updateInputValue();
@@ -340,14 +293,12 @@ To change the slider disabled secondary progress bar color:
     },
 
     _expandKnob: function() {
-      this.$.ink.holdDown = false;
       this._setExpand(true);
     },
 
     _resetKnob: function() {
       this.cancelDebouncer('expandKnob');
       this._setExpand(false);
-      this.$.ink.hidden = true;
     },
 
     _positionKnob: function(ratio) {
@@ -431,10 +382,6 @@ To change the slider disabled secondary progress bar color:
     },
 
     _bardown: function(event) {
-      this.$.ink.hidden = true;
-
-      event.preventDefault();
-
       this._w = this.$.sliderBar.offsetWidth;
       var rect = this.$.sliderBar.getBoundingClientRect();
       var ratio = (event.detail.x - rect.left) / this._w;
@@ -512,5 +459,27 @@ To change the slider disabled secondary progress bar color:
       }
       this.fire('change');
     }
-  })
+  });
+
+  /**
+   * Fired when the slider's value changes.
+   *
+   * @event value-change
+   */
+
+  /**
+   * Fired when the slider's immediateValue changes.
+   *
+   * @event immediate-value-change
+   */
+
+  /**
+   * Fired when the slider's value changes due to user interaction.
+   *
+   * Changes to the slider's value due to changes in an underlying
+   * bound variable will not trigger this event.
+   *
+   * @event change
+   */
+
 </script>

@@ -31,17 +31,24 @@
        */
 
       /**
-       * Fired when the selected panel changes.
+       * Fired when the a panel is selected.
        *
        * Listening for this event is an alternative to observing changes in the `selected` attribute.
-       * This event is fired both when a panel is selected and deselected.
-       * The `isSelected` detail property contains the selection state.
+       * This event is fired both when a panel is selected.
        *
-       * @event paper-select {{isSelected: boolean, item: Object}} detail -
-       *     isSelected: True for selection and false for deselection.
+       * @event iron-select {{item: Object}} detail -
        *     item: The panel that the event refers to.
        */
 
+      /**
+       * Fired when a panel is deselected.
+       *
+       * Listening for this event is an alternative to observing changes in the `selected` attribute.
+       * This event is fired both when a panel is deselected.
+       *
+       * @event iron-deselect {{item: Object}} detail -
+       *     item: The panel that the event refers to.
+       */
       properties: {
 
         /**
@@ -240,13 +247,14 @@
         this.transition = true;
       },
 
-      _computeIronSelectorClass: function(narrow, transition, dragging, rightDrawer) {
+      _computeIronSelectorClass: function(narrow, transition, dragging, rightDrawer, peeking) {
         return classNames({
           dragging: dragging,
           'narrow-layout': narrow,
           'right-drawer': rightDrawer,
           'left-drawer': !rightDrawer,
-          transition: transition
+          transition: transition,
+          peeking: peeking
         });
       },
 
@@ -261,8 +269,6 @@
 
         if (rightDrawer) {
           style += 'right:' + (narrow ? '' : drawerWidth) + ';';
-        } else {
-          style += 'right:;';
         }
 
         return style;
@@ -276,19 +282,19 @@
         return !narrow || disableEdgeSwipe;
       },
 
-      _onTrack: function(e) {
+      _onTrack: function(event) {
         if (sharedPanel && this !== sharedPanel) {
           return;
         }
-        switch (e.detail.state) {
+        switch (event.detail.state) {
           case 'start':
-            this._trackStart(e);
+            this._trackStart(event);
             break;
           case 'track':
-            this._trackX(e);
+            this._trackX(event);
             break;
           case 'end':
-            this._trackEnd(e);
+            this._trackEnd(event);
             break;
         }
 
@@ -305,8 +311,8 @@
         this.fire('paper-responsive-change', {narrow: this.narrow});
       },
 
-      _onQueryMatchesChanged: function(e) {
-        this._responsiveChange(e.detail.value);
+      _onQueryMatchesChanged: function(event) {
+        this._responsiveChange(event.detail.value);
       },
 
       _forceNarrowChanged: function() {
@@ -336,9 +342,11 @@
         }
       },
 
-      _downHandler: function(e) {
-        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(e) && !sharedPanel) {
+      _downHandler: function(event) {
+        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(event) && !sharedPanel) {
           this._startEdgePeek();
+          // cancel selection
+          event.preventDefault();
           // grab this panel
           sharedPanel = this;
         }
@@ -350,8 +358,8 @@
         sharedPanel = null;
       },
 
-      _onTap: function(e) {
-        var targetElement = Polymer.dom(e).localTarget;
+      _onTap: function(event) {
+        var targetElement = Polymer.dom(event).localTarget;
         var isTargetToggleElement = targetElement &&
           this.drawerToggleAttribute &&
           targetElement.hasAttribute(this.drawerToggleAttribute);
@@ -361,8 +369,8 @@
         }
       },
 
-      _isEdgeTouch: function(e) {
-        var x = e.detail.x;
+      _isEdgeTouch: function(event) {
+        var x = event.detail.x;
 
         return !this.disableEdgeSwipe && this._swipeAllowed() &&
           (this.rightDrawer ?
@@ -396,9 +404,9 @@
         }
       },
 
-      _trackX: function(e) {
+      _trackX: function(event) {
         if (this.dragging) {
-          var dx = e.detail.dx;
+          var dx = event.detail.dx;
 
           if (this.peeking) {
             if (Math.abs(dx) <= this.edgeSwipeSensitivity) {
@@ -412,9 +420,9 @@
         }
       },
 
-      _trackEnd: function(e) {
+      _trackEnd: function(event) {
         if (this.dragging) {
-          var xDirection = e.detail.dx > 0;
+          var xDirection = event.detail.dx > 0;
 
           this._setDragging(false);
           this.transition = true;
@@ -439,13 +447,7 @@
       },
 
       _moveDrawer: function(translateX) {
-        var s = this.$.drawer.style;
-
-        if (this.hasTransform) {
-          s.transform = this._transformForTranslateX(translateX);
-        } else {
-          s.webkitTransform = this._transformForTranslateX(translateX);
-        }
+        this.transform(this._transformForTranslateX(translateX), this.$.drawer);
       }
 
     });

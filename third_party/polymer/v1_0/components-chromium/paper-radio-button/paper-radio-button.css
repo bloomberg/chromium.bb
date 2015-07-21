@@ -33,6 +33,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   height: 48px;
   color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
   opacity: 0.6;
+  pointer-events: none;
 }
 
 :host #ink[checked] {
@@ -47,6 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   height: 12px;
   border-radius: 50%;
   border: solid 2px;
+  background-color: var(--paper-radio-button-unchecked-background-color, transparent);
   border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
   transition: border-color 0.28s;
 }

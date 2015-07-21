@@ -1,13 +1,6 @@
 Polymer.Base._addFeature({
 _prepTemplate: function () {
 this._template = this._template || Polymer.DomModule.import(this.is, 'template');
-if (!this._template) {
-var script = document._currentScript || document.currentScript;
-var prev = script && script.previousElementSibling;
-if (prev && prev.localName === 'template') {
-this._template = prev;
-}
-}
 if (this._template && this._template.hasAttribute('is')) {
 this._warn(this._logf('_prepTemplate', 'top-level Polymer template ' + 'must not be a type-extension, found', this._template, 'Move inside simple <template>.'));
 }
@@ -423,6 +416,8 @@ var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
 var nativeInsertBefore = Element.prototype.insertBefore;
 var nativeRemoveChild = Element.prototype.removeChild;
 var nativeAppendChild = Element.prototype.appendChild;
+var nativeCloneNode = Element.prototype.cloneNode;
+var nativeImportNode = Document.prototype.importNode;
 var dirtyRoots = [];
 var DomApi = function (node) {
 this.node = node;
@@ -446,20 +441,17 @@ dirtyRoots.push(host);
 }
 },
 appendChild: function (node) {
-var distributed;
-this._removeNodeFromHost(node);
+var handled;
+this._removeNodeFromHost(node, true);
 if (this._nodeIsInLogicalTree(this.node)) {
-var host = this._hostForNode(this.node);
-this._addLogicalInfo(node, this.node, host && host.shadyRoot);
+this._addLogicalInfo(node, this.node);
 this._addNodeToHost(node);
-if (host) {
-distributed = this._maybeDistribute(node, this.node, host);
+handled = this._maybeDistribute(node, this.node);
 }
-}
-if (!distributed && !this._tryRemoveUndistributedNode(node)) {
+if (!handled && !this._tryRemoveUndistributedNode(node)) {
 var container = this.node._isShadyRoot ? this.node.host : this.node;
-nativeAppendChild.call(container, node);
 addToComposedParent(container, node);
+nativeAppendChild.call(container, node);
 }
 return node;
 },
@@ -467,8 +459,8 @@ insertBefore: function (node, ref_node) {
 if (!ref_node) {
 return this.appendChild(node);
 }
-var distributed;
-this._removeNodeFromHost(node);
+var handled;
+this._removeNodeFromHost(node, true);
 if (this._nodeIsInLogicalTree(this.node)) {
 saveLightChildrenIfNeeded(this.node);
 var children = this.childNodes;
@@ -476,18 +468,15 @@ var index = children.indexOf(ref_node);
 if (index < 0) {
 throw Error('The ref_node to be inserted before is not a child ' + 'of this node');
 }
-var host = this._hostForNode(this.node);
-this._addLogicalInfo(node, this.node, host && host.shadyRoot, index);
+this._addLogicalInfo(node, this.node, index);
 this._addNodeToHost(node);
-if (host) {
-distributed = this._maybeDistribute(node, this.node, host);
+handled = this._maybeDistribute(node, this.node);
 }
-}
-if (!distributed && !this._tryRemoveUndistributedNode(node)) {
+if (!handled && !this._tryRemoveUndistributedNode(node)) {
 ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
 var container = this.node._isShadyRoot ? this.node.host : this.node;
-nativeInsertBefore.call(container, node, ref_node);
 addToComposedParent(container, node, ref_node);
+nativeInsertBefore.call(container, node, ref_node);
 }
 return node;
 },
@@ -495,17 +484,16 @@ removeChild: function (node) {
 if (factory(node).parentNode !== this.node) {
 console.warn('The node to be removed is not a child of this node', node);
 }
-var distributed;
+var handled;
 if (this._nodeIsInLogicalTree(this.node)) {
-var host = this._hostForNode(this.node);
-distributed = this._maybeDistribute(node, this.node, host);
 this._removeNodeFromHost(node);
+handled = this._maybeDistribute(node, this.node);
 }
-if (!distributed) {
+if (!handled) {
 var container = this.node._isShadyRoot ? this.node.host : this.node;
 if (container === node.parentNode) {
-nativeRemoveChild.call(container, node);
 removeFromComposedParent(container, node);
+nativeRemoveChild.call(container, node);
 }
 }
 return node;
@@ -538,21 +526,28 @@ node._ownerShadyRoot = root;
 }
 return node._ownerShadyRoot;
 },
-_maybeDistribute: function (node, parent, host) {
-var nodeNeedsDistribute = this._nodeNeedsDistribution(node);
-var distribute = this._parentNeedsDistribution(parent) || nodeNeedsDistribute;
-if (nodeNeedsDistribute) {
+_maybeDistribute: function (node, parent) {
+var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && Polymer.dom(node).querySelector(CONTENT);
+var wrappedContent = fragContent && Polymer.dom(fragContent).parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
+var hasContent = fragContent || node.localName === CONTENT;
+if (hasContent) {
+var root = this._ownerShadyRootForNode(parent);
+if (root) {
+var host = root.host;
 this._updateInsertionPoints(host);
-}
-if (distribute) {
 this._lazyDistribute(host);
 }
-return distribute;
+}
+var parentNeedsDist = this._parentNeedsDistribution(parent);
+if (parentNeedsDist) {
+this._lazyDistribute(parent);
+}
+return parentNeedsDist || hasContent && !wrappedContent;
 },
 _tryRemoveUndistributedNode: function (node) {
 if (this.node.shadyRoot) {
-if (node.parentNode) {
-nativeRemoveChild.call(node.parentNode, node);
+if (node._composedParent) {
+nativeRemoveChild.call(node._composedParent, node);
 }
 return true;
 }
@@ -561,27 +556,58 @@ _updateInsertionPoints: function (host) {
 host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
 },
 _nodeIsInLogicalTree: function (node) {
-return Boolean(node._lightParent || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
-},
-_hostForNode: function (node) {
-var root = node.shadyRoot || (node._isShadyRoot ? node : this._ownerShadyRootForNode(node));
-return root && root.host;
+return Boolean(node._lightParent !== undefined || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
 },
 _parentNeedsDistribution: function (parent) {
 return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
 },
-_nodeNeedsDistribution: function (node) {
-return node.localName === CONTENT || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && node.querySelector(CONTENT);
-},
-_removeNodeFromHost: function (node) {
-if (node._lightParent) {
-var root = this._ownerShadyRootForNode(node);
+_removeNodeFromHost: function (node, ensureComposedRemoval) {
+var hostNeedsDist;
+var root;
+var parent = node._lightParent;
+if (parent) {
+root = this._ownerShadyRootForNode(node);
 if (root) {
 root.host._elementRemove(node);
+hostNeedsDist = this._removeDistributedChildren(root, node);
 }
 this._removeLogicalInfo(node, node._lightParent);
 }
 this._removeOwnerShadyRoot(node);
+if (root && hostNeedsDist) {
+this._updateInsertionPoints(root.host);
+this._lazyDistribute(root.host);
+} else if (ensureComposedRemoval) {
+removeFromComposedParent(parent || node.parentNode, node);
+}
+},
+_removeDistributedChildren: function (root, container) {
+var hostNeedsDist;
+var ip$ = root._insertionPoints;
+for (var i = 0; i < ip$.length; i++) {
+var content = ip$[i];
+if (this._contains(container, content)) {
+var dc$ = factory(content).getDistributedNodes();
+for (var j = 0; j < dc$.length; j++) {
+hostNeedsDist = true;
+var node = dc$[j];
+var parent = node.parentNode;
+if (parent) {
+removeFromComposedParent(parent, node);
+nativeRemoveChild.call(parent, node);
+}
+}
+}
+}
+return hostNeedsDist;
+},
+_contains: function (container, node) {
+while (node) {
+if (node == container) {
+return true;
+}
+node = factory(node).parentNode;
+}
 },
 _addNodeToHost: function (node) {
 var checkNode = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? node.firstChild : node;
@@ -590,7 +616,7 @@ if (root) {
 root.host._elementAdd(node);
 }
 },
-_addLogicalInfo: function (node, container, root, index) {
+_addLogicalInfo: function (node, container, index) {
 saveLightChildrenIfNeeded(container);
 var children = factory(container).childNodes;
 index = index === undefined ? children.length : index;
@@ -703,6 +729,31 @@ _distributeParent: function () {
 if (this._parentNeedsDistribution(this.parentNode)) {
 this._lazyDistribute(this.parentNode);
 }
+},
+cloneNode: function (deep) {
+var n = nativeCloneNode.call(this.node, false);
+if (deep) {
+var c$ = this.childNodes;
+var d = factory(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = factory(c$[i]).cloneNode(true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+importNode: function (externalNode, deep) {
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
+var n = nativeImportNode.call(doc, externalNode, false);
+if (deep) {
+var c$ = factory(externalNode).childNodes;
+var d = factory(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = factory(doc).importNode(c$[i], true);
+d.appendChild(nc);
+}
+}
+return n;
 }
 };
 Object.defineProperty(DomApi.prototype, 'classList', {
@@ -730,6 +781,9 @@ this.domApi._distributeParent();
 toggle: function () {
 this.node.classList.toggle.apply(this.node.classList, arguments);
 this.domApi._distributeParent();
+},
+contains: function () {
+return this.node.classList.contains.apply(this.node.classList, arguments);
 }
 };
 if (!Settings.useShadow) {
@@ -848,8 +902,9 @@ if (this.node.nodeType !== Node.TEXT_NODE) {
 this._clear();
 var d = document.createElement('div');
 d.innerHTML = text;
-for (var e = d.firstChild; e; e = e.nextSibling) {
-this.appendChild(e);
+var c$ = Array.prototype.slice.call(d.childNodes);
+for (var i = 0; i < c$.length; i++) {
+this.appendChild(c$[i]);
 }
 }
 },
@@ -872,12 +927,19 @@ return n;
 n = n.parentNode;
 }
 };
+DomApi.prototype.cloneNode = function (deep) {
+return this.node.cloneNode(deep);
+};
+DomApi.prototype.importNode = function (externalNode, deep) {
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
+return doc.importNode(externalNode, deep);
+};
 DomApi.prototype.getDestinationInsertionPoints = function () {
-var n$ = this.node.getDestinationInsertionPoints();
+var n$ = this.node.getDestinationInsertionPoints && this.node.getDestinationInsertionPoints();
 return n$ ? Array.prototype.slice.call(n$) : [];
 };
 DomApi.prototype.getDistributedNodes = function () {
-var n$ = this.node.getDistributedNodes();
+var n$ = this.node.getDistributedNodes && this.node.getDistributedNodes();
 return n$ ? Array.prototype.slice.call(n$) : [];
 };
 DomApi.prototype._distributeParent = function () {
@@ -965,20 +1027,17 @@ var children = getComposedChildren(parent);
 var i = ref_node ? children.indexOf(ref_node) : -1;
 if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
 var fragChildren = getComposedChildren(node);
-fragChildren.forEach(function (c) {
-addNodeToComposedChildren(c, parent, children, i);
-});
+for (var j = 0; j < fragChildren.length; j++) {
+addNodeToComposedChildren(fragChildren[j], parent, children, i + j);
+}
+node._composedChildren = null;
 } else {
 addNodeToComposedChildren(node, parent, children, i);
 }
 }
 function addNodeToComposedChildren(node, parent, children, i) {
 node._composedParent = parent;
-if (i >= 0) {
-children.splice(i, 0, node);
-} else {
-children.push(node);
-}
+children.splice(i >= 0 ? i : children.length, 0, node);
 }
 function removeFromComposedParent(parent, node) {
 node._composedParent = null;
@@ -1019,9 +1078,6 @@ factory: factory
 Polymer.Base._addFeature({
 _prepShady: function () {
 this._useContent = this._useContent || Boolean(this._template);
-if (this._useContent) {
-this._template._hasInsertionPoint = this._template.content.querySelector('content');
-}
 },
 _poolContent: function () {
 if (this._useContent) {
@@ -1041,7 +1097,7 @@ this.shadyRoot = this.root;
 this.shadyRoot._distributionClean = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
-this.shadyRoot._insertionPoints = this._template._hasInsertionPoint ? this.shadyRoot.querySelectorAll('content') : [];
+this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
 saveLightChildrenIfNeeded(this.shadyRoot);
 this.shadyRoot.host = this;
 },
@@ -1049,10 +1105,14 @@ get domHost() {
 var root = Polymer.dom(this).getOwnerRoot();
 return root && root.host;
 },
-distributeContent: function () {
+distributeContent: function (updateInsertionPoints) {
 if (this.shadyRoot) {
+var dom = Polymer.dom(this);
+if (updateInsertionPoints) {
+dom._updateInsertionPoints(this);
+}
 var host = getTopDistributingHost(this);
-Polymer.dom(this)._lazyDistribute(host);
+dom._lazyDistribute(host);
 }
 },
 _distributeContent: function () {
@@ -1082,6 +1142,7 @@ this._composeTree();
 } else {
 if (!this.shadyRoot._hasDistributed) {
 this.textContent = '';
+this._composedChildren = null;
 this.appendChild(this.shadyRoot);
 } else {
 var children = this._composeNode(this);
@@ -1241,10 +1302,12 @@ points.push(insertionPoint);
 }
 function clearDistributedDestinationInsertionPoints(content) {
 var e$ = content._distributedNodes;
+if (e$) {
 for (var i = 0; i < e$.length; i++) {
 var d = e$[i]._destinationInsertionPoints;
 if (d) {
 d.splice(d.indexOf(content) + 1, d.length);
+}
 }
 }
 }
@@ -1334,7 +1397,6 @@ _registerFeatures: function () {
 this._prepIs();
 this._prepAttributes();
 this._prepBehaviors();
-this._prepExtends();
 this._prepConstructor();
 this._prepTemplate();
 this._prepShady();

@@ -37,6 +37,6 @@
     "commit": "b9dcc768f789547bb99f65cd976006cb578af255"
   },
   "_source": "git://github.com/PolymerLabs/more-routing.git",
-  "_target": "^1.0.0",
+  "_target": "~1.0.0",
   "_originalSource": "PolymerLabs/more-routing"
 }

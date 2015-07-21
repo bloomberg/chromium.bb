@@ -2,9 +2,9 @@
 
   /**
    * Use `Polymer.NeonSharedElementAnimationBehavior` to implement shared element animations.
-   * @polymerBehavior
+   * @polymerBehavior Polymer.NeonSharedElementAnimationBehavior
    */
-  Polymer.NeonSharedElementAnimationBehavior = [Polymer.NeonAnimationBehavior, {
+  Polymer.NeonSharedElementAnimationBehaviorImpl = {
 
     properties: {
 
@@ -48,5 +48,11 @@
       return this.sharedElements;
     }
 
-  }];
+  };
+
+  /** @polymerBehavior Polymer.NeonSharedElementAnimationBehavior */
+  Polymer.NeonSharedElementAnimationBehavior = [
+    Polymer.NeonAnimationBehavior,
+    Polymer.NeonSharedElementAnimationBehaviorImpl
+  ];
 

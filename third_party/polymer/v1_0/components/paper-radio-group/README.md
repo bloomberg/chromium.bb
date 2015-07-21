@@ -10,9 +10,9 @@ Example:
 
 ```html
 <paper-radio-group selected="small">
-  <paper-radio-button name="small" label="Small"></paper-radio-button>
-  <paper-radio-button name="medium" label="Medium"></paper-radio-button>
-  <paper-radio-button name="large" label="Large"></paper-radio-button>
+  <paper-radio-button name="small">Small</paper-radio-button>
+  <paper-radio-button name="medium">Medium</paper-radio-button>
+  <paper-radio-button name="large">Large</paper-radio-button>
 </paper-radio-group>
 ```
 

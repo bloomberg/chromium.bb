@@ -65,10 +65,7 @@
     /**
      * Called when the animation finishes.
      */
-    complete: function() {
-      // FIXME not sure about non-bubbling event
-      this.fire(this.animationEndEvent, null, {bubbles: false});
-    }
+    complete: function() {}
 
   };
 

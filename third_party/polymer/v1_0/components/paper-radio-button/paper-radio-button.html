@@ -14,15 +14,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!--
 `paper-radio-button` is a button that can be either checked or unchecked.
-User can tap the radio button to check it.  But it cannot be unchecked by
-tapping once checked.
+User can tap the radio button to check or uncheck it.
 
-Use `paper-radio-group` to group a set of radio buttons.  When radio buttons
-are inside a radio group, only one radio button in the group can be checked.
+Use a `<paper-radio-group>` to group a set of radio buttons.  When radio buttons
+are inside a radio group, exactly one radio button in the group can be checked
+at any time.
 
 Example:
 
     <paper-radio-button></paper-radio-button>
+    <paper-radio-button>Item label</paper-radio-button>
 
 ### Styling
 
@@ -30,6 +31,7 @@ The following custom properties and mixins are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
+`--paper-radio-button-unchecked-background-color` | Radio button background color when the input is not checked | `transparent`
 `--paper-radio-button-unchecked-color` | Radio button color when the input is not checked | `--primary-text-color`
 `--paper-radio-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--primary-text-color`
 `--paper-radio-button-checked-color` | Radio button color when the input is checked | `--default-primary-color`

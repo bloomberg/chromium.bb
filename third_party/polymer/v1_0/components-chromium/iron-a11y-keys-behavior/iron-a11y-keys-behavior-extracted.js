@@ -82,10 +82,10 @@
      * in a KeyboardEvent instance.
      */
     var MODIFIER_KEYS = {
-      shift: 'shiftKey',
-      ctrl: 'ctrlKey',
-      alt: 'altKey',
-      meta: 'metaKey'
+      'shift': 'shiftKey',
+      'ctrl': 'ctrlKey',
+      'alt': 'altKey',
+      'meta': 'metaKey'
     };
 
     /**

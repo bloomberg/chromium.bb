@@ -27,6 +27,14 @@
       selectedAttribute: {
         type: String,
         value: 'checked'
+      },
+
+      /**
+       * Overriden from Polymer.IronSelectableBehavior
+       */
+      selectable: {
+        type: String,
+        value: 'paper-radio-button'
       }
     },
 
@@ -73,7 +81,7 @@
 
     /**
      * Selects the next item. If the next item is disabled, then it is
-     * skipped, and its nexy item is selected
+     * skipped, and the next item after it is selected.
      */
     selectNext: function() {
       var length = this.items.length;

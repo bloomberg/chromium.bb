@@ -7,8 +7,7 @@
     is: 'paper-textarea',
 
     behaviors: [
-      Polymer.PaperInputBehavior,
-      Polymer.IronFormElementBehavior
+      Polymer.PaperInputBehavior
     ],
 
     properties: {

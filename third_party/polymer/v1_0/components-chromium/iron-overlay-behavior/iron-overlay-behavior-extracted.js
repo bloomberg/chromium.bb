@@ -45,7 +45,8 @@ context. You should place this element as a child of `<body>` whenever possible.
       opened: {
         observer: '_openedChanged',
         type: Boolean,
-        value: false
+        value: false,
+        notify: true
       },
 
       /**
@@ -353,7 +354,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.display = '';
     },
 
-    _finishPositioning: function(target) {
+    _finishPositioning: function() {
       this.style.display = 'none';
       this.style.transform = this.style.webkitTransform = '';
       // force layout to avoid application of transform

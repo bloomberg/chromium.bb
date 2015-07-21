@@ -8,9 +8,9 @@
    *
    * The input element can be accessed by the `inputElement` property if you need to access
    * properties or methods that are not exposed.
-   * @polymerBehavior
+   * @polymerBehavior Polymer.PaperInputBehavior
    */
-  Polymer.PaperInputBehavior = {
+  Polymer.PaperInputBehaviorImpl = {
 
     properties: {
 
@@ -69,6 +69,14 @@
        * to the `<input is="iron-input">`'s `type` property.
        */
       type: {
+        type: String
+      },
+
+      /**
+       * The datalist of the input (if any). This should match the id of an existing <datalist>. Bind this
+       * to the `<input is="iron-input">`'s `list` property.
+       */
+      list: {
         type: String
       },
 
@@ -210,6 +218,24 @@
         type: Number
       },
 
+      // Nonstandard attributes for binding if needed
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocapitalize` property.
+       */
+      autocapitalize: {
+        type: String,
+        value: 'none'
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocorrect` property.
+       */
+      autocorrect: {
+        type: String,
+        value: 'off'
+      },
+
       _ariaDescribedBy: {
         type: String,
         value: ''
@@ -220,6 +246,10 @@
     listeners: {
       'addon-attached': '_onAddonAttached'
     },
+
+    observers: [
+      '_focusedControlStateChanged(focused)'
+    ],
 
     /**
      * Returns a reference to the input element.
@@ -285,6 +315,24 @@
       return placeholder || alwaysFloatLabel;
     },
 
+    _focusedControlStateChanged: function(focused) {
+      // IronControlState stops the focus and blur events in order to redispatch them on the host
+      // element, but paper-input-container listens to those events. Since there are more
+      // pending work on focus/blur in IronControlState, I'm putting in this hack to get the
+      // input focus state working for now.
+      if (!this.$.container) {
+        this.$.container = Polymer.dom(this.root).querySelector('paper-input-container');
+        if (!this.$.container) {
+          return;
+        }
+      }
+      if (focused) {
+        this.$.container._onFocus();
+      } else {
+        this.$.container._onBlur();
+      }
+    },
+
     _updateAriaLabelledBy: function() {
       var label = Polymer.dom(this.root).querySelector('label');
       if (!label) {
@@ -302,4 +350,7 @@
     }
 
   };
+
+  /** @polymerBehavior */
+  Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
 

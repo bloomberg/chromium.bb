@@ -1,36 +1,17 @@
 
-  /**
-   * Fired when the slider's value changes.
-   *
-   * @event value-change
-   */
-
-  /**
-   * Fired when the slider's immediateValue changes.
-   *
-   * @event immediate-value-change
-   */
-
-  /**
-   * Fired when the slider's value changes due to user interaction.
-   *
-   * Changes to the slider's value due to changes in an underlying
-   * bound variable will not trigger this event.
-   *
-   * @event change
-   */
 
   Polymer({
     is: 'paper-slider',
 
     behaviors: [
-      Polymer.IronRangeBehavior,
       Polymer.IronA11yKeysBehavior,
+      Polymer.PaperInkyFocusBehavior,
       Polymer.IronFormElementBehavior,
-      Polymer.PaperInkyFocusBehavior
+      Polymer.IronRangeBehavior
     ],
 
     properties: {
+
       /**
        * If true, the slider thumb snaps to tick marks evenly spaced based
        * on the `step` property value.
@@ -141,7 +122,6 @@
 
     ready: function() {
       // issue polymer/polymer#1305
-
       this.async(function() {
         this._updateKnob(this.value);
         this._updateInputValue();
@@ -201,14 +181,12 @@
     },
 
     _expandKnob: function() {
-      this.$.ink.holdDown = false;
       this._setExpand(true);
     },
 
     _resetKnob: function() {
       this.cancelDebouncer('expandKnob');
       this._setExpand(false);
-      this.$.ink.hidden = true;
     },
 
     _positionKnob: function(ratio) {
@@ -292,10 +270,6 @@
     },
 
     _bardown: function(event) {
-      this.$.ink.hidden = true;
-
-      event.preventDefault();
-
       this._w = this.$.sliderBar.offsetWidth;
       var rect = this.$.sliderBar.getBoundingClientRect();
       var ratio = (event.detail.x - rect.left) / this._w;
@@ -373,4 +347,26 @@
       }
       this.fire('change');
     }
-  })
+  });
+
+  /**
+   * Fired when the slider's value changes.
+   *
+   * @event value-change
+   */
+
+  /**
+   * Fired when the slider's immediateValue changes.
+   *
+   * @event immediate-value-change
+   */
+
+  /**
+   * Fired when the slider's value changes due to user interaction.
+   *
+   * Changes to the slider's value due to changes in an underlying
+   * bound variable will not trigger this event.
+   *
+   * @event change
+   */
+

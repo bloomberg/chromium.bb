@@ -46,8 +46,8 @@ Configuration:
       Polymer.NeonSharedElementAnimationBehavior
     ],
 
-    configure: function(config, fromPage, toPage) {
-      var shared = this.findSharedElements(config, fromPage, toPage);
+    configure: function(config) {
+      var shared = this.findSharedElements(config);
       if (!shared) {
         return null;
       }
@@ -56,11 +56,11 @@ Configuration:
       var toRect = shared.to.getBoundingClientRect();
       if (config.gesture) {
         translateX = config.gesture.x - (toRect.left + (toRect.width / 2));
-        translateY = config.gesture.y - (toRect.left + (toRect.height / 2));
+        translateY = config.gesture.y - (toRect.top + (toRect.height / 2));
       } else {
         var fromRect = shared.from.getBoundingClientRect();
         translateX = (fromRect.left + (fromRect.width / 2)) - (toRect.left + (toRect.width / 2));
-        translateY = (fromRect.top + (fromRect.height / 2)) - (toRect.left + (toRect.height / 2));
+        translateY = (fromRect.top + (fromRect.height / 2)) - (toRect.top + (toRect.height / 2));
       }
       var translate = 'translate(' + translateX + 'px,' + translateY + 'px)';
 

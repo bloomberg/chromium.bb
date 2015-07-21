@@ -53,4 +53,7 @@ find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
 NBSP=$(python -c 'print u"\u00A0".encode("utf-8")')
 sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 
+# Remove import of external resource in font-roboto (fonts.googleapis.com).
+patch -p1 < chromium.patch
+
 ./extract_inline_scripts.sh components components-chromium

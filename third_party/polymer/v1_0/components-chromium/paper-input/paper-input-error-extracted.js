@@ -10,10 +10,6 @@
       Polymer.PaperInputAddonBehavior
     ],
 
-    hostAttributes: {
-      'role': 'alert'
-    },
-
     properties: {
 
       /**

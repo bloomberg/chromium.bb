@@ -1,10 +1,9 @@
 {
   "name": "iron-meta",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "keywords": [
     "web-components",
-    "polymer",
-    "meta"
+    "polymer"
   ],
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Useful for sharing information across a DOM tree",
@@ -12,14 +11,15 @@
   "authors": [
     "The Polymer Authors"
   ],
-  "keywords": [
-    "web-components",
-    "polymer"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-meta.git"
+  },
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
+    "paper-styles": "polymerelements/paper-styles#^1.0.4",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
     "web-component-tester": "*",

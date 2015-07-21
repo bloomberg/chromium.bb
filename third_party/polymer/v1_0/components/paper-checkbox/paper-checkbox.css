@@ -29,6 +29,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   vertical-align: middle;
+  background-color: var(--paper-checkbox-unchecked-background-color, transparent);
 }
 
 :host #ink {
@@ -39,6 +40,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   height: 48px;
   color: var(--paper-checkbox-unchecked-ink-color, --primary-text-color);
   opacity: 0.6;
+  pointer-events: none;
 }
 
 :host #ink[checked] {
@@ -111,7 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   border-left: none;
   border-right-width: 2px;
   border-bottom-width: 2px;
-  border-color: white;
+  border-color: var(--paper-checkbox-checkmark-color, white);
 }
 
 /* label */

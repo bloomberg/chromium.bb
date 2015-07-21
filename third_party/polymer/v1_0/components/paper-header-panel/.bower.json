@@ -32,6 +32,6 @@
     "commit": "19cde2fc5dfd51439e3433b3d5e6b618d444cb0a"
   },
   "_source": "git://github.com/PolymerElements/paper-header-panel.git",
-  "_target": "^1.0.0",
+  "_target": "~1.0.0",
   "_originalSource": "PolymerElements/paper-header-panel"
 }
