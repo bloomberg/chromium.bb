@@ -11,6 +11,9 @@
 
 namespace device {
 
+const std::string BluetoothTestBase::kTestAdapterName = "FakeBluetoothAdapter";
+const std::string BluetoothTestBase::kTestAdapterAddress = "A1:B2:C3:D4:E5:F6";
+
 BluetoothTestBase::BluetoothTestBase() {
 }
 

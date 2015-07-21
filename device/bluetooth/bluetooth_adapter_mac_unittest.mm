@@ -107,12 +107,13 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   void RemoveTimedOutDevices() { adapter_mac_->RemoveTimedOutDevices(); }
 
-  bool SetMockCentralManager() {
+  bool SetMockCentralManager(CBCentralManagerState desired_state) {
     if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
       LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
       return false;
     }
     mock_central_manager_ = [[MockCentralManager alloc] init];
+    [mock_central_manager_ setState:desired_state];
     adapter_mac_->SetCentralManagerForTesting(mock_central_manager_);
     return true;
   }
@@ -157,7 +158,7 @@ TEST_F(BluetoothAdapterMacTest, Poll) {
 }
 
 TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager())
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(0, NumDiscoverySessions());
@@ -178,7 +179,7 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
 // TODO(krstnmnlsn): Test changing the filter when adding the second discovery
 // session (once we have that ability).
 TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager())
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
     return;
   scoped_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(
@@ -200,7 +201,7 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
 }
 
 TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager())
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
 
@@ -224,7 +225,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
 }
 
 TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
-  if (!SetMockCentralManager())
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(0, [mock_central_manager_ stopScanCallCount]);

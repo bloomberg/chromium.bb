@@ -22,6 +22,9 @@ class BluetoothAdapter;
 // BluetoothTest.
 class BluetoothTestBase : public testing::Test {
  public:
+  static const std::string kTestAdapterName;
+  static const std::string kTestAdapterAddress;
+
   BluetoothTestBase();
   ~BluetoothTestBase() override;
 

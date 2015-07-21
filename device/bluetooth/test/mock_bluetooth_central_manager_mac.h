@@ -23,6 +23,7 @@
 @property(nonatomic, assign) BOOL scanForPeripheralsCallCount;
 @property(nonatomic, assign) BOOL stopScanCallCount;
 @property(nonatomic, assign) id<CBCentralManagerDelegate> delegate;
+@property(nonatomic, assign) CBCentralManagerState state;
 
 // Designated initializer
 - (instancetype)init;
@@ -30,8 +31,6 @@
 - (instancetype)initWithDelegate:(id<CBCentralManagerDelegate>)delegate
                            queue:(dispatch_queue_t)queue
                          options:(NSDictionary*)options;
-
-- (CBCentralManagerState)state;
 
 - (void)scanForPeripheralsWithServices:(NSArray*)serviceUUIDs
                                options:(NSDictionary*)options;

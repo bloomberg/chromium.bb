@@ -55,6 +55,8 @@
         'bluetooth/test/bluetooth_test.h',
         'bluetooth/test/bluetooth_test_android.cc',
         'bluetooth/test/bluetooth_test_android.h',
+        'bluetooth/test/bluetooth_test_mac.h',
+        'bluetooth/test/bluetooth_test_mac.mm',
         'bluetooth/test/test_bluetooth_adapter_observer.cc',
         'bluetooth/test/test_bluetooth_adapter_observer.h',
         'devices_app/usb/device_impl_unittest.cc',

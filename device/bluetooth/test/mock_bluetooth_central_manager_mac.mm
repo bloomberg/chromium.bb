@@ -9,6 +9,7 @@
 @synthesize scanForPeripheralsCallCount = _scanForPeripheralsCallCount;
 @synthesize stopScanCallCount = _stopScanCallCount;
 @synthesize delegate = _delegate;
+@synthesize state = _state;
 
 - (instancetype)init {
   _scanForPeripheralsCallCount = 0;
@@ -20,10 +21,6 @@
                            queue:(dispatch_queue_t)queue
                          options:(NSDictionary*)options {
   return [self init];
-}
-
-- (CBCentralManagerState)state {
-  return CBCentralManagerStatePoweredOn;
 }
 
 - (void)scanForPeripheralsWithServices:(NSArray*)serviceUUIDs

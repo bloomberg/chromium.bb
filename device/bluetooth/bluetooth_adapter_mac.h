@@ -41,7 +41,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       public BluetoothDiscoveryManagerMac::Observer,
       public BluetoothLowEnergyDiscoveryManagerMac::Observer {
  public:
-  static base::WeakPtr<BluetoothAdapter> CreateAdapter();
+  static base::WeakPtr<BluetoothAdapterMac> CreateAdapter();
+  static base::WeakPtr<BluetoothAdapterMac> CreateAdapterForTest(
+      std::string name,
+      std::string address,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
 
   // BluetoothAdapter overrides:
   std::string GetAddress() const override;
@@ -91,6 +95,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // builder running 10.9.5. May also cause blued to crash on OS X 10.9.5
   // (crbug.com/506287).
   static bool IsLowEnergyAvailable();
+
+  // Resets |low_energy_central_manager_| to |central_manager| and sets
+  // |low_energy_central_manager_delegate_| as the manager's delegate. Should
+  // be called only when |IsLowEnergyAvailable()|.
+  void SetCentralManagerForTesting(CBCentralManager* central_manager);
 
  protected:
   // BluetoothAdapter override:
@@ -148,15 +157,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // observers.
   void AddPairedDevices();
 
-  // Private method for testing. Resets |low_energy_central_manager_| to
-  // |central_manager| and sets |low_energy_central_manager_delegate_| as its
-  // delegate. Should be called only when CoreBluetooth is available.
-  void SetCentralManagerForTesting(CBCentralManager* central_manager);
-
   std::string address_;
   std::string name_;
-  bool powered_;
-
+  bool classic_powered_;
   int num_discovery_sessions_;
 
   // Discovery manager for Bluetooth Classic.
