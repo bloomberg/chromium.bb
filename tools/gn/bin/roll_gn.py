@@ -355,7 +355,11 @@ class GNRoller(object):
       '\n'
       '%s'
       '\n'
-      'TBR=%s\n' % (
+      'TBR=%s\n'
+      'CQ_EXTRA_TRYBOTS=tryserver.chromium.mac:mac_chromium_gn_rel,'
+      'mac_chromium_gn_dbg;'
+      'tryserver.chromium.win:win8_chromium_gn_dbg,'
+      'win_chromium_gn_x64_rel\n' % (
         old_buildtools_commitish,
         new_buildtools_commitish,
         self.old_gn_commitish,
