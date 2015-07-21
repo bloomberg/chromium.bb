@@ -52536,10 +52536,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="ContentSetting" type="int">
+  <int value="0" label="DEFAULT"/>
   <int value="1" label="ALLOW"/>
   <int value="2" label="BLOCK"/>
   <int value="3" label="ASK"/>
   <int value="4" label="SESSION_ONLY"/>
+  <int value="5" label="DETECT_IMPORTANT_CONTENT"/>
 </enum>
 
 <enum name="ContentSettingMixedScriptAction" type="int">
