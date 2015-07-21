@@ -180,7 +180,6 @@
       'common/appcache_messages.h',
       'common/bluetooth/bluetooth_device.cc',
       'common/bluetooth/bluetooth_device.h',
-      'common/bluetooth/bluetooth_error.h',
       'common/bluetooth/bluetooth_messages.h',
       'common/bluetooth/bluetooth_scan_filter.cc',
       'common/bluetooth/bluetooth_scan_filter.h',
