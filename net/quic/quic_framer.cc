@@ -332,8 +332,7 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
                                         size_t packet_length) {
   QuicDataWriter writer(packet_length, buffer);
   if (!AppendPacketHeader(header, &writer)) {
-    // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-    CHECK(false) << "AppendPacketHeader failed";
+    LOG(DFATAL) << "AppendPacketHeader failed";
     return nullptr;
   }
 
@@ -344,8 +343,7 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         (header.is_in_fec_group == NOT_IN_FEC_GROUP) &&
         (i == frames.size() - 1);
     if (!AppendTypeByte(frame, no_stream_frame_length, &writer)) {
-      // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-      CHECK(false) << "AppendTypeByte failed";
+      LOG(DFATAL) << "AppendTypeByte failed";
       return nullptr;
     }
 
@@ -356,24 +354,21 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
       case STREAM_FRAME:
         if (!AppendStreamFrame(
             *frame.stream_frame, no_stream_frame_length, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendStreamFrame failed";
+          LOG(DFATAL) << "AppendStreamFrame failed";
           return nullptr;
         }
         break;
       case ACK_FRAME:
         if (!AppendAckFrameAndTypeByte(
                 header, *frame.ack_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendAckFrameAndTypeByte failed";
+          LOG(DFATAL) << "AppendAckFrameAndTypeByte failed";
           return nullptr;
         }
         break;
       case STOP_WAITING_FRAME:
         if (!AppendStopWaitingFrame(
                 header, *frame.stop_waiting_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendStopWaitingFrame failed";
+          LOG(DFATAL) << "AppendStopWaitingFrame failed";
           return nullptr;
         }
         break;
@@ -384,44 +379,38 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         break;
       case RST_STREAM_FRAME:
         if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendRstStreamFrame failed";
+          LOG(DFATAL) << "AppendRstStreamFrame failed";
           return nullptr;
         }
         break;
       case CONNECTION_CLOSE_FRAME:
         if (!AppendConnectionCloseFrame(
                 *frame.connection_close_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendConnectionCloseFrame failed";
+          LOG(DFATAL) << "AppendConnectionCloseFrame failed";
           return nullptr;
         }
         break;
       case GOAWAY_FRAME:
         if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendGoAwayFrame failed";
+          LOG(DFATAL) << "AppendGoAwayFrame failed";
           return nullptr;
         }
         break;
       case WINDOW_UPDATE_FRAME:
         if (!AppendWindowUpdateFrame(*frame.window_update_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendWindowUpdateFrame failed";
+          LOG(DFATAL) << "AppendWindowUpdateFrame failed";
           return nullptr;
         }
         break;
       case BLOCKED_FRAME:
         if (!AppendBlockedFrame(*frame.blocked_frame, &writer)) {
-          // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-          CHECK(false) << "AppendBlockedFrame failed";
+          LOG(DFATAL) << "AppendBlockedFrame failed";
           return nullptr;
         }
         break;
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
-        // TODO(rtenneti): Revert the CHECKs to LOG(DFATAL).
-        CHECK(false) << "QUIC_INVALID_FRAME_DATA";
+        LOG(DFATAL) << "QUIC_INVALID_FRAME_DATA";
         return nullptr;
     }
     ++i;
