@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/buffers.h"
 
 namespace chromecast {
@@ -94,13 +95,34 @@ void BufferingState::NotifyMaxCapacity(base::TimeDelta buffered_time) {
     high_level_buffer_cb_.Run(buffer_duration);
 }
 
+static const char* StateToString(BufferingState::State state) {
+  switch(state) {
+    case BufferingState::kLowLevel:
+      return "kLowLevel";
+    case BufferingState::kMediumLevel:
+      return "kMediumLevel";
+    case BufferingState::kHighLevel:
+      return "kHighLevel";
+    case BufferingState::kEosReached:
+      return "kEosReached";
+    default:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return "";
+}
+
+static std::string TimeDeltaToString(const base::TimeDelta& t) {
+  if (t == ::media::kNoTimestamp())
+    return "kNoTimestamp";
+  return base::DoubleToString(t.InSecondsF());
+}
+
 std::string BufferingState::ToString() const {
   std::ostringstream s;
-  s << stream_id_ << " state=" << state_
-    << " media_time_ms=" << media_time_.InMilliseconds()
-    << " buffered_time_ms=" << buffered_time_.InMilliseconds()
-    << " low_level_ms=" << config_->low_level().InMilliseconds()
-    << " high_level_ms=" << config_->high_level().InMilliseconds();
+  s << stream_id_ << " state=" << StateToString(state_)
+    << " media_time=" << TimeDeltaToString(media_time_)
+    << " buffered_time=" << TimeDeltaToString(buffered_time_);
   return s.str();
 }
 
