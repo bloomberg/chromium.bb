@@ -77,7 +77,7 @@ grit("resources") {
 source_set("export") {
   visibility = [ "//content/*" ]
   sources = [
-    "content/common/content_export.h",
+    "common/content_export.h",
   ]
 }
 
