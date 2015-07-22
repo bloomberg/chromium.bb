@@ -704,17 +704,7 @@ crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnl
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-Bug(eae) [ Mac ] fast/text/complex-preferred-logical-widths.html [ NeedsRebaseline ]
 Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-br.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/text/emphasis.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/css/text-rendering.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/lists/009-vertical.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/writing-mode/vertical-lr-replaced-selection.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-p.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/lists/003-vertical.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/writing-mode/vertical-rl-replaced-selection.html [ NeedsRebaseline ]
 
 crbug.com/508398 [ Android ] editing/caret/caret-color.html [ ImageOnlyFailure Pass ]
 
@@ -3442,7 +3432,6 @@ crbug.com/508733 tables/mozilla_expected_failures/core/col_span2.html [ NeedsReb
 Bug(eae) [ Win Linux Android ] fast/text/atsui-negative-spacing-features.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android ] fast/text/atsui-small-caps-punctuation-size.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android ] fast/text/atsui-spacing-features.html [ NeedsRebaseline ]
-Bug(eae) [ Win Linux Android ] fast/text/complex-preferred-logical-widths.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android ] fast/text/international/arabic-justify.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android ] fast/text/vertical-rl-rtl-linebreak.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android Lion MountainLion Retina Mavericks ] fast/text/apply-start-width-after-skipped-text.html [ NeedsRebaseline ]
@@ -3507,7 +3496,6 @@ Bug(eae) [ Win Linux Android SnowLeopard Lion MountainLion Retina Mavericks ] fa
 Bug(eae) [ Win Android SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/emphasis-complex.html [ NeedsRebaseline ]
 Bug(eae) [ Linux Android ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/emphasis-height-crash.html [ NeedsRebaseline ]
-Bug(eae) [ Win Linux Android ] fast/text/emphasis.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/emphasis-vertical.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/fallback-for-custom-font.html [ NeedsRebaseline ]
 Bug(eae) [ Win Linux Android SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/fallback-traits-fixup.html [ NeedsRebaseline ]

@@ -25,9 +25,9 @@ layer at (0,0) size 800x567
         LayoutInline {SPAN} at (0,0) size 214x28
           LayoutText {#text} at (3,45) size 214x28
             text run at (3,45) width 214: "consectetur adipiscing"
-        LayoutText {#text} at (216,45) size 133x28
+        LayoutText {#text} at (216,45) size 134x28
           text run at (216,45) width 7: " "
-          text run at (222,45) width 127: "elit. Aliquam"
+          text run at (222,45) width 128: "elit. Aliquam"
         LayoutInline {SPAN} at (0,0) size 110x28
           LayoutText {#text} at (3,73) size 110x28
             text run at (3,73) width 110: "odio sa\x{300}pien"
