@@ -351,11 +351,10 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   var onCancel = function() {
     // According to API cancel may fail, but there is no proper UI to reflect
     // this. So, we just silently assume that everything is cancelled.
-    chrome.fileManagerPrivate.cancelFileTransfers(
-        selection.urls, function() {
-          if (chrome.runtime.lastError)
-            console.error(chrome.runtime.lastError.message);
-        });
+    util.URLsToEntries(selection.urls).then(function(entries) {
+      chrome.fileManagerPrivate.cancelFileTransfers(
+          entries, util.checkAPIError);
+    });
   }.bind(this);
 
   var onProperties = function(properties) {

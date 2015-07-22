@@ -159,6 +159,38 @@ binding.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.setEntryTag(
         url, visibility, key, value, callback);
   });
+
+  apiFunctions.setHandleRequest('cancelFileTransfers', function(
+        entries, callback) {
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.cancelFileTransfers(entry);
+    });
+    fileManagerPrivateInternal.cancelFileTransfers(urls, callback);
+  });
+
+  apiFunctions.setHandleRequest('startCopy', function(
+        entry, parentEntry, newName, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    var parentUrl = fileBrowserHandlerNatives.GetEntryURL(parentEntry);
+    fileManagerPrivateInternal.startCopy(
+        url, parentUrl, newName, callback);
+  });
+
+  apiFunctions.setHandleRequest('zipSelection', function(
+        parentEntry, entries, destName, callback) {
+    var parentUrl = fileBrowserHandlerNatives.GetEntryURL(parentEntry);
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.cancelFileTransfers(entry);
+    });
+    fileManagerPrivateInternal.zipSelection(
+        parentUrl, urls, destName, callback);
+  });
+
+  apiFunctions.setHandleRequest('validatePathNameLength', function(
+        entry, name, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.validatePathNameLength(url, name, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(

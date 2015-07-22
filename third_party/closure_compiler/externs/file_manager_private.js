@@ -401,16 +401,16 @@ chrome.fileManagerPrivate.cancelAllFileTransfers = function(callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
- * recursively. |sourceUrl| URL of the source entry to be copied. |parent| URL
- * of the destination directory. |newName| Name of the new entry. It shouldn't
+ * recursively. |sourceUrl| URL of the source entry to be copied. |parent| Entry
+ * of the destination directory. |newName| Name of the new entry. It must not
  * contain '/'. |callback| Completion callback.
- * @param {string} sourceUrl
- * @param {string} parent
+ * @param {!Entry} entry
+ * @param {!DirectoryEntry} parentEntry
  * @param {string} newName
  * @param {function((number|undefined))} callback |copyId| ID of the copy task.
  *     Can be used to identify the progress, and to cancel the task.
  */
-chrome.fileManagerPrivate.startCopy = function(sourceUrl, parent, newName,
+chrome.fileManagerPrivate.startCopy = function(entry, parentEntry, newName,
     callback) {};
 
 /**
@@ -476,17 +476,17 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes,
     callback) {};
 
 /**
- * Create a zip file for the selected files. |dirURL| URL of the directory
- * containing the selected files. |selectionUrls| URLs of the selected files.
- * The files must be under the     directory specified by dirURL. |destName|
- * Name of the destination zip file. The zip file will be created     under the
- * directory specified by dirURL. |callback|
- * @param {string} dirURL
- * @param {!Array<string>} selectionUrls
+ * Create a zip file for the selected files. |parentEntry| Entry of the
+ * directory containing the selected files. |entries| Selected entries.
+ * The files must be under the directory specified by |parentEntry|. |destName|
+ * Name of the destination zip file. The zip file will be created under the
+ * directory specified by |parentEntry|.
+ * @param {!DirectoryEntry} parentEntry
+ * @param {!Array<!Entry>} entries
  * @param {string} destName
  * @param {function((boolean|undefined))} callback
  */
-chrome.fileManagerPrivate.zipSelection = function(dirURL, selectionUrls,
+chrome.fileManagerPrivate.zipSelection = function(parentEntry, entries,
     destName, callback) {};
 
 /**
@@ -497,15 +497,15 @@ chrome.fileManagerPrivate.getDriveConnectionState = function(callback) {};
 
 /**
  * Checks whether the path name length fits in the limit of the filesystem.
- * |parent_directory_url| The URL of the parent directory entry. |name| The
- * name of the file. |callback| Called back when the check is finished.
- * @param {string} parentDirectoryUrl
+ * |parentEntry| The parent directory entry. |name| The name of the file.
+ * |callback| Called back when the check is finished.
+ * @param {!DirectoryEntry} parentEntry
  * @param {string} name
  * @param {function((boolean|undefined))} callback |result| true if the length
  *     is in the valid range, false otherwise.
  */
 chrome.fileManagerPrivate.validatePathNameLength = function(
-    parentDirectoryUrl, name, callback) {};
+    parentEntry, name, callback) {};
 
 /**
  * Changes the zoom factor of the Files.app. |operation| Zooming mode.

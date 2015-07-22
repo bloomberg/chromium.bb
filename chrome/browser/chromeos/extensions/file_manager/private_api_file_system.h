@@ -163,14 +163,15 @@ class FileManagerPrivateGetSizeStatsFunction
 };
 
 // Implements the chrome.fileManagerPrivate.validatePathNameLength method.
-class FileManagerPrivateValidatePathNameLengthFunction
+class FileManagerPrivateInternalValidatePathNameLengthFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.validatePathNameLength",
-                             FILEMANAGERPRIVATE_VALIDATEPATHNAMELENGTH)
+  DECLARE_EXTENSION_FUNCTION(
+      "fileManagerPrivateInternal.validatePathNameLength",
+      FILEMANAGERPRIVATEINTERNAL_VALIDATEPATHNAMELENGTH)
 
  protected:
-  ~FileManagerPrivateValidatePathNameLengthFunction() override {}
+  ~FileManagerPrivateInternalValidatePathNameLengthFunction() override {}
 
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
@@ -194,14 +195,14 @@ class FileManagerPrivateFormatVolumeFunction
 };
 
 // Implements the chrome.fileManagerPrivate.startCopy method.
-class FileManagerPrivateStartCopyFunction
+class FileManagerPrivateInternalStartCopyFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.startCopy",
-                             FILEMANAGERPRIVATE_STARTCOPY)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.startCopy",
+                             FILEMANAGERPRIVATEINTERNAL_STARTCOPY)
 
  protected:
-  ~FileManagerPrivateStartCopyFunction() override {}
+  ~FileManagerPrivateInternalStartCopyFunction() override {}
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

@@ -51,7 +51,7 @@ function fileCopy(fromRoot, fromPath, toRoot, toPath, newName,
       };
       chrome.fileManagerPrivate.onCopyProgress.addListener(onProgress);
       chrome.fileManagerPrivate.startCopy(
-        from.toURL(), to.toURL(), newName, function(startCopyId) {
+        from, to, newName, function(startCopyId) {
           if (chrome.runtime.lastError) {
             errorCallback('Error starting to copy.');
             return;

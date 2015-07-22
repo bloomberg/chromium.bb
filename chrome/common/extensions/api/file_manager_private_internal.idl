@@ -26,6 +26,10 @@ namespace fileManagerPrivateInternal {
   callback ExecuteTaskCallback = void(fileManagerPrivate.TaskResult result);
   callback GetFileTasksCallback = void(fileManagerPrivate.FileTask[] tasks);
   callback GetUrlCallback = void(DOMString url);
+  callback GetUrlCallback = void(DOMString url);
+  callback StartCopyCallback = void(long copyId);
+  callback ZipSelectionCallback = void(optional boolean success);
+  callback ValidatePathNameLengthCallback = void(boolean result);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -71,5 +75,19 @@ namespace fileManagerPrivateInternal {
                             DOMString key,
                             DOMString value,
                             SimpleCallback callback);
+    static void cancelFileTransfers(DOMString[] urls,
+                                    optional SimpleCallback callback);
+    static void startCopy(DOMString url,
+                          DOMString parentUrl,
+                          DOMString newName,
+                          StartCopyCallback callback);
+    static void zipSelection(DOMString parentUrl,
+                             DOMString[] urls,
+                             DOMString destName,
+                             ZipSelectionCallback callback);
+    static void validatePathNameLength(
+        DOMString parentUrl,
+        DOMString name,
+        ValidatePathNameLengthCallback callback);
   };
 };

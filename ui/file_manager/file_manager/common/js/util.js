@@ -993,7 +993,7 @@ util.isDropEffectAllowed = function(effectAllowed, dropEffect) {
  *
  * It also verifies if the name length is in the limit of the filesystem.
  *
- * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
+ * @param {!DirectoryEntry} parentEntry The entry of the parent directory.
  * @param {string} name New file or folder name.
  * @param {boolean} filterHiddenOn Whether to report the hidden file name error
  *     or not.
@@ -1016,7 +1016,7 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
 
   return new Promise(function(fulfill, reject) {
     chrome.fileManagerPrivate.validatePathNameLength(
-        parentEntry.toURL(),
+        parentEntry,
         name,
         function(valid) {
           if (valid)

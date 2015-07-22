@@ -610,8 +610,9 @@ void FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet(
   }
 }
 
-bool FileManagerPrivateCancelFileTransfersFunction::RunAsync() {
-  using extensions::api::file_manager_private::CancelFileTransfers::Params;
+bool FileManagerPrivateInternalCancelFileTransfersFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::CancelFileTransfers::
+      Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -632,9 +633,9 @@ bool FileManagerPrivateCancelFileTransfersFunction::RunAsync() {
       path_to_id_map[jobs[i].file_path].push_back(jobs[i].job_id);
   }
 
-  for (size_t i = 0; i < params->file_urls.size(); ++i) {
+  for (size_t i = 0; i < params->urls.size(); ++i) {
     base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-        render_frame_host(), GetProfile(), GURL(params->file_urls[i]));
+        render_frame_host(), GetProfile(), GURL(params->urls[i]));
     if (file_path.empty())
       continue;
 

@@ -773,9 +773,10 @@ interface Functions {
   static void getVolumeMetadataList(GetVolumeMetadataListCallback callback);
 
   // Cancels ongoing file transfers for selected files.
-  // |fileUrls| Array of files for which ongoing transfer should be canceled.
+  // |entries| Array of files for which ongoing transfer should be canceled.
   // |callback| Completion callback of the cancel.
-  static void cancelFileTransfers(DOMString[] fileUrls,
+  [nocompile]
+  static void cancelFileTransfers([instanceof=Entry] object[] entries,
                                   SimpleCallback callback);
 
   // Cancels all ongoing file transfers.
@@ -784,12 +785,13 @@ interface Functions {
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
-  // |sourceUrl| URL of the source entry to be copied.
-  // |parent| URL of the destination directory.
-  // |newName| Name of the new entry. It shouldn't contain '/'.
+  // |entry| Entry of the source entry to be copied.
+  // |parentEntry| Entry for the destination (parent) directory.
+  // |newName| Name of the new entry. It must not contain '/'.
   // |callback| Completion callback.
-  static void startCopy(DOMString sourceUrl,
-                        DOMString parent,
+  [nocompile]
+  static void startCopy([instanceof=Entry] object entry,
+                        [instanceof=DirectoryEntry] object parentEntry,
                         DOMString newName,
                         StartCopyCallback callback);
 
@@ -834,14 +836,16 @@ interface Functions {
                                   SearchFilesByHashesCallback callback);
 
   // Create a zip file for the selected files.
-  // |dirURL| URL of the directory containing the selected files.
-  // |selectionUrls| URLs of the selected files. The files must be under the
-  //     directory specified by dirURL.
+  // |parentEntry| Entry of the directory containing the selected files.
+  // |entries| Entries of the selected files. The files must be under the
+  //     directory specified by |parentEntry|.
   // |destName| Name of the destination zip file. The zip file will be created
-  //     under the directory specified by dirURL.
+  //     under the directory specified by |parentEntry|.
   // |callback|
-  static void zipSelection(DOMString dirURL,
-                           DOMString[] selectionUrls,
+  // TODO(mtomasz): Swap order of |entries| and |parentEntry|.
+  [nocompile]
+  static void zipSelection([instanceof=DirectoryEntry] object parentEntry,
+                           [instanceof=Entry] object[] entries,
                            DOMString destName,
                            ZipSelectionCallback callback);
 
@@ -850,12 +854,14 @@ interface Functions {
   static void getDriveConnectionState(GetDriveConnectionStateCallback callback);
 
   // Checks whether the path name length fits in the limit of the filesystem.
-  // |parentDirectoryUrl| The URL of the parent directory entry.
+  // |parentEntry| The entry of the parent directory entry.
   // |name| The name of the file.
   // |callback| Called back when the check is finished.
-  static void validatePathNameLength(DOMString parentDirectoryUrl,
-                                     DOMString name,
-                                     ValidatePathNameLengthCallback callback);
+  [nocompile]
+  static void validatePathNameLength(
+      [instanceof=DirectoryEntry] object parentEntry,
+      DOMString name,
+      ValidatePathNameLengthCallback callback);
 
   // Changes the zoom factor of the Files.app.
   // |operation| Zooming mode.

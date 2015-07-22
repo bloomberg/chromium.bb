@@ -83,14 +83,14 @@ class FileManagerPrivateInternalPinDriveFileFunction
 };
 
 // Implements the chrome.fileManagerPrivate.cancelFileTransfers method.
-class FileManagerPrivateCancelFileTransfersFunction
+class FileManagerPrivateInternalCancelFileTransfersFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelFileTransfers",
-                             FILEMANAGERPRIVATE_CANCELFILETRANSFERS)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.cancelFileTransfers",
+                             FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS)
 
  protected:
-  ~FileManagerPrivateCancelFileTransfersFunction() override {}
+  ~FileManagerPrivateInternalCancelFileTransfersFunction() override {}
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

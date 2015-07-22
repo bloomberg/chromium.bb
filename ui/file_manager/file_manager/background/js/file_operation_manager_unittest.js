@@ -99,20 +99,25 @@ function BlockableFakeStartCopy(blockedDestination, sourceEntry, fileSystems) {
 
 /**
  * A fake implemencation of startCopy function.
- * @param {string} source
- * @param {string} destination
+ * @param {!Entry} source
+ * @param {!Entry} destination
  * @param {string} newName
  * @param {function(number)} callback
  */
 BlockableFakeStartCopy.prototype.startCopyFunc = function(
     source, destination, newName, callback) {
   var makeStatus = function(type) {
-    return {type: type, sourceUrl: source, destinationUrl: destination};
+    return {
+      type: type,
+      sourceUrl: source.toURL(),
+      destinationUrl: destination.toURL()
+    };
   };
 
   var completeCopyOperation = function(copyId) {
     var newPath = joinPath('/', newName);
-    var fileSystem = getFileSystemForURL(this.fileSystems_, destination);
+    var fileSystem = getFileSystemForURL(
+        this.fileSystems_, destination.toURL());
     fileSystem.entries[newPath] = this.sourceEntry_.clone(newPath);
     listener(copyId, makeStatus('end_copy_entry'));
     listener(copyId, makeStatus('success'));
@@ -125,7 +130,7 @@ BlockableFakeStartCopy.prototype.startCopyFunc = function(
   listener(this.startCopyId_, makeStatus('begin_copy_entry'));
   listener(this.startCopyId_, makeStatus('progress'));
 
-  if (destination === this.blockedDestination_) {
+  if (destination.toURL() === this.blockedDestination_) {
     this.resolveBlockedOperationCallback =
         completeCopyOperation.bind(this, this.startCopyId_);
   } else {
@@ -160,7 +165,7 @@ function getFileSystemForURL(fileSystems, url) {
     if (new RegExp('^filesystem:' + fileSystems[i].name + '/').test(url))
       return fileSystems[i];
   }
-  throw new Error('Unexpected url.');
+  throw new Error('Unexpected url: ' + url + '.');
 }
 
 /**
@@ -463,7 +468,11 @@ function testCopy(callback) {
   chrome.fileManagerPrivate.startCopy =
       function(source, destination, newName, callback) {
         var makeStatus = function(type) {
-          return {type: type, sourceUrl: source, destinationUrl: destination};
+          return {
+            type: type,
+            sourceUrl: source.toURL(),
+            destinationUrl: destination.toURL()
+          };
         };
         callback(1);
         var listener = chrome.fileManagerPrivate.onCopyProgress.listener_;
@@ -822,7 +831,7 @@ function testZip(callback) {
   window.webkitResolveLocalFileSystemURL =
       resolveTestFileSystemURL.bind(null, fileSystem);
   chrome.fileManagerPrivate.zipSelection =
-      function(parentURL, sources, newName, success, error) {
+      function(parent, sources, newName, success, error) {
         var newPath = joinPath('/', newName);
         var newEntry = new MockFileEntry(fileSystem, newPath, {size: 10});
         fileSystem.entries[newPath] = newEntry;

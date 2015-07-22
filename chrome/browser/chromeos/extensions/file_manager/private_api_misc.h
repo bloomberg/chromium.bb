@@ -68,16 +68,16 @@ class FileManagerPrivateSetPreferencesFunction
 
 // Implements the chrome.fileManagerPrivate.zipSelection method.
 // Creates a zip file for the selected files.
-class FileManagerPrivateZipSelectionFunction
+class FileManagerPrivateInternalZipSelectionFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.zipSelection",
-                             FILEMANAGERPRIVATE_ZIPSELECTION)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.zipSelection",
+                             FILEMANAGERPRIVATEINTERNAL_ZIPSELECTION)
 
-  FileManagerPrivateZipSelectionFunction();
+  FileManagerPrivateInternalZipSelectionFunction();
 
  protected:
-  ~FileManagerPrivateZipSelectionFunction() override;
+  ~FileManagerPrivateInternalZipSelectionFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

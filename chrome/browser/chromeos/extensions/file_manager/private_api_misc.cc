@@ -159,34 +159,34 @@ bool FileManagerPrivateSetPreferencesFunction::RunSync() {
   return true;
 }
 
-FileManagerPrivateZipSelectionFunction::
-    FileManagerPrivateZipSelectionFunction() {}
+FileManagerPrivateInternalZipSelectionFunction::
+    FileManagerPrivateInternalZipSelectionFunction() {}
 
-FileManagerPrivateZipSelectionFunction::
-    ~FileManagerPrivateZipSelectionFunction() {}
+FileManagerPrivateInternalZipSelectionFunction::
+    ~FileManagerPrivateInternalZipSelectionFunction() {}
 
-bool FileManagerPrivateZipSelectionFunction::RunAsync() {
-  using extensions::api::file_manager_private::ZipSelection::Params;
+bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::ZipSelection::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // First param is the source directory URL.
-  if (params->dir_url.empty())
+  // First param is the parent directory URL.
+  if (params->parent_url.empty())
     return false;
 
   base::FilePath src_dir = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), GetProfile(), GURL(params->dir_url));
+      render_frame_host(), GetProfile(), GURL(params->parent_url));
   if (src_dir.empty())
     return false;
 
-  // Second param is the list of selected file URLs.
-  if (params->selection_urls.empty())
+  // Second param is the list of selected file URLs to be zipped.
+  if (params->urls.empty())
     return false;
 
   std::vector<base::FilePath> files;
-  for (size_t i = 0; i < params->selection_urls.size(); ++i) {
+  for (size_t i = 0; i < params->urls.size(); ++i) {
     base::FilePath path = file_manager::util::GetLocalPathFromURL(
-        render_frame_host(), GetProfile(), GURL(params->selection_urls[i]));
+        render_frame_host(), GetProfile(), GURL(params->urls[i]));
     if (path.empty())
       return false;
     files.push_back(path);
@@ -214,14 +214,14 @@ bool FileManagerPrivateZipSelectionFunction::RunAsync() {
   }
 
   (new file_manager::ZipFileCreator(
-       base::Bind(&FileManagerPrivateZipSelectionFunction::OnZipDone, this),
-       src_dir,
-       src_relative_paths,
-       dest_file))->Start();
+       base::Bind(&FileManagerPrivateInternalZipSelectionFunction::OnZipDone,
+                  this),
+       src_dir, src_relative_paths, dest_file))
+      ->Start();
   return true;
 }
 
-void FileManagerPrivateZipSelectionFunction::OnZipDone(bool success) {
+void FileManagerPrivateInternalZipSelectionFunction::OnZipDone(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }

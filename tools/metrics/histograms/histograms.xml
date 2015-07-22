@@ -55424,7 +55424,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="18" label="TERMINALPRIVATE_ONTERMINALRESIZE"/>
   <int value="19" label="DELETED_FILEMANAGERPRIVATE_REQUESTDIRECTORYREFRESH"/>
   <int value="20" label="BLUETOOTH_GETADAPTERSTATE"/>
-  <int value="21" label="FILEMANAGERPRIVATE_CANCELFILETRANSFERS"/>
+  <int value="21" label="FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS"/>
   <int value="22" label="FILEMANAGERPRIVATEINTERNAL_PINDRIVEFILE"/>
   <int value="23" label="SOCKET_WRITE"/>
   <int value="24" label="OMNIBOX_SETDEFAULTSUGGESTION"/>
@@ -55732,7 +55732,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="325" label="BLUETOOTH_GETDEVICES"/>
   <int value="326" label="ALARMS_CLEARALL"/>
   <int value="327" label="FONTSETTINGS_GETDEFAULTFIXEDFONTSIZE"/>
-  <int value="328" label="FILEMANAGERPRIVATE_ZIPSELECTION"/>
+  <int value="328" label="FILEMANAGERPRIVATEINTERNAL_ZIPSELECTION"/>
   <int value="329" label="SYSTEMINDICATOR_DISABLE"/>
   <int value="330" label="DELETED_SCRIPTBADGE_SETPOPUP"/>
   <int value="331" label="EXTENSION_ISALLOWEDFILESCHEMEACCESS"/>
@@ -55808,7 +55808,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="401" label="DELETED_SESSIONRESTORE_RESTORE"/>
   <int value="402" label="MANAGEMENT_UNINSTALLSELF"/>
   <int value="403" label="ECHOPRIVATE_GETOOBETIMESTAMP"/>
-  <int value="404" label="FILEMANAGERPRIVATE_VALIDATEPATHNAMELENGTH"/>
+  <int value="404" label="FILEMANAGERPRIVATEINTERNAL_VALIDATEPATHNAMELENGTH"/>
   <int value="405" label="BROWSINGDATA_SETTINGS"/>
   <int value="406" label="WEBSTOREPRIVATE_GETISLAUNCHERENABLED"/>
   <int value="407" label="NETWORKINGPRIVATE_GETPROPERTIES"/>
@@ -55967,7 +55967,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="557" label="ECHOPRIVATE_GETOFFERINFO"/>
   <int value="558" label="DEVELOPERPRIVATE_ISPROFILEMANAGED"/>
   <int value="559" label="DELETED_FILEMANAGERPRIVATE_INSTALLWEBSTOREITEM"/>
-  <int value="560" label="FILEMANAGERPRIVATE_STARTCOPY"/>
+  <int value="560" label="FILEMANAGERPRIVATEINTERNAL_STARTCOPY"/>
   <int value="561" label="FILEMANAGERPRIVATE_CANCELCOPY"/>
   <int value="562" label="NETWORKINGPRIVATE_CREATENETWORK"/>
   <int value="563" label="BRAILLEDISPLAYPRIVATE_GETDISPLAYSTATE"/>
