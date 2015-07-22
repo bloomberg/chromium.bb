@@ -234,6 +234,30 @@ TEST_F(LoggingTest, DcheckReleaseBehavior) {
   DCHECK_EQ(some_variable, 1) << "test";
 }
 
+TEST_F(LoggingTest, DCheckEqStatements) {
+  bool reached = false;
+  if (false)
+    DCHECK_EQ(false, true);           // Unreached.
+  else
+    DCHECK_EQ(true, reached = true);  // Reached, passed.
+  ASSERT_EQ(DCHECK_IS_ON() ? true : false, reached);
+
+  if (false)
+    DCHECK_EQ(false, true);           // Unreached.
+}
+
+TEST_F(LoggingTest, CheckEqStatements) {
+  bool reached = false;
+  if (false)
+    CHECK_EQ(false, true);           // Unreached.
+  else
+    CHECK_EQ(true, reached = true);  // Reached, passed.
+  ASSERT_TRUE(reached);
+
+  if (false)
+    CHECK_EQ(false, true);           // Unreached.
+}
+
 // Test that defining an operator<< for a type in a namespace doesn't prevent
 // other code in that namespace from calling the operator<<(ostream, wstring)
 // defined by logging.h. This can fail if operator<<(ostream, wstring) can't be

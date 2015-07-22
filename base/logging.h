@@ -426,6 +426,21 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define EAT_STREAM_PARAMETERS                                           \
   true ? (void) 0 : ::logging::LogMessageVoidify() & LOG_STREAM(FATAL)
 
+// Captures the result of a CHECK_EQ (for example) and facilitates testing as a
+// boolean.
+class CheckOpResult {
+ public:
+  // |message| must be null if and only if the check failed.
+  CheckOpResult(std::string* message) : message_(message) {}
+  // Returns true if the check succeeded.
+  operator bool() const { return !message_; }
+  // Returns the message.
+  std::string* message() { return message_; }
+
+ private:
+  std::string* message_;
+};
+
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
 // compilation mode.
@@ -483,14 +498,18 @@ const LogSeverity LOG_0 = LOG_ERROR;
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use CHECK_EQ et al below.
-//
-// TODO(akalin): Rewrite this so that constructs like if (...)
-// CHECK_EQ(...) else { ... } work properly.
-#define CHECK_OP(name, op, val1, val2)                          \
-  if (std::string* _result =                                    \
-      logging::Check##name##Impl((val1), (val2),                \
-                                 #val1 " " #op " " #val2))      \
-    logging::LogMessage(__FILE__, __LINE__, _result).stream()
+// The 'switch' is used to prevent the 'else' from being ambiguous when the
+// macro is used in an 'if' clause such as:
+// if (a == 1)
+//   CHECK_EQ(2, a);
+#define CHECK_OP(name, op, val1, val2)                                         \
+  switch (0) case 0: default:                                                  \
+  if (logging::CheckOpResult true_if_passed =                                  \
+      logging::Check##name##Impl((val1), (val2),                               \
+                                 #val1 " " #op " " #val2))                     \
+   ;                                                                           \
+  else                                                                         \
+    logging::LogMessage(__FILE__, __LINE__, true_if_passed.message()).stream()
 
 #endif
 
@@ -666,12 +685,20 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.
-#define DCHECK_OP(name, op, val1, val2)                                   \
-  if (DCHECK_IS_ON())                                                     \
-    if (std::string* _result = logging::Check##name##Impl(                \
-            (val1), (val2), #val1 " " #op " " #val2))                     \
-  logging::LogMessage(__FILE__, __LINE__, ::logging::LOG_DCHECK, _result) \
-      .stream()
+// The 'switch' is used to prevent the 'else' from being ambiguous when the
+// macro is used in an 'if' clause such as:
+// if (a == 1)
+//   DCHECK_EQ(2, a);
+#define DCHECK_OP(name, op, val1, val2)                               \
+  switch (0) case 0: default:                                         \
+  if (logging::CheckOpResult true_if_passed =                         \
+      DCHECK_IS_ON() ?                                                \
+      logging::Check##name##Impl((val1), (val2),                      \
+                                 #val1 " " #op " " #val2) : nullptr)  \
+   ;                                                                  \
+  else                                                                \
+    logging::LogMessage(__FILE__, __LINE__, ::logging::LOG_DCHECK,    \
+                        true_if_passed.message()).stream()
 
 // Equality/Inequality checks - compare two values, and log a
 // LOG_DCHECK message including the two values when the result is not
