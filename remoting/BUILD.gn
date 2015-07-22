@@ -4,13 +4,14 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/util/version.gni")
 import("//remoting/remoting_version.gni")
 import("//remoting/remoting_enable.gni")
 import("//testing/test.gni")
 
 # Various remoting targets need this version definition.
 config("version") {
-  defines = [ "VERSION=$version_full" ]
+  defines = [ "VERSION=$chrome_version_full" ]
 }
 
 group("remoting_all") {

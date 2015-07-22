@@ -533,12 +533,14 @@
               'message': 'Copy first run complete sentinel file',
             },
             {
+              # GN version: //chrome/app/version_assembly:chrome_exe_manifest
               'action_name': 'chrome_exe_manifest',
               'includes': [
                   'app/version_assembly/chrome_exe_manifest_action.gypi',
               ],
             },
             {
+              # GN version: //chrome/app/version_assembly:version_assembly_manifest
               'action_name': 'version_assembly_manifest',
               'includes': [
                   'app/version_assembly/version_assembly_manifest_action.gypi',

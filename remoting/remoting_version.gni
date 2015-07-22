@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 
 _version_py_abspath = "//build/util/version.py"
 _remoting_version_abspath = "//remoting/VERSION"
-_chrome_version_abspath = "//chrome/VERSION"
 if (is_chrome_branded) {
   _remoting_branding_abspath = "//remoting/branding_Chrome"
 } else {
@@ -17,57 +16,12 @@ if (is_chrome_branded) {
 # be re-run if the files change.
 remoting_version_files = [
   _remoting_version_abspath,
-  _chrome_version_abspath,
   _remoting_branding_abspath,
 ]
 
-_chrome_version_path = rebase_path(_chrome_version_abspath, root_build_dir)
 _remoting_version_path = rebase_path(_remoting_version_abspath, root_build_dir)
 _remoting_branding_path =
     rebase_path(_remoting_branding_abspath, root_build_dir)
-
-version_major = exec_script(_version_py_abspath,
-                            [
-                              "-f",
-                              _chrome_version_path,
-                              "-f",
-                              _remoting_version_path,
-                              "-t \"@MAJOR@\"",
-                            ],
-                            "value",
-                            remoting_version_files)
-
-version_minor = exec_script(_version_py_abspath,
-                            [
-                              "-f",
-                              _remoting_version_path,
-                              "-t \"@REMOTING_PATCH@\"",
-                            ],
-                            "value",
-                            remoting_version_files)
-
-version_short =
-    "${version_major}.${version_minor}." + exec_script(_version_py_abspath,
-                                                       [
-                                                         "-f",
-                                                         _chrome_version_path,
-                                                         "-f",
-                                                         _remoting_version_path,
-                                                         "-t \"@BUILD@\"",
-                                                       ],
-                                                       "value",
-                                                       remoting_version_files)
-
-version_full = "${version_short}." + exec_script(_version_py_abspath,
-                                                 [
-                                                   "-f",
-                                                   _chrome_version_path,
-                                                   "-f",
-                                                   _remoting_version_path,
-                                                   "-t \"@PATCH@\"",
-                                                 ],
-                                                 "value",
-                                                 remoting_version_files)
 
 prefpane_bundle_name = exec_script(_version_py_abspath,
                                    [

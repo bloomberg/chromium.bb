@@ -5,6 +5,7 @@
 # Keep in sync with 'remoting_webapp' target in remoting/remoting_client.gypi.
 
 import("//build/config/chrome_build.gni")
+import("//build/util/version.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_options.gni")
 import("//remoting/remoting_version.gni")
@@ -211,7 +212,7 @@ template("desktop_remoting_webapp") {
 
     args = [
       buildtype,
-      version_full,
+      chrome_version_full,
       output_dir,
       zip_path,
       rebase_path("crd/manifest.json.jinja2", root_build_dir),
@@ -307,7 +308,7 @@ template("app_remoting_webapp") {
 
     args = [
       buildtype,
-      version_full,
+      chrome_version_full,
       output_dir,
       zip_path,
       rebase_path(ar_app_manifest, root_build_dir),
@@ -492,7 +493,7 @@ template("app_remoting_shared_module") {
 
     args = [
       buildtype,
-      version_full,
+      chrome_version_full,
       output_dir,
       zip_path,
       rebase_path(ar_manifest, root_build_dir),

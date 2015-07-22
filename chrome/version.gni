@@ -36,10 +36,16 @@ import("//build/config/chrome_build.gni")
 #   template_file (optional):
 #     Template file to use (not a list). Defaults to
 #     //chrome/app/chrome_version.rc.version if unspecified.
+#     TODO(brettw) remove this default behavior and specify it every time.
 #
 #   extra_args (optional):
 #     Extra arguments to pass to version.py. Any "-f <filename>" args should
 #     use sources instead.
+#
+#   process_only (optional, defaults to false)
+#     Set to generate only one action that processes the version file and
+#     doesn't attempt to link the result into a source set. This is for if
+#     you are processing the version as data only.
 #
 #   visibility (optional)
 #
@@ -55,11 +61,16 @@ template("process_version") {
          "Either sources or template_file must be defined for $target_name")
   assert(defined(invoker.output), "Output must be defined for $target_name")
 
-  action_name = target_name + "_action"
-  source_set_name = target_name
+  process_only = defined(invoker.process_only) && invoker.process_only
+
+  if (process_only) {
+    action_name = target_name
+  } else {
+    action_name = target_name + "_action"
+    source_set_name = target_name
+  }
 
   action(action_name) {
-    visibility = [ ":$source_set_name" ]
     script = "//build/util/version.py"
 
     lastchange_path = "//build/util/LASTCHANGE"
@@ -113,15 +124,27 @@ template("process_version") {
       rebase_path(template_path, root_build_dir),
       rebase_path(invoker.output, root_build_dir),
     ]
+
+    if (process_only) {
+      # When processing only, visibility gets applied to this target.
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
+    } else {
+      # When linking the result, only the source set can depend on the action.
+      visibility = [ ":$source_set_name" ]
+    }
   }
 
-  source_set(source_set_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
+  if (!process_only) {
+    source_set(source_set_name) {
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
+      sources = get_target_outputs(":$action_name")
+      public_deps = [
+        ":$action_name",
+      ]
     }
-    sources = get_target_outputs(":$action_name")
-    public_deps = [
-      ":$action_name",
-    ]
   }
 }

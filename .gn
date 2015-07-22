@@ -118,6 +118,7 @@ exec_script_whitelist = [
   "//build/toolchain/gcc_toolchain.gni",
   "//build/toolchain/mac/BUILD.gn",
   "//build/toolchain/win/BUILD.gn",
+  "//build/util/version.gni",
   "//chrome/android/BUILD.gn",
   "//chrome/browser/BUILD.gn",
   "//chrome/browser/chromeos/BUILD.gn",
