@@ -288,18 +288,6 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
   signal.Wait();
 }
 
-void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
-  scoped_ptr<NativePanelTesting> panel_testing(
-      CreateNativePanelTesting(panel));
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
-      content::Source<Panel>(panel));
-  if (panel_testing->IsWindowSizeKnown())
-    return;
-  signal.Wait();
-  EXPECT_TRUE(panel_testing->IsWindowSizeKnown());
-}
-
 void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
@@ -388,10 +376,6 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     // asynchronous communication, and it is not enough to just run the local
     // message loop to make sure this activity has completed.
     WaitForPanelActiveState(panel, params.expected_active_state);
-
-    // On Linux, window size is not available right away and we should wait
-    // before moving forward with the test.
-    WaitForWindowSizeAvailable(panel);
 
     // Wait for the bounds animations on creation to finish.
     WaitForBoundsAnimationFinished(panel);

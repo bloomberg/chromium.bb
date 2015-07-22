@@ -86,7 +86,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   static NativePanelTesting* CreateNativePanelTesting(Panel* panel);
 
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
-  void WaitForWindowSizeAvailable(Panel* panel);
   void WaitForBoundsAnimationFinished(Panel* panel);
 
   scoped_refptr<extensions::Extension> CreateExtension(
