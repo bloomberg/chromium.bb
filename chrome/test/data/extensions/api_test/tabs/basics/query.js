@@ -180,12 +180,16 @@ chrome.test.runTests([
         }));
         chrome.tabs.query({windowType: 'popup'}, pass(function(tabs) {
           assertEq(2, tabs.length);
+          for (var i = 0; i < tabs.length; i++)
+            assertFalse(tabs[i].id == chrome.tabs.TAB_ID_NONE);
         }));
         chrome.tabs.query({
           windowType: 'popup',
           url: 'about:*'
         }, pass(function(tabs) {
           assertEq(2, tabs.length);
+          for (var i = 0; i < tabs.length; i++)
+            assertFalse(tabs[i].id == chrome.tabs.TAB_ID_NONE);
         }));
       }));
     }));
@@ -211,4 +215,3 @@ chrome.test.runTests([
     }));
   }
 ]);
-

@@ -12,6 +12,7 @@ chrome.test.runTests([
           chrome.test.callbackPass(function(tabs) {
         chrome.test.assertEq(1, tabs.length);
         chrome.test.assertTrue(tabs[0].windowId == win.id);
+        chrome.test.assertFalse(tabs[0].id == chrome.tabs.TAB_ID_NONE);
       }));
     }));
   }

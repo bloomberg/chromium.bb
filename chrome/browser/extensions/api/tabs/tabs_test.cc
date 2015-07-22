@@ -59,6 +59,29 @@ class ExtensionWindowCreateTest : public InProcessBrowserTest {
   }
 };
 
+const int kUndefinedId = INT_MIN;
+
+int GetTabId(base::DictionaryValue* tab) {
+  int id = kUndefinedId;
+  if (tab)
+    tab->GetInteger(keys::kIdKey, &id);
+  return id;
+}
+
+int GetTabWindowId(base::DictionaryValue* tab) {
+  int id = kUndefinedId;
+  if (tab)
+    tab->GetInteger(keys::kWindowIdKey, &id);
+  return id;
+}
+
+int GetWindowId(base::DictionaryValue* window) {
+  int id = kUndefinedId;
+  if (window)
+    window->GetInteger(keys::kIdKey, &id);
+  return id;
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, WindowTypes) {
@@ -107,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
           function.get(),
           base::StringPrintf("[%u]", window_id),
           browser())));
-  EXPECT_EQ(window_id, api_test_utils::GetInteger(result.get(), "id"));
+  EXPECT_EQ(window_id, GetWindowId(result.get()));
   EXPECT_FALSE(api_test_utils::GetBoolean(result.get(), "incognito"));
   EXPECT_EQ("normal", api_test_utils::GetString(result.get(), "type"));
   EXPECT_EQ(bounds.x(), api_test_utils::GetInteger(result.get(), "left"));
@@ -125,10 +148,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
           base::StringPrintf("[%u, {\"populate\": true}]", window_id),
           browser())));
 
-  EXPECT_EQ(window_id, api_test_utils::GetInteger(result.get(), "id"));
+  EXPECT_EQ(window_id, GetWindowId(result.get()));
   // "populate" was enabled so tabs should be populated.
-  base::ListValue* tabs = NULL;
+  base::ListValue* tabs = nullptr;
   EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
+
+  base::Value* tab0 = nullptr;
+  EXPECT_TRUE(tabs->Get(0, &tab0));
+  EXPECT_GE(GetTabId(utils::ToDictionary(tab0)), 0);
 
   // TODO(aa): Can't assume window is focused. On mac, calling Activate() from a
   // browser test doesn't seem to do anything, so can't test the opposite
@@ -195,8 +222,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
 
   // The id should match the window id of the browser instance that was passed
   // to RunFunctionAndReturnSingleResult.
-  EXPECT_EQ(new_id, api_test_utils::GetInteger(result.get(), "id"));
-  base::ListValue* tabs = NULL;
+  EXPECT_EQ(new_id, GetWindowId(result.get()));
+  base::ListValue* tabs = nullptr;
   EXPECT_FALSE(result.get()->GetList(keys::kTabsKey, &tabs));
 
   // Get the current window using the old window and make the tabs populated.
@@ -209,9 +236,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
 
   // The id should match the window id of the browser instance that was passed
   // to RunFunctionAndReturnSingleResult.
-  EXPECT_EQ(window_id, api_test_utils::GetInteger(result.get(), "id"));
+  EXPECT_EQ(window_id, GetWindowId(result.get()));
   // "populate" was enabled so tabs should be populated.
   EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
+
+  // The tab id should not be -1 as this is a browser window.
+  base::Value* tab0 = nullptr;
+  EXPECT_TRUE(tabs->Get(0, &tab0));
+  EXPECT_GE(GetTabId(utils::ToDictionary(tab0)), 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
@@ -240,12 +272,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   base::ListValue* windows = result.get();
   EXPECT_EQ(NUM_WINDOWS, windows->GetSize());
   for (size_t i = 0; i < NUM_WINDOWS; ++i) {
-    base::DictionaryValue* result_window = NULL;
+    base::DictionaryValue* result_window = nullptr;
     EXPECT_TRUE(windows->GetDictionary(i, &result_window));
-    result_ids.insert(api_test_utils::GetInteger(result_window, "id"));
+    result_ids.insert(GetWindowId(result_window));
 
     // "populate" was not passed in so tabs are not populated.
-    base::ListValue* tabs = NULL;
+    base::ListValue* tabs = nullptr;
     EXPECT_FALSE(result_window->GetList(keys::kTabsKey, &tabs));
   }
   // The returned ids should contain all the current browser instance ids.
@@ -262,12 +294,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   windows = result.get();
   EXPECT_EQ(NUM_WINDOWS, windows->GetSize());
   for (size_t i = 0; i < windows->GetSize(); ++i) {
-    base::DictionaryValue* result_window = NULL;
+    base::DictionaryValue* result_window = nullptr;
     EXPECT_TRUE(windows->GetDictionary(i, &result_window));
-    result_ids.insert(api_test_utils::GetInteger(result_window, "id"));
+    result_ids.insert(GetWindowId(result_window));
 
     // "populate" was enabled so tabs should be populated.
-    base::ListValue* tabs = NULL;
+    base::ListValue* tabs = nullptr;
     EXPECT_TRUE(result_window->GetList(keys::kTabsKey, &tabs));
   }
   // The returned ids should contain all the current browser instance ids.
@@ -316,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
 
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
-            api_test_utils::GetInteger(result.get(), "id"));
+            GetWindowId(result.get()));
   // ... and it is incognito.
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "incognito"));
 
@@ -333,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
           utils::INCLUDE_INCOGNITO)));
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(incognito_browser),
-            api_test_utils::GetInteger(result.get(), "id"));
+            GetWindowId(result.get()));
   // ... and it is incognito.
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "incognito"));
 }
@@ -356,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
 
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
-            api_test_utils::GetInteger(result.get(), "id"));
+            GetWindowId(result.get()));
   // ... and it is incognito.
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "incognito"));
 
@@ -372,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
                                               utils::INCLUDE_INCOGNITO)));
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(incognito_browser),
-            api_test_utils::GetInteger(result.get(), "id"));
+            GetWindowId(result.get()));
   // ... and it is incognito.
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "incognito"));
 }
@@ -451,10 +483,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   // We should have one initial tab and one added tab.
   EXPECT_EQ(2u, result_tabs->GetSize());
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
-    base::DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = nullptr;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_EQ(window_id,
-              api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
+    EXPECT_EQ(window_id, GetTabWindowId(result_tab));
   }
 
   // Get tabs NOT in the 'current' window called from non-focused browser.
@@ -469,10 +500,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   // We should have one tab for each extra window.
   EXPECT_EQ(kExtraWindows, result_tabs->GetSize());
   for (size_t i = 0; i < kExtraWindows; ++i) {
-    base::DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = nullptr;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_NE(window_id,
-              api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
+    EXPECT_NE(window_id, GetTabWindowId(result_tab));
   }
 }
 
@@ -502,10 +532,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryAllTabsWithDevTools) {
   // We should have one tab per browser except for DevTools.
   EXPECT_EQ(kNumWindows, result_tabs->GetSize());
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
-    base::DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = nullptr;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    result_ids.insert(
-        api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
+    result_ids.insert(GetTabWindowId(result_tab));
   }
   EXPECT_EQ(window_ids, result_ids);
 
@@ -537,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
           base::StringPrintf(kNewBlankTabArgs, window_id),
           browser())));
 
-  EXPECT_NE(window_id, api_test_utils::GetInteger(result.get(), "windowId"));
+  EXPECT_NE(window_id, GetTabWindowId(result.get()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
@@ -594,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           function.get(), "[{\"state\": \"minimized\"}]", browser(),
           utils::INCLUDE_INCOGNITO)));
-  int window_id = api_test_utils::GetInteger(result.get(), "id");
+  int window_id = GetWindowId(result.get());
   std::string error;
   Browser* new_window = ExtensionTabUtil::GetBrowserFromWindowID(
       function.get(), window_id, &error);
@@ -612,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
       function.get(), "[{\"state\": \"fullscreen\"}]", browser(),
       utils::INCLUDE_INCOGNITO)));
-  window_id = api_test_utils::GetInteger(result.get(), "id");
+  window_id = GetWindowId(result.get());
   new_window = ExtensionTabUtil::GetBrowserFromWindowID(function.get(),
                                                         window_id, &error);
   EXPECT_TRUE(error.empty());
@@ -688,10 +717,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
           duplicate_tab_function.get(), base::StringPrintf("[%u]", tab_id),
           browser())));
 
-  int duplicate_tab_id =
-      api_test_utils::GetInteger(duplicate_result.get(), "id");
-  int duplicate_tab_window_id =
-      api_test_utils::GetInteger(duplicate_result.get(), "windowId");
+  int duplicate_tab_id = GetTabId(duplicate_result.get());
+  int duplicate_tab_window_id = GetTabWindowId(duplicate_result.get());
   int duplicate_tab_index =
       api_test_utils::GetInteger(duplicate_result.get(), "index");
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, duplicate_result->GetType());
@@ -729,10 +756,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
           duplicate_tab_function.get(), base::StringPrintf("[%u]", tab_id),
           browser())));
 
-  int duplicate_tab_id =
-      api_test_utils::GetInteger(duplicate_result.get(), "id");
-  int duplicate_tab_window_id =
-      api_test_utils::GetInteger(duplicate_result.get(), "windowId");
+  int duplicate_tab_id = GetTabId(duplicate_result.get());
+  int duplicate_tab_window_id = GetTabWindowId(duplicate_result.get());
   int duplicate_tab_index =
       api_test_utils::GetInteger(duplicate_result.get(), "index");
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, duplicate_result->GetType());
@@ -1101,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
       1.1f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
 
   // Test 'manual' mode.
-  EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "manual", NULL));
+  EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "manual", nullptr));
   EXPECT_TRUE(RunSetZoom(tab_id_A1, 1.3f));
   EXPECT_FLOAT_EQ(
       1.3f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
@@ -1109,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
       1.1f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
 
   // Test 'disabled' mode, which will reset A1's zoom to 1.f.
-  EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "disabled", NULL));
+  EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "disabled", nullptr));
   std::string error = RunSetZoomExpectError(tab_id_A1, 1.4f);
   EXPECT_TRUE(base::MatchPattern(error, keys::kCannotZoomDisabledTabError));
   EXPECT_FLOAT_EQ(

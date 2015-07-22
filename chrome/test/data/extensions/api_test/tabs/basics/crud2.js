@@ -117,6 +117,7 @@ chrome.test.runTests([
     chrome.windows.create(
         {url: 'about:blank', type: 'popup'},
         pass(function(window) {
+      assertFalse(window.tabs[0].id == chrome.tabs.TAB_ID_NONE);
       chrome.tabs.create(
           {url: 'about:blank', windowId: window.id},
           pass(function(tab) {
