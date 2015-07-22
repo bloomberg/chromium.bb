@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,31 +23,6 @@
 
 namespace ash {
 namespace test {
-
-namespace {
-
-// A browser window proxy which is able to associate an aura native window with
-// it.
-class TestBrowserWindowAura : public TestBrowserWindow {
- public:
-  explicit TestBrowserWindowAura(aura::Window* native_window);
-  ~TestBrowserWindowAura() override;
-
-  gfx::NativeWindow GetNativeWindow() const override { return native_window_; }
-
- private:
-  gfx::NativeWindow native_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
-};
-
-TestBrowserWindowAura::TestBrowserWindowAura(aura::Window *native_window)
-    : native_window_(native_window) {
-}
-
-TestBrowserWindowAura::~TestBrowserWindowAura() {}
-
-}  // namespace
 
 // A test class for preparing window positioner tests - it creates a testing
 // base by adding a window and a popup which can be independently
@@ -60,85 +35,62 @@ class WindowPositionerTest : public AshTestBase {
   void TearDown() override;
 
  protected:
-  aura::Window* window() { return window_.get(); }
-  aura::Window* popup() { return popup_.get(); }
+  aura::Window* window() { return browser_->window()->GetNativeWindow(); }
+  aura::Window* popup() { return browser_popup_->window()->GetNativeWindow(); }
 
-  Browser* window_browser() { return window_owning_browser_.get(); }
-  Browser* popup_browser() { return popup_owning_browser_.get(); }
-
-  WindowPositioner* window_positioner() { return window_positioner_; }
+  WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
   // The positioner & desktop's used grid alignment size.
   const int grid_size_;
 
  private:
-  WindowPositioner* window_positioner_;
+  scoped_ptr<WindowPositioner> window_positioner_;
 
-  // These two need to be deleted after everything else is gone.
   TestingProfile profile_;
 
-  // These get created for each session.
-  scoped_ptr<aura::Window> window_;
-  scoped_ptr<aura::Window> popup_;
-
-  scoped_ptr<BrowserWindow> browser_window_;
-  scoped_ptr<BrowserWindow> browser_popup_;
-
-  scoped_ptr<Browser> window_owning_browser_;
-  scoped_ptr<Browser> popup_owning_browser_;
+  scoped_ptr<Browser> browser_;
+  scoped_ptr<Browser> browser_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPositionerTest);
 };
 
 WindowPositionerTest::WindowPositionerTest()
-    : grid_size_(WindowPositioner::kMinimumWindowOffset),
-      window_positioner_(NULL) {
-}
+    : grid_size_(WindowPositioner::kMinimumWindowOffset) {}
 
 void WindowPositionerTest::SetUp() {
   AshTestBase::SetUp();
   // Create some default dummy windows.
-  window_.reset(CreateTestWindowInShellWithId(0));
-  window_->SetBounds(gfx::Rect(16, 32, 640, 320));
-  popup_.reset(CreateTestWindowInShellWithId(1));
-  popup_->SetBounds(gfx::Rect(16, 32, 128, 256));
+  scoped_ptr<aura::Window> dummy_window(CreateTestWindowInShellWithId(0));
+  dummy_window->SetBounds(gfx::Rect(16, 32, 640, 320));
+  scoped_ptr<aura::Window> dummy_popup(CreateTestWindowInShellWithId(1));
+  dummy_popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
   // Create a browser for the window.
-  browser_window_.reset(new TestBrowserWindowAura(window_.get()));
   Browser::CreateParams window_params(&profile_,
                                       chrome::HOST_DESKTOP_TYPE_ASH);
-  window_params.window = browser_window_.get();
-  window_owning_browser_.reset(new Browser(window_params));
+  browser_ = chrome::CreateBrowserWithAuraTestWindowForParams(
+      dummy_window.Pass(), &window_params);
 
   // Creating a browser for the popup.
-  browser_popup_.reset(new TestBrowserWindowAura(popup_.get()));
   Browser::CreateParams popup_params(Browser::TYPE_POPUP, &profile_,
                                      chrome::HOST_DESKTOP_TYPE_ASH);
-  popup_params.window = browser_popup_.get();
-  popup_owning_browser_.reset(new Browser(popup_params));
+  browser_popup_ = chrome::CreateBrowserWithAuraTestWindowForParams(
+      dummy_popup.Pass(), &popup_params);
 
   // We hide all windows upon start - each user is required to set it up
   // as he needs it.
   window()->Hide();
   popup()->Hide();
-  window_positioner_ = new WindowPositioner();
+  window_positioner_.reset(new WindowPositioner());
 }
 
 void WindowPositionerTest::TearDown() {
   // Since the AuraTestBase is needed to create our assets, we have to
   // also delete them before we tear it down.
-  window_owning_browser_.reset(NULL);
-  popup_owning_browser_.reset(NULL);
-
-  browser_window_.reset(NULL);
-  browser_popup_.reset(NULL);
-
-  window_.reset(NULL);
-  popup_.reset(NULL);
-
+  browser_.reset();
+  browser_popup_.reset();
+  window_positioner_.reset();
   AshTestBase::TearDown();
-  delete window_positioner_;
-  window_positioner_ = NULL;
 }
 
 int AlignToGridRoundDown(int location, int grid_size) {

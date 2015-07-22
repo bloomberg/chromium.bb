@@ -274,8 +274,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     Browser::CreateParams native_params(profile_.get(),
                                         chrome::GetActiveDesktop());
-    browser_.reset(
-        chrome::CreateBrowserWithTestWindowForParams(&native_params));
+    browser_ = chrome::CreateBrowserWithTestWindowForParams(&native_params);
 
     local_state_.reset(new ScopedTestingLocalState(
         TestingBrowserProcess::GetGlobal()));

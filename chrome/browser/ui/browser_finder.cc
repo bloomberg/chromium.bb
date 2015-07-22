@@ -42,25 +42,23 @@ bool BrowserMatches(Browser* browser,
                     Profile* profile,
                     Browser::WindowFeature window_feature,
                     uint32 match_types) {
-  if (match_types & kMatchCanSupportWindowFeature &&
+  if ((match_types & kMatchCanSupportWindowFeature) &&
       !browser->CanSupportWindowFeature(window_feature)) {
     return false;
   }
 
-  bool matches_profile = browser->profile() == profile;
 #if defined(OS_CHROMEOS)
   // Get the profile on which the window is currently shown.
   // MultiUserWindowManager might be NULL under test scenario.
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
+  Profile* shown_profile = nullptr;
   if (window_manager) {
     const std::string& shown_user_id = window_manager->GetUserPresentingWindow(
         browser->window()->GetNativeWindow());
-    Profile* shown_profile =
-        shown_user_id.empty()
-            ? nullptr
-            : multi_user_util::GetProfileFromUserID(shown_user_id);
-    matches_profile &= !shown_profile || shown_profile == profile;
+    shown_profile = shown_user_id.empty()
+                        ? nullptr
+                        : multi_user_util::GetProfileFromUserID(shown_user_id);
   }
 #endif
 
@@ -68,8 +66,19 @@ bool BrowserMatches(Browser* browser,
     if (browser->profile()->GetOriginalProfile() !=
         profile->GetOriginalProfile())
       return false;
-  } else if (!matches_profile) {
-    return false;
+#if defined(OS_CHROMEOS)
+    if (shown_profile &&
+        shown_profile->GetOriginalProfile() != profile->GetOriginalProfile()) {
+      return false;
+    }
+#endif
+  } else {
+    if (browser->profile() != profile)
+      return false;
+#if defined(OS_CHROMEOS)
+    if (shown_profile && shown_profile != profile)
+      return false;
+#endif
   }
 
   if (match_types & kMatchTabbed)

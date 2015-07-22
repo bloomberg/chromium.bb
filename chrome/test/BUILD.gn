@@ -182,6 +182,13 @@ source_set("test_support") {
     deps += [ "//components/ownership" ]
   }
 
+  if (use_aura) {
+    sources += [
+      "base/test_browser_window_aura.cc",
+      "base/test_browser_window_aura.h",
+    ]
+  }
+
   if (enable_plugins) {
     sources += [
       "ppapi/ppapi_test.cc",

@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -618,51 +619,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 };
 
 #if defined(OS_CHROMEOS)
-// A browser window proxy which is able to associate an aura native window with
-// it.
-class TestBrowserWindowAura : public TestBrowserWindow {
- public:
-  // |native_window| will still be owned by the caller after the constructor
-  // was called.
-  explicit TestBrowserWindowAura(aura::Window* native_window)
-      : native_window_(native_window) {
-  }
-  ~TestBrowserWindowAura() override {}
-
-  gfx::NativeWindow GetNativeWindow() const override {
-    return native_window_.get();
-  }
-
-  Browser* browser() { return browser_.get(); }
-
-  void CreateBrowser(const Browser::CreateParams& params) {
-    Browser::CreateParams create_params = params;
-    create_params.window = this;
-    browser_.reset(new Browser(create_params));
-  }
-
- private:
-  scoped_ptr<Browser> browser_;
-  scoped_ptr<aura::Window> native_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
-};
-
-// Creates a test browser window which has a native window.
-scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
-    const Browser::CreateParams& params) {
-  // Create a window.
-  aura::Window* window = new aura::Window(NULL);
-  window->set_id(0);
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_TEXTURED);
-  window->Show();
-
-  scoped_ptr<TestBrowserWindowAura> browser_window(
-      new TestBrowserWindowAura(window));
-  browser_window->CreateBrowser(params);
-  return browser_window.Pass();
-}
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
 // the destruction of a V2 application.
@@ -861,17 +817,18 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   }
 
   // Creates a browser with a |profile| and load a tab with a |title| and |url|.
-  Browser* CreateBrowserAndTabWithProfile(Profile* profile,
-                                          const std::string& title,
-                                          const std::string& url) {
+  scoped_ptr<Browser> CreateBrowserAndTabWithProfile(Profile* profile,
+                                                     const std::string& title,
+                                                     const std::string& url) {
     Browser::CreateParams params(profile, chrome::HOST_DESKTOP_TYPE_ASH);
-    Browser* browser = chrome::CreateBrowserWithTestWindowForParams(&params);
-    chrome::NewTab(browser);
+    scoped_ptr<Browser> browser =
+        chrome::CreateBrowserWithTestWindowForParams(&params);
+    chrome::NewTab(browser.get());
 
-    BrowserList::SetLastActive(browser);
-    NavigateAndCommitActiveTabWithTitle(
-        browser, GURL(url), ASCIIToUTF16(title));
-    return browser;
+    BrowserList::SetLastActive(browser.get());
+    NavigateAndCommitActiveTabWithTitle(browser.get(), GURL(url),
+                                        ASCIIToUTF16(title));
+    return browser.Pass();
   }
 
   // Creates a running V1 application.
@@ -1482,15 +1439,16 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       multi_user_util::GetUserIDFromProfile(profile());
 
   // Create a browser window with a native window for the current user.
-  scoped_ptr<BrowserWindow> browser_window(CreateTestBrowserWindow(
-      Browser::CreateParams(profile(), chrome::HOST_DESKTOP_TYPE_ASH)));
+  Browser::CreateParams params(profile(), chrome::HOST_DESKTOP_TYPE_ASH);
+  scoped_ptr<Browser> browser(
+      chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
+  BrowserWindow* browser_window = browser->window();
   aura::Window* window = browser_window->GetNativeWindow();
   manager->SetWindowOwner(window, current_user);
 
   // Check that an activation of the window on its owner's desktop does not
   // change the visibility to another user.
-  launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window.get(),
-                                                         false);
+  launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window, false);
   EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
 
   // Transfer the window to another user's desktop and check that activating it
@@ -1498,8 +1456,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   manager->ShowWindowForUser(window,
                              multi_user_util::GetUserIDFromProfile(profile2));
   EXPECT_FALSE(manager->IsWindowOnDesktopOfUser(window, current_user));
-  launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window.get(),
-                                                         false);
+  launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window, false);
   EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
 }
 #endif

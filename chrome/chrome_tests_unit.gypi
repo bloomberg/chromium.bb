@@ -1339,6 +1339,7 @@
       'browser/extensions/updater/local_extension_cache_unittest.cc',
       'browser/metrics/chromeos_metrics_provider_unittest.cc',
       'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
+      'browser/ui/browser_finder_chromeos_unittest.cc',
       # TODO(zturner): Enable this on Windows. See
       # BrowserWithTestWindowTest::SetUp() for a comment explaining why this is
       # broken.
@@ -1962,6 +1963,12 @@
             'browser/chromeos/settings/device_settings_test_helper.h',
             'browser/chromeos/system/fake_input_device_settings.cc',
             'browser/chromeos/system/fake_input_device_settings.h',
+          ],
+        }],
+        ['use_aura==1', {
+          'sources': [
+            'test/base/test_browser_window_aura.cc',
+            'test/base/test_browser_window_aura.h',
           ],
         }],
         ['configuration_policy==1', {
