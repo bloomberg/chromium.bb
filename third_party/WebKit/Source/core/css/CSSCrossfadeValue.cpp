@@ -222,6 +222,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSCrossfadeValue)
     visitor->trace(m_fromValue);
     visitor->trace(m_toValue);
     visitor->trace(m_percentageValue);
+    visitor->trace(m_crossfadeSubimageObserver);
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 

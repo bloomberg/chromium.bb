@@ -83,16 +83,22 @@ private:
         , m_crossfadeSubimageObserver(this) { }
 
     class CrossfadeSubimageObserverProxy final : public ImageResourceClient {
+        DISALLOW_ALLOCATION();
     public:
-        CrossfadeSubimageObserverProxy(CSSCrossfadeValue* ownerValue)
-        : m_ownerValue(ownerValue)
-        , m_ready(false) { }
+        explicit CrossfadeSubimageObserverProxy(CSSCrossfadeValue* ownerValue)
+            : m_ownerValue(ownerValue)
+            , m_ready(false) { }
 
         ~CrossfadeSubimageObserverProxy() override { }
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_ownerValue);
+        }
+
         void imageChanged(ImageResource*, const IntRect* = nullptr) override;
         void setReady(bool ready) { m_ready = ready; }
     private:
-        CSSCrossfadeValue* m_ownerValue;
+        RawPtrWillBeMember<CSSCrossfadeValue> m_ownerValue;
         bool m_ready;
     };
 
