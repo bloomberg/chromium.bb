@@ -22,6 +22,7 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 
@@ -36,7 +37,8 @@ import java.util.List;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-class SelectFileDialog implements WindowAndroid.IntentCallback, WindowAndroid.PermissionCallback {
+public class SelectFileDialog
+        implements WindowAndroid.IntentCallback, WindowAndroid.PermissionCallback {
     private static final String TAG = "SelectFileDialog";
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
@@ -45,6 +47,11 @@ class SelectFileDialog implements WindowAndroid.IntentCallback, WindowAndroid.Pe
     private static final String ALL_VIDEO_TYPES = VIDEO_TYPE + "*";
     private static final String ALL_AUDIO_TYPES = AUDIO_TYPE + "*";
     private static final String ANY_TYPES = "*/*";
+
+    /**
+     * If set, overrides the WindowAndroid passed in {@link selectFile()}.
+     */
+    private static WindowAndroid sOverrideWindowAndroid = null;
 
     private final long mNativeSelectFileDialog;
     private List<String> mFileTypes;
@@ -62,6 +69,14 @@ class SelectFileDialog implements WindowAndroid.IntentCallback, WindowAndroid.Pe
     }
 
     /**
+     * Overrides the WindowAndroid passed in {@link selectFile()}.
+     */
+    @VisibleForTesting
+    public static void setWindowAndroidForTests(WindowAndroid window) {
+        sOverrideWindowAndroid = window;
+    }
+
+    /**
      * Creates and starts an intent based on the passed fileTypes and capture value.
      * @param fileTypes MIME types requested (i.e. "image/*")
      * @param capture The capture value as described in http://www.w3.org/TR/html-media-capture/
@@ -75,7 +90,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback, WindowAndroid.Pe
         mFileTypes = new ArrayList<String>(Arrays.asList(fileTypes));
         mCapture = capture;
         mAllowMultiple = multiple;
-        mWindowAndroid = window;
+        mWindowAndroid = (sOverrideWindowAndroid == null) ? window : sOverrideWindowAndroid;
 
         mSupportsImageCapture =
                 mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));

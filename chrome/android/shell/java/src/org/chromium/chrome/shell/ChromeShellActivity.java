@@ -485,11 +485,6 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
     }
 
     @VisibleForTesting
-    public static void setActivityWindowAndroidFactory(ActivityWindowAndroidFactory factory) {
-        sWindowAndroidFactory = factory;
-    }
-
-    @VisibleForTesting
     public static void setAppMenuHandlerFactory(AppMenuHandlerFactory factory) {
         sAppMenuHandlerFactory = factory;
     }

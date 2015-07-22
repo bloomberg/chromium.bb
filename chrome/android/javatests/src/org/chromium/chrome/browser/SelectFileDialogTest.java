@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.input;
+package org.chromium.chrome.browser;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -14,19 +14,18 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellActivity.ActivityWindowAndroidFactory;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.SelectFileDialog;
 
 /**
  * Integration test for select file dialog used for <input type="file" />
  */
-public class SelectFileDialogTest extends ChromeShellTestBase {
+public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\""
             + "content=\"width=device-width, initial-scale=2.0, maximum-scale=2.0\" /></head>"
@@ -37,9 +36,6 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
             + "<input id=\"input_audio\" type=\"file\" accept=\"audio/*\" capture />"
             + "</form>"
             + "</body></html>");
-
-    private ContentViewCore mContentViewCore;
-    private ActivityWindowAndroidForTest mActivityWindowAndroidForTest;
 
     private static class ActivityWindowAndroidForTest extends ActivityWindowAndroid {
         public Intent lastIntent;
@@ -71,21 +67,26 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
         }
     }
 
+    private ContentViewCore mContentViewCore;
+    private ActivityWindowAndroidForTest mActivityWindowAndroidForTest;
+
+    public SelectFileDialogTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(DATA_URL);
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
-        ChromeShellActivity.setActivityWindowAndroidFactory(new ActivityWindowAndroidFactory() {
-            @Override
-            public ActivityWindowAndroid getActivityWindowAndroid(Activity activity) {
-                mActivityWindowAndroidForTest = new ActivityWindowAndroidForTest(activity);
-                return mActivityWindowAndroidForTest;
-            }
-        });
-        launchChromeShellWithUrl(DATA_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        mActivityWindowAndroidForTest = new ActivityWindowAndroidForTest(getActivity());
+        SelectFileDialog.setWindowAndroidForTests(mActivityWindowAndroidForTest);
 
-        mContentViewCore = getActivity().getActiveContentViewCore();
+        mContentViewCore = getActivity().getCurrentContentViewCore();
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
         assertWaitForPageScaleFactorMatch(2);
         assertTrue(
