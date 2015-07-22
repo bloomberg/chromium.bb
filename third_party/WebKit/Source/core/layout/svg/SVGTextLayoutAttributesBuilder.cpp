@@ -232,4 +232,9 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& po
     }
 }
 
+DEFINE_TRACE(SVGTextLayoutAttributesBuilder::TextPosition)
+{
+    visitor->trace(element);
+}
+
 }
