@@ -62,6 +62,10 @@ public:
     unsigned rulesFastRejected;
     unsigned rulesRejected;
     unsigned rulesMatched;
+    unsigned stylesChanged;
+    unsigned stylesUnchanged;
+    unsigned elementsStyled;
+    unsigned pseudoElementsStyled;
 
 private:
     StyleResolverStats()

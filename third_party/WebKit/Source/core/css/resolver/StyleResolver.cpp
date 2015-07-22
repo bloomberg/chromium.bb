@@ -535,6 +535,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     }
 
     didAccess();
+    INCREMENT_STYLE_STATS_COUNTER(*this, elementsStyled, 1);
 
     StyleResolverParentScope::ensureParentStackIsPushed();
 
@@ -769,6 +770,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         adjustComputedStyle(state, 0);
 
     didAccess();
+    INCREMENT_STYLE_STATS_COUNTER(*this, pseudoElementsStyled, 1);
 
     if (state.style()->hasViewportUnits())
         document().setHasViewportUnits();

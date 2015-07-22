@@ -49,6 +49,10 @@ void StyleResolverStats::reset()
     rulesFastRejected = 0;
     rulesRejected = 0;
     rulesMatched = 0;
+    stylesChanged = 0;
+    stylesUnchanged = 0;
+    elementsStyled = 0;
+    pseudoElementsStyled = 0;
 }
 
 bool StyleResolverStats::allCountersEnabled() const
@@ -76,6 +80,10 @@ PassRefPtr<TracedValue> StyleResolverStats::toTracedValue() const
     tracedValue->setInteger("rulesRejected", rulesRejected);
     tracedValue->setInteger("rulesFastRejected", rulesFastRejected);
     tracedValue->setInteger("rulesMatched", rulesMatched);
+    tracedValue->setInteger("stylesChanged", stylesChanged);
+    tracedValue->setInteger("stylesUnchanged", stylesUnchanged);
+    tracedValue->setInteger("elementsStyled", elementsStyled);
+    tracedValue->setInteger("pseudoElementsStyled", pseudoElementsStyled);
     return tracedValue.release();
 }
 
