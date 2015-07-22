@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/dom_distiller_viewer_source.h"
+#include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
 
 #include <sstream>
 #include <string>

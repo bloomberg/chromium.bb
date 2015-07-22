@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 
 #include <string>
 

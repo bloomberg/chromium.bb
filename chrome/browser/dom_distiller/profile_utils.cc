@@ -11,8 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/dom_distiller/content/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/dom_distiller_viewer_source.h"
+#include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/external_feedback_reporter.h"
 #include "components/dom_distiller/core/url_constants.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_WEB_CONTENTS_MAIN_FRAME_OBSERVER_H_
-#define COMPONENTS_DOM_DISTILLER_CONTENT_WEB_CONTENTS_MAIN_FRAME_OBSERVER_H_
+#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_WEB_CONTENTS_MAIN_FRAME_OBSERVER_H_
+#define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_WEB_CONTENTS_MAIN_FRAME_OBSERVER_H_
 
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -55,4 +55,4 @@ class WebContentsMainFrameObserver
 
 }  // namespace dom_distiller
 
-#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_WEB_CONTENTS_MAIN_FRAME_OBSERVER_H_
+#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_WEB_CONTENTS_MAIN_FRAME_OBSERVER_H_

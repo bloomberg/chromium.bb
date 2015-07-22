@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/distillable_page_utils_android.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils_android.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "components/dom_distiller/content/distillable_page_utils.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/DistillablePageUtils_jni.h"
 

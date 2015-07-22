@@ -257,7 +257,7 @@ source_set("browser") {
       "//components/data_reduction_proxy/content/browser",
       "//components/devtools_discovery",
       "//components/devtools_http_handler",
-      "//components/dom_distiller/content",
+      "//components/dom_distiller/content:content_browser",
       "//components/favicon/content",
       "//components/history/content/browser",
       "//components/keyed_service/content",

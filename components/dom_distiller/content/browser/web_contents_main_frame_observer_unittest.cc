@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/web_contents_main_frame_observer.h"
+#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"

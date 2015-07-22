@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/distiller_page_web_contents.h"
+#include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/dom_distiller/content/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/web_contents_main_frame_observer.h"
+#include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_constants.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/distillable_page_utils.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/dom_distiller/content/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"

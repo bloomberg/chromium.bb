@@ -164,8 +164,8 @@
     ['OS != "ios"', {
       'targets': [
         {
-          # GN version: //components/dom_distiller/content
-          'target_name': 'dom_distiller_content',
+          # GN version: //components/dom_distiller/content:content_browser
+          'target_name': 'dom_distiller_content_browser',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
@@ -184,18 +184,18 @@
             '..',
           ],
           'sources': [
-            'dom_distiller/content/distillable_page_utils.cc',
-            'dom_distiller/content/distillable_page_utils.h',
-            'dom_distiller/content/distillable_page_utils_android.cc',
-            'dom_distiller/content/distillable_page_utils_android.h',
-            'dom_distiller/content/distiller_javascript_utils.cc',
-            'dom_distiller/content/distiller_javascript_utils.h',
-            'dom_distiller/content/distiller_page_web_contents.cc',
-            'dom_distiller/content/distiller_page_web_contents.h',
-            'dom_distiller/content/dom_distiller_viewer_source.cc',
-            'dom_distiller/content/dom_distiller_viewer_source.h',
-            'dom_distiller/content/web_contents_main_frame_observer.cc',
-            'dom_distiller/content/web_contents_main_frame_observer.h',
+            'dom_distiller/content/browser/distillable_page_utils.cc',
+            'dom_distiller/content/browser/distillable_page_utils.h',
+            'dom_distiller/content/browser/distillable_page_utils_android.cc',
+            'dom_distiller/content/browser/distillable_page_utils_android.h',
+            'dom_distiller/content/browser/distiller_javascript_utils.cc',
+            'dom_distiller/content/browser/distiller_javascript_utils.h',
+            'dom_distiller/content/browser/distiller_page_web_contents.cc',
+            'dom_distiller/content/browser/distiller_page_web_contents.h',
+            'dom_distiller/content/browser/dom_distiller_viewer_source.cc',
+            'dom_distiller/content/browser/dom_distiller_viewer_source.h',
+            'dom_distiller/content/browser/web_contents_main_frame_observer.cc',
+            'dom_distiller/content/browser/web_contents_main_frame_observer.h',
           ],
           'conditions': [
             ['OS == "android"', {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_DISTILLABLE_PAGE_UTILS_H_
-#define COMPONENTS_DOM_DISTILLER_CONTENT_DISTILLABLE_PAGE_UTILS_H_
+#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABLE_PAGE_UTILS_H_
+#define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABLE_PAGE_UTILS_H_
 
 #include "base/callback.h"
 #include "content/public/browser/web_contents.h"
@@ -30,4 +30,4 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   base::Callback<void(bool)> callback);
 }
 
-#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_DISTILLABLE_PAGE_UTILS_H_
+#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABLE_PAGE_UTILS_H_

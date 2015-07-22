@@ -12,7 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/dom_distiller/content/web_contents_main_frame_observer.h"
+#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
