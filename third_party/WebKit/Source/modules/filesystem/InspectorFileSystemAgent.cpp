@@ -190,7 +190,6 @@ public:
 
     ~DirectoryContentRequest()
     {
-        reportResult(FileError::ABORT_ERR);
     }
 
     void start(ExecutionContext*);
@@ -311,7 +310,6 @@ public:
 
     ~MetadataRequest()
     {
-        reportResult(FileError::ABORT_ERR);
     }
 
     void start(ExecutionContext*);
@@ -384,7 +382,6 @@ public:
 
     ~FileContentRequest() override
     {
-        reportResult(FileError::ABORT_ERR);
     }
 
     void start(ExecutionContext*);
@@ -509,7 +506,6 @@ public:
 
     ~DeleteEntryRequest()
     {
-        reportResult(FileError::ABORT_ERR);
     }
 
     void start(ExecutionContext*);
