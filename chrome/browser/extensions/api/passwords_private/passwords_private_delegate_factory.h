@@ -20,7 +20,8 @@ class PasswordsPrivateDelegateFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   static PasswordsPrivateDelegate* GetForBrowserContext(
-      content::BrowserContext* browser_context);
+      content::BrowserContext* browser_context,
+      bool create);
 
   static PasswordsPrivateDelegateFactory* GetInstance();
 

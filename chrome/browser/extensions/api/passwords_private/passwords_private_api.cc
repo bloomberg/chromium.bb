@@ -40,7 +40,8 @@ ExtensionFunction::ResponseAction
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
   delegate->RemoveSavedPassword(
       parameters->login_pair.origin_url,
       parameters->login_pair.username);
@@ -62,7 +63,8 @@ ExtensionFunction::ResponseAction
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
   delegate->RemovePasswordException(parameters->exception_url);
 
   return RespondNow(NoArguments());
@@ -82,7 +84,8 @@ ExtensionFunction::ResponseAction
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
 
   delegate->RequestShowPassword(parameters->login_pair.origin_url,
                                 parameters->login_pair.username,

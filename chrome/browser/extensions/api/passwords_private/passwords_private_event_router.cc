@@ -48,8 +48,10 @@ void PasswordsPrivateEventRouter::Shutdown() {
     event_router_->UnregisterObserver(this);
 
   PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(context_);
-  delegate->RemoveObserver(this);
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(context_,
+                                                            false /* create */);
+  if (delegate)
+    delegate->RemoveObserver(this);
 }
 
 void PasswordsPrivateEventRouter::OnListenerAdded(
@@ -141,7 +143,8 @@ void PasswordsPrivateEventRouter::StartOrStopListeningForChanges() {
       should_listen_for_plaintext_password_retrieval;
 
   PasswordsPrivateDelegate* delegate =
-      PasswordsPrivateDelegateFactory::GetForBrowserContext(context_);
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(context_,
+                                                            true /* create */);
   if (should_listen && !listening_)
     delegate->AddObserver(this);
   else if (!should_listen && listening_)
