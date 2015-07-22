@@ -31,7 +31,6 @@ var activeVisit = null;
 /** @const */ var Command = cr.ui.Command;
 /** @const */ var FocusOutlineManager = cr.ui.FocusOutlineManager;
 /** @const */ var Menu = cr.ui.Menu;
-/** @const */ var MenuButton = cr.ui.MenuButton;
 /** @const */ var MenuItem = cr.ui.MenuItem;
 
 /**
@@ -78,8 +77,6 @@ var HistoryEntry;
  *            term: string}}
  */
 var HistoryQuery;
-
-MenuButton.createDropDownArrows();
 
 /**
  * Returns true if the mobile (non-desktop) version is being shown.
@@ -303,7 +300,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     if (focusless)
       dropDown.tabIndex = -1;
 
-    cr.ui.decorate(dropDown, MenuButton);
+    cr.ui.decorate(dropDown, cr.ui.MenuButton);
     dropDown.respondToArrowKeys = false;
 
     dropDown.addEventListener('mousedown', setActiveVisit);

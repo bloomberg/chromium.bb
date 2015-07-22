@@ -96,7 +96,9 @@ list > .folder > .url:empty::after {
 
 list > * > button {
   -webkit-transition: opacity 150ms;
-  background: #fff -webkit-canvas(drop-down-arrow) no-repeat center center;
+  background: #fff
+      url(../../../../../ui/webui/resources/images/drop_down_arrow_black.svg)
+      no-repeat center center;
   border: 1px solid hsl(214, 91%, 85%);
   border-radius: 3px;
   bottom: 1px;
@@ -341,8 +343,9 @@ list > .drag-above {
   -webkit-appearance: none;
   -webkit-padding-end: 11px;
   -webkit-padding-start: 0;
-  background: transparent -webkit-canvas(drop-down-arrow)
-              no-repeat right center;
+  background: transparent
+      url(../../../../../ui/webui/resources/images/drop_down_arrow_black.svg)
+      no-repeat right center;
   border: 0;
   font: inherit;
   font-weight: bold;
