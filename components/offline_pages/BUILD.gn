@@ -10,6 +10,8 @@ static_library("offline_pages") {
     "offline_page_item.h",
     "offline_page_metadata_store.cc",
     "offline_page_metadata_store.h",
+    "offline_page_metadata_store_impl.cc",
+    "offline_page_metadata_store_impl.h",
     "offline_page_model.cc",
     "offline_page_model.h",
   ]
@@ -17,7 +19,10 @@ static_library("offline_pages") {
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
+    "//components/offline_pages/proto:offline_pages_proto",
     "//net",
+    "//third_party/leveldatabase",
     "//url",
   ]
 }
@@ -25,11 +30,13 @@ static_library("offline_pages") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "offline_page_metadata_store_impl_unittest.cc",
     "offline_page_model_unittest.cc",
   ]
 
   deps = [
     ":offline_pages",
+    "//components/offline_pages/proto:offline_pages_proto",
     "//testing/gtest",
   ]
 }

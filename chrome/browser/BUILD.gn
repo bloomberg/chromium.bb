@@ -85,7 +85,6 @@ source_set("browser") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/net:encrypted_cert_logger_proto",
     "//chrome/browser/net:probe_message_proto",
-    "//chrome/browser/offline_pages:offline_pages_proto",
     "//chrome/browser/ssl:cert_logger_proto",
     "//chrome/browser/ui",
     "//chrome/common",

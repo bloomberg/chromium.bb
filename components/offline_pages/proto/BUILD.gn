@@ -4,7 +4,7 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_browser.gypi:offline_pages_proto
+# GYP version: components/offline_pages.gypi:offline_pages_proto
 proto_library("offline_pages_proto") {
   sources = [
     "offline_pages.proto",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/offline_page_metadata_store_impl.h"
+#include "components/offline_pages/offline_page_metadata_store_impl.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -11,9 +11,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/offline_pages/offline_pages.pb.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/proto/offline_pages.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "url/gurl.h"

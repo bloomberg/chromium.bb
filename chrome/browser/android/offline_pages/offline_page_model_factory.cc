@@ -8,14 +8,14 @@
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/offline_pages/offline_page_metadata_store_impl.h"
-#include "chrome/browser/offline_pages/offline_pages.pb.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/proto_database_impl.h"
+#include "components/offline_pages/offline_page_metadata_store_impl.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/proto/offline_pages.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace offline_pages {

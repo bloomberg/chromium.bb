@@ -342,6 +342,7 @@
       'network_time/network_time_tracker_unittest.cc',
     ],
     'offline_page_unittest_sources': [
+      'offline_pages/offline_page_metadata_store_impl_unittest.cc',
       'offline_pages/offline_page_model_unittest.cc',
     ],
     'omnibox_unittest_sources': [
