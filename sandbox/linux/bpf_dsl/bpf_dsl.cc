@@ -255,6 +255,8 @@ uint64_t DefaultMask(size_t size) {
 }
 
 BoolExpr ArgEq(int num, size_t size, uint64_t mask, uint64_t val) {
+  // If this is changed, update Arg<T>::EqualTo's static_cast rules
+  // accordingly.
   CHECK(size == 4 || size == 8);
 
   // TODO(mdempsky): Should we just always use TP_64BIT?

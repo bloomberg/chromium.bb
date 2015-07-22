@@ -278,6 +278,10 @@ Arg<T>::Arg(int num)
 // see http://www.parashift.com/c++-faq-lite/template-friends.html.
 template <typename T>
 BoolExpr Arg<T>::EqualTo(T val) const {
+  if (sizeof(T) == 4) {
+    // Prevent sign-extension of negative int32_t values.
+    return internal::ArgEq(num_, sizeof(T), mask_, static_cast<uint32_t>(val));
+  }
   return internal::ArgEq(num_, sizeof(T), mask_, static_cast<uint64_t>(val));
 }
 

@@ -37,12 +37,12 @@ namespace {
 
 // Helper function to construct fake arch_seccomp_data objects.
 struct arch_seccomp_data FakeSyscall(int nr,
-                                     uint64_t p0 = 0,
-                                     uint64_t p1 = 0,
-                                     uint64_t p2 = 0,
-                                     uint64_t p3 = 0,
-                                     uint64_t p4 = 0,
-                                     uint64_t p5 = 0) {
+                                     uintptr_t p0 = 0,
+                                     uintptr_t p1 = 0,
+                                     uintptr_t p2 = 0,
+                                     uintptr_t p3 = 0,
+                                     uintptr_t p4 = 0,
+                                     uintptr_t p5 = 0) {
   // Made up program counter for syscall address.
   const uint64_t kFakePC = 0x543210;
 
@@ -282,6 +282,31 @@ TEST(BPFDSL, ArgSizeTest) {
 
   emulator.ExpectAllow(FakeSyscall(__NR_uname, 0));
   emulator.ExpectErrno(EPERM, FakeSyscall(__NR_uname, kDeadBeefAddr));
+}
+
+class NegativeConstantsPolicy : public Policy {
+ public:
+  NegativeConstantsPolicy() {}
+  ~NegativeConstantsPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
+    if (sysno == __NR_fcntl) {
+      const Arg<int> fd(0);
+      return If(fd == -314, Error(EPERM)).Else(Allow());
+    }
+    return Allow();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NegativeConstantsPolicy);
+};
+
+TEST(BPFDSL, NegativeConstantsTest) {
+  NegativeConstantsPolicy policy;
+  PolicyEmulator emulator(&policy);
+
+  emulator.ExpectAllow(FakeSyscall(__NR_fcntl, -5, F_DUPFD));
+  emulator.ExpectAllow(FakeSyscall(__NR_fcntl, 20, F_DUPFD));
+  emulator.ExpectErrno(EPERM, FakeSyscall(__NR_fcntl, -314, F_DUPFD));
 }
 
 #if 0
