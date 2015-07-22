@@ -208,7 +208,7 @@ void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
 
 void HTMLTextFormControlElement::setRangeText(const String& replacement, ExceptionState& exceptionState)
 {
-    setRangeText(replacement, selectionStart(), selectionEnd(), String(), exceptionState);
+    setRangeText(replacement, selectionStart(), selectionEnd(), "preserve", exceptionState);
 }
 
 void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& exceptionState)
@@ -242,15 +242,15 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
 
     subtreeHasChanged();
 
-    if (equalIgnoringCase(selectionMode, "select")) {
+    if (selectionMode == "select") {
         newSelectionStart = start;
         newSelectionEnd = start + replacementLength;
-    } else if (equalIgnoringCase(selectionMode, "start")) {
+    } else if (selectionMode == "start") {
         newSelectionStart = newSelectionEnd = start;
-    } else if (equalIgnoringCase(selectionMode, "end")) {
+    } else if (selectionMode == "end") {
         newSelectionStart = newSelectionEnd = start + replacementLength;
     } else {
-        // Default is "preserve".
+        ASSERT(selectionMode == "preserve");
         long delta = replacementLength - (end - start);
 
         if (newSelectionStart > end)

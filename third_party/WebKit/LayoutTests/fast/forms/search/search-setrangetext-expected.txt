@@ -77,10 +77,10 @@ PASS element.selectionStart is 6
 PASS element.selectionEnd is 9
 element.value = '0123456789'
 element.setSelectionRange(6, 9)
-element.setRangeText('AB', 1, 1, 'invalid')
-PASS element.value is "0AB123456789"
-PASS element.selectionStart is 8
-PASS element.selectionEnd is 11
+PASS element.setRangeText('AB', 1, 1, 'invalid') threw exception TypeError: Failed to execute 'setRangeText' on 'HTMLInputElement': The provided value 'invalid' is not a valid enum value of type SelectionMode..
+PASS element.value is "0123456789"
+PASS element.selectionStart is 6
+PASS element.selectionEnd is 9
 element.value = '0123456789'
 element.setSelectionRange(6, 9)
 element.setRangeText('AB', 1, 1, undefined)
@@ -201,10 +201,10 @@ PASS element.selectionStart is 6
 PASS element.selectionEnd is 9
 element.value = '0123456789'
 element.setSelectionRange(6, 9)
-element.setRangeText('AB', 1, 1, 'invalid')
-PASS element.value is "0AB123456789"
-PASS element.selectionStart is 8
-PASS element.selectionEnd is 11
+PASS element.setRangeText('AB', 1, 1, 'invalid') threw exception TypeError: Failed to execute 'setRangeText' on 'HTMLInputElement': The provided value 'invalid' is not a valid enum value of type SelectionMode..
+PASS element.value is "0123456789"
+PASS element.selectionStart is 6
+PASS element.selectionEnd is 9
 element.value = '0123456789'
 element.setSelectionRange(6, 9)
 element.setRangeText('AB', 1, 1, undefined)

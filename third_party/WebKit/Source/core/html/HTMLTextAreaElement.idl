@@ -58,11 +58,10 @@ interface HTMLTextAreaElement : HTMLElement {
     attribute long selectionEnd;
     attribute DOMString selectionDirection;
     [RaisesException] void setRangeText(DOMString replacement);
-    // TODO(philipj): The selectionMode argument should be a SelectionMode enum.
     [RaisesException] void setRangeText(DOMString replacement,
                                         unsigned long start,
                                         unsigned long end,
-                                        optional DOMString selectionMode = null);
+                                        optional SelectionMode selectionMode = "preserve");
     // TODO(philipj): The start and end arguments should be unsigned long and
     // should not be optional.
     void setSelectionRange([Default=Undefined] optional long start,

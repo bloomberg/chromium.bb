@@ -21,6 +21,8 @@
 
 // https://html.spec.whatwg.org/#the-input-element
 
+enum SelectionMode { "select", "start", "end", "preserve" };
+
 interface HTMLInputElement : HTMLElement {
     [Reflect] attribute DOMString accept;
     [Reflect] attribute DOMString alt;
@@ -83,11 +85,10 @@ interface HTMLInputElement : HTMLElement {
     [RaisesException, ImplementedAs=selectionEndForBinding] attribute long selectionEnd;
     [RaisesException, ImplementedAs=selectionDirectionForBinding] attribute DOMString selectionDirection;
     [RaisesException] void setRangeText(DOMString replacement);
-    // FIXME: The selectionMode argument should be a SelectionMode enum.
     [RaisesException] void setRangeText(DOMString replacement,
                                         unsigned long start,
                                         unsigned long end,
-                                        optional DOMString selectionMode = "preserve");
+                                        optional SelectionMode selectionMode = "preserve");
     // FIXME: The start and end arguments should be unsigned long and should not have [Default=Undefined].
     [RaisesException, ImplementedAs=setSelectionRangeForBinding]
     void setSelectionRange([Default=Undefined] optional long start,
