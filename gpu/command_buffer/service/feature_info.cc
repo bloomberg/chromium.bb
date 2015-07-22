@@ -761,12 +761,11 @@ void FeatureInfo::InitializeFeatures() {
       gl_version_info_->is_desktop_core_profile) {
     AddExtensionString("GL_ARB_texture_rectangle");
     feature_flags_.arb_texture_rectangle = true;
+    // Rectangle textures are used as samplers via glBindTexture, framebuffer
+    // textures via glFramebufferTexture2D, and copy destinations via
+    // glCopyPixels.
     validators_.texture_bind_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
-    // For the moment we don't add this enum to the texture_target
-    // validator. This implies that the only way to get image data into a
-    // rectangular texture is via glTexImageIOSurface2DCHROMIUM, which is
-    // just fine since again we don't want applications depending on this
-    // extension.
+    validators_.texture_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
     validators_.get_tex_param_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_RECTANGLE_ARB);
   }

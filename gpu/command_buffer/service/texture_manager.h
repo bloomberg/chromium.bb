@@ -603,7 +603,8 @@ class GPU_EXPORT TextureManager {
   GLint MaxLevelsForTarget(GLenum target) const {
     switch (target) {
       case GL_TEXTURE_2D:
-        return  max_levels_;
+        return max_levels_;
+      case GL_TEXTURE_RECTANGLE_ARB:
       case GL_TEXTURE_EXTERNAL_OES:
         return 1;
       case GL_TEXTURE_3D:
