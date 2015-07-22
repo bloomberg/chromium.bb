@@ -40,7 +40,6 @@ SKIP = {
   # http://crbug.com/480053
   'Linux GN',
   'Linux GN (dbg)',
-  'linux_chromium_gn_rel',
 
   # Unmaintained builders on chromium.fyi
   'ClangToTMac',
@@ -138,7 +137,7 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
     for d in data['gtest_tests']:
       if (d['test'] not in ninja_targets and
           d['test'] not in SKIP_NINJA_TO_GN_TARGETS):
-        raise Error('%s: %s / %s is not listed in ninja_to_gn.pyl.' %
+        raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl.' %
                     (filename, builder, d['test']))
       elif d['test'] in ninja_targets:
         ninja_targets_seen.add(d['test'])
@@ -268,8 +267,9 @@ def main():
         'count_run_local': 0, 'count_run_on_swarming': 0, 'local_configs': {}
       })
 
-  with open(os.path.join(THIS_DIR, "ninja_to_gn.pyl")) as fp:
-    ninja_targets = ast.literal_eval(fp.read())
+  with open(os.path.join(THIS_DIR, "gn_isolate_map.pyl")) as fp:
+    gn_isolate_map = ast.literal_eval(fp.read())
+    ninja_targets = dict((k, v['label']) for k, v in gn_isolate_map.items())
 
   try:
     result = 0

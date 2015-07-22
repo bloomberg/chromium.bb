@@ -336,14 +336,14 @@ class MetaBuildWrapper(object):
       # the compile targets to the matching GN labels.
       contents = self.ReadFile(self.args.swarming_targets_file)
       swarming_targets = contents.splitlines()
-      ninja_targets_to_labels = ast.literal_eval(self.ReadFile(os.path.join(
-          self.chromium_src_dir, 'testing', 'buildbot', 'ninja_to_gn.pyl')))
+      gn_isolate_map = ast.literal_eval(self.ReadFile(os.path.join(
+          self.chromium_src_dir, 'testing', 'buildbot', 'gn_isolate_map.pyl')))
       gn_labels = []
       for target in swarming_targets:
-        if not target in ninja_targets_to_labels:
+        if not target in gn_isolate_map:
           raise MBErr('test target "%s"  not found in %s' %
-                      (target, '//testing/buildbot/ninja_to_gn.pyl'))
-        gn_labels.append(ninja_targets_to_labels[target])
+                      (target, '//testing/buildbot/gn_isolate_map.pyl'))
+        gn_labels.append(gn_isolate_map[target]['label'])
 
       gn_runtime_deps_path = self.ToAbsPath(path, 'runtime_deps')
 
@@ -363,7 +363,8 @@ class MetaBuildWrapper(object):
       if not self.Exists(deps_path):
           raise MBErr('did not generate %s' % deps_path)
 
-      command, extra_files = self.GetIsolateCommand(target, vals)
+      command, extra_files = self.GetIsolateCommand(target, vals,
+                                                    gn_isolate_map)
 
       runtime_deps = self.ReadFile(deps_path).splitlines()
 
@@ -448,15 +449,55 @@ class MetaBuildWrapper(object):
 
     return ret
 
-  def GetIsolateCommand(self, target, vals):
-    extra_files = []
+  def RunGNIsolate(self, vals):
+    build_path = self.args.path[0]
+    inp = self.ReadInputJSON(['targets'])
+    if self.args.verbose:
+      self.Print()
+      self.Print('isolate input:')
+      self.PrintJSON(inp)
+      self.Print()
+    output_path = self.args.output_path[0]
 
-    # TODO(dpranke): We should probably pull this from
-    # the test list info in //testing/buildbot/*.json,
-    # and assert that the test has can_use_on_swarming_builders: True,
-    # but we hardcode it here for now.
-    test_type = {}.get(target, 'gtest_test')
+    for target in inp['targets']:
+      runtime_deps_path = self.ToAbsPath(build_path, target + '.runtime_deps')
 
+      if not self.Exists(runtime_deps_path):
+        self.WriteFailureAndRaise('"%s" does not exist' % runtime_deps_path,
+                                  output_path)
+
+      command, extra_files = self.GetIsolateCommand(target, vals, None)
+
+      runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
+
+
+      isolate_path = self.ToAbsPath(build_path, target + '.isolate')
+      self.WriteFile(isolate_path,
+        pprint.pformat({
+          'variables': {
+            'command': command,
+            'files': sorted(runtime_deps + extra_files),
+            'read_only': 1,
+          }
+        }) + '\n')
+
+      self.WriteJSON(
+        {
+          'args': [
+            '--isolated',
+            self.ToSrcRelPath('%s/%s.isolated' % (build_path, target)),
+            '--isolate',
+            self.ToSrcRelPath('%s/%s.isolate' % (build_path, target)),
+          ],
+          'dir': self.chromium_src_dir,
+          'version': 1,
+        },
+        isolate_path + 'd.gen.json',
+      )
+
+    return 0
+
+  def GetIsolateCommand(self, target, vals, gn_isolate_map):
     # This needs to mirror the settings in //build/config/ui.gni:
     # use_x11 = is_linux && !use_ozone.
     # TODO(dpranke): Figure out how to keep this in sync better.
@@ -470,41 +511,48 @@ class MetaBuildWrapper(object):
 
     executable_suffix = '.exe' if sys.platform == 'win32' else ''
 
-    if test_type == 'gtest_test':
-      extra_files.append('../../testing/test_env.py')
+    test_type = gn_isolate_map[target]['type']
+    cmdline = []
+    extra_files = []
 
-      if use_x11:
-        # TODO(dpranke): Figure out some way to figure out which
-        # test steps really need xvfb.
-        extra_files.append('xdisplaycheck')
-        extra_files.append('../../testing/xvfb.py')
-
-        cmdline = [
-          '../../testing/xvfb.py',
-          '.',
-          './' + str(target),
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=%d' % asan,
-          '--msan=%d' % msan,
-          '--tsan=%d' % tsan,
-        ]
-      else:
-        cmdline = [
+    if use_x11 and test_type == 'windowed_test_launcher':
+      extra_files = [
+          'xdisplaycheck',
           '../../testing/test_env.py',
-          '.',
+          '../../testing/xvfb.py',
+      ]
+      cmdline = [
+        '../../testing/xvfb.py',
+        '.',
+        './' + str(target),
+        '--brave-new-test-launcher',
+        '--test-launcher-bot-mode',
+        '--asan=%d' % asan,
+        '--msan=%d' % msan,
+        '--tsan=%d' % tsan,
+      ]
+    elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
+      extra_files = [
+          '../../testing/test_env.py'
+      ]
+      cmdline = [
+          '../../testing/test_env.py',
           './' + str(target) + executable_suffix,
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
           '--asan=%d' % asan,
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
-        ]
-    else:
-      # TODO(dpranke): Handle script_tests and other types of swarmed tests.
-      self.WriteFailureAndRaise('unknown test type "%s" for %s' %
-                                (test_type, target), output_path=None)
+      ]
+    elif test_type in ('raw'):
+      extra_files = []
+      cmdline = [
+          './' + str(target) + executable_suffix,
+      ] + gn_isolate_map[target].get('args')
 
+    else:
+      self.WriteFailureAndRaise('No command line for %s found (test type %s).'
+                                % (target, test_type), output_path=None)
 
     return cmdline, extra_files
 
