@@ -376,6 +376,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the accessibility mode.
   void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback);
 
+  // Resets the accessibility serializer in the renderer.
+  void AccessibilityReset();
+
   // Turn on accessibility testing. The given callback will be run
   // every time an accessibility notification is received from the
   // renderer process, and the accessibility tree it sent can be

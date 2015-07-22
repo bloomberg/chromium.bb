@@ -512,6 +512,11 @@ void RenderFrameHostImpl::AccessibilitySetAccessibilityFocus(int acc_obj_id) {
   Send(new AccessibilityMsg_SetAccessibilityFocus(routing_id_, acc_obj_id));
 }
 
+void RenderFrameHostImpl::AccessibilityReset() {
+  accessibility_reset_token_ = g_next_accessibility_reset_token++;
+  Send(new AccessibilityMsg_Reset(routing_id_, accessibility_reset_token_));
+}
+
 void RenderFrameHostImpl::AccessibilityFatalError() {
   browser_accessibility_manager_.reset(NULL);
   if (accessibility_reset_token_)

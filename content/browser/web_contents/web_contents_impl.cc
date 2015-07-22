@@ -219,6 +219,10 @@ void SetAccessibilityModeOnFrame(AccessibilityMode mode,
   static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
 }
 
+void ResetAccessibility(RenderFrameHost* rfh) {
+  static_cast<RenderFrameHostImpl*>(rfh)->AccessibilityReset();
+}
+
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -863,7 +867,10 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
 }
 
 void WebContentsImpl::EnableTreeOnlyAccessibilityMode() {
-  AddAccessibilityMode(AccessibilityModeTreeOnly);
+  if (GetAccessibilityMode() == AccessibilityModeTreeOnly)
+    ForEachFrame(base::Bind(&ResetAccessibility));
+  else
+    AddAccessibilityMode(AccessibilityModeTreeOnly);
 }
 
 bool WebContentsImpl::IsTreeOnlyAccessibilityModeForTesting() const {

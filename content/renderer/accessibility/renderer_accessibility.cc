@@ -397,8 +397,13 @@ void RendererAccessibility::OnReset(int reset_token) {
   pending_events_.clear();
 
   const WebDocument& document = GetMainDocument();
-  if (!document.isNull())
-    HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
+  if (!document.isNull()) {
+    // Tree-only mode gets used by the automation extension API which requires a
+    // load complete event to invoke listener callbacks.
+    ui::AXEvent evt = document.accessibilityObject().isLoaded()
+        ? ui::AX_EVENT_LOAD_COMPLETE : ui::AX_EVENT_LAYOUT_COMPLETE;
+    HandleAXEvent(document.accessibilityObject(), evt);
+  }
 }
 
 void RendererAccessibility::OnScrollToMakeVisible(

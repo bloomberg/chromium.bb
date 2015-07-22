@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
       break;
 
     AccessibilityNotificationWaiter waiter(
-        shell(), AccessibilityModeComplete, ui::AX_EVENT_LAYOUT_COMPLETE);
+        shell(), AccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
     waiter.WaitForNotification();
   }
 
