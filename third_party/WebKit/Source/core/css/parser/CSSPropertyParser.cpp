@@ -4659,7 +4659,7 @@ void CSSPropertyParser::parseSystemFont(bool important)
 }
 
 class FontFamilyValueBuilder {
-    DISALLOW_ALLOCATION();
+    STACK_ALLOCATED();
 public:
     FontFamilyValueBuilder(CSSValueList* list)
         : m_list(list)
@@ -4689,7 +4689,7 @@ public:
 
 private:
     StringBuilder m_builder;
-    CSSValueList* m_list;
+    RawPtrWillBeMember<CSSValueList> m_list;
 };
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFamily()
