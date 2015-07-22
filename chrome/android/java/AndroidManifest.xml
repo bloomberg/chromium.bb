@@ -22,10 +22,20 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!--
+      Enable Bluetooth permission via uses-permission in tip of tree builds
+      only for ease of development on Android L and earlier. For consumer
+      channels use "runtime permission" uses-permission-sdk-m which provides
+      permission on Android M and later without a prompt.
+    -->
     {% if channel in ['default'] %}
         <uses-permission android:name="android.permission.BLUETOOTH"/>
         <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     {% endif %}
+    <uses-permission-sdk-m android:name="android.permission.BLUETOOTH"/>
+    <uses-permission-sdk-m android:name="android.permission.BLUETOOTH_ADMIN"/>
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.INTERNET"/>
