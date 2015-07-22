@@ -520,9 +520,6 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // Create an object that will close the window on a process crash.
   WindowDestroyer destroyer(wc1, browser()->tab_strip_model());
 
-  // Use NOTIFICATION_BROWSER_CLOSED instead of NOTIFICATION_WINDOW_CLOSED,
-  // since the latter is not implemented on OSX and the test will timeout,
-  // causing it to fail.
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());

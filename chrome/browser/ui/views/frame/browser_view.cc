@@ -1892,11 +1892,6 @@ bool BrowserView::CanClose() {
     return false;
   }
 
-  // Empty TabStripModel, it's now safe to allow the Window to be closed.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WINDOW_CLOSED,
-      content::Source<gfx::NativeWindow>(frame_->GetNativeWindow()),
-      content::NotificationService::NoDetails());
   return true;
 }
 
