@@ -805,7 +805,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   CheckPublicSessionPresent(user_id_2_);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
+// Flaky: http://crbug.com/512670.
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
