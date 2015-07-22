@@ -14,6 +14,7 @@
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 
 class GURL;
@@ -47,8 +48,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
  public:
   typedef blink::WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks
       WebServiceWorkerRegistrationCallbacks;
-  typedef blink::WebCallbacks<bool, blink::WebServiceWorkerError>
-      WebServiceWorkerUnregistrationCallbacks;
+  typedef blink::WebServiceWorkerRegistration::
+      WebServiceWorkerUnregistrationCallbacks
+          WebServiceWorkerUnregistrationCallbacks;
   typedef
       blink::WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks
       WebServiceWorkerGetRegistrationCallbacks;

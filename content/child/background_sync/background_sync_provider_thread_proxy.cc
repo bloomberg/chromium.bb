@@ -20,15 +20,25 @@ namespace content {
 
 namespace {
 
+// This is needed to migrate from WebCallback<S, T> to WebCallback<S*, T*>.
+// See https://crbug.com/493531
+#ifdef CRBUG_493531
+template <typename S, typename T>
+using Callbacks = blink::WebCallbacks<S*, T*>;
+#else
+template <typename S, typename T>
+using Callbacks = blink::WebCallbacks<S, T>;
+#endif
+
 // CallbackThreadAdapter<S,T> is a wrapper for WebCallbacks<S,T> which
 // switches to a specific thread before calling the wrapped callback's
 // onSuccess or onError methods.
 //
 // Takes ownership of the WebCallbacks object which it wraps.
 template <typename S, typename T>
-class CallbackThreadAdapter : public blink::WebCallbacks<S, T> {
+class CallbackThreadAdapter : public Callbacks<S, T> {
  public:
-  CallbackThreadAdapter(scoped_ptr<blink::WebCallbacks<S, T>> callbacks,
+  CallbackThreadAdapter(scoped_ptr<Callbacks<S, T>> callbacks,
                         int worker_thread_id)
       : worker_thread_id_(worker_thread_id) {
     callbacks_.reset(callbacks.release());
@@ -39,7 +49,7 @@ class CallbackThreadAdapter : public blink::WebCallbacks<S, T> {
     // silently discarded.
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id_,
-        base::Bind(&blink::WebCallbacks<S, T>::onSuccess,
+        base::Bind(&Callbacks<S, T>::onSuccess,
                    base::Owned(callbacks_.release()), results));
   }
 
@@ -48,12 +58,12 @@ class CallbackThreadAdapter : public blink::WebCallbacks<S, T> {
     // silently discarded.
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id_,
-        base::Bind(&blink::WebCallbacks<S, T>::onError,
-                   base::Owned(callbacks_.release()), error));
+        base::Bind(&Callbacks<S, T>::onError, base::Owned(callbacks_.release()),
+                   error));
   }
 
  private:
-  scoped_ptr<blink::WebCallbacks<S, T>> callbacks_;
+  scoped_ptr<Callbacks<S, T>> callbacks_;
   int worker_thread_id_;
 };
 
