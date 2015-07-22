@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_client_session.h"
+#include "net/quic/quic_chromium_client_session.h"
 
 #include <vector>
 
@@ -22,7 +22,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
-#include "net/quic/test_tools/quic_client_session_peer.h"
+#include "net/quic/test_tools/quic_chromium_client_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -40,9 +40,10 @@ namespace {
 const char kServerHostname[] = "www.example.org";
 const uint16 kServerPort = 80;
 
-class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicChromiumClientSessionTest
+    : public ::testing::TestWithParam<QuicVersion> {
  protected:
-  QuicClientSessionTest()
+  QuicChromiumClientSessionTest()
       : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
                                                SupportedVersions(GetParam()))),
         session_(connection_,
@@ -74,15 +75,15 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   scoped_ptr<DatagramClientSocket> GetSocket() {
     socket_factory_.AddSocketDataProvider(&socket_data_);
     return socket_factory_.CreateDatagramClientSocket(
-        DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
-        &net_log_, NetLog::Source());
+        DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt), &net_log_,
+        NetLog::Source());
   }
 
   void CompleteCryptoHandshake() {
     ASSERT_EQ(ERR_IO_PENDING,
               session_.CryptoConnect(false, callback_.callback()));
-    CryptoTestUtils::HandshakeWithFakeServer(
-        connection_, session_.GetCryptoStream());
+    CryptoTestUtils::HandshakeWithFakeServer(connection_,
+                                             session_.GetCryptoStream());
     ASSERT_EQ(OK, callback_.WaitForResult());
   }
 
@@ -91,7 +92,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   MockClientSocketFactory socket_factory_;
   StaticSocketDataProvider socket_data_;
   TransportSecurityState transport_security_state_;
-  QuicClientSession session_;
+  QuicChromiumClientSession session_;
   MockClock clock_;
   MockRandom random_;
   QuicConnectionVisitorInterface* visitor_;
@@ -99,14 +100,15 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicCryptoClientConfig crypto_config_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicClientSessionTest,
+INSTANTIATE_TEST_CASE_P(Tests,
+                        QuicChromiumClientSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
-TEST_P(QuicClientSessionTest, CryptoConnect) {
+TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_P(QuicClientSessionTest, MaxNumStreams) {
+TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   CompleteCryptoHandshake();
 
   std::vector<QuicReliableClientStream*> streams;
@@ -122,7 +124,7 @@ TEST_P(QuicClientSessionTest, MaxNumStreams) {
   EXPECT_TRUE(session_.CreateOutgoingDynamicStream());
 }
 
-TEST_P(QuicClientSessionTest, MaxNumStreamsViaRequest) {
+TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   CompleteCryptoHandshake();
 
   std::vector<QuicReliableClientStream*> streams;
@@ -133,7 +135,7 @@ TEST_P(QuicClientSessionTest, MaxNumStreamsViaRequest) {
   }
 
   QuicReliableClientStream* stream;
-  QuicClientSession::StreamRequest stream_request;
+  QuicChromiumClientSession::StreamRequest stream_request;
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_IO_PENDING,
             stream_request.StartRequest(session_.GetWeakPtr(), &stream,
@@ -146,7 +148,7 @@ TEST_P(QuicClientSessionTest, MaxNumStreamsViaRequest) {
   EXPECT_TRUE(stream != nullptr);
 }
 
-TEST_P(QuicClientSessionTest, GoAwayReceived) {
+TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
   CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing
@@ -155,7 +157,7 @@ TEST_P(QuicClientSessionTest, GoAwayReceived) {
   EXPECT_EQ(nullptr, session_.CreateOutgoingDynamicStream());
 }
 
-TEST_P(QuicClientSessionTest, CanPool) {
+TEST_P(QuicChromiumClientSessionTest, CanPool) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
@@ -176,7 +178,7 @@ TEST_P(QuicClientSessionTest, CanPool) {
   EXPECT_FALSE(session_.CanPool("mail.google.com", PRIVACY_MODE_DISABLED));
 }
 
-TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
+TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
@@ -189,7 +191,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
-  QuicClientSessionPeer::SetChannelIDSent(&session_, true);
+  QuicChromiumClientSessionPeer::SetChannelIDSent(&session_, true);
 
   EXPECT_TRUE(session_.CanPool("www.example.org", PRIVACY_MODE_DISABLED));
   EXPECT_TRUE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
@@ -197,7 +199,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
   EXPECT_FALSE(session_.CanPool("mail.google.com", PRIVACY_MODE_DISABLED));
 }
 
-TEST_P(QuicClientSessionTest, ConnectionNotPooledWithDifferentPin) {
+TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   uint8 primary_pin = 1;
   uint8 backup_pin = 2;
   uint8 bad_pin = 3;
@@ -215,12 +217,12 @@ TEST_P(QuicClientSessionTest, ConnectionNotPooledWithDifferentPin) {
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
-  QuicClientSessionPeer::SetChannelIDSent(&session_, true);
+  QuicChromiumClientSessionPeer::SetChannelIDSent(&session_, true);
 
   EXPECT_FALSE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
 }
 
-TEST_P(QuicClientSessionTest, ConnectionPooledWithMatchingPin) {
+TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   uint8 primary_pin = 1;
   uint8 backup_pin = 2;
   AddPin(&transport_security_state_, "mail.example.org", primary_pin,
@@ -237,7 +239,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithMatchingPin) {
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
-  QuicClientSessionPeer::SetChannelIDSent(&session_, true);
+  QuicChromiumClientSessionPeer::SetChannelIDSent(&session_, true);
 
   EXPECT_TRUE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
 }

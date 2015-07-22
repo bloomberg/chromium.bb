@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/quic/quic_client_session.h"
+#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_utils.h"
@@ -24,7 +24,8 @@
 
 namespace net {
 
-QuicHttpStream::QuicHttpStream(const base::WeakPtr<QuicClientSession>& session)
+QuicHttpStream::QuicHttpStream(
+    const base::WeakPtr<QuicChromiumClientSession>& session)
     : next_state_(STATE_NONE),
       session_(session),
       session_error_(OK),

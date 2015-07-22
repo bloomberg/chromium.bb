@@ -17,7 +17,6 @@
 #include "net/tools/quic/quic_epoll_clock.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
-#include "net/tools/quic/test_tools/quic_test_utils.h"
 
 namespace net {
 namespace tools {

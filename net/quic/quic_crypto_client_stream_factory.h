@@ -11,7 +11,7 @@
 
 namespace net {
 
-class QuicClientSession;
+class QuicChromiumClientSession;
 class QuicCryptoClientStream;
 class QuicServerId;
 
@@ -23,7 +23,7 @@ class NET_EXPORT QuicCryptoClientStreamFactory {
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const QuicServerId& server_id,
-      QuicClientSession* session,
+      QuicChromiumClientSession* session,
       QuicCryptoClientConfig* crypto_config) = 0;
 };
 

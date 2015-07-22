@@ -7,8 +7,8 @@
 // a non-owning pointer to the helper so this session needs to ensure that
 // the helper outlives the connection.
 
-#ifndef NET_QUIC_QUIC_CLIENT_SESSION_H_
-#define NET_QUIC_QUIC_CLIENT_SESSION_H_
+#ifndef NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
+#define NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_
 
 #include <string>
 
@@ -38,11 +38,12 @@ class SSLInfo;
 class TransportSecurityState;
 
 namespace test {
-class QuicClientSessionPeer;
+class QuicChromiumClientSessionPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
-                                             public QuicPacketReader::Visitor {
+class NET_EXPORT_PRIVATE QuicChromiumClientSession
+    : public QuicClientSessionBase,
+      public QuicPacketReader::Visitor {
  public:
   // Reasons to disable QUIC, that is under certain pathological
   // connection errors.  Note: these values must be kept in sync with
@@ -74,7 +75,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
     // |stream| will be updated with the newly created stream.  If
     // ERR_IO_PENDING is returned, then when the request is eventuallly
     // complete |callback| will be called.
-    int StartRequest(const base::WeakPtr<QuicClientSession>& session,
+    int StartRequest(const base::WeakPtr<QuicChromiumClientSession>& session,
                      QuicReliableClientStream** stream,
                      const CompletionCallback& callback);
 
@@ -83,7 +84,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
     void CancelRequest();
 
    private:
-    friend class QuicClientSession;
+    friend class QuicChromiumClientSession;
 
     // Called by |session_| for an asynchronous request when the stream
     // request has finished successfully.
@@ -94,7 +95,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
     // if |session_| is destroyed while the stream request is still pending.
     void OnRequestCompleteFailure(int rv);
 
-    base::WeakPtr<QuicClientSession> session_;
+    base::WeakPtr<QuicChromiumClientSession> session_;
     CompletionCallback callback_;
     QuicReliableClientStream** stream_;
 
@@ -104,21 +105,22 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   // Constructs a new session which will own |connection|, but not
   // |stream_factory|, which must outlive this session.
   // TODO(rch): decouple the factory from the session via a Delegate interface.
-  QuicClientSession(QuicConnection* connection,
-                    scoped_ptr<DatagramClientSocket> socket,
-                    QuicStreamFactory* stream_factory,
-                    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
-                    TransportSecurityState* transport_security_state,
-                    scoped_ptr<QuicServerInfo> server_info,
-                    const QuicServerId& server_id,
-                    int cert_verify_flags,
-                    const QuicConfig& config,
-                    QuicCryptoClientConfig* crypto_config,
-                    const char* const connection_description,
-                    base::TimeTicks dns_resolution_end_time,
-                    base::TaskRunner* task_runner,
-                    NetLog* net_log);
-  ~QuicClientSession() override;
+  QuicChromiumClientSession(
+      QuicConnection* connection,
+      scoped_ptr<DatagramClientSocket> socket,
+      QuicStreamFactory* stream_factory,
+      QuicCryptoClientStreamFactory* crypto_client_stream_factory,
+      TransportSecurityState* transport_security_state,
+      scoped_ptr<QuicServerInfo> server_info,
+      const QuicServerId& server_id,
+      int cert_verify_flags,
+      const QuicConfig& config,
+      QuicCryptoClientConfig* crypto_config,
+      const char* const connection_description,
+      base::TimeTicks dns_resolution_end_time,
+      base::TaskRunner* task_runner,
+      NetLog* net_log);
+  ~QuicChromiumClientSession() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -192,7 +194,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
 
   const BoundNetLog& net_log() const { return net_log_; }
 
-  base::WeakPtr<QuicClientSession> GetWeakPtr();
+  base::WeakPtr<QuicChromiumClientSession> GetWeakPtr();
 
   // Returns the number of client hello messages that have been sent on the
   // crypto stream. If the handshake has completed then this is one greater
@@ -213,7 +215,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
 
  private:
-  friend class test::QuicClientSessionPeer;
+  friend class test::QuicChromiumClientSessionPeer;
 
   typedef std::set<Observer*> ObserverSet;
   typedef std::list<StreamRequest*> StreamRequestQueue;
@@ -276,11 +278,11 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   // on this session. Existing stream will continue to be processed.
   bool going_away_;
   QuicDisabledReason disabled_reason_;
-  base::WeakPtrFactory<QuicClientSession> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
+  DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);
 };
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_CLIENT_SESSION_H_
+#endif  // NET_QUIC_QUIC_CHROMIUM_CLIENT_SESSION_H_

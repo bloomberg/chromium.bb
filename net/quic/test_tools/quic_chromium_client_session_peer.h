@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_TEST_TOOLS_QUIC_CLIENT_SESSION_PEER_H_
-#define NET_QUIC_TEST_TOOLS_QUIC_CLIENT_SESSION_PEER_H_
+#ifndef NET_QUIC_TEST_TOOLS_QUIC_CHROMIUM_CLIENT_SESSION_PEER_H_
+#define NET_QUIC_TEST_TOOLS_QUIC_CHROMIUM_CLIENT_SESSION_PEER_H_
 
 #include "net/quic/quic_protocol.h"
 
 namespace net {
 
-class QuicClientSession;
+class QuicChromiumClientSession;
 
 namespace test {
 
-class QuicClientSessionPeer {
+class QuicChromiumClientSessionPeer {
  public:
-  static void SetMaxOpenStreams(QuicClientSession* session,
+  static void SetMaxOpenStreams(QuicChromiumClientSession* session,
                                 size_t max_streams,
                                 size_t default_streams);
 
-  static void SetChannelIDSent(QuicClientSession* session,
+  static void SetChannelIDSent(QuicChromiumClientSession* session,
                                bool channel_id_sent);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(QuicClientSessionPeer);
+  DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSessionPeer);
 };
 
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_QUIC_CLIENT_SESSION_PEER_H_
+#endif  // NET_QUIC_TEST_TOOLS_QUIC_CHROMIUM_CLIENT_SESSION_PEER_H_

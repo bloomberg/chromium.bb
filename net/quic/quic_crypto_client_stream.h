@@ -20,7 +20,7 @@ class QuicClientSessionBase;
 
 namespace test {
 class CryptoTestUtils;
-class QuicClientSessionPeer;
+class QuicChromiumClientSessionPeer;
 }  // namespace test
 
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
@@ -91,7 +91,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   };
 
   friend class test::CryptoTestUtils;
-  friend class test::QuicClientSessionPeer;
+  friend class test::QuicChromiumClientSessionPeer;
 
   enum State {
     STATE_IDLE,

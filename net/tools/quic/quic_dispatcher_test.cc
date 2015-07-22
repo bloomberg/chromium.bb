@@ -20,8 +20,8 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
+#include "net/tools/quic/test_tools/mock_quic_time_wait_list_manager.h"
 #include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
-#include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +30,7 @@ using net::EpollServer;
 using net::test::ConstructEncryptedPacket;
 using net::test::MockConnection;
 using net::test::ValueRestore;
+using net::test::TestWriterFactory;
 using std::string;
 using std::vector;
 using testing::DoAll;

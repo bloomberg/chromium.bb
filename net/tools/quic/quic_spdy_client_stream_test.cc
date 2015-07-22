@@ -10,7 +10,6 @@
 #include "net/tools/quic/quic_client_session.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/spdy_balsa_utils.h"
-#include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,6 +17,9 @@ using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
 using net::test::SupportedVersions;
 using net::test::kClientDataStreamId1;
+using net::test::kInitialSessionFlowControlWindowForTest;
+using net::test::kInitialStreamFlowControlWindowForTest;
+
 using std::string;
 using testing::StrictMock;
 using testing::TestWithParam;

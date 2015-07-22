@@ -19,7 +19,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
-#include "net/quic/quic_client_session.h"
+#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
@@ -80,9 +80,9 @@ class TestQuicConnection : public QuicConnection {
 // is received.
 class AutoClosingStream : public QuicHttpStream {
  public:
-  explicit AutoClosingStream(const base::WeakPtr<QuicClientSession>& session)
-      : QuicHttpStream(session) {
-  }
+  explicit AutoClosingStream(
+      const base::WeakPtr<QuicChromiumClientSession>& session)
+      : QuicHttpStream(session) {}
 
   void OnHeadersAvailable(StringPiece headers) override { Close(false); }
 
@@ -212,7 +212,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                          helper_.get(), writer_factory);
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
-    session_.reset(new QuicClientSession(
+    session_.reset(new QuicChromiumClientSession(
         connection_, scoped_ptr<DatagramClientSocket>(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
@@ -307,7 +307,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
   TransportSecurityState transport_security_state_;
-  scoped_ptr<QuicClientSession> session_;
+  scoped_ptr<QuicChromiumClientSession> session_;
   QuicCryptoClientConfig crypto_config_;
   TestCompletionCallback callback_;
   HttpRequestInfo request_;

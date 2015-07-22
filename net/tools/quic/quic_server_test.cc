@@ -6,11 +6,12 @@
 
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/mock_quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
-#include "net/tools/quic/test_tools/mock_quic_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using net::test::MockQuicDispatcher;
 
 namespace net {
 namespace tools {

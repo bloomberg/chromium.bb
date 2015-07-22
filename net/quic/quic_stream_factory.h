@@ -20,7 +20,7 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/network_connection.h"
-#include "net/quic/quic_client_session.h"
+#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
@@ -34,7 +34,7 @@ class ClientSocketFactory;
 class HostResolver;
 class HttpServerProperties;
 class QuicClock;
-class QuicClientSession;
+class QuicChromiumClientSession;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
@@ -94,7 +94,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 };
 
 // A factory for creating new QuicHttpStreams on top of a pool of
-// QuicClientSessions.
+// QuicChromiumClientSessions.
 class NET_EXPORT_PRIVATE QuicStreamFactory
     : public NetworkChangeNotifier::IPAddressObserver,
       public CertDatabase::Observer {
@@ -150,30 +150,32 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // disables QUIC. If QUIC is disabled then it closes the connection.
   //
   // Returns true if QUIC is disabled for the port of the session.
-  bool OnHandshakeConfirmed(QuicClientSession* session, float packet_loss_rate);
+  bool OnHandshakeConfirmed(QuicChromiumClientSession* session,
+                            float packet_loss_rate);
 
   // Returns true if QUIC is disabled for this port.
   bool IsQuicDisabled(uint16 port);
 
   // Returns reason QUIC is disabled for this port, or QUIC_DISABLED_NOT if not.
-  QuicClientSession::QuicDisabledReason QuicDisabledReason(uint16 port) const;
+  QuicChromiumClientSession::QuicDisabledReason QuicDisabledReason(
+      uint16 port) const;
 
   // Returns reason QUIC is disabled as string for net-internals, or
   // returns empty string if QUIC is not disabled.
   const char* QuicDisabledReasonString() const;
 
   // Called by a session when it becomes idle.
-  void OnIdleSession(QuicClientSession* session);
+  void OnIdleSession(QuicChromiumClientSession* session);
 
   // Called by a session when it is going away and no more streams should be
   // created on it.
-  void OnSessionGoingAway(QuicClientSession* session);
+  void OnSessionGoingAway(QuicChromiumClientSession* session);
 
   // Called by a session after it shuts down.
-  void OnSessionClosed(QuicClientSession* session);
+  void OnSessionClosed(QuicChromiumClientSession* session);
 
   // Called by a session whose connection has timed out.
-  void OnSessionConnectTimeout(QuicClientSession* session);
+  void OnSessionConnectTimeout(QuicChromiumClientSession* session);
 
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
@@ -245,11 +247,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     bool operator==(const IpAliasKey &other) const;
   };
 
-  typedef std::map<QuicServerId, QuicClientSession*> SessionMap;
-  typedef std::map<QuicClientSession*, QuicServerId> SessionIdMap;
+  typedef std::map<QuicServerId, QuicChromiumClientSession*> SessionMap;
+  typedef std::map<QuicChromiumClientSession*, QuicServerId> SessionIdMap;
   typedef std::set<QuicServerId> AliasSet;
-  typedef std::map<QuicClientSession*, AliasSet> SessionAliasMap;
-  typedef std::set<QuicClientSession*> SessionSet;
+  typedef std::map<QuicChromiumClientSession*, AliasSet> SessionAliasMap;
+  typedef std::set<QuicChromiumClientSession*> SessionSet;
   typedef std::map<IpAliasKey, SessionSet> IPAliasMap;
   typedef std::map<QuicServerId, QuicCryptoClientConfig*> CryptoConfigMap;
   typedef std::set<Job*> JobSet;
@@ -257,7 +259,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<QuicStreamRequest*, QuicServerId> RequestMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<QuicServerId, RequestSet> ServerIDRequestsMap;
-  typedef std::deque<enum QuicClientSession::QuicDisabledReason>
+  typedef std::deque<enum QuicChromiumClientSession::QuicDisabledReason>
       DisabledReasonsQueue;
 
   // Creates a job which doesn't wait for server config to be loaded from the
@@ -269,7 +271,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                          const BoundNetLog& net_log);
 
   // Returns a newly created QuicHttpStream owned by the caller.
-  scoped_ptr<QuicHttpStream> CreateFromSession(QuicClientSession*);
+  scoped_ptr<QuicHttpStream> CreateFromSession(QuicChromiumClientSession*);
 
   bool OnResolution(const QuicServerId& server_id,
                     const AddressList& address_list);
@@ -282,9 +284,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     const AddressList& address_list,
                     base::TimeTicks dns_resolution_end_time,
                     const BoundNetLog& net_log,
-                    QuicClientSession** session);
+                    QuicChromiumClientSession** session);
   void ActivateSession(const QuicServerId& key,
-                       QuicClientSession* session);
+                       QuicChromiumClientSession* session);
 
   // Returns |srtt| in micro seconds from ServerNetworkStats. Returns 0 if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
@@ -302,12 +304,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicServerId& server_id,
       const scoped_ptr<QuicServerInfo>& server_info);
 
-  void ProcessGoingAwaySession(QuicClientSession* session,
+  void ProcessGoingAwaySession(QuicChromiumClientSession* session,
                                const QuicServerId& server_id,
                                bool was_session_active);
 
   // Collect stats from recent connections, possibly disabling Quic.
-  void MaybeDisableQuic(QuicClientSession* session);
+  void MaybeDisableQuic(QuicChromiumClientSession* session);
 
   bool require_confirmation_;
   HostResolver* host_resolver_;

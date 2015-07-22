@@ -23,7 +23,7 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
 
   QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const QuicServerId& server_id,
-      QuicClientSession* session,
+      QuicChromiumClientSession* session,
       QuicCryptoClientConfig* crypto_config) override;
 
   void set_handshake_mode(
