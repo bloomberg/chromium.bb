@@ -185,7 +185,6 @@ LINUX_X86_64_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-64')
 # Map of native host tuple to extra tuples that it cross-builds for.
 EXTRA_HOSTS_MAP = {
     LINUX_X86_64_TUPLE: [
-        LINUX_X86_32_TUPLE,
         WINDOWS_HOST_TUPLE,
         ],
     }
@@ -212,8 +211,7 @@ STANDARD_TARGETS = [TARGET('arm', '')]
 UPLOAD_HOST_TARGETS = [
     HOST_TARGET('win', 'x86-32', False, STANDARD_TARGETS),
     HOST_TARGET('darwin', 'x86-64', False, STANDARD_TARGETS),
-    HOST_TARGET('linux', 'x86-32', False, STANDARD_TARGETS),
-    HOST_TARGET('linux', 'x86-64', True, STANDARD_TARGETS),
+    HOST_TARGET('linux', 'x86-64', False, STANDARD_TARGETS),
     ]
 
 # GDB is built by toolchain_build but injected into package targets built by
@@ -222,7 +220,7 @@ UPLOAD_HOST_TARGETS = [
 GDB_INJECT_HOSTS = [
   ('win', 'x86-32'),
   ('darwin', 'x86-64'),
-  ('linux', 'x86-32'),
+  ('linux', 'x86-64'),
   ]
 
 GDB_INJECT_PACKAGES = [
