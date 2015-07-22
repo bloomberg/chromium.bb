@@ -1205,7 +1205,7 @@ if (!is_android) {
     if (!is_ios) {
       deps += [
         ":unit_tests_js",
-        "//components/audio_modem:audio_modem_test_support",
+        "//components/audio_modem:test_support",
         "//components/autofill/content/browser/wallet:test_support",
         "//components/autofill/content/renderer:test_support",
         "//components/metrics/proto",
