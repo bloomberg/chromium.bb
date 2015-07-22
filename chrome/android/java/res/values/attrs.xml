@@ -51,4 +51,9 @@
         <attr name="maxWidth" format="dimension" />
     </declare-styleable>
 
+    <declare-styleable name="ClipDrawableProgressBar">
+        <attr name="progressBarColor" format="reference|color" />
+        <attr name="backgroundColor" format="reference|color" />
+    </declare-styleable>
+
 </resources>

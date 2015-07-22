@@ -1122,9 +1122,9 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
-    public void setLoadProgress(int progress) {
-        super.setLoadProgress(progress);
-        if (FeatureUtilities.isDocumentMode(getContext()) && progress == 100) {
+    public void finishLoadProgress(boolean delayed) {
+        super.finishLoadProgress(delayed);
+        if (FeatureUtilities.isDocumentMode(getContext())) {
             mUrlContainer.setTrailingTextVisible(false);
         }
     }
@@ -1815,16 +1815,16 @@ public class ToolbarPhone extends ToolbarLayout
         mUseLightToolbarDrawables = false;
         mUnfocusedLocationBarUsesTransparentBg = false;
         mUrlBackgroundAlpha = 255;
-        int progressBarResource = R.drawable.progress_bar;
+        int progressBarBackgroundColorResource = R.color.progress_bar_background;
         updateToolbarBackground(mVisualState);
         if (isInTabSwitcherMode) {
             mUseLightToolbarDrawables = true;
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
-            progressBarResource = R.drawable.progress_bar_white;
+            progressBarBackgroundColorResource = R.color.progress_bar_background_white;
         } else if (isIncognito()) {
             mUseLightToolbarDrawables = true;
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
-            progressBarResource = R.drawable.progress_bar_white;
+            progressBarBackgroundColorResource = R.color.progress_bar_background_white;
         } else if (mVisualState == VisualState.BRAND_COLOR) {
             mUseLightToolbarDrawables =
                     BrandColorUtils.shouldUseLightDrawablesForToolbar(currentPrimaryColor);
@@ -1832,16 +1832,12 @@ public class ToolbarPhone extends ToolbarLayout
                     !BrandColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             mUrlBackgroundAlpha = mUnfocusedLocationBarUsesTransparentBg
                     ? LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA : 255;
-            progressBarResource = mUseLightToolbarDrawables
-                    ? R.drawable.progress_bar_white : R.drawable.progress_bar;
-        } else {
-            mUseLightToolbarDrawables = false;
-            mUrlBackgroundAlpha = 255;
-            progressBarResource = R.drawable.progress_bar;
+            progressBarBackgroundColorResource = mUseLightToolbarDrawables
+                    ? R.color.progress_bar_background_white : R.color.progress_bar_background;
         }
 
-        getProgressBar().setProgressDrawable(
-                ApiCompatibilityUtils.getDrawable(getResources(), progressBarResource));
+        getProgressBar().setBackgroundColor(
+                getResources().getColor(progressBarBackgroundColorResource));
 
         if (mToggleTabStackButton != null) {
             mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
