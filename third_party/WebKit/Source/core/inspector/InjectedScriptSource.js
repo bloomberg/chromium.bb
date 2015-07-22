@@ -959,10 +959,7 @@ InjectedScript.prototype = {
         var callFrame = this._callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
-        var result = callFrame.restart();
-        if (result === false)
-            result = "Restart frame is not supported";
-        return result;
+        return callFrame.restart();
     },
 
     /**

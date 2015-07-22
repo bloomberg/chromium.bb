@@ -169,7 +169,7 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8:
     makeEvalCall(errorString, function, result, wasThrown, exceptionDetails);
 }
 
-void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<JSONObject>* result)
+void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId)
 {
     ScriptFunctionCall function(injectedScriptObject(), "restartFrame");
     function.appendArgument(callFrames);
@@ -179,12 +179,11 @@ void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object
     if (resultValue) {
         if (resultValue->type() == JSONValue::TypeString) {
             resultValue->asString(errorString);
-            return;
+        } else {
+            bool value;
+            ASSERT_UNUSED(value, resultValue->asBoolean(&value) && value);
         }
-        if (resultValue->type() == JSONValue::TypeObject) {
-            *result = resultValue->asObject();
-            return;
-        }
+        return;
     }
     *errorString = "Internal error";
 }

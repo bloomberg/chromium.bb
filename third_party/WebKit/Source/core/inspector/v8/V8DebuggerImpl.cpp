@@ -298,7 +298,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result)
+bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -339,10 +339,7 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
     switch (code) {
     case 0:
         {
-            v8::Local<v8::Value> normalResult = resultTuple->Get(1);
-            RefPtr<JSONValue> jsonResult = toJSONValue(m_isolate, normalResult);
-            if (jsonResult)
-                *result = jsonResult->asObject();
+            *stackChanged = resultTuple->Get(1)->BooleanValue();
             // Call stack may have changed after if the edited function was on the stack.
             if (!preview && isPaused())
                 newCallFrames->Reset(m_isolate, currentCallFrames());

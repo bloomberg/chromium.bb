@@ -57,7 +57,7 @@ public:
     virtual void stepOutOfFunction() = 0;
     virtual void clearStepping() = 0;
 
-    virtual bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result) = 0;
+    virtual bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged) = 0;
     virtual v8::Local<v8::Object> currentCallFrames() = 0;
     virtual v8::Local<v8::Object> currentCallFramesForAsyncStack() = 0;
     virtual PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index) = 0;

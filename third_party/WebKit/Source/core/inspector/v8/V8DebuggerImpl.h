@@ -78,7 +78,7 @@ public:
     void stepOutOfFunction() override;
     void clearStepping() override;
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result) override;
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged) override;
     v8::Local<v8::Object> currentCallFrames() override;
     v8::Local<v8::Object> currentCallFramesForAsyncStack() override;
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index) override;

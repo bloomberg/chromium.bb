@@ -295,7 +295,7 @@ DebuggerScript.liveEditScriptSource = function(scriptId, newSource, preview)
     var changeLog = [];
     try {
         var result = Debug.LiveEdit.SetScriptSource(scriptToEdit, newSource, preview, changeLog);
-        return [0, result];
+        return [0, result.stack_modified];
     } catch (e) {
         if (e instanceof Debug.LiveEdit.Failure && "details" in e) {
             var details = e.details;
@@ -490,7 +490,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
 
     function restart()
     {
-        return Debug.LiveEdit.RestartFrame(frameMirror);
+        return frameMirror.restart();
     }
 
     function setVariableValue(scopeNumber, variableName, newValue)

@@ -614,11 +614,11 @@ void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& s
         *error = "No script for id: " + scriptId;
 }
 
-void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
+void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame>>& newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<StackTrace>& asyncStackTrace)
 {
     if (!checkEnabled(error))
         return;
-    if (!debugger().setScriptSource(scriptId, newContent, asBool(preview), error, errorData, &m_currentCallStack, &result))
+    if (!debugger().setScriptSource(scriptId, newContent, asBool(preview), error, errorData, &m_currentCallStack, stackChanged))
         return;
 
     newCallFrames = currentCallFrames();
@@ -633,7 +633,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
     m_editedScripts.set(url, newContent);
 }
 
-void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
+void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame>>& newCallFrames, RefPtr<StackTrace>& asyncStackTrace)
 {
     if (!isPaused() || m_currentCallStack.IsEmpty()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -652,7 +652,7 @@ void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
-    injectedScript.restartFrame(errorString, callStack, callFrameId, &result);
+    injectedScript.restartFrame(errorString, callStack, callFrameId);
     m_currentCallStack.Reset(m_isolate, debugger().currentCallFrames());
     newCallFrames = currentCallFrames();
     asyncStackTrace = currentAsyncStackTrace();
