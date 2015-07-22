@@ -78,8 +78,6 @@ public:
     // have been updated.
     virtual void dispatchSyncEvent(int syncEventID) = 0;
     virtual void dispatchSyncEvent(int syncEventID, const WebSyncRegistration&) = 0;
-
-    virtual void addStashedMessagePorts(const WebMessagePortChannelArray& channels, const WebVector<WebString>& channelNames) {}
 };
 
 } // namespace blink
