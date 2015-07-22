@@ -109,24 +109,6 @@ public class OmniboxUrlEmphasizer {
     }
 
     /**
-     * Make the whole url greyed out (trailing url color).
-     *
-     * @param url The URL spannable to grey out. This variable is modified.
-     * @param resources Resources for the given application context.
-     * @param useDarkColors Whether the text colors should be dark (i.e.
-     *                      appropriate for use on a light background).
-     */
-    public static void greyOutUrl(Spannable url, Resources resources, boolean useDarkColors) {
-        int nonEmphasizedColorId = R.color.url_emphasis_non_emphasized_text;
-        if (!useDarkColors) {
-            nonEmphasizedColorId = R.color.url_emphasis_light_non_emphasized_text;
-        }
-        UrlEmphasisColorSpan span = new UrlEmphasisColorSpan(
-                resources.getColor(nonEmphasizedColorId));
-        url.setSpan(span, 0, url.toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-    /**
      * Modifies the given URL to emphasize the TLD and second domain.
      * TODO(sashab): Make this take an EmphasizeComponentsResponse object to
      *               prevent calling parseForEmphasizeComponents() again.

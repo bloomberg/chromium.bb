@@ -1806,6 +1806,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BookmarkNavigatorWidgetAdded">
+  <owner>aurimas@chromium.org</owner>
+  <description>
+    User added the &quot;bookmark navigator&quot; widget, which shows a
+    navigable hierarchy of the user's bookmarks, to their homescreen on Android.
+  </description>
+</action>
+
+<action name="BookmarkShortcutWidgetAdded">
+  <owner>aurimas@chromium.org</owner>
+  <description>
+    User added the &quot;bookmark shortcut&quot; widget, which is an icon to
+    open a single bookmark in Chrome, to their homescreen on Android.
+  </description>
+</action>
+
 <action name="Bookmarks_Search">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -7916,6 +7932,7 @@ should be able to be added at any place in this file.
     When user navigates back, using either system back or toolbar back button,
     from the preview page.
   </description>
+  <obsolete>Deprecated as of 7/2015</obsolete>
 </action>
 
 <action name="MobilePreviewPageReload">
@@ -7923,6 +7940,7 @@ should be able to be added at any place in this file.
   <description>
     User pressed reload button while the preview page is being shown.
   </description>
+  <obsolete>Deprecated as of 7/2015</obsolete>
 </action>
 
 <action name="MobilePreviewPageSingleTap">
@@ -7930,11 +7948,13 @@ should be able to be added at any place in this file.
   <description>
     User taped on the page while the preview page is being shown.
   </description>
+  <obsolete>Deprecated as of 7/2015</obsolete>
 </action>
 
 <action name="MobilePreviewPageTabClose">
   <owner>ksimbili@chromium.org</owner>
   <description>User closes the tab while preview page is loaded.</description>
+  <obsolete>Deprecated as of 7/2015</obsolete>
 </action>
 
 <action name="MobilePullGestureReload">

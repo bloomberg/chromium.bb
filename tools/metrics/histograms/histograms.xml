@@ -14584,6 +14584,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantSearchClicks.PreviewScrollState"
     enum="InstantSearchClicks_PreviewScrollState">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <owner>ksimbili@chromium.org</owner>
   <summary>
     Records the scroll state on the preview page when instant search clicks
@@ -14593,6 +14596,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantSearchClicks.ReasonForSwap"
     enum="InstantSearchClicks_ReasonForSwap">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <owner>ksimbili@chromium.org</owner>
   <summary>
     Records the reason that triggered the page swap when instant search clicks
@@ -14601,6 +14607,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InstantSearchClicks.TimeInPreview" units="milliseconds">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <owner>ksimbili@chromium.org</owner>
   <summary>
     The time spent by the user in preview page before swapping to original or
@@ -14609,6 +14618,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InstantSearchClicks.TimeToSwap" units="milliseconds">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <owner>ksimbili@chromium.org</owner>
   <summary>
     The time it took for swap to trigger for all swaps. The is the time between
@@ -60003,12 +60015,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="InstantSearchClicks_PreviewScrollState" type="int">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <int value="0" label="No scroll"/>
   <int value="1" label="Scrolled but not to bottom"/>
   <int value="2" label="Scrolled to bottom."/>
 </enum>
 
 <enum name="InstantSearchClicks_ReasonForSwap" type="int">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <int value="0" label="Regular swap"/>
   <int value="1" label="Swapped on timeout"/>
   <int value="2" label="Swap aborted due to navigation"/>
@@ -72424,6 +72442,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="InstantSearchClicks">
+  <obsolete>
+    Deprecated as of 7/2015.
+  </obsolete>
   <suffix name="WithPreview"
       label="Only page loads through data reduction proxy that are result of
              navigation from web search and preview version of the page shown

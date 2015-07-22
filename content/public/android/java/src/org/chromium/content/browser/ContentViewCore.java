@@ -1404,17 +1404,6 @@ public class ContentViewCore implements
     }
 
     /**
-     * Sets whether or not this {@link ContentViewCore} will visibly display it's content. By
-     * default this is set to {@code true} so there is no need to call this to start showing content
-     * when initially creating a {@link ContentViewCore}.
-     * @param draws Whether or not this {@link ContentViewCore} should draw.
-     */
-    public void setDrawsContent(boolean draws) {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetDrawsContent(mNativeContentViewCore, draws);
-    }
-
-    /**
      * To be called when the ContentView is shown.
      */
     public void onShow() {
@@ -3267,6 +3256,4 @@ public class ContentViewCore implements
             int x, int y, int w, int h);
 
     private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
-
-    private native void nativeSetDrawsContent(long nativeContentViewCoreImpl, boolean draws);
 }

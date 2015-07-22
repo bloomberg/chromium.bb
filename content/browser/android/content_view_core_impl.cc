@@ -1364,12 +1364,6 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
   }
 }
 
-void ContentViewCoreImpl::SetDrawsContent(JNIEnv* env,
-                                          jobject jobj,
-                                          jboolean draws) {
-  GetLayer()->SetHideLayerAndSubtree(!draws);
-}
-
 void ContentViewCoreImpl::RequestTextSurroundingSelection(
     int max_length,
     const base::Callback<
