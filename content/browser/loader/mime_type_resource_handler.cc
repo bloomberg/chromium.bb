@@ -292,6 +292,49 @@ bool MimeTypeResourceHandler::DetermineMimeType() {
   return made_final_decision;
 }
 
+bool MimeTypeResourceHandler::SelectPluginHandler(bool* defer,
+                                                  bool* handled_by_plugin) {
+  *handled_by_plugin = false;
+#if defined(ENABLE_PLUGINS)
+  ResourceRequestInfoImpl* info = GetRequestInfo();
+  bool allow_wildcard = false;
+  bool stale;
+  WebPluginInfo plugin;
+  bool has_plugin = plugin_service_->GetPluginInfo(
+      info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
+      request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
+      &stale, &plugin, NULL);
+
+  if (stale) {
+    // Refresh the plugins asynchronously.
+    plugin_service_->GetPlugins(
+        base::Bind(&MimeTypeResourceHandler::OnPluginsLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+    request()->LogBlockedBy("MimeTypeResourceHandler");
+    *defer = true;
+    return true;
+  }
+
+  if (has_plugin && plugin.type != WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+    *handled_by_plugin = true;
+    return true;
+  }
+
+  // Attempt to intercept the request as a stream.
+  base::FilePath plugin_path;
+  if (has_plugin)
+    plugin_path = plugin.path;
+  std::string payload;
+  scoped_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
+      plugin_path, request(), response_.get(), &payload));
+  if (handler) {
+    *handled_by_plugin = true;
+    return UseAlternateNextHandler(handler.Pass(), payload);
+  }
+#endif
+  return true;
+}
+
 bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
   DCHECK(!response_->head.mime_type.empty());
 
@@ -309,13 +352,12 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
   // Allow requests for object/embed tags to be intercepted as streams.
   if (info->GetResourceType() == content::RESOURCE_TYPE_OBJECT) {
     DCHECK(!info->allow_download());
-    std::string payload;
-    scoped_ptr<ResourceHandler> handler(
-        host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
-    if (handler) {
-      DCHECK(!mime_util::IsSupportedMimeType(mime_type));
-      return UseAlternateNextHandler(handler.Pass(), payload);
-    }
+
+    bool handled_by_plugin;
+    if (!SelectPluginHandler(defer, &handled_by_plugin))
+      return false;
+    if (handled_by_plugin || *defer)
+      return true;
   }
 
   if (!info->allow_download())
@@ -332,28 +374,11 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
     if (mime_util::IsSupportedMimeType(mime_type))
       return true;
 
-    std::string payload;
-    scoped_ptr<ResourceHandler> handler(
-        host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
-    if (handler) {
-      return UseAlternateNextHandler(handler.Pass(), payload);
-    }
-
-#if defined(ENABLE_PLUGINS)
-    bool stale;
-    bool has_plugin = HasSupportingPlugin(&stale);
-    if (stale) {
-      // Refresh the plugins asynchronously.
-      plugin_service_->GetPlugins(
-          base::Bind(&MimeTypeResourceHandler::OnPluginsLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
-      request()->LogBlockedBy("MimeTypeResourceHandler");
-      *defer = true;
+    bool handled_by_plugin;
+    if (!SelectPluginHandler(defer, &handled_by_plugin))
+      return false;
+    if (handled_by_plugin || *defer)
       return true;
-    }
-    if (has_plugin)
-      return true;
-#endif
   }
 
   // Install download handler
@@ -468,23 +493,6 @@ bool MimeTypeResourceHandler::MustDownload() {
   }
 
   return must_download_;
-}
-
-bool MimeTypeResourceHandler::HasSupportingPlugin(bool* stale) {
-#if defined(ENABLE_PLUGINS)
-  ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  bool allow_wildcard = false;
-  WebPluginInfo plugin;
-  return plugin_service_->GetPluginInfo(
-      info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
-      request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
-      stale, &plugin, NULL);
-#else
-  if (stale)
-    *stale = false;
-  return false;
-#endif
 }
 
 bool MimeTypeResourceHandler::CopyReadBufferToNextHandler() {

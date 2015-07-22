@@ -2,27 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 const int kNumberLoadTestParts = 10;
 
@@ -150,6 +167,79 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, Load) {
 #endif
   // Load public PDFs.
   LoadAllPdfsTest("pdf", GetParam());
+}
+
+class DisablePluginHelper : public content::DownloadManager::Observer,
+                            public content::NotificationObserver {
+ public:
+  DisablePluginHelper() {}
+
+  virtual ~DisablePluginHelper() {}
+
+  void DisablePlugin(Profile* profile) {
+    registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
+                   content::Source<Profile>(profile));
+    scoped_refptr<PluginPrefs> prefs(PluginPrefs::GetForProfile(profile));
+    DCHECK(prefs.get());
+    prefs->EnablePluginGroup(
+        false, base::UTF8ToUTF16(ChromeContentClient::kPDFPluginName));
+    // Wait until the plugin has been disabled.
+    disable_run_loop_.Run();
+  }
+
+  const GURL& GetLastUrl() {
+    // Wait until the download has been created.
+    download_run_loop_.Run();
+    return last_url_;
+  }
+
+  // content::DownloadManager::Observer implementation.
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override {
+    last_url_ = item->GetURL();
+    download_run_loop_.Quit();
+  }
+
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
+    disable_run_loop_.Quit();
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::RunLoop disable_run_loop_;
+  base::RunLoop download_run_loop_;
+  GURL last_url_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DisablePlugin) {
+  // Disable the PDF plugin.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DisablePluginHelper helper;
+  helper.DisablePlugin(profile);
+
+  // Register a download observer.
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(browser_context);
+  download_manager->AddObserver(&helper);
+
+  // Navigate to a PDF and test that it is downloaded.
+  GURL url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_EQ(url, helper.GetLastUrl());
+
+  // Cancel the download to shutdown cleanly.
+  download_manager->RemoveObserver(&helper);
+  std::vector<content::DownloadItem*> downloads;
+  download_manager->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  downloads[0]->Cancel(false);
 }
 
 // We break PDFTest.Load up into kNumberLoadTestParts.

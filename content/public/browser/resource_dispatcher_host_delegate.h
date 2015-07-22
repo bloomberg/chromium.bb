@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -86,20 +87,22 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
                                            const std::string& mime_type);
 
   // Returns true and sets |origin| if a Stream should be created for the
-  // resource.
-  // If true is returned, a new Stream will be created and OnStreamCreated()
-  // will be called with
-  // - a StreamHandle instance for the Stream. The handle contains the URL for
-  //   reading the Stream etc.
-  // The Stream's origin will be set to |origin|.
+  // resource. |plugin_path| is the plugin which will be used to handle the
+  // request (if the stream will be rendered in a BrowserPlugin). It may be
+  // empty. If true is returned, a new Stream will be created and
+  // OnStreamCreated() will be called with a StreamHandle instance for the
+  // Stream. The handle contains the URL for reading the Stream etc. The
+  // Stream's origin will be set to |origin|.
   //
   // If the stream will be rendered in a BrowserPlugin, |payload| will contain
   // the data that should be given to the old ResourceHandler to forward to the
   // renderer process.
-  virtual bool ShouldInterceptResourceAsStream(net::URLRequest* request,
-                                               const std::string& mime_type,
-                                               GURL* origin,
-                                               std::string* payload);
+  virtual bool ShouldInterceptResourceAsStream(
+      net::URLRequest* request,
+      const base::FilePath& plugin_path,
+      const std::string& mime_type,
+      GURL* origin,
+      std::string* payload);
 
   // Informs the delegate that a Stream was created. The Stream can be read from
   // the blob URL of the Stream, but can only be read once.
