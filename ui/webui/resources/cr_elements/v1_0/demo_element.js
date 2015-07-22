@@ -36,24 +36,6 @@ Polymer({
       type: String,
       value: 'sub-label',
     },
-
-    /**
-     * @type {!Array<!CrOnc.NetworkStateProperties>}
-     */
-    networkStates: {
-      type: Array,
-      value: function() {
-        return [
-          { Type: 'Ethernet' },
-          { ConnectionState: 'Connected', Type: 'Cellular', Name: 'cellular1',
-            Cellular: { NetworkTechnology: 'LTE', SignalStrength: 80 }, },
-          { ConnectionState: 'Connected', Type: 'WiFi', Name: 'wifi1',
-            WiFi: { SignalStrength: 60 }, },
-          { ConnectionState: 'NotConnected', Type: 'WiFi', Name: 'wifi2',
-            WiFi: { Security: 'WEP', SignalStrength: 20 }, },
-        ];
-      }
-    }
   },
 
   checkboxCheckedChanged_: function() {
