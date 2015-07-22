@@ -21,6 +21,11 @@ src:*third_party/mesa*
 type:*BlockRefType*
 type:*SkAutoTUnref*
 
+# All std:: types
+# This should be possible to remove, if/when we build against
+# a statically linked libc++.
+type:std::*
+
 #############################################################################
 # Base class's constructor accesses a derived class.
 
