@@ -70534,6 +70534,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Unspecified, usually Rec 601"/>
   <int value="1" label="Jpeg"/>
   <int value="2" label="HD Rec 709"/>
+  <int value="3" label="SD Rec 601"/>
 </enum>
 
 <enum name="VideoFramePixelFormat" type="int">
