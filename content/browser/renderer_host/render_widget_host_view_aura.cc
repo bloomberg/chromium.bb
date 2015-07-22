@@ -2503,7 +2503,7 @@ void RenderWidgetHostViewAura::ModifyEventMovementAndCoords(
     event->globalX = unlocked_global_mouse_position_.x();
     event->globalY = unlocked_global_mouse_position_.y();
   } else {
-    unlocked_mouse_position_.SetPoint(event->windowX, event->windowY);
+    unlocked_mouse_position_.SetPoint(event->x, event->y);
     unlocked_global_mouse_position_.SetPoint(event->globalX, event->globalY);
   }
 }
