@@ -143,11 +143,6 @@ void ServiceWorkerGlobalScopeClientImpl::navigate(const WebString& clientUUID, c
     m_client.navigate(clientUUID, url, callback);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::stashMessagePort(WebMessagePortChannel* channel, const WebString& name)
-{
-    m_client.stashMessagePort(channel, name);
-}
-
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient& client)
     : m_client(client)
 {

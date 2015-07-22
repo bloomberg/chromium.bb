@@ -39,10 +39,6 @@
   readonly attribute Clients clients;
   readonly attribute ServiceWorkerRegistration registration;
 
-  // https://github.com/mkruisselbrink/navigator-connect/blob/gh-pages/docs/api-idea.md#persisted-messageports
-  // TODO(mek): Link to actual spec when this is added there, and decide if this is the right place for this.
-  [RuntimeEnabled=NavigatorConnect] readonly attribute StashedPortCollection ports;
-
   [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
 
   [RaisesException] void close();

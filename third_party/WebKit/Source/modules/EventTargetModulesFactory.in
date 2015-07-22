@@ -31,7 +31,6 @@ modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerContainer
 modules/serviceworkers/ServiceWorkerGlobalScope
 modules/serviceworkers/ServiceWorkerRegistration
-modules/serviceworkers/StashedPortCollection
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesis
 modules/speech/SpeechSynthesisUtterance

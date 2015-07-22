@@ -186,9 +186,6 @@ public:
     // WebServiceWorkerClientInfo and WebServiceWorkerError ownerships are
     // passed to the WebServiceWorkerClientsCallbacks implementation.
     virtual void navigate(const WebString& uuid, const WebURL&, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
-
-    // Ownership of the passed WebMessagePortChannel is NOT passed to the callee.
-    virtual void stashMessagePort(WebMessagePortChannel*, const WebString& name) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

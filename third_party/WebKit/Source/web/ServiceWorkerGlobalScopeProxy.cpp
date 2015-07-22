@@ -56,8 +56,6 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "modules/serviceworkers/StashedMessagePort.h"
-#include "modules/serviceworkers/StashedPortCollection.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebCrossOriginServiceWorkerClient.h"
@@ -206,13 +204,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCro
     RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(ports, value, webClient.origin.string());
     event->setType(EventTypeNames::crossoriginmessage);
     m_workerGlobalScope->dispatchEvent(event);
-}
-
-void ServiceWorkerGlobalScopeProxy::addStashedMessagePorts(const WebMessagePortChannelArray& webChannels, const WebVector<WebString>& webChannelNames)
-{
-    ASSERT(m_workerGlobalScope);
-    StashedMessagePortArray* ports = StashedMessagePort::toStashedMessagePortArray(m_workerGlobalScope, webChannels, webChannelNames);
-    m_workerGlobalScope->ports()->addPorts(*ports);
 }
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int)

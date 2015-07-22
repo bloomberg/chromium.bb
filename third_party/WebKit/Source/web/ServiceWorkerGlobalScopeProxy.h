@@ -84,7 +84,6 @@ public:
     // have been updated.
     void dispatchSyncEvent(int) override;
     void dispatchSyncEvent(int, const WebSyncRegistration&) override;
-    void addStashedMessagePorts(const WebMessagePortChannelArray&, const WebVector<WebString>& webChannelNames) override;
 
     // WorkerReportingProxy overrides:
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;

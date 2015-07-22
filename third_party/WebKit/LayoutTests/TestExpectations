@@ -1677,8 +1677,6 @@ crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
-crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
-
 # Uncomment these once tests are rebaselined for crbug.com/509013
 # crbug.com/240827 css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
 # crbug.com/240827 css3/filters/effect-reference-subregion-hw.html [ NeedsManualRebaseline ]
@@ -1728,7 +1726,6 @@ crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ ImageOnlyFailure ]
 
 crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Failure ]
-crbug.com/505422 [ Linux Mac ] http/tests/serviceworker/chromium/stashed-ports-after-terminate.html [ Pass Timeout ]
 
 crbug.com/505429 [ Release Mavericks Retina ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-reason.html [ Pass Failure ]

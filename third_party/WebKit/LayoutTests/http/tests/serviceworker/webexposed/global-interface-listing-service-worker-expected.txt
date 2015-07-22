@@ -878,7 +878,6 @@ interface ServiceWorkerGlobalScope
     getter onperiodicsync
     getter onpush
     getter onsync
-    getter ports
     getter registration
     method close
     method constructor
@@ -921,14 +920,6 @@ interface Set
     method has
     method keys
     method values
-interface StashedMessagePort
-    getter name
-    method constructor
-interface StashedPortCollection
-    getter onmessage
-    method add
-    method constructor
-    setter onmessage
 interface String
     attribute length
     method anchor

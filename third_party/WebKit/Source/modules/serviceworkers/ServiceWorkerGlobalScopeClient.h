@@ -82,7 +82,6 @@ public:
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
     virtual void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) = 0;
     virtual void navigate(const WebString& clientUUID, const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
-    virtual void stashMessagePort(WebMessagePortChannel*, const WebString& name) = 0;
 
     static const char* supplementName();
     static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);

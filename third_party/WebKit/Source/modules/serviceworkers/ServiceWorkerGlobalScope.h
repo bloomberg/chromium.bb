@@ -47,7 +47,6 @@ class ScriptState;
 class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
-class StashedPortCollection;
 class WaitUntilObserver;
 class WebServiceWorkerRegistration;
 class WorkerThreadStartupData;
@@ -68,7 +67,6 @@ public:
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
     ServiceWorkerRegistration* registration();
-    StashedPortCollection* ports();
 
     ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
@@ -107,7 +105,6 @@ private:
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
     PersistentWillBeMember<ServiceWorkerRegistration> m_registration;
-    PersistentWillBeMember<StashedPortCollection> m_ports;
     bool m_didEvaluateScript;
     bool m_hadErrorInTopLevelEventHandler;
     unsigned m_eventNestingLevel;
