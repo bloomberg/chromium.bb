@@ -17,7 +17,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
       output_surface_state_(OUTPUT_SURFACE_LOST),
       begin_impl_frame_state_(BEGIN_IMPL_FRAME_STATE_IDLE),
-      commit_state_(COMMIT_STATE_IDLE),
+      begin_main_frame_state_(BEGIN_MAIN_FRAME_STATE_IDLE),
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
       commit_count_(0),
       current_frame_number_(0),
@@ -38,7 +38,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_redraw_(false),
       needs_animate_(false),
       needs_prepare_tiles_(false),
-      needs_commit_(false),
+      needs_begin_main_frame_(false),
       visible_(false),
       can_start_(false),
       can_draw_(false),
@@ -110,20 +110,21 @@ const char* SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
   return "???";
 }
 
-const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
+const char* SchedulerStateMachine::BeginMainFrameStateToString(
+    BeginMainFrameState state) {
   switch (state) {
-    case COMMIT_STATE_IDLE:
-      return "COMMIT_STATE_IDLE";
-    case COMMIT_STATE_BEGIN_MAIN_FRAME_SENT:
-      return "COMMIT_STATE_BEGIN_MAIN_FRAME_SENT";
-    case COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED:
-      return "COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED";
-    case COMMIT_STATE_READY_TO_COMMIT:
-      return "COMMIT_STATE_READY_TO_COMMIT";
-    case COMMIT_STATE_WAITING_FOR_ACTIVATION:
-      return "COMMIT_STATE_WAITING_FOR_ACTIVATION";
-    case COMMIT_STATE_WAITING_FOR_DRAW:
-      return "COMMIT_STATE_WAITING_FOR_DRAW";
+    case BEGIN_MAIN_FRAME_STATE_IDLE:
+      return "BEGIN_MAIN_FRAME_STATE_IDLE";
+    case BEGIN_MAIN_FRAME_STATE_SENT:
+      return "BEGIN_MAIN_FRAME_STATE_SENT";
+    case BEGIN_MAIN_FRAME_STATE_STARTED:
+      return "BEGIN_MAIN_FRAME_STATE_STARTED";
+    case BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT:
+      return "BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT";
+    case BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION:
+      return "BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION";
+    case BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW:
+      return "BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW";
   }
   NOTREACHED();
   return "???";
@@ -188,7 +189,8 @@ void SchedulerStateMachine::AsValueInto(
   state->SetString("next_action", ActionToString(NextAction()));
   state->SetString("begin_impl_frame_state",
                    BeginImplFrameStateToString(begin_impl_frame_state_));
-  state->SetString("commit_state", CommitStateToString(commit_state_));
+  state->SetString("begin_main_frame_state",
+                   BeginMainFrameStateToString(begin_main_frame_state_));
   state->SetString("output_surface_state_",
                    OutputSurfaceStateToString(output_surface_state_));
   state->SetString("forced_redraw_state",
@@ -222,7 +224,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_animate_", needs_animate_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
-  state->SetBoolean("needs_commit", needs_commit_);
+  state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
   state->SetBoolean("visible", visible_);
   state->SetBoolean("can_start", can_start_);
   state->SetBoolean("can_draw", can_draw_);
@@ -296,7 +298,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 
   // We only want to start output surface initialization after the
   // previous commit is complete.
-  if (commit_state_ != COMMIT_STATE_IDLE)
+  if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE)
     return false;
 
   // Make sure the BeginImplFrame from any previous OutputSurfaces
@@ -387,7 +389,7 @@ bool SchedulerStateMachine::ShouldAnimate() const {
 }
 
 bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
-  if (!needs_commit_)
+  if (!needs_begin_main_frame_)
     return false;
 
   // We can not perform commits if we are not visible.
@@ -426,7 +428,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   // Other parts of the state machine indirectly defer the BeginMainFrame
   // by transitioning to WAITING commit states rather than going
   // immediately to IDLE.
-  if (commit_state_ != COMMIT_STATE_IDLE)
+  if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE)
     return false;
 
   // Don't send BeginMainFrame early if we are prioritizing the active tree
@@ -482,7 +484,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
 }
 
 bool SchedulerStateMachine::ShouldCommit() const {
-  if (commit_state_ != COMMIT_STATE_READY_TO_COMMIT)
+  if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT)
     return false;
 
   // We must not finish the commit until the pending tree is free.
@@ -622,8 +624,8 @@ void SchedulerStateMachine::UpdateStateOnSendBeginMainFrame() {
   DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled);
   DCHECK(visible_);
   DCHECK(!send_begin_main_frame_funnel_);
-  commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
-  needs_commit_ = false;
+  begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_SENT;
+  needs_begin_main_frame_ = false;
   send_begin_main_frame_funnel_ = true;
   last_frame_number_begin_main_frame_sent_ = current_frame_number_;
 }
@@ -636,9 +638,9 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
     animate_funnel_ = false;
 
   if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
-    commit_state_ = COMMIT_STATE_IDLE;
+    begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
   } else {
-    commit_state_ = COMMIT_STATE_WAITING_FOR_ACTIVATION;
+    begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION;
   }
 
   // If the commit was aborted, then there is no pending tree.
@@ -675,15 +677,16 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
   pending_tree_is_ready_for_activation_ = false;
 
   if (continuous_painting_)
-    needs_commit_ = true;
+    needs_begin_main_frame_ = true;
   last_commit_had_no_updates_ = commit_has_no_updates;
 }
 
 void SchedulerStateMachine::UpdateStateOnActivation() {
-  if (commit_state_ == COMMIT_STATE_WAITING_FOR_ACTIVATION) {
-    commit_state_ = settings_.commit_to_active_tree
-                        ? COMMIT_STATE_WAITING_FOR_DRAW
-                        : COMMIT_STATE_IDLE;
+  if (begin_main_frame_state_ ==
+      BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION) {
+    begin_main_frame_state_ = settings_.commit_to_active_tree
+                                  ? BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW
+                                  : BEGIN_MAIN_FRAME_STATE_IDLE;
   }
 
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION)
@@ -702,8 +705,8 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
 
-  if (commit_state_ == COMMIT_STATE_WAITING_FOR_DRAW)
-    commit_state_ = COMMIT_STATE_IDLE;
+  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW)
+    begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
 
   needs_redraw_ = false;
   active_tree_needs_first_draw_ = false;
@@ -727,7 +730,7 @@ void SchedulerStateMachine::UpdateStateOnBeginOutputSurfaceCreation() {
   // The following DCHECKs make sure we are in the proper quiescent state.
   // The pipeline should be flushed entirely before we start output
   // surface creation to avoid complicated corner cases.
-  DCHECK_EQ(commit_state_, COMMIT_STATE_IDLE);
+  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_IDLE);
   DCHECK(!has_pending_tree_);
   DCHECK(!active_tree_needs_first_draw_);
 }
@@ -794,7 +797,8 @@ bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
-  return needs_animate_ || needs_redraw_ || (needs_commit_ && !defer_commits_);
+  return needs_animate_ || needs_redraw_ ||
+         (needs_begin_main_frame_ && !defer_commits_);
 }
 
 // These are cases where we are very likely want a BeginFrame message in the
@@ -813,7 +817,8 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // request frames when commits are disabled, because the frame requests will
   // not provide the needed commit (and will wake up the process when it could
   // stay idle).
-  if ((commit_state_ != COMMIT_STATE_IDLE) && !defer_commits_)
+  if ((begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE) &&
+      !defer_commits_)
     return true;
 
   // If the pending tree activates quickly, we'll want a BeginImplFrame soon
@@ -942,7 +947,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   // don't have a pending tree -- otherwise we should give it a chance to
   // activate.
   // TODO(skyostil): Revisit this when we have more accurate deadline estimates.
-  if (commit_state_ == COMMIT_STATE_IDLE && !has_pending_tree_)
+  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_IDLE &&
+      !has_pending_tree_)
     return true;
 
   // Prioritize impl-thread draws in impl_latency_takes_priority_ mode.
@@ -988,7 +994,9 @@ void SchedulerStateMachine::SetWaitForReadyToDraw() {
 bool SchedulerStateMachine::OnlyImplSideUpdatesExpected() const {
   bool has_impl_updates = needs_redraw_ || needs_animate_;
   bool main_updates_expected =
-      needs_commit_ || commit_state_ != COMMIT_STATE_IDLE || has_pending_tree_;
+      needs_begin_main_frame_ ||
+      begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE ||
+      has_pending_tree_;
   return has_impl_updates && !main_updates_expected;
 }
 
@@ -1044,7 +1052,7 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
       if (forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE)
         return;
 
-      needs_commit_ = true;
+      needs_begin_main_frame_ = true;
       consecutive_checkerboard_animations_++;
       if (settings_.timeout_and_draw_when_animation_checkerboards &&
           consecutive_checkerboard_animations_ >=
@@ -1060,19 +1068,19 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
       // pictures (which requires a commit) or because of memory pressure
       // removing textures (which might not).  To be safe, request a commit
       // anyway.
-      needs_commit_ = true;
+      needs_begin_main_frame_ = true;
       break;
   }
 }
 
-void SchedulerStateMachine::SetNeedsCommit() {
-  needs_commit_ = true;
+void SchedulerStateMachine::SetNeedsBeginMainFrame() {
+  needs_begin_main_frame_ = true;
 }
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
-  DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED)
+  DCHECK(begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_STARTED)
       << AsValue()->ToString();
-  commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
+  begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT;
   // In commit_to_active_tree mode, commit should happen right after
   // BeginFrame, meaning when this function is called, next action should be
   // commit.
@@ -1081,13 +1089,13 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
 }
 
 void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
-  DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
+  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_SENT);
   switch (reason) {
     case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:
-      commit_state_ = COMMIT_STATE_IDLE;
-      SetNeedsCommit();
+      begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
+      SetNeedsBeginMainFrame();
       return;
     case CommitEarlyOutReason::FINISHED_NO_UPDATES:
       bool commit_has_no_updates = true;
@@ -1127,7 +1135,7 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
   if (did_create_and_initialize_first_output_surface_) {
     // TODO(boliu): See if we can remove this when impl-side painting is always
     // on. Does anything on the main thread need to update after recreate?
-    needs_commit_ = true;
+    needs_begin_main_frame_ = true;
   }
   did_create_and_initialize_first_output_surface_ = true;
   pending_swaps_ = 0;
@@ -1136,8 +1144,8 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
 }
 
 void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
-  DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
-  commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED;
+  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_SENT);
+  begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_STARTED;
 }
 
 bool SchedulerStateMachine::HasInitializedOutputSurface() const {

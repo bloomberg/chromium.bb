@@ -190,7 +190,7 @@ void SingleThreadProxy::SetNeedsAnimate() {
   animate_requested_ = true;
   DebugScopedSetImplThread impl(this);
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsCommit();
+    scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
 }
 
 void SingleThreadProxy::SetNeedsUpdateLayers() {
@@ -314,7 +314,7 @@ void SingleThreadProxy::SetNeedsCommit() {
   commit_requested_ = true;
   DebugScopedSetImplThread impl(this);
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsCommit();
+    scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
 }
 
 void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
@@ -425,7 +425,7 @@ void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {
   client_->ScheduleComposite();
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsCommit();
+    scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
 }
 
 void SingleThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {

@@ -23,7 +23,7 @@ SurfacesScheduler::SurfacesScheduler()
   scheduler_->SetCanStart();
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
-  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsBeginMainFrame();
 }
 
 SurfacesScheduler::~SurfacesScheduler() {

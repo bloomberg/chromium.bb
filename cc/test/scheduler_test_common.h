@@ -217,7 +217,9 @@ class TestScheduler : public Scheduler {
 
   bool CanStart() const { return state_machine_.CanStartForTesting(); }
 
-  bool NeedsCommit() const { return state_machine_.needs_commit(); }
+  bool NeedsBeginMainFrame() const {
+    return state_machine_.needs_begin_main_frame();
+  }
 
   BeginFrameSource& frame_source() { return *frame_source_; }
   bool FrameProductionThrottled() { return throttle_frame_production_; }

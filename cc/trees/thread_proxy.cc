@@ -374,7 +374,7 @@ void ThreadProxy::NotifyReadyToDraw() {
 void ThreadProxy::SetNeedsCommitOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsCommitOnImplThread");
   DCHECK(IsImplThread());
-  impl().scheduler->SetNeedsCommit();
+  impl().scheduler->SetNeedsBeginMainFrame();
 }
 
 void ThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {

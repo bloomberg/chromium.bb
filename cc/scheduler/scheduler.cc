@@ -162,8 +162,8 @@ void Scheduler::SetThrottleFrameProduction(bool throttle) {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetNeedsCommit() {
-  state_machine_.SetNeedsCommit();
+void Scheduler::SetNeedsBeginMainFrame() {
+  state_machine_.SetNeedsBeginMainFrame();
   ProcessScheduledActions();
 }
 
@@ -814,10 +814,10 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline(
 }
 
 bool Scheduler::IsBeginMainFrameSentOrStarted() const {
-  return (state_machine_.commit_state() ==
-              SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT ||
-          state_machine_.commit_state() ==
-              SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED);
+  return (state_machine_.begin_main_frame_state() ==
+              SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT ||
+          state_machine_.begin_main_frame_state() ==
+              SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_STARTED);
 }
 
 }  // namespace cc

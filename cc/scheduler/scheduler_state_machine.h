@@ -72,15 +72,15 @@ class CC_EXPORT SchedulerStateMachine {
   static const char* BeginImplFrameDeadlineModeToString(
       BeginImplFrameDeadlineMode mode);
 
-  enum CommitState {
-    COMMIT_STATE_IDLE,
-    COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
-    COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED,
-    COMMIT_STATE_READY_TO_COMMIT,
-    COMMIT_STATE_WAITING_FOR_ACTIVATION,
-    COMMIT_STATE_WAITING_FOR_DRAW,
+  enum BeginMainFrameState {
+    BEGIN_MAIN_FRAME_STATE_IDLE,
+    BEGIN_MAIN_FRAME_STATE_SENT,
+    BEGIN_MAIN_FRAME_STATE_STARTED,
+    BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT,
+    BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION,
+    BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW,
   };
-  static const char* CommitStateToString(CommitState state);
+  static const char* BeginMainFrameStateToString(BeginMainFrameState state);
 
   enum ForcedRedrawOnTimeoutState {
     FORCED_REDRAW_STATE_IDLE,
@@ -92,11 +92,13 @@ class CC_EXPORT SchedulerStateMachine {
       ForcedRedrawOnTimeoutState state);
 
   bool CommitPending() const {
-    return commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT ||
-           commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED ||
-           commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
+    return begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_SENT ||
+           begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_STARTED ||
+           begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT;
   }
-  CommitState commit_state() const { return commit_state_; }
+  BeginMainFrameState begin_main_frame_state() const {
+    return begin_main_frame_state_;
+  }
 
   bool RedrawPending() const { return needs_redraw_; }
   bool PrepareTilesPending() const { return needs_prepare_tiles_; }
@@ -195,11 +197,11 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
   void DidDrawIfPossibleCompleted(DrawResult result);
 
-  // Indicates that a new commit flow needs to be performed, either to pull
-  // updates from the main thread to the impl, or to push deltas from the impl
-  // thread to main.
-  void SetNeedsCommit();
-  bool needs_commit() const { return needs_commit_; }
+  // Indicates that a new begin main frame flow needs to be performed, either
+  // to pull updates from the main thread to the impl, or to push deltas from
+  // the impl thread to main.
+  void SetNeedsBeginMainFrame();
+  bool needs_begin_main_frame() const { return needs_begin_main_frame_; }
 
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction.
@@ -297,7 +299,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   OutputSurfaceState output_surface_state_;
   BeginImplFrameState begin_impl_frame_state_;
-  CommitState commit_state_;
+  BeginMainFrameState begin_main_frame_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
 
   // These are used for tracing only.
@@ -328,7 +330,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_redraw_;
   bool needs_animate_;
   bool needs_prepare_tiles_;
-  bool needs_commit_;
+  bool needs_begin_main_frame_;
   bool visible_;
   bool can_start_;
   bool can_draw_;
