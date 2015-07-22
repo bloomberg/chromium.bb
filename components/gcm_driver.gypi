@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      # GN version: //components/gcm_driver:common
+      # GN version: //components/gcm_driver/common
       'target_name': 'gcm_driver_common',
       'type': '<(component)',
       'include_dirs': [
