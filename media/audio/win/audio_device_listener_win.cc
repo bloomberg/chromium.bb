@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/time/default_tick_clock.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -52,7 +53,7 @@ static std::string GetDeviceId(EDataFlow flow,
 }
 
 AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
-    : listener_cb_(listener_cb) {
+    : listener_cb_(listener_cb), tick_clock_(new base::DefaultTickClock()) {
   CHECK(CoreAudioUtil::IsSupported());
 
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator(
@@ -68,13 +69,6 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
   }
 
   device_enumerator_ = device_enumerator;
-
-  default_render_device_id_ = GetDeviceId(eRender, eConsole);
-  default_capture_device_id_ = GetDeviceId(eCapture, eConsole);
-  default_communications_render_device_id_ =
-      GetDeviceId(eRender, eCommunications);
-  default_communications_capture_device_id_ =
-      GetDeviceId(eCapture, eCommunications);
 }
 
 AudioDeviceListenerWin::~AudioDeviceListenerWin() {
@@ -140,41 +134,36 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
     return S_OK;
   }
 
-  // Grab a pointer to the appropriate ID member.
-  // Note that there are three "?:"'s here to select the right ID.
-  std::string* current_device_id =
-      flow == eRender ? (
-          role == eConsole ?
-              &default_render_device_id_ :
-              &default_communications_render_device_id_
-      ) : (
-          role == eConsole ?
-              &default_capture_device_id_ :
-              &default_communications_capture_device_id_
-      );
-
   // If no device is now available, |new_default_device_id| will be NULL.
   std::string new_device_id;
   if (new_default_device_id)
     new_device_id = base::WideToUTF8(new_default_device_id);
 
+  // Only output device changes should be forwarded.  Do not attempt to filter
+  // changes based on device id since some devices may not change their device
+  // id and instead trigger some internal flow change: http://crbug.com/506712
+  //
+  // We rate limit device changes to avoid a single device change causing back
+  // to back changes for eCommunications and eConsole; this is worth doing as
+  // it provides a substantially faster resumption of playback.
+  bool did_run_listener_cb = false;
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  if (flow == eRender &&
+      now - last_device_change_time_ >
+          base::TimeDelta::FromMilliseconds(kDeviceChangeLimitMs)) {
+    last_device_change_time_ = now;
+    listener_cb_.Run();
+    did_run_listener_cb = true;
+  }
+
   DVLOG(1) << "OnDefaultDeviceChanged() "
            << "new_default_device: "
-           << (new_default_device_id ?
-               CoreAudioUtil::GetFriendlyName(new_device_id) : "No device")
+           << (new_default_device_id
+                   ? CoreAudioUtil::GetFriendlyName(new_device_id)
+                   : "no device")
            << ", flow: " << FlowToString(flow)
-           << ", role: " << RoleToString(role);
-
-  // Only fire a state change event if the device has actually changed.
-  // TODO(dalecurtis): This still seems to fire an extra event on my machine for
-  // an unplug event (probably others too); e.g., we get two transitions to a
-  // new default device id.
-  if (new_device_id.compare(*current_device_id) == 0)
-    return S_OK;
-
-  // Store the new id in the member variable (that current_device_id points to).
-  *current_device_id = new_device_id;
-  listener_cb_.Run();
+           << ", role: " << RoleToString(role)
+           << ", notified manager: " << (did_run_listener_cb ? "Yes" : "No");
 
   return S_OK;
 }

@@ -11,10 +11,15 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/win/scoped_comptr.h"
 #include "media/base/media_export.h"
 
 using base::win::ScopedComPtr;
+
+namespace base {
+class TickClock;
+}
 
 namespace media {
 
@@ -35,6 +40,9 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
  private:
   friend class AudioDeviceListenerWinTest;
 
+  // Minimum allowed time between device change notifications.
+  static const int kDeviceChangeLimitMs = 250;
+
   // IMMNotificationClient implementation.
   STDMETHOD_(ULONG, AddRef)() override;
   STDMETHOD_(ULONG, Release)() override;
@@ -50,13 +58,14 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
 
   base::Closure listener_cb_;
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;
-  std::string default_render_device_id_;
-  std::string default_capture_device_id_;
-  std::string default_communications_render_device_id_;
-  std::string default_communications_capture_device_id_;
+
+  // Used to rate limit device change events.
+  base::TimeTicks last_device_change_time_;
 
   // AudioDeviceListenerWin must be constructed and destructed on one thread.
   base::ThreadChecker thread_checker_;
+
+  scoped_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerWin);
 };

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
@@ -36,6 +37,15 @@ class AudioDeviceListenerWinTest : public testing::Test {
 
     output_device_listener_.reset(new AudioDeviceListenerWin(base::Bind(
         &AudioDeviceListenerWinTest::OnDeviceChange, base::Unretained(this))));
+
+    tick_clock_ = new base::SimpleTestTickClock();
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(12345));
+    output_device_listener_->tick_clock_.reset(tick_clock_);
+  }
+
+  void AdvanceLastDeviceChangeTime() {
+    tick_clock_->Advance(base::TimeDelta::FromMilliseconds(
+        AudioDeviceListenerWin::kDeviceChangeLimitMs + 1));
   }
 
   // Simulate a device change where no output devices are available.
@@ -51,15 +61,13 @@ class AudioDeviceListenerWinTest : public testing::Test {
         base::ASCIIToUTF16(new_device_id).c_str()) == S_OK;
   }
 
-  void SetOutputDeviceId(std::string new_device_id) {
-    output_device_listener_->default_render_device_id_ = new_device_id;
-  }
 
   MOCK_METHOD0(OnDeviceChange, void());
 
  private:
   ScopedCOMInitializer com_init_;
   scoped_ptr<AudioDeviceListenerWin> output_device_listener_;
+  base::SimpleTestTickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerWinTest);
 };
@@ -68,16 +76,15 @@ class AudioDeviceListenerWinTest : public testing::Test {
 TEST_F(AudioDeviceListenerWinTest, OutputDeviceChange) {
   ABORT_AUDIO_TEST_IF_NOT(CoreAudioUtil::IsSupported());
 
-  SetOutputDeviceId(kNoDevice);
   EXPECT_CALL(*this, OnDeviceChange()).Times(1);
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kFirstTestDevice));
 
   testing::Mock::VerifyAndClear(this);
+  AdvanceLastDeviceChangeTime();
   EXPECT_CALL(*this, OnDeviceChange()).Times(1);
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kSecondTestDevice));
 
-  // The second device event should be ignored since the device id has not
-  // changed.
+  // The second device event should be ignored since it occurs too soon.
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kSecondTestDevice));
 }
 
@@ -86,15 +93,16 @@ TEST_F(AudioDeviceListenerWinTest, OutputDeviceChange) {
 TEST_F(AudioDeviceListenerWinTest, NullOutputDeviceChange) {
   ABORT_AUDIO_TEST_IF_NOT(CoreAudioUtil::IsSupported());
 
-  SetOutputDeviceId(kNoDevice);
-  EXPECT_CALL(*this, OnDeviceChange()).Times(0);
+  EXPECT_CALL(*this, OnDeviceChange()).Times(1);
   ASSERT_TRUE(SimulateNullDefaultOutputDeviceChange());
 
   testing::Mock::VerifyAndClear(this);
+  AdvanceLastDeviceChangeTime();
   EXPECT_CALL(*this, OnDeviceChange()).Times(1);
   ASSERT_TRUE(SimulateDefaultOutputDeviceChange(kFirstTestDevice));
 
   testing::Mock::VerifyAndClear(this);
+  AdvanceLastDeviceChangeTime();
   EXPECT_CALL(*this, OnDeviceChange()).Times(1);
   ASSERT_TRUE(SimulateNullDefaultOutputDeviceChange());
 }
