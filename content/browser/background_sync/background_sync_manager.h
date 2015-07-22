@@ -267,7 +267,8 @@ class CONTENT_EXPORT BackgroundSyncManager
                              ServiceWorkerStatusCode status_code);
 
   // Called when all sync events have completed.
-  static void OnAllSyncEventsCompleted(const base::TimeTicks& start_time);
+  static void OnAllSyncEventsCompleted(const base::TimeTicks& start_time,
+                                       int number_of_batched_sync_events);
 
   // OnRegistrationDeleted callbacks
   void OnRegistrationDeletedImpl(int64 registration_id,

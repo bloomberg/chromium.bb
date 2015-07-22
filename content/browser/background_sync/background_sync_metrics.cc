@@ -22,13 +22,16 @@ void BackgroundSyncMetrics::RecordEventResult(SyncPeriodicity periodicity,
   NOTREACHED();
 }
 
-void BackgroundSyncMetrics::RecordBatchSyncEventHandlingTime(
-    const base::TimeDelta& time) {
+void BackgroundSyncMetrics::RecordBatchSyncEventComplete(
+    const base::TimeDelta& time,
+    int number_of_batched_sync_events) {
   // The total batch handling time should be under 5 minutes; we'll record up to
   // 6 minutes, to be safe.
   UMA_HISTOGRAM_CUSTOM_TIMES("BackgroundSync.Event.Time", time,
                              base::TimeDelta::FromMilliseconds(10),
                              base::TimeDelta::FromMinutes(6), 50);
+  UMA_HISTOGRAM_COUNTS_100("BackgroundSync.Event.BatchSize",
+                           number_of_batched_sync_events);
 }
 
 void BackgroundSyncMetrics::CountRegister(

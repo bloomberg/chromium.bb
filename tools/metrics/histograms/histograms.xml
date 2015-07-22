@@ -2438,6 +2438,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BackgroundSync.Event.BatchSize">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the number of sync events which were fired in a batch. A batch is
+    defined as the set of sync events dispatched at the same time by the
+    BackgroundSyncManager. Periodic syncs often run in a batch. One-shots
+    usually run individually (a batch of one), unless the device was offline and
+    multiple are waiting for the device to go back online.
+  </summary>
+</histogram>
+
 <histogram name="BackgroundSync.Event.OneShotResult" enum="BooleanSuccess">
   <owner>iclelland@chromium.org</owner>
   <summary>Records whether a one-shot sync event succeeded or failed.</summary>

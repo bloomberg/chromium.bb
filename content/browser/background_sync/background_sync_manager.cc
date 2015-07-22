@@ -799,29 +799,37 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
     }
   }
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
+  // If there are no registrations currently ready, then just run |callback|.
+  // Otherwise, fire them all, and record the result when done.
+  if (sw_id_and_keys_to_fire.size() == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback));
+  } else {
+    base::TimeTicks start_time = base::TimeTicks::Now();
 
-  // Fire the sync event of the ready registrations and run |callback| once
-  // they're all done.
-  base::Closure events_fired_barrier_closure =
-      base::BarrierClosure(sw_id_and_keys_to_fire.size(), base::Bind(callback));
+    // Fire the sync event of the ready registrations and run |callback| once
+    // they're all done.
+    base::Closure events_fired_barrier_closure = base::BarrierClosure(
+        sw_id_and_keys_to_fire.size(), base::Bind(callback));
 
-  // Record the total time taken after all events have run to completion.
-  base::Closure events_completed_barrier_closure =
-      base::BarrierClosure(sw_id_and_keys_to_fire.size(),
-                           base::Bind(&OnAllSyncEventsCompleted, start_time));
+    // Record the total time taken after all events have run to completion.
+    base::Closure events_completed_barrier_closure =
+        base::BarrierClosure(sw_id_and_keys_to_fire.size(),
+                             base::Bind(&OnAllSyncEventsCompleted, start_time,
+                                        sw_id_and_keys_to_fire.size()));
 
-  for (const auto& sw_id_and_key : sw_id_and_keys_to_fire) {
-    int64 service_worker_id = sw_id_and_key.first;
-    const BackgroundSyncRegistration* registration =
-        LookupRegistration(service_worker_id, sw_id_and_key.second);
+    for (const auto& sw_id_and_key : sw_id_and_keys_to_fire) {
+      int64 service_worker_id = sw_id_and_key.first;
+      const BackgroundSyncRegistration* registration =
+          LookupRegistration(service_worker_id, sw_id_and_key.second);
 
-    service_worker_context_->FindRegistrationForId(
-        service_worker_id, sw_to_registrations_map_[service_worker_id].origin,
-        base::Bind(&BackgroundSyncManager::FireReadyEventsDidFindRegistration,
-                   weak_ptr_factory_.GetWeakPtr(), sw_id_and_key.second,
-                   registration->id(), events_fired_barrier_closure,
-                   events_completed_barrier_closure));
+      service_worker_context_->FindRegistrationForId(
+          service_worker_id, sw_to_registrations_map_[service_worker_id].origin,
+          base::Bind(&BackgroundSyncManager::FireReadyEventsDidFindRegistration,
+                     weak_ptr_factory_.GetWeakPtr(), sw_id_and_key.second,
+                     registration->id(), events_fired_barrier_closure,
+                     events_completed_barrier_closure));
+    }
   }
 
   SchedulePendingRegistrations();
@@ -948,10 +956,11 @@ void BackgroundSyncManager::EventCompleteDidStore(
 
 // static
 void BackgroundSyncManager::OnAllSyncEventsCompleted(
-    const base::TimeTicks& start_time) {
+    const base::TimeTicks& start_time,
+    int number_of_batched_sync_events) {
   // Record the combined time taken by all sync events.
-  BackgroundSyncMetrics::RecordBatchSyncEventHandlingTime(
-      base::TimeTicks::Now() - start_time);
+  BackgroundSyncMetrics::RecordBatchSyncEventComplete(
+      base::TimeTicks::Now() - start_time, number_of_batched_sync_events);
 }
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(

@@ -31,8 +31,10 @@ class BackgroundSyncMetrics {
   // Records the result of a single sync event firing.
   static void RecordEventResult(SyncPeriodicity periodicity, bool result);
 
-  // Records the time spent running a batch of sync events.
-  static void RecordBatchSyncEventHandlingTime(const base::TimeDelta& time);
+  // Records the result of running a batch of sync events, including the total
+  // time spent, and the batch size.
+  static void RecordBatchSyncEventComplete(const base::TimeDelta& time,
+                                           int number_of_batched_sync_events);
 
   // Records the result of trying to register a sync. |could_fire| indicates
   // whether the conditions were sufficient for the sync to fire immediately at
