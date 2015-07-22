@@ -573,10 +573,12 @@ repack("packed_extra_resources") {
 repack("browser_tests_pak") {
   sources = [
     "$root_gen_dir/chrome/options_test_resources.pak",
+    "$root_gen_dir/chrome/webui_test_resources.pak",
   ]
   output = "$root_out_dir/browser_tests.pak"
   deps = [
     "//chrome/browser/resources:options_test_resources",
+    "//chrome/test/data:webui_test_resources",
   ]
 }
 

@@ -135,7 +135,11 @@
   },
   "chrome/browser/resources/options_test_resources.grd": {
     "includes": [23400],
-    "structures": [23450],
+    "structures": [23440],
+  },
+  "chrome/test/data/webui_test_resources.grd": {
+    "includes": [23480],
+    "structures": [23490],
   },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
     "messages": [23500],

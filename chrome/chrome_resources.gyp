@@ -599,11 +599,27 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      # GN version: //chrome/test/data/resources:webui_test_resources
+      'target_name': 'webui_test_resources',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'generate_webui_test_resources',
+          'variables': {
+            'grit_grd_file': 'test/data/webui_test_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },
+    {
       # GN version: //chrome:browser_tests_pak
       'target_name': 'browser_tests_pak',
       'type': 'none',
       'dependencies': [
         'options_test_resources',
+        'webui_test_resources',
       ],
       'actions': [
         {
@@ -611,6 +627,7 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/chrome/options_test_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/webui_test_resources.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/browser_tests.pak',
           },
