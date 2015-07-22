@@ -336,7 +336,7 @@ PositionAlgorithm<Strategy> nextCandidateAlgorithm(const PositionAlgorithm<Strat
     PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atEnd()) {
         p.increment();
-        PositionAlgorithm<Strategy> candidate = p;
+        PositionAlgorithm<Strategy> candidate = p.deprecatedComputePosition();
         if (candidate.isCandidate())
             return candidate;
     }
@@ -371,7 +371,7 @@ PositionAlgorithm<Strategy> previousCandidateAlgorithm(const PositionAlgorithm<S
     PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atStart()) {
         p.decrement();
-        PositionAlgorithm<Strategy> candidate = p;
+        PositionAlgorithm<Strategy> candidate = p.deprecatedComputePosition();
         if (candidate.isCandidate())
             return candidate;
     }

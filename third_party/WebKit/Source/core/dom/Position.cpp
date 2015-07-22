@@ -678,7 +678,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
         // If we've moved to a position that is visually distinct, return the last saved position. There
         // is code below that terminates early if we're *about* to move to a visually distinct position.
         if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentNode != boundary)
-            return lastVisible;
+            return lastVisible.deprecatedComputePosition();
 
         // skip position in non-laid out or invisible node
         LayoutObject* layoutObject = currentNode->layoutObject();
@@ -697,7 +697,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
         // Don't move past a position that is visually distinct.  We could rely on code above to terminate and
         // return lastVisible on the next iteration, but we terminate early to avoid doing a nodeIndex() call.
         if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentPos.atStartOfNode())
-            return lastVisible;
+            return lastVisible.deprecatedComputePosition();
 
         // Return position after tables and nodes which have content that can be ignored.
         if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
@@ -723,7 +723,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
             for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->start() + box->len()) {
                     if (textOffset > box->start())
-                        return currentPos;
+                        return currentPos.deprecatedComputePosition();
                     continue;
                 }
 
@@ -753,11 +753,11 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
                 }
 
                 if (continuesOnNextLine)
-                    return currentPos;
+                    return currentPos.deprecatedComputePosition();
             }
         }
     }
-    return lastVisible;
+    return lastVisible.deprecatedComputePosition();
 }
 
 // This function and upstream() are used for moving back and forth between visually equivalent candidates.
@@ -805,12 +805,12 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
 
         // Do not move to a visually distinct position.
         if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentNode != boundary)
-            return lastVisible;
+            return lastVisible.deprecatedComputePosition();
         // Do not move past a visually disinct position.
         // Note: The first position after the last in a node whose ends are visually distinct
         // positions will be [boundary->parentNode(), originalBlock->nodeIndex() + 1].
         if (boundary && Strategy::parent(*boundary) == currentNode)
-            return lastVisible;
+            return lastVisible.deprecatedComputePosition();
 
         // skip position in non-laid out or invisible node
         LayoutObject* layoutObject = currentNode->layoutObject();
@@ -846,7 +846,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
             for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->end()) {
                     if (textOffset >= box->start())
-                        return currentPos;
+                        return currentPos.deprecatedComputePosition();
                     continue;
                 }
 
@@ -876,12 +876,12 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
                 }
 
                 if (continuesOnNextLine)
-                    return currentPos;
+                    return currentPos.deprecatedComputePosition();
             }
         }
     }
 
-    return lastVisible;
+    return lastVisible.deprecatedComputePosition();
 }
 
 static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)

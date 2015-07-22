@@ -50,7 +50,7 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm()
 }
 
 template <typename Strategy>
-PositionIteratorAlgorithm<Strategy>::operator PositionAlgorithm<Strategy>() const
+PositionAlgorithm<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedComputePosition() const
 {
     if (m_nodeAfterPositionInAnchor) {
         ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);

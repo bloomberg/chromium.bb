@@ -44,7 +44,9 @@ public:
     explicit PositionIteratorAlgorithm(const PositionAlgorithm<Strategy>&);
     PositionIteratorAlgorithm();
 
-    operator PositionAlgorithm<Strategy>() const;
+    // Since |deprecatedComputePosition()| is slow, new code should not use
+    // this function.
+    PositionAlgorithm<Strategy> deprecatedComputePosition() const;
 
     void increment();
     void decrement();
