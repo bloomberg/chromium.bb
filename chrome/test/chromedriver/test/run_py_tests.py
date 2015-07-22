@@ -158,16 +158,7 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         'ChromeDriverTest.testTouchPinch',
     ])
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        # The beta channel Chrome for Android does not yet support Synthetic
-        # Gesture DevTools commands.
-        # TODO(samuong): reenable when it does.
-        'ChromeDriverTest.testHasTouchScreen',
-        'ChromeDriverTest.testTouchScrollElement',
-        'ChromeDriverTest.testTouchDoubleTapElement',
-        'ChromeDriverTest.testTouchLongPressElement',
-        'ChromeDriverTest.testTouchPinch',
-    ])
+    _ANDROID_NEGATIVE_FILTER['chrome'])
 _ANDROID_NEGATIVE_FILTER['chrome_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         # ChromeShell doesn't support multiple tabs.
@@ -1050,13 +1041,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertAlmostEqual(2.0, float(width_before_pinch) / width_after_pinch)
 
   def testBrowserDoesntSupportSyntheticGestures(self):
-    # Current versions of stable and beta channel Chrome for Android do not
-    # support synthetic gesture commands in DevTools, so touch action tests have
-    # been disabled for chrome_stable and chrome_beta.
+    # The current stable channel Chrome for Android does not support synthetic
+    # gesture commands in DevTools, so touch action tests have been disabled for
+    # chrome_stable and chromedriver_webview_shell.
     # TODO(samuong): when this test starts failing, re-enable touch tests and
     # delete this test.
     if _ANDROID_PACKAGE_KEY:
-      packages = ['chrome_stable', 'chrome_beta', 'chromedriver_webview_shell']
+      packages = ['chrome_stable', 'chromedriver_webview_shell']
       if _ANDROID_PACKAGE_KEY in packages:
         self.assertFalse(self._driver.capabilities['hasTouchScreen'])
 
