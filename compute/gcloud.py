@@ -228,7 +228,7 @@ class GCContext(object):
 
   def CreateInstance(self, instance, image=None, machine_type=None,
                      network=None, address=None, wait_until_sshable=True,
-                     scopes=None, **kwargs):
+                     scopes=None, disks=None, **kwargs):
     """Creates an |instance|.
 
     Additionally, if an image is provided, adds a custom metadata pair to
@@ -243,6 +243,8 @@ class GCContext(object):
       wait_until_sshable: After creating |instance|, wait until
         we can ssh into |instance|.
       scopes: The list (or tuple) of service account scopes.
+      disks: A list of disks to attach. Each entry in the list is a dict of
+          properties to use for the disk.
       kwargs: See DoZoneSpecificCommand.
     """
     cmd = ['instances', 'create', instance]
@@ -258,6 +260,11 @@ class GCContext(object):
       cmd += ['--machine-type', machine_type]
     if scopes is not None:
       cmd += ['--scopes', ','.join(list(scopes))]
+    if disks is not None:
+      for disk in disks:
+        properties = ['%s=%s' % (key, val)
+                      for key, val in disk.iteritems()]
+        cmd += ['--disk', ','.join(properties)]
 
     ret = self.DoZoneSpecificCommand(cmd, **kwargs)
     if wait_until_sshable:

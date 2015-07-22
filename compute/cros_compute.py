@@ -13,8 +13,6 @@ from chromite.compute import compute_configs
 from chromite.compute import gcloud
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
-from chromite.lib import gs
 from chromite.lib import osutils
 
 
@@ -121,63 +119,6 @@ def BotifyInstance(instance, project, zone, testing=False):
           os.path.join(base_dir, 'chromite', 'compute', 'setup_bot')))
 
 
-def CreateAndArchiveImageFromInstance(instance, project, zone, image_name):
-  """Create an image from the root disk of |instance|.
-
-  This creates the image on the |instance|, archives it to Google
-  Storage, and add the image to the Compute Engine.
-
-  The root disk needs to be smaller than 10GB. See requirement in
-  https://cloud.google.com/compute/docs/images
-
-  Args:
-    instance: Name of the GCE instance.
-    project: GCloud Project that the |instance| belongs to.
-    zone: Zone of the GCE instance.
-    image_name: Name of the image.
-  """
-  image_name_with_suffix = '%s%s' % (image_name, compute_configs.IMAGE_SUFFIX)
-  archive_path = os.path.join(
-      compute_configs.GS_IMAGE_ARCHIVE_BASE_URL,
-      image_name_with_suffix)
-  gsctx = gs.GSContext()
-  if gsctx.Exists(archive_path):
-    # We should not allow overwriting the existing image.
-    cros_build_lib.Die('Image %s already exists!' % archive_path)
-
-  logging.info('Creating image %s', image_name_with_suffix)
-  gcctx = gcloud.GCContext(project, zone=zone)
-
-  # Do not include current user's home directory.
-  home_dir = gcctx.SSH(instance, cmd='cd ~ && pwd',
-                       redirect_stdout=True).output.strip()
-  # Create the image. gcimagebundle should have been installed in the
-  # base image already.
-  output_dir = '/tmp'
-  cmd = ['sudo',
-         'gcimagebundle',
-         '--disk', compute_configs.BOOT_DISK,
-         '--root', '/',
-         '--output_directory', '/tmp',
-         '--output_file_name', image_name_with_suffix,
-         '--excludes', home_dir,
-         '--loglevel=DEBUG', '--log_file=/tmp/image_bundle.log']
-  gcctx.SSH(instance, cmd=' '.join(cmd))
-
-  # Get a temporary Copy of gsutil.
-  gcctx.SSH(instance,
-            cmd=('curl https://storage.googleapis.com/pub/gsutil.tar.gz'
-                 '| tar -xz -C /tmp'))
-  # Upload the image to Google Storage.
-  src_path = os.path.join(output_dir, image_name_with_suffix)
-  gcctx.SSH(
-      instance,
-      cmd='/tmp/gsutil/gsutil cp %s %s' % (src_path, archive_path))
-
-  # Add the image to the project.
-  gcctx.CreateImage(image_name, archive_path)
-
-
 def CreateImageForCrosBots(project, zone, address=None, testing=False):
   """Create a new image for cros bots."""
   gcctx = gcloud.GCContext(project, zone=zone, quiet=True)
@@ -219,29 +160,40 @@ def main(argv):
       'operation', type=str, choices=ALL_OPERATIONS,
       help='Operation type. Valid operations depend on target.')
   parser.add_argument(
+      '--quiet', '-q', action='store_true',
+      help='Do not prompt user for verification.')
+  parser.add_argument(
       '--project', type=str, default=compute_configs.PROJECT,
       help='Project name')
-  parser.add_argument(
-      '--instance', type=str, default=None, help='Instance name')
-  parser.add_argument(
-      '--image', type=str, default=None, help='Image name')
   parser.add_argument(
       '--zone', type=str, default=compute_configs.DEFAULT_ZONE,
       help='Zone to run the command against')
   parser.add_argument(
       '--address', type=str, default=None,
       help='IP to assign to the instance')
+
+  group = parser.add_argument_group(
+      'Instance options (use with target: instances)')
+  group.add_argument(
+      '--instance', type=str, default=None, help='Instance name')
+
+  group = parser.add_argument_group(
+      'Instance creation options '
+      '(use with target: instances, operation: create)')
+  group.add_argument(
+      '--build-disk', type=str, default=None, help='Build disk')
+  group.add_argument(
+      '--creds-disk', type=str, default=None, help='Credentials disk')
+  group.add_argument(
+      '--image', type=str, default=None, help='Image name')
   parser.add_argument(
       '--config', type=str, default=None,
       help='Config to create the instance from')
-  parser.add_argument(
-      '--quiet', '-q', action='store_true',
-      help='Do not prompt user for verification.')
-  parser.add_argument(
-      '--chromeos', default=False, action='store_true',
-      help='Turn on the offical Chrome OS flag (e.g. to create '
-           'a new Chrome OS bot image)')
-  parser.add_argument(
+
+  group = parser.add_argument_group(
+      'Image creation options '
+      '(use with target: image, operation: create)')
+  group.add_argument(
       '--testing', default=False, action='store_true',
       help='This option is mainly for testing changes to the official '
            'Chrome OS bot image creation process. If set true, it copies '
@@ -260,18 +212,10 @@ def main(argv):
   if opts.target == 'images':
     # Operations against images.
     if opts.operation == 'create':
-      if opts.chromeos:
-        # Create a new image for Chrome OS bots. The name of the base
-        # image and the image to create are defined in compute_configs.
-        CreateImageForCrosBots(opts.project, opts.zone, testing=opts.testing,
-                               address=opts.address)
-      else:
-        if not opts.image or not opts.instance:
-          cros_build_lib.Die(
-              'Please specify the name of the instance (--instance) '
-              'and the name of the image (--image) to create')
-          CreateAndArchiveImageFromInstance(opts.instance, opts.project,
-                                            opts.zone, opts.image)
+      # Create a new image for Chrome OS bots. The name of the base
+      # image and the image to create are defined in compute_configs.
+      CreateImageForCrosBots(opts.project, opts.zone, testing=opts.testing,
+                             address=opts.address)
     elif opts.operation == 'delete':
       gcctx.DeleteImage(opts.image)
     elif opts.operation == 'list':
@@ -283,19 +227,29 @@ def main(argv):
       if not opts.instance:
         cros_build_lib.Die('Please specify the instance name (--instance)')
 
-      if ((not opts.image and not opts.config) or
-          (opts.image and opts.config)):
+      if not opts.image and not opts.config:
         cros_build_lib.Die(
-            'One and only one of the two options should be specified: '
+            'At least one of the two options should be specified: '
             'source image (--image) or the builder (--config)')
-      if opts.image:
-        gcctx.CreateInstance(opts.instance, image=opts.image,
-                             address=opts.address)
-      elif opts.config:
+      if opts.config:
         config = compute_configs.configs.get(opts.config, None)
-        if not config:
+        if config is None:
           cros_build_lib.Die('Unkown config %s' % opts.config)
-        gcctx.CreateInstance(opts.instance, address=opts.address, **config)
+        config = dict(config)
+      else:
+        config = {}
+
+      if opts.image:
+        config['image'] = opts.image
+      if opts.build_disk or opts.creds_disk:
+        disks = []
+        if opts.build_disk:
+          disks.append({'name': opts.build_disk, 'mode': 'rw'})
+        if opts.creds_disk:
+          disks.append({'name': opts.creds_disk, 'mode': 'ro'})
+        config['disks'] = disks
+
+      gcctx.CreateInstance(opts.instance, address=opts.address, **config)
     elif opts.operation == 'delete':
       if not opts.instance:
         cros_build_lib.Die('Please specify the instance name (--instance)')

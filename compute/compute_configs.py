@@ -16,6 +16,7 @@ PROJECT = 'chromeos-bot'
 DEFAULT_BASE_IMAGE = 'ubuntu-14-04-server-v20150324'
 DEFAULT_IMAGE_NAME = 'chromeos-bot-v5'
 DEFAULT_ZONE = 'us-east1-a'
+DEFAULT_MACHINE_TYPE_16 = 'n1-highmem-16'
 DEFAULT_SCOPES = ('https://www.googleapis.com/auth/devstorage.full_control',
                   'https://www.googleapis.com/auth/gerritcodereview')
 
@@ -40,7 +41,7 @@ IMAGE_CREATION_CONFIG = configs['image-creation']
 
 # The default config for Chrome OS builders.
 configs['cros-bot'] = dict(
-    machine_type='n1-highmem-16',
+    machine_type=DEFAULT_MACHINE_TYPE_16,
     zone=DEFAULT_ZONE,
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
@@ -48,7 +49,7 @@ configs['cros-bot'] = dict(
 
 # The default config for Chrome OS PreCQ builders.
 configs['cros-precq-bot'] = dict(
-    machine_type='n1-highmem-16',
+    machine_type=DEFAULT_MACHINE_TYPE_16,
     zone=DEFAULT_ZONE,
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
@@ -73,8 +74,17 @@ configs['cros-test'] = dict(
 # Config to use to launch an instance with the image created for the purposes of
 # testing changes to cros_compute.
 configs['cros-bot-testing'] = dict(
-    machine_type='n1-highmem-16',
+    machine_type=DEFAULT_MACHINE_TYPE_16,
     zone=DEFAULT_ZONE,
     image='%s-testing' % DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
+)
+
+# Same as cros-bot, but launch in the staging network.
+configs['cros-bot-staging'] = dict(
+    machine_type=DEFAULT_MACHINE_TYPE_16,
+    zone=DEFAULT_ZONE,
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
+    network='staging-network',
 )
