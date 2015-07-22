@@ -6,4 +6,3 @@
 
 const char kChromeUIExternalFileHost[] = "external-file";
 const char kChromeUIOmahaHost[] = "omaha";
-const char kChromeUISetUpForTestingHost[] = "setupfortesting";

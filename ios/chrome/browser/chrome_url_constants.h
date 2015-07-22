@@ -10,6 +10,5 @@
 // URL components for Chrome on iOS.
 extern const char kChromeUIExternalFileHost[];
 extern const char kChromeUIOmahaHost[];
-extern const char kChromeUISetUpForTestingHost[];
 
 #endif  // IOS_CHROME_BROWSER_CHROME_URL_CONSTANTS_H_
