@@ -14,7 +14,6 @@
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
@@ -29,7 +28,6 @@ class ClientSideDetectionService;
 // class which sends a ping to a server to validate the verdict.
 // TODO(noelutz): move all client-side detection IPCs to this class.
 class ClientSideDetectionHost : public content::WebContentsObserver,
-                                public content::NotificationObserver,
                                 public SafeBrowsingUIManager::Observer {
  public:
   // The caller keeps ownership of the tab object and is responsible for
@@ -39,6 +37,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // From content::WebContentsObserver.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void DidGetResourceResponseStart(
+      const content::ResourceRequestDetails& details) override;
 
   // From content::WebContentsObserver.  If we navigate away we cancel all
   // pending callbacks that could show an interstitial, and check to see whether
@@ -120,12 +120,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
                       const std::string& referrer,
                       const content::ResourceType resource_type);
 
-  // From NotificationObserver.  Called when a notification comes in.  This
-  // method is called in the UI thread.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Inherited from WebContentsObserver.  This is called once the page is
   // done loading.
   void DidStopLoading() override;
@@ -160,8 +154,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   std::vector<GURL> cur_host_redirects_;
   // Current host, used to help determine cur_host_redirects_.
   std::string cur_host_;
-  // Handles registering notifications with the NotificationService.
-  content::NotificationRegistrar registrar_;
 
   // Max number of ips we save for each browse
   static const size_t kMaxIPsPerBrowse;

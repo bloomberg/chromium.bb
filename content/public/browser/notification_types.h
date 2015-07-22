@@ -89,13 +89,6 @@ enum NotificationType {
   // DEPRECATED: Use WebContentsObserver::DidStopLoading()
   NOTIFICATION_LOAD_STOP,
 
-  // A response has been received for a resource request.  The source will be
-  // a Source<WebContents> corresponding to the tab in which the request was
-  // issued.  Details in the form of a ResourceRequestDetails object are
-  // provided.
-  // DEPRECATED: Use WebContentsObserver::DidGetResourceResponseStart()
-  NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-
   // A redirect was received while requesting a resource.  The source will be
   // a Source<WebContents> corresponding to the tab in which the request was
   // issued.  Details in the form of a ResourceRedirectDetails are provided.

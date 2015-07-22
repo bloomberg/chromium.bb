@@ -2509,12 +2509,6 @@ void WebContentsImpl::DidGetResourceResponseStart(
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidGetResourceResponseStart(details));
-
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-      Source<WebContents>(this),
-      Details<const ResourceRequestDetails>(&details));
 }
 
 void WebContentsImpl::DidGetRedirectForResourceRequest(

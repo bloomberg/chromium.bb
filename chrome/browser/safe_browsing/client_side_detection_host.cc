@@ -26,9 +26,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
@@ -329,8 +326,6 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
   // Note: csd_service_ and sb_service will be NULL here in testing.
   csd_service_ = g_browser_process->safe_browsing_detection_service();
   feature_extractor_.reset(new BrowserFeatureExtractor(tab, this));
-  registrar_.Add(this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-                 content::Source<WebContents>(tab));
 
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
@@ -701,21 +696,15 @@ void ClientSideDetectionHost::UpdateIPUrlMap(const std::string& ip,
   }
 }
 
-void ClientSideDetectionHost::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(type, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED);
-  const ResourceRequestDetails* req = content::Details<ResourceRequestDetails>(
-      details).ptr();
-  if (req && browse_info_.get() &&
-      should_extract_malware_features_ && req->url.is_valid()) {
-    UpdateIPUrlMap(req->socket_address.host() /* ip */,
-                   req->url.spec()  /* url */,
-                   req->method,
-                   req->referrer,
-                   req->resource_type);
+void ClientSideDetectionHost::DidGetResourceResponseStart(
+    const content::ResourceRequestDetails& details) {
+  if (browse_info_.get() && should_extract_malware_features_ &&
+      details.url.is_valid()) {
+    UpdateIPUrlMap(details.socket_address.host() /* ip */,
+                   details.url.spec() /* url */,
+                   details.method,
+                   details.referrer,
+                   details.resource_type);
   }
 }
 
