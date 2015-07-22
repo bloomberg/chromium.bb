@@ -89,11 +89,8 @@ class URL_EXPORT Origin {
   ~Origin();
 
   // For unique origins, these return ("", "", 0).
-  //
-  // TODO(mkwst): These should be 'const std::string&', along with their
-  // 'url::SchemeHostPort' analogs.
-  std::string scheme() const { return tuple_.scheme(); }
-  std::string host() const { return tuple_.host(); }
+  const std::string& scheme() const { return tuple_.scheme(); }
+  const std::string& host() const { return tuple_.host(); }
   uint16 port() const { return tuple_.port(); }
 
   bool unique() const { return unique_; }
