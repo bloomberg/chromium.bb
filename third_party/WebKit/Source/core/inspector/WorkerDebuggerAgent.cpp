@@ -56,7 +56,6 @@ WorkerDebuggerAgent::~WorkerDebuggerAgent()
 
 DEFINE_TRACE(WorkerDebuggerAgent)
 {
-    visitor->trace(m_workerThreadDebugger);
     visitor->trace(m_inspectedWorkerGlobalScope);
     InspectorDebuggerAgent::trace(visitor);
 }

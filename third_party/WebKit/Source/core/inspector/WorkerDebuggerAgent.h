@@ -56,7 +56,7 @@ private:
     void muteConsole() override;
     void unmuteConsole() override;
 
-    RawPtrWillBeMember<WorkerThreadDebugger> m_workerThreadDebugger;
+    WorkerThreadDebugger* m_workerThreadDebugger;
     RawPtrWillBeMember<WorkerGlobalScope> m_inspectedWorkerGlobalScope;
 };
 
