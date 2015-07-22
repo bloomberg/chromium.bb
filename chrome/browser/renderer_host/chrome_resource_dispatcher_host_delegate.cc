@@ -478,8 +478,13 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture) {
 #if defined(ENABLE_EXTENSIONS)
-  if (extensions::WebViewRendererState::GetInstance()->IsGuest(child_id))
+  // External protocols are disabled for guests. An exception is made for the
+  // "mailto" protocol, so that pages that utilize it work properly in a
+  // WebView.
+  if (extensions::WebViewRendererState::GetInstance()->IsGuest(child_id) &&
+      !url.SchemeIs(url::kMailToScheme)) {
     return false;
+  }
 #endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(OS_ANDROID)

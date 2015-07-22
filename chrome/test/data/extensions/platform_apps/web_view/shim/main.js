@@ -41,6 +41,8 @@ embedder.setUp_ = function(config) {
   embedder.virtualURL = 'http://virtualurl/';
   embedder.pluginURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/embed.html';
+  embedder.mailtoTestURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/mailto.html';
 };
 
 window.runTest = function(testName) {
@@ -2733,6 +2735,30 @@ function testPDFInWebview() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that mailto links are enabled.
+function testMailtoLink() {
+  var webview = new WebView();
+  webview.src = embedder.mailtoTestURL;
+
+  webview.onloadstop = function() {
+    webview.onloadabort = function(e) {
+      // The mailto link should not trigger a loadabort.
+      if (e.url.substring(0, 7) == 'mailto:') {
+        embedder.test.fail();
+      }
+    };
+    webview.onloadstop = function() {
+      // If mailto links are disabled, then |webview.src| will now be
+      // 'about:blank'.
+      embedder.test.assertFalse(webview.src == 'about:blank');
+      embedder.test.succeed();
+    };
+    webview.executeScript({code:'document.getElementById("mailto").click()'});
+  };
+
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2834,7 +2860,8 @@ embedder.test.testList = {
   'testGarbageCollect': testGarbageCollect,
   'testCloseNewWindowCleanup': testCloseNewWindowCleanup,
   'testFocusWhileFocused': testFocusWhileFocused,
-  'testPDFInWebview': testPDFInWebview
+  'testPDFInWebview': testPDFInWebview,
+  'testMailtoLink': testMailtoLink
 };
 
 onload = function() {

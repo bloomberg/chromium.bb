@@ -797,6 +797,10 @@ void WebViewGuest::DidFailProvisionalLoad(
     int error_code,
     const base::string16& error_description,
     bool was_ignored_by_handler) {
+  // Suppress loadabort for "mailto" URLs.
+  if (validated_url.SchemeIs(url::kMailToScheme))
+    return;
+
   LoadAbort(!render_frame_host->GetParent(), validated_url, error_code,
             net::ErrorToShortString(error_code));
 }

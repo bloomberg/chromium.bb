@@ -2484,6 +2484,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NestedGuestContainerBounds) {
             mime_handler_view_container_bounds.origin());
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestMailtoLink) {
+  TestHelper("testMailtoLink", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
 #if defined(USE_AURA)
 // TODO(wjmaclean): when WebViewTest is re-enabled on the site-isolation
 // bots, then re-enable this test class as well.
