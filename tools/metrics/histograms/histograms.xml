@@ -27267,6 +27267,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.HardwareKeyboardModeEnabled" enum="BooleanEnabled">
+  <owner>lpromero@chromium.org</owner>
+  <summary>
+    iOS: Records whether a hardware keyboard is used to input text. This is
+    recorded each time a UIKeyboardWillChangeFrameNotification is sent while
+    editing the omnibox text.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.HasLegalDefaultMatchWithoutCompletion" enum="Boolean">
   <obsolete>
     Deprecated 2015-01-27

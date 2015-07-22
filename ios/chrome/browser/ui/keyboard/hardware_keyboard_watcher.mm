@@ -1,0 +1,94 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ios/chrome/browser/ui/keyboard/hardware_keyboard_watcher.h"
+
+#import <CoreGraphics/CoreGraphics.h>
+
+#include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram_macros.h"
+
+namespace {
+
+// Whether firstRect has a non null rect intersection with secondRect, yet does
+// not fully include it.
+bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
+  return CGRectIntersectsRect(firstRect, secondRect) &&
+         !CGRectContainsRect(firstRect, secondRect);
+}
+
+}  // namespace
+
+@interface HardwareKeyboardWatcher () {
+  base::scoped_nsobject<UIView> _accessoryView;
+}
+@property(nonatomic, assign) UIInterfaceOrientation orientation;
+@end
+
+@implementation HardwareKeyboardWatcher
+
+@synthesize orientation = _orientation;
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithAccessoryView:(UIView*)accessoryView {
+  DCHECK(accessoryView);
+  self = [super init];
+  if (self) {
+    _accessoryView.reset([accessoryView retain]);
+    _orientation = [UIApplication sharedApplication].statusBarOrientation;
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(keyboardWillChangeFrame:)
+               name:UIKeyboardWillChangeFrameNotification
+             object:nil];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)keyboardWillChangeFrame:(NSNotification*)notification {
+  // Don't handle keyboard notifications not involving the set accessory view.
+  if ([_accessoryView window] == nil)
+    return;
+
+  // Don't handle rotations as the reported keyboard frames are in the screen
+  // coordinates *prior* to the rotation, while the screen already has its
+  // new coordinates. http://crbug.com/511267
+  if (self.orientation !=
+      [UIApplication sharedApplication].statusBarOrientation) {
+    return;
+  }
+
+  NSDictionary* userInfo = [notification userInfo];
+  CGRect beginKeyboardFrame =
+      [userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+  CGRect endKeyboardFrame =
+      [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  CGRect screenBounds = [UIScreen mainScreen].bounds;
+
+  // Null frames are seen when moving a split dock. Split keyboard means
+  // software keyboard.
+  bool hasNullFrames =
+      CGRectIsNull(beginKeyboardFrame) || CGRectIsNull(endKeyboardFrame);
+
+  bool keyboardIsPartiallyOnScreen =
+      IntersectsButDoesNotInclude(screenBounds, beginKeyboardFrame) ||
+      IntersectsButDoesNotInclude(screenBounds, endKeyboardFrame);
+
+  bool isInHarwareKeyboardMode = !hasNullFrames && keyboardIsPartiallyOnScreen;
+
+  UMA_HISTOGRAM_BOOLEAN("Omnibox.HardwareKeyboardModeEnabled",
+                        isInHarwareKeyboardMode);
+}
+
+@end
