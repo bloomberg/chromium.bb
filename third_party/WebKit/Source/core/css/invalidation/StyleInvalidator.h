@@ -29,7 +29,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    struct RecursionData {
+    class RecursionData {
+        STACK_ALLOCATED();
+    public:
         RecursionData()
             : m_invalidateCustomPseudo(false)
             , m_wholeSubtreeInvalid(false)
@@ -47,7 +49,7 @@ private:
         bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
         bool insertionPointCrossing() const { return m_insertionPointCrossing; }
 
-        using InvalidationSets = Vector<const DescendantInvalidationSet*, 16>;
+        using InvalidationSets = WillBeHeapVector<RawPtrWillBeMember<const DescendantInvalidationSet>, 16>;
         InvalidationSets m_invalidationSets;
         bool m_invalidateCustomPseudo;
         bool m_wholeSubtreeInvalid;
@@ -60,6 +62,7 @@ private:
     bool checkInvalidationSetsAgainstElement(Element&, RecursionData&);
 
     class RecursionCheckpoint {
+        STACK_ALLOCATED();
     public:
         RecursionCheckpoint(RecursionData* data)
             : m_prevInvalidationSetsSize(data->m_invalidationSets.size())
@@ -84,6 +87,7 @@ private:
         bool m_prevWholeSubtreeInvalid;
         bool m_treeBoundaryCrossing;
         bool m_insertionPointCrossing;
+        // This is a stack reference and need not separate tracing.
         RecursionData* m_data;
     };
 
