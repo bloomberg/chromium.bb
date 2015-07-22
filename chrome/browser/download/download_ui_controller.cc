@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_ui_controller.h"
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -113,8 +111,7 @@ DownloadUIController::DownloadUIController(content::DownloadManager* manager,
     // The delegate should not be invoked after the profile has gone away. This
     // should be the case since DownloadUIController is owned by
     // DownloadService, which in turn is a profile keyed service.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableDownloadNotification)) {
+    if (DownloadNotificationManager::IsEnabled()) {
       delegate_.reset(new DownloadNotificationManager(
           Profile::FromBrowserContext(manager->GetBrowserContext())));
     } else {

@@ -418,7 +418,7 @@ const char kEnableDomDistiller[] = "enable-dom-distiller";
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
-// Enables Download Notification.
+// Download Notification. (value is "", "enabled" or "disabled")
 const char kEnableDownloadNotification[] = "enable-download-notification";
 
 // Enable Enhanced Bookmarks.

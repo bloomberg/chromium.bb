@@ -242,7 +242,8 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(yoshiki): Remove this after the download notification launches.
-    command_line->AppendSwitch(switches::kEnableDownloadNotification);
+    command_line->AppendSwitchASCII(switches::kEnableDownloadNotification,
+                                    "enabled");
   }
 
   void SetUp() override {

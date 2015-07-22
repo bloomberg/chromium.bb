@@ -508,6 +508,16 @@ const Experiment::Choice kGestureEditingChoices[] = {
 };
 #endif
 
+const Experiment::Choice kDownloadNotificationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableDownloadNotification,
+    "enabled" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kEnableDownloadNotification,
+    "disabled" }
+};
+
 const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -878,7 +888,7 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_NAME,
      IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableDownloadNotification)},
+     MULTI_VALUE_TYPE(kDownloadNotificationChoices)},
 #if defined(ENABLE_PLUGINS)
     {"allow-nacl-socket-api",
      IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
