@@ -13,9 +13,10 @@ namespace corruption_testing {
 
 // This value needs to be large enough to force the underlying DB to be read
 // from disk before writing, but small enough so that tests don't take too long
-// and timeout. The value *may* depend on the underlying DB page size as well as
-// the DB's cache_size PRAGMA.
-const int kNumEntriesRequiredForCorruption = 12000;
+// and timeout. The value depend on the underlying DB page size as well as the
+// DB's cache_size PRAGMA. If test fails, you either increase
+// kNumEntriesRequiredForCorruption, or increase the size of each entry.
+const int kNumEntriesRequiredForCorruption = 2000;
 
 bool CorruptDatabase(const base::FilePath& backing_file_path) {
   // Corrupt the DB by write a bunch of zeros at the beginning.

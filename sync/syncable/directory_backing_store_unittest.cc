@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
@@ -39,10 +40,11 @@ void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
   *catastrophic_error_handler_was_called = true;
 }
 
-// Create a dirty EntryKernel with an ID derived from |id|.
-scoped_ptr<EntryKernel> CreateEntry(int id) {
+// Create a dirty EntryKernel with an ID derived from |id| + |id_suffix|.
+scoped_ptr<EntryKernel> CreateEntry(int id, const std::string &id_suffix) {
   scoped_ptr<EntryKernel> entry(new EntryKernel());
-  entry->put(ID, Id::CreateFromClientString(base::Int64ToString(id)));
+  std::string id_string = base::Int64ToString(id) + id_suffix;
+  entry->put(ID, Id::CreateFromClientString(id_string));
   entry->put(META_HANDLE, id);
   entry->mark_dirty(NULL);
   return entry;
@@ -4034,7 +4036,7 @@ TEST_F(DirectoryBackingStoreTest,
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
     Directory::SaveChangesSnapshot snapshot;
-    snapshot.dirty_metas.insert(CreateEntry(2).release());
+    snapshot.dirty_metas.insert(CreateEntry(2, "").release());
     ASSERT_TRUE(dbs->SaveChanges(snapshot));
   }
 
@@ -4086,9 +4088,11 @@ TEST_F(DirectoryBackingStoreTest,
   ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
   ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
   Directory::SaveChangesSnapshot snapshot;
+  const std::string suffix(400, 'o');
   for (int i = 0; i < corruption_testing::kNumEntriesRequiredForCorruption;
        ++i) {
-    snapshot.dirty_metas.insert(CreateEntry(i).release());
+    scoped_ptr<EntryKernel> large_entry = CreateEntry(i, suffix);
+    snapshot.dirty_metas.insert(large_entry.release());
   }
   ASSERT_TRUE(dbs->SaveChanges(snapshot));
   // Corrupt it.

@@ -84,9 +84,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 //
 // If this test fails, see the definition of kNumEntriesRequiredForCorruption
 // for one possible cause.
-// TODO:(gangwu): flaky test on windows and linux, see http://crbug.com/511388
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       DISABLED_DeleteDirectoryWhenCorrupted) {
+                       DeleteDirectoryWhenCorrupted) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Sync and wait for syncing to complete.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -109,7 +108,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // Write a bunch of bookmarks and flush the directory to ensure sync notices
   // the corruption. The key here is to force sync to actually write a lot of
   // data to its DB so it will see the corruption we introduced above.
-  const GURL url("https://www.google.com");
+  const GURL url(
+      "https://"
+      "www."
+      "gooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooogle.com");
   const bookmarks::BookmarkNode* top = bookmarks_helper::AddFolder(
       0, bookmarks_helper::GetOtherNode(0), 0, "top");
   for (int i = 0; i < kNumEntriesRequiredForCorruption; ++i) {
