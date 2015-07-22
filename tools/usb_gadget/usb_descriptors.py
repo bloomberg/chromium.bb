@@ -247,6 +247,34 @@ class DescriptorContainer(Descriptor):
                                      for descriptor in self._descriptors))
 
 
+class StringDescriptor(Descriptor):
+  """Standard String Descriptor.
+
+  See Universal Serial Bus Specification Revision 2.0 Table 9-16.
+  """
+
+  def __init__(self, **kwargs):
+    self.bString = kwargs.pop('bString', '')
+    super(StringDescriptor, self).__init__(**kwargs)
+
+  @property
+  def total_size(self):
+    return self.struct_size + len(self.bString.encode('UTF-16LE'))
+
+  def Encode(self):
+    return (
+        super(StringDescriptor, self).Encode() +
+        self.bString.encode('UTF-16LE'))
+
+  def __str__(self):
+    return '{}\n  bString:         "{}"'.format(
+        super(StringDescriptor, self).__str__(), self.bString)
+
+StringDescriptor.AddComputedField('bLength', 'B', 'total_size')
+StringDescriptor.AddFixedField(
+    'bDescriptorType', 'B', usb_constants.DescriptorType.STRING)
+
+
 class ConfigurationDescriptor(DescriptorContainer):
   """Standard Configuration Descriptor.
 

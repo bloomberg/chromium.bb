@@ -442,11 +442,9 @@ class Gadget(object):
     elif index not in self._strings[lang]:
       return None
     else:
-      string = self._strings[lang][index].encode('UTF-16LE')
-      header = struct.pack(
-          '<BB', 2 + len(string), usb_constants.DescriptorType.STRING)
-      buf = header + string
-      return buf[:length]
+      descriptor = usb_descriptors.StringDescriptor(
+          bString=self._strings[lang][index])
+      return descriptor.Encode()[:length]
 
   def GetMicrosoftOSDescriptorV1(self, recipient, value, index, length):
     """Handle a the Microsoft OS 1.0 Descriptor request from the host.
