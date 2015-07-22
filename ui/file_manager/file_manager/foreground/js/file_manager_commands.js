@@ -665,6 +665,12 @@ CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     var entries = CommandUtil.getCommandEntries(event.target);
 
+    // Execute might be called without a call of canExecute method, e.g. called
+    // directly from code. Double check here not to delete undeletable entries.
+    if (this.containsFakeOrRootEntry_(entries, fileManager) ||
+        this.containsReadOnlyEntry_(entries, fileManager))
+      return;
+
     var message = entries.length === 1 ?
         strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
         strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
@@ -680,25 +686,44 @@ CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     var entries = CommandUtil.getCommandEntries(event.target);
 
-    // If it contains a fake entry, hide command.
-    var containsFakeEntry = entries.some(function(entry) {
-      return util.isFakeEntry(entry);
-    });
-    if (containsFakeEntry) {
+    // If entries contain fake or root entry, hide delete option.
+    if (this.containsFakeOrRootEntry_(entries, fileManager)) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
     }
 
-    // If it contains an entry which is on read only volume or no item is
-    // selected, disable command.
-    var containsReadOnlyEntry = entries.some(function(entry) {
+    event.canExecute = entries.length > 0 &&
+        !this.containsReadOnlyEntry_(entries, fileManager);
+    event.command.setHidden(false);
+  },
+  /**
+   * @param {!Array<!Entry>} entries
+   * @param {!FileManager} fileManager
+   * @return {boolean} True if entries contain fake or root entry.
+   */
+  containsFakeOrRootEntry_: function(entries, fileManager) {
+    return entries.some(function(entry) {
+      if (util.isFakeEntry(entry))
+        return true;
+
+      var volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
+      if (!volumeInfo)
+        return true;
+
+      return volumeInfo.displayRoot === entry;
+    });
+  },
+  /**
+   * @param {!Array<!Entry>} entries
+   * @param {!FileManager} fileManager
+   * @return {boolean} True if entries contain read only entry.
+   */
+  containsReadOnlyEntry_: function(entries, fileManager) {
+    return entries.some(function(entry) {
       var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
       return locationInfo && locationInfo.isReadOnly;
     });
-
-    event.canExecute = !containsReadOnlyEntry && entries.length > 0;
-    event.command.setHidden(false);
   }
 });
 
