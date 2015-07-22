@@ -284,15 +284,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
     WillBeHeapVector<RawPtrWillBeMember<ContainerNode>> ancestorsToClose;
     Node* next;
     Node* lastClosed = nullptr;
-    for (Node* n = startNode; n != pastEnd; n = next) {
-        // According to <rdar://problem/5730668>, it is possible for n to blow
-        // past pastEnd and become null here. This shouldn't be possible.
-        // This null check will prevent crashes (but create too much markup)
-        // and the ASSERT will hopefully lead us to understanding the problem.
-        ASSERT(n);
-        if (!n)
-            break;
-
+    for (Node* n = startNode; n && n != pastEnd; n = next) {
         // If |n| is a selection boundary such as <input>, traverse the child
         // nodes in the DOM tree instead of the composed tree.
         if (handleSelectionBoundary<Strategy>(*n)) {
@@ -333,7 +325,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
         while (!ancestorsToClose.isEmpty()) {
             ContainerNode* ancestor = ancestorsToClose.last();
             ASSERT(ancestor);
-            if (next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
+            if (next && next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
                 break;
             // Not at the end of the range, close ancestors up to sibling of next node.
             appendEndMarkup(*ancestor);
