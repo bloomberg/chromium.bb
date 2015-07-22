@@ -3145,6 +3145,7 @@ popup_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct wl_resource *resource;
+	struct wl_list *resource_list;
 	wl_fixed_t x, y;
 	wl_fixed_t sx, sy;
 
@@ -3156,7 +3157,11 @@ popup_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 
 	weston_pointer_move(pointer, event);
 
-	wl_resource_for_each(resource, &pointer->focus_resource_list) {
+	if (!pointer->focus_client)
+		return;
+
+	resource_list = &pointer->focus_client->pointer_resources;
+	wl_resource_for_each(resource, resource_list) {
 		weston_view_from_global_fixed(pointer->focus,
 					      pointer->x, pointer->y,
 					      &sx, &sy);
@@ -3174,10 +3179,11 @@ popup_grab_button(struct weston_pointer_grab *grab,
 	struct wl_display *display = shseat->seat->compositor->wl_display;
 	enum wl_pointer_button_state state = state_w;
 	uint32_t serial;
-	struct wl_list *resource_list;
+	struct wl_list *resource_list = NULL;
 
-	resource_list = &grab->pointer->focus_resource_list;
-	if (!wl_list_empty(resource_list)) {
+	if (grab->pointer->focus_client)
+		resource_list = &grab->pointer->focus_client->pointer_resources;
+	if (resource_list && !wl_list_empty(resource_list)) {
 		serial = wl_display_get_serial(display);
 		wl_resource_for_each(resource, resource_list) {
 			wl_pointer_send_button(resource, serial,

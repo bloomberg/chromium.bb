@@ -327,12 +327,19 @@ struct weston_data_source {
 	void (*cancel)(struct weston_data_source *source);
 };
 
+struct weston_pointer_client {
+	struct wl_list link;
+	struct wl_client *client;
+	struct wl_list pointer_resources;
+};
+
 struct weston_pointer {
 	struct weston_seat *seat;
 
-	struct wl_list resource_list;
-	struct wl_list focus_resource_list;
+	struct wl_list pointer_clients;
+
 	struct weston_view *focus;
+	struct weston_pointer_client *focus_client;
 	uint32_t focus_serial;
 	struct wl_listener focus_view_listener;
 	struct wl_listener focus_resource_listener;
