@@ -75,7 +75,7 @@ const char kShellPath[] = "/system/bin/sh";
 const char kPosixShell[] = "sh";
 #else
 const char kShellPath[] = "/bin/sh";
-const char kPosixShell[] = "bash";
+const char kPosixShell[] = "sh";
 #endif
 #endif  // defined(OS_POSIX)
 
