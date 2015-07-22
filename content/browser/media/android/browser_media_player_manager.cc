@@ -584,8 +584,14 @@ void BrowserMediaPlayerManager::OnSetPoster(int player_id, const GURL& url) {
 
 void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
+  if (player) {
+    // Videos can't play in the background, so are removed from the media
+    // session.
+    if (player->GetVideoWidth() > 0)
+      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+
     ReleasePlayer(player);
+  }
   if (player_id == fullscreen_player_id_)
     fullscreen_player_is_released_ = true;
 }
