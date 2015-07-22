@@ -6,26 +6,38 @@
 #define UI_MESSAGE_CENTER_VIEWS_PROPORTIONAL_IMAGE_VIEW_H_
 
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/views/view.h"
 
 namespace message_center {
 
-// ProportionalImageViews center their images to preserve their proportion.
-class ProportionalImageView : public views::View {
+// ProportionalImageViews scale and center their images while preserving their
+// original proportions.
+class MESSAGE_CENTER_EXPORT ProportionalImageView : public views::View {
  public:
-  ProportionalImageView(const gfx::ImageSkia& image, const gfx::Size& max_size);
+  // Internal class name.
+  static const char kViewClassName[];
+
+  explicit ProportionalImageView(const gfx::Size& view_size);
   ~ProportionalImageView() override;
+
+  // |image| is scaled to fit within |view_size_| and |max_image_size| while
+  // maintaining its original aspect ratio. It is then centered within the view.
+  void SetImage(const gfx::ImageSkia& image,
+                const gfx::Size& max_image_size);
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
 
  private:
   gfx::Size GetImageDrawingSize();
 
   gfx::ImageSkia image_;
-  gfx::Size max_size_;
+  gfx::Size max_image_size_;
+  gfx::Size view_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ProportionalImageView);
 };

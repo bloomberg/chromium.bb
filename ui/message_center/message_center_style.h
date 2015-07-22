@@ -86,8 +86,9 @@ MESSAGE_CENTER_EXPORT extern const SkColor
 
 // Given the size of an image, returns the size of the properly scaled-up image
 // which fits into |container_size|.
-gfx::Size GetImageSizeForContainerSize(const gfx::Size& container_size,
-                                       const gfx::Size& image_size);
+MESSAGE_CENTER_EXPORT gfx::Size GetImageSizeForContainerSize(
+    const gfx::Size& container_size,
+    const gfx::Size& image_size);
 
 extern const int kNotificationMaximumImageHeight;  // For image notifications.
 extern const size_t kNotificationMaximumItems;     // For list notifications.

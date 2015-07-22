@@ -9,16 +9,24 @@
 
 namespace message_center {
 
-ProportionalImageView::ProportionalImageView(const gfx::ImageSkia& image,
-                                             const gfx::Size& max_size)
-    : image_(image), max_size_(max_size) {}
+const char ProportionalImageView::kViewClassName[] = "ProportionalImageView";
+
+ProportionalImageView::ProportionalImageView(const gfx::Size& view_size)
+    : view_size_(view_size) {}
 
 ProportionalImageView::~ProportionalImageView() {}
 
-gfx::Size ProportionalImageView::GetPreferredSize() const { return max_size_; }
+void ProportionalImageView::SetImage(const gfx::ImageSkia& image,
+                                     const gfx::Size& max_image_size) {
+  image_ = image;
+  max_image_size_ = max_image_size;
+  SchedulePaint();
+}
+
+gfx::Size ProportionalImageView::GetPreferredSize() const { return view_size_; }
 
 int ProportionalImageView::GetHeightForWidth(int width) const {
-  return max_size_.height();
+  return view_size_.height();
 }
 
 void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
@@ -50,11 +58,17 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+const char* ProportionalImageView::GetClassName() const {
+  return kViewClassName;
+}
+
 gfx::Size ProportionalImageView::GetImageDrawingSize() {
   if (!visible())
     return gfx::Size();
-  return message_center::GetImageSizeForContainerSize(
-      GetContentsBounds().size(), image_.size());
+
+  gfx::Size max_size = max_image_size_;
+  max_size.SetToMin(GetContentsBounds().size());
+  return message_center::GetImageSizeForContainerSize(max_size, image_.size());
 }
 
 }  // namespace message_center

@@ -8,13 +8,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/notification_button.h"
+#include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -49,6 +57,9 @@ class NotificationViewTest : public views::ViewsTestBase,
                                  int button_index) override;
 
  protected:
+  // Used to fill bitmaps returned by CreateBitmap().
+  static const SkColor kBitmapColor = SK_ColorGREEN;
+
   const gfx::Image CreateTestImage(int width, int height) {
     return gfx::Image::CreateFrom1xBitmap(CreateBitmap(width, height));
   }
@@ -56,7 +67,7 @@ class NotificationViewTest : public views::ViewsTestBase,
   const SkBitmap CreateBitmap(int width, int height) {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(width, height);
-    bitmap.eraseRGB(0, 255, 0);
+    bitmap.eraseColor(kBitmapColor);
     return bitmap;
   }
 
@@ -64,6 +75,47 @@ class NotificationViewTest : public views::ViewsTestBase,
     ButtonInfo info(base::ASCIIToUTF16("Test button title."));
     info.icon = CreateTestImage(4, 4);
     return std::vector<ButtonInfo>(number, info);
+  }
+
+  // Paints |view| and returns the size that the original image (which must have
+  // been created by CreateBitmap()) was scaled to.
+  gfx::Size GetImagePaintSize(ProportionalImageView* view) {
+    CHECK(view);
+    if (view->bounds().IsEmpty())
+      return gfx::Size();
+
+    gfx::Size canvas_size = view->bounds().size();
+    gfx::Canvas canvas(canvas_size, 1.0 /* image_scale */,
+                       true /* is_opaque */);
+    COMPILE_ASSERT(kBitmapColor != SK_ColorBLACK,
+                   bitmap_color_matches_background_color);
+    canvas.DrawColor(SK_ColorBLACK);
+    view->OnPaint(&canvas);
+
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(canvas_size.width(), canvas_size.height());
+    canvas.sk_canvas()->readPixels(&bitmap, 0, 0);
+
+    // Incrementally inset each edge at its midpoint to find the bounds of the
+    // rect containing the image's color. This assumes that the image is
+    // centered in the canvas.
+    const int kHalfWidth = canvas_size.width() / 2;
+    const int kHalfHeight = canvas_size.height() / 2;
+    gfx::Rect rect(canvas_size);
+    while (rect.width() > 0 &&
+           bitmap.getColor(rect.x(), kHalfHeight) != kBitmapColor)
+      rect.Inset(1, 0, 0, 0);
+    while (rect.height() > 0 &&
+           bitmap.getColor(kHalfWidth, rect.y()) != kBitmapColor)
+      rect.Inset(0, 1, 0, 0);
+    while (rect.width() > 0 &&
+           bitmap.getColor(rect.right() - 1, kHalfHeight) != kBitmapColor)
+      rect.Inset(0, 0, 1, 0);
+    while (rect.height() > 0 &&
+           bitmap.getColor(kHalfWidth, rect.bottom() - 1) != kBitmapColor)
+      rect.Inset(0, 0, 0, 1);
+
+    return rect.size();
   }
 
   void CheckVerticalOrderInNotification() {
@@ -223,6 +275,97 @@ TEST_F(NotificationViewTest, TestLineLimits) {
   EXPECT_EQ(1, notification_view()->GetMessageLineLimit(0, 360));
   EXPECT_EQ(1, notification_view()->GetMessageLineLimit(1, 360));
   EXPECT_EQ(0, notification_view()->GetMessageLineLimit(2, 360));
+}
+
+TEST_F(NotificationViewTest, TestIconSizing) {
+  notification()->set_type(NOTIFICATION_TYPE_SIMPLE);
+  ProportionalImageView* view = notification_view()->icon_view_;
+
+  // Icons smaller than the legacy size should be scaled up to it.
+  notification()->set_icon(CreateTestImage(kLegacyIconSize / 2,
+                                           kLegacyIconSize / 2));
+  UpdateNotificationViews();
+  EXPECT_EQ(gfx::Size(kLegacyIconSize, kLegacyIconSize).ToString(),
+            GetImagePaintSize(view).ToString());
+
+  // Icons at the legacy size should be unscaled.
+  notification()->set_icon(CreateTestImage(kLegacyIconSize, kLegacyIconSize));
+  UpdateNotificationViews();
+  EXPECT_EQ(gfx::Size(kLegacyIconSize, kLegacyIconSize).ToString(),
+            GetImagePaintSize(view).ToString());
+
+  // Icons slightly smaller than the preferred size should be scaled down to the
+  // legacy size to avoid having tiny borders (http://crbug.com/232966).
+  notification()->set_icon(CreateTestImage(kIconSize - 1, kIconSize - 1));
+  UpdateNotificationViews();
+  EXPECT_EQ(gfx::Size(kLegacyIconSize, kLegacyIconSize).ToString(),
+            GetImagePaintSize(view).ToString());
+
+  // Icons at the preferred size or above should be scaled down to the preferred
+  // size.
+  notification()->set_icon(CreateTestImage(kIconSize, kIconSize));
+  UpdateNotificationViews();
+  EXPECT_EQ(gfx::Size(kIconSize, kIconSize).ToString(),
+            GetImagePaintSize(view).ToString());
+
+  notification()->set_icon(CreateTestImage(2 * kIconSize, 2 * kIconSize));
+  UpdateNotificationViews();
+  EXPECT_EQ(gfx::Size(kIconSize, kIconSize).ToString(),
+            GetImagePaintSize(view).ToString());
+
+  // Large, non-square images' aspect ratios should be preserved.
+  notification()->set_icon(CreateTestImage(4 * kIconSize, 2 * kIconSize));
+  UpdateNotificationViews();
+  EXPECT_EQ(gfx::Size(kIconSize, kIconSize / 2).ToString(),
+            GetImagePaintSize(view).ToString());
+}
+
+TEST_F(NotificationViewTest, TestImageSizing) {
+  ProportionalImageView* view = notification_view()->image_view_;
+  const gfx::Size kIdealSize(kNotificationPreferredImageWidth,
+                             kNotificationPreferredImageHeight);
+
+  // Images should be scaled to the ideal size.
+  notification()->set_image(CreateTestImage(kIdealSize.width() / 2,
+                                            kIdealSize.height() / 2));
+  UpdateNotificationViews();
+  EXPECT_EQ(kIdealSize.ToString(), GetImagePaintSize(view).ToString());
+
+  notification()->set_image(CreateTestImage(kIdealSize.width(),
+                                            kIdealSize.height()));
+  UpdateNotificationViews();
+  EXPECT_EQ(kIdealSize.ToString(), GetImagePaintSize(view).ToString());
+
+  notification()->set_image(CreateTestImage(kIdealSize.width() * 2,
+                                            kIdealSize.height() * 2));
+  UpdateNotificationViews();
+  EXPECT_EQ(kIdealSize.ToString(), GetImagePaintSize(view).ToString());
+
+  // Original aspect ratios should be preserved.
+  gfx::Size orig_size(kIdealSize.width() * 2, kIdealSize.height());
+  notification()->set_image(
+      CreateTestImage(orig_size.width(), orig_size.height()));
+  UpdateNotificationViews();
+  gfx::Size paint_size = GetImagePaintSize(view);
+  gfx::Size container_size = kIdealSize;
+  container_size.Enlarge(-2 * kNotificationImageBorderSize,
+                         -2 * kNotificationImageBorderSize);
+  EXPECT_EQ(GetImageSizeForContainerSize(container_size, orig_size).ToString(),
+            paint_size.ToString());
+  ASSERT_GT(paint_size.height(), 0);
+  EXPECT_EQ(orig_size.width() / orig_size.height(),
+            paint_size.width() / paint_size.height());
+
+  orig_size.SetSize(kIdealSize.width(), kIdealSize.height() * 2);
+  notification()->set_image(
+      CreateTestImage(orig_size.width(), orig_size.height()));
+  UpdateNotificationViews();
+  paint_size = GetImagePaintSize(view);
+  EXPECT_EQ(GetImageSizeForContainerSize(container_size, orig_size).ToString(),
+            paint_size.ToString());
+  ASSERT_GT(paint_size.height(), 0);
+  EXPECT_EQ(orig_size.width() / orig_size.height(),
+            paint_size.width() / paint_size.height());
 }
 
 TEST_F(NotificationViewTest, UpdateButtonsStateTest) {

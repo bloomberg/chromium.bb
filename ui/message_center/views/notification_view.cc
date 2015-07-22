@@ -152,39 +152,6 @@ void ItemView::SetVisible(bool visible) {
     child_at(i)->SetVisible(visible);
 }
 
-// The NotificationImage is the view representing the area covered by the
-// notification's image, including background and border.  Its size can be
-// specified in advance and images will be scaled to fit including a border if
-// necessary.
-
-// static
-views::View* MakeNotificationImage(const gfx::Image& image, gfx::Size size) {
-  views::View* container = new views::View();
-  container->SetLayoutManager(new views::FillLayout());
-  container->set_background(views::Background::CreateSolidBackground(
-      message_center::kImageBackgroundColor));
-
-  gfx::Size ideal_size(
-      message_center::kNotificationPreferredImageWidth,
-      message_center::kNotificationPreferredImageHeight);
-  gfx::Size scaled_size =
-      message_center::GetImageSizeForContainerSize(ideal_size, image.Size());
-
-  views::View* proportional_image_view =
-      new message_center::ProportionalImageView(image.AsImageSkia(),
-                                                ideal_size);
-
-  // This calculation determines that the new image would have the correct
-  // height for width.
-  if (ideal_size != scaled_size) {
-    proportional_image_view->SetBorder(views::Border::CreateSolidBorder(
-        message_center::kNotificationImageBorderSize, SK_ColorTRANSPARENT));
-  }
-
-  container->AddChildView(proportional_image_view);
-  return container;
-}
-
 // NotificationProgressBar /////////////////////////////////////////////////////
 
 class NotificationProgressBar : public views::ProgressBar {
@@ -353,6 +320,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
       context_message_view_(NULL),
       icon_view_(NULL),
       bottom_view_(NULL),
+      image_container_(NULL),
       image_view_(NULL),
       progress_bar_view_(NULL) {
   // Create the top_view_, which collects into a vertical box all content
@@ -661,50 +629,64 @@ void NotificationView::CreateOrUpdateListItemViews(
 
 void NotificationView::CreateOrUpdateIconView(
     const Notification& notification) {
-  if (icon_view_) {
-    delete icon_view_;
-    icon_view_ = NULL;
+  if (!icon_view_) {
+    icon_view_ = new ProportionalImageView(gfx::Size(kIconSize, kIconSize));
+    icon_view_->set_background(
+        views::Background::CreateSolidBackground(kIconBackgroundColor));
+    AddChildView(icon_view_);
   }
 
-  // TODO(dewittj): Detect a compatible update and use the existing icon view.
   gfx::ImageSkia icon = notification.icon().AsImageSkia();
-  if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
-      (icon.width() != kIconSize || icon.height() != kIconSize ||
-       HasAlpha(icon, GetWidget()))) {
-    views::ImageView* icon_view = new views::ImageView();
-    icon_view->SetImage(icon);
-    icon_view->SetImageSize(gfx::Size(kLegacyIconSize, kLegacyIconSize));
-    icon_view->SetHorizontalAlignment(views::ImageView::CENTER);
-    icon_view->SetVerticalAlignment(views::ImageView::CENTER);
-    icon_view_ = icon_view;
-  } else {
-    icon_view_ =
-        new ProportionalImageView(icon, gfx::Size(kIconSize, kIconSize));
-  }
-
-  icon_view_->set_background(
-      views::Background::CreateSolidBackground(kIconBackgroundColor));
-
-  AddChildView(icon_view_);
+  gfx::Size max_image_size =
+      notification.type() == NOTIFICATION_TYPE_SIMPLE &&
+              (icon.width() < kIconSize || icon.height() < kIconSize ||
+               HasAlpha(icon, GetWidget()))
+          ? gfx::Size(kLegacyIconSize, kLegacyIconSize)
+          : gfx::Size(kIconSize, kIconSize);
+  icon_view_->SetImage(icon, max_image_size);
 }
 
 void NotificationView::CreateOrUpdateImageView(
     const Notification& notification) {
-  if (image_view_) {
-    delete image_view_;
+  // |image_view_| is the view representing the area covered by the
+  // notification's image, including background and border.  Its size can be
+  // specified in advance and images will be scaled to fit including a border if
+  // necessary.
+  if (notification.image().IsEmpty()) {
+    delete image_container_;
+    image_container_ = NULL;
     image_view_ = NULL;
+    return;
   }
 
-  DCHECK(bottom_view_);
-  DCHECK_EQ(this, bottom_view_->parent());
+  gfx::Size ideal_size(kNotificationPreferredImageWidth,
+                       kNotificationPreferredImageHeight);
 
-  // TODO(dewittj): Detect a compatible update and use the existing image view.
-  if (!notification.image().IsEmpty()) {
-    gfx::Size image_size(kNotificationPreferredImageWidth,
-                         kNotificationPreferredImageHeight);
-    image_view_ = MakeNotificationImage(notification.image(), image_size);
-    bottom_view_->AddChildViewAt(image_view_, 0);
+  if (!image_container_) {
+    DCHECK(!image_view_);
+    DCHECK(bottom_view_);
+    DCHECK_EQ(this, bottom_view_->parent());
+
+    image_container_ = new views::View();
+    image_container_->SetLayoutManager(new views::FillLayout());
+    image_container_->set_background(views::Background::CreateSolidBackground(
+        message_center::kImageBackgroundColor));
+
+    image_view_ = new message_center::ProportionalImageView(ideal_size);
+    image_container_->AddChildView(image_view_);
+    bottom_view_->AddChildViewAt(image_container_, 0);
   }
+
+  DCHECK(image_view_);
+  image_view_->SetImage(notification.image().AsImageSkia(), ideal_size);
+
+  gfx::Size scaled_size = message_center::GetImageSizeForContainerSize(
+      ideal_size, notification.image().Size());
+  image_view_->SetBorder(ideal_size != scaled_size
+                             ? views::Border::CreateSolidBorder(
+                                   message_center::kNotificationImageBorderSize,
+                                   SK_ColorTRANSPARENT)
+                             : NULL);
 }
 
 void NotificationView::CreateOrUpdateActionButtonViews(
