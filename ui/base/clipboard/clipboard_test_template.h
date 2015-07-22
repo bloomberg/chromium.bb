@@ -23,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -46,6 +47,8 @@ using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 
+using testing::Contains;
+
 namespace ui {
 
 template <typename ClipboardTraits>
@@ -63,6 +66,13 @@ class ClipboardTest : public PlatformTest {
 
  protected:
   Clipboard& clipboard() { return *clipboard_; }
+
+  std::vector<base::string16> GetAvailableTypes(ClipboardType type) {
+    bool contains_filenames;
+    std::vector<base::string16> types;
+    clipboard().ReadAvailableTypes(type, &types, &contains_filenames);
+    return types;
+  }
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -89,6 +99,7 @@ TYPED_TEST(ClipboardTest, ClearTest) {
 
   this->clipboard().Clear(CLIPBOARD_TYPE_COPY_PASTE);
 
+  EXPECT_TRUE(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE).empty());
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
       Clipboard::GetPlainTextWFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
@@ -104,6 +115,8 @@ TYPED_TEST(ClipboardTest, TextTest) {
     clipboard_writer.WriteText(text);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetPlainTextWFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
@@ -126,6 +139,8 @@ TYPED_TEST(ClipboardTest, HTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   uint32 fragment_start;
@@ -153,6 +168,8 @@ TYPED_TEST(ClipboardTest, RTFTest) {
     clipboard_writer.WriteRTF(rtf);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeRTF)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(Clipboard::GetRtfFormatType(),
                                                   CLIPBOARD_TYPE_COPY_PASTE));
   std::string result;
@@ -177,6 +194,11 @@ TYPED_TEST(ClipboardTest, MultipleBufferTest) {
     ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_SELECTION);
     clipboard_writer.WriteHTML(markup, url);
   }
+
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeText)));
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_SELECTION),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetPlainTextFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
@@ -214,6 +236,8 @@ TYPED_TEST(ClipboardTest, TrickyHTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   uint32 fragment_start;
@@ -242,6 +266,8 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   uint32 fragment_start;
@@ -287,6 +313,10 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
     clipboard_writer.WriteText(text);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
@@ -319,6 +349,8 @@ TYPED_TEST(ClipboardTest, URLTest) {
     clipboard_writer.WriteURL(url);
   }
 
+  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+              Contains(ASCIIToUTF16(Clipboard::kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetPlainTextWFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(

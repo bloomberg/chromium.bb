@@ -42,6 +42,18 @@ void TestClipboard::Clear(ClipboardType type) {
 void TestClipboard::ReadAvailableTypes(ClipboardType type,
                                        std::vector<base::string16>* types,
                                        bool* contains_filenames) const {
+  types->clear();
+
+  if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeText));
+  if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
+
+  if (IsFormatAvailable(Clipboard::GetRtfFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
+  if (IsFormatAvailable(Clipboard::GetBitmapFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
+
   *contains_filenames = false;
 }
 

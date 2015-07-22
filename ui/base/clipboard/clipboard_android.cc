@@ -311,9 +311,21 @@ void ClipboardAndroid::ReadAvailableTypes(ClipboardType type,
     return;
   }
 
-  NOTIMPLEMENTED();
-
   types->clear();
+
+  // would be nice to ask the ClipboardMap to enumerate the types it supports,
+  // rather than hardcode the list here.
+  if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeText));
+  if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
+
+  // these formats aren't supported by the ClipboardMap currently, but might
+  // be one day?
+  if (IsFormatAvailable(Clipboard::GetRtfFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
+  if (IsFormatAvailable(Clipboard::GetBitmapFormatType(), type))
+    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 }
 
