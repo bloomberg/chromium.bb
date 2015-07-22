@@ -400,6 +400,10 @@ extern const char kDisablePluginPowerSaver[];
 extern const char kEnablePluginPowerSaver[];
 #endif
 
+#if defined(ENABLE_TASK_MANAGER)
+extern const char kEnableNewTaskManager[];
+#endif  // defined(ENABLE_TASK_MANAGER)
+
 bool AboutInSettingsEnabled();
 bool MdDownloadsEnabled();
 bool MdSettingsEnabled();
@@ -410,6 +414,10 @@ bool SettingsWindowEnabled();
 #if defined(OS_CHROMEOS)
 bool PowerOverlayEnabled();
 #endif
+
+#if defined(ENABLE_TASK_MANAGER)
+bool NewTaskManagerEnabled();
+#endif  // defined(ENABLE_TASK_MANAGER)
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).

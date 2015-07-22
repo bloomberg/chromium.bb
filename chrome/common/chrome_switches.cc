@@ -1347,6 +1347,11 @@ const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
 const char kDebugPrint[] = "debug-print";
 #endif
 
+#if defined(ENABLE_TASK_MANAGER)
+// Enables the new implementation of the task manager.
+const char kEnableNewTaskManager[]   = "enable-new-task-manager";
+#endif  // defined(ENABLE_TASK_MANAGER)
+
 bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1395,6 +1400,13 @@ bool PowerOverlayEnabled() {
       ::switches::kEnablePowerOverlay);
 }
 #endif
+
+#if defined(ENABLE_TASK_MANAGER)
+bool NewTaskManagerEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableNewTaskManager);
+}
+#endif  // defined(ENABLE_TASK_MANAGER)
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

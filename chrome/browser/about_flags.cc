@@ -2059,6 +2059,14 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableClearBrowsingDataCounters)
     },
+#if defined(ENABLE_TASK_MANAGER)
+    {"enable-new-task-manager",
+     IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_NAME,
+     IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_DESCRIPTION,
+     kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableNewTaskManager)
+    },
+#endif  // defined(ENABLE_TASK_MANAGER)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
