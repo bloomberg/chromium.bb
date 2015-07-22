@@ -15,7 +15,7 @@ namespace {
 
 class TestCustomFontData : public CustomFontData {
 public:
-    static PassRefPtr<TestCustomFontData> create() { return adoptRef(new TestCustomFontData()); }
+    static PassRefPtrWillBeRawPtr<TestCustomFontData> create() { return adoptRefWillBeNoop(new TestCustomFontData()); }
 private:
     TestCustomFontData() { }
     bool isLoadingFallback() const override { return true; }
