@@ -1150,7 +1150,7 @@ crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pas
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Pass Slow ]
 
-crbug.com/419486 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
+crbug.com/419486 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ImageOnlyFailure ]
 
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
@@ -1166,7 +1166,7 @@ crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 crbug.com/421854 [ SnowLeopard ] fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard ] fast/text/atsui-bidi-control.html [ Pass Timeout Crash ]
 crbug.com/421854 [ SnowLeopard ] fast/dom/52776.html [ Pass Crash ]
-#crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
+crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
 
 crbug.com/418091 [ SnowLeopard ] fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 
@@ -1246,7 +1246,7 @@ crbug.com/418091 [ SnowLeopard Debug ] media/track/track-cue-rendering-rtl.html 
 
 crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-02-d-agi.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-04-d-agi.html [ Pass Failure ]
-#crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard Debug ] fast/text/aat-morx.html [ Pass Failure ]
 #crbug.com/418091 [ SnowLeopard ] fast/text/cg-fallback-bolding.html [ Failure ]
 #crbug.com/418091 [ SnowLeopard Release ] fast/text/decorations-transformed.html [ Failure ]
 #crbug.com/418091 [ SnowLeopard Release ] fast/text/emphasis-avoid-ruby.html [ Failure ]
@@ -1471,7 +1471,7 @@ crbug.com/470429 inspector/tracing/worker-js-profile.html [ Skip ]
 crbug.com/471066 [ SnowLeopard ] fast/text/apply-start-width-after-skipped-text.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] fast/text/emphasis-overlap.html [ Failure ]
-crbug.com/471066 [ SnowLeopard ] fast/text/fake-italic.html [ Failure ]
+crbug.com/471066 [ SnowLeopard ] fast/text/fake-italic.html [ Failure ImageOnlyFailure ]
 
 crbug.com/478109 [ SnowLeopard ] fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
 
@@ -3556,3 +3556,5 @@ Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-12.html [ NeedsMan
 
 crbug.com/512667 inspector/sources/debugger/live-edit-no-reveal.html [ Pass Timeout ]
 crbug.com/512667 inspector-protocol/debugger/domdebugger-setInnerHTML.html [ Pass Failure ]
+
+crbug.com/512709 [ XP ] fast/text/emphasis.html [ Pass ImageOnlyFailure ]
