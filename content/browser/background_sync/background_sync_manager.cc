@@ -582,11 +582,13 @@ void BackgroundSyncManager::GetDataFromBackend(
 }
 
 void BackgroundSyncManager::FireOneShotSync(
+    const BackgroundSyncRegistration& registration,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
     const ServiceWorkerVersion::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  active_version->DispatchSyncEvent(callback);
+  active_version->DispatchSyncEvent(
+      mojo::ConvertTo<SyncRegistrationPtr>(registration), callback);
 }
 
 void BackgroundSyncManager::UnregisterImpl(
@@ -852,8 +854,11 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     return;
   }
 
+  BackgroundSyncRegistration* registration =
+      LookupRegistration(service_worker_registration->id(), registration_key);
+
   FireOneShotSync(
-      service_worker_registration->active_version(),
+      *registration, service_worker_registration->active_version(),
       base::Bind(&BackgroundSyncManager::EventComplete,
                  weak_ptr_factory_.GetWeakPtr(), service_worker_registration,
                  service_worker_registration->id(), registration_key,

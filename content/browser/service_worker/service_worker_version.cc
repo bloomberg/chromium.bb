@@ -39,6 +39,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/background_sync.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -792,15 +793,15 @@ void ServiceWorkerVersion::DispatchFetchEvent(
   }
 }
 
-void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
+void ServiceWorkerVersion::DispatchSyncEvent(SyncRegistrationPtr registration,
+                                             const StatusCallback& callback) {
   DCHECK_EQ(ACTIVATED, status()) << status();
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(&RunTaskAfterStartWorker,
-                           weak_factory_.GetWeakPtr(), callback,
-                           base::Bind(&self::DispatchSyncEvent,
-                                      weak_factory_.GetWeakPtr(),
-                                      callback)));
+    StartWorker(base::Bind(
+        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
+        base::Bind(&self::DispatchSyncEvent, weak_factory_.GetWeakPtr(),
+                   base::Passed(registration.Pass()), callback)));
     return;
   }
 
@@ -813,13 +814,9 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
         weak_factory_.GetWeakPtr()));
   }
 
-  // TODO(iclelland): Replace this with the real event registration details
-  // crbug.com/482066
-  content::SyncRegistrationPtr null_event(content::SyncRegistration::New());
-
   background_sync_dispatcher_->Sync(
-      null_event.Pass(), base::Bind(&self::OnSyncEventFinished,
-                                    weak_factory_.GetWeakPtr(), request_id));
+      registration.Pass(), base::Bind(&self::OnSyncEventFinished,
+                                      weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::DispatchNotificationClickEvent(

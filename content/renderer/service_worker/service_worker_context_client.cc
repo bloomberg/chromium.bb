@@ -46,6 +46,7 @@
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
@@ -628,12 +629,13 @@ void ServiceWorkerContextClient::stashMessagePort(
 }
 
 void ServiceWorkerContextClient::DispatchSyncEvent(
+    const blink::WebSyncRegistration& registration,
     const SyncCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::DispatchSyncEvent");
   int request_id =
       context_->sync_event_callbacks.Add(new SyncCallback(callback));
-  proxy_->dispatchSyncEvent(request_id);
+  proxy_->dispatchSyncEvent(request_id, registration);
 }
 
 void ServiceWorkerContextClient::Send(IPC::Message* message) {

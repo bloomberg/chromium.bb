@@ -36,6 +36,7 @@ class WebDataSource;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
+struct WebSyncRegistration;
 }
 
 namespace IPC {
@@ -150,7 +151,8 @@ class ServiceWorkerContextClient
   virtual void stashMessagePort(blink::WebMessagePortChannel* channel,
                                 const blink::WebString& name);
 
-  virtual void DispatchSyncEvent(const SyncCallback& callback);
+  virtual void DispatchSyncEvent(const blink::WebSyncRegistration& registration,
+                                 const SyncCallback& callback);
 
  private:
   struct WorkerContextData;

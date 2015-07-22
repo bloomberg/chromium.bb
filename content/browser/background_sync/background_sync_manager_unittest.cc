@@ -183,10 +183,12 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   }
 
   void FireOneShotSync(
+      const BackgroundSyncRegistration& registration,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
       const ServiceWorkerVersion::StatusCallback& callback) override {
     if (one_shot_callback_.is_null()) {
-      BackgroundSyncManager::FireOneShotSync(active_version, callback);
+      BackgroundSyncManager::FireOneShotSync(registration, active_version,
+                                             callback);
     } else {
       one_shot_callback_.Run(active_version, callback);
     }

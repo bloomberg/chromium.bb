@@ -4,7 +4,9 @@
 
 #include "content/renderer/background_sync/background_sync_client_impl.h"
 
+#include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 
 namespace content {
 
@@ -28,7 +30,9 @@ void BackgroundSyncClientImpl::Sync(content::SyncRegistrationPtr registration,
     callback.Run(SERVICE_WORKER_EVENT_STATUS_ABORTED);
     return;
   }
-  client->DispatchSyncEvent(callback);
+  scoped_ptr<blink::WebSyncRegistration> reg =
+      mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(registration);
+  client->DispatchSyncEvent(*reg, callback);
 }
 
 }  // namespace content

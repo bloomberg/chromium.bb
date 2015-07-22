@@ -171,6 +171,12 @@ void ExpectResultAndRun(bool expected,
   continuation.Run();
 }
 
+SyncRegistrationPtr CreateOneShotSyncRegistration(const std::string& tag) {
+  SyncRegistrationPtr registration = SyncRegistration::New();
+  registration->tag = tag;
+  return registration.Pass();
+}
+
 class WorkerActivatedObserver
     : public ServiceWorkerContextObserver,
       public base::RefCountedThreadSafe<WorkerActivatedObserver> {
@@ -789,6 +795,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     version_->DispatchSyncEvent(
+        CreateOneShotSyncRegistration(""),
         CreateReceiver(BrowserThread::UI, done, result));
   }
 

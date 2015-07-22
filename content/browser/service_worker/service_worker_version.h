@@ -211,7 +211,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // notify completion.
   //
   // This must be called when the status() is ACTIVATED.
-  void DispatchSyncEvent(const StatusCallback& callback);
+  void DispatchSyncEvent(SyncRegistrationPtr registration,
+                         const StatusCallback& callback);
 
   // Sends notificationclick event to the associated embedded worker and
   // asynchronously calls |callback| when it errors out or it gets a response

@@ -121,6 +121,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
           callback);
   virtual void FireOneShotSync(
+      const BackgroundSyncRegistration& registration,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
       const ServiceWorkerVersion::StatusCallback& callback);
 

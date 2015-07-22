@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration_options.h"
+#include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace content {
 
@@ -38,5 +41,24 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 };
 
 }  // namespace content
+
+namespace mojo {
+
+template <>
+struct CONTENT_EXPORT
+    TypeConverter<scoped_ptr<content::BackgroundSyncRegistration>,
+                  content::SyncRegistrationPtr> {
+  static scoped_ptr<content::BackgroundSyncRegistration> Convert(
+      const content::SyncRegistrationPtr& input);
+};
+
+template <>
+struct CONTENT_EXPORT TypeConverter<content::SyncRegistrationPtr,
+                                    content::BackgroundSyncRegistration> {
+  static content::SyncRegistrationPtr Convert(
+      const content::BackgroundSyncRegistration& input);
+};
+
+}  // namespace
 
 #endif  // CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
