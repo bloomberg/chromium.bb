@@ -32,6 +32,11 @@ void FakeAccountFetcherService::StartFetchingUserInfo(
   // In tests, don't do actual network fetch.
 }
 
+void FakeAccountFetcherService::StartFetchingChildInfo(
+    const std::string& account_id) {
+  // In tests, don't do actual network fetch.
+}
+
 void FakeAccountFetcherService::FakeUserInfoFetchSuccess(
     const std::string& email,
     const std::string& gaia,
@@ -48,11 +53,9 @@ void FakeAccountFetcherService::FakeUserInfoFetchSuccess(
   user_info.SetString("given_name", given_name);
   user_info.SetString("locale", locale);
   user_info.SetString("picture", picture_url);
-  std::vector<std::string> service_flags;
   account_tracker_service()->SetAccountStateFromUserInfo(
       account_tracker_service()->PickAccountIdForAccount(gaia, email),
-      &user_info,
-      &service_flags);
+      &user_info);
 }
 
 void FakeAccountFetcherService::SendRefreshTokenAnnotationRequest(
