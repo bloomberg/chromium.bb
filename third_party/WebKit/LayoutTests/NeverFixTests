@@ -18,7 +18,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Platform specific virtual test suites.
 [ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
-[ Linux XP Android ] virtual/antialiasedtext [ WontFix ]
 
 # Chrome Win/Linux doesn't support emacs key-bindings.
 [ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
@@ -108,7 +107,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Mac has different fallback behavior so that this test won't work there
 [ Mac ] fast/text/font-cachekey.html [ WontFix ]
-[ Mac ] virtual/antialiasedtext/fast/text/font-cachekey.html [ WontFix ]
 
 # This test is specific to Android. Because long pressing on disabled/readonly input/textarea
 # won't trigger text selection on Linux/Mac/Windows platforms, hence we need to skip it.
@@ -116,7 +114,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # AAT/mortx shaping not supported on platforms other than Mac
 [ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
-[ Linux Win Android ] virtual/antialiasedtext/fast/text/aat-morx.html [ WontFix ]
 
 # This test crashes occasionally on Windows and we can't seem to repro locally.
 # See comments in crbug.com/239077
@@ -147,7 +144,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ Snowleopard Debug ] inspector/elements/styles-2/pseudo-elements.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger-breakpoints/event-listener-breakpoints.html [ WontFix ]
-[ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 [ SnowLeopard Debug ] fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 
 
@@ -162,7 +158,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
 # Mac 10.6 only due to slight changes in text rendering
 [ SnowLeopard ] fast/text/international/text-shaping-arabic.html [ WontFix ]
-[ SnowLeopard ] virtual/antialiasedtext/fast/text/international/text-shaping-arabic.html [ WontFix ]
 
 # Mac 10.6 debug only, and the tests are very artificial to test orientation of all code points.
 [ SnowLeopard Debug ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ WontFix ]

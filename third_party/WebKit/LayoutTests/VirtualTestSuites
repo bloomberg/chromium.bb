@@ -92,12 +92,6 @@
     "args": ["--enable-webkit-text-subpixel-positioning"]
   },
   {
-    "prefix": "antialiasedtext",
-    "base": "fast/text",
-    "args": ["--enable-direct-write",
-             "--enable-font-antialiasing"]
-  },
-  {
     "prefix": "threaded",
     "base": "printing",
     "args": ["--enable-threaded-compositing"]
