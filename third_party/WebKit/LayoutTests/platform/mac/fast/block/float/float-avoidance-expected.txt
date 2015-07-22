@@ -57,8 +57,8 @@ layer at (0,0) size 785x2342 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText (anonymous) at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           LayoutText {#text} at (0,0) size 0x0
-        LayoutButton {INPUT} at (110,28) size 27.27x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 11.27x13
+        LayoutButton {INPUT} at (110,28) size 27.17x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 11.17x13
             LayoutText {#text} at (0,0) size 12x13
               text run at (0,0) width 12: "Hi"
         LayoutBlockFlow (anonymous) at (10,46) size 200x18
@@ -250,9 +250,9 @@ layer at (0,0) size 785x2342 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutText (anonymous) at (8,2) size 22x13
               text run at (8,2) width 22: "One"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow (floating) {HR} at (112,30) size 80x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow (floating) {HR} at (112,30) size 82x2 [border: (1px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (194,28) size 0x18
+        LayoutBR {BR} at (196,28) size 0x18
       LayoutBlockFlow (anonymous) at (0,2040) size 769x36
         LayoutText {#text} at (0,0) size 768x36
           text run at (0,0) width 768: "The floating hr below should still be even with the select and shrinks to use its intrinsic width (which is basically like 1-"
@@ -282,7 +282,7 @@ layer at (0,0) size 785x2342 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText (anonymous) at (8,2) size 22x13
                 text run at (8,2) width 22: "One"
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {HR} at (10,46) size 200x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow {HR} at (10,46) size 202x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow (anonymous) at (10,56) size 200x18
           LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow (anonymous) at (0,2234) size 769x18
