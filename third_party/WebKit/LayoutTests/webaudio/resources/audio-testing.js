@@ -290,6 +290,10 @@ function isValidNumber(x) {
 //
 //   // Queue tasks by readable task names.
 //   audit.runTasks('foo', 'bar');
+//
+//   // Alternatively, if you want to run all of the defined tasks in the order in which they were
+//   // defined, use no arguments:
+//   audit.runTasks();
  var Audit = (function () {
 
     'use strict';
@@ -302,11 +306,18 @@ function isValidNumber(x) {
 
     Tasks.prototype.defineTask = function (taskName, taskFunc) {
         this.tasks[taskName] = taskFunc;
+        // Add this name to the queue so we can run it later if requested.
+        this.queue.push(taskName);
     };
 
     Tasks.prototype.runTasks = function () {
-        for (var i = 0; i < arguments.length; i++) {
-          this.queue[i] = arguments[i];
+        // runTasks without arguments runs all of the defined tasks.  But if arguments are given,
+        // only run the specified tasks.
+        if (arguments.length > 0) {
+            this.queue = [];
+            for (var i = 0; i < arguments.length; i++) {
+                this.queue[i] = arguments[i];
+            }
         }
 
         // done() callback from tasks. Increase the task index and call the
