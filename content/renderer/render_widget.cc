@@ -468,14 +468,15 @@ gfx::Rect RenderWidget::ScreenMetricsEmulator::AdjustValidationMessageAnchor(
 
 // RenderWidget ---------------------------------------------------------------
 
-RenderWidget::RenderWidget(blink::WebPopupType popup_type,
+RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
+                           blink::WebPopupType popup_type,
                            const blink::WebScreenInfo& screen_info,
                            bool swapped_out,
                            bool hidden,
                            bool never_visible)
     : routing_id_(MSG_ROUTING_NONE),
       surface_id_(0),
-      compositor_deps_(nullptr),
+      compositor_deps_(compositor_deps),
       webwidget_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
       init_complete_(false),
@@ -540,9 +541,9 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
                                    blink::WebPopupType popup_type,
                                    const blink::WebScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
-  scoped_refptr<RenderWidget> widget(
-      new RenderWidget(popup_type, screen_info, false, false, false));
-  if (widget->Init(opener_id, compositor_deps)) {  // adds reference on success.
+  scoped_refptr<RenderWidget> widget(new RenderWidget(
+      compositor_deps, popup_type, screen_info, false, false, false));
+  if (widget->Init(opener_id)) {  // adds reference on success.
     return widget.get();
   }
   return NULL;
@@ -557,15 +558,15 @@ RenderWidget* RenderWidget::CreateForFrame(
     CompositorDependencies* compositor_deps,
     blink::WebLocalFrame* frame) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
-  scoped_refptr<RenderWidget> widget(new RenderWidget(
-      blink::WebPopupTypeNone, screen_info, false, hidden, false));
+  scoped_refptr<RenderWidget> widget(
+      new RenderWidget(compositor_deps, blink::WebPopupTypeNone, screen_info,
+                       false, hidden, false));
   widget->routing_id_ = routing_id;
   widget->surface_id_ = surface_id;
-  widget->compositor_deps_ = compositor_deps;
   widget->for_oopif_ = true;
   // DoInit increments the reference count on |widget|, keeping it alive after
   // this function returns.
-  if (widget->DoInit(MSG_ROUTING_NONE, compositor_deps,
+  if (widget->DoInit(MSG_ROUTING_NONE,
                      RenderWidget::CreateWebFrameWidget(widget.get(), frame),
                      nullptr)) {
     widget->CompleteInit();
@@ -602,15 +603,13 @@ void RenderWidget::CloseForFrame() {
   CloseInternal(true);
 }
 
-bool RenderWidget::Init(int32 opener_id,
-                        CompositorDependencies* compositor_deps) {
-  return DoInit(opener_id, compositor_deps, RenderWidget::CreateWebWidget(this),
+bool RenderWidget::Init(int32 opener_id) {
+  return DoInit(opener_id, RenderWidget::CreateWebWidget(this),
                 new ViewHostMsg_CreateWidget(opener_id, popup_type_,
                                              &routing_id_, &surface_id_));
 }
 
 bool RenderWidget::DoInit(int32 opener_id,
-                          CompositorDependencies* compositor_deps,
                           WebWidget* web_widget,
                           IPC::SyncMessage* create_widget_message) {
   DCHECK(!webwidget_);
@@ -618,7 +617,6 @@ bool RenderWidget::DoInit(int32 opener_id,
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
-  compositor_deps_ = compositor_deps;
   webwidget_ = web_widget;
 
   bool result = true;

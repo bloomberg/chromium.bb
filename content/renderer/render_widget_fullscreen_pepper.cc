@@ -270,23 +270,23 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     const blink::WebScreenInfo& screen_info) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
-      new RenderWidgetFullscreenPepper(plugin, active_url, screen_info));
-  widget->Init(opener_id, compositor_deps);
+      new RenderWidgetFullscreenPepper(compositor_deps, plugin, active_url,
+                                       screen_info));
+  widget->Init(opener_id);
   widget->AddRef();
   return widget.get();
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
+    CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
     const blink::WebScreenInfo& screen_info)
-    : RenderWidgetFullscreen(screen_info),
+    : RenderWidgetFullscreen(compositor_deps, screen_info),
       active_url_(active_url),
       plugin_(plugin),
       layer_(NULL),
-      mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(
-          this)) {
-}
+      mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(this)) {}
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
 }

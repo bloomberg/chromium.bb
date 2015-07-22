@@ -1728,7 +1728,7 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
   CompositorDependencies* compositor_deps = this;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  RenderViewImpl::Create(params, compositor_deps, false);
+  RenderViewImpl::Create(compositor_deps, params, false);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(

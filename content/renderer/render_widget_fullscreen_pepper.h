@@ -51,7 +51,8 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   }
 
  protected:
-  RenderWidgetFullscreenPepper(PepperPluginInstanceImpl* plugin,
+  RenderWidgetFullscreenPepper(CompositorDependencies* compositor_deps,
+                               PepperPluginInstanceImpl* plugin,
                                const GURL& active_url,
                                const blink::WebScreenInfo& screen_info);
   ~RenderWidgetFullscreenPepper() override;

@@ -317,8 +317,9 @@ const int kDelaySecondsForContentStateSync = 1;
 const size_t kContentIntentDelayMilliseconds = 700;
 #endif
 
-static RenderViewImpl* (*g_create_render_view_impl)(const ViewMsg_New_Params&) =
-    NULL;
+static RenderViewImpl* (*g_create_render_view_impl)(
+    CompositorDependencies* compositor_deps,
+    const ViewMsg_New_Params&) = nullptr;
 
 // static
 Referrer RenderViewImpl::GetReferrerFromRequest(
@@ -649,8 +650,10 @@ WebFrame* ResolveOpener(int opener_frame_routing_id,
 
 }  // namespace
 
-RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
-    : RenderWidget(blink::WebPopupTypeNone,
+RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
+                               const ViewMsg_New_Params& params)
+    : RenderWidget(compositor_deps,
+                   blink::WebPopupTypeNone,
                    params.initial_size.screen_info,
                    params.swapped_out,
                    params.hidden,
@@ -694,7 +697,6 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
 }
 
 void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
-                                CompositorDependencies* compositor_deps,
                                 bool was_created_by_renderer) {
   routing_id_ = params.view_id;
   surface_id_ = params.surface_id;
@@ -720,7 +722,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     main_render_frame_->SetWebFrame(web_frame);
   }
 
-  compositor_deps_ = compositor_deps;
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
@@ -1182,23 +1183,24 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 }
 
 /*static*/
-RenderViewImpl* RenderViewImpl::Create(const ViewMsg_New_Params& params,
-                                       CompositorDependencies* compositor_deps,
+RenderViewImpl* RenderViewImpl::Create(CompositorDependencies* compositor_deps,
+                                       const ViewMsg_New_Params& params,
                                        bool was_created_by_renderer) {
   DCHECK(params.view_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
-    render_view = g_create_render_view_impl(params);
+    render_view = g_create_render_view_impl(compositor_deps, params);
   else
-    render_view = new RenderViewImpl(params);
+    render_view = new RenderViewImpl(compositor_deps, params);
 
-  render_view->Initialize(params, compositor_deps, was_created_by_renderer);
+  render_view->Initialize(params, was_created_by_renderer);
   return render_view;
 }
 
 // static
-void RenderViewImpl::InstallCreateHook(
-    RenderViewImpl* (*create_render_view_impl)(const ViewMsg_New_Params&)) {
+void RenderViewImpl::InstallCreateHook(RenderViewImpl* (
+    *create_render_view_impl)(CompositorDependencies* compositor_deps,
+                              const ViewMsg_New_Params&)) {
   CHECK(!g_create_render_view_impl);
   g_create_render_view_impl = create_render_view_impl;
 }
@@ -1691,7 +1693,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.max_size = gfx::Size();
 
   RenderViewImpl* view =
-      RenderViewImpl::Create(view_params, compositor_deps_, true);
+      RenderViewImpl::Create(compositor_deps_, view_params, true);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.

@@ -32,8 +32,9 @@ class MockWebWidget : public blink::WebWidget {
 
 class TestRenderWidget : public RenderWidget {
  public:
-  TestRenderWidget()
-      : RenderWidget(blink::WebPopupTypeNone,
+  explicit TestRenderWidget(CompositorDependencies* compositor_deps)
+      : RenderWidget(compositor_deps,
+                     blink::WebPopupTypeNone,
                      blink::WebScreenInfo(),
                      true,
                      false,
@@ -52,8 +53,8 @@ class TestRenderWidget : public RenderWidget {
 class RenderWidgetCompositorTest : public testing::Test {
  public:
   RenderWidgetCompositorTest()
-      : render_widget_(new TestRenderWidget()),
-        compositor_deps_(new FakeCompositorDependencies),
+      : compositor_deps_(new FakeCompositorDependencies),
+        render_widget_(new TestRenderWidget(compositor_deps_.get())),
         render_widget_compositor_(
             RenderWidgetCompositor::Create(render_widget_.get(),
                                            compositor_deps_.get())) {}
@@ -62,8 +63,8 @@ class RenderWidgetCompositorTest : public testing::Test {
  protected:
   base::MessageLoop loop_;
   MockRenderThread render_thread_;
-  scoped_refptr<TestRenderWidget> render_widget_;
   scoped_ptr<FakeCompositorDependencies> compositor_deps_;
+  scoped_refptr<TestRenderWidget> render_widget_;
   scoped_ptr<RenderWidgetCompositor> render_widget_compositor_;
 
  private:
@@ -92,7 +93,8 @@ class RenderWidgetCompositorOutputSurface;
 
 class RenderWidgetOutputSurface : public TestRenderWidget {
  public:
-  RenderWidgetOutputSurface() : compositor_(NULL) {}
+  explicit RenderWidgetOutputSurface(CompositorDependencies* compositor_deps)
+      : TestRenderWidget(compositor_deps), compositor_(NULL) {}
   void SetCompositor(RenderWidgetCompositorOutputSurface* compositor);
 
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) override;
@@ -234,8 +236,8 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
 class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
  public:
   RenderWidgetCompositorOutputSurfaceTest()
-      : render_widget_(new RenderWidgetOutputSurface),
-        compositor_deps_(new FakeCompositorDependencies) {
+      : compositor_deps_(new FakeCompositorDependencies),
+        render_widget_(new RenderWidgetOutputSurface(compositor_deps_.get())) {
     render_widget_compositor_.reset(new RenderWidgetCompositorOutputSurface(
         render_widget_.get(), compositor_deps_.get()));
     render_widget_compositor_->Initialize();
@@ -261,8 +263,8 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
  protected:
   base::MessageLoop ye_olde_message_loope_;
   MockRenderThread render_thread_;
-  scoped_refptr<RenderWidgetOutputSurface> render_widget_;
   scoped_ptr<FakeCompositorDependencies> compositor_deps_;
+  scoped_refptr<RenderWidgetOutputSurface> render_widget_;
   scoped_ptr<RenderWidgetCompositorOutputSurface> render_widget_compositor_;
 
  private:

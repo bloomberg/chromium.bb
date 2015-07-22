@@ -18,12 +18,13 @@ class RenderWidgetFullscreen : public RenderWidget {
   virtual void show(blink::WebNavigationPolicy);
 
  protected:
-  RenderWidgetFullscreen(const blink::WebScreenInfo& screen_info);
+  RenderWidgetFullscreen(CompositorDependencies* compositor_deps,
+                         const blink::WebScreenInfo& screen_info);
   ~RenderWidgetFullscreen() override;
 
   virtual blink::WebWidget* CreateWebWidget();
 
-  bool Init(int32 opener_id, CompositorDependencies* compositor_deps);
+  bool Init(int32 opener_id);
 };
 
 }  // namespace content

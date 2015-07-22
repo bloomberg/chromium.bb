@@ -302,10 +302,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 // RenderWidget. It's safe to ignore that warning.
 #pragma warning(disable: 4250)
 #endif
-template <class Base, typename T>
+template <class Base, typename... Args>
 class WebTestProxy : public Base, public WebTestProxyBase {
  public:
-  explicit WebTestProxy(T t) : Base(t) {}
+  explicit WebTestProxy(Args... args) : Base(args...) {}
 
   // WebWidgetClient implementation.
   virtual blink::WebScreenInfo screenInfo() {

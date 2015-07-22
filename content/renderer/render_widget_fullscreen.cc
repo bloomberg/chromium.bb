@@ -24,8 +24,14 @@ void RenderWidgetFullscreen::show(blink::WebNavigationPolicy) {
 }
 
 RenderWidgetFullscreen::RenderWidgetFullscreen(
+    CompositorDependencies* compositor_deps,
     const blink::WebScreenInfo& screen_info)
-    : RenderWidget(blink::WebPopupTypeNone, screen_info, false, false, false) {}
+    : RenderWidget(compositor_deps,
+                   blink::WebPopupTypeNone,
+                   screen_info,
+                   false,
+                   false,
+                   false) {}
 
 RenderWidgetFullscreen::~RenderWidgetFullscreen() {}
 
@@ -34,11 +40,10 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
   return RenderWidget::CreateWebWidget(this);
 }
 
-bool RenderWidgetFullscreen::Init(int32 opener_id,
-                                  CompositorDependencies* compositor_deps) {
+bool RenderWidgetFullscreen::Init(int32 opener_id) {
   DCHECK(!webwidget_);
 
-  return RenderWidget::DoInit(opener_id, compositor_deps, CreateWebWidget(),
+  return RenderWidget::DoInit(opener_id, CreateWebWidget(),
                               new ViewHostMsg_CreateFullscreenWidget(
                                   opener_id, &routing_id_, &surface_id_));
 }
