@@ -241,6 +241,9 @@
       'filepath': 'third_party/closure_(compiler|linter)/|'
                   'compiled_resources.gyp',
     },
+    'components_deps': {
+      'filepath': 'components/([^/]*/)*DEPS',
+    },
     'content': {
       'filepath': 'content/',
     },
@@ -946,6 +949,9 @@
     'closure': ['dbeam+watch-closure@chromium.org',
                 'vitalyp+closure@chromium.org',
                 'jlklein+watch-closure@chromium.org'],
+    'components_deps': ['blundell+watchlist@chromium.org',
+                        'droger+watchlist@chromium.org',
+                        'sdefresne+watchlist@chromium.org'],
     'content': ['jam@chromium.org',
                 'darin-cc@chromium.org' ],
     'content_bluetooth': ['scheib+watch@chromium.org'],
