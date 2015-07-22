@@ -164,6 +164,7 @@ source_set("common") {
   if (!is_ios) {
     deps += [
       "//cc",
+      "//device/bluetooth",
       "//ipc",
       "//ipc/mojo",
 
@@ -187,6 +188,7 @@ source_set("common") {
       "//third_party/WebKit/public:blink",
       "//third_party/mojo/src/mojo/edk/system",
       "//ui/gl",
+      ":mojo_bindings",
     ]
   }
 

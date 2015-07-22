@@ -599,6 +599,7 @@
     }, {  # OS!="ios"
       'dependencies': [
         '../cc/cc.gyp:cc',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_c_lib',
