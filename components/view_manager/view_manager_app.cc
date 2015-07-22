@@ -33,7 +33,10 @@ namespace view_manager {
 ViewManagerApp::ViewManagerApp() : app_impl_(nullptr), is_headless_(false) {
 }
 
-ViewManagerApp::~ViewManagerApp() {}
+ViewManagerApp::~ViewManagerApp() {
+  if (gpu_state_)
+    gpu_state_->StopControlThread();
+}
 
 void ViewManagerApp::Initialize(ApplicationImpl* app) {
   app_impl_ = app;

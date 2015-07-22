@@ -6,6 +6,7 @@
 #define COMPONENTS_VIEW_MANAGER_GLES2_COMMAND_BUFFER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/view_manager/public/interfaces/command_buffer.mojom.h"
 #include "components/view_manager/public/interfaces/viewport_parameter_listener.mojom.h"
@@ -77,6 +78,7 @@ class CommandBufferImpl : public mojo::CommandBuffer {
   mojo::ViewportParameterListenerPtr viewport_parameter_listener_;
   mojo::Binding<CommandBuffer> binding_;
   CommandBufferImplObserver* observer_;
+  base::WeakPtrFactory<CommandBufferImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);
 };

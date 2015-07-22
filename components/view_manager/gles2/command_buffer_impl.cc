@@ -47,12 +47,14 @@ CommandBufferImpl::CommandBufferImpl(
       driver_(driver.Pass()),
       viewport_parameter_listener_(listener.Pass()),
       binding_(this),
-      observer_(nullptr) {
+      observer_(nullptr),
+      weak_ptr_factory_(this) {
   driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
 
   gpu_state_->control_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&CommandBufferImpl::BindToRequest,
-                            base::Unretained(this), base::Passed(&request)));
+      FROM_HERE,
+      base::Bind(&CommandBufferImpl::BindToRequest,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&request)));
 }
 
 void CommandBufferImpl::Initialize(

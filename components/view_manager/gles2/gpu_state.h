@@ -28,6 +28,8 @@ class GpuState : public base::RefCounted<GpuState> {
     return control_thread_.task_runner();
   }
 
+  void StopControlThread();
+
   // These objects are intended to be used on the "driver" thread (i.e., the
   // thread on which GpuImpl instances are created).
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }

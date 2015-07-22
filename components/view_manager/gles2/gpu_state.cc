@@ -18,4 +18,8 @@ GpuState::GpuState()
 GpuState::~GpuState() {
 }
 
+void GpuState::StopControlThread() {
+  control_thread_.Stop();
+}
+
 }  // namespace gles2
