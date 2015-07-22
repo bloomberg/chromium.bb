@@ -103,6 +103,26 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetMissingCharacteristicGenericAccessAdapter();
 
+  // |FailingConnectionsAdapter|
+  // Inherits from BaseAdapter
+  // FailingConnectionsAdapter holds a device for each type of connection error
+  // that can occur. This way we don’t need to create an adapter for each type
+  // of error. Each of the devices has a service with a different UUID so that
+  // they can be accessed by using different filters.
+  // See errorUUID() declaration below.
+  // Internal Structure:
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_UNKNOWN)       errorUUID(0x0)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_INPROGRESS)    errorUUID(0x1)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_FAILED)        errorUUID(0x2)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_AUTH_FAILED)   errorUUID(0x3)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_AUTH_CANCELED) errorUUID(0x4)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_AUTH_REJECTED) errorUUID(0x5)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_AUTH_TIMEOUT)  errorUUID(0x6)
+  //  - UnconnectableDevice(BluetoothDevice::ERROR_UNSUPPORTED_DEVICE)
+  //    errorUUID(0x7)
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetFailingConnectionsAdapter();
+
   // Discovery Sessions
 
   // |DiscoverySession|
@@ -199,6 +219,21 @@ class LayoutTestBluetoothAdapterProvider {
       const std::string& device_name = "Connectable Device",
       device::BluetoothDevice::UUIDList = device::BluetoothDevice::UUIDList());
 
+  // |UnconnectableDevice|
+  // Inherits from BaseDevice(adapter, device_name)
+  // Adv UUIDs Added:
+  //  - errorUUID(error_code)
+  // Services Added:
+  // None.
+  // Mock Functions:
+  //  - CreateGATTConnection:
+  //      - Run error callback with error_type
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetUnconnectableDevice(
+      device::MockBluetoothAdapter* adapter,
+      device::BluetoothDevice::ConnectErrorCode error_code,
+      const std::string& device_name = "Unconnectable Device");
+
   // |GenericAccessDevice|
   // Inherits from ConnectableDevice(adapter, device_name)
   // Adv UUIDs Added:
@@ -235,6 +270,20 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattService>>
   GetBaseGATTService(device::MockBluetoothDevice* device,
                      const std::string& uuid);
+
+  // Helper functions:
+
+  // errorUUID(alias) returns a UUID with the top 32 bits of
+  // "00000000-97e5-4cd7-b9f1-f5a427670c59" replaced with the bits of |alias|.
+  // For example, errorUUID(0xDEADBEEF) returns
+  // "deadbeef-97e5-4cd7-b9f1-f5a427670c59". The bottom 96 bits of error UUIDs
+  // were generated as a type 4 (random) UUID.
+  static std::string errorUUID(uint32_t alias);
+
+  // Function to turn an integer into an MAC address of the form
+  // XX:XX:XX:XX:XX:XX. For example makeMACAddress(0xdeadbeef)
+  // returns "00:00:DE:AD:BE:EF".
+  static std::string makeMACAddress(uint64_t addr);
 
   // The functions after this haven't been updated to the new design yet.
 

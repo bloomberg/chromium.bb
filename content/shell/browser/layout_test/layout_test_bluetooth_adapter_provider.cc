@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -113,6 +115,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetMissingServiceGenericAccessAdapter();
   else if (fake_adapter_name == "MissingCharacteristicGenericAccessAdapter")
     return GetMissingCharacteristicGenericAccessAdapter();
+  else if (fake_adapter_name == "FailingConnectionsAdapter")
+    return GetFailingConnectionsAdapter();
   else if (fake_adapter_name == "")
     return NULL;
 
@@ -244,6 +248,18 @@ LayoutTestBluetoothAdapterProvider::
   return adapter.Pass();
 }
 
+scoped_refptr<NiceMock<MockBluetoothAdapter>>
+LayoutTestBluetoothAdapterProvider::GetFailingConnectionsAdapter() {
+  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetEmptyAdapter());
+
+  for (int error = BluetoothDevice::ERROR_UNKNOWN;
+       error <= BluetoothDevice::ERROR_UNSUPPORTED_DEVICE; error++) {
+    adapter->AddMockDevice(GetUnconnectableDevice(
+        adapter.get(), static_cast<BluetoothDevice::ConnectErrorCode>(error)));
+  }
+  return adapter.Pass();
+}
+
 // static
 scoped_ptr<NiceMock<MockBluetoothDevice>>
 LayoutTestBluetoothAdapterProvider::GetBaseDevice(
@@ -338,6 +354,24 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDeviceNew(
 
 // static
 scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+LayoutTestBluetoothAdapterProvider::GetUnconnectableDevice(
+    MockBluetoothAdapter* adapter,
+    BluetoothDevice::ConnectErrorCode error_code,
+    const std::string& device_name) {
+  BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(errorUUID(error_code)));
+
+  scoped_ptr<testing::NiceMock<MockBluetoothDevice>> device(
+      GetBaseDevice(adapter, device_name, uuids, makeMACAddress(error_code)));
+
+  ON_CALL(*device, CreateGattConnection(_, _))
+      .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
+
+  return device.Pass();
+}
+
+// static
+scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
 LayoutTestBluetoothAdapterProvider::GetGenericAccessDevice(
     MockBluetoothAdapter* adapter,
     const std::string& device_name) {
@@ -366,6 +400,17 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTService(
                             &MockBluetoothGattService::GetMockCharacteristic));
 
   return service.Pass();
+}
+
+// static
+std::string LayoutTestBluetoothAdapterProvider::errorUUID(uint32_t alias) {
+  return base::StringPrintf("%08x-97e5-4cd7-b9f1-f5a427670c59", alias);
+}
+
+// static
+std::string LayoutTestBluetoothAdapterProvider::makeMACAddress(uint64_t addr) {
+  return BluetoothDevice::CanonicalizeAddress(
+      base::StringPrintf("%012" PRIx64, addr));
 }
 
 // The functions after this haven't been updated to the new design yet.
