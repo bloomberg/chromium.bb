@@ -39,7 +39,7 @@ ALWAYS_INLINE void packOneRowOfRGBA8LittleToR8(const uint8_t*& source, uint8_t*&
     float tmp[4];
     unsigned pixelsPerRowTrunc = (pixelsPerRow / 4) * 4;
 
-    for (unsigned i = 0; i < pixelsPerRow; i += 4) {
+    for (unsigned i = 0; i < pixelsPerRowTrunc; i += 4) {
         __m128 scale = _mm_set_ps(source[15] ? source[15] : 255,
             source[11] ? source[11] : 255,
             source[7] ? source[7] : 255,
@@ -61,10 +61,11 @@ ALWAYS_INLINE void packOneRowOfRGBA8LittleToR8(const uint8_t*& source, uint8_t*&
     pixelsPerRow -= pixelsPerRowTrunc;
 }
 
-ALWAYS_INLINE void packOneRowOfRGBA8LittleToRGBA8(const uint8_t*& source, uint8_t*& destination, unsigned& pixelsPerRow)
+// This function deliberately doesn't mutate the incoming source, destination,
+// or pixelsPerRow arguments, since it always handles the full row.
+ALWAYS_INLINE void packOneRowOfRGBA8LittleToRGBA8(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
     float tmp[4];
-    unsigned pixelsPerRowTrunc = (pixelsPerRow / 4) * 4;
     float scale;
 
     for (unsigned i = 0; i < pixelsPerRow; i++) {
@@ -85,8 +86,6 @@ ALWAYS_INLINE void packOneRowOfRGBA8LittleToRGBA8(const uint8_t*& source, uint8_
         source += 4;
         destination += 4;
     }
-
-    pixelsPerRow -= pixelsPerRowTrunc;
 }
 
 } // namespace SIMD
