@@ -382,34 +382,28 @@ TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
     GURL expected;
   } tests[] = {
       {
-       "Nothing set", "", "", GURL("https://datasaver.googleapis.com"),
+          "Nothing set", "", "",
+          GURL("https://datasaver.googleapis.com/v1/clientConfigs"),
       },
       {
-       "Only command line set",
-       "http://commandline.config-service/",
-       "",
-       GURL("http://commandline.config-service/"),
+          "Only command line set", "http://commandline.config-service/", "",
+          GURL("http://commandline.config-service/"),
       },
       {
-       "Enabled group", "", "Enabled", GURL("http://enabled.config-service/"),
+          "Enabled group", "", "Enabled",
+          GURL("http://enabled.config-service/"),
       },
       {
-       "Disabled group",
-       "",
-       "Disabled",
-       GURL("http://disabled.config-service/"),
+          "Disabled group", "", "Disabled",
+          GURL("http://disabled.config-service/"),
       },
       {
-       "Alternate enabled group",
-       "",
-       "EnabledOther",
-       GURL("http://other.config-service/"),
+          "Alternate enabled group", "", "EnabledOther",
+          GURL("http://other.config-service/"),
       },
       {
-       "Command line precedence",
-       "http://commandline.config-service/",
-       "Enabled",
-       GURL("http://commandline.config-service/"),
+          "Command line precedence", "http://commandline.config-service/",
+          "Enabled", GURL("http://commandline.config-service/"),
       },
   };
 

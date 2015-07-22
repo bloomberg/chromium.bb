@@ -47,7 +47,8 @@ const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
 const char kConfigServiceURLParam[] = "url";
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
-const char kClientConfigURL[] = "https://datasaver.googleapis.com";
+const char kClientConfigURL[] =
+    "https://datasaver.googleapis.com/v1/clientConfigs";
 
 }  // namespace
 
