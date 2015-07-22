@@ -46,9 +46,10 @@ public:
     {
         // This assertion fails if:
         //  - promise() is called at least once and
-        //  - this resolver is destructed before it is resolved, rejected or
-        //    the associated ExecutionContext is stopped.
-        ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
+        //  - this resolver is destructed before it is resolved, rejected, the
+        //    V8 isolate is terminated or the associated ExecutionContext is
+        //    stopped.
+        ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled || !scriptState()->contextIsValid() || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
     }
 #endif
 
@@ -115,7 +116,7 @@ private:
     template<typename T>
     void resolveOrReject(T value, ResolutionState newState)
     {
-        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        if (m_state != Pending || !scriptState()->contextIsValid() || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
             return;
         ASSERT(newState == Resolving || newState == Rejecting);
         m_state = newState;

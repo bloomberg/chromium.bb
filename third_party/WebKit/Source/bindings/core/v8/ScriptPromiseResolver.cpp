@@ -5,9 +5,6 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 
-#include "bindings/core/v8/V8RecursionScope.h"
-#include "platform/LifecycleObserver.h"
-
 namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
@@ -58,6 +55,11 @@ void ScriptPromiseResolver::keepAliveWhilePending()
 void ScriptPromiseResolver::onTimerFired(Timer<ScriptPromiseResolver>*)
 {
     ASSERT(m_state == Resolving || m_state == Rejecting);
+    if (!scriptState()->contextIsValid()) {
+        clear();
+        return;
+    }
+
     ScriptState::Scope scope(m_scriptState.get());
     resolveOrRejectImmediately();
 }
