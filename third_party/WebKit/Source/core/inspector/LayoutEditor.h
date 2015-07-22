@@ -16,9 +16,10 @@
 
 namespace blink {
 
-class JSONObject;
-class InspectorCSSAgent;
 class CSSPrimitiveValue;
+class InspectorCSSAgent;
+class JSONArray;
+class JSONObject;
 
 class CORE_EXPORT LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LayoutEditor);
@@ -37,6 +38,7 @@ private:
     explicit LayoutEditor(InspectorCSSAgent*);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
+    void appendAnchorFor(JSONArray*, const String&, const FloatPoint&, const FloatPoint&) const;
 
     // InspectorOverlayHost::LayoutEditorListener implementation.
     void overlayStartedPropertyChange(const String&) override;

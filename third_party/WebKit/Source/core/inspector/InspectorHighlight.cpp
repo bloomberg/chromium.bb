@@ -162,64 +162,6 @@ const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths*
     return shapeOutsideInfo;
 }
 
-bool buildNodeQuads(LayoutObject* layoutObject, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
-{
-    FrameView* containingView = layoutObject->frameView();
-    if (!containingView)
-        return false;
-    if (!layoutObject->isBox() && !layoutObject->isLayoutInline())
-        return false;
-
-    LayoutRect contentBox;
-    LayoutRect paddingBox;
-    LayoutRect borderBox;
-    LayoutRect marginBox;
-
-    if (layoutObject->isBox()) {
-        LayoutBox* layoutBox = toLayoutBox(layoutObject);
-
-        // LayoutBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
-        const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
-        const int horizontalScrollbarHeight = layoutBox->horizontalScrollbarHeight();
-        contentBox = layoutBox->contentBoxRect();
-        contentBox.setWidth(contentBox.width() + verticalScrollbarWidth);
-        contentBox.setHeight(contentBox.height() + horizontalScrollbarHeight);
-
-        paddingBox = layoutBox->paddingBoxRect();
-        paddingBox.setWidth(paddingBox.width() + verticalScrollbarWidth);
-        paddingBox.setHeight(paddingBox.height() + horizontalScrollbarHeight);
-
-        borderBox = layoutBox->borderBoxRect();
-
-        marginBox = LayoutRect(borderBox.x() - layoutBox->marginLeft(), borderBox.y() - layoutBox->marginTop(),
-            borderBox.width() + layoutBox->marginWidth(), borderBox.height() + layoutBox->marginHeight());
-    } else {
-        LayoutInline* layoutInline = toLayoutInline(layoutObject);
-
-        // LayoutInline's bounding box includes paddings and borders, excludes margins.
-        borderBox = LayoutRect(layoutInline->linesBoundingBox());
-        paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(), borderBox.y() + layoutInline->borderTop(),
-            borderBox.width() - layoutInline->borderLeft() - layoutInline->borderRight(), borderBox.height() - layoutInline->borderTop() - layoutInline->borderBottom());
-        contentBox = LayoutRect(paddingBox.x() + layoutInline->paddingLeft(), paddingBox.y() + layoutInline->paddingTop(),
-            paddingBox.width() - layoutInline->paddingLeft() - layoutInline->paddingRight(), paddingBox.height() - layoutInline->paddingTop() - layoutInline->paddingBottom());
-        // Ignore marginTop and marginBottom for inlines.
-        marginBox = LayoutRect(borderBox.x() - layoutInline->marginLeft(), borderBox.y(),
-            borderBox.width() + layoutInline->marginWidth(), borderBox.height());
-    }
-
-    *content = layoutObject->localToAbsoluteQuad(FloatRect(contentBox));
-    *padding = layoutObject->localToAbsoluteQuad(FloatRect(paddingBox));
-    *border = layoutObject->localToAbsoluteQuad(FloatRect(borderBox));
-    *margin = layoutObject->localToAbsoluteQuad(FloatRect(marginBox));
-
-    contentsQuadToViewport(containingView, *content);
-    contentsQuadToViewport(containingView, *padding);
-    contentsQuadToViewport(containingView, *border);
-    contentsQuadToViewport(containingView, *margin);
-
-    return true;
-}
-
 PassRefPtr<JSONObject> buildElementInfo(Element* element)
 {
     RefPtr<JSONObject> elementInfo = JSONObject::create();
@@ -322,7 +264,7 @@ void InspectorHighlight::appendEventTargetQuads(Node* eventTargetNode, const Ins
 {
     if (eventTargetNode->layoutObject()) {
         FloatQuad border, unused;
-        if (buildNodeQuads(eventTargetNode->layoutObject(), &unused, &unused, &border, &unused))
+        if (buildNodeQuads(eventTargetNode, &unused, &unused, &border, &unused))
             appendQuad(border, highlightConfig.eventTarget);
     }
 }
@@ -366,7 +308,7 @@ void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighligh
     }
 
     FloatQuad content, padding, border, margin;
-    if (!buildNodeQuads(layoutObject, &content, &padding, &border, &margin))
+    if (!buildNodeQuads(node, &content, &padding, &border, &margin))
         return;
     appendQuad(content, highlightConfig.content, highlightConfig.contentOutline);
     appendQuad(padding, highlightConfig.padding);
@@ -394,7 +336,7 @@ bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxMod
         return false;
 
     FloatQuad content, padding, border, margin;
-    if (!buildNodeQuads(node->layoutObject(), &content, &padding, &border, &margin))
+    if (!buildNodeQuads(node, &content, &padding, &border, &margin))
         return false;
 
     IntRect boundingBox = view->contentsToRootFrame(layoutObject->absoluteBoundingBoxRect());
@@ -417,6 +359,68 @@ bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxMod
             .setMarginShape(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape));
         model->setShapeOutside(shapeTypeBuilder);
     }
+
+    return true;
+}
+
+bool InspectorHighlight::buildNodeQuads(Node* node, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
+{
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
+        return false;
+
+    FrameView* containingView = layoutObject->frameView();
+    if (!containingView)
+        return false;
+    if (!layoutObject->isBox() && !layoutObject->isLayoutInline())
+        return false;
+
+    LayoutRect contentBox;
+    LayoutRect paddingBox;
+    LayoutRect borderBox;
+    LayoutRect marginBox;
+
+    if (layoutObject->isBox()) {
+        LayoutBox* layoutBox = toLayoutBox(layoutObject);
+
+        // LayoutBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
+        const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
+        const int horizontalScrollbarHeight = layoutBox->horizontalScrollbarHeight();
+        contentBox = layoutBox->contentBoxRect();
+        contentBox.setWidth(contentBox.width() + verticalScrollbarWidth);
+        contentBox.setHeight(contentBox.height() + horizontalScrollbarHeight);
+
+        paddingBox = layoutBox->paddingBoxRect();
+        paddingBox.setWidth(paddingBox.width() + verticalScrollbarWidth);
+        paddingBox.setHeight(paddingBox.height() + horizontalScrollbarHeight);
+
+        borderBox = layoutBox->borderBoxRect();
+
+        marginBox = LayoutRect(borderBox.x() - layoutBox->marginLeft(), borderBox.y() - layoutBox->marginTop(),
+            borderBox.width() + layoutBox->marginWidth(), borderBox.height() + layoutBox->marginHeight());
+    } else {
+        LayoutInline* layoutInline = toLayoutInline(layoutObject);
+
+        // LayoutInline's bounding box includes paddings and borders, excludes margins.
+        borderBox = LayoutRect(layoutInline->linesBoundingBox());
+        paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(), borderBox.y() + layoutInline->borderTop(),
+            borderBox.width() - layoutInline->borderLeft() - layoutInline->borderRight(), borderBox.height() - layoutInline->borderTop() - layoutInline->borderBottom());
+        contentBox = LayoutRect(paddingBox.x() + layoutInline->paddingLeft(), paddingBox.y() + layoutInline->paddingTop(),
+            paddingBox.width() - layoutInline->paddingLeft() - layoutInline->paddingRight(), paddingBox.height() - layoutInline->paddingTop() - layoutInline->paddingBottom());
+        // Ignore marginTop and marginBottom for inlines.
+        marginBox = LayoutRect(borderBox.x() - layoutInline->marginLeft(), borderBox.y(),
+            borderBox.width() + layoutInline->marginWidth(), borderBox.height());
+    }
+
+    *content = layoutObject->localToAbsoluteQuad(FloatRect(contentBox));
+    *padding = layoutObject->localToAbsoluteQuad(FloatRect(paddingBox));
+    *border = layoutObject->localToAbsoluteQuad(FloatRect(borderBox));
+    *margin = layoutObject->localToAbsoluteQuad(FloatRect(marginBox));
+
+    contentsQuadToViewport(containingView, *content);
+    contentsQuadToViewport(containingView, *padding);
+    contentsQuadToViewport(containingView, *border);
+    contentsQuadToViewport(containingView, *margin);
 
     return true;
 }

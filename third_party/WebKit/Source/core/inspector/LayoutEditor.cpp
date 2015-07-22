@@ -9,6 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorCSSAgent.h"
+#include "core/inspector/InspectorHighlight.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
@@ -18,11 +19,11 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<JSONObject> createAnchor(float x, float y, const String& propertyName, FloatPoint deltaVector, PassRefPtr<JSONObject> valueDescription)
+PassRefPtr<JSONObject> createAnchor(const FloatPoint& point, const String& propertyName, FloatPoint deltaVector, PassRefPtr<JSONObject> valueDescription)
 {
     RefPtr<JSONObject> object = JSONObject::create();
-    object->setNumber("x", x);
-    object->setNumber("y", y);
+    object->setNumber("x", point.x());
+    object->setNumber("y", point.y());
     object->setString("propertyName", propertyName);
 
     RefPtr<JSONObject> deltaVectorJSON = JSONObject::create();
@@ -33,20 +34,39 @@ PassRefPtr<JSONObject> createAnchor(float x, float y, const String& propertyName
     return object.release();
 }
 
-void contentsQuadToViewport(const FrameView* view, FloatQuad& quad)
-{
-    quad.setP1(view->contentsToViewport(roundedIntPoint(quad.p1())));
-    quad.setP2(view->contentsToViewport(roundedIntPoint(quad.p2())));
-    quad.setP3(view->contentsToViewport(roundedIntPoint(quad.p3())));
-    quad.setP4(view->contentsToViewport(roundedIntPoint(quad.p4())));
-}
-
 FloatPoint orthogonalVector(FloatPoint from, FloatPoint to, FloatPoint defaultVector)
 {
     if (from == to)
         return defaultVector;
 
     return FloatPoint(to.y() - from.y(), from.x() - to.x());
+}
+
+FloatPoint mean(const FloatPoint& p1, const FloatPoint& p2)
+{
+    float x = (p1.x() + p2.x()) / 2;
+    float y = (p1.y() + p2.y()) / 2;
+    return FloatPoint(x, y);
+}
+
+FloatQuad means(const FloatQuad& quad)
+{
+    FloatQuad result;
+    result.setP1(mean(quad.p1(), quad.p2()));
+    result.setP2(mean(quad.p2(), quad.p3()));
+    result.setP3(mean(quad.p3(), quad.p4()));
+    result.setP4(mean(quad.p4(), quad.p1()));
+    return result;
+}
+
+FloatQuad orthogonalVectors(const FloatQuad& quad)
+{
+    FloatQuad result;
+    result.setP1(orthogonalVector(quad.p1(), quad.p2(), FloatPoint(0, -1)));
+    result.setP2(orthogonalVector(quad.p2(), quad.p3(), FloatPoint(1, 0)));
+    result.setP3(orthogonalVector(quad.p3(), quad.p4(), FloatPoint(0, 1)));
+    result.setP4(orthogonalVector(quad.p4(), quad.p1(), FloatPoint(-1, 0)));
+    return result;
 }
 
 } // namespace
@@ -77,57 +97,19 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
     if (!m_element)
         return nullptr;
 
-    LayoutObject* layoutObject = m_element->layoutObject();
+    FloatQuad padding, unused;
+    InspectorHighlight::buildNodeQuads(m_element.get(), &unused, &padding, &unused, &unused);
 
-    if (!layoutObject)
-        return nullptr;
-
-    FrameView* containingView = layoutObject->frameView();
-    if (!containingView)
-        return nullptr;
-    if (!layoutObject->isBox() && !layoutObject->isLayoutInline())
-        return nullptr;
-
-    LayoutRect paddingBox;
-
-    if (layoutObject->isBox()) {
-        LayoutBox* layoutBox = toLayoutBox(layoutObject);
-
-        // LayoutBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
-        const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
-        const int horizontalScrollbarHeight = layoutBox->horizontalScrollbarHeight();
-
-        paddingBox = layoutBox->paddingBoxRect();
-        paddingBox.setWidth(paddingBox.width() + verticalScrollbarWidth);
-        paddingBox.setHeight(paddingBox.height() + horizontalScrollbarHeight);
-    } else {
-        LayoutInline* layoutInline = toLayoutInline(layoutObject);
-        LayoutRect borderBox = LayoutRect(layoutInline->linesBoundingBox());
-        paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(), borderBox.y() + layoutInline->borderTop(),
-            borderBox.width() - layoutInline->borderLeft() - layoutInline->borderRight(), borderBox.height() - layoutInline->borderTop() - layoutInline->borderBottom());
-    }
-
-    FloatQuad padding = layoutObject->localToAbsoluteQuad(FloatRect(paddingBox));
-    contentsQuadToViewport(containingView, padding);
-
-    float xLeft = (padding.p1().x() + padding.p4().x()) / 2;
-    float yLeft = (padding.p1().y() + padding.p4().y()) / 2;
-    FloatPoint orthoLeft = orthogonalVector(padding.p4(), padding.p1(), FloatPoint(-1, 0));
-
-    float xRight = (padding.p2().x() + padding.p3().x()) / 2;
-    float yRight = (padding.p2().y() + padding.p3().y()) / 2;
-    FloatPoint orthoRight = orthogonalVector(padding.p2(), padding.p3(), FloatPoint(1, 0));
+    FloatQuad paddingMeans = means(padding);
+    FloatQuad paddingOrthogonalVectors = orthogonalVectors(padding);
 
     RefPtr<JSONObject> object = JSONObject::create();
     RefPtr<JSONArray> anchors = JSONArray::create();
 
-    RefPtr<JSONObject> paddingLeftDescription = createValueDescription("padding-left");
-    if (paddingLeftDescription)
-        anchors->pushObject(createAnchor(xLeft, yLeft, "padding-left", orthoLeft, paddingLeftDescription.release()));
-
-    RefPtr<JSONObject> paddingRightDescription = createValueDescription("padding-right");
-    if (paddingRightDescription)
-        anchors->pushObject(createAnchor(xRight, yRight, "padding-right", orthoRight, paddingRightDescription.release()));
+    appendAnchorFor(anchors.get(), "padding-top", paddingMeans.p1(), paddingOrthogonalVectors.p1());
+    appendAnchorFor(anchors.get(), "padding-right", paddingMeans.p2(), paddingOrthogonalVectors.p2());
+    appendAnchorFor(anchors.get(), "padding-bottom", paddingMeans.p3(), paddingOrthogonalVectors.p3());
+    appendAnchorFor(anchors.get(), "padding-left", paddingMeans.p4(), paddingOrthogonalVectors.p4());
 
     object->setArray("anchors", anchors.release());
     return object.release();
@@ -155,6 +137,13 @@ PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& proper
     object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
     object->setString("unit", "px");
     return object.release();
+}
+
+void LayoutEditor::appendAnchorFor(JSONArray* anchors, const String& propertyName, const FloatPoint& position, const FloatPoint& orthogonalVector) const
+{
+    RefPtr<JSONObject> description = createValueDescription(propertyName);
+    if (description)
+        anchors->pushObject(createAnchor(position, propertyName, orthogonalVector, description.release()));
 }
 
 void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)

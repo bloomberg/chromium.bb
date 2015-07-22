@@ -46,6 +46,7 @@ public:
 
     static bool getBoxModel(Node*, RefPtr<TypeBuilder::DOM::BoxModel>&);
     static InspectorHighlightConfig defaultConfig();
+    static bool buildNodeQuads(Node*, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin);
 
     void appendPath(PassRefPtr<JSONArrayBase> path, const Color& fillColor, const Color& outlineColor);
     void appendQuad(const FloatQuad&, const Color& fillColor, const Color& outlineColor = Color::transparent);
