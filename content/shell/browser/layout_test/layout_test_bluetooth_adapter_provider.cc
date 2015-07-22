@@ -107,9 +107,7 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetEmptyAdapter();
   else if (fake_adapter_name == "FailStartDiscoveryAdapter")
     return GetFailStartDiscoveryAdapter();
-  // TODO(ortuno): Remove MultiDeviceAdapter in follow up patch.
-  else if (fake_adapter_name == "MultiDeviceAdapter" ||
-           fake_adapter_name == "GlucoseHeartRateAdapter")
+  else if (fake_adapter_name == "GlucoseHeartRateAdapter")
     return GetGlucoseHeartRateAdapter();
   else if (fake_adapter_name == "")
     return NULL;
