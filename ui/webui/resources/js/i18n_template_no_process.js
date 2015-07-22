@@ -184,8 +184,10 @@ var i18nTemplate = (function() {
 
     if (mark) {
       var processed = isElement ? [root] : root.children;
-      for (var i = 0; i < processed.length; ++i) {
-        processed[i].setAttribute('i18n-processed', '');
+      if (processed) {
+        for (var i = 0; i < processed.length; ++i) {
+          processed[i].setAttribute('i18n-processed', '');
+        }
       }
     }
   }
