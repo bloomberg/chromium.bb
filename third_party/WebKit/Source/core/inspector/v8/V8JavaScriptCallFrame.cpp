@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "bindings/core/v8/inspector/V8JavaScriptCallFrame.h"
+#include "core/inspector/v8/V8JavaScriptCallFrame.h"
 
-#include "bindings/core/v8/inspector/InspectorWrapper.h"
-#include "core/inspector/JavaScriptCallFrame.h"
+#include "core/inspector/v8/InspectorWrapper.h"
+#include "core/inspector/v8/JavaScriptCallFrame.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <algorithm>

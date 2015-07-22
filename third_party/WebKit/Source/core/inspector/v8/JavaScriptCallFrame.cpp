@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/inspector/JavaScriptCallFrame.h"
+#include "core/inspector/v8/JavaScriptCallFrame.h"
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"

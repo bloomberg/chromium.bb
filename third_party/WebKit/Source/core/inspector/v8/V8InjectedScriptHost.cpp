@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "bindings/core/v8/inspector/V8InjectedScriptHost.h"
+#include "core/inspector/v8/V8InjectedScriptHost.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -18,12 +18,12 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/inspector/InspectorWrapper.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/JavaScriptCallFrame.h"
+#include "core/inspector/v8/InspectorWrapper.h"
+#include "core/inspector/v8/JavaScriptCallFrame.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/JSONValues.h"
 #include "wtf/RefPtr.h"

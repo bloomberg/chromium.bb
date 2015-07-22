@@ -36,7 +36,7 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/PromiseTracker.h"
-#include "core/inspector/ScriptBreakpoint.h"
+#include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/V8DebuggerListener.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"

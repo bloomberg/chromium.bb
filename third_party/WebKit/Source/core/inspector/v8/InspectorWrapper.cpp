@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "bindings/core/v8/inspector/InspectorWrapper.h"
+#include "core/inspector/v8/InspectorWrapper.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "wtf/RefPtr.h"
