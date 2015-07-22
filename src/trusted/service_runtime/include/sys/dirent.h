@@ -9,6 +9,7 @@
 
 #if defined(NACL_IN_TOOLCHAIN_HEADERS)
 #include <sys/types.h>
+#include <stdint.h>
 #else
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #endif

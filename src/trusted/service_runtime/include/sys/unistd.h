@@ -27,6 +27,7 @@ extern "C" {
 #define __need_size_t
 #define __need_ptrdiff_t
 #include <stddef.h>
+#include <stdint.h>
 
 extern char **environ;
 
