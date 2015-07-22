@@ -457,7 +457,12 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   char buffer[kMaxPacketSize];
   SerializedPacket serialized_packet =
       packet_creator_.SerializePacket(buffer, kMaxPacketSize);
-  DCHECK(serialized_packet.packet);
+  if (serialized_packet.packet == nullptr) {
+    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy_
+                << " should_fec_protect_:" << should_fec_protect_;
+    delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
+    return;
+  }
 
   // There may be AckNotifiers interested in this packet.
   serialized_packet.notifiers.swap(ack_notifiers_);

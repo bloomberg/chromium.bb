@@ -550,6 +550,8 @@ enum QuicErrorCode {
   QUIC_PUBLIC_RESETS_POST_HANDSHAKE = 73,
   // Disabled QUIC because of too many timeouts with streams open.
   QUIC_TIMEOUTS_WITH_OPEN_STREAMS = 74,
+  // Closed because we failed to serialize a packet.
+  QUIC_FAILED_TO_SERIALIZE_PACKET = 75,
 
   // Crypto errors.
 
@@ -609,7 +611,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 75,
+  QUIC_LAST_ERROR = 76,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
