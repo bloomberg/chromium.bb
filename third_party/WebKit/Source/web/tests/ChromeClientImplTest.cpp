@@ -94,7 +94,7 @@ protected:
         m_mainFrame->close();
     }
 
-    WebNavigationPolicy getNavigationPolicyWithMouseEvent(int modifiers, WebMouseEvent::Button button, bool asPopup, CreateWindowReason createWindowReason)
+    WebNavigationPolicy getNavigationPolicyWithMouseEvent(int modifiers, WebMouseEvent::Button button, bool asPopup)
     {
         WebMouseEvent event;
         event.modifiers = modifiers;
@@ -102,14 +102,14 @@ protected:
         event.button = button;
         setCurrentInputEventForTest(&event);
         m_chromeClientImpl->setScrollbarsVisible(!asPopup);
-        m_chromeClientImpl->show(NavigationPolicyIgnore, createWindowReason);
+        m_chromeClientImpl->show(NavigationPolicyIgnore);
         setCurrentInputEventForTest(0);
         return m_result;
     }
 
     bool isNavigationPolicyPopup()
     {
-        m_chromeClientImpl->show(NavigationPolicyIgnore, CreatedFromLoadRequest);
+        m_chromeClientImpl->show(NavigationPolicyIgnore);
         return m_result == WebNavigationPolicyNewPopup;
     }
 
@@ -128,7 +128,7 @@ TEST_F(GetNavigationPolicyTest, LeftClick)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, LeftClickPopup)
@@ -137,7 +137,7 @@ TEST_F(GetNavigationPolicyTest, LeftClickPopup)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewPopup,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, ShiftLeftClick)
@@ -146,7 +146,7 @@ TEST_F(GetNavigationPolicyTest, ShiftLeftClick)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewWindow,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, ShiftLeftClickPopup)
@@ -155,7 +155,7 @@ TEST_F(GetNavigationPolicyTest, ShiftLeftClickPopup)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewPopup,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClick)
@@ -168,7 +168,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClick)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClickPopup)
@@ -181,7 +181,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClickPopup)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClick)
@@ -195,7 +195,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClick)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup)
@@ -209,7 +209,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup)
     WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, MiddleClick)
@@ -218,7 +218,7 @@ TEST_F(GetNavigationPolicyTest, MiddleClick)
     bool asPopup = false;
     WebMouseEvent::Button button = WebMouseEvent::ButtonMiddle;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, MiddleClickPopup)
@@ -227,7 +227,7 @@ TEST_F(GetNavigationPolicyTest, MiddleClickPopup)
     bool asPopup = true;
     WebMouseEvent::Button button = WebMouseEvent::ButtonMiddle;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromLoadRequest));
+        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
 
 TEST_F(GetNavigationPolicyTest, NoToolbarsForcesPopup)
@@ -260,15 +260,6 @@ TEST_F(GetNavigationPolicyTest, NotResizableForcesPopup)
     EXPECT_TRUE(isNavigationPolicyPopup());
     m_chromeClientImpl->setResizable(true);
     EXPECT_FALSE(isNavigationPolicyPopup());
-}
-
-TEST_F(GetNavigationPolicyTest, WindowOpenIgnoresInputEvents)
-{
-    int modifiers = 0;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
-    bool asPopup = true;
-    EXPECT_EQ(WebNavigationPolicyNewPopup,
-        getNavigationPolicyWithMouseEvent(modifiers, button, asPopup, CreatedFromWindowOpen));
 }
 
 } // namespace blink

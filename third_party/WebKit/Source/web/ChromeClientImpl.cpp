@@ -249,7 +249,7 @@ void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* pol
     *policy = userPolicy;
 }
 
-WebNavigationPolicy getNavigationPolicy(const WindowFeatures& features, CreateWindowReason createWindowReason)
+WebNavigationPolicy getNavigationPolicy(const WindowFeatures& features)
 {
     // If our default configuration was modified by a script or wasn't
     // created by a user gesture, then show as a popup. Else, let this
@@ -263,18 +263,17 @@ WebNavigationPolicy getNavigationPolicy(const WindowFeatures& features, CreateWi
     NavigationPolicy policy = NavigationPolicyNewForegroundTab;
     if (asPopup)
         policy = NavigationPolicyNewPopup;
-    if (createWindowReason == CreatedFromLoadRequest)
-        updatePolicyForEvent(WebViewImpl::currentInputEvent(), &policy);
+    updatePolicyForEvent(WebViewImpl::currentInputEvent(), &policy);
 
     return static_cast<WebNavigationPolicy>(policy);
 }
 
-WebNavigationPolicy effectiveNavigationPolicy(NavigationPolicy navigationPolicy, const WindowFeatures& features, CreateWindowReason createWindowReason)
+WebNavigationPolicy effectiveNavigationPolicy(NavigationPolicy navigationPolicy, const WindowFeatures& features)
 {
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
-        return getNavigationPolicy(features, createWindowReason);
-    if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(features, createWindowReason) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
+        return getNavigationPolicy(features);
+    if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(features) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
         return WebNavigationPolicyNewForegroundTab;
 
     return policy;
@@ -283,12 +282,12 @@ WebNavigationPolicy effectiveNavigationPolicy(NavigationPolicy navigationPolicy,
 } // namespace
 
 Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
-    NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer, CreateWindowReason createWindowReason)
+    NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer)
 {
     if (!m_webView->client())
         return nullptr;
 
-    WebNavigationPolicy policy = effectiveNavigationPolicy(navigationPolicy, features, createWindowReason);
+    WebNavigationPolicy policy = effectiveNavigationPolicy(navigationPolicy, features);
     ASSERT(frame->document());
     Fullscreen::fullyExitFullscreen(*frame->document());
 
@@ -307,10 +306,10 @@ void ChromeClientImpl::didOverscroll(const FloatSize& unusedDelta, const FloatSi
     m_webView->client()->didOverscroll(unusedDelta, accumulatedRootOverScroll, position, velocity);
 }
 
-void ChromeClientImpl::show(NavigationPolicy navigationPolicy, CreateWindowReason createWindowReason)
+void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
 {
     if (m_webView->client())
-        m_webView->client()->show(effectiveNavigationPolicy(navigationPolicy, m_windowFeatures, createWindowReason));
+        m_webView->client()->show(effectiveNavigationPolicy(navigationPolicy, m_windowFeatures));
 }
 
 void ChromeClientImpl::setToolbarsVisible(bool value)
