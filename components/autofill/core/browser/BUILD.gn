@@ -151,6 +151,7 @@ static_library("browser") {
     "//components/signin/core/common",
     "//components/strings",
     "//components/sync_driver",
+    "//components/variations/net",
     "//components/webdata/common",
     "//google_apis",
     "//net",

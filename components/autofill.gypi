@@ -94,6 +94,7 @@
         'rappor',
         'signin_core_browser',
         'signin_core_common',
+        'variations_http_provider',
         'webdata_common',
       ],
       'sources': [

@@ -14,7 +14,9 @@
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/variations/net/variations_http_header_provider.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlparser.h"
@@ -186,6 +188,11 @@ bool AutofillDownloadManager::StartRequest(
   fetcher->SetUploadData("text/plain", form_xml);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);
+  // Add Chrome experiment state to the request headers.
+  net::HttpRequestHeaders headers;
+  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+      fetcher->GetOriginalURL(), driver_->IsOffTheRecord(), false, &headers);
+  fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
 
   VLOG(1) << "Sending AutofillDownloadManager "
