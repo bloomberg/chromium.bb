@@ -43,7 +43,58 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock> g_download_controller_lock_;
+
+content::WebContents* GetWebContents(int render_process_id,
+                                     int render_view_id) {
+  content::RenderViewHost* render_view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+
+  if (!render_view_host)
+    return nullptr;
+
+  return content::WebContents::FromRenderViewHost(render_view_host);
 }
+
+void CreateContextMenuDownload(int render_process_id,
+                               int render_view_id,
+                               const content::ContextMenuParams& params,
+                               bool is_link,
+                               const std::string& extra_headers,
+                               bool granted) {
+  if (!granted)
+    return;
+
+  content::WebContents* web_contents =
+      GetWebContents(render_process_id, render_view_id);
+  if (!web_contents)
+    return;
+
+  const GURL& url = is_link ? params.link_url : params.src_url;
+  const GURL& referring_url =
+      params.frame_url.is_empty() ? params.page_url : params.frame_url;
+  content::DownloadManagerImpl* dlm =
+      static_cast<content::DownloadManagerImpl*>(
+          content::BrowserContext::GetDownloadManager(
+              web_contents->GetBrowserContext()));
+  scoped_ptr<content::DownloadUrlParameters> dl_params(
+      content::DownloadUrlParameters::FromWebContents(web_contents, url));
+  content::Referrer referrer = content::Referrer::SanitizeForRequest(
+      url,
+      content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
+  dl_params->set_referrer(referrer);
+  if (is_link)
+    dl_params->set_referrer_encoding(params.frame_charset);
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(extra_headers);
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
+    dl_params->add_request_header(it.name(), it.value());
+  if (!is_link && extra_headers.empty())
+    dl_params->set_prefer_cache(true);
+  dl_params->set_prompt(false);
+  dlm->DownloadUrl(dl_params.Pass());
+}
+
+}  // namespace
 
 namespace content {
 
@@ -128,9 +179,11 @@ void DownloadControllerAndroidImpl::CancelDeferredDownload(
 }
 
 void DownloadControllerAndroidImpl::AcquireFileAccessPermission(
-    WebContents* web_contents,
+    int render_process_id,
+    int render_view_id,
     const DownloadControllerAndroid::AcquireFileAccessPermissionCallback& cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
   if (!web_contents) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(cb, false));
@@ -305,7 +358,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
   }
 
   AcquireFileAccessPermission(
-      web_contents,
+      render_process_id, render_view_id,
       base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownloadInternal,
                  base::Unretained(this), render_process_id, render_view_id,
                  info));
@@ -449,17 +502,6 @@ void DownloadControllerAndroidImpl::OnDangerousDownload(DownloadItem* item) {
   }
 }
 
-WebContents* DownloadControllerAndroidImpl::GetWebContents(
-    int render_process_id, int render_view_id) {
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id, render_view_id);
-
-  if (!render_view_host)
-    return NULL;
-
-  return render_view_host->GetDelegate()->GetAsWebContents();
-}
-
 ScopedJavaLocalRef<jobject>
     DownloadControllerAndroidImpl::GetContentViewCoreFromWebContents(
     WebContents* web_contents) {
@@ -488,28 +530,12 @@ DownloadControllerAndroidImpl::JavaObject*
 void DownloadControllerAndroidImpl::StartContextMenuDownload(
     const ContextMenuParams& params, WebContents* web_contents, bool is_link,
     const std::string& extra_headers) {
-  const GURL& url = is_link ? params.link_url : params.src_url;
-  const GURL& referring_url = params.frame_url.is_empty() ?
-      params.page_url : params.frame_url;
-  DownloadManagerImpl* dlm = static_cast<DownloadManagerImpl*>(
-      BrowserContext::GetDownloadManager(web_contents->GetBrowserContext()));
-  scoped_ptr<DownloadUrlParameters> dl_params(
-      DownloadUrlParameters::FromWebContents(web_contents, url));
-  content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url,
-      content::Referrer(referring_url.GetAsReferrer(),
-                        params.referrer_policy));
-  dl_params->set_referrer(referrer);
-  if (is_link)
-    dl_params->set_referrer_encoding(params.frame_charset);
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(extra_headers);
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
-    dl_params->add_request_header(it.name(), it.value());
-  if (!is_link && extra_headers.empty())
-    dl_params->set_prefer_cache(true);
-  dl_params->set_prompt(false);
-  dlm->DownloadUrl(dl_params.Pass());
+  int process_id = web_contents->GetRenderProcessHost()->GetID();
+  int routing_id = web_contents->GetRoutingID();
+  AcquireFileAccessPermission(
+      process_id, routing_id,
+      base::Bind(&CreateContextMenuDownload, process_id, routing_id, params,
+                 is_link, extra_headers));
 }
 
 void DownloadControllerAndroidImpl::DangerousDownloadValidated(
@@ -547,8 +573,7 @@ DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
     url = request->url_chain().back();
   }
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info)
     has_user_gesture = info->HasUserGesture();
 }

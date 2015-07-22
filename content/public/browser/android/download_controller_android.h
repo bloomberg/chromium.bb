@@ -50,7 +50,8 @@ class CONTENT_EXPORT DownloadControllerAndroid {
   // Called to prompt the user for file access permission. When finished,
   // |callback| will be executed.
   virtual void AcquireFileAccessPermission(
-      WebContents* web_contents,
+      int render_process_id,
+      int render_view_id,
       const AcquireFileAccessPermissionCallback& callback) = 0;
 
   // Called by unit test to approve or disapprove file access request.

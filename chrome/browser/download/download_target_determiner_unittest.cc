@@ -47,10 +47,6 @@
 #include "extensions/common/extension.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/download/mock_download_controller_android.h"
-#endif
-
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Ref;
@@ -261,21 +257,12 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
     return download_prefs_.get();
   }
 
-#if defined(OS_ANDROID)
-  chrome::android::MockDownloadControllerAndroid* download_controller() {
-    return &download_controller_;
-  }
-#endif
-
  private:
   scoped_ptr<DownloadPrefs> download_prefs_;
   ::testing::NiceMock<MockDownloadTargetDeterminerDelegate> delegate_;
   NullWebContentsDelegate web_contents_delegate_;
   base::ScopedTempDir test_download_dir_;
   base::FilePath test_virtual_dir_;
-#if defined(OS_ANDROID)
-  chrome::android::MockDownloadControllerAndroid download_controller_;
-#endif
 };
 
 void DownloadTargetDeterminerTest::SetUp() {
@@ -287,17 +274,10 @@ void DownloadTargetDeterminerTest::SetUp() {
   test_virtual_dir_ = test_download_dir().Append(FILE_PATH_LITERAL("virtual"));
   download_prefs_->SetDownloadPath(test_download_dir());
   delegate_.SetupDefaults();
-#if defined(OS_ANDROID)
-  content::DownloadControllerAndroid::SetDownloadControllerAndroid(
-     &download_controller_);
-#endif
 }
 
 void DownloadTargetDeterminerTest::TearDown() {
   download_prefs_.reset();
-#if defined(OS_ANDROID)
-  content::DownloadControllerAndroid::SetDownloadControllerAndroid(nullptr);
-#endif
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
@@ -1173,30 +1153,6 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_PromptAlways) {
   RunTestCasesWithActiveItem(kPromptingTestCases,
                              arraysize(kPromptingTestCases));
 }
-
-#if defined(OS_ANDROID)
-TEST_F(DownloadTargetDeterminerTest,
-       TargetDeterminer_DisapprovePromptForUserPermission) {
-  const DownloadTestCase kUserPermissionTestCases[] = {
-    {
-      // 0: Automatic Safe
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/foo.txt", "text/plain",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL(""),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_LOCAL_PATH
-    },
-  };
-  content::DownloadControllerAndroid::Get()->
-      SetApproveFileAccessRequestForTesting(false);
-  RunTestCasesWithActiveItem(kUserPermissionTestCases,
-                             arraysize(kUserPermissionTestCases));
-}
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
 // These test cases are run with "Prompt for download" user preference set to

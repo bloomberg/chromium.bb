@@ -38,7 +38,8 @@ void MockDownloadControllerAndroid::DangerousDownloadValidated(
 }
 
 void MockDownloadControllerAndroid::AcquireFileAccessPermission(
-    content::WebContents* web_contents,
+    int render_process_id,
+    int render_view_id,
     const DownloadControllerAndroid::AcquireFileAccessPermissionCallback& cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(cb, approve_file_access_request_));

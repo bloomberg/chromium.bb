@@ -93,7 +93,6 @@ class DownloadTargetDeterminer
   // Result indicating how the workflow should proceed. The loop ends when a
   // handler returns COMPLETE.
   enum State {
-    STATE_PROMPT_USER_FOR_PERMISSION,
     STATE_GENERATE_TARGET_PATH,
     STATE_NOTIFY_EXTENSIONS,
     STATE_RESERVE_VIRTUAL_PATH,
@@ -148,17 +147,6 @@ class DownloadTargetDeterminer
   void DoLoop();
 
   // === Main workflow ===
-
-  // Prompts user for file access if necessary.
-  // Next state:
-  // - STATE_GENERATE_TARGET_PATH.
-  Result DoPromptUserForPermission();
-
-#if defined(OS_ANDROID)
-  // Callback invoked after the file access prompt completes. Cancels the
-  // download if the user doesn't grant file access.
-  void PromptUserForPermissionDone(bool granted);
-#endif
 
   // Generates an initial target path. This target is based only on the state of
   // the download item.

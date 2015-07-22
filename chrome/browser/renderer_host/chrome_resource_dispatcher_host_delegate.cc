@@ -474,12 +474,9 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-    throttles->push_back(
-        new DownloadResourceThrottle(download_request_limiter_.get(),
-                                     child_id,
-                                     route_id,
-                                     request->url(),
-                                     request->method()));
+    throttles->push_back(new DownloadResourceThrottle(
+        download_request_limiter_, child_id, route_id, request->url(),
+        request->method()));
 #if defined(OS_ANDROID)
     throttles->push_back(
         new chrome::InterceptDownloadResourceThrottle(

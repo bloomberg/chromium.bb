@@ -36,7 +36,8 @@ class MockDownloadControllerAndroid
       content::WebContents* web_contents, int download_id,
       bool accept) override;
   void AcquireFileAccessPermission(
-      content::WebContents* web_contents,
+      int render_process_id,
+      int render_view_id,
       const AcquireFileAccessPermissionCallback& callback) override;
   void SetApproveFileAccessRequestForTesting(bool approve) override;
 

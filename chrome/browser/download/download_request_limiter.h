@@ -181,13 +181,12 @@ class DownloadRequestLimiter
   // anyway.
   DownloadStatus GetDownloadStatus(content::WebContents* tab);
 
-  // Updates the state of the page as necessary and notifies the callback.
-  // WARNING: both this call and the callback are invoked on the io thread.
-  void CanDownloadOnIOThread(int render_process_host_id,
-                             int render_view_id,
-                             const GURL& url,
-                             const std::string& request_method,
-                             const Callback& callback);
+  // Check if download can proceed and notifies the callback on UI thread.
+  void CanDownload(int render_process_host_id,
+                   int render_view_id,
+                   const GURL& url,
+                   const std::string& request_method,
+                   const Callback& callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
@@ -209,14 +208,6 @@ class DownloadRequestLimiter
       content::WebContents* originating_web_contents,
       bool create);
 
-  // CanDownloadOnIOThread invokes this on the UI thread. This determines the
-  // tab and invokes CanDownloadImpl.
-  void CanDownload(int render_process_host_id,
-                   int render_view_id,
-                   const GURL& url,
-                   const std::string& request_method,
-                   const Callback& callback);
-
   // Does the work of updating the download status on the UI thread and
   // potentially prompting the user.
   void CanDownloadImpl(content::WebContents* originating_contents,
@@ -229,10 +220,6 @@ class DownloadRequestLimiter
                             const std::string& request_method,
                             const Callback& orig_callback,
                             bool allow);
-
-  // Invoked on the UI thread. Schedules a call to NotifyCallback on the io
-  // thread.
-  void ScheduleNotification(const Callback& callback, bool allow);
 
   // Removes the specified TabDownloadState from the internal map and deletes
   // it. This has the effect of resetting the status for the tab to

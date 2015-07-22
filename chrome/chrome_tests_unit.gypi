@@ -86,6 +86,7 @@
       'browser/download/download_query_unittest.cc',
       'browser/download/download_request_infobar_delegate_unittest.cc',
       'browser/download/download_request_limiter_unittest.cc',
+      'browser/download/download_resource_throttle_unittest.cc',
       'browser/download/download_status_updater_unittest.cc',
       'browser/download/download_target_determiner_unittest.cc',
       'browser/download/download_ui_controller_unittest.cc',

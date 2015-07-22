@@ -28,10 +28,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/download/mock_download_controller_android.h"
-#endif
-
 using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::Ref;
@@ -170,9 +166,6 @@ class ChromeDownloadManagerDelegateTest
   scoped_ptr<content::MockDownloadManager> download_manager_;
   scoped_ptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
-#if defined(OS_ANDROID)
-  chrome::android::MockDownloadControllerAndroid download_controller_;
-#endif
 
 };
 
@@ -191,18 +184,11 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
   SetDefaultDownloadPath(test_download_dir_.path());
-#if defined(OS_ANDROID)
-  content::DownloadControllerAndroid::SetDownloadControllerAndroid(
-     &download_controller_);
-#endif
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
   base::RunLoop().RunUntilIdle();
   delegate_->Shutdown();
-#if defined(OS_ANDROID)
-  content::DownloadControllerAndroid::SetDownloadControllerAndroid(nullptr);
-#endif
   ChromeRenderViewHostTestHarness::TearDown();
 }
 

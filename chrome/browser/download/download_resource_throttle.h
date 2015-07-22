@@ -22,7 +22,28 @@ class DownloadResourceThrottle
     : public content::ResourceThrottle,
       public base::SupportsWeakPtr<DownloadResourceThrottle> {
  public:
-  DownloadResourceThrottle(DownloadRequestLimiter* limiter,
+  // Information passed between callbacks to check whether download can proceed.
+  struct DownloadRequestInfo {
+    DownloadRequestInfo(
+        scoped_refptr<DownloadRequestLimiter> limiter,
+        int render_process_id,
+        int render_view_id,
+        const GURL& url,
+        const std::string& request_method,
+        const DownloadRequestLimiter::Callback& continue_callback);
+    ~DownloadRequestInfo();
+
+    scoped_refptr<DownloadRequestLimiter> limiter;
+    int render_process_id;
+    int render_view_id;
+    GURL url;
+    std::string request_method;
+    DownloadRequestLimiter::Callback continue_callback;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfo);
+  };
+
+  DownloadResourceThrottle(scoped_refptr<DownloadRequestLimiter> limiter,
                            int render_process_id,
                            int render_view_id,
                            const GURL& url,
@@ -35,11 +56,12 @@ class DownloadResourceThrottle
   void WillProcessResponse(bool* defer) override;
   const char* GetNameForLogging() const override;
 
+  void ContinueDownload(bool allow);
+
  private:
   ~DownloadResourceThrottle() override;
 
   void WillDownload(bool* defer);
-  void ContinueDownload(bool allow);
 
   // Set to true when we are querying the DownloadRequestLimiter.
   bool querying_limiter_;

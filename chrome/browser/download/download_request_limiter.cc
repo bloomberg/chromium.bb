@@ -247,8 +247,11 @@ void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
     change_status = true;
   }
 
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    host_->ScheduleNotification(callbacks[i], allow);
+  for (const auto& callback : callbacks) {
+    // When callback runs, it can cause the WebContents to be destroyed.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, allow));
+  }
 
   if (change_status)
     set_download_status(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD);
@@ -277,22 +280,6 @@ DownloadRequestLimiter::DownloadStatus
 DownloadRequestLimiter::GetDownloadStatus(content::WebContents* web_contents) {
   TabDownloadState* state = GetDownloadState(web_contents, NULL, false);
   return state ? state->download_status() : ALLOW_ONE_DOWNLOAD;
-}
-
-void DownloadRequestLimiter::CanDownloadOnIOThread(
-    int render_process_host_id,
-    int render_view_id,
-    const GURL& url,
-    const std::string& request_method,
-    const Callback& callback) {
-  // This is invoked on the IO thread. Schedule the task to run on the UI
-  // thread so that we can query UI state.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadRequestLimiter::CanDownload, this,
-                 render_process_host_id, render_view_id, url,
-                 request_method, callback));
 }
 
 DownloadRequestLimiter::TabDownloadState*
@@ -325,12 +312,12 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
   if (!originating_contents) {
     // The WebContents was closed, don't allow the download.
-    ScheduleNotification(callback, false);
+    callback.Run(false);
     return;
   }
 
   if (!originating_contents->GetDelegate()) {
-    ScheduleNotification(callback, false);
+    callback.Run(false);
     return;
   }
 
@@ -360,7 +347,7 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
   content::WebContents* originating_contents =
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
   if (!originating_contents || !allow) {
-    ScheduleNotification(orig_callback, false);
+    orig_callback.Run(false);
     return;
   }
 
@@ -388,18 +375,18 @@ void DownloadRequestLimiter::CanDownloadImpl(
       if (state->download_count() && !(state->download_count() %
             DownloadRequestLimiter::kMaxDownloadsAtOnce))
         state->set_download_status(PROMPT_BEFORE_DOWNLOAD);
-      ScheduleNotification(callback, true);
+      callback.Run(true);
       state->increment_download_count();
       break;
 
     case ALLOW_ONE_DOWNLOAD:
       state->set_download_status(PROMPT_BEFORE_DOWNLOAD);
-      ScheduleNotification(callback, true);
+      callback.Run(true);
       state->increment_download_count();
       break;
 
     case DOWNLOADS_NOT_ALLOWED:
-      ScheduleNotification(callback, false);
+      callback.Run(false);
       break;
 
     case PROMPT_BEFORE_DOWNLOAD: {
@@ -419,7 +406,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
                   originating_contents);
           if (settings)
             settings->SetDownloadsBlocked(false);
-          ScheduleNotification(callback, true);
+          callback.Run(true);
           state->increment_download_count();
           return;
         }
@@ -429,7 +416,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
                   originating_contents);
           if (settings)
             settings->SetDownloadsBlocked(true);
-          ScheduleNotification(callback, false);
+          callback.Run(false);
           return;
         }
         case CONTENT_SETTING_DEFAULT:
@@ -449,12 +436,6 @@ void DownloadRequestLimiter::CanDownloadImpl(
     default:
       NOTREACHED();
   }
-}
-
-void DownloadRequestLimiter::ScheduleNotification(const Callback& callback,
-                                                  bool allow) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, allow));
 }
 
 void DownloadRequestLimiter::Remove(TabDownloadState* state,

@@ -56,7 +56,8 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
 
   // DownloadControllerAndroid implementation.
   void AcquireFileAccessPermission(
-      WebContents* web_contents,
+      int render_process_id,
+      int render_view_id,
       const AcquireFileAccessPermissionCallback& callback) override;
 
  private:
@@ -135,8 +136,6 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
 
   base::android::ScopedJavaLocalRef<jobject> GetContentViewCoreFromWebContents(
       WebContents* web_contents);
-
-  WebContents* GetWebContents(int render_process_id, int render_view_id);
 
   // Creates Java object if it is not created already and returns it.
   JavaObject* GetJavaObject();
