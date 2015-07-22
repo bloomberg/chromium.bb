@@ -410,6 +410,7 @@ def UpdateClang(args):
       try:
         DownloadUrl(cds_full_url, f)
         f.seek(0)
+        # TODO(thakis): Delete LLVM_BUILD_DIR before extracting.
         tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
         print 'clang %s unpacked' % PACKAGE_VERSION
         # Download the gold plugin if requested to by an environment variable.
