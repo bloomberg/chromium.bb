@@ -30,9 +30,12 @@
 
 namespace web {
 
-// An abstract class of tests that need to create real WebControllers that can
-// be loaded with test HTML and JavaScripts. Concrete subclasses override
+// An abstract test fixture that sets up a WebControllers that can be loaded
+// with test HTML and JavaScripts. Concrete subclasses override
 // |CreateWebController| specifying the test WebController object.
+// DEPRECATED. Please use WebTestWithWebController instead.
+// TODO(shreyasv): Remove this after all clients have stopped using it.
+// crbug.com/512910.
 class WebTestBase : public PlatformTest,
                     public base::MessageLoop::TaskObserver {
  public:
@@ -88,11 +91,22 @@ class WebTestBase : public PlatformTest,
 
 #pragma mark -
 
-// A concrete test class that is needed to create a real
-// CRWUIWebViewWebController.
-class UIWebViewWebTest : public WebTestBase {
+// A test fixture that sets up a WebControllers that can be loaded with test
+// HTML and JavaScripts. Concrete subclasses override |CreateWebController|
+// specifying the test WebController object.
+typedef WebTestBase WebTestWithWebController;
+
+#pragma mark -
+
+// A test fixtures thats creates a CRWUIWebViewWebController for testing.
+// DEPRECATED. Please use WebTestWithUIWebViewWebController instead.
+// TODO(shreyasv): Remove this once all clients have moved over.
+// crbug.com/512910.
+class UIWebViewWebTest : public WebTestWithWebController {
  protected:
+  // WebTestWithWebController methods.
   CRWWebController* CreateWebController() override;
+
   // Invokes JS->ObjC messages directly on the web controller, registering a
   // human interaction if userIsInteraction==YES. |commands| should be a
   // stringified message queue.
@@ -103,12 +117,25 @@ class UIWebViewWebTest : public WebTestBase {
 
 #pragma mark -
 
-// A concrete test class that is needed to create a real
-// CRWWKWebViewWebController.
-class WKWebViewWebTest : public WebTestBase {
+// A test fixtures thats creates a CRWUIWebViewWebController for testing.
+typedef UIWebViewWebTest WebTestWithUIWebViewWebController;
+
+#pragma mark -
+
+// A test fixtures thats creates a CRWWKWebViewWebController for testing.
+// DEPRECATED. Please use WebTestWithWKWebViewWebController instead.
+// TODO(shreyasv): Remove this once all clients have moved over.
+// crbug.com/512910.
+class WKWebViewWebTest : public WebTestWithWebController {
  protected:
+  // WebTestWithWebController methods.
   CRWWebController* CreateWebController() override;
 };
+
+#pragma mark -
+
+// A test fixtures thats creates a CRWWKWebViewWebController for testing.
+typedef WKWebViewWebTest WebTestWithWKWebViewWebController;
 
 }  // namespace web
 

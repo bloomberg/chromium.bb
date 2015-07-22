@@ -44,11 +44,11 @@ class CRWWebControllerObserverTest : public WebTestT {
 };
 
 // Concrete test fixture to test UIWebView-based web controller observing.
-typedef CRWWebControllerObserverTest<web::UIWebViewWebTest>
+typedef CRWWebControllerObserverTest<web::WebTestWithUIWebViewWebController>
     CRWUIWebViewWebControllerObserverTest;
 
 // Concrete test fixture to test WKWebView-based web controller observing.
-typedef CRWWebControllerObserverTest<web::WKWebViewWebTest>
+typedef CRWWebControllerObserverTest<web::WebTestWithWKWebViewWebController>
     CRWWKWebViewWebControllerObserverTest;
 
 WEB_TEST_F(CRWUIWebViewWebControllerObserverTest,

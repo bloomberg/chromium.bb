@@ -31,10 +31,12 @@ template <typename WebTestT>
 class CommonJsTest : public WebTestT {};
 
 // Concrete test fixture to test core.js using UIWebView-based web controller.
-typedef CommonJsTest<web::UIWebViewWebTest> CommonJSUIWebViewTest;
+typedef CommonJsTest<web::WebTestWithUIWebViewWebController>
+    CommonJSUIWebViewTest;
 
 // Concrete test fixture to test core.js using WKWebView-based web controller.
-typedef CommonJsTest<web::WKWebViewWebTest> CommonJSWKWebViewTest;
+typedef CommonJsTest<web::WebTestWithWKWebViewWebController>
+    CommonJSWKWebViewTest;
 
 WEB_TEST_F(CommonJSUIWebViewTest, CommonJSWKWebViewTest, Foo) {
   this->LoadHtml(@"<html><body>"

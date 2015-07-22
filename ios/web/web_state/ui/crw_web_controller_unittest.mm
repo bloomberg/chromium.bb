@@ -341,7 +341,7 @@ class WebControllerTest : public WebTestT {
 };
 
 class CRWUIWebViewWebControllerTest
-    : public WebControllerTest<web::UIWebViewWebTest> {
+    : public WebControllerTest<web::WebTestWithUIWebViewWebController> {
  protected:
   UIView* CreateMockWebView() const override {
     id result = [[OCMockObject mockForClass:[UIWebView class]] retain];
@@ -367,11 +367,11 @@ class CRWUIWebViewWebControllerTest
 };
 
 class CRWWKWebViewWebControllerTest
-    : public WebControllerTest<web::WKWebViewWebTest> {
+    : public WebControllerTest<web::WebTestWithWKWebViewWebController> {
  protected:
   void SetUp() override {
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    WebControllerTest<web::WKWebViewWebTest>::SetUp();
+    WebControllerTest<web::WebTestWithWKWebViewWebController>::SetUp();
   }
   UIView* CreateMockWebView() const override {
     id result = [[OCMockObject mockForClass:[WKWebView class]] retain];
@@ -896,10 +896,12 @@ TEST_F(CRWWKWebViewWebControllerTest, SSLError) {
 #endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 // None of the |CRWUIWebViewWebControllerTest| setup is needed;
-typedef web::UIWebViewWebTest CRWUIWebControllerPageDialogsOpenPolicyTest;
+typedef web::WebTestWithUIWebViewWebController
+    CRWUIWebControllerPageDialogsOpenPolicyTest;
 
 // None of the |CRWWKWebViewWebControllerTest| setup is needed;
-typedef web::WKWebViewWebTest CRWWKWebControllerPageDialogsOpenPolicyTest;
+typedef web::WebTestWithWKWebViewWebController
+    CRWWKWebControllerPageDialogsOpenPolicyTest;
 
 WEB_TEST_F(CRWUIWebControllerPageDialogsOpenPolicyTest,
            CRWWKWebControllerPageDialogsOpenPolicyTest,
@@ -919,7 +921,8 @@ WEB_TEST_F(CRWUIWebControllerPageDialogsOpenPolicyTest,
 
 // A separate test class, as none of the |CRWUIWebViewWebControllerTest| setup
 // is needed;
-class CRWUIWebControllerPageScrollStateTest : public web::UIWebViewWebTest {
+class CRWUIWebControllerPageScrollStateTest
+    : public web::WebTestWithUIWebViewWebController {
  protected:
   // Returns a web::PageDisplayState that will scroll a UIWebView to
   // |scrollOffset| and zoom the content by |relativeZoomScale|.
@@ -938,7 +941,8 @@ class CRWUIWebControllerPageScrollStateTest : public web::UIWebViewWebTest {
 
 // A separate test class, as none of the |CRWUIWebViewWebControllerTest| setup
 // is needed;
-class CRWWKWebControllerPageScrollStateTest : public web::WKWebViewWebTest {
+class CRWWKWebControllerPageScrollStateTest
+    : public web::WebTestWithWKWebViewWebController {
  protected:
   // Returns a web::PageDisplayState that will scroll a WKWebView to
   // |scrollOffset| and zoom the content by |relativeZoomScale|.
@@ -1179,10 +1183,12 @@ TEST_F(WebControllerJSEvaluationTest, JavaScriptEvaluationNilHandler) {
 }
 
 // Real UIWebView is required for JSEvaluationTest.
-typedef web::UIWebViewWebTest CRWUIWebControllerJSEvaluationTest;
+typedef web::WebTestWithUIWebViewWebController
+    CRWUIWebControllerJSEvaluationTest;
 
 // Real WKWebView is required for JSEvaluationTest.
-typedef web::WKWebViewWebTest CRWWKWebControllerJSEvaluationTest;
+typedef web::WebTestWithWKWebViewWebController
+    CRWWKWebControllerJSEvaluationTest;
 
 // Tests that a script correctly evaluates to string.
 WEB_TEST_F(CRWUIWebControllerJSEvaluationTest,
@@ -1213,10 +1219,11 @@ WEB_TEST_F(CRWUIWebControllerJSEvaluationTest,
 // A separate test class is used for testing the keyboard dismissal, as none of
 // the setup in |CRWUIWebViewWebControllerTest| is needed; keyboard appearance
 // is tracked by the KeyboardAppearanceListener.
-class WebControllerKeyboardTest : public web::UIWebViewWebTest {
+class WebControllerKeyboardTest
+    : public web::WebTestWithUIWebViewWebController {
  protected:
   void SetUp() override {
-    UIWebViewWebTest::SetUp();
+    web::WebTestWithUIWebViewWebController::SetUp();
     // Close any outstanding alert boxes.
     ui::test::uiview_utils::CancelAlerts();
 
@@ -1293,8 +1300,8 @@ TEST_F(CRWWKWebViewWebControllerTest, WebURLWithTrustLevel) {
 
 // A separate test class, as none of the |CRWUIWebViewWebControllerTest| setup
 // is needed;
-typedef web::UIWebViewWebTest CRWUIWebControllerObserversTest;
-typedef web::WKWebViewWebTest CRWWKWebControllerObserversTest;
+typedef web::WebTestWithUIWebViewWebController CRWUIWebControllerObserversTest;
+typedef web::WebTestWithWKWebViewWebController CRWWKWebControllerObserversTest;
 
 // Tests that CRWWebControllerObservers are called.
 WEB_TEST_F(CRWUIWebControllerObserversTest,
@@ -1329,11 +1336,12 @@ WEB_TEST_F(CRWUIWebControllerObserversTest,
 };
 
 // Test fixture for window.open tests.
-class CRWWKWebControllerWindowOpenTest : public web::WKWebViewWebTest {
+class CRWWKWebControllerWindowOpenTest
+    : public web::WebTestWithWKWebViewWebController {
  protected:
   void SetUp() override {
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    WKWebViewWebTest::SetUp();
+    web::WebTestWithWKWebViewWebController::SetUp();
 
     // Configure web delegate.
     delegate_.reset([[MockInteractionLoader alloc]
@@ -1362,7 +1370,7 @@ class CRWWKWebControllerWindowOpenTest : public web::WKWebViewWebTest {
     [webController_ setDelegate:nil];
     [child_ close];
 
-    WKWebViewWebTest::TearDown();
+    web::WebTestWithWKWebViewWebController::TearDown();
   }
   // Executes JavaScript that opens a new window and returns evaluation result
   // as a string.
@@ -1475,11 +1483,12 @@ TEST_F(CRWWKWebControllerWindowOpenTest, BlockPopup) {
 };
 
 // Fixture class to test WKWebView crashes.
-class CRWWKWebControllerWebProcessTest : public web::WKWebViewWebTest {
+class CRWWKWebControllerWebProcessTest
+    : public web::WebTestWithWKWebViewWebController {
  protected:
   void SetUp() override {
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    WKWebViewWebTest::SetUp();
+    web::WebTestWithWKWebViewWebController::SetUp();
     webView_.reset(web::CreateTerminatedWKWebView());
     base::scoped_nsobject<TestWebViewContentView> webViewContentView(
         [[TestWebViewContentView alloc]
@@ -1507,7 +1516,7 @@ TEST_F(CRWWKWebControllerWebProcessTest, Crash) {
 
 // Tests that WKWebView does not crash if deallocation happens during JavaScript
 // evaluation.
-typedef web::WKWebViewWebTest DeallocationDuringJSEvaluation;
+typedef web::WebTestWithWKWebViewWebController DeallocationDuringJSEvaluation;
 TEST_F(DeallocationDuringJSEvaluation, NoCrash) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 

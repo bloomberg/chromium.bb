@@ -68,10 +68,10 @@ class CoreJsTest : public WebTestT {
 };
 
 // Concrete test fixture to test core.js using UIWebView-based web controller.
-typedef CoreJsTest<web::UIWebViewWebTest> CoreJSUIWebViewTest;
+typedef CoreJsTest<web::WebTestWithUIWebViewWebController> CoreJSUIWebViewTest;
 
 // Concrete test fixture to test core.js using WKWebView-based web controller.
-typedef CoreJsTest<web::WKWebViewWebTest> CoreJSWKWebViewTest;
+typedef CoreJsTest<web::WebTestWithWKWebViewWebController> CoreJSWKWebViewTest;
 
 WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, GetImageUrlAtPoint) {
   NSString* htmlForImage =

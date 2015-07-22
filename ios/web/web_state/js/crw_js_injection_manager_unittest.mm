@@ -176,17 +176,17 @@ class JsInjectionManagerTest : public WebTestT {
 };
 
 // Concrete test fixture to test UIWebView-based web controller injection.
-typedef JsInjectionManagerTest<web::UIWebViewWebTest>
+typedef JsInjectionManagerTest<web::WebTestWithUIWebViewWebController>
     JsInjectionManagerUIWebViewTest;
 
 // Concrete test fixture to test WKWebView-based web controller injection.
-class JsInjectionManagerWKWebViewTest :
-    public JsInjectionManagerTest<web::WKWebViewWebTest> {
+class JsInjectionManagerWKWebViewTest
+    : public JsInjectionManagerTest<web::WebTestWithWKWebViewWebController> {
  protected:
   void SetUp() override {
     // SetUp crashes on WKWebView creation if running on iOS7.
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    JsInjectionManagerTest<web::WKWebViewWebTest>::SetUp();
+    JsInjectionManagerTest<web::WebTestWithWKWebViewWebController>::SetUp();
   }
 };
 
