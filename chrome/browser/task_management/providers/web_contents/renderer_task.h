@@ -8,6 +8,8 @@
 #include "chrome/browser/task_management/providers/task.h"
 #include "content/public/browser/navigation_entry.h"
 
+class ProcessResourceUsage;
+
 namespace content {
 class RenderProcessHost;
 class WebContents;
@@ -71,6 +73,11 @@ class RendererTask : public Task {
 
   // The render process host of the task this object represents.
   content::RenderProcessHost* render_process_host_;
+
+  // The Mojo service wrapper that will provider with the V8 memory usage and
+  // the WebCache resource stats of the render process represented by this
+  // object.
+  scoped_ptr<ProcessResourceUsage> renderer_resources_sampler_;
 
   // The unique ID of the RenderProcessHost.
   const int render_process_id_;
