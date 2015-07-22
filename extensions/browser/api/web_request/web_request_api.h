@@ -85,8 +85,6 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(WebRequestAPI);
 };
 
-}  // namespace extensions
-
 // This class observes network events and routes them to the appropriate
 // extensions listening to those events. All methods must be called on the IO
 // thread unless otherwise specified.
@@ -555,5 +553,7 @@ class WebRequestHandlerBehaviorChangedFunction
   void OnQuotaExceeded(const std::string& error) override;
   bool RunSync() override;
 };
+
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_H_

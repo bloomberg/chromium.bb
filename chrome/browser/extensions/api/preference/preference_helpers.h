@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/common/permissions/permission_set.h"
 
@@ -35,13 +36,13 @@ const char* GetLevelOfControl(
 // key-value for the level of control the extension has over |browser_pref| is
 // injected into the first item of |args|, which must be of type
 // DictionaryValue.
-void DispatchEventToExtensions(
-    Profile* profile,
-    const std::string& event_name,
-    base::ListValue* args,
-    extensions::APIPermission::ID permission,
-    bool incognito,
-    const std::string& browser_pref);
+void DispatchEventToExtensions(Profile* profile,
+                               events::HistogramValue histogram_value,
+                               const std::string& event_name,
+                               base::ListValue* args,
+                               extensions::APIPermission::ID permission,
+                               bool incognito,
+                               const std::string& browser_pref);
 
 }  // namespace preference_helpers
 }  // namespace extensions

@@ -17,6 +17,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 namespace base {
 class ListValue;
@@ -68,7 +69,8 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
       content::RenderProcessHost* rph,
       content::RenderProcessHost::RendererClosedDetails* details);
 
-  void DispatchEvent(const std::string& event_name,
+  void DispatchEvent(events::HistogramValue histogram_value,
+                     const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);
 
   // Determines whether there is a registered listener for the specified event.

@@ -82,13 +82,13 @@ const char* GetLevelOfControl(
   return kControlledByOtherExtensions;
 }
 
-void DispatchEventToExtensions(
-    Profile* profile,
-    const std::string& event_name,
-    base::ListValue* args,
-    APIPermission::ID permission,
-    bool incognito,
-    const std::string& browser_pref) {
+void DispatchEventToExtensions(Profile* profile,
+                               events::HistogramValue histogram_value,
+                               const std::string& event_name,
+                               base::ListValue* args,
+                               APIPermission::ID permission,
+                               bool incognito,
+                               const std::string& browser_pref) {
   EventRouter* router = EventRouter::Get(profile);
   if (!router || !router->HasEventListener(event_name))
     return;
@@ -127,7 +127,7 @@ void DispatchEventToExtensions(
 
       scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
       scoped_ptr<Event> event(
-          new Event(events::UNKNOWN, event_name, args_copy.Pass()));
+          new Event(histogram_value, event_name, args_copy.Pass()));
       event->restrict_to_browser_context = restrict_to_profile;
       router->DispatchEventToExtension(extension->id(), event.Pass());
     }

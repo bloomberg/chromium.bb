@@ -282,10 +282,12 @@ ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 }
 
 void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
   g_browser_process->extension_event_router_forwarder()
-      ->BroadcastEventToRenderers(event_name, args.Pass(), GURL());
+      ->BroadcastEventToRenderers(histogram_value, event_name, args.Pass(),
+                                  GURL());
 }
 
 net::NetLog* ChromeExtensionsBrowserClient::GetNetLog() {

@@ -145,8 +145,19 @@ void ChromeDirectSettingAPI::OnPrefChanged(
       const std::string& extension_id = extension->id();
       if (router->ExtensionHasEventListener(extension_id, event_name)) {
         scoped_ptr<base::ListValue> args_copy(args.DeepCopy());
+        // TODO(kalman): Have a histogram value for each pref type.
+        // This isn't so important for the current use case of these
+        // histograms, which is to track which event types are waking up event
+        // pages, or which are delivered to persistent background pages. Simply
+        // "a setting changed" is enough detail for that. However if we try to
+        // use these histograms for any fine-grained logic (like removing the
+        // string event name altogether), or if we discover this event is
+        // firing a lot and want to understand that better, then this will need
+        // to change.
+        events::HistogramValue histogram_value =
+            events::TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE;
         scoped_ptr<Event> event(
-            new Event(events::UNKNOWN, event_name, args_copy.Pass()));
+            new Event(histogram_value, event_name, args_copy.Pass()));
         router->DispatchEventToExtension(extension_id, event.Pass());
       }
     }

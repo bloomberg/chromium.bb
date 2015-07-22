@@ -360,6 +360,10 @@ enum HistogramValue {
   CAST_CHANNEL_ON_ERROR,
   SCREENLOCK_PRIVATE_ON_CHANGED,
   SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED,
+  TYPES_CHROME_SETTING_ON_CHANGE,
+  TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE,
+  WEB_VIEW_INTERNAL_ON_MESSAGE,  // TODO(kalman): where are the rest of the
+                                 // webview events?
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

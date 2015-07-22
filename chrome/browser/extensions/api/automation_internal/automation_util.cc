@@ -116,11 +116,12 @@ void PopulateNodeData(const ui::AXNodeData& node_data,
 }
 
 void DispatchEventInternal(content::BrowserContext* context,
+                           events::HistogramValue histogram_value,
                            const std::string& event_name,
                            scoped_ptr<base::ListValue> args) {
   if (context && EventRouter::Get(context)) {
     scoped_ptr<Event> event(
-        new Event(events::UNKNOWN, event_name, args.Pass()));
+        new Event(histogram_value, event_name, args.Pass()));
     event->restrict_to_browser_context = context;
     EventRouter::Get(context)->BroadcastEvent(event.Pass());
   }
@@ -188,7 +189,7 @@ void DispatchAccessibilityEventsToAutomation(
     // collection of tree updates over (to the extension); see
     // |AccessibilityHostMsg_EventParams| and |AccessibilityHostMsg_Events|.
     DispatchEventInternal(
-        browser_context,
+        browser_context, events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_EVENT,
         api::automation_internal::OnAccessibilityEvent::kEventName,
         api::automation_internal::OnAccessibilityEvent::Create(
             ax_event_params));
@@ -203,6 +204,7 @@ void DispatchTreeDestroyedEventToAutomation(
       process_id, routing_id);
   DispatchEventInternal(
       browser_context,
+      events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
   AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(tree_id);

@@ -23,6 +23,7 @@
 #include "components/storage_monitor/media_storage_util.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
@@ -73,6 +74,7 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>;
 
   void DispatchEventToExtension(const std::string& extension_id,
+                                events::HistogramValue histogram_value,
                                 const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args);
 

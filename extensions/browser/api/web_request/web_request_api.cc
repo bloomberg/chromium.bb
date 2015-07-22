@@ -69,20 +69,15 @@ using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
 using content::ResourceType;
-using extensions::ErrorUtils;
-using extensions::Extension;
-using extensions::InfoMap;
-using extensions::Feature;
-using extensions::RulesRegistryService;
-using extensions::Warning;
-using extensions::WarningService;
-using extensions::WarningSet;
 
-namespace activitylog = activity_log_web_request_constants;
+namespace activity_log = activity_log_web_request_constants;
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
-namespace web_request = extensions::core_api::web_request;
-namespace declarative_keys = extensions::declarative_webrequest_constants;
+
+namespace extensions {
+
+namespace declarative_keys = declarative_webrequest_constants;
+namespace web_request = core_api::web_request;
 
 namespace {
 
@@ -181,14 +176,13 @@ void ExtractRequestRoutingInfo(net::URLRequest* request,
 // a <webview> guest process or not. If it is from a <webview> guest process,
 // then |web_view_info| is returned with information about the instance ID
 // that uniquely identifies the <webview> and its embedder.
-bool GetWebViewInfo(
-    net::URLRequest* request,
-    extensions::WebViewRendererState::WebViewInfo* web_view_info) {
+bool GetWebViewInfo(net::URLRequest* request,
+                    WebViewRendererState::WebViewInfo* web_view_info) {
   int render_process_host_id = -1;
   int routing_id = -1;
   ExtractRequestRoutingInfo(request, &render_process_host_id, &routing_id);
-  return extensions::WebViewRendererState::GetInstance()->
-      GetInfo(render_process_host_id, routing_id, web_view_info);
+  return WebViewRendererState::GetInstance()->GetInfo(
+      render_process_host_id, routing_id, web_view_info);
 }
 
 void ExtractRequestInfoDetails(net::URLRequest* request,
@@ -229,11 +223,11 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
   out->Set(keys::kRequestBodyKey, request_body);
 
   // Get the data presenters, ordered by how specific they are.
-  extensions::ParsedDataPresenter parsed_data_presenter(*request);
-  extensions::RawDataPresenter raw_data_presenter;
-  extensions::UploadDataPresenter* const presenters[] = {
-    &parsed_data_presenter,    // 1: any parseable forms? (Specific to forms.)
-    &raw_data_presenter        // 2: any data at all? (Non-specific.)
+  ParsedDataPresenter parsed_data_presenter(*request);
+  RawDataPresenter raw_data_presenter;
+  UploadDataPresenter* const presenters[] = {
+      &parsed_data_presenter,  // 1: any parseable forms? (Specific to forms.)
+      &raw_data_presenter      // 2: any data at all? (Non-specific.)
   };
   // Keys for the results of the corresponding presenters.
   static const char* const kKeys[] = {
@@ -330,39 +324,39 @@ void SendOnMessageEventOnUI(
     void* browser_context_id,
     const std::string& extension_id,
     bool is_web_view_guest,
-    const extensions::WebViewRendererState::WebViewInfo& web_view_info,
+    const WebViewRendererState::WebViewInfo& web_view_info,
     scoped_ptr<base::DictionaryValue> event_argument) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* browser_context =
       reinterpret_cast<content::BrowserContext*>(browser_context_id);
-  if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(
-      browser_context))
+  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
 
   scoped_ptr<base::ListValue> event_args(new base::ListValue);
   event_args->Append(event_argument.release());
 
-  extensions::EventRouter* event_router =
-      extensions::EventRouter::Get(browser_context);
+  EventRouter* event_router = EventRouter::Get(browser_context);
 
-  extensions::EventFilteringInfo event_filtering_info;
+  EventFilteringInfo event_filtering_info;
 
+  events::HistogramValue histogram_value = events::UNKNOWN;
   std::string event_name;
   // The instance ID uniquely identifies a <webview> instance within an embedder
   // process. We use a filter here so that only event listeners for a particular
   // <webview> will fire.
   if (is_web_view_guest) {
     event_filtering_info.SetInstanceID(web_view_info.instance_id);
+    histogram_value = events::WEB_VIEW_INTERNAL_ON_MESSAGE;
     event_name = webview::kEventMessage;
   } else {
+    histogram_value = events::DECLARATIVE_WEB_REQUEST_ON_MESSAGE;
     event_name = declarative_keys::kOnMessage;
   }
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, event_name, event_args.Pass(),
-      browser_context, GURL(), extensions::EventRouter::USER_GESTURE_UNKNOWN,
-      event_filtering_info));
+  scoped_ptr<Event> event(new Event(
+      histogram_value, event_name, event_args.Pass(), browser_context, GURL(),
+      EventRouter::USER_GESTURE_UNKNOWN, event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -379,8 +373,6 @@ void RemoveEventListenerOnIOThread(
 }
 
 }  // namespace
-
-namespace extensions {
 
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context) {
@@ -427,8 +419,6 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
                                      0 /* embedder_process_id */,
                                      0 /* web_view_instance_id */));
 }
-
-}  // namespace extensions
 
 // Represents a single unique listener to an event, along with whatever filter
 // parameters and extra_info_spec were specified at the time the listener was
@@ -648,8 +638,7 @@ ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
 ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()
     : request_time_tracker_(new ExtensionWebRequestTimeTracker) {
   web_request_event_router_delegate_.reset(
-      extensions::ExtensionsAPIClient::Get()->
-          CreateWebRequestEventRouterDelegate());
+      ExtensionsAPIClient::Get()->CreateWebRequestEventRouterDelegate());
 }
 
 ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
@@ -658,7 +647,7 @@ ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     void* browser_context,
     int rules_registry_id,
-    scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry) {
+    scoped_refptr<WebRequestRulesRegistry> rules_registry) {
   RulesRegistryKey key(browser_context, rules_registry_id);
   if (rules_registry.get())
     rules_registries_[key] = rules_registry;
@@ -724,7 +713,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   initialize_blocked_requests |=
       ProcessDeclarativeRules(browser_context, extension_info_map,
                               web_request::OnBeforeRequest::kEventName, request,
-                              extensions::ON_BEFORE_REQUEST, NULL);
+                              ON_BEFORE_REQUEST, NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -778,10 +767,9 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
   bool initialize_blocked_requests = false;
 
-  initialize_blocked_requests |=
-      ProcessDeclarativeRules(browser_context, extension_info_map,
-                              keys::kOnBeforeSendHeadersEvent, request,
-                              extensions::ON_BEFORE_SEND_HEADERS, NULL);
+  initialize_blocked_requests |= ProcessDeclarativeRules(
+      browser_context, extension_info_map, keys::kOnBeforeSendHeadersEvent,
+      request, ON_BEFORE_SEND_HEADERS, NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -870,11 +858,9 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
 
   bool initialize_blocked_requests = false;
 
-  initialize_blocked_requests |=
-      ProcessDeclarativeRules(browser_context, extension_info_map,
-                              keys::kOnHeadersReceivedEvent, request,
-                              extensions::ON_HEADERS_RECEIVED,
-                              original_response_headers);
+  initialize_blocked_requests |= ProcessDeclarativeRules(
+      browser_context, extension_info_map, keys::kOnHeadersReceivedEvent,
+      request, ON_HEADERS_RECEIVED, original_response_headers);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -1210,12 +1196,10 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     if (!((*it)->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
       dict->Remove(keys::kResponseHeadersKey, NULL);
 
-    extensions::EventRouter::DispatchEvent(
-        (*it)->ipc_sender.get(), browser_context,
-        (*it)->extension_id, (*it)->sub_event_name,
-        args_filtered.Pass(),
-        extensions::EventRouter::USER_GESTURE_UNKNOWN,
-        extensions::EventFilteringInfo());
+    EventRouter::DispatchEvent(
+        (*it)->ipc_sender.get(), browser_context, (*it)->extension_id,
+        (*it)->sub_event_name, args_filtered.Pass(),
+        EventRouter::USER_GESTURE_UNKNOWN, EventFilteringInfo());
     if ((*it)->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       (*it)->blocked_requests.insert(request->identifier());
@@ -1311,8 +1295,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
     const std::string& sub_event_name,
     int embedder_process_id,
     int web_view_instance_id) {
-  std::string event_name =
-      extensions::EventRouter::GetBaseEventName(sub_event_name);
+  std::string event_name = EventRouter::GetBaseEventName(sub_event_name);
   DCHECK(IsWebRequestEvent(event_name));
 
   EventListener listener;
@@ -1464,9 +1447,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
   std::string web_request_event_name(event_name);
-  extensions::WebViewRendererState::WebViewInfo web_view_info;
-  bool is_web_view_guest = extensions::WebViewRendererState::GetInstance()->
-      GetInfo(render_process_host_id, routing_id, &web_view_info);
+  WebViewRendererState::WebViewInfo web_view_info;
+  bool is_web_view_guest = WebViewRendererState::GetInstance()->GetInfo(
+      render_process_host_id, routing_id, &web_view_info);
   if (is_web_view_guest) {
     web_request_event_name.replace(
         0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
@@ -1645,32 +1628,32 @@ base::ListValue* SummarizeCookieModifications(
     const CookieType& mod = *i->get();
     switch (mod.type) {
       case helpers::ADD:
-        summary->SetString(activitylog::kCookieModificationTypeKey,
-                           activitylog::kCookieModificationAdd);
+        summary->SetString(activity_log::kCookieModificationTypeKey,
+                           activity_log::kCookieModificationAdd);
         break;
       case helpers::EDIT:
-        summary->SetString(activitylog::kCookieModificationTypeKey,
-                           activitylog::kCookieModificationEdit);
+        summary->SetString(activity_log::kCookieModificationTypeKey,
+                           activity_log::kCookieModificationEdit);
         break;
       case helpers::REMOVE:
-        summary->SetString(activitylog::kCookieModificationTypeKey,
-                           activitylog::kCookieModificationRemove);
+        summary->SetString(activity_log::kCookieModificationTypeKey,
+                           activity_log::kCookieModificationRemove);
         break;
     }
     if (mod.filter) {
       if (mod.filter->name)
-        summary->SetString(activitylog::kCookieFilterNameKey,
+        summary->SetString(activity_log::kCookieFilterNameKey,
                            *mod.modification->name);
       if (mod.filter->domain)
-        summary->SetString(activitylog::kCookieFilterDomainKey,
+        summary->SetString(activity_log::kCookieFilterDomainKey,
                            *mod.modification->name);
     }
     if (mod.modification) {
       if (mod.modification->name)
-        summary->SetString(activitylog::kCookieModDomainKey,
+        summary->SetString(activity_log::kCookieModDomainKey,
                            *mod.modification->name);
       if (mod.modification->domain)
-        summary->SetString(activitylog::kCookieModDomainKey,
+        summary->SetString(activity_log::kCookieModDomainKey,
                            *mod.modification->name);
     }
     cookie_modifications->Append(summary.release());
@@ -1685,10 +1668,10 @@ scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
     const helpers::EventResponseDelta& delta) {
   scoped_ptr<base::DictionaryValue> details(new base::DictionaryValue());
   if (delta.cancel) {
-    details->SetBoolean(activitylog::kCancelKey, true);
+    details->SetBoolean(activity_log::kCancelKey, true);
   }
   if (!delta.new_url.is_empty()) {
-      details->SetString(activitylog::kNewUrlKey, delta.new_url.spec());
+    details->SetString(activity_log::kNewUrlKey, delta.new_url.spec());
   }
 
   scoped_ptr<base::ListValue> modified_headers(new base::ListValue());
@@ -1698,34 +1681,34 @@ scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
         helpers::CreateHeaderDictionary(iter.name(), iter.value()));
   }
   if (!modified_headers->empty()) {
-    details->Set(activitylog::kModifiedRequestHeadersKey,
+    details->Set(activity_log::kModifiedRequestHeadersKey,
                  modified_headers.release());
   }
 
   scoped_ptr<base::ListValue> deleted_headers(new base::ListValue());
   deleted_headers->AppendStrings(delta.deleted_request_headers);
   if (!deleted_headers->empty()) {
-    details->Set(activitylog::kDeletedRequestHeadersKey,
+    details->Set(activity_log::kDeletedRequestHeadersKey,
                  deleted_headers.release());
   }
 
   if (!delta.added_response_headers.empty()) {
-    details->Set(activitylog::kAddedRequestHeadersKey,
+    details->Set(activity_log::kAddedRequestHeadersKey,
                  SerializeResponseHeaders(delta.added_response_headers));
   }
   if (!delta.deleted_response_headers.empty()) {
-    details->Set(activitylog::kDeletedResponseHeadersKey,
+    details->Set(activity_log::kDeletedResponseHeadersKey,
                  SerializeResponseHeaders(delta.deleted_response_headers));
   }
   if (delta.auth_credentials) {
-    details->SetString(activitylog::kAuthCredentialsKey,
-                       base::UTF16ToUTF8(
-                           delta.auth_credentials->username()) + ":*");
+    details->SetString(
+        activity_log::kAuthCredentialsKey,
+        base::UTF16ToUTF8(delta.auth_credentials->username()) + ":*");
   }
 
   if (!delta.response_cookie_modifications.empty()) {
     details->Set(
-        activitylog::kResponseCookieModificationsKey,
+        activity_log::kResponseCookieModificationsKey,
         SummarizeCookieModifications(delta.response_cookie_modifications));
   }
 
@@ -1838,7 +1821,7 @@ void ExtensionWebRequestEventRouter::SendMessages(
          message != messages.end(); ++message) {
       scoped_ptr<base::DictionaryValue> argument(new base::DictionaryValue);
       ExtractRequestInfo(blocked_request.request, argument.get());
-      extensions::WebViewRendererState::WebViewInfo web_view_info;
+      WebViewRendererState::WebViewInfo web_view_info;
       bool is_web_view_guest = GetWebViewInfo(blocked_request.request,
                                               &web_view_info);
       argument->SetString(keys::kMessageKey, *message);
@@ -1965,9 +1948,9 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     InfoMap* extension_info_map,
     const std::string& event_name,
     net::URLRequest* request,
-    extensions::RequestStage request_stage,
+    RequestStage request_stage,
     const net::HttpResponseHeaders* original_response_headers) {
-  extensions::WebViewRendererState::WebViewInfo web_view_info;
+  WebViewRendererState::WebViewInfo web_view_info;
   bool is_web_view_guest = GetWebViewInfo(request, &web_view_info);
   int rules_registry_id = is_web_view_guest
                               ? web_view_info.rules_registry_id
@@ -1976,7 +1959,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   RulesRegistryKey rules_key(browser_context, rules_registry_id);
   // If this check fails, check that the active stages are up-to-date in
   // extensions/browser/api/declarative_webrequest/request_stage.h .
-  DCHECK(request_stage & extensions::kActiveStages);
+  DCHECK(request_stage & kActiveStages);
 
   // Rules of the current |browser_context| may apply but we need to check also
   // whether there are applicable rules from extensions whose background page
@@ -1984,8 +1967,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
 
   // First parameter identifies the registry, the second indicates whether the
   // registry belongs to the cross browser_context.
-  typedef std::pair<extensions::WebRequestRulesRegistry*, bool>
-      RelevantRegistry;
+  typedef std::pair<WebRequestRulesRegistry*, bool> RelevantRegistry;
   typedef std::vector<RelevantRegistry> RelevantRegistries;
   RelevantRegistries relevant_registries;
 
@@ -2009,7 +1991,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   // logged with UMA Extensions.NetworkDelayRegistryLoad. crbug.com/175961
   for (RelevantRegistries::iterator i = relevant_registries.begin();
        i != relevant_registries.end(); ++i) {
-    extensions::WebRequestRulesRegistry* rules_registry = i->first;
+    WebRequestRulesRegistry* rules_registry = i->first;
     if (!rules_registry->ready().is_signaled()) {
       // The rules registry is still loading. Block this request until it
       // finishes.
@@ -2040,14 +2022,11 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   bool deltas_created = false;
   for (RelevantRegistries::iterator i = relevant_registries.begin();
        i != relevant_registries.end(); ++i) {
-    extensions::WebRequestRulesRegistry* rules_registry =
-        i->first;
-    helpers::EventResponseDeltas result =
-        rules_registry->CreateDeltas(
-            extension_info_map,
-            extensions::WebRequestData(
-                request, request_stage, original_response_headers),
-            i->second);
+    WebRequestRulesRegistry* rules_registry = i->first;
+    helpers::EventResponseDeltas result = rules_registry->CreateDeltas(
+        extension_info_map,
+        WebRequestData(request, request_stage, original_response_headers),
+        i->second);
 
     if (!result.empty()) {
       helpers::EventResponseDeltas& deltas =
@@ -2068,7 +2047,7 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
     void* browser_context,
     const std::string& event_name,
     uint64 request_id,
-    extensions::RequestStage request_stage) {
+    RequestStage request_stage) {
   // It's possible that this request was deleted, or cancelled by a previous
   // event handler. If so, ignore this response.
   if (blocked_requests_.find(request_id) == blocked_requests_.end())
@@ -2124,7 +2103,7 @@ void ExtensionWebRequestEventRouter::ClearSignaled(uint64 request_id,
 // webRequest.handlerBehaviorChanged() should trigger a quota violation at the
 // time it is called. Instead we only decrement the bucket counter at the time
 // when the cache is cleared (when page loads happen).
-class ClearCacheQuotaHeuristic : public extensions::QuotaLimitHeuristic {
+class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
  public:
   ClearCacheQuotaHeuristic(const Config& config, BucketMapper* map)
       : QuotaLimitHeuristic(
@@ -2210,8 +2189,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   int web_view_instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &web_view_instance_id));
 
-  base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender =
-      ipc_sender_weak();
+  base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender = ipc_sender_weak();
   int embedder_process_id =
       ipc_sender.get() && web_view_instance_id > 0 ?
           ipc_sender->render_process_id() : 0;
@@ -2229,7 +2207,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
          (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
           ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
         !extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kWebRequestBlocking)) {
+            APIPermission::kWebRequestBlocking)) {
       error_ = keys::kBlockingPermissionRequired;
       return false;
     }
@@ -2434,13 +2412,13 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
 }
 
 void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
-    extensions::QuotaLimitHeuristics* heuristics) const {
-  extensions::QuotaLimitHeuristic::Config config = {
+    QuotaLimitHeuristics* heuristics) const {
+  QuotaLimitHeuristic::Config config = {
       // See web_request.json for current value.
       web_request::MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES,
       base::TimeDelta::FromMinutes(10)};
-  extensions::QuotaLimitHeuristic::BucketMapper* bucket_mapper =
-      new extensions::QuotaLimitHeuristic::SingletonBucketMapper();
+  QuotaLimitHeuristic::BucketMapper* bucket_mapper =
+      new QuotaLimitHeuristic::SingletonBucketMapper();
   ClearCacheQuotaHeuristic* heuristic =
       new ClearCacheQuotaHeuristic(config, bucket_mapper);
   heuristics->push_back(heuristic);
@@ -2465,3 +2443,5 @@ bool WebRequestHandlerBehaviorChangedFunction::RunSync() {
   helpers::ClearCacheOnNavigation();
   return true;
 }
+
+}  // namespace extensions

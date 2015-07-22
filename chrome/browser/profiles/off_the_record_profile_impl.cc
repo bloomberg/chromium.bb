@@ -97,14 +97,14 @@ namespace {
 
 void NotifyOTRProfileCreatedOnIOThread(void* original_profile,
                                        void* otr_profile) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnOTRBrowserContextCreated(
-      original_profile, otr_profile);
+  extensions::ExtensionWebRequestEventRouter::GetInstance()
+      ->OnOTRBrowserContextCreated(original_profile, otr_profile);
 }
 
 void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
                                          void* otr_profile) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnOTRBrowserContextDestroyed(
-      original_profile, otr_profile);
+  extensions::ExtensionWebRequestEventRouter::GetInstance()
+      ->OnOTRBrowserContextDestroyed(original_profile, otr_profile);
 }
 
 }  // namespace

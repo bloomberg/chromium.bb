@@ -102,14 +102,15 @@ FontSettingsEventRouter::FontSettingsEventRouter(
   registrar_.Init(profile_->GetPrefs());
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
+                   events::FONT_SETTINGS_ON_DEFAULT_FIXED_FONT_SIZE_CHANGED,
                    fonts::OnDefaultFixedFontSizeChanged::kEventName,
                    kPixelSizeKey);
   AddPrefToObserve(prefs::kWebKitDefaultFontSize,
-                   fonts::OnDefaultFontSizeChanged::kEventName,
-                   kPixelSizeKey);
+                   events::FONT_SETTINGS_ON_DEFAULT_FONT_SIZE_CHANGED,
+                   fonts::OnDefaultFontSizeChanged::kEventName, kPixelSizeKey);
   AddPrefToObserve(prefs::kWebKitMinimumFontSize,
-                   fonts::OnMinimumFontSizeChanged::kEventName,
-                   kPixelSizeKey);
+                   events::FONT_SETTINGS_ON_MINIMUM_FONT_SIZE_CHANGED,
+                   fonts::OnMinimumFontSizeChanged::kEventName, kPixelSizeKey);
 
   PrefChangeRegistrar::NamedChangeCallback callback =
       base::Bind(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
@@ -133,13 +134,15 @@ FontSettingsEventRouter::FontSettingsEventRouter(
 
 FontSettingsEventRouter::~FontSettingsEventRouter() {}
 
-void FontSettingsEventRouter::AddPrefToObserve(const char* pref_name,
-                                               const char* event_name,
-                                               const char* key) {
-  registrar_.Add(pref_name,
-                 base::Bind(&FontSettingsEventRouter::OnFontPrefChanged,
-                            base::Unretained(this),
-                            event_name, key));
+void FontSettingsEventRouter::AddPrefToObserve(
+    const char* pref_name,
+    events::HistogramValue histogram_value,
+    const char* event_name,
+    const char* key) {
+  registrar_.Add(
+      pref_name,
+      base::Bind(&FontSettingsEventRouter::OnFontPrefChanged,
+                 base::Unretained(this), histogram_value, event_name, key));
 }
 
 void FontSettingsEventRouter::OnFontFamilyMapPrefChanged(
@@ -178,15 +181,13 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
   dict->SetString(kScriptKey, script);
 
   extensions::preference_helpers::DispatchEventToExtensions(
-      profile_,
-      fonts::OnFontChanged::kEventName,
-      &args,
-      APIPermission::kFontSettings,
-      false,
-      pref_name);
+      profile_, events::FONT_SETTINGS_ON_FONT_CHANGED,
+      fonts::OnFontChanged::kEventName, &args, APIPermission::kFontSettings,
+      false, pref_name);
 }
 
 void FontSettingsEventRouter::OnFontPrefChanged(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     const std::string& key,
     const std::string& pref_name) {
@@ -200,12 +201,8 @@ void FontSettingsEventRouter::OnFontPrefChanged(
   dict->Set(key, pref->GetValue()->DeepCopy());
 
   extensions::preference_helpers::DispatchEventToExtensions(
-      profile_,
-      event_name,
-      &args,
-      APIPermission::kFontSettings,
-      false,
-      pref_name);
+      profile_, histogram_value, event_name, &args,
+      APIPermission::kFontSettings, false, pref_name);
 }
 
 FontSettingsAPI::FontSettingsAPI(content::BrowserContext* context)

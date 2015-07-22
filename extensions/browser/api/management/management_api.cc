@@ -832,32 +832,38 @@ ManagementEventRouter::~ManagementEventRouter() {
 void ManagementEventRouter::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  BroadcastEvent(extension, management::OnEnabled::kEventName);
+  BroadcastEvent(extension, events::MANAGEMENT_ON_ENABLED,
+                 management::OnEnabled::kEventName);
 }
 
 void ManagementEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  BroadcastEvent(extension, management::OnDisabled::kEventName);
+  BroadcastEvent(extension, events::MANAGEMENT_ON_DISABLED,
+                 management::OnDisabled::kEventName);
 }
 
 void ManagementEventRouter::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update) {
-  BroadcastEvent(extension, management::OnInstalled::kEventName);
+  BroadcastEvent(extension, events::MANAGEMENT_ON_INSTALLED,
+                 management::OnInstalled::kEventName);
 }
 
 void ManagementEventRouter::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  BroadcastEvent(extension, management::OnUninstalled::kEventName);
+  BroadcastEvent(extension, events::MANAGEMENT_ON_UNINSTALLED,
+                 management::OnUninstalled::kEventName);
 }
 
-void ManagementEventRouter::BroadcastEvent(const Extension* extension,
-                                           const char* event_name) {
+void ManagementEventRouter::BroadcastEvent(
+    const Extension* extension,
+    events::HistogramValue histogram_value,
+    const char* event_name) {
   if (ShouldNotBeVisible(extension, browser_context_))
     return;  // Don't dispatch events for built-in extenions.
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -871,7 +877,7 @@ void ManagementEventRouter::BroadcastEvent(const Extension* extension,
 
   EventRouter::Get(browser_context_)
       ->BroadcastEvent(scoped_ptr<Event>(
-          new Event(events::UNKNOWN, event_name, args.Pass())));
+          new Event(histogram_value, event_name, args.Pass())));
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)

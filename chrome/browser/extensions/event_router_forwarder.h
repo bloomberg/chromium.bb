@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 class GURL;
 
@@ -34,7 +35,8 @@ class EventRouterForwarder
   //   DispatchEventToRenderers(event_name, event_args, profile, event_url)
   // on all (original) profiles' EventRouters.
   // May be called on any thread.
-  void BroadcastEventToRenderers(const std::string& event_name,
+  void BroadcastEventToRenderers(events::HistogramValue histogram_value,
+                                 const std::string& event_name,
                                  scoped_ptr<base::ListValue> event_args,
                                  const GURL& event_url);
 
@@ -44,6 +46,7 @@ class EventRouterForwarder
   // on all (original) profiles' EventRouters.
   // May be called on any thread.
   void BroadcastEventToExtension(const std::string& extension_id,
+                                 events::HistogramValue histogram_value,
                                  const std::string& event_name,
                                  scoped_ptr<base::ListValue> event_args,
                                  const GURL& event_url);
@@ -52,7 +55,8 @@ class EventRouterForwarder
   //   DispatchEventToRenderers(event_name, event_args,
   //       use_profile_to_restrict_events ? profile : NULL, event_url)
   // on |profile|'s EventRouter. May be called on any thread.
-  void DispatchEventToRenderers(const std::string& event_name,
+  void DispatchEventToRenderers(events::HistogramValue histogram_value,
+                                const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args,
                                 void* profile,
                                 bool use_profile_to_restrict_events,
@@ -63,6 +67,7 @@ class EventRouterForwarder
   //       use_profile_to_restrict_events ? profile : NULL, event_url)
   // on |profile|'s EventRouter. May be called on any thread.
   void DispatchEventToExtension(const std::string& extension_id,
+                                events::HistogramValue histogram_value,
                                 const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args,
                                 void* profile,
@@ -76,6 +81,7 @@ class EventRouterForwarder
   // Helper function for {Broadcast,Dispatch}EventTo{Extension,Renderers}.
   // Virtual for testing.
   virtual void HandleEvent(const std::string& extension_id,
+                           events::HistogramValue histogram_value,
                            const std::string& event_name,
                            scoped_ptr<base::ListValue> event_args,
                            void* profile,
@@ -88,6 +94,7 @@ class EventRouterForwarder
   // Virtual for testing.
   virtual void CallEventRouter(Profile* profile,
                                const std::string& extension_id,
+                               events::HistogramValue histogram_value,
                                const std::string& event_name,
                                scoped_ptr<base::ListValue> event_args,
                                Profile* restrict_to_profile,

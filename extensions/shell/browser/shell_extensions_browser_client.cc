@@ -202,20 +202,19 @@ ShellExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 }
 
 void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&ShellExtensionsBrowserClient::BroadcastEventToRenderers,
-                   base::Unretained(this),
-                   event_name,
+                   base::Unretained(this), histogram_value, event_name,
                    base::Passed(&args)));
     return;
   }
 
-  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -32,7 +33,8 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               content::RenderFrameHost* frame_host,
                               const GURL& validated_url);
 
-void DispatchOnCommitted(const std::string& event_name,
+void DispatchOnCommitted(events::HistogramValue histogram_value,
+                         const std::string& event_name,
                          content::WebContents* web_contents,
                          content::RenderFrameHost* frame_host,
                          const GURL& url,

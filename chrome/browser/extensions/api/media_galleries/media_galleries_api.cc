@@ -347,7 +347,7 @@ void MediaGalleriesEventRouter::OnScanStarted(const std::string& extension_id) {
   MediaGalleries::ScanProgressDetails details;
   details.type = MediaGalleries::SCAN_PROGRESS_TYPE_START;
   DispatchEventToExtension(
-      extension_id,
+      extension_id, events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
       MediaGalleries::OnScanProgress::kEventName,
       MediaGalleries::OnScanProgress::Create(details).Pass());
 }
@@ -357,7 +357,7 @@ void MediaGalleriesEventRouter::OnScanCancelled(
   MediaGalleries::ScanProgressDetails details;
   details.type = MediaGalleries::SCAN_PROGRESS_TYPE_CANCEL;
   DispatchEventToExtension(
-      extension_id,
+      extension_id, events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
       MediaGalleries::OnScanProgress::kEventName,
       MediaGalleries::OnScanProgress::Create(details).Pass());
 }
@@ -373,7 +373,7 @@ void MediaGalleriesEventRouter::OnScanFinished(
   details.image_count.reset(new int(file_counts.image_count));
   details.video_count.reset(new int(file_counts.video_count));
   DispatchEventToExtension(
-      extension_id,
+      extension_id, events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
       MediaGalleries::OnScanProgress::kEventName,
       MediaGalleries::OnScanProgress::Create(details).Pass());
 }
@@ -383,13 +383,14 @@ void MediaGalleriesEventRouter::OnScanError(
   MediaGalleries::ScanProgressDetails details;
   details.type = MediaGalleries::SCAN_PROGRESS_TYPE_ERROR;
   DispatchEventToExtension(
-      extension_id,
+      extension_id, events::MEDIA_GALLERIES_ON_SCAN_PROGRESS,
       MediaGalleries::OnScanProgress::kEventName,
       MediaGalleries::OnScanProgress::Create(details).Pass());
 }
 
 void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& extension_id,
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -402,8 +403,8 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
   if (!router->ExtensionHasEventListener(extension_id, event_name))
     return;
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, event_name, event_args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(histogram_value, event_name, event_args.Pass()));
   router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -413,7 +414,7 @@ void MediaGalleriesEventRouter::OnGalleryChanged(
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_CONTENTS_CHANGED;
   details.gallery_id = base::Uint64ToString(gallery_id);
   DispatchEventToExtension(
-      extension_id,
+      extension_id, events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
       MediaGalleries::OnGalleryChanged::kEventName,
       MediaGalleries::OnGalleryChanged::Create(details).Pass());
 }
@@ -424,7 +425,7 @@ void MediaGalleriesEventRouter::OnGalleryWatchDropped(
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_WATCH_DROPPED;
   details.gallery_id = gallery_id;
   DispatchEventToExtension(
-      extension_id,
+      extension_id, events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
       MediaGalleries::OnGalleryChanged::kEventName,
       MediaGalleries::OnGalleryChanged::Create(details).Pass());
 }

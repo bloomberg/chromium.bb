@@ -79,9 +79,8 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
       api::sync_file_system::OnServiceStatusChanged::Create(service_info));
 
   BroadcastOrDispatchEvent(
-      app_origin,
-      api::sync_file_system::OnServiceStatusChanged::kEventName,
-      params.Pass());
+      app_origin, events::SYNC_FILE_SYSTEM_ON_SERVICE_STATUS_CHANGED,
+      api::sync_file_system::OnServiceStatusChanged::kEventName, params.Pass());
 }
 
 void ExtensionSyncEventObserver::OnFileSynced(
@@ -110,13 +109,13 @@ void ExtensionSyncEventObserver::OnFileSynced(
   params->AppendString(api::sync_file_system::ToString(direction_enum));
 
   BroadcastOrDispatchEvent(
-      url.origin(),
-      api::sync_file_system::OnFileStatusChanged::kEventName,
-      params.Pass());
+      url.origin(), events::SYNC_FILE_SYSTEM_ON_FILE_STATUS_CHANGED,
+      api::sync_file_system::OnFileStatusChanged::kEventName, params.Pass());
 }
 
 void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
     const GURL& app_origin,
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> values) {
   // Check to see whether the event should be broadcasted to all listening
@@ -126,7 +125,7 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   DCHECK(event_router);
 
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, event_name, values.Pass()));
+      new Event(histogram_value, event_name, values.Pass()));
   event->restrict_to_browser_context = browser_context_;
 
   // No app_origin, broadcast to all listening extensions for this event name.

@@ -16,6 +16,7 @@
 #include "device/hid/hid_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/common/api/hid.h"
 
 namespace device {
@@ -106,7 +107,8 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   void OnEnumerationComplete(
       const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
 
-  void DispatchEvent(const std::string& event_name,
+  void DispatchEvent(events::HistogramValue histogram_value,
+                     const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args,
                      scoped_refptr<device::HidDeviceInfo> device_info);
 

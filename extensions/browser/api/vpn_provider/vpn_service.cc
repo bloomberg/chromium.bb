@@ -100,7 +100,8 @@ void VpnService::VpnConfiguration::OnPacketReceived(
   scoped_ptr<base::ListValue> event_args =
       api_vpn::OnPacketReceived::Create(data);
   vpn_service_->SendSignalToExtension(
-      extension_id_, api_vpn::OnPacketReceived::kEventName, event_args.Pass());
+      extension_id_, extensions::events::VPN_PROVIDER_ON_PACKET_RECEIVED,
+      api_vpn::OnPacketReceived::kEventName, event_args.Pass());
 }
 
 void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
@@ -120,7 +121,8 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
       configuration_name_, platform_message, std::string());
 
   vpn_service_->SendSignalToExtension(
-      extension_id_, api_vpn::OnPlatformMessage::kEventName, event_args.Pass());
+      extension_id_, extensions::events::VPN_PROVIDER_ON_PLATFORM_MESSAGE,
+      api_vpn::OnPlatformMessage::kEventName, event_args.Pass());
 }
 
 VpnService::VpnService(
@@ -159,7 +161,9 @@ VpnService::~VpnService() {
 }
 
 void VpnService::SendShowAddDialogToExtension(const std::string& extension_id) {
-  SendSignalToExtension(extension_id, api_vpn::OnUIEvent::kEventName,
+  SendSignalToExtension(extension_id,
+                        extensions::events::VPN_PROVIDER_ON_UI_EVENT,
+                        api_vpn::OnUIEvent::kEventName,
                         api_vpn::OnUIEvent::Create(
                             api_vpn::UI_EVENT_SHOWADDDIALOG, std::string()));
 }
@@ -168,7 +172,8 @@ void VpnService::SendShowConfigureDialogToExtension(
     const std::string& extension_id,
     const std::string& configuration_id) {
   SendSignalToExtension(
-      extension_id, api_vpn::OnUIEvent::kEventName,
+      extension_id, extensions::events::VPN_PROVIDER_ON_UI_EVENT,
+      api_vpn::OnUIEvent::kEventName,
       api_vpn::OnUIEvent::Create(api_vpn::UI_EVENT_SHOWCONFIGUREDIALOG,
                                  configuration_id));
 }
@@ -177,7 +182,8 @@ void VpnService::SendPlatformError(const std::string& extension_id,
                                    const std::string& configuration_id,
                                    const std::string& error_message) {
   SendSignalToExtension(
-      extension_id, api_vpn::OnPlatformMessage::kEventName,
+      extension_id, extensions::events::VPN_PROVIDER_ON_PLATFORM_MESSAGE,
+      api_vpn::OnPlatformMessage::kEventName,
       api_vpn::OnPlatformMessage::Create(
           configuration_id, api_vpn::PLATFORM_MESSAGE_ERROR, error_message));
 }
@@ -215,6 +221,7 @@ void VpnService::OnConfigurationRemoved(const std::string& service_path,
   scoped_ptr<base::ListValue> event_args =
       api_vpn::OnConfigRemoved::Create(configuration->configuration_name());
   SendSignalToExtension(configuration->extension_id(),
+                        extensions::events::VPN_PROVIDER_ON_CONFIG_REMOVED,
                         api_vpn::OnConfigRemoved::kEventName,
                         event_args.Pass());
 
@@ -514,12 +521,13 @@ void VpnService::OnRemoveConfigurationFailure(
   callback.Run(error_name, std::string());
 }
 
-void VpnService::SendSignalToExtension(const std::string& extension_id,
-                                       const std::string& event_name,
-                                       scoped_ptr<base::ListValue> event_args) {
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(extensions::events::UNKNOWN, event_name,
-                            event_args.Pass(), browser_context_));
+void VpnService::SendSignalToExtension(
+    const std::string& extension_id,
+    extensions::events::HistogramValue histogram_value,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> event_args) {
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      histogram_value, event_name, event_args.Pass(), browser_context_));
 
   event_router_->DispatchEventToExtension(extension_id, event.Pass());
 }

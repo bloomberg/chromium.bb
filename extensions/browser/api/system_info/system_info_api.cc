@@ -73,7 +73,8 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
 
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
-  void DispatchEvent(const std::string& event_name,
+  void DispatchEvent(events::HistogramValue histogram_value,
+                     const std::string& event_name,
                      scoped_ptr<base::ListValue> args);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
@@ -164,7 +165,8 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
   systeminfo::BuildStorageUnitInfo(info, &unit);
   scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(unit.ToValue().release());
-  DispatchEvent(system_storage::OnAttached::kEventName, args.Pass());
+  DispatchEvent(events::SYSTEM_STORAGE_ON_ATTACHED,
+                system_storage::OnAttached::kEventName, args.Pass());
 }
 
 void SystemInfoEventRouter::OnRemovableStorageDetached(
@@ -175,7 +177,8 @@ void SystemInfoEventRouter::OnRemovableStorageDetached(
           info.device_id());
   args->AppendString(transient_id);
 
-  DispatchEvent(system_storage::OnDetached::kEventName, args.Pass());
+  DispatchEvent(events::SYSTEM_STORAGE_ON_DETACHED,
+                system_storage::OnDetached::kEventName, args.Pass());
 }
 
 void SystemInfoEventRouter::OnDisplayAdded(const gfx::Display& new_display) {
@@ -193,13 +196,16 @@ void SystemInfoEventRouter::OnDisplayMetricsChanged(const gfx::Display& display,
 
 void SystemInfoEventRouter::OnDisplayChanged() {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  DispatchEvent(system_display::OnDisplayChanged::kEventName, args.Pass());
+  DispatchEvent(events::SYSTEM_DISPLAY_ON_DISPLAY_CHANGED,
+                system_display::OnDisplayChanged::kEventName, args.Pass());
 }
 
-void SystemInfoEventRouter::DispatchEvent(const std::string& event_name,
-                                          scoped_ptr<base::ListValue> args) {
-  ExtensionsBrowserClient::Get()->BroadcastEventToRenderers(event_name,
-                                                            args.Pass());
+void SystemInfoEventRouter::DispatchEvent(
+    events::HistogramValue histogram_value,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> args) {
+  ExtensionsBrowserClient::Get()->BroadcastEventToRenderers(
+      histogram_value, event_name, args.Pass());
 }
 
 void AddEventListener(const std::string& event_name) {

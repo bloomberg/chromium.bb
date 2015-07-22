@@ -797,41 +797,41 @@ void EventRouter::OnExtensionUnloaded(content::BrowserContext* browser_context,
 Event::Event(events::HistogramValue histogram_value,
              const std::string& event_name,
              scoped_ptr<base::ListValue> event_args)
-    : histogram_value(histogram_value),
-      event_name(event_name),
-      event_args(event_args.Pass()),
-      restrict_to_browser_context(NULL),
-      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
-  DCHECK(this->event_args.get());
-}
+    : Event(histogram_value, event_name, event_args.Pass(), nullptr) {}
 
 Event::Event(events::HistogramValue histogram_value,
              const std::string& event_name,
              scoped_ptr<base::ListValue> event_args,
              BrowserContext* restrict_to_browser_context)
-    : histogram_value(histogram_value),
-      event_name(event_name),
-      event_args(event_args.Pass()),
-      restrict_to_browser_context(restrict_to_browser_context),
-      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
-  DCHECK(this->event_args.get());
-}
+    : Event(histogram_value,
+            event_name,
+            event_args.Pass(),
+            restrict_to_browser_context,
+            GURL(),
+            EventRouter::USER_GESTURE_UNKNOWN,
+            EventFilteringInfo()) {}
 
 Event::Event(events::HistogramValue histogram_value,
              const std::string& event_name,
-             scoped_ptr<ListValue> event_args,
+             scoped_ptr<ListValue> event_args_tmp,
              BrowserContext* restrict_to_browser_context,
              const GURL& event_url,
              EventRouter::UserGestureState user_gesture,
              const EventFilteringInfo& filter_info)
     : histogram_value(histogram_value),
       event_name(event_name),
-      event_args(event_args.Pass()),
+      event_args(event_args_tmp.Pass()),
       restrict_to_browser_context(restrict_to_browser_context),
       event_url(event_url),
       user_gesture(user_gesture),
       filter_info(filter_info) {
-  DCHECK(this->event_args.get());
+  DCHECK(event_args);
+  DCHECK_NE(events::UNKNOWN, histogram_value)
+      << "events::UNKNOWN cannot be used as a histogram value.\n"
+      << "If this is a test, use events::FOR_TEST.\n"
+      << "If this is production code, it is important that you use a realistic "
+      << "value so that we can accurately track event usage. "
+      << "See extension_event_histogram_value.h for inspiration.";
 }
 
 Event::~Event() {}

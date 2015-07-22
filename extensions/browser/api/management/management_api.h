@@ -12,6 +12,7 @@
 #include "extensions/browser/api/management/management_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -243,7 +244,9 @@ class ManagementEventRouter : public ExtensionRegistryObserver {
                               extensions::UninstallReason reason) override;
 
   // Dispatches management api events to listening extensions.
-  void BroadcastEvent(const Extension* extension, const char* event_name);
+  void BroadcastEvent(const Extension* extension,
+                      events::HistogramValue histogram_value,
+                      const char* event_name);
 
   content::BrowserContext* browser_context_;
 

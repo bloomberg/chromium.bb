@@ -112,7 +112,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         component_id,
         input_ime::ParseScreenType(GetCurrentScreenType())));
 
-    DispatchEventToExtension(input_ime::OnActivate::kEventName, args.Pass());
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_ACTIVATE,
+                             input_ime::OnActivate::kEventName, args.Pass());
   }
 
   void OnDeactivated(const std::string& component_id) override {
@@ -123,7 +124,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     scoped_ptr<base::ListValue> args(
         input_ime::OnDeactivated::Create(component_id));
 
-    DispatchEventToExtension(input_ime::OnDeactivated::kEventName, args.Pass());
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_DEACTIVATED,
+                             input_ime::OnDeactivated::kEventName, args.Pass());
   }
 
   void OnFocus(
@@ -140,7 +142,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
 
-    DispatchEventToExtension(input_ime::OnFocus::kEventName, args.Pass());
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_FOCUS,
+                             input_ime::OnFocus::kEventName, args.Pass());
   }
 
   void OnBlur(int context_id) override {
@@ -149,7 +152,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     scoped_ptr<base::ListValue> args(input_ime::OnBlur::Create(context_id));
 
-    DispatchEventToExtension(input_ime::OnBlur::kEventName, args.Pass());
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_BLUR,
+                             input_ime::OnBlur::kEventName, args.Pass());
   }
 
   void OnInputContextUpdate(
@@ -165,8 +169,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     scoped_ptr<base::ListValue> args(
         input_ime::OnInputContextUpdate::Create(context_value));
 
-    DispatchEventToExtension(input_ime::OnInputContextUpdate::kEventName,
-                             args.Pass());
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_INPUT_CONTEXT_UPDATE,
+        input_ime::OnInputContextUpdate::kEventName, args.Pass());
   }
 
   bool IsInterestedInKeyEvent() const override {
@@ -206,7 +211,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     scoped_ptr<base::ListValue> args(
         input_ime::OnKeyEvent::Create(component_id, key_data_value));
 
-    DispatchEventToExtension(input_ime::OnKeyEvent::kEventName, args.Pass());
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_KEY_EVENT,
+                             input_ime::OnKeyEvent::kEventName, args.Pass());
   }
 
   void OnCandidateClicked(
@@ -237,7 +243,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     scoped_ptr<base::ListValue> args(input_ime::OnCandidateClicked::Create(
         component_id, candidate_id, button_enum));
 
-    DispatchEventToExtension(input_ime::OnCandidateClicked::kEventName,
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_CANDIDATE_CLICKED,
+                             input_ime::OnCandidateClicked::kEventName,
                              args.Pass());
   }
 
@@ -250,8 +257,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     scoped_ptr<base::ListValue> args(
         input_ime::OnMenuItemActivated::Create(component_id, menu_id));
 
-    DispatchEventToExtension(input_ime::OnMenuItemActivated::kEventName,
-                             args.Pass());
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_MENU_ITEM_ACTIVATED,
+        input_ime::OnMenuItemActivated::kEventName, args.Pass());
   }
 
   void OnSurroundingTextChanged(const std::string& component_id,
@@ -269,8 +277,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     scoped_ptr<base::ListValue> args(
         input_ime::OnSurroundingTextChanged::Create(component_id, info));
 
-    DispatchEventToExtension(input_ime::OnSurroundingTextChanged::kEventName,
-                             args.Pass());
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_SURROUNDING_TEXT_CHANGED,
+        input_ime::OnSurroundingTextChanged::kEventName, args.Pass());
   }
 
   void OnCompositionBoundsChanged(
@@ -301,7 +310,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
       args->Append(first_value->DeepCopy());
     args->Append(bounds_list);
 
-    DispatchEventToExtension(kOnCompositionBoundsChangedEventName, args.Pass());
+    DispatchEventToExtension(
+        extensions::events::INPUT_METHOD_PRIVATE_ON_COMPOSITION_BOUNDS_CHANGED,
+        kOnCompositionBoundsChangedEventName, args.Pass());
   }
 
   void OnReset(const std::string& component_id) override {
@@ -310,12 +321,15 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     scoped_ptr<base::ListValue> args(input_ime::OnReset::Create(component_id));
 
-    DispatchEventToExtension(input_ime::OnReset::kEventName, args.Pass());
+    DispatchEventToExtension(extensions::events::INPUT_IME_ON_RESET,
+                             input_ime::OnReset::kEventName, args.Pass());
   }
 
  private:
-  void DispatchEventToExtension(const std::string& event_name,
-                                scoped_ptr<base::ListValue> args) {
+  void DispatchEventToExtension(
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      scoped_ptr<base::ListValue> args) {
     if (event_name != input_ime::OnActivate::kEventName) {
       // For suspended IME extension (e.g. XKB extension), don't awake it by IME
       // events except onActivate. The IME extension should be awake by other
@@ -339,8 +353,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
       }
     }
 
-    scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::UNKNOWN, event_name, args.Pass()));
+    scoped_ptr<extensions::Event> event(
+        new extensions::Event(histogram_value, event_name, args.Pass()));
     event->restrict_to_browser_context = profile_;
     extensions::EventRouter::Get(profile_)
         ->DispatchEventToExtension(extension_id_, event.Pass());

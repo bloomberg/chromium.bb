@@ -21,6 +21,7 @@
 
 using content::BrowserThread;
 using content::ResourceRequestInfo;
+using extensions::ExtensionWebRequestEventRouter;
 
 namespace {
 

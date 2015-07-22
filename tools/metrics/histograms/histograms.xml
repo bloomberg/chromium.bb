@@ -55403,6 +55403,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="339" label="CAST_CHANNEL_ON_ERROR"/>
   <int value="340" label="SCREENLOCK_PRIVATE_ON_CHANGED"/>
   <int value="341" label="SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED"/>
+  <int value="342" label="TYPES_CHROME_SETTING_ON_CHANGE"/>
+  <int value="343" label="TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
+  <int value="344" label="WEB_VIEW_INTERNAL_ON_MESSAGE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

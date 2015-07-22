@@ -220,7 +220,8 @@ void HidDeviceManager::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
     if (api_device_info.collections.size() > 0) {
       scoped_ptr<base::ListValue> args(
           hid::OnDeviceAdded::Create(api_device_info));
-      DispatchEvent(hid::OnDeviceAdded::kEventName, args.Pass(), device_info);
+      DispatchEvent(events::HID_ON_DEVICE_ADDED, hid::OnDeviceAdded::kEventName,
+                    args.Pass(), device_info);
     }
   }
 }
@@ -239,7 +240,8 @@ void HidDeviceManager::OnDeviceRemoved(
   if (event_router_) {
     DCHECK(enumeration_ready_);
     scoped_ptr<base::ListValue> args(hid::OnDeviceRemoved::Create(resource_id));
-    DispatchEvent(hid::OnDeviceRemoved::kEventName, args.Pass(), device_info);
+    DispatchEvent(events::HID_ON_DEVICE_REMOVED,
+                  hid::OnDeviceRemoved::kEventName, args.Pass(), device_info);
   }
 }
 
@@ -315,11 +317,12 @@ void HidDeviceManager::OnEnumerationComplete(
   pending_enumerations_.clear();
 }
 
-void HidDeviceManager::DispatchEvent(const std::string& event_name,
+void HidDeviceManager::DispatchEvent(events::HistogramValue histogram_value,
+                                     const std::string& event_name,
                                      scoped_ptr<base::ListValue> event_args,
                                      scoped_refptr<HidDeviceInfo> device_info) {
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, event_name, event_args.Pass()));
+      new Event(histogram_value, event_name, event_args.Pass()));
   event->will_dispatch_callback = base::Bind(
       &WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(), device_info);
   event_router_->BroadcastEvent(event.Pass());

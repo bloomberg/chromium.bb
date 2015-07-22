@@ -45,11 +45,13 @@ void ProxyEventRouter::OnProxyError(
   args->Append(dict);
 
   if (profile) {
-    event_router->DispatchEventToRenderers(
-        keys::kProxyEventOnProxyError, args.Pass(), profile, true, GURL());
+    event_router->DispatchEventToRenderers(events::PROXY_ON_PROXY_ERROR,
+                                           keys::kProxyEventOnProxyError,
+                                           args.Pass(), profile, true, GURL());
   } else {
-    event_router->BroadcastEventToRenderers(
-        keys::kProxyEventOnProxyError, args.Pass(), GURL());
+    event_router->BroadcastEventToRenderers(events::PROXY_ON_PROXY_ERROR,
+                                            keys::kProxyEventOnProxyError,
+                                            args.Pass(), GURL());
   }
 }
 
@@ -75,11 +77,13 @@ void ProxyEventRouter::OnPACScriptError(
   args->Append(dict);
 
   if (profile) {
-    event_router->DispatchEventToRenderers(
-        keys::kProxyEventOnProxyError, args.Pass(), profile, true, GURL());
+    event_router->DispatchEventToRenderers(events::PROXY_ON_PROXY_ERROR,
+                                           keys::kProxyEventOnProxyError,
+                                           args.Pass(), profile, true, GURL());
   } else {
-    event_router->BroadcastEventToRenderers(
-        keys::kProxyEventOnProxyError, args.Pass(), GURL());
+    event_router->BroadcastEventToRenderers(events::PROXY_ON_PROXY_ERROR,
+                                            keys::kProxyEventOnProxyError,
+                                            args.Pass(), GURL());
   }
 }
 

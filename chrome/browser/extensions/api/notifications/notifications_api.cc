@@ -147,14 +147,15 @@ class NotificationsApiDelegate : public NotificationDelegate {
                 : EventRouter::USER_GESTURE_NOT_ENABLED;
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(by_user));
-    SendEvent(notifications::OnClosed::kEventName, gesture, args.Pass());
+    SendEvent(events::NOTIFICATIONS_ON_CLOSED,
+              notifications::OnClosed::kEventName, gesture, args.Pass());
   }
 
   void Click() override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
-    SendEvent(notifications::OnClicked::kEventName,
-              EventRouter::USER_GESTURE_ENABLED,
-              args.Pass());
+    SendEvent(events::NOTIFICATIONS_ON_CLICKED,
+              notifications::OnClicked::kEventName,
+              EventRouter::USER_GESTURE_ENABLED, args.Pass());
   }
 
   bool HasClickedListener() override {
@@ -168,9 +169,9 @@ class NotificationsApiDelegate : public NotificationDelegate {
   void ButtonClick(int index) override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(index));
-    SendEvent(notifications::OnButtonClicked::kEventName,
-              EventRouter::USER_GESTURE_ENABLED,
-              args.Pass());
+    SendEvent(events::NOTIFICATIONS_ON_BUTTON_CLICKED,
+              notifications::OnButtonClicked::kEventName,
+              EventRouter::USER_GESTURE_ENABLED, args.Pass());
   }
 
   std::string id() const override { return scoped_id_; }
@@ -178,13 +179,14 @@ class NotificationsApiDelegate : public NotificationDelegate {
  private:
   ~NotificationsApiDelegate() override {}
 
-  void SendEvent(const std::string& name,
+  void SendEvent(events::HistogramValue histogram_value,
+                 const std::string& name,
                  EventRouter::UserGestureState user_gesture,
                  scoped_ptr<base::ListValue> args) {
     if (!event_router_)
       return;
 
-    scoped_ptr<Event> event(new Event(events::UNKNOWN, name, args.Pass()));
+    scoped_ptr<Event> event(new Event(histogram_value, name, args.Pass()));
     event->user_gesture = user_gesture;
     event_router_->DispatchEventToExtension(extension_id_, event.Pass());
   }

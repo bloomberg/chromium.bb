@@ -177,9 +177,9 @@ TestExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 }
 
 void TestExtensionsBrowserClient::BroadcastEventToRenderers(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
-    scoped_ptr<base::ListValue> args) {
-}
+    scoped_ptr<base::ListValue> args) {}
 
 net::NetLog* TestExtensionsBrowserClient::GetNetLog() {
   return NULL;
