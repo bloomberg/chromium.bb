@@ -44,10 +44,10 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
   # Google Storage path, image and payload name base templates.
   _GS_BUILD_PATH_TEMPLATE = 'gs://%(bucket)s/%(channel)s/%(board)s/%(version)s'
   _IMAGE_NAME_TEMPLATE = (
-      'chromeos_%(image_version)s_%(board)s_recovery_%(image_channel)s_'
-      '%(key)s.bin')
+      'chromeos_%(image_version)s_%(board)s_%(signed_image_type)s_'
+      '%(image_channel)s_%(key)s.bin')
   _UNSIGNED_IMAGE_ARCHIVE_NAME_TEMPLATE = (
-      'ChromeOS-%(image_type)s-%(milestone)s-%(image_version)s-'
+      'ChromeOS-%(unsigned_image_type)s-%(milestone)s-%(image_version)s-'
       '%(board)s.tar.xz')
   _FULL_PAYLOAD_NAME_TEMPLATE = (
       'chromeos_%(image_version)s_%(board)s_%(image_channel)s_full_%(key)s.bin-'
@@ -57,10 +57,10 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
       'delta_%(key)s.bin-%(random_str)s.signed')
   _UNSIGNED_FULL_PAYLOAD_NAME_TEMPLATE = (
       'chromeos_%(image_version)s_%(board)s_%(image_channel)s_full_'
-      '%(image_type)s.bin-%(random_str)s')
+      '%(unsigned_image_type)s.bin-%(random_str)s')
   _UNSIGNED_DELTA_PAYLOAD_NAME_TEMPLATE = (
       'chromeos_%(src_version)s-%(image_version)s_%(board)s_%(image_channel)s_'
-      'delta_%(image_type)s.bin-%(random_str)s')
+      'delta_%(unsigned_image_type)s.bin-%(random_str)s')
 
   # Compound templates.
   _GS_IMAGE_PATH_TEMPLATE = '/'.join(
@@ -84,10 +84,11 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
 
     # Signed image attributes.
     self.key = 'mp-v3'
+    self.signed_image_type = 'base'
 
     # Unsigned (test) image attributes.
     self.milestone = 'R12'
-    self.image_type = 'test'
+    self.unsigned_image_type = 'test'
 
     # Attributes used for payload testing.
     self.src_version = '1.1.1'
@@ -101,7 +102,8 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         board=self.board,
         version=self.version,
         image_version=self.version,
-        key=self.key)
+        key=self.key,
+        signed_image_type=self.signed_image_type)
     self.unsigned_image_archive_attrs = dict(
         bucket=self.bucket,
         channel=self.channel,
@@ -110,7 +112,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         version=self.version,
         image_version=self.version,
         milestone=self.milestone,
-        image_type=self.image_type)
+        unsigned_image_type=self.unsigned_image_type)
     self.all_attrs = dict(self.image_attrs,
                           src_version=self.src_version,
                           random_str=self.random_str,
@@ -253,7 +255,8 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         gspaths.ChromeosReleases.ImageName(self.channel,
                                            self.board,
                                            self.version,
-                                           self.key),
+                                           self.key,
+                                           self.signed_image_type),
         self._Populate(self._IMAGE_NAME_TEMPLATE))
 
   def testUnsignedImageArchiveName(self):
@@ -262,7 +265,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
             self.board,
             self.version,
             self.milestone,
-            self.image_type),
+            self.unsigned_image_type),
         self._Populate(self._UNSIGNED_IMAGE_ARCHIVE_NAME_TEMPLATE))
 
   def testImageUri(self):
@@ -271,6 +274,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                           self.board,
                                           self.version,
                                           self.key,
+                                          self.signed_image_type,
                                           bucket=self.bucket),
         self._Populate(self._GS_IMAGE_PATH_TEMPLATE))
 
@@ -278,7 +282,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
     self.assertEquals(
         gspaths.ChromeosReleases.UnsignedImageArchiveUri(
             self.channel, self.board, self.version, self.milestone,
-            self.image_type, bucket=self.bucket),
+            self.unsigned_image_type, bucket=self.bucket),
         self._Populate(self._GS_UNSIGNED_IMAGE_ARCHIVE_PATH_TEMPLATE))
 
   @staticmethod
@@ -302,23 +306,25 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                    channel=self.channel,
                                    board=self.board,
                                    version=self.version,
+                                   image_type=self.signed_image_type,
                                    key=self.key,
                                    uri=uri_basic)
     expected_basic_str = gspaths.ChromeosReleases.ImageName(
         expected_basic.channel, expected_basic.board, expected_basic.version,
-        expected_basic.key)
+        expected_basic.key, expected_basic.image_type)
 
     expected_npo = gspaths.Image(channel=self.channel,
                                  board=self.board,
                                  version=self.version,
                                  key=self.key,
+                                 image_type=self.signed_image_type,
                                  image_channel=npo_channel,
                                  image_version=npo_version,
                                  uri=uri_npo)
 
     expected_npo_str = gspaths.ChromeosReleases.ImageName(
         expected_npo.image_channel, expected_npo.board,
-        expected_npo.image_version, expected_npo.key)
+        expected_npo.image_version, expected_npo.key, expected_npo.image_type)
 
     basic_image = gspaths.ChromeosReleases.ParseImageUri(uri_basic)
     self.assertEqual(basic_image, expected_basic)
@@ -345,7 +351,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                             board=self.board,
                                             version=self.version,
                                             milestone=self.milestone,
-                                            image_type=self.image_type,
+                                            image_type=self.unsigned_image_type,
                                             uri=uri)
     expected_str = gspaths.ChromeosReleases.UnsignedImageArchiveName(
         expected.board, expected.version, expected.milestone,
@@ -374,7 +380,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         board=self.board,
         version=self.version,
         random_str=self.random_str,
-        unsigned_image_type=self.image_type)
+        unsigned_image_type=self.unsigned_image_type)
 
     delta_unsigned = gspaths.ChromeosReleases.PayloadName(
         channel=self.channel,
@@ -382,7 +388,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         version=self.version,
         src_version=self.src_version,
         random_str=self.random_str,
-        unsigned_image_type=self.image_type)
+        unsigned_image_type=self.unsigned_image_type)
 
     self.assertEqual(full, self._Populate(self._FULL_PAYLOAD_NAME_TEMPLATE))
     self.assertEqual(delta, self._Populate(self._DELTA_PAYLOAD_NAME_TEMPLATE))
@@ -605,3 +611,35 @@ class GsPathsTest(cros_test_lib.TestCase):
 
     self.assertFalse(gspaths.VersionGreater('1.2.3.4', '1.2.3'))
     self.assertFalse(gspaths.VersionGreater('0.1.2.3', '1.2.3'))
+
+  def testIsImage(self):
+    a = float(3.14)
+    self.assertFalse(gspaths.IsImage(a))
+    b = gspaths.Image()
+    self.assertTrue(gspaths.IsImage(b))
+
+  def testIsUnsignedImageArchive(self):
+    a = float(3.14)
+    self.assertFalse(gspaths.IsUnsignedImageArchive(a))
+    b = gspaths.UnsignedImageArchive()
+    self.assertTrue(gspaths.IsUnsignedImageArchive(b))
+
+
+class ImageTest(cros_test_lib.TestCase):
+  """Test Image class implementation."""
+
+  def testImage_DefaultImageType(self):
+    default_image = gspaths.Image(bucket='bucket',
+                                  board='board',
+                                  channel='channel',
+                                  version='version')
+    self.assertEquals('recovery', default_image.image_type)
+
+  def testImage_CustomImageType(self):
+    custom_image_type = 'base'
+    custom_image = gspaths.Image(bucket='bucket',
+                                 board='board',
+                                 channel='channel',
+                                 version='version',
+                                 image_type=custom_image_type)
+    self.assertEquals(custom_image_type, custom_image.image_type)

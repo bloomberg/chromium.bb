@@ -165,7 +165,7 @@ def _LogList(title, obj_list):
 
 def _FilterForImages(artifacts):
   """Return only instances of Image from a list of artifacts."""
-  return [a for a in artifacts if isinstance(a, gspaths.Image)]
+  return filter(gspaths.IsImage, artifacts)
 
 
 def _FilterForMp(artifacts):
@@ -230,7 +230,12 @@ def _FilterForNpo(artifacts):
 
 def _FilterForUnsignedImageArchives(artifacts):
   """Return only instances of UnsignedImageArchive from a list of artifacts."""
-  return [i for i in artifacts if isinstance(i, gspaths.UnsignedImageArchive)]
+  return filter(gspaths.IsUnsignedImageArchive, artifacts)
+
+
+def _FilterForImageType(artifacts, image_type):
+  """Return only images for given |image_type|."""
+  return [i for i in artifacts if i.image_type == image_type]
 
 
 def _FilterForTest(artifacts):
@@ -466,9 +471,13 @@ class _PaygenBuild(object):
       BuildCorrupt: Raised if unexpected images are found.
       ImageMissing: Raised if expected images are missing.
     """
+    # Ideally, |image_type| below should be constrained to the type(s) expected
+    # for the board. But the board signing configs are not easily accessible at
+    # this point, so we use the wildcard here and rely on the signers to upload
+    # the expected artifacts.
     search_uri = gspaths.ChromeosReleases.ImageUri(
-        build.channel, build.board, build.version, key='*', image_channel='*',
-        image_version='*', bucket=build.bucket)
+        build.channel, build.board, build.version, key='*', image_type='*',
+        image_channel='*', image_version='*', bucket=build.bucket)
 
     image_uris = urilib.ListFiles(search_uri)
     images = [gspaths.ChromeosReleases.ParseImageUri(uri) for uri in image_uris]
@@ -635,15 +644,14 @@ class _PaygenBuild(object):
       May be empty.
     """
     basics = _FilterForBasic(images)
-    npos = _FilterForNpo(images)
-
     # If previously filtered for premp, and filtered for npo, there can only
     # be one of each.
     assert len(basics) <= 1, 'Unexpected images found %s' % basics
-    assert len(npos) <= 1, 'Unexpected NPO images found %s' % npos
-
-    if basics and npos:
-      return [gspaths.Payload(tgt_image=npos[0], src_image=basics[0])]
+    if basics:
+      npos = _FilterForImageType(_FilterForNpo(images), basics[0].image_type)
+      assert len(npos) <= 1, 'Unexpected NPO images found %s' % npos
+      if npos:
+        return [gspaths.Payload(tgt_image=npos[0], src_image=basics[0])]
 
     return []
 
@@ -694,13 +702,16 @@ class _PaygenBuild(object):
     # After filtering for NPO, and for MP/PREMP, there can be only one!
     assert len(images) == 1, 'Unexpected images found %s.' % images
     image = images[0]
+    # Filter artifacts that have the same |image_type| as that of |image|.
+    previous_images_by_type = _FilterForImageType(previous_images,
+                                                  image.image_type)
 
     results = []
 
     # We should never generate downgrades, they are unsafe. Deltas to the
     # same images are useless. Neither case normally happens unless
     # we are re-generating payloads for old builds.
-    for prev in previous_images:
+    for prev in previous_images_by_type:
       if gspaths.VersionGreater(image.version, prev.version):
         # A delta from each previous image to current image.
         results.append(gspaths.Payload(tgt_image=image, src_image=prev))

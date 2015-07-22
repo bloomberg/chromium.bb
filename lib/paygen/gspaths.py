@@ -64,6 +64,8 @@ class Image(utils.RestrictedAttrDict):
                    directory it's in. (ie: nplusone). None otherwise.
     image_version: Sometimes an image has a different version than the build
                    directory it's in. (ie: nplusone). None otherwise.
+    image_type: The type of the image. Currently, "recovery" or "base" types
+                are supported.
     key: The key the image was signed with. "premp", "mp", "mp-v2"
          This is not the board specific key name, but the general value used
          in image/payload names.
@@ -72,9 +74,10 @@ class Image(utils.RestrictedAttrDict):
     version: The version of the image. "0.14.23.2", "3401.0.0", etc.
   """
   _name = 'Image definition'
-  _slots = ('board', 'version', 'channel', 'key',
+  _slots = ('board', 'version', 'channel', 'image_type', 'key',
             'image_channel', 'image_version', 'bucket',
             'uri')
+  DEFAULT_IMAGE_TYPE = 'recovery'
 
   def __init__(self, *args, **kwargs):
     super(Image, self).__init__(*args, **kwargs)
@@ -83,17 +86,20 @@ class Image(utils.RestrictedAttrDict):
     self._clear_if_default('bucket', ChromeosReleases.BUCKET)
     self._clear_if_default('image_channel', self['channel'])
     self._clear_if_default('image_version', self['version'])
+    # Force a default image_type if unspecified.
+    if not self['image_type']:
+      self['image_type'] = Image.DEFAULT_IMAGE_TYPE
 
   def __str__(self):
     if self.uri:
       return '%s' % self.uri.split('/')[-1]
     else:
-      return ('Image: %s:%s/%s%s/%s%s/%s (no uri)' %
+      return ('Image: %s:%s/%s%s/%s%s/%s/%s (no uri)' %
               (self.bucket, self.board, self.channel,
                '(%s)' % self.image_channel if self.image_channel else '',
                self.version,
                '(%s)' % self.image_version if self.image_version else '',
-               self.key))
+               self.image_type, self.key))
 
 
 class UnsignedImageArchive(utils.RestrictedAttrDict):
@@ -105,7 +111,7 @@ class UnsignedImageArchive(utils.RestrictedAttrDict):
     board: The board of the image "x86-mario", etc.
     version: The version of the image. "0.14.23.2", "3401.0.0", etc.
     milestone: the most recent branch corresponding to the version; "R19" etc
-    image_type: "test" or "recovery"
+    image_type: "test", "recovery" or "base"
     uri: The URI of the image. This URI can be any format understood by
          urilib.
   """
@@ -127,9 +133,10 @@ class Payload(utils.RestrictedAttrDict):
   """Define a ChromeOS Payload.
 
   Fields:
-    tgt_image: An instance of Image saying what the payload updates to.
-    src_image: An instance of Image showing what it updates from. None for
-               Full updates.
+    tgt_image: A representation of image the payload updates to, either
+               Image or UnsignedImageArchive.
+    src_image: A representation of image it updates from. None for
+               Full updates, or the same type as tgt_image otherwise.
     uri: The URI of the payload. This can be any format understood by urilib.
   """
   _name = 'Payload definition'
@@ -154,7 +161,7 @@ class ChromeosReleases(object):
 
   FLAGS = (SKIP, FINISHED, LOCK)
 
-  UNSIGNED_IMAGE_TYPES = ('test', 'recovery')
+  UNSIGNED_IMAGE_TYPES = ('test', 'recovery', 'base')
 
   @staticmethod
   def BuildUri(channel, board, version, bucket=None):
@@ -269,7 +276,7 @@ class ChromeosReleases(object):
                         '%s_flag' % flag)
 
   @staticmethod
-  def ImageName(channel, board, version, key):
+  def ImageName(channel, board, version, key, image_type):
     """Creates the base file name for a given build image.
 
     Args:
@@ -277,19 +284,22 @@ class ChromeosReleases(object):
       board: What board is the build for? "x86-alex", "lumpy", etc.
       version: "What is the build version. "3015.0.0", "1945.76.3", etc
       key: "What is the signing key. "premp", "mp", "mp-v2", etc
+      image_type: The type of image.  It can be either "recovery" or "base".
 
     Returns:
       The name of the specified image. Should be of the form:
         chromeos_1.2.3_board-name_recovery_blah-channel_key.bin
     """
 
-    template = 'chromeos_%(version)s_%(board)s_recovery_%(channel)s_%(key)s.bin'
+    template = ('chromeos_%(version)s_%(board)s_%(image_type)s'
+                + '_%(channel)s_%(key)s.bin')
 
     return template % {
         'channel': channel,
         'board': board,
         'version': version,
         'key': key,
+        'image_type': image_type,
     }
 
   @staticmethod
@@ -318,7 +328,7 @@ class ChromeosReleases(object):
     }
 
   @staticmethod
-  def ImageUri(channel, board, version, key,
+  def ImageUri(channel, board, version, key, image_type,
                image_channel=None, image_version=None,
                bucket=None):
     """Creates the gspath for a given build image.
@@ -328,6 +338,7 @@ class ChromeosReleases(object):
       board: What board is the build for? "x86-alex", "lumpy", etc
       version: What is the build version? "3015.0.0", "1945.76.3", etc
       key: What is the signing key? "premp", "mp", "mp-v2", etc
+      image_type: The type of image.  It can be either "recovery" or "base".
       image_channel: Sometimes an image has a different channel than the build
                      directory it's in. (ie: nplusone).
       image_version: Sometimes an image has a different version than the build
@@ -347,7 +358,8 @@ class ChromeosReleases(object):
 
     return os.path.join(
         ChromeosReleases.BuildUri(channel, board, version, bucket=bucket),
-        ChromeosReleases.ImageName(image_channel, board, image_version, key))
+        ChromeosReleases.ImageName(image_channel, board, image_version, key,
+                                   image_type))
 
   @staticmethod
   def UnsignedImageArchiveUri(channel, board, version, milestone, image_type,
@@ -379,7 +391,8 @@ class ChromeosReleases(object):
     # The named values in this regex must match the arguments to gspaths.Image.
     exp = (r'^gs://(?P<bucket>.*)/(?P<channel>.*)/(?P<board>.*)/'
            r'(?P<version>.*)/chromeos_(?P<image_version>[^_]+)_'
-           r'(?P=board)_recovery_(?P<image_channel>[^_]+)_(?P<key>[^_]+).bin$')
+           r'(?P=board)_(?P<image_type>[^_]+)_(?P<image_channel>[^_]+)_'
+           '(?P<key>[^_]+).bin$')
 
     m = re.match(exp, image_uri)
 
@@ -491,8 +504,7 @@ class ChromeosReleases(object):
   @staticmethod
   def PayloadUri(channel, board, version, random_str, key=None,
                  image_channel=None, image_version=None,
-                 src_version=None,
-                 bucket=None):
+                 src_version=None, bucket=None):
     """Creates the gspath for a payload associated with a given build.
 
     Args:
@@ -677,3 +689,27 @@ def VersionGreater(left, right):
     left > right taking into account new style versions versus old style.
   """
   return VersionKey(left) > VersionKey(right)
+
+
+def IsImage(a):
+  """Return if the object is of Image type.
+
+  Args:
+    a: object whose type needs to be checked
+
+  Returns:
+    True if |a| is of Image type, False otherwise
+  """
+  return isinstance(a, Image)
+
+
+def IsUnsignedImageArchive(a):
+  """Return if the object is of UnsignedImageArchive type.
+
+  Args:
+    a: object whose type needs to be checked
+
+  Returns:
+    True if |a| is of UnsignedImageArchive type, False otherwise
+  """
+  return isinstance(a, UnsignedImageArchive)

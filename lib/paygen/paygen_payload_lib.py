@@ -56,6 +56,7 @@ class _PaygenPayload(object):
 
   TEST_IMAGE_NAME = 'chromiumos_test_image.bin'
   RECOVERY_IMAGE_NAME = 'chromiumos_recovery_image.bin'
+  BASE_IMAGE_NAME = 'chromiumos_base_image.bin'
 
   # Default names used by cros_generate_update_payload for extracting old/new
   # kernel/rootfs partitions.
@@ -223,7 +224,8 @@ class _PaygenPayload(object):
     an on-disk format, as necessary.
 
     Args:
-      image: an object representing the image we're processing
+      image: an object representing the image we're processing, either
+             UnsignedImageArchive or Image type from gspaths module.
       image_file: file into which the prepared image should be copied.
     """
 
@@ -234,8 +236,16 @@ class _PaygenPayload(object):
         'signed': (None, True),
         'test': (self.TEST_IMAGE_NAME, False),
         'recovery': (self.RECOVERY_IMAGE_NAME, True),
+        'base': (self.BASE_IMAGE_NAME, True),
     }
-    extract_file, _ = image_handling_by_type[image.get('image_type', 'signed')]
+    if gspaths.IsImage(image):
+      # No need to extract.
+      extract_file = None
+    elif gspaths.IsUnsignedImageArchive(image):
+      extract_file, _ = image_handling_by_type[image.get('image_type',
+                                                         'signed')]
+    else:
+      raise Error('Unknown image type %s' % type(image))
 
     # Are we donwloading an archive that contains the image?
     if extract_file:
@@ -735,7 +745,7 @@ def DefaultPayloadUri(payload, random_str=None):
   if payload.src_image:
     src_version = payload.src_image['version']
 
-  if payload.tgt_image.get('image_type', 'signed') == 'signed':
+  if gspaths.IsImage(payload.tgt_image):
     # Signed payload.
     return gspaths.ChromeosReleases.PayloadUri(
         channel=payload.tgt_image.channel,
@@ -747,7 +757,7 @@ def DefaultPayloadUri(payload, random_str=None):
         image_version=payload.tgt_image.image_version,
         src_version=src_version,
         bucket=payload.tgt_image.bucket)
-  else:
+  elif gspaths.IsUnsignedImageArchive(payload.tgt_image):
     # Unsigned test payload.
     return gspaths.ChromeosReleases.PayloadUri(
         channel=payload.tgt_image.channel,
@@ -756,6 +766,8 @@ def DefaultPayloadUri(payload, random_str=None):
         random_str=random_str,
         src_version=src_version,
         bucket=payload.tgt_image.bucket)
+  else:
+    raise Error('Unknown image type %s' % type(payload.tgt_image))
 
 
 def SetPayloadUri(payload, uri):

@@ -39,6 +39,15 @@ class PaygenPayloadLibTest(cros_test_lib.MoxTempDirTestCase):
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
+    self.old_base_image = gspaths.Image(
+        channel='dev-channel',
+        board='x86-alex',
+        version='1620.0.0',
+        key='mp-v3',
+        image_type='base',
+        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
+             'chromeos_1620.0.0_x86-alex_base_dev-channel_mp-v3.bin'))
+
     self.new_image = gspaths.Image(
         channel='dev-channel',
         board='x86-alex',
@@ -71,7 +80,7 @@ class PaygenPayloadLibTest(cros_test_lib.MoxTempDirTestCase):
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_test.bin'))
 
-    self.full_payload = gspaths.Payload(tgt_image=self.old_image,
+    self.full_payload = gspaths.Payload(tgt_image=self.old_base_image,
                                         src_image=None,
                                         uri='gs://full_old_foo/boo')
 
