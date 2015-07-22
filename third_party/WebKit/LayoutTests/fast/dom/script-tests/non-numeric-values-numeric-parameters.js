@@ -172,6 +172,11 @@ function createHTMLTableRowElement()
     return row;
 }
 
+function createCanvasElement()
+{
+    return document.createElement("canvas");
+}
+
 // CharacterData
 
 shouldBe("nonNumericPolicy('document.createTextNode(\"a\").substringData(x, 0)')", "'any type allowed'");
@@ -254,6 +259,10 @@ shouldBe("nonNumericPolicy('createHTMLTableSectionElement().deleteRow(x)')", "'a
 
 shouldBe("nonNumericPolicy('document.createElement(\"textarea\").setSelectionRange(x, 0)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('document.createElement(\"textarea\").setSelectionRange(0, x)')", "'any type allowed'");
+
+// HTMLCanvasElement
+
+shouldBe("nonNumericPolicy('createCanvasElement().getContext(x)')", "'any type allowed (but not omitted)'");
 
 // KeyboardEvent
 

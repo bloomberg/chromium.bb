@@ -45,8 +45,7 @@ interface HTMLCanvasElement : HTMLElement {
     // handled differently the return type could be changed to "RenderingContext?"
     // and the [CallWith=ScriptState] extended attribute removed.
     //
-    // FIXME: The contextId argument should not be optional.
-    [CallWith=ScriptState] any getContext([Default=Undefined] optional DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributes attributes);
+    [CallWith=ScriptState] any getContext(DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributes attributes);
 
     // Note: The arguments argument is variadic in the spec, but not here as
     // only one extra argument is actually used.

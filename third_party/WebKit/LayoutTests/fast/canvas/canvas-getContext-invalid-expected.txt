@@ -9,6 +9,9 @@ PASS canvas.getContext('This is clearly not a valid context name.') is null
 PASS canvas.getContext('2d\0') is null
 PASS canvas.getContext('2ｄ') is null
 PASS canvas.getContext('2D') is null
+PASS canvas.getContext() threw exception TypeError: Failed to execute 'getContext' on 'HTMLCanvasElement': 1 argument required, but only 0 present..
+PASS canvas.getContext('null') is null
+PASS canvas.getContext('undefined') is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
