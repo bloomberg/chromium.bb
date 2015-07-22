@@ -41,7 +41,7 @@ protected:
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin)
 {
-    TextRun latinCommon("ABC DEF.", 8);
+    TextRun latinCommon(reinterpret_cast<const LChar*>("ABC DEF."), 8);
     HarfBuzzShaper shaper(font, latinCommon, &fallbackFonts);
     RefPtr<ShapeResult> result = shaper.shapeResult();
 
@@ -54,7 +54,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin)
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon)
 {
-    TextRun leadingCommon("... test", 8);
+    TextRun leadingCommon(reinterpret_cast<const LChar*>("... test"), 8);
     HarfBuzzShaper shaper(font, leadingCommon, &fallbackFonts);
     RefPtr<ShapeResult> result = shaper.shapeResult();
 
