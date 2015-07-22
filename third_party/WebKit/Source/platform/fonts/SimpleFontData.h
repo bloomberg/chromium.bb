@@ -52,7 +52,7 @@ enum FontDataVariant { AutoVariant, NormalVariant, SmallCapsVariant, EmphasisMar
 class PLATFORM_EXPORT SimpleFontData : public FontData {
 public:
     // Used to create platform fonts.
-    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData = nullptr, bool isTextOrientationFallback = false)
+    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtrWillBeRawPtr<CustomFontData> customData = nullptr, bool isTextOrientationFallback = false)
     {
         return adoptRef(new SimpleFontData(platformData, customData, isTextOrientationFallback));
     }
@@ -127,15 +127,15 @@ public:
 
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 
-    PassRefPtr<CustomFontData> customFontData() const { return m_customFontData; }
+    PassRefPtrWillBeRawPtr<CustomFontData> customFontData() const { return m_customFontData; }
 
     // Implemented by the platform.
     virtual bool fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const;
 
 protected:
-    SimpleFontData(const FontPlatformData&, PassRefPtr<CustomFontData> customData, bool isTextOrientationFallback = false);
+    SimpleFontData(const FontPlatformData&, PassRefPtrWillBeRawPtr<CustomFontData> customData, bool isTextOrientationFallback = false);
 
-    SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic);
+    SimpleFontData(PassRefPtrWillBeRawPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic);
 
 private:
     void platformInit();
@@ -184,7 +184,7 @@ private:
 
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
-    RefPtr<CustomFontData> m_customFontData;
+    RefPtrWillBePersistent<CustomFontData> m_customFontData;
     mutable OwnPtr<HashMap<String, bool>> m_combiningCharacterSequenceSupport;
 };
 

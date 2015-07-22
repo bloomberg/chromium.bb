@@ -257,7 +257,7 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData, unsigned pa
 
             // If this is a custom font needs to be loaded, do not fill
             // the page so that font fallback is used while loading.
-            RefPtr<CustomFontData> customData = range.fontData()->customFontData();
+            RefPtrWillBeRawPtr<CustomFontData> customData = range.fontData()->customFontData();
             if (customData && customData->isLoadingFallback()) {
                 for (int j = from; j < to; j++) {
                     m_page->setCustomFontToLoad(j, customData.get());

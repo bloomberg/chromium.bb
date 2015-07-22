@@ -22,6 +22,7 @@
 #define CustomFontData_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -29,11 +30,12 @@ namespace blink {
 
 class SimpleFontData;
 
-class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
+class PLATFORM_EXPORT CustomFontData : public RefCountedWillBeGarbageCollectedFinalized<CustomFontData> {
 public:
-    static PassRefPtr<CustomFontData> create() { return adoptRef(new CustomFontData()); }
+    static PassRefPtrWillBeRawPtr<CustomFontData> create() { return adoptRefWillBeNoop(new CustomFontData()); }
 
     virtual ~CustomFontData() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void beginLoadIfNeeded() const { }
     virtual bool isLoading() const { return false; }

@@ -30,12 +30,17 @@ class CSSCustomFontData final : public CustomFontData {
 public:
     enum FallbackVisibility { InvisibleFallback, VisibleFallback };
 
-    static PassRefPtr<CSSCustomFontData> create(RemoteFontFaceSource* source, FallbackVisibility visibility)
+    static PassRefPtrWillBeRawPtr<CSSCustomFontData> create(RemoteFontFaceSource* source, FallbackVisibility visibility)
     {
-        return adoptRef(new CSSCustomFontData(source, visibility));
+        return adoptRefWillBeNoop(new CSSCustomFontData(source, visibility));
     }
 
     ~CSSCustomFontData() override { }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_fontFaceSource);
+        CustomFontData::trace(visitor);
+    }
 
     bool shouldSkipDrawing() const override
     {
@@ -54,7 +59,7 @@ public:
 
     bool isLoading() const override { return m_isLoading; }
     bool isLoadingFallback() const override { return true; }
-    void clearFontFaceSource() override { m_fontFaceSource = 0; }
+    void clearFontFaceSource() override { m_fontFaceSource = nullptr; }
 
 private:
     CSSCustomFontData(RemoteFontFaceSource* source, FallbackVisibility visibility)
@@ -66,7 +71,7 @@ private:
             m_isLoading = source->isLoading();
     }
 
-    RemoteFontFaceSource* m_fontFaceSource;
+    RawPtrWillBeMember<RemoteFontFaceSource> m_fontFaceSource;
     FallbackVisibility m_fallbackVisibility;
     mutable bool m_isLoading;
 };

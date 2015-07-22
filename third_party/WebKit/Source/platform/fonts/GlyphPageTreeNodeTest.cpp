@@ -34,7 +34,7 @@ public:
     }
 
 private:
-    TestSimpleFontData(PassRefPtr<CustomFontData> customData, UChar32 from, UChar32 to)
+    TestSimpleFontData(PassRefPtrWillBeRawPtr<CustomFontData> customData, UChar32 from, UChar32 to)
         : SimpleFontData(customData, 10, false, false)
         , m_from(from)
         , m_to(to)
