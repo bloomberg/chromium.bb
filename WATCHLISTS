@@ -542,6 +542,9 @@
     'netinfo': {
       'filepath': 'netinfo',
     },
+    'network_quality': {
+      'filepath': 'net/base/network_quality*',
+    },
     'notifications': {
       'filepath': 'chrome/browser/extensions/api/notifications/|' \
         'chrome/browser/notifications/|' \
@@ -1045,6 +1048,7 @@
     'net_error_list': ['mmenke@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
+    'network_quality': ['rdsmith@chromium.org'],
     'notifications': ['peter+watch@chromium.org',
                       'mlamouri+watch-notifications@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
