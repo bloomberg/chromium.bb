@@ -117,8 +117,10 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
   // CFNetworkCopyProxiesForURL initializes some state within CFNetwork that is
   // required by CFNetworkExecuteProxyAutoConfigurationURL.
 
-  CFArrayRef dummy_result = CFNetworkCopyProxiesForURL(query_url_ref.get(),
-                                                       NULL);
+  base::ScopedCFTypeRef<CFDictionaryRef> empty_dictionary(
+      CFDictionaryCreate(NULL, NULL, NULL, 0, NULL, NULL));
+  CFArrayRef dummy_result =
+      CFNetworkCopyProxiesForURL(query_url_ref.get(), empty_dictionary);
   if (dummy_result)
     CFRelease(dummy_result);
 
