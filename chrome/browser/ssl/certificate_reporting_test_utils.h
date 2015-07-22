@@ -38,7 +38,7 @@ class CertificateReportingTest : public InProcessBrowserTest {
 
  protected:
   // Get the latest hostname for which a certificate report was sent.
-  const std::string& GetLatestHostnameReported();
+  const std::string& GetLatestHostnameReported() const;
 
  private:
   MockReporter* reporter_;
@@ -55,10 +55,9 @@ scoped_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
     base::RunLoop* run_loop,
     ExpectReport expect_report);
 
-// Forces a Finch config for the cert reporting experiment.
-void SetCertReportingFinchConfig(const std::string& group_name,
-                                 const std::string& param_value);
-void SetCertReportingFinchConfig(const std::string& group_name);
+// Returns whether a report should be expected (due to the Finch config)
+// if the user opts in.
+ExpectReport GetReportExpectedFromFinch();
 
 }  // namespace CertificateReportingTestUtils
 

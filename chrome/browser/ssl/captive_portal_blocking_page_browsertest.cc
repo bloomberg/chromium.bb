@@ -279,14 +279,18 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, CertReportingOptIn) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
-  TestCertReporting(CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN);
+  // This test should only run if the Finch config is such that reports
+  // will be sent when opted in. This tests that a report *is* sent when
+  // the user opts in under such a Finch config, and the below test
+  // tests that a report *is not* sent when the user doesn't opt in
+  // (under any Finch config).
+  if (CertificateReportingTestUtils::GetReportExpectedFromFinch() ==
+      CertificateReportingTestUtils::CERT_REPORT_EXPECTED) {
+    TestCertReporting(CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, CertReportingOptOut) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
   TestCertReporting(
       CertificateReportingTestUtils::EXTENDED_REPORTING_DO_NOT_OPT_IN);
 }

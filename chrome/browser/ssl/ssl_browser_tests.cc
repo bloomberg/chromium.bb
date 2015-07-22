@@ -1065,116 +1065,73 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestDisplaysInsecureContent) {
                           AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
-// User proceeds, checkbox is shown and checked, Finch parameter is set
-// -> we expect a report.
-IN_PROC_BROWSER_TEST_F(
-    SSLUITestWithExtendedReporting,
-    TestBrokenHTTPSProceedWithShowYesCheckYesParamYesReportYes) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+// Test that if the user proceeds and the checkbox is checked, a report
+// is sent or not sent depending on the Finch config.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSProceedReporting) {
+  CertificateReportingTestUtils::ExpectReport expect_report =
+      CertificateReportingTestUtils::GetReportExpectedFromFinch();
   TestBrokenHTTPSReporting(
       CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
-      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
-      CertificateReportingTestUtils::CERT_REPORT_EXPECTED, browser());
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED, expect_report,
+      browser());
 }
 
-// User goes back, checkbox is shown and checked, Finch parameter is set
-// -> we expect a report.
-IN_PROC_BROWSER_TEST_F(
-    SSLUITestWithExtendedReporting,
-    TestBrokenHTTPSGoBackWithShowYesCheckYesParamYesReportYes) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+// Test that if the user goes back and the checkbox is checked, a report
+// is sent or not sent depending on the Finch config.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSGoBackReporting) {
+  CertificateReportingTestUtils::ExpectReport expect_report =
+      CertificateReportingTestUtils::GetReportExpectedFromFinch();
   TestBrokenHTTPSReporting(
       CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
       CertificateReportingTestUtils::SSL_INTERSTITIAL_DO_NOT_PROCEED,
-      CertificateReportingTestUtils::CERT_REPORT_EXPECTED, browser());
+      expect_report, browser());
 }
 
-// User proceeds, checkbox is shown but unchecked, Finch parameter is set
-// -> we expect no report.
-IN_PROC_BROWSER_TEST_F(
-    SSLUITestWithExtendedReporting,
-    TestBrokenHTTPSProceedWithShowYesCheckNoParamYesReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+// User proceeds, checkbox is shown but unchecked. Reports should never
+// be sent, regardless of Finch config.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSProceedReportingWithNoOptIn) {
   TestBrokenHTTPSReporting(
       CertificateReportingTestUtils::EXTENDED_REPORTING_DO_NOT_OPT_IN,
       CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
       CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
-// User goes back, checkbox is shown but unchecked, Finch parameter is set
-// -> we expect no report.
+// User goes back, checkbox is shown but unchecked. Reports should never
+// be sent, regardless of Finch config.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSGoBackShowYesCheckNoParamYesReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
   TestBrokenHTTPSReporting(
       CertificateReportingTestUtils::EXTENDED_REPORTING_DO_NOT_OPT_IN,
       CertificateReportingTestUtils::SSL_INTERSTITIAL_DO_NOT_PROCEED,
       CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
-// User proceeds, checkbox is shown and checked, Finch parameter is not
-// set -> we expect no report.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSProceedShowYesCheckYesParamNoReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "-1.0");
-  TestBrokenHTTPSReporting(
-      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
-      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
-      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
-}
-
-// User goes back, checkbox is shown and checked, Finch parameter is not set
-// -> we expect no report.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSGoBackShowYesCheckYesParamNoReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "-1.0");
-  TestBrokenHTTPSReporting(
-      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
-      CertificateReportingTestUtils::SSL_INTERSTITIAL_DO_NOT_PROCEED,
-      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
-}
-
-// User proceeds, checkbox is not shown but checked -> we expect no report
+// User proceeds, checkbox is not shown but checked -> we expect no
+// report.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSProceedShowNoCheckYesReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupDontShowDontSend);
-  TestBrokenHTTPSReporting(
-      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
-      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
-      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
+  if (base::FieldTrialList::FindFullName(
+          CertReportHelper::kFinchExperimentName) ==
+      CertReportHelper::kFinchGroupDontShowDontSend) {
+    TestBrokenHTTPSReporting(
+        CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+        CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+        CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
+  }
 }
 
-// Browser is incognito, user proceeds, checkbox is shown and checked, Finch
-// parameter is set -> we expect no report
+// Browser is incognito, user proceeds, checkbox has previously opted in
+// -> no report, regardless of Finch config.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSInIncognitoReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
   TestBrokenHTTPSReporting(
       CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
       CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
       CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED,
       CreateIncognitoBrowser());
-}
-
-// User proceeds, checkbox is shown and checked, Finch parameter is invalid
-// -> we expect no report.
-IN_PROC_BROWSER_TEST_F(
-    SSLUITestWithExtendedReporting,
-    TestBrokenHTTPSProceedWithShowYesCheckYesParamInvalidReportNo) {
-  CertificateReportingTestUtils::SetCertReportingFinchConfig(
-      CertReportHelper::kFinchGroupShowPossiblySend, "abcdef");
-  TestBrokenHTTPSReporting(
-      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
-      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
-      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // Test that reports don't get sent when extended reporting opt-in is
