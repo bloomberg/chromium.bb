@@ -69,9 +69,9 @@ class HTMLFrameTreeManager : public mandoline::FrameTreeClient {
 
   blink::WebView* GetWebView();
 
-  void LoadingStarted();
-  void LoadingStopped();
-  void ProgressChanged(double progress);
+  void LoadingStarted(HTMLFrame* frame);
+  void LoadingStopped(HTMLFrame* frame);
+  void ProgressChanged(HTMLFrame* frame, double progress);
 
  private:
   friend class HTMLFrame;

@@ -190,16 +190,22 @@ void HTMLFrameTreeManager::OnConnect(
   NOTREACHED();
 }
 
-void HTMLFrameTreeManager::LoadingStarted() {
-  server_->LoadingStarted();
+void HTMLFrameTreeManager::LoadingStarted(HTMLFrame* frame) {
+  // TODO(sky): need way to propagate loading status for non-local frames.
+  if (frame == GetLocalFrame())
+    server_->LoadingStarted();
 }
 
-void HTMLFrameTreeManager::LoadingStopped() {
-  server_->LoadingStopped();
+void HTMLFrameTreeManager::LoadingStopped(HTMLFrame* frame) {
+  // TODO(sky): need way to propagate loading status for non-local frames.
+  if (frame == GetLocalFrame())
+    server_->LoadingStopped();
 }
 
-void HTMLFrameTreeManager::ProgressChanged(double progress) {
-  server_->ProgressChanged(progress);
+void HTMLFrameTreeManager::ProgressChanged(HTMLFrame* frame, double progress) {
+  // TODO(sky): need way to propagate loading status for non-local frames.
+  if (frame == GetLocalFrame())
+    server_->ProgressChanged(progress);
 }
 
 void HTMLFrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {

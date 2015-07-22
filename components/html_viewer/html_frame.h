@@ -38,8 +38,7 @@ class WebLayerTreeViewImpl;
 // Frame is used to represent a single frame in the frame tree of a page. The
 // frame is either local or remote. Each Frame is associated with a single
 // HTMLFrameTreeManager and can not be moved to another HTMLFrameTreeManager.
-// Local
-// frames have a mojo::View, remote frames do not.
+// Local frames have a mojo::View, remote frames do not.
 class HTMLFrame : public blink::WebFrameClient,
                   public blink::WebViewClient,
                   public blink::WebRemoteFrameClient,

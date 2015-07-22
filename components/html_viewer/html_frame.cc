@@ -501,15 +501,15 @@ blink::WebEncryptedMediaClient* HTMLFrame::encryptedMediaClient() {
 }
 
 void HTMLFrame::didStartLoading(bool to_different_document) {
-  frame_tree_manager_->LoadingStarted();
+  frame_tree_manager_->LoadingStarted(this);
 }
 
 void HTMLFrame::didStopLoading() {
-  frame_tree_manager_->LoadingStopped();
+  frame_tree_manager_->LoadingStopped(this);
 }
 
 void HTMLFrame::didChangeLoadProgress(double load_progress) {
-  frame_tree_manager_->ProgressChanged(load_progress);
+  frame_tree_manager_->ProgressChanged(this, load_progress);
 }
 
 void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,
