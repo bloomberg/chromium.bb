@@ -43,6 +43,21 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetBaseAdapter();
 
+  // |ScanFilterCheckingAdapter|
+  // Inherits from |BaseAdapter|
+  // BluetoothAdapter that asserts that its StartDiscoverySessionWithFilter()
+  // method is called with a filter consisting of the standard battery, heart
+  // rate, and glucose services.
+  // Devices added:
+  //  - BatteryDevice
+  // Mock Functions:
+  //  - StartDiscoverySessionWithFilter:
+  //      - With correct arguments: Run success callback.
+  //      - With incorrect arguments: Mock complains that function with
+  //        correct arguments was never called and error callback is called.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetScanFilterCheckingAdapter();
+
   // |FailStartDiscoveryAdapter|
   // Inherits from |BaseAdapter|
   // Devices added:
@@ -55,13 +70,21 @@ class LayoutTestBluetoothAdapterProvider {
 
   // |EmptyAdapter|
   // Inherits from |BaseAdapter|
-  // Devices added:
+  // Devices Added:
   //  None.
   // Mock Functions:
   //  - StartDiscoverySessionWithFilter:
   //      Run success callback with |DiscoverySession|.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetEmptyAdapter();
+
+  // |GlucoseHeartRateAdapter|
+  // Inherits from |EmptyAdapter|
+  // Devices added:
+  //  - |GlucoseDevice|
+  //  - |HeartRateDevice|
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetGlucoseHeartRateAdapter();
 
   // Discovery Sessions
 
@@ -72,17 +95,79 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDiscoverySession>>
   GetDiscoverySession();
 
-  // The functions after this haven't been updated to the new design yet.
+  // Devices
 
-  // Returns a fake BluetoothAdapter that asserts that its
-  // StartDiscoverySessionWithFilter() method is called with a filter consisting
-  // of the standard battery, heart rate, and glucose services.
-  //  - |StartDiscoverySessionWithFilter(correct arguments)| runs the success
-  //    callback with |DiscoverySession| as the argument. With incorrect
-  //    arguments, it runs the failure callback.
-  //  - |GetDevices| returns a device with a Battery service.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetScanFilterCheckingAdapter();
+  // |BaseDevice|
+  // Adv UUIDs added:
+  // None.
+  // Services added:
+  // None.
+  // MockFunctions:
+  //  - GetUUIDs:
+  //      Returns uuids
+  //  - GetGattServices:
+  //      Returns a list of all services added to the device.
+  //  - GetGattService:
+  //      Return a service matching the identifier provided if the service was
+  //      added to the mock.
+  //  - GetAddress:
+  //      Returns: address
+  //  - GetName:
+  //      Returns: device_name.
+  //  - GetBluetoothClass:
+  //      Returns: 0x1F00. “Unspecified Device Class” see
+  //      bluetooth.org/en-us/specification/assigned-numbers/baseband
+  //  - GetVendorIDSource:
+  //      Returns: BluetoothDevice::VENDOR_ID_BLUETOOTH.
+  //  - GetVendorID:
+  //      Returns: 0xFFFF.
+  //  - GetProductID:
+  //      Returns: 1.
+  //  - GetDeviceID:
+  //      Returns: 2.
+  //  - IsPaired:
+  //      Returns true.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetBaseDevice(device::MockBluetoothAdapter* adapter,
+                const std::string& device_name = "Base Device",
+                device::BluetoothDevice::UUIDList uuids =
+                    device::BluetoothDevice::UUIDList(),
+                const std::string& address = "00:00:00:00:00");
+
+  // |BatteryDevice|
+  // Inherits from BaseDevice(adapter, "Battery Device", uuids,
+  //                          "00:00:00:00:01")
+  // Adv UUIDs added:
+  //   - Generic Access (0x1800)
+  //   - Battery Service UUID (0x180F)
+  // Services added:
+  // None.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetBatteryDevice(device::MockBluetoothAdapter* adapter);
+
+  // |GlucoseDevice|
+  // Inherits from BaseDevice(adapter, "Glucose Device", uuids,
+  //                          "00:00:00:00:02")
+  // Adv UUIDs added:
+  //   - Generic Access (0x1800)
+  //   - Glucose UUID (0x1808)
+  // Services added:
+  // None.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetGlucoseDevice(device::MockBluetoothAdapter* adapter);
+
+  // |HeartRateDevice|
+  // Inherits from BaseDevice(adapter, "Heart Rate Device", uuids,
+  //                          "00:00:00:00:03")
+  // Adv UUIDs added:
+  //   - Generic Access (0x1800)
+  //   - Heart Rate UUID (0x180D)
+  // Services added:
+  // None.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetHeartRateDevice(device::MockBluetoothAdapter* adapter);
+
+  // The functions after this haven't been updated to the new design yet.
 
   // Returns "SingleEmptyDeviceAdapter" fake BluetoothAdapter with the following
   // characteristics:
@@ -92,19 +177,6 @@ class LayoutTestBluetoothAdapterProvider {
   //  - |GetDevices| returns a list with an |EmptyDevice|.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetSingleEmptyDeviceAdapter();
-
-  // Returns "MultiDeviceAdapter", a fake BluetoothAdapter with the following
-  // characteristics:
-  //  - |StartDiscoverySessionWithFilter| runs the success callback with
-  //  |DiscoverySession|
-  //    as argument.
-  //  - |GetDevices| returns a list with 2 devices:
-  //    - GetUUIDs() returns a Heart Rate Service,
-  //      and GetName() returns "Heart Rate Device".
-  //    - GetUUIDs() returns a Glucose Service,
-  //      and GetName() returns "Glucose Device".
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetMultiDeviceAdapter();
 
   // Returns "ConnectableDeviceAdapter" fake BluetoothAdapter with the
   // following characteristics:
