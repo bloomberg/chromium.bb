@@ -58,6 +58,9 @@ const char kEnableAutoThrottlingKey[] = "enableAutoThrottling";
 // they provide API's. If there are additional extension ids that need
 // whitelisting and are *not* the Chromecast extension, add them to a new
 // kWhitelist array.
+//
+// This list is also used by CastConfigDelegateChromeos to find official Cast
+// extensions.
 const char* const kChromecastExtensionIds[] = {
     "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
     "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Dogfood
@@ -65,6 +68,7 @@ const char* const kChromecastExtensionIds[] = {
     "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
     "dliochdbjfkdbacpmhlcpmleaejidimm",  // Google Cast Beta
     "boadgeojelhgndaghljhdicfkmllpafd",  // Google Cast Stable
+    "hlgmmjhlnlapooncikdpiiokdjcdpjme",  // Test cast extension
 };
 
 bool TabCaptureCaptureFunction::RunSync() {

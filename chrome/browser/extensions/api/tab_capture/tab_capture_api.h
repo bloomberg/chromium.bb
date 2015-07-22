@@ -15,7 +15,7 @@
 namespace extensions {
 
 // Extension ids for the chromecast.
-extern const char* const kChromecastExtensionIds[6];
+extern const char* const kChromecastExtensionIds[7];
 
 class TabCaptureCaptureFunction : public ChromeSyncExtensionFunction {
  public:
