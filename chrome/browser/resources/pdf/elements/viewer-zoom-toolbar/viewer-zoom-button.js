@@ -55,16 +55,12 @@ Polymer({
   },
 
   _onAnimationFinished: function() {
-    // Must use visibility: hidden so that the buttons do not change layout as
-    // they are hidden.
-    if (!this.opened)
-      this.style.visibility = 'hidden';
+    this.style.transform = this.opened ? 'none' : 'translateX(100%)';
   },
 
   show: function() {
     if (!this.opened) {
       this.toggle_();
-      this.style.visibility = 'initial';
     }
   },
 

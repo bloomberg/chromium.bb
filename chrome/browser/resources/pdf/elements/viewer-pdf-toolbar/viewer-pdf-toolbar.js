@@ -78,8 +78,7 @@
     },
 
     _onAnimationFinished: function() {
-      if (!this.opened)
-        this.style.visibility = 'hidden';
+        this.style.transform = this.opened ? 'none' : 'translateY(-100%)';
     },
 
     loadProgressChanged: function() {
@@ -98,7 +97,6 @@
     show: function() {
       if (!this.opened) {
         this.toggleVisibility();
-        this.style.visibility = 'initial';
       }
     },
 
