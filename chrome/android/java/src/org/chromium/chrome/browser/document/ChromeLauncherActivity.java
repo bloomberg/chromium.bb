@@ -333,7 +333,7 @@ public class ChromeLauncherActivity extends Activity
             int shortcutSource = getIntent().getIntExtra(
                         ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
             LaunchMetrics.recordHomeScreenLaunchIntoTab(url, shortcutSource);
-            if (relaunchTask(incognito, url)) return;
+            if (relaunchTask(incognito, url) != Tab.INVALID_TAB_ID) return;
         }
 
         // Create and fire a launch Intent to start a new Task.  The old Intent is copied using
@@ -450,9 +450,10 @@ public class ChromeLauncherActivity extends Activity
      * @param incognito Whether the created document should be incognito.
      * @param asyncParams AsyncTabCreationParams to store internally and use later once an intent is
      *                    received to launch the URL.
+     * @return ID of the Tab that was launched.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static void launchDocumentInstance(
+    public static int launchDocumentInstance(
             Activity activity, boolean incognito, AsyncTabCreationParams asyncParams) {
         assert asyncParams != null;
 
@@ -471,7 +472,8 @@ public class ChromeLauncherActivity extends Activity
         if (launchMode == LAUNCH_MODE_RETARGET) {
             assert asyncParams.getWebContents() == null;
             assert loadUrlParams.getPostData() == null;
-            if (relaunchTask(incognito, loadUrlParams.getUrl())) return;
+            int relaunchedId = relaunchTask(incognito, loadUrlParams.getUrl());
+            if (relaunchedId != Tab.INVALID_TAB_ID) return relaunchedId;
         }
 
         // If the new tab is spawned by another tab, record the parent.
@@ -504,6 +506,8 @@ public class ChromeLauncherActivity extends Activity
         } else {
             fireDocumentIntent(activity, intent, incognito, affiliated, asyncParams);
         }
+
+        return ActivityDelegate.getTabIdFromIntent(intent);
     }
 
     /**
@@ -657,11 +661,11 @@ public class ChromeLauncherActivity extends Activity
      * Bring the task matching the given URL to the front if the task is retargetable.
      * @param incognito Whether or not the tab is incognito.
      * @param url URL that the tab would have been created for. If null, this param is ignored.
-     * @return Whether the task was successfully brought back.
+     * @return ID of the Tab if it was successfully relaunched, otherwise Tab.INVALID_TAB_ID.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static boolean relaunchTask(boolean incognito, String url) {
-        if (TextUtils.isEmpty(url)) return false;
+    private static int relaunchTask(boolean incognito, String url) {
+        if (TextUtils.isEmpty(url)) return Tab.INVALID_TAB_ID;
 
         Context context = ApplicationStatus.getApplicationContext();
         ActivityManager manager =
@@ -681,10 +685,10 @@ public class ChromeLauncherActivity extends Activity
             }
 
             if (!moveToFront(task)) continue;
-            return true;
+            return id;
         }
 
-        return false;
+        return Tab.INVALID_TAB_ID;
     }
 
     /**

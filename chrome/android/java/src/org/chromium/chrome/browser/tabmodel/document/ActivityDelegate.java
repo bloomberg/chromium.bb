@@ -16,6 +16,7 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentActivity;
@@ -203,5 +204,20 @@ public class ActivityDelegate {
             if (isValidActivity(true, intent)) return true;
         }
         return false;
+    }
+
+    /** @return Running Activity that owns the given Tab, null if the Activity couldn't be found. */
+    public static Activity getActivityForTabId(int id) {
+        if (id == Tab.INVALID_TAB_ID) return null;
+
+        for (WeakReference<Activity> ref : ApplicationStatus.getRunningActivities()) {
+            if (!(ref.get() instanceof ChromeActivity)) continue;
+
+            ChromeActivity activity = (ChromeActivity) ref.get();
+            if (activity == null) continue;
+
+            if (activity.getTabModelSelector().getTabById(id) != null) return activity;
+        }
+        return null;
     }
 }
