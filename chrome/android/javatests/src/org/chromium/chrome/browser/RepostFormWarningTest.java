@@ -10,12 +10,12 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -23,20 +23,26 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests verifying that form resubmission dialogs are correctly displayed and handled.
  */
-public class RepostFormWarningTest extends ChromeShellTestBase {
+public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     // Active tab.
-    private ChromeShellTab mTab;
+    private Tab mTab;
     // Callback helper that manages waiting for pageloads to finish.
     private TestCallbackHelperContainer mCallbackHelper;
+
+    public RepostFormWarningTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
-        launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
-
-        mTab = getActivity().getActiveTab();
+        mTab = getActivity().getActivityTab();
         mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
     }
 
@@ -130,7 +136,8 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTab.loadUrlWithSanitization(TestHttpServerClient.getUrl(url), postData);
+                mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
+                        TestHttpServerClient.getUrl(url), postData));
             }
         });
     }

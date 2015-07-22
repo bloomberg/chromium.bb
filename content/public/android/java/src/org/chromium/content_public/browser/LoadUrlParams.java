@@ -5,6 +5,7 @@
 package org.chromium.content_public.browser;
 
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
@@ -159,6 +160,7 @@ public class LoadUrlParams {
      * @param url URL of the load.
      * @param postData Post data of the load. Can be null.
      */
+    @VisibleForTesting
     public static LoadUrlParams createLoadHttpPostParams(
             String url, byte[] postData) {
         LoadUrlParams params = new LoadUrlParams(url);
