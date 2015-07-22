@@ -11,6 +11,7 @@
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
 #include "sandbox/mac/mach_message_server.h"
+#include "sandbox/mac/os_compatibility.h"
 #include "sandbox/mac/xpc_message_server.h"
 
 namespace sandbox {
@@ -24,7 +25,7 @@ LaunchdInterceptionServer::LaunchdInterceptionServer(
     const BootstrapSandbox* sandbox)
     : sandbox_(sandbox),
       sandbox_port_(MACH_PORT_NULL),
-      compat_shim_(GetLaunchdCompatibilityShim()) {
+      compat_shim_(OSCompatibility::CreateForPlatform()) {
 }
 
 LaunchdInterceptionServer::~LaunchdInterceptionServer() {
@@ -60,8 +61,8 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
 
 void LaunchdInterceptionServer::DemuxMessage(IPCMessage request) {
   const uint64_t message_subsystem =
-      compat_shim_.ipc_message_get_subsystem(request);
-  const uint64_t message_id = compat_shim_.ipc_message_get_id(request);
+      compat_shim_->GetMessageSubsystem(request);
+  const uint64_t message_id = compat_shim_->GetMessageID(request);
   VLOG(3) << "Incoming message #" << message_subsystem << "," << message_id;
 
   pid_t sender_pid = message_server_->GetMessageSenderPID(request);
@@ -75,14 +76,14 @@ void LaunchdInterceptionServer::DemuxMessage(IPCMessage request) {
     return;
   }
 
-  if (compat_shim_.is_launchd_look_up(request)) {
+  if (compat_shim_->IsServiceLookUpRequest(request)) {
     // Filter messages sent via bootstrap_look_up to enforce the sandbox policy
     // over the bootstrap namespace.
     HandleLookUp(request, policy);
-  } else if (compat_shim_.is_launchd_vproc_swap_integer(request)) {
+  } else if (compat_shim_->IsVprocSwapInteger(request)) {
     // Ensure that any vproc_swap_integer requests are safe.
     HandleSwapInteger(request);
-  } else if (compat_shim_.is_xpc_domain_management(request)) {
+  } else if (compat_shim_->IsXPCDomainManagement(request)) {
     // XPC domain management requests just require an ACK.
     message_server_->SendReply(message_server_->CreateReply(request));
   } else {
@@ -96,7 +97,7 @@ void LaunchdInterceptionServer::HandleLookUp(
     IPCMessage request,
     const BootstrapSandboxPolicy* policy) {
   const std::string request_service_name(
-      compat_shim_.look_up2_get_request_name(request));
+      compat_shim_->GetServiceLookupName(request));
   VLOG(2) << "Incoming look_up2 request for " << request_service_name;
 
   // Find the Rule for this service. If a named rule is not found, use the
@@ -133,13 +134,13 @@ void LaunchdInterceptionServer::HandleLookUp(
       result_port = rule.substitute_port;
 
     IPCMessage reply = message_server_->CreateReply(request);
-    compat_shim_.look_up2_fill_reply(reply, result_port);
+    compat_shim_->WriteServiceLookUpReply(reply, result_port);
     // If the message was sent successfully, clear the result_port out of the
     // message so that it is not destroyed at the end of ReceiveMessage. The
     // above-inserted right has been moved out of the process, and destroying
     // the message will unref yet another right.
     if (message_server_->SendReply(reply))
-      compat_shim_.look_up2_fill_reply(reply, MACH_PORT_NULL);
+      compat_shim_->WriteServiceLookUpReply(reply, MACH_PORT_NULL);
   } else {
     NOTREACHED();
   }
@@ -149,7 +150,7 @@ void LaunchdInterceptionServer::HandleSwapInteger(IPCMessage request) {
   // Only allow getting information out of launchd. Do not allow setting
   // values. Two commonly observed values that are retrieved are
   // VPROC_GSK_MGR_PID and VPROC_GSK_TRANSACTIONS_ENABLED.
-  if (compat_shim_.swap_integer_is_get_only(request)) {
+  if (compat_shim_->IsSwapIntegerReadOnly(request)) {
     VLOG(2) << "Forwarding vproc swap_integer message.";
     ForwardMessage(request);
   } else {

@@ -10,12 +10,12 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
-#include "sandbox/mac/os_compatibility.h"
 
 namespace sandbox {
 
 class BootstrapSandbox;
 struct BootstrapSandboxPolicy;
+class OSCompatibility;
 
 // This class is used to run a Mach IPC message server. This server can
 // hold the receive right for a bootstrap_port of a process, and it filters
@@ -65,7 +65,7 @@ class LaunchdInterceptionServer : public MessageDemuxer {
 
   // The compatibility shim that handles differences in message header IDs and
   // request/reply structures between different OS X versions.
-  const LaunchdCompatibilityShim compat_shim_;
+  scoped_ptr<OSCompatibility> compat_shim_;
 };
 
 }  // namespace sandbox
