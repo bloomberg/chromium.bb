@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -56,7 +57,8 @@ public class NewTabPageToolbar extends LinearLayout implements OnLongClickListen
         TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(), drawableId);
         ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 textView, icon, null, null, null);
-        if (!DeviceFormFactor.isTablet(getContext())) {
+        if (!DeviceFormFactor.isTablet(getContext())
+                && !ChromeAppMenuPropertiesDelegate.isMenuTrimmingExperimentEnabled()) {
             // On phones, no text is shown, but long pressing shows a tooltip.
             textView.setText("");
             textView.setCompoundDrawablePadding(0);

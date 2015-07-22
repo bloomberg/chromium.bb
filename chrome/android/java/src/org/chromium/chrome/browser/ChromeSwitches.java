@@ -169,6 +169,11 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_ANDROID_SPELLCHECKER = "enable-android-spellchecker";
 
     /**
+     * Enable the menu trimming that removes "Bookmarks" and "Recent tabs" menu items.
+     */
+    public static final String ENABLE_MENU_TRIMMING = "enable-menu-trimming";
+
+    /**
      * Disable speculative TCP/IP preconnection.
      * Native switch - switches::kDisablePreconnect
      */
