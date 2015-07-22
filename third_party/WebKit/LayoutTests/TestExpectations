@@ -3554,3 +3554,5 @@ Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-11.html [ NeedsMan
 Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
 
 crbug.com/512709 [ XP ] fast/text/emphasis.html [ Pass ImageOnlyFailure ]
+
+crbug.com/512868 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Pass ImageOnlyFailure ]
