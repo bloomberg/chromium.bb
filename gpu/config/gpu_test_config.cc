@@ -39,6 +39,8 @@ GPUTestConfig::OS GetCurrentOS() {
     return GPUTestConfig::kOsWin7;
   if (major_version == 6 && (minor_version == 2 || minor_version == 3))
     return GPUTestConfig::kOsWin8;
+  if (major_version == 10)
+    return GPUTestConfig::kOsWin10;
 #elif defined(OS_MACOSX)
   int32 major_version = 0;
   int32 minor_version = 0;
@@ -169,6 +171,7 @@ bool GPUTestBotConfig::IsValid() const {
     case kOsWinVista:
     case kOsWin7:
     case kOsWin8:
+    case kOsWin10:
     case kOsMacLeopard:
     case kOsMacSnowLeopard:
     case kOsMacLion:

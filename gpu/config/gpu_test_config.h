@@ -24,7 +24,6 @@ class GPU_EXPORT GPUTestConfig {
     kOsWinVista = 1 << 1,
     kOsWin7 = 1 << 2,
     kOsWin8 = 1 << 3,
-    kOsWin = kOsWinXP | kOsWinVista | kOsWin7 | kOsWin8,
     kOsMacLeopard = 1 << 4,
     kOsMacSnowLeopard = 1 << 5,
     kOsMacLion = 1 << 6,
@@ -36,6 +35,8 @@ class GPU_EXPORT GPUTestConfig {
     kOsLinux = 1 << 10,
     kOsChromeOS = 1 << 11,
     kOsAndroid = 1 << 12,
+    kOsWin10 = 1 << 13,
+    kOsWin = kOsWinXP | kOsWinVista | kOsWin7 | kOsWin8 | kOsWin10,
   };
 
   enum BuildType {

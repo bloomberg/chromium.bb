@@ -26,6 +26,7 @@ static const struct TestOsWithFamily {
   { { "VISTA", GPUTestConfig::kOsWinVista }, kOsFamilyWin },
   { { "WIN7", GPUTestConfig::kOsWin7 }, kOsFamilyWin },
   { { "WIN8", GPUTestConfig::kOsWin8 }, kOsFamilyWin },
+  { { "WIN10", GPUTestConfig::kOsWin10 }, kOsFamilyWin },
   { { "LEOPARD", GPUTestConfig::kOsMacLeopard }, kOsFamilyMac },
   { { "SNOWLEOPARD", GPUTestConfig::kOsMacSnowLeopard }, kOsFamilyMac },
   { { "LION", GPUTestConfig::kOsMacLion }, kOsFamilyMac },
@@ -165,7 +166,7 @@ TEST_F(GPUTestExpectationsParserTest, ValidUnrelatedTestEntry) {
 
 TEST_F(GPUTestExpectationsParserTest, AllModifiers) {
   const std::string text =
-      "BUG12345 XP VISTA WIN7 WIN8 LEOPARD SNOWLEOPARD LION MOUNTAINLION "
+      "BUG12345 XP VISTA WIN7 WIN8 WIN10 LEOPARD SNOWLEOPARD LION MOUNTAINLION "
       "MAVERICKS LINUX CHROMEOS ANDROID "
       "NVIDIA INTEL AMD VMWARE RELEASE DEBUG : MyTest = "
       "PASS FAIL FLAKY TIMEOUT SKIP";
@@ -194,8 +195,8 @@ TEST_P(GPUTestExpectationsParserParamTest, DuplicateModifiers) {
 
 TEST_F(GPUTestExpectationsParserTest, AllModifiersLowerCase) {
   const std::string text =
-      "BUG12345 xp vista win7 leopard snowleopard lion linux chromeos android "
-      "nvidia intel amd vmware release debug : MyTest = "
+      "BUG12345 xp vista win7 win8 win10 leopard snowleopard lion linux "
+      "chromeos android nvidia intel amd vmware release debug : MyTest = "
       "pass fail flaky timeout skip";
 
   GPUTestExpectationsParser parser;

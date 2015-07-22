@@ -31,6 +31,7 @@ enum Token {
   kConfigWinVista,
   kConfigWin7,
   kConfigWin8,
+  kConfigWin10,
   kConfigWin,
   kConfigMacLeopard,
   kConfigMacSnowLeopard,
@@ -78,6 +79,7 @@ const TokenInfo kTokenData[] = {
   { "vista", GPUTestConfig::kOsWinVista },
   { "win7", GPUTestConfig::kOsWin7 },
   { "win8", GPUTestConfig::kOsWin8 },
+  { "win10", GPUTestConfig::kOsWin10 },
   { "win", GPUTestConfig::kOsWin },
   { "leopard", GPUTestConfig::kOsMacLeopard },
   { "snowleopard", GPUTestConfig::kOsMacSnowLeopard },
@@ -231,6 +233,7 @@ bool GPUTestExpectationsParser::ParseConfig(
       case kConfigWinVista:
       case kConfigWin7:
       case kConfigWin8:
+      case kConfigWin10:
       case kConfigWin:
       case kConfigMacLeopard:
       case kConfigMacSnowLeopard:
@@ -283,6 +286,7 @@ bool GPUTestExpectationsParser::ParseLine(
       case kConfigWinVista:
       case kConfigWin7:
       case kConfigWin8:
+      case kConfigWin10:
       case kConfigWin:
       case kConfigMacLeopard:
       case kConfigMacSnowLeopard:
@@ -398,6 +402,7 @@ bool GPUTestExpectationsParser::UpdateTestConfig(
     case kConfigWinVista:
     case kConfigWin7:
     case kConfigWin8:
+    case kConfigWin10:
     case kConfigWin:
     case kConfigMacLeopard:
     case kConfigMacSnowLeopard:
