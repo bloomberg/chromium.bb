@@ -269,7 +269,7 @@ def main():
 
   with open(os.path.join(THIS_DIR, "gn_isolate_map.pyl")) as fp:
     gn_isolate_map = ast.literal_eval(fp.read())
-    ninja_targets = dict((k, v['label']) for k, v in gn_isolate_map.items())
+    ninja_targets = {k: v['label'] for k, v in gn_isolate_map.items()}
 
   try:
     result = 0
