@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_SYSTEM_H
 #define COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_SYSTEM_H
 
+#include <vector>
+
 #include "base/macros.h"
 #include "components/proximity_auth/remote_device.h"
 

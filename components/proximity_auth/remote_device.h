@@ -6,13 +6,22 @@
 #define COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_H
 
 #include <string>
-#include <vector>
 
 namespace proximity_auth {
 
 struct RemoteDevice {
+ public:
   std::string name;
+  std::string public_key;
   std::string bluetooth_address;
+  std::string persistent_symmetric_key;
+
+  RemoteDevice();
+  RemoteDevice(const std::string& name,
+               const std::string& public_key,
+               const std::string& bluetooth_address,
+               const std::string& persistent_symmetric_key);
+  ~RemoteDevice();
 };
 
 }  // namespace proximity_auth

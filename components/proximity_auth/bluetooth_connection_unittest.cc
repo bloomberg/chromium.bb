@@ -35,12 +35,13 @@ const char kOtherDeviceName[] = "Other device name";
 const char kBluetoothAddress[] = "11:22:33:44:55:66";
 const char kOtherBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 
+const char kPublicKey[] = "Public key";
+const char kPersistentSymmetricKey[] = "PSK";
+
 const char kSerializedMessage[] = "Yarrr, this be a serialized message. Yarr!";
 const int kSerializedMessageLength = strlen(kSerializedMessage);
 
 const char kUuid[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEF";
-
-const RemoteDevice kRemoteDevice = {kDeviceName, kBluetoothAddress};
 
 const int kReceiveBufferSize = 6;
 const char kReceiveBufferContents[] = "bytes";
@@ -55,7 +56,8 @@ scoped_refptr<net::IOBuffer> CreateReceiveBuffer() {
 class MockBluetoothConnection : public BluetoothConnection {
  public:
   MockBluetoothConnection()
-      : BluetoothConnection(kRemoteDevice, device::BluetoothUUID(kUuid)) {}
+      : BluetoothConnection(CreateRemoteDevice(),
+                            device::BluetoothUUID(kUuid)) {}
 
   // Calls back into the parent Connection class.
   MOCK_METHOD1(SetStatusProxy, void(Status status));
@@ -74,6 +76,11 @@ class MockBluetoothConnection : public BluetoothConnection {
   using BluetoothConnection::Disconnect;
 
  private:
+  RemoteDevice CreateRemoteDevice() {
+    return RemoteDevice(kDeviceName, kPublicKey, kBluetoothAddress,
+                        kPersistentSymmetricKey);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothConnection);
 };
 

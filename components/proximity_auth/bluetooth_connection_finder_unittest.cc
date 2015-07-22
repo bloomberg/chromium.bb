@@ -27,14 +27,20 @@ namespace proximity_auth {
 namespace {
 
 const char kDeviceName[] = "Device name";
+const char kPublicKey[] = "Public key";
 const char kBluetoothAddress[] = "11:22:33:44:55:66";
-const RemoteDevice kRemoteDevice = {kDeviceName, kBluetoothAddress};
+const char kPersistentSymmetricKey[] = "PSK";
 
 const char kUuid[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEF";
 
+RemoteDevice CreateRemoteDevice() {
+  return RemoteDevice(kDeviceName, kPublicKey, kBluetoothAddress,
+                      kPersistentSymmetricKey);
+}
+
 class MockConnection : public Connection {
  public:
-  MockConnection() : Connection(kRemoteDevice) {}
+  MockConnection() : Connection(CreateRemoteDevice()) {}
   ~MockConnection() override {}
 
   MOCK_METHOD0(Connect, void());
@@ -51,7 +57,7 @@ class MockConnection : public Connection {
 class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
  public:
   MockBluetoothConnectionFinder()
-      : BluetoothConnectionFinder(kRemoteDevice,
+      : BluetoothConnectionFinder(CreateRemoteDevice(),
                                   device::BluetoothUUID(kUuid),
                                   base::TimeDelta()) {}
   ~MockBluetoothConnectionFinder() override {}
@@ -121,8 +127,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   // Destroying a BluetoothConnectionFinder for which Find() has not been called
   // should not crash.
   BluetoothConnectionFinder connection_finder(
-      kRemoteDevice,
-      device::BluetoothUUID(kUuid),
+      CreateRemoteDevice(), device::BluetoothUUID(kUuid),
       base::TimeDelta::FromMilliseconds(1));
 }
 

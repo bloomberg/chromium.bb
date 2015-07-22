@@ -33,6 +33,7 @@ source_set("proximity_auth") {
     "proximity_monitor_impl.cc",
     "proximity_monitor_impl.h",
     "proximity_monitor_observer.h",
+    "remote_device.cc",
     "remote_device.h",
     "remote_status_update.cc",
     "remote_status_update.h",

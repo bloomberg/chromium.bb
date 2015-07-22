@@ -63,6 +63,7 @@
         "proximity_auth/proximity_monitor_impl.cc",
         "proximity_auth/proximity_monitor_impl.h",
         "proximity_auth/proximity_monitor_observer.h",
+        "proximity_auth/remote_device.cc",
         "proximity_auth/remote_device.h",
         "proximity_auth/remote_status_update.cc",
         "proximity_auth/remote_status_update.h",

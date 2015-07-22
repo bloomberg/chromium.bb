@@ -34,7 +34,9 @@ namespace proximity_auth {
 namespace {
 
 const char kDeviceName[] = "Device name";
+const char kPublicKey[] = "Public key";
 const char kBluetoothAddress[] = "11:22:33:44:55:66";
+const char kPersistentSymmetricKey[] = "PSK";
 
 const char kServiceUUID[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
 const char kToPeripheralCharUUID[] = "FBAE09F2-0482-11E5-8418-1697F925EC7B";
@@ -105,7 +107,10 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
  public:
   ProximityAuthBluetoothLowEnergyConnectionTest()
       : adapter_(new NiceMock<device::MockBluetoothAdapter>),
-        remote_device_({kDeviceName, kBluetoothAddress}),
+        remote_device_(kDeviceName,
+                       kPublicKey,
+                       kBluetoothAddress,
+                       kPersistentSymmetricKey),
         service_uuid_(device::BluetoothUUID(kServiceUUID)),
         to_peripheral_char_uuid_(device::BluetoothUUID(kToPeripheralCharUUID)),
         from_peripheral_char_uuid_(

@@ -31,7 +31,9 @@ namespace proximity_auth {
 namespace {
 
 const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
+const char kRemoteDevicePublicKey[] = "Remote Public Key";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
+const char kPersistentSymmetricKey[] = "PSK";
 
 class TestProximityMonitorImpl : public ProximityMonitorImpl {
  public:
@@ -81,7 +83,10 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                                  kBluetoothAddress,
                                  false /* paired */,
                                  true /* connected */),
-        monitor_({kRemoteDeviceName, kBluetoothAddress},
+        monitor_(RemoteDevice(kRemoteDeviceName,
+                              kRemoteDevicePublicKey,
+                              kBluetoothAddress,
+                              kPersistentSymmetricKey),
                  make_scoped_ptr(clock_),
                  &observer_),
         task_runner_(new base::TestSimpleTaskRunner()),
@@ -528,7 +533,12 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_UnknownValues) {
-  RemoteDevice unnamed_remote_device = {kBluetoothAddress, kBluetoothAddress};
+  // Note: A device without a recorded name will have its Bluetooth address as
+  // its name.
+  RemoteDevice unnamed_remote_device(kBluetoothAddress, kRemoteDevicePublicKey,
+                                     kBluetoothAddress,
+                                     kPersistentSymmetricKey);
+
   scoped_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
   ProximityMonitorImpl monitor(unnamed_remote_device, clock.Pass(), &observer_);
   monitor.Start();
