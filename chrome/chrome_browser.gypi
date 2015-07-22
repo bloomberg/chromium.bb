@@ -1796,6 +1796,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java',
@@ -2077,6 +2078,8 @@
       'browser/permissions/permission_queue_controller.h',
       'browser/permissions/permission_request_id.cc',
       'browser/permissions/permission_request_id.h',
+      'browser/permissions/permission_update_infobar_delegate_android.cc',
+      'browser/permissions/permission_update_infobar_delegate_android.h',
     ],
     # See also the plugin_installation_sources list below.
     'chrome_browser_plugins_sources': [
