@@ -308,6 +308,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/454655
 "race:content::BrowserTestBase::PostTaskToInProcessRendererAndWait\n"
 
+// https://crbug.com/512783
+"race:OPENSSL_ia32cap_P\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
