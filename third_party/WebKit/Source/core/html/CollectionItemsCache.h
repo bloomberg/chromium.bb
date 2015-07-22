@@ -40,11 +40,19 @@ namespace blink {
 
 template <typename Collection, typename NodeType>
 class CollectionItemsCache : public CollectionIndexCache<Collection, NodeType> {
+    DISALLOW_ALLOCATION();
+
     typedef CollectionIndexCache<Collection, NodeType> Base;
 
 public:
     CollectionItemsCache();
     ~CollectionItemsCache();
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_cachedList);
+        Base::trace(visitor);
+    }
 
     unsigned nodeCount(const Collection&);
     NodeType* nodeAt(const Collection&, unsigned index);
@@ -58,7 +66,7 @@ private:
     }
 
     bool m_listValid;
-    Vector<NodeType*> m_cachedList;
+    WillBeHeapVector<RawPtrWillBeMember<NodeType>> m_cachedList;
 };
 
 template <typename Collection, typename NodeType>
@@ -110,7 +118,7 @@ inline NodeType* CollectionItemsCache<Collection, NodeType>::nodeAt(const Collec
 {
     if (m_listValid) {
         ASSERT(this->isCachedNodeCountValid());
-        return index < this->cachedNodeCount() ? m_cachedList[index] : 0;
+        return index < this->cachedNodeCount() ? m_cachedList[index] : nullptr;
     }
     return Base::nodeAt(collection, index);
 }
