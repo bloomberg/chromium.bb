@@ -25,14 +25,14 @@ bool ParseDer(const uint8_t(&data)[N], scoped_ptr<SignatureAlgorithm>* out) {
 }
 
 // Parses a SignatureAlgorithm given an empty DER input.
-TEST(SignatureAlgorithmTest, ParseDer_Empty) {
+TEST(SignatureAlgorithmTest, ParseDerEmpty) {
   scoped_ptr<SignatureAlgorithm> algorithm =
       SignatureAlgorithm::CreateFromDer(der::Input());
   ASSERT_FALSE(algorithm);
 }
 
 // Parses a SignatureAlgorithm given invalid DER input.
-TEST(SignatureAlgorithmTest, ParseDer_Bogus) {
+TEST(SignatureAlgorithmTest, ParseDerBogus) {
   const uint8_t kData[] = {0x00};
   scoped_ptr<SignatureAlgorithm> algorithm;
   ASSERT_FALSE(ParseDer(kData, &algorithm));
@@ -43,7 +43,7 @@ TEST(SignatureAlgorithmTest, ParseDer_Bogus) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.5
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRSAEncryptionNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -63,7 +63,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.5
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRSAEncryptionNoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0B,  // SEQUENCE (11 bytes)
@@ -81,7 +81,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.5
 //       INTEGER  0
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NonNullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRSAEncryptionNonNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0E,  // SEQUENCE (14 bytes)
@@ -99,7 +99,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NonNullParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.3.14.3.2.29
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSASignature_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRSASignatureNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x09,  // SEQUENCE (9 bytes)
@@ -119,7 +119,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSASignature_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.3.14.3.2.29
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSASignature_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRSASignatureNoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x07,  // SEQUENCE (7 bytes)
@@ -137,7 +137,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSASignature_NoParams) {
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.5
 //       NULL
 //   INTEGER  0
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRsaEncryption_DataAfterSequence) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRsaEncryptionDataAfterSequence) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -158,7 +158,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRsaEncryption_DataAfterSequence) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.5
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_BadNullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha1WithRSAEncryptionBadNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0E,  // SEQUENCE (13 bytes)
@@ -179,7 +179,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_BadNullParams) {
 //       NULL
 //       INTEGER  0
 TEST(SignatureAlgorithmTest,
-     ParseDer_sha1WithRSAEncryption_NullParamsThenInteger) {
+     ParseDerSha1WithRSAEncryptionNullParamsThenInteger) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x10,  // SEQUENCE (16 bytes)
@@ -196,7 +196,7 @@ TEST(SignatureAlgorithmTest,
 // Parses a SignatureAlgorithm given DER which does not encode a sequence.
 //
 //   INTEGER 0
-TEST(SignatureAlgorithmTest, ParseDer_NotASequence) {
+TEST(SignatureAlgorithmTest, ParseDerNotASequence) {
   // clang-format off
   const uint8_t kData[] = {
       0x02, 0x01, 0x00,  // INTEGER (1 byte)
@@ -211,7 +211,7 @@ TEST(SignatureAlgorithmTest, ParseDer_NotASequence) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.11
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha256WithRSAEncryption_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha256WithRSAEncryptionNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -231,7 +231,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha256WithRSAEncryption_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.11
-TEST(SignatureAlgorithmTest, ParseDer_sha256WithRSAEncryption_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha256WithRSAEncryptionNoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0B,  // SEQUENCE (11 bytes)
@@ -248,7 +248,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha256WithRSAEncryption_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.12
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha384WithRSAEncryption_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha384WithRSAEncryptionNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -268,7 +268,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha384WithRSAEncryption_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.12
-TEST(SignatureAlgorithmTest, ParseDer_sha384WithRSAEncryption_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha384WithRSAEncryptionNoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0B,  // SEQUENCE (11 bytes)
@@ -285,7 +285,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha384WithRSAEncryption_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.13
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha512WithRSAEncryption_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha512WithRSAEncryptionNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -305,7 +305,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha512WithRSAEncryption_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.13
-TEST(SignatureAlgorithmTest, ParseDer_sha512WithRSAEncryption_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha512WithRSAEncryptionNoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0B,  // SEQUENCE (11 bytes)
@@ -324,7 +324,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha512WithRSAEncryption_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.14
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_sha224WithRSAEncryption_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerSha224WithRSAEncryptionNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -341,7 +341,7 @@ TEST(SignatureAlgorithmTest, ParseDer_sha224WithRSAEncryption_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.1
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA1_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA1NoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x09,  // SEQUENCE (9 bytes)
@@ -361,7 +361,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA1_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.1
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA1_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA1NullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0B,  // SEQUENCE (11 bytes)
@@ -378,7 +378,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA1_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.3.2
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA256_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA256NoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0A,  // SEQUENCE (10 bytes)
@@ -398,7 +398,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA256_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.3.2
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA256_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA256NullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0C,  // SEQUENCE (12 bytes)
@@ -415,7 +415,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA256_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.3.3
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA384_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA384NoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0A,  // SEQUENCE (10 bytes)
@@ -435,7 +435,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA384_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.3.3
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA384_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA384NullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0C,  // SEQUENCE (12 bytes)
@@ -452,7 +452,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA384_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.3.4
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA512_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA512NoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0A,  // SEQUENCE (10 bytes)
@@ -472,7 +472,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA512_NoParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.10045.4.3.4
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA512_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerEcdsaWithSHA512NullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0C,  // SEQUENCE (12 bytes)
@@ -486,7 +486,7 @@ TEST(SignatureAlgorithmTest, ParseDer_ecdsaWithSHA512_NullParams) {
 }
 
 // Tests that two RSA algorithms with different digests are not equal.
-TEST(SignatureAlgorithmTest, Equals_RsaWithDifferentDigest) {
+TEST(SignatureAlgorithmTest, EqualsRsaWithDifferentDigest) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateRsaPkcs1(DigestAlgorithm::Sha1);
 
@@ -497,7 +497,7 @@ TEST(SignatureAlgorithmTest, Equals_RsaWithDifferentDigest) {
 }
 
 // Tests that two ECDSA algorithms with different digests are not equal.
-TEST(SignatureAlgorithmTest, Equals_EcdsaWithDifferentDigest) {
+TEST(SignatureAlgorithmTest, EqualsEcdsaWithDifferentDigest) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateEcdsa(DigestAlgorithm::Sha1);
 
@@ -509,7 +509,7 @@ TEST(SignatureAlgorithmTest, Equals_EcdsaWithDifferentDigest) {
 
 // Tests that an ECDSA algorithm is not equal to an RSA algorithm (even though
 // digests match).
-TEST(SignatureAlgorithmTest, Equals_EcdsaNotEqualRsa) {
+TEST(SignatureAlgorithmTest, EqualsEcdsaNotEqualRsa) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateEcdsa(DigestAlgorithm::Sha256);
 
@@ -520,7 +520,7 @@ TEST(SignatureAlgorithmTest, Equals_EcdsaNotEqualRsa) {
 }
 
 // Tests that two identical ECDSA algorithms are equal - both use SHA-256.
-TEST(SignatureAlgorithmTest, Equals_EcdsaMatch) {
+TEST(SignatureAlgorithmTest, EqualsEcdsaMatch) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateEcdsa(DigestAlgorithm::Sha256);
 
@@ -531,7 +531,7 @@ TEST(SignatureAlgorithmTest, Equals_EcdsaMatch) {
 }
 
 // Tests that two identical RSA algorithms are equal - both use SHA-512
-TEST(SignatureAlgorithmTest, Equals_RsaPkcs1Match) {
+TEST(SignatureAlgorithmTest, EqualsRsaPkcs1Match) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateRsaPkcs1(DigestAlgorithm::Sha512);
 
@@ -542,7 +542,7 @@ TEST(SignatureAlgorithmTest, Equals_RsaPkcs1Match) {
 }
 
 // Tests that two RSASSA-PSS algorithms are equal.
-TEST(SignatureAlgorithmTest, Equals_RsaPssMatch) {
+TEST(SignatureAlgorithmTest, EqualsRsaPssMatch) {
   scoped_ptr<SignatureAlgorithm> alg1 = SignatureAlgorithm::CreateRsaPss(
       DigestAlgorithm::Sha256, DigestAlgorithm::Sha1, 21);
 
@@ -553,7 +553,7 @@ TEST(SignatureAlgorithmTest, Equals_RsaPssMatch) {
 }
 
 // Tests that two RSASSA-PSS algorithms with different hashes are not equal.
-TEST(SignatureAlgorithmTest, Equals_RsaPssWithDifferentDigest) {
+TEST(SignatureAlgorithmTest, EqualsRsaPssWithDifferentDigest) {
   scoped_ptr<SignatureAlgorithm> alg1 = SignatureAlgorithm::CreateRsaPss(
       DigestAlgorithm::Sha1, DigestAlgorithm::Sha1, 20);
 
@@ -564,7 +564,7 @@ TEST(SignatureAlgorithmTest, Equals_RsaPssWithDifferentDigest) {
 }
 
 // Tests that two RSASSA-PSS algorithms with different mask gens are not equal.
-TEST(SignatureAlgorithmTest, Equals_RsaPssWithDifferentMaskGen) {
+TEST(SignatureAlgorithmTest, EqualsRsaPssWithDifferentMaskGen) {
   scoped_ptr<SignatureAlgorithm> alg1 = SignatureAlgorithm::CreateRsaPss(
       DigestAlgorithm::Sha256, DigestAlgorithm::Sha1, 20);
 
@@ -575,7 +575,7 @@ TEST(SignatureAlgorithmTest, Equals_RsaPssWithDifferentMaskGen) {
 }
 
 // Tests that two RSASSA-PSS algorithms with different salts
-TEST(SignatureAlgorithmTest, Equals_RsaPssWithDifferentSalt) {
+TEST(SignatureAlgorithmTest, EqualsRsaPssWithDifferentSalt) {
   scoped_ptr<SignatureAlgorithm> alg1 = SignatureAlgorithm::CreateRsaPss(
       DigestAlgorithm::Sha1, DigestAlgorithm::Sha1, 20);
 
@@ -587,7 +587,7 @@ TEST(SignatureAlgorithmTest, Equals_RsaPssWithDifferentSalt) {
 
 // Tests that the parmeters returned for an ECDSA algorithm are null for
 // non-ECDSA algorithms.
-TEST(SignatureAlgorithmTest, ParamsAreNullForWrongType_Ecdsa) {
+TEST(SignatureAlgorithmTest, ParamsAreNullForWrongTypeEcdsa) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateEcdsa(DigestAlgorithm::Sha1);
 
@@ -596,7 +596,7 @@ TEST(SignatureAlgorithmTest, ParamsAreNullForWrongType_Ecdsa) {
 
 // Tests that the parmeters returned for an RSA PKCS#1 v1.5 algorithm are null
 // for non-RSA PKCS#1 v1.5 algorithms.
-TEST(SignatureAlgorithmTest, ParamsAreNullForWrongType_RsaPkcs1) {
+TEST(SignatureAlgorithmTest, ParamsAreNullForWrongTypeRsaPkcs1) {
   scoped_ptr<SignatureAlgorithm> alg1 =
       SignatureAlgorithm::CreateRsaPkcs1(DigestAlgorithm::Sha1);
 
@@ -622,7 +622,7 @@ TEST(SignatureAlgorithmTest, ParamsAreNullForWrongType_RsaPkcs1) {
 //               INTEGER  20
 //           [3] (1 elem)
 //               INTEGER  1
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPss) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x3E,  // SEQUENCE (62 bytes)
@@ -669,7 +669,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
 //       SEQUENCE (0 elem)
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_EmptyParams) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssEmptyParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -696,7 +696,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_EmptyParams) {
 //   SEQUENCE (2 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NullParams) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNullParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0D,  // SEQUENCE (13 bytes)
@@ -713,7 +713,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NullParams) {
 //
 //   SEQUENCE (1 elem)
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NoParams) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNoParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0B,  // SEQUENCE (11 bytes)
@@ -731,7 +731,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NoParams) {
 //       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
 //       SEQUENCE (0 elem)
 //       NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_DataAfterParams) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssDataAfterParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x0F,  // SEQUENCE (15 bytes)
@@ -753,7 +753,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_DataAfterParams) {
 //       SEQUENCE (1 elem)
 //           [2] (1 elem)
 //               INTEGER  23
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_DefaultsExceptForSaltLength) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssDefaultsExceptForSaltLength) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x12,  // SEQUENCE (62 bytes)
@@ -787,7 +787,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_DefaultsExceptForSaltLength) {
 //           [2] (1 elem)
 //               INTEGER  23
 //           NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NullInsideParams) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNullInsideParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x14,  // SEQUENCE (62 bytes)
@@ -812,7 +812,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NullInsideParams) {
 //       SEQUENCE (1 elem)
 //           [3] (1 elem)
 //               INTEGER  2
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedTrailer) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssUnsupportedTrailer) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x12,  // SEQUENCE (18 bytes)
@@ -837,7 +837,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedTrailer) {
 //           [3] (2 elem)
 //               INTEGER  1
 //               NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_BadTrailer) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssBadTrailer) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x14,  // SEQUENCE (20 bytes)
@@ -864,7 +864,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_BadTrailer) {
 //               SEQUENCE (2 elem)
 //                   OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.2
 //                   NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHash) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNonDefaultHash) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x1E,  // SEQUENCE (30 bytes)
@@ -901,7 +901,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHash) {
 //           [0] (1 elem)
 //               SEQUENCE (1 elem)
 //                   OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.2
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHash_AbsentParams) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNonDefaultHashAbsentParams) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x1C,  // SEQUENCE (28 bytes)
@@ -936,7 +936,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHash_AbsentParams) {
 //           [0] (1 elem)
 //               SEQUENCE (1 elem)
 //                   OBJECT IDENTIFIER  2.16.840.2.103.19.4.2.2
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedHashOid) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssUnsupportedHashOid) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x1C,  // SEQUENCE (28 bytes)
@@ -965,7 +965,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedHashOid) {
 //                   SEQUENCE (2 elem)
 //                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.3
 //                       NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultMaskGen) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNonDefaultMaskGen) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x2B,  // SEQUENCE (43 bytes)
@@ -1007,7 +1007,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultMaskGen) {
 //                   SEQUENCE (2 elem)
 //                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.3
 //                       NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedMaskGen) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssUnsupportedMaskGen) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x2B,  // SEQUENCE (43 bytes)
@@ -1044,7 +1044,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedMaskGen) {
 //                   SEQUENCE (2 elem)
 //                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.3
 //                       NULL
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHashAndMaskGen) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNonDefaultHashAndMaskGen) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x3C,  // SEQUENCE (60 bytes)
@@ -1097,7 +1097,7 @@ TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHashAndMaskGen) {
 //                       NULL
 //           [2] (1 elem)
 //               INTEGER  10
-TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHashAndMaskGenAndSalt) {
+TEST(SignatureAlgorithmTest, ParseDerRsaPssNonDefaultHashAndMaskGenAndSalt) {
   // clang-format off
   const uint8_t kData[] = {
       0x30, 0x41,  // SEQUENCE (65 bytes)
