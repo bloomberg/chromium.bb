@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 388x17
           text run at (0,0) width 388: "\x{201C}onelongwrodwithnobreaks\x{201D} should not break in the middle."
-      LayoutBlockFlow {DIV} at (0,86) size 200x28 [bgcolor=#FFFF00]
-        LayoutText {#text} at (0,0) size 165x28
+      LayoutBlockFlow {DIV} at (0,86) size 200x24 [bgcolor=#FFFF00]
+        LayoutText {#text} at (0,0) size 165x24
           text run at (0,0) width 165: "lllllllllllllllllllllllllllllllllllllllllllllllllllllll"
-          text run at (0,14) width 120: "onelongwrodwithnobreaks"
+          text run at (0,12) width 124: "onelongwrodwithnobreaks"

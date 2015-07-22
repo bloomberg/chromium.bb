@@ -15,17 +15,17 @@ layer at (0,0) size 800x306
           LayoutText {#text} at (0,0) size 120x16
             text run at (0,0) width 120: "Should be 13 px"
       LayoutBlockFlow {PRE} at (0,96) size 784x16
-        LayoutInline {SPAN} at (0,0) size 81x15
-          LayoutText {#text} at (0,0) size 81x15
-            text run at (0,0) width 81: "Should be 13px"
+        LayoutInline {SPAN} at (0,0) size 86x15
+          LayoutText {#text} at (0,0) size 86x15
+            text run at (0,0) width 86: "Should be 13px"
       LayoutBlockFlow {PRE} at (0,125) size 784x16
-        LayoutInline {SPAN} at (0,0) size 81x15
-          LayoutText {#text} at (0,0) size 81x15
-            text run at (0,0) width 81: "Should be 13px"
+        LayoutInline {SPAN} at (0,0) size 86x15
+          LayoutText {#text} at (0,0) size 86x15
+            text run at (0,0) width 86: "Should be 13px"
       LayoutBlockFlow {P} at (0,157) size 784x18
-        LayoutInline {SPAN} at (0,0) size 81x15
-          LayoutText {#text} at (0,2) size 81x15
-            text run at (0,2) width 81: "Should be 13px"
+        LayoutInline {SPAN} at (0,0) size 86x15
+          LayoutText {#text} at (0,2) size 86x15
+            text run at (0,2) width 86: "Should be 13px"
       LayoutBlockFlow {P} at (0,191) size 784x19
         LayoutInline {TT} at (0,0) size 101x18
           LayoutInline {SPAN} at (0,0) size 101x17
