@@ -472,9 +472,9 @@ define('media_router_bindings', [
       routeId, message) {
     return this.handlers_.sendRouteMessage(routeId, message)
         .then(function() {
-          return true;
+          return {'sent': true};
         }, function() {
-          return false;
+          return {'sent': false};
         });
   };
 
