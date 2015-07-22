@@ -470,10 +470,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-0
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
 
-crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-long.html [ NeedsRebaseline ]
-crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-tall.html [ NeedsRebaseline ]
-crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-transform.html [ NeedsRebaseline ]
-
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
 crbug.com/399430 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
