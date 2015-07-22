@@ -148,8 +148,6 @@ class ServiceWorkerContextClient
   virtual void skipWaiting(
       blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
   virtual void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
-  virtual void stashMessagePort(blink::WebMessagePortChannel* channel,
-                                const blink::WebString& name);
 
   virtual void DispatchSyncEvent(const blink::WebSyncRegistration& registration,
                                  const SyncCallback& callback);
@@ -186,10 +184,6 @@ class ServiceWorkerContextClient
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
-  void OnSendStashedMessagePorts(
-      const std::vector<TransferredMessagePort>& stashed_message_ports,
-      const std::vector<int>& new_routing_ids,
-      const std::vector<base::string16>& port_names);
   void OnDidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnOpenWindowResponse(int request_id,

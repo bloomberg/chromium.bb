@@ -281,11 +281,6 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
                     int /* request_id */)
 
-// Asks the browser to stash a message port, giving it a name.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_StashMessagePort,
-                    int /* message_port_id */,
-                    base::string16 /* name */)
-
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //
@@ -473,10 +468,3 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
                      int /* request_id */,
                      content::ServiceWorkerClientInfo /* client */)
-
-// Sent via EmbeddedWorker to transfer a stashed message port to the worker.
-IPC_MESSAGE_CONTROL3(
-    ServiceWorkerMsg_SendStashedMessagePorts,
-    std::vector<content::TransferredMessagePort> /* stashed_message_ports */,
-    std::vector<int> /* new_routing_ids */,
-    std::vector<base::string16> /* port_names */)

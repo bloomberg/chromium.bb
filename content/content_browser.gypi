@@ -1402,8 +1402,6 @@
       'browser/service_worker/service_worker_version.h',
       'browser/service_worker/service_worker_write_to_cache_job.cc',
       'browser/service_worker/service_worker_write_to_cache_job.h',
-      'browser/service_worker/stashed_port_manager.cc',
-      'browser/service_worker/stashed_port_manager.h',
       'browser/shared_worker/shared_worker_host.cc',
       'browser/shared_worker/shared_worker_host.h',
       'browser/shared_worker/shared_worker_instance.cc',

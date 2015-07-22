@@ -78,8 +78,6 @@ class WebMessagePortChannelImpl
   void QueueMessages();
   int message_port_id() const { return message_port_id_; }
 
-  void set_is_stashed() { is_stashed_ = true; }
-
  private:
   friend class base::RefCountedThreadSafe<WebMessagePortChannelImpl>;
   ~WebMessagePortChannelImpl() override;
@@ -126,7 +124,6 @@ class WebMessagePortChannelImpl
   // base::Value instances as opposed to being serialized using the default
   // blink::WebSerializedScriptValue.
   bool send_messages_as_values_;
-  bool is_stashed_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMessagePortChannelImpl);
