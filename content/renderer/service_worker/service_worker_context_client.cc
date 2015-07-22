@@ -32,6 +32,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/document_state.h"
+#include "content/renderer/background_sync/background_sync_client_impl.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
@@ -178,6 +179,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<blink::WebServiceWorkerClientCallbacks, IDMapOwnPointer>;
   using SkipWaitingCallbacksMap =
       IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>;
+  using SyncEventCallbacksMap =
+      IDMap<const mojo::Callback<void(ServiceWorkerEventStatus)>,
+            IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
       : weak_factory(owner), proxy_weak_factory(owner->proxy_) {}
@@ -197,6 +201,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for ClaimClients().
   ClaimClientsCallbacksMap claim_clients_callbacks;
+
+  // Pending callbacks for Background Sync Events
+  SyncEventCallbacksMap sync_event_callbacks;
 
   ServiceRegistryImpl service_registry;
 
@@ -246,7 +253,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationClickEvent,
                         OnNotificationClickEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
@@ -351,6 +357,8 @@ void ServiceWorkerContextClient::workerContextStarted(
   context_->service_registry.ServiceRegistry::AddService(
       base::Bind(&ServicePortDispatcherImpl::Create,
                  context_->proxy_weak_factory.GetWeakPtr()));
+  context_->service_registry.ServiceRegistry::AddService(
+      base::Bind(&BackgroundSyncClientImpl::Create));
 
   SetRegistrationInServiceWorkerGlobalScope();
 
@@ -496,8 +504,16 @@ void ServiceWorkerContextClient::didHandlePushEvent(
 void ServiceWorkerContextClient::didHandleSyncEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  Send(new ServiceWorkerHostMsg_SyncEventFinished(GetRoutingID(), request_id,
-                                                  result));
+  const SyncCallback* callback =
+      context_->sync_event_callbacks.Lookup(request_id);
+  if (!callback)
+    return;
+  if (result == blink::WebServiceWorkerEventResultCompleted) {
+    callback->Run(SERVICE_WORKER_EVENT_STATUS_COMPLETED);
+  } else {
+    callback->Run(SERVICE_WORKER_EVENT_STATUS_REJECTED);
+  }
+  context_->sync_event_callbacks.Remove(request_id);
 }
 
 blink::WebServiceWorkerNetworkProvider*
@@ -611,6 +627,15 @@ void ServiceWorkerContextClient::stashMessagePort(
                  static_cast<base::string16>(name)));
 }
 
+void ServiceWorkerContextClient::DispatchSyncEvent(
+    const SyncCallback& callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::DispatchSyncEvent");
+  int request_id =
+      context_->sync_event_callbacks.Add(new SyncCallback(callback));
+  proxy_->dispatchSyncEvent(request_id);
+}
+
 void ServiceWorkerContextClient::Send(IPC::Message* message) {
   sender_->Send(message);
 }
@@ -692,12 +717,6 @@ void ServiceWorkerContextClient::OnFetchEvent(
   webRequest.setFrameType(GetBlinkFrameType(request.frame_type));
   webRequest.setIsReload(request.is_reload);
   proxy_->dispatchFetchEvent(request_id, webRequest);
-}
-
-void ServiceWorkerContextClient::OnSyncEvent(int request_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnSyncEvent");
-  proxy_->dispatchSyncEvent(request_id);
 }
 
 void ServiceWorkerContextClient::OnNotificationClickEvent(

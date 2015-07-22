@@ -28,6 +28,7 @@
           'public/common/background_sync.mojom',
           'public/common/mojo_geoposition.mojom',
           'public/common/permission_status.mojom',
+          'public/common/service_worker_event_status.mojom',
         ],
       },
       'includes': [ '../third_party/mojo/mojom_bindings_generator_explicit.gypi' ],

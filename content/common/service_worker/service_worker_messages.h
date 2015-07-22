@@ -228,9 +228,6 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventFinished,
                     int /* request_id */,
                     content::ServiceWorkerFetchEventResult,
                     content::ServiceWorkerResponse)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_SyncEventFinished,
-                    int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_NotificationClickEventFinished,
                     int /* request_id */)
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_PushEventFinished,
@@ -422,8 +419,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FetchEvent,
                      int /* request_id */,
                      content::ServiceWorkerFetchRequest)
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
-                     int /* request_id */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
                      int64_t /* persistent_notification_id */,

@@ -62,5 +62,6 @@ mojom("mojo_bindings") {
     "background_sync.mojom",
     "mojo_geoposition.mojom",
     "permission_status.mojom",
+    "service_worker_event_status.mojom",
   ]
 }

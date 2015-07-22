@@ -6,12 +6,11 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -20,7 +19,7 @@ namespace content {
 class ServiceWorkerRegistrationTest : public testing::Test {
  public:
   ServiceWorkerRegistrationTest()
-      : io_thread_(BrowserThread::IO, &message_loop_) {}
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
@@ -82,8 +81,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
  protected:
   scoped_ptr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {

@@ -31,6 +31,7 @@
 #include "content/browser/service_worker/stashed_port_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
@@ -42,6 +43,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/service_registry.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
 #include "net/http/http_response_headers.h"
@@ -803,12 +805,21 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
   }
 
   int request_id = AddRequest(callback, &sync_requests_, REQUEST_SYNC);
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_SyncEvent(request_id));
-  if (status != SERVICE_WORKER_OK) {
-    sync_requests_.Remove(request_id);
-    RunSoon(base::Bind(callback, status));
+  if (!background_sync_dispatcher_) {
+    embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&background_sync_dispatcher_));
+    background_sync_dispatcher_.set_connection_error_handler(base::Bind(
+        &ServiceWorkerVersion::OnBackgroundSyncDispatcherConnectionError,
+        weak_factory_.GetWeakPtr()));
   }
+
+  // TODO(iclelland): Replace this with the real event registration details
+  // crbug.com/482066
+  content::SyncRegistrationPtr null_event(content::SyncRegistration::New());
+
+  background_sync_dispatcher_->Sync(
+      null_event.Pass(), base::Bind(&self::OnSyncEventFinished,
+                                    weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::DispatchNotificationClickEvent(
@@ -1207,8 +1218,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnInstallEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FetchEventFinished,
                         OnFetchEventFinished)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SyncEventFinished,
-                        OnSyncEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NotificationClickEventFinished,
                         OnNotificationClickEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PushEventFinished,
@@ -1392,7 +1401,7 @@ void ServiceWorkerVersion::OnFetchEventFinished(
 
 void ServiceWorkerVersion::OnSyncEventFinished(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    ServiceWorkerEventStatus status) {
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerVersion::OnSyncEventFinished",
                "Request id", request_id);
@@ -1402,13 +1411,8 @@ void ServiceWorkerVersion::OnSyncEventFinished(
     return;
   }
 
-  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected) {
-    status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-  }
-
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  request->callback.Run(status);
+  request->callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
   RemoveCallbackAndStopIfRedundant(&sync_requests_, request_id);
 }
 
@@ -2211,6 +2215,8 @@ void ServiceWorkerVersion::OnStoppedInternal(
   // for messages that are still outstanding for those services.
   OnServicePortDispatcherConnectionError();
 
+  OnBackgroundSyncDispatcherConnectionError();
+
   streaming_url_request_jobs_.clear();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
@@ -2224,6 +2230,11 @@ void ServiceWorkerVersion::OnServicePortDispatcherConnectionError() {
                     SERVICE_WORKER_ERROR_FAILED, false, base::string16(),
                     base::string16());
   service_port_dispatcher_.reset();
+}
+
+void ServiceWorkerVersion::OnBackgroundSyncDispatcherConnectionError() {
+  RunIDMapCallbacks(&sync_requests_, SERVICE_WORKER_ERROR_FAILED);
+  background_sync_dispatcher_.reset();
 }
 
 }  // namespace content

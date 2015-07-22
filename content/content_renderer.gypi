@@ -103,6 +103,8 @@
       'renderer/android/renderer_date_time_picker.h',
       'renderer/android/synchronous_compositor_factory.cc',
       'renderer/android/synchronous_compositor_factory.h',
+      'renderer/background_sync/background_sync_client_impl.cc',
+      'renderer/background_sync/background_sync_client_impl.h',
       'renderer/battery_status/battery_status_dispatcher.cc',
       'renderer/battery_status/battery_status_dispatcher.h',
       'renderer/bluetooth/bluetooth_dispatcher.cc',

@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/service_worker_event_status.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
@@ -56,6 +57,8 @@ class WebServiceWorkerRegistrationImpl;
 class ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
+  using SyncCallback = mojo::Callback<void(ServiceWorkerEventStatus)>;
+
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.
   static ServiceWorkerContextClient* ThreadSpecificInstance();
@@ -147,6 +150,8 @@ class ServiceWorkerContextClient
   virtual void stashMessagePort(blink::WebMessagePortChannel* channel,
                                 const blink::WebString& name);
 
+  virtual void DispatchSyncEvent(const SyncCallback& callback);
+
  private:
   struct WorkerContextData;
 
@@ -161,7 +166,6 @@ class ServiceWorkerContextClient
   void OnActivateEvent(int request_id);
   void OnInstallEvent(int request_id);
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
-  void OnSyncEvent(int request_id);
   void OnNotificationClickEvent(
       int request_id,
       int64_t persistent_notification_id,

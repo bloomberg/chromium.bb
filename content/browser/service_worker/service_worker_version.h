@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
+#include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/service_port_service.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -438,8 +439,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnFetchEventFinished(int request_id,
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
-  void OnSyncEventFinished(int request_id,
-                           blink::WebServiceWorkerEventResult result);
+  void OnSyncEventFinished(int request_id, ServiceWorkerEventStatus status);
   void OnNotificationClickEventFinished(int request_id);
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
@@ -541,10 +541,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStoppedInternal(EmbeddedWorkerInstance::Status old_status);
 
-  // Called when the connection to a ServicePortDispatcher drops or fails.
+  // Called when a connection to a mojo event Dispatcher drops or fails.
   // Calls callbacks for any outstanding requests to the dispatcher as well
   // as cleans up the dispatcher.
   void OnServicePortDispatcherConnectionError();
+  void OnBackgroundSyncDispatcherConnectionError();
 
   const int64 version_id_;
   const int64 registration_id_;
@@ -571,6 +572,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       service_port_connect_requests_;
 
   ServicePortDispatcherPtr service_port_dispatcher_;
+  BackgroundSyncServiceClientPtr background_sync_dispatcher_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 
