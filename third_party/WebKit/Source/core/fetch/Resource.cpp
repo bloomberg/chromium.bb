@@ -861,8 +861,15 @@ void Resource::didChangePriority(ResourceLoadPriority loadPriority, int intraPri
 
 Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()
 {
-    DEFINE_STATIC_LOCAL(ResourceCallback, callbackHandler, ());
-    return &callbackHandler;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ResourceCallback>, callbackHandler, (adoptPtrWillBeNoop(new ResourceCallback)));
+    return callbackHandler.get();
+}
+
+DEFINE_TRACE(Resource::ResourceCallback)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_resourcesWithPendingClients);
+#endif
 }
 
 Resource::ResourceCallback::ResourceCallback()
@@ -894,8 +901,8 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const
 void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
 {
     Vector<ResourcePtr<Resource>> resources;
-    for (Resource* resource : m_resourcesWithPendingClients)
-        resources.append(resource);
+    for (const RawPtrWillBeMember<Resource>& resource : m_resourcesWithPendingClients)
+        resources.append(resource.get());
     m_resourcesWithPendingClients.clear();
 
     for (const auto& resource : resources) {
