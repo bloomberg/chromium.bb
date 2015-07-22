@@ -138,23 +138,23 @@ class SingleChildFrameLoaderClient : public EmptyFrameLoaderClient {
 public:
     SingleChildFrameLoaderClient() : m_child(nullptr) { }
 
-    Frame* firstChild() const override { return m_child; }
-    Frame* lastChild() const override { return m_child; }
+    Frame* firstChild() const override { return m_child.get(); }
+    Frame* lastChild() const override { return m_child.get(); }
 
     void setChild(Frame* child) { m_child = child; }
 
 private:
-    Frame* m_child;
+    RefPtrWillBePersistent<Frame> m_child;
 };
 
 class FrameLoaderClientWithParent : public EmptyFrameLoaderClient {
 public:
     FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
 
-    Frame* parent() const override { return m_parent; }
+    Frame* parent() const override { return m_parent.get(); }
 
 private:
-    Frame* m_parent;
+    RefPtrWillBePersistent<Frame> m_parent;
 };
 
 class PrintContextFrameTest : public PrintContextTest {
