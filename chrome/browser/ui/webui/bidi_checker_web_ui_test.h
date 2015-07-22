@@ -38,13 +38,17 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
 };
 
 // Base class for BidiChecker-based tests that run with an LTR UI.
-class WebUIBidiCheckerBrowserTestLTR : public WebUIBidiCheckerBrowserTest {
+// Disabled on all platforms due to http://crbug.com/511439
+class DISABLED_WebUIBidiCheckerBrowserTestLTR
+    : public WebUIBidiCheckerBrowserTest {
  public:
   void RunBidiCheckerOnPage(const std::string& page_url);
 };
 
 // Base class for BidiChecker-based tests that run with an RTL UI.
-class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
+// Disabled on all platforms due to http://crbug.com/511439
+class DISABLED_WebUIBidiCheckerBrowserTestRTL
+    : public WebUIBidiCheckerBrowserTest {
  public:
   void RunBidiCheckerOnPage(const std::string& page_url);
 
