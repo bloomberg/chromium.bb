@@ -140,6 +140,24 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
 };
 
 /**
+ * Obtains visible tree items.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {!Array<string>} List of visible item names.
+ */
+test.util.sync.getTreeItems = function(contentWindow) {
+  var items = contentWindow.document.querySelectorAll(
+      '#directory-tree .tree-item');
+  var result = [];
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].matches('.tree-children:not([expanded]) *'))
+      continue;
+    result.push(items[i].querySelector('.entry-name').textContent);
+  }
+  return result;
+};
+
+/**
  * Executes Javascript code on a webview and returns the result.
  *
  * @param {Window} contentWindow Window to be tested.

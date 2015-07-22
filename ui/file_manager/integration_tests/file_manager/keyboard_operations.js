@@ -5,16 +5,6 @@
 'use strict';
 
 /**
- * Constants for interacting with the directory tree on the LHS of Files.
- * When we are not in guest mode, we fill Google Drive with the basic entry set
- * which causes an extra tree-item to be added.
- */
-var PHOTOS_FOLDER;
-var PHOTOS_FOLDER_GUEST = '#tree-item-autogen-id-6';
-var PHOTOS_FOLDER_DOWNLOADS = '#tree-item-autogen-id-7';
-var PHOTOS_FOLDER_DRIVE = '#tree-item-autogen-id-8';
-
-/**
  * Waits until a dialog with an OK button is shown and accepts it.
  *
  * @param {string} windowId Target window ID.
@@ -32,6 +22,55 @@ function waitAndAcceptDialog(windowId) {
         chrome.test.assertTrue(result);
         return remoteCall.waitForElementLost(windowId, '.cr-dialog-container');
       });
+}
+
+/**
+ * Obtains visible tree items.
+ *
+ * @param {string} windowId Window ID.
+ * @return {!Promise<!Array<string>>} List of visible item names.
+ */
+function getTreeItems(windowId) {
+  return remoteCall.callRemoteTestUtil('getTreeItems', windowId, []);
+};
+
+/**
+ * Waits until the directory item appears.
+ *
+ * @param {string} windowId Window ID.
+ * @param {string} name Name of item.
+ * @return {!Promise}
+ */
+function waitForDirectoryItem(windowId, name) {
+  return repeatUntil(function() {
+    return getTreeItems(windowId).then(function(items) {
+      if (items.indexOf(name) !== -1) {
+        return true;
+      } else {
+        return pending('Tree item %s is not found.', name);
+      }
+    });
+  });
+}
+
+/**
+ * Waits until the directory item disappears.
+ *
+ * @param {string} windowId Window ID.
+ * @param {string} name Name of item.
+ * @return {!Promise}
+ */
+function waitForDirectoryItemLost(windowId, name) {
+  return repeatUntil(function() {
+    return getTreeItems(windowId).then(function(items) {
+      console.log(items);
+      if (items.indexOf(name) === -1) {
+        return true;
+      } else {
+        return pending('Tree item %s is still exists.', name);
+      }
+    });
+  });
 }
 
 /**
@@ -122,7 +161,7 @@ function keyboardDelete(path, treeItem) {
     },
     function() {
       // Check that the directory appears in the LHS tree
-      remoteCall.waitForElement(appId, PHOTOS_FOLDER).then(this.next);
+      waitForDirectoryItem(appId, directoryName).then(this.next);
     },
     // Wait for a file list change.
     function() {
@@ -154,7 +193,7 @@ function keyboardDelete(path, treeItem) {
     },
     function() {
       // Check that the directory is removed from the LHS tree
-      remoteCall.waitForElementLost(appId, PHOTOS_FOLDER).then(this.next);
+      waitForDirectoryItemLost(appId, directoryName).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -293,10 +332,6 @@ testcase.keyboardCopyDownloads = function() {
 };
 
 testcase.keyboardDeleteDownloads = function() {
-  if (chrome.extension.inIncognitoContext)
-    PHOTOS_FOLDER = PHOTOS_FOLDER_GUEST;
-  else
-    PHOTOS_FOLDER = PHOTOS_FOLDER_DOWNLOADS;
   keyboardDelete(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
 };
 
@@ -305,11 +340,7 @@ testcase.keyboardCopyDrive = function() {
 };
 
 testcase.keyboardDeleteDrive = function() {
-  PHOTOS_FOLDER = PHOTOS_FOLDER_DRIVE;
   keyboardDelete(RootPath.DRIVE, TREEITEM_DRIVE);
-};
-
-testcase.createNewFolderAndCheckFocus = function() {
 };
 
 testcase.renameFileDownloads = function() {
