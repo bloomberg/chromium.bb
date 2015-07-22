@@ -98,7 +98,9 @@ class CONTENT_EXPORT WebContentsAndroid
 
   void RequestAccessibilitySnapshot(JNIEnv* env,
                                     jobject obj,
-                                    jobject callback);
+                                    jobject callback,
+                                    jfloat y_offset,
+                                    jfloat x_scroll);
 
   void ResumeMediaSession(JNIEnv* env, jobject obj);
   void SuspendMediaSession(JNIEnv* env, jobject obj);

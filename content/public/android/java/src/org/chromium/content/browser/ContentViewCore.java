@@ -35,6 +35,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -72,6 +73,8 @@ import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupDropdown;
 import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
+import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -111,6 +114,14 @@ public class ContentViewCore implements
     // Used to represent gestures for long press and long tap.
     private static final int IS_LONG_PRESS = 1;
     private static final int IS_LONG_TAP = 2;
+
+    /**
+     * TODO(sgurun) remove these and use public API. crbug/512264
+     */
+    private static final int TEXT_STYLE_BOLD = 1 << 0;
+    private static final int TEXT_STYLE_ITALIC = 1 << 1;
+    private static final int TEXT_STYLE_UNDERLINE = 1 << 2;
+    private static final int TEXT_STYLE_STRIKE_THRU = 1 << 3;
 
     private static final ZoomControlsDelegate NO_OP_ZOOM_CONTROLS_DELEGATE =
             new ZoomControlsDelegate() {
@@ -2928,6 +2939,51 @@ public class ContentViewCore implements
         }
 
         return null;
+    }
+
+    // @TargetApi(Build.VERSION_CODES.M) TODO(sgurun) add method document once API is public
+    // crbug/512264
+    public void onProvideVirtualStructure(final ViewStructure structure) {
+        structure.setChildCount(1);
+        final ViewStructure viewRoot = structure.asyncNewChild(0);
+        getWebContents().requestAccessibilitySnapshot(
+                new AccessibilitySnapshotCallback() {
+                    @Override
+                    public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
+                        viewRoot.setClassName("");
+                        if (root == null) {
+                            viewRoot.asyncCommit();
+                            return;
+                        }
+                        createVirtualStructure(viewRoot, root, 0, 0);
+                    }
+                },
+                mRenderCoordinates.getContentOffsetYPix(),
+                mRenderCoordinates.getScrollXPix());
+    }
+
+    // When creating the View structure, the left and top are relative to the parent node.
+    // The X scroll is not used, rather compensated through X-position, while the Y scroll
+    // is provided.
+    private void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
+            int parentX, int parentY) {
+        viewNode.setClassName(node.className);
+        viewNode.setText(node.text);
+        viewNode.setDimens(node.x - parentX - node.scrollX, node.y - parentY, 0, node.scrollY,
+                node.width, node.height);
+        viewNode.setChildCount(node.children.size());
+        if (node.hasStyle) {
+            int style = (node.bold ? TEXT_STYLE_BOLD : 0)
+                    | (node.italic ? TEXT_STYLE_ITALIC : 0)
+                    | (node.underline ? TEXT_STYLE_UNDERLINE : 0)
+                    | (node.lineThrough ? TEXT_STYLE_STRIKE_THRU : 0);
+            viewNode.setTextStyle(node.textSize, node.color, node.bgcolor, style);
+        }
+        for (int i = 0; i < node.children.size(); i++) {
+            createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), node.x,
+                    node.y);
+        }
+        viewNode.asyncCommit();
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)

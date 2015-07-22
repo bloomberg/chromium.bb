@@ -323,8 +323,10 @@ import java.util.UUID;
     }
 
     @Override
-    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
-        nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
+    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback,
+            float offsetY, float scrollX) {
+        nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback,
+                offsetY, scrollX);
     }
 
     @Override
@@ -425,7 +427,7 @@ import java.util.UUID;
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
     private native void nativeRequestAccessibilitySnapshot(long nativeWebContentsAndroid,
-            AccessibilitySnapshotCallback callback);
+            AccessibilitySnapshotCallback callback, float offsetY, float scrollX);
     private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
     private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
 }

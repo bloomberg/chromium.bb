@@ -254,8 +254,11 @@ public interface WebContents extends Parcelable {
      * using the callback
      * @param callback The callback to be called when the snapshot is ready. The callback
      *                 cannot be null.
+     * @param offsetY The Physical on-screen Y offset amount below the top controls.
+     * @param scrollX Horizontal scroll offset in physical pixels
      */
-    void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
+    void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback, float offsetY,
+            float scrollX);
 
     /**
      * Resumes the current media session.

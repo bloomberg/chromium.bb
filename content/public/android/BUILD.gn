@@ -50,6 +50,10 @@ android_library("content_java") {
     #"//content:content_common",
   ]
 
+  if (android_sdk_version != "M") {
+    deps += [ "//third_party/android_tools:preview_java_sources" ]
+  }
+
   srcjar_deps = [
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",
