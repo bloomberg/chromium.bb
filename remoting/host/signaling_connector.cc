@@ -52,7 +52,8 @@ void SignalingConnector::OnSignalStrategyStateChange(
   DCHECK(CalledOnValidThread());
 
   if (state == SignalStrategy::CONNECTED) {
-    HOST_LOG << "Signaling connected.";
+    HOST_LOG << "Signaling connected. New JID: "
+             << signal_strategy_->GetLocalJid();
     reconnect_attempts_ = 0;
   } else if (state == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Signaling disconnected.";
