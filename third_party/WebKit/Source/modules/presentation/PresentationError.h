@@ -11,12 +11,16 @@
 namespace blink {
 
 class DOMException;
+class ScriptPromiseResolver;
 
 // A container of methods taking care of WebPresentationError in WebCallbacks subclasses.
 class PresentationError final {
     WTF_MAKE_NONCOPYABLE(PresentationError);
 public:
-    static DOMException* take(const WebPresentationError&);
+    // For CallbackPromiseAdapter.
+    using WebType = WebPresentationError;
+
+    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationError>);
 
 private:
     PresentationError() = delete;

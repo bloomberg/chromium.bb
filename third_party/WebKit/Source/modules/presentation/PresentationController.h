@@ -51,12 +51,13 @@ public:
     void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
     void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) override;
 
-    // Connects the |Presentation| object with this controller.
-    void setPresentation(Presentation*);
-
     // Handling of the default request.
     PresentationRequest* defaultRequest() const;
     void setDefaultRequest(PresentationRequest*);
+
+    // Handling of running sessions.
+    void registerSession(PresentationSession*);
+    void unregisterSession(PresentationSession*);
 
 private:
     PresentationController(LocalFrame&, WebPresentationClient*);
@@ -64,9 +65,21 @@ private:
     // Implementation of LocalFrameLifecycleObserver.
     void willDetachFrameHost() override;
 
+    // Return the session associated with the given |sessionClient| or null if
+    // it doesn't exist.
+    PresentationSession* findSession(WebPresentationSessionClient*);
+
+    // The WebPresentationClient which allows communicating with the embedder.
+    // It is not owned by the PresentationController but the controller will
+    // set it to null when the LocalFrame will be detached at which point the
+    // client can't be used.
     WebPresentationClient* m_client;
-    PersistentWillBeMember<Presentation> m_presentation;
+
+    // Default PermissionRequest used by the embedder.
     PersistentWillBeMember<PresentationRequest> m_defaultRequest;
+
+    // The presentation sessions associated with that frame.
+    PersistentHeapHashSet<Member<PresentationSession>> m_sessions;
 };
 
 } // namespace blink

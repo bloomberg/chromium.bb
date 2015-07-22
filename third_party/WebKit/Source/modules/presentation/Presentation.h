@@ -52,27 +52,11 @@ public:
     PresentationRequest* defaultRequest() const;
     void setDefaultRequest(PresentationRequest*);
 
-    // Called when the |onstatechange| event needs to be fired to the right session.
-    void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState);
-
-    // Called when the |onmessage| event needs to be fired to the right session.
-    void didReceiveSessionTextMessage(WebPresentationSessionClient*, const String& message);
-    void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length);
-
-    // Adds a session to the open sessions list.
-    void registerSession(PresentationSession*);
-
 private:
     explicit Presentation(LocalFrame*);
 
-    // Returns the session that matches the WebPresentationSessionClient or null.
-    PresentationSession* findSession(WebPresentationSessionClient*);
-
     // The session object provided to the presentation page. Not supported.
     Member<PresentationSession> m_session;
-
-    // The sessions opened for this frame.
-    HeapHashSet<Member<PresentationSession>> m_openSessions;
 };
 
 } // namespace blink

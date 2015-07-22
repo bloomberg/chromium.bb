@@ -31,7 +31,7 @@ void PresentationAvailabilityCallback::onError(WebPresentationError* result)
     OwnPtr<WebPresentationError> error = adoptPtr(result);
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->reject(PresentationError::take(*error));
+    m_resolver->reject(PresentationError::take(m_resolver.get(), error.release()));
 }
 
 } // namespace blink

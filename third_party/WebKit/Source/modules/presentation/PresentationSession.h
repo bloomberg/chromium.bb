@@ -21,7 +21,6 @@ namespace blink {
 
 class DOMArrayBuffer;
 class DOMArrayBufferView;
-class Presentation;
 class PresentationController;
 
 class PresentationSession final
@@ -31,7 +30,11 @@ class PresentationSession final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationSession);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PresentationSession* take(WebPresentationSessionClient*, Presentation*);
+    // For CallbackPromiseAdapter.
+    using WebType = WebPresentationSessionClient;
+
+    static PresentationSession* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationSessionClient>);
+    static PresentationSession* take(PresentationController*, PassOwnPtr<WebPresentationSessionClient>);
     ~PresentationSession() override;
 
     // EventTarget implementation.

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/presentation/PresentationSession.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
@@ -110,16 +111,36 @@ PresentationSession::PresentationSession(LocalFrame* frame, const String& id, co
 PresentationSession::~PresentationSession()
 {
     ASSERT(!m_blobLoader);
+    if (frame()) {
+        PresentationController* controller = PresentationController::from(*frame());
+        if (controller)
+            controller->unregisterSession(this);
+    }
 }
 
 // static
-PresentationSession* PresentationSession::take(WebPresentationSessionClient* client, Presentation* presentation)
+PresentationSession* PresentationSession::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebPresentationSessionClient> client)
 {
+    ASSERT(resolver);
     ASSERT(client);
-    ASSERT(presentation);
+    ASSERT(resolver->executionContext()->isDocument());
 
-    PresentationSession* session = new PresentationSession(presentation->frame(), client->getId(), client->getUrl());
-    presentation->registerSession(session);
+    Document* document = toDocument(resolver->executionContext());
+    if (!document->frame())
+        return nullptr;
+
+    PresentationController* controller = PresentationController::from(*document->frame());
+    if (!controller)
+        return nullptr;
+
+    return take(controller, client);
+}
+
+// static
+PresentationSession* PresentationSession::take(PresentationController* controller, PassOwnPtr<WebPresentationSessionClient> client)
+{
+    PresentationSession* session = new PresentationSession(controller->frame(), client->getId(), client->getUrl());
+    controller->registerSession(session);
     return session;
 }
 

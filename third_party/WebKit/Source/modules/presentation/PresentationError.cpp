@@ -13,10 +13,10 @@
 namespace blink {
 
 // static
-DOMException* PresentationError::take(const WebPresentationError& error)
+DOMException* PresentationError::take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationError> error)
 {
     ExceptionCode code = UnknownError;
-    switch (error.errorType) {
+    switch (error->errorType) {
     case WebPresentationError::ErrorTypeNoAvailableScreens:
     case WebPresentationError::ErrorTypeNoPresentationFound:
         code = NotFoundError;
@@ -32,7 +32,7 @@ DOMException* PresentationError::take(const WebPresentationError& error)
         break;
     }
 
-    return DOMException::create(code, error.message);
+    return DOMException::create(code, error->message);
 }
 
 } // namespace blink

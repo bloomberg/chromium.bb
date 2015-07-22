@@ -1208,8 +1208,6 @@
       'presentation/PresentationRequest.h',
       'presentation/PresentationSession.cpp',
       'presentation/PresentationSession.h',
-      'presentation/PresentationSessionClientCallbacks.cpp',
-      'presentation/PresentationSessionClientCallbacks.h',
       'push_messaging/PushController.cpp',
       'push_messaging/PushController.h',
       'push_messaging/PushError.cpp',

@@ -16,9 +16,8 @@
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/PresentationAvailabilityCallback.h"
 #include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "modules/presentation/PresentationSessionClientCallbacks.h"
-#include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 
 namespace blink {
 
@@ -52,11 +51,7 @@ Presentation* Presentation::create(LocalFrame* frame)
 {
     ASSERT(frame);
 
-    Presentation* presentation = new Presentation(frame);
-    PresentationController* controller = PresentationController::from(*frame);
-    if (controller)
-        controller->setPresentation(presentation);
-    return presentation;
+    return new Presentation(frame);
 }
 
 const AtomicString& Presentation::interfaceName() const
@@ -74,7 +69,6 @@ ExecutionContext* Presentation::executionContext() const
 DEFINE_TRACE(Presentation)
 {
     visitor->trace(m_session);
-    visitor->trace(m_openSessions);
     RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
@@ -94,7 +88,7 @@ ScriptPromise Presentation::startSession(ScriptState* state, const String& prese
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
         return promise;
     }
-    client->startSession(presentationUrl, new PresentationSessionClientCallbacks(resolver, this));
+    client->startSession(presentationUrl, new CallbackPromiseAdapter<PresentationSession, PresentationError>(resolver));
 
     return promise;
 }
@@ -109,7 +103,7 @@ ScriptPromise Presentation::joinSession(ScriptState* state, const String& presen
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
         return promise;
     }
-    client->joinSession(presentationUrl, presentationId, new PresentationSessionClientCallbacks(resolver, this));
+    client->joinSession(presentationUrl, presentationId, new CallbackPromiseAdapter<PresentationSession, PresentationError>(resolver));
 
     return promise;
 }
@@ -147,47 +141,6 @@ void Presentation::setDefaultRequest(PresentationRequest* request)
     if (!controller)
         return;
     controller->setDefaultRequest(request);
-}
-
-void Presentation::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState sessionState)
-{
-    PresentationSession* session = findSession(sessionClient);
-    if (session)
-        session->didChangeState(sessionState);
-
-    delete sessionClient;
-}
-
-void Presentation::didReceiveSessionTextMessage(WebPresentationSessionClient* sessionClient, const String& message)
-{
-    PresentationSession* session = findSession(sessionClient);
-    if (session)
-        session->didReceiveTextMessage(message);
-
-    delete sessionClient;
-}
-
-void Presentation::didReceiveSessionBinaryMessage(WebPresentationSessionClient* sessionClient, const uint8_t* data, size_t length)
-{
-    PresentationSession* session = findSession(sessionClient);
-    if (session)
-        session->didReceiveBinaryMessage(data, length);
-
-    delete sessionClient;
-}
-
-void Presentation::registerSession(PresentationSession* session)
-{
-    m_openSessions.add(session);
-}
-
-PresentationSession* Presentation::findSession(WebPresentationSessionClient* sessionClient)
-{
-    for (const auto& session : m_openSessions) {
-        if (session->matches(sessionClient))
-            return session.get();
-    }
-    return nullptr;
 }
 
 } // namespace blink
