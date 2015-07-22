@@ -853,7 +853,7 @@ test("ui_base_unittests") {
   if (is_mac) {
     data += [ "$root_out_dir/ui_unittests Framework.framework/" ]
 
-    if (use_asan && symbol_level == 0) {
+    if (is_asan && symbol_level == 0) {
       data += [ "$root_out_dir/ui_base_unittests.dSYM/" ]
     }
   }
