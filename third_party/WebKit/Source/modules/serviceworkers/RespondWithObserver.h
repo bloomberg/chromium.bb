@@ -23,7 +23,7 @@ class ScriptValue;
 class MODULES_EXPORT RespondWithObserver final : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 public:
-    static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
+    static RespondWithObserver* create(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
 
     void contextDestroyed() override;
 
@@ -41,9 +41,10 @@ public:
 private:
     class ThenFunction;
 
-    RespondWithObserver(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
+    RespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
 
     int m_eventID;
+    KURL m_requestURL;
     WebURLRequest::FetchRequestMode m_requestMode;
     WebURLRequest::FrameType m_frameType;
 
