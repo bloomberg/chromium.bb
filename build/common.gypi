@@ -305,7 +305,7 @@
           }], # OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0
 
           ['OS=="linux" and target_arch=="mipsel"', {
-            'sysroot%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/sysroot',
+            'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/debian_wheezy_mips-sysroot',
           }],
         ],
       },
@@ -2360,7 +2360,7 @@
       }],
 
       # Enable brlapi by default for chromeos.
-      [ 'chromeos==1', {
+      ['chromeos==1', {
         'use_brlapi%': 1,
       }],
 
@@ -5969,8 +5969,8 @@
     }],
     ['OS=="linux" and target_arch=="mipsel" and clang==0', {
       'make_global_settings': [
-        ['CC', '<(sysroot)/../bin/mipsel-linux-gnu-gcc'],
-        ['CXX', '<(sysroot)/../bin/mipsel-linux-gnu-g++'],
+        ['CC', '<!(which mipsel-linux-gnu-gcc)'],
+        ['CXX', '<!(which mipsel-linux-gnu-g++)'],
         ['CC.host', '<(host_cc)'],
         ['CXX.host', '<(host_cxx)'],
       ],
