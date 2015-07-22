@@ -30,6 +30,23 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('device_name'))
+    .then(characteristic => {
+      testRunner.setBluetoothMockDataSet('MissingServiceGenericAccessAdapter');
+      return characteristic.writeValue(new ArrayBuffer(1 /* length */)).then(() => {
+        assert_unreached('Service got removed should fail');
+      }, function(error) {
+        assert_equals(error.name, 'InvalidStateError');
+        assert_equals(error.message, 'GATT Service no longer exists.');
+      });
+    });
+}, 'Service gets removed. Reject with InvalidStateError.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
