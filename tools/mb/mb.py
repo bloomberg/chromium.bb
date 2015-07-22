@@ -620,6 +620,16 @@ class MetaBuildWrapper(object):
       self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
       return 0
 
+    # This shouldn't normally happen, but could due to unusual race conditions,
+    # like a try job that gets scheduled before a patch lands but runs after
+    # the patch has landed.
+    if not inp['files']:
+      self.Print('Warning: No files modified in patch, bailing out early.')
+      self.WriteJSON({'targets': [],
+                      'build_targets': [],
+                      'status': 'No dependency'}, output_path)
+      return 0
+
     ret = 0
     response_file = self.TempFile()
     response_file.write('\n'.join(inp['files']) + '\n')
