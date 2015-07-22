@@ -22853,6 +22853,7 @@
     },
     "veyron_minnie-chromium-pfq": {
         "_template": "chromium-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie"
         ],

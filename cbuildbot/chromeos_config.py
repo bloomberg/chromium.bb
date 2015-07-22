@@ -635,6 +635,7 @@ _waterfall_config_map = {
 
         # Experimental PFQs.
         'tricky-chrome-pfq',
+        'veyron_minnie-chromium-pfq',
 
         # Incremental Builders.
         'mario-incremental',
