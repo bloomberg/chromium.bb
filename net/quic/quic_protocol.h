@@ -50,7 +50,7 @@ typedef std::map<QuicTag, std::string> QuicTagValueMap;
 // QuicPriority is uint32. Use SpdyPriority when we change the QUIC_VERSION.
 typedef uint32 QuicPriority;
 
-// Default and initial maximum size in bytes of a QUIC packet.
+// Default initial maximum size in bytes of a QUIC packet.
 const QuicByteCount kDefaultMaxPacketSize = 1350;
 // Default initial maximum size in bytes of a QUIC packet for servers.
 const QuicByteCount kDefaultServerMaxPacketSize = 1000;

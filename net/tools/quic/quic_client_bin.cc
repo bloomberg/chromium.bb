@@ -165,10 +165,6 @@ int main(int argc, char *argv[]) {
       std::cerr << "--initial_mtu must be an integer\n";
       return 1;
     }
-  } else {
-    // Default and initial maximum size in bytes of a QUIC packet, which is used
-    // to set connection's max_packet_length.
-    FLAGS_initial_mtu = net::kDefaultMaxPacketSize;
   }
 
   VLOG(1) << "server host: " << FLAGS_host << " port: " << FLAGS_port
@@ -219,11 +215,10 @@ int main(int argc, char *argv[]) {
                                 versions, &epoll_server);
   scoped_ptr<CertVerifier> cert_verifier;
   scoped_ptr<TransportSecurityState> transport_security_state;
-  if (FLAGS_initial_mtu != 0) {
-    client.set_initial_max_packet_length(FLAGS_initial_mtu);
-  }
+  client.set_initial_max_packet_length(
+      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   if (is_https) {
-    // For secure QUIC we need to verify the cert chain.a
+    // For secure QUIC we need to verify the cert chain.
     cert_verifier.reset(CertVerifier::CreateDefault());
     transport_security_state.reset(new TransportSecurityState);
     client.SetProofVerifier(new ProofVerifierChromium(

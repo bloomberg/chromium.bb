@@ -735,10 +735,8 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     if (incoming_ack.is_truncated) {
       should_last_packet_instigate_acks_ = true;
     }
-    QuicPacketSequenceNumber least_acked = GetLeastUnacked();
-    if (least_acked > 0 &&
-        (incoming_ack.missing_packets.empty() ||
-         least_acked > *incoming_ack.missing_packets.begin())) {
+    if (!incoming_ack.missing_packets.empty() &&
+        GetLeastUnacked() > *incoming_ack.missing_packets.begin()) {
       ++stop_waiting_count_;
     } else {
       stop_waiting_count_ = 0;
