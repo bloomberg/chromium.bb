@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsexception_enabler.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/spellcheck_common.h"
@@ -36,10 +35,11 @@ const unsigned int kShortLanguageCodeSize = 2;
 // spell-checking will not work, but it also will not crash the
 // browser.
 NSSpellChecker* SharedSpellChecker() {
-  return base::mac::ObjCCastStrict<NSSpellChecker>(
-      base::mac::RunBlockIgnoringExceptions(^{
-          return [NSSpellChecker sharedSpellChecker];
-      }));
+  @try {
+    return [NSSpellChecker sharedSpellChecker];
+  } @catch (id exception) {
+    return nil;
+  }
 }
 
 // A private utility function to convert hunspell language codes to OS X

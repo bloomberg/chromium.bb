@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/scoped_nsexception_enabler.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -20,8 +19,6 @@ namespace chrome_browser_application_mac {
 
 // Generate an NSException with the given name.
 NSException* ExceptionNamed(NSString* name) {
-  base::mac::ScopedNSExceptionEnabler enabler;
-
   return [NSException exceptionWithName:name
                                  reason:@"No reason given"
                                userInfo:nil];

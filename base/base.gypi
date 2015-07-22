@@ -317,8 +317,6 @@
           'mac/scoped_mach_vm.h',
           'mac/scoped_nsautorelease_pool.h',
           'mac/scoped_nsautorelease_pool.mm',
-          'mac/scoped_nsexception_enabler.h',
-          'mac/scoped_nsexception_enabler.mm',
           'mac/scoped_nsobject.h',
           'mac/scoped_objc_class_swizzler.h',
           'mac/scoped_objc_class_swizzler.mm',

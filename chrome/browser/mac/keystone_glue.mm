@@ -18,7 +18,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsexception_enabler.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
@@ -542,14 +541,7 @@ NSString* const kVersionKey = @"KSVersion";
   [self updateStatus:kAutoupdateRegistering version:nil];
 
   NSDictionary* parameters = [self keystoneParameters];
-  BOOL result;
-  {
-    // TODO(shess): Allows Keystone to throw an exception when
-    // /usr/bin/python does not exist (really!).
-    // http://crbug.com/86221 and http://crbug.com/87931
-    base::mac::ScopedNSExceptionEnabler enabler;
-    result = [registration_ registerWithParameters:parameters];
-  }
+  BOOL result = [registration_ registerWithParameters:parameters];
   if (!result) {
     [self updateStatus:kAutoupdateRegisterFailed version:nil];
     return;

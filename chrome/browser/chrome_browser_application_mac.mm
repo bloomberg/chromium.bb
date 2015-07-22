@@ -12,7 +12,6 @@
 #include "base/debug/stack_trace.h"
 #import "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
-#import "base/mac/scoped_nsexception_enabler.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/metrics/histogram.h"
@@ -320,23 +319,8 @@ void CancelTerminate() {
       static_cast<long>(tag),
       [actionString UTF8String],
       aTarget);
-
   base::debug::ScopedCrashKey key(crash_keys::mac::kSendAction, value);
 
-  // Certain third-party code, such as print drivers, can still throw
-  // exceptions and Chromium cannot fix them.  This provides a way to
-  // work around those on a spot basis.
-  bool enableNSExceptions = false;
-
-  // http://crbug.com/80686 , an Epson printer driver.
-  if (anAction == @selector(selectPDE:)) {
-    enableNSExceptions = true;
-  }
-
-  // Minimize the window by keeping this close to the super call.
-  scoped_ptr<base::mac::ScopedNSExceptionEnabler> enabler;
-  if (enableNSExceptions)
-    enabler.reset(new base::mac::ScopedNSExceptionEnabler());
   return [super sendAction:anAction to:aTarget from:sender];
 }
 
