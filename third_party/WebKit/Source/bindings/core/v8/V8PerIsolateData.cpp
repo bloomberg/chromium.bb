@@ -128,6 +128,8 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
     return m_liveRoot.getUnsafe();
 }
 
+// willBeDestroyed() clear things that should be cleared before
+// ThreadState::detach() gets called.
 void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = from(isolate);
@@ -135,11 +137,14 @@ void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
     ASSERT(!data->m_destructionPending);
     data->m_destructionPending = true;
 
+    data->m_scriptDebugger.clear();
     // Clear any data that may have handles into the heap,
     // prior to calling ThreadState::detach().
     data->clearEndOfScopeTasks();
 }
 
+// destroy() clear things that should be cleared after ThreadState::detach()
+// gets called but before the Isolate exits.
 void V8PerIsolateData::destroy(v8::Isolate* isolate)
 {
 #if ENABLE(ASSERT)
@@ -151,7 +156,6 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     // Clear everything before exiting the Isolate.
     if (data->m_scriptRegexpScriptState)
         data->m_scriptRegexpScriptState->disposePerContextData();
-    data->m_scriptDebugger.clear();
     data->m_liveRoot.clear();
     data->m_hiddenValue.clear();
     data->m_stringCache->dispose();
