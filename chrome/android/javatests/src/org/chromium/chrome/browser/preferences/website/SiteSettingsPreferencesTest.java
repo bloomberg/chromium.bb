@@ -11,8 +11,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -20,25 +21,32 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
 
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for everything under Settings > Site Settings.
  */
-public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
+public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    public SiteSettingsPreferencesTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
 
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         final Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.LOCATION_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.LOCATION_KEY);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -63,7 +71,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
                     @Override
                     public InfoBarTestAnimationListener call() throws Exception {
                         InfoBarContainer container =
-                                getActivity().getActiveTab().getInfoBarContainer();
+                                getActivity().getActivityTab().getInfoBarContainer();
                         InfoBarTestAnimationListener listener =  new InfoBarTestAnimationListener();
                         container.setAnimationListener(listener);
                         return listener;
@@ -104,13 +112,9 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
         assertTrue(getInfoBars().isEmpty());
     }
 
-    private Preferences startContentSettingsCategory(
-            String categoryKey) {
-        // Launch main activity for initial SiteSettingsPreferences initialization.
-        launchChromeShellWithBlankPage();
-
+    private Preferences startSiteSettingsCategory(String category) {
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, categoryKey);
+        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 getInstrumentation().getTargetContext(), SingleCategoryPreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
@@ -165,7 +169,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
 
     private void setEnablePopups(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.POPUPS_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.POPUPS_KEY);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -185,7 +189,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
 
     private void setEnableCamera(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.CAMERA_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.CAMERA_KEY);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -205,7 +209,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
 
     private void setEnableMic(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.MICROPHONE_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.MICROPHONE_KEY);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -230,7 +234,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
         setCookiesEnabled(preferenceActivity, true);
         setThirdPartyCookiesEnabled(preferenceActivity, false);
         setThirdPartyCookiesEnabled(preferenceActivity, true);
@@ -245,7 +249,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
         Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
         setCookiesEnabled(preferenceActivity, true);
         preferenceActivity.finish();
 
@@ -269,7 +273,7 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
         Preferences preferenceActivity =
-                startContentSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
+                startSiteSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
         setCookiesEnabled(preferenceActivity, false);
         preferenceActivity.finish();
 
@@ -394,26 +398,15 @@ public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
         assertEquals("Wrong infobar count", 1, getInfoBars().size());
     }
 
-    private String runJavaScriptCodeInCurrentTab(String code) throws InterruptedException,
-            TimeoutException {
-        return JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                getActivity().getActiveContentViewCore().getWebContents(), code);
-    }
-
-    private List<InfoBar> getInfoBars() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<InfoBar>>() {
-            @Override
-            public List<InfoBar> call() throws Exception {
-                return getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
-            }
-        });
-    }
-
     private int getTabCount() {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return getActivity().getTabModelSelector().getCurrentModel().getCount();
+                if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
+                    return ChromeApplication.getDocumentTabModelSelector().getTotalTabCount();
+                } else {
+                    return getActivity().getTabModelSelector().getTotalTabCount();
+                }
             }
         });
     }
