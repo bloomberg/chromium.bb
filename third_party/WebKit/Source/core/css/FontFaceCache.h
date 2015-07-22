@@ -69,7 +69,7 @@ public:
 private:
     typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSSegmentedFontFace>> TraitsMap;
     typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
-    typedef WillBeHeapHashMap<const StyleRuleFontFace*, RefPtrWillBeMember<FontFace>> StyleRuleToFontFace;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<const StyleRuleFontFace>, RefPtrWillBeMember<FontFace>> StyleRuleToFontFace;
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
