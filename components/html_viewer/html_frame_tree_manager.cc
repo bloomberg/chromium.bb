@@ -203,11 +203,44 @@ void HTMLFrameTreeManager::ProgressChanged(double progress) {
 }
 
 void HTMLFrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
-  NOTIMPLEMENTED();
+  HTMLFrame* parent = root_->FindFrame(frame_data->parent_id);
+  if (!parent) {
+    DVLOG(1) << "Received invalid parent in OnFrameAdded "
+             << frame_data->parent_id;
+    return;
+  }
+  if (root_->FindFrame(frame_data->frame_id)) {
+    DVLOG(1) << "Child with id already exists in OnFrameAdded "
+             << frame_data->frame_id;
+    return;
+  }
+
+  HTMLFrame::CreateParams params(this, parent, frame_data->frame_id);
+  // |parent| takes ownership of |frame|.
+  HTMLFrame* frame = new HTMLFrame(params);
+  frame->Init(nullptr, frame_data->name.To<blink::WebString>(),
+              frame_data->origin.To<blink::WebString>());
 }
 
 void HTMLFrameTreeManager::OnFrameRemoved(uint32_t frame_id) {
-  NOTIMPLEMENTED();
+  HTMLFrame* frame = root_->FindFrame(frame_id);
+  if (!frame) {
+    DVLOG(1) << "OnFrameRemoved with unknown frame " << frame_id;
+    return;
+  }
+
+  // We shouldn't see requests to remove the root.
+  if (frame == root_) {
+    DVLOG(1) << "OnFrameRemoved supplied root; ignoring";
+    return;
+  }
+
+  // Requests to remove the local frame are followed by the View being
+  // destroyed. We handle destruction there.
+  if (frame == GetLocalFrame())
+    return;
+
+  frame->Close();
 }
 
 void HTMLFrameTreeManager::OnFrameNameChanged(uint32_t frame_id,

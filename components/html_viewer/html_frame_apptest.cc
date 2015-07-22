@@ -83,6 +83,8 @@ class HTMLFrameTest : public ViewManagerTestBase {
   ~HTMLFrameTest() override {}
 
  protected:
+  // Creates the frame tree showing an empty page at the root and adds (via
+  // script) a frame showing the same empty page.
   Frame* LoadEmptyPageAndCreateFrame() {
     View* embed_view = window_manager()->CreateView();
     FrameConnection* root_connection =
@@ -94,23 +96,29 @@ class HTMLFrameTest : public ViewManagerTestBase {
       return nullptr;
     }
 
+    return CreateEmptyChildFrame(frame_tree_->root());
+  }
+
+  Frame* CreateEmptyChildFrame(Frame* parent) {
+    const size_t initial_frame_count = parent->children().size();
     // Dynamically add a new frame.
-    ExecuteScript(root_connection->application_connection(),
+    ExecuteScript(ApplicationConnectionForFrame(parent),
                   AddPortToString(kAddFrameWithEmptyPageScript));
 
     // Wait for the frame to appear.
-    if (frame_tree_->root()->children().empty() &&
+    if (parent->children().size() != initial_frame_count + 1u &&
         !WaitForEmbedForDescendant()) {
       ADD_FAILURE() << "timed out waiting for child";
       return nullptr;
     }
 
-    if (embed_view->children().size() != 1u) {
+    if (parent->view()->children().size() != initial_frame_count + 1u) {
       ADD_FAILURE() << "unexpected number of children "
-                    << embed_view->children().size();
+                    << parent->view()->children().size();
       return nullptr;
     }
-    return frame_tree_->root()->FindFrame(embed_view->children()[0]->id());
+
+    return parent->FindFrame(parent->view()->children().back()->id());
   }
 
   std::string AddPortToString(const std::string& string) {
@@ -257,11 +265,12 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
   ExecuteScript(child_frame_connection, "window.name = 'new_child';");
 
   // Eventually the parent should see the change. There is no convenient way
-  // to observer this change, so we repeatedly ask for it and timeout if we
+  // to observe this change, so we repeatedly ask for it and timeout if we
   // never get the right value.
   const base::TimeTicks start_time(base::TimeTicks::Now());
   std::string find_window_result;
   do {
+    find_window_result.clear();
     scoped_ptr<base::Value> script_value(
         ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
                       "window.frames['new_child'] != null ? 'found frame' : "
@@ -277,6 +286,66 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
            base::TimeTicks::Now() - start_time <
                TestTimeouts::action_timeout());
   EXPECT_EQ("found frame", find_window_result);
+}
+
+// Triggers dynamic addition and removal of a frame.
+TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
+  if (!EnableOOPIFs())
+    return;
+
+  // Create a child frame, and in that child frame create another child frame.
+  Frame* child_frame = LoadEmptyPageAndCreateFrame();
+  ASSERT_TRUE(child_frame);
+
+  ASSERT_TRUE(CreateEmptyChildFrame(child_frame));
+
+  // Make sure the parent can see the child and child's child. There is no
+  // convenient way to observe this change, so we repeatedly ask for it and
+  // timeout if we never get the right value.
+  const char kGetChildChildFrameCount[] =
+      "if (window.frames.length > 0)"
+      "  window.frames[0].frames.length.toString();"
+      "else"
+      "  '0';";
+  const base::TimeTicks start_time(base::TimeTicks::Now());
+  std::string child_child_frame_count;
+  do {
+    child_child_frame_count.clear();
+    scoped_ptr<base::Value> script_value(
+        ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+                      kGetChildChildFrameCount));
+    if (script_value->IsType(base::Value::TYPE_LIST)) {
+      base::ListValue* script_value_as_list;
+      if (script_value->GetAsList(&script_value_as_list) &&
+          script_value_as_list->GetSize() == 1) {
+        script_value_as_list->GetString(0u, &child_child_frame_count);
+      }
+    }
+  } while (child_child_frame_count != "1" &&
+           base::TimeTicks::Now() - start_time <
+               TestTimeouts::action_timeout());
+  EXPECT_EQ("1", child_child_frame_count);
+
+  // Remove the child's child and make sure the root doesn't see it anymore.
+  const char kRemoveLastIFrame[] =
+      "document.body.removeChild(document.body.lastChild);";
+  ExecuteScript(ApplicationConnectionForFrame(child_frame), kRemoveLastIFrame);
+  do {
+    child_child_frame_count.clear();
+    scoped_ptr<base::Value> script_value(
+        ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+                      kGetChildChildFrameCount));
+    if (script_value->IsType(base::Value::TYPE_LIST)) {
+      base::ListValue* script_value_as_list;
+      if (script_value->GetAsList(&script_value_as_list) &&
+          script_value_as_list->GetSize() == 1) {
+        script_value_as_list->GetString(0u, &child_child_frame_count);
+      }
+    }
+  } while (child_child_frame_count != "0" &&
+           base::TimeTicks::Now() - start_time <
+               TestTimeouts::action_timeout());
+  ASSERT_EQ("0", child_child_frame_count);
 }
 
 }  // namespace mojo

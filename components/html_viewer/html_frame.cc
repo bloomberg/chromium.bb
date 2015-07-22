@@ -99,7 +99,7 @@ HTMLFrame::HTMLFrame(const HTMLFrame::CreateParams& params)
 void HTMLFrame::Init(mojo::View* local_view,
                      const blink::WebString& remote_frame_name,
                      const blink::WebString& remote_origin) {
-  if (local_view->id() == id_)
+  if (local_view && local_view->id() == id_)
     SetView(local_view);
 
   // TODO(sky): need to plumb through scope and other args correctly for frame
@@ -131,7 +131,7 @@ void HTMLFrame::Init(mojo::View* local_view,
       // local_web_frame->close();
       web_frame_ = remote_web_frame;
     }
-  } else if (id_ == local_view->id()) {
+  } else if (local_view && id_ == local_view->id()) {
     // Frame represents the local frame.
     HTMLFrame* previous_sibling = GetPreviousSibling(this);
     blink::WebFrame* previous_web_frame =

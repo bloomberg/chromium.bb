@@ -195,8 +195,6 @@ void Frame::OnViewDestroying(mojo::View* view) {
   // destructor.
   view_ownership_ = ViewOwnership::DOESNT_OWN_VIEW;
 
-  // Assume the view associated with the root is never deleted out from under
-  // us.
   // TODO(sky): Change browser to create a child for each FrameTree.
   if (tree_->root() == this) {
     view_->RemoveObserver(this);
