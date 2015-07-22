@@ -255,6 +255,8 @@
             'sources': [
               'nacl_irt/irt_interfaces.cc',
               'nacl_irt/irt_interfaces.h',
+              'nacl_irt/irt_pnacl_translator_compile.cc',
+              'nacl_irt/irt_pnacl_translator_link.cc',
               'nacl_irt/irt_ppapi.cc',
               'nacl_irt/irt_ppapi.h',
               'nacl_irt/irt_start.cc',

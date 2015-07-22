@@ -10,6 +10,7 @@
 #include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/irt_shim_ppapi.h"
@@ -54,6 +55,21 @@ static const struct nacl_irt_interface irt_interfaces[] = {
     NULL,
 #endif
   },
+#if defined(OS_NACL_SFI)
+  // TODO(mseaborn): Ideally these two PNaCl translator interfaces should
+  // be hidden in processes that aren't PNaCl sandboxed translator
+  // processes.  However, we haven't yet plumbed though a flag to indicate
+  // when a NaCl process is a PNaCl translator process.  The risk of an app
+  // accidentally depending on the presence of this interface is much lower
+  // than for other non-stable IRT interfaces, because this interface is
+  // not useful to apps.
+  { NACL_IRT_PRIVATE_PNACL_TRANSLATOR_LINK_v0_1,
+    &nacl_irt_private_pnacl_translator_link,
+    sizeof(nacl_irt_private_pnacl_translator_link), NULL },
+  { NACL_IRT_PRIVATE_PNACL_TRANSLATOR_COMPILE_v0_1,
+    &nacl_irt_private_pnacl_translator_compile,
+    sizeof(nacl_irt_private_pnacl_translator_compile), NULL },
+#endif
 };
 
 size_t chrome_irt_query(const char* interface_ident,

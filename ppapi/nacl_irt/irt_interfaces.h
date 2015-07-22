@@ -8,6 +8,10 @@
 #include <stdlib.h>
 
 extern const struct nacl_irt_ppapihook nacl_irt_ppapihook;
+extern const struct nacl_irt_private_pnacl_translator_link
+    nacl_irt_private_pnacl_translator_link;
+extern const struct nacl_irt_private_pnacl_translator_compile
+    nacl_irt_private_pnacl_translator_compile;
 
 size_t chrome_irt_query(const char* interface_ident,
                         void* table, size_t tablesize);
