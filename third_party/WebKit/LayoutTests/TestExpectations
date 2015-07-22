@@ -3544,8 +3544,7 @@ crbug.com/509025 [ Yosemite ] fast/text/zero-font-size.html [ NeedsRebaseline ]
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-combined-hw.html [ NeedsManualRebaseline ]
-# [robertphillips] re-enable this suppression after the Skia DEPS roll has landed
-#crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
+crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
 
 crbug.com/509855 webaudio/stereopannernode-no-glitch.html [ Pass Timeout ]
 
