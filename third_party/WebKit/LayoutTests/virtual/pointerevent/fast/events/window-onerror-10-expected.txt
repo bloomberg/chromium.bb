@@ -17,7 +17,7 @@ window.onerror: "Uncaught Error: exception in onload" at onerror-test.js (Line: 
 Stack Trace:
 Error: exception in onload
     at throwException onerror-test.js:6:11
-    at onload window-onerror-10.html:11:290
+    at onload window-onerror-10.html:11:205
 
 Returning 'true': the error should not be reported in the console as an unhandled exception.
 
@@ -27,7 +27,7 @@ window.onerror: "Uncaught Error: exception in setTimeout" at onerror-test.js (Li
 Stack Trace:
 Error: exception in setTimeout
     at throwException onerror-test.js:6:11
-    at window-onerror-10.html:11:240
+    at eval window-onerror-10.html:11:155
 
 PASS successfullyParsed is true
 

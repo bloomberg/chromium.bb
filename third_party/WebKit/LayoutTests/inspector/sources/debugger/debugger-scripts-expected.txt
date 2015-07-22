@@ -16,6 +16,6 @@ script 5:
     start: 46:11
     end: 48:0
 script 6:
-    start: 51:56
-    end: 52:7
+    start: 51:39
+    end: 52:2
 

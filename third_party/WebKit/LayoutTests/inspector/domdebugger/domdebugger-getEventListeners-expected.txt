@@ -26,7 +26,7 @@ sourceName: domdebugger-getEventListeners.html
 
 type: click
 useCapture: false
-location: 121, 75
+location: 37, 75
 handler: function onclick(event) {
   return 42;
 }

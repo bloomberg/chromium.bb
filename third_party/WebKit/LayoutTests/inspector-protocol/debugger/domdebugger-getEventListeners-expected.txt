@@ -18,7 +18,7 @@ Event listeners of window
   type:load
   useCapture:false
   lineNumber:164
-  columnNumber:102
+  columnNumber:18
   handler.type:function
   handler.className:Function
   handler.description:function onload(event) {  runTest();}
@@ -60,7 +60,7 @@ Event listeners of div#listeners1
   type:load
   useCapture:false
   lineNumber:162
-  columnNumber:117
+  columnNumber:33
   handler.type:function
   handler.className:Function
   handler.description:function onload(event) {  return 42;}
