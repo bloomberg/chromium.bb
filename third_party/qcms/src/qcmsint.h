@@ -306,6 +306,11 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
                                           unsigned char *dest,
                                           size_t length,
                                           qcms_format_type output_format);
+void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform* transform,
+                                              unsigned char* src,
+                                              unsigned char* dest,
+                                              size_t length,
+                                              qcms_format_type output_format);
 
 extern qcms_bool qcms_supports_iccv4;
 

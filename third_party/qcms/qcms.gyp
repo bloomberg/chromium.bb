@@ -47,6 +47,31 @@
         }],
       ],
     },
+    {
+      'target_name': 'qcms_test',
+      'product_name': 'qcms_test',
+      'type': 'executable',
+      'conditions': [
+        ['target_arch=="ia32" or target_arch=="x64"', {
+          'defines': [
+            'SSE2_ENABLE',
+          ],
+          'sources': [
+            'src/tests/qcms_test_tetra_clut_rgba.c',
+          ],
+          'dependencies': [
+            'qcms',
+          ],
+          'conditions': [
+            ['OS != "win"', {
+              'libraries': [
+                '-lm',
+              ],
+            }],
+          ],            
+        }],
+      ],
+    },    
   ],
 }
 
