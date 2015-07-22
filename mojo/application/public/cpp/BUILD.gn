@@ -66,7 +66,13 @@ source_set("content_handler") {
   ]
   deps = [
     ":cpp",
+
+    # TODO: this code should not depend on base.
     "//base",
+    "//mojo/application/public/interfaces:interfaces_cpp_sources",
+
+    # TODO: this code should not depend on mojo/common.
+    "//mojo/common:common_base",
     "//mojo/services/network/public/interfaces",
   ]
 }
@@ -83,6 +89,7 @@ source_set("test_support") {
     ":cpp",
     "//base",
     "//base/test:test_support",
+    "//mojo/application/public/interfaces:interfaces_cpp_sources",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",

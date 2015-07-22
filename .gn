@@ -71,7 +71,8 @@ check_targets = [
 
   #"//jingle/*",
   #"//media/*",  # Lots of errors.
-  #"//mojo/*",
+  "//mojo/application/*",
+
   #"//native_client/*",
   #"//net/*",  # Needs GN binary changes to work on Android.
 
