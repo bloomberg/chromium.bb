@@ -45,6 +45,9 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
   // days older than |current_time|.
   void DeleteExpiredPrecacheHistory(const base::Time& current_time);
 
+  // Delete all history entries from the database.
+  void ClearHistory();
+
   // Report precache-related metrics in response to a URL being fetched, where
   // the fetch was motivated by precaching.
   void RecordURLPrecached(const GURL& url, const base::Time& fetch_time,

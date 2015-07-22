@@ -73,7 +73,17 @@ void PrecacheDatabase::DeleteExpiredPrecacheHistory(
   buffered_writes_.push_back(
       base::Bind(&PrecacheURLTable::DeleteAllPrecachedBefore,
                  base::Unretained(&precache_url_table_), delete_end));
+  Flush();
+}
 
+void PrecacheDatabase::ClearHistory() {
+  if (!IsDatabaseAccessible()) {
+    // Do nothing if unable to access the database.
+    return;
+  }
+
+  buffered_writes_.push_back(base::Bind(
+      &PrecacheURLTable::DeleteAll, base::Unretained(&precache_url_table_)));
   Flush();
 }
 

@@ -367,6 +367,11 @@ class BrowsingDataRemover
   void OnClearedWebRtcLogs();
 #endif
 
+#if defined(OS_ANDROID)
+  // Callback on UI thread when the precache history has been cleared.
+  void OnClearedPrecacheHistory();
+#endif
+
   void OnClearedDomainReliabilityMonitor();
 
   // Returns true if we're all done.
@@ -423,6 +428,9 @@ class BrowsingDataRemover
   bool waiting_for_clear_platform_keys_;
   bool waiting_for_clear_plugin_data_;
   bool waiting_for_clear_pnacl_cache_;
+#if defined(OS_ANDROID)
+  bool waiting_for_clear_precache_history_;
+#endif
   bool waiting_for_clear_storage_partition_data_;
 #if defined(ENABLE_WEBRTC)
   bool waiting_for_clear_webrtc_logs_;

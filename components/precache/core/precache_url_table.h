@@ -44,6 +44,9 @@ class PrecacheURLTable {
   // Deletes entries that were precached before the time of |delete_end|.
   void DeleteAllPrecachedBefore(const base::Time& delete_end);
 
+  // Delete all entries.
+  void DeleteAll();
+
   // Used by tests to get the contents of the table.
   void GetAllDataForTesting(std::map<GURL, base::Time>* map);
 

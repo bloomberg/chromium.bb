@@ -69,6 +69,13 @@ void PrecacheURLTable::DeleteAllPrecachedBefore(const base::Time& delete_end) {
   statement.Run();
 }
 
+void PrecacheURLTable::DeleteAll() {
+  Statement statement(
+      db_->GetCachedStatement(SQL_FROM_HERE, "DELETE FROM precache_urls"));
+
+  statement.Run();
+}
+
 void PrecacheURLTable::GetAllDataForTesting(std::map<GURL, base::Time>* map) {
   map->clear();
 

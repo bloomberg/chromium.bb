@@ -68,6 +68,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/precache/precache_manager_factory.h"
+#include "components/precache/content/precache_manager.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/attestation/attestation_constants.h"
@@ -219,6 +224,9 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_platform_keys_(false),
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_pnacl_cache_(false),
+#if defined(OS_ANDROID)
+      waiting_for_clear_precache_history_(false),
+#endif
       waiting_for_clear_storage_partition_data_(false),
 #if defined(ENABLE_WEBRTC)
       waiting_for_clear_webrtc_logs_(false),
@@ -437,6 +445,23 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // include origins that the user has visited, so it must be cleared.
     if (profile_->GetSSLHostStateDelegate())
       profile_->GetSSLHostStateDelegate()->Clear();
+
+#if defined(OS_ANDROID)
+    precache::PrecacheManager* precache_manager =
+        precache::PrecacheManagerFactory::GetForBrowserContext(profile_);
+    // |precache_manager| could be NULL if the profile is off the record.
+    if (!precache_manager) {
+      waiting_for_clear_precache_history_ = true;
+      precache_manager->ClearHistory();
+      // The above calls are done on the UI thread but do their work on the DB
+      // thread. So wait for it.
+      BrowserThread::PostTaskAndReply(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(&base::DoNothing),
+          base::Bind(&BrowsingDataRemover::OnClearedPrecacheHistory,
+                     base::Unretained(this)));
+    }
+#endif
   }
 
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {
@@ -820,6 +845,9 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_platform_keys_ &&
          !waiting_for_clear_plugin_data_ &&
          !waiting_for_clear_pnacl_cache_ &&
+#if defined(OS_ANDROID)
+         !waiting_for_clear_precache_history_ &&
+#endif
 #if defined(ENABLE_WEBRTC)
          !waiting_for_clear_webrtc_logs_ &&
 #endif
@@ -1101,6 +1129,14 @@ void BrowsingDataRemover::OnClearedStoragePartitionData() {
 void BrowsingDataRemover::OnClearedWebRtcLogs() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_webrtc_logs_ = false;
+  NotifyAndDeleteIfDone();
+}
+#endif
+
+#if defined(OS_ANDROID)
+void BrowsingDataRemover::OnClearedPrecacheHistory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_precache_history_ = false;
   NotifyAndDeleteIfDone();
 }
 #endif

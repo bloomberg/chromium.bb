@@ -87,6 +87,10 @@ class PrecacheManager : public KeyedService,
                            int64 size,
                            bool was_cached);
 
+  // Posts a task to the DB thread to delete all history entries from the
+  // database. Does not wait for completion of this task.
+  void ClearHistory();
+
  private:
   // From KeyedService.
   void Shutdown() override;

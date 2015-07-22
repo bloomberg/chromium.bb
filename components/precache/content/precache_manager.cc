@@ -154,6 +154,15 @@ void PrecacheManager::RecordStatsForFetch(const GURL& url,
   }
 }
 
+void PrecacheManager::ClearHistory() {
+  // PrecacheDatabase::ClearHistory must run after PrecacheDatabase::Init has
+  // finished. Using PostNonNestableTask guarantees this, by definition. See
+  // base::SequencedTaskRunner for details.
+  BrowserThread::PostNonNestableTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&PrecacheDatabase::ClearHistory, precache_database_));
+}
+
 void PrecacheManager::Shutdown() {
   CancelPrecaching();
 }
