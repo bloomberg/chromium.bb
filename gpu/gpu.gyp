@@ -781,12 +781,13 @@
           # and is only a part of the Chromium build to allow easy integration
           # with the GPU bot waterfall. (Note that dEQP uses exceptions, and
           # currently can't build with Clang on Windows)
-          'target_name': 'angle_deqp_tests',
+          'target_name': 'angle_deqp_gles2_tests',
           'type': '<(gtest_target_type)',
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
             '../third_party/angle/src/tests/tests.gyp:angle_deqp_gtest_support',
+            '../third_party/angle/src/tests/tests.gyp:angle_deqp_libgles2',
           ],
           'includes': [
             '../third_party/angle/build/common_defines.gypi',

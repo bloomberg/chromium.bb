@@ -3332,14 +3332,14 @@
             ['OS=="win"', {
               'targets': [
                 {
-                  'target_name': 'angle_deqp_tests_run',
+                  'target_name': 'angle_deqp_gles2_tests_run',
                   'type': 'none',
                   'dependencies': [
-                    '../gpu/gpu.gyp:angle_deqp_tests',
+                    '../gpu/gpu.gyp:angle_deqp_gles2_tests',
                     'gpu_tests_base',
                   ],
                   'sources': [
-                    'angle_deqp_tests.isolate',
+                    'angle_deqp_gles2_tests.isolate',
                   ],
                 },
               ],
