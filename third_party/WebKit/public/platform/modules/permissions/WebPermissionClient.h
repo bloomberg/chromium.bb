@@ -11,9 +11,7 @@
 
 namespace blink {
 
-// WebPermissionQueryCallback is kept for backward compatibility
-using WebPermissionQueryCallback = WebCallbacks<WebPermissionStatus, void>;
-using WebPermissionCallback = WebPermissionQueryCallback;
+using WebPermissionCallback = WebCallbacks<WebPermissionStatus, void>;
 
 class WebPermissionObserver;
 class WebURL;
