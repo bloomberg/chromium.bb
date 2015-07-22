@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.input;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -22,7 +21,7 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Test the select popup and how it interacts with another ContentViewCore.
  */
-public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
             "<html><body>"
             + "Which animal is the strongest:<br/>"
@@ -40,18 +39,12 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
     private class PopupShowingCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-            ContentViewCore contentViewCore = getActivity().getCurrentContentViewCore();
+            ContentViewCore contentViewCore = getActivity().getActiveContentViewCore();
             return contentViewCore.getSelectPopupForTest() != null;
         }
     }
 
     public SelectPopupOtherContentViewTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // Don't launch activity automatically.
     }
 
     /**
@@ -66,9 +59,10 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
     public void testPopupNotClosedByOtherContentView()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.
-        startMainActivityWithURL(SELECT_URL);
+        launchChromeShellWithUrl(SELECT_URL);
+        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
-        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(this, viewCore, "select");
