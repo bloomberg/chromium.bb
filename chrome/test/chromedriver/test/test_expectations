@@ -90,8 +90,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
     # https://code.google.com/p/chromedriver/issues/detail?id=1117
     'PageLoadingTest.testShouldBeAbleToAccessPagesWithAnInsecureSslCertificate',
-    # https://code.google.com/p/chromedriver/issues/detail?id=1138
-    'XPathElementFindingTest.*',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1113
     'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1151

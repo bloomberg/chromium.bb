@@ -22,3 +22,16 @@ index 3f5af55..b94b128 100644
    } else {
      buttonValueMap[bot.events.EventType.CLICK] = [0, 1, 2, null];
      buttonValueMap[bot.events.EventType.CONTEXTMENU] = [null, null, 2, null];
+diff --git a/rake-tasks/crazy_fun/mappings/javascript.rb b/rake-tasks/crazy_fun/mappings/javascript.rb
+index 5602049..b46a17c 100644
+--- a/rake-tasks/crazy_fun/mappings/javascript.rb
++++ b/rake-tasks/crazy_fun/mappings/javascript.rb
+@@ -878,6 +878,8 @@ module Javascript
+             "--jscomp_error=undefinedVars " <<
+             "--jscomp_error=uselessCode " <<
+             "--jscomp_error=visibility " <<
++            # Work around https://github.com/google/closure-compiler/issues/1044
++            "--use_types_for_optimization=false " <<
+             "--js='" <<
+             all_deps.join("' --js='") << "'"
+ 
