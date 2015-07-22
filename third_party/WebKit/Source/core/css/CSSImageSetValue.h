@@ -63,7 +63,7 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValueList::traceAfterDispatch(visitor); }
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
     ImageWithScale bestImageForScaleFactor();
@@ -74,7 +74,7 @@ private:
     void fillImageSet();
     static inline bool compareByScaleFactor(ImageWithScale first, ImageWithScale second) { return first.scaleFactor < second.scaleFactor; }
 
-    RefPtr<StyleImage> m_imageSet;
+    RefPtrWillBeMember<StyleImage> m_imageSet;
     bool m_accessedBestFitImage;
 
     // This represents the scale factor that we used to find the best fit image. It does not necessarily

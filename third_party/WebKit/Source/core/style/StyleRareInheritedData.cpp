@@ -40,7 +40,12 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     Color colors[5];
     void* ownPtrs[1];
     AtomicString atomicStrings[4];
+#if ENABLE(OILPAN)
+    void* refPtrs[1];
+    Persistent<void*> persistentHandles[2];
+#else
     void* refPtrs[3];
+#endif
     Length lengths[1];
     float secondFloat;
     unsigned m_bitfields[2];
@@ -51,7 +56,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     TabSize tabSize;
 };
 
-static_assert(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInheritedData), "StyleRareInheritedData should stay small");
+static_assert(sizeof(StyleRareInheritedData) <= sizeof(SameSizeAsStyleRareInheritedData), "StyleRareInheritedData should stay small");
 
 StyleRareInheritedData::StyleRareInheritedData()
     : listStyleImage(ComputedStyle::initialListStyleImage())

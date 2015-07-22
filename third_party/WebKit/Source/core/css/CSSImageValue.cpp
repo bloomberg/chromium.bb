@@ -118,6 +118,7 @@ bool CSSImageValue::knownToBeOpaque(const LayoutObject* layoutObject) const
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSImageValue)
 {
+    visitor->trace(m_image);
     CSSValue::traceAfterDispatch(visitor);
 }
 

@@ -52,7 +52,7 @@ public:
 private:
     void loadPendingSVGDocuments(ComputedStyle*, ElementStyleResources&);
 
-    PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
+    PassRefPtrWillBeRawPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
     void loadPendingImages(ComputedStyle*, ElementStyleResources&);
     void loadPendingShapeImage(ComputedStyle*, ShapeValue*, float deviceScaleFactor);
 

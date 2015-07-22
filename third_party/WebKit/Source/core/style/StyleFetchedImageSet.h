@@ -39,11 +39,11 @@ class CSSImageSetValue;
 // This class keeps one cached image and has access to a set of alternatives.
 
 class StyleFetchedImageSet final : public StyleImage, private ImageResourceClient {
-    WTF_MAKE_FAST_ALLOCATED(StyleFetchedImageSet);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleFetchedImageSet);
 public:
-    static PassRefPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
+    static PassRefPtrWillBeRawPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
     {
-        return adoptRef(new StyleFetchedImageSet(image, imageScaleFactor, value));
+        return adoptRefWillBeNoop(new StyleFetchedImageSet(image, imageScaleFactor, value));
     }
     ~StyleFetchedImageSet() override;
 
@@ -54,7 +54,9 @@ public:
     // meaningful enough or not.
     WrappedImagePtr data() const override { return m_bestFitImage.get(); }
 
-    void clearImageSetValue() { m_imageSetValue = 0; }
+#if !ENABLE(OILPAN)
+    void clearImageSetValue() { m_imageSetValue = nullptr; }
+#endif
 
     bool canRender(const LayoutObject&, float multiplier) const override;
     bool isLoaded() const override;
@@ -72,17 +74,15 @@ public:
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override { return m_bestFitImage.get(); }
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     StyleFetchedImageSet(ImageResource*, float imageScaleFactor, CSSImageSetValue*);
 
     ResourcePtr<ImageResource> m_bestFitImage;
     float m_imageScaleFactor;
 
-    // FIXME: oilpan: Change to RawPtrWillBeMember when moving this class onto oilpan heap.
-    // Also add "if !ENABLE(OILPAN)" around clearImageSetValue above as well as around its
-    // caller since it should not be needed once both of the objects are on the heap and
-    // oilpan is enabled.
-    CSSImageSetValue* m_imageSetValue; // Not retained; it owns us.
+    RawPtrWillBeMember<CSSImageSetValue> m_imageSetValue; // Not retained; it owns us.
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, isImageResourceSet());

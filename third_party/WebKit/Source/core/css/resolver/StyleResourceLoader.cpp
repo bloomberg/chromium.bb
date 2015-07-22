@@ -77,7 +77,7 @@ void StyleResourceLoader::loadPendingSVGDocuments(ComputedStyle* computedStyle, 
     elementStyleResources.clearPendingSVGDocuments();
 }
 
-static PassRefPtr<StyleImage> doLoadPendingImage(Document* document, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
+static PassRefPtrWillBeRawPtr<StyleImage> doLoadPendingImage(Document* document, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
         return imageValue->cachedImage(document, options);
@@ -98,7 +98,7 @@ static PassRefPtr<StyleImage> doLoadPendingImage(Document* document, StylePendin
     return nullptr;
 }
 
-PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
+PassRefPtrWillBeRawPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
 {
     return doLoadPendingImage(m_document, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
 }
@@ -142,7 +142,7 @@ void StyleResourceLoader::loadPendingImages(ComputedStyle* style, ElementStyleRe
                 if (contentData->isImage()) {
                     StyleImage* image = toImageContentData(contentData)->image();
                     if (image->isPendingImage()) {
-                        RefPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(image), elementStyleResources.deviceScaleFactor());
+                        RefPtrWillBeRawPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(image), elementStyleResources.deviceScaleFactor());
                         if (loadedImage)
                             toImageContentData(contentData)->setImage(loadedImage.release());
                     }
@@ -176,7 +176,7 @@ void StyleResourceLoader::loadPendingImages(ComputedStyle* style, ElementStyleRe
             if (StyleReflection* reflection = style->boxReflect()) {
                 const NinePieceImage& maskImage = reflection->mask();
                 if (maskImage.image() && maskImage.image()->isPendingImage()) {
-                    RefPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(maskImage.image()), elementStyleResources.deviceScaleFactor());
+                    RefPtrWillBeRawPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(maskImage.image()), elementStyleResources.deviceScaleFactor());
                     reflection->setMask(NinePieceImage(loadedImage.release(), maskImage.imageSlices(), maskImage.fill(), maskImage.borderSlices(), maskImage.outset(), maskImage.horizontalRule(), maskImage.verticalRule()));
                 }
             }

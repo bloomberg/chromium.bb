@@ -34,9 +34,12 @@ class Document;
 class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
-    WTF_MAKE_FAST_ALLOCATED(StyleFetchedImage);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleFetchedImage);
 public:
-    static PassRefPtr<StyleFetchedImage> create(ImageResource* image, Document* document) { return adoptRef(new StyleFetchedImage(image, document)); }
+    static PassRefPtrWillBeRawPtr<StyleFetchedImage> create(ImageResource* image, Document* document)
+    {
+        return adoptRefWillBeNoop(new StyleFetchedImage(image, document));
+    }
     ~StyleFetchedImage() override;
 
     WrappedImagePtr data() const override { return m_image.get(); }
@@ -59,11 +62,13 @@ public:
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override { return m_image.get(); }
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     StyleFetchedImage(ImageResource*, Document*);
 
     ResourcePtr<ImageResource> m_image;
-    RawPtrWillBePersistent<Document> m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, isImageResource());

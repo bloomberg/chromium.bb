@@ -51,8 +51,10 @@ CSSImageSetValue::CSSImageSetValue()
 
 CSSImageSetValue::~CSSImageSetValue()
 {
+#if !ENABLE(OILPAN)
     if (m_imageSet && m_imageSet->isImageResourceSet())
         toStyleFetchedImageSet(m_imageSet)->clearImageSetValue();
+#endif
 }
 
 void CSSImageSetValue::fillImageSet()
@@ -178,6 +180,12 @@ bool CSSImageSetValue::hasFailedOrCanceledSubresources() const
     if (Resource* cachedResource = toStyleFetchedImageSet(m_imageSet)->cachedImage())
         return cachedResource->loadFailedOrCanceled();
     return true;
+}
+
+DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue)
+{
+    visitor->trace(m_imageSet);
+    CSSValueList::traceAfterDispatch(visitor);
 }
 
 } // namespace blink

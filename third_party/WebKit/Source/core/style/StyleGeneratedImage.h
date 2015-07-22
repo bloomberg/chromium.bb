@@ -34,9 +34,9 @@ class CSSImageGeneratorValue;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 public:
-    static PassRefPtr<StyleGeneratedImage> create(CSSImageGeneratorValue* value)
+    static PassRefPtrWillBeRawPtr<StyleGeneratedImage> create(CSSImageGeneratorValue* value)
     {
-        return adoptRef(new StyleGeneratedImage(value));
+        return adoptRefWillBeNoop(new StyleGeneratedImage(value));
     }
 
     WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
@@ -54,11 +54,12 @@ public:
     PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
     bool knownToBeOpaque(const LayoutObject*) const override;
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGeneratorValue>);
 
-    // FIXME: oilpan: change to member once StyleImage is moved to the oilpan heap
-    RefPtrWillBePersistent<CSSImageGeneratorValue> m_imageGeneratorValue;
+    RefPtrWillBeMember<CSSImageGeneratorValue> m_imageGeneratorValue;
     IntSize m_containerSize;
     bool m_fixedSize;
 };

@@ -117,7 +117,7 @@ public:
     // FIXME: Once styleImage can be made to not take a StyleResolverState
     // this convenience function should be removed. As-is, without this, call
     // sites are extremely verbose.
-    PassRefPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
+    PassRefPtrWillBeRawPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
     {
         return m_elementStyleResources.styleImage(document(), document().textLinkColors(), style()->color(), propertyId, value);
     }

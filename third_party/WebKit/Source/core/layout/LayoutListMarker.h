@@ -90,7 +90,7 @@ private:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     String m_text;
-    RefPtr<StyleImage> m_image;
+    RefPtrWillBePersistent<StyleImage> m_image;
     LayoutListItem* m_listItem;
 };
 

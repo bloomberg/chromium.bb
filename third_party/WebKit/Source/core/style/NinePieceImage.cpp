@@ -41,7 +41,7 @@ NinePieceImage::NinePieceImage()
 {
 }
 
-NinePieceImage::NinePieceImage(PassRefPtr<StyleImage> image, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices, const BorderImageLengthBox& outset, ENinePieceImageRule horizontalRule, ENinePieceImageRule verticalRule)
+NinePieceImage::NinePieceImage(PassRefPtrWillBeRawPtr<StyleImage> image, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices, const BorderImageLengthBox& outset, ENinePieceImageRule horizontalRule, ENinePieceImageRule verticalRule)
 {
     m_data.init();
     m_data.access()->image = image;

@@ -94,4 +94,10 @@ bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject* layoutObject) cons
     return m_imageGeneratorValue->knownToBeOpaque(layoutObject);
 }
 
+DEFINE_TRACE(StyleGeneratedImage)
+{
+    visitor->trace(m_imageGeneratorValue);
+    StyleImage::trace(visitor);
+}
+
 }

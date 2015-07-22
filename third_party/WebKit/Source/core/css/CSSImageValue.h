@@ -77,7 +77,7 @@ private:
     String m_relativeURL;
     String m_absoluteURL;
     Referrer m_referrer;
-    RefPtr<StyleImage> m_image;
+    RefPtrWillBeMember<StyleImage> m_image;
     bool m_accessedImage;
     AtomicString m_initiatorName;
 };

@@ -203,6 +203,7 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 DEFINE_TRACE_AFTER_DISPATCH(CSSCursorImageValue)
 {
     visitor->trace(m_imageValue);
+    visitor->trace(m_image);
     CSSValue::traceAfterDispatch(visitor);
 }
 

@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class ShapeValue : public RefCounted<ShapeValue> {
+class ShapeValue final : public RefCountedWillBeGarbageCollectedFinalized<ShapeValue> {
 public:
     enum ShapeValueType {
         // The Auto value is defined by a null ShapeValue*
@@ -48,19 +48,19 @@ public:
         Image
     };
 
-    static PassRefPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
+    static PassRefPtrWillBeRawPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
     {
-        return adoptRef(new ShapeValue(shape, cssBox));
+        return adoptRefWillBeNoop(new ShapeValue(shape, cssBox));
     }
 
-    static PassRefPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
+    static PassRefPtrWillBeRawPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
     {
-        return adoptRef(new ShapeValue(cssBox));
+        return adoptRefWillBeNoop(new ShapeValue(cssBox));
     }
 
-    static PassRefPtr<ShapeValue> createImageValue(PassRefPtr<StyleImage> image)
+    static PassRefPtrWillBeRawPtr<ShapeValue> createImageValue(PassRefPtrWillBeRawPtr<StyleImage> image)
     {
-        return adoptRef(new ShapeValue(image));
+        return adoptRefWillBeNoop(new ShapeValue(image));
     }
 
     ShapeValueType type() const { return m_type; }
@@ -75,7 +75,7 @@ public:
             return image()->cachedImage() && image()->cachedImage()->hasImage();
         return image()->isGeneratedImage();
     }
-    void setImage(PassRefPtr<StyleImage> image)
+    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image)
     {
         ASSERT(type() == Image);
         if (m_image != image)
@@ -84,6 +84,11 @@ public:
     CSSBoxType cssBox() const { return m_cssBox; }
 
     bool operator==(const ShapeValue& other) const;
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_image);
+    }
 
 private:
     ShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
@@ -97,7 +102,7 @@ private:
         , m_cssBox(BoxMissing)
     {
     }
-    ShapeValue(PassRefPtr<StyleImage> image)
+    ShapeValue(PassRefPtrWillBeRawPtr<StyleImage> image)
         : m_type(Image)
         , m_image(image)
         , m_cssBox(ContentBox)
@@ -112,7 +117,7 @@ private:
 
     ShapeValueType m_type;
     RefPtr<BasicShape> m_shape;
-    RefPtr<StyleImage> m_image;
+    RefPtrWillBeMember<StyleImage> m_image;
     CSSBoxType m_cssBox;
 };
 

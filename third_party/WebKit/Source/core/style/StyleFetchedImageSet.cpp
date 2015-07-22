@@ -119,4 +119,10 @@ bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject* layoutObject) con
     return m_bestFitImage->currentFrameKnownToBeOpaque(layoutObject);
 }
 
+DEFINE_TRACE(StyleFetchedImageSet)
+{
+    visitor->trace(m_imageSetValue);
+    StyleImage::trace(visitor);
+}
+
 } // namespace blink

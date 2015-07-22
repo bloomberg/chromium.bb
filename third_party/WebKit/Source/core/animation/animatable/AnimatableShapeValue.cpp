@@ -65,4 +65,10 @@ bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const
     return m_shape == shape || (m_shape && shape && *m_shape == *shape);
 }
 
+DEFINE_TRACE(AnimatableShapeValue)
+{
+    visitor->trace(m_shape);
+    AnimatableValue::trace(visitor);
+}
+
 }

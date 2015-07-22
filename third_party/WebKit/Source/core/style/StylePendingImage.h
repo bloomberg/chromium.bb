@@ -41,7 +41,10 @@ namespace blink {
 
 class StylePendingImage final : public StyleImage {
 public:
-    static PassRefPtr<StylePendingImage> create(CSSValue* value) { return adoptRef(new StylePendingImage(value)); }
+    static PassRefPtrWillBeRawPtr<StylePendingImage> create(CSSValue* value)
+    {
+        return adoptRefWillBeNoop(new StylePendingImage(value));
+    }
 
     WrappedImagePtr data() const override { return m_value; }
 
@@ -66,14 +69,20 @@ public:
     }
     bool knownToBeOpaque(const LayoutObject*) const override { return false; }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_value);
+        StyleImage::trace(visitor);
+    }
+
 private:
-    StylePendingImage(CSSValue* value)
+    explicit StylePendingImage(CSSValue* value)
         : m_value(value)
     {
         m_isPendingImage = true;
     }
 
-    CSSValue* m_value; // Not retained; it owns us.
+    RawPtrWillBeMember<CSSValue> m_value; // Not retained; it owns us.
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, isPendingImage());

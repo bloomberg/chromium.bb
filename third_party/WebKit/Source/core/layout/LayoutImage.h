@@ -45,7 +45,7 @@ public:
 
     static LayoutImage* createAnonymous(Document*);
 
-    void setImageResource(PassOwnPtr<LayoutImageResource>);
+    void setImageResource(PassOwnPtrWillBeRawPtr<LayoutImageResource>);
 
     LayoutImageResource* imageResource() { return m_imageResource.get(); }
     const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
@@ -110,7 +110,7 @@ private:
     void updateInnerContentRect();
 
     // Text to display as long as the image isn't available.
-    OwnPtr<LayoutImageResource> m_imageResource;
+    OwnPtrWillBePersistent<LayoutImageResource> m_imageResource;
     bool m_didIncrementVisuallyNonEmptyPixelCount;
     bool m_isGeneratedContent;
     float m_imageDevicePixelRatio;

@@ -37,7 +37,7 @@ ElementStyleResources::ElementStyleResources()
 {
 }
 
-PassRefPtr<StyleImage> ElementStyleResources::styleImage(Document& document, const TextLinkColors& textLinkColors, Color currentColor, CSSPropertyID property, CSSValue* value)
+PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::styleImage(Document& document, const TextLinkColors& textLinkColors, Color currentColor, CSSPropertyID property, CSSValue* value)
 {
     if (value->isImageValue())
         return cachedOrPendingFromValue(document, property, toCSSImageValue(value));
@@ -54,7 +54,7 @@ PassRefPtr<StyleImage> ElementStyleResources::styleImage(Document& document, con
     return nullptr;
 }
 
-PassRefPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPropertyID property, CSSImageGeneratorValue* value)
+PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPropertyID property, CSSImageGeneratorValue* value)
 {
     if (value->isPending()) {
         m_pendingImageProperties.set(property, value);
@@ -63,17 +63,17 @@ PassRefPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPro
     return StyleGeneratedImage::create(value);
 }
 
-PassRefPtr<StyleImage> ElementStyleResources::setOrPendingFromValue(CSSPropertyID property, CSSImageSetValue* value)
+PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::setOrPendingFromValue(CSSPropertyID property, CSSImageSetValue* value)
 {
-    RefPtr<StyleImage> image = value->cachedOrPendingImageSet(m_deviceScaleFactor);
+    RefPtrWillBeRawPtr<StyleImage> image = value->cachedOrPendingImageSet(m_deviceScaleFactor);
     if (image && image->isPendingImage())
         m_pendingImageProperties.set(property, value);
     return image.release();
 }
 
-PassRefPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(Document& document, CSSPropertyID property, CSSImageValue* value)
+PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(Document& document, CSSPropertyID property, CSSImageValue* value)
 {
-    RefPtr<StyleImage> image = value->cachedOrPendingImage();
+    RefPtrWillBeRawPtr<StyleImage> image = value->cachedOrPendingImage();
     if (image) {
         if (image->isPendingImage())
             m_pendingImageProperties.set(property, value);
@@ -83,9 +83,9 @@ PassRefPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(Document&
     return image.release();
 }
 
-PassRefPtr<StyleImage> ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
+PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
 {
-    RefPtr<StyleImage> image = value->cachedOrPendingImage(m_deviceScaleFactor);
+    RefPtrWillBeRawPtr<StyleImage> image = value->cachedOrPendingImage(m_deviceScaleFactor);
     if (image && image->isPendingImage())
         m_pendingImageProperties.set(property, value);
     return image.release();

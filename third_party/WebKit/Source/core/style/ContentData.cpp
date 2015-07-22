@@ -32,38 +32,43 @@
 
 namespace blink {
 
-PassOwnPtr<ContentData> ContentData::create(PassRefPtr<StyleImage> image)
+PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(PassRefPtrWillBeRawPtr<StyleImage> image)
 {
-    return adoptPtr(new ImageContentData(image));
+    return adoptPtrWillBeNoop(new ImageContentData(image));
 }
 
-PassOwnPtr<ContentData> ContentData::create(const String& text)
+PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(const String& text)
 {
-    return adoptPtr(new TextContentData(text));
+    return adoptPtrWillBeNoop(new TextContentData(text));
 }
 
-PassOwnPtr<ContentData> ContentData::create(PassOwnPtr<CounterContent> counter)
+PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(PassOwnPtr<CounterContent> counter)
 {
-    return adoptPtr(new CounterContentData(counter));
+    return adoptPtrWillBeNoop(new CounterContentData(counter));
 }
 
-PassOwnPtr<ContentData> ContentData::create(QuoteType quote)
+PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(QuoteType quote)
 {
-    return adoptPtr(new QuoteContentData(quote));
+    return adoptPtrWillBeNoop(new QuoteContentData(quote));
 }
 
-PassOwnPtr<ContentData> ContentData::clone() const
+PassOwnPtrWillBeRawPtr<ContentData> ContentData::clone() const
 {
-    OwnPtr<ContentData> result = cloneInternal();
+    OwnPtrWillBeRawPtr<ContentData> result = cloneInternal();
 
     ContentData* lastNewData = result.get();
     for (const ContentData* contentData = next(); contentData; contentData = contentData->next()) {
-        OwnPtr<ContentData> newData = contentData->cloneInternal();
+        OwnPtrWillBeRawPtr<ContentData> newData = contentData->cloneInternal();
         lastNewData->setNext(newData.release());
         lastNewData = lastNewData->next();
     }
 
     return result.release();
+}
+
+DEFINE_TRACE(ContentData)
+{
+    visitor->trace(m_next);
 }
 
 LayoutObject* ImageContentData::createLayoutObject(Document& doc, ComputedStyle& pseudoStyle) const
@@ -75,6 +80,12 @@ LayoutObject* ImageContentData::createLayoutObject(Document& doc, ComputedStyle&
     else
         image->setImageResource(LayoutImageResource::create());
     return image;
+}
+
+DEFINE_TRACE(ImageContentData)
+{
+    visitor->trace(m_image);
+    ContentData::trace(visitor);
 }
 
 LayoutObject* TextContentData::createLayoutObject(Document& doc, ComputedStyle& pseudoStyle) const

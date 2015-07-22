@@ -76,7 +76,7 @@ private:
     bool m_needsTransformUpdate : 1;
     AffineTransform m_localTransform;
     FloatRect m_objectBoundingBox;
-    OwnPtr<LayoutImageResource> m_imageResource;
+    OwnPtrWillBePersistent<LayoutImageResource> m_imageResource;
 
     RefPtr<const SkPicture> m_bufferedForeground;
 };

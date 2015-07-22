@@ -46,7 +46,7 @@ public:
     }
     ShapeValue* shapeValue() const { return m_shape.get(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
@@ -61,7 +61,7 @@ private:
     AnimatableType type() const override { return TypeShapeValue; }
     bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<ShapeValue> m_shape;
+    RefPtrWillBeMember<ShapeValue> m_shape;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, isShapeValue());

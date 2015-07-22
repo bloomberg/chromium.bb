@@ -68,7 +68,7 @@ private:
 
     bool m_hotSpotSpecified;
     IntPoint m_hotSpot;
-    RefPtr<StyleImage> m_image;
+    RefPtrWillBeMember<StyleImage> m_image;
     bool m_accessedImage;
 
 #if !ENABLE(OILPAN)

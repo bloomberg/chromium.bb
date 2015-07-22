@@ -43,7 +43,12 @@ public:
 
     void* dataRefs[9];
     void* ownPtrs[4];
+#if ENABLE(OILPAN)
+    Persistent<void*> persistentHandles[2];
+    void* refPtrs[2];
+#else
     void* refPtrs[4];
+#endif
 
     FillLayer fillLayers;
     NinePieceImage ninePieces;

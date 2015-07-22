@@ -60,6 +60,7 @@ struct FillSize {
     LengthSize size;
 };
 
+// FIXME(Oilpan): Move FillLayer to Oilpan's heap.
 class CORE_EXPORT FillLayer {
     WTF_MAKE_FAST_ALLOCATED(FillLayer);
 public:
@@ -107,7 +108,7 @@ public:
     bool isSizeSet() const { return m_sizeType != SizeNone; }
     bool isMaskSourceTypeSet() const { return m_maskSourceTypeSet; }
 
-    void setImage(PassRefPtr<StyleImage> i) { m_image = i; m_imageSet = true; }
+    void setImage(PassRefPtrWillBeRawPtr<StyleImage> i) { m_image = i; m_imageSet = true; }
     void setXPosition(const Length& position) { m_xPosition = position; m_xPosSet = true; m_backgroundXOriginSet = false; m_backgroundXOrigin = LeftEdge; }
     void setYPosition(const Length& position) { m_yPosition = position; m_yPosSet = true; m_backgroundYOriginSet = false; m_backgroundYOrigin = TopEdge; }
     void setBackgroundXOrigin(BackgroundEdgeOrigin origin) { m_backgroundXOrigin = origin; m_backgroundXOriginSet = true; }
@@ -208,7 +209,7 @@ private:
 
     FillLayer* m_next;
 
-    RefPtr<StyleImage> m_image;
+    RefPtrWillBePersistent<StyleImage> m_image;
 
     Length m_xPosition;
     Length m_yPosition;

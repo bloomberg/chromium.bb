@@ -38,9 +38,9 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
 public:
     ~LayoutImageResourceStyleImage() override;
 
-    static PassOwnPtr<LayoutImageResource> create(StyleImage* styleImage)
+    static PassOwnPtrWillBeRawPtr<LayoutImageResource> create(StyleImage* styleImage)
     {
-        return adoptPtr(new LayoutImageResourceStyleImage(styleImage));
+        return adoptPtrWillBeNoop(new LayoutImageResourceStyleImage(styleImage));
     }
     void initialize(LayoutObject*) override;
     void shutdown() override;
@@ -58,9 +58,11 @@ public:
 
     WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
-    LayoutImageResourceStyleImage(StyleImage*);
-    RefPtr<StyleImage> m_styleImage;
+    explicit LayoutImageResourceStyleImage(StyleImage*);
+    RefPtrWillBeMember<StyleImage> m_styleImage;
 };
 
 } // namespace blink

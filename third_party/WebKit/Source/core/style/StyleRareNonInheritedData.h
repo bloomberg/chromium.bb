@@ -120,7 +120,7 @@ public:
     DataRef<StyleGridItemData> m_gridItem;
     DataRef<StyleScrollSnapData> m_scrollSnap;
 
-    OwnPtr<ContentData> m_content;
+    OwnPtrWillBePersistent<ContentData> m_content;
     OwnPtr<CounterDirectiveMap> m_counterDirectives;
     OwnPtr<CSSAnimationData> m_animations;
     OwnPtr<CSSTransitionData> m_transitions;
@@ -129,7 +129,7 @@ public:
 
     RefPtr<StyleReflection> m_boxReflect;
 
-    RefPtr<ShapeValue> m_shapeOutside;
+    RefPtrWillBePersistent<ShapeValue> m_shapeOutside;
     RefPtr<ClipPathOperation> m_clipPath;
 
     FillLayer m_mask;

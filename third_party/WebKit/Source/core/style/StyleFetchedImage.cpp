@@ -122,4 +122,10 @@ bool StyleFetchedImage::knownToBeOpaque(const LayoutObject* layoutObject) const
     return m_image->currentFrameKnownToBeOpaque(layoutObject);
 }
 
+DEFINE_TRACE(StyleFetchedImage)
+{
+    visitor->trace(m_document);
+    StyleImage::trace(visitor);
+}
+
 }

@@ -75,4 +75,10 @@ void LayoutImageResourceStyleImage::setContainerSizeForLayoutObject(const IntSiz
     m_styleImage->setContainerSizeForLayoutObject(m_layoutObject, size, m_layoutObject->style()->effectiveZoom());
 }
 
+DEFINE_TRACE(LayoutImageResourceStyleImage)
+{
+    visitor->trace(m_styleImage);
+    LayoutImageResource::trace(visitor);
+}
+
 } // namespace blink
