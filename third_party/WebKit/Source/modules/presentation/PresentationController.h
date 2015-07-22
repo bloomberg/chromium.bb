@@ -79,7 +79,7 @@ private:
     PersistentWillBeMember<PresentationRequest> m_defaultRequest;
 
     // The presentation sessions associated with that frame.
-    PersistentHeapHashSet<Member<PresentationSession>> m_sessions;
+    PersistentHeapHashSetWillBeHeapHashSet<Member<PresentationSession>> m_sessions;
 };
 
 } // namespace blink
