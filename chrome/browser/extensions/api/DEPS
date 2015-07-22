@@ -5,6 +5,7 @@ include_rules = [
   "+device/hid",
    # Enable remote assistance on Chrome OS
   "+remoting/host",
+  "+third_party/cld_2/src",
 ]
 
 specific_include_rules = {

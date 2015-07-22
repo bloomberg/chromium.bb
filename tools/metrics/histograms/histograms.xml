@@ -56498,6 +56498,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1069" label="LANGUAGESETTINGSPRIVATE_ADDINPUTMETHOD"/>
   <int value="1070" label="LANGUAGESETTINGSPRIVATE_REMOVEINPUTMETHOD"/>
   <int value="1071" label="FILEMANAGERPRIVATE_CANCELALLFILETRANSFERS"/>
+  <int value="1072" label="I18N_DETECTLANGUAGE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

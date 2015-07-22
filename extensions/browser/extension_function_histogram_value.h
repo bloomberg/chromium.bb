@@ -1130,6 +1130,7 @@ enum HistogramValue {
   LANGUAGESETTINGSPRIVATE_ADDINPUTMETHOD,
   LANGUAGESETTINGSPRIVATE_REMOVEINPUTMETHOD,
   FILEMANAGERPRIVATE_CANCELALLFILETRANSFERS,
+  I18N_DETECTLANGUAGE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
