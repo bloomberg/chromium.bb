@@ -704,8 +704,6 @@ crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnl
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ NeedsRebaseline ]
-
 crbug.com/508398 [ Android ] editing/caret/caret-color.html [ ImageOnlyFailure Pass ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
