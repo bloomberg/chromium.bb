@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 
@@ -21,6 +22,11 @@ GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
                                 VectorIconId id,
                                 size_t dip_size,
                                 SkColor color);
+
+// Creates an ImageSkia which will render the icon on demand.
+GFX_EXPORT ImageSkia CreateVectorIcon(VectorIconId id,
+                                      size_t dip_size,
+                                      SkColor color);
 
 }  // namespace gfx
 

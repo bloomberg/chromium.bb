@@ -48,6 +48,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
@@ -237,9 +238,8 @@ class EditableProfilePhoto : public views::LabelButton {
     const SkColor kBackgroundColor = SkColorSetARGB(65, 255, 255, 255);
     photo_overlay_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
-    photo_overlay_->SetVectorIcon(gfx::VectorIconId::PHOTO_CAMERA,
-                                  SkColorSetRGB(0x33, 0x33, 0x33),
-                                  gfx::Size(48, 48));
+    photo_overlay_->SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::PHOTO_CAMERA, 48u, SkColorSetRGB(0x33, 0x33, 0x33)));
 
     photo_overlay_->SetSize(bounds.size());
     photo_overlay_->SetVisible(false);

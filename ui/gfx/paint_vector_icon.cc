@@ -5,10 +5,38 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/gfx/vector_icons2.h"
 
 namespace gfx {
+
+namespace {
+
+class VectorIconSource : public CanvasImageSource {
+ public:
+  VectorIconSource(VectorIconId id, size_t dip_size, SkColor color)
+      : CanvasImageSource(
+            gfx::Size(static_cast<int>(dip_size), static_cast<int>(dip_size)),
+            false),
+        id_(id),
+        color_(color) {}
+
+  ~VectorIconSource() override {}
+
+  // CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override {
+    PaintVectorIcon(canvas, id_, size_.width(), color_);
+  }
+
+ private:
+  const VectorIconId id_;
+  const SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(VectorIconSource);
+};
+
+}  // namespace
 
 void PaintVectorIcon(Canvas* canvas,
                      VectorIconId id,
@@ -116,6 +144,12 @@ void PaintVectorIcon(Canvas* canvas,
   paint.setAntiAlias(true);
   paint.setColor(color);
   canvas->DrawPath(path, paint);
+}
+
+ImageSkia CreateVectorIcon(VectorIconId id, size_t dip_size, SkColor color) {
+  return ImageSkia(
+      new VectorIconSource(id, dip_size, color),
+      gfx::Size(static_cast<int>(dip_size), static_cast<int>(dip_size)));
 }
 
 }  // namespace gfx
