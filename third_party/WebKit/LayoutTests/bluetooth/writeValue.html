@@ -47,6 +47,23 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('device_name'))
+    .then(characteristic => {
+      testRunner.setBluetoothMockDataSet('MissingCharacteristicGenericAccessAdapter');
+      return characteristic.writeValue(new ArrayBuffer(1 /* length */)).then(() => {
+        assert_unreached('Characteristic got removed. Should fail.');
+      }, error => {
+        assert_equals(error.name, 'InvalidStateError');
+        assert_equals(error.message, 'GATT Characteristic no longer exists.');
+      });
+    });
+}, 'Characteristic gets removed. Reject with InvalidStateError.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -64,9 +81,6 @@ sequential_promise_test(function() {
     });
   });
 }, 'Characteristic is not writable. Reject with NotSupportedError.');
-
-// TODO(ortuno): Add a test for when a characteristic gets removed.
-// http://crbug.com/499552
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
