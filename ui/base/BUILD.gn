@@ -627,6 +627,16 @@ if (is_android) {
   }
 }
 
+#
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("ui_base_unittests_run") {
+  testonly = true
+  deps = [
+    ":ui_base_unittests",
+  ]
+}
+
 # GYP version: ui/base/ui_base_tests.gyp:ui_base_unittests
 test("ui_base_unittests") {
   sources = [
@@ -647,6 +657,9 @@ test("ui_base_unittests") {
     "test/test_clipboard_unittest.cc",
     "user_activity/user_activity_detector_unittest.cc",
   ]
+
+  data = []
+  data_deps = []
 
   if (is_android) {
     sources -= [ "user_activity/user_activity_detector_unittest.cc" ]
@@ -784,9 +797,7 @@ test("ui_base_unittests") {
       "//ui/gfx/x",
     ]
 
-    datadeps = [
-      "//tools/xdisplaycheck",
-    ]
+    data_deps += [ "//tools/xdisplaycheck" ]
   }
 
   if (is_mac) {
@@ -817,6 +828,34 @@ test("ui_base_unittests") {
       "//chromeos",
       "//ui/events:dom_keycode_converter",
     ]
+  }
+
+  if (is_linux || is_mac || is_win) {
+    # TODO(brettw): We should be able to depend on //ui/resources:ui_test_pak
+    # instead of depending directly on the non-test .pak files, but depending
+    # on ui_test_pak seems to have no effect.
+    data += [
+      "test/data/data_pack_unittest/truncated-header.pak",
+      "$root_out_dir/ui_test.pak",  # TODO(brettw): remove this line.
+    ]
+    data_deps += [
+      "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
+      "//third_party/mesa:osmesa",
+    ]
+  }
+  if (is_linux || is_win) {
+    data += [
+      # TODO(brettw): Remove these two lines.
+      "$root_out_dir/ui/en-US.pak",
+      "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    ]
+  }
+  if (is_mac) {
+    data += [ "$root_out_dir/ui_unittests Framework.framework/" ]
+
+    if (use_asan && symbol_level == 0) {
+      data += [ "$root_out_dir/ui_base_unittests.dSYM/" ]
+    }
   }
 }
 # TODO(GYP) Mac (ui_base_tests_bundle)
