@@ -9,6 +9,7 @@
 
 #include <pango/pango.h>
 #include <X11/Xlib.h>
+#include <gio/gio.h>
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
@@ -424,6 +425,21 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
     default:
       return views::LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
   }
+}
+
+double GetGnomeTextScalingFactor() {
+  const char kDesktopInterfaceSchema[] = "org.gnome.desktop.interface";
+  for (const gchar* const* schemas = g_settings_list_schemas(); *schemas;
+       schemas++) {
+    if (!strcmp(kDesktopInterfaceSchema, static_cast<const char*>(*schemas))) {
+      GSettings* settings = g_settings_new(kDesktopInterfaceSchema);
+      double scale = g_settings_get_double(settings, "text-scaling-factor");
+      g_object_unref(settings);
+      return scale;
+    }
+  }
+  // Fallback if the schema does not exist.
+  return GetFontDPI() / GetBaseDPI();
 }
 
 }  // namespace
@@ -1438,9 +1454,12 @@ void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
 float Gtk2UI::GetDeviceScaleFactor() const {
   if (gfx::Display::HasForceDeviceScaleFactor())
     return gfx::Display::GetForcedDeviceScaleFactor();
-  float scale = GetFontDPI() / GetBaseDPI();
-  // Round to 1 decimal, e.g. to 1.4.
-  return roundf(scale * 10) / 10;
+  // Linux chrome does not support dynamnic scale factor change. Use the
+  // value obtanied during startup. The value is rounded to 1 decimal, e.g.
+  // to 1.4, for safety.
+  static float device_scale_factor =
+      roundf(GetGnomeTextScalingFactor() * 10) / 10;
+  return device_scale_factor;
 }
 
 }  // namespace libgtk2ui
