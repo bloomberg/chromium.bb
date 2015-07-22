@@ -351,9 +351,11 @@ enum AXIgnoredReason {
     AXUninteresting
 };
 
-struct IgnoredReason {
+class IgnoredReason {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     AXIgnoredReason reason;
-    const AXObject* relatedObject;
+    RawPtrWillBeMember<const AXObject> relatedObject;
 
     explicit IgnoredReason(AXIgnoredReason reason)
         : reason(reason)
@@ -364,6 +366,11 @@ struct IgnoredReason {
         : reason(r)
         , relatedObject(obj)
     { }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(relatedObject);
+    }
 };
 
 class MODULES_EXPORT AXObject : public RefCountedWillBeGarbageCollectedFinalized<AXObject> {
@@ -512,7 +519,7 @@ public:
 
     // Whether objects are ignored, i.e. not included in the tree.
     bool accessibilityIsIgnored() const;
-    typedef Vector<IgnoredReason> IgnoredReasons;
+    typedef WillBeHeapVector<IgnoredReason> IgnoredReasons;
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const { return true; }
     bool accessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
     AXObjectInclusion accessibilityPlatformIncludesObject() const;
@@ -822,5 +829,7 @@ private:
     DEFINE_TYPE_CASTS(thisType, AXObject, object, object->predicate, object.predicate)
 
 } // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason);
 
 #endif // AXObject_h
