@@ -31,8 +31,8 @@ sequential_promise_test(function() {
     device.productVersion = "overwritten";
     device.paired = "overwritten";
     device.uuids = "overwritten";
-
-    assert_equals(device.instanceID, "Empty Mock Device instanceID");
+    // TODO(ortuno): Uncomment once browser-side patch lands.
+    /* assert_equals(device.instanceID, "00:00:00:00:00"); */
     assert_equals(device.name, "Empty Mock Device");
     assert_equals(device.deviceClass, 0x1F00);
     assert_equals(device.vendorIDSource, "bluetooth");
