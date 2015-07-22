@@ -33,6 +33,7 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
+#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -203,6 +204,7 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 #endif
       http_cache_enabled_(true),
       throttling_enabled_(false),
+      backoff_enabled_(false),
       sdch_enabled_(false) {
 }
 
@@ -332,6 +334,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 
   if (throttling_enabled_)
     storage->set_throttler_manager(new URLRequestThrottlerManager());
+
+  if (backoff_enabled_)
+    storage->set_backoff_manager(new URLRequestBackoffManager());
 
   HttpNetworkSession::Params network_session_params;
   network_session_params.host_resolver = context->host_resolver();

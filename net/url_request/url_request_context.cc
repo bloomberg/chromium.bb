@@ -31,6 +31,7 @@ URLRequestContext::URLRequestContext()
       http_transaction_factory_(nullptr),
       job_factory_(nullptr),
       throttler_manager_(nullptr),
+      backoff_manager_(nullptr),
       sdch_manager_(nullptr),
       network_quality_estimator_(nullptr),
       url_requests_(new std::set<const URLRequest*>) {
@@ -58,6 +59,7 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_http_transaction_factory(other->http_transaction_factory_);
   set_job_factory(other->job_factory_);
   set_throttler_manager(other->throttler_manager_);
+  set_backoff_manager(other->backoff_manager_);
   set_sdch_manager(other->sdch_manager_);
   set_http_user_agent_settings(other->http_user_agent_settings_);
   set_network_quality_estimator(other->network_quality_estimator_);

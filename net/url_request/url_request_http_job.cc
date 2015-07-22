@@ -44,6 +44,7 @@
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -195,6 +196,7 @@ URLRequestHttpJob::URLRequestHttpJob(
                      base::Unretained(this))),
       awaiting_callback_(false),
       http_user_agent_settings_(http_user_agent_settings),
+      backoff_manager_(request->context()->backoff_manager()),
       weak_factory_(this) {
   URLRequestThrottlerManager* manager = request->context()->throttler_manager();
   if (manager)
@@ -301,6 +303,23 @@ void URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback(
   }
 }
 
+void URLRequestHttpJob::NotifyBeforeNetworkStart(bool* defer) {
+  if (!request_)
+    return;
+  if (backoff_manager_) {
+    if (backoff_manager_->ShouldRejectRequest(request()->url(),
+                                              request()->request_time())) {
+      *defer = true;
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&URLRequestHttpJob::OnStartCompleted,
+                     weak_factory_.GetWeakPtr(), ERR_TEMPORARY_BACKOFF));
+      return;
+    }
+  }
+  URLRequestJob::NotifyBeforeNetworkStart(defer);
+}
+
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
 
@@ -312,6 +331,9 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
 
   if (!is_cached_content_ && throttling_entry_.get())
     throttling_entry_->UpdateWithResponse(GetResponseCode());
+
+  if (!is_cached_content_)
+    ProcessBackoffHeader();
 
   // The ordering of these calls is not important.
   ProcessStrictTransportSecurityHeader();
@@ -794,6 +816,26 @@ void URLRequestHttpJob::FetchResponseCookies(
     if (!value.empty())
       cookies->push_back(value);
   }
+}
+
+void URLRequestHttpJob::ProcessBackoffHeader() {
+  DCHECK(response_info_);
+
+  if (!backoff_manager_)
+    return;
+
+  TransportSecurityState* security_state =
+      request_->context()->transport_security_state();
+  const SSLInfo& ssl_info = response_info_->ssl_info;
+
+  // Only accept Backoff headers on HTTPS connections that have no
+  // certificate errors.
+  if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status) ||
+      !security_state)
+    return;
+
+  backoff_manager_->UpdateWithResponse(request()->url(), GetResponseHeaders(),
+                                       base::Time::Now());
 }
 
 // NOTE: |ProcessStrictTransportSecurityHeader| and

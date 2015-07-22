@@ -29,6 +29,7 @@ class SdchManager;
 class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
+class URLRequestBackoffManager;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
 
@@ -65,6 +66,7 @@ class NET_EXPORT URLRequestContextStorage {
       HttpTransactionFactory* http_transaction_factory);
   void set_job_factory(URLRequestJobFactory* job_factory);
   void set_throttler_manager(URLRequestThrottlerManager* throttler_manager);
+  void set_backoff_manager(URLRequestBackoffManager* backoff_manager);
   void set_http_user_agent_settings(
       HttpUserAgentSettings* http_user_agent_settings);
   void set_sdch_manager(scoped_ptr<SdchManager> sdch_manager);
@@ -95,6 +97,7 @@ class NET_EXPORT URLRequestContextStorage {
   scoped_ptr<HttpTransactionFactory> http_transaction_factory_;
   scoped_ptr<URLRequestJobFactory> job_factory_;
   scoped_ptr<URLRequestThrottlerManager> throttler_manager_;
+  scoped_ptr<URLRequestBackoffManager> backoff_manager_;
   scoped_ptr<SdchManager> sdch_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextStorage);

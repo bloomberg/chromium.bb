@@ -19,6 +19,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/http_user_agent_settings.h"
+#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -117,6 +118,12 @@ void URLRequestContextStorage::set_throttler_manager(
     URLRequestThrottlerManager* throttler_manager) {
   context_->set_throttler_manager(throttler_manager);
   throttler_manager_.reset(throttler_manager);
+}
+
+void URLRequestContextStorage::set_backoff_manager(
+    URLRequestBackoffManager* backoff_manager) {
+  context_->set_backoff_manager(backoff_manager);
+  backoff_manager_.reset(backoff_manager);
 }
 
 void URLRequestContextStorage::set_http_user_agent_settings(

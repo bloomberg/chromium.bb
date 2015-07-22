@@ -41,6 +41,7 @@ class NetworkQualityEstimator;
 class SdchManager;
 class ProxyService;
 class URLRequest;
+class URLRequestBackoffManager;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
 
@@ -184,6 +185,12 @@ class NET_EXPORT URLRequestContext
   }
 
   // May return nullptr.
+  URLRequestBackoffManager* backoff_manager() const { return backoff_manager_; }
+  void set_backoff_manager(URLRequestBackoffManager* backoff_manager) {
+    backoff_manager_ = backoff_manager;
+  }
+
+  // May return nullptr.
   SdchManager* sdch_manager() const { return sdch_manager_; }
   void set_sdch_manager(SdchManager* sdch_manager) {
     sdch_manager_ = sdch_manager;
@@ -245,6 +252,7 @@ class NET_EXPORT URLRequestContext
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;
+  URLRequestBackoffManager* backoff_manager_;
   SdchManager* sdch_manager_;
   NetworkQualityEstimator* network_quality_estimator_;
 

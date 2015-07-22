@@ -20,6 +20,7 @@
 #include "net/filter/filter.h"
 #include "net/http/http_request_info.h"
 #include "net/socket/connection_attempts.h"
+#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"
 
@@ -69,6 +70,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   class HttpFilterContext;
 
+  // Shadows URLRequestJob's version of this method.
+  void NotifyBeforeNetworkStart(bool* defer);
+
   // Shadows URLRequestJob's version of this method so we can grab cookies.
   void NotifyHeadersComplete();
 
@@ -82,6 +86,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void SaveCookiesAndNotifyHeadersComplete(int result);
   void SaveNextCookie();
   void FetchResponseCookies(std::vector<std::string>* cookies);
+
+  // Processes a Backoff header, if one exists.
+  void ProcessBackoffHeader();
 
   // Processes the Strict-Transport-Security header, if one exists.
   void ProcessStrictTransportSecurityHeader();
@@ -264,6 +271,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool awaiting_callback_;
 
   const HttpUserAgentSettings* http_user_agent_settings_;
+
+  URLRequestBackoffManager* backoff_manager_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 

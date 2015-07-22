@@ -9764,6 +9764,15 @@ I don't think this site should be blocked!
         Extension requests to this URL have been temporarily throttled.
       </message>
 
+      <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARY_BACKOFF" desc="Summary in the error page when we temporarily stop sending requests to a server because of a Backoff header received earlier.">
+        The server hosting the webpage might be overloaded or under maintainance.
+        In order to avoid generating too much traffic and making the situation worse,
+        requests to this URL has been temporarily disallowed.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_TEMPORARY_BACKOFF" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid overloading it.">
+        Requests to this URL have been temporarily throttled.
+      </message>
+
       <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED" desc="Summary in the error page when an extension blocks a request.">
         A third-party extension has blocked access to this webpage.
       </message>

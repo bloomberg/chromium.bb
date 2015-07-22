@@ -642,6 +642,10 @@ NET_ERROR(PAC_SCRIPT_TERMINATED, -367)
 // https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html#host_auth.
 NET_ERROR(ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN, -368)
 
+// Request is throttled because of a Backoff header.
+// See: crbug.com/486891.
+NET_ERROR(TEMPORARY_BACKOFF, -369)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 
