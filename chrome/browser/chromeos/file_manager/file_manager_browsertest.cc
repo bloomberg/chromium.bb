@@ -129,7 +129,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
 #define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
 #else
-#define MAYBE_KeyboardOperations KeyboardOperations
+// Flaky on other builds. http://crbug.com/512669
+#define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_KeyboardOperations,
