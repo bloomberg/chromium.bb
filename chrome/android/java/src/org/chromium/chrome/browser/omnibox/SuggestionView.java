@@ -21,6 +21,7 @@ import android.text.SpannableString;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,6 +86,13 @@ class SuggestionView extends ViewGroup {
     private TintedDrawable mRefineIcon;
 
     private final int[] mViewPositionHolder = new int[2];
+
+    // The offset for the phone's suggestions left-alignment.
+    private static final int PHONE_URL_BAR_LEFT_OFFSET_DP = 10;
+    private static final int PHONE_URL_BAR_LEFT_OFFSET_RTL_DP = 46;
+    // Pre-computed offsets in px.
+    private final int mPhoneUrlBarLeftOffsetPx;
+    private final int mPhoneUrlBarLeftOffsetRtlPx;
 
     /**
      * Constructs a new omnibox suggestion view.
@@ -162,6 +170,14 @@ class SuggestionView extends ViewGroup {
         mRefineWidth = (int) (getResources().getDisplayMetrics().density * 48);
 
         mUrlBar = (UrlBar) locationBar.getContainerView().findViewById(R.id.url_bar);
+
+        mPhoneUrlBarLeftOffsetPx = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                PHONE_URL_BAR_LEFT_OFFSET_DP,
+                getContext().getResources().getDisplayMetrics()));
+        mPhoneUrlBarLeftOffsetRtlPx = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                PHONE_URL_BAR_LEFT_OFFSET_RTL_DP,
+                getContext().getResources().getDisplayMetrics()));
     }
 
     @Override
@@ -566,22 +582,6 @@ class SuggestionView extends ViewGroup {
     }
 
     /**
-     * @return The left offset for the suggestion text that will align it with the url text.
-     */
-    private int getUrlBarTextLeftPosition() {
-        mUrlBar.getLocationOnScreen(mViewPositionHolder);
-        return mViewPositionHolder[0] + mUrlBar.getPaddingLeft();
-    }
-
-    /**
-     * @return The right offset for the suggestion text that will align it with the url text.
-     */
-    private int getUrlBarTextRightPosition() {
-        mUrlBar.getLocationOnScreen(mViewPositionHolder);
-        return mViewPositionHolder[0] + mUrlBar.getWidth() - mUrlBar.getPaddingRight();
-    }
-
-    /**
      * Container view for the contents of the suggestion (the search query, URL, and suggestion type
      * icon).
      */
@@ -817,26 +817,37 @@ class SuggestionView extends ViewGroup {
             mSuggestionIconLeft = suggestionIconPosition;
         }
 
+        private int getUrlBarLeftOffset() {
+            if (DeviceFormFactor.isTablet(getContext())) {
+                mUrlBar.getLocationOnScreen(mViewPositionHolder);
+                return mViewPositionHolder[0];
+            } else {
+                return ApiCompatibilityUtils.isLayoutRtl(this) ? mPhoneUrlBarLeftOffsetRtlPx
+                        : mPhoneUrlBarLeftOffsetPx;
+            }
+        }
+
         /**
-         * @return The left offset for the suggestion text that will align it with the url text.
+         * @return The left offset for the suggestion text.
          */
         private int getSuggestionTextLeftPosition() {
             if (mLocationBar == null) return 0;
 
-            int textLeftPosition = getUrlBarTextLeftPosition();
+            int leftOffset = getUrlBarLeftOffset();
             getLocationOnScreen(mViewPositionHolder);
-            return textLeftPosition - mViewPositionHolder[0];
+            return leftOffset + mUrlBar.getPaddingLeft() - mViewPositionHolder[0];
         }
 
         /**
-         * @return The right offset for the suggestion text that will align it with the url text.
+         * @return The right offset for the suggestion text.
          */
         private int getSuggestionTextRightPosition() {
             if (mLocationBar == null) return 0;
 
-            int textRightPosition = getUrlBarTextRightPosition();
+            int leftOffset = getUrlBarLeftOffset();
             getLocationOnScreen(mViewPositionHolder);
-            return textRightPosition - mViewPositionHolder[0];
+            return leftOffset + mUrlBar.getWidth() - mUrlBar.getPaddingRight()
+                    - mViewPositionHolder[0];
         }
 
         /**
