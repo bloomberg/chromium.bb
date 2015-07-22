@@ -10,7 +10,7 @@ OBJS=$(QCMS:.c=.o)
 all: qcms_test
 
 qcms_test: qcms_test_tetra_clut_rgba.c $(OBJS)
-	$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) qcms_test_tetra_clut_rgba.c -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(OBJS) qcms_test_tetra_clut_rgba.c -o $@
 
 clean:
 	rm -rf qcms_test *.o $(OBJS)

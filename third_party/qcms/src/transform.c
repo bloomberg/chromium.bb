@@ -514,7 +514,7 @@ static void qcms_transform_data_clut(qcms_transform *transform, unsigned char *s
 */
 
 // Using lcms' tetra interpolation algorithm.
-void qcms_transform_data_tetra_clut_rgba(qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length, qcms_format_type output_format)
+static void qcms_transform_data_tetra_clut_rgba(qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length, qcms_format_type output_format)
 {
 	const int r_out = output_format.r;
 	const int b_out = output_format.b;
@@ -1146,11 +1146,7 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
 			transform->b_clut = &lut[2]; // b
 			transform->grid_size = samples;
 			if (in_type == QCMS_DATA_RGBA_8) {
-#if defined(SSE2_ENABLE)
-				transform->transform_fn = qcms_transform_data_tetra_clut_rgba_sse2;
-#else
 				transform->transform_fn = qcms_transform_data_tetra_clut_rgba;
-#endif
 			} else {
 				transform->transform_fn = qcms_transform_data_tetra_clut;
 			}
@@ -1268,7 +1264,7 @@ qcms_transform* qcms_transform_create(
 
 	if (qcms_supports_iccv4 && (in->A2B0 || out->B2A0 || in->mAB || out->mAB)) {
 		// Precache the transformation to a CLUT 33x33x33 in size.
-		// 33 is used by many profiles and works well in practice.
+		// 33 is used by many profiles and works well in pratice. 
 		// This evenly divides 256 into blocks of 8x8x8.
 		// TODO For transforming small data sets of about 200x200 or less
 		// precaching should be avoided.

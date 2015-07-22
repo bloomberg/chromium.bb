@@ -37,20 +37,3 @@ source_set("qcms") {
     ]
   }
 }
-
-executable("qcms_test") {
-  if (current_cpu == "x86" || current_cpu == "x64") {
-    defines = [ "SSE2_ENABLE" ]
-    sources = [
-      "src/tests/qcms_test_tetra_clut_rgba.c",
-    ]
-
-    deps = [
-      "//third_party/qcms",
-    ]
-
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
-    public_configs = [ ":qcms_config" ]
-  }
-}

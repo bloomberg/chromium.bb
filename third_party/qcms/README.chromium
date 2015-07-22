@@ -91,8 +91,6 @@ The following changes have been made since qcms was imported:
    - https://bugzilla.mozilla.org/show_bug.cgi?id=1168480
  - Apply fix for crash in qcms_transform_data_rgb_out_lut_sse1
    - https://bugzilla.mozilla.org/show_bug.cgi?id=1163740
- - Add SSE2 code for qcms_transform_data_rgba_out_lut_sse2
-   - https://code.google.com/p/chromium/issues/detail?id=506607
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
