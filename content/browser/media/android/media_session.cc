@@ -52,7 +52,7 @@ MediaSession* MediaSession::Get(WebContents* web_contents) {
 
 MediaSession::~MediaSession() {
   DCHECK(players_.empty());
-  DCHECK(audio_focus_state_ == State::Suspended);
+  DCHECK(audio_focus_state_ == State::INACTIVE);
 }
 
 bool MediaSession::AddPlayer(MediaSessionObserver* observer,
@@ -62,23 +62,23 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
   // nothing to do. If it is granted of type Transient the requested type is
   // also transient, there is also nothing to do. Otherwise, the session needs
   // to request audio focus again.
-  if (audio_focus_state_ == State::Active &&
+  if (audio_focus_state_ == State::ACTIVE &&
       (audio_focus_type_ == Type::Content || audio_focus_type_ == type)) {
     players_.insert(PlayerIdentifier(observer, player_id));
     return true;
   }
 
   State old_audio_focus_state = audio_focus_state_;
-  audio_focus_state_ = RequestSystemAudioFocus(type) ? State::Active
-                                                     : State::Suspended;
+  audio_focus_state_ = RequestSystemAudioFocus(type) ? State::ACTIVE
+                                                     : State::INACTIVE;
   audio_focus_type_ = type;
 
-  if (audio_focus_state_ != State::Active)
+  if (audio_focus_state_ != State::ACTIVE)
     return false;
 
   // The session should be reset if a player is starting while all players are
   // suspended.
-  if (old_audio_focus_state != State::Active)
+  if (old_audio_focus_state != State::ACTIVE)
     players_.clear();
 
   players_.insert(PlayerIdentifier(observer, player_id));
@@ -108,35 +108,43 @@ void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
 }
 
 void MediaSession::OnSuspend(JNIEnv* env, jobject obj, jboolean temporary) {
-  OnSuspendInternal(temporary);
+  if (audio_focus_state_ != State::ACTIVE)
+    return;
+
+  OnSuspendInternal(SuspendType::SYSTEM);
+  if (!temporary)
+    audio_focus_state_ = State::INACTIVE;
   UpdateWebContents();
 }
 
 void MediaSession::OnResume(JNIEnv* env, jobject obj) {
-  OnResumeInternal();
+  if (audio_focus_state_ != State::SUSPENDED)
+    return;
+
+  OnResumeInternal(SuspendType::SYSTEM);
   UpdateWebContents();
 }
 
 void MediaSession::Resume() {
   DCHECK(IsSuspended());
 
-  OnResumeInternal();
+  OnResumeInternal(SuspendType::UI);
 }
 
 void MediaSession::Suspend() {
   DCHECK(!IsSuspended());
 
-  // Since the playback can be resumed, it's a transient suspension.
-  OnSuspendInternal(true);
+  OnSuspendInternal(SuspendType::UI);
 }
 
 bool MediaSession::IsSuspended() const {
-  return audio_focus_state_ != State::Active;
+  // TODO(mlamouri): should be == State::SUSPENDED.
+  return audio_focus_state_ != State::ACTIVE;
 }
 
 bool MediaSession::IsControllable() const {
-  // Only content type media session can be controllable unless it's stopped.
-  return audio_focus_state_ != State::Suspended &&
+  // Only content type media session can be controllable unless it is inactive.
+  return audio_focus_state_ != State::INACTIVE &&
          audio_focus_type_ == Type::Content;
 }
 
@@ -145,7 +153,7 @@ void MediaSession::ResetJavaRefForTest() {
 }
 
 bool MediaSession::IsActiveForTest() const {
-  return audio_focus_state_ == State::Active;
+  return audio_focus_state_ == State::ACTIVE;
 }
 
 MediaSession::Type MediaSession::audio_focus_type_for_test() const {
@@ -157,18 +165,19 @@ void MediaSession::RemoveAllPlayersForTest() {
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::OnSuspendInternal(bool temporary) {
-  if (temporary)
-    audio_focus_state_ = State::TemporarilySuspended;
-  else
-    audio_focus_state_ = State::Suspended;
+void MediaSession::OnSuspendInternal(SuspendType type) {
+  audio_focus_state_ = State::SUSPENDED;
+  suspend_type_ = type;
 
   for (const auto& it : players_)
     it.observer->OnSuspend(it.player_id);
 }
 
-void MediaSession::OnResumeInternal() {
-  audio_focus_state_ = State::Active;
+void MediaSession::OnResumeInternal(SuspendType type) {
+  if (suspend_type_ != type && type != SuspendType::UI)
+    return;
+
+  audio_focus_state_ = State::ACTIVE;
 
   for (const auto& it : players_)
     it.observer->OnResume(it.player_id);
@@ -176,7 +185,7 @@ void MediaSession::OnResumeInternal() {
 
 MediaSession::MediaSession(WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      audio_focus_state_(State::Suspended),
+      audio_focus_state_(State::INACTIVE),
       audio_focus_type_(Type::Transient) {}
 
 void MediaSession::Initialize() {
@@ -200,7 +209,7 @@ bool MediaSession::RequestSystemAudioFocus(Type type) {
 }
 
 void MediaSession::AbandonSystemAudioFocusIfNeeded() {
-  if (audio_focus_state_ == State::Suspended || !players_.empty())
+  if (audio_focus_state_ == State::INACTIVE || !players_.empty())
     return;
 
   // During tests, j_media_session_ might be null.
@@ -210,7 +219,7 @@ void MediaSession::AbandonSystemAudioFocusIfNeeded() {
     Java_MediaSession_abandonAudioFocus(env, j_media_session_.obj());
   }
 
-  audio_focus_state_ = State::Suspended;
+  audio_focus_state_ = State::INACTIVE;
   UpdateWebContents();
 }
 

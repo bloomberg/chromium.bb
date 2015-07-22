@@ -93,13 +93,17 @@ class CONTENT_EXPORT MediaSession
   Type audio_focus_type_for_test() const;
   void RemoveAllPlayersForTest();
 
-  void OnSuspendInternal(bool temporary);
-  void OnResumeInternal();
-
   enum class State {
-    Active,
-    TemporarilySuspended,
-    Suspended,
+    ACTIVE,
+    SUSPENDED,
+    INACTIVE
+  };
+
+  enum class SuspendType {
+    // Suspended by the system because a transient sound needs to be played.
+    SYSTEM,
+    // Suspended by the UI.
+    UI,
   };
 
   // Representation of a player for the MediaSession.
@@ -125,6 +129,9 @@ class CONTENT_EXPORT MediaSession
   // Setup the JNI.
   void Initialize();
 
+  void OnSuspendInternal(SuspendType type);
+  void OnResumeInternal(SuspendType type);
+
   // Requests audio focus to Android using |j_media_session_|.
   // Returns whether the request was granted. If |j_media_session_| is null, it
   // will always return true.
@@ -141,6 +148,7 @@ class CONTENT_EXPORT MediaSession
   PlayersMap players_;
 
   State audio_focus_state_;
+  SuspendType suspend_type_;
   Type audio_focus_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSession);

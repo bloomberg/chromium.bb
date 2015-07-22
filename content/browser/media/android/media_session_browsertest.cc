@@ -154,9 +154,23 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
 
   bool IsSuspended() { return media_session_->IsSuspended(); }
 
-  void ResumeSession() { media_session_->Resume(); }
+  void UIResume() {
+    media_session_->OnResumeInternal(content::MediaSession::SuspendType::UI);
+  }
 
-  void SuspendSession() { media_session_->Suspend(); }
+  void SystemResume() {
+    media_session_->OnResumeInternal(
+        content::MediaSession::SuspendType::SYSTEM);
+  }
+
+  void UISuspend() {
+    media_session_->OnSuspendInternal(content::MediaSession::SuspendType::UI);
+  }
+
+  void SystemSuspend() {
+    media_session_->OnSuspendInternal(
+        content::MediaSession::SuspendType::SYSTEM);
+  }
 
   MockWebContentsObserver* mock_web_contents_observer() {
     return mock_web_contents_observer_.get();
@@ -753,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
       new MockMediaSessionObserver);
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  SuspendSession();
+  UISuspend();
 
   EXPECT_TRUE(IsControllable());
   EXPECT_TRUE(IsSuspended());
@@ -768,9 +782,67 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
       new MockMediaSessionObserver);
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  SuspendSession();
-  ResumeSession();
+  UISuspend();
+  UIResume();
 
+  EXPECT_TRUE(IsControllable());
+  EXPECT_FALSE(IsSuspended());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       DontResumeBySystemUISuspendedSessions) {
+  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+
+  UISuspend();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsSuspended());
+
+  SystemResume();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsSuspended());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       AllowUIResumeForSystemSuspend) {
+  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+
+  SystemSuspend();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsSuspended());
+
+  UIResume();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_FALSE(IsSuspended());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumeSuspendFromUI) {
+  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+
+  UISuspend();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsSuspended());
+
+  UIResume();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_FALSE(IsSuspended());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumeSuspendFromSystem) {
+  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+
+  SystemSuspend();
+  EXPECT_TRUE(IsControllable());
+  EXPECT_TRUE(IsSuspended());
+
+  SystemResume();
   EXPECT_TRUE(IsControllable());
   EXPECT_FALSE(IsSuspended());
 }
