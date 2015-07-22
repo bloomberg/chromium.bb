@@ -1681,7 +1681,6 @@ crbug.com/509025 [ Yosemite ] fast/css/font-face-data-uri-invalid.html [ Failure
 crbug.com/509025 [ Yosemite ] fast/css/fontfaceset-download-error.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/dom/adopt-attribute-crash.svg [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/dynamic/positioned-movement-with-positioned-children.html [ Failure ]
-crbug.com/509025 [ Yosemite ] fast/forms/enter-clicks-buttons.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/forms/hidden-listbox.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/forms/select/menulist-update-text-popup.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] fast/forms/textarea-newline.html [ Failure ]

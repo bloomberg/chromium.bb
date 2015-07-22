@@ -1,11 +1,5 @@
 Test for <rdar://5483519> Pressing Enter on selected buttons should fire onclick
 
-In a form:
-
-button type="button"  button type="submit"  button type="reset"       
-Outside a form:
-
-button type="button" button type="submit" button type="reset"    
 
 
 Sending Enter keypresses...
@@ -58,4 +52,7 @@ click: INPUT type=checkbox
 click: INPUT type=button
 click: INPUT type=submit
 click: INPUT type=reset
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
