@@ -1187,8 +1187,9 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  // There should be only one tab.
-  EXPECT_EQ(1, tab_strip->count());
+  // There should be only one tab, except on Windows 10. See crbug.com/505029.
+  const int tab_count = IsWindows10OrNewer() ? 2 : 1;
+  EXPECT_EQ(tab_count, tab_strip->count());
 }
 
 #endif  // !defined(OS_CHROMEOS)
