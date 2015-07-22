@@ -4,7 +4,6 @@
 
 import("//build/config/sanitizers/sanitizers.gni")
 
-# TODO(GYP): Make tcmalloc work on win.
 if (is_android || current_cpu == "mipsel" || is_mac || is_ios || is_asan ||
     is_lsan || is_tsan || is_msan || is_win || is_syzyasan) {
   _default_allocator = "none"
@@ -16,3 +15,7 @@ declare_args() {
   # Memory allocator to use. Set to "none" to use default allocator.
   use_allocator = _default_allocator
 }
+
+assert(use_allocator == "none" || use_allocator == "tcmalloc")
+
+assert(!is_win || use_allocator == "none", "Tcmalloc doesn't work on Windows.")

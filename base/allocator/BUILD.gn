@@ -9,10 +9,26 @@ import("//build/config/allocator.gni")
 # This "allocator" meta-target will forward to the default allocator according
 # to the build settings.
 group("allocator") {
+  public_deps = []
   if (use_allocator == "tcmalloc") {
-    deps = [
-      ":tcmalloc",
-    ]
+    public_deps += [ ":tcmalloc" ]
+  }
+
+  # This condition expresses the win_use_allocator_shim in the GYP build.
+  if (is_win && !is_component_build) {
+    public_deps += [ ":allocator_shim" ]
+  }
+}
+
+# This config defines ALLOCATOR_SHIM in the same conditions that the allocator
+# shim will be used by the allocator target.
+#
+# TODO(brettw) this is only used in one place and is kind of mess, because it
+# assumes that the library using it will eventually be linked with
+# //base/allocator in the default way. Clean this up and delete this.
+config("allocator_shim_define") {
+  if (is_win && !is_component_build) {
+    defines = [ "ALLOCATOR_SHIM" ]
   }
 }
 
@@ -37,6 +53,19 @@ if (is_win) {
       visual_studio_path + "/vc/lib",
       rebase_path("$target_gen_dir/allocator"),
       current_cpu,
+    ]
+  }
+
+  source_set("allocator_shim") {
+    sources = [
+      "allocator_shim_win.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    public_configs = [ ":nocmt" ]
+    deps = [
+      ":prep_libc",
     ]
   }
 }
@@ -149,7 +178,6 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/thread_cache.h",
       "$tcmalloc_dir/src/windows/port.cc",
       "$tcmalloc_dir/src/windows/port.h",
-      "allocator_shim.cc",
       "debugallocation_shim.cc",
 
       # These are both #included by allocator_shim for maximal linking.
@@ -185,9 +213,6 @@ if (use_allocator == "tcmalloc") {
         "$tcmalloc_dir/src/system-alloc.cc",
         "$tcmalloc_dir/src/system-alloc.h",
 
-        # included by allocator_shim.cc
-        "debugallocation_shim.cc",
-
         # cpuprofiler
         "$tcmalloc_dir/src/base/thread_lister.c",
         "$tcmalloc_dir/src/base/thread_lister.h",
@@ -215,9 +240,6 @@ if (use_allocator == "tcmalloc") {
         "$tcmalloc_dir/src/system-alloc.h",
         "$tcmalloc_dir/src/windows/port.cc",
         "$tcmalloc_dir/src/windows/port.h",
-
-        # TODO(willchan): Support allocator shim later on.
-        "allocator_shim.cc",
       ]
 
       # We enable all warnings by default, but upstream disables a few.

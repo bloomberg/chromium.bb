@@ -209,6 +209,8 @@ source_set("base") {
   ]
   libs = []
   configs += [
+    # This target uses the ALLOCATOR_SHIM define.
+    "//base/allocator:allocator_shim_define",
     "//media:media_config",
     "//media:media_implementation",
   ]
