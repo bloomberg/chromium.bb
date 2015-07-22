@@ -95,6 +95,15 @@ component("url") {
 
 # TODO(dpranke): crbug.com/360936. Get this to build and run on Android.
 if (!is_android) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("url_unittests_run") {
+    testonly = true
+    deps = [
+      ":url_unittests",
+    ]
+  }
+
   test("url_unittests") {
     sources = [
       "deprecated_serialized_origin_unittest.cc",

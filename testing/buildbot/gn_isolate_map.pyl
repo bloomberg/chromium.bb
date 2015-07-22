@@ -32,11 +32,13 @@
 {
   "accessibility_unittests":  {
     "label": "//ui/accessibility:accessibility_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "angle_unittests": {
     "label": "//gpu:angle_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "app_list_unittests": {
     "label": "//ui/app_list:app_list_unittests",
@@ -95,7 +97,7 @@
   },
   "cc_unittests": {
     "label": "//cc:cc_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "chrome_elf_unittests": {
     "label": "//chrome_elf:chrome_elf_unittests",
@@ -119,7 +121,7 @@
   },
   "compositor_unittests": {
     "label": "//ui/compositor:compositor_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "content_browsertests": {
     "label": "//content/test:content_browsertests",
@@ -171,11 +173,13 @@
   },
   "gl_unittests": {
     "label": "//ui/gl:gl_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "gn_unittests": {
     "label": "//tools/gn:gn_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "google_apis_unittests": {
     "label": "//google_apis:google_apis_unittests",
@@ -203,7 +207,7 @@
   },
   "ipc_tests": {
     "label": "//ipc:ipc_tests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "jingle_unittests": {
     "label": "//jingle:jingle_unittests",
@@ -299,7 +303,8 @@
   },
   "sandbox_linux_unittests": {
     "label": "//sandbox/linux:sandbox_linux_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "sandbox_mac_unittests": {
     "label": "//sandbox/mac:sandbox_mac_unittests",
@@ -323,11 +328,11 @@
   },
   "skia_unittests": {
     "label": "//skia:skia_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "sql_unittests": {
     "label": "//sql:sql_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "sync_integration_tests": {
     "label": "//sync:sync_integration_tests",
@@ -355,7 +360,7 @@
   },
   "url_unittests": {
     "label": "//url:url_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "view_manager_unittests": {
     "label": "//components/view_manager:view_manager_unittests",

@@ -154,6 +154,15 @@ source_set("test_support") {
 }
 
 if (!is_android) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("compositor_unittests_run") {
+    testonly = true
+    deps = [
+      ":compositor_unittests",
+    ]
+  }
+
   test("compositor_unittests") {
     sources = [
       "compositor_unittest.cc",
@@ -164,6 +173,10 @@ if (!is_android) {
       "layer_unittest.cc",
       "run_all_unittests.cc",
       "transform_animation_curve_adapter_unittest.cc",
+    ]
+
+    data = [
+      "//ui/gfx/test/data/compositor/",
     ]
 
     deps = [

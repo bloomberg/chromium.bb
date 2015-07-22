@@ -146,6 +146,15 @@ source_set("sandbox_linux_unittests_sources") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("sandbox_linux_unittests_run") {
+  testonly = true
+  deps = [
+    ":sandbox_linux_unittests",
+  ]
+}
+
 # The main sandboxing test target.
 test("sandbox_linux_unittests") {
   deps = [

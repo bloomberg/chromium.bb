@@ -65,6 +65,15 @@ source_set("redirection_header") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("sql_unittests_run") {
+  testonly = true
+  deps = [
+    ":sql_unittests",
+  ]
+}
+
 test("sql_unittests") {
   sources = [
     "connection_unittest.cc",
@@ -80,6 +89,10 @@ test("sql_unittests") {
     "test/sql_test_suite.cc",
     "test/sql_test_suite.h",
     "transaction_unittest.cc",
+  ]
+
+  data = [
+    "test/data/",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

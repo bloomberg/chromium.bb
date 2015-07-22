@@ -107,6 +107,13 @@ component("ipc") {
 
 # TODO(GYP): crbug.com/360936. Get this to build and run on Android.
 if (!is_android) {
+  group("ipc_tests_run") {
+    testonly = true
+    deps = [
+      ":ipc_tests",
+    ]
+  }
+
   test("ipc_tests") {
     sources = [
       "attachment_broker_win_unittest.cc",
