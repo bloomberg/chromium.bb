@@ -273,7 +273,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                fragment.onPassphraseEntered("passphrase", false, false);
+                fragment.onPassphraseEntered("passphrase");
             }
         });
         // No crash means we passed.
@@ -390,12 +390,12 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
 
     private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
         return (PassphraseTypeDialogFragment) mActivity.getFragmentManager()
-                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_PASSWORD_TYPE);
+                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_PASSPHRASE_TYPE);
     }
 
     private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment() {
         return (PassphraseCreationDialogFragment) mActivity.getFragmentManager()
-                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_CUSTOM_PASSWORD);
+                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
     private void assertDefaultSyncOnState(SyncCustomizationFragment fragment) {

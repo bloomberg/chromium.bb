@@ -20,7 +20,6 @@ import android.preference.SwitchPreference;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,19 +41,18 @@ import java.util.Set;
 /**
  * Settings fragment to customize Sync options (data types, encryption).
  */
-public class SyncCustomizationFragment extends PreferenceFragment implements
-        PassphraseDialogFragment.Listener, PassphraseTypeDialogFragment.Listener,
-        OnPreferenceClickListener, OnPreferenceChangeListener,
-        ProfileSyncService.SyncStateChangedListener {
-
+public class SyncCustomizationFragment extends PreferenceFragment
+        implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
+                   PassphraseTypeDialogFragment.Listener, OnPreferenceClickListener,
+                   OnPreferenceChangeListener, ProfileSyncService.SyncStateChangedListener {
     private static final String TAG = "SyncCustomizationFragment";
 
     @VisibleForTesting
-    public static final String FRAGMENT_ENTER_PASSWORD = "enter_password";
+    public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
     @VisibleForTesting
-    public static final String FRAGMENT_CUSTOM_PASSWORD = "custom_password";
+    public static final String FRAGMENT_CUSTOM_PASSPHRASE = "custom_password";
     @VisibleForTesting
-    public static final String FRAGMENT_PASSWORD_TYPE = "password_type";
+    public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
     @VisibleForTesting
     public static final String PREFERENCE_SYNC_EVERYTHING = "sync_everything";
@@ -286,8 +284,8 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             // If sync is not initialized, encryption state is unavailable and can't be changed.
             // Leave the button disabled and the summary empty. Additionally, close the dialogs in
             // case they were open when a stop and clear comes.
-            closeDialogIfOpen(FRAGMENT_CUSTOM_PASSWORD);
-            closeDialogIfOpen(FRAGMENT_ENTER_PASSWORD);
+            closeDialogIfOpen(FRAGMENT_CUSTOM_PASSPHRASE);
+            closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
             return;
         }
         if (mProfileSyncService.isPassphraseRequiredForDecryption() && isAdded()) {
@@ -327,27 +325,26 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         return types;
     }
 
-    private void displayPasswordTypeDialog() {
+    private void displayPassphraseTypeDialog() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         PassphraseTypeDialogFragment dialog = PassphraseTypeDialogFragment.create(
                 mProfileSyncService.getPassphraseType(),
                 mProfileSyncService.getExplicitPassphraseTime(),
                 mProfileSyncService.isEncryptEverythingAllowed());
-        dialog.show(ft, FRAGMENT_PASSWORD_TYPE);
+        dialog.show(ft, FRAGMENT_PASSPHRASE_TYPE);
         dialog.setTargetFragment(this, -1);
     }
 
-    private void displayPasswordDialog(boolean isGaia, boolean isUpdate) {
+    private void displayPassphraseDialog() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-        PassphraseDialogFragment.newInstance(this, isGaia, isUpdate)
-                .show(ft, FRAGMENT_ENTER_PASSWORD);
+        PassphraseDialogFragment.newInstance(this).show(ft, FRAGMENT_ENTER_PASSPHRASE);
     }
 
-    private void displayCustomPasswordDialog() {
+    private void displayCustomPassphraseDialog() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         PassphraseCreationDialogFragment dialog = new PassphraseCreationDialogFragment();
         dialog.setTargetFragment(this, -1);
-        dialog.show(ft, FRAGMENT_CUSTOM_PASSWORD);
+        dialog.show(ft, FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
     private void closeDialogIfOpen(String tag) {
@@ -357,20 +354,16 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         }
     }
 
-    private void configureEncryption(String passphrase, boolean isGaia) {
+    private void configureEncryption(String passphrase) {
         if (mProfileSyncService.isSyncInitialized()) {
             mProfileSyncService.enableEncryptEverything();
-            mProfileSyncService.setEncryptionPassphrase(passphrase, isGaia);
+            mProfileSyncService.setEncryptionPassphrase(passphrase, false);
             // Configure the current set of data types - this tells the sync engine to
             // apply our encryption configuration changes.
             configureSyncDataTypes();
             // Re-display our config UI to properly reflect the new state.
             updateSyncState();
         }
-    }
-
-    private void handleEncryptWithCustomPassphrase(String passphrase) {
-        configureEncryption(passphrase, false);
     }
 
     /**
@@ -381,52 +374,43 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             // PassphraseDialogFragment doesn't handle closing itself, so do it here. This is
             // not done in updateSyncState() because that happens onResume and possibly in other
             // cases where the dialog should stay open.
-            closeDialogIfOpen(FRAGMENT_ENTER_PASSWORD);
+            closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
             // Update our configuration UI.
             updateSyncState();
             return true;
-        } else {
-            // Let the user know that the passphrase was not valid.
-            notifyInvalidPassphrase();
-            return false;
         }
+        return false;
     }
 
     /**
      * Callback for PassphraseDialogFragment.Listener
      */
     @Override
-    public boolean onPassphraseEntered(String passphrase, boolean isGaia, boolean isUpdate) {
+    public boolean onPassphraseEntered(String passphrase) {
         if (!mProfileSyncService.isSyncInitialized()) {
             // If the backend was shut down since the dialog was opened, do nothing.
             return false;
         }
-
-        if (isUpdate) {
-            handleEncryptWithCustomPassphrase(passphrase);
-            // Setting a new passphrase should always succeed (validation that
-            // it's not an empty passphrase should already have happened).
-            return true;
-        } else {
-            return handleDecryption(passphrase);
-        }
-    }
-
-    private void notifyInvalidPassphrase() {
-        PassphraseDialogFragment passwordDialog = (PassphraseDialogFragment)
-                getFragmentManager().findFragmentByTag(FRAGMENT_ENTER_PASSWORD);
-        if (passwordDialog != null) {
-            passwordDialog.invalidPassphrase();
-        } else {
-            Log.w(TAG, "invalid passphrase but no dialog to notify");
-        }
+        return handleDecryption(passphrase);
     }
 
     /**
      * Callback for PassphraseDialogFragment.Listener
      */
     @Override
-    public void onPassphraseCanceled(boolean isGaia, boolean isUpdate) {
+    public void onPassphraseCanceled() {
+    }
+
+    /**
+     * Callback for PassphraseCreationDialogFragment.Listener
+     */
+    @Override
+    public void onPassphraseCreated(String passphrase) {
+        if (!mProfileSyncService.isSyncInitialized()) {
+            // If the backend was shut down since the dialog was opened, do nothing.
+            return;
+        }
+        configureEncryption(passphrase);
     }
 
     /**
@@ -446,7 +430,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         // full encryption enabled. Otherwise both options should be disabled.
         assert !isAllDataEncrypted;
         assert !isUsingSecondaryPassphrase;
-        displayCustomPasswordDialog();
+        displayCustomPassphraseDialog();
     }
 
     /**
@@ -461,9 +445,9 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         }
         if (preference == mSyncEncryption && mProfileSyncService.isSyncInitialized()) {
             if (mProfileSyncService.isPassphraseRequiredForDecryption()) {
-                displayPasswordDialog(false, false);
+                displayPassphraseDialog();
             } else {
-                displayPasswordTypeDialog();
+                displayPassphraseTypeDialog();
                 return true;
             }
         } else if (preference == mManageSyncData) {

@@ -22,6 +22,9 @@ import org.chromium.chrome.R;
  * Dialog to ask the user to enter a new custom passphrase.
  */
 public class PassphraseCreationDialogFragment extends DialogFragment {
+    interface Listener {
+        void onPassphraseCreated(String passphrase);
+    }
 
     private EditText mEnterPassphrase;
     private EditText mConfirmPassphrase;
@@ -80,9 +83,7 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
         }
 
         // The passphrase is not empty and matches.
-        PassphraseDialogFragment.Listener listener =
-                (PassphraseDialogFragment.Listener) getTargetFragment();
-        listener.onPassphraseEntered(passphrase, false, true);
+        ((Listener) getTargetFragment()).onPassphraseCreated(passphrase);
         getDialog().dismiss();
     }
 }

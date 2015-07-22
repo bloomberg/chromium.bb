@@ -36,7 +36,7 @@ import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 /**
- * Dialog to ask to user to enter their sync password.
+ * Dialog to ask to user to enter their sync passphrase.
  */
 public class PassphraseDialogFragment extends DialogFragment implements OnClickListener {
 
@@ -44,20 +44,14 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
 
     /**
      * A listener for passphrase events.
-     *
-     * Move back to package scope once PassphraseActivity is upstream.
      */
-    public interface Listener {
+    interface Listener {
         /**
          * @return whether passphrase was valid.
          */
-        public boolean onPassphraseEntered(String password, boolean isGaia, boolean isUpdate);
-
-        public void onPassphraseCanceled(boolean isGaia, boolean isUpdate);
+        boolean onPassphraseEntered(String passphrase);
+        void onPassphraseCanceled();
     }
-
-    static final String ARG_IS_GAIA = "is_gaia";
-    static final String ARG_IS_UPDATE = "is_update";
 
     private static final int PASSPHRASE_DIALOG_OK = 0;
     private static final int PASSPHRASE_DIALOG_ERROR = 1;
@@ -68,16 +62,11 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     /**
      * Create a new instanceof of {@link PassphraseDialogFragment} and set its arguments.
      */
-    public static PassphraseDialogFragment newInstance(
-            Fragment target, boolean isGaia, boolean isUpdate) {
+    public static PassphraseDialogFragment newInstance(Fragment target) {
         PassphraseDialogFragment dialog = new PassphraseDialogFragment();
         if (target != null) {
             dialog.setTargetFragment(target, -1);
         }
-        Bundle args = new Bundle();
-        args.putBoolean(PassphraseDialogFragment.ARG_IS_GAIA, isGaia);
-        args.putBoolean(PassphraseDialogFragment.ARG_IS_UPDATE, isUpdate);
-        dialog.setArguments(args);
         return dialog;
     }
 
@@ -203,14 +192,11 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     }
 
     private void handleCancel() {
-        boolean isUpdate = getArguments().getBoolean(ARG_IS_UPDATE);
-        boolean isGaia = getArguments().getBoolean(ARG_IS_GAIA);
-
         int cancelReason = isIncorrectPassphraseVisible()
                 ? PASSPHRASE_DIALOG_ERROR
                 : PASSPHRASE_DIALOG_CANCEL;
         recordPassphraseDialogDismissal(cancelReason);
-        getListener().onPassphraseCanceled(isGaia, isUpdate);
+        getListener().onPassphraseCanceled();
     }
 
     private void handleOk() {
@@ -220,12 +206,11 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         EditText passphraseEditText = (EditText) getDialog().findViewById(R.id.passphrase);
         String passphrase = passphraseEditText.getText().toString();
 
-        boolean isUpdate = getArguments().getBoolean(ARG_IS_UPDATE);
-        boolean isGaia = getArguments().getBoolean(ARG_IS_GAIA);
-        boolean success =
-                getListener().onPassphraseEntered(passphrase, isGaia, isUpdate);
+        boolean success = getListener().onPassphraseEntered(passphrase);
         if (success) {
             recordPassphraseDialogDismissal(PASSPHRASE_DIALOG_OK);
+        } else {
+            invalidPassphrase();
         }
     }
 
@@ -238,9 +223,9 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     }
 
     /**
-     * Notify this fragment that the password the user entered is incorrect.
+     * Notify this fragment that the passphrase the user entered is incorrect.
      */
-    public void invalidPassphrase() {
+    private void invalidPassphrase() {
         TextView verifying = (TextView) getDialog().findViewById(R.id.verifying);
         verifying.setText(R.string.sync_passphrase_incorrect);
     }
