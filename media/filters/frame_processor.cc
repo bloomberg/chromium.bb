@@ -388,10 +388,11 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
         append_window_start - buffer->timestamp(), base::TimeDelta()));
 
     // Adjust the timestamp of this buffer forward to |append_window_start| and
-    // decrease the duration to compensate.
+    // decrease the duration to compensate. Adjust DTS by the same delta as PTS
+    // to help prevent spurious discontinuities when DTS > PTS.
+    base::TimeDelta pts_delta = append_window_start - buffer->timestamp();
     buffer->set_timestamp(append_window_start);
-    buffer->SetDecodeTimestamp(
-        DecodeTimestamp::FromPresentationTime(append_window_start));
+    buffer->SetDecodeTimestamp(buffer->GetDecodeTimestamp() + pts_delta);
     buffer->set_duration(frame_end_timestamp - append_window_start);
     processed_buffer = true;
   }

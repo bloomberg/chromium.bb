@@ -110,8 +110,16 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
 
-      double time_in_ms;
-      CHECK(base::StringToDouble(timestamps[i], &time_in_ms));
+      // Use custom decode timestamp if included.
+      std::vector<std::string> buffer_timestamps;
+      base::SplitString(timestamps[i], '|', &buffer_timestamps);
+      if (buffer_timestamps.size() == 1)
+        buffer_timestamps.push_back(buffer_timestamps[0]);
+      CHECK_EQ(2u, buffer_timestamps.size());
+
+      double time_in_ms, decode_time_in_ms;
+      CHECK(base::StringToDouble(buffer_timestamps[0], &time_in_ms));
+      CHECK(base::StringToDouble(buffer_timestamps[1], &decode_time_in_ms));
 
       // Create buffer. Encode the original time_in_ms as the buffer's data to
       // enable later verification of possible buffer relocation in presentation
@@ -123,6 +131,12 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       base::TimeDelta timestamp = base::TimeDelta::FromSecondsD(
           time_in_ms / base::Time::kMillisecondsPerSecond);
       buffer->set_timestamp(timestamp);
+      if (time_in_ms != decode_time_in_ms) {
+        DecodeTimestamp decode_timestamp = DecodeTimestamp::FromSecondsD(
+            decode_time_in_ms / base::Time::kMillisecondsPerSecond);
+        buffer->SetDecodeTimestamp(decode_timestamp);
+      }
+
       buffer->set_duration(frame_duration_);
       buffers.push_back(buffer);
     }
@@ -660,6 +674,44 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoDiscontinuity) {
   EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
   CheckExpectedRangesByTimestamp(audio_.get(), "{ [7,29) }");
   CheckReadsThenReadStalls(audio_.get(), "7:0 19");
+}
+
+TEST_P(FrameProcessorTest,
+       PartialAppendWindowFilterNoDiscontinuity_DtsAfterPts) {
+  // Tests that spurious discontinuity is not introduced by a partially trimmed
+  // frame that originally had DTS > PTS.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  new_media_segment_ = true;
+  bool using_sequence_mode = GetParam();
+  if (using_sequence_mode) {
+    frame_processor_->SetSequenceMode(true);
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(
+                                base::TimeDelta::FromMilliseconds(20)));
+  } else {
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(
+                                base::TimeDelta::FromMilliseconds(13)));
+  }
+
+  ProcessFrames("-7|10K 3|20K", "");
+
+  if (using_sequence_mode) {
+    EXPECT_EQ(base::TimeDelta::FromMilliseconds(7), timestamp_offset_);
+
+    // TODO(wolenetz): Adjust the following expectation to use PTS instead of
+    // DTS once https://crbug.com/398130 is fixed.
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [17,37) }");
+
+    CheckReadsThenReadStalls(audio_.get(), "0:-7 10:3");
+  } else {
+    EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+
+    // TODO(wolenetz): Adjust the following expectation to use PTS instead of
+    // DTS once https://crbug.com/398130 is fixed.
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [17,30) }");
+
+    CheckReadsThenReadStalls(audio_.get(), "0:-7 3");
+  }
 }
 
 TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
