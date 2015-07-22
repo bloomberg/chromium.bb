@@ -27,7 +27,6 @@
 // http://w3c.github.io/webcomponents/spec/shadow/#the-content-element
 
 interface HTMLContentElement : HTMLElement {
-    // FIXME: select should not have [TreatNullAs=NullString].
-    [Reflect, TreatNullAs=NullString] attribute DOMString select;
+    [Reflect] attribute DOMString select;
     NodeList getDistributedNodes();
 };
