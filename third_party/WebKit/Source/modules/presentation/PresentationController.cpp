@@ -65,18 +65,13 @@ DEFINE_TRACE(PresentationController)
 
 void PresentationController::didStartDefaultSession(WebPresentationSessionClient* sessionClient)
 {
-    if (!m_presentation) {
+    if (!m_presentation || !m_defaultRequest) {
         delete sessionClient;
         return;
     }
 
     PresentationSession* session = PresentationSession::take(sessionClient, m_presentation);
-    if (m_defaultRequest)
-        m_defaultRequest->dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::connect, session));
-
-    // TODO(mlamouri): remove. this is only here to allow tests to upgrade to
-    // the new way of doing things.
-    m_presentation->didStartDefaultSession(session);
+    m_defaultRequest->dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::connect, session));
 }
 
 void PresentationController::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState state)

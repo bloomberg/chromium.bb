@@ -52,11 +52,6 @@ public:
     PresentationRequest* defaultRequest() const;
     void setDefaultRequest(PresentationRequest*);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(defaultsessionstart);
-
-    // Called when the |defaultsessionstart| event needs to be fired.
-    void didStartDefaultSession(PresentationSession*);
-
     // Called when the |onstatechange| event needs to be fired to the right session.
     void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState);
 

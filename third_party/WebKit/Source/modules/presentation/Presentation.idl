@@ -13,7 +13,6 @@
     // TODO(avayvod): The |presentationId| argument should not be optional.
     [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString url, [Default=Undefined] optional DOMString presentationId);
     [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability(DOMString url);
-    attribute EventHandler ondefaultsessionstart;
 
     // This API used by presenting browsing context.
     // TODO(avayvod): The spec has |getSession()| and |getSessions()| instead.

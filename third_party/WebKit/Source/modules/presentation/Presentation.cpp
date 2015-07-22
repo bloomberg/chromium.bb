@@ -14,7 +14,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
-#include "modules/presentation/DefaultSessionStartEvent.h"
 #include "modules/presentation/PresentationAvailabilityCallback.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationRequest.h"
@@ -148,11 +147,6 @@ void Presentation::setDefaultRequest(PresentationRequest* request)
     if (!controller)
         return;
     controller->setDefaultRequest(request);
-}
-
-void Presentation::didStartDefaultSession(PresentationSession* session)
-{
-    dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::defaultsessionstart, session));
 }
 
 void Presentation::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState sessionState)

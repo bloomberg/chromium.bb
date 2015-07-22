@@ -70,7 +70,7 @@ public:
 
     // Called when a defaultRequest has been set. It sends the url associated
     // with it for the embedder.
-    virtual void setDefaultPresentationUrl(const WebString& url) {}
+    virtual void setDefaultPresentationUrl(const WebString&) = 0;
 };
 
 } // namespace blink
