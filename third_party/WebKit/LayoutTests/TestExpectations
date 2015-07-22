@@ -3838,3 +3838,6 @@ Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-12.html [ NeedsMan
 crbug.com/158753 fast/css/image-orientation/image-orientation.html [ NeedsRebaseline ]
 crbug.com/158753 fast/css/image-orientation/image-orientation-from-image.html [ NeedsRebaseline ]
 crbug.com/158753 fast/css/image-orientation/image-orientation-from-image-composited.html [ NeedsRebaseline ]
+
+crbug.com/512667 inspector/sources/debugger/live-edit-no-reveal.html [ Pass Timeout ]
+crbug.com/512667 inspector-protocol/debugger/domdebugger-setInnerHTML.html [ Pass Failure ]
