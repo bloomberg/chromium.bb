@@ -5,7 +5,6 @@
 #include "chrome/common/chrome_version_info.h"
 
 #include "base/basictypes.h"
-#include "base/file_version_info.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"

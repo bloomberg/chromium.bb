@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"

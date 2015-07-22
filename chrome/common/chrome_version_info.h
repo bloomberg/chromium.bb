@@ -8,9 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-
-class FileVersionInfo;
 
 namespace chrome {
 
@@ -81,10 +78,6 @@ class VersionInfo {
   std::string CreateVersionString() const;
 
  private:
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<FileVersionInfo> version_info_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(VersionInfo);
 };
 
