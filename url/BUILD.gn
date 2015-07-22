@@ -24,6 +24,8 @@ component("url") {
     "deprecated_serialized_origin.h",
     "gurl.cc",
     "gurl.h",
+    "origin.cc",
+    "origin.h",
     "scheme_host_port.cc",
     "scheme_host_port.h",
     "third_party/mozilla/url_parse.cc",
@@ -97,6 +99,7 @@ if (!is_android) {
     sources = [
       "deprecated_serialized_origin_unittest.cc",
       "gurl_unittest.cc",
+      "origin_unittest.cc",
       "scheme_host_port_unittest.cc",
       "url_canon_icu_unittest.cc",
       "url_canon_unittest.cc",
