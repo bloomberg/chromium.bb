@@ -58,9 +58,9 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
         profile(), siteInstance_.get());
   }
 
-  void ShowBubble() {
+  void ShowBubble(bool user_action) {
     TabDialogs::FromWebContents(test_web_contents_)
-        ->ShowManagePasswordsBubble(false);
+        ->ShowManagePasswordsBubble(user_action);
     if (ManagePasswordsBubbleCocoa::instance()) {
       // Disable animations so that closing happens immediately.
       InfoBubbleWindow* bubbleWindow = base::mac::ObjCCast<InfoBubbleWindow>(
@@ -78,6 +78,11 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
     return bubble ? [bubble->controller_ window] : nil;
   }
 
+  ManagePasswordsBubbleController* controller() {
+    ManagePasswordsBubbleCocoa* bubble = ManagePasswordsBubbleCocoa::instance();
+    return bubble ? bubble->controller_ : nil;
+  }
+
   ManagePasswordsIconCocoa* icon() {
     return static_cast<ManagePasswordsIconCocoa*>(
       ManagePasswordsBubbleCocoa::instance()->icon_);
@@ -91,13 +96,13 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 TEST_F(ManagePasswordsBubbleCocoaTest, ShowShouldCreateAndShowBubble) {
   EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_FALSE([bubbleWindow() isVisible]);
-  ShowBubble();
+  ShowBubble(false);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_TRUE([bubbleWindow() isVisible]);
 }
 
 TEST_F(ManagePasswordsBubbleCocoaTest, CloseShouldCloseAndDeleteBubble) {
-  ShowBubble();
+  ShowBubble(false);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_TRUE([bubbleWindow() isVisible]);
   CloseBubble();
@@ -106,7 +111,7 @@ TEST_F(ManagePasswordsBubbleCocoaTest, CloseShouldCloseAndDeleteBubble) {
 }
 
 TEST_F(ManagePasswordsBubbleCocoaTest, BackgroundCloseShouldDeleteBubble) {
-  ShowBubble();
+  ShowBubble(false);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_TRUE([bubbleWindow() isVisible]);
   // Close the window directly instead of using the bubble interface.
@@ -127,12 +132,12 @@ TEST_F(ManagePasswordsBubbleCocoaTest, ShowBubbleOnInactiveTabShouldDoNothing) {
   EXPECT_EQ(2, tabStripModel->count());
 
   // Try to show the bubble on the inactive tab. Nothing should happen.
-  ShowBubble();
+  ShowBubble(false);
   EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
 }
 
 TEST_F(ManagePasswordsBubbleCocoaTest, HideBubbleOnChangedState) {
-  ShowBubble();
+  ShowBubble(false);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_TRUE([bubbleWindow() isVisible]);
   EXPECT_TRUE(icon()->active());
@@ -140,4 +145,16 @@ TEST_F(ManagePasswordsBubbleCocoaTest, HideBubbleOnChangedState) {
   icon()->OnChangingState();
   EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_FALSE([bubbleWindow() isVisible]);
+}
+
+TEST_F(ManagePasswordsBubbleCocoaTest, OpenWithoutFocus) {
+  ShowBubble(false);
+  EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
+  EXPECT_FALSE([controller() shouldOpenAsKeyWindow]);
+}
+
+TEST_F(ManagePasswordsBubbleCocoaTest, OpenWithFocus) {
+  ShowBubble(true);
+  EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
+  EXPECT_TRUE([controller() shouldOpenAsKeyWindow]);
 }

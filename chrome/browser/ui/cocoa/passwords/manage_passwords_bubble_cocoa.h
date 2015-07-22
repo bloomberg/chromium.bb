@@ -43,7 +43,7 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
                              DisplayReason displayReason,
                              ManagePasswordsIcon* icon);
   ~ManagePasswordsBubbleCocoa() override;
-  void Show();
+  void Show(bool user_action);
 
   // Cleans up state and deletes itself. Called when the bubble is closed.
   void OnClose();

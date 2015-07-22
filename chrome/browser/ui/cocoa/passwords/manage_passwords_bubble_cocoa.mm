@@ -59,7 +59,7 @@ ManagePasswordsBubbleCocoa::~ManagePasswordsBubbleCocoa() {
     icon_->SetActive(false);
 }
 
-void ManagePasswordsBubbleCocoa::Show() {
+void ManagePasswordsBubbleCocoa::Show(bool user_action) {
   // Create and show the bubble.
   NSView* browserView = webContents_->GetNativeView();
   DCHECK(browserView);
@@ -68,6 +68,7 @@ void ManagePasswordsBubbleCocoa::Show() {
   controller_ = [[ManagePasswordsBubbleController alloc]
       initWithParentWindow:browserWindow
                      model:model()];
+  [controller_ setShouldOpenAsKeyWindow:(user_action ? YES : NO)];
   [controller_ showWindow:nil];
 
   // Listen for close notification to perform cleanup: the window isn't
@@ -120,5 +121,5 @@ void ManagePasswordsBubbleCocoa::Show(content::WebContents* webContents,
                   : ManagePasswordsBubble::AUTOMATIC,
       [bwc locationBarBridge]->manage_passwords_decoration()->icon());
 
-  bubble_->Show();
+  bubble_->Show(user_action);
 }
