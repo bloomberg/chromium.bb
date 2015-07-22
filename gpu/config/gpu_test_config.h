@@ -45,12 +45,21 @@ class GPU_EXPORT GPUTestConfig {
     kBuildTypeDebug = 1 << 1,
   };
 
+  enum API {
+    kAPIUnknown = 0,
+    kAPID3D9 = 1 << 0,
+    kAPID3D11 = 1 << 1,
+    kAPIGLDesktop = 1 << 2,
+    kAPIGLES = 1 << 3,
+  };
+
   GPUTestConfig();
   virtual ~GPUTestConfig();
 
   void set_os(int32 os);
   void set_gpu_device_id(uint32 id);
   void set_build_type(int32 build_type);
+  void set_api(int32 api);
 
   virtual void AddGPUVendor(uint32 gpu_vendor);
 
@@ -58,6 +67,7 @@ class GPU_EXPORT GPUTestConfig {
   const std::vector<uint32>& gpu_vendor() const { return gpu_vendor_; }
   uint32 gpu_device_id() const { return gpu_device_id_; }
   int32 build_type() const { return build_type_; }
+  int32 api() const { return api_; }
 
   // Check if the config is valid. For example, if gpu_device_id_ is set, but
   // gpu_vendor_ is unknown, then it's invalid.
@@ -89,6 +99,9 @@ class GPU_EXPORT GPUTestConfig {
 
   // Release or Debug.
   int32 build_type_;
+
+  // Back-end rendering APIs.
+  int32 api_;
 };
 
 class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {

@@ -26,6 +26,7 @@ TEST_F(GPUTestConfigTest, EmptyValues) {
   EXPECT_EQ(0u, config.gpu_vendor().size());
   EXPECT_EQ(0u, config.gpu_device_id());
   EXPECT_EQ(GPUTestConfig::kBuildTypeUnknown, config.build_type());
+  EXPECT_EQ(GPUTestConfig::kAPIUnknown, config.api());
 }
 
 TEST_F(GPUTestConfigTest, SetGPUInfo) {
@@ -89,6 +90,7 @@ TEST_F(GPUTestConfigTest, Matches) {
   config.set_build_type(GPUTestConfig::kBuildTypeRelease);
   config.AddGPUVendor(0x10de);
   config.set_gpu_device_id(0x0640);
+  config.set_api(GPUTestConfig::kAPID3D11);
   EXPECT_TRUE(config.IsValid());
 
   {  // os matching
@@ -140,6 +142,21 @@ TEST_F(GPUTestConfigTest, Matches) {
     config2.set_gpu_device_id(0x0641);
     EXPECT_FALSE(config.Matches(config2));
   }
+
+  {  // api matching
+    {
+      GPUTestConfig config2;
+      config2.set_api(GPUTestConfig::kAPID3D11);
+      EXPECT_TRUE(config.Matches(config2));
+      config2.set_api(config2.api() | GPUTestConfig::kAPID3D9);
+      EXPECT_TRUE(config.Matches(config2));
+    }
+    {
+      GPUTestConfig config2;
+      config2.set_api(GPUTestConfig::kAPID3D9);
+      EXPECT_FALSE(config.Matches(config2));
+    }
+  }
 }
 
 TEST_F(GPUTestConfigTest, StringMatches) {
@@ -148,6 +165,7 @@ TEST_F(GPUTestConfigTest, StringMatches) {
   config.set_build_type(GPUTestConfig::kBuildTypeRelease);
   config.AddGPUVendor(0x10de);
   config.set_gpu_device_id(0x0640);
+  config.set_api(GPUTestConfig::kAPID3D11);
   EXPECT_TRUE(config.IsValid());
 
   EXPECT_TRUE(config.Matches(std::string()));
@@ -171,6 +189,10 @@ TEST_F(GPUTestConfigTest, StringMatches) {
   // exact matching
   EXPECT_TRUE(config.Matches("WIN7 RELEASE NVIDIA 0X0640"));
   EXPECT_FALSE(config.Matches("WIN7 RELEASE NVIDIA 0X0641"));
+
+  // api matching
+  EXPECT_TRUE(config.Matches("D3D11"));
+  EXPECT_FALSE(config.Matches("D3D9 OPENGL GLES"));
 }
 
 TEST_F(GPUTestConfigTest, OverlapsWith) {
