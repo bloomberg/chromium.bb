@@ -7,6 +7,7 @@
 #include <Carbon/Carbon.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -305,4 +306,36 @@ TEST_F(PermissionBubbleControllerTest, EscapeCloses) {
       performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
                                kVK_Escape, '\e', NSKeyDown, 0)];
   EXPECT_FALSE([[controller_ window] isVisible]);
+}
+
+TEST_F(PermissionBubbleControllerTest, EnterFullscreen) {
+  [controller_ showAtAnchor:NSZeroPoint
+               withDelegate:this
+                forRequests:requests_
+               acceptStates:accept_states_];
+
+  EXPECT_TRUE([[controller_ window] isVisible]);
+
+  // Post the "enter fullscreen" notification.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:NSWindowWillEnterFullScreenNotification
+                        object:test_window()];
+
+  EXPECT_TRUE([[controller_ window] isVisible]);
+}
+
+TEST_F(PermissionBubbleControllerTest, ExitFullscreen) {
+  [controller_ showAtAnchor:NSZeroPoint
+               withDelegate:this
+                forRequests:requests_
+               acceptStates:accept_states_];
+
+  EXPECT_TRUE([[controller_ window] isVisible]);
+
+  // Post the "enter fullscreen" notification.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:NSWindowWillExitFullScreenNotification
+                        object:test_window()];
+
+  EXPECT_TRUE([[controller_ window] isVisible]);
 }

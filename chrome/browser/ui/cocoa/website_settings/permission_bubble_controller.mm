@@ -250,7 +250,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [super windowWillClose:notification];
 }
 
-- (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification {
+- (void)parentWindowWillToggleFullScreen:(NSNotification*)notification {
   // Override the base class implementation, which would have closed the bubble.
 }
 
