@@ -272,18 +272,11 @@ base::WeakPtr<CacheStorageCache> CacheStorageCache::AsWeakPtr() {
 
 void CacheStorageCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                               const ResponseCallback& callback) {
-  switch (backend_state_) {
-    case BACKEND_UNINITIALIZED:
-      InitBackend();
-      break;
-    case BACKEND_CLOSED:
-      callback.Run(CACHE_STORAGE_ERROR_STORAGE,
-                   scoped_ptr<ServiceWorkerResponse>(),
-                   scoped_ptr<storage::BlobDataHandle>());
-      return;
-    case BACKEND_OPEN:
-      DCHECK(backend_);
-      break;
+  if (!LazyInitialize()) {
+    callback.Run(CACHE_STORAGE_ERROR_STORAGE,
+                 scoped_ptr<ServiceWorkerResponse>(),
+                 scoped_ptr<storage::BlobDataHandle>());
+    return;
   }
 
   ResponseCallback pending_callback =
@@ -297,16 +290,9 @@ void CacheStorageCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
 void CacheStorageCache::BatchOperation(
     const std::vector<CacheStorageBatchOperation>& operations,
     const ErrorCallback& callback) {
-  switch (backend_state_) {
-    case BACKEND_UNINITIALIZED:
-      InitBackend();
-      break;
-    case BACKEND_CLOSED:
-      callback.Run(CACHE_STORAGE_ERROR_STORAGE);
-      return;
-    case BACKEND_OPEN:
-      DCHECK(backend_);
-      break;
+  if (!LazyInitialize()) {
+    callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+    return;
   }
 
   scoped_ptr<ErrorCallback> callback_copy(new ErrorCallback(callback));
@@ -359,16 +345,9 @@ void CacheStorageCache::BatchDidAllOperations(
 }
 
 void CacheStorageCache::Keys(const RequestsCallback& callback) {
-  switch (backend_state_) {
-    case BACKEND_UNINITIALIZED:
-      InitBackend();
-      break;
-    case BACKEND_CLOSED:
-      callback.Run(CACHE_STORAGE_ERROR_STORAGE, scoped_ptr<Requests>());
-      return;
-    case BACKEND_OPEN:
-      DCHECK(backend_);
-      break;
+  if (!LazyInitialize()) {
+    callback.Run(CACHE_STORAGE_ERROR_STORAGE, scoped_ptr<Requests>());
+    return;
   }
 
   RequestsCallback pending_callback =
@@ -436,6 +415,21 @@ CacheStorageCache::CacheStorageCache(
       initializing_(false),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
+}
+
+bool CacheStorageCache::LazyInitialize() {
+  switch (backend_state_) {
+    case BACKEND_UNINITIALIZED:
+      InitBackend();
+      return true;
+    case BACKEND_CLOSED:
+      return false;
+    case BACKEND_OPEN:
+      DCHECK(backend_);
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 void CacheStorageCache::MatchImpl(scoped_ptr<ServiceWorkerFetchRequest> request,

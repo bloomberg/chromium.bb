@@ -130,6 +130,9 @@ class CONTENT_EXPORT CacheStorageCache
   // Async operations in progress will cancel and not run their callbacks.
   virtual ~CacheStorageCache();
 
+  // Returns true if the backend is ready to operate.
+  bool LazyInitialize();
+
   // Match callbacks
   void MatchImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                  const ResponseCallback& callback);
