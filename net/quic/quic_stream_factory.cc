@@ -47,6 +47,7 @@
 
 #if defined(USE_OPENSSL)
 #include <openssl/aead.h>
+#include "crypto/openssl_util.h"
 #else
 #include "base/cpu.h"
 #endif
@@ -627,6 +628,7 @@ QuicStreamFactory::QuicStreamFactory(
         new ChannelIDSourceChromium(channel_id_service));
   }
 #if defined(USE_OPENSSL)
+  crypto::EnsureOpenSSLInit();
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();
 #else
   base::CPU cpu;
