@@ -123,7 +123,7 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
 
   if (net::IsCertStatusError(info->ssl_cert_status())) {
     backend_->HostRanInsecureContent(info->url().host(), info->child_id());
-  } else {
+  } else if (info->url().SchemeIsCryptographic()) {
     SSLGoodCertSeenEvent event = NO_PREVIOUS_EXCEPTION;
     if (backend_->HasAllowException(info->url().host())) {
       // If there's no certificate error, a good certificate has been seen, so
