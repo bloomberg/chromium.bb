@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -25,6 +26,7 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         mSnackbarManager = new SnackbarManager(getWindow());
         mBookmarkManager = new EnhancedBookmarkManager(this);
         setContentView(mBookmarkManager.getView());
