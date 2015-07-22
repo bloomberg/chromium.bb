@@ -110,6 +110,7 @@ class CC_EXPORT ResourceProvider {
 
   bool IsLost(ResourceId id);
 
+  void LoseResourceForTesting(ResourceId id);
   void EnableReadLockFencesForTesting(ResourceId id);
 
   // Producer interface.

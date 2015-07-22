@@ -112,12 +112,9 @@ void ResourcePool::ReduceResourceUsage() {
     // memory is necessarily returned to the OS.
     ScopedResource* resource = unused_resources_.front().resource;
     unused_resources_.pop_front();
-    size_t resource_bytes = Resource::UncheckedMemorySizeBytes(
+    unused_memory_usage_bytes_ -= Resource::UncheckedMemorySizeBytes(
         resource->size(), resource->format());
-    memory_usage_bytes_ -= resource_bytes;
-    unused_memory_usage_bytes_ -= resource_bytes;
-    --resource_count_;
-    delete resource;
+    DeleteResource(resource);
   }
 }
 
@@ -131,6 +128,14 @@ bool ResourcePool::ResourceUsageTooHigh() {
   return false;
 }
 
+void ResourcePool::DeleteResource(ScopedResource* resource) {
+  size_t resource_bytes =
+      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
+  memory_usage_bytes_ -= resource_bytes;
+  --resource_count_;
+  delete resource;
+}
+
 void ResourcePool::CheckBusyResources(bool wait_if_needed) {
   ResourceList::iterator it = busy_resources_.begin();
 
@@ -142,6 +147,10 @@ void ResourcePool::CheckBusyResources(bool wait_if_needed) {
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
       DidFinishUsingResource(resource, it->content_id);
+      it = busy_resources_.erase(it);
+    } else if (resource_provider_->IsLost(resource->id())) {
+      // Remove lost resources from pool.
+      DeleteResource(resource);
       it = busy_resources_.erase(it);
     } else {
       ++it;

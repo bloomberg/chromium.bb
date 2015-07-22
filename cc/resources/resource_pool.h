@@ -58,6 +58,7 @@ class CC_EXPORT ResourcePool {
 
  private:
   void DidFinishUsingResource(ScopedResource* resource, uint64_t content_id);
+  void DeleteResource(ScopedResource* resource);
 
   ResourceProvider* resource_provider_;
   const GLenum target_;

@@ -441,6 +441,12 @@ bool ResourceProvider::IsLost(ResourceId id) {
   return resource->lost;
 }
 
+void ResourceProvider::LoseResourceForTesting(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource);
+  resource->lost = true;
+}
+
 ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
                                             GLint wrap_mode,
                                             TextureHint hint,

@@ -94,6 +94,7 @@
       'raster/texture_compressor_etc1_unittest.cc',
       'raster/tile_task_worker_pool_unittest.cc',
       'resources/platform_color_unittest.cc',
+      'resources/resource_pool_unittest.cc',
       'resources/resource_provider_unittest.cc',
       'resources/scoped_resource_unittest.cc',
       'resources/video_resource_updater_unittest.cc',
