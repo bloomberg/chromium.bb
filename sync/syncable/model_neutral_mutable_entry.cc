@@ -105,66 +105,65 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(
 
 void ModelNeutralMutableEntry::PutBaseVersion(int64 value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(BASE_VERSION) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(BASE_VERSION, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 void ModelNeutralMutableEntry::PutServerVersion(int64 value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(SERVER_VERSION) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     ScopedKernelLock lock(dir());
     kernel_->put(SERVER_VERSION, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 void ModelNeutralMutableEntry::PutServerMtime(base::Time value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(SERVER_MTIME) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(SERVER_MTIME, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 void ModelNeutralMutableEntry::PutServerCtime(base::Time value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(SERVER_CTIME) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(SERVER_CTIME, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 bool ModelNeutralMutableEntry::PutId(const Id& value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(ID) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     if (!dir()->ReindexId(base_write_transaction(), kernel_, value))
       return false;
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
   return true;
 }
 
 void ModelNeutralMutableEntry::PutServerParentId(const Id& value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
-
   if (kernel_->ref(SERVER_PARENT_ID) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(SERVER_PARENT_ID, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 bool ModelNeutralMutableEntry::PutIsUnsynced(bool value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(IS_UNSYNCED) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     MetahandleSet* index = &dir()->kernel()->unsynced_metahandles;
 
     ScopedKernelLock lock(dir());
@@ -184,15 +183,15 @@ bool ModelNeutralMutableEntry::PutIsUnsynced(bool value) {
       }
     }
     kernel_->put(IS_UNSYNCED, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
   return true;
 }
 
 bool ModelNeutralMutableEntry::PutIsUnappliedUpdate(bool value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if (kernel_->ref(IS_UNAPPLIED_UPDATE) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     // Use kernel_->GetServerModelType() instead of
     // GetServerModelType() as we may trigger some DCHECKs in the
     // latter.
@@ -216,28 +215,27 @@ bool ModelNeutralMutableEntry::PutIsUnappliedUpdate(bool value) {
       }
     }
     kernel_->put(IS_UNAPPLIED_UPDATE, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
   return true;
 }
 
 void ModelNeutralMutableEntry::PutServerIsDir(bool value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
-  bool old_value = kernel_->ref(SERVER_IS_DIR);
-  if (old_value != value) {
+  if (kernel_->ref(SERVER_IS_DIR) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(SERVER_IS_DIR, value);
-    kernel_->mark_dirty(GetDirtyIndexHelper());
+    MarkDirty();
   }
 }
 
 void ModelNeutralMutableEntry::PutServerIsDel(bool value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   bool old_value = kernel_->ref(SERVER_IS_DEL);
   if (old_value != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(SERVER_IS_DEL, value);
-    kernel_->mark_dirty(GetDirtyIndexHelper());
+    MarkDirty();
   }
 
   if (!value || kernel_->ref(IS_UNAPPLIED_UPDATE)) {
@@ -259,11 +257,10 @@ void ModelNeutralMutableEntry::PutServerIsDel(bool value) {
 void ModelNeutralMutableEntry::PutServerNonUniqueName(
     const std::string& value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
-
   if (kernel_->ref(SERVER_NON_UNIQUE_NAME) != value) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     kernel_->put(SERVER_NON_UNIQUE_NAME, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
@@ -283,7 +280,7 @@ bool ModelNeutralMutableEntry::PutUniqueServerTag(const string& new_tag) {
   dir()->kernel()->server_tags_map.erase(
       kernel_->ref(UNIQUE_SERVER_TAG));
   kernel_->put(UNIQUE_SERVER_TAG, new_tag);
-  kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+  MarkDirty();
   if (!new_tag.empty()) {
     dir()->kernel()->server_tags_map[new_tag] = kernel_;
   }
@@ -307,7 +304,7 @@ bool ModelNeutralMutableEntry::PutUniqueClientTag(const string& new_tag) {
   dir()->kernel()->client_tags_map.erase(
       kernel_->ref(UNIQUE_CLIENT_TAG));
   kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
-  kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+  MarkDirty();
   if (!new_tag.empty()) {
     dir()->kernel()->client_tags_map[new_tag] = kernel_;
   }
@@ -323,6 +320,8 @@ void ModelNeutralMutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
     return;
   }
 
+  // TODO(stanisc): Does this need a call to TrackChangesTo?
+
   if (!kernel_->ref(UNIQUE_BOOKMARK_TAG).empty() &&
       tag != kernel_->ref(UNIQUE_BOOKMARK_TAG)) {
     // There is only one scenario where our tag is expected to change.  That
@@ -335,18 +334,18 @@ void ModelNeutralMutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
   }
 
   kernel_->put(UNIQUE_BOOKMARK_TAG, tag);
-  kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+  MarkDirty();
 }
 
 void ModelNeutralMutableEntry::PutServerSpecifics(
     const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
   CHECK(!value.password().has_client_only_encrypted_data());
-  base_write_transaction_->TrackChangesTo(kernel_);
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   const std::string& serialized_value = value.SerializeAsString();
   if (serialized_value != kernel_->ref(SERVER_SPECIFICS).SerializeAsString()) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     if (kernel_->ref(IS_UNAPPLIED_UPDATE)) {
       // Remove ourselves from unapplied_update_metahandles with our
       // old server type.
@@ -365,7 +364,7 @@ void ModelNeutralMutableEntry::PutServerSpecifics(
     } else {
       kernel_->put(SERVER_SPECIFICS, value);
     }
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
 
     if (kernel_->ref(IS_UNAPPLIED_UPDATE)) {
       // Add ourselves back into unapplied_update_metahandles with our
@@ -382,12 +381,12 @@ void ModelNeutralMutableEntry::PutBaseServerSpecifics(
     const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
   CHECK(!value.password().has_client_only_encrypted_data());
-  base_write_transaction_->TrackChangesTo(kernel_);
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   const std::string& serialized_value = value.SerializeAsString();
   if (serialized_value !=
       kernel_->ref(BASE_SERVER_SPECIFICS).SerializeAsString()) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     // Check for potential sharing - BASE_SERVER_SPECIFICS is often
     // copied from SERVER_SPECIFICS.
     if (serialized_value ==
@@ -396,30 +395,30 @@ void ModelNeutralMutableEntry::PutBaseServerSpecifics(
     } else {
       kernel_->put(BASE_SERVER_SPECIFICS, value);
     }
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 void ModelNeutralMutableEntry::PutServerUniquePosition(
     const UniquePosition& value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   if(!kernel_->ref(SERVER_UNIQUE_POSITION).Equals(value)) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     // We should never overwrite a valid position with an invalid one.
     DCHECK(value.IsValid());
     ScopedKernelLock lock(dir());
     kernel_->put(SERVER_UNIQUE_POSITION, value);
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
 void ModelNeutralMutableEntry::PutServerAttachmentMetadata(
     const sync_pb::AttachmentMetadata& value) {
   DCHECK(kernel_);
-  base_write_transaction_->TrackChangesTo(kernel_);
   const std::string& serialized_value = value.SerializeAsString();
   if (serialized_value !=
       kernel_->ref(SERVER_ATTACHMENT_METADATA).SerializeAsString()) {
+    base_write_transaction_->TrackChangesTo(kernel_);
     // Check for potential sharing - SERVER_ATTACHMENT_METADATA is often
     // copied from ATTACHMENT_METADATA.
     if (serialized_value ==
@@ -428,7 +427,7 @@ void ModelNeutralMutableEntry::PutServerAttachmentMetadata(
     } else {
       kernel_->put(SERVER_ATTACHMENT_METADATA, value);
     }
-    kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+    MarkDirty();
   }
 }
 
@@ -444,20 +443,19 @@ void ModelNeutralMutableEntry::PutDirtySync(bool value) {
 void ModelNeutralMutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
   base_write_transaction_->TrackChangesTo(kernel_);
   dir()->ReindexParentId(base_write_transaction(), kernel_, parent_id);
-  kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
+  MarkDirty();
 }
 
 void ModelNeutralMutableEntry::UpdateTransactionVersion(int64 value) {
-  ScopedKernelLock lock(dir());
   kernel_->put(TRANSACTION_VERSION, value);
-  kernel_->mark_dirty(&(dir()->kernel()->dirty_metahandles));
+  MarkDirty();
 }
 
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans)
   : Entry(trans), base_write_transaction_(trans) {}
 
-MetahandleSet* ModelNeutralMutableEntry::GetDirtyIndexHelper() {
-  return &dir()->kernel()->dirty_metahandles;
+void ModelNeutralMutableEntry::MarkDirty() {
+  kernel_->mark_dirty(&dir()->kernel()->dirty_metahandles);
 }
 
 }  // namespace syncable
