@@ -23,7 +23,8 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         scoped_ptr<BrowserCompositorOverlayCandidateValidator>
             overlay_candidate_validator,
-        unsigned internalformat,
+        unsigned int target,
+        unsigned int internalformat,
         BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,
                                         vsync_manager,
@@ -43,9 +44,9 @@ GpuSurfacelessBrowserCompositorOutputSurface::
 
   gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
                                 context_provider_->ContextSupport()));
-  output_surface_.reset(
-      new BufferQueue(context_provider_, internalformat_, gl_helper_.get(),
-                      gpu_memory_buffer_manager_, surface_id));
+  output_surface_.reset(new BufferQueue(
+      context_provider_, target, internalformat_, gl_helper_.get(),
+      gpu_memory_buffer_manager_, surface_id));
   output_surface_->Initialize();
 }
 
@@ -106,5 +107,11 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
   GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted(latency_info,
                                                             result);
 }
+
+#if defined(OS_MACOSX)
+void GpuSurfacelessBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
+  OnSwapBuffersComplete();
+}
+#endif
 
 }  // namespace content

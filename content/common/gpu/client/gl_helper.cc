@@ -914,7 +914,8 @@ GLint GLHelper::MaxDrawBuffers() {
   return copy_texture_to_impl_->MaxDrawBuffers();
 }
 
-void GLHelper::CopySubBufferDamage(GLuint texture,
+void GLHelper::CopySubBufferDamage(GLenum target,
+                                   GLuint texture,
                                    GLuint previous_texture,
                                    const SkRegion& new_damage,
                                    const SkRegion& old_damage) {
@@ -923,23 +924,15 @@ void GLHelper::CopySubBufferDamage(GLuint texture,
     ScopedFramebuffer dst_framebuffer(gl_);
     ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
                                                                dst_framebuffer);
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER,
-                              GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D,
-                              previous_texture,
-                              0);
+    gl_->BindTexture(target, texture);
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
+                              previous_texture, 0);
     for (SkRegion::Iterator it(region); !it.done(); it.next()) {
       const SkIRect& rect = it.rect();
-      gl_->CopyTexSubImage2D(GL_TEXTURE_2D,
-                             0,
-                             rect.x(),
-                             rect.y(),
-                             rect.x(),
-                             rect.y(),
-                             rect.width(),
-                             rect.height());
+      gl_->CopyTexSubImage2D(target, 0, rect.x(), rect.y(), rect.x(), rect.y(),
+                             rect.width(), rect.height());
     }
+    gl_->BindTexture(target, 0);
     gl_->Flush();
   }
 }

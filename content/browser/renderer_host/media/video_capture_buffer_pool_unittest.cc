@@ -99,8 +99,10 @@ class VideoCaptureBufferPoolTest
    public:
     MockBufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                     BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
+                    unsigned int target,
                     unsigned int internalformat)
         : BufferQueue(context_provider,
+                      target,
                       internalformat,
                       nullptr,
                       gpu_memory_buffer_manager,
@@ -138,8 +140,9 @@ class VideoCaptureBufferPoolTest
         cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
     context_provider->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubBrowserGpuMemoryBufferManager);
-    output_surface_.reset(new MockBufferQueue(
-        context_provider, gpu_memory_buffer_manager_.get(), GL_RGBA));
+    output_surface_.reset(new MockBufferQueue(context_provider,
+                                              gpu_memory_buffer_manager_.get(),
+                                              GL_TEXTURE_2D, GL_RGBA));
     output_surface_->Initialize();
   }
 #endif

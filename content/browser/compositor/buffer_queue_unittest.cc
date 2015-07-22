@@ -56,8 +56,10 @@ class MockBufferQueue : public BufferQueue {
  public:
   MockBufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
+                  unsigned int target,
                   unsigned int internalformat)
       : BufferQueue(context_provider,
+                    target,
                     internalformat,
                     nullptr,
                     gpu_memory_buffer_manager,
@@ -79,8 +81,9 @@ class BufferQueueTest : public ::testing::Test {
         cc::TestContextProvider::Create(context.Pass());
     context_provider->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubBrowserGpuMemoryBufferManager);
-    mock_output_surface_ = new MockBufferQueue(
-        context_provider, gpu_memory_buffer_manager_.get(), GL_RGBA);
+    mock_output_surface_ =
+        new MockBufferQueue(context_provider, gpu_memory_buffer_manager_.get(),
+                            GL_TEXTURE_2D, GL_RGBA);
     output_surface_.reset(mock_output_surface_);
     output_surface_->Initialize();
   }
@@ -202,6 +205,7 @@ class BufferQueueMockedContextTest : public BufferQueueTest {
 };
 
 scoped_ptr<BufferQueue> CreateOutputSurfaceWithMock(
+    unsigned int target,
     MockedContext** context,
     BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager) {
   *context = new MockedContext();
@@ -209,8 +213,9 @@ scoped_ptr<BufferQueue> CreateOutputSurfaceWithMock(
       cc::TestContextProvider::Create(
           scoped_ptr<cc::TestWebGraphicsContext3D>(*context));
   context_provider->BindToCurrentThread();
-  scoped_ptr<BufferQueue> buffer_queue(new BufferQueue(
-      context_provider, GL_RGBA, nullptr, gpu_memory_buffer_manager, 1));
+  scoped_ptr<BufferQueue> buffer_queue(
+      new BufferQueue(context_provider, target, GL_RGBA, nullptr,
+                      gpu_memory_buffer_manager, 1));
   buffer_queue->Initialize();
   return buffer_queue.Pass();
 }
@@ -219,8 +224,8 @@ TEST(BufferQueueStandaloneTest, FboInitialization) {
   MockedContext* context;
   scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager(
       new StubBrowserGpuMemoryBufferManager);
-  scoped_ptr<BufferQueue> output_surface =
-      CreateOutputSurfaceWithMock(&context, gpu_memory_buffer_manager.get());
+  scoped_ptr<BufferQueue> output_surface = CreateOutputSurfaceWithMock(
+      GL_TEXTURE_2D, &context, gpu_memory_buffer_manager.get());
 
   EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
   ON_CALL(*context, framebufferTexture2D(_, _, _, _, _))
@@ -230,29 +235,33 @@ TEST(BufferQueueStandaloneTest, FboInitialization) {
 }
 
 TEST(BufferQueueStandaloneTest, FboBinding) {
-  MockedContext* context;
-  scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager(
-      new StubBrowserGpuMemoryBufferManager);
-  scoped_ptr<BufferQueue> output_surface =
-      CreateOutputSurfaceWithMock(&context, gpu_memory_buffer_manager.get());
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, Ne(0U)));
-  EXPECT_CALL(*context, destroyImageCHROMIUM(1));
-  Expectation image =
-      EXPECT_CALL(*context, createImageCHROMIUM(_, 0, 0, GL_RGBA))
-          .WillOnce(Return(1));
-  Expectation fb =
-      EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
-  Expectation tex = EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, Ne(0U)));
-  Expectation bind_tex =
-      EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1))
-          .After(tex, image);
-  EXPECT_CALL(
-      *context,
-      framebufferTexture2D(
-          GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Ne(0U), _))
-      .After(fb, bind_tex);
+  GLenum targets[] = { GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB };
+  for (size_t i = 0; i < 2; ++i) {
+    GLenum target = targets[i];
+    MockedContext* context;
+    scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager(
+        new StubBrowserGpuMemoryBufferManager);
+    scoped_ptr<BufferQueue> output_surface = CreateOutputSurfaceWithMock(
+        target, &context, gpu_memory_buffer_manager.get());
+    EXPECT_CALL(*context, bindTexture(target, Ne(0U)));
+    EXPECT_CALL(*context, destroyImageCHROMIUM(1));
+    Expectation image =
+        EXPECT_CALL(*context, createImageCHROMIUM(_, 0, 0, GL_RGBA))
+            .WillOnce(Return(1));
+    Expectation fb =
+        EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
+    Expectation tex = EXPECT_CALL(*context, bindTexture(target, Ne(0U)));
+    Expectation bind_tex =
+        EXPECT_CALL(*context, bindTexImage2DCHROMIUM(target, 1))
+            .After(tex, image);
+    EXPECT_CALL(
+        *context,
+        framebufferTexture2D(
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, Ne(0U), _))
+        .After(fb, bind_tex);
 
-  output_surface->BindFramebuffer();
+    output_surface->BindFramebuffer();
+  }
 }
 
 TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
@@ -267,7 +276,7 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
   gl_helper.reset(new GLHelper(context_provider->ContextGL(),
                                context_provider->ContextSupport()));
 
-  output_surface.reset(new BufferQueue(context_provider, GL_RGBA,
+  output_surface.reset(new BufferQueue(context_provider, GL_TEXTURE_2D, GL_RGBA,
                                        gl_helper.get(),
                                        gpu_memory_buffer_manager.get(), 1));
   output_surface->Initialize();

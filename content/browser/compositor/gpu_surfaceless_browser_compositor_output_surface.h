@@ -22,7 +22,8 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       scoped_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator,
-      unsigned internalformat,
+      unsigned int target,
+      unsigned int internalformat,
       BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuSurfacelessBrowserCompositorOutputSurface() override;
 
@@ -35,6 +36,9 @@ class GpuSurfacelessBrowserCompositorOutputSurface
 
   void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
                               gfx::SwapResult result) override;
+#if defined(OS_MACOSX)
+  void OnSurfaceDisplayed() override;
+#endif
 
   unsigned int internalformat_;
   scoped_ptr<GLHelper> gl_helper_;

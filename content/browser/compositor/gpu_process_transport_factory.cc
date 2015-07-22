@@ -280,8 +280,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
               context_provider, data->surface_id, compositor->vsync_manager(),
-              CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
-              BrowserGpuMemoryBufferManager::current()));
+              CreateOverlayCandidateValidator(compositor->widget()),
+              GL_TEXTURE_2D, GL_RGB, BrowserGpuMemoryBufferManager::current()));
     } else {
       surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
           context_provider, compositor->vsync_manager(),

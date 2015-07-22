@@ -233,7 +233,8 @@ class CONTENT_EXPORT GLHelper {
 
   // Copies all pixels from |previous_texture| into |texture| that are
   // inside the region covered by |old_damage| but not part of |new_damage|.
-  void CopySubBufferDamage(GLuint texture,
+  void CopySubBufferDamage(GLenum target,
+                           GLuint texture,
                            GLuint previous_texture,
                            const SkRegion& new_damage,
                            const SkRegion& old_damage);

@@ -30,6 +30,7 @@ class GLHelper;
 class CONTENT_EXPORT BufferQueue {
  public:
   BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
+              unsigned int texture_target,
               unsigned int internalformat,
               GLHelper* gl_helper,
               BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -84,7 +85,8 @@ class CONTENT_EXPORT BufferQueue {
   scoped_refptr<cc::ContextProvider> context_provider_;
   unsigned int fbo_;
   size_t allocated_count_;
-  unsigned int internalformat_;
+  unsigned int texture_target_;
+  unsigned int internal_format_;
   AllocatedSurface current_surface_;  // This surface is currently bound.
   AllocatedSurface displayed_surface_;  // The surface currently on the screen.
   std::vector<AllocatedSurface> available_surfaces_;  // These are free for use.
