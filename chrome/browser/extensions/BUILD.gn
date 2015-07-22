@@ -208,8 +208,4 @@ source_set("extensions") {
   if (!use_ozone) {
     sources -= [ "global_shortcut_listener_ozone.cc" ]
   }
-
-  if (cld_version == 0 || cld_version == 2) {
-    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
-  }
 }

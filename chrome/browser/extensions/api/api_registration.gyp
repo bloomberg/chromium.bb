@@ -35,11 +35,6 @@
             '<(DEPTH)/components/components.gyp:drive_proto',
           ],
         }],
-        ['cld_version==0 or cld_version==2', {
-          'dependencies': [
-            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', 
-          ],
-        }],
       ],
     },
   ],
