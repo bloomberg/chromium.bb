@@ -23,43 +23,6 @@
 #include <v8.h>
 
 namespace blink {
-namespace {
-
-// Returns the error message to let the developer know about the reason of the unusual failures.
-const String getMessageForResponseError(WebServiceWorkerResponseError error, const KURL& requestURL)
-{
-    String errorMessage = "The FetchEvent for \"" + requestURL.string() + "\" resulted in a network error response: ";
-    switch (error) {
-    case WebServiceWorkerResponseErrorPromiseRejected:
-        errorMessage = errorMessage + "the promise was rejected.";
-        break;
-    case WebServiceWorkerResponseErrorDefaultPrevented:
-        errorMessage = errorMessage + "preventDefault() was called without calling respondWith().";
-        break;
-    case WebServiceWorkerResponseErrorNoV8Instance:
-        errorMessage = errorMessage + "an object that was not a Response was passed to respondWith().";
-        break;
-    case WebServiceWorkerResponseErrorResponseTypeError:
-        errorMessage = errorMessage + "the promise was resolved with an error response object.";
-        break;
-    case WebServiceWorkerResponseErrorResponseTypeOpaque:
-        errorMessage = errorMessage + "an \"opaque\" response was used for a request whose type is not no-cors";
-        break;
-    case WebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault:
-        errorMessage = errorMessage + "the response for a client request must have type \"basic\" or \"default\".";
-        break;
-    case WebServiceWorkerResponseErrorBodyUsed:
-        errorMessage = errorMessage + "a Response whose \"bodyUsed\" is \"true\" cannot be used to respond to a request.";
-        break;
-    case WebServiceWorkerResponseErrorUnknown:
-    default:
-        errorMessage = errorMessage + "an unexpected error occurred.";
-        break;
-    }
-    return errorMessage;
-}
-
-} // namespace
 
 class RespondWithObserver::ThenFunction final : public ScriptFunction {
 public:
@@ -106,9 +69,9 @@ private:
     ResolveType m_resolveType;
 };
 
-RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
+RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
 {
-    return new RespondWithObserver(context, eventID, requestURL, requestMode, frameType);
+    return new RespondWithObserver(context, eventID, requestMode, frameType);
 }
 
 void RespondWithObserver::contextDestroyed()
@@ -148,8 +111,6 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValu
 void RespondWithObserver::responseWasRejected(WebServiceWorkerResponseError error)
 {
     ASSERT(executionContext());
-    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, getMessageForResponseError(error, m_requestURL)));
-
     // The default value of WebServiceWorkerResponse's status is 0, which maps
     // to a network error.
     WebServiceWorkerResponse webResponse;
@@ -213,10 +174,9 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     m_state = Done;
 }
 
-RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
+RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
     : ContextLifecycleObserver(context)
     , m_eventID(eventID)
-    , m_requestURL(requestURL)
     , m_requestMode(requestMode)
     , m_frameType(frameType)
     , m_state(Initial)
