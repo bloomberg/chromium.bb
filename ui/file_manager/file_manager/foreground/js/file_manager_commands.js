@@ -657,75 +657,89 @@ CommandHandler.COMMANDS_['drive-hosted-settings'] = /** @type {Command} */ ({
  * Deletes selected files.
  * @type {Command}
  */
-CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
+CommandHandler.COMMANDS_['delete'] = (function() {
   /**
-   * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager FileManager to use.
+   * @constructor
+   * @implements {Command}
    */
-  execute: function(event, fileManager) {
-    var entries = CommandUtil.getCommandEntries(event.target);
+  var DeleteCommand = function() {};
 
-    // Execute might be called without a call of canExecute method, e.g. called
-    // directly from code. Double check here not to delete undeletable entries.
-    if (this.containsFakeOrRootEntry_(entries, fileManager) ||
-        this.containsReadOnlyEntry_(entries, fileManager))
-      return;
+  DeleteCommand.prototype = {
+    /**
+     * @param {!Event} event Command event.
+     * @param {!FileManager} fileManager FileManager to use.
+     */
+    execute: function(event, fileManager) {
+      var entries = CommandUtil.getCommandEntries(event.target);
 
-    var message = entries.length === 1 ?
-        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
-        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
+      // Execute might be called without a call of canExecute method,
+      // e.g. called directly from code. Double check here not to delete
+      // undeletable entries.
+      if (this.containsFakeOrRootEntry_(entries, fileManager) ||
+          this.containsReadOnlyEntry_(entries, fileManager))
+        return;
 
-    fileManager.ui.deleteConfirmDialog.show(message, function() {
-      fileManager.fileOperationManager.deleteEntries(entries);
-    }, null, null);
-  },
-  /**
-   * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager FileManager to use.
-   */
-  canExecute: function(event, fileManager) {
-    var entries = CommandUtil.getCommandEntries(event.target);
+      var message = entries.length === 1 ?
+          strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
+          strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
 
-    // If entries contain fake or root entry, hide delete option.
-    if (this.containsFakeOrRootEntry_(entries, fileManager)) {
-      event.canExecute = false;
-      event.command.setHidden(true);
-      return;
+      fileManager.ui.deleteConfirmDialog.show(message, function() {
+        fileManager.fileOperationManager.deleteEntries(entries);
+      }, null, null);
+    },
+
+    /**
+     * @param {!Event} event Command event.
+     * @param {!FileManager} fileManager FileManager to use.
+     */
+    canExecute: function(event, fileManager) {
+      var entries = CommandUtil.getCommandEntries(event.target);
+
+      // If entries contain fake or root entry, hide delete option.
+      if (this.containsFakeOrRootEntry_(entries, fileManager)) {
+        event.canExecute = false;
+        event.command.setHidden(true);
+        return;
+      }
+
+      event.canExecute = entries.length > 0 &&
+          !this.containsReadOnlyEntry_(entries, fileManager);
+      event.command.setHidden(false);
+    },
+
+    /**
+     * @param {!Array<!Entry>} entries
+     * @param {!FileManager} fileManager
+     * @return {boolean} True if entries contain fake or root entry.
+     */
+    containsFakeOrRootEntry_: function(entries, fileManager) {
+      return entries.some(function(entry) {
+        if (util.isFakeEntry(entry))
+          return true;
+
+        var volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
+        if (!volumeInfo)
+          return true;
+
+        return volumeInfo.displayRoot === entry;
+      });
+    },
+
+    /**
+     * @param {!Array<!Entry>} entries
+     * @param {!FileManager} fileManager
+     * @return {boolean} True if entries contain read only entry.
+     */
+    containsReadOnlyEntry_: function(entries, fileManager) {
+      return entries.some(function(entry) {
+        var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
+        return locationInfo && locationInfo.isReadOnly;
+      });
     }
+  };
 
-    event.canExecute = entries.length > 0 &&
-        !this.containsReadOnlyEntry_(entries, fileManager);
-    event.command.setHidden(false);
-  },
-  /**
-   * @param {!Array<!Entry>} entries
-   * @param {!FileManager} fileManager
-   * @return {boolean} True if entries contain fake or root entry.
-   */
-  containsFakeOrRootEntry_: function(entries, fileManager) {
-    return entries.some(function(entry) {
-      if (util.isFakeEntry(entry))
-        return true;
-
-      var volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
-      if (!volumeInfo)
-        return true;
-
-      return volumeInfo.displayRoot === entry;
-    });
-  },
-  /**
-   * @param {!Array<!Entry>} entries
-   * @param {!FileManager} fileManager
-   * @return {boolean} True if entries contain read only entry.
-   */
-  containsReadOnlyEntry_: function(entries, fileManager) {
-    return entries.some(function(entry) {
-      var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
-      return locationInfo && locationInfo.isReadOnly;
-    });
-  }
-});
+  return new DeleteCommand();
+})();
 
 /**
  * Pastes files from clipboard.
@@ -1394,8 +1408,6 @@ CommandHandler.COMMANDS_['configure'] = (function() {
   };
 
   ConfigureCommand.prototype = {
-    __proto__: Command.prototype,
-
     /**
      * @param {EventTarget} element
      * @param {!FileManager} fileManager
