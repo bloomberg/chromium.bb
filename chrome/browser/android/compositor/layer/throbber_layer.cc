@@ -5,8 +5,9 @@
 #include "chrome/browser/android/compositor/layer/throbber_layer.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/solid_color_layer.h"
-#include "cc/layers/ui_resource_layer.h"
+#include "cc/layers/picture_layer.h"
+#include "cc/playback/display_item_list.h"
+#include "cc/playback/drawing_display_item.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -27,6 +28,7 @@ void ThrobberLayer::Show(const base::Time& now) {
     return;
   start_time_ = now;
   layer_->SetHideLayerAndSubtree(false);
+  UpdateThrobber(now);
 }
 
 void ThrobberLayer::Hide() {
@@ -38,35 +40,63 @@ void ThrobberLayer::SetColor(SkColor color) {
 }
 
 void ThrobberLayer::UpdateThrobber(const base::Time& now) {
-  if (layer_->hide_layer_and_subtree())
-    return;
-
-  SkBitmap skbitmap;
-  skbitmap.allocN32Pixels(layer_->bounds().width(), layer_->bounds().height());
-  SkCanvas skcanvas(skbitmap);
-  gfx::Canvas canvas(&skcanvas, 1.0f);
-  gfx::Rect rect(0, 0, layer_->bounds().width(), layer_->bounds().height());
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  SkRect skrect = RectToSkRect(rect);
-  skcanvas.drawRect(skrect, paint);
-  skcanvas.clipRect(skrect);
-  gfx::PaintThrobberSpinning(&canvas, rect, color_, now - start_time_);
-  skbitmap.setImmutable();
-  layer_->SetBitmap(skbitmap);
+  update_time_ = now;
+  layer_->SetNeedsDisplay();
 }
 
 scoped_refptr<cc::Layer> ThrobberLayer::layer() {
   return layer_;
 }
 
+void ThrobberLayer::PaintContents(
+    SkCanvas* canvas,
+    const gfx::Rect& clip,
+    ContentLayerClient::PaintingControlSetting painting_control) {
+  // ContentLayerClient::PaintContents() should not be called as we enabled
+  // slimming paint on Android. This is kept just in case we revert that change.
+  gfx::Rect rect(layer_->bounds());
+  canvas->clipRect(RectToSkRect(rect));
+  canvas->clear(SK_ColorTRANSPARENT);
+  gfx::Canvas gfx_canvas(canvas, 1.0f);
+  gfx::PaintThrobberSpinning(&gfx_canvas, rect, color_,
+                             update_time_ - start_time_);
+}
+
+scoped_refptr<cc::DisplayItemList> ThrobberLayer::PaintContentsToDisplayList(
+    const gfx::Rect& clip,
+    ContentLayerClient::PaintingControlSetting painting_control) {
+  const bool use_cached_picture = true;
+  scoped_refptr<cc::DisplayItemList> display_list =
+      cc::DisplayItemList::Create(clip, use_cached_picture);
+
+  SkPictureRecorder recorder;
+  SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
+  PaintContents(canvas, clip, painting_control);
+
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
+  auto* item = display_list->CreateAndAppendItem<cc::DrawingDisplayItem>();
+  item->SetNew(picture.Pass());
+
+  display_list->Finalize();
+  return display_list;
+}
+
+bool ThrobberLayer::FillsBoundsCompletely() const {
+  return false;
+}
+
+size_t ThrobberLayer::GetApproximateUnsharedMemoryUsage() const {
+  return 0;
+}
+
 ThrobberLayer::ThrobberLayer(SkColor color)
     : color_(color),
       start_time_(base::Time::Now()),
-      layer_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())) {
+      layer_(cc::PictureLayer::Create(content::Compositor::LayerSettings(),
+                                      this)) {
   layer_->SetIsDrawable(true);
+  layer_->SetHideLayerAndSubtree(true);
 }
 
 ThrobberLayer::~ThrobberLayer() {
