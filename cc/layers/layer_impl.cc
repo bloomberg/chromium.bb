@@ -1521,7 +1521,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
     scrollbar_needs_animation |=
         scrollbar_layer->SetVisibleToTotalLengthRatio(visible_ratio);
     if (y_offset_did_change && layer_tree_impl()->IsActiveTree() &&
-        this == layer_tree_impl()->InnerViewportScrollLayer()) {
+        this == layer_tree_impl()->OuterViewportScrollLayer()) {
       TRACE_COUNTER_ID1("cc", "scroll_offset_y", this->id(),
                         current_offset.y());
     }
