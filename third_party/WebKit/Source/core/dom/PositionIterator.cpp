@@ -65,6 +65,22 @@ PositionAlgorithm<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedCompu
 }
 
 template <typename Strategy>
+PositionAlgorithm<Strategy> PositionIteratorAlgorithm<Strategy>::computePosition() const
+{
+    if (m_nodeAfterPositionInAnchor) {
+        ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);
+        return PositionAlgorithm<Strategy>::inParentBeforeNode(*m_nodeAfterPositionInAnchor);
+    }
+    if (Strategy::hasChildren(*m_anchorNode))
+        return PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(m_anchorNode);
+    if (m_anchorNode->isTextNode())
+        return PositionAlgorithm<Strategy>(m_anchorNode, m_offsetInAnchor);
+    if (m_offsetInAnchor)
+        return PositionAlgorithm<Strategy>(m_anchorNode, PositionAnchorType::AfterAnchor);
+    return PositionAlgorithm<Strategy>(m_anchorNode, PositionAnchorType::BeforeAnchor);
+}
+
+template <typename Strategy>
 void PositionIteratorAlgorithm<Strategy>::increment()
 {
     if (!m_anchorNode)
