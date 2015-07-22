@@ -86,6 +86,14 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetGlucoseHeartRateAdapter();
 
+  // |MissingServiceGenericAccessAdapter|
+  // Inherits from EmptyAdapter
+  // Internal Structure:
+  //   - GenericAccessDevice
+  //       - Generic Access UUID (0x1800)
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetMissingServiceGenericAccessAdapter();
+
   // Discovery Sessions
 
   // |DiscoverySession|
@@ -166,6 +174,33 @@ class LayoutTestBluetoothAdapterProvider {
   // None.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetHeartRateDevice(device::MockBluetoothAdapter* adapter);
+
+  // |ConnectableDevice|
+  // Inherits from BaseDevice(adapter, device_name)
+  // Adv UUIDs Added:
+  // None.
+  // Services Added:
+  // None.
+  // Mock Functions:
+  //   - CreateGattConnection:
+  //       - Run success callback with BaseGATTConnection
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetConnectableDeviceNew(
+      device::MockBluetoothAdapter* adapter,
+      const std::string& device_name = "Connectable Device",
+      device::BluetoothDevice::UUIDList = device::BluetoothDevice::UUIDList());
+
+  // |GenericAccessDevice|
+  // Inherits from ConnectableDevice(adapter, device_name)
+  // Adv UUIDs Added:
+  //   - Generic Access UUID (0x1800)
+  // Services Added:
+  // None. Each user of the GenericAccessDevice is in charge of adding the
+  // relevant services, characteristics, and descriptors.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+  GetGenericAccessDevice(
+      device::MockBluetoothAdapter* adapter,
+      const std::string& device_name = "Generic Access Device");
 
   // The functions after this haven't been updated to the new design yet.
 

@@ -109,6 +109,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetFailStartDiscoveryAdapter();
   else if (fake_adapter_name == "GlucoseHeartRateAdapter")
     return GetGlucoseHeartRateAdapter();
+  else if (fake_adapter_name == "MissingServiceGenericAccessAdapter")
+    return GetMissingServiceGenericAccessAdapter();
   else if (fake_adapter_name == "")
     return NULL;
 
@@ -210,6 +212,16 @@ LayoutTestBluetoothAdapterProvider::GetGlucoseHeartRateAdapter() {
 }
 
 // static
+scoped_refptr<NiceMock<MockBluetoothAdapter>>
+LayoutTestBluetoothAdapterProvider::GetMissingServiceGenericAccessAdapter() {
+  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetEmptyAdapter());
+
+  adapter->AddMockDevice(GetGenericAccessDevice(adapter.get()));
+
+  return adapter.Pass();
+}
+
+// static
 scoped_ptr<NiceMock<MockBluetoothDevice>>
 LayoutTestBluetoothAdapterProvider::GetBaseDevice(
     MockBluetoothAdapter* adapter,
@@ -280,6 +292,38 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateDevice(
   return GetBaseDevice(adapter, "Heart Rate Device", uuids, "00:00:00:00:03");
 }
 
+// static
+scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+LayoutTestBluetoothAdapterProvider::GetConnectableDeviceNew(
+    device::MockBluetoothAdapter* adapter,
+    const std::string& device_name,
+    BluetoothDevice::UUIDList uuids) {
+  scoped_ptr<NiceMock<MockBluetoothDevice>> device(
+      GetBaseDevice(adapter, device_name, uuids));
+
+  BluetoothDevice* device_ptr = device.get();
+
+  ON_CALL(*device, CreateGattConnection(_, _))
+      .WillByDefault(
+          RunCallbackWithResult<0 /* success_callback */>([device_ptr]() {
+            return make_scoped_ptr(new NiceMock<MockBluetoothGattConnection>(
+                device_ptr->GetAddress()));
+          }));
+
+  return device.Pass();
+}
+
+// static
+scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
+LayoutTestBluetoothAdapterProvider::GetGenericAccessDevice(
+    MockBluetoothAdapter* adapter,
+    const std::string& device_name) {
+  BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(kGenericAccessServiceUUID));
+
+  return GetConnectableDeviceNew(adapter, device_name, uuids);
+}
+
 // The functions after this haven't been updated to the new design yet.
 
 // static
@@ -320,7 +364,7 @@ LayoutTestBluetoothAdapterProvider::GetEmptyDevice(
   scoped_ptr<NiceMock<MockBluetoothDevice>> empty_device(
       new NiceMock<MockBluetoothDevice>(
           adapter, 0x1F00 /* Bluetooth Class */, device_name,
-          device_name + " instanceID", true /* Paired */,
+          "00:00:00:00:00" /* Device Address */, true /* Paired */,
           true /* Connected */));
 
   ON_CALL(*empty_device, GetVendorIDSource())
