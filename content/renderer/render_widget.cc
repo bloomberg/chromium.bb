@@ -1919,6 +1919,7 @@ void RenderWidget::FinishHandlingImeEvent() {
 }
 
 void RenderWidget::UpdateTextInputType() {
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateTextInputType");
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
@@ -1950,6 +1951,7 @@ void RenderWidget::UpdateTextInputType() {
 #if defined(OS_ANDROID) || defined(USE_AURA)
 void RenderWidget::UpdateTextInputState(ShowIme show_ime,
                                         ChangeSource change_source) {
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateTextInputState");
   if (handling_ime_event_)
     return;
   ui::TextInputType new_type = GetTextInputType();
@@ -2018,6 +2020,7 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
 }
 
 void RenderWidget::UpdateSelectionBounds() {
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateSelectionBounds");
   if (!webwidget_)
     return;
   if (handling_ime_event_)
@@ -2085,6 +2088,7 @@ void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
   // TODO(yukawa): Start sending character bounds when the browser side
   // implementation becomes ready (crbug.com/424866).
 #else
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateCompositionInfo");
   gfx::Range range = gfx::Range();
   if (should_update_range) {
     GetCompositionRange(&range);
