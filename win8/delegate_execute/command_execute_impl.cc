@@ -29,6 +29,7 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/metro_mode.h"
 #include "win8/delegate_execute/chrome_util.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
 #include "win8/viewer/metro_viewer_constants.h"
@@ -485,11 +486,7 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     return launch_mode;
   }
 
-  // As of now ActivateApplication fails on Windows 10 (Build 9926).
-  // Until there is some clarity on special status of browser in metro mode on
-  // Windows 10, we just  disable Chrome metro mode so that browser remains
-  // usable.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (!gfx::win::ShouldUseMetroMode()) {
     launch_mode = ECHUIM_DESKTOP;
     launch_mode_determined = true;
     return launch_mode;

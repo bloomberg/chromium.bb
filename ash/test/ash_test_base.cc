@@ -44,6 +44,7 @@
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/window_tree_host_win.h"
+#include "ui/gfx/win/metro_mode.h"
 #include "ui/platform_window/win/win_window.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
@@ -146,7 +147,7 @@ void AshTestBase::SetUp() {
 
 #if defined(OS_WIN)
   if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {
-    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    if (gfx::win::ShouldUseMetroMode()) {
       ipc_thread_.reset(new base::Thread("test_metro_viewer_ipc_thread"));
       base::Thread::Options options;
       options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -171,7 +172,7 @@ void AshTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  if (gfx::win::ShouldUseMetroMode() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop)) {
     // Check that our viewer connection is still established.
