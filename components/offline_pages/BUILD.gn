@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # GYP: //components/offline_pages.gypi:offline_pages
 static_library("offline_pages") {
   sources = [
@@ -39,4 +43,17 @@ source_set("unit_tests") {
     "//components/offline_pages/proto:offline_pages_proto",
     "//testing/gtest",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("offline_pages_enums_java") {
+    sources = [
+      "offline_page_model.h",
+    ]
+    outputs = [
+      "org/chromium/components/offline_pages/DeletePageResult.java",
+      "org/chromium/components/offline_pages/LoadResult.java",
+      "org/chromium/components/offline_pages/SavePageResult.java",
+    ]
+  }
 }
