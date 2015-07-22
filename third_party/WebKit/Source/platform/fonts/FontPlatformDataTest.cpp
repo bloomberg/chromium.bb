@@ -39,6 +39,8 @@
 
 namespace blink {
 
+// Disables on Android as the specific fonts cannot be loaded.
+#if !OS(ANDROID)
 static inline String fontPath(String relativePath)
 {
     return Platform::current()->unitTestSupport()->webKitRootDir()
@@ -46,8 +48,6 @@ static inline String fontPath(String relativePath)
         + relativePath;
 }
 
-// Disables on Android as the specific fonts cannot be loaded.
-#if !OS(ANDROID)
 TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning)
 {
     Font font = createTestFont("Ahem", fontPath("resources/Ahem.woff"));
