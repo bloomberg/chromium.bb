@@ -1094,7 +1094,6 @@
       'service/cloud_print/printer_job_handler_unittest.cc',
       'service/cloud_print/printer_job_queue_handler_unittest.cc',
       'service/service_process_prefs_unittest.cc',
-      'service/service_process_unittest.cc',
     ],
     'chrome_unit_tests_captive_portal_sources': [
       'browser/captive_portal/captive_portal_service_unittest.cc',
