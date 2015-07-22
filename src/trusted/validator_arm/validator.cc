@@ -220,7 +220,7 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
 }
 
 bool SfiValidator::CopyCode(const CodeSegment& source_code,
-                            CodeSegment& dest_code,
+                            CodeSegment* dest_code,
                             NaClCopyInstructionFunc copy_func,
                             ProblemSink* out) {
   if (ConstructionFailed(out))
@@ -239,7 +239,7 @@ bool SfiValidator::CopyCode(const CodeSegment& source_code,
     intptr_t offset = va - source_code.begin_addr();
     // TODO(olonho): this const cast is a bit ugly, but we
     // need to write to dest segment.
-    copy_func(const_cast<uint8_t*>(dest_code.base()) + offset,
+    copy_func(const_cast<uint8_t*>(dest_code->base()) + offset,
               const_cast<uint8_t*>(source_code.base()) + offset,
               nacl_arm_dec::kArm32InstSize / CHAR_BIT);
   }

@@ -133,7 +133,7 @@ class SfiValidator {
   // where code being replaced is executed.
   // Returns true iff no problems were found.
   bool CopyCode(const CodeSegment& source_code,
-                CodeSegment& dest_code,
+                CodeSegment* dest_code,
                 NaClCopyInstructionFunc copy_func,
                 ProblemSink* out);
 
@@ -219,7 +219,7 @@ class SfiValidator {
   // Returns true if address is the first address of a bundle.
   bool is_bundle_head(uint32_t address) const {
     return (address & (bytes_per_bundle_ - 1)) == 0;
-  };
+  }
 
  private:
   // The SfiValidator constructor could have been given invalid values.

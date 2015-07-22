@@ -78,7 +78,7 @@ static NaClValidationStatus ValidatorCopyArm(
       RegisterList(Register::Sp()),
       features);
 
-  bool success = validator.CopyCode(source_code, dest_code, copy_func,
+  bool success = validator.CopyCode(source_code, &dest_code, copy_func,
                                     NULL);
   return success ? NaClValidationSucceeded : NaClValidationFailed;
 }
