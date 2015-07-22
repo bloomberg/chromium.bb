@@ -21,9 +21,8 @@ chrome.test.getConfig(function(config) {
 
       try {
         req.send(null);
-        chrome.test.fail('expected an error to be thrown');
       } catch (e) {
-      };
+      }
     }
   ]);
 });
