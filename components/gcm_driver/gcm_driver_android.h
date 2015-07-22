@@ -35,6 +35,7 @@ class GCMDriverAndroid : public GCMDriver {
                          jstring app_id,
                          jstring sender_id,
                          jstring collapse_key,
+                         jbyteArray raw_data,
                          jobjectArray data_keys_and_values);
   void OnMessagesDeleted(JNIEnv* env,
                          jobject obj,

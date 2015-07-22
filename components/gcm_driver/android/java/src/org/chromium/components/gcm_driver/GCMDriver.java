@@ -125,23 +125,26 @@ public class GCMDriver {
                 final String bundleSubtype = "subtype";
                 final String bundleSenderId = "from";
                 final String bundleCollapseKey = "collapse_key";
+                final String bundleRawData = "rawData";
                 final String bundleGcmplex = "com.google.ipc.invalidation.gcmmplex.";
 
                 String senderId = extras.getString(bundleSenderId);
-                String collapseKey = extras.getString(bundleCollapseKey);
+                String collapseKey = extras.getString(bundleCollapseKey);  // May be null.
+                byte[] rawData = extras.getByteArray(bundleRawData);  // May be null.
 
                 List<String> dataKeysAndValues = new ArrayList<String>();
                 for (String key : extras.keySet()) {
                     // TODO(johnme): Check there aren't other keys that we need to exclude.
                     if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
-                            || key.equals(bundleCollapseKey) || key.startsWith(bundleGcmplex))
+                            || key.equals(bundleCollapseKey) || key.equals(bundleRawData)
+                            || key.startsWith(bundleGcmplex))
                         continue;
                     dataKeysAndValues.add(key);
                     dataKeysAndValues.add(extras.getString(key));
                 }
 
                 sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
-                        appId, senderId, collapseKey,
+                        appId, senderId, collapseKey, rawData,
                         dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
             }
         });
@@ -162,7 +165,7 @@ public class GCMDriver {
     private native void nativeOnUnregisterFinished(long nativeGCMDriverAndroid, String appId,
             boolean success);
     private native void nativeOnMessageReceived(long nativeGCMDriverAndroid, String appId,
-            String senderId, String collapseKey, String[] dataKeysAndValues);
+            String senderId, String collapseKey, byte[] rawData, String[] dataKeysAndValues);
     private native void nativeOnMessagesDeleted(long nativeGCMDriverAndroid, String appId);
 
     private static void launchNativeThen(Context context, Runnable task) {

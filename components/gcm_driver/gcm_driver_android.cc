@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_driver_android.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -15,7 +17,7 @@ using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::ToJavaArrayOfStrings;
+using base::android::JavaByteArrayToByteVector;
 
 namespace gcm {
 
@@ -61,6 +63,7 @@ void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
                                          jstring j_app_id,
                                          jstring j_sender_id,
                                          jstring j_collapse_key,
+                                         jbyteArray j_raw_data,
                                          jobjectArray j_data_keys_and_values) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
 
@@ -74,6 +77,12 @@ void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
                                       &data_keys_and_values);
   for (size_t i = 0; i + 1 < data_keys_and_values.size(); i += 2) {
     message.data[data_keys_and_values[i]] = data_keys_and_values[i+1];
+  }
+  // Convert j_raw_data from byte[] to binary std::string.
+  if (j_raw_data) {
+    std::vector<uint8_t> raw_data;
+    JavaByteArrayToByteVector(env, j_raw_data, &raw_data);
+    message.raw_data.assign(raw_data.begin(), raw_data.end());
   }
 
   GetAppHandler(app_id)->OnMessage(app_id, message);
