@@ -122,7 +122,7 @@ static bool isHTMLInterchangeConvertedSpaceSpan(const Node* node)
 static Position positionAvoidingPrecedingNodes(Position pos)
 {
     // If we're already on a break, it's probably a placeholder and we shouldn't change our position.
-    if (editingIgnoresContent(pos.deprecatedNode()))
+    if (editingIgnoresContent(pos.anchorNode()))
         return pos;
 
     // We also stop when changing block flow elements because even though the visual position is the
@@ -415,7 +415,7 @@ bool ReplaceSelectionCommand::shouldMergeStart(bool selectionStartWasStartOfPara
     return !selectionStartWasStartOfParagraph
         && !fragmentHasInterchangeNewlineAtStart
         && isStartOfParagraph(startOfInsertedContent)
-        && !isHTMLBRElement(*startOfInsertedContent.deepEquivalent().deprecatedNode())
+        && !isHTMLBRElement(*startOfInsertedContent.deepEquivalent().anchorNode())
         && shouldMerge(startOfInsertedContent, prev);
 }
 
@@ -428,7 +428,7 @@ bool ReplaceSelectionCommand::shouldMergeEnd(bool selectionEndWasEndOfParagraph)
 
     return !selectionEndWasEndOfParagraph
         && isEndOfParagraph(endOfInsertedContent)
-        && !isHTMLBRElement(*endOfInsertedContent.deepEquivalent().deprecatedNode())
+        && !isHTMLBRElement(*endOfInsertedContent.deepEquivalent().anchorNode())
         && shouldMerge(endOfInsertedContent, next);
 }
 
@@ -467,8 +467,8 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const V
     if (source.isNull() || destination.isNull())
         return false;
 
-    Node* sourceNode = source.deepEquivalent().deprecatedNode();
-    Node* destinationNode = destination.deepEquivalent().deprecatedNode();
+    Node* sourceNode = source.deepEquivalent().anchorNode();
+    Node* destinationNode = destination.deepEquivalent().anchorNode();
     Element* sourceBlock = enclosingBlock(sourceNode);
     Element* destinationBlock = enclosingBlock(destinationNode);
     return !enclosingNodeOfType(source.deepEquivalent(), &isMailPasteAsQuotationHTMLBlockQuoteElement)
@@ -849,7 +849,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     // To avoid this, we add a placeholder node before the start of the paragraph.
     if (endOfParagraph(startOfParagraphToMove) == destination) {
         RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
-        insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().deprecatedNode());
+        insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().anchorNode());
         destination = VisiblePosition(positionBeforeNode(placeholder.get()));
     }
 
@@ -920,8 +920,8 @@ void ReplaceSelectionCommand::doApply()
 {
     VisibleSelection selection = endingSelection();
     ASSERT(selection.isCaretOrRange());
-    ASSERT(selection.start().deprecatedNode());
-    if (!selection.isNonOrphanedCaretOrRange() || !selection.start().deprecatedNode())
+    ASSERT(selection.start().anchorNode());
+    if (!selection.isNonOrphanedCaretOrRange() || !selection.start().anchorNode())
         return;
 
     if (!selection.rootEditableElement())
@@ -932,8 +932,8 @@ void ReplaceSelectionCommand::doApply()
         return;
 
     // We can skip matching the style if the selection is plain text.
-    if ((selection.start().deprecatedNode()->layoutObject() && selection.start().deprecatedNode()->layoutObject()->style()->userModify() == READ_WRITE_PLAINTEXT_ONLY)
-        && (selection.end().deprecatedNode()->layoutObject() && selection.end().deprecatedNode()->layoutObject()->style()->userModify() == READ_WRITE_PLAINTEXT_ONLY))
+    if ((selection.start().anchorNode()->layoutObject() && selection.start().anchorNode()->layoutObject()->style()->userModify() == READ_WRITE_PLAINTEXT_ONLY)
+        && (selection.end().anchorNode()->layoutObject() && selection.end().anchorNode()->layoutObject()->style()->userModify() == READ_WRITE_PLAINTEXT_ONLY))
         m_matchStyle = false;
 
     if (m_matchStyle) {
@@ -947,7 +947,7 @@ void ReplaceSelectionCommand::doApply()
     bool selectionEndWasEndOfParagraph = isEndOfParagraph(visibleEnd);
     bool selectionStartWasStartOfParagraph = isStartOfParagraph(visibleStart);
 
-    Element* enclosingBlockOfVisibleStart = enclosingBlock(visibleStart.deepEquivalent().deprecatedNode());
+    Element* enclosingBlockOfVisibleStart = enclosingBlock(visibleStart.deepEquivalent().anchorNode());
 
     Position insertionPos = selection.start();
     bool startIsInsideMailBlockquote = enclosingNodeOfType(insertionPos, isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
@@ -1007,7 +1007,7 @@ void ReplaceSelectionCommand::doApply()
     if (startIsInsideMailBlockquote && m_preventNesting && !(enclosingNodeOfType(insertionPos, &isTableStructureNode))) {
         applyCommandToComposite(BreakBlockquoteCommand::create(document()));
         // This will leave a br between the split.
-        Node* br = endingSelection().start().deprecatedNode();
+        Node* br = endingSelection().start().anchorNode();
         ASSERT(isHTMLBRElement(br));
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder).
         insertionPos = positionInParentBeforeNode(*br);
@@ -1018,18 +1018,18 @@ void ReplaceSelectionCommand::doApply()
     prepareWhitespaceAtPositionForSplit(insertionPos);
 
     // If the downstream node has been removed there's no point in continuing.
-    if (!insertionPos.downstream().deprecatedNode())
+    if (!insertionPos.downstream().anchorNode())
       return;
 
     // NOTE: This would be an incorrect usage of downstream() if downstream() were changed to mean the last position after
     // p that maps to the same visible position as p (since in the case where a br is at the end of a block and collapsed
     // away, there are positions after the br which map to the same visible position as [br, 0]).
-    HTMLBRElement* endBR = isHTMLBRElement(*insertionPos.downstream().deprecatedNode()) ? toHTMLBRElement(insertionPos.downstream().deprecatedNode()) : 0;
+    HTMLBRElement* endBR = isHTMLBRElement(*insertionPos.downstream().anchorNode()) ? toHTMLBRElement(insertionPos.downstream().anchorNode()) : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
         originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR), DOWNSTREAM).previous();
 
-    RefPtrWillBeRawPtr<Element> enclosingBlockOfInsertionPos = enclosingBlock(insertionPos.deprecatedNode());
+    RefPtrWillBeRawPtr<Element> enclosingBlockOfInsertionPos = enclosingBlock(insertionPos.anchorNode());
 
     // Adjust insertionPos to prevent nesting.
     // If the start was in a Mail blockquote, we will have already handled adjusting insertionPos above.
@@ -1109,7 +1109,7 @@ void ReplaceSelectionCommand::doApply()
 
     fragment.removeNode(refNode);
 
-    Element* blockStart = enclosingBlock(insertionPos.deprecatedNode());
+    Element* blockStart = enclosingBlock(insertionPos.anchorNode());
     if ((isHTMLListElement(refNode.get()) || (isLegacyAppleHTMLSpanElement(refNode.get()) && isHTMLListElement(refNode->firstChild())))
         && blockStart && blockStart->layoutObject()->isListItem())
         refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes);
@@ -1158,7 +1158,7 @@ void ReplaceSelectionCommand::doApply()
 
     // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and the content before the enclosingBlockOfInsertionPos wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
-    if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.deprecatedNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.deprecatedEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
+    if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.anchorNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.deprecatedEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
         insertNodeAt(createBreakElement(document()).get(), startOfInsertedContent.deepEquivalent());
 
     if (endBR && (plainTextFragment || (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) && !(fragment.hasInterchangeNewlineAtEnd() && selectionIsPlainText)))) {
@@ -1192,7 +1192,7 @@ void ReplaceSelectionCommand::doApply()
         // We need to handle the case where we need to merge the end
         // but our destination node is inside an inline that is the last in the block.
         // We insert a placeholder before the newly inserted content to avoid being merged into the inline.
-        Node* destinationNode = destination.deepEquivalent().deprecatedNode();
+        Node* destinationNode = destination.deepEquivalent().anchorNode();
         if (m_shouldMergeEnd && destinationNode != enclosingInline(destinationNode) && enclosingInline(destinationNode)->nextSibling())
             insertNodeBefore(createBreakElement(document()), refNode.get());
 
@@ -1227,7 +1227,7 @@ void ReplaceSelectionCommand::doApply()
         if (selectionEndWasEndOfParagraph || !isEndOfParagraph(endOfInsertedContent) || next.isNull()) {
             if (!isStartOfParagraph(endOfInsertedContent)) {
                 setEndingSelection(endOfInsertedContent);
-                Element* enclosingBlockElement = enclosingBlock(endOfInsertedContent.deepEquivalent().deprecatedNode());
+                Element* enclosingBlockElement = enclosingBlock(endOfInsertedContent.deepEquivalent().anchorNode());
                 if (isListItem(enclosingBlockElement)) {
                     RefPtrWillBeRawPtr<HTMLLIElement> newListItem = createListItemElement(document());
                     insertNodeAfter(newListItem, enclosingBlockElement);
@@ -1241,7 +1241,7 @@ void ReplaceSelectionCommand::doApply()
 
                 // Select up to the paragraph separator that was added.
                 lastPositionToSelect = endingSelection().visibleStart().deepEquivalent();
-                updateNodesInserted(lastPositionToSelect.deprecatedNode());
+                updateNodesInserted(lastPositionToSelect.anchorNode());
             }
         } else {
             // Select up to the beginning of the next paragraph.
@@ -1467,9 +1467,9 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElem
     // list items and insert these nodes between them.
     if (isMiddle) {
         int textNodeOffset = insertPos.offsetInContainerNode();
-        if (insertPos.deprecatedNode()->isTextNode() && textNodeOffset > 0)
-            splitTextNode(toText(insertPos.deprecatedNode()), textNodeOffset);
-        splitTreeToNode(insertPos.deprecatedNode(), lastNode, true);
+        if (insertPos.anchorNode()->isTextNode() && textNodeOffset > 0)
+            splitTextNode(toText(insertPos.anchorNode()), textNodeOffset);
+        splitTreeToNode(insertPos.anchorNode(), lastNode, true);
     }
 
     while (RefPtrWillBeRawPtr<Node> listItem = listElement->firstChild()) {

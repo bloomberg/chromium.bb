@@ -87,12 +87,12 @@ bool InsertListCommand::selectionHasListOfType(const VisibleSelection& selection
 {
     VisiblePosition start = selection.visibleStart();
 
-    if (!enclosingList(start.deepEquivalent().deprecatedNode()))
+    if (!enclosingList(start.deepEquivalent().anchorNode()))
         return false;
 
     VisiblePosition end = startOfParagraph(selection.visibleEnd());
     while (start.isNotNull() && start != end) {
-        HTMLElement* listElement = enclosingList(start.deepEquivalent().deprecatedNode());
+        HTMLElement* listElement = enclosingList(start.deepEquivalent().anchorNode());
         if (!listElement || !listElement->hasTagName(listTag))
             return false;
         start = startOfNextParagraph(start);
@@ -205,7 +205,7 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
     // FIXME: This will produce unexpected results for a selection that starts just before a
     // table and ends inside the first cell, selectionForParagraphIteration should probably
     // be renamed and deployed inside setEndingSelection().
-    Node* selectionNode = endingSelection().start().deprecatedNode();
+    Node* selectionNode = endingSelection().start().anchorNode();
     Node* listChildNode = enclosingListChild(selectionNode);
     bool switchListType = false;
     if (listChildNode) {
@@ -231,7 +231,7 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             RefPtrWillBeRawPtr<HTMLElement> newList = createHTMLElement(document(), listTag);
             insertNodeBefore(newList, listElement);
 
-            Node* firstChildInList = enclosingListChild(VisiblePosition(firstPositionInNode(listElement.get())).deepEquivalent().deprecatedNode(), listElement.get());
+            Node* firstChildInList = enclosingListChild(VisiblePosition(firstPositionInNode(listElement.get())).deepEquivalent().anchorNode(), listElement.get());
             Element* outerBlock = firstChildInList && isBlockFlowElement(*firstChildInList) ? toElement(firstChildInList) : listElement.get();
 
             moveParagraphWithClones(VisiblePosition(firstPositionInNode(listElement.get())), VisiblePosition(lastPositionInNode(listElement.get())), newList.get(), outerBlock);
@@ -279,9 +279,9 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // A paragraph is visually a list item minus a list marker.  The paragraph will be moved.
         start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
         end = endOfParagraph(start, CanSkipOverEditingBoundary);
-        nextListChild = enclosingListChild(end.next().deepEquivalent().deprecatedNode(), listElement);
+        nextListChild = enclosingListChild(end.next().deepEquivalent().anchorNode(), listElement);
         ASSERT(nextListChild != listChildNode);
-        previousListChild = enclosingListChild(start.previous().deepEquivalent().deprecatedNode(), listElement);
+        previousListChild = enclosingListChild(start.previous().deepEquivalent().anchorNode(), listElement);
         ASSERT(previousListChild != listChildNode);
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
@@ -323,7 +323,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
 
 static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const HTMLQualifiedName& listTag)
 {
-    HTMLElement* listElement = outermostEnclosingList(adjacentPos.deepEquivalent().deprecatedNode());
+    HTMLElement* listElement = outermostEnclosingList(adjacentPos.deepEquivalent().anchorNode());
 
     if (!listElement)
         return 0;
@@ -332,9 +332,9 @@ static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const Visi
     Element* currentCell = enclosingTableCell(adjacentPos.deepEquivalent());
 
     if (!listElement->hasTagName(listTag)
-        || listElement->contains(pos.deepEquivalent().deprecatedNode())
+        || listElement->contains(pos.deepEquivalent().anchorNode())
         || previousCell != currentCell
-        || enclosingList(listElement) != enclosingList(pos.deepEquivalent().deprecatedNode()))
+        || enclosingList(listElement) != enclosingList(pos.deepEquivalent().anchorNode()))
         return 0;
 
     return listElement;
@@ -366,7 +366,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         listElement = createHTMLElement(document(), listTag);
         appendNode(listItemElement, listElement);
 
-        if (start == end && isBlock(start.deepEquivalent().deprecatedNode())) {
+        if (start == end && isBlock(start.deepEquivalent().anchorNode())) {
             // Inserting the list into an empty paragraph that isn't held open
             // by a br or a '\n', will invalidate start and end.  Insert
             // a placeholder and then recompute start and end.
@@ -382,7 +382,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         // clean markup when inline elements are pushed down as far as possible.
         Position insertionPos(start.deepEquivalent().upstream());
         // Also avoid the containing list item.
-        Node* listChild = enclosingListChild(insertionPos.deprecatedNode());
+        Node* listChild = enclosingListChild(insertionPos.anchorNode());
         if (isHTMLLIElement(listChild))
             insertionPos = positionInParentBeforeNode(*listChild);
 

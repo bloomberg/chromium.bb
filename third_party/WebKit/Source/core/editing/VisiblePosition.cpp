@@ -449,7 +449,7 @@ PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionW
     ContainerNode* highestRoot = highestEditableRoot(anchor);
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
-    if (highestRoot && !pos.position().deprecatedNode()->isDescendantOf(highestRoot))
+    if (highestRoot && !pos.position().anchorNode()->isDescendantOf(highestRoot))
         return PositionWithAffinityType();
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable
@@ -490,7 +490,7 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosi
     ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
-    if (highestRoot && !pos.deepEquivalent().deprecatedNode()->isDescendantOf(highestRoot))
+    if (highestRoot && !pos.deepEquivalent().anchorNode()->isDescendantOf(highestRoot))
         return VisiblePosition();
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable
@@ -597,8 +597,8 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     // blocks or enter new ones), we search forward and backward until we find one.
     PositionType next = canonicalizeCandidate(nextCandidate(position));
     PositionType prev = canonicalizeCandidate(previousCandidate(position));
-    Node* nextNode = next.deprecatedNode();
-    Node* prevNode = prev.deprecatedNode();
+    Node* nextNode = next.anchorNode();
+    Node* prevNode = prev.anchorNode();
 
     // The new position must be in the same editable element. Enforce that first.
     // Unless the descent is from a non-editable html element to an editable body.
@@ -609,7 +609,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
 
     // If the html element is editable, descending into its body will look like a descent
     // from non-editable to editable content since rootEditableElement() always stops at the body.
-    if (isHTMLHtmlElement(editingRoot) || position.deprecatedNode()->isDocumentNode())
+    if (isHTMLHtmlElement(editingRoot) || position.anchorNode()->isDocumentNode())
         return next.isNotNull() ? next : prev;
 
     bool prevIsInSameEditableElement = prevNode && editableRootForPosition(prev) == editingRoot;
@@ -790,7 +790,7 @@ Element* enclosingBlockFlowElement(const VisiblePosition& visiblePosition)
     if (visiblePosition.isNull())
         return 0;
 
-    return enclosingBlockFlowElement(*visiblePosition.deepEquivalent().deprecatedNode());
+    return enclosingBlockFlowElement(*visiblePosition.deepEquivalent().anchorNode());
 }
 
 bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
@@ -802,7 +802,7 @@ bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const 
         return false;
 
     VisiblePosition previous = visiblePosition.previous();
-    return previous.isNull() || !previous.deepEquivalent().deprecatedNode()->isDescendantOf(node);
+    return previous.isNull() || !previous.deepEquivalent().anchorNode()->isDescendantOf(node);
 }
 
 bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
@@ -814,7 +814,7 @@ bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition, const C
         return false;
 
     VisiblePosition next = visiblePosition.next();
-    return next.isNull() || !next.deepEquivalent().deprecatedNode()->isDescendantOf(node);
+    return next.isNull() || !next.deepEquivalent().anchorNode()->isDescendantOf(node);
 }
 
 DEFINE_TRACE(VisiblePosition)

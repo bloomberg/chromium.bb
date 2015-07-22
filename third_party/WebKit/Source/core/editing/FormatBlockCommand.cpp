@@ -68,8 +68,8 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     if (!root || !refElement)
         return;
 
-    Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.deprecatedNode());
-    RefPtrWillBeRawPtr<Node> outerBlock = (start.deprecatedNode() == nodeToSplitTo) ? start.deprecatedNode() : splitTreeToNode(start.deprecatedNode(), nodeToSplitTo).get();
+    Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.anchorNode());
+    RefPtrWillBeRawPtr<Node> outerBlock = (start.anchorNode() == nodeToSplitTo) ? start.anchorNode() : splitTreeToNode(start.anchorNode(), nodeToSplitTo).get();
     RefPtrWillBeRawPtr<Node> nodeAfterInsertionPosition = outerBlock;
     RefPtrWillBeRawPtr<Range> range = Range::create(document(), start, endOfSelection);
 

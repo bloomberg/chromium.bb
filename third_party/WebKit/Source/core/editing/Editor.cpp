@@ -258,7 +258,7 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const
         VisiblePosition start(range.startPosition(), DOWNSTREAM);
         VisiblePosition previous = start.previous();
         // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
-        if (previous.isNull() || previous.deepEquivalent().deprecatedNode()->rootEditableElement() != startContainer->rootEditableElement())
+        if (previous.isNull() || previous.deepEquivalent().anchorNode()->rootEditableElement() != startContainer->rootEditableElement())
             return false;
     }
     return true;
@@ -543,7 +543,7 @@ void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelec
 void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
 {
     if (frame().settings() && frame().settings()->accessibilityEnabled()) {
-        Node* node = endingSelection.start().deprecatedNode();
+        Node* node = endingSelection.start().anchorNode();
         if (AXObjectCache* cache = frame().document()->existingAXObjectCache())
             cache->handleEditableTextContentChanged(node);
     }
@@ -764,7 +764,7 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     // that is contained in the event target.
     selection = selectionForCommand(triggeringEvent);
     if (selection.isContentEditable()) {
-        if (Node* selectionStart = selection.start().deprecatedNode()) {
+        if (Node* selectionStart = selection.start().anchorNode()) {
             RefPtrWillBeRawPtr<Document> document(selectionStart->document());
 
             // Insert the text

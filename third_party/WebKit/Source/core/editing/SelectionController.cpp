@@ -226,7 +226,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
 
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
-    if (Node* selectionBaseNode = Strategy::selectionBase(newSelection).deprecatedNode()) {
+    if (Node* selectionBaseNode = Strategy::selectionBase(newSelection).anchorNode()) {
         if (LayoutObject* selectionBaseLayoutObject = selectionBaseNode->layoutObject()) {
             if (selectionBaseLayoutObject->isSVGText()) {
                 if (target->layoutObject()->containingBlock() != selectionBaseLayoutObject->containingBlock())
@@ -375,7 +375,7 @@ void SelectionController::selectClosestWordOrLinkFromMouseEvent(const MouseEvent
     VisibleSelection newSelection;
     Element* URLElement = result.hitTestResult().URLElement();
     VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
-    if (pos.isNotNull() && pos.deepEquivalent().deprecatedNode()->isDescendantOf(URLElement))
+    if (pos.isNotNull() && pos.deepEquivalent().anchorNode()->isDescendantOf(URLElement))
         newSelection = VisibleSelection::selectionFromContentsOfNode(URLElement);
 
     updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);

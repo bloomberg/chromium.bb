@@ -57,7 +57,7 @@ IndentOutdentCommand::IndentOutdentCommand(Document& document, EIndentType typeO
 bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const Position& end)
 {
     // If our selection is not inside a list, bail out.
-    RefPtrWillBeRawPtr<Node> lastNodeInSelectedParagraph = start.deprecatedNode();
+    RefPtrWillBeRawPtr<Node> lastNodeInSelectedParagraph = start.anchorNode();
     RefPtrWillBeRawPtr<HTMLElement> listElement = enclosingList(lastNodeInSelectedParagraph.get());
     if (!listElement)
         return false;
@@ -184,13 +184,13 @@ void IndentOutdentCommand::outdentParagraph()
         return;
     }
     RefPtrWillBeRawPtr<Node> splitBlockquoteNode = enclosingElement;
-    if (Element* enclosingBlockFlow = enclosingBlock(visibleStartOfParagraph.deepEquivalent().deprecatedNode())) {
+    if (Element* enclosingBlockFlow = enclosingBlock(visibleStartOfParagraph.deepEquivalent().anchorNode())) {
         if (enclosingBlockFlow != enclosingElement) {
             splitBlockquoteNode = splitTreeToNode(enclosingBlockFlow, enclosingElement, true);
         } else {
             // We split the blockquote at where we start outdenting.
             Node* highestInlineNode = highestEnclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), isInline, CannotCrossEditingBoundary, enclosingBlockFlow);
-            splitElement(enclosingElement, highestInlineNode ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().deprecatedNode());
+            splitElement(enclosingElement, highestInlineNode ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().anchorNode());
         }
     }
     VisiblePosition startOfParagraphToMove(startOfParagraph(visibleStartOfParagraph));

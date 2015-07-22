@@ -61,7 +61,7 @@ bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
     // the input element, and in that case we need to check the input element's
     // parent's layoutObject.
     Position p(insertionPos.parentAnchoredEquivalent());
-    return p.deprecatedNode()->layoutObject() && !p.deprecatedNode()->layoutObject()->style()->preserveNewline();
+    return p.anchorNode()->layoutObject() && !p.anchorNode()->layoutObject()->style()->preserveNewline();
 }
 
 void InsertLineBreakCommand::doApply()
@@ -92,7 +92,7 @@ void InsertLineBreakCommand::doApply()
     // FIXME: Need to merge text nodes when inserting just after or before text.
 
     if (isEndOfParagraph(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
-        bool needExtraLineBreak = !isHTMLHRElement(*pos.deprecatedNode()) && !isHTMLTableElement(*pos.deprecatedNode());
+        bool needExtraLineBreak = !isHTMLHRElement(*pos.anchorNode()) && !isHTMLTableElement(*pos.anchorNode());
 
         insertNodeAt(nodeToInsert.get(), pos);
 
@@ -101,7 +101,7 @@ void InsertLineBreakCommand::doApply()
 
         VisiblePosition endingPosition(positionBeforeNode(nodeToInsert.get()));
         setEndingSelection(VisibleSelection(endingPosition, endingSelection().isDirectional()));
-    } else if (pos.deprecatedEditingOffset() <= caretMinOffset(pos.deprecatedNode())) {
+    } else if (pos.deprecatedEditingOffset() <= caretMinOffset(pos.anchorNode())) {
         insertNodeAt(nodeToInsert.get(), pos);
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
@@ -111,12 +111,12 @@ void InsertLineBreakCommand::doApply()
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), DOWNSTREAM, endingSelection().isDirectional()));
     // If we're inserting after all of the rendered text in a text node, or into a non-text node,
     // a simple insertion is sufficient.
-    } else if (pos.deprecatedEditingOffset() >= caretMaxOffset(pos.deprecatedNode()) || !pos.deprecatedNode()->isTextNode()) {
+    } else if (pos.deprecatedEditingOffset() >= caretMaxOffset(pos.anchorNode()) || !pos.anchorNode()->isTextNode()) {
         insertNodeAt(nodeToInsert.get(), pos);
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), DOWNSTREAM, endingSelection().isDirectional()));
-    } else if (pos.deprecatedNode()->isTextNode()) {
+    } else if (pos.anchorNode()->isTextNode()) {
         // Split a text node
-        Text* textNode = toText(pos.deprecatedNode());
+        Text* textNode = toText(pos.anchorNode());
         splitTextNode(textNode, pos.deprecatedEditingOffset());
         insertNodeBefore(nodeToInsert, textNode);
         Position endingPosition = firstPositionInNode(textNode);

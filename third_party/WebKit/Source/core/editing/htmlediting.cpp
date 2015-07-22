@@ -282,14 +282,14 @@ bool isEditablePosition(const PositionInComposedTree& p, EditableType editableTy
 
 bool isAtUnsplittableElement(const Position& pos)
 {
-    Node* node = pos.deprecatedNode();
+    Node* node = pos.anchorNode();
     return (node == editableRootForPosition(pos) || node == enclosingNodeOfType(pos, &isTableCell));
 }
 
 
 bool isRichlyEditablePosition(const Position& p, EditableType editableType)
 {
-    Node* node = p.deprecatedNode();
+    Node* node = p.anchorNode();
     if (!node)
         return false;
 
@@ -419,18 +419,18 @@ VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& 
 
     Position editablePosition = position;
 
-    if (position.deprecatedNode()->treeScope() != highestRoot->treeScope()) {
-        Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.deprecatedNode());
+    if (position.anchorNode()->treeScope() != highestRoot->treeScope()) {
+        Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.anchorNode());
         if (!shadowAncestor)
             return VisiblePosition();
 
         editablePosition = positionAfterNode(shadowAncestor);
     }
 
-    while (editablePosition.deprecatedNode() && !isEditablePosition(editablePosition) && editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
-        editablePosition = isAtomicNode(editablePosition.deprecatedNode()) ? positionInParentAfterNode(*editablePosition.deprecatedNode()) : nextVisuallyDistinctCandidate(editablePosition);
+    while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(highestRoot))
+        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? positionInParentAfterNode(*editablePosition.anchorNode()) : nextVisuallyDistinctCandidate(editablePosition);
 
-    if (editablePosition.deprecatedNode() && editablePosition.deprecatedNode() != highestRoot && !editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
+    if (editablePosition.anchorNode() && editablePosition.anchorNode() != highestRoot && !editablePosition.anchorNode()->isDescendantOf(highestRoot))
         return VisiblePosition();
 
     return VisiblePosition(editablePosition);
@@ -450,18 +450,18 @@ PositionType lastEditablePositionBeforePositionInRootAlgorithm(const PositionTyp
 
     PositionType editablePosition = position;
 
-    if (position.deprecatedNode()->treeScope() != highestRoot->treeScope()) {
-        Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.deprecatedNode());
+    if (position.anchorNode()->treeScope() != highestRoot->treeScope()) {
+        Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.anchorNode());
         if (!shadowAncestor)
             return PositionType();
 
         editablePosition = PositionType::firstPositionInOrBeforeNode(shadowAncestor);
     }
 
-    while (editablePosition.deprecatedNode() && !isEditablePosition(editablePosition) && editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
-        editablePosition = isAtomicNode(editablePosition.deprecatedNode()) ? PositionType::inParentBeforeNode(*editablePosition.deprecatedNode()) : previousVisuallyDistinctCandidate(editablePosition);
+    while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(highestRoot))
+        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionType::inParentBeforeNode(*editablePosition.anchorNode()) : previousVisuallyDistinctCandidate(editablePosition);
 
-    if (editablePosition.deprecatedNode() && editablePosition.deprecatedNode() != highestRoot && !editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
+    if (editablePosition.anchorNode() && editablePosition.anchorNode() != highestRoot && !editablePosition.anchorNode()->isDescendantOf(highestRoot))
         return PositionType();
     return editablePosition;
 }
@@ -600,7 +600,7 @@ static bool isSpecialHTMLElement(const Node& n)
 static HTMLElement* firstInSpecialElement(const Position& pos)
 {
     Element* rootEditableElement = pos.containerNode()->rootEditableElement();
-    for (Node* n = pos.deprecatedNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
+    for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
         if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
@@ -617,7 +617,7 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
 static HTMLElement* lastInSpecialElement(const Position& pos)
 {
     Element* rootEditableElement = pos.containerNode()->rootEditableElement();
-    for (Node* n = pos.deprecatedNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
+    for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
         if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
@@ -637,7 +637,7 @@ Position positionBeforeContainingSpecialElement(const Position& pos, HTMLElement
     if (!n)
         return pos;
     Position result = positionInParentBeforeNode(*n);
-    if (result.isNull() || result.deprecatedNode()->rootEditableElement() != pos.deprecatedNode()->rootEditableElement())
+    if (result.isNull() || result.anchorNode()->rootEditableElement() != pos.anchorNode()->rootEditableElement())
         return pos;
     if (containingSpecialElement)
         *containingSpecialElement = n;
@@ -650,7 +650,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
     if (!n)
         return pos;
     Position result = positionInParentAfterNode(*n);
-    if (result.isNull() || result.deprecatedNode()->rootEditableElement() != pos.deprecatedNode()->rootEditableElement())
+    if (result.isNull() || result.anchorNode()->rootEditableElement() != pos.anchorNode()->rootEditableElement())
         return pos;
     if (containingSpecialElement)
         *containingSpecialElement = n;
@@ -660,8 +660,8 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
 Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 {
     Position upstream(visiblePosition.deepEquivalent().upstream());
-    if (isRenderedTableElement(upstream.deprecatedNode()) && upstream.atLastEditingPositionForNode())
-        return toElement(upstream.deprecatedNode());
+    if (isRenderedTableElement(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
+        return toElement(upstream.anchorNode());
 
     return 0;
 }
@@ -669,8 +669,8 @@ Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 {
     Position downstream(visiblePosition.deepEquivalent().downstream());
-    if (isRenderedTableElement(downstream.deprecatedNode()) && downstream.atFirstEditingPositionForNode())
-        return toElement(downstream.deprecatedNode());
+    if (isRenderedTableElement(downstream.anchorNode()) && downstream.atFirstEditingPositionForNode())
+        return toElement(downstream.anchorNode());
 
     return 0;
 }
@@ -758,7 +758,7 @@ Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName
         return 0;
 
     ContainerNode* root = highestEditableRoot(p);
-    Element* ancestor = p.deprecatedNode()->isElementNode() ? toElement(p.deprecatedNode()) : p.deprecatedNode()->parentElement();
+    Element* ancestor = p.anchorNode()->isElementNode() ? toElement(p.anchorNode()) : p.anchorNode()->parentElement();
     for (; ancestor; ancestor = ancestor->parentElement()) {
         if (root && !ancestor->hasEditableStyle())
             continue;
@@ -779,7 +779,7 @@ Node* enclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), 
         return 0;
 
     ContainerNode* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : 0;
-    for (Node* n = p.deprecatedNode(); n; n = n->parentNode()) {
+    for (Node* n = p.anchorNode(); n; n = n->parentNode()) {
         // Don't return a non-editable node if the input position was editable, since
         // the callers from editing will no doubt want to perform editing inside the returned node.
         if (root && !n->hasEditableStyle())
@@ -847,7 +847,7 @@ Element* enclosingAnchorElement(const Position& p)
     if (p.isNull())
         return 0;
 
-    for (Element* ancestor = ElementTraversal::firstAncestorOrSelf(*p.deprecatedNode()); ancestor; ancestor = ElementTraversal::firstAncestor(*ancestor)) {
+    for (Element* ancestor = ElementTraversal::firstAncestorOrSelf(*p.anchorNode()); ancestor; ancestor = ElementTraversal::firstAncestor(*ancestor)) {
         if (ancestor->isLink())
             return ancestor;
     }
@@ -894,7 +894,7 @@ Node* enclosingListChild(Node *node)
 Node* enclosingEmptyListItem(const VisiblePosition& visiblePos)
 {
     // Check that position is on a line by itself inside a list item
-    Node* listChildNode = enclosingListChild(visiblePos.deepEquivalent().deprecatedNode());
+    Node* listChildNode = enclosingListChild(visiblePos.deepEquivalent().anchorNode());
     if (!listChildNode || !isStartOfParagraph(visiblePos) || !isEndOfParagraph(visiblePos))
         return 0;
 
@@ -1158,7 +1158,7 @@ Position trailingWhitespacePosition(const Position& position, EAffinity, Whitesp
 unsigned numEnclosingMailBlockquotes(const Position& p)
 {
     unsigned num = 0;
-    for (Node* n = p.deprecatedNode(); n; n = n->parentNode())
+    for (Node* n = p.anchorNode(); n; n = n->parentNode())
         if (isMailHTMLBlockquoteElement(n))
             num++;
 
@@ -1260,7 +1260,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // that we'll want modify is the last one inside the table, not the table itself
     // (a table is itself a paragraph).
     if (Element* table = isFirstPositionAfterTable(endOfSelection))
-        if (startOfSelection.deepEquivalent().deprecatedNode()->isDescendantOf(table))
+        if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection, endOfSelection.previous(CannotCrossEditingBoundary));
 
     // If the start of the selection to modify is just before a table,
@@ -1268,7 +1268,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // we'll want to modify is the first one inside the table, not the paragraph
     // containing the table itself.
     if (Element* table = isLastPositionBeforeTable(startOfSelection))
-        if (endOfSelection.deepEquivalent().deprecatedNode()->isDescendantOf(table))
+        if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection.next(CannotCrossEditingBoundary), endOfSelection);
 
     return newSelection;

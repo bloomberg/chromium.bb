@@ -1271,7 +1271,7 @@ IntRect FrameSelection::absoluteCaretBounds()
         else
             updateCaretRect(m_frame->document(), VisiblePosition(m_selection.start(), m_selection.affinity()));
     }
-    return absoluteBoundsForLocalRect(m_selection.start().deprecatedNode(), localCaretRectWithoutUpdate());
+    return absoluteBoundsForLocalRect(m_selection.start().anchorNode(), localCaretRectWithoutUpdate());
 }
 
 static LayoutRect localCaretRect(const VisibleSelection& m_selection, const PositionWithAffinity& caretPosition, LayoutObject*& layoutObject)
@@ -1314,7 +1314,7 @@ void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& pai
 {
     if (m_selection.isCaret() && m_shouldPaintCaret) {
         updateCaretRect(m_frame->document(), PositionWithAffinity(m_selection.start(), m_selection.affinity()));
-        CaretBase::paintCaret(m_selection.start().deprecatedNode(), context, paintOffset, clipRect);
+        CaretBase::paintCaret(m_selection.start().anchorNode(), context, paintOffset, clipRect);
     }
 }
 
@@ -1810,7 +1810,7 @@ HTMLFormElement* FrameSelection::currentForm() const
     // Start looking either at the active (first responder) node, or where the selection is.
     Node* start = m_frame->document()->focusedElement();
     if (!start)
-        start = this->start().deprecatedNode();
+        start = this->start().anchorNode();
     if (!start)
         return 0;
 
@@ -1840,13 +1840,13 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
     }
 
     Position start = this->start();
-    ASSERT(start.deprecatedNode());
-    if (start.deprecatedNode() && start.deprecatedNode()->layoutObject()) {
+    ASSERT(start.anchorNode());
+    if (start.anchorNode() && start.anchorNode()->layoutObject()) {
         // FIXME: This code only handles scrolling the startContainer's layer, but
         // the selection rect could intersect more than just that.
         // See <rdar://problem/4799899>.
         m_frame->view()->setWasScrolledByUser(true);
-        if (start.deprecatedNode()->layoutObject()->scrollRectToVisible(rect, alignment, alignment))
+        if (start.anchorNode()->layoutObject()->scrollRectToVisible(rect, alignment, alignment))
             updateAppearance();
     }
 }

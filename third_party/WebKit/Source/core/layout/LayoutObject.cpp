@@ -2964,10 +2964,10 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
             // If it can be found, we prefer a visually equivalent position that is editable.
             Position position = createLegacyEditingPosition(node, offset);
             Position candidate = position.downstream(CanCrossEditingBoundary);
-            if (candidate.deprecatedNode()->hasEditableStyle())
+            if (candidate.anchorNode()->hasEditableStyle())
                 return PositionWithAffinity(candidate, affinity);
             candidate = position.upstream(CanCrossEditingBoundary);
-            if (candidate.deprecatedNode()->hasEditableStyle())
+            if (candidate.anchorNode()->hasEditableStyle())
                 return PositionWithAffinity(candidate, affinity);
         }
         // FIXME: Eliminate legacy editing positions

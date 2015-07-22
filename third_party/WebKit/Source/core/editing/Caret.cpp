@@ -97,7 +97,7 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
     if (caretPosition.position().isNull())
         return false;
 
-    ASSERT(caretPosition.position().deprecatedNode()->layoutObject());
+    ASSERT(caretPosition.position().anchorNode()->layoutObject());
 
     // First compute a rect local to the layoutObject at the selection start.
     LayoutObject* layoutObject;
@@ -105,7 +105,7 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
 
     // Get the layoutObject that will be responsible for painting the caret
     // (which is either the layoutObject we just found, or one of its containers).
-    m_caretPainter = caretLayoutObject(caretPosition.position().deprecatedNode());
+    m_caretPainter = caretLayoutObject(caretPosition.position().anchorNode());
 
     mapCaretRectToCaretPainter(layoutObject, m_caretPainter, m_caretLocalRect);
 

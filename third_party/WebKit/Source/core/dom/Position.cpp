@@ -392,7 +392,7 @@ int PositionAlgorithm<Strategy>::compareTo(const PositionAlgorithm<Strategy>& ot
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveType moveType) const
 {
-    Node* node = deprecatedNode();
+    Node* node = anchorNode();
     if (!node)
         return PositionAlgorithm<Strategy>(*this);
 
@@ -429,7 +429,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
 {
     ASSERT(moveType != BackwardDeletion);
 
-    Node* node = deprecatedNode();
+    Node* node = anchorNode();
     if (!node)
         return PositionAlgorithm<Strategy>(*this);
 
@@ -487,7 +487,7 @@ bool PositionAlgorithm<Strategy>::atFirstEditingPositionForNode() const
         return true;
     case PositionAnchorType::AfterChildren:
     case PositionAnchorType::AfterAnchor:
-        return !lastOffsetForEditing(deprecatedNode());
+        return !lastOffsetForEditing(anchorNode());
     }
     ASSERT_NOT_REACHED();
     return false;
@@ -500,7 +500,7 @@ bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
         return true;
     // FIXME: Position after anchor shouldn't be considered as at the first editing position for node
     // since that position resides outside of the node.
-    return m_anchorType == PositionAnchorType::AfterAnchor || m_anchorType == PositionAnchorType::AfterChildren || m_offset >= lastOffsetForEditing(deprecatedNode());
+    return m_anchorType == PositionAnchorType::AfterAnchor || m_anchorType == PositionAnchorType::AfterChildren || m_offset >= lastOffsetForEditing(anchorNode());
 }
 
 // A position is considered at editing boundary if one of the following is true:
@@ -514,15 +514,15 @@ template <typename Strategy>
 bool PositionAlgorithm<Strategy>::atEditingBoundary() const
 {
     PositionAlgorithm<Strategy> nextPosition = downstream(CanCrossEditingBoundary);
-    if (atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.deprecatedNode()->hasEditableStyle())
+    if (atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
         return true;
 
     PositionAlgorithm<Strategy> prevPosition = upstream(CanCrossEditingBoundary);
-    if (atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.deprecatedNode()->hasEditableStyle())
+    if (atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
         return true;
 
-    return nextPosition.isNotNull() && !nextPosition.deprecatedNode()->hasEditableStyle()
-        && prevPosition.isNotNull() && !prevPosition.deprecatedNode()->hasEditableStyle();
+    return nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle()
+        && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle();
 }
 
 template <typename Strategy>
@@ -555,7 +555,7 @@ bool PositionAlgorithm<Strategy>::atStartOfTree() const
 {
     if (isNull())
         return true;
-    return !Strategy::parent(*deprecatedNode()) && m_offset <= 0;
+    return !Strategy::parent(*anchorNode()) && m_offset <= 0;
 }
 
 template <typename Strategy>
@@ -563,20 +563,20 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
 {
     if (isNull())
         return true;
-    return !Strategy::parent(*deprecatedNode()) && m_offset >= lastOffsetForEditing(deprecatedNode());
+    return !Strategy::parent(*anchorNode()) && m_offset >= lastOffsetForEditing(anchorNode());
 }
 
 template <typename Strategy>
 int PositionAlgorithm<Strategy>::renderedOffset() const
 {
-    if (!deprecatedNode()->isTextNode())
+    if (!anchorNode()->isTextNode())
         return m_offset;
 
-    if (!deprecatedNode()->layoutObject())
+    if (!anchorNode()->layoutObject())
         return m_offset;
 
     int result = 0;
-    LayoutText* textLayoutObject = toLayoutText(deprecatedNode()->layoutObject());
+    LayoutText* textLayoutObject = toLayoutText(anchorNode()->layoutObject());
     for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
         int start = box->start();
         int end = box->start() + box->len();
@@ -648,7 +648,7 @@ static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos)
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
 {
-    Node* startNode = deprecatedNode();
+    Node* startNode = anchorNode();
     if (!startNode)
         return PositionAlgorithm<Strategy>();
 
@@ -770,7 +770,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
-    Node* startNode = deprecatedNode();
+    Node* startNode = anchorNode();
     if (!startNode)
         return PositionAlgorithm<Strategy>();
 
@@ -945,7 +945,7 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     if (isNull())
         return false;
 
-    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    LayoutObject* layoutObject = anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
@@ -956,11 +956,11 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
         // TODO(leviw) The condition should be
         // m_anchorType == PositionAnchorType::BeforeAnchor, but for now we
         // still need to support legacy positions.
-        return !m_offset && m_anchorType != PositionAnchorType::AfterAnchor && !nodeIsUserSelectNone(Strategy::parent(*deprecatedNode()));
+        return !m_offset && m_anchorType != PositionAnchorType::AfterAnchor && !nodeIsUserSelectNone(Strategy::parent(*anchorNode()));
     }
 
     if (layoutObject->isText())
-        return !nodeIsUserSelectNone(deprecatedNode()) && inRenderedText();
+        return !nodeIsUserSelectNone(anchorNode()) && inRenderedText();
 
     if (layoutObject->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
@@ -968,8 +968,8 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
         return false;
     }
 
-    if (isRenderedHTMLTableElement(deprecatedNode()) || Strategy::editingIgnoresContent(deprecatedNode()))
-        return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*deprecatedNode()));
+    if (isRenderedHTMLTableElement(anchorNode()) || Strategy::editingIgnoresContent(anchorNode()))
+        return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*anchorNode()));
 
     if (isHTMLHtmlElement(*m_anchorNode))
         return false;
@@ -977,13 +977,13 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     if (layoutObject->isLayoutBlockFlow() || layoutObject->isFlexibleBox() || layoutObject->isLayoutGrid()) {
         if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
-                return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(deprecatedNode());
-            return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
+                return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode());
+            return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary();
         }
     } else {
         LocalFrame* frame = m_anchorNode->document().frame();
         bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
+        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary();
     }
 
     return false;
@@ -992,10 +992,10 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
 template <typename Strategy>
 bool PositionAlgorithm<Strategy>::inRenderedText() const
 {
-    if (isNull() || !deprecatedNode()->isTextNode())
+    if (isNull() || !anchorNode()->isTextNode())
         return false;
 
-    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    LayoutObject* layoutObject = anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
@@ -1019,10 +1019,10 @@ bool PositionAlgorithm<Strategy>::inRenderedText() const
 template <typename Strategy>
 bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
 {
-    if (isNull() || !deprecatedNode()->isTextNode())
+    if (isNull() || !anchorNode()->isTextNode())
         return false;
 
-    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    LayoutObject* layoutObject = anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
@@ -1047,11 +1047,11 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
     if (isNull() || pos.isNull())
         return false;
 
-    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    LayoutObject* layoutObject = anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
-    LayoutObject* posLayoutObject = pos.deprecatedNode()->layoutObject();
+    LayoutObject* posLayoutObject = pos.anchorNode()->layoutObject();
     if (!posLayoutObject)
         return false;
 
@@ -1059,32 +1059,32 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
         || posLayoutObject->style()->visibility() != VISIBLE)
         return false;
 
-    if (deprecatedNode() == pos.deprecatedNode()) {
-        if (isHTMLBRElement(*deprecatedNode()))
+    if (anchorNode() == pos.anchorNode()) {
+        if (isHTMLBRElement(*anchorNode()))
             return false;
 
         if (m_offset == pos.deprecatedEditingOffset())
             return false;
 
-        if (!deprecatedNode()->isTextNode() && !pos.deprecatedNode()->isTextNode()) {
+        if (!anchorNode()->isTextNode() && !pos.anchorNode()->isTextNode()) {
             if (m_offset != pos.deprecatedEditingOffset())
                 return true;
         }
     }
 
-    if (isHTMLBRElement(*deprecatedNode()) && pos.isCandidate())
+    if (isHTMLBRElement(*anchorNode()) && pos.isCandidate())
         return true;
 
-    if (isHTMLBRElement(*pos.deprecatedNode()) && isCandidate())
+    if (isHTMLBRElement(*pos.anchorNode()) && isCandidate())
         return true;
 
-    if (!inSameContainingBlockFlowElement(deprecatedNode(), pos.deprecatedNode()))
+    if (!inSameContainingBlockFlowElement(anchorNode(), pos.anchorNode()))
         return true;
 
-    if (deprecatedNode()->isTextNode() && !inRenderedText())
+    if (anchorNode()->isTextNode() && !inRenderedText())
         return false;
 
-    if (pos.deprecatedNode()->isTextNode() && !pos.inRenderedText())
+    if (pos.anchorNode()->isTextNode() && !pos.inRenderedText())
         return false;
 
     int thisRenderedOffset = renderedOffset();
@@ -1100,8 +1100,8 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
     WTF_LOG(Editing, "thisRenderedOffset:     %d\n", thisRenderedOffset);
     WTF_LOG(Editing, "posLayoutObject:        %p [%p]\n", posLayoutObject, boxPosition2.inlineBox);
     WTF_LOG(Editing, "posRenderedOffset:      %d\n", posRenderedOffset);
-    WTF_LOG(Editing, "node min/max:           %d:%d\n", caretMinOffset(deprecatedNode()), caretMaxOffset(deprecatedNode()));
-    WTF_LOG(Editing, "pos node min/max:       %d:%d\n", caretMinOffset(pos.deprecatedNode()), caretMaxOffset(pos.deprecatedNode()));
+    WTF_LOG(Editing, "node min/max:           %d:%d\n", caretMinOffset(anchorNode()), caretMaxOffset(anchorNode()));
+    WTF_LOG(Editing, "pos node min/max:       %d:%d\n", caretMinOffset(pos.anchorNode()), caretMaxOffset(pos.anchorNode()));
     WTF_LOG(Editing, "----------------------------------------------------------------------\n");
 
     if (!boxPosition1.inlineBox || !boxPosition2.inlineBox) {
@@ -1112,13 +1112,13 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
         return true;
     }
 
-    if (nextRenderedEditable(deprecatedNode()) == pos.deprecatedNode()
-        && thisRenderedOffset == caretMaxOffset(deprecatedNode()) && !posRenderedOffset) {
+    if (nextRenderedEditable(anchorNode()) == pos.anchorNode()
+        && thisRenderedOffset == caretMaxOffset(anchorNode()) && !posRenderedOffset) {
         return false;
     }
 
-    if (previousRenderedEditable(deprecatedNode()) == pos.deprecatedNode()
-        && !thisRenderedOffset && posRenderedOffset == caretMaxOffset(pos.deprecatedNode())) {
+    if (previousRenderedEditable(anchorNode()) == pos.anchorNode()
+        && !thisRenderedOffset && posRenderedOffset == caretMaxOffset(pos.anchorNode())) {
         return false;
     }
 
@@ -1198,7 +1198,7 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
 
     if (!layoutObject->isText()) {
         inlineBox = 0;
-        if (canHaveChildrenForEditing(deprecatedNode()) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
+        if (canHaveChildrenForEditing(anchorNode()) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
             // of LayoutObject::createVisiblePosition().
@@ -1379,11 +1379,11 @@ void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
 
     const char* anchorType = anchorTypes[std::min(static_cast<size_t>(m_anchorType), WTF_ARRAY_LENGTH(anchorTypes) - 1)];
     if (m_anchorNode->isTextNode()) {
-        fprintf(stderr, "Position [%s]: %s%s [%p] %s, (%s) at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", deprecatedNode()->nodeName().utf8().data(), deprecatedNode(), anchorType, m_anchorNode->nodeValue().utf8().data(), m_offset);
+        fprintf(stderr, "Position [%s]: %s%s [%p] %s, (%s) at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_anchorNode->nodeValue().utf8().data(), m_offset);
         return;
     }
 
-    fprintf(stderr, "Position [%s]: %s%s [%p] %s at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", deprecatedNode()->nodeName().utf8().data(), deprecatedNode(), anchorType, m_offset);
+    fprintf(stderr, "Position [%s]: %s%s [%p] %s at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_offset);
 }
 
 PositionInComposedTree toPositionInComposedTree(const Position& pos)
@@ -1472,7 +1472,7 @@ void PositionAlgorithm<Strategy>::formatForDebugger(char* buffer, unsigned lengt
         result.appendLiteral("offset ");
         result.appendNumber(m_offset);
         result.appendLiteral(" of ");
-        deprecatedNode()->formatForDebugger(s, sizeof(s));
+        anchorNode()->formatForDebugger(s, sizeof(s));
         result.append(s);
     }
 

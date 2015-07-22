@@ -54,11 +54,11 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
     // involves updating compositing state.
     DisableCompositingQueryAsserts disabler;
 
-    if (Node* node = m_position.deepEquivalent().deprecatedNode())
+    if (Node* node = m_position.deepEquivalent().anchorNode())
         invalidateCaretRect(node);
     m_position = position;
     Document* document = nullptr;
-    if (Node* node = m_position.deepEquivalent().deprecatedNode()) {
+    if (Node* node = m_position.deepEquivalent().anchorNode()) {
         invalidateCaretRect(node);
         document = &node->document();
     }
@@ -104,8 +104,8 @@ DEFINE_TRACE(DragCaretController)
 
 void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
-    if (m_position.deepEquivalent().deprecatedNode()->document().frame() == frame)
-        paintCaret(m_position.deepEquivalent().deprecatedNode(), p, paintOffset, clipRect);
+    if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)
+        paintCaret(m_position.deepEquivalent().anchorNode(), p, paintOffset, clipRect);
 }
 
 } // namespace blink

@@ -271,9 +271,9 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         // Find out what node has the composition now.
         Position base = frame().selection().base().downstream();
         Position extent = frame().selection().extent();
-        Node* baseNode = base.deprecatedNode();
+        Node* baseNode = base.anchorNode();
         unsigned baseOffset = base.deprecatedEditingOffset();
-        Node* extentNode = extent.deprecatedNode();
+        Node* extentNode = extent.anchorNode();
         unsigned extentOffset = extent.deprecatedEditingOffset();
 
         if (baseNode && baseNode == extentNode && baseNode->isTextNode() && baseOffset + text.length() == extentOffset) {

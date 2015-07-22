@@ -82,10 +82,10 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextItera
 {
     ASSERT(behavior == TextIteratorDefaultBehavior || behavior == TextIteratorStopsOnFormControls);
 
-    Node* startNode = start.deprecatedNode();
+    Node* startNode = start.anchorNode();
     if (!startNode)
         return;
-    Node* endNode = end.deprecatedNode();
+    Node* endNode = end.anchorNode();
     int startOffset = start.deprecatedEditingOffset();
     int endOffset = end.deprecatedEditingOffset();
 

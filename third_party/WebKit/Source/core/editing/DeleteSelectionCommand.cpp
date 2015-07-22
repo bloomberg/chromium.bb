@@ -110,10 +110,10 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
 
     // For HRs, we'll get a position at (HR,1) when hitting delete from the beginning of the previous line, or (HR,0) when forward deleting,
     // but in these cases, we want to delete it, so manually expand the selection
-    if (isHTMLHRElement(*start.deprecatedNode()))
-        start = positionBeforeNode(start.deprecatedNode());
-    else if (isHTMLHRElement(*end.deprecatedNode()))
-        end = positionAfterNode(end.deprecatedNode());
+    if (isHTMLHRElement(*start.anchorNode()))
+        start = positionBeforeNode(start.anchorNode());
+    else if (isHTMLHRElement(*end.anchorNode()))
+        end = positionAfterNode(end.anchorNode());
 
     // FIXME: This is only used so that moveParagraphs can avoid the bugs in special element expansion.
     if (!m_expandForSpecialElements)
@@ -279,7 +279,7 @@ void DeleteSelectionCommand::saveTypingStyleState()
     // typing style at the start of the selection, nor is there a reason to
     // compute the style at the start of the selection after deletion (see the
     // early return in calculateTypingStyleAfterDelete).
-    if (m_upstreamStart.deprecatedNode() == m_downstreamEnd.deprecatedNode() && m_upstreamStart.deprecatedNode()->isTextNode())
+    if (m_upstreamStart.anchorNode() == m_downstreamEnd.anchorNode() && m_upstreamStart.anchorNode()->isTextNode())
         return;
 
     if (shouldNotInheritStyleFrom(*m_selectionToDelete.start().anchorNode()))
@@ -448,7 +448,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
         return;
 
     int startOffset = m_upstreamStart.deprecatedEditingOffset();
-    Node* startNode = m_upstreamStart.deprecatedNode();
+    Node* startNode = m_upstreamStart.anchorNode();
     ASSERT(startNode);
 
     makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
@@ -476,7 +476,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
     if (!startNode)
         return;
 
-    if (startNode == m_downstreamEnd.deprecatedNode()) {
+    if (startNode == m_downstreamEnd.anchorNode()) {
         if (m_downstreamEnd.deprecatedEditingOffset() - startOffset > 0) {
             if (startNode->isTextNode()) {
                 // in a text node that needs to be trimmed
@@ -493,7 +493,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
             removeNode(startNode);
     }
     else {
-        bool startNodeWasDescendantOfEndNode = m_upstreamStart.deprecatedNode()->isDescendantOf(m_downstreamEnd.deprecatedNode());
+        bool startNodeWasDescendantOfEndNode = m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode());
         // The selection to delete spans more than one node.
         RefPtrWillBeRawPtr<Node> node(startNode);
 
@@ -506,17 +506,17 @@ void DeleteSelectionCommand::handleGeneralDelete()
             } else {
                 node = NodeTraversal::childAt(*startNode, startOffset);
             }
-        } else if (startNode == m_upstreamEnd.deprecatedNode() && startNode->isTextNode()) {
-            Text* text = toText(m_upstreamEnd.deprecatedNode());
+        } else if (startNode == m_upstreamEnd.anchorNode() && startNode->isTextNode()) {
+            Text* text = toText(m_upstreamEnd.anchorNode());
             deleteTextFromNode(text, 0, m_upstreamEnd.deprecatedEditingOffset());
         }
 
         // handle deleting all nodes that are completely selected
-        while (node && node != m_downstreamEnd.deprecatedNode()) {
+        while (node && node != m_downstreamEnd.anchorNode()) {
             if (comparePositions(firstPositionInOrBeforeNode(node.get()), m_downstreamEnd) >= 0) {
                 // NodeTraversal::nextSkippingChildren just blew past the end position, so stop deleting
                 node = nullptr;
-            } else if (!m_downstreamEnd.deprecatedNode()->isDescendantOf(node.get())) {
+            } else if (!m_downstreamEnd.anchorNode()->isDescendantOf(node.get())) {
                 RefPtrWillBeRawPtr<Node> nextNode = NodeTraversal::nextSkippingChildren(*node);
                 // if we just removed a node from the end container, update end position so the
                 // check above will work
@@ -525,7 +525,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 node = nextNode.get();
             } else {
                 Node& n = NodeTraversal::lastWithinOrSelf(*node);
-                if (m_downstreamEnd.deprecatedNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
+                if (m_downstreamEnd.anchorNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
                     removeNode(node.get());
                     node = nullptr;
                 } else {
@@ -534,34 +534,34 @@ void DeleteSelectionCommand::handleGeneralDelete()
             }
         }
 
-        if (m_downstreamEnd.deprecatedNode() != startNode && !m_upstreamStart.deprecatedNode()->isDescendantOf(m_downstreamEnd.deprecatedNode()) && m_downstreamEnd.inDocument() && m_downstreamEnd.deprecatedEditingOffset() >= caretMinOffset(m_downstreamEnd.deprecatedNode())) {
-            if (m_downstreamEnd.atLastEditingPositionForNode() && !canHaveChildrenForEditing(m_downstreamEnd.deprecatedNode())) {
+        if (m_downstreamEnd.anchorNode() != startNode && !m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode()) && m_downstreamEnd.inDocument() && m_downstreamEnd.deprecatedEditingOffset() >= caretMinOffset(m_downstreamEnd.anchorNode())) {
+            if (m_downstreamEnd.atLastEditingPositionForNode() && !canHaveChildrenForEditing(m_downstreamEnd.anchorNode())) {
                 // The node itself is fully selected, not just its contents.  Delete it.
-                removeNode(m_downstreamEnd.deprecatedNode());
+                removeNode(m_downstreamEnd.anchorNode());
             } else {
-                if (m_downstreamEnd.deprecatedNode()->isTextNode()) {
+                if (m_downstreamEnd.anchorNode()->isTextNode()) {
                     // in a text node that needs to be trimmed
-                    Text* text = toText(m_downstreamEnd.deprecatedNode());
+                    Text* text = toText(m_downstreamEnd.anchorNode());
                     if (m_downstreamEnd.deprecatedEditingOffset() > 0) {
                         deleteTextFromNode(text, 0, m_downstreamEnd.deprecatedEditingOffset());
                     }
-                // Remove children of m_downstreamEnd.deprecatedNode() that come after m_upstreamStart.
-                // Don't try to remove children if m_upstreamStart was inside m_downstreamEnd.deprecatedNode()
+                // Remove children of m_downstreamEnd.anchorNode() that come after m_upstreamStart.
+                // Don't try to remove children if m_upstreamStart was inside m_downstreamEnd.anchorNode()
                 // and m_upstreamStart has been removed from the document, because then we don't
                 // know how many children to remove.
                 // FIXME: Make m_upstreamStart a position we update as we remove content, then we can
                 // always know which children to remove.
                 } else if (!(startNodeWasDescendantOfEndNode && !m_upstreamStart.inDocument())) {
                     int offset = 0;
-                    if (m_upstreamStart.deprecatedNode()->isDescendantOf(m_downstreamEnd.deprecatedNode())) {
-                        Node* n = m_upstreamStart.deprecatedNode();
-                        while (n && n->parentNode() != m_downstreamEnd.deprecatedNode())
+                    if (m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode())) {
+                        Node* n = m_upstreamStart.anchorNode();
+                        while (n && n->parentNode() != m_downstreamEnd.anchorNode())
                             n = n->parentNode();
                         if (n)
                             offset = n->nodeIndex() + 1;
                     }
-                    removeChildrenInRange(m_downstreamEnd.deprecatedNode(), offset, m_downstreamEnd.deprecatedEditingOffset());
-                    m_downstreamEnd = createLegacyEditingPosition(m_downstreamEnd.deprecatedNode(), offset);
+                    removeChildrenInRange(m_downstreamEnd.anchorNode(), offset, m_downstreamEnd.deprecatedEditingOffset());
+                    m_downstreamEnd = createLegacyEditingPosition(m_downstreamEnd.anchorNode(), offset);
                 }
             }
         }
@@ -572,13 +572,13 @@ void DeleteSelectionCommand::fixupWhitespace()
 {
     document().updateLayoutIgnorePendingStylesheets();
     // FIXME: isRenderedCharacter should be removed, and we should use VisiblePosition::characterAfter and VisiblePosition::characterBefore
-    if (m_leadingWhitespace.isNotNull() && !m_leadingWhitespace.isRenderedCharacter() && m_leadingWhitespace.deprecatedNode()->isTextNode()) {
-        Text* textNode = toText(m_leadingWhitespace.deprecatedNode());
+    if (m_leadingWhitespace.isNotNull() && !m_leadingWhitespace.isRenderedCharacter() && m_leadingWhitespace.anchorNode()->isTextNode()) {
+        Text* textNode = toText(m_leadingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
         replaceTextInNodePreservingMarkers(textNode, m_leadingWhitespace.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
     }
-    if (m_trailingWhitespace.isNotNull() && !m_trailingWhitespace.isRenderedCharacter() && m_trailingWhitespace.deprecatedNode()->isTextNode()) {
-        Text* textNode = toText(m_trailingWhitespace.deprecatedNode());
+    if (m_trailingWhitespace.isNotNull() && !m_trailingWhitespace.isRenderedCharacter() && m_trailingWhitespace.anchorNode()->isTextNode()) {
+        Text* textNode = toText(m_trailingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
         replaceTextInNodePreservingMarkers(textNode, m_trailingWhitespace.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
     }
@@ -619,14 +619,14 @@ void DeleteSelectionCommand::mergeParagraphs()
 
     // m_downstreamEnd's block has been emptied out by deletion.  There is no content inside of it to
     // move, so just remove it.
-    Element* endBlock = enclosingBlock(m_downstreamEnd.deprecatedNode());
-    if (!endBlock || !endBlock->contains(startOfParagraphToMove.deepEquivalent().deprecatedNode()) || !startOfParagraphToMove.deepEquivalent().deprecatedNode()) {
-        removeNode(enclosingBlock(m_downstreamEnd.deprecatedNode()));
+    Element* endBlock = enclosingBlock(m_downstreamEnd.anchorNode());
+    if (!endBlock || !endBlock->contains(startOfParagraphToMove.deepEquivalent().anchorNode()) || !startOfParagraphToMove.deepEquivalent().anchorNode()) {
+        removeNode(enclosingBlock(m_downstreamEnd.anchorNode()));
         return;
     }
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
-    if (!mergeDestination.deepEquivalent().deprecatedNode() || (!mergeDestination.deepEquivalent().deprecatedNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.containerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination != startOfParagraphToMove)) {
+    if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.containerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination != startOfParagraphToMove)) {
         insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
         mergeDestination = VisiblePosition(m_upstreamStart);
     }
@@ -653,8 +653,8 @@ void DeleteSelectionCommand::mergeParagraphs()
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
     if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && startOfParagraphToMove.absoluteCaretBounds().x() > mergeDestination.absoluteCaretBounds().x()) {
-        if (isHTMLBRElement(*mergeDestination.deepEquivalent().downstream().deprecatedNode())) {
-            removeNodeAndPruneAncestors(mergeDestination.deepEquivalent().downstream().deprecatedNode());
+        if (isHTMLBRElement(*mergeDestination.deepEquivalent().downstream().anchorNode())) {
+            removeNodeAndPruneAncestors(mergeDestination.deepEquivalent().downstream().anchorNode());
             m_endingPosition = startOfParagraphToMove.deepEquivalent();
             return;
         }
@@ -663,7 +663,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     // Block images, tables and horizontal rules cannot be made inline with content at mergeDestination.  If there is
     // any (!isStartOfParagraph(mergeDestination)), don't merge, just move the caret to just before the selection we deleted.
     // See https://bugs.webkit.org/show_bug.cgi?id=25439
-    if (isRenderedAsNonInlineTableImageOrHR(startOfParagraphToMove.deepEquivalent().deprecatedNode()) && !isStartOfParagraph(mergeDestination)) {
+    if (isRenderedAsNonInlineTableImageOrHR(startOfParagraphToMove.deepEquivalent().anchorNode()) && !isStartOfParagraph(mergeDestination)) {
         m_endingPosition = m_upstreamStart;
         return;
     }
@@ -706,7 +706,7 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
     if (m_endTableRow && m_endTableRow->inDocument() && m_endTableRow != m_startTableRow)
         if (isTableRowEmpty(m_endTableRow.get())) {
             // Don't remove m_endTableRow if it's where we're putting the ending selection.
-            if (!m_endingPosition.deprecatedNode()->isDescendantOf(m_endTableRow.get())) {
+            if (!m_endingPosition.anchorNode()->isDescendantOf(m_endTableRow.get())) {
                 // FIXME: We probably shouldn't remove m_endTableRow unless it's fully selected, even if it is empty.
                 // We'll need to start adjusting the selection endpoints during deletion to know whether or not m_endTableRow
                 // was fully selected here.
@@ -800,7 +800,7 @@ void DeleteSelectionCommand::doApply()
         // and ends inside it (we do need placeholders to hold open empty cells, but that's
         // handled elsewhere).
         if (Element* table = isLastPositionBeforeTable(m_selectionToDelete.visibleStart()))
-            if (m_selectionToDelete.end().deprecatedNode()->isDescendantOf(table))
+            if (m_selectionToDelete.end().anchorNode()->isDescendantOf(table))
                 m_needPlaceholder = false;
     }
 

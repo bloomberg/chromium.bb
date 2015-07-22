@@ -473,7 +473,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     if (requiresContextForWordBoundary(c.characterBefore())) {
         RefPtrWillBeRawPtr<Range> forwardsScanRange(d.createRange());
         forwardsScanRange->setEndAfter(boundary, exceptionState);
-        forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), exceptionState);
+        forwardsScanRange->setStart(end.anchorNode(), end.deprecatedEditingOffset(), exceptionState);
         TextIterator forwardsIterator(forwardsScanRange->startPosition(), forwardsScanRange->endPosition());
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
@@ -561,7 +561,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    Position searchStart = createLegacyEditingPosition(start.deprecatedNode(), start.deprecatedEditingOffset());
+    Position searchStart = createLegacyEditingPosition(start.anchorNode(), start.deprecatedEditingOffset());
     RangeBoundaryPoint searchEndPoint(boundary);
     searchEndPoint.setToEndOfNode(*boundary);
     Position searchEnd = searchEndPoint.toPosition();
@@ -724,7 +724,7 @@ static PositionWithAffinityType startPositionForLine(const PositionWithAffinityT
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
         PositionType p = c.position();
-        if (p.deprecatedNode()->layoutObject() && p.deprecatedNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
+        if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
 
         return PositionWithAffinityType();
@@ -804,7 +804,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
         Position p = c.deepEquivalent();
-        if (p.deprecatedNode()->layoutObject() && p.deprecatedNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
+        if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
         return VisiblePosition();
     }
@@ -963,7 +963,7 @@ static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInli
 VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
-    Node* node = p.deprecatedNode();
+    Node* node = p.anchorNode();
 
     if (!node)
         return VisiblePosition();
@@ -1016,7 +1016,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
 VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
-    Node* node = p.deprecatedNode();
+    Node* node = p.anchorNode();
 
     if (!node)
         return VisiblePosition();
@@ -1126,7 +1126,7 @@ VisiblePosition nextSentencePosition(const VisiblePosition &c)
 VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     Position p = c.deepEquivalent();
-    Node* startNode = p.deprecatedNode();
+    Node* startNode = p.anchorNode();
 
     if (!startNode)
         return VisiblePosition();
@@ -1204,7 +1204,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
         return VisiblePosition();
 
     Position p = c.deepEquivalent();
-    Node* startNode = p.deprecatedNode();
+    Node* startNode = p.anchorNode();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
         return VisiblePosition(positionAfterNode(startNode));
@@ -1368,7 +1368,7 @@ VisiblePosition startOfDocument(const Node* node)
 
 VisiblePosition startOfDocument(const VisiblePosition &c)
 {
-    return startOfDocument(c.deepEquivalent().deprecatedNode());
+    return startOfDocument(c.deepEquivalent().anchorNode());
 }
 
 VisiblePosition endOfDocument(const Node* node)
@@ -1382,7 +1382,7 @@ VisiblePosition endOfDocument(const Node* node)
 
 VisiblePosition endOfDocument(const VisiblePosition &c)
 {
-    return endOfDocument(c.deepEquivalent().deprecatedNode());
+    return endOfDocument(c.deepEquivalent().anchorNode());
 }
 
 bool isStartOfDocument(const VisiblePosition &p)

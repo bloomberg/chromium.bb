@@ -688,7 +688,7 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
     bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
 
     if (caretBrowsing && !currentNode)
-        currentNode = frame->selection().start().deprecatedNode();
+        currentNode = frame->selection().start().anchorNode();
 
     document->updateLayoutIgnorePendingStylesheets();
 
@@ -783,7 +783,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
     if (caretBrowsing)
         return;
 
-    Node* selectionStartNode = selection.selection().start().deprecatedNode();
+    Node* selectionStartNode = selection.selection().start().anchorNode();
     if (selectionStartNode == newFocusedElement || selectionStartNode->isDescendantOf(newFocusedElement))
         return;
 

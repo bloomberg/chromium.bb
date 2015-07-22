@@ -363,7 +363,7 @@ EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propert
     : m_isMonospaceFont(false)
     , m_fontSizeDelta(NoFontDelta)
 {
-    init(position.deprecatedNode(), propertiesToInclude);
+    init(position.anchorNode(), propertiesToInclude);
 }
 
 EditingStyle::EditingStyle(const StylePropertySet* style)
@@ -743,7 +743,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 
     TriState state = FalseTriState;
     bool nodeIsStart = true;
-    for (Node& node : NodeTraversal::startsAt(selection.start().deprecatedNode())) {
+    for (Node& node : NodeTraversal::startsAt(selection.start().anchorNode())) {
         if (node.layoutObject() && node.hasEditableStyle()) {
             RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
@@ -757,7 +757,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
                 }
             }
         }
-        if (&node == selection.end().deprecatedNode())
+        if (&node == selection.end().anchorNode())
             break;
     }
 
@@ -1347,7 +1347,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
 
     Position position = selection.start().downstream();
 
-    Node* node = position.deprecatedNode();
+    Node* node = position.anchorNode();
     if (!node)
         return NaturalWritingDirection;
 
@@ -1378,7 +1378,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
             hasNestedOrMultipleEmbeddings = false;
             return direction;
         }
-        node = selection.visibleStart().deepEquivalent().deprecatedNode();
+        node = selection.visibleStart().deepEquivalent().anchorNode();
     }
 
     // The selection is either a caret with no typing attributes or a range in which no embedding is added, so just use the start position
@@ -1416,7 +1416,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
             return NaturalWritingDirection;
 
         // In the range case, make sure that the embedding element persists until the end of the range.
-        if (selection.isRange() && !end.deprecatedNode()->isDescendantOf(element))
+        if (selection.isRange() && !end.anchorNode()->isDescendantOf(element))
             return NaturalWritingDirection;
 
         foundDirection = directionValue == CSSValueLtr ? LeftToRightWritingDirection : RightToLeftWritingDirection;
@@ -1469,7 +1469,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
         extractTextStyles(document, mutableStyle.get(), computedStyle->isMonospaceFont());
 
     // Changing the whitespace style in a tab span would collapse the tab into a space.
-    if (isTabHTMLSpanElementTextNode(position.deprecatedNode()) || isTabHTMLSpanElement((position.deprecatedNode())))
+    if (isTabHTMLSpanElementTextNode(position.anchorNode()) || isTabHTMLSpanElement((position.anchorNode())))
         mutableStyle->removeProperty(CSSPropertyWhiteSpace);
 
     // If unicode-bidi is present in mutableStyle and direction is not, then add direction to mutableStyle.

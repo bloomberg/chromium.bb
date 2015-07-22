@@ -174,7 +174,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     Range::selectNodeContents(frame().document(), spellingSearchStart, spellingSearchEnd);
 
     bool startedWithSelection = false;
-    if (selection.start().deprecatedNode()) {
+    if (selection.start().anchorNode()) {
         startedWithSelection = true;
         if (startBeforeSelection) {
             VisiblePosition start(selection.visibleStart());
@@ -469,7 +469,7 @@ bool SpellChecker::isSpellCheckingEnabledFor(Node* node) const
 
 bool SpellChecker::isSpellCheckingEnabledInFocusedNode() const
 {
-    return isSpellCheckingEnabledFor(frame().selection().start().deprecatedNode());
+    return isSpellCheckingEnabledFor(frame().selection().start().anchorNode());
 }
 
 void SpellChecker::markMisspellings(const VisibleSelection& selection, RefPtrWillBeRawPtr<Range>& firstMisspellingRange)
@@ -872,7 +872,7 @@ static Node* findFirstMarkable(Node* node)
         if (node->layoutObject()->isText())
             return node;
         if (node->layoutObject()->isTextControl())
-            node = toLayoutTextControl(node->layoutObject())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
+            node = toLayoutTextControl(node->layoutObject())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().anchorNode();
         else if (node->hasChildren())
             node = node->firstChild();
         else
@@ -884,7 +884,7 @@ static Node* findFirstMarkable(Node* node)
 
 bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerType, int from, int length) const
 {
-    Node* node = findFirstMarkable(frame().selection().start().deprecatedNode());
+    Node* node = findFirstMarkable(frame().selection().start().anchorNode());
     if (!node)
         return false;
 

@@ -334,7 +334,7 @@ void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild
     // For editing positions like [table, 0], insert before the table,
     // likewise for replaced elements, brs, etc.
     Position p = editingPosition.parentAnchoredEquivalent();
-    Node* refChild = p.deprecatedNode();
+    Node* refChild = p.anchorNode();
     int offset = p.deprecatedEditingOffset();
 
     if (canHaveChildrenForEditing(refChild)) {
@@ -684,7 +684,7 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(PassRefPtrWillBeRa
 
 void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& position)
 {
-    Node* node = position.deprecatedNode();
+    Node* node = position.anchorNode();
     if (!node || !node->isTextNode())
         return;
     Text* textNode = toText(node);
@@ -816,17 +816,17 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<Text>> nodes;
-    for (Node& node : NodeTraversal::startsAt(start.deprecatedNode())) {
+    for (Node& node : NodeTraversal::startsAt(start.anchorNode())) {
         if (node.isTextNode())
             nodes.append(toText(&node));
-        if (&node == end.deprecatedNode())
+        if (&node == end.anchorNode())
             break;
     }
 
     for (const auto& node : nodes) {
         Text* textNode = node.get();
-        int startOffset = textNode == start.deprecatedNode() ? start.deprecatedEditingOffset() : 0;
-        int endOffset = textNode == end.deprecatedNode() ? end.deprecatedEditingOffset() : static_cast<int>(textNode->length());
+        int startOffset = textNode == start.anchorNode() ? start.deprecatedEditingOffset() : 0;
+        int endOffset = textNode == end.anchorNode() ? end.deprecatedEditingOffset() : static_cast<int>(textNode->length());
         deleteInsignificantText(textNode, startOffset, endOffset);
     }
 }
@@ -858,7 +858,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlacehold
         return nullptr;
 
     // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See 4244964.
-    ASSERT(pos.deprecatedNode()->layoutObject());
+    ASSERT(pos.anchorNode()->layoutObject());
 
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
     insertNodeAt(placeholder, pos);
@@ -930,21 +930,21 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
         return nullptr;
 
     // Perform some checks to see if we need to perform work in this function.
-    if (isBlock(upstreamStart.deprecatedNode())) {
+    if (isBlock(upstreamStart.anchorNode())) {
         // If the block is the root editable element, always move content to a new block,
         // since it is illegal to modify attributes on the root editable element for editing.
-        if (upstreamStart.deprecatedNode() == editableRootForPosition(upstreamStart)) {
+        if (upstreamStart.anchorNode() == editableRootForPosition(upstreamStart)) {
             // If the block is the root editable element and it contains no visible content, create a new
             // block but don't try and move content into it, since there's nothing for moveParagraphs to move.
-            if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.deprecatedNode()->layoutObject()))
+            if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.anchorNode()->layoutObject()))
                 return insertNewDefaultParagraphElementAt(upstreamStart);
-        } else if (isBlock(upstreamEnd.deprecatedNode())) {
-            if (!upstreamEnd.deprecatedNode()->isDescendantOf(upstreamStart.deprecatedNode())) {
+        } else if (isBlock(upstreamEnd.anchorNode())) {
+            if (!upstreamEnd.anchorNode()->isDescendantOf(upstreamStart.anchorNode())) {
                 // If the paragraph end is a descendant of paragraph start, then we need to run
                 // the rest of this function. If not, we can bail here.
                 return nullptr;
             }
-        } else if (enclosingBlock(upstreamEnd.deprecatedNode()) != upstreamStart.deprecatedNode()) {
+        } else if (enclosingBlock(upstreamEnd.anchorNode()) != upstreamStart.anchorNode()) {
             // It should be an ancestor of the paragraph start.
             // We can bail as we have a full block to work with.
             return nullptr;
@@ -959,7 +959,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
 
     RefPtrWillBeRawPtr<HTMLElement> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
 
-    bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().deprecatedNode());
+    bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().anchorNode());
 
     // Inserting default paragraph element can change visible position. We
     // should update visible positions before use them.
@@ -1012,10 +1012,10 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
         WillBeHeapVector<RefPtrWillBeMember<Node>> ancestors;
 
         // Insert each node from innerNode to outerNode (excluded) in a list.
-        for (Node* n = start.deprecatedNode(); n && n != outerNode; n = n->parentNode())
+        for (Node* n = start.anchorNode(); n && n != outerNode; n = n->parentNode())
             ancestors.append(n);
 
-        // Clone every node between start.deprecatedNode() and outerBlock.
+        // Clone every node between start.anchorNode() and outerBlock.
 
         for (size_t i = ancestors.size(); i != 0; --i) {
             Node* item = ancestors[i - 1].get();
@@ -1031,20 +1031,20 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
         return;
 
     // Handle the case of paragraphs with more than one node,
-    // cloning all the siblings until end.deprecatedNode() is reached.
+    // cloning all the siblings until end.anchorNode() is reached.
 
-    if (start.deprecatedNode() != end.deprecatedNode() && !start.deprecatedNode()->isDescendantOf(end.deprecatedNode())) {
+    if (start.anchorNode() != end.anchorNode() && !start.anchorNode()->isDescendantOf(end.anchorNode())) {
         // If end is not a descendant of outerNode we need to
         // find the first common ancestor to increase the scope
         // of our nextSibling traversal.
-        while (outerNode && !end.deprecatedNode()->isDescendantOf(outerNode.get())) {
+        while (outerNode && !end.anchorNode()->isDescendantOf(outerNode.get())) {
             outerNode = outerNode->parentNode();
         }
 
         if (!outerNode)
             return;
 
-        RefPtrWillBeRawPtr<Node> startNode = start.deprecatedNode();
+        RefPtrWillBeRawPtr<Node> startNode = start.anchorNode();
         for (RefPtrWillBeRawPtr<Node> node = NodeTraversal::nextSkippingChildren(*startNode, outerNode.get()); node; node = NodeTraversal::nextSkippingChildren(*node, outerNode.get())) {
             // Move lastNode up in the tree as much as node was moved up in the
             // tree by NodeTraversal::nextSkippingChildren, so that the relative depth between
@@ -1060,7 +1060,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
             RefPtrWillBeRawPtr<Node> clonedNode = node->cloneNode(true);
             insertNodeAfter(clonedNode, lastNode);
             lastNode = clonedNode.release();
-            if (node == end.deprecatedNode() || end.deprecatedNode()->isDescendantOf(node.get()))
+            if (node == end.anchorNode() || end.anchorNode()->isDescendantOf(node.get()))
                 break;
         }
     }
@@ -1080,7 +1080,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
     if (caretAfterDelete != destination && isStartOfParagraph(caretAfterDelete) && isEndOfParagraph(caretAfterDelete)) {
         // Note: We want the rightmost candidate.
         Position position = caretAfterDelete.deepEquivalent().downstream();
-        Node* node = position.deprecatedNode();
+        Node* node = position.anchorNode();
 
         // Bail if we'd remove an ancestor of our destination.
         if (destinationNode && destinationNode->isDescendantOf(node))
@@ -1157,7 +1157,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     beforeParagraph = VisiblePosition(beforeParagraph.deepEquivalent());
     afterParagraph = VisiblePosition(afterParagraph.deepEquivalent());
 
-    if (beforeParagraph.isNotNull() && !isRenderedTableElement(beforeParagraph.deepEquivalent().deprecatedNode())
+    if (beforeParagraph.isNotNull() && !isRenderedTableElement(beforeParagraph.deepEquivalent().anchorNode())
         && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph == afterParagraph)) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(createBreakElement(document()), beforeParagraph.deepEquivalent());
@@ -1390,13 +1390,13 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
 
     Position caretPos(caret.deepEquivalent().downstream());
     // A line break is either a br or a preserved newline.
-    ASSERT(isHTMLBRElement(caretPos.deprecatedNode()) || (caretPos.deprecatedNode()->isTextNode() && caretPos.deprecatedNode()->layoutObject()->style()->preserveNewline()));
+    ASSERT(isHTMLBRElement(caretPos.anchorNode()) || (caretPos.anchorNode()->isTextNode() && caretPos.anchorNode()->layoutObject()->style()->preserveNewline()));
 
-    if (isHTMLBRElement(*caretPos.deprecatedNode()))
-        removeNodeAndPruneAncestors(caretPos.deprecatedNode());
-    else if (caretPos.deprecatedNode()->isTextNode()) {
+    if (isHTMLBRElement(*caretPos.anchorNode())) {
+        removeNodeAndPruneAncestors(caretPos.anchorNode());
+    } else if (caretPos.anchorNode()->isTextNode()) {
         ASSERT(caretPos.deprecatedEditingOffset() == 0);
-        Text* textNode = toText(caretPos.deprecatedNode());
+        Text* textNode = toText(caretPos.anchorNode());
         ContainerNode* parentNode = textNode->parentNode();
         // The preserved newline must be the first thing in the node, since otherwise the previous
         // paragraph would be quoted, and we verified that it wasn't above.
@@ -1432,7 +1432,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         if (visiblePos == lastInAnchor) {
             // Make sure anchors are pushed down before avoiding them so that we don't
             // also avoid structural elements like lists and blocks (5142012).
-            if (original.deprecatedNode() != enclosingAnchor && original.deprecatedNode()->parentNode() != enclosingAnchor) {
+            if (original.anchorNode() != enclosingAnchor && original.anchorNode()->parentNode() != enclosingAnchor) {
                 pushAnchorElementDown(enclosingAnchor);
                 enclosingAnchor = enclosingAnchorElement(original);
                 if (!enclosingAnchor)
@@ -1441,7 +1441,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             // Don't insert outside an anchor if doing so would skip over a line break.  It would
             // probably be safe to move the line break so that we could still avoid the anchor here.
             Position downstream(visiblePos.deepEquivalent().downstream());
-            if (lineBreakExistsAtVisiblePosition(visiblePos) && downstream.deprecatedNode()->isDescendantOf(enclosingAnchor))
+            if (lineBreakExistsAtVisiblePosition(visiblePos) && downstream.anchorNode()->isDescendantOf(enclosingAnchor))
                 return original;
 
             result = positionInParentAfterNode(*enclosingAnchor);
@@ -1451,7 +1451,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         if (visiblePos == firstInAnchor) {
             // Make sure anchors are pushed down before avoiding them so that we don't
             // also avoid structural elements like lists and blocks (5142012).
-            if (original.deprecatedNode() != enclosingAnchor && original.deprecatedNode()->parentNode() != enclosingAnchor) {
+            if (original.anchorNode() != enclosingAnchor && original.anchorNode()->parentNode() != enclosingAnchor) {
                 pushAnchorElementDown(enclosingAnchor);
                 enclosingAnchor = enclosingAnchorElement(original);
             }

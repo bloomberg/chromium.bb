@@ -2757,7 +2757,7 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
     Position start = selection.selection().start();
     PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
 
-    if (!overrideTargetElement && start.deprecatedNode() && (selection.rootEditableElement() || selection.isRange())) {
+    if (!overrideTargetElement && start.anchorNode() && (selection.rootEditableElement() || selection.isRange())) {
         RefPtrWillBeRawPtr<Range> selectionRange = selection.toNormalizedRange();
         IntRect firstRect = m_frame->editor().firstRectForRange(selectionRange.get());
 

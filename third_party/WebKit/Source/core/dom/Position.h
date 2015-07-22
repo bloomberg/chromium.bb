@@ -167,11 +167,6 @@ public:
 
     Node* anchorNode() const { return m_anchorNode.get(); }
 
-    // FIXME: Callers should be moved off of node(), node() is not always the container for this position.
-    // For nodes which editingIgnoresContent(node()) returns true, positions like [ignoredNode, 0]
-    // will be treated as before ignoredNode (thus node() is really after the position, not containing it).
-    Node* deprecatedNode() const { return m_anchorNode.get(); }
-
     Document* document() const { return m_anchorNode ? &m_anchorNode->document() : 0; }
     bool inDocument() const { return m_anchorNode && m_anchorNode->inDocument(); }
     Element* rootEditableElement() const

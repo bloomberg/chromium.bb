@@ -150,7 +150,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         // no longer in the document.
         if (endAfterSelection.isNotNull() && !endAfterSelection.deepEquivalent().inDocument())
             break;
-        // Sanity check: Make sure our moveParagraph calls didn't remove endOfNextParagraph.deepEquivalent().deprecatedNode()
+        // Sanity check: Make sure our moveParagraph calls didn't remove endOfNextParagraph.deepEquivalent().anchorNode()
         // If somehow, e.g. mutation event handler, we did, return to prevent crashes.
         if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().inDocument())
             return;
@@ -216,7 +216,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
     document().updateLayoutTreeIfNeeded();
 
     if (const ComputedStyle* endStyle = computedStyleOfEnclosingTextNode(end)) {
-        bool isEndAndEndOfLastParagraphOnSameNode = computedStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.deprecatedNode() == m_endOfLastParagraph.deprecatedNode();
+        bool isEndAndEndOfLastParagraphOnSameNode = computedStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.anchorNode() == m_endOfLastParagraph.anchorNode();
         // Include \n at the end of line if we're at an empty paragraph
         if (endStyle->preserveNewline() && start == end && end.offsetInContainerNode() < end.containerNode()->maxCharacterOffset()) {
             int endOffset = end.offsetInContainerNode();

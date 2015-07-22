@@ -337,7 +337,7 @@ bool VisibleSelection::expandUsingGranularityInComposedTree(TextGranularity gran
 
 static PassRefPtrWillBeRawPtr<Range> makeSearchRange(const Position& pos)
 {
-    Node* node = pos.deprecatedNode();
+    Node* node = pos.anchorNode();
     if (!node)
         return nullptr;
     Document& document = node->document();
@@ -494,7 +494,7 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         VisiblePosition wordEnd(endOfWord(originalEnd, side));
         VisiblePosition end(wordEnd);
 
-        if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.deprecatedNode())) {
+        if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.anchorNode())) {
             // Select the paragraph break (the space from the end of a paragraph to the start of
             // the next one) to match TextEdit.
             end = wordEnd.next();
@@ -1064,7 +1064,7 @@ Element* VisibleSelection::rootEditableElement() const
 
 Node* VisibleSelection::nonBoundaryShadowTreeRootNode() const
 {
-    return start().deprecatedNode() && !start().deprecatedNode()->isShadowRoot() ? start().deprecatedNode()->nonBoundaryShadowTreeRootNode() : 0;
+    return start().anchorNode() && !start().anchorNode()->isShadowRoot() ? start().anchorNode()->nonBoundaryShadowTreeRootNode() : 0;
 }
 
 VisibleSelection::ChangeObserver::ChangeObserver()

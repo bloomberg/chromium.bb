@@ -157,7 +157,7 @@ void testBoundary(HTMLDocument& document, HTMLTextFormControlElement& textContro
     for (unsigned i = 0; i < textControl.innerEditorValue().length(); i++) {
         textControl.setSelectionRange(i, i);
         Position position = document.frame()->selection().start();
-        SCOPED_TRACE(::testing::Message() << "offset " << position.deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(position.deprecatedNode()).ascii().data());
+        SCOPED_TRACE(::testing::Message() << "offset " << position.deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(position.anchorNode()).ascii().data());
         {
             SCOPED_TRACE("HTMLTextFormControlElement::startOfWord");
             testFunctionEquivalence(position, HTMLTextFormControlElement::startOfWord, startOfWord);
