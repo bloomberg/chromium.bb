@@ -13,9 +13,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -33,7 +32,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for the AutofillPopup.
  */
-public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class AutofillPopupTest extends ChromeShellTestBase {
 
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Smith";
@@ -119,18 +118,10 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
     private AutofillTestHelper mHelper;
     private List<AutofillLogger.LogEntry> mAutofillLoggedEntries;
 
-    public AutofillPopupTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // Don't launch activity automatically.
-    }
-
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        clearAppData();
         mAutofillLoggedEntries = new ArrayList<AutofillLogger.LogEntry>();
         AutofillLogger.setLogger(
                 new AutofillLogger.Logger() {
@@ -145,12 +136,13 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
     private void loadAndFillForm(
             final String formDataUrl, final String inputText)
             throws InterruptedException, ExecutionException, TimeoutException {
-        startMainActivityWithURL(formDataUrl);
+        launchChromeShellWithUrl(formDataUrl);
+        assertTrue(waitForActiveShellToBeDoneLoading());
         mHelper = new AutofillTestHelper();
 
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
-        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
         final WebContents webContents = viewCore.getWebContents();
         final ViewGroup view = viewCore.getContainerView();
         final TestInputMethodManagerWrapper immw =
@@ -203,7 +195,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
     public void testClickAutofillPopupSuggestion()
             throws InterruptedException, ExecutionException, TimeoutException {
         loadAndFillForm(BASIC_PAGE_DATA, "J");
-        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
         final WebContents webContents = viewCore.getWebContents();
 
         assertEquals("First name did not match",
