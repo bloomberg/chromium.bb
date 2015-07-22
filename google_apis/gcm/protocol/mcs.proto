@@ -250,6 +250,9 @@ message DataMessageStanza {
   optional int32 queued = 19;
 
   optional int64 status = 20;
+
+  // Optional field containing the binary payload of the message.
+  optional bytes raw_data = 21;
 }
 
 /**

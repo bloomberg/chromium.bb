@@ -1335,6 +1335,8 @@ void GCMClientImpl::HandleIncomingDataMessage(
   if (data_message_stanza.has_token())
     incoming_message.collapse_key = data_message_stanza.token();
   incoming_message.data = message_data;
+  incoming_message.raw_data = data_message_stanza.raw_data();
+
   delegate_->OnMessageReceived(app_id, incoming_message);
 }
 

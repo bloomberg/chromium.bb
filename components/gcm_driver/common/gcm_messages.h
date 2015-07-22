@@ -37,6 +37,7 @@ struct GCM_DRIVER_EXPORT IncomingMessage {
   MessageData data;
   std::string collapse_key;
   std::string sender_id;
+  std::string raw_data;
 };
 
 }  // namespace gcm
