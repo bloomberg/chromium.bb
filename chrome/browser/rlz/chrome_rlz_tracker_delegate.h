@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_RLZ_CHROME_RLZ_TRACKER_DELEGATE_H_
 #define CHROME_BROWSER_RLZ_CHROME_RLZ_TRACKER_DELEGATE_H_
 
-#include "base/callback_list.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "content/public/browser/notification_observer.h"

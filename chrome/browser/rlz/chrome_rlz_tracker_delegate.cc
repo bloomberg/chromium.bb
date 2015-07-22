@@ -5,12 +5,15 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
@@ -27,11 +30,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
-#endif
-
-#if !defined(OS_IOS)
-#include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #endif
 
 ChromeRLZTrackerDelegate::ChromeRLZTrackerDelegate() {
@@ -63,7 +61,6 @@ bool ChromeRLZTrackerDelegate::IsGoogleHomepage(Profile* profile) {
 
 // static
 bool ChromeRLZTrackerDelegate::IsGoogleInStartpages(Profile* profile) {
-#if !defined(OS_IOS)
   bool is_google_in_startpages = false;
   SessionStartupPref session_startup_prefs =
       StartupBrowserCreator::GetSessionStartupPref(
@@ -75,10 +72,6 @@ bool ChromeRLZTrackerDelegate::IsGoogleInStartpages(Profile* profile) {
                       google_util::IsGoogleHomePageUrl) > 0;
   }
   return is_google_in_startpages;
-#else
-  // iOS does not have a notion of startpages.
-  return false;
-#endif
 }
 
 void ChromeRLZTrackerDelegate::Cleanup() {
@@ -156,12 +149,10 @@ void ChromeRLZTrackerDelegate::SetOmniboxSearchCallback(
 
 void ChromeRLZTrackerDelegate::SetHomepageSearchCallback(
     const base::Closure& callback) {
-#if !defined(OS_IOS)
   DCHECK(!callback.is_null());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
   on_homepage_search_callback_ = callback;
-#endif
 }
 
 void ChromeRLZTrackerDelegate::Observe(
@@ -183,7 +174,6 @@ void ChromeRLZTrackerDelegate::Observe(
       swap(callback_to_run, on_omnibox_search_callback_);
       break;
 
-#if !defined(OS_IOS)
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       // Firstly check if it is a Google search.
       content::LoadCommittedDetails* load_details =
@@ -224,7 +214,6 @@ void ChromeRLZTrackerDelegate::Observe(
       }
       break;
     }
-#endif  // !defined(OS_IOS)
 
     default:
       NOTREACHED();
