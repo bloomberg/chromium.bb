@@ -3145,6 +3145,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
   caps.image = true;
+  caps.surfaceless = surfaceless_;
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;

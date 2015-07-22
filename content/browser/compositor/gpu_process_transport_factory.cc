@@ -270,23 +270,19 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         compositor->vsync_manager()));
   } else {
     DCHECK(context_provider);
+    ContextProvider::Capabilities capabilities =
+        context_provider->ContextCapabilities();
     if (!data->surface_id) {
       surface = make_scoped_ptr(new OffscreenBrowserCompositorOutputSurface(
           context_provider, compositor->vsync_manager(),
           scoped_ptr<BrowserCompositorOverlayCandidateValidator>()));
-    } else
-#if defined(USE_OZONE)
-        if (ui::OzonePlatform::GetInstance()
-                ->GetOverlayManager()
-                ->CanShowPrimaryPlaneAsOverlay()) {
+    } else if (capabilities.gpu.surfaceless) {
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
               context_provider, data->surface_id, compositor->vsync_manager(),
               CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
               BrowserGpuMemoryBufferManager::current()));
-    } else
-#endif
-    {
+    } else {
       surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
           context_provider, compositor->vsync_manager(),
           CreateOverlayCandidateValidator(compositor->widget())));

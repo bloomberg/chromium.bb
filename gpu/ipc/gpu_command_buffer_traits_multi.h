@@ -97,6 +97,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(render_buffer_format_bgra8888)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_query_boolean)
   IPC_STRUCT_TRAITS_MEMBER(timer_queries)
+  IPC_STRUCT_TRAITS_MEMBER(surfaceless)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)
