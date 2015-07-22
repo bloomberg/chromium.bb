@@ -136,10 +136,6 @@ DisplayManager::DisplayManager()
       registered_internal_display_rotation_(gfx::Display::ROTATE_0),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
-  // Enable only on the device so that DisplayManagerFontTest passes.
-  if (base::SysInfo::IsRunningOnChromeOS())
-    DisplayInfo::SetUse125DSFForUIScaling(true);
-
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());

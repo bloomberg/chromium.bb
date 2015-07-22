@@ -942,7 +942,7 @@ TEST_F(DisplayManagerTest, Rotate) {
 }
 
 TEST_F(DisplayManagerTest, UIScale) {
-  DisplayInfo::SetUse125DSFForUIScaling(false);
+  test::ScopedDisable125DSFForUIScaling disable;
 
   UpdateDisplay("1280x800");
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
@@ -1113,9 +1113,7 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 }
 
-TEST_F(DisplayManagerTest, Use125DSFRorUIScaling) {
-  DisplayInfo::SetUse125DSFForUIScaling(true);
-
+TEST_F(DisplayManagerTest, Use125DSFForUIScaling) {
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   test::DisplayManagerTestApi(display_manager())
       .SetInternalDisplayId(display_id);
@@ -1138,8 +1136,6 @@ TEST_F(DisplayManagerTest, Use125DSFRorUIScaling) {
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   EXPECT_EQ("2400x1350", GetDisplayForId(display_id).size().ToString());
-
-  DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
 TEST_F(DisplayManagerTest, UIScaleInUnifiedMode) {
@@ -1727,6 +1723,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100Internal) {
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125Internal) {
+  test::ScopedDisable125DSFForUIScaling disable;
   FontTestHelper helper(1.25f, FontTestHelper::INTERNAL);
   ASSERT_DOUBLE_EQ(
       1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
@@ -1776,7 +1773,6 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
 
 TEST_F(DisplayManagerFontTest,
        TextSubpixelPositioningWithDsf125InternalWithScaling) {
-  DisplayInfo::SetUse125DSFForUIScaling(true);
   FontTestHelper helper(1.25f, FontTestHelper::INTERNAL);
   ASSERT_DOUBLE_EQ(
       1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
@@ -1790,8 +1786,6 @@ TEST_F(DisplayManagerFontTest,
       1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
   EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
-
-  DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {

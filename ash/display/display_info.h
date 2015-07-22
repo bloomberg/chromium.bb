@@ -86,14 +86,14 @@ class ASH_EXPORT DisplayInfo {
   static DisplayInfo CreateFromSpecWithID(const std::string& spec,
                                           int64 id);
 
-  DisplayInfo();
-  DisplayInfo(int64 id, const std::string& name, bool has_overscan);
-  ~DisplayInfo();
-
   // When this is set to true on the device whose internal display has
   // 1.25 dsf, Chrome uses 1.0f as a default scale factor, and uses
   // dsf 1.25 when UI scaling is set to 0.8f.
-  static void SetUse125DSFForUIScaling(bool enable);
+  static void SetUse125DSFForUIScalingForTest(bool enable);
+
+  DisplayInfo();
+  DisplayInfo(int64 id, const std::string& name, bool has_overscan);
+  ~DisplayInfo();
 
   int64 id() const { return id_; }
 
@@ -235,7 +235,7 @@ class ASH_EXPORT DisplayInfo {
  private:
   // Returns true if this display should use DSF=1.25 for UI scaling; i.e.
   // SetUse125DSFForUIScaling(true) is called and this is the internal display.
-  bool Use125DSFRorUIScaling() const;
+  bool Use125DSFForUIScaling() const;
 
   int64 id_;
   std::string name_;

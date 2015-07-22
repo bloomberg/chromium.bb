@@ -66,6 +66,15 @@ class DisplayManagerTestApi {
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTestApi);
 };
 
+class ScopedDisable125DSFForUIScaling {
+ public:
+  ScopedDisable125DSFForUIScaling();
+  ~ScopedDisable125DSFForUIScaling();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisable125DSFForUIScaling);
+};
+
 }  // namespace test
 }  // namespace ash
 

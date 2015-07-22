@@ -169,5 +169,13 @@ void DisplayManagerTestApi::SetAvailableColorProfiles(
       profiles);
 }
 
+ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {
+  DisplayInfo::SetUse125DSFForUIScalingForTest(false);
+}
+
+ScopedDisable125DSFForUIScaling::~ScopedDisable125DSFForUIScaling() {
+  DisplayInfo::SetUse125DSFForUIScalingForTest(true);
+}
+
 }  // namespace test
 }  // namespace ash

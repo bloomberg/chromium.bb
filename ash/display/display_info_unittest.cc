@@ -110,23 +110,19 @@ TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPHiDPI) {
 }
 
 TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIP125) {
-  DisplayInfo::SetUse125DSFForUIScaling(true);
   gfx::Size size(1920, 1080);
   EXPECT_EQ("2400x1350", GetModeSizeInDIP(size, 1.25f, 1.25f, true));
   EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 1.25f, 1.0f, true));
   EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.25f, 0.8f, true));
   EXPECT_EQ("1200x675", GetModeSizeInDIP(size, 1.25f, 0.625f, true));
   EXPECT_EQ("960x540", GetModeSizeInDIP(size, 1.25f, 0.5f, true));
-  DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
 TEST_F(DisplayInfoTest, DisplayModeGetSizeForExternal4K) {
-  DisplayInfo::SetUse125DSFForUIScaling(true);
   gfx::Size size(3840, 2160);
   EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 2.0f, 1.0f, false));
   EXPECT_EQ("3072x1728", GetModeSizeInDIP(size, 1.25f, 1.0f, false));
   EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
-  DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
 }  // namespace ash
