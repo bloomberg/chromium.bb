@@ -1132,15 +1132,6 @@ template<typename T> struct PtrHash<blink::Member<T>> : PtrHash<T*> {
 template<typename T> struct PtrHash<blink::WeakMember<T>> : PtrHash<blink::Member<T>> {
 };
 
-template<typename P> struct PtrHash<blink::Persistent<P>> : PtrHash<P*> {
-    using PtrHash<P*>::hash;
-    static unsigned hash(const RefPtr<P>& key) { return hash(key.get()); }
-    using PtrHash<P*>::equal;
-    static bool equal(const RefPtr<P>& a, const RefPtr<P>& b) { return a == b; }
-    static bool equal(P* a, const RefPtr<P>& b) { return a == b; }
-    static bool equal(const RefPtr<P>& a, P* b) { return a == b; }
-};
-
 // PtrHash is the default hash for hash tables with members.
 template<typename T> struct DefaultHash<blink::Member<T>> {
     using Hash = PtrHash<blink::Member<T>>;
@@ -1148,10 +1139,6 @@ template<typename T> struct DefaultHash<blink::Member<T>> {
 
 template<typename T> struct DefaultHash<blink::WeakMember<T>> {
     using Hash = PtrHash<blink::WeakMember<T>>;
-};
-
-template<typename T> struct DefaultHash<blink::Persistent<T>> {
-    using Hash = PtrHash<blink::Persistent<T>>;
 };
 
 template<typename T>
