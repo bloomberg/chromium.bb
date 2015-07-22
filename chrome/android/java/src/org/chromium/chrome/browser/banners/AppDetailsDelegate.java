@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.banners;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * Fetches data about the given app.
  */
@@ -16,6 +18,7 @@ public abstract class AppDetailsDelegate {
          * Called when the task has finished.
          * @param data Data about the requested package.  Will be null if retrieval failed.
          */
+        @VisibleForTesting
         public void onAppDetailsRetrieved(AppData data);
     }
 

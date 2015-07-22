@@ -7,22 +7,21 @@ package org.chromium.chrome.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content.browser.test.util.DOMUtils;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for InterceptNavigationDelegate
  */
-public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
+public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String BASE_URL = "chrome/test/data/navigation_interception/";
     private static final String NAVIGATION_FROM_TIMEOUT_PAGE =
             BASE_URL + "navigation_from_timer.html";
@@ -40,7 +39,7 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
     private static final long DEFAULT_MAX_TIME_TO_WAIT_IN_MS = 3000;
     private static final long LONG_MAX_TIME_TO_WAIT_IN_MS = 20000;
 
-    private ChromeShellActivity mActivity;
+    private ChromeActivity mActivity;
     private ArrayList<NavigationParams> mHistory = new ArrayList<NavigationParams>();
 
     private TestInterceptNavigationDelegate mInterceptNavigationDelegate =
@@ -52,6 +51,15 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
             mHistory.add(navigationParams);
             return false;
         }
+    }
+
+    public InterceptNavigationDelegateTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     private void waitTillExpectedCallsComplete(final int count, long timeout) {
@@ -72,12 +80,11 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        mActivity = getActivity();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeShellTab tab = mActivity.getActiveTab();
+                Tab tab = mActivity.getActivityTab();
                 tab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
             }
         });
@@ -85,7 +92,7 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
 
     @SmallTest
     public void testNavigationFromTimer() throws InterruptedException {
-        loadUrlWithSanitization(TestHttpServerClient.getUrl(NAVIGATION_FROM_TIMEOUT_PAGE));
+        loadUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_TIMEOUT_PAGE));
         assertEquals(1, mHistory.size());
 
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
@@ -94,57 +101,58 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
     }
 
     @SmallTest
-    public void testNavigationFromUserGesture() throws InterruptedException {
-        loadUrlWithSanitization(TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PAGE));
+    public void testNavigationFromUserGesture() throws InterruptedException, TimeoutException {
+        loadUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PAGE));
         assertEquals(1, mHistory.size());
 
-        TouchCommon.singleClickView(mActivity.getActiveTab().getView(), 25, 25);
+        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(true, mHistory.get(1).hasUserGesture);
         assertEquals(false, mHistory.get(1).hasUserGestureCarryover);
     }
 
     @SmallTest
-    public void testNavigationFromXHRCallback() throws InterruptedException {
-        loadUrlWithSanitization(TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PAGE));
+    public void testNavigationFromXHRCallback() throws InterruptedException, TimeoutException {
+        loadUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PAGE));
         assertEquals(1, mHistory.size());
 
-        TouchCommon.singleClickView(mActivity.getActiveTab().getView(), 25, 25);
+        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(false, mHistory.get(1).hasUserGesture);
         assertEquals(true, mHistory.get(1).hasUserGestureCarryover);
     }
 
     @SmallTest
-    public void testNavigationFromXHRCallbackAndShortTimeout() throws InterruptedException {
-        loadUrlWithSanitization(
-                TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE));
+    public void testNavigationFromXHRCallbackAndShortTimeout()
+            throws InterruptedException, TimeoutException {
+        loadUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE));
         assertEquals(1, mHistory.size());
 
-        TouchCommon.singleClickView(mActivity.getActiveTab().getView(), 25, 25);
+        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(false, mHistory.get(1).hasUserGesture);
         assertEquals(true, mHistory.get(1).hasUserGestureCarryover);
     }
 
     @SmallTest
-    public void testNavigationFromXHRCallbackAndLongTimeout() throws InterruptedException {
-        loadUrlWithSanitization(
+    public void testNavigationFromXHRCallbackAndLongTimeout()
+            throws InterruptedException, TimeoutException {
+        loadUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE));
         assertEquals(1, mHistory.size());
 
-        TouchCommon.singleClickView(mActivity.getActiveTab().getView(), 25, 25);
+        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, LONG_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(false, mHistory.get(1).hasUserGesture);
         assertEquals(false, mHistory.get(1).hasUserGestureCarryover);
     }
 
     @SmallTest
-    public void testNavigationFromImageOnLoad() throws InterruptedException {
-        loadUrlWithSanitization(TestHttpServerClient.getUrl(NAVIGATION_FROM_IMAGE_ONLOAD_PAGE));
+    public void testNavigationFromImageOnLoad() throws InterruptedException, TimeoutException {
+        loadUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_IMAGE_ONLOAD_PAGE));
         assertEquals(1, mHistory.size());
 
-        TouchCommon.singleClickView(mActivity.getActiveTab().getView(), 25, 25);
+        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(false, mHistory.get(1).hasUserGesture);
         assertEquals(true, mHistory.get(1).hasUserGestureCarryover);

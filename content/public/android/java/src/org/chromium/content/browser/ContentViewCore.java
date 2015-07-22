@@ -1139,6 +1139,7 @@ public class ContentViewCore implements
     /**
      * @return The selected text (empty if no text selected).
      */
+    @VisibleForTesting
     public String getSelectedText() {
         return mHasSelection ? mLastSelectedText : "";
     }
@@ -2466,6 +2467,7 @@ public class ContentViewCore implements
     /**
      * @return The visible select popup being shown.
      */
+    @VisibleForTesting
     public SelectPopup getSelectPopupForTest() {
         return mSelectPopup;
     }

@@ -11,8 +11,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 /**
  * Tests org.chromium.chrome.browser.webapps.AddToHomescreenDialog by verifying
@@ -22,26 +22,25 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
  * This is mostly intended as a smoke test because the dialog isn't used in
  * Chromium for the moment.
  */
-public class AddToHomescreenDialogTest extends ChromeShellTestBase {
-    private ChromeShellActivity mActivity;
+public class AddToHomescreenDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+    public AddToHomescreenDialogTest() {
+        super(ChromeActivity.class);
+    }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     @SmallTest
     @Feature("{Webapp}")
     public void testSmoke() throws InterruptedException {
-        assertTrue(waitForActiveShellToBeDoneLoading());
-
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertNull(AddToHomescreenDialog.getCurrentDialogForTest());
 
-                AddToHomescreenDialog.show(mActivity, mActivity.getActiveTab());
+                AddToHomescreenDialog.show(getActivity(), getActivity().getActivityTab());
                 AlertDialog dialog = AddToHomescreenDialog.getCurrentDialogForTest();
                 assertNotNull(dialog);
 
