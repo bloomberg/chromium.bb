@@ -303,12 +303,18 @@ public:
 
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
 public:
+    // Window coordinate
     int x;
     int y;
+
+    // DEPRECATED (crbug.com/507787)
     int windowX;
     int windowY;
+
+    // Screen coordinate
     int globalX;
     int globalY;
+
     int movementX;
     int movementY;
     int clickCount;
