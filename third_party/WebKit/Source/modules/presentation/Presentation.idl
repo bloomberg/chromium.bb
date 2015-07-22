@@ -19,5 +19,5 @@
     readonly attribute PresentationSession? session;
     // TODO(avayvod): attribute EventHandler onsessionavailable;
 
-    attribute PresentationRequest defaultRequest;
+    attribute PresentationRequest? defaultRequest;
 };

@@ -110,7 +110,12 @@ void PresentationController::setDefaultRequest(PresentationRequest* request)
     m_defaultRequest = request;
 
     if (m_client)
+        return;
+
+    if (m_defaultRequest)
         m_client->setDefaultPresentationUrl(m_defaultRequest->url().string());
+    else
+        m_client->setDefaultPresentationUrl(blink::WebString());
 }
 
 void PresentationController::registerSession(PresentationSession* session)
