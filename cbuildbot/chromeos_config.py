@@ -439,6 +439,7 @@ _x86_internal_release_boards = frozenset([
     'tidus',
     'tricky',
     'winky',
+    'wizpig',
     'wolf',
     'x86-alex',
     'x86-alex_freon',
@@ -2404,6 +2405,7 @@ def GetConfig():
   _AddGroupConfig(
       'rambi-e', 'orco', (
           'heli',
+          'wizpig',
       ),
       important=False,
   )
