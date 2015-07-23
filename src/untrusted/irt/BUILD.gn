@@ -8,6 +8,8 @@ executable("irt_core") {
   sources = [
     "irt_core_resource.c",
     "irt_entry_core.c",
+    "irt_pnacl_translator_compile.c",
+    "irt_pnacl_translator_link.c",
   ]
   deps = [
     "//native_client/build/config/nacl:nacl_base",
@@ -40,8 +42,6 @@ static_library("irt_core_lib") {
     "irt_malloc.c",
     "irt_memory.c",
     "irt_mutex.c",
-    "irt_pnacl_translator_compile.c",
-    "irt_pnacl_translator_link.c",
     "irt_private_pthread.c",
     "irt_private_tls.c",
     "irt_query_list.c",

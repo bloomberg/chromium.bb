@@ -89,6 +89,10 @@ UNTRUSTED_LIBRARY_DEPENDENCIES = {
     'ppapi_cpp': [
         'ppapi',
         ],
+    'srpc': [
+        'platform',
+        'imc_syscalls',
+        ],
     }
 
 # Platform specific library dependencies. Mapping from a platform,
