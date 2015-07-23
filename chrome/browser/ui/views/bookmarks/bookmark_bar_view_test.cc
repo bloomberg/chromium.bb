@@ -2070,3 +2070,77 @@ class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
 #endif
 
 VIEW_TEST(BookmarkBarViewTest22, MAYBE_CloseSourceBrowserDuringDrag)
+
+// Tests opening a context menu for a bookmark node from the keyboard.
+class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
+ public:
+  BookmarkBarViewTest23()
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest23::Step4)) {
+  }
+
+ protected:
+  void DoTestOnMessageLoop() override {
+    // Move the mouse to the first folder on the bookmark bar and press the
+    // mouse.
+    views::LabelButton* button = bb_view_->other_bookmarks_button();
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest23::Step2));
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Navigate down to highlight the first menu item.
+    ui_controls::SendKeyPressNotifyWhenDone(
+        GetWidget()->GetNativeWindow(), ui::VKEY_DOWN,
+        false, false, false, false,  // No modifer keys
+        CreateEventTask(this, &BookmarkBarViewTest23::Step3));
+  }
+
+  void Step3() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Open the context menu via the keyboard.
+    ui_controls::SendKeyPress(
+        GetWidget()->GetNativeWindow(), ui::VKEY_APPS,
+        false, false, false, false);  // No modifer keys
+    // The BookmarkContextMenuNotificationObserver triggers Step4.
+  }
+
+  void Step4() {
+    // Make sure the context menu is showing.
+    views::MenuItemView* menu = bb_view_->GetContextMenu();
+    ASSERT_TRUE(menu);
+    ASSERT_TRUE(menu->GetSubmenu());
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Select the first menu item (open).
+    ui_test_utils::MoveMouseToCenterAndPress(
+        menu->GetSubmenu()->GetMenuItemAt(0),
+        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest23::Step5));
+  }
+
+  void Step5() {
+    EXPECT_EQ(navigator_.url_, model_->other_node()->GetChild(0)->url());
+    Done();
+  }
+
+  BookmarkContextMenuNotificationObserver observer_;
+};
+
+#if defined(USE_OZONE)
+// ozone bringup - http://crbug.com/401304
+#define MAYBE_ContextMenusKeyboard DISABLED_ContextMenusKeyboard
+#else
+#define MAYBE_ContextMenusKeyboard ContextMenusKeyboard
+#endif
+VIEW_TEST(BookmarkBarViewTest23, MAYBE_ContextMenusKeyboard)
