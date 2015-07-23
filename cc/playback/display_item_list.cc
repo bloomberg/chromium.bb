@@ -46,7 +46,7 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
       use_cached_picture_(settings.use_cached_picture),
       retain_individual_display_items_(retain_individual_display_items),
       layer_rect_(layer_rect),
-      is_suitable_for_gpu_rasterization_(true),
+      all_items_are_suitable_for_gpu_rasterization_(true),
       approximate_op_count_(0),
       picture_memory_usage_(0),
       external_memory_usage_(0) {
@@ -142,7 +142,7 @@ void DisplayItemList::ProcessAppendedItems() {
   needs_process_ = false;
 #endif
   for (const DisplayItem* item : items_) {
-    is_suitable_for_gpu_rasterization_ &=
+    all_items_are_suitable_for_gpu_rasterization_ &=
         item->is_suitable_for_gpu_rasterization();
     approximate_op_count_ += item->approximate_op_count();
 
@@ -165,7 +165,7 @@ void DisplayItemList::ProcessAppendedItems() {
 void DisplayItemList::RasterIntoCanvas(const DisplayItem& item) {
   DCHECK(canvas_);
   DCHECK(!retain_individual_display_items_);
-  is_suitable_for_gpu_rasterization_ &=
+  all_items_are_suitable_for_gpu_rasterization_ &=
       item.is_suitable_for_gpu_rasterization();
   approximate_op_count_ += item.approximate_op_count();
 
@@ -203,10 +203,14 @@ void DisplayItemList::Finalize() {
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
   DCHECK(ProcessAppendedItemsCalled());
+  if (use_cached_picture_)
+    return picture_->suitableForGpuRasterization(NULL);
+
   // This is more permissive than Picture's implementation, since none of the
   // items might individually trigger a veto even though they collectively have
-  // enough "bad" operations that a corresponding Picture would get vetoed.
-  return is_suitable_for_gpu_rasterization_;
+  // enough "bad" operations that a corresponding Picture would get vetoed. See
+  // crbug.com/513016.
+  return all_items_are_suitable_for_gpu_rasterization_;
 }
 
 int DisplayItemList::ApproximateOpCount() const {

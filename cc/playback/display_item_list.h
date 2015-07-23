@@ -112,7 +112,7 @@ class CC_EXPORT DisplayItemList
   bool retain_individual_display_items_;
 
   gfx::Rect layer_rect_;
-  bool is_suitable_for_gpu_rasterization_;
+  bool all_items_are_suitable_for_gpu_rasterization_;
   int approximate_op_count_;
 
   // Memory usage due to the cached SkPicture.

@@ -284,6 +284,133 @@ TEST(DisplayItemListTest, CompactingItems) {
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
 
+TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
+  gfx::Rect layer_rect(1000, 1000);
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  skia::RefPtr<SkPicture> picture;
+
+  bool use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
+  canvas =
+      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+
+  SkPath path;
+  path.moveTo(0, 0);
+  path.lineTo(0, 100);
+  path.lineTo(50, 50);
+  path.lineTo(100, 100);
+  path.lineTo(100, 0);
+  path.close();
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  canvas->drawPath(path, paint);
+
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  DrawingDisplayItem* item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->Finalize();
+
+  // A single DrawingDisplayItem with a large AA concave path shouldn't trigger
+  // a veto.
+  EXPECT_TRUE(list->IsSuitableForGpuRasterization());
+
+  list = DisplayItemList::Create(layer_rect, use_cached_picture);
+  canvas =
+      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+  for (int i = 0; i < 10; ++i)
+    canvas->drawPath(path, paint);
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->Finalize();
+
+  // A single DrawingDisplayItem with several large AA concave paths should
+  // trigger a veto.
+  EXPECT_FALSE(list->IsSuitableForGpuRasterization());
+
+  list = DisplayItemList::Create(layer_rect, use_cached_picture);
+  for (int i = 0; i < 10; ++i) {
+    canvas =
+        skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+    canvas->drawPath(path, paint);
+    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+    item = list->CreateAndAppendItem<DrawingDisplayItem>();
+    item->SetNew(picture);
+  }
+  list->Finalize();
+
+  // Having several DrawingDisplayItems that each contain a large AA concave
+  // path should trigger a veto.
+  EXPECT_FALSE(list->IsSuitableForGpuRasterization());
+}
+
+TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
+  gfx::Rect layer_rect(1000, 1000);
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  skia::RefPtr<SkPicture> picture;
+
+  bool use_cached_picture = false;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
+  canvas =
+      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+
+  SkPath path;
+  path.moveTo(0, 0);
+  path.lineTo(0, 100);
+  path.lineTo(50, 50);
+  path.lineTo(100, 100);
+  path.lineTo(100, 0);
+  path.close();
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  canvas->drawPath(path, paint);
+
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  DrawingDisplayItem* item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->Finalize();
+
+  // A single DrawingDisplayItem with a large AA concave path shouldn't trigger
+  // a veto.
+  EXPECT_TRUE(list->IsSuitableForGpuRasterization());
+
+  list = DisplayItemList::Create(layer_rect, use_cached_picture);
+  canvas =
+      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+  for (int i = 0; i < 10; ++i)
+    canvas->drawPath(path, paint);
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->Finalize();
+
+  // A single DrawingDisplayItem with several large AA concave paths should
+  // trigger a veto.
+  EXPECT_FALSE(list->IsSuitableForGpuRasterization());
+
+  list = DisplayItemList::Create(layer_rect, use_cached_picture);
+  for (int i = 0; i < 10; ++i) {
+    canvas =
+        skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
+    canvas->drawPath(path, paint);
+    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+    item = list->CreateAndAppendItem<DrawingDisplayItem>();
+    item->SetNew(picture);
+  }
+  list->Finalize();
+
+  // Without a cached picture, having several DrawingDisplayItems that each
+  // contain a single large AA concave will not trigger a veto, since each item
+  // is individually suitable for GPU rasterization.
+  EXPECT_TRUE(list->IsSuitableForGpuRasterization());
+}
+
 TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   const int kNumCommandsInTestSkPicture = 1000;
   scoped_refptr<DisplayItemList> list;
