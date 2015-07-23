@@ -2706,6 +2706,25 @@ TEST_F(LayerTreeHostImplTest, ScrollRootIgnored) {
   EXPECT_FALSE(did_request_commit_);
 }
 
+TEST_F(LayerTreeHostImplTest, ClampingAfterActivation) {
+  host_impl_->CreatePendingTree();
+  CreateScrollAndContentsLayers(host_impl_->pending_tree(),
+                                gfx::Size(100, 100));
+  host_impl_->ActivateSyncTree();
+
+  host_impl_->CreatePendingTree();
+  const gfx::ScrollOffset pending_scroll = gfx::ScrollOffset(-100, -100);
+  LayerImpl* active_outer_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  LayerImpl* pending_outer_layer =
+      host_impl_->pending_tree()->OuterViewportScrollLayer();
+  pending_outer_layer->PushScrollOffsetFromMainThread(pending_scroll);
+
+  host_impl_->ActivateSyncTree();
+  // Scrolloffsets on the active tree will be clamped after activation.
+  EXPECT_EQ(active_outer_layer->CurrentScrollOffset(), gfx::ScrollOffset(0, 0));
+}
+
 // TODO(bokan): Convert these tests to create inner and outer viewports.
 class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
  public:

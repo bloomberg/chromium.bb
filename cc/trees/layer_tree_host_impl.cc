@@ -1786,11 +1786,15 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   // TODO(bokan): This code is currently specific to top controls. It should be
   // made general. crbug.com/464814.
   if (!TopControlsHeight()) {
-    if (outer_container)
-      outer_container->SetBoundsDelta(gfx::Vector2dF());
-
     inner_container->SetBoundsDelta(gfx::Vector2dF());
     active_tree_->InnerViewportScrollLayer()->SetBoundsDelta(gfx::Vector2dF());
+
+    if (outer_container) {
+      outer_container->SetBoundsDelta(gfx::Vector2dF());
+      ViewportAnchor anchor(InnerViewportScrollLayer(),
+                            OuterViewportScrollLayer());
+      anchor.ResetViewportToAnchoredPosition();
+    }
 
     return;
   }
@@ -1927,10 +1931,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     DCHECK(!recycle_tree_);
     pending_tree_.swap(recycle_tree_);
 
+    UpdateViewportContainerSizes();
+
     active_tree_->SetRootLayerScrollOffsetDelegate(
         root_layer_scroll_offset_delegate_);
-
-    UpdateViewportContainerSizes();
   } else {
     active_tree_->ProcessUIResourceRequestQueue();
   }
