@@ -176,14 +176,15 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
     ASSERT(e);
     ASSERT(e->inDocument());
     Document& document = e->document();
-    if (m_sheet)
-        clearSheet(e);
 
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
     bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP(e)
         || csp->allowStyleWithHash(text)
         || csp->allowStyleWithNonce(e->fastGetAttribute(HTMLNames::nonceAttr))
         || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line, text);
+
+    // Clearing the current sheet may remove the cache entry so create the new sheet first
+    RefPtrWillBeRawPtr<CSSStyleSheet> newSheet = nullptr;
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
@@ -195,12 +196,16 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
         if (screenEval.eval(mediaQueries.get()) || printEval.eval(mediaQueries.get())) {
             m_loading = true;
             TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
-            m_sheet = document.styleEngine().createSheet(e, text, startPosition);
-            m_sheet->setMediaQueries(mediaQueries.release());
+            newSheet = document.styleEngine().createSheet(e, text, startPosition);
+            newSheet->setMediaQueries(mediaQueries.release());
             m_loading = false;
         }
     }
 
+    if (m_sheet)
+        clearSheet(e);
+
+    m_sheet = newSheet.release();
     if (m_sheet)
         m_sheet->contents()->checkLoaded();
 

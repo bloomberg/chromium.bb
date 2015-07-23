@@ -3729,6 +3729,7 @@
             'dom/PositionTest.cpp',
             'dom/RangeTest.cpp',
             'dom/ScriptRunnerTest.cpp',
+            'dom/StyleElementTest.cpp',
             'dom/TreeScopeStyleSheetCollectionTest.cpp',
             'dom/TreeScopeTest.cpp',
             'dom/shadow/ComposedTreeTraversalTest.cpp',
