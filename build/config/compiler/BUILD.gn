@@ -792,6 +792,7 @@ if (is_win) {
     "/wd4510",  # Default constructor could not be generated.
     "/wd4512",  # Assignment operator could not be generated.
     "/wd4610",  # Class can never be instantiated, constructor required.
+    "/wd4995",  # 'X': name was marked as #pragma deprecated
     "/wd4996",  # Deprecated function warning.
   ]
 
