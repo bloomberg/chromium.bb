@@ -31,7 +31,6 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   virtual blink::WebExternalTextureLayer* createExternalTextureLayer(
       blink::WebExternalTextureLayerClient* client);
   virtual blink::WebImageLayer* createImageLayer();
-  virtual blink::WebNinePatchLayer* createNinePatchLayer();
   virtual blink::WebScrollbarLayer* createScrollbarLayer(
       blink::WebScrollbar* scrollbar,
       blink::WebScrollbarThemePainter painter,
