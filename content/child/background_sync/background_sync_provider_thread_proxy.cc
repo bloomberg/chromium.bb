@@ -20,50 +20,40 @@ namespace content {
 
 namespace {
 
-// This is needed to migrate from WebCallback<S, T> to WebCallback<S*, T*>.
-// See https://crbug.com/493531
-#ifdef CRBUG_493531
-template <typename S, typename T>
-using Callbacks = blink::WebCallbacks<S*, T*>;
-#else
-template <typename S, typename T>
-using Callbacks = blink::WebCallbacks<S, T>;
-#endif
-
 // CallbackThreadAdapter<S,T> is a wrapper for WebCallbacks<S,T> which
 // switches to a specific thread before calling the wrapped callback's
 // onSuccess or onError methods.
 //
 // Takes ownership of the WebCallbacks object which it wraps.
 template <typename S, typename T>
-class CallbackThreadAdapter : public Callbacks<S, T> {
+class CallbackThreadAdapter : public blink::WebCallbacks<S, T> {
  public:
-  CallbackThreadAdapter(scoped_ptr<Callbacks<S, T>> callbacks,
+  CallbackThreadAdapter(scoped_ptr<blink::WebCallbacks<S, T>> callbacks,
                         int worker_thread_id)
       : worker_thread_id_(worker_thread_id) {
     callbacks_.reset(callbacks.release());
   }
 
-  virtual void onSuccess(S* results) {
+  virtual void onSuccess(S results) {
     // If the worker thread has been destroyed, then this task will be
     // silently discarded.
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id_,
-        base::Bind(&Callbacks<S, T>::onSuccess,
+        base::Bind(&blink::WebCallbacks<S, T>::onSuccess,
                    base::Owned(callbacks_.release()), results));
   }
 
-  virtual void onError(T* error) {
+  virtual void onError(T error) {
     // If the worker thread has been destroyed, then this task will be
     // silently discarded.
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id_,
-        base::Bind(&Callbacks<S, T>::onError, base::Owned(callbacks_.release()),
-                   error));
+        base::Bind(&blink::WebCallbacks<S, T>::onError,
+                   base::Owned(callbacks_.release()), error));
   }
 
  private:
-  scoped_ptr<Callbacks<S, T>> callbacks_;
+  scoped_ptr<blink::WebCallbacks<S, T>> callbacks_;
   int worker_thread_id_;
 };
 
@@ -99,8 +89,8 @@ void BackgroundSyncProviderThreadProxy::registerBackgroundSync(
       base::Bind(&BackgroundSyncProvider::registerBackgroundSync,
                  base::Unretained(sync_provider_), options,
                  service_worker_registration,
-                 new CallbackThreadAdapter<blink::WebSyncRegistration,
-                                           blink::WebSyncError>(
+                 new CallbackThreadAdapter<blink::WebSyncRegistration*,
+                                           blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
 }
@@ -118,7 +108,7 @@ void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
       base::Bind(&BackgroundSyncProvider::unregisterBackgroundSync,
                  base::Unretained(sync_provider_), periodicity, id, tag,
                  service_worker_registration,
-                 new CallbackThreadAdapter<bool, blink::WebSyncError>(
+                 new CallbackThreadAdapter<bool*, blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
 }
@@ -135,8 +125,8 @@ void BackgroundSyncProviderThreadProxy::getRegistration(
       base::Bind(&BackgroundSyncProvider::getRegistration,
                  base::Unretained(sync_provider_), periodicity, tag,
                  service_worker_registration,
-                 new CallbackThreadAdapter<blink::WebSyncRegistration,
-                                           blink::WebSyncError>(
+                 new CallbackThreadAdapter<blink::WebSyncRegistration*,
+                                           blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
 }
@@ -153,8 +143,8 @@ void BackgroundSyncProviderThreadProxy::getRegistrations(
                  base::Unretained(sync_provider_), periodicity,
                  service_worker_registration,
                  new CallbackThreadAdapter<
-                     blink::WebVector<blink::WebSyncRegistration*>,
-                     blink::WebSyncError>(
+                     blink::WebVector<blink::WebSyncRegistration*>*,
+                     blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
 }
@@ -170,8 +160,8 @@ void BackgroundSyncProviderThreadProxy::getPermissionStatus(
       base::Bind(&BackgroundSyncProvider::getPermissionStatus,
                  base::Unretained(sync_provider_), periodicity,
                  service_worker_registration,
-                 new CallbackThreadAdapter<blink::WebSyncPermissionStatus,
-                                           blink::WebSyncError>(
+                 new CallbackThreadAdapter<blink::WebSyncPermissionStatus*,
+                                           blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
 }
