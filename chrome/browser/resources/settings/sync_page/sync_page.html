@@ -11,69 +11,65 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="sync_page.css">
   <template>
-    <paper-material>
-      <div i18n-content="syncPageTitle"></div>
-      <select>
-        <option value="sync-everything"
-            i18n-content="syncEverythingMenuOption">
-        </option>
-        <option value="choose-what-to-sync"
-            i18n-content="chooseWhatToSyncMenuOption">
-        </option>
-      </select>
-      <div class="checkbox-container">
-        <div class="checkbox-container-row">
-          <cr-checkbox>
-            <span i18n-content="appCheckboxLabel"></span>
-          </cr-checkbox>
-          <cr-checkbox>
-            <span i18n-content="extensionsCheckboxLabel"></span>
-          </cr-checkbox>
-          <cr-checkbox>
-            <span i18n-content="settingsCheckboxLabel"></span>
-          </cr-checkbox>
-        </div>
-        <div class="checkbox-container-row">
-          <cr-checkbox>
-            <span i18n-content="autofillCheckboxLabel"></span>
-          </cr-checkbox>
-          <cr-checkbox>
-            <span i18n-content="historyCheckboxLabel"></span>
-          </cr-checkbox>
-          <cr-checkbox>
-            <span i18n-content="themesAndWallpapersCheckboxLabel"></span>
-          </cr-checkbox>
-        </div>
-        <div class="checkbox-container-row">
-          <cr-checkbox>
-            <span i18n-content="bookmarksCheckboxLabel"></span>
-          </cr-checkbox>
-          <cr-checkbox>
-            <span i18n-content="passwordsCheckboxLabel"></span>
-          </cr-checkbox>
-          <cr-checkbox>
-            <span i18n-content="openTabsCheckboxLabel"></span>
-          </cr-checkbox>
-        </div>
+    <div i18n-content="syncPageTitle"></div>
+    <select>
+      <option value="sync-everything"
+          i18n-content="syncEverythingMenuOption">
+      </option>
+      <option value="choose-what-to-sync"
+          i18n-content="chooseWhatToSyncMenuOption">
+      </option>
+    </select>
+    <div class="checkbox-container">
+      <div class="checkbox-container-row">
+        <cr-checkbox>
+          <span i18n-content="appCheckboxLabel"></span>
+        </cr-checkbox>
+        <cr-checkbox>
+          <span i18n-content="extensionsCheckboxLabel"></span>
+        </cr-checkbox>
+        <cr-checkbox>
+          <span i18n-content="settingsCheckboxLabel"></span>
+        </cr-checkbox>
       </div>
-    </paper-material>
-    <paper-material>
-      <div i18n-content="encryptionOptionsTitle"></div>
-      <div i18n-content="syncDataEncryptedText"></div>
-      <paper-radio-group selected="encrypt-with-google">
-        <paper-radio-button name="encrypt-with-google"
-            i18n-content="encryptWithGoogleCredentialsLabel">
-        </paper-radio-button>
-        <paper-radio-button name="encrypt-with-passphrase"
-            i18n-content="encryptWithSyncPassphraseLabel">
-        </paper-radio-button>
-      </paper-radio-group>
-      <div>
-        <cr-button i18n-content="useDefaultSettingsButton"></cr-button>
-        <cr-button i18n-content="cancelButton"></cr-button>
-        <cr-button i18n-content="okButton"></cr-button>
+      <div class="checkbox-container-row">
+        <cr-checkbox>
+          <span i18n-content="autofillCheckboxLabel"></span>
+        </cr-checkbox>
+        <cr-checkbox>
+          <span i18n-content="historyCheckboxLabel"></span>
+        </cr-checkbox>
+        <cr-checkbox>
+          <span i18n-content="themesAndWallpapersCheckboxLabel"></span>
+        </cr-checkbox>
       </div>
-    </paper-material>
+      <div class="checkbox-container-row">
+        <cr-checkbox>
+          <span i18n-content="bookmarksCheckboxLabel"></span>
+        </cr-checkbox>
+        <cr-checkbox>
+          <span i18n-content="passwordsCheckboxLabel"></span>
+        </cr-checkbox>
+        <cr-checkbox>
+          <span i18n-content="openTabsCheckboxLabel"></span>
+        </cr-checkbox>
+      </div>
+    </div>
+    <div i18n-content="encryptionOptionsTitle"></div>
+    <div i18n-content="syncDataEncryptedText"></div>
+    <paper-radio-group selected="encrypt-with-google">
+      <paper-radio-button name="encrypt-with-google"
+          i18n-content="encryptWithGoogleCredentialsLabel">
+      </paper-radio-button>
+      <paper-radio-button name="encrypt-with-passphrase"
+          i18n-content="encryptWithSyncPassphraseLabel">
+      </paper-radio-button>
+    </paper-radio-group>
+    <div>
+      <cr-button i18n-content="useDefaultSettingsButton"></cr-button>
+      <cr-button i18n-content="cancelButton"></cr-button>
+      <cr-button i18n-content="okButton"></cr-button>
+    </div>
   </template>
   <script src="sync_page.js"></script>
 </dom-module>

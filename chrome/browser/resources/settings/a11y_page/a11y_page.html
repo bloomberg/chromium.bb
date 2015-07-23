@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <dom-module id="cr-settings-a11y-page">
@@ -7,63 +6,60 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="a11y_page.css">
   <template>
-    <paper-material>
-      <div class="more-a11y-link">
-        <a href="https://chrome.google.com/webstore/category/collection/accessibility"
-            target="_blank" i18n-content="moreFeaturesLink"></a>
-      </div>
+    <div class="more-a11y-link">
+      <a href="https://chrome.google.com/webstore/category/collection/accessibility"
+          target="_blank" i18n-content="moreFeaturesLink"></a>
+    </div>
 
 <if expr="chromeos">
-      <cr-settings-checkbox i18n-values="label:optionsInMenuLabel"
-          pref="{{prefs.settings.a11y.enable_menu}}">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox i18n-values="label:largeMouseCursorLabel"
-          pref="{{prefs.settings.a11y.large_cursor_enabled}}">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox i18n-values="label:highContrastLabel"
-          pref="{{prefs.settings.a11y.high_contrast_enabled}}">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox
-          pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
-          i18n-values="label:stickyKeysLabel; subLabel:stickyKeysSublabel">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox pref="{{prefs.settings.accessibility}}"
-          i18n-values="label:chromeVoxLabel; subLabel:chromeVoxSublabel">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox i18n-values="label:screenMagnifierLabel"
-          pref="{{prefs.settings.a11y.screen_magnifier}}">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox i18n-values="label:tapDraggingLabel"
-          pref="{{prefs.settings.touchpad.enable_tap_dragging}}">
-      </cr-settings-checkbox>
-      <cr-settings-checkbox i18n-values="label:clickOnStopLabel"
-          pref="{{prefs.settings.a11y.autoclick}}">
-      </cr-settings-checkbox>
+    <cr-settings-checkbox i18n-values="label:optionsInMenuLabel"
+        pref="{{prefs.settings.a11y.enable_menu}}">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox i18n-values="label:largeMouseCursorLabel"
+        pref="{{prefs.settings.a11y.large_cursor_enabled}}">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox i18n-values="label:highContrastLabel"
+        pref="{{prefs.settings.a11y.high_contrast_enabled}}">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox
+        pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
+        i18n-values="label:stickyKeysLabel; subLabel:stickyKeysSublabel">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox pref="{{prefs.settings.accessibility}}"
+        i18n-values="label:chromeVoxLabel; subLabel:chromeVoxSublabel">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox i18n-values="label:screenMagnifierLabel"
+        pref="{{prefs.settings.a11y.screen_magnifier}}">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox i18n-values="label:tapDraggingLabel"
+        pref="{{prefs.settings.touchpad.enable_tap_dragging}}">
+    </cr-settings-checkbox>
+    <cr-settings-checkbox i18n-values="label:clickOnStopLabel"
+        pref="{{prefs.settings.a11y.autoclick}}">
+    </cr-settings-checkbox>
 
-      <div class="autoclick-delay-label"
-          hidden$="[[!prefs.settings.a11y.autoclick]]">
-        <span i18n-content="delayBeforeClickLabel"></span>
-        <select id="autoclickDropdown"
-            value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
-          <option value="200" i18n-content="delayBeforeClickExtremelyShort">
-          </option>
-          <option value="400" i18n-content="delayBeforeClickVeryShort">
-          </option>
-          <option value="600" i18n-content="delayBeforeClickShort">
-          </option>
-          <option value="800" i18n-content="delayBeforeClickLong">
-          </option>
-          <option value="1000" i18n-content="delayBeforeClickVeryLong">
-          </option>
-        </select>
-      </div>
+    <div class="autoclick-delay-label"
+        hidden$="[[!prefs.settings.a11y.autoclick]]">
+      <span i18n-content="delayBeforeClickLabel"></span>
+      <select id="autoclickDropdown"
+          value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
+        <option value="200" i18n-content="delayBeforeClickExtremelyShort">
+        </option>
+        <option value="400" i18n-content="delayBeforeClickVeryShort">
+        </option>
+        <option value="600" i18n-content="delayBeforeClickShort">
+        </option>
+        <option value="800" i18n-content="delayBeforeClickLong">
+        </option>
+        <option value="1000" i18n-content="delayBeforeClickVeryLong">
+        </option>
+      </select>
+    </div>
 
-      <cr-settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
-          i18n-values="label:onScreenKeyboardLabel">
-      </cr-settings-checkbox>
+    <cr-settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
+        i18n-values="label:onScreenKeyboardLabel">
+    </cr-settings-checkbox>
 </if>
-
-    </paper-material>
   </template>
   <script src="a11y_page.js"></script>
 </dom-module>

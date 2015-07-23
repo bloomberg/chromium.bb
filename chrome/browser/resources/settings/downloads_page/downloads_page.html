@@ -1,32 +1,30 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <dom-module id="cr-settings-downloads-page">
-  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="downloads_page.css">
   <template>
-    <paper-material>
-      <div class="horizontal layout center">
-        <div class="layout horizontal center">
-          <div id="locationLabel" i18n-content="downloadLocation"></div>
-          <cr-input id="downloadsPath" floating-label="false"
-              value="{{prefs.download.default_directory.value}}"
-              readonly aria-labelledby="locationLabel">
-          </cr-input>
-        </div>
-        <cr-button id="changeDownloadsPath" on-click="selectDownloadLocation_"
-            i18n-content="changeDownloadLocation">
-        </cr-button>
+    <div class="horizontal layout center">
+      <div class="layout horizontal center">
+        <div id="locationLabel" i18n-content="downloadLocation"></div>
+        <cr-input id="downloadsPath" floating-label="false"
+            value="{{prefs.download.default_directory.value}}"
+            readonly aria-labelledby="locationLabel">
+        </cr-input>
       </div>
-      <cr-settings-checkbox pref="{{prefs.download.prompt_for_download}}"
-          i18n-values="label:promptForDownload">
-      </cr-settings-checkbox>
-    </paper-material>
+      <cr-button id="changeDownloadsPath" on-click="selectDownloadLocation_"
+          i18n-content="changeDownloadLocation">
+      </cr-button>
+    </div>
+    <cr-settings-checkbox pref="{{prefs.download.prompt_for_download}}"
+        i18n-values="label:promptForDownload">
+    </cr-settings-checkbox>
   </template>
   <script src="downloads_page.js"></script>
 </dom-module>

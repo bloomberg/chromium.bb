@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <dom-module id="cr-settings-appearance-page">
@@ -10,34 +9,32 @@
   <link rel="import" type="css" href="chrome://resources/css/widgets.css">
   <link rel="import" href="chrome://resources/html/action_link.html">
   <template>
-    <paper-material>
-      <div id="action-container">
-        <cr-button i18n-content="setWallpaper"></cr-button>
-        <cr-button id="get-themes" i18n-content="getThemes"
-            on-click="openThemesGallery_">
-        </cr-button>
-        <cr-button id="resetTheme" i18n-content="resetToDefaultTheme" disabled
-            on-click="resetTheme_">
-        </cr-button>
-      </div>
-      <hr>
-      <cr-settings-checkbox pref="{{prefs.browser.show_home_button}}"
-          i18n-values="label:showHomeButton">
-      </cr-settings-checkbox>
-      <div id="change-home-page-section"
-          hidden$="[[!prefs.browser.show_home_button.value]]">
-        <div id="change-home-page-section-container">
-          <span id="home-page-ntp" i18n-content="homePageNtp"></span>
-          <span id="home-page-url"></span>
-          <a is="action-link" id="change-home-page"
-              i18n-content="changeHomePage">
-          </a>
+    <div id="action-container">
+      <cr-button i18n-content="setWallpaper"></cr-button>
+      <cr-button id="get-themes" i18n-content="getThemes"
+          on-click="openThemesGallery_">
+      </cr-button>
+      <cr-button id="resetTheme" i18n-content="resetToDefaultTheme" disabled
+          on-click="resetTheme_">
+      </cr-button>
+    </div>
+    <hr>
+    <cr-settings-checkbox pref="{{prefs.browser.show_home_button}}"
+        i18n-values="label:showHomeButton">
+    </cr-settings-checkbox>
+    <div id="change-home-page-section"
+        hidden$="[[!prefs.browser.show_home_button.value]]">
+      <div id="change-home-page-section-container">
+        <span id="home-page-ntp" i18n-content="homePageNtp"></span>
+        <span id="home-page-url"></span>
+        <a is="action-link" id="change-home-page"
+            i18n-content="changeHomePage">
+        </a>
       </div>
     </div>
-      <cr-settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
-          i18n-values="label:showBookmarksBar">
-      </cr-settings-checkbox>
-    </paper-material>
+    <cr-settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
+        i18n-values="label:showBookmarksBar">
+    </cr-settings-checkbox>
   </template>
   <script src="appearance_page.js"></script>
 </dom-module>

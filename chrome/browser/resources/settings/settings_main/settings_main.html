@@ -4,9 +4,12 @@
 <link rel="import" href="chrome://md-settings/routes.html">
 <link rel="import" href="chrome://md-settings/advanced_page/advanced_page.html">
 <link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
-<link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_page_header.html">
+
+<if expr="chromeos">
+<link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
+</if>
 
 <dom-module id="cr-settings-main">
   <link rel="import" type="css" href="settings_main.css">

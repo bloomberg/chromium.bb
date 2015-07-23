@@ -1,22 +1,20 @@
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 
 <dom-module id="cr-settings-date-time-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="date_time_page.css">
-  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <paper-material class="layout veritcal">
-      <div class="horizontal layout center">
-        <span class="time-zone-label" i18n-content="timeZone"></span>
-      </div>
-      <cr-settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
-          i18n-values="label:use24HourClock">
-      </cr-settings-checkbox>
-      <span id="setAutomatically" i18n-content="dateTimeSetAutomatically">
-      </span>
-    </paper-material>
+    <div class="horizontal layout center">
+      <span class="time-zone-label" i18n-content="timeZone"></span>
+    </div>
+    <cr-settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
+        i18n-values="label:use24HourClock">
+    </cr-settings-checkbox>
+    <span id="setAutomatically" i18n-content="dateTimeSetAutomatically">
+    </span>
   </template>
   <script src="date_time_page.js"></script>
 </dom-module>

@@ -58,11 +58,10 @@ Polymer({
 
     /**
      * Name of the 'iron-icon' to show.
-     * TODO(khorimoto): Find the correct icon to show.
      */
     icon: {
       type: String,
-      value: 'accessibility',
+      value: 'notification:sync',
       readOnly: true,
     },
   },
