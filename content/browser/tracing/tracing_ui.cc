@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -199,6 +200,20 @@ void TracingCallbackWrapperBase64(
   callback.Run(data_base64);
 }
 
+std::string GenerateMetadataJSON() {
+  // Serialize metadata to json.
+  scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
+  metadata_dict->SetString("version", GetContentClient()->GetProduct());
+  metadata_dict->SetString(
+      "command_line",
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+
+  std::string results;
+  if (base::JSONWriter::Write(*metadata_dict.get(), &results))
+    return results;
+  return std::string();
+}
+
 bool OnBeginJSONRequest(const std::string& path,
                         const WebUIDataSource::GotDataCallback& callback) {
   if (path == "json/categories") {
@@ -221,10 +236,12 @@ bool OnBeginJSONRequest(const std::string& path,
         base::Bind(OnTraceBufferStatusResult, callback));
   }
   if (path == "json/end_recording_compressed") {
-    return TracingController::GetInstance()->DisableRecording(
+    scoped_refptr<TracingControllerImpl::TraceDataSink> data_sink =
         TracingController::CreateCompressedStringSink(
             TracingController::CreateCallbackEndpoint(
-                base::Bind(TracingCallbackWrapperBase64, callback))));
+                base::Bind(TracingCallbackWrapperBase64, callback)));
+    data_sink->SetMetadata(GenerateMetadataJSON());
+    return TracingController::GetInstance()->DisableRecording(data_sink);
   }
 
   const char* enableMonitoringPath = "json/begin_monitoring?";
@@ -237,10 +254,12 @@ bool OnBeginJSONRequest(const std::string& path,
         base::Bind(OnMonitoringDisabled, callback));
   }
   if (path == "json/capture_monitoring_compressed") {
-    TracingController::GetInstance()->CaptureMonitoringSnapshot(
+    scoped_refptr<TracingControllerImpl::TraceDataSink> data_sink =
         TracingController::CreateCompressedStringSink(
             TracingController::CreateCallbackEndpoint(
-                base::Bind(TracingCallbackWrapperBase64, callback))));
+                base::Bind(TracingCallbackWrapperBase64, callback)));
+    data_sink->SetMetadata(GenerateMetadataJSON());
+    TracingController::GetInstance()->CaptureMonitoringSnapshot(data_sink);
     return true;
   }
   if (path == "json/get_monitoring_status") {
