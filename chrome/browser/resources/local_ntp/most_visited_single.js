@@ -230,8 +230,6 @@ var removeAllOldTiles = function() {
  * we are ready to show the new tiles and drop the old ones.
  */
 var showTiles = function() {
-  removeAllOldTiles();
-
   // Store the tiles on the current closure.
   var cur = tiles;
 
@@ -247,6 +245,7 @@ var showTiles = function() {
   if (old) {
     old.removeAttribute('id');
     old.classList.add('mv-tiles-old');
+    old.style.opacity = 0.0;
     cur.addEventListener('webkitTransitionEnd', function(ev) {
       if (ev.target === cur) {
         removeAllOldTiles();
