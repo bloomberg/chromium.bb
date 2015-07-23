@@ -523,7 +523,10 @@ class TemplateURL {
   // Generates a suitable keyword for the specified url, which must be valid.
   // This is guaranteed not to return an empty string, since TemplateURLs should
   // never have an empty keyword.
-  static base::string16 GenerateKeyword(const GURL& url);
+  // |accept_languages| is a list of languages, which will be used in
+  // IDN-decoding of |url|'s hostname.
+  static base::string16 GenerateKeyword(const GURL& url,
+                                        const std::string& accept_languages);
 
   // Generates a favicon URL from the specified url.
   static GURL GenerateFaviconURL(const GURL& url);

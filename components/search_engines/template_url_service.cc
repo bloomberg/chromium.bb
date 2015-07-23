@@ -2107,7 +2107,8 @@ base::string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
     GURL gurl(turl.url());
     if (gurl.is_valid() &&
         (turl.GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
-      base::string16 keyword_candidate = TemplateURL::GenerateKeyword(gurl);
+      base::string16 keyword_candidate = TemplateURL::GenerateKeyword(
+          gurl, search_terms_data().GetAcceptLanguages());
       if (!GetTemplateURLForKeyword(keyword_candidate))
         return keyword_candidate;
     }

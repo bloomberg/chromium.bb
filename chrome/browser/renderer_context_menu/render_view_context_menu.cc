@@ -1788,7 +1788,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           SearchEngineTabHelper::FromWebContents(source_web_contents_);
       if (search_engine_tab_helper &&
           search_engine_tab_helper->delegate()) {
-        base::string16 keyword(TemplateURL::GenerateKeyword(params_.page_url));
+        base::string16 keyword(TemplateURL::GenerateKeyword(
+            params_.page_url,
+            GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages)));
         TemplateURLData data;
         data.SetShortName(keyword);
         data.SetKeyword(keyword);

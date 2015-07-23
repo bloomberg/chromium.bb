@@ -19,6 +19,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -179,6 +180,11 @@ std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   if (!modifier.empty())
     version += " " + modifier;
   return version;
+}
+
+std::string UIThreadSearchTermsData::GetAcceptLanguages() const {
+  return profile_ ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
+                  : std::string();
 }
 
 // static

@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "libxml/parser.h"
 #include "libxml/xmlwriter.h"
@@ -315,7 +316,8 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   // Generate a keyword for this search engine if a custom one was not present
   // in the imported data.
   if (!has_custom_keyword_)
-    data_.SetKeyword(TemplateURL::GenerateKeyword(search_url));
+    data_.SetKeyword(TemplateURL::GenerateKeyword(
+        search_url, search_terms_data.GetAcceptLanguages()));
 
   data_.show_in_default_list = show_in_default_list;
 

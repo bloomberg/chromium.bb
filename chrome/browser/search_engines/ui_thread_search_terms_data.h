@@ -33,6 +33,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
   int OmniboxStartMargin() const override;
   std::string NTPIsThemedParam() const override;
   std::string GoogleImageSearchSource() const override;
+  std::string GetAcceptLanguages() const override;
 
   // Used by tests to override the value for the Google base URL.  Passing the
   // empty string cancels this override.

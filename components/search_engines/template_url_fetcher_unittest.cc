@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -181,6 +183,7 @@ TEST_F(TemplateURLFetcherTest, BasicAutodetectedTest) {
   EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
             t_url->url_ref().DisplayURL(
                 test_util()->model()->search_terms_data()));
+  EXPECT_EQ(ASCIIToUTF16("Simple Search"), t_url->short_name());
   EXPECT_TRUE(t_url->safe_for_autoreplace());
 }
 
@@ -322,4 +325,20 @@ TEST_F(TemplateURLFetcherTest, DuplicateDownloadTest) {
   ASSERT_EQ(1, add_provider_called());
   ASSERT_EQ(2, callbacks_destroyed());
   ASSERT_TRUE(last_callback_template_url());
+}
+
+TEST_F(TemplateURLFetcherTest, UnicodeTest) {
+  base::string16 keyword(ASCIIToUTF16("test"));
+
+  test_util()->ChangeModelToLoadState();
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
+
+  std::string osdd_file_name("unicode_open_search.xml");
+  StartDownload(keyword, osdd_file_name,
+                TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
+  WaitForDownloadToFinish();
+  const TemplateURL* t_url =
+      test_util()->model()->GetTemplateURLForKeyword(keyword);
+  EXPECT_EQ(base::UTF8ToUTF16("\xd1\x82\xd0\xb5\xd1\x81\xd1\x82"),
+            t_url->short_name());
 }

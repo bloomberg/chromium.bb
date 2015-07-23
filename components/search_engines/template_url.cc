@@ -1210,14 +1210,20 @@ TemplateURL::~TemplateURL() {
 }
 
 // static
-base::string16 TemplateURL::GenerateKeyword(const GURL& url) {
+base::string16 TemplateURL::GenerateKeyword(
+    const GURL& url,
+    const std::string& accept_languages) {
   DCHECK(url.is_valid());
   // Strip "www." off the front of the keyword; otherwise the keyword won't work
   // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
+  // |url|'s hostname may be IDN-encoded. Before generating |keyword| from it,
+  // convert to Unicode using the user's accept-languages, so it won't look like
+  // a confusing punycode string.
+  base::string16 keyword =
+      net::StripWWW(net::IDNToUnicode(url.host(), accept_languages));
   // Special case: if the host was exactly "www." (not sure this can happen but
   // perhaps with some weird intranet and custom DNS server?), ensure we at
   // least don't return the empty string.
-  base::string16 keyword(net::StripWWWFromHost(url));
   return keyword.empty() ? base::ASCIIToUTF16("www") : keyword;
 }
 
@@ -1485,7 +1491,8 @@ void TemplateURL::ResetKeywordIfNecessary(
     DCHECK(GetType() != OMNIBOX_API_EXTENSION);
     GURL url(GenerateSearchURL(search_terms_data));
     if (url.is_valid())
-      data_.SetKeyword(GenerateKeyword(url));
+      data_.SetKeyword(
+          GenerateKeyword(url, search_terms_data.GetAcceptLanguages()));
   }
 }
 

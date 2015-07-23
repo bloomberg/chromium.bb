@@ -74,6 +74,11 @@ class SearchTermsData {
   // GOOGLE_IMAGE_SEARCH_SOURCE.
   virtual std::string GoogleImageSearchSource() const;
 
+  // Returns a string with languages understood by the user.
+  // Determining this requires accessing the Profile, so this can only ever be
+  // non-empty for UIThreadSearchTermsData.
+  virtual std::string GetAcceptLanguages() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
 };
