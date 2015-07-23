@@ -1015,6 +1015,8 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+        # Only needed at runtime.
+        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'include_dirs': [
         '..',
@@ -1411,7 +1413,6 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../third_party/mesa/mesa.gyp:osmesa',
             '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
@@ -1427,6 +1428,8 @@
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/accessibility/accessibility.gyp:ax_gen',
+            # Only needed at runtime.
+            '../third_party/mesa/mesa.gyp:osmesa',
           ],
           'include_dirs': [
             '..',

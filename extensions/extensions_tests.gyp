@@ -40,6 +40,8 @@
         'extensions.gyp:extensions_utility',
         'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
+        # Only needed at runtime.
+        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       # Needed for third_party libraries like leveldb.
       'include_dirs': [
@@ -82,6 +84,8 @@
         '<(DEPTH)/device/usb/usb.gyp:device_usb_mocks',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        # Only needed at runtime.
+        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',

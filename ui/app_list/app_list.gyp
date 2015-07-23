@@ -257,6 +257,8 @@
         '../resources/ui_resources.gyp:ui_test_pak',
         'app_list',
         'app_list_test_support',
+        # Only needed at runtime.
+        '../../third_party/mesa/mesa.gyp:osmesa',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.

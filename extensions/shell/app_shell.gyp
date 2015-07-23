@@ -215,6 +215,8 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
         '<(DEPTH)/extensions/extensions.gyp:extensions_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        # Only needed at runtime.
+        '../../third_party/mesa/mesa.gyp:osmesa',
       ],
       'sources': [
         '<@(app_shell_unittests_sources)',
