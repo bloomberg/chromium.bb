@@ -216,13 +216,13 @@ bool GpuTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
 
 void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
   for (auto& task : tasks) {
-    RasterTask* raster_task = static_cast<RasterTask*>(task.get());
+    TileTask* tile_task = static_cast<TileTask*>(task.get());
 
-    raster_task->WillComplete();
-    raster_task->CompleteOnOriginThread(this);
-    raster_task->DidComplete();
+    tile_task->WillComplete();
+    tile_task->CompleteOnOriginThread(this);
+    tile_task->DidComplete();
 
-    raster_task->RunReplyOnOriginThread();
+    tile_task->RunReplyOnOriginThread();
   }
   completed_tasks_.clear();
 }
