@@ -26,6 +26,7 @@ component("surfaces") {
     "//base",
     "//cc",
     "//cc/surfaces",
+    "//cc/surfaces:surface_id",
     "//components/view_manager/public/interfaces",
     "//gpu",
     "//ui/gfx/geometry",

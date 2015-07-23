@@ -11,6 +11,7 @@ source_set("mojo_gles2_implementation") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    "//base",
     "//gpu/command_buffer/client:gles2_interface",
     "//third_party/mojo/src/mojo/public/c/gles2",
   ]
