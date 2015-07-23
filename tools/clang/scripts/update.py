@@ -309,6 +309,8 @@ def ApplyLocalPatches():
 
 
 def DeleteChromeToolsShim():
+  OLD_SHIM_DIR = os.path.join(LLVM_DIR, 'tools', 'zzz-chrometools')
+  shutil.rmtree(OLD_SHIM_DIR, ignore_errors=True)
   shutil.rmtree(CHROME_TOOLS_SHIM_DIR, ignore_errors=True)
 
 
