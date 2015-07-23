@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -134,6 +135,8 @@ WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output)
 {
 	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
+
+	assert(output->zoom.active);
 
 	output->zoom.current.x = seat->pointer->x;
 	output->zoom.current.y = seat->pointer->y;

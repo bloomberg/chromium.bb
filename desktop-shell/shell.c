@@ -4804,7 +4804,10 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 				output->zoom.level = 0.0;
 			else if (output->zoom.level > output->zoom.max_level)
 				output->zoom.level = output->zoom.max_level;
-			else if (!output->zoom.active) {
+
+			if (!output->zoom.active) {
+				if (output->zoom.level <= 0.0)
+					continue;
 				weston_output_activate_zoom(output);
 			}
 
