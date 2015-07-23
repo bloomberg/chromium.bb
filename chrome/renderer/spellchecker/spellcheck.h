@@ -18,8 +18,8 @@
 #include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "ipc/ipc_platform_file.h"
 
+struct SpellCheckBDictLanguage;
 class SpellcheckLanguage;
 struct SpellCheckResult;
 
@@ -50,10 +50,7 @@ class SpellCheck : public content::RenderProcessObserver,
   SpellCheck();
   ~SpellCheck() override;
 
-  // TODO: Try to move that all to SpellcheckLanguage.
-  void Init(base::File file,
-            const std::set<std::string>& custom_words,
-            const std::string& language);
+  void AddSpellcheckLanguage(base::File file, const std::string& language);
 
   // If there is no dictionary file, then this requests one from the browser
   // and does not block. In this case it returns true.
@@ -125,9 +122,8 @@ class SpellCheck : public content::RenderProcessObserver,
    bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
-   void OnInit(IPC::PlatformFileForTransit bdict_file,
+   void OnInit(const std::vector<SpellCheckBDictLanguage>& bdict_languages,
                const std::set<std::string>& custom_words,
-               const std::string& language,
                bool auto_spell_correct);
    void OnCustomDictionaryChanged(const std::set<std::string>& words_added,
                                   const std::set<std::string>& words_removed);

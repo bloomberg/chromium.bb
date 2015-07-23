@@ -64,10 +64,12 @@ class SpellCheckTest : public testing::Test {
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
+    spell_check_->languages_.push_back(new SpellcheckLanguage());
     spell_check_->languages_.front()->platform_spelling_engine_.reset(
         new HunspellEngine);
+    spell_check_->languages_.front()->Init(file.Pass(), language);
 #endif
-    spell_check_->Init(file.Pass(), std::set<std::string>(), language);
+    spell_check_->AddSpellcheckLanguage(file.Pass(), language);
   }
 
   void EnableAutoCorrect(bool enable_autocorrect) {

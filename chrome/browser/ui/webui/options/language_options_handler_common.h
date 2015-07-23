@@ -84,7 +84,8 @@ class LanguageOptionsHandlerCommon
   // Updates the hunspell dictionary that is used for spellchecking.
   void RefreshHunspellDictionary();
 
-  // Returns the hunspell dictionary that is used for spellchecking. Never null.
+  // Returns the hunspell dictionary that is used for spellchecking. Null when
+  // no languages are selected for spellchecking.
   base::WeakPtr<SpellcheckHunspellDictionary>& GetHunspellDictionary();
 
   // The hunspell dictionary that is used for spellchecking. Might be null.

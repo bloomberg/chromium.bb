@@ -17,6 +17,7 @@
 #include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_bdict_language.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "components/user_prefs/user_prefs.h"
@@ -171,18 +172,21 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
     return;
 
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
-  IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
+  std::vector<SpellCheckBDictLanguage> bdict_languages;
 
-  if (hunspell_dictionaries_.front()->GetDictionaryFile().IsValid()) {
-    file = IPC::GetFileHandleForProcess(
-        hunspell_dictionaries_.front()->GetDictionaryFile().GetPlatformFile(),
-        process->GetHandle(), false);
+  for (const auto& hunspell_dictionary : hunspell_dictionaries_) {
+    bdict_languages.push_back(SpellCheckBDictLanguage());
+    bdict_languages.back().language = hunspell_dictionary->GetLanguage();
+    bdict_languages.back().file =
+        hunspell_dictionary->GetDictionaryFile().IsValid()
+            ? IPC::GetFileHandleForProcess(
+                  hunspell_dictionary->GetDictionaryFile().GetPlatformFile(),
+                  process->GetHandle(), false)
+            : IPC::InvalidPlatformFileForTransit();
   }
 
   process->Send(new SpellCheckMsg_Init(
-      file,
-      custom_dictionary_->GetWords(),
-      hunspell_dictionaries_.front()->GetLanguage(),
+      bdict_languages, custom_dictionary_->GetWords(),
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   process->Send(new SpellCheckMsg_EnableSpellCheck(
       prefs->GetBoolean(prefs::kEnableContinuousSpellcheck)));
@@ -196,9 +200,9 @@ SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
   return custom_dictionary_.get();
 }
 
-SpellcheckHunspellDictionary* SpellcheckService::GetHunspellDictionary() {
-  return hunspell_dictionaries_.empty() ? nullptr
-                                        : hunspell_dictionaries_.front();
+const ScopedVector<SpellcheckHunspellDictionary>&
+SpellcheckService::GetHunspellDictionaries() {
+  return hunspell_dictionaries_;
 }
 
 spellcheck::FeedbackSender* SpellcheckService::GetFeedbackSender() {
@@ -289,23 +293,31 @@ void SpellcheckService::OnEnableAutoSpellCorrectChanged() {
 }
 
 void SpellcheckService::OnSpellCheckDictionariesChanged() {
-  if (!hunspell_dictionaries_.empty())
-    hunspell_dictionaries_.front()->RemoveObserver(this);
+  for (auto& hunspell_dictionary : hunspell_dictionaries_)
+    hunspell_dictionary->RemoveObserver(this);
+
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   DCHECK(prefs);
 
-  std::string dictionary;
-  prefs->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &dictionary);
+  const base::ListValue* dictionary_values =
+      prefs->GetList(prefs::kSpellCheckDictionaries);
 
   hunspell_dictionaries_.clear();
-  hunspell_dictionaries_.push_back(new SpellcheckHunspellDictionary(
-      dictionary, context_->GetRequestContext(), this));
-  hunspell_dictionaries_.front()->AddObserver(this);
-  hunspell_dictionaries_.front()->Load();
+  for (const base::Value* dictionary_value : *dictionary_values) {
+    std::string dictionary;
+    dictionary_value->GetAsString(&dictionary);
+    hunspell_dictionaries_.push_back(new SpellcheckHunspellDictionary(
+        dictionary, context_->GetRequestContext(), this));
+    hunspell_dictionaries_.back()->AddObserver(this);
+    hunspell_dictionaries_.back()->Load();
+  }
+
+  std::string feedback_language;
+  dictionary_values->GetString(0, &feedback_language);
   std::string language_code;
   std::string country_code;
   chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(
-      dictionary, &language_code, &country_code);
+      feedback_language, &language_code, &country_code);
   feedback_sender_->OnLanguageCountryChange(language_code, country_code);
   UpdateFeedbackSenderState();
 }

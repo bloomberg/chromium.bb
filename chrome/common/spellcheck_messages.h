@@ -5,6 +5,7 @@
 // IPC messages for spellcheck.
 // Multiply-included message file, hence no include guard.
 
+#include "chrome/common/spellcheck_bdict_language.h"
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_result.h"
 #include "ipc/ipc_message_macros.h"
@@ -31,6 +32,11 @@ IPC_STRUCT_TRAITS_BEGIN(SpellCheckMarker)
   IPC_STRUCT_TRAITS_MEMBER(offset)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(SpellCheckBDictLanguage)
+  IPC_STRUCT_TRAITS_MEMBER(file)
+  IPC_STRUCT_TRAITS_MEMBER(language)
+IPC_STRUCT_TRAITS_END()
+
 // Messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
@@ -39,10 +45,9 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
 // Passes some initialization params from the browser to the renderer's
 // spellchecker. This can be called directly after startup or in (async)
 // response to a RequestDictionary ViewHost message.
-IPC_MESSAGE_CONTROL4(SpellCheckMsg_Init,
-                     IPC::PlatformFileForTransit /* bdict_file */,
+IPC_MESSAGE_CONTROL3(SpellCheckMsg_Init,
+                     std::vector<SpellCheckBDictLanguage> /* bdict_languages */,
                      std::set<std::string> /* custom_dict_words */,
-                     std::string /* language */,
                      bool /* auto spell correct */)
 
 // Words have been added and removed in the custom dictionary; update the local

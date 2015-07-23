@@ -96,8 +96,8 @@ class SpellcheckService : public KeyedService,
   // Returns the instance of the custom dictionary.
   SpellcheckCustomDictionary* GetCustomDictionary();
 
-  // Returns the instance of the Hunspell dictionary.
-  SpellcheckHunspellDictionary* GetHunspellDictionary();
+  // Returns the instance of the vector of Hunspell dictionaries.
+  const ScopedVector<SpellcheckHunspellDictionary>& GetHunspellDictionaries();
 
   // Returns the instance of the spelling service feedback sender.
   spellcheck::FeedbackSender* GetFeedbackSender();

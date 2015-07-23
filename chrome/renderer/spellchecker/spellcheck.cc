@@ -20,6 +20,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
@@ -162,7 +163,6 @@ class SpellCheck::SpellcheckRequest {
 SpellCheck::SpellCheck()
     : auto_spell_correct_turned_on_(false),
       spellcheck_enabled_(true) {
-  languages_.push_back(new SpellcheckLanguage());
 }
 
 SpellCheck::~SpellCheck() {
@@ -185,11 +185,18 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
-                        const std::set<std::string>& custom_words,
-                        const std::string& language,
-                        bool auto_spell_correct) {
-  Init(IPC::PlatformFileForTransitToFile(bdict_file), custom_words, language);
+void SpellCheck::OnInit(
+    const std::vector<SpellCheckBDictLanguage>& bdict_languages,
+    const std::set<std::string>& custom_words,
+    bool auto_spell_correct) {
+  languages_.clear();
+  for (const auto& bdict_language : bdict_languages) {
+    AddSpellcheckLanguage(
+        IPC::PlatformFileForTransitToFile(bdict_language.file),
+        bdict_language.language);
+  }
+
+  custom_dictionary_.Init(custom_words);
   auto_spell_correct_turned_on_ = auto_spell_correct;
 #if !defined(OS_MACOSX)
   PostDelayedSpellCheckTask(pending_request_param_.release());
@@ -223,13 +230,12 @@ void SpellCheck::OnRequestDocumentMarkers() {
       new SpellCheckHostMsg_RespondDocumentMarkers(collector.markers()));
 }
 
-// TODO(groby): Make sure we always have a spelling engine, even before Init()
-// is called.
-void SpellCheck::Init(base::File file,
-                      const std::set<std::string>& custom_words,
-                      const std::string& language) {
-  languages_.front()->Init(file.Pass(), language);
-  custom_dictionary_.Init(custom_words);
+// TODO(groby): Make sure we always have a spelling engine, even before
+// AddSpellcheckLanguage() is called.
+void SpellCheck::AddSpellcheckLanguage(base::File file,
+                                       const std::string& language) {
+  languages_.push_back(new SpellcheckLanguage());
+  languages_.back()->Init(file.Pass(), language);
 }
 
 bool SpellCheck::SpellCheckWord(
@@ -373,7 +379,7 @@ void SpellCheck::RequestTextChecking(
 #endif
 
 bool SpellCheck::InitializeIfNeeded() {
-  return languages_.front()->InitializeIfNeeded();
+  return languages_.empty() ? true : languages_.front()->InitializeIfNeeded();
 }
 
 #if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
@@ -391,7 +397,7 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 
-  if (!languages_.front()->IsEnabled()) {
+  if (languages_.empty() || !languages_.front()->IsEnabled()) {
     param->completion()->didCancelCheckingText();
   } else {
     WebVector<blink::WebTextCheckingResult> results;
