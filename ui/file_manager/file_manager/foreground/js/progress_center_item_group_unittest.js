@@ -279,27 +279,56 @@ function testTwoItems() {
 
 function testOneError() {
   var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
-  var item = new ProgressCenterItem();
-  item.id = 'test-item-1';
-  item.message = 'TestItemMessage1';
-  item.state = ProgressItemState.PROGRESSING;
-  item.progressMax = 0.0;
-  item.progressValue = 0.0;
-  item.type = ProgressItemType.COPY;
+  var item1 = new ProgressCenterItem();
+  item1.id = 'test-item-1';
+  item1.message = 'TestItemMessage1';
+  item1.state = ProgressItemState.PROGRESSING;
+  item1.progressMax = 2.0;
+  item1.progressValue = 1.0;
+  item1.type = ProgressItemType.COPY;
 
   // Item 1 is added.
-  group.update(item);
+  group.update(item1);
 
   // Item 1 becomes error.
-  item.message = "Error.";
-  item.state = ProgressItemState.ERROR;
-  group.update(item);
+  item1.message = "Error.";
+  item1.state = ProgressItemState.ERROR;
+  group.update(item1);
 
-  assertTrue(!!group.getItem(item.id));
-  assertFalse(group.isAnimated(item.id));
+  assertTrue(!!group.getItem(item1.id));
+  assertFalse(group.isAnimated(item1.id));
   assertEquals(null, group.getSummarizedItem());
   assertFalse(group.isSummarizedAnimated());
   assertEquals(ProgressCenterItemGroup.State.INACTIVE, group.state);
+
+  // Add another item without dismissing the error item.
+  var item2 = new ProgressCenterItem();
+  item2.id = 'test-item-2';
+  item2.message = 'TestItemMessage2';
+  item2.state = ProgressItemState.PROGRESSING;
+  item2.progressMax = 4.0;
+  item2.progressValue = 1.0;
+  item2.type = ProgressItemType.COPY;
+
+  // Item 2 is added.
+  group.update(item2);
+
+  assertTrue(!!group.getItem(item1.id));
+  assertTrue(!!group.getItem(item2.id));
+  assertEquals('Copying... 1 Error.', group.getSummarizedItem(0).message);
+  assertEquals(4.0, group.getSummarizedItem(0).progressMax);
+  assertEquals(1.0, group.getSummarizedItem(0).progressValue);
+  assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
+
+  // Dismiss the error item.
+  group.dismissErrorItem(item1.id);
+
+  assertFalse(!!group.getItem(item1.id));
+  assertTrue(!!group.getItem(item2.id));
+  assertEquals('TestItemMessage2', group.getSummarizedItem(0).message);
+  assertEquals(4.0, group.getSummarizedItem(0).progressMax);
+  assertEquals(1.0, group.getSummarizedItem(0).progressValue);
+  assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
 }
 
 function testOneItemWithError() {
@@ -372,8 +401,8 @@ function testOneItemWithError() {
   assertFalse(group.isSummarizedAnimated());
   assertEquals(ProgressCenterItemGroup.State.INACTIVE, group.state);
 
-  // End inactive states.
-  group.endInactive();
+  // Dismiss error item.
+  group.dismissErrorItem(item2.id);
   assertFalse(!!group.getItem(item2.id));
   assertEquals(ProgressCenterItemGroup.State.EMPTY, group.state);
 }
@@ -445,11 +474,21 @@ function testTwoErrors() {
 
   // Add another error item.
   group.update(item2);
-  assertFalse(!!group.getItem(item1.id));
+  assertTrue(!!group.getItem(item1.id));
+  assertTrue(!!group.getItem(item2.id));
   assertFalse(group.isAnimated(item2.id));
   assertFalse(group.isSummarizedAnimated());
-  assertEquals('Error message 2',
+  assertEquals('2 Errors.',
                ProgressCenterItemGroup.getSummarizedErrorItem(group).message);
+  assertEquals(ProgressCenterItemGroup.State.INACTIVE, group.state);
+
+  // Dismiss Error message 1.
+  group.dismissErrorItem(item1.id);
+
+  assertFalse(!!group.getItem(item1.id));
+  assertTrue(!!group.getItem(item2.id));
+  assertEquals('Error message 2',
+      ProgressCenterItemGroup.getSummarizedErrorItem(group).message);
   assertEquals(ProgressCenterItemGroup.State.INACTIVE, group.state);
 }
 

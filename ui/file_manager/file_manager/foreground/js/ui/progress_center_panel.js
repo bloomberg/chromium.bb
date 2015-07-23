@@ -28,9 +28,15 @@ function ProgressCenterItemElement(document) {
   cancelButton.className = 'cancel';
   cancelButton.setAttribute('tabindex', '-1');
 
+  // Dismiss button is shown for error item.
+  var dismissButton = document.createElement('button');
+  dismissButton.classList.add('dismiss');
+  dismissButton.setAttribute('tabindex', '-1');
+
   var buttonFrame = document.createElement('div');
   buttonFrame.className = 'button-frame';
   buttonFrame.appendChild(cancelButton);
+  buttonFrame.appendChild(dismissButton);
 
   var itemElement = document.createElement('li');
   itemElement.appendChild(progressFrame);
@@ -243,6 +249,13 @@ function ProgressCenterPanel(element) {
    */
   this.cancelCallback = null;
 
+  /**
+   * Callback to be called with the ID of the error item when user pressed
+   * dismiss button of it.
+   * @type {?function(string)}
+   */
+  this.dismissErrorItemCallback = null;
+
   // Register event handlers.
   element.addEventListener('click', this.onClick_.bind(this));
   element.addEventListener(
@@ -272,15 +285,6 @@ ProgressCenterPanel.getToggleAnimation_ = function(document) {
   throw new Error('The progress-center-toggle rules is not found.');
 };
 
-/**
- * The default amount of milliseconds time, before a progress item will reset
- * after the last complete.
- * @type {number}
- * @private
- * @const
- */
-ProgressCenterPanel.RESET_DELAY_TIME_MS_ = 5000;
-
 ProgressCenterPanel.prototype = /** @struct */ {
   /**
    * Root element of the progress center.
@@ -299,9 +303,7 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
   var targetGroup = this.getGroupForItem_(item);
 
   // Update the item.
-  var oldState = targetGroup.state;
   targetGroup.update(item);
-  this.handleGroupStateChange_(targetGroup, oldState, targetGroup.state);
 
   // Update an open view item.
   var newItem = targetGroup.getItem(item.id);
@@ -331,7 +333,6 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
 ProgressCenterPanel.prototype.onItemAnimationEnd_ = function(event) {
   var targetGroup = event.target.classList.contains('quiet') ?
       this.quietItemGroup_ : this.normalItemGroup_;
-  var oldState = targetGroup.state;
   if (event.target === this.closeView_) {
     targetGroup.completeSummarizedItemAnimation();
   } else {
@@ -342,36 +343,21 @@ ProgressCenterPanel.prototype.onItemAnimationEnd_ = function(event) {
     if (!newItem && itemElement)
       itemElement.parentNode.removeChild(itemElement);
   }
-  this.handleGroupStateChange_(targetGroup, oldState, targetGroup.state);
   this.updateCloseView_();
 };
 
 /**
- * Handles the state change of group.
- * @param {ProgressCenterItemGroup} group Item group.
- * @param {ProgressCenterItemGroup.State} oldState Old state of the group.
- * @param {ProgressCenterItemGroup.State} newState New state of the group.
- * @private
+ * Requests all item groups to dismiss an error item.
+ * @param {string} id Item id.
  */
-ProgressCenterPanel.prototype.handleGroupStateChange_ =
-    function(group, oldState, newState) {
-  if (oldState === ProgressCenterItemGroup.State.INACTIVE) {
-    clearTimeout(this.timeoutId_[group.name]);
-    this.timeoutId_[group.name] = null;
-    var elements =
-        this.openView_.querySelectorAll(this.itemQuery_[group.name]);
-    for (var i = 0; i < elements.length; i++) {
-      elements[i].parentNode.removeChild(elements[i]);
-    }
-  }
-  if (newState === ProgressCenterItemGroup.State.INACTIVE) {
-    this.timeoutId_[group.name] = setTimeout(function() {
-      var inOldState = group.state;
-      group.endInactive();
-      this.handleGroupStateChange_(group, inOldState, group.state);
-      this.updateCloseView_();
-    }.bind(this), ProgressCenterPanel.RESET_DELAY_TIME_MS_);
-  }
+ProgressCenterPanel.prototype.dismissErrorItem = function(id) {
+  this.normalItemGroup_.dismissErrorItem(id);
+  this.quietItemGroup_.dismissErrorItem(id);
+
+  var element = this.getItemElement_(id);
+  if (element)
+    this.openView_.removeChild(element);
+  this.updateCloseView_();
 };
 
 /**
@@ -386,11 +372,7 @@ ProgressCenterPanel.prototype.updateCloseView_ = function() {
     // If the quiet animation is overridden by normal summarized item, discard
     // the quiet animation.
     if (this.quietItemGroup_.isSummarizedAnimated()) {
-      var oldState = this.quietItemGroup_.state;
       this.quietItemGroup_.completeSummarizedItemAnimation();
-      this.handleGroupStateChange_(this.quietItemGroup_,
-                                   oldState,
-                                   this.quietItemGroup_.state);
     }
 
     // Update the view state.
@@ -491,6 +473,14 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
     this.element_.classList.add('animated');
     this.element_.classList.toggle('opened');
     return;
+  }
+
+  if (event.target.classList.contains('dismiss')) {
+    // To dismiss the error item in all windows, we send this to progress center
+    // in background page.
+    var itemElement = event.target.parentNode.parentNode;
+    var id = itemElement.getAttribute('data-progress-id');
+    this.dismissErrorItemCallback(id);
   }
 
   // Cancel button.

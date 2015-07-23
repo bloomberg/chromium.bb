@@ -2175,10 +2175,6 @@ list.autocomplete-suggestions > [lead] {
   width: 16px;
 }
 
-#progress-center li.error.single .button-frame {
-  display: none;
-}
-
 #progress-center button.close {
   -webkit-margin-end: 12px;
   -webkit-margin-start: auto;
@@ -2199,6 +2195,7 @@ list.autocomplete-suggestions > [lead] {
   margin-bottom: 14px;
 }
 
+#progress-center button.dismiss,
 #progress-center button.cancel {
   background: -webkit-image-set(
       url(../images/files/ui/cancel.png) 1x,
@@ -2209,6 +2206,20 @@ list.autocomplete-suggestions > [lead] {
 #progress-center li.error button.open,
 #progress-center li.quiet button.open {
   margin-bottom: 0;
+}
+
+#progress-center button.dismiss {
+  display: none;
+}
+
+/*
+ * Dismiss button is shown only when
+ * - Single error in close view.
+ * - Error items in open view.
+ */
+li#progress-center-close-view.error.single button.dismiss,
+#progress-center-open-view li.error button.dismiss {
+  display: block;
 }
 
 #progress-center-close-view:not(.single) button.cancel {

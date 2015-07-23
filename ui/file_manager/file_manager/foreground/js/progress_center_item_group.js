@@ -207,14 +207,26 @@ ProgressCenterItemGroup.prototype.isSummarizedAnimated = function() {
 };
 
 /**
+ * Dismisses an error item.
+ * @param {string} id Item id.
+ */
+ProgressCenterItemGroup.prototype.dismissErrorItem = function(id) {
+  var errorItem = this.items_[id];
+
+  if (!errorItem || errorItem.state !== ProgressItemState.ERROR)
+    return;
+
+  delete this.items_[id];
+
+  this.tryToGoToNextState_();
+};
+
+/**
  * Starts item update.
  * Marks the given item as updating.
  * @param {ProgressCenterItem} item Item containing updated information.
  */
 ProgressCenterItemGroup.prototype.update = function(item) {
-  // If the group is inactive, go back to the empty state.
-  this.endInactive();
-
   // Compares the current state and the new state to check if the update is
   // valid or not.
   var previousItem = this.items_[item.id];
@@ -235,7 +247,8 @@ ProgressCenterItemGroup.prototype.update = function(item) {
           (previousItem &&
            previousItem.state !== ProgressItemState.PROGRESSING))
         return;
-      if (this.state_ === ProgressCenterItemGroup.State.EMPTY)
+      if (this.state_ === ProgressCenterItemGroup.State.EMPTY ||
+          this.state_ === ProgressCenterItemGroup.State.INACTIVE)
         this.state_ = ProgressCenterItemGroup.State.ACTIVE;
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = ProgressCenterItemGroup.shouldAnimate_(
@@ -275,15 +288,12 @@ ProgressCenterItemGroup.prototype.update = function(item) {
  * @param {string} id Item ID.
  */
 ProgressCenterItemGroup.prototype.completeItemAnimation = function(id) {
-  if (this.state_ !== ProgressCenterItemGroup.State.ACTIVE)
-    return;
-
   this.animated_[id] = false;
   if (this.items_[id].state === ProgressItemState.COMPLETED) {
     this.totalProgressValue_ += (this.items_[id].progressValue || 0.0);
     this.totalProgressMax_ += (this.items_[id].progressMax || 0.0);
     delete this.items_[id];
-    this.tryEndActive_();
+    this.tryToGoToNextState_();
   }
 };
 
@@ -293,7 +303,7 @@ ProgressCenterItemGroup.prototype.completeItemAnimation = function(id) {
  */
 ProgressCenterItemGroup.prototype.completeSummarizedItemAnimation = function() {
   this.summarizedItemAnimated_ = false;
-  this.tryEndActive_();
+  this.tryToGoToNextState_();
 };
 
 /**
@@ -392,29 +402,14 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
 };
 
 /**
- * Goes back to the EMPTY state from the INACTIVE state. Removes all the items.
- * If the current state is not the INACTIVE, nothing happens.
- */
-ProgressCenterItemGroup.prototype.endInactive = function() {
-  if (this.state_ !== ProgressCenterItemGroup.State.INACTIVE)
-    return;
-  this.items_ = {};
-  this.animated_ = {};
-  this.summarizedItem_ = null;
-  this.summarizedItemAnimated_ = false;
-  this.totalProgressValue_ = 0.0;
-  this.totalProgressMax_ = 0.0;
-  this.state_ = ProgressCenterItemGroup.State.EMPTY;
-};
-
-/**
- * Ends active state if there is no progressing and animated items.
+ * Tries to go to next state.
  * @private
  */
-ProgressCenterItemGroup.prototype.tryEndActive_ = function() {
-  if (this.state_ !== ProgressCenterItemGroup.State.ACTIVE ||
-      this.summarizedItemAnimated_)
+ProgressCenterItemGroup.prototype.tryToGoToNextState_ = function() {
+  if (this.summarizedItemAnimated_)
     return;
+
+  // If there is no item except for error items, go to INACTIVE state.
   var hasError = false;
   for (var id in this.items_) {
     // If there is non-error item (progressing, or completed but still
@@ -423,7 +418,18 @@ ProgressCenterItemGroup.prototype.tryEndActive_ = function() {
       return;
     hasError = true;
   }
+
+  this.totalProgressValue_ = 0.0;
+  this.totalProgressMax_ = 0.0;
   this.state_ = ProgressCenterItemGroup.State.INACTIVE;
-  if (!hasError)
-    this.endInactive();
+
+  // If there is no item, go to EMPTY state.
+  if (hasError)
+    return;
+
+  this.items_ = {};
+  this.animated_ = {};
+  this.summarizedItem_ = null;
+  this.summarizedItemAnimated_ = false;
+  this.state_ = ProgressCenterItemGroup.State.EMPTY;
 };

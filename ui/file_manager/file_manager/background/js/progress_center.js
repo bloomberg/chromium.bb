@@ -21,7 +21,8 @@ var ProgressCenter = function() {
    * @private
    */
   this.notifications_ = new ProgressCenter.Notifications_(
-      this.requestCancel.bind(this));
+      this.requestCancel.bind(this),
+      this.onNotificationDismissed_.bind(this));
 
   /**
    * List of panel UI managed by the progress center.
@@ -35,11 +36,13 @@ var ProgressCenter = function() {
  * Notifications created by progress center.
  * @param {function(string)} cancelCallback Callback to notify the progress
  *     center of cancel operation.
+ * @param {function(string)} dismissCallback Callback to notify the progress
+ *     center that a notification is dismissed.
  * @constructor
  * @struct
  * @private
  */
-ProgressCenter.Notifications_ = function(cancelCallback) {
+ProgressCenter.Notifications_ = function(cancelCallback, dismissCallback) {
   /**
    * ID set of notifications that is progressing now.
    * @type {Object<ProgressCenter.Notifications_.NotificationState_>}
@@ -60,6 +63,12 @@ ProgressCenter.Notifications_ = function(cancelCallback) {
    * @private
    */
   this.cancelCallback_ = cancelCallback;
+
+  /**
+   * Callback to notify the progress center that a notification is dismissed.
+   * @private {function(string)}
+   */
+  this.dismissCallback_ = dismissCallback;
 
   chrome.notifications.onButtonClicked.addListener(
       this.onButtonClicked_.bind(this));
@@ -93,7 +102,8 @@ ProgressCenter.Notifications_.prototype.updateItem = function(
 
   // Update the ID map and return if we does not show a notification for the
   // item.
-  if (item.state === ProgressItemState.PROGRESSING) {
+  if (item.state === ProgressItemState.PROGRESSING ||
+      item.state === ProgressItemState.ERROR) {
     if (newlyAdded)
       this.ids_[item.id] = NotificationState.VISIBLE;
     else if (this.ids_[item.id] === NotificationState.DISMISSED)
@@ -134,6 +144,21 @@ ProgressCenter.Notifications_.prototype.updateItem = function(
 };
 
 /**
+ * Dismisses error item.
+ * @param {string} id Item ID.
+ */
+ProgressCenter.Notifications_.prototype.dismissErrorItem = function(id) {
+  if (!this.ids_[id])
+    return;
+
+  delete this.ids_[id];
+
+  this.queue_.run(function(proceed) {
+    chrome.notifications.clear(id, proceed);
+  });
+};
+
+/**
  * Handles cancel button click.
  * @param {string} id Item ID.
  * @private
@@ -149,8 +174,10 @@ ProgressCenter.Notifications_.prototype.onButtonClicked_ = function(id) {
  * @private
  */
 ProgressCenter.Notifications_.prototype.onClosed_ = function(id) {
-  if (id in this.ids_)
+  if (id in this.ids_) {
     this.ids_[id] = ProgressCenter.Notifications_.NotificationState_.DISMISSED;
+    this.dismissCallback_(id);
+  }
 };
 
 /**
@@ -168,7 +195,8 @@ ProgressCenter.prototype.updateItem = function(item) {
     else
       this.items_[index] = item;
   } else {
-    if (index !== -1)
+    // Error item is not removed until user explicitly dismiss it.
+    if (item.state !== ProgressItemState.ERROR && index !== -1)
       this.items_.splice(index, 1);
   }
 
@@ -192,6 +220,16 @@ ProgressCenter.prototype.requestCancel = function(id) {
 };
 
 /**
+ * Called when notification is dismissed.
+ * @param {string} id Item id.
+ */
+ProgressCenter.prototype.onNotificationDismissed_ = function(id) {
+  var item = this.getItemById(id);
+  if (item && item.state === ProgressItemState.ERROR)
+    this.dismissErrorItem_(id);
+};
+
+/**
  * Adds a panel UI to the notification center.
  * @param {ProgressCenterPanel} panel Panel UI.
  */
@@ -208,6 +246,9 @@ ProgressCenter.prototype.addPanel = function(panel) {
 
   // Register the cancel callback.
   panel.cancelCallback = this.requestCancel.bind(this);
+
+  // Register the dismiss error item callback.
+  panel.dismissErrorItemCallback = this.dismissErrorItem_.bind(this);
 };
 
 /**
@@ -251,4 +292,21 @@ ProgressCenter.prototype.getItemIndex_ = function(id) {
       return i;
   }
   return -1;
+};
+
+/**
+ * Requests all panels to dismiss an error item.
+ * @param {string} id Item ID.
+ * @private
+ */
+ProgressCenter.prototype.dismissErrorItem_ = function(id) {
+  var index = this.getItemIndex_(id);
+  if (index > -1)
+    this.items_.splice(index, 1);
+
+  this.notifications_.dismissErrorItem(id);
+
+  for (var i = 0; i < this.panels_.length; i++) {
+    this.panels_[i].dismissErrorItem(id);
+  }
 };
