@@ -2,14 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("pref_registry") {
+source_set("pref_registry") {
   sources = [
-    "pref_registry_export.h",
     "pref_registry_syncable.cc",
     "pref_registry_syncable.h",
   ]
-
-  defines = [ "PREF_REGISTRY_IMPLEMENTATION" ]
 
   deps = [
     "//base",

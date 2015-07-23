@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/prefs/pref_registry_simple.h"
-#include "components/pref_registry/pref_registry_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -36,7 +35,7 @@ namespace user_prefs {
 // logic which is only required to support pref registration after the
 // PrefService has been created which is only used by tests. We can remove this
 // entire class and those tests with some work.
-class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistrySimple {
+class PrefRegistrySyncable : public PrefRegistrySimple {
  public:
   // Enum of flags used when registering preferences to determine if it should
   // be synced or not. These flags are mutually exclusive, only one of them

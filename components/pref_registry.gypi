@@ -7,7 +7,7 @@
     {
       # GN version: //components/pref_registry
       'target_name': 'pref_registry',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
@@ -16,11 +16,7 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [
-        'PREF_REGISTRY_IMPLEMENTATION',
-      ],
       'sources': [
-        'pref_registry/pref_registry_export.h',
         'pref_registry/pref_registry_syncable.cc',
         'pref_registry/pref_registry_syncable.h',
       ],
