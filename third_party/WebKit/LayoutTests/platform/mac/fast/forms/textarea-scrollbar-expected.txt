@@ -7,9 +7,9 @@ layer at (0,0) size 800x600
         text run at (0,0) width 453: "This tests that a scrollbar will appear when text overflows the textarea "
       LayoutBR {BR} at (452,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,26) size 161x84 clip at (9,27) size 144x82 scrollHeight 121
-  LayoutTextControl {TEXTAREA} at (0,18) size 161x84 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (3,3) size 140x117
+layer at (8,26) size 141x84 clip at (9,27) size 124x82 scrollHeight 121
+  LayoutTextControl {TEXTAREA} at (0,18) size 141x84 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 120x117
       LayoutText {#text} at (0,0) size 7x13
         text run at (0,0) width 7: "1"
       LayoutBR {BR} at (6,11) size 1x0

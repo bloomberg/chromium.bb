@@ -20,9 +20,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,1) size 288x18
           text run at (0,1) width 288 LTR override: "Text in the field should look like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
       LayoutBlockFlow (anonymous) at (0,105) size 784x19
-        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,116) size 117x13
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
-    LayoutText {#text} at (0,0) size 30x13
-      text run at (0,0) width 30 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"
+layer at (11,116) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
+    LayoutText {#text} at (0,0) size 31x13
+      text run at (0,0) width 31 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"
