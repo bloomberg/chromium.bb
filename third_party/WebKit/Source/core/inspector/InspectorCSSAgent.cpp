@@ -1523,7 +1523,7 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDecl
 
     String longhand = getPropertyNameString(propertyId);
 
-    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle;
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = nullptr;
     bool isImportant = false;
 
     if (inlineStyle && !inlineStyle->getPropertyValue(longhand).isEmpty()) {
