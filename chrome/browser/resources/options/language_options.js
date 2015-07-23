@@ -231,12 +231,14 @@ cr.define('options', function() {
           $('auto-spell-correction-option').hidden = false;
       }
 
-      if (!cr.isMac) {
-        // Handle spell check enable/disable.
-        Preferences.getInstance().addEventListener(ENABLE_SPELL_CHECK_PREF,
-            this.updateEnableSpellCheck_.bind(this));
+      // Handle spell check enable/disable.
+      if (!(cr.isMac || cr.isChromeOS)) {
+        Preferences.getInstance().addEventListener(
+            ENABLE_SPELL_CHECK_PREF, this.updateEnableSpellCheck_.bind(this));
+      }
 
-        // Handle clicks on "Use this language for spell checking" button.
+      // Handle clicks on "Use this language for spell checking" button.
+      if (!cr.isMac) {
         if (loadTimeData.getBoolean('enableMultilingualSpellChecker')) {
           $('spellcheck-language-checkbox').addEventListener(
               'change',
@@ -675,8 +677,9 @@ cr.define('options', function() {
 
       var areNoLanguagesSelected =
           Object.keys(this.spellCheckLanguages_).length == 0;
-      $('enable-spellcheck-container').hidden = areNoLanguagesSelected;
       $('edit-dictionary-button').hidden = areNoLanguagesSelected;
+      if ($('enable-spellcheck-container'))
+        $('enable-spellcheck-container').hidden = areNoLanguagesSelected;
     },
 
     /**

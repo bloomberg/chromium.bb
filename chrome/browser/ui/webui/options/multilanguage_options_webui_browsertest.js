@@ -164,16 +164,18 @@ TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'BlankSpellcheckLanguges',
 });
 
 // Make sure that when no languages are selected, the "Enable spell checking"
-// checkbox is not visible.
+// checkbox and "Edit custom spelling dictionary" link are not visible.
 TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'DeselectAllLanguages',
        function() {
   expectTrue($('language-options-list').selectLanguageByCode('fr'));
-  expectTrue($('enable-spellcheck-container').hidden);
+  if ($('enable-spellcheck-container'))
+    expectTrue($('enable-spellcheck-container').hidden);
   expectTrue($('edit-dictionary-button').hidden);
 
   this.addPreferenceListener('spellcheck.dictionaries', function() {
     expectTrue($('spellcheck-language-checkbox').checked, 'fr');
-    expectFalse($('enable-spellcheck-container').hidden);
+    if ($('enable-spellcheck-container'))
+      expectFalse($('enable-spellcheck-container').hidden);
     expectFalse($('edit-dictionary-button').hidden);
     testDone();
   });
@@ -181,6 +183,10 @@ TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'DeselectAllLanguages',
   // Click 'fr' and trigger the preference listener.
   $('spellcheck-language-checkbox').click();
 });
+
+// ChromeOS never shows the "Enable spell checking" checkbox so don't run the
+// last test on ChromeOS.
+GEN('#if !defined(OS_CHROMEOS)');
 
 // Make sure that disabling spellchecking disables the language checkboxes.
 TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'DisableLanguageCheckboxes',
@@ -201,3 +207,5 @@ TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'DisableLanguageCheckboxes',
   // Click 'fr' to display the 'Enable spell checking' checkbox.
   $('spellcheck-language-checkbox').click();
 });
+
+GEN('#endif  // OS_CHROMEOS');
