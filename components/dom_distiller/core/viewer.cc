@@ -113,15 +113,12 @@ std::string ReplaceHtmlTemplateValues(
   std::vector<std::string> substitutions;
 
   std::ostringstream css;
-  std::ostringstream script;
 #if defined(OS_IOS)
   // On iOS the content is inlined as there is no API to detect those requests
   // and return the local data once a page is loaded.
   css << "<style>" << viewer::GetCss() << viewer::GetIOSCss() << "</style>";
-  script << "<script>\n" << viewer::GetJavaScript() << "\n</script>";
 #else
   css << "<link rel=\"stylesheet\" href=\"/" << kViewerCssPath << "\">";
-  script << "<script src=\"" << kViewerJsPath << "\"></script>";
 #endif  // defined(OS_IOS)
 
   substitutions.push_back(
@@ -141,8 +138,6 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(
       l10n_util::GetStringUTF8(
           IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $7
-
-  substitutions.push_back(script.str());                                  // $8
 
   return base::ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }

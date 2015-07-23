@@ -104,8 +104,9 @@ void DomDistillerRequestViewBase::OnChangeFontFamily(
 void DomDistillerRequestViewBase::TakeViewerHandle(
     scoped_ptr<ViewerHandle> viewer_handle) {
   viewer_handle_ = viewer_handle.Pass();
-  // Getting the viewer handle means this is not an error page, show the
-  // loading indicator.
+  // Getting the viewer handle means this is not an error page, send
+  // the viewer JavaScript and show the loading indicator.
+  SendJavaScript(viewer::GetJavaScript());
   SendJavaScript(viewer::GetToggleLoadingIndicatorJs(false));
 }
 
