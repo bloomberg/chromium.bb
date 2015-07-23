@@ -58,7 +58,14 @@ html.col-resize * {
 .table-header-splitter {
   cursor: col-resize;
   height: 100%;
-  left: 0;
   position: absolute;
   top: 0;
+}
+
+html[dir='ltr'] .table-header-splitter {
+  left: 0;
+}
+
+html[dir='rtl'] .table-header-splitter {
+  right: 0;
 }
