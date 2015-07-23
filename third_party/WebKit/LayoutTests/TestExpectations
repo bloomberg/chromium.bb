@@ -1385,9 +1385,9 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
-crbug.com/510473 [ Lion Mavericks SnowLeopard MountainLion Win Android ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ NeedsRebaseline ]
+crbug.com/510473 [ Lion Mavericks SnowLeopard MountainLion Yosemite Retina Trusty Win Android ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ NeedsRebaseline ]
 
-    # Temporary until we start generating Trusty baselines.
+# Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/498021 [ Linux ] http/tests/misc/xslt-bad-import.html [ Failure ]
 crbug.com/498021 [ Linux ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
