@@ -332,8 +332,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
             resetMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-                    new ProtectedContentResetCredentialConfirmDialogFragment(
-                            SingleCategoryPreferences.this).show(getFragmentManager(), null);
+                    ProtectedContentResetCredentialConfirmDialogFragment
+                            .newInstance(SingleCategoryPreferences.this)
+                            .show(getFragmentManager(), null);
                     return true;
                 }
             });

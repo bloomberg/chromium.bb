@@ -32,10 +32,15 @@ public class ProtectedContentResetCredentialConfirmDialogFragment extends Dialog
     }
 
     /**
+     * Creates a {@link ProtectedContentResetCredentialConfirmDialogFragment} instance.
      * @param listener This is notified when user confirms to reset.
      */
-    public ProtectedContentResetCredentialConfirmDialogFragment(Listener listener) {
-        mListener = listener;
+    public static final ProtectedContentResetCredentialConfirmDialogFragment newInstance(
+            Listener listener) {
+        ProtectedContentResetCredentialConfirmDialogFragment fragment =
+                new ProtectedContentResetCredentialConfirmDialogFragment();
+        fragment.mListener = listener;
+        return fragment;
     }
 
     /**
@@ -44,6 +49,8 @@ public class ProtectedContentResetCredentialConfirmDialogFragment extends Dialog
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreateDialog(savedInstanceState);
+        if (savedInstanceState != null) dismiss();
+
         return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.protected_content_reset_title)
                 .setMessage(R.string.protected_content_reset_message)
