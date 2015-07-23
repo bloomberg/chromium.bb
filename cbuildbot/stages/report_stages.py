@@ -163,6 +163,8 @@ class BuildStartStage(generic_stages.BuilderStage):
                                                  'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database type %s.',
                      build_id, db_type)
+        logging.PrintBuildbotStepText('database: %s, build_id: %s' %
+                                      (db_type, build_id))
 
         master_build_id = d['master_build_id']
         if master_build_id is not None:
