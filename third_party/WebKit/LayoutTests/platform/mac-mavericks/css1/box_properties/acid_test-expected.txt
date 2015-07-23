@@ -23,12 +23,12 @@ layer at (0,0) size 800x420
                 LayoutBlockFlow {P} at (0,0) size 139.97x20
                   LayoutText {#text} at (0,4) size 29x12
                     text run at (0,4) width 29: "bang "
-                  LayoutBlockFlow {INPUT} at (31.17,3) size 12x13 [color=#000000]
+                  LayoutBlockFlow {INPUT} at (31.20,3) size 12x13 [color=#000000]
                   LayoutText {#text} at (0,0) size 0x0
                 LayoutBlockFlow {P} at (0,20) size 139.97x20
                   LayoutText {#text} at (0,4) size 47x12
                     text run at (0,4) width 47: "whimper "
-                  LayoutBlockFlow {INPUT} at (49.83,3) size 12x13 [color=#000000]
+                  LayoutBlockFlow {INPUT} at (49.86,3) size 12x13 [color=#000000]
                   LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow (anonymous) at (10,60) size 139.97x0
                 LayoutInline {FORM} at (0,0) size 0x0
