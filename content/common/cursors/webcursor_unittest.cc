@@ -150,7 +150,7 @@ TEST(WebCursorTest, ClampHotspot) {
   // Custom Windows message.
   ok_custom_pickle.WriteUInt32(0);
   base::PickleIterator iter(ok_custom_pickle);
-  ASSERT_TRUE(custom_cursor.Deserialize(&iter));
+  EXPECT_TRUE(custom_cursor.Deserialize(&iter));
 
   // Convert to WebCursorInfo, make sure the hotspot got clamped.
   WebCursor::CursorInfo info;
@@ -185,7 +185,7 @@ TEST(WebCursorTest, EmptyImage) {
   // Make sure we can read this on all platforms; it is technicaally a valid
   // cursor.
   base::PickleIterator iter(broken_cursor_pickle);
-  ASSERT_TRUE(custom_cursor.Deserialize(&iter));
+  EXPECT_TRUE(custom_cursor.Deserialize(&iter));
 }
 
 TEST(WebCursorTest, Scale2) {
@@ -208,6 +208,40 @@ TEST(WebCursorTest, Scale2) {
   ok_custom_pickle.WriteUInt32(0);
   base::PickleIterator iter(ok_custom_pickle);
   EXPECT_TRUE(custom_cursor.Deserialize(&iter));
+}
+
+TEST(WebCursorTest, AlphaConversion) {
+  SkBitmap bitmap;
+  SkPMColor testColor = SkPreMultiplyARGB(10, 255, 255, 255);
+  bitmap.allocN32Pixels(1,1);
+  SkAutoLockPixels bitmap_lock(bitmap);
+  *bitmap.getAddr32(0, 0) = testColor;
+  WebCursor::CursorInfo cursor_info;
+  cursor_info.type = WebCursorInfo::TypeCustom;
+  cursor_info.custom_image = bitmap;
+  cursor_info.image_scale_factor = 1;
+  WebCursor custom_cursor;
+
+  // This round trip will convert the cursor to unpremultiplied form
+  custom_cursor.InitFromCursorInfo(cursor_info);
+  custom_cursor.GetCursorInfo(&cursor_info);
+  {
+    SkAutoLockPixels lock(cursor_info.custom_image);
+    EXPECT_EQ(kUnpremul_SkAlphaType, cursor_info.custom_image.alphaType());
+    EXPECT_EQ(testColor,
+              SkPreMultiplyColor(*cursor_info.custom_image.getAddr32(0,0)));
+  }
+
+  // Second round trip should not do any conversion because data is alread
+  // unpremultiplied
+  custom_cursor.InitFromCursorInfo(cursor_info);
+  custom_cursor.GetCursorInfo(&cursor_info);
+  {
+    SkAutoLockPixels lock(cursor_info.custom_image);
+    EXPECT_EQ(kUnpremul_SkAlphaType, cursor_info.custom_image.alphaType());
+    EXPECT_EQ(testColor,
+              SkPreMultiplyColor(*cursor_info.custom_image.getAddr32(0,0)));
+  }
 }
 
 }  // namespace content
