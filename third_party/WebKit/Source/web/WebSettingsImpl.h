@@ -154,6 +154,7 @@ public:
     void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     void setStrictMixedContentChecking(bool) override;
     void setStrictPowerfulFeatureRestrictions(bool) override;
+    void setStrictlyBlockBlockableMixedContent(bool) override;
     void setSupportDeprecatedTargetDensityDPI(bool) override;
     void setSupportsMultipleWindows(bool) override;
     void setSyncXHRInDocumentsEnabled(bool) override;

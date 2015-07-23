@@ -619,6 +619,11 @@ void WebSettingsImpl::setStrictPowerfulFeatureRestrictions(bool enabled)
     m_settings->setStrictPowerfulFeatureRestrictions(enabled);
 }
 
+void WebSettingsImpl::setStrictlyBlockBlockableMixedContent(bool enabled)
+{
+    m_settings->setStrictlyBlockBlockableMixedContent(enabled);
+}
+
 void WebSettingsImpl::setPasswordEchoEnabled(bool flag)
 {
     m_settings->setPasswordEchoEnabled(flag);

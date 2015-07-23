@@ -332,6 +332,7 @@ showContextMenuOnMouseUp initial=false
 disableReadingFromCanvas initial=false
 strictMixedContentChecking initial=false
 strictPowerfulFeatureRestrictions initial=false
+strictlyBlockBlockableMixedContent initial=false
 logDnsPrefetchAndPreconnect initial=false
 logPreload initial=false
 

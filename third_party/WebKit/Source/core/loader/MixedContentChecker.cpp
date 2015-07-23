@@ -323,7 +323,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         break;
 
     case ContextTypeBlockable:
-        allowed = !strictMode && client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
+        allowed = !strictMode && !settings->strictlyBlockBlockableMixedContent() && client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
         if (allowed) {
             client->didRunInsecureContent(securityOrigin, url);
             UseCounter::count(mixedFrame, UseCounter::MixedContentBlockableAllowed);
