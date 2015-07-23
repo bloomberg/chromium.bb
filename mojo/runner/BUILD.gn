@@ -59,6 +59,7 @@ source_set("mojo_runner_lib") {
       "//components/view_manager",
       "//mojo/shell",
       "//ui/gl",
+      "//ui/platform_window/android",
     ]
   }
 }
