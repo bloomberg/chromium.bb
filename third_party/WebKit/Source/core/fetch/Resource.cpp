@@ -155,7 +155,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_decodedSize(0)
     , m_handleCount(0)
     , m_preloadCount(0)
-    , m_protectorCount(0)
     , m_cacheIdentifier(MemoryCache::defaultCacheIdentifier())
     , m_preloadResult(PreloadNotReferenced)
     , m_requestedFromNetworkingLayer(false)
@@ -512,8 +511,7 @@ void Resource::clearCachedMetadata(CachedMetadataHandler::CacheType cacheType)
 
 bool Resource::canDelete() const
 {
-    return !hasClients() && !m_loader && !m_preloadCount && hasRightHandleCountApartFromCache(0)
-        && !m_protectorCount;
+    return !hasClients() && !m_loader && !m_preloadCount && hasRightHandleCountApartFromCache(0);
 }
 
 bool Resource::hasOneHandle() const

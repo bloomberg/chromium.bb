@@ -271,32 +271,6 @@ protected:
 
     virtual void destroyDecodedDataForFailedRevalidation() { }
 
-    // Normal resource pointers will silently switch what Resource* they reference when we
-    // successfully revalidated the resource. We need a way to guarantee that the Resource
-    // that received the 304 response survives long enough to switch everything over to the
-    // revalidatedresource. The normal mechanisms for keeping a Resource alive externally
-    // (ResourcePtrs and ResourceClients registering themselves) don't work in this case, so
-    // have a separate internal protector).
-    class InternalResourcePtr {
-    public:
-        explicit InternalResourcePtr(Resource* resource)
-            : m_resource(resource)
-        {
-            m_resource->incrementProtectorCount();
-        }
-
-        ~InternalResourcePtr()
-        {
-            m_resource->decrementProtectorCount();
-            m_resource->deleteIfPossible();
-        }
-    private:
-        Resource* m_resource;
-    };
-
-    void incrementProtectorCount() { m_protectorCount++; }
-    void decrementProtectorCount() { m_protectorCount--; }
-
     void setEncodedSize(size_t);
     void setDecodedSize(size_t);
     void didAccessDecodedData();
@@ -382,7 +356,6 @@ private:
     size_t m_decodedSize;
     unsigned m_handleCount;
     unsigned m_preloadCount;
-    unsigned m_protectorCount;
 
     String m_cacheIdentifier;
 
