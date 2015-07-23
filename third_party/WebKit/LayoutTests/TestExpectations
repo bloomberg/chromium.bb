@@ -3063,3 +3063,4 @@ crbug.com/513073 [ Win ] http/tests/inspector/network/long-script-content.html [
 crbug.com/513073 [ Win ] http/tests/inspector/network/network-disable-cache-memory.html [ Pass Timeout ]
 crbug.com/513073 [ Win ] http/tests/inspector/extensions-ignore-cache.html [ Pass Timeout ]
 crbug.com/513073 [ Win ] http/tests/inspector/network/network-memory-cached-resource.html [ Pass Timeout ]
+crbug.com/513073 [ XP ] http/tests/security/suborigins/crossorigin/suborigin-cors.php [ Pass Timeout ]
