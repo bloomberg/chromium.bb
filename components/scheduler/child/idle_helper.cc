@@ -9,28 +9,27 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/child/task_queue.h"
+#include "components/scheduler/child/task_queue_manager.h"
 
 namespace scheduler {
 
 IdleHelper::IdleHelper(
     SchedulerHelper* helper,
     Delegate* delegate,
-    size_t idle_queue_index,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* idle_period_tracing_name,
     base::TimeDelta required_quiescence_duration_before_long_idle_period)
     : helper_(helper),
       delegate_(delegate),
-      idle_queue_index_(idle_queue_index),
+      idle_queue_(
+          helper_->NewTaskQueue(TaskQueue::Spec("idle_tq").SetPumpPolicy(
+              TaskQueue::PumpPolicy::MANUAL))),
       state_(helper,
              delegate,
              tracing_category,
              disabled_by_default_tracing_category,
              idle_period_tracing_name),
-      quiescence_monitored_task_queue_mask_(
-          helper_->GetQuiescenceMonitoredTaskQueueMask() &
-          ~(1ull << idle_queue_index_)),
       required_quiescence_duration_before_long_idle_period_(
           required_quiescence_duration_before_long_idle_period),
       disabled_by_default_tracing_category_(
@@ -43,12 +42,10 @@ IdleHelper::IdleHelper(
       &IdleHelper::OnIdleTaskPostedOnMainThread, weak_idle_helper_ptr_));
 
   idle_task_runner_ = make_scoped_refptr(new SingleThreadIdleTaskRunner(
-      helper_->TaskRunnerForQueue(idle_queue_index_),
-      helper_->ControlAfterWakeUpTaskRunner(), this, tracing_category));
+      idle_queue_, helper_->ControlAfterWakeUpTaskRunner(), this,
+      tracing_category));
 
-  helper_->DisableQueue(idle_queue_index_);
-  helper_->SetPumpPolicy(idle_queue_index_,
-                         TaskQueueManager::PumpPolicy::MANUAL);
+  idle_queue_->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
 
   helper_->AddTaskObserver(this);
 }
@@ -94,7 +91,7 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
   if (long_idle_period_duration >=
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
     *next_long_idle_period_delay_out = long_idle_period_duration;
-    if (helper_->IsQueueEmpty(idle_queue_index_)) {
+    if (idle_queue_->IsQueueEmpty()) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED;
     } else if (long_idle_period_duration == max_long_idle_period_duration) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;
@@ -119,17 +116,10 @@ bool IdleHelper::ShouldWaitForQuiescence() {
       base::TimeDelta())
     return false;
 
-  uint64 task_queues_run_since_last_check_bitmap =
-      helper_->GetAndClearTaskWasRunOnQueueBitmap() &
-      quiescence_monitored_task_queue_mask_;
-
+  bool system_is_quiescent = helper_->GetAndClearSystemIsQuiescentBit();
   TRACE_EVENT1(disabled_by_default_tracing_category_, "ShouldWaitForQuiescence",
-               "task_queues_run_since_last_check_bitmap",
-               task_queues_run_since_last_check_bitmap);
-
-  // If anything was run on the queues we care about, then we're not quiescent
-  // and we should wait.
-  return task_queues_run_since_last_check_bitmap != 0;
+               "system_is_quiescent", system_is_quiescent);
+  return !system_is_quiescent;
 }
 
 void IdleHelper::EnableLongIdlePeriod() {
@@ -182,9 +172,8 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
   }
 
   TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
-  helper_->EnableQueue(idle_queue_index_,
-                       PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
-  helper_->PumpQueue(idle_queue_index_);
+  idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
+  idle_queue_->PumpQueue();
 
   state_.UpdateState(new_state, idle_period_deadline, now);
 }
@@ -200,7 +189,7 @@ void IdleHelper::EndIdlePeriod() {
   if (!IsInIdlePeriod(state_.idle_period_state()))
     return;
 
-  helper_->DisableQueue(idle_queue_index_);
+  idle_queue_->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
   state_.UpdateState(IdlePeriodState::NOT_IN_IDLE_PERIOD, base::TimeTicks(),
                      base::TimeTicks());
 }
@@ -232,14 +221,13 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
   DCHECK(IsInLongIdlePeriod(state_.idle_period_state()));
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "UpdateLongIdlePeriodStateAfterIdleTask");
-  TaskQueueManager::QueueState queue_state =
-      helper_->GetQueueState(idle_queue_index_);
-  if (queue_state == TaskQueueManager::QueueState::EMPTY) {
+  TaskQueue::QueueState queue_state = idle_queue_->GetQueueState();
+  if (queue_state == TaskQueue::QueueState::EMPTY) {
     // If there are no more idle tasks then pause long idle period ticks until a
     // new idle task is posted.
     state_.UpdateState(IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED,
                        state_.idle_period_deadline(), base::TimeTicks());
-  } else if (queue_state == TaskQueueManager::QueueState::NEEDS_PUMPING) {
+  } else if (queue_state == TaskQueue::QueueState::NEEDS_PUMPING) {
     // If there is still idle work to do then just start the next idle period.
     base::TimeDelta next_long_idle_period_delay;
     if (state_.idle_period_state() ==

@@ -144,7 +144,6 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
       base::TimeDelta required_quiescence_duration_before_long_idle_period)
       : IdleHelper(scheduler_helper,
                    this,
-                   SchedulerHelper::TASK_QUEUE_COUNT,
                    "test.idle",
                    TRACE_DISABLED_BY_DEFAULT("test.idle"),
                    "TestSchedulerIdlePeriod",
@@ -179,8 +178,7 @@ class BaseIdleHelperTest : public testing::Test {
             new SchedulerHelper(main_task_runner_,
                                 "test.idle",
                                 TRACE_DISABLED_BY_DEFAULT("test.idle"),
-                                TRACE_DISABLED_BY_DEFAULT("test.idle.debug"),
-                                SchedulerHelper::TASK_QUEUE_COUNT + 1)),
+                                TRACE_DISABLED_BY_DEFAULT("test.idle.debug"))),
         idle_helper_(new IdleHelperForTest(
             scheduler_helper_.get(),
             required_quiescence_duration_before_long_idle_period)),

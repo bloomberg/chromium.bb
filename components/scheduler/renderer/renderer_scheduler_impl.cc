@@ -9,9 +9,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
-#include "components/scheduler/child/prioritizing_task_queue_selector.h"
 #include "components/scheduler/child/scheduler_task_runner_delegate.h"
-#include "components/scheduler/child/task_queue.h"
+#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_selector.h"
 
 namespace scheduler {
 
@@ -20,20 +20,23 @@ RendererSchedulerImpl::RendererSchedulerImpl(
     : helper_(main_task_runner,
               "renderer.scheduler",
               TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-              TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
-              TASK_QUEUE_COUNT),
+              TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug")),
       idle_helper_(&helper_,
                    this,
-                   IDLE_TASK_QUEUE,
                    "renderer.scheduler",
                    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                    "RendererSchedulerIdlePeriod",
                    base::TimeDelta()),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(
-          helper_.TaskRunnerForQueue(COMPOSITOR_TASK_QUEUE)),
-      loading_task_runner_(helper_.TaskRunnerForQueue(LOADING_TASK_QUEUE)),
-      timer_task_runner_(helper_.TaskRunnerForQueue(TIMER_TASK_QUEUE)),
+          helper_.NewTaskQueue(TaskQueue::Spec("compositor_tq")
+                                   .SetShouldMonitorQuiescence(true))),
+      loading_task_runner_(
+          helper_.NewTaskQueue(TaskQueue::Spec("loading_tq")
+                                   .SetShouldMonitorQuiescence(true))),
+      timer_task_runner_(
+          helper_.NewTaskQueue(TaskQueue::Spec("timer_tq")
+                                   .SetShouldMonitorQuiescence(true))),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
@@ -45,10 +48,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
       &RendererSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
-  for (size_t i = SchedulerHelper::TASK_QUEUE_COUNT; i < TASK_QUEUE_COUNT;
-       i++) {
-    helper_.SetQueueName(i, TaskQueueIdToString(static_cast<QueueId>(i)));
-  }
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
@@ -357,10 +356,10 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
       return false;
 
     case Policy::COMPOSITOR_PRIORITY:
-      return !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
+      return !compositor_task_runner_->IsQueueEmpty();
 
     case Policy::COMPOSITOR_CRITICAL_PATH_PRIORITY:
-      return !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
+      return !compositor_task_runner_->IsQueueEmpty();
 
     case Policy::TOUCHSTART_PRIORITY:
       return true;
@@ -431,60 +430,49 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy == MainThreadOnly().current_policy_)
     return;
 
-  bool policy_disables_timer_queue = false;
-  PrioritizingTaskQueueSelector::QueuePriority timer_queue_priority =
-      PrioritizingTaskQueueSelector::NORMAL_PRIORITY;
+  TaskQueue::QueuePriority compositor_queue_priority =
+      TaskQueue::NORMAL_PRIORITY;
+  TaskQueue::QueuePriority loading_queue_priority = TaskQueue::NORMAL_PRIORITY;
+  TaskQueue::QueuePriority timer_queue_priority =
+      MainThreadOnly().timer_queue_suspend_count_ != 0
+          ? TaskQueue::DISABLED_PRIORITY
+          : TaskQueue::NORMAL_PRIORITY;
 
   switch (new_policy) {
     case Policy::COMPOSITOR_PRIORITY:
-      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::HIGH_PRIORITY);
-      helper_.SetQueuePriority(LOADING_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
+      compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
       break;
     case Policy::COMPOSITOR_CRITICAL_PATH_PRIORITY:
-      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::HIGH_PRIORITY);
-      helper_.DisableQueue(LOADING_TASK_QUEUE);
-      policy_disables_timer_queue = true;
+      compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
+      loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
+      timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
       break;
     case Policy::TOUCHSTART_PRIORITY:
-      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::HIGH_PRIORITY);
-      helper_.DisableQueue(LOADING_TASK_QUEUE);
-      policy_disables_timer_queue = true;
+      compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
+      loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
+      timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
       break;
     case Policy::NORMAL:
-      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
-      helper_.SetQueuePriority(LOADING_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
       break;
     case Policy::LOADING_PRIORITY:
       // We prioritize loading tasks by deprioritizing compositing and timers.
-      helper_.SetQueuePriority(LOADING_TASK_QUEUE,
-                               PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
-      helper_.SetQueuePriority(
-          COMPOSITOR_TASK_QUEUE,
-          PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
-      timer_queue_priority =
-          PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY;
+      compositor_queue_priority = TaskQueue::BEST_EFFORT_PRIORITY;
+      timer_queue_priority = TaskQueue::BEST_EFFORT_PRIORITY;
       // TODO(alexclarke): See if we can safely mark the loading task queue as
       // high priority.
       break;
     default:
       NOTREACHED();
   }
-  if (MainThreadOnly().timer_queue_suspend_count_ != 0 ||
-      policy_disables_timer_queue) {
-    helper_.DisableQueue(TIMER_TASK_QUEUE);
-  } else {
-    helper_.SetQueuePriority(TIMER_TASK_QUEUE, timer_queue_priority);
-  }
-  DCHECK(helper_.IsQueueEnabled(COMPOSITOR_TASK_QUEUE));
+
+  compositor_task_runner_->SetQueuePriority(compositor_queue_priority);
+  loading_task_runner_->SetQueuePriority(loading_queue_priority);
+  timer_task_runner_->SetQueuePriority(timer_queue_priority);
+
+  DCHECK(compositor_task_runner_->IsQueueEnabled());
   if (new_policy != Policy::TOUCHSTART_PRIORITY &&
       new_policy != Policy::COMPOSITOR_CRITICAL_PATH_PRIORITY) {
-    DCHECK(helper_.IsQueueEnabled(LOADING_TASK_QUEUE));
+    DCHECK(loading_task_runner_->IsQueueEnabled());
   }
   MainThreadOnly().current_policy_ = new_policy;
 
@@ -586,30 +574,13 @@ SchedulerHelper* RendererSchedulerImpl::GetSchedulerHelperForTesting() {
 void RendererSchedulerImpl::SuspendTimerQueue() {
   MainThreadOnly().timer_queue_suspend_count_++;
   ForceUpdatePolicy();
-  DCHECK(!helper_.IsQueueEnabled(TIMER_TASK_QUEUE));
+  DCHECK(!timer_task_runner_->IsQueueEnabled());
 }
 
 void RendererSchedulerImpl::ResumeTimerQueue() {
   MainThreadOnly().timer_queue_suspend_count_--;
   DCHECK_GE(MainThreadOnly().timer_queue_suspend_count_, 0);
   ForceUpdatePolicy();
-}
-
-// static
-const char* RendererSchedulerImpl::TaskQueueIdToString(QueueId queue_id) {
-  switch (queue_id) {
-    case IDLE_TASK_QUEUE:
-      return "idle_tq";
-    case COMPOSITOR_TASK_QUEUE:
-      return "compositor_tq";
-    case LOADING_TASK_QUEUE:
-      return "loading_tq";
-    case TIMER_TASK_QUEUE:
-      return "timer_tq";
-    default:
-      return SchedulerHelper::TaskQueueIdToString(
-          static_cast<SchedulerHelper::QueueId>(queue_id));
-  }
 }
 
 // static

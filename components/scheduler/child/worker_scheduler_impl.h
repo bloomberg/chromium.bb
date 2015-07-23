@@ -51,12 +51,6 @@ class SCHEDULER_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   void OnIdlePeriodEnded() override {}
 
  private:
-  enum QueueId {
-    IDLE_TASK_QUEUE = SchedulerHelper::TASK_QUEUE_COUNT,
-    // Must be the last entry.
-    TASK_QUEUE_COUNT,
-  };
-
   void MaybeStartLongIdlePeriod();
 
   SchedulerHelper helper_;

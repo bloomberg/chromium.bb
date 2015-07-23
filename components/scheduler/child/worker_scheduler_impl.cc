@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "components/scheduler/child/task_queue.h"
 
 namespace scheduler {
 
@@ -16,11 +17,9 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
     : helper_(main_task_runner,
               "worker.scheduler",
               TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
-              TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"),
-              TASK_QUEUE_COUNT),
+              TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug")),
       idle_helper_(&helper_,
                    this,
-                   IDLE_TASK_QUEUE,
                    "worker.scheduler",
                    TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
                    "WorkerSchedulerIdlePeriod",

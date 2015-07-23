@@ -7,53 +7,13 @@
 #include "base/bind.h"
 #include "base/threading/thread.h"
 #include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
-#include "components/scheduler/child/task_queue.h"
+#include "components/scheduler/child/task_queue_impl.h"
 #include "components/scheduler/child/task_queue_selector.h"
+#include "components/scheduler/child/task_queue_sets.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
 namespace scheduler {
-
-namespace {
-
-class SelectorForTest : public TaskQueueSelector {
- public:
-  SelectorForTest() {}
-
-  void RegisterWorkQueues(
-      const std::vector<const base::TaskQueue*>& work_queues) override {
-    work_queues_ = work_queues;
-  }
-
-  bool SelectWorkQueueToService(size_t* out_queue_index) override {
-    // Choose the oldest task, if any.
-    bool found_one = false;
-    for (size_t i = 0; i < work_queues_.size(); i++) {
-      if (work_queues_[i]->empty())
-        continue;
-      // Note: the < comparison is correct due to the fact that the PendingTask
-      // operator inverts its comparison operation in order to work well in a
-      // heap based priority queue.
-      if (!found_one ||
-          work_queues_[*out_queue_index]->front() < work_queues_[i]->front())
-        *out_queue_index = i;
-      found_one = true;
-    }
-    CHECK(found_one);
-    return found_one;
-  }
-
-  void SetTaskQueueSelectorObserver(Observer* observer) override {}
-
-  void AsValueInto(base::trace_event::TracedValue* state) const override {}
-
- private:
-  std::vector<const base::TaskQueue*> work_queues_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectorForTest);
-};
-
-}  // namespace
 
 class TaskQueueManagerPerfTest : public testing::Test {
  public:
@@ -67,11 +27,11 @@ class TaskQueueManagerPerfTest : public testing::Test {
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
-    selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        num_queues,
         SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get()),
-        selector_.get(), "fake.category", "fake.category.debug"));
+        "fake.category", "fake.category.debug"));
+    for (size_t i = 0; i < num_queues; i++)
+      queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
   }
 
   void TestDelayedTask() {
@@ -100,9 +60,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
       // Simulate a mix of short and longer delays.
       unsigned int delay =
           num_tasks_to_post_ % 2 ? 1 : (10 + num_tasks_to_post_ % 10);
-      scoped_refptr<base::SingleThreadTaskRunner> runner =
-          manager_->TaskRunnerForQueue(queue);
-      runner->PostDelayedTask(
+      queues_[queue]->PostDelayedTask(
           FROM_HERE, base::Bind(&TaskQueueManagerPerfTest::TestDelayedTask,
                                 base::Unretained(this)),
           base::TimeDelta::FromMicroseconds(delay));
@@ -139,9 +97,9 @@ class TaskQueueManagerPerfTest : public testing::Test {
   unsigned int num_tasks_in_flight_;
   unsigned int num_tasks_to_post_;
   unsigned int num_tasks_to_run_;
-  scoped_ptr<SelectorForTest> selector_;
   scoped_ptr<TaskQueueManager> manager_;
   scoped_ptr<base::MessageLoop> message_loop_;
+  std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
 };
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {

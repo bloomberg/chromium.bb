@@ -333,13 +333,6 @@ class RendererSchedulerImplTest : public testing::Test {
     }
   }
 
-  static void CheckAllTaskQueueIdToString() {
-    CallForEachEnumValue<RendererSchedulerImpl::QueueId>(
-        RendererSchedulerImpl::FIRST_QUEUE_ID,
-        RendererSchedulerImpl::TASK_QUEUE_COUNT,
-        &RendererSchedulerImpl::TaskQueueIdToString);
-  }
-
   static void CheckAllPolicyToString() {
     CallForEachEnumValue<RendererSchedulerImpl::Policy>(
         RendererSchedulerImpl::Policy::FIRST_POLICY,
@@ -1756,12 +1749,8 @@ TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
               testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
-TEST_F(RendererSchedulerImplTest, TaskQueueIdToString) {
-  CheckAllTaskQueueIdToString();
-}
-
 TEST_F(RendererSchedulerImplTest, PolicyToString) {
-  CheckAllTaskQueueIdToString();
+  CheckAllPolicyToString();
 }
 
 TEST_F(RendererSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {

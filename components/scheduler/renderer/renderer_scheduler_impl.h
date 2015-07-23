@@ -64,17 +64,6 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   friend class RendererSchedulerImplTest;
   friend class RendererSchedulerImplForTest;
 
-  // Keep RendererSchedulerImpl::TaskQueueIdToString in sync with this enum.
-  enum QueueId {
-    IDLE_TASK_QUEUE = SchedulerHelper::TASK_QUEUE_COUNT,
-    COMPOSITOR_TASK_QUEUE,
-    LOADING_TASK_QUEUE,
-    TIMER_TASK_QUEUE,
-    // Must be the last entry.
-    TASK_QUEUE_COUNT,
-    FIRST_QUEUE_ID = SchedulerHelper::FIRST_QUEUE_ID,
-  };
-
   // Keep RendererSchedulerImpl::PolicyToString in sync with this enum.
   enum class Policy {
     NORMAL,
@@ -120,7 +109,6 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
       base::TimeTicks optional_now) const;
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
-  static const char* TaskQueueIdToString(QueueId queue_id);
   static const char* PolicyToString(Policy policy);
 
   static bool ShouldPrioritizeInputEvent(
@@ -196,9 +184,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
+  const scoped_refptr<TaskQueue> control_task_runner_;
+  const scoped_refptr<TaskQueue> compositor_task_runner_;
+  const scoped_refptr<TaskQueue> loading_task_runner_;
   const scoped_refptr<TaskQueue> timer_task_runner_;
 
   base::Closure update_policy_closure_;

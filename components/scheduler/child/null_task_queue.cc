@@ -28,6 +28,7 @@ bool NullTaskQueue::PostNonNestableDelayedTask(
     base::TimeDelta delay) {
   return task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
 }
+
 bool NullTaskQueue::PostDelayedTaskAt(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
@@ -37,5 +38,23 @@ bool NullTaskQueue::PostDelayedTaskAt(
   return task_runner_->PostDelayedTask(
       from_here, task, desired_run_time - base::TimeTicks::Now());
 }
+
+bool NullTaskQueue::IsQueueEnabled() const {
+  return true;
+}
+
+TaskQueue::QueueState NullTaskQueue::GetQueueState() const {
+  return QueueState::EMPTY;
+}
+
+const char* NullTaskQueue::GetName() const {
+  return "null_tq";
+}
+
+void NullTaskQueue::SetQueuePriority(QueuePriority priority) {}
+
+void NullTaskQueue::PumpQueue() {}
+
+void NullTaskQueue::SetPumpPolicy(PumpPolicy pump_policy) {}
 
 }  // namespace scheduler

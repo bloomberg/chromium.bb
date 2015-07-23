@@ -48,12 +48,11 @@ class SchedulerHelperTest : public testing::Test {
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), false)),
         main_task_runner_(
             SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_)),
-        scheduler_helper_(
-            new SchedulerHelper(main_task_runner_,
-                                "test.scheduler",
-                                TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
-                                TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"),
-                                SchedulerHelper::TASK_QUEUE_COUNT)),
+        scheduler_helper_(new SchedulerHelper(
+            main_task_runner_,
+            "test.scheduler",
+            TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
+            TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"))),
         default_task_runner_(scheduler_helper_->DefaultTaskRunner()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_helper_->SetTimeSourceForTesting(
@@ -81,12 +80,6 @@ class SchedulerHelperTest : public testing::Test {
          val = static_cast<E>(static_cast<int>(val) + 1)) {
       (*function)(val);
     }
-  }
-
-  static void CheckAllTaskQueueIdToString() {
-    CallForEachEnumValue<SchedulerHelper::QueueId>(
-        SchedulerHelper::FIRST_QUEUE_ID, SchedulerHelper::TASK_QUEUE_COUNT,
-        &SchedulerHelper::TaskQueueIdToString);
   }
 
  protected:
@@ -133,10 +126,6 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 
   scheduler_helper_->Shutdown();
   EXPECT_TRUE(scheduler_helper_->IsShutdown());
-}
-
-TEST_F(SchedulerHelperTest, TaskQueueIdToString) {
-  CheckAllTaskQueueIdToString();
 }
 
 TEST_F(SchedulerHelperTest, DefaultTaskRunnerRegistration) {

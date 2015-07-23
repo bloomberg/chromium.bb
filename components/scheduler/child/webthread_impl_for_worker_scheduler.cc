@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"

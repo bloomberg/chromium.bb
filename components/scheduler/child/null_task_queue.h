@@ -26,6 +26,13 @@ class SCHEDULER_EXPORT NullTaskQueue : public TaskQueue {
                          const base::Closure& task,
                          base::TimeTicks desired_run_time) override;
 
+  bool IsQueueEnabled() const override;
+  QueueState GetQueueState() const override;
+  const char* GetName() const override;
+  void SetQueuePriority(QueuePriority priority) override;
+  void PumpQueue() override;
+  void SetPumpPolicy(PumpPolicy pump_policy) override;
+
  protected:
   ~NullTaskQueue() override;
 

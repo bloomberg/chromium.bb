@@ -21,6 +21,7 @@ class SCHEDULER_EXPORT ChildScheduler {
   virtual ~ChildScheduler() {}
 
   // Returns the default task runner.
+  // TODO(alexclarke): Change this to return a SingleThreadIdleTaskRunner.
   virtual scoped_refptr<TaskQueue> DefaultTaskRunner() = 0;
 
   // Returns the idle task runner. Tasks posted to this runner may be reordered
