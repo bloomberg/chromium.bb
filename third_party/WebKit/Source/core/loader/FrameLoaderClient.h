@@ -52,6 +52,7 @@ namespace blink {
     class HTMLAppletElement;
     class HTMLFormElement;
     class HTMLFrameOwnerElement;
+    class HTMLMediaElement;
     class HTMLPlugInElement;
     class HistoryItem;
     class KURL;
@@ -65,6 +66,7 @@ namespace blink {
     class SubstituteData;
     class WebApplicationCacheHost;
     class WebApplicationCacheHostClient;
+    class WebMediaPlayer;
     class WebCookieJar;
     class WebRTCPeerConnectionHandler;
     class WebServiceWorkerProvider;
@@ -155,6 +157,8 @@ namespace blink {
         virtual PassRefPtrWillBeRawPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
         virtual PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;
+
+        virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement*, const WebURL&) = 0;
 
         virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 

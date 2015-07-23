@@ -47,7 +47,6 @@
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ImageDecodingStore.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/glue/MessageLoopInterruptor.h"
 #include "platform/heap/glue/PendingGCRunner.h"
@@ -55,7 +54,6 @@
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
 #include "web/IndexedDBClientImpl.h"
-#include "web/WebMediaPlayerClientImpl.h"
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
@@ -197,8 +195,6 @@ void initializeWithoutV8(Platform* platform)
     initializer.init();
 
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
-
-    MediaPlayer::setMediaEngineCreateFunction(WebMediaPlayerClientImpl::create);
 }
 
 void shutdown()

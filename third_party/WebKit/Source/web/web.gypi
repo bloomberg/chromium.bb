@@ -185,8 +185,6 @@
       'WebLocalFrameImpl.h',
       'WebMIDIPermissionRequest.cpp',
       'WebMediaDevicesRequest.cpp',
-      'WebMediaPlayerClientImpl.cpp',
-      'WebMediaPlayerClientImpl.h',
       'WebMediaStreamRegistry.cpp',
       'WebNetworkStateNotifier.cpp',
       'WebNode.cpp',

@@ -34,7 +34,6 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
 #include "platform/audio/AudioUtilities.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Locker.h"
 #include "wtf/MainThread.h"

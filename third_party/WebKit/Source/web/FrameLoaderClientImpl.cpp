@@ -42,6 +42,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAppletElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/loader/DocumentLoader.h"
@@ -53,6 +54,7 @@
 #include "modules/device_light/DeviceLightController.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
+#include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/storage/DOMWindowStorageController.h"
@@ -775,6 +777,22 @@ PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
 {
     return createPlugin(element, KURL(), paramNames, paramValues,
         "application/x-java-applet", false, FailOnDetachedPlugin);
+}
+
+PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
+    HTMLMediaElement* htmlMediaElement,
+    const WebURL& url)
+{
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(
+        htmlMediaElement->document().frame());
+
+    if (!webFrame || !webFrame->client())
+        return nullptr;
+
+    HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(*htmlMediaElement);
+    return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url,
+        htmlMediaElement,
+        &encryptedMedia, encryptedMedia.contentDecryptionModule()));
 }
 
 ObjectContentType FrameLoaderClientImpl::objectContentType(

@@ -275,11 +275,6 @@ KURL HTMLVideoElement::posterImageURL() const
     return document().completeURL(url);
 }
 
-KURL HTMLVideoElement::mediaPlayerPosterURL()
-{
-    return posterImageURL();
-}
-
 PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageMode mode, SourceImageStatus* status) const
 {
     if (!hasAvailableVideoFrame()) {

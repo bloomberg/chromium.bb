@@ -64,15 +64,19 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "wtf/CurrentTime.h"
@@ -482,10 +486,10 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
     if (m_shouldDelayLoadEvent) {
         document().incrementLoadEventDelayCount();
         // Note: Keeping the load event delay count increment on oldDocument that was added
-        // when m_shouldDelayLoadEvent was set so that destruction of m_player can not
+        // when m_shouldDelayLoadEvent was set so that destruction of m_webMediaPlayer can not
         // cause load event dispatching in oldDocument.
     } else {
-        // Incrementing the load event delay count so that destruction of m_player can not
+        // Incrementing the load event delay count so that destruction of m_webMediaPlayer can not
         // cause load event dispatching in oldDocument.
         oldDocument.incrementLoadEventDelayCount();
     }
@@ -500,7 +504,7 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
     // document changes so that playback can be resumed properly.
     userCancelledLoad();
 
-    // Decrement the load event delay count on oldDocument now that m_player has been destroyed
+    // Decrement the load event delay count on oldDocument now that m_webMediaPlayer has been destroyed
     // and there is no risk of dispatching a load event from within the destructor.
     oldDocument.decrementLoadEventDelayCount();
 
@@ -533,8 +537,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == controlsAttr) {
         configureMediaControls();
     } else if (name == preloadAttr) {
-        if (m_player)
-            setPlayerPreload();
+        setPlayerPreload();
     } else if (name == mediagroupAttr && RuntimeEnabledFeatures::mediaControllerEnabled()) {
         setMediaGroup(value);
     } else {
@@ -744,7 +747,7 @@ void HTMLMediaElement::prepareForLoad()
     if (m_networkState == NETWORK_LOADING || m_networkState == NETWORK_IDLE)
         scheduleEvent(EventTypeNames::abort);
 
-    createMediaPlayer();
+    resetMediaPlayerAndMediaSource();
 
     // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
     if (m_networkState != NETWORK_EMPTY) {
@@ -910,8 +913,8 @@ void HTMLMediaElement::loadNextSourceChild()
         return;
     }
 
-    // Recreate the media player for the new url
-    createMediaPlayer();
+    // Reset the MediaPlayer and MediaSource if any
+    resetMediaPlayerAndMediaSource();
 
     m_loadState = LoadingFromSourceElement;
     loadResource(mediaURL, contentType, keySystem);
@@ -979,7 +982,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
         ASSERT(!webMediaPlayer());
 
-        if (!m_havePreparedToPlay && !autoplay() && preloadType() == MediaPlayer::None) {
+        if (!m_havePreparedToPlay && !autoplay() && preloadType() == WebMediaPlayer::PreloadNone) {
             WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) : Delaying load because preload == 'none'", this);
             deferLoad();
         } else {
@@ -999,6 +1002,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
 void HTMLMediaElement::startPlayerLoad()
 {
+    ASSERT(!m_webMediaPlayer);
     // Filter out user:pass as those two URL components aren't
     // considered for media resource fetches (including for the CORS
     // use-credentials mode.) That behavior aligns with Gecko, with IE
@@ -1018,14 +1022,45 @@ void HTMLMediaElement::startPlayerLoad()
     if (!requestURL.pass().isEmpty())
         requestURL.setPass(String());
 
-    m_player->load(loadType(), requestURL, corsMode());
+    LocalFrame* frame = document().frame();
+    // TODO(srirama.m): Figure out how frame can be null when
+    // coming from executeDeferredLoad()
+    if (!frame) {
+        mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
+        return;
+    }
+
+    KURL kurl(ParsedURLString, requestURL);
+    m_webMediaPlayer = frame->loader().client()->createWebMediaPlayer(this, kurl);
+    if (!m_webMediaPlayer) {
+        mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
+        return;
+    }
+
+    if (layoutObject())
+        layoutObject()->setShouldDoFullPaintInvalidation();
+#if ENABLE(WEB_AUDIO)
+    // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
+    m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
+#endif
+    m_webMediaPlayer->setVolume(effectiveMediaVolume());
+
+    m_webMediaPlayer->setPoster(posterImageURL());
+
+    m_webMediaPlayer->setPreload(effectivePreloadType());
+
+    m_webMediaPlayer->load(loadType(), kurl, corsMode());
+
+    if (isFullscreen())
+        m_webMediaPlayer->enterFullscreen();
 }
 
 void HTMLMediaElement::setPlayerPreload()
 {
-    m_player->setPreload(effectivePreloadType());
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->setPreload(effectivePreloadType());
 
-    if (loadIsDeferred() && preloadType() != MediaPlayer::None)
+    if (loadIsDeferred() && preloadType() != WebMediaPlayer::PreloadNone)
         startDeferredLoad();
 }
 
@@ -1289,7 +1324,7 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
         source->cancelPendingErrorEvent();
 }
 
-void HTMLMediaElement::mediaPlayerNetworkStateChanged()
+void HTMLMediaElement::networkStateChanged()
 {
     setNetworkState(webMediaPlayer()->networkState());
 }
@@ -1380,7 +1415,6 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
 
 void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 {
-    ASSERT(m_player);
     m_progressEventTimer.stop();
 
     // Schedule one last progress event so we guarantee that at least one is fired
@@ -1391,7 +1425,7 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
     m_networkState = NETWORK_IDLE;
 }
 
-void HTMLMediaElement::mediaPlayerReadyStateChanged()
+void HTMLMediaElement::readyStateChanged()
 {
     setReadyState(static_cast<ReadyState>(webMediaPlayer()->readyState()));
 }
@@ -1549,7 +1583,6 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
 void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
 {
-    ASSERT(m_player);
     if (m_networkState != NETWORK_LOADING)
         return;
 
@@ -1602,7 +1635,7 @@ void HTMLMediaElement::seek(double time)
         return;
 
     // If the media engine has been told to postpone loading data, let it go ahead now.
-    if (preloadType() < MediaPlayer::Auto && m_readyState < HAVE_FUTURE_DATA)
+    if (preloadType() < WebMediaPlayer::PreloadAuto && m_readyState < HAVE_FUTURE_DATA)
         prepareToPlay();
 
     // Get the current time before setting m_seeking, m_lastSeekTime is returned once it is set.
@@ -1776,10 +1809,10 @@ void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionStat
 
 double HTMLMediaElement::duration() const
 {
-    // FIXME: remove m_player check once we figure out how m_player is going
-    // out of sync with readystate. m_player is cleared but readystate is not set
-    // to HAVE_NOTHING
-    if (!m_player || m_readyState < HAVE_METADATA)
+    // FIXME: remove m_webMediaPlayer check once we figure out how
+    // m_webMediaPlayer is going out of sync with readystate.
+    // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
+    if (!m_webMediaPlayer || m_readyState < HAVE_METADATA)
         return std::numeric_limits<double>::quiet_NaN();
 
     // FIXME: Refactor so m_duration is kept current (in both MSE and
@@ -1848,7 +1881,10 @@ HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::directionOfPlayback() co
 void HTMLMediaElement::updatePlaybackRate()
 {
     double effectiveRate = effectivePlaybackRate();
-    if (m_player && potentiallyPlaying())
+    // FIXME: remove m_webMediaPlayer check once we figure out how
+    // m_webMediaPlayer is going out of sync with readystate.
+    // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
+    if (m_webMediaPlayer && potentiallyPlaying())
         webMediaPlayer()->setRate(effectiveRate);
 }
 
@@ -1868,11 +1904,11 @@ bool HTMLMediaElement::autoplay() const
 String HTMLMediaElement::preload() const
 {
     switch (preloadType()) {
-    case MediaPlayer::None:
+    case WebMediaPlayer::PreloadNone:
         return "none";
-    case MediaPlayer::MetaData:
+    case WebMediaPlayer::PreloadMetaData:
         return "metadata";
-    case MediaPlayer::Auto:
+    case WebMediaPlayer::PreloadAuto:
         return "auto";
     }
 
@@ -1886,22 +1922,22 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
     setAttribute(preloadAttr, preload);
 }
 
-MediaPlayer::Preload HTMLMediaElement::preloadType() const
+WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
 {
     // TODO(philipj): The spec requires case-sensitive string matching:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28951
     const AtomicString& preload = fastGetAttribute(preloadAttr);
     if (equalIgnoringCase(preload, "none")) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadNone);
-        return MediaPlayer::None;
+        return WebMediaPlayer::PreloadNone;
     }
     if (equalIgnoringCase(preload, "metadata")) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadMetadata);
-        return MediaPlayer::MetaData;
+        return WebMediaPlayer::PreloadMetaData;
     }
     if (equalIgnoringCase(preload, "auto")) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadAuto);
-        return MediaPlayer::Auto;
+        return WebMediaPlayer::PreloadAuto;
     }
 
     // "The attribute's missing value default is user-agent defined, though the
@@ -1914,12 +1950,12 @@ MediaPlayer::Preload HTMLMediaElement::preloadType() const
     // TODO(philipj): Try to make "metadata" the default preload state:
     // https://crbug.com/310450
     UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadDefault);
-    return MediaPlayer::Auto;
+    return WebMediaPlayer::PreloadAuto;
 }
 
-MediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
+WebMediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
 {
-    return autoplay() ? MediaPlayer::Auto : preloadType();
+    return autoplay() ? WebMediaPlayer::PreloadAuto : preloadType();
 }
 
 void HTMLMediaElement::play()
@@ -1947,7 +1983,7 @@ void HTMLMediaElement::playInternal()
     WTF_LOG(Media, "HTMLMediaElement::playInternal(%p)", this);
 
     // 4.8.10.9. Playing the media resource
-    if (!m_player || m_networkState == NETWORK_EMPTY)
+    if (m_networkState == NETWORK_EMPTY)
         scheduleDelayedAction(LoadMediaResource);
 
     // Generally "ended" and "looping" are exclusive. Here, the loop attribute
@@ -2007,7 +2043,7 @@ void HTMLMediaElement::pause()
 {
     WTF_LOG(Media, "HTMLMediaElement::pause(%p)", this);
 
-    if (!m_player || m_networkState == NETWORK_EMPTY)
+    if (m_networkState == NETWORK_EMPTY)
         scheduleDelayedAction(LoadMediaResource);
 
     m_autoplaying = false;
@@ -2152,8 +2188,6 @@ void HTMLMediaElement::startPlaybackProgressTimer()
 
 void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
 {
-    ASSERT(m_player);
-
     if (!std::isnan(m_fragmentEndTime) && currentTime() >= m_fragmentEndTime && directionOfPlayback() == Forward) {
         m_fragmentEndTime = std::numeric_limits<double>::quiet_NaN();
         if (!m_mediaController && !m_paused) {
@@ -2248,11 +2282,11 @@ void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)
     webMediaPlayer()->enabledAudioTracksChanged(enabledTrackIds);
 }
 
-WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const String& id, WebMediaPlayerClient::AudioTrackKind kind, const AtomicString& label, const AtomicString& language, bool enabled)
+WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const WebString& id, blink::WebMediaPlayerClient::AudioTrackKind kind, const WebString& label, const WebString& language, bool enabled)
 {
     AtomicString kindString = AudioKindToString(kind);
     WTF_LOG(Media, "HTMLMediaElement::addAudioTrack(%p, '%s', '%s', '%s', '%s', %d)",
-        this, id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), enabled);
+        this, id.utf8().data(), kindString.ascii().data(), label.utf8().data(), language.utf8().data(), enabled);
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
         return 0;
@@ -2292,11 +2326,11 @@ void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* select
     webMediaPlayer()->selectedVideoTrackChanged(selectedTrackId);
 }
 
-WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const String& id, WebMediaPlayerClient::VideoTrackKind kind, const AtomicString& label, const AtomicString& language, bool selected)
+WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const WebString& id, blink::WebMediaPlayerClient::VideoTrackKind kind, const WebString& label, const WebString& language, bool selected)
 {
     AtomicString kindString = VideoKindToString(kind);
     WTF_LOG(Media, "HTMLMediaElement::addVideoTrack(%p, '%s', '%s', '%s', '%s', %d)",
-        this, id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), selected);
+        this, id.utf8().data(), kindString.ascii().data(), label.utf8().data(), language.utf8().data(), selected);
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
         return 0;
@@ -2321,7 +2355,7 @@ void HTMLMediaElement::removeVideoTrack(WebMediaPlayer::TrackId trackId)
     videoTracks().remove(trackId);
 }
 
-void HTMLMediaElement::mediaPlayerDidAddTextTrack(WebInbandTextTrack* webTrack)
+void HTMLMediaElement::addTextTrack(WebInbandTextTrack* webTrack)
 {
     // 4.8.10.12.2 Sourcing in-band text tracks
     // 1. Associate the relevant data with a new text track and its corresponding new TextTrack object.
@@ -2353,7 +2387,7 @@ void HTMLMediaElement::mediaPlayerDidAddTextTrack(WebInbandTextTrack* webTrack)
     addTextTrack(textTrack.get());
 }
 
-void HTMLMediaElement::mediaPlayerDidRemoveTextTrack(WebInbandTextTrack* webTrack)
+void HTMLMediaElement::removeTextTrack(WebInbandTextTrack* webTrack)
 {
     if (!m_textTracks)
         return;
@@ -2698,7 +2732,7 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
     }
 }
 
-void HTMLMediaElement::mediaPlayerTimeChanged()
+void HTMLMediaElement::timeChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerTimeChanged(%p)", this);
 
@@ -2751,13 +2785,13 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
     updatePlayState();
 }
 
-void HTMLMediaElement::mediaPlayerDurationChanged()
+void HTMLMediaElement::durationChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged(%p)", this);
-    // FIXME: Change MediaPlayerClient & WebMediaPlayer to convey
-    // the currentTime when the duration change occured. The current
-    // WebMediaPlayer implementations always clamp currentTime() to
-    // duration() so the requestSeek condition here is always false.
+    WTF_LOG(Media, "HTMLMediaElement::durationChanged(%p)", this);
+    // FIXME: Change WebMediaPlayer to convey the currentTime
+    // when the duration change occured. The current WebMediaPlayer
+    // implementations always clamp currentTime() to duration()
+    // so the requestSeek condition here is always false.
     durationChanged(duration(), currentTime() > duration());
 }
 
@@ -2782,7 +2816,7 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
         seek(duration);
 }
 
-void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
+void HTMLMediaElement::playbackStateChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged(%p)", this);
 
@@ -2795,7 +2829,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
         playInternal();
 }
 
-void HTMLMediaElement::mediaPlayerRequestSeek(double time)
+void HTMLMediaElement::requestSeek(double time)
 {
     // The player is the source of this seek request.
     if (m_mediaController) {
@@ -2827,7 +2861,7 @@ void HTMLMediaElement::disconnectedFromRemoteDevice()
 }
 
 // MediaPlayerPresentation methods
-void HTMLMediaElement::mediaPlayerRepaint()
+void HTMLMediaElement::repaint()
 {
     if (m_webLayer)
         m_webLayer->invalidate();
@@ -2837,7 +2871,7 @@ void HTMLMediaElement::mediaPlayerRepaint()
         layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-void HTMLMediaElement::mediaPlayerSizeChanged()
+void HTMLMediaElement::sizeChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged(%p)", this);
 
@@ -2902,7 +2936,7 @@ bool HTMLMediaElement::couldPlayIfEnoughData() const
 bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
 {
     double dur = duration();
-    if (!m_player || std::isnan(dur))
+    if (std::isnan(dur))
         return false;
 
     // 4.8.10.8 Playing the media resource
@@ -2938,9 +2972,6 @@ bool HTMLMediaElement::stoppedDueToErrors() const
 
 void HTMLMediaElement::updatePlayState()
 {
-    if (!m_player)
-        return;
-
     bool isPlaying = webMediaPlayer() && !webMediaPlayer()->paused();
     bool shouldBePlaying = potentiallyPlaying();
 
@@ -3031,7 +3062,7 @@ void HTMLMediaElement::userCancelledLoad()
     // 6 - Abort the overall resource selection algorithm.
     m_currentSourceNode = nullptr;
 
-    // Reset m_readyState since m_player is gone.
+    // Reset m_readyState since m_webMediaPlayer is gone.
     m_readyState = HAVE_NOTHING;
     invalidateCachedTime();
     updateMediaController();
@@ -3042,9 +3073,12 @@ void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLockin
 {
 #if ENABLE(WEB_AUDIO)
     if (audioSourceProvider())
-        audioSourceProvider()->setClient(0);
+        audioSourceProvider()->setClient(nullptr);
 #endif
-    m_player.clear();
+    if (m_webMediaPlayer) {
+        m_audioSourceProvider.wrap(nullptr);
+        m_webMediaPlayer.clear();
+    }
 }
 
 void HTMLMediaElement::clearMediaPlayer(int flags)
@@ -3266,7 +3300,7 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 {
     WTF_LOG(Media, "HTMLMediaElement::setClosedCaptionsVisible(%p, %s)", this, boolString(closedCaptionVisible));
 
-    if (!m_player || !hasClosedCaptions())
+    if (!hasClosedCaptions())
         return;
 
     m_closedCaptionsVisible = closedCaptionVisible;
@@ -3453,23 +3487,26 @@ void* HTMLMediaElement::preDispatchEventHandler(Event* event)
     return nullptr;
 }
 
-void HTMLMediaElement::createMediaPlayer()
+// TODO(srirama.m): Refactor this and other relevant methods and have a
+// single method for clearing the mediaplayer and its stuff.
+void HTMLMediaElement::resetMediaPlayerAndMediaSource()
 {
     AudioSourceProviderClientLockScope scope(*this);
 
     closeMediaSource();
 
-    m_player = MediaPlayer::create(this);
+    if (m_webMediaPlayer) {
+        m_audioSourceProvider.wrap(nullptr);
+        m_webMediaPlayer.clear();
+    }
 
     // We haven't yet found out if any remote routes are available.
     m_remoteRoutesAvailable = false;
     m_playingRemotely = false;
 
 #if ENABLE(WEB_AUDIO)
-    if (m_audioSourceNode && audioSourceProvider()) {
-        // When creating the player, make sure its AudioSourceProvider knows about the client.
+    if (m_audioSourceNode)
         audioSourceProvider()->setClient(m_audioSourceNode);
-    }
 #endif
 }
 
@@ -3482,14 +3519,6 @@ void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
     AudioSourceProviderClientLockScope scope(*this);
     if (audioSourceProvider())
         audioSourceProvider()->setClient(m_audioSourceNode);
-}
-
-AudioSourceProvider* HTMLMediaElement::audioSourceProvider()
-{
-    if (m_player)
-        return m_player->audioSourceProvider();
-
-    return nullptr;
 }
 #endif
 
@@ -3602,7 +3631,7 @@ WebMediaPlayer::CORSMode HTMLMediaElement::corsMode() const
     return WebMediaPlayer::CORSModeAnonymous;
 }
 
-void HTMLMediaElement::mediaPlayerSetWebLayer(WebLayer* webLayer)
+void HTMLMediaElement::setWebLayer(blink::WebLayer* webLayer)
 {
     if (webLayer == m_webLayer)
         return;
@@ -3622,7 +3651,7 @@ void HTMLMediaElement::mediaPlayerSetWebLayer(WebLayer* webLayer)
         GraphicsLayer::registerContentsLayer(m_webLayer);
 }
 
-void HTMLMediaElement::mediaPlayerMediaSourceOpened(WebMediaSource* webMediaSource)
+void HTMLMediaElement::mediaSourceOpened(WebMediaSource* webMediaSource)
 {
     m_mediaSource->setWebMediaSourceAndOpen(adoptPtr(webMediaSource));
 }
@@ -3698,6 +3727,65 @@ void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
     if (!Heap::isHeapObjectAlive(m_audioSourceNode) && audioSourceProvider())
         audioSourceProvider()->setClient(nullptr);
+}
+
+void HTMLMediaElement::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
+{
+    MutexLocker locker(provideInputLock);
+
+    if (m_webAudioSourceProvider && provider != m_webAudioSourceProvider)
+        m_webAudioSourceProvider->setClient(nullptr);
+
+    m_webAudioSourceProvider = provider;
+    if (m_webAudioSourceProvider)
+        m_webAudioSourceProvider->setClient(m_client.get());
+}
+
+void HTMLMediaElement::AudioSourceProviderImpl::setClient(AudioSourceProviderClient* client)
+{
+    MutexLocker locker(provideInputLock);
+
+    if (client)
+        m_client = new HTMLMediaElement::AudioClientImpl(client);
+    else
+        m_client.clear();
+
+    if (m_webAudioSourceProvider)
+        m_webAudioSourceProvider->setClient(m_client.get());
+}
+
+void HTMLMediaElement::AudioSourceProviderImpl::provideInput(AudioBus* bus, size_t framesToProcess)
+{
+    // TODO(srirama.m): Investigate whether the bus can be null or not
+    // and remove either ASSERT or null check appropriately.
+    ASSERT(bus);
+    if (!bus)
+        return;
+
+    MutexTryLocker tryLocker(provideInputLock);
+    if (!tryLocker.locked() || !m_webAudioSourceProvider || !m_client.get()) {
+        bus->zero();
+        return;
+    }
+
+    // Wrap the AudioBus channel data using WebVector.
+    size_t n = bus->numberOfChannels();
+    WebVector<float*> webAudioData(n);
+    for (size_t i = 0; i < n; ++i)
+        webAudioData[i] = bus->channel(i)->mutableData();
+
+    m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
+}
+
+void HTMLMediaElement::AudioClientImpl::setFormat(size_t numberOfChannels, float sampleRate)
+{
+    if (m_client)
+        m_client->setFormat(numberOfChannels, sampleRate);
+}
+
+DEFINE_TRACE(HTMLMediaElement::AudioClientImpl)
+{
+    visitor->trace(m_client);
 }
 #endif
 

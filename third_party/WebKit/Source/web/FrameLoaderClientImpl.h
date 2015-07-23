@@ -132,6 +132,7 @@ public:
         const KURL& /* base_url */,
         const Vector<WTF::String>& paramNames,
         const Vector<WTF::String>& paramValues) override;
+    PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement*, const WebURL&) override;
     ObjectContentType objectContentType(
         const KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) override;
     void didChangeScrollOffset() override;

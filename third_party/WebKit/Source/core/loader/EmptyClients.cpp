@@ -37,6 +37,7 @@
 #include "platform/FileChooser.h"
 #include "platform/Widget.h"
 #include "public/platform/WebApplicationCacheHost.h"
+#include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 
@@ -130,6 +131,11 @@ PassRefPtrWillBeRawPtr<Widget> EmptyFrameLoaderClient::createPlugin(HTMLPlugInEl
 }
 
 PassRefPtrWillBeRawPtr<Widget> EmptyFrameLoaderClient::createJavaAppletWidget(HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&)
+{
+    return nullptr;
+}
+
+PassOwnPtr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(HTMLMediaElement*, const WebURL&)
 {
     return nullptr;
 }

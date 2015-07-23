@@ -31,8 +31,8 @@
 #ifndef WebMediaPlayerClient_h
 #define WebMediaPlayerClient_h
 
+#include "WebCommon.h"
 #include "WebMediaPlayer.h"
-#include "WebMediaPlayerEncryptedMediaClient.h"
 
 namespace blink {
 
@@ -40,10 +40,7 @@ class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;
 
-// TODO(srirama): Remove this inheritance when we get rid of the MediaPlayer
-// and MediaPlayerClient interfaces by having HTMLMediaElement implement
-// WebMediaPlayerClient interface. See crbug.com/350571.
-class WebMediaPlayerClient : public WebMediaPlayerEncryptedMediaClient {
+class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
 public:
     enum VideoTrackKind {
         VideoTrackKindNone,

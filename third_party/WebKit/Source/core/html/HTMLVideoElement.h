@@ -72,12 +72,9 @@ public:
 
     bool shouldDisplayPosterImage() const { return displayMode() == Poster; }
 
-    KURL posterImageURL() const;
-
     bool hasAvailableVideoFrame() const;
 
-    // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
-    KURL mediaPlayerPosterURL() override;
+    KURL posterImageURL() const override;
 
     // CanvasImageSource implementation
     PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;

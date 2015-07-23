@@ -31,9 +31,15 @@
 #ifndef WebMediaPlayerEncryptedMediaClient_h
 #define WebMediaPlayerEncryptedMediaClient_h
 
+#include "WebCommon.h"
+#include "WebEncryptedMediaTypes.h"
+
 namespace blink {
 
-class WebMediaPlayerEncryptedMediaClient {
+class WebString;
+class WebURL;
+
+class BLINK_PLATFORM_EXPORT WebMediaPlayerEncryptedMediaClient {
 public:
     enum MediaKeyErrorCode {
         MediaKeyErrorCodeUnknown = 1,

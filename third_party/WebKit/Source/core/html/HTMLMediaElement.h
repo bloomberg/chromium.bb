@@ -32,7 +32,8 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/Supplementable.h"
-#include "platform/graphics/media/MediaPlayer.h"
+#include "platform/audio/AudioSourceProvider.h"
+#include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMimeRegistry.h"
 
@@ -65,11 +66,11 @@ class TimeRanges;
 class URLRegistry;
 class VideoTrackList;
 
-// FIXME: The inheritance from MediaPlayerClient here should be private inheritance.
-// But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
-// no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
-
-class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject {
+// TODO(srirama.m): Make the WebMediaPlayerClient inheritance private by
+// adding a means for getting a WebMediaPlayerEncryptedMediaClient and
+// WebContentDecryptionModule from an HTMLMediaElement and calling
+// WebFrameClient::createMediaPlayer() directly.
+class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public WebMediaPlayerClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
     WILL_BE_USING_PRE_FINALIZER(HTMLMediaElement, dispose);
@@ -83,7 +84,10 @@ public:
 #if ENABLE(WEB_AUDIO)
     void clearWeakMembers(Visitor*);
 #endif
-    WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
+    WebMediaPlayer* webMediaPlayer() const
+    {
+        return m_webMediaPlayer.get();
+    }
 
     virtual bool hasVideo() const { return false; }
     bool hasAudio() const;
@@ -114,8 +118,8 @@ public:
 
     String preload() const;
     void setPreload(const AtomicString&);
-    MediaPlayer::Preload preloadType() const;
-    MediaPlayer::Preload effectivePreloadType() const;
+    WebMediaPlayer::Preload preloadType() const;
+    WebMediaPlayer::Preload effectivePreloadType() const;
 
     PassRefPtrWillBeRawPtr<TimeRanges> buffered() const;
     void load();
@@ -189,16 +193,6 @@ public:
     void didAddTrackElement(HTMLTrackElement*);
     void didRemoveTrackElement(HTMLTrackElement*);
 
-    WebMediaPlayer::TrackId addAudioTrack(const String& id, WebMediaPlayerClient::AudioTrackKind, const AtomicString& label, const AtomicString& language, bool enabled);
-    void removeAudioTrack(WebMediaPlayer::TrackId);
-    WebMediaPlayer::TrackId addVideoTrack(const String& id, WebMediaPlayerClient::VideoTrackKind, const AtomicString& label, const AtomicString& language, bool selected);
-    void removeVideoTrack(WebMediaPlayer::TrackId);
-
-    void mediaPlayerDidAddTextTrack(WebInbandTextTrack*) final;
-    void mediaPlayerDidRemoveTextTrack(WebInbandTextTrack*) final;
-    // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
-    KURL mediaPlayerPosterURL() override { return KURL(); }
-
     void honorUserPreferencesForAutomaticTextTrackSelection();
 
     bool textTracksAreReady() const;
@@ -216,7 +210,7 @@ public:
     // of one of them here.
     using HTMLElement::executionContext;
 
-    bool hasSingleSecurityOrigin() const { return !m_player || (webMediaPlayer() && webMediaPlayer()->hasSingleSecurityOrigin()); }
+    bool hasSingleSecurityOrigin() const { return webMediaPlayer() && webMediaPlayer()->hasSingleSecurityOrigin(); }
 
     bool isFullscreen() const;
     void enterFullscreen();
@@ -228,10 +222,6 @@ public:
 
     static void setTextTrackKindUserPreferenceForAllMediaElements(Document*);
     void automaticTrackSelectionForUpdatedUserPreference();
-
-    void remoteRouteAvailabilityChanged(bool);
-    void connectedToRemoteDevice();
-    void disconnectedFromRemoteDevice();
 
     // Returns the MediaControls, or null if they have not been added yet.
     // Note that this can be non-null even if there is no controls attribute.
@@ -252,7 +242,7 @@ public:
     AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
     void setAudioSourceNode(AudioSourceProviderClient*);
 
-    AudioSourceProvider* audioSourceProvider();
+    AudioSourceProvider* audioSourceProvider() { return &m_audioSourceProvider; }
 #endif
 
     enum InvalidURLAction { DoNothing, Complain };
@@ -288,6 +278,7 @@ protected:
     void attach(const AttachContext& = AttachContext()) override;
 
     void didMoveToNewDocument(Document& oldDocument) override;
+    virtual KURL posterImageURL() const { return KURL(); }
 
     enum DisplayMode { Unknown, Poster, Video };
     DisplayMode displayMode() const { return m_displayMode; }
@@ -296,7 +287,7 @@ protected:
     void setControllerInternal(MediaController*);
 
 private:
-    void createMediaPlayer();
+    void resetMediaPlayerAndMediaSource();
 
     bool alwaysCreateUserAgentShadowRoot() const final { return true; }
     bool areAuthorShadowsAllowed() const final { return false; }
@@ -325,16 +316,27 @@ private:
     void setReadyState(ReadyState);
     void setNetworkState(WebMediaPlayer::NetworkState);
 
-    void mediaPlayerNetworkStateChanged() final;
-    void mediaPlayerReadyStateChanged() final;
-    void mediaPlayerTimeChanged() final;
-    void mediaPlayerDurationChanged() final;
-    void mediaPlayerPlaybackStateChanged() final;
-    void mediaPlayerRequestSeek(double) final;
-    void mediaPlayerRepaint() final;
-    void mediaPlayerSizeChanged() final;
-    void mediaPlayerSetWebLayer(WebLayer*) final;
-    void mediaPlayerMediaSourceOpened(WebMediaSource*) final;
+    // WebMediaPlayerClient implementation.
+    void networkStateChanged() final;
+    void readyStateChanged() final;
+    void timeChanged() final;
+    void repaint() final;
+    void durationChanged() final;
+    void sizeChanged() final;
+    void playbackStateChanged() final;
+
+    void setWebLayer(WebLayer*) final;
+    WebMediaPlayer::TrackId addAudioTrack(const WebString&, WebMediaPlayerClient::AudioTrackKind, const WebString&, const WebString&, bool) final;
+    void removeAudioTrack(WebMediaPlayer::TrackId) final;
+    WebMediaPlayer::TrackId addVideoTrack(const WebString&, WebMediaPlayerClient::VideoTrackKind, const WebString&, const WebString&, bool) final;
+    void removeVideoTrack(WebMediaPlayer::TrackId) final;
+    void addTextTrack(WebInbandTextTrack*) final;
+    void removeTextTrack(WebInbandTextTrack*) final;
+    void mediaSourceOpened(WebMediaSource*) final;
+    void requestSeek(double) final;
+    void remoteRouteAvailabilityChanged(bool) final;
+    void connectedToRemoteDevice() final;
+    void disconnectedFromRemoteDevice() final;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
@@ -501,7 +503,7 @@ private:
     DeferredLoadState m_deferredLoadState;
     Timer<HTMLMediaElement> m_deferredLoadTimer;
 
-    OwnPtr<MediaPlayer> m_player;
+    OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     WebLayer* m_webLayer;
 
     DisplayMode m_displayMode;
@@ -560,6 +562,52 @@ private:
     // FIXME: Oilpan: Consider making this a strongly traced pointer with oilpan where strong cycles are not a problem.
     GC_PLUGIN_IGNORE("http://crbug.com/404577")
     RawPtrWillBeWeakMember<AudioSourceProviderClient> m_audioSourceNode;
+
+    // AudioClientImpl wraps an AudioSourceProviderClient.
+    // When the audio format is known, Chromium calls setFormat().
+    class AudioClientImpl final : public GarbageCollectedFinalized<AudioClientImpl>, public WebAudioSourceProviderClient {
+    public:
+        explicit AudioClientImpl(AudioSourceProviderClient* client)
+            : m_client(client)
+        {
+        }
+
+        ~AudioClientImpl() override { }
+
+        // WebAudioSourceProviderClient
+        void setFormat(size_t numberOfChannels, float sampleRate) override;
+
+        DECLARE_TRACE();
+
+    private:
+        Member<AudioSourceProviderClient> m_client;
+    };
+
+    // AudioSourceProviderImpl wraps a WebAudioSourceProvider.
+    // provideInput() calls into Chromium to get a rendered audio stream.
+    class AudioSourceProviderImpl final : public AudioSourceProvider {
+    public:
+        AudioSourceProviderImpl()
+            : m_webAudioSourceProvider(nullptr)
+        {
+        }
+
+        ~AudioSourceProviderImpl() override { }
+
+        // Wraps the given WebAudioSourceProvider.
+        void wrap(WebAudioSourceProvider*);
+
+        // AudioSourceProvider
+        void setClient(AudioSourceProviderClient*) override;
+        void provideInput(AudioBus*, size_t framesToProcess) override;
+
+    private:
+        WebAudioSourceProvider* m_webAudioSourceProvider;
+        Persistent<AudioClientImpl> m_client;
+        Mutex provideInputLock;
+    };
+
+    AudioSourceProviderImpl m_audioSourceProvider;
 #endif
 
     friend class MediaController;
