@@ -12,9 +12,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (186,0) size 309x18
           text run at (186,0) width 309: " property is ignored for single-line text controls."
       LayoutBlockFlow (anonymous) at (0,34) size 784x33
-        LayoutTextControl {INPUT} at (0,0) size 123x33 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 131x33 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,52) size 117x13 scrollWidth 263
-  LayoutBlockFlow {DIV} at (3,10) size 117x13
-    LayoutText {#text} at (0,0) size 263x13
-      text run at (0,0) width 263: "This sentence should not wrap into the next line."
+layer at (11,52) size 125x13 scrollWidth 258
+  LayoutBlockFlow {DIV} at (3,10) size 125x13
+    LayoutText {#text} at (0,0) size 257x13
+      text run at (0,0) width 257: "This sentence should not wrap into the next line."

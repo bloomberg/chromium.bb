@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (13,2) size 36x52
                 text run at (13,2) width 28: "short"
                 text run at (10,15) width 34: "words"
-                text run at (15,28) width 24: "only"
+                text run at (16,28) width 22: "only"
                 text run at (9,41) width 36: "please"
         LayoutText {#text} at (0,0) size 0x0
       LayoutButton {BUTTON} at (0,134) size 100x50 [bgcolor=#C0C0C0] [border: (2px outset #FFFF00)]
@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (13,2) size 36x52
               text run at (13,2) width 28: "short"
               text run at (10,15) width 34: "words"
-              text run at (15,28) width 24: "only"
+              text run at (16,28) width 22: "only"
               text run at (9,41) width 36: "please"
       LayoutBlockFlow {P} at (0,200) size 784x0
 layer at (8,208) size 100x50
@@ -39,5 +39,5 @@ layer at (8,208) size 100x50
         LayoutText {#text} at (13,2) size 36x52
           text run at (13,2) width 28: "short"
           text run at (10,15) width 34: "words"
-          text run at (15,28) width 24: "only"
+          text run at (16,28) width 22: "only"
           text run at (9,41) width 36: "please"
