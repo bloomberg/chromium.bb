@@ -5,6 +5,7 @@
 #include "components/scheduler/child/task_queue_manager.h"
 
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
@@ -995,6 +996,37 @@ TEST_F(TaskQueueManagerTest, DelayedTaskWithAbsoluteRunTime) {
   test_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+}
+
+void CheckIsNested(bool* is_nested) {
+  *is_nested = base::MessageLoop::current()->IsNested();
+}
+
+void PostAndQuitFromNestedRunloop(base::RunLoop* run_loop,
+                                  base::SingleThreadTaskRunner* runner,
+                                  bool* was_nested) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  runner->PostTask(FROM_HERE, run_loop->QuitClosure());
+  runner->PostTask(FROM_HERE, base::Bind(&CheckIsNested, was_nested));
+  run_loop->Run();
+}
+
+TEST_F(TaskQueueManagerTest, QuitWhileNested) {
+  // This test makes sure we don't continue running a work batch after a nested
+  // run loop has been exited in the middle of the batch.
+  InitializeWithRealMessageLoop(1u);
+  manager_->SetWorkBatchSize(2);
+
+  bool was_nested = true;
+  base::RunLoop run_loop;
+  runners_[0]->PostTask(
+      FROM_HERE,
+      base::Bind(&PostAndQuitFromNestedRunloop, base::Unretained(&run_loop),
+                 runners_[0], base::Unretained(&was_nested)));
+
+  message_loop_->RunUntilIdle();
+  EXPECT_FALSE(was_nested);
 }
 
 }  // namespace scheduler

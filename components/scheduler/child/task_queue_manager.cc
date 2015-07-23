@@ -155,6 +155,11 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
                                  TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
     if (!UpdateWorkQueues(should_trigger_wakeup, &previous_task))
       return;
+
+    // Only run a single task per batch in nested run loops so that we can
+    // properly exit the nested loop when someone calls RunLoop::Quit().
+    if (main_task_runner_->IsNested())
+      break;
   }
 }
 
