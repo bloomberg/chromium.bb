@@ -357,11 +357,10 @@ public class NewTabPageView extends FrameLayout
                 mManager.optOutPromoClicked(true);
             }
 
-            // Change link formatting to use our blue control color and no underline
+            // Disable underline on the link text.
             @Override
             public void updateDrawState(android.text.TextPaint textPaint) {
-                textPaint.setColor(getContext().getResources().getColor(
-                        R.color.light_active_color));
+                super.updateDrawState(textPaint);
                 textPaint.setUnderlineText(false);
             }
         };
