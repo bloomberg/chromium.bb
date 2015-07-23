@@ -51,6 +51,9 @@ Examples:
   cros flash usb:///dev/sde xbuddy://peppy/latest
   cros flash file:///~/images xbuddy://peppy/latest
 
+  # For a recovery image
+  cros flash usb:// xbuddy://remote/link/latest-stable/recovery
+
   For more information and known problems/fixes, please see:
   http://dev.chromium.org/chromium-os/build/cros-flash
 """
