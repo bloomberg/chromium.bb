@@ -104,7 +104,11 @@ void VideoPipelineImpl::Initialize(
     const std::vector<::media::VideoDecoderConfig>& configs,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
-  CMALOG(kLogControl) << __FUNCTION__ << " config (" << configs.size() << ")";
+  DCHECK_GT(configs.size(), 0u);
+  for (const auto& config : configs) {
+    CMALOG(kLogControl) << __FUNCTION__ << " "
+                        << config.AsHumanReadableString();
+  }
   VideoPipelineDevice::VideoClient client;
   client.natural_size_changed_cb =
       base::Bind(&VideoPipelineImpl::OnNaturalSizeChanged, weak_this_);
