@@ -22,7 +22,8 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
       media_router_idle_icon_(ui::ResourceBundle::GetSharedInstance().
           GetImageNamed(IDR_MEDIA_ROUTER_IDLE_ICON)),
       delegate_(nullptr),
-      platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)) {
+      platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
+      contextual_menu_(browser) {
 }
 
 MediaRouterAction::~MediaRouterAction() {
@@ -80,7 +81,7 @@ gfx::NativeView MediaRouterAction::GetPopupNativeView() {
 }
 
 ui::MenuModel* MediaRouterAction::GetContextMenu() {
-  return nullptr;
+  return contextual_menu_.menu_model();
 }
 
 bool MediaRouterAction::CanDrag() const {

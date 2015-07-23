@@ -349,6 +349,12 @@
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100
 
+// Context menu items for media router
+#define IDC_MEDIA_ROUTER_ABOUT 51200
+#define IDC_MEDIA_ROUTER_HELP 51201
+#define IDC_MEDIA_ROUTER_LEARN_MORE 51202
+#define IDC_MEDIA_ROUTER_REPORT_ISSUE 51203
+
 // Context menu items for media stream status tray
 #define IDC_MEDIA_STREAM_DEVICE_STATUS_TRAY 51300
 #define IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST 51301

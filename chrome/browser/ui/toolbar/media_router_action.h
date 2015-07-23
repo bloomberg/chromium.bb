@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_H_
 
+#include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 
 class Browser;
@@ -59,6 +60,8 @@ class MediaRouterAction : public ToolbarActionViewController {
 
   // The delegate to handle platform-specific implementations.
   scoped_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
+
+  MediaRouterContextualMenu contextual_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAction);
 };

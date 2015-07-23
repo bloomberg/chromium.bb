@@ -1470,6 +1470,8 @@
     'chrome_browser_ui_media_router_sources': [
       'browser/ui/toolbar/media_router_action.cc',
       'browser/ui/toolbar/media_router_action.h',
+      'browser/ui/toolbar/media_router_contextual_menu.cc',
+      'browser/ui/toolbar/media_router_contextual_menu.h',
       'browser/ui/toolbar/media_router_action_platform_delegate.cc',
       'browser/ui/toolbar/media_router_action_platform_delegate.h',
       'browser/ui/views/toolbar/media_router_action_platform_delegate_views.cc',

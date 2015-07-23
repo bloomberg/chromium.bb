@@ -31,6 +31,20 @@
    Select source
   </message>
 
+  <!-- Contextual Menu -->
+  <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of menu item which, on selection, opens a page with product information about Chromecast.">
+   About
+  </message>
+  <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of help item which, on selection, opens a page to the Chromecast help center.">
+   Help
+  </message>
+  <message name="IDS_MEDIA_ROUTER_LEARN_MORE" desc="Title of learn more item which, on selection, opens a page with instructions on how to cast to a Chromecast.">
+   Learn more
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of report issue item which, on selection, opens a page to give feedback or report an issue with Chromecast integration.">
+   Report an issue
+  </message>
+
   <!-- Issue Actions -->
   <message name="IDS_MEDIA_ROUTER_CANCEL_BUTTON" desc="Text of Cancel button.">
     Cancel
