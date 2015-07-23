@@ -49,6 +49,6 @@ interface HTMLCanvasElement : HTMLElement {
 
     // Note: The arguments argument is variadic in the spec, but not here as
     // only one extra argument is actually used.
-    // FIXME: type should not be nullable or have a default value.
-    [RaisesException] DOMString toDataURL(optional DOMString? type = null, optional any arguments);
+    // FIXME: type should not have a default value.
+    [RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
 };
