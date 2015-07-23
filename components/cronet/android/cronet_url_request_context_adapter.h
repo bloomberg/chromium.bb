@@ -18,15 +18,18 @@
 #include "base/prefs/json_pref_store.h"
 #include "base/threading/thread.h"
 
+class PrefService;
+
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
-class WriteToFileNetLogObserver;
-class URLRequestContext;
+class HttpServerPropertiesManager;
 class ProxyConfigService;
 class SdchOwner;
+class URLRequestContext;
+class WriteToFileNetLogObserver;
 }  // namespace net
 
 namespace cronet {
@@ -104,16 +107,21 @@ class CronetURLRequestContextAdapter {
   // |write_to_file_observer_| and |context_| should only be accessed on
   // network thread.
   scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+
+  // |pref_service_| should outlive the HttpServerPropertiesManager owned by
+  // |context_|.
+  scoped_ptr<PrefService> pref_service_;
   scoped_ptr<net::URLRequestContext> context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_refptr<JsonPrefStore> json_pref_store_;
+  net::HttpServerPropertiesManager* http_server_properties_manager_;
 
   // |sdch_owner_| should be destroyed before |json_pref_store_|, because
   // tearing down |sdch_owner_| forces |json_pref_store_| to flush pending
   // writes to the disk.
-  scoped_refptr<JsonPrefStore> json_pref_store_;
   scoped_ptr<net::SdchOwner> sdch_owner_;
 
-  // Context config is only valid untng context is initialized.
+  // Context config is only valid until context is initialized.
   scoped_ptr<URLRequestContextConfig> context_config_;
 
   // A queue of tasks that need to be run after context has been initialized.

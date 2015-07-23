@@ -11,7 +11,11 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_filter.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/pref_service_factory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "components/cronet/url_request_context_config.h"
@@ -20,6 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_server_properties_manager.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
@@ -32,6 +37,8 @@
 #endif
 
 namespace {
+
+const char kHttpServerProperties[] = "net.http_server_properties";
 
 class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  public:
@@ -128,6 +135,11 @@ CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
 
 CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+
+  if (http_server_properties_manager_)
+    http_server_properties_manager_->ShutdownOnPrefThread();
+  if (pref_service_)
+    pref_service_->CommitPendingWrite();
   StopNetLogOnNetworkThread();
 }
 
@@ -184,14 +196,29 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   // Set up pref file if storage path is specified.
-  // TODO(xunjieli): maybe get rid of the condition on sdch.
-  if (!config->storage_path.empty() && config->enable_sdch) {
+  if (!config->storage_path.empty()) {
     base::FilePath filepath(config->storage_path);
     filepath = filepath.Append(FILE_PATH_LITERAL("local_prefs.json"));
     json_pref_store_ = new JsonPrefStore(
         filepath, GetFileThread()->task_runner(), scoped_ptr<PrefFilter>());
-    json_pref_store_->ReadPrefsAsync(nullptr);
     context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
+
+    // Set up HttpServerPropertiesManager.
+    base::PrefServiceFactory factory;
+    factory.set_user_prefs(json_pref_store_);
+    scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
+    registry->RegisterDictionaryPref(kHttpServerProperties,
+                                     new base::DictionaryValue());
+    pref_service_ = factory.Create(registry.get()).Pass();
+
+    scoped_ptr<net::HttpServerPropertiesManager> http_server_properties_manager(
+        new net::HttpServerPropertiesManager(pref_service_.get(),
+                                             kHttpServerProperties,
+                                             GetNetworkTaskRunner()));
+    http_server_properties_manager->InitializeOnNetworkThread();
+    http_server_properties_manager_ = http_server_properties_manager.get();
+    context_builder.SetHttpServerProperties(
+        http_server_properties_manager.Pass());
   }
 
   context_.reset(context_builder.Build());

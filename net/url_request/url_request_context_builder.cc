@@ -26,6 +26,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties_manager.h"
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/ssl/channel_id_service.h"
@@ -245,6 +246,11 @@ void URLRequestContextBuilder::SetFileTaskRunner(
   file_task_runner_ = task_runner;
 }
 
+void URLRequestContextBuilder::SetHttpServerProperties(
+    scoped_ptr<HttpServerProperties> http_server_properties) {
+  http_server_properties_ = http_server_properties.Pass();
+}
+
 URLRequestContext* URLRequestContextBuilder::Build() {
   BasicURLRequestContext* context =
       new BasicURLRequestContext(file_task_runner_);
@@ -328,8 +334,13 @@ URLRequestContext* URLRequestContextBuilder::Build() {
                                            false)));
   }
 
-  storage->set_http_server_properties(
-      scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+  if (http_server_properties_) {
+    storage->set_http_server_properties(http_server_properties_.Pass());
+  } else {
+    storage->set_http_server_properties(
+        scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+  }
+
   storage->set_cert_verifier(CertVerifier::CreateDefault());
 
   if (throttling_enabled_)

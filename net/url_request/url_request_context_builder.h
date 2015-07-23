@@ -42,6 +42,7 @@ class CookieStore;
 class FtpTransactionFactory;
 class HostMappingRules;
 class HttpAuthHandlerFactory;
+class HttpServerProperties;
 class ProxyConfigService;
 class URLRequestContext;
 class URLRequestInterceptor;
@@ -211,6 +212,11 @@ class NET_EXPORT URLRequestContextBuilder {
   // SdchOwner in net/sdch/sdch_owner.h is a simple policy object.
   void set_sdch_enabled(bool enable) { sdch_enabled_ = enable; }
 
+  // Sets a specific HttpServerProperties for use in the
+  // URLRequestContext rather than creating a default HttpServerPropertiesImpl.
+  void SetHttpServerProperties(
+      scoped_ptr<HttpServerProperties> http_server_properties);
+
   URLRequestContext* Build();
 
  private:
@@ -253,6 +259,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   std::vector<SchemeFactory> extra_http_auth_handlers_;
   ScopedVector<URLRequestInterceptor> url_request_interceptors_;
+  scoped_ptr<HttpServerProperties> http_server_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
 };
