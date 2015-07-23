@@ -56,14 +56,19 @@ class OomPriorityManager {
   void Start();
   void Stop();
 
-  // Returns list of tab titles sorted from most interesting (don't kill)
-  // to least interesting (OK to kill).
-  std::vector<base::string16> GetTabTitles();
+  // Returns the list of the stats for all renderers. Must be called on the UI
+  // thread.
+  TabStatsList GetTabStats();
 
-  // Discards a tab to free the memory occupied by its renderer.
-  // Tab still exists in the tab-strip; clicking on it will reload it.
-  // Returns true if it successfully found a tab and discarded it.
+  // Discards a tab to free the memory occupied by its renderer. The tab still
+  // exists in the tab-strip; clicking on it will reload it. Returns true if it
+  // successfully found a tab and discarded it.
   bool DiscardTab();
+
+  // Discards a tab with the given unique ID. The tab still exists in the
+  // tab-strip; clicking on it will reload it. Returns true if it successfully
+  // found a tab and discarded it.
+  bool DiscardTabById(int64 target_web_contents_id);
 
   // Log memory statistics for the running processes, then discards a tab.
   // Tab discard happens sometime later, as collecting the statistics touches
@@ -83,9 +88,6 @@ class OomPriorityManager {
   // can be easily reloaded and hence makes a good choice to discard.
   static bool IsInternalPage(const GURL& url);
 
-  // Discards a tab with the given unique ID. Returns true if discard occurred.
-  bool DiscardTabById(int64 target_web_contents_id);
-
   // Records UMA histogram statistics for a tab discard. We record statistics
   // for user triggered discards via chrome://discards/ because that allows us
   // to manually test the system.
@@ -100,9 +102,6 @@ class OomPriorityManager {
 
   // Returns the number of tabs open in all browser instances.
   int GetTabCount() const;
-
-  // Returns the list of the stats for all renderers.
-  TabStatsList GetTabStatsOnUIThread();
 
   // Adds all the stats of the tabs in |browser_list| into |stats_list|. If
   // |active_desktop| is true, we consider its first window as being active.

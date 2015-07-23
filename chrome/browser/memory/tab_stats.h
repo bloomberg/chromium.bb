@@ -26,6 +26,9 @@ struct TabStats {
   base::ProcessHandle renderer_handle;
   int child_process_host_id;
   base::string16 title;
+#if defined(OS_CHROMEOS)
+  int oom_score;
+#endif
   int64 tab_contents_id;  // Unique ID per WebContents.
 };
 

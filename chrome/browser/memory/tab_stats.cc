@@ -15,6 +15,9 @@ TabStats::TabStats()
       is_discarded(false),
       renderer_handle(0),
       child_process_host_id(0),
+#if defined(OS_CHROMEOS)
+      oom_score(0),
+#endif
       tab_contents_id(0) {
 }
 

@@ -118,28 +118,34 @@ void OomPriorityManager::Stop() {
   memory_pressure_listener_.reset();
 }
 
-std::vector<base::string16> OomPriorityManager::GetTabTitles() {
-  TabStatsList stats = GetTabStatsOnUIThread();
-  std::vector<base::string16> titles;
-  titles.reserve(stats.size());
-  TabStatsList::iterator it = stats.begin();
-  for (; it != stats.end(); ++it) {
-    base::string16 str;
-    str.reserve(4096);
-#if defined(OS_CHROMEOS)
-    int score = delegate_->GetOomScore(it->child_process_host_id);
-    str += base::IntToString16(score);
-    str += base::ASCIIToUTF16(" - ");
-#endif
-    str += it->title;
-    str += base::ASCIIToUTF16(it->is_app ? " app" : "");
-    str += base::ASCIIToUTF16(it->is_internal_page ? " internal_page" : "");
-    str += base::ASCIIToUTF16(it->is_playing_audio ? " playing_audio" : "");
-    str += base::ASCIIToUTF16(it->is_pinned ? " pinned" : "");
-    str += base::ASCIIToUTF16(it->is_discarded ? " discarded" : "");
-    titles.push_back(str);
+// Things we need to collect on the browser thread (because TabStripModel isn't
+// thread safe):
+// 1) whether or not a tab is pinned
+// 2) last time a tab was selected
+// 3) is the tab currently selected
+TabStatsList OomPriorityManager::GetTabStats() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TabStatsList stats_list;
+  stats_list.reserve(32);  // 99% of users have < 30 tabs open
+
+  // We go through each window to get all the tabs. Depending on the platform,
+  // windows are either native or ash or both. We want to make sure to go
+  // through them all, starting with the active window first (we use
+  // chrome::GetActiveDesktop to get the current used type).
+  AddTabStats(BrowserList::GetInstance(chrome::GetActiveDesktop()), true,
+              &stats_list);
+  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_NATIVE) {
+    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE),
+                false, &stats_list);
+  } else if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH) {
+    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH), false,
+                &stats_list);
   }
-  return titles;
+
+  // Sort the data we collected so that least desirable to be
+  // killed is first, most desirable is last.
+  std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
+  return stats_list;
 }
 
 // TODO(jamescook): This should consider tabs with references to other tabs,
@@ -147,7 +153,7 @@ std::vector<base::string16> OomPriorityManager::GetTabTitles() {
 // discard the entire set together, or use that in the priority computation.
 bool OomPriorityManager::DiscardTab() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabStatsList stats = GetTabStatsOnUIThread();
+  TabStatsList stats = GetTabStats();
   if (stats.empty())
     return false;
   // Loop until we find a non-discarded tab to kill.
@@ -156,6 +162,30 @@ bool OomPriorityManager::DiscardTab() {
     int64 least_important_tab_id = stats_rit->tab_contents_id;
     if (DiscardTabById(least_important_tab_id))
       return true;
+  }
+  return false;
+}
+
+bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    TabStripModel* model = browser->tab_strip_model();
+    for (int idx = 0; idx < model->count(); idx++) {
+      // Can't discard tabs that are already discarded or active.
+      if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
+        continue;
+      WebContents* web_contents = model->GetWebContentsAt(idx);
+      int64 web_contents_id = IdFromWebContents(web_contents);
+      if (web_contents_id == target_web_contents_id) {
+        VLOG(1) << "Discarding tab " << idx << " id " << target_web_contents_id;
+        // Record statistics before discarding because we want to capture the
+        // memory state that lead to the discard.
+        RecordDiscardStatistics();
+        model->DiscardWebContentsAt(idx);
+        recent_tab_discard_ = true;
+        return true;
+      }
+    }
   }
   return false;
 }
@@ -199,31 +229,6 @@ bool OomPriorityManager::IsInternalPage(const GURL& url) {
     if (!strncmp(url.spec().c_str(), kInternalPagePrefixes[i],
                  strlen(kInternalPagePrefixes[i])))
       return true;
-  }
-  return false;
-}
-
-bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
-    TabStripModel* model = browser->tab_strip_model();
-    for (int idx = 0; idx < model->count(); idx++) {
-      // Can't discard tabs that are already discarded or active.
-      if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
-        continue;
-      WebContents* web_contents = model->GetWebContentsAt(idx);
-      int64 web_contents_id = IdFromWebContents(web_contents);
-      if (web_contents_id == target_web_contents_id) {
-        LOG(WARNING) << "Discarding tab " << idx << " id "
-                     << target_web_contents_id;
-        // Record statistics before discarding because we want to capture the
-        // memory state that lead to the discard.
-        RecordDiscardStatistics();
-        model->DiscardWebContentsAt(idx);
-        recent_tab_discard_ = true;
-        return true;
-      }
-    }
   }
   return false;
 }
@@ -370,40 +375,10 @@ void OomPriorityManager::UpdateTimerCallback() {
   last_adjust_time_ = TimeTicks::Now();
 
 #if defined(OS_CHROMEOS)
-  TabStatsList stats_list = GetTabStatsOnUIThread();
+  TabStatsList stats_list = GetTabStats();
   // This starts the CrOS specific OOM adjustments in /proc/<pid>/oom_score_adj.
   delegate_->AdjustOomPriorities(stats_list);
 #endif
-}
-
-// Things we need to collect on the browser thread (because TabStripModel isn't
-// thread safe):
-// 1) whether or not a tab is pinned
-// 2) last time a tab was selected
-// 3) is the tab currently selected
-TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabStatsList stats_list;
-  stats_list.reserve(32);  // 99% of users have < 30 tabs open
-
-  // We go through each window to get all the tabs. Depending on the platform,
-  // windows are either native or ash or both. We want to make sure to go
-  // through them all, starting with the active window first (we use
-  // chrome::GetActiveDesktop to get the current used type).
-  AddTabStats(BrowserList::GetInstance(chrome::GetActiveDesktop()), true,
-              &stats_list);
-  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_NATIVE) {
-    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE),
-                false, &stats_list);
-  } else if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH) {
-    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH), false,
-                &stats_list);
-  }
-
-  // Sort the data we collected so that least desirable to be
-  // killed is first, most desirable is last.
-  std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
-  return stats_list;
 }
 
 void OomPriorityManager::AddTabStats(BrowserList* browser_list,
@@ -433,6 +408,9 @@ void OomPriorityManager::AddTabStats(BrowserList* browser_list,
         stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
+#if defined(OS_CHROMEOS)
+        stats.oom_score = delegate_->GetOomScore(stats.child_process_host_id);
+#endif
         stats.title = contents->GetTitle();
         stats.tab_contents_id = IdFromWebContents(contents);
         stats_list->push_back(stats);

@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -458,6 +459,8 @@ std::string ChromeURLs() {
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 
+const char kAboutDiscardsRunCommand[] = "run";
+
 // Html output helper functions
 
 // Helper function to wrap HTML with a tag.
@@ -489,51 +492,89 @@ void AddContentSecurityPolicy(std::string* output) {
 
 // TODO(stevenjb): L10N AboutDiscards.
 
-std::string AboutDiscardsRun() {
+std::string BuildAboutDiscardsRunPage() {
   std::string output;
   AppendHeader(&output, 0, "About discards");
-  output.append(
-      base::StringPrintf("<meta http-equiv='refresh' content='2;%s'>",
-      chrome::kChromeUIDiscardsURL));
+  output.append(base::StringPrintf("<meta http-equiv='refresh' content='2;%s'>",
+                                   chrome::kChromeUIDiscardsURL));
   AddContentSecurityPolicy(&output);
   output.append(WrapWithTag("p", "Discarding a tab..."));
-  g_browser_process->GetOomPriorityManager()->LogMemoryAndDiscardTab();
   AppendFooter(&output);
   return output;
 }
 
+std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
+  memory::OomPriorityManager* oom = g_browser_process->GetOomPriorityManager();
+  memory::TabStatsList stats = oom->GetTabStats();
+  std::vector<std::string> titles;
+  titles.reserve(stats.size());
+  for (memory::TabStatsList::iterator it = stats.begin(); it != stats.end();
+       ++it) {
+    std::string str;
+    str.reserve(4096);
+    str += "<b>";
+    str += it->is_app ? "[App] " : "";
+    str += it->is_internal_page ? "[Internal] " : "";
+    str += it->is_playing_audio ? "[Audio] " : "";
+    str += it->is_pinned ? "[Pinned] " : "";
+    str += it->is_discarded ? "[Discarded] " : "";
+    str += "</b>";
+    str += net::EscapeForHTML(base::UTF16ToUTF8(it->title));
+#if defined(OS_CHROMEOS)
+    str += base::StringPrintf(" (%d) ", it->oom_score);
+#endif
+    if (!it->is_discarded) {
+      str += base::StringPrintf(" <a href='%s%s/%" PRId64 "'>Discard</a>",
+                                chrome::kChromeUIDiscardsURL,
+                                kAboutDiscardsRunCommand, it->tab_contents_id);
+    }
+    titles.push_back(str);
+  }
+  return titles;
+}
+
 std::string AboutDiscards(const std::string& path) {
   std::string output;
-  const char kRunCommand[] = "run";
-  if (path == kRunCommand)
-    return AboutDiscardsRun();
+  std::vector<std::string> path_split;
+  int64 web_content_id;
+  memory::OomPriorityManager* oom = g_browser_process->GetOomPriorityManager();
+
+  base::SplitString(path, '/', &path_split);
+  if (path_split.size() == 2 && path_split[0] == kAboutDiscardsRunCommand &&
+      base::StringToInt64(path_split[1], &web_content_id)) {
+    oom->DiscardTabById(web_content_id);
+    return BuildAboutDiscardsRunPage();
+  } else if (path_split.size() == 1 &&
+             path_split[0] == kAboutDiscardsRunCommand) {
+    oom->DiscardTab();
+    return BuildAboutDiscardsRunPage();
+  }
+
   AppendHeader(&output, 0, "About discards");
   AddContentSecurityPolicy(&output);
   AppendBody(&output);
-  output.append("<h3>About discards</h3>");
+  output.append("<h3>Discarded Tabs</h3>");
   output.append(
       "<p>Tabs sorted from most interesting to least interesting. The least "
       "interesting tab may be discarded if we run out of physical memory.</p>");
 
-  memory::OomPriorityManager* oom = g_browser_process->GetOomPriorityManager();
-  std::vector<base::string16> titles = oom->GetTabTitles();
+  std::vector<std::string> titles = GetHtmlTabDescriptorsForDiscardPage();
   if (!titles.empty()) {
     output.append("<ul>");
-    std::vector<base::string16>::iterator it = titles.begin();
+    std::vector<std::string>::iterator it = titles.begin();
     for ( ; it != titles.end(); ++it) {
-      std::string title = base::UTF16ToUTF8(*it);
-      title = net::EscapeForHTML(title);
-      output.append(WrapWithTag("li", title));
+      output.append(WrapWithTag("li", *it));
     }
     output.append("</ul>");
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
-  output.append(base::StringPrintf("%d discards this session. ",
-                             oom->discard_count()));
+  output.append(
+      base::StringPrintf("%d discards this session. ", oom->discard_count()));
   output.append(base::StringPrintf("<a href='%s%s'>Discard tab now</a>",
                                    chrome::kChromeUIDiscardsURL,
-                                   kRunCommand));
+                                   kAboutDiscardsRunCommand));
+
 #if defined(OS_CHROMEOS)
   base::SystemMemoryInfoKB meminfo;
   base::GetSystemMemoryInfo(&meminfo);
