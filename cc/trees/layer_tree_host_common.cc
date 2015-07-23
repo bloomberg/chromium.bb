@@ -2440,6 +2440,20 @@ static bool ApproximatelyEqual(const gfx::Transform& a,
   return true;
 }
 
+void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
+                                        PropertyTrees* property_trees) {
+  const bool render_surface_draw_transforms_match =
+      ApproximatelyEqual(render_surface->draw_transform(),
+                         DrawTransformOfRenderSurfaceFromPropertyTrees(
+                             render_surface, property_trees->transform_tree));
+  CHECK(render_surface_draw_transforms_match)
+      << "expected: " << render_surface->draw_transform().ToString()
+      << " actual: "
+      << DrawTransformOfRenderSurfaceFromPropertyTrees(
+             render_surface, property_trees->transform_tree)
+             .ToString();
+}
+
 void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
                                       PropertyTrees* property_trees,
                                       bool layers_always_allowed_lcd_text,
@@ -2488,6 +2502,9 @@ void VerifyPropertyTreeValues(
       end = LayerIterator::End(inputs->render_surface_layer_list);
        it != end; ++it) {
     LayerImpl* current_layer = *it;
+    if (it.represents_target_render_surface())
+      VerifyPropertyTreeValuesForSurface(current_layer->render_surface(),
+                                         inputs->property_trees);
     if (!it.represents_itself() || !current_layer->DrawsContent())
       continue;
     VerifyPropertyTreeValuesForLayer(current_layer, inputs->property_trees,

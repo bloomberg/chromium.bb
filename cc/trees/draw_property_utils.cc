@@ -587,6 +587,24 @@ gfx::Transform DrawTransformFromPropertyTrees(const LayerImpl* layer,
   return DrawTransformFromPropertyTreesInternal(layer, tree);
 }
 
+gfx::Transform DrawTransformOfRenderSurfaceFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& tree) {
+  const TransformNode* node = tree.Node(render_surface->TransformTreeIndex());
+  gfx::Transform render_surface_transform;
+  // The draw transform of root render surface is identity tranform.
+  if (node->id == 1)
+    return render_surface_transform;
+  const TransformNode* target_node = tree.Node(node->data.target_id);
+  if (target_node->id == 1)
+    target_node = tree.Node(0);
+  tree.ComputeTransformWithDestinationSublayerScale(node->id, target_node->id,
+                                                    &render_surface_transform);
+  render_surface_transform.Scale(1.0 / node->data.sublayer_scale.x(),
+                                 1.0 / node->data.sublayer_scale.y());
+  return render_surface_transform;
+}
+
 template <typename LayerType>
 gfx::Transform ScreenSpaceTransformFromPropertyTreesInternal(
     LayerType* layer,

@@ -18,6 +18,7 @@ namespace cc {
 class ClipTree;
 class Layer;
 class LayerImpl;
+class RenderSurfaceImpl;
 class OpacityTree;
 class TransformTree;
 class PropertyTrees;
@@ -75,6 +76,10 @@ ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
 
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const Layer* layer, const TransformTree& tree);
+
+gfx::Transform CC_EXPORT DrawTransformOfRenderSurfaceFromPropertyTrees(
+    const RenderSurfaceImpl* render_Surface,
+    const TransformTree& tree);
 
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const LayerImpl* layer,

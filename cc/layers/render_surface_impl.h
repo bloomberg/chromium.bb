@@ -138,6 +138,8 @@ class CC_EXPORT RenderSurfaceImpl {
                    AppendQuadsData* append_quads_data,
                    RenderPassId render_pass_id);
 
+  int TransformTreeIndex() const;
+
  private:
   LayerImpl* owning_layer_;
 
