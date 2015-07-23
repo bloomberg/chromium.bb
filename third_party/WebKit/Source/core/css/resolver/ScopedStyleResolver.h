@@ -94,7 +94,7 @@ private:
             return adoptPtrWillBeNoop(new RuleSubSet(sheet, index, rules));
         }
 
-        CSSStyleSheet* m_parentStyleSheet;
+        RawPtrWillBeMember<CSSStyleSheet> m_parentStyleSheet;
         unsigned m_parentIndex;
         OwnPtrWillBeMember<RuleSet> m_ruleSet;
 

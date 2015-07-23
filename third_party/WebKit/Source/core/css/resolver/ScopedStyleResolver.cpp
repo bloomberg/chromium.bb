@@ -248,6 +248,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
 
 DEFINE_TRACE(ScopedStyleResolver::RuleSubSet)
 {
+    visitor->trace(m_parentStyleSheet);
     visitor->trace(m_ruleSet);
 }
 
