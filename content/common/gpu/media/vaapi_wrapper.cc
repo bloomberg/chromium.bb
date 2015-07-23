@@ -225,6 +225,12 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
   return profiles;
 }
 
+// static
+bool VaapiWrapper::IsJpegDecodeSupported() {
+  return profile_infos_.Get().IsProfileSupported(kDecode,
+                                                 VAProfileJPEGBaseline);
+}
+
 void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
   base::AutoLock auto_lock(*va_lock_);
   VADisplayAttribute item = {VADisplayAttribRenderMode,

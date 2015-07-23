@@ -38,6 +38,7 @@ class CONTENT_EXPORT VaapiJpegDecodeAccelerator
   bool Initialize(media::JpegDecodeAccelerator::Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<media::VideoFrame>& video_frame) override;
+  bool IsSupported() override;
 
  private:
   // An input buffer and the corresponding output video frame awaiting

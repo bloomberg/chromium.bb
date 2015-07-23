@@ -166,6 +166,8 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
       context_gpu_info.video_decode_accelerator_supported_profiles;
   basic_gpu_info->video_encode_accelerator_supported_profiles =
       context_gpu_info.video_encode_accelerator_supported_profiles;
+  basic_gpu_info->jpeg_decode_accelerator_supported =
+      context_gpu_info.jpeg_decode_accelerator_supported;
 }
 
 }  // namespace gpu

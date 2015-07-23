@@ -66,12 +66,11 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       process_crash_count(0),
       basic_info_state(kCollectInfoNone),
-#if defined(OS_WIN)
       context_info_state(kCollectInfoNone),
-      dx_diagnostics_info_state(kCollectInfoNone) {
-#else
-      context_info_state(kCollectInfoNone) {
+#if defined(OS_WIN)
+      dx_diagnostics_info_state(kCollectInfoNone),
 #endif
+      jpeg_decode_accelerator_supported(false) {
 }
 
 GPUInfo::~GPUInfo() { }
@@ -117,6 +116,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
         video_decode_accelerator_supported_profiles;
     VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
+    bool jpeg_decode_accelerator_supported;
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -176,6 +176,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     EnumerateVideoDecodeAcceleratorSupportedProfile(profile, enumerator);
   for (const auto& profile : video_encode_accelerator_supported_profiles)
     EnumerateVideoEncodeAcceleratorSupportedProfile(profile, enumerator);
+  enumerator->AddBool("jpegDecodeAcceleratorSupported",
+      jpeg_decode_accelerator_supported);
   enumerator->EndAuxAttributes();
 }
 

@@ -221,6 +221,8 @@ struct GPU_EXPORT GPUInfo {
       video_decode_accelerator_supported_profiles;
   VideoEncodeAcceleratorSupportedProfiles
       video_encode_accelerator_supported_profiles;
+  bool jpeg_decode_accelerator_supported;
+
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 

@@ -302,4 +302,8 @@ void VaapiJpegDecodeAccelerator::Decode(
                             base::Unretained(this), base::Passed(&request)));
 }
 
+bool VaapiJpegDecodeAccelerator::IsSupported() {
+  return VaapiWrapper::IsJpegDecodeSupported();
+}
+
 }  // namespace content

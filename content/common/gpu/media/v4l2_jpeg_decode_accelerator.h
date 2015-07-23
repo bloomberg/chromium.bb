@@ -33,6 +33,7 @@ class CONTENT_EXPORT V4L2JpegDecodeAccelerator
   bool Initialize(Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<media::VideoFrame>& video_frame) override;
+  bool IsSupported() override;
 
  private:
   // Record for input/output buffers.

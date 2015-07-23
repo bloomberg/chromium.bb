@@ -25,6 +25,7 @@
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
@@ -347,6 +348,8 @@ int GpuMain(const MainFunctionParams& parameters) {
         content::GpuVideoDecodeAccelerator::GetSupportedProfiles();
     gpu_info.video_encode_accelerator_supported_profiles =
         content::GpuVideoEncodeAccelerator::GetSupportedProfiles();
+    gpu_info.jpeg_decode_accelerator_supported =
+        content::GpuJpegDecodeAccelerator::IsSupported();
   } else {
     dead_on_arrival = true;
   }

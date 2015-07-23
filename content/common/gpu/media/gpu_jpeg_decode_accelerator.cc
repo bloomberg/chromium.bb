@@ -327,8 +327,8 @@ void GpuJpegDecodeAccelerator::AddClient(int32 route_id,
                                          IPC::Message* reply_msg) {
   DCHECK(CalledOnValidThread());
 
-  // When adding more platforms, VideoCaptureGpuJpegDecoder::Supported need
-  // update as well.
+  // When adding non-chromeos platforms, VideoCaptureGpuJpegDecoder::Initialize
+  // needs to be updated.
 
   // This list is ordered by priority of use.
   const GpuJpegDecodeAccelerator::CreateJDAFp create_jda_fps[] = {
@@ -340,7 +340,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32 route_id,
   scoped_ptr<media::JpegDecodeAccelerator> accelerator;
   for (const auto& create_jda_function : create_jda_fps) {
     scoped_ptr<media::JpegDecodeAccelerator> tmp_accelerator =
-        (this->*create_jda_function)();
+        (*create_jda_function)(io_task_runner_);
     if (tmp_accelerator && tmp_accelerator->Initialize(client.get())) {
       accelerator = tmp_accelerator.Pass();
       break;
@@ -397,25 +397,44 @@ bool GpuJpegDecodeAccelerator::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+// static
 scoped_ptr<media::JpegDecodeAccelerator>
-GpuJpegDecodeAccelerator::CreateV4L2JDA() {
+GpuJpegDecodeAccelerator::CreateV4L2JDA(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
   scoped_ptr<media::JpegDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(
       V4L2Device::kJpegDecoder);
   if (device)
-    decoder.reset(new V4L2JpegDecodeAccelerator(device, io_task_runner_));
+    decoder.reset(new V4L2JpegDecodeAccelerator(device, io_task_runner));
 #endif
   return decoder.Pass();
 }
 
+// static
 scoped_ptr<media::JpegDecodeAccelerator>
-GpuJpegDecodeAccelerator::CreateVaapiJDA() {
+GpuJpegDecodeAccelerator::CreateVaapiJDA(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
   scoped_ptr<media::JpegDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  decoder.reset(new VaapiJpegDecodeAccelerator(io_task_runner_));
+  decoder.reset(new VaapiJpegDecodeAccelerator(io_task_runner));
 #endif
   return decoder.Pass();
+}
+
+// static
+bool GpuJpegDecodeAccelerator::IsSupported() {
+  const GpuJpegDecodeAccelerator::CreateJDAFp create_jda_fps[] = {
+      &GpuJpegDecodeAccelerator::CreateV4L2JDA,
+      &GpuJpegDecodeAccelerator::CreateVaapiJDA,
+  };
+  for (const auto& create_jda_function : create_jda_fps) {
+    scoped_ptr<media::JpegDecodeAccelerator> accelerator =
+        (*create_jda_function)(base::ThreadTaskRunnerHandle::Get());
+    if (accelerator && accelerator->IsSupported())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content

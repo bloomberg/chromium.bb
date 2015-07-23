@@ -36,14 +36,18 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       public base::NonThreadSafe,
       public base::SupportsWeakPtr<VideoCaptureGpuJpegDecoder> {
  public:
+  // Enumeration of Initialize status.
+  enum Status {
+    INIT_PENDING,  // Default value while waiting initialization finished.
+    INIT_FAILED,   // JPEG decode is not supported or initialization failed.
+    INIT_PASSED,   // Initialization succeed.
+  };
+
   typedef base::Callback<void(
       scoped_ptr<media::VideoCaptureDevice::Client::Buffer>,
       const scoped_refptr<media::VideoFrame>&,
       const base::TimeTicks&)> DecodeDoneCB;
   typedef base::Callback<void(const std::string&)> ErrorCB;
-
-  // Returns true if JPEG hardware decoding is supported on this device.
-  static bool Supported();
 
   // |decode_done_cb| is called on the IO thread when decode succeed.
   // |error_cb| is called when error. This can be on any thread.
@@ -56,9 +60,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // Creates and intializes decoder asynchronously.
   void Initialize();
 
-  // Returns true if Initialize is done and it's okay to call
-  // DecodeCapturedData.
-  bool ReadyToDecode();
+  // Returns initialization status.
+  Status GetStatus();
 
   // Decodes a JPEG picture.
   void DecodeCapturedData(
@@ -115,6 +118,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // Shared memory to store JPEG stream buffer. The input BitstreamBuffer is
   // backed by this.
   scoped_ptr<base::SharedMemory> in_shared_memory_;
+
+  Status init_status_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureGpuJpegDecoder);
 };

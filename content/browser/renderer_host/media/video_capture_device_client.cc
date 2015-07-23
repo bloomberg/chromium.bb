@@ -229,8 +229,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
           VideoCaptureFormat::PixelFormatToString(frame_format.pixel_format));
     last_captured_pixel_format_ = frame_format.pixel_format;
 
-    if (frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
-        VideoCaptureGpuJpegDecoder::Supported()) {
+    if (frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG) {
       if (!external_jpeg_decoder_initialized_) {
         external_jpeg_decoder_initialized_ = true;
         // base::Unretained is safe because |this| outlives
@@ -361,12 +360,18 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
 
-  if (external_jpeg_decoder_ &&
-      frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
-      rotation == 0 && !flip && external_jpeg_decoder_->ReadyToDecode()) {
-    external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
-                                               timestamp, buffer.Pass());
-    return;
+  if (external_jpeg_decoder_) {
+    VideoCaptureGpuJpegDecoder::Status status =
+        external_jpeg_decoder_->GetStatus();
+    if (status == VideoCaptureGpuJpegDecoder::INIT_FAILED) {
+      external_jpeg_decoder_.reset();
+    } else if (status == VideoCaptureGpuJpegDecoder::INIT_PASSED &&
+        frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
+        rotation == 0 && !flip) {
+      external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
+                                                 timestamp, buffer.Pass());
+      return;
+    }
   }
 
   if (libyuv::ConvertToI420(data,

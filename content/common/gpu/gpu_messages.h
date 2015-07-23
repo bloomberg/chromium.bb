@@ -218,6 +218,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
 #endif
   IPC_STRUCT_TRAITS_MEMBER(video_decode_accelerator_supported_profiles)
   IPC_STRUCT_TRAITS_MEMBER(video_encode_accelerator_supported_profiles)
+  IPC_STRUCT_TRAITS_MEMBER(jpeg_decode_accelerator_supported)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats::ProcessStats)

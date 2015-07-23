@@ -21,6 +21,7 @@
 #include "content/common/gpu/media/va_surface.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libva/va/va.h"
@@ -67,13 +68,16 @@ class CONTENT_EXPORT VaapiWrapper {
       media::VideoCodecProfile profile,
       const base::Closure& report_error_to_uma_cb);
 
-  // Return the supported encode profiles.
+  // Return the supported video encode profiles.
   static media::VideoEncodeAccelerator::SupportedProfiles
       GetSupportedEncodeProfiles();
 
-  // Return the supported decode profiles.
+  // Return the supported video decode profiles.
   static media::VideoDecodeAccelerator::SupportedProfiles
       GetSupportedDecodeProfiles();
+
+  // Return true when JPEG decode is supported.
+  static bool IsJpegDecodeSupported();
 
   ~VaapiWrapper();
 

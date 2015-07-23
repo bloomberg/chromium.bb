@@ -169,6 +169,18 @@ void V4L2JpegDecodeAccelerator::Decode(
                             base::Unretained(this), base::Passed(&job_record)));
 }
 
+bool V4L2JpegDecodeAccelerator::IsSupported() {
+  v4l2_fmtdesc fmtdesc;
+  memset(&fmtdesc, 0, sizeof(fmtdesc));
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+
+  for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
+    if (fmtdesc.pixelformat == V4L2_PIX_FMT_JPEG)
+      return true;
+  }
+  return false;
+}
+
 void V4L2JpegDecodeAccelerator::DecodeTask(scoped_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   job_record->shm.reset(

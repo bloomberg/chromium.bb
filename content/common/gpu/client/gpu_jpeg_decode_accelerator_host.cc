@@ -181,6 +181,10 @@ void GpuJpegDecodeAcceleratorHost::Decode(
   Send(new AcceleratedJpegDecoderMsg_Decode(decoder_route_id_, decode_params));
 }
 
+bool GpuJpegDecodeAcceleratorHost::IsSupported() {
+  return channel_->gpu_info().jpeg_decode_accelerator_supported;
+}
+
 void GpuJpegDecodeAcceleratorHost::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
 

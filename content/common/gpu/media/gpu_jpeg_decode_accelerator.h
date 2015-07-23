@@ -40,17 +40,23 @@ class GpuJpegDecodeAccelerator
   // Function to delegate sending to actual sender.
   bool Send(IPC::Message* message) override;
 
+  // Static query for JPEG supported. This query calls the appropriate
+  // platform-specific version.
+  static bool IsSupported();
+
  private:
-  using CreateJDAFp = scoped_ptr<media::JpegDecodeAccelerator> (
-      GpuJpegDecodeAccelerator::*)();
+  using CreateJDAFp = scoped_ptr<media::JpegDecodeAccelerator> (*)(
+          const scoped_refptr<base::SingleThreadTaskRunner>&);
 
   class Client;
   class MessageFilter;
 
   void ClientRemoved();
 
-  scoped_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA();
-  scoped_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA();
+  static scoped_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+  static scoped_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuJpegDecodeAccelerator that they own when

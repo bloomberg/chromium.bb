@@ -108,6 +108,10 @@ class MEDIA_EXPORT JpegDecodeAccelerator {
   //  |bitstream_buffer|, or destructor returns.
   virtual void Decode(const BitstreamBuffer& bitstream_buffer,
                       const scoped_refptr<media::VideoFrame>& video_frame) = 0;
+
+  // Returns true when the JPEG decoder is supported. This can be called before
+  // Initialize().
+  virtual bool IsSupported() = 0;
 };
 
 }  // namespace media

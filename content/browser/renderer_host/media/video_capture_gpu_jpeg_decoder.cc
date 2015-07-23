@@ -19,28 +19,14 @@
 
 namespace content {
 
-// static
-bool VideoCaptureGpuJpegDecoder::Supported() {
-  // A lightweight check for caller to avoid IPC latency for known unsupported
-  // platform. Initialize() can do the real platform supporting check but it
-  // requires an IPC even for platforms that do not support HW decoder.
-  // TODO(kcwu): move this information to GpuInfo. https://crbug.com/503568
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAcceleratedMjpegDecode)) {
-    return true;
-  }
-#endif
-  return false;
-}
-
 VideoCaptureGpuJpegDecoder::VideoCaptureGpuJpegDecoder(
     const DecodeDoneCB& decode_done_cb,
     const ErrorCB& error_cb)
     : decode_done_cb_(decode_done_cb),
       error_cb_(error_cb),
       next_bitstream_buffer_id_(0),
-      in_buffer_id_(media::JpegDecodeAccelerator::kInvalidBitstreamBufferId) {
+      in_buffer_id_(media::JpegDecodeAccelerator::kInvalidBitstreamBufferId),
+      init_status_(INIT_PENDING) {
 }
 
 VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
@@ -63,16 +49,29 @@ bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() {
 void VideoCaptureGpuJpegDecoder::Initialize() {
   DCHECK(CalledOnValidThread());
 
+  // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
+  // gpu channel to introduce overhead.
+#if !defined(OS_CHROMEOS)
+  init_status_ = INIT_FAILED;
+  return;
+#else
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAcceleratedMjpegDecode)) {
+    init_status_ = INIT_FAILED;
+    return;
+  }
+
   const scoped_refptr<base::SingleThreadTaskRunner> current_task_runner(
       base::ThreadTaskRunnerHandle::Get());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&EstablishGpuChannelOnUIThread,
                                      current_task_runner, AsWeakPtr()));
+#endif
 }
 
-bool VideoCaptureGpuJpegDecoder::ReadyToDecode() {
+VideoCaptureGpuJpegDecoder::Status VideoCaptureGpuJpegDecoder::GetStatus() {
   DCHECK(CalledOnValidThread());
-  return decoder_;
+  return init_status_;
 }
 
 // static
@@ -106,11 +105,15 @@ void VideoCaptureGpuJpegDecoder::InitializeDone(
   DCHECK(CalledOnValidThread());
   if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
+    init_status_ = INIT_FAILED;
     return;
   }
-  gpu_channel_host_ = gpu_channel_host.Pass();
 
-  decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
+  if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
+    gpu_channel_host_ = gpu_channel_host.Pass();
+    decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
+  }
+  init_status_ = decoder_ ? INIT_PASSED : INIT_FAILED;
 }
 
 void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {
