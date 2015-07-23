@@ -52,6 +52,15 @@ namespace blink {
 
 using namespace HTMLNames;
 
+#if ENABLE(ASSERT)
+static bool canBeAnchorNode(Node* node)
+{
+    if (!node || node->isFirstLetterPseudoElement())
+        return true;
+    return !node->isPseudoElement();
+}
+#endif
+
 static Node* nextRenderedEditable(Node* node)
 {
     for (node = nextAtomicLeafNode(*node); node; node = nextAtomicLeafNode(*node)) {
@@ -88,14 +97,36 @@ const TreeScope* PositionAlgorithm<Strategy>::commonAncestorTreeScope(const Posi
     return a.containerNode()->treeScope().commonAncestorTreeScope(b.containerNode()->treeScope());
 }
 
+
 template <typename Strategy>
-PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
-    : m_anchorNode(anchorNode)
-    , m_offset(offset.value())
-    , m_anchorType(anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset))
-    , m_isLegacyEditingPosition(true)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset)
 {
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
+    if (!anchorNode || anchorNode->isTextNode())
+        return PositionAlgorithm<Strategy>(anchorNode, offset);
+
+    switch (anchorTypeForLegacyEditingPosition(anchorNode.get(), offset)) {
+    case PositionAnchorType::OffsetInAnchor:
+        return PositionAlgorithm<Strategy>(anchorNode, offset);
+    case PositionAnchorType::BeforeAnchor:
+        ASSERT(!offset);
+        return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
+    case PositionAnchorType::AfterAnchor: {
+        PositionAlgorithm<Strategy> position(anchorNode, PositionAnchorType::AfterAnchor);
+        // TODO(yosin) This is the source of unexpected behavior of legacy
+        // editing position, we need to further analysis why we need to set
+        // offset.
+        ASSERT(offset > 0);
+        position.m_offset = offset;
+        position.m_isLegacyEditingPosition = true;
+        return position;
+    }
+    case PositionAnchorType::BeforeChildren:
+    case PositionAnchorType::AfterChildren:
+        ASSERT_NOT_REACHED();
+        return PositionAlgorithm<Strategy>();
+    }
+    ASSERT_NOT_REACHED();
+    return PositionAlgorithm<Strategy>();
 }
 
 template <typename Strategy>
@@ -105,7 +136,15 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
+    if (!m_anchorNode) {
+        m_anchorType = PositionAnchorType::OffsetInAnchor;
+        return;
+    }
+    if (m_anchorNode->isTextNode()) {
+        ASSERT(m_anchorType == PositionAnchorType::BeforeAnchor || m_anchorType == PositionAnchorType::AfterAnchor);
+        return;
+    }
+    ASSERT(canBeAnchorNode(m_anchorNode.get()));
     ASSERT(m_anchorType != PositionAnchorType::OffsetInAnchor);
 }
 
@@ -116,7 +155,7 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
     , m_anchorType(PositionAnchorType::OffsetInAnchor)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
+    ASSERT(canBeAnchorNode(m_anchorNode.get()));
 }
 
 template <typename Strategy>
@@ -137,16 +176,21 @@ void PositionAlgorithm<Strategy>::moveToPosition(PassRefPtrWillBeRawPtr<Node> no
     ASSERT(anchorType() == PositionAnchorType::OffsetInAnchor || m_isLegacyEditingPosition);
     m_anchorNode = node;
     m_offset = offset;
-    if (m_isLegacyEditingPosition)
-        m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
+    if (!m_isLegacyEditingPosition)
+        return;
+    m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
+    m_isLegacyEditingPosition = m_anchorType == PositionAnchorType::AfterAnchor;
 }
+
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::moveToOffset(int offset)
 {
     ASSERT(anchorType() == PositionAnchorType::OffsetInAnchor || m_isLegacyEditingPosition);
     m_offset = offset;
-    if (m_isLegacyEditingPosition)
-        m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
+    if (!m_isLegacyEditingPosition)
+        return;
+    m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
+    m_isLegacyEditingPosition = m_anchorType == PositionAnchorType::AfterAnchor;
 }
 
 template <typename Strategy>
@@ -343,6 +387,7 @@ Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionAlgorit
 template <typename Strategy>
 PositionAnchorType PositionAlgorithm<Strategy>::anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset)
 {
+    ASSERT(!anchorNode || !anchorNode->isTextNode());
     if (anchorNode && Strategy::editingIgnoresContent(anchorNode)) {
         if (offset == 0)
             return PositionAnchorType::BeforeAnchor;

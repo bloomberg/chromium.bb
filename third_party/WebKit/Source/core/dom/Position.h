@@ -88,21 +88,8 @@ public:
     {
     }
 
-    // For creating legacy editing positions: (Anchor type will be determined from editingIgnoresContent(node))
-    class LegacyEditingOffset {
-    public:
-        int value() const { return m_offset; }
-
-        explicit LegacyEditingOffset(int offset) : m_offset(offset) { }
-
-    private:
-        int m_offset;
-    };
-
     static const TreeScope* commonAncestorTreeScope(const PositionAlgorithm<Strategy>&, const PositionAlgorithm<Strategy>& b);
     static PositionAlgorithm<Strategy> createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
-
-    PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
 
     // For creating before/after positions:
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, PositionAnchorType);
@@ -276,12 +263,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
-
-template <typename Strategy>
-PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
-{
-    return PositionAlgorithm<Strategy>(node, PositionAlgorithm::LegacyEditingOffset(offset));
-}
 
 inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
