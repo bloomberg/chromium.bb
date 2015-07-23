@@ -15,6 +15,7 @@
 
 namespace leveldb {
 class DB;
+class Env;
 struct Options;
 }  // namespace leveldb
 
@@ -37,6 +38,10 @@ class LevelDB {
 
  private:
   DFAKE_MUTEX(thread_checker_);
+
+  // The declaration order of these members matters: |db_| depends on |env_| and
+  // therefore has to be destructed first.
+  scoped_ptr<leveldb::Env> env_;
   scoped_ptr<leveldb::DB> db_;
 };
 

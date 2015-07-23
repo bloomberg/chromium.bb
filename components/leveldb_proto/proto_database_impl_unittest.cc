@@ -412,4 +412,25 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   EXPECT_FALSE(db->Save(save_entries, remove_keys));
 }
 
+TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
+  scoped_ptr<LevelDB> db(new LevelDB());
+
+  std::vector<std::string> load_entries;
+
+  ASSERT_TRUE(db->Init(base::FilePath()));
+
+  ASSERT_TRUE(db->Load(&load_entries));
+  EXPECT_EQ(0u, load_entries.size());
+
+  KeyValueVector save_entries(1, std::make_pair("foo", "bar"));
+  KeyVector remove_keys;
+
+  ASSERT_TRUE(db->Save(save_entries, remove_keys));
+
+  std::vector<std::string> second_load_entries;
+
+  ASSERT_TRUE(db->Load(&second_load_entries));
+  EXPECT_EQ(1u, second_load_entries.size());
+}
+
 }  // namespace leveldb_proto
