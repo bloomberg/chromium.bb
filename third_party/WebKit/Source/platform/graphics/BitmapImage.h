@@ -61,7 +61,6 @@ public:
     ~BitmapImage() override;
 
     bool isBitmapImage() const override;
-    bool isLazyDecodedBitmap() override;
 
     bool currentFrameHasSingleSecurityOrigin() const override;
 
@@ -90,6 +89,8 @@ public:
     PassRefPtr<Image> imageForDefaultFrame() override;
     bool currentFrameKnownToBeOpaque() override;
     bool currentFrameIsComplete() override;
+    bool currentFrameIsLazyDecoded() override;
+
     ImageOrientation currentFrameOrientation();
 
 private:
@@ -118,6 +119,7 @@ private:
     float frameDurationAtIndex(size_t);
     bool frameHasAlphaAtIndex(size_t);
     ImageOrientation frameOrientationAtIndex(size_t);
+    bool frameIsLazyDecodedAtIndex(size_t) const;
 
     // Decodes and caches a frame. Never accessed except internally.
     void cacheFrame(size_t index);

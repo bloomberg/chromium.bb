@@ -34,13 +34,6 @@
 
 namespace blink {
 
-namespace {
-
-// URI label for SkDiscardablePixelRef.
-const char labelDiscardable[] = "discardable";
-
-} // namespace
-
 bool DeferredImageDecoder::s_enabled = true;
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
@@ -65,13 +58,6 @@ PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer
 PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> decoder)
 {
     return adoptPtr(new DeferredImageDecoder(decoder));
-}
-
-bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
-{
-    return bitmap.pixelRef()
-        && bitmap.pixelRef()->getURI()
-        && !memcmp(bitmap.pixelRef()->getURI(), labelDiscardable, sizeof(labelDiscardable));
 }
 
 void DeferredImageDecoder::setEnabled(bool enabled)
@@ -193,6 +179,13 @@ bool DeferredImageDecoder::frameIsCompleteAtIndex(size_t index) const
     return false;
 }
 
+bool DeferredImageDecoder::frameIsCachedAndLazyDecodedAtIndex(size_t index) const
+{
+    // All frames cached in m_frameData are lazy-decoded.
+    ASSERT(index >= m_frameData.size() || m_frameData[index].m_haveMetadata);
+    return index < m_frameData.size();
+}
+
 float DeferredImageDecoder::frameDurationAtIndex(size_t index) const
 {
     if (m_actualDecoder)
@@ -287,7 +280,6 @@ SkBitmap DeferredImageDecoder::createBitmap(size_t index)
     DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, info, index);
     bool installed = SkInstallDiscardablePixelRef(generator, &bitmap);
     ASSERT_UNUSED(installed, installed);
-    bitmap.pixelRef()->setURI(labelDiscardable);
     generator->setGenerationId(bitmap.getGenerationID());
     return bitmap;
 }

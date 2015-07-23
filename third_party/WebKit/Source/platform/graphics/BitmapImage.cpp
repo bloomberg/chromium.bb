@@ -179,6 +179,7 @@ void BitmapImage::cacheFrame(size_t index)
     if (repetitionCount(false) != cAnimationNone)
         m_frames[index].m_duration = m_source.frameDurationAtIndex(index);
     m_frames[index].m_hasAlpha = m_source.frameHasAlphaAtIndex(index);
+    m_frames[index].m_isLazyDecoded = m_source.frameIsLazyDecodedAtIndex(index);
     m_frames[index].m_frameBytes = m_source.frameBytesAtIndex(index);
 
     const IntSize frameSize(index ? m_source.frameSizeAtIndex(index) : m_size);
@@ -272,14 +273,6 @@ String BitmapImage::filenameExtension() const
     return m_source.filenameExtension();
 }
 
-bool BitmapImage::isLazyDecodedBitmap()
-{
-    SkBitmap bitmap;
-    if (!deprecatedBitmapForCurrentFrame(&bitmap))
-        return false;
-    return DeferredImageDecoder::isLazyDecoded(bitmap);
-}
-
 void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum shouldRespectImageOrientation, ImageClampingMode clampMode)
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
@@ -322,7 +315,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     canvas->drawBitmapRect(bitmap, &skSrcRect, adjustedDstRect, &paint, constraint);
     canvas->restoreToCount(initialSaveCount);
 
-    if (DeferredImageDecoder::isLazyDecoded(bitmap))
+    if (currentFrameIsLazyDecoded())
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
 
     if (ImageObserver* observer = imageObserver())
@@ -425,6 +418,11 @@ bool BitmapImage::currentFrameIsComplete()
     return frameIsCompleteAtIndex(currentFrame());
 }
 
+bool BitmapImage::currentFrameIsLazyDecoded()
+{
+    return ensureFrameIsCached(currentFrame()) && frameIsLazyDecodedAtIndex(currentFrame());
+}
+
 ImageOrientation BitmapImage::currentFrameOrientation()
 {
     return frameOrientationAtIndex(currentFrame());
@@ -439,6 +437,17 @@ ImageOrientation BitmapImage::frameOrientationAtIndex(size_t index)
         return m_frames[index].m_orientation;
 
     return m_source.orientationAtIndex(index);
+}
+
+bool BitmapImage::frameIsLazyDecodedAtIndex(size_t index) const
+{
+    if (m_frames.size() <= index)
+        return false;
+
+    if (m_frames[index].m_haveMetadata)
+        return m_frames[index].m_isLazyDecoded;
+
+    return m_source.frameIsLazyDecodedAtIndex(index);
 }
 
 int BitmapImage::repetitionCount(bool imageKnownToBeComplete)

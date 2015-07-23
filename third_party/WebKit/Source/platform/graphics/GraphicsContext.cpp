@@ -901,7 +901,7 @@ SkFilterQuality GraphicsContext::computeFilterQuality(Image* image, const FloatR
     InterpolationQuality resampling;
     if (printing()) {
         resampling = InterpolationNone;
-    } else if (image->isLazyDecodedBitmap()) {
+    } else if (image->currentFrameIsLazyDecoded()) {
         resampling = InterpolationHigh;
     } else {
         SkRect destRectTarget = dest;

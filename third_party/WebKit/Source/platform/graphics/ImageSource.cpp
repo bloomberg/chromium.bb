@@ -143,6 +143,11 @@ bool ImageSource::frameIsCompleteAtIndex(size_t index) const
     return m_decoder && m_decoder->frameIsCompleteAtIndex(index);
 }
 
+bool ImageSource::frameIsLazyDecodedAtIndex(size_t index) const
+{
+    return m_decoder && m_decoder->frameIsCachedAndLazyDecodedAtIndex(index);
+}
+
 size_t ImageSource::frameBytesAtIndex(size_t index) const
 {
     return m_decoder ? m_decoder->frameBytesAtIndex(index) : 0;

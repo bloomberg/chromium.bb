@@ -87,6 +87,7 @@ public:
     float frameDurationAtIndex(size_t) const;
     bool frameHasAlphaAtIndex(size_t) const; // Whether or not the frame actually used any alpha.
     bool frameIsCompleteAtIndex(size_t) const; // Whether or not the frame is fully received.
+    bool frameIsLazyDecodedAtIndex(size_t) const; // Whether or not the frame is lazy-decoded.
     ImageOrientation orientationAtIndex(size_t) const; // EXIF image orientation
 
     // Returns the number of bytes in the decoded frame. May return 0 if the

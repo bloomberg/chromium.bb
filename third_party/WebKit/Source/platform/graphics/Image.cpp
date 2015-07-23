@@ -253,7 +253,7 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
         context->drawRect(destRect, paint);
     }
 
-    if (DeferredImageDecoder::isLazyDecoded(bitmap))
+    if (currentFrameIsLazyDecoded())
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
 }
 

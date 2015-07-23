@@ -71,9 +71,9 @@ public:
 
     virtual bool isSVGImage() const { return false; }
     virtual bool isBitmapImage() const { return false; }
-    virtual bool isLazyDecodedBitmap() { return false; }
     virtual bool currentFrameKnownToBeOpaque() = 0;
     virtual bool currentFrameIsComplete() { return false; }
+    virtual bool currentFrameIsLazyDecoded() { return false; }
 
     // Derived classes should override this if they can assure that the current
     // image frame contains only resources from its own security origin.

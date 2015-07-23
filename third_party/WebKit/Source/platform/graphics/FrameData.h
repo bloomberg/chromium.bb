@@ -52,6 +52,7 @@ public:
     bool m_haveMetadata : 1;
     bool m_isComplete : 1;
     bool m_hasAlpha : 1;
+    bool m_isLazyDecoded : 1;
     size_t m_frameBytes;
 };
 
