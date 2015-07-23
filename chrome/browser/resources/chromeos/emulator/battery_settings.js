@@ -7,20 +7,6 @@ var BatterySettings = Polymer({
 
   properties: {
     /**
-     * The title for the settings section.
-     */
-    title: {
-      type: String,
-    },
-
-    /**
-     * Whether or not a battery is present in the device.
-     */
-    batteryPresent: {
-      type: Boolean,
-    },
-
-    /**
      * The system's battery percentage.
      */
     batteryPercent: {
@@ -28,11 +14,22 @@ var BatterySettings = Polymer({
     },
 
     /**
-     * An integer representing the value of an
+     * A string representing the value of an
      * PowerSupplyProperties_ExternalPower enumeration.
      */
     externalPower: {
-      type: Number,
+      type: String,
+    },
+
+    /**
+      * An array representing the external power options.
+      * The names are ordered based on the
+      * PowerSupplyProperties_ExternalPower enumeration. These values must be
+      * in sync.
+      */
+    externalPowerOptions: {
+      type: Array,
+      value: function() { return ['AC', 'USB (Low Power)', 'Disconnected']; }
     },
 
     /**
@@ -50,34 +47,26 @@ var BatterySettings = Polymer({
     },
 
     /**
-     * A set of options for the power supply radio group. Populated via WebUI.
-     * @type !Array<! { type: string, value: number }>
+     * The title for the settings section.
      */
-    externalPowerOptions: {
-      type: Array,
-      value: function() { return []; }
-    }
+    title: {
+      type: String,
+    },
   },
 
   ready: function() {
-    this.title = 'Battery/Power Settings';
+    this.title = 'Power Settings';
   },
 
   observers: [
     'batteryPercentChanged(batteryPercent)',
     'externalPowerChanged(externalPower)',
+    'timeUntilEmptyChanged(timeUntilEmpty)',
+    'timeUntilFullChanged(timeUntilFull)',
   ],
 
   batteryPercentChanged: function(percent) {
     chrome.send('updateBatteryPercent', [parseInt(percent)]);
-  },
-
-  setBatteryPercent: function(percent) {
-    this.batteryPercent = percent;
-  },
-
-  setExternalPowerOptions: function(options) {
-    this.externalPowerOptions = options;
   },
 
   externalPowerChanged: function(source) {
@@ -85,7 +74,7 @@ var BatterySettings = Polymer({
 
     // Find the index of the selected power source.
     for (var i = 0; i < this.externalPowerOptions.length; i++) {
-      if (this.externalPowerOptions[i].text == source) {
+      if (this.externalPowerOptions[i] == source) {
         index = i;
         break;
       }
@@ -93,5 +82,20 @@ var BatterySettings = Polymer({
 
     if (index >= 0)
       chrome.send('updateExternalPower', [index]);
+  },
+
+  timeUntilEmptyChanged: function(time) {
+    chrome.send('updateTimeToEmpty', [parseInt(time)]);
+  },
+
+  timeUntilFullChanged: function(time) {
+    chrome.send('updateTimeToFull', [parseInt(time)]);
+  },
+
+  updatePowerProperties: function(percent, external_power, empty, full) {
+    this.batteryPercent = percent;
+    this.externalPower = this.externalPowerOptions[external_power];
+    this.timeUntilEmpty = empty;
+    this.timeUntilFull = full;
   }
 });

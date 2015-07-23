@@ -9,8 +9,7 @@ cr.define('device_emulator', function() {
 
   function initialize() {
     batterySettings = $('battery-settings');
-    chrome.send('requestBatteryInfo');
-    chrome.send('requestExternalPowerOptions');
+    chrome.send('requestPowerInfo');
 
     document.querySelector('.menu-item-toggle')
         .addEventListener('click', function(e) {

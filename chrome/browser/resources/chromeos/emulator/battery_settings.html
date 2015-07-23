@@ -17,6 +17,7 @@
               <span class="form-label">Battery Present</span>
               <paper-toggle-button checked="{{batteryPresent}}"
                   id="battery-present-checkbox" type="checkbox">
+              </paper-toggle-button>
             </label>
           </p>
         </div>
@@ -27,6 +28,7 @@
               <span class="form-label">Battery Percentage</span>
               <paper-input value="{{batteryPercent}}"
                   id="battery-percent-text" type="number" min="0" max="100">
+              </paper-input>
             </label>
           </p>
         </div>
@@ -39,7 +41,7 @@
                   id="external-power-radio-group">
                 <template is="dom-repeat" items="{{externalPowerOptions}}">
                   <paper-radio-button
-                      name="{{item.text}}">{{item.text}}</paper-radio-button>
+                      name="{{item}}">{{item}}</paper-radio-button>
                 </template>
               </paper-radio-group>
             </label>
@@ -51,7 +53,8 @@
             <label>
               <span class="form-label">Time Until Battery Empty</span>
               <paper-input value="{{timeUntilEmpty}}"
-               id="time-until-empty-text">
+                   id="time-until-empty-text">
+             </paper-input>
             </label>
           </p>
 
@@ -59,6 +62,7 @@
             <label>
               <span class="form-label">Time Until Battery Full</span>
               <paper-input value="{{timeUntilFull}}" id="time-until-full-text">
+              </paper-input>
             </label>
           </p>
         </div>

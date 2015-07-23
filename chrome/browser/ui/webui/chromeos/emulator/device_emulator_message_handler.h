@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_EMULATOR_DEVICE_EMULATOR_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_EMULATOR_DEVICE_EMULATOR_MESSAGE_HANDLER_H_
 
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -22,24 +21,16 @@ class DeviceEmulatorMessageHandler
   DeviceEmulatorMessageHandler();
   ~DeviceEmulatorMessageHandler() override;
 
+  // Callbacks for JS request methods. All these methods work
+  // asynchronously.
+  void RequestPowerInfo(const base::ListValue* args);
 
-  // Callback for the "requestBatteryInfo" message. This asynchronously
-  // requests the emulator's battery percentage.
-  void HandleRequestBatteryInfo(const base::ListValue* args);
-
-  // Callback for the "requestExternalPowerOptions" message. This asynchronously
-  // requests the options which can be selected for the emulator's power source.
-  void HandleRequestExternalPowerOptions(const base::ListValue* args);
-
-  // Callback for the "updateBatteryPercent" message. This asynchronously
-  // updates the emulator's battery percentage to a given percentage
-  // contained in args.
-  void HandleUpdateBatteryPercent(const base::ListValue* args);
-
-  // Callback for the "updateExternalPower" message. This asynchronously
-  // updates the emulator's power source based on the given parameter
-  // in args.
-  void HandleUpdateExternalPower(const base::ListValue* args);
+  // Callbacks for JS update methods. All these methods work
+  // asynchronously.
+  void UpdateBatteryPercent(const base::ListValue* args);
+  void UpdateExternalPower(const base::ListValue* args);
+  void UpdateTimeToEmpty(const base::ListValue* args);
+  void UpdateTimeToFull(const base::ListValue* args);
 
   // Adds |this| as an observer to all necessary objects.
   void Init();
@@ -51,7 +42,7 @@ class DeviceEmulatorMessageHandler
   void RegisterMessages() override;
 
  private:
-  void CallBatteryPercentCallback(int percent);
+  chromeos::FakePowerManagerClient* fake_power_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEmulatorMessageHandler);
 };
