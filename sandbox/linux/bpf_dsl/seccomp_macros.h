@@ -5,12 +5,11 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_SECCOMP_MACROS_H_
 #define SANDBOX_LINUX_BPF_DSL_SECCOMP_MACROS_H_
 
-#include <sys/cdefs.h>
+#include <sys/types.h>  // For __BIONIC__.
 // Old Bionic versions do not have sys/user.h.  The if can be removed once we no
 // longer need to support these old Bionic versions.
 // All x86_64 builds use a new enough bionic to have sys/user.h.
 #if !defined(__BIONIC__) || defined(__x86_64__)
-#include <sys/types.h>  // Fix for gcc 4.7, make sure __uint16_t is defined.
 #if !defined(__native_client_nonsfi__)
 #include <sys/user.h>
 #endif

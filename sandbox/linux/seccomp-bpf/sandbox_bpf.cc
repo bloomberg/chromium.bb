@@ -4,12 +4,6 @@
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
-// Some headers on Android are missing cdefs: crbug.com/172337.
-// (We can't use OS_ANDROID here since build_config.h is not included).
-#if defined(ANDROID)
-#include <sys/cdefs.h>
-#endif
-
 #include <errno.h>
 #include <sys/prctl.h>
 #include <sys/types.h>
