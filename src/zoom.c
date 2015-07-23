@@ -69,8 +69,8 @@ weston_zoom_pick_seat(struct weston_compositor *compositor)
 }
 
 static void
-zoom_area_center_from_pointer(struct weston_output *output,
-				wl_fixed_t *x, wl_fixed_t *y)
+zoom_area_center_from_point(struct weston_output *output,
+			    wl_fixed_t *x, wl_fixed_t *y)
 {
 	float level = output->zoom.spring_z.current;
 	wl_fixed_t offset_x = wl_fixed_from_int(output->x);
@@ -96,7 +96,7 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	    level == 0.0f)
 		return;
 
-	zoom_area_center_from_pointer(output, &x, &y);
+	zoom_area_center_from_point(output, &x, &y);
 
 	global_x = wl_fixed_to_double(x);
 	global_y = wl_fixed_to_double(y);
