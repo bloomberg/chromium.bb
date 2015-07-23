@@ -206,7 +206,7 @@ MainWindowComponent.prototype.onToggleViewButtonClick_ = function(event) {
   this.ui_.setCurrentListType(listType);
   this.appStateController_.saveViewOptions();
 
-  this.ui_.toggleViewButton.blur();
+  this.ui_.listContainer.focus();
 };
 
 /**

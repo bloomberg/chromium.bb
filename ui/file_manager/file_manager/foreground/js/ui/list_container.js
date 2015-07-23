@@ -265,6 +265,23 @@ ListContainer.prototype.findListItemForNode = function(node) {
 };
 
 /**
+ * Focuses the active file list in the list container.
+ */
+ListContainer.prototype.focus = function() {
+  switch (this.currentListType) {
+    case ListContainer.ListType.DETAIL:
+      this.table.list.focus();
+      break;
+    case ListContainer.ListType.THUMBNAIL:
+      this.grid.focus();
+      break;
+    default:
+      assertNotReached();
+      break;
+  }
+};
+
+/**
  * KeyDown event handler for the div#list-container element.
  * @param {!Event} event Key event.
  * @private
