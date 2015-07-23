@@ -109,6 +109,18 @@ cr.define('options', function() {
      */
     initializationComplete_: false,
 
+    /**
+     * Current status of "Resolve Timezone by Geolocation" checkbox.
+     * @private {boolean}
+     */
+    resolveTimezoneByGeolocation_: false,
+
+    /**
+     * True if system timezone is managed by policy.
+     * @private {boolean}
+     */
+    systemTimezoneIsManaged_: false,
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -407,9 +419,12 @@ cr.define('options', function() {
         // Timezone
         if (loadTimeData.getBoolean('enableTimeZoneTrackingOption')) {
           $('resolve-timezone-by-geolocation-selection').hidden = false;
-          this.setSystemTimezoneManaged_(false);
-          $('timezone-value-select').disabled = loadTimeData.getBoolean(
+          this.resolveTimezoneByGeolocation_ = loadTimeData.getBoolean(
               'resolveTimezoneByGeolocationInitialValue');
+          this.updateTimezoneSectionState_();
+          Preferences.getInstance().addEventListener(
+              'settings.resolve_timezone_by_geolocation',
+              this.onResolveTimezoneByGeolocationChanged_.bind(this));
         }
       }
 
@@ -1652,26 +1667,44 @@ cr.define('options', function() {
     },
 
     /**
+     * This enables or disables dependent settings in timezone section.
+     * @private
+     */
+    updateTimezoneSectionState_: function() {
+      if (this.systemTimezoneIsManaged_) {
+        $('resolve-timezone-by-geolocation-selection').disabled = true;
+        $('resolve-timezone-by-geolocation').onclick = function(event) {};
+      } else {
+        this.enableElementIfPossible_(
+            getRequiredElement('resolve-timezone-by-geolocation-selection'));
+        $('resolve-timezone-by-geolocation').onclick = function(event) {
+          $('timezone-value-select').disabled = event.currentTarget.checked;
+        };
+        $('timezone-value-select').disabled =
+            this.resolveTimezoneByGeolocation_;
+      }
+    },
+
+    /**
      * This is called from chromium code when system timezone "managed" state
      * is changed. Enables or disables dependent settings.
      * @param {boolean} managed Is true when system Timezone is managed by
      *     enterprise policy. False otherwize.
      */
     setSystemTimezoneManaged_: function(managed) {
-      if (loadTimeData.getBoolean('enableTimeZoneTrackingOption')) {
-        if (managed) {
-          $('resolve-timezone-by-geolocation-selection').disabled = true;
-          $('resolve-timezone-by-geolocation').onclick = function(event) {};
-        } else {
-          this.enableElementIfPossible_(
-              getRequiredElement('resolve-timezone-by-geolocation-selection'));
-          $('resolve-timezone-by-geolocation').onclick = function(event) {
-            $('timezone-value-select').disabled = event.currentTarget.checked;
-          };
-          $('timezone-value-select').disabled =
-              $('resolve-timezone-by-geolocation').checked;
-        }
-      }
+      this.systemTimezoneIsManaged_ = managed;
+      this.updateTimezoneSectionState_();
+    },
+
+    /**
+     * This is Preferences event listener, which is called when
+     * kResolveTimezoneByGeolocation preference is changed.
+     * Enables or disables dependent settings.
+     * @param {Event} value New preference state.
+     */
+    onResolveTimezoneByGeolocationChanged_: function(value) {
+      this.resolveTimezoneByGeolocation_ = value.value.value;
+      this.updateTimezoneSectionState_();
     },
 
     /**
