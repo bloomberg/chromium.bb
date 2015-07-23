@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
+#include "core/dom/Fullscreen.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
@@ -42,9 +43,23 @@ namespace blink {
 // LayoutTests/media/media-controls.js.
 static const double timeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
-static bool fullscreenIsSupported(const Document& document)
+static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement)
 {
-    return !document.settings() || document.settings()->fullscreenSupported();
+    // Unconditionally allow the user to exit fullscreen if we are in it
+    // now.  Especially on android, when we might not yet know if
+    // fullscreen is supported, we sometimes guess incorrectly and show
+    // the button earlier, and we don't want to remove it here if the
+    // user chose to enter fullscreen.  crbug.com/500732 .
+    if (mediaElement.isFullscreen())
+        return true;
+
+    if (!mediaElement.hasVideo())
+        return false;
+
+    if (!Fullscreen::fullscreenEnabled(mediaElement.document()))
+        return false;
+
+    return true;
 }
 
 MediaControls::MediaControls(HTMLMediaElement& mediaElement)
@@ -184,13 +199,7 @@ void MediaControls::reset()
 
     refreshClosedCaptionsButtonVisibility();
 
-    // Unconditionally allow the user to exit fullscreen if we are in it
-    // now.  Especially on android, when we might not yet know if
-    // fullscreen is supported, we sometimes guess incorrectly and show
-    // the button earlier, and we don't want to remove it here if the
-    // user chose to enter fullscreen.  crbug.com/500732 .
-    if ((mediaElement().hasVideo() && fullscreenIsSupported(document()))
-        || mediaElement().isFullscreen())
+    if (shouldShowFullscreenButton(mediaElement()))
         m_fullScreenButton->show();
     else
         m_fullScreenButton->hide();

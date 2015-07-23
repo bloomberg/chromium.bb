@@ -1,5 +1,11 @@
 "use strict";
 
+function hasFullscreenButton(element)
+{
+    var size = mediaControlsButtonDimensions(element, "fullscreen-button");
+    return size[0] > 0 && size[1] > 0;
+}
+
 function fullscreen_test(controller)
 {
     async_test(function(t)
@@ -16,8 +22,10 @@ function fullscreen_test(controller)
         // load event fires when both video elements are ready
         window.addEventListener("load", t.step_func(function()
         {
-            // no fullscreen button for a video element with no video track
-            assert_button_hidden(v2);
+            assert_true(hasFullscreenButton(v1),
+                        "fullscreen button shown when there is a video track");
+            assert_false(hasFullscreenButton(v2),
+                         "fullscreen button not shown when there is no video track");
 
             // click the fullscreen button
             var coords = mediaControlsButtonCoordinates(v1, "fullscreen-button");
@@ -27,14 +35,26 @@ function fullscreen_test(controller)
             // wait for the fullscreenchange event
         }));
 
-        v1.addEventListener("webkitfullscreenchange", t.step_func(function()
-        {
-            t.done();
-        }));
+        v1.addEventListener("webkitfullscreenchange", t.step_func_done());
+        v2.addEventListener("webkitfullscreenchange", t.unreached_func());
+    });
+}
 
-        v2.addEventListener("webkitfullscreenchange", t.step_func(function()
+function fullscreen_iframe_test()
+{
+    async_test(function(t)
+    {
+        var iframe = document.querySelector("iframe");
+        var doc = iframe.contentDocument;
+        var v = doc.createElement("video");
+        v.controls = true;
+        v.src = findMediaFile("video", "content/test");
+        doc.body.appendChild(v);
+
+        v.addEventListener("loadeddata", t.step_func_done(function()
         {
-            assert_unreached();
+            assert_equals(hasFullscreenButton(v), iframe.allowFullscreen,
+                          "fullscreen button shown if and only if fullscreen is allowed");
         }));
     });
 }
@@ -48,18 +68,10 @@ function fullscreen_not_supported_test()
         v.src = findMediaFile("video", "content/test");
         document.body.appendChild(v);
 
-        // load event fires when video elements is ready
-        window.addEventListener("load", t.step_func(function()
+        v.addEventListener("loadeddata", t.step_func_done(function()
         {
-            // no fullscreen button for a video element when fullscreen is not
-            // supported
-            assert_button_hidden(v);
-            t.done();
+            assert_false(hasFullscreenButton(v),
+                         "fullscreen button not show when fullscreen is not supported");
         }));
     });
-}
-
-function assert_button_hidden(elm)
-{
-    assert_array_equals(mediaControlsButtonDimensions(elm, "fullscreen-button"), [0, 0]);
 }

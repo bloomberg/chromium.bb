@@ -8,7 +8,7 @@
             function start()
             {
                 findMediaElement();
-                testExpected("video.webkitSupportsFullscreen", false);
+                testExpected("video.webkitSupportsFullscreen", true);
                 testExpected("video.webkitDisplayingFullscreen", false);
                 video.src = findMediaFile("video", "content/test");
                 waitForEvent("loadeddata", loadeddata);

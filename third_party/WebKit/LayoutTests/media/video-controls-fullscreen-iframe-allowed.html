@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>video controls fullscreen button with fullscreenSupported setting disabled</title>
+        <title>video controls fullscreen button in iframe with allowfullscreen attribute</title>
         <script src="../resources/testharness.js"></script>
         <script src="../resources/testharnessreport.js"></script>
         <script src="media-file.js"></script>
@@ -10,9 +10,7 @@
     </head>
     <body>
         <div id="log"></div>
-        <script>
-            window.internals.settings.setFullscreenSupported(false);
-            fullscreen_not_supported_test();
-        </script>
+        <iframe allowfullscreen></iframe>
+        <script>fullscreen_iframe_test();</script>
     </body>
 </html>

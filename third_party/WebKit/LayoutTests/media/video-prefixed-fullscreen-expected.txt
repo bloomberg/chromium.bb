@@ -5,7 +5,7 @@ CONSOLE WARNING: Failed to execute 'requestFullScreen' on 'Element': API can onl
 CONSOLE WARNING: 'HTMLVideoElement.webkitExitFullscreen()' is deprecated. Please use 'Document.exitFullscreen()' instead.
 Test the prefixed HTMLVideoElement fullscreen API
 
-EXPECTED (video.webkitSupportsFullscreen == 'false') OK
+EXPECTED (video.webkitSupportsFullscreen == 'true') OK
 EXPECTED (video.webkitDisplayingFullscreen == 'false') OK
 EVENT(loadeddata)
 EXPECTED (video.webkitSupportsFullscreen == 'true') OK

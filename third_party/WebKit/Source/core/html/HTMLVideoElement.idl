@@ -38,11 +38,11 @@
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoSupportsFullscreen] readonly attribute boolean webkitSupportsFullscreen;
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoDisplayingFullscreen] readonly attribute boolean webkitDisplayingFullscreen;
 
-    [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoEnterFullscreen, RaisesException, LogActivity, LogAllWorlds] void webkitEnterFullscreen();
+    [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoEnterFullscreen, LogActivity, LogAllWorlds] void webkitEnterFullscreen();
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoExitFullscreen] void webkitExitFullscreen();
 
     // Note the different capitalization of the "S" in FullScreen.
-    [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoEnterFullScreen, ImplementedAs=webkitEnterFullscreen, RaisesException, LogActivity, LogAllWorlds] void webkitEnterFullScreen();
+    [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoEnterFullScreen, ImplementedAs=webkitEnterFullscreen, LogActivity, LogAllWorlds] void webkitEnterFullScreen();
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoExitFullScreen, ImplementedAs=webkitExitFullscreen] void webkitExitFullScreen();
 
     // The number of frames that have been decoded and made available for

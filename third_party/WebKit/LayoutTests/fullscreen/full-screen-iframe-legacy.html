@@ -2,25 +2,21 @@
 <script src="full-screen-test.js"></script>
 <script src="../media/media-file.js"></script>
 <script>
+var frame, video;
 
 function canplaythrough() {
-    var frame = document.getElementById('frame');
-
+    testExpected("video.webkitDisplayingFullscreen", false);
     runWithKeyDown(function() {
-        var video = frame.contentDocument.getElementsByTagName('video')[0];
         video.webkitEnterFullScreen();
     });
+    waitForEventAndEnd(frame.contentDocument, "webkitfullscreenerror");
 }
 
 function runTest() {
-    var frame = document.getElementById('frame');
-
-    waitForEventAndEnd(frame.contentDocument, 'webkitfullscreenerror');
-
-    var video = frame.contentDocument.getElementsByTagName('video')[0];
-    var mediaFile = findMediaFile("video", "../../media/content/test");
-    video.src = mediaFile;
-    video.addEventListener('canplaythrough', canplaythrough);
+    frame = document.getElementById("frame");
+    video = frame.contentDocument.querySelector("video");
+    video.src = findMediaFile("video", "../../media/content/test");
+    video.addEventListener("canplaythrough", canplaythrough);
 }
 </script>
 <iframe id="frame" src="resources/legacy.html" onload="runTest()" width="336" height="256">

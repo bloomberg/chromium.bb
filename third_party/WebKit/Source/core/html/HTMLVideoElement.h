@@ -55,7 +55,7 @@ public:
     unsigned videoHeight() const;
 
     // Fullscreen
-    void webkitEnterFullscreen(ExceptionState&);
+    void webkitEnterFullscreen();
     void webkitExitFullscreen();
     bool webkitSupportsFullscreen();
     bool webkitDisplayingFullscreen();
@@ -98,7 +98,6 @@ private:
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     bool hasVideo() const override { return webMediaPlayer() && webMediaPlayer()->hasVideo(); }
-    bool supportsFullscreen() const;
     bool isURLAttribute(const Attribute&) const override;
     const AtomicString imageSourceURL() const override;
 

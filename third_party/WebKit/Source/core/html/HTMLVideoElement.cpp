@@ -32,6 +32,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -136,17 +137,6 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 }
 
-bool HTMLVideoElement::supportsFullscreen() const
-{
-    if (!document().page())
-        return false;
-
-    if (!webMediaPlayer())
-        return false;
-
-    return true;
-}
-
 unsigned HTMLVideoElement::videoWidth() const
 {
     if (!webMediaPlayer())
@@ -232,17 +222,10 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
     return webMediaPlayer()->hasVideo() && webMediaPlayer()->readyState() >= WebMediaPlayer::ReadyStateHaveCurrentData;
 }
 
-void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
+void HTMLVideoElement::webkitEnterFullscreen()
 {
-    if (isFullscreen())
-        return;
-
-    if (!supportsFullscreen()) {
-        exceptionState.throwDOMException(InvalidStateError, "This element does not support fullscreen mode.");
-        return;
-    }
-
-    enterFullscreen();
+    if (!isFullscreen())
+        enterFullscreen();
 }
 
 void HTMLVideoElement::webkitExitFullscreen()
@@ -253,7 +236,7 @@ void HTMLVideoElement::webkitExitFullscreen()
 
 bool HTMLVideoElement::webkitSupportsFullscreen()
 {
-    return supportsFullscreen();
+    return Fullscreen::fullscreenEnabled(document());
 }
 
 bool HTMLVideoElement::webkitDisplayingFullscreen()
