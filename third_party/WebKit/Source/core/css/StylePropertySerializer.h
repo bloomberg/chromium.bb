@@ -57,6 +57,7 @@ private:
 
     // Only StylePropertySerializer uses the following two classes.
     class PropertyValueForSerializer {
+        STACK_ALLOCATED();
     public:
         explicit PropertyValueForSerializer(StylePropertySet::PropertyReference property)
             : m_value(property.value())
@@ -80,7 +81,7 @@ private:
         bool isValid() const { return m_value; }
 
     private:
-        const CSSValue* m_value;
+        RawPtrWillBeMember<const CSSValue> m_value;
         CSSPropertyID m_id;
         bool m_isImportant;
         bool m_isImplicit;
