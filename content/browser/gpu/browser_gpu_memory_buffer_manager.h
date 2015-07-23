@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
@@ -135,9 +134,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   using BufferMap = base::hash_map<gfx::GpuMemoryBufferId, BufferInfo>;
   using ClientMap = base::hash_map<int, BufferMap>;
   ClientMap clients_;
-
-  // This should only be accessed on the IO thread.
-  base::WeakPtrFactory<BrowserGpuMemoryBufferManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserGpuMemoryBufferManager);
 };

@@ -159,6 +159,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     for (size_t i = 0; i < num_planes; ++i)
       stride[i] = StrideInBytes(size_.width(), format_, i);
   }
+  gfx::GpuMemoryBufferId GetId() const override {
+    NOTREACHED();
+    return 0;
+  }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();

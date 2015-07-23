@@ -69,6 +69,7 @@ class VideoCaptureBufferPoolTest
       *stride = size_.width() * 4;
       return;
     }
+    gfx::GpuMemoryBufferId GetId() const override { return 0; }
     gfx::GpuMemoryBufferHandle GetHandle() const override {
       return gfx::GpuMemoryBufferHandle();
     }

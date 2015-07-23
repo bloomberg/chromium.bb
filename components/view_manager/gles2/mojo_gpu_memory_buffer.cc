@@ -166,6 +166,10 @@ void MojoGpuMemoryBufferImpl::GetStride(int* stride) const {
         base::checked_cast<int>(StrideInBytes(size_.width(), format_, i));
 }
 
+gfx::GpuMemoryBufferId MojoGpuMemoryBufferImpl::GetId() const {
+  return 0;
+}
+
 gfx::GpuMemoryBufferHandle MojoGpuMemoryBufferImpl::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;

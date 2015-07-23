@@ -32,6 +32,7 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool IsMapped() const override { return false; }
   Format GetFormat() const override { return gfx::GpuMemoryBuffer::RGBX_8888; }
   void GetStride(int* stride) const override {}
+  gfx::GpuMemoryBufferId GetId() const override { return 0; }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     return gfx::GpuMemoryBufferHandle();
   }

@@ -135,6 +135,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       stride[i] =
           base::checked_cast<int>(StrideInBytes(size_.width(), format_, i));
   }
+  gfx::GpuMemoryBufferId GetId() const override {
+    NOTREACHED();
+    return 0;
+  }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     gfx::GpuMemoryBufferHandle handle;
     handle.type = gfx::SHARED_MEMORY_BUFFER;

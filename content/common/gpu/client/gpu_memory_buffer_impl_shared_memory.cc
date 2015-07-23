@@ -9,12 +9,6 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
-namespace {
-
-void Noop(uint32 sync_point) {
-}
-
-}  // namespace
 
 GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     gfx::GpuMemoryBufferId id,
@@ -35,7 +29,8 @@ GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format) {
+    Format format,
+    const DestructionCallback& callback) {
   size_t buffer_size = 0u;
   if (!BufferSizeInBytes(size, format, &buffer_size))
     return scoped_ptr<GpuMemoryBufferImpl>();
@@ -45,7 +40,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
     return scoped_ptr<GpuMemoryBufferImpl>();
 
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
-      id, size, format, base::Bind(&Noop), shared_memory.Pass()));
+      id, size, format, callback, shared_memory.Pass()));
 }
 
 // static

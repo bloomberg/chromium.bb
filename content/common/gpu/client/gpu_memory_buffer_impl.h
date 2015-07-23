@@ -61,6 +61,7 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   bool IsMapped() const override;
   Format GetFormat() const override;
+  gfx::GpuMemoryBufferId GetId() const override;
   ClientBuffer AsClientBuffer() override;
 
   void set_destruction_sync_point(uint32 sync_point) {

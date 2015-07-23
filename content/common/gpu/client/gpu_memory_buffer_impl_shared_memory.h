@@ -14,9 +14,11 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplSharedMemory() override;
 
-  static scoped_ptr<GpuMemoryBufferImpl> Create(gfx::GpuMemoryBufferId id,
-                                                const gfx::Size& size,
-                                                Format format);
+  static scoped_ptr<GpuMemoryBufferImpl> Create(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      Format format,
+      const DestructionCallback& callback);
 
   static gfx::GpuMemoryBufferHandle AllocateForChildProcess(
       gfx::GpuMemoryBufferId id,

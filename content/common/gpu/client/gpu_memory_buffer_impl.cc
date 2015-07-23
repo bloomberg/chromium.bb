@@ -201,6 +201,10 @@ bool GpuMemoryBufferImpl::IsMapped() const {
   return mapped_;
 }
 
+gfx::GpuMemoryBufferId GpuMemoryBufferImpl::GetId() const {
+  return id_;
+}
+
 ClientBuffer GpuMemoryBufferImpl::AsClientBuffer() {
   return reinterpret_cast<ClientBuffer>(this);
 }
