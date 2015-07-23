@@ -393,6 +393,50 @@ const DeviceCapabilities kElo_TouchSystems_2700 = {
     arraysize(kElo_TouchSystems_2700AbsAxes),
 };
 
+// Captured from Intel reference design: "Wilson Beach".
+const DeviceAbsoluteAxis kWilsonBeachActiveStylusAbsAxes[] = {
+    {ABS_X, {0, 0, 9600, 0, 0, 33}},
+    {ABS_Y, {0, 0, 7200, 0, 0, 44}},
+    {ABS_PRESSURE, {0, 0, 1024, 0, 0, 0}},
+};
+const DeviceCapabilities kWilsonBeachActiveStylus = {
+  /* path */ "/sys/devices/pci0000:00/INT3433:00/i2c-1/"
+    "i2c-NTRG0001:00/0018:1B96:0D03.0004/input/"
+    "input11/event10",
+  /* name */ "NTRG0001:00 1B96:0D03 Pen",
+  /* phys */ "",
+  /* uniq */ "",
+  /* bustype */ "0018",
+  /* vendor */ "1b96",
+  /* product */ "0d03",
+  /* version */ "0100",
+  /* prop */ "0",
+  /* ev */ "1b",
+  /* key */ "c03 1 0 0 0 0",
+  /* rel */ "0",
+  /* abs */ "1000003",
+  /* msc */ "10",
+  /* sw */ "0",
+  /* led */ "0",
+  /* ff */ "0",
+  kWilsonBeachActiveStylusAbsAxes,
+  arraysize(kWilsonBeachActiveStylusAbsAxes),
+};
+
+ui::InputDeviceType InputDeviceTypeFromBusType(int bustype) {
+  switch (bustype) {
+    case BUS_I8042:
+    case BUS_I2C:
+      return ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
+    case BUS_USB:
+    case 0x1D:  // Used in kLogitechTouchKeyboardK400 but not listed in input.h.
+      return ui::InputDeviceType::INPUT_DEVICE_EXTERNAL;
+    default:
+      NOTREACHED() << "Unexpected bus type";
+      return ui::InputDeviceType::INPUT_DEVICE_UNKNOWN;
+  }
+}
+
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
                               EventDeviceInfo* devinfo) {
   std::vector<unsigned long> ev_bits;
@@ -446,6 +490,10 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
     else
       devinfo->SetAbsMtSlots(code, zero_slots);
   }
+
+  int bustype = 0;
+  sscanf(capabilities.bustype, "%x", &bustype);
+  devinfo->SetDeviceType(InputDeviceTypeFromBusType(bustype));
 
   return true;
 }

@@ -941,4 +941,102 @@ TEST_F(TouchEventConverterEvdevTouchNoiseTest,
   EXPECT_EQ(1u, filter->num_events(ET_TOUCH_RELEASED));
 }
 
+TEST_F(TouchEventConverterEvdevTest, ActiveStylusTouchAndRelease) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kWilsonBeachActiveStylus, &devinfo));
+  dev->Initialize(devinfo);
+
+  struct input_event mock_kernel_queue[]{
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
+      {{0, 0}, EV_ABS, ABS_X, 9170},
+      {{0, 0}, EV_ABS, ABS_Y, 3658},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_KEY, BTN_TOUCH, 1},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 60},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_KEY, BTN_TOUCH, 0},
+      {{0, 0}, EV_ABS, ABS_X, 9173},
+      {{0, 0}, EV_ABS, ABS_Y, 3906},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(2u, size());
+
+  ui::TouchEventParams event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(9170, event.location.x());
+  EXPECT_EQ(3658, event.location.y());
+  EXPECT_EQ(60.f / 1024, event.pressure);
+
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(9173, event.location.x());
+  EXPECT_EQ(3906, event.location.y());
+  EXPECT_EQ(0.f / 1024, event.pressure);
+}
+
+TEST_F(TouchEventConverterEvdevTest, ActiveStylusMotion) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kWilsonBeachActiveStylus, &devinfo));
+  dev->Initialize(devinfo);
+
+  struct input_event mock_kernel_queue[]{
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
+      {{0, 0}, EV_ABS, ABS_X, 8921},
+      {{0, 0}, EV_ABS, ABS_Y, 1072},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_KEY, BTN_TOUCH, 1},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 35},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_ABS, ABS_X, 8934},
+      {{0, 0}, EV_ABS, ABS_Y, 981},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 184},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_ABS, ABS_X, 8930},
+      {{0, 0}, EV_ABS, ABS_Y, 980},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 348},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_KEY, BTN_TOUCH, 0},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(4u, size());
+
+  ui::TouchEventParams event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(8921, event.location.x());
+  EXPECT_EQ(1072, event.location.y());
+  EXPECT_EQ(35.f / 1024, event.pressure);
+
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(8934, event.location.x());
+  EXPECT_EQ(981, event.location.y());
+  EXPECT_EQ(184.f / 1024, event.pressure);
+
+  event = dispatched_event(2);
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(8930, event.location.x());
+  EXPECT_EQ(980, event.location.y());
+  EXPECT_EQ(348.f / 1024, event.pressure);
+
+  event = dispatched_event(3);
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(8930, event.location.x());
+  EXPECT_EQ(980, event.location.y());
+  EXPECT_EQ(0.f / 1024, event.pressure);
+}
+
 }  // namespace ui

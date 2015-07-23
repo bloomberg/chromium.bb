@@ -69,6 +69,7 @@ extern const DeviceCapabilities kWacomIntuosPtS_Pen;
 extern const DeviceCapabilities kWacomIntuosPtS_Finger;
 extern const DeviceCapabilities kLogitechTouchKeyboardK400;
 extern const DeviceCapabilities kElo_TouchSystems_2700;
+extern const DeviceCapabilities kWilsonBeachActiveStylus;
 
 }  // namspace ui
 

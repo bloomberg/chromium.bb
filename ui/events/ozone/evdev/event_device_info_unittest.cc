@@ -148,4 +148,15 @@ TEST_F(EventDeviceInfoTest, AbsoluteMouseTouchscreen) {
   EXPECT_FALSE(devinfo.HasTablet());
 }
 
+TEST_F(EventDeviceInfoTest, OnScreenStylus) {
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kWilsonBeachActiveStylus, &devinfo));
+
+  EXPECT_FALSE(devinfo.HasKeyboard());
+  EXPECT_FALSE(devinfo.HasMouse());
+  EXPECT_FALSE(devinfo.HasTouchpad());
+  EXPECT_TRUE(devinfo.HasTouchscreen());
+  EXPECT_FALSE(devinfo.HasTablet());
+}
+
 }  // namespace ui

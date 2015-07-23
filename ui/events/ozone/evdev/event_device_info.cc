@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "ui/events/devices/device_util_linux.h"
 
 #if !defined(EVIOCGMTSLOTS)
 #define EVIOCGMTSLOTS(len) _IOC(_IOC_READ, 'E', 0x0a, len)
@@ -182,6 +183,8 @@ bool EventDeviceInfo::Initialize(int fd, const base::FilePath& path) {
   if (!GetDeviceIdentifiers(fd, path, &vendor_id_, &product_id_))
     return false;
 
+  device_type_ = GetInputDeviceTypeFromPath(path);
+
   return true;
 }
 
@@ -241,6 +244,10 @@ void EventDeviceInfo::SetAbsMtSlot(unsigned int code,
   if (index < 0 || index >= EVDEV_ABS_MT_COUNT)
     return;
   slot_values_[index][slot] = value;
+}
+
+void EventDeviceInfo::SetDeviceType(InputDeviceType type) {
+  device_type_ = type;
 }
 
 bool EventDeviceInfo::HasEventType(unsigned int type) const {
@@ -423,6 +430,10 @@ EventDeviceInfo::LegacyAbsoluteDeviceType
 EventDeviceInfo::ProbeLegacyAbsoluteDevice() const {
   if (!HasAbsXY())
     return LegacyAbsoluteDeviceType::LADT_NONE;
+
+  // Treat internal stylus devices as touchscreens.
+  if (device_type_ == INPUT_DEVICE_INTERNAL && HasStylus())
+    return LegacyAbsoluteDeviceType::LADT_TOUCHSCREEN;
 
   if (HasStylus())
     return LegacyAbsoluteDeviceType::LADT_TABLET;
