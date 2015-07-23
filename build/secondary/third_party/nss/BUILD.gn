@@ -222,7 +222,7 @@ if (is_linux) {
       "//build/config/compiler:no_size_t_to_int_warning",
 
       # nspr passes "const char*" through "void*".
-      "//build/compiler:no_incompatible_pointer_warnings",
+      "//build/config/compiler:no_incompatible_pointer_warnings",
     ]
 
     cflags = []
@@ -887,7 +887,7 @@ if (is_linux) {
       "//build/config/compiler:no_size_t_to_int_warning",
 
       # nss passes "const char*" through "void*".
-      "//build/compiler:no_incompatible_pointer_warnings",
+      "//build/config/compiler:no_incompatible_pointer_warnings",
     ]
     public_configs = [ ":nss_static_config" ]
 
