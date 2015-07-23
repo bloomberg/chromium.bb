@@ -152,6 +152,7 @@ struct weston_output_zoom {
 	float level;
 	float max_level;
 	float trans_x, trans_y;
+	struct weston_seat *seat;
 	struct weston_animation animation_z;
 	struct weston_spring spring_z;
 	struct weston_fixed_point current;
@@ -1370,7 +1371,8 @@ weston_output_init_zoom(struct weston_output *output);
 void
 weston_output_update_zoom(struct weston_output *output);
 void
-weston_output_activate_zoom(struct weston_output *output);
+weston_output_activate_zoom(struct weston_output *output,
+			    struct weston_seat *seat);
 void
 weston_output_update_matrix(struct weston_output *output);
 void

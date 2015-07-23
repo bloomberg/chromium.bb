@@ -4808,7 +4808,7 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 			if (!output->zoom.active) {
 				if (output->zoom.level <= 0.0)
 					continue;
-				weston_output_activate_zoom(output);
+				weston_output_activate_zoom(output, seat);
 			}
 
 			output->zoom.spring_z.target = output->zoom.level;

@@ -50,6 +50,7 @@ weston_zoom_frame_z(struct weston_animation *animation,
 	if (weston_spring_done(&output->zoom.spring_z)) {
 		if (output->zoom.active && output->zoom.level <= 0.0) {
 			output->zoom.active = false;
+			output->zoom.seat = NULL;
 			output->disable_planes--;
 			wl_list_remove(&output->zoom.motion_listener.link);
 		}
@@ -60,13 +61,6 @@ weston_zoom_frame_z(struct weston_animation *animation,
 
 	output->dirty = 1;
 	weston_output_damage(output);
-}
-
-static struct weston_seat *
-weston_zoom_pick_seat(struct weston_compositor *compositor)
-{
-	return container_of(compositor->seat_list.next,
-			    struct weston_seat, link);
 }
 
 static void
@@ -134,7 +128,7 @@ weston_zoom_transition(struct weston_output *output)
 WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output)
 {
-	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
+	struct weston_seat *seat = output->zoom.seat;
 
 	assert(output->zoom.active);
 
@@ -157,14 +151,14 @@ motion(struct wl_listener *listener, void *data)
 }
 
 WL_EXPORT void
-weston_output_activate_zoom(struct weston_output *output)
+weston_output_activate_zoom(struct weston_output *output,
+			    struct weston_seat *seat)
 {
-	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
-
 	if (output->zoom.active)
 		return;
 
 	output->zoom.active = true;
+	output->zoom.seat = seat;
 	output->disable_planes++;
 	wl_signal_add(&seat->pointer->motion_signal,
 		      &output->zoom.motion_listener);
@@ -174,6 +168,7 @@ WL_EXPORT void
 weston_output_init_zoom(struct weston_output *output)
 {
 	output->zoom.active = false;
+	output->zoom.seat = NULL;
 	output->zoom.increment = 0.07;
 	output->zoom.max_level = 0.95;
 	output->zoom.level = 0.0;
