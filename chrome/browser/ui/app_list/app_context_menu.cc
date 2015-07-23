@@ -248,7 +248,7 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
 
 bool AppContextMenu::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* acclelrator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 
