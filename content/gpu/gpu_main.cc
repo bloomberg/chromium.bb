@@ -225,6 +225,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   GetGpuInfoFromCommandLine(gpu_info, command_line);
+  gpu_info.in_process_gpu = false;
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   VaapiWrapper::PreSandboxInitialization();

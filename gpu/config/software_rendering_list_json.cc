@@ -733,22 +733,11 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 LONG_STRING_CONST(
     {
       "id": 76,
-      "description": "WebGL is disabled on Android unless GPU reset notification is supported",
+      "description": "WebGL is disabled on Android unless the GPU runs in a separate process",
       "os": {
         "type": "android"
       },
-      "exceptions": [
-        {
-          "gl_reset_notification_strategy": {
-            "op": "=",
-            "value": "33362"
-          }
-        },
-        {
-          "gl_renderer": "Mali-400.*",
-          "gl_extensions": ".*EXT_robustness.*"
-        }
-      ],
+      "in_process_gpu": true,
       "features": [
         "webgl"
       ]
