@@ -38,6 +38,7 @@
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8History.h"
+#include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8Window.h"
@@ -410,8 +411,12 @@ void V8Initializer::initializeMainThreadIfNeeded()
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
 
-    if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
-        Platform::current()->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
+    if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
+        WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
+        V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(scheduler)));
+        // FIXME: Remove idleGCTaskInMainThread once V8 starts posting idle task explicity.
+        scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
+    }
 
     isolate->SetEventLogger(timerTraceProfilerInMainThread);
     isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);

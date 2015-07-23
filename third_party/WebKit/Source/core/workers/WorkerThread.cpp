@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -211,6 +212,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     WorkerThreadStartMode startMode = startupData->m_startMode;
     OwnPtr<Vector<char>> cachedMetaData = startupData->m_cachedMetaData.release();
     V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
+    m_webScheduler = backingThread().platformThread().scheduler();
 
     {
         MutexLocker lock(m_threadStateMutex);
@@ -230,10 +232,12 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         backingThread().addTaskObserver(m_microtaskRunner.get());
 
         m_isolate = initializeIsolate();
+        if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
+            V8PerIsolateData::enableIdleTasks(m_isolate, adoptPtr(new V8IdleTaskRunner(m_webScheduler)));
+        }
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
     }
-    m_webScheduler = backingThread().platformThread().scheduler();
 
     // The corresponding call to didStopRunLoop() is in ~WorkerScriptController().
     didStartRunLoop();

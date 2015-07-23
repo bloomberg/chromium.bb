@@ -121,6 +121,11 @@ v8::Isolate* V8PerIsolateData::initialize()
     return isolate;
 }
 
+void V8PerIsolateData::enableIdleTasks(v8::Isolate* isolate, PassOwnPtr<gin::V8IdleTaskRunner> taskRunner)
+{
+    from(isolate)->m_isolateHolder->EnableIdleTasks(scoped_ptr<gin::V8IdleTaskRunner>(taskRunner.leakPtr()));
+}
+
 v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 {
     if (m_liveRoot.isEmpty())

@@ -131,6 +131,7 @@
             'V8GlobalValueMap.h',
             'V8HiddenValue.cpp',
             'V8HiddenValue.h',
+            'V8IdleTaskRunner.h',
             'V8Initializer.cpp',
             'V8Initializer.h',
             'V8IteratorResultValue.cpp',

@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/ScriptDebuggerBase.h"
 #include "gin/public/isolate_holder.h"
+#include "gin/public/v8_idle_task_runner.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -58,6 +59,7 @@ public:
     };
 
     static v8::Isolate* initialize();
+
     static V8PerIsolateData* from(v8::Isolate* isolate)
     {
         ASSERT(isolate);
@@ -68,6 +70,8 @@ public:
     static void willBeDestroyed(v8::Isolate*);
     static void destroy(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
+
+    static void enableIdleTasks(v8::Isolate*, PassOwnPtr<gin::V8IdleTaskRunner>);
 
     bool destructionPending() const { return m_destructionPending; }
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
