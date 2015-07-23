@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
@@ -510,6 +511,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       },
   };
   ScopedVector<net::SocketDataProvider> socket_data_providers;
+  base::HistogramTester histogram_tester;
   for (net::MockRead* mock_reads : mock_reads_array) {
     socket_data_providers.push_back(
         new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0));
@@ -518,10 +520,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
 
   config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
   SetDataReductionProxyEnabled(true);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccessWithOldConfig();
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
 
   scoped_refptr<net::HttpResponseHeaders> parsed(new net::HttpResponseHeaders(
       "HTTP/1.1 407 Proxy Authentication Required\n"));
@@ -531,6 +537,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       parsed.get(), origin.host_port_pair()));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
   EXPECT_EQ(std::string(), persisted_config());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", true, 1);
   RunUntilIdle();
   VerifyRemoteSuccess();
 

@@ -54,6 +54,10 @@ const char kUMAConfigServiceFetchFailedAttemptsBeforeSuccess[] =
 const char kUMAConfigServiceFetchLatency[] =
     "DataReductionProxy.ConfigService.FetchLatency";
 
+// Key of the UMA DataReductionProxy.ConfigService.AuthExpired histogram.
+const char kUMAConfigServiceAuthExpired[] =
+    "DataReductionProxy.ConfigService.AuthExpired";
+
 #if defined(USE_GOOGLE_API_KEYS)
 // Used in all Data Reduction Proxy URLs to specify API Key.
 const char kApiKeyName[] = "key";
@@ -115,6 +119,10 @@ GURL AddApiKeyToUrl(const GURL& url) {
   }
 #endif
   return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
+}
+
+void RecordAuthExpiredHistogram(bool auth_expired) {
+  UMA_HISTOGRAM_BOOLEAN(kUMAConfigServiceAuthExpired, auth_expired);
 }
 
 }  // namespace
@@ -222,6 +230,8 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
       if (previous_request_failed_authentication_)
         GetBackoffEntry()->InformOfRequest(false);
 
+      // Record that a request resulted in an authentication failure.
+      RecordAuthExpiredHistogram(true);
       previous_request_failed_authentication_ = true;
       InvalidateConfig();
       RetrieveConfig();
@@ -353,6 +363,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   if (!use_local_config_ && succeeded) {
     base::TimeDelta configuration_fetch_latency =
         base::Time::Now() - config_fetch_start_time_;
+    RecordAuthExpiredHistogram(false);
     UMA_HISTOGRAM_MEDIUM_TIMES(kUMAConfigServiceFetchLatency,
                                configuration_fetch_latency);
     UMA_HISTOGRAM_COUNTS_100(kUMAConfigServiceFetchFailedAttemptsBeforeSuccess,

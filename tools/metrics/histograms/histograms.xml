@@ -4855,6 +4855,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.ConfigService.AuthExpired"
+    enum="BooleanExpired">
+  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Total number of authentication required responses received from the Data
+    Reduction Proxy.
+  </summary>
+</histogram>
+
 <histogram
     name="DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess">
   <owner>jeremyim@chromium.org</owner>
