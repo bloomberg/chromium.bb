@@ -11,8 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -26,17 +25,17 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for the navigation popup.
  */
-public class NavigationPopupTest extends ChromeShellTestBase {
+public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final int INVALID_NAVIGATION_INDEX = -1;
 
-    private ChromeShellActivity mActivity;
+    public NavigationPopupTest() {
+        super(ChromeActivity.class);
+    }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        mActivity = launchChromeShellWithBlankPage();
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     // Exists solely to expose protected methods to this test.
@@ -208,9 +207,9 @@ public class NavigationPopupTest extends ChromeShellTestBase {
     public void testFaviconFetching() throws InterruptedException {
         final TestNavigationController controller = new TestNavigationController();
         final NavigationPopup popup = new NavigationPopup(
-                mActivity, controller, true);
+                getActivity(), controller, true);
         popup.setWidth(300);
-        popup.setAnchorView(mActivity.getActiveContentViewCore().getContainerView());
+        popup.setAnchorView(getActivity().getCurrentContentViewCore().getContainerView());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -254,9 +253,9 @@ public class NavigationPopupTest extends ChromeShellTestBase {
     public void testItemSelection() {
         final TestNavigationController controller = new TestNavigationController();
         final NavigationPopup popup = new NavigationPopup(
-                mActivity, controller, true);
+                getActivity(), controller, true);
         popup.setWidth(300);
-        popup.setAnchorView(mActivity.getActiveContentViewCore().getContainerView());
+        popup.setAnchorView(getActivity().getCurrentContentViewCore().getContainerView());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

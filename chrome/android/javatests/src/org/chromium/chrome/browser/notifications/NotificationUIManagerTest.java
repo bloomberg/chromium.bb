@@ -17,16 +17,16 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeoutException;
  */
 // TODO(peter): remove @SuppressLint once crbug.com/501900 is fixed.
 @SuppressLint("NewApi")
-public class NotificationUIManagerTest extends ChromeShellTestBase {
+public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String NOTIFICATION_TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/notifications/android_test.html");
 
@@ -50,6 +50,10 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     private static final long POLLING_INTERVAL_MS = 50;
 
     private MockNotificationManagerProxy mMockNotificationManager;
+
+    public NotificationUIManagerTest() {
+        super(ChromeActivity.class);
+    }
 
     /**
      * Returns the origin of the HTTP server the test is being ran on.
@@ -82,18 +86,6 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         } else {
             assertEquals("\"default\"", permission);
         }
-    }
-
-    /**
-     * Runs the Javascript |code| in the current tab, and waits for the result to be available.
-     *
-     * @param code The JavaScript code to execute in the current tab.
-     * @return A JSON-formatted string with the result of executing the |code|.
-     */
-    private String runJavaScriptCodeInCurrentTab(String code) throws InterruptedException,
-                                                                     TimeoutException {
-        return JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                getActivity().getActiveContentViewCore().getWebContents(), code);
     }
 
     /**
@@ -131,14 +123,12 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    public void startMainActivity() throws InterruptedException {
+        // The NotificationUIManager must be overriden prior to the browser process starting.
         mMockNotificationManager = new MockNotificationManagerProxy();
         NotificationUIManager.overrideNotificationManagerForTesting(mMockNotificationManager);
 
-        launchChromeShellWithUrl(NOTIFICATION_TEST_PAGE);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        startMainActivityWithURL(NOTIFICATION_TEST_PAGE);
     }
 
     @Override
