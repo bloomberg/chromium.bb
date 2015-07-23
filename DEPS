@@ -584,6 +584,13 @@ hooks = [
                '-s', 'src/third_party/WebKit',
                '-o', 'src/build/util/LASTCHANGE.blink'],
   },
+  {
+    # Update CANARY_VERSION.
+    'name': 'ios_canary_version',
+    'pattern': '.',
+    'action': ['python', 'src/ios/build/util/canary_version.py',
+               '-o', 'src/ios/build/util/CANARY_VERSION'],
+  },
   # Pull GN binaries. This needs to be before running GYP below.
   {
     'name': 'gn_win',
