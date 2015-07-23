@@ -74,9 +74,6 @@ public:
 
     // Once the ServiceWorker has finished handling the sync event,
     // didHandleSyncEvent is called on the context client.
-    // TODO(iclelland): Remove the single-parameter version once all call sites
-    // have been updated.
-    virtual void dispatchSyncEvent(int syncEventID) = 0;
     virtual void dispatchSyncEvent(int syncEventID, const WebSyncRegistration&) = 0;
 };
 

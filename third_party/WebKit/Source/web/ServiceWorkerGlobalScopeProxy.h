@@ -80,9 +80,6 @@ public:
     void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&) override;
     void dispatchPushEvent(int, const WebString& data) override;
     void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) override;
-    // TODO(iclelland): Remove the single-parameter version once all call sites
-    // have been updated.
-    void dispatchSyncEvent(int) override;
     void dispatchSyncEvent(int, const WebSyncRegistration&) override;
 
     // WorkerReportingProxy overrides:

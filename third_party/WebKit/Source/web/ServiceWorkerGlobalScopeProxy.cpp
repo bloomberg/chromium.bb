@@ -159,21 +159,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchServicePortConnectEvent(WebServicePo
     collection->dispatchConnectEvent(callbacks.release(), targetURL, origin, portID);
 }
 
-// TODO(iclelland): Remove this method in favor of the two-parameter version
-// below, once all call sites have been updated.
-void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)
-{
-    ASSERT(m_workerGlobalScope);
-    if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
-        ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandleSyncEvent(eventID, WebServiceWorkerEventResultCompleted);
-        return;
-    }
-    WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Sync, eventID);
-    // TODO(chasej) - Send registration as in crbug.com/482066
-    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, nullptr /* registration */, observer));
-    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
-}
-
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSyncRegistration& registration)
 {
     ASSERT(m_workerGlobalScope);
