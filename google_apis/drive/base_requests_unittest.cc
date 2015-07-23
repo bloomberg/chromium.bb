@@ -193,7 +193,7 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::RunLoop run_loop;
   const base::FilePath source_path =
-      google_apis::test_util::GetTestFilePath("chromeos/file_manager/text.txt");
+      google_apis::test_util::GetTestFilePath("drive/text.txt");
   std::string upload_content_type;
   std::string upload_content_data;
   FakeMultipartUploadRequest* const multipart_request =

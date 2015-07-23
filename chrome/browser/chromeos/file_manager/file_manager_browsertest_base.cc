@@ -52,6 +52,20 @@ enum SharedOption {
   SHARED,
 };
 
+// Obtains file manager test data directory.
+base::FilePath GetTestFilePath(const std::string& relative_path) {
+  base::FilePath path;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
+    return base::FilePath();
+  path = path.AppendASCII("chrome")
+             .AppendASCII("test")
+             .AppendASCII("data")
+             .AppendASCII("chromeos")
+             .AppendASCII("file_manager")
+             .Append(base::FilePath::FromUTF8Unsafe(relative_path));
+  return path;
+}
+
 // Maps the given string to EntryType. Returns true on success.
 bool MapStringToEntryType(const base::StringPiece& value, EntryType* output) {
   if (value == "file")
@@ -248,8 +262,7 @@ class LocalTestVolume : public TestVolume {
     switch (entry.type) {
       case FILE: {
         const base::FilePath source_path =
-            google_apis::test_util::GetTestFilePath("chromeos/file_manager")
-                .AppendASCII(entry.source_file_name);
+            GetTestFilePath(entry.source_file_name);
         ASSERT_TRUE(base::CopyFile(source_path, target_path))
             << "Copy from " << source_path.value() << " to "
             << target_path.value() << " failed.";
@@ -417,9 +430,7 @@ class DriveTestVolume : public TestVolume {
 
     std::string content_data;
     if (!source_file_name.empty()) {
-      base::FilePath source_file_path =
-          google_apis::test_util::GetTestFilePath("chromeos/file_manager")
-              .AppendASCII(source_file_name);
+      base::FilePath source_file_path = GetTestFilePath(source_file_name);
       ASSERT_TRUE(base::ReadFileToString(source_file_path, &content_data));
     }
 

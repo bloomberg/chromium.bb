@@ -37,7 +37,7 @@ base::FilePath GetTestFilePath(const std::string& relative_path) {
   base::FilePath path;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
     return base::FilePath();
-  path = path.AppendASCII("chrome")
+  path = path.AppendASCII("google_apis")
              .AppendASCII("test")
              .AppendASCII("data")
              .Append(base::FilePath::FromUTF8Unsafe(relative_path));

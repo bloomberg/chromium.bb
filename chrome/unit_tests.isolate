@@ -51,6 +51,7 @@
           '../base/test/data/',
           '../components/test/data/',
           '../extensions/test/data/',
+          '../google_apis/test/data/',
           '../net/data/',
           '../third_party/accessibility-audit/axs_testing.js',
           '../third_party/hunspell_dictionaries/',

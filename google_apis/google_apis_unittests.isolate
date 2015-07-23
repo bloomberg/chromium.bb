@@ -15,8 +15,6 @@
           '--test-launcher-bot-mode',
         ],
         'files': [
-          '../chrome/test/data/drive/',
-          '../chrome/test/data/chromeos/file_manager/text.txt',
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/google_apis_unittests<(EXECUTABLE_SUFFIX)',
           'test/',
