@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/containers/small_map.h"
+#include "base/containers/stack_container.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -746,6 +747,41 @@ struct ParamTraits<ScopedVector<P> > {
       if (i != 0)
         l->append(" ");
       LogParam(*p[i], l);
+    }
+  }
+};
+
+template <class P, size_t stack_capacity>
+struct ParamTraits<base::StackVector<P, stack_capacity> > {
+  typedef base::StackVector<P, stack_capacity> param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p->size()));
+    for (size_t i = 0; i < p->size(); i++)
+      WriteParam(m, p[i]);
+  }
+  static bool Read(const Message* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    int size;
+    // ReadLength() checks for < 0 itself.
+    if (!iter->ReadLength(&size))
+      return false;
+    // Sanity check for the vector size.
+    if (INT_MAX / sizeof(P) <= static_cast<size_t>(size))
+      return false;
+    P value;
+    for (int i = 0; i < size; i++) {
+      if (!ReadParam(m, iter, &value))
+        return false;
+      (*r)->push_back(value);
+    }
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    for (size_t i = 0; i < p->size(); ++i) {
+      if (i != 0)
+        l->append(" ");
+      LogParam((p[i]), l);
     }
   }
 };
