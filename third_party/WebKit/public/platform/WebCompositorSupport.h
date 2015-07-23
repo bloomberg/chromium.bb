@@ -70,8 +70,6 @@ public:
 
     virtual WebImageLayer* createImageLayer() { return nullptr; }
 
-    virtual WebNinePatchLayer* createNinePatchLayer() { return nullptr; }
-
     // The ownership of the WebScrollbarThemeGeometry pointer is passed to Chromium.
     virtual WebScrollbarLayer* createScrollbarLayer(WebScrollbar*, WebScrollbarThemePainter, WebScrollbarThemeGeometry*) { return nullptr; }
 

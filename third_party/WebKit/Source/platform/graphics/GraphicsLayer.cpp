@@ -1028,29 +1028,6 @@ void GraphicsLayer::setContentsToImage(Image* image)
     setContentsTo(m_imageLayer ? m_imageLayer->layer() : 0);
 }
 
-void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture)
-{
-    if (m_ninePatchLayer) {
-        unregisterContentsLayer(m_ninePatchLayer->layer());
-        m_ninePatchLayer.clear();
-    }
-    SkBitmap bitmap;
-    if (image && image->deprecatedBitmapForCurrentFrame(&bitmap)) {
-        m_ninePatchLayer = adoptPtr(Platform::current()->compositorSupport()->createNinePatchLayer());
-        int borderWidth = bitmap.width() - aperture.width();
-        int borderHeight = bitmap.height() - aperture.height();
-        WebRect border(aperture.x(), aperture.y(), borderWidth, borderHeight);
-
-        m_ninePatchLayer->setBitmap(bitmap);
-        m_ninePatchLayer->setAperture(aperture);
-        m_ninePatchLayer->setBorder(border);
-
-        m_ninePatchLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
-        registerContentsLayer(m_ninePatchLayer->layer());
-    }
-    setContentsTo(m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
-}
-
 bool GraphicsLayer::addAnimation(PassOwnPtr<WebCompositorAnimation> popAnimation)
 {
     OwnPtr<WebCompositorAnimation> animation(popAnimation);

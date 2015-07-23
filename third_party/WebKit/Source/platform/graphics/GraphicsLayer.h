@@ -213,7 +213,6 @@ public:
 
     // Layer contents
     void setContentsToImage(Image*);
-    void setContentsToNinePatch(Image*, const IntRect& aperture);
     void setContentsToPlatformLayer(WebLayer* layer) { setContentsTo(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
@@ -353,7 +352,6 @@ private:
 
     OwnPtr<WebContentLayer> m_layer;
     OwnPtr<WebImageLayer> m_imageLayer;
-    OwnPtr<WebNinePatchLayer> m_ninePatchLayer;
     WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
     // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
