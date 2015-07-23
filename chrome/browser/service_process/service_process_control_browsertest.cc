@@ -69,6 +69,8 @@ class ServiceProcessControlBrowserTest
   }
 
   void SetUp() override {
+    InProcessBrowserTest::SetUp();
+
     // This should not be needed because TearDown() ends with a closed
     // service_process_, but HistogramsTimeout and Histograms fail without this
     // on Mac.
@@ -89,6 +91,8 @@ class ServiceProcessControlBrowserTest
       EXPECT_EQ(0, exit_code);
       service_process_.Close();
     }
+
+    InProcessBrowserTest::TearDown();
   }
 
   void ProcessControlLaunched() {
@@ -265,7 +269,16 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsNoService) {
       base::TimeDelta()));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsTimeout) {
+// Histograms disabled on OSX http://crbug.com/406227
+#if defined(OS_MACOSX)
+#define MAYBE_HistogramsTimeout DISABLED_HistogramsTimeout
+#define MAYBE_Histograms DISABLED_Histograms
+#else
+#define MAYBE_HistogramsTimeout HistogramsTimeout
+#define MAYBE_Histograms Histograms
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_HistogramsTimeout) {
   LaunchServiceProcessControl();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
@@ -279,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsTimeout) {
   content::RunMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, Histograms) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_Histograms) {
   LaunchServiceProcessControl();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
