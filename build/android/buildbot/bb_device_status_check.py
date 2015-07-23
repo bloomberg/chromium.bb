@@ -321,12 +321,6 @@ def main():
     types, builds, batteries, errors, devices_ok, json_data = (
         zip(*[DeviceInfo(dev, options) for dev in devices]))
 
-  for j in json_data:
-    if j.get('serial') not in expected_devices:
-      j['device_list_error'] = 'unexpected device'
-  for d in expected_devices:
-    if d not in device_serials:
-      json_data.append({'serial': d, 'device_list_error': 'missing device'})
   # Write device info to file for buildbot info display.
   if os.path.exists('/home/chrome-bot'):
     with open('/home/chrome-bot/.adb_device_info', 'w') as f:
