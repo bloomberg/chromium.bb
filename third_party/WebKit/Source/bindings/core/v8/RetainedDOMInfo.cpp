@@ -31,10 +31,21 @@
 #include "config.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
 
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeTraversal.h"
 
 namespace blink {
+
+v8::RetainedObjectInfo* RetainedDOMInfo::retainedDOMInfo(uint16_t classId, v8::Local<v8::Value> wrapper)
+{
+    ASSERT(classId == WrapperTypeInfo::NodeClassId);
+    if (!wrapper->IsObject())
+        return 0;
+    Node* node = V8Node::toImpl(wrapper.As<v8::Object>());
+    return node ? new RetainedDOMInfo(node) : 0;
+}
 
 RetainedDOMInfo::RetainedDOMInfo(Node* root)
     : m_root(root)

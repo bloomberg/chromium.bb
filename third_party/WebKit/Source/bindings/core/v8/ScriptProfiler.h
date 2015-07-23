@@ -31,7 +31,6 @@
 #ifndef ScriptProfiler_h
 #define ScriptProfiler_h
 
-#include "bindings/core/v8/ScriptHeapSnapshot.h"
 #include "core/inspector/ScriptProfile.h"
 
 #include "wtf/PassRefPtr.h"
@@ -43,33 +42,9 @@ class ScriptValue;
 class ScriptProfiler {
     WTF_MAKE_NONCOPYABLE(ScriptProfiler);
 public:
-    class HeapSnapshotProgress {
-    public:
-        virtual ~HeapSnapshotProgress() { }
-        virtual void Start(int totalWork) = 0;
-        virtual void Worked(int workDone) = 0;
-        virtual void Done() = 0;
-        virtual bool isCanceled() = 0;
-    };
-
-    class OutputStream {
-    public:
-        virtual ~OutputStream() { }
-        virtual void write(const uint32_t* chunk, const int size) = 0;
-    };
-
-    static void collectGarbage();
-    static ScriptValue objectByHeapObjectId(unsigned id);
-    static unsigned getHeapObjectId(v8::Local<v8::Value>);
-    static void clearHeapObjectIds();
     static void setSamplingInterval(int intervalUs);
     static void start(const String& title);
     static PassRefPtrWillBeRawPtr<ScriptProfile> stop(const String& title);
-    static PassRefPtr<ScriptHeapSnapshot> takeHeapSnapshot(HeapSnapshotProgress*);
-    static void startTrackingHeapObjects(bool trackAllocations);
-    static void stopTrackingHeapObjects();
-    static unsigned requestHeapStatsUpdate(OutputStream*);
-    static void initialize();
     static HashMap<String, double>* currentProfileNameIdleTimeMap();
     static void setIdle(bool isIdle);
 };

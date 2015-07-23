@@ -469,7 +469,8 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, m_overlay));
 
-    m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    m_agents.append(InspectorHeapProfilerAgent::create(isolate, injectedScriptManager));
 
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
     m_pageConsoleAgent->setDebuggerAgent(debuggerAgent);

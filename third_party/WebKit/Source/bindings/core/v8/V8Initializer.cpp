@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/RejectedPromises.h"
+#include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptProfiler.h"
@@ -64,6 +65,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8-debug.h>
+#include <v8-profiler.h>
 
 namespace blink {
 
@@ -421,7 +423,8 @@ void V8Initializer::initializeMainThreadIfNeeded()
     isolate->SetEventLogger(timerTraceProfilerInMainThread);
     isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
 
-    ScriptProfiler::initialize();
+    if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler())
+        profiler->SetWrapperClassInfoProvider(WrapperTypeInfo::NodeClassId, &RetainedDOMInfo::retainedDOMInfo);
 }
 
 static void reportFatalErrorInWorker(const char* location, const char* message)

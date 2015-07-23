@@ -41,6 +41,10 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8 {
+class Isolate;
+}
+
 namespace blink {
 
 class InjectedScriptManager;
@@ -52,7 +56,7 @@ class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<I
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(InjectedScriptManager*);
+    static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, InjectedScriptManager*);
     ~InspectorHeapProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -72,17 +76,16 @@ public:
     void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
 
 private:
-    class HeapStatsStream;
     class HeapStatsUpdateTask;
 
-    explicit InspectorHeapProfilerAgent(InjectedScriptManager*);
+    InspectorHeapProfilerAgent(v8::Isolate*, InjectedScriptManager*);
 
     void requestHeapStatsUpdate();
-    void pushHeapStatsUpdate(const uint32_t* const data, const int size);
 
     void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
 
+    v8::Isolate* m_isolate;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
