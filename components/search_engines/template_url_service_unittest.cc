@@ -79,7 +79,8 @@ TemplateURL* CreateKeywordWithDate(
   data.favicon_url = GURL(favicon_url);
   data.safe_for_autoreplace = safe_for_autoreplace;
   data.show_in_default_list = show_in_default_list;
-  base::SplitString(encodings, ';', &data.input_encodings);
+  data.input_encodings = base::SplitString(
+      encodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.date_created = date_created;
   data.last_modified = last_modified;
   return new TemplateURL(data);
@@ -855,7 +856,8 @@ TEST_F(TemplateURLServiceTest, RepairSearchEnginesWithManagedDefault) {
   data.SetURL(kSearchURL);
   data.favicon_url = GURL(kIconURL);
   data.show_in_default_list = true;
-  base::SplitString(kEncodings, ';', &data.input_encodings);
+  data.input_encodings = base::SplitString(
+      kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.alternate_urls.push_back(kAlternateURL);
   data.search_terms_replacement_key = kSearchTermsReplacementKey;
   scoped_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
@@ -1234,7 +1236,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   data.SetURL(kSearchURL);
   data.favicon_url = GURL(kIconURL);
   data.show_in_default_list = true;
-  base::SplitString(kEncodings, ';', &data.input_encodings);
+  data.input_encodings = base::SplitString(
+      kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.alternate_urls.push_back(kAlternateURL);
   data.search_terms_replacement_key = kSearchTermsReplacementKey;
   scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL(data));
@@ -1477,7 +1480,8 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
   data.SetURL(kSearchURL);
   data.favicon_url = GURL(kIconURL);
   data.show_in_default_list = true;
-  base::SplitString(kEncodings, ';', &data.input_encodings);
+  data.input_encodings = base::SplitString(
+      kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.alternate_urls.push_back(kAlternateURL);
   data.search_terms_replacement_key = kSearchTermsReplacementKey;
   scoped_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));

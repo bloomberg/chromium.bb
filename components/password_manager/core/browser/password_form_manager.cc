@@ -110,8 +110,11 @@ PasswordFormManager::PasswordFormManager(
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified) {
   drivers_.push_back(driver);
-  if (observed_form_.origin.is_valid())
-    base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
+  if (observed_form_.origin.is_valid()) {
+    form_path_tokens_ =
+        base::SplitString(observed_form_.origin.path(), "/",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
 }
 
 PasswordFormManager::~PasswordFormManager() {
@@ -938,8 +941,9 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
   } else {
     // Walk the origin URL paths one directory at a time to see how
     // deep the two match.
-    std::vector<std::string> candidate_path_tokens;
-    base::SplitString(candidate.origin.path(), '/', &candidate_path_tokens);
+    std::vector<std::string> candidate_path_tokens =
+        base::SplitString(candidate.origin.path(), "/", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_ALL);
     size_t depth = 0;
     size_t max_dirs =
         std::min(form_path_tokens_.size(), candidate_path_tokens.size());

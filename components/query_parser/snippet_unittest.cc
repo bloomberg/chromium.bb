@@ -96,22 +96,18 @@ base::string16 BuildSnippet(const std::string& document,
   // |document|. We need to add more test cases and change this function
   // to be more generic depending on how we deal with 'folding for match'
   // in history.
-  const std::string document_folded =
-      base::StringToLowerASCII(std::string(document));
-
-  std::vector<std::string> query_words;
-  base::SplitString(query, ' ', &query_words);
+  const std::string document_folded = base::StringToLowerASCII(document);
 
   // Manually construct match_positions of the document.
   Snippet::MatchPositions match_positions;
   match_positions.clear();
-  for (std::vector<std::string>::iterator qw = query_words.begin();
-       qw != query_words.end(); ++qw) {
+  for (const std::string& word : base::SplitString(
+           query, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     // Insert all instances of this word into match_pairs.
     size_t ofs = 0;
-    while ((ofs = document_folded.find(*qw, ofs)) != std::string::npos) {
-      match_positions.push_back(std::make_pair(ofs, ofs + qw->size()));
-      ofs += qw->size();
+    while ((ofs = document_folded.find(word, ofs)) != std::string::npos) {
+      match_positions.push_back(std::make_pair(ofs, ofs + word.size()));
+      ofs += word.size();
     }
   }
   // Sort match_positions in order of increasing offset.

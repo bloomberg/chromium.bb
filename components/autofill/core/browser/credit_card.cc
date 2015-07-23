@@ -448,9 +448,10 @@ void CreditCard::SetInfoForMonthInputType(const base::string16& value) {
     return;
   }
 
-  std::vector<base::string16> year_month;
-  base::SplitString(value, L'-', &year_month);
-  DCHECK_EQ((int)year_month.size(), 2);
+  std::vector<base::StringPiece16> year_month = base::SplitStringPiece(
+      value, base::ASCIIToUTF16("-"),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  DCHECK_EQ(2u, year_month.size());
   int num = 0;
   bool converted = false;
   converted = base::StringToInt(year_month[0], &num);

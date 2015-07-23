@@ -90,7 +90,7 @@ void GetDataListSuggestions(const WebInputElement& element,
     if (element.isMultiple() && element.isEmailField()) {
       const base::char16 comma[2] = { ',', 0 };
       std::vector<base::string16> parts = base::SplitString(
-          prefix, comma, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+          prefix, comma, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if (parts.size() > 0) {
         base::TrimWhitespace(parts[parts.size() - 1], base::TRIM_LEADING,
                              &prefix);
@@ -485,10 +485,9 @@ void AutofillAgent::AcceptDataListSuggestion(
   // If this element takes multiple values then replace the last part with
   // the suggestion.
   if (input_element->isMultiple() && input_element->isEmailField()) {
-    std::vector<base::string16> parts;
-
-    base::SplitStringDontTrim(
-        base::StringPiece16(input_element->editingValue()), ',', &parts);
+    std::vector<base::string16> parts = base::SplitString(
+        base::StringPiece16(input_element->editingValue()),
+        base::ASCIIToUTF16(","), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() == 0)
       parts.push_back(base::string16());
 

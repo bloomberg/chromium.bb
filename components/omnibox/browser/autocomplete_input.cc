@@ -37,14 +37,14 @@ void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
 void PopulateTermsPrefixedByHttpOrHttps(
     const base::string16& text,
     std::vector<base::string16>* terms_prefixed_by_http_or_https) {
-  std::vector<base::string16> terms;
   // Split on whitespace rather than use ICU's word iterator because, for
   // example, ICU's iterator may break on punctuation (such as ://) or decide
   // to split a single term in a hostname (if it seems to think that the
   // hostname is multiple words).  Neither of these behaviors is desirable.
-  base::SplitString(text, ' ', &terms);
   const std::string separator(url::kStandardSchemeSeparator);
-  for (const auto& term : terms) {
+  for (const auto& term :
+       base::SplitString(text, base::ASCIIToUTF16(" "),
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     const std::string term_utf8(base::UTF16ToUTF8(term));
     static const char* kSchemes[2] = { url::kHttpScheme, url::kHttpsScheme };
     for (const char* scheme : kSchemes) {

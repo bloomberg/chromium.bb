@@ -130,7 +130,9 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
       break;
 
     case ADDRESS_HOME_STREET_ADDRESS:
-      base::SplitString(value, base::char16('\n'), &street_address_);
+      street_address_ = base::SplitString(
+          value, base::ASCIIToUTF16("\n"),
+          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       break;
 
     default:

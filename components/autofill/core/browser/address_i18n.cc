@@ -48,11 +48,10 @@ scoped_ptr<AddressData> CreateAddressData(
       get_info.Run(AutofillType(ADDRESS_HOME_SORTING_CODE)));
   address_data->postal_code = base::UTF16ToUTF8(
       get_info.Run(AutofillType(ADDRESS_HOME_ZIP)));
-  base::SplitString(
+  address_data->address_line = base::SplitString(
       base::UTF16ToUTF8(
           get_info.Run(AutofillType(ADDRESS_HOME_STREET_ADDRESS))),
-      '\n',
-      &address_data->address_line);
+      "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   return address_data.Pass();
 }
 

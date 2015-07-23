@@ -47,17 +47,16 @@ bool IsSubDomainOrEqual(const std::string& sub_domain,
 
 // Compares two domain names.
 int CompareDomainNames(const std::string& str1, const std::string& str2) {
-  std::vector<std::string> domain_name1;
-  std::vector<std::string> domain_name2;
-
-  base::SplitString(str1, '.', &domain_name1);
-  base::SplitString(str2, '.', &domain_name2);
+  std::vector<base::StringPiece> domain_name1 = base::SplitStringPiece(
+      str1, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::StringPiece> domain_name2 = base::SplitStringPiece(
+      str2, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   int i1 = static_cast<int>(domain_name1.size()) - 1;
   int i2 = static_cast<int>(domain_name2.size()) - 1;
   int rv;
   while (i1 >= 0 && i2 >= 0) {
-    // domain names are stored in puny code. So it's fine to use the compare
+    // Domain names are stored in puny code. So it's fine to use the compare
     // method.
     rv = domain_name1[i1].compare(domain_name2[i2]);
     if (rv != 0)

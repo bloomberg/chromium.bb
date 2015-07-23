@@ -62,22 +62,16 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
   DCHECK(prefs);
   // Build the languages.
   accept_languages_.clear();
-  std::string accept_langs_str = prefs->GetString(
-      accept_languages_pref_.c_str());
-  std::vector<std::string> accept_langs_list;
-  base::SplitString(accept_langs_str, ',', &accept_langs_list);
-  std::vector<std::string>::const_iterator iter;
-
-  for (iter = accept_langs_list.begin();
-       iter != accept_langs_list.end(); ++iter) {
+  for (const base::StringPiece& lang : base::SplitStringPiece(
+           prefs->GetString(accept_languages_pref_), ",",
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     // Get rid of the locale extension if any (ex: en-US -> en), but for Chinese
     // for which the CLD reports zh-CN and zh-TW.
-    std::string accept_lang(*iter);
-    size_t index = iter->find("-");
-    if (index != std::string::npos && *iter != "zh-CN" && *iter != "zh-TW")
-      accept_lang = iter->substr(0, index);
-
-    accept_languages_.insert(accept_lang);
+    size_t index = lang.find('-');
+    if (index != base::StringPiece::npos && lang != "zh-CN" && lang != "zh-TW")
+      accept_languages_.insert(lang.substr(0, index).as_string());
+    else
+      accept_languages_.insert(lang.as_string());
   }
 }
 

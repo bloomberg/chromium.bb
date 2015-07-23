@@ -313,7 +313,8 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
   data->originating_url = GURL(s.ColumnString(6));
   data->show_in_default_list = s.ColumnBool(10);
   data->safe_for_autoreplace = s.ColumnBool(5);
-  base::SplitString(s.ColumnString(9), ';', &data->input_encodings);
+  data->input_encodings = base::SplitString(
+      s.ColumnString(9), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data->id = s.ColumnInt64(0);
   data->date_created = Time::FromTimeT(s.ColumnInt64(7));
   data->last_modified = Time::FromTimeT(s.ColumnInt64(15));

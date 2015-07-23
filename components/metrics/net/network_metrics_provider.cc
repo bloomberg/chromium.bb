@@ -226,13 +226,10 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
     return;
 
   // Parse OUI list.
-  std::vector<std::string> oui_list;
-  base::SplitString(info.oui_list, ' ', &oui_list);
-  for (std::vector<std::string>::const_iterator it = oui_list.begin();
-       it != oui_list.end();
-       ++it) {
+  for (const base::StringPiece& oui_str : base::SplitStringPiece(
+           info.oui_list, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     uint32 oui;
-    if (base::HexStringToUInt(*it, &oui))
+    if (base::HexStringToUInt(oui_str, &oui))
       vendor->add_element_identifier(oui);
     else
       NOTREACHED();

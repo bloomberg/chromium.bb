@@ -21,12 +21,12 @@ void SplitIntoMainAndTail(const std::string& language,
   DCHECK(main_part);
   DCHECK(tail_part);
 
-  std::vector<std::string> chunks;
-  base::SplitString(language, '-', &chunks);
-  if (chunks.size() == 0u)
+  std::vector<base::StringPiece> chunks = base::SplitStringPiece(
+      language, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (chunks.empty())
     return;
 
-  *main_part = chunks[0];
+  chunks[0].CopyToString(main_part);
   *tail_part = language.substr(main_part->size());
 }
 

@@ -36,9 +36,9 @@ std::string GetDeviceLocationFromStorageName(const std::string& storage_name) {
 // E.g. If the |storage_name| is "usb:2,2:65537", the storage identifier is
 // "65537".
 std::string GetStorageIdFromStorageName(const std::string& storage_name) {
-  std::vector<std::string> name_parts;
-  base::SplitString(storage_name, ':', &name_parts);
-  return name_parts.size() == 3 ? name_parts[2] : std::string();
+  std::vector<base::StringPiece> name_parts = base::SplitStringPiece(
+      storage_name, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  return name_parts.size() == 3 ? name_parts[2].as_string() : std::string();
 }
 
 // Returns a unique device id from the given |storage_info|.

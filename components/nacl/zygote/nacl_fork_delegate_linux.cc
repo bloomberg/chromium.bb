@@ -447,8 +447,9 @@ void NaClForkDelegate::AddPassthroughEnvToOptions(
   std::string pass_through_string;
   std::vector<std::string> pass_through_vars;
   if (env->GetVar(kNaClEnvPassthrough, &pass_through_string)) {
-    base::SplitString(
-        pass_through_string, kNaClEnvPassthroughDelimiter, &pass_through_vars);
+    pass_through_vars = base::SplitString(
+        pass_through_string, std::string(1, kNaClEnvPassthroughDelimiter),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
   pass_through_vars.push_back(kNaClExeStderr);
   pass_through_vars.push_back(kNaClExeStdout);

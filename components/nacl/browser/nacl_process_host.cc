@@ -109,12 +109,9 @@ void FindAddressSpace(base::ProcessHandle process,
 #ifdef _DLL
 
 bool IsInPath(const std::string& path_env_var, const std::string& dir) {
-  std::vector<std::string> split;
-  base::SplitString(path_env_var, ';', &split);
-  for (std::vector<std::string>::const_iterator i(split.begin());
-       i != split.end();
-       ++i) {
-    if (*i == dir)
+  for (const base::StringPiece& cur : base::SplitStringPiece(
+           path_env_var, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    if (cur == dir)
       return true;
   }
   return false;
@@ -558,11 +555,10 @@ void NaClProcessHost::LaunchNaClGdb() {
 #else
   base::CommandLine::StringType nacl_gdb =
       command_line.GetSwitchValueNative(switches::kNaClGdb);
-  base::CommandLine::StringVector argv;
   // We don't support spaces inside arguments in --nacl-gdb switch.
-  base::SplitString(nacl_gdb, static_cast<base::CommandLine::CharType>(' '),
-                    &argv);
-  base::CommandLine cmd_line(argv);
+  base::CommandLine cmd_line(base::SplitString(
+      nacl_gdb, base::CommandLine::StringType(1, ' '),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
 #endif
   cmd_line.AppendArg("--eval-command");
   base::FilePath::StringType irt_path(

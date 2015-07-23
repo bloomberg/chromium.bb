@@ -144,9 +144,9 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   }
 
   // Get the accepted languages list.
-  std::vector<std::string> accept_languages_list;
-  base::SplitString(prefs->GetString(accept_languages_pref_name_.c_str()), ',',
-                    &accept_languages_list);
+  std::vector<std::string> accept_languages_list = base::SplitString(
+      prefs->GetString(accept_languages_pref_name_), ",",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   std::string target_lang = GetTargetLanguage(accept_languages_list);
   std::string language_code =

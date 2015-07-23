@@ -160,8 +160,9 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
 // NOTE: each name must be unique, and folders are assigned a unique title by
 // way of an increasing integer.
 void PopulateNodeFromString(const std::string& description, TestNode* parent) {
-  std::vector<std::string> elements;
-  base::SplitStringAlongWhitespace(description, &elements);
+  std::vector<std::string> elements = base::SplitString(
+      description, base::kWhitespaceASCII,
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   size_t index = 0;
   PopulateNodeImpl(elements, &index, parent);
 }

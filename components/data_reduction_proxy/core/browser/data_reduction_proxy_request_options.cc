@@ -87,11 +87,11 @@ bool DataReductionProxyRequestOptions::ParseLocalSessionKey(
     const std::string& session_key,
     std::string* session,
     std::string* credentials) {
-  std::vector<std::string> auth_values;
-  base::SplitString(session_key, '|', &auth_values);
+  std::vector<base::StringPiece> auth_values = base::SplitStringPiece(
+      session_key, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (auth_values.size() == 2) {
-    *session = auth_values[0];
-    *credentials = auth_values[1];
+    auth_values[0].CopyToString(session);
+    auth_values[1].CopyToString(credentials);
     return true;
   }
 
@@ -145,12 +145,12 @@ void DataReductionProxyRequestOptions::GetChromiumBuildAndPatch(
     const std::string& version,
     std::string* build,
     std::string* patch) const {
-  std::vector<std::string> version_parts;
-  base::SplitString(version, '.', &version_parts);
+  std::vector<base::StringPiece> version_parts = base::SplitStringPiece(
+      version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (version_parts.size() != 4)
     return;
-  *build = version_parts[2];
-  *patch = version_parts[3];
+  version_parts[2].CopyToString(build);
+  version_parts[3].CopyToString(patch);
 }
 
 void DataReductionProxyRequestOptions::UpdateVersion() {

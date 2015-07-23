@@ -1557,12 +1557,9 @@ class PexeDownloader : public blink::WebURLLoaderClient {
     std::string cache_control =
         response.httpHeaderField("cache-control").utf8();
 
-    std::vector<std::string> values;
-    base::SplitString(cache_control, ',', &values);
-    for (std::vector<std::string>::const_iterator it = values.begin();
-         it != values.end();
-         ++it) {
-      if (base::StringToLowerASCII(*it) == "no-store")
+    for (const std::string& cur : base::SplitString(
+             cache_control, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      if (base::StringToLowerASCII(cur) == "no-store")
         has_no_store_header = true;
     }
 

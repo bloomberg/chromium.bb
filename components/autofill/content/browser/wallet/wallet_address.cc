@@ -132,8 +132,9 @@ Address::Address(const AutofillProfile& profile)
       phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
       is_complete_address_(true),
       language_code_(profile.language_code()) {
-  base::SplitString(
-      profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS), '\n', &street_address_);
+  street_address_ = base::SplitString(
+      profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("\n"),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (!country_name_code_.empty())
     phone_object_ = i18n::PhoneObject(phone_number_, country_name_code_);

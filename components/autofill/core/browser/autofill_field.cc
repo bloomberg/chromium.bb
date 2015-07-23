@@ -102,7 +102,9 @@ bool SetSelectControlValueTokenMatch(const base::string16& value,
   l10n::CaseInsensitiveCompare compare;
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
-    base::SplitStringAlongWhitespace(field->option_values[i], &tokenized);
+    tokenized = base::SplitString(
+        field->option_values[i], base::kWhitespaceASCIIAs16,
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (std::find_if(tokenized.begin(), tokenized.end(),
                      [&compare, value](base::string16& rhs) {
                        return compare.StringsEqual(value, rhs);
@@ -111,7 +113,9 @@ bool SetSelectControlValueTokenMatch(const base::string16& value,
       return true;
     }
 
-    base::SplitStringAlongWhitespace(field->option_contents[i], &tokenized);
+    tokenized = base::SplitString(
+        field->option_contents[i], base::kWhitespaceASCIIAs16,
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (std::find_if(tokenized.begin(), tokenized.end(),
                      [&compare, value](base::string16& rhs) {
                        return compare.StringsEqual(value, rhs);
@@ -333,8 +337,9 @@ bool FillSelectControl(const AutofillType& type,
 // formatted as MM/YYYY.  If it isn't, filling will fail.
 bool FillMonthControl(const base::string16& value, FormFieldData* field) {
   // Autofill formats a combined date as month/year.
-  std::vector<base::string16> pieces;
-  base::SplitString(value, base::char16('/'), &pieces);
+  std::vector<base::string16> pieces = base::SplitString(
+      value, base::ASCIIToUTF16("/"),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (pieces.size() != 2)
     return false;
 
@@ -365,7 +370,9 @@ void FillStreetAddress(const base::string16& value,
 
   AddressData address_data;
   address_data.language_code = address_language_code;
-  base::SplitString(base::UTF16ToUTF8(value), '\n', &address_data.address_line);
+  address_data.address_line = base::SplitString(
+      base::UTF16ToUTF8(value), "\n",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::string line;
   GetStreetAddressLinesAsSingleLine(address_data, &line);
   field->value = base::UTF8ToUTF16(line);

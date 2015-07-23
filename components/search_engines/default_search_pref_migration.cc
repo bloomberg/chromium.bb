@@ -67,8 +67,9 @@ scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
   default_provider_data->show_in_default_list = true;
   default_provider_data->search_terms_replacement_key =
       prefs->GetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey);
-  base::SplitString(prefs->GetString(prefs::kDefaultSearchProviderEncodings),
-                    ';', &default_provider_data->input_encodings);
+  default_provider_data->input_encodings = base::SplitString(
+      prefs->GetString(prefs::kDefaultSearchProviderEncodings),
+      ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   default_provider_data->alternate_urls.clear();
   const base::ListValue* alternate_urls =

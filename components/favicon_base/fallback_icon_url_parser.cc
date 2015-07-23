@@ -74,8 +74,8 @@ bool ParsedFallbackIconPath::ParseSpecs(
   DCHECK(size);
   DCHECK(style);
 
-  std::vector<std::string> tokens;
-  base::SplitStringDontTrim(specs_str, ',', &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      specs_str, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (tokens.size() != 5)  // Force "," for empty fields.
     return false;
 

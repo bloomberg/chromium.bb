@@ -79,8 +79,8 @@ void ExpandLanguageCodes(const std::vector<std::string>& languages,
       seen.insert(language);
     }
 
-    std::vector<std::string> tokens;
-    base::SplitString(language, '-', &tokens);
+    std::vector<std::string> tokens = base::SplitString(
+        language, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (tokens.size() == 0)
       continue;
     const std::string& main_part = tokens[0];
@@ -319,8 +319,8 @@ void TranslatePrefs::GetLanguageList(std::vector<std::string>* languages) {
   const char* key = accept_languages_pref_.c_str();
 #endif
 
-  std::string languages_str = prefs_->GetString(key);
-  base::SplitString(languages_str, ',', languages);
+  *languages = base::SplitString(prefs_->GetString(key), ",",
+                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 }
 
 void TranslatePrefs::UpdateLanguageList(
@@ -449,10 +449,9 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs,
     std::vector<std::string> blacklisted_languages;
     GetBlacklistedLanguages(user_prefs, &blacklisted_languages);
 
-    std::string accept_languages_str =
-        user_prefs->GetString(accept_languages_pref);
-    std::vector<std::string> accept_languages;
-    base::SplitString(accept_languages_str, ',', &accept_languages);
+    std::vector<std::string> accept_languages = base::SplitString(
+        user_prefs->GetString(accept_languages_pref), ",",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     std::vector<std::string> blocked_languages;
     CreateBlockedLanguages(

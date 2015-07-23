@@ -112,8 +112,9 @@ std::string CreatePatternString(
 }
 
 PatternPair ParsePatternString(const std::string& pattern_str) {
-  std::vector<std::string> pattern_str_list;
-  base::SplitString(pattern_str, kPatternSeparator[0], &pattern_str_list);
+  std::vector<std::string> pattern_str_list = base::SplitString(
+      pattern_str, std::string(1, kPatternSeparator[0]),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // If the |pattern_str| is an empty string then the |pattern_string_list|
   // contains a single empty string. In this case the empty string will be

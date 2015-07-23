@@ -113,12 +113,10 @@ void AddPluginsToFingerprint(const std::vector<content::WebPluginInfo>& plugins,
 void AddAcceptLanguagesToFingerprint(
     const std::string& accept_languages_str,
     Fingerprint::MachineCharacteristics* machine) {
-  std::vector<std::string> accept_languages;
-  base::SplitString(accept_languages_str, ',', &accept_languages);
-  for (std::vector<std::string>::const_iterator it = accept_languages.begin();
-       it != accept_languages.end(); ++it) {
-    machine->add_requested_language(*it);
-  }
+  for (const std::string& lang :
+       base::SplitString(accept_languages_str, ",", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_ALL))
+    machine->add_requested_language(lang);
 }
 
 // This function writes

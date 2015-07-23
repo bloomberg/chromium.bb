@@ -109,11 +109,11 @@ class BookmarkIndexTest : public testing::Test {
 
   void ExtractMatchPositions(const std::string& string,
                              BookmarkMatch::MatchPositions* matches) {
-    std::vector<std::string> match_strings;
-    base::SplitString(string, ':', &match_strings);
-    for (size_t i = 0; i < match_strings.size(); ++i) {
-      std::vector<std::string> chunks;
-      base::SplitString(match_strings[i], ',', &chunks);
+    for (const base::StringPiece& match :
+         base::SplitStringPiece(string, ":",
+                                base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      std::vector<base::StringPiece> chunks = base::SplitStringPiece(
+          match, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2U, chunks.size());
       matches->push_back(BookmarkMatch::MatchPosition());
       int chunks0, chunks1;
@@ -192,18 +192,20 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     { "abc def",                    "abc d",    "" },
   };
   for (size_t i = 0; i < arraysize(data); ++i) {
-    std::vector<std::string> titles;
-    base::SplitString(data[i].titles, ';', &titles);
     std::vector<TitleAndURL> bookmarks;
-    for (size_t j = 0; j < titles.size(); ++j) {
-      TitleAndURL bookmark(titles[j], kAboutBlankURL);
+    for (const std::string& title : base::SplitString(
+             data[i].titles, ";",
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      TitleAndURL bookmark(title, kAboutBlankURL);
       bookmarks.push_back(bookmark);
     }
     AddBookmarks(bookmarks);
 
     std::vector<std::string> expected;
-    if (!data[i].expected.empty())
-      base::SplitString(data[i].expected, ';', &expected);
+    if (!data[i].expected.empty()) {
+      expected = base::SplitString(data[i].expected, ";",
+                                   base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    }
 
     ExpectMatches(data[i].query, query_parser::MatchingAlgorithm::DEFAULT,
                   expected);
@@ -251,18 +253,20 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingAlwaysPrefixSearch) {
     { "ab cdef;abcd;abcd cdefg",    "ab cdef",  "ab cdef;abcd cdefg" },
   };
   for (size_t i = 0; i < arraysize(data); ++i) {
-    std::vector<std::string> titles;
-    base::SplitString(data[i].titles, ';', &titles);
     std::vector<TitleAndURL> bookmarks;
-    for (size_t j = 0; j < titles.size(); ++j) {
-      TitleAndURL bookmark(titles[j], kAboutBlankURL);
+    for (const std::string& title : base::SplitString(
+             data[i].titles, ";",
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      TitleAndURL bookmark(title, kAboutBlankURL);
       bookmarks.push_back(bookmark);
     }
     AddBookmarks(bookmarks);
 
     std::vector<std::string> expected;
-    if (!data[i].expected.empty())
-      base::SplitString(data[i].expected, ';', &expected);
+    if (!data[i].expected.empty()) {
+      expected = base::SplitString(data[i].expected, ";",
+                                   base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    }
 
     ExpectMatches(data[i].query,
                   query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,

@@ -711,15 +711,12 @@ std::string TemplateURLRef::ParseURL(const std::string& url,
   // Handles the post parameters.
   const std::string& post_params_string = GetPostParamsString();
   if (!post_params_string.empty()) {
-    typedef std::vector<std::string> Strings;
-    Strings param_list;
-    base::SplitString(post_params_string, ',', &param_list);
-
-    for (Strings::const_iterator iterator = param_list.begin();
-         iterator != param_list.end(); ++iterator) {
-      Strings parts;
+    for (const base::StringPiece& cur : base::SplitStringPiece(
+             post_params_string, ",",
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       // The '=' delimiter is required and the name must be not empty.
-      base::SplitString(*iterator, '=', &parts);
+      std::vector<std::string> parts = base::SplitString(
+          cur, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if ((parts.size() != 2U) || parts[0].empty())
         return std::string();
 

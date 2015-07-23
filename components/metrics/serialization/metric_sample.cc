@@ -118,8 +118,8 @@ scoped_ptr<MetricSample> MetricSample::HistogramSample(
 // static
 scoped_ptr<MetricSample> MetricSample::ParseHistogram(
     const std::string& serialized_histogram) {
-  std::vector<std::string> parts;
-  base::SplitString(serialized_histogram, ' ', &parts);
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      serialized_histogram, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (parts.size() != 5)
     return scoped_ptr<MetricSample>();
@@ -131,7 +131,7 @@ scoped_ptr<MetricSample> MetricSample::ParseHistogram(
     return scoped_ptr<MetricSample>();
   }
 
-  return HistogramSample(parts[0], sample, min, max, bucket_count);
+  return HistogramSample(parts[0].as_string(), sample, min, max, bucket_count);
 }
 
 // static
@@ -145,15 +145,15 @@ scoped_ptr<MetricSample> MetricSample::SparseHistogramSample(
 // static
 scoped_ptr<MetricSample> MetricSample::ParseSparseHistogram(
     const std::string& serialized_histogram) {
-  std::vector<std::string> parts;
-  base::SplitString(serialized_histogram, ' ', &parts);
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      serialized_histogram, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 2)
     return scoped_ptr<MetricSample>();
   int sample;
   if (parts[0].empty() || !base::StringToInt(parts[1], &sample))
     return scoped_ptr<MetricSample>();
 
-  return SparseHistogramSample(parts[0], sample);
+  return SparseHistogramSample(parts[0].as_string(), sample);
 }
 
 // static
@@ -168,9 +168,9 @@ scoped_ptr<MetricSample> MetricSample::LinearHistogramSample(
 // static
 scoped_ptr<MetricSample> MetricSample::ParseLinearHistogram(
     const std::string& serialized_histogram) {
-  std::vector<std::string> parts;
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      serialized_histogram, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   int sample, max;
-  base::SplitString(serialized_histogram, ' ', &parts);
   if (parts.size() != 3)
     return scoped_ptr<MetricSample>();
   if (parts[0].empty() || !base::StringToInt(parts[1], &sample) ||
@@ -178,7 +178,7 @@ scoped_ptr<MetricSample> MetricSample::ParseLinearHistogram(
     return scoped_ptr<MetricSample>();
   }
 
-  return LinearHistogramSample(parts[0], sample, max);
+  return LinearHistogramSample(parts[0].as_string(), sample, max);
 }
 
 // static

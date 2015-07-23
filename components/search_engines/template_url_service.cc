@@ -1281,7 +1281,9 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   data.favicon_url = GURL(specifics.favicon_url());
   data.show_in_default_list = specifics.show_in_default_list();
   data.safe_for_autoreplace = specifics.safe_for_autoreplace();
-  base::SplitString(specifics.input_encodings(), ';', &data.input_encodings);
+  data.input_encodings = base::SplitString(
+      specifics.input_encodings(), ";",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   // If the server data has duplicate encodings, we'll want to push an update
   // below to correct it.  Note that we also fix this in
   // GetSearchProvidersUsingKeywordResult(), since otherwise we'd never correct

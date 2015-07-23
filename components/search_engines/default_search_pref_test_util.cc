@@ -41,14 +41,10 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
   value->Set(DefaultSearchManager::kSearchTermsReplacementKey,
              new base::StringValue(search_terms_replacement_key));
 
-  std::vector<std::string> encodings_items;
-  base::SplitString(encodings, ';', &encodings_items);
   scoped_ptr<base::ListValue> encodings_list(new base::ListValue);
-  for (std::vector<std::string>::const_iterator it = encodings_items.begin();
-       it != encodings_items.end();
-       ++it) {
-    encodings_list->AppendString(*it);
-  }
+  for (const std::string& term : base::SplitString(
+           encodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+    encodings_list->AppendString(term);
   value->Set(DefaultSearchManager::kInputEncodings, encodings_list.release());
 
   scoped_ptr<base::ListValue> alternate_url_list(new base::ListValue());

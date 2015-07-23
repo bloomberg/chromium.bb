@@ -312,34 +312,32 @@ void CorrectLanguageCodeTypo(std::string* code) {
 bool IsValidLanguageCode(const std::string& code) {
   // Roughly check if the language code follows /[a-zA-Z]{2,3}(-[a-zA-Z]{2})?/.
   // TODO(hajimehoshi): How about es-419, which is used as an Accept language?
-  std::vector<std::string> chunks;
-  base::SplitString(code, '-', &chunks);
+  std::vector<base::StringPiece> chunks = base::SplitStringPiece(
+      code, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (chunks.size() < 1 || 2 < chunks.size())
     return false;
 
-  const std::string& main_code = chunks[0];
+  const base::StringPiece& main_code = chunks[0];
 
   if (main_code.size() < 1 || 3 < main_code.size())
     return false;
 
-  for (std::string::const_iterator it = main_code.begin();
-       it != main_code.end(); ++it) {
-    if (!base::IsAsciiAlpha(*it))
+  for (char c : main_code) {
+    if (!base::IsAsciiAlpha(c))
       return false;
   }
 
   if (chunks.size() == 1)
     return true;
 
-  const std::string& sub_code = chunks[1];
+  const base::StringPiece& sub_code = chunks[1];
 
   if (sub_code.size() != 2)
     return false;
 
-  for (std::string::const_iterator it = sub_code.begin();
-       it != sub_code.end(); ++it) {
-    if (!base::IsAsciiAlpha(*it))
+  for (char c : sub_code) {
+    if (!base::IsAsciiAlpha(c))
       return false;
   }
 
@@ -348,17 +346,17 @@ bool IsValidLanguageCode(const std::string& code) {
 
 bool IsSameOrSimilarLanguages(const std::string& page_language,
                               const std::string& cld_language) {
-  std::vector<std::string> chunks;
-
-  base::SplitString(page_language, '-', &chunks);
+  std::vector<std::string> chunks = base::SplitString(
+      page_language, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (chunks.size() == 0)
     return false;
-  std::string page_language_main_part = chunks[0];
+  std::string page_language_main_part = chunks[0];  // Need copy.
 
-  base::SplitString(cld_language, '-', &chunks);
+  chunks = base::SplitString(
+      cld_language, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (chunks.size() == 0)
     return false;
-  std::string cld_language_main_part = chunks[0];
+  const std::string& cld_language_main_part = chunks[0];
 
   // Language code part of |page_language| is matched to one of |cld_language|.
   // Country code is ignored here.
