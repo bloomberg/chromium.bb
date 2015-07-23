@@ -14,9 +14,7 @@
         '../url/url.gyp:url_lib',
         '../ui/gfx/gfx.gyp:gfx',
       ],
-      'defines': [
-        'SECURE_DISPLAY_IMPLEMENTATION',
-      ],
+
       'sources': [
         # Note: file list duplicated in GN build.
         'secure_display/elide_url.h',
