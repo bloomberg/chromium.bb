@@ -15,21 +15,27 @@ import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellActivity.AppMenuHandlerFactory;
-import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.shell.R;
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Tests AppMenu popup
  */
-public class AppMenuTest extends ChromeShellTestBase {
+public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+    private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>poit.</html>");
+
     private AppMenu mAppMenu;
-    private AppMenuHandlerForTest mAppMenuHandler;
+    private AppMenuHandler mAppMenuHandler;
 
     /**
      * AppMenuHandler that will be used to intercept item selections for testing.
@@ -50,22 +56,34 @@ public class AppMenuTest extends ChromeShellTestBase {
         void onOptionsItemSelected(MenuItem item) {
             mLastSelectedItemId = item.getItemId();
         }
+    }
 
+    public AppMenuTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(TEST_URL);
     }
 
     @Override
     protected void setUp() throws Exception {
+        // We need list selection; ensure we are not in touch mode.
+        getInstrumentation().setInTouchMode(false);
+
+        ChromeActivity.setAppMenuHandlerFactoryForTesting(
+                new ChromeActivity.AppMenuHandlerFactory() {
+                    @Override
+                    public AppMenuHandler get(Activity activity, AppMenuPropertiesDelegate delegate,
+                            int menuResourceId) {
+                        mAppMenuHandler =
+                                new AppMenuHandlerForTest(activity, delegate, menuResourceId);
+                        return mAppMenuHandler;
+                    }
+                });
+
         super.setUp();
-        ChromeShellActivity.setAppMenuHandlerFactory(new AppMenuHandlerFactory() {
-            @Override
-            public AppMenuHandler getAppMenuHandler(Activity activity,
-                    AppMenuPropertiesDelegate delegate, int menuResourceId) {
-                mAppMenuHandler = new AppMenuHandlerForTest(activity, delegate, menuResourceId);
-                return mAppMenuHandler;
-            }
-        });
-        launchChromeShellWithBlankPage();
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
         showAppMenuAndAssertMenuShown();
         mAppMenu = getActivity().getAppMenuHandler().getAppMenuForTest();
@@ -82,6 +100,20 @@ public class AppMenuTest extends ChromeShellTestBase {
             }
         }));
         getInstrumentation().waitForIdleSync();
+    }
+
+    /**
+     * Verify opening a new tab from the menu.
+     */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @SmallTest
+    @Feature({"Browser", "Main"})
+    public void testMenuNewTab() throws InterruptedException {
+        final int tabCountBefore = getActivity().getCurrentTabModel().getCount();
+        ChromeTabUtils.newTabFromMenu(getInstrumentation(), (ChromeTabbedActivity) getActivity());
+        final int tabCountAfter = getActivity().getCurrentTabModel().getCount();
+        assertTrue("Expected: " + (tabCountBefore + 1) + " Got: " + tabCountAfter,
+                tabCountBefore + 1 == tabCountAfter);
     }
 
     /**
@@ -181,11 +213,12 @@ public class AppMenuTest extends ChromeShellTestBase {
     }
 
     private void showAppMenuAndAssertMenuShown() throws InterruptedException {
-        final View menuButton = getActivity().findViewById(R.id.menu_button);
+        final View anchor = getActivity().findViewById(R.id.menu_anchor_stub);
+
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                menuButton.performClick();
+                mAppMenuHandler.showAppMenu(anchor, false, false);
             }
         });
         assertTrue("AppMenu did not show",

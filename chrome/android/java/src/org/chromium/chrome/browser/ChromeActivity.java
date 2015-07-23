@@ -138,6 +138,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
         ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver {
     /**
+     * Factory which creates the AppMenuHandler.
+     */
+    public interface AppMenuHandlerFactory {
+        /**
+         * @return AppMenuHandler for the given activity and menu resource id.
+         */
+        public AppMenuHandler get(Activity activity,
+                AppMenuPropertiesDelegate delegate, int menuResourceId);
+    }
+
+    /**
      * No control container to inflate during initialization.
      */
     private static final int NO_CONTROL_CONTAINER = -1;
@@ -198,6 +209,22 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private OnPreDrawListener mFirstDrawListener;
 
     private final Locale mCurrentLocale = Locale.getDefault();
+
+    private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
+        @Override
+        public AppMenuHandler get(
+                Activity activity, AppMenuPropertiesDelegate delegate, int menuResourceId) {
+            return new AppMenuHandler(activity, delegate, menuResourceId);
+        }
+    };
+
+    /**
+     * @param The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
+     */
+    @VisibleForTesting
+    public static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
+        sAppMenuHandlerFactory = factory;
+    }
 
     @Override
     public void preInflationStartup() {
@@ -320,8 +347,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         assert controlContainer != null;
         ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
         mAppMenuPropertiesDelegate = createAppMenuPropertiesDelegate();
-        mAppMenuHandler = new AppMenuHandler(this,
-                mAppMenuPropertiesDelegate, getAppMenuLayoutId());
+        mAppMenuHandler = sAppMenuHandlerFactory.get(this, mAppMenuPropertiesDelegate,
+                getAppMenuLayoutId());
         mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
                 mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator());
         mAppMenuHandler.addObserver(new AppMenuObserver() {
