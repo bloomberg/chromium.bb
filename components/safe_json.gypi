@@ -65,6 +65,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../content/content.gyp:content_common',
         '../content/content.gyp:content_utility',
         '../ipc/ipc.gyp:ipc',
       ],
