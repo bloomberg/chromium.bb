@@ -98,6 +98,21 @@ public:
 
     static void dumpMemoryStats(PartitionStatsDumper*);
 
+    ALWAYS_INLINE static void* bufferMalloc(size_t n)
+    {
+        return partitionAllocGeneric(bufferPartition(), n);
+    }
+
+    ALWAYS_INLINE static void* bufferRealloc(void* p, size_t n)
+    {
+        return partitionReallocGeneric(bufferPartition(), p, n);
+    }
+
+    ALWAYS_INLINE static void bufferFree(void* p)
+    {
+        partitionFreeGeneric(bufferPartition(), p);
+    }
+
 private:
     static int s_initializationLock;
     static bool s_initialized;

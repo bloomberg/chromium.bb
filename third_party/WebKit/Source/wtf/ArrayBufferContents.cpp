@@ -109,7 +109,7 @@ void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy polic
 
 void ArrayBufferContents::freeMemory(void* data, size_t size)
 {
-    partitionFreeGeneric(WTF::Partitions::bufferPartition(), data);
+    Partitions::bufferFree(data);
     if (s_adjustAmountOfExternalAllocatedMemoryFunction)
         s_adjustAmountOfExternalAllocatedMemoryFunction(-static_cast<int>(size));
 }

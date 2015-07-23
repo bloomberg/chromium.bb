@@ -261,12 +261,12 @@ void StringStats::printStats()
 void* StringImpl::operator new(size_t size)
 {
     ASSERT(size == sizeof(StringImpl));
-    return partitionAllocGeneric(Partitions::bufferPartition(), size);
+    return Partitions::bufferMalloc(size);
 }
 
 void StringImpl::operator delete(void* ptr)
 {
-    partitionFreeGeneric(Partitions::bufferPartition(), ptr);
+    Partitions::bufferFree(ptr);
 }
 
 inline StringImpl::~StringImpl()
@@ -295,7 +295,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::bufferPartition(), allocationSize<LChar>(length)));
+    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferMalloc(allocationSize<LChar>(length)));
 
     data = reinterpret_cast<LChar*>(string + 1);
     return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
@@ -311,7 +311,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::bufferPartition(), allocationSize<UChar>(length)));
+    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferMalloc(allocationSize<UChar>(length)));
 
     data = reinterpret_cast<UChar*>(string + 1);
     return adoptRef(new (string) StringImpl(length));
@@ -328,7 +328,7 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     // Same as createUninitialized() except here we use realloc.
     size_t size = is8Bit ? allocationSize<LChar>(length) : allocationSize<UChar>(length);
     originalString->~StringImpl();
-    StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::bufferPartition(), originalString.leakRef(), size));
+    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferRealloc(originalString.leakRef(), size));
     if (is8Bit)
         return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
     return adoptRef(new (string) StringImpl(length));
@@ -379,7 +379,7 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
 
     WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
-    StringImpl* impl = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::bufferPartition(), size));
+    StringImpl* impl = static_cast<StringImpl*>(Partitions::bufferMalloc(size));
 
     LChar* data = reinterpret_cast<LChar*>(impl + 1);
     impl = new (impl) StringImpl(length, hash, StaticString);
