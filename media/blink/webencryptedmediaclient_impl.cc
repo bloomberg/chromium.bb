@@ -122,9 +122,9 @@ void WebEncryptedMediaClientImpl::CreateCdm(
     const blink::WebString& key_system,
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
-    blink::WebContentDecryptionModuleResult result) {
+    scoped_ptr<blink::WebContentDecryptionModuleResult> result) {
   WebContentDecryptionModuleImpl::Create(
-      cdm_factory_, key_system, security_origin, cdm_config, result);
+      cdm_factory_, key_system, security_origin, cdm_config, result.Pass());
 }
 
 void WebEncryptedMediaClientImpl::OnRequestSucceeded(

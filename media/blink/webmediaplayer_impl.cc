@@ -687,7 +687,21 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     return;
   }
 
-  SetCdm(BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result),
+  // Although unlikely, it is possible that multiple calls happen
+  // simultaneously, so fail this call if there is already one pending.
+  if (set_cdm_result_) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
+        "Unable to set MediaKeys object at this time.");
+    return;
+  }
+
+  // Create a local copy of |result| to avoid problems with the callback
+  // getting passed to the media thread and causing |result| to be destructed
+  // on the wrong thread in some failure conditions.
+  set_cdm_result_.reset(new blink::WebContentDecryptionModuleResult(result));
+
+  SetCdm(BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnCdmAttached),
          ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext());
 }
 
@@ -729,17 +743,17 @@ void WebMediaPlayerImpl::SetCdm(const CdmAttachedCB& cdm_attached_cb,
     pipeline_.SetCdm(cdm_context, cdm_attached_cb);
 }
 
-void WebMediaPlayerImpl::OnCdmAttached(
-    blink::WebContentDecryptionModuleResult result,
-    bool success) {
+void WebMediaPlayerImpl::OnCdmAttached(bool success) {
   if (success) {
-    result.complete();
+    set_cdm_result_->complete();
+    set_cdm_result_.reset();
     return;
   }
 
-  result.completeWithError(
+  set_cdm_result_->completeWithError(
       blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
       "Unable to set MediaKeys object");
+  set_cdm_result_.reset();
 }
 
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,

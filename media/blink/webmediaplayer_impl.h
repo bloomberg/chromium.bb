@@ -226,8 +226,7 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   void SetCdm(const CdmAttachedCB& cdm_attached_cb, CdmContext* cdm_context);
 
   // Called when a CDM has been attached to the |pipeline_|.
-  void OnCdmAttached(blink::WebContentDecryptionModuleResult result,
-                     bool success);
+  void OnCdmAttached(bool success);
 
   // Updates |paused_time_| to the current media time with consideration for the
   // |ended_| state by clamping current time to duration upon |ended_|.
@@ -326,6 +325,8 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
   EncryptedMediaPlayerSupport encrypted_media_support_;
+
+  scoped_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
 
   scoped_ptr<RendererFactory> renderer_factory_;
 

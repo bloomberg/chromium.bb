@@ -48,7 +48,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   void CreateCdm(const blink::WebString& key_system,
                  const blink::WebSecurityOrigin& security_origin,
                  const CdmConfig& cdm_config,
-                 blink::WebContentDecryptionModuleResult result);
+                 scoped_ptr<blink::WebContentDecryptionModuleResult> result);
 
  private:
   // Report usage of key system to UMA. There are 2 different counts logged:

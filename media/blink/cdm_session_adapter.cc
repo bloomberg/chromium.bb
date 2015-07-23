@@ -33,7 +33,7 @@ void CdmSessionAdapter::CreateCdm(
     const std::string& key_system,
     const GURL& security_origin,
     const CdmConfig& cdm_config,
-    blink::WebContentDecryptionModuleResult result) {
+    scoped_ptr<blink::WebContentDecryptionModuleResult> result) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "CdmSessionAdapter::CreateCdm",
                            ++trace_id_);
 
@@ -43,6 +43,10 @@ void CdmSessionAdapter::CreateCdm(
   // holding a reference to the CdmSessionAdapter. Bind OnCdmCreated() with
   // |this| instead of |weak_this| to prevent |this| from being destructed.
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
+
+  DCHECK(!cdm_created_result_);
+  cdm_created_result_ = result.Pass();
+
   cdm_factory->Create(
       key_system, security_origin, cdm_config,
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
@@ -50,8 +54,8 @@ void CdmSessionAdapter::CreateCdm(
       base::Bind(&CdmSessionAdapter::OnLegacySessionError, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this),
-      base::Bind(&CdmSessionAdapter::OnCdmCreated, this, key_system, start_time,
-                 result));
+      base::Bind(&CdmSessionAdapter::OnCdmCreated, this, key_system,
+                 start_time));
 }
 
 void CdmSessionAdapter::SetServerCertificate(
@@ -127,7 +131,6 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
 void CdmSessionAdapter::OnCdmCreated(
     const std::string& key_system,
     base::TimeTicks start_time,
-    blink::WebContentDecryptionModuleResult result,
     scoped_ptr<MediaKeys> cdm,
     const std::string& error_message) {
   DVLOG(2) << __FUNCTION__;
@@ -138,9 +141,10 @@ void CdmSessionAdapter::OnCdmCreated(
                          error_message);
 
   if (!cdm) {
-    result.completeWithError(
+    cdm_created_result_->completeWithError(
         blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
         blink::WebString::fromUTF8(error_message));
+    cdm_created_result_.reset();
     return;
   }
 
@@ -153,8 +157,9 @@ void CdmSessionAdapter::OnCdmCreated(
 
   cdm_ = cdm.Pass();
 
-  result.completeWithContentDecryptionModule(
+  cdm_created_result_->completeWithContentDecryptionModule(
       new WebContentDecryptionModuleImpl(this));
+  cdm_created_result_.reset();
 }
 
 void CdmSessionAdapter::OnSessionMessage(

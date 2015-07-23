@@ -30,11 +30,12 @@ class WebContentDecryptionModuleSessionImpl;
 class MEDIA_EXPORT WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
-  static void Create(CdmFactory* cdm_factory,
-                     const base::string16& key_system,
-                     const blink::WebSecurityOrigin& security_origin,
-                     const CdmConfig& cdm_config,
-                     blink::WebContentDecryptionModuleResult result);
+  static void Create(
+      CdmFactory* cdm_factory,
+      const base::string16& key_system,
+      const blink::WebSecurityOrigin& security_origin,
+      const CdmConfig& cdm_config,
+      scoped_ptr<blink::WebContentDecryptionModuleResult> result);
 
   virtual ~WebContentDecryptionModuleImpl();
 
