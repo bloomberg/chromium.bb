@@ -2553,14 +2553,11 @@ ScriptValue WebGLRenderingContextBase::getBufferParameter(ScriptState* scriptSta
             return WebGLAny(scriptState, static_cast<unsigned>(value));
         }
     case GL_BUFFER_SIZE:
-        if (!isWebGL2OrHigher()) {
+        {
             GLint value = 0;
             webContext()->getBufferParameteriv(target, pname, &value);
-            return WebGLAny(scriptState, value);
-        }
-        {
-            GLint64 value = 0;
-            webContext()->getBufferParameteri64v(target, pname, &value);
+            if (!isWebGL2OrHigher())
+                return WebGLAny(scriptState, value);
             return WebGLAny(scriptState, static_cast<GLint64>(value));
         }
     default:
