@@ -237,7 +237,7 @@ class BootstrapStage(PatchChangesStage):
 
   def HandleApplyFailures(self, failures):
     """Handle the case where patches fail to apply."""
-    if self._run.config.pre_cq:
+    if self._run.options.pre_cq or self._run.config.pre_cq:
       # Let the PreCQSync stage handle this failure. The PreCQSync stage will
       # comment on CLs with the appropriate message when they fail to apply.
       #

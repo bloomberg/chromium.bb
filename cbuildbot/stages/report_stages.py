@@ -393,7 +393,7 @@ class ReportStage(generic_stages.BuilderStage,
         self._run.config.overlays,
         self._run.config.name,
         self._run.ConstructDashboardURL())
-    pre_cq = self._run.config.pre_cq
+    pre_cq = self._run.config.pre_cq or self._run.options.pre_cq
     if pre_cq and msg.HasFailureType(failures_lib.InfrastructureFailure):
       name = self._run.config.name
       title = 'pre-cq infra failures'

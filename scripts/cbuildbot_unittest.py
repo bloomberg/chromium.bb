@@ -28,6 +28,7 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
     argv = ['x86-generic-paladin']
     (options, _) = cbuildbot._ParseCommandLine(parser, argv)
     options.buildbot = False
+    options.pre_cq = False
 
     build_config = dict(pre_cq=False,
                         manifest_version=False)
@@ -43,6 +44,11 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
     # Default options.
     _TestConfig(False)
 
+    # In Pre-CQ mode, we run as as a distributed builder.
+    options.pre_cq = True
+    _TestConfig(True)
+
+    options.pre_cq = False
     build_config['pre_cq'] = True
     _TestConfig(True)
 
