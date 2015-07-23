@@ -159,7 +159,7 @@ def _IsDistributedBuilder(options, chrome_rev, build_config):
   Returns:
     True if the builder should be a distributed_builder
   """
-  if build_config['pre_cq'] or options.pre_cq:
+  if build_config['pre_cq']:
     return True
   elif not options.buildbot:
     return False
@@ -643,8 +643,6 @@ def _CreateParser():
             "target is a cq target, and we're in buildbot mode."))
   group.add_option('--pass-through', dest='pass_through_args', action='append',
                    type='string', default=[])
-  group.add_remote_option('--pre-cq', action='store_true', default=False,
-                          help='Mark CLs as tested by the PreCQ on success.')
   group.add_option('--reexec-api-version', dest='output_api_version',
                    action='store_true', default=False,
                    help=('Used for handling forwards/backwards compatibility '

@@ -306,7 +306,7 @@ class DistributedBuilder(SimpleBuilder):
     """
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
-    if self._run.config.pre_cq or self._run.options.pre_cq:
+    if self._run.config.pre_cq:
       sync_stage = self._GetStageInstance(sync_stages.PreCQSyncStage,
                                           self.patch_pool.gerrit_patches)
       self.completion_stage_class = completion_stages.PreCQCompletionStage
