@@ -8,6 +8,11 @@ import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
+if (is_android) {
+  import("//build/config/android/internal_rules.gni")
+  import("//mojo/generate_mojo_shell_assets_list.gni")
+}
+
 grit("html_viewer_resources_grit") {
   source = "html_viewer_resources.grd"
   outputs = [
@@ -235,6 +240,33 @@ mojo_native_application("layout_test_html_viewer") {
   }
 }
 
+if (is_android) {
+  html_viewer_unittests_assets = "$root_build_dir/html_viewer_unittests_assets"
+
+  copy_ex("copy_unittest_assets") {
+    clear_dir = true
+    deps = [
+      ":pak",
+      "//gin",
+      "//third_party/icu:icudata",
+    ]
+    dest = html_viewer_unittests_assets
+    sources = [
+      "$root_build_dir/html_viewer.pak",
+      "$root_build_dir/icudtl.dat",
+      "$root_build_dir/natives_blob.bin",
+      "$root_build_dir/snapshot_blob.bin",
+    ]
+  }
+
+  generate_mojo_shell_assets_list("build_unittest_assets") {
+    deps = [
+      ":copy_unittest_assets",
+    ]
+    dir = html_viewer_unittests_assets
+  }
+}
+
 test("html_viewer_unittests") {
   sources = [
     "ax_provider_impl_unittest.cc",
@@ -246,7 +278,13 @@ test("html_viewer_unittests") {
     ":pak",
     "//base/test:test_support",
     "//third_party/mojo/src/mojo/edk/system",
+    "//ui/mojo/init",
   ]
+
+  if (is_android) {
+    deps += [ ":build_unittest_assets" ]
+    apk_asset_location = html_viewer_unittests_assets
+  }
 }
 
 mojo_native_application("apptests") {
