@@ -117,7 +117,8 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
         consentWindow.contentWindow.addEventListener('load', onLoad, false);
       };
       chrome.app.window.create(
-          'feedback_consent.html', windowAttributes, onCreate);
+          '_modules/koejkfhmphamcgafjmkellhnekdkopod/feedback_consent.html',
+          windowAttributes, onCreate);
       break;
 
     case remoting.ApplicationContextMenu.kShowStatsId:
@@ -126,7 +127,7 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
 
     case remoting.ApplicationContextMenu.kShowCreditsId:
       chrome.app.window.create(
-          'credits.html',
+          '_modules/koejkfhmphamcgafjmkellhnekdkopod/credits.html',
           {
             'width': 800,
             'height': 600,
