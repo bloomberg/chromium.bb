@@ -381,6 +381,9 @@ cvox.ActiveIndicator.prototype.clientRectsFromNodes_ = function(nodes) {
       while (!node.getClientRects) {
         node = node.parentElement;
       }
+      if (!node) {
+        return [];
+      }
       var nodeRects = node.getClientRects();
       for (var j = 0; j < nodeRects.length; ++j)
         clientRects.push(nodeRects[j]);
