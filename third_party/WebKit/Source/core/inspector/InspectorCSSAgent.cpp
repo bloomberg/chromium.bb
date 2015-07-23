@@ -1505,7 +1505,7 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
-CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(Element* element, CSSPropertyID propertyId)
+PassRefPtrWillBeRawPtr<CSSStyleDeclaration> InspectorCSSAgent::findEffectiveDeclaration(Element* element, CSSPropertyID propertyId)
 {
     PseudoId elementPseudoId = element->pseudoId();
     CSSStyleDeclaration* inlineStyle =  element->style();
@@ -1523,7 +1523,7 @@ CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(Element* elemen
 
     String longhand = getPropertyNameString(propertyId);
 
-    CSSStyleDeclaration* foundStyle = nullptr;
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle;
     bool isImportant = false;
 
     if (inlineStyle && !inlineStyle->getPropertyValue(longhand).isEmpty()) {
@@ -1558,7 +1558,7 @@ CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(Element* elemen
             foundStyle = style;
     }
 
-    return foundStyle;
+    return foundStyle.release();
 }
 
 void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, CSSPropertyID propertyId, const String& value)
@@ -1575,7 +1575,7 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
     String longhand = getPropertyNameString(propertyId);
 
-    CSSStyleDeclaration* foundStyle = findEffectiveDeclaration(element, propertyId);
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> foundStyle = findEffectiveDeclaration(element, propertyId);
     CSSStyleDeclaration* inlineStyle =  element->style();
     if (!foundStyle || !foundStyle->parentStyleSheet())
         foundStyle = inlineStyle;

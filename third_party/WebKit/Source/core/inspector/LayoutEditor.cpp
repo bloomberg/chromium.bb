@@ -117,11 +117,12 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
 
 RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
 {
-    CSSStyleDeclaration* style = m_cssAgent->findEffectiveDeclaration(m_element.get(), property);
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(m_element.get(), property);
     if (!style)
         return nullptr;
+
     RefPtrWillBeRawPtr<CSSValue> cssValue = style->getPropertyCSSValueInternal(property);
-    if (!cssValue->isPrimitiveValue())
+    if (!cssValue || !cssValue->isPrimitiveValue())
         return nullptr;
 
     return toCSSPrimitiveValue(cssValue.get());
