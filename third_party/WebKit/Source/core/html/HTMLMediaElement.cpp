@@ -3686,6 +3686,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
     visitor->trace(m_mediaController);
 #if ENABLE(WEB_AUDIO)
+    visitor->trace(m_audioSourceProvider);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
 #endif
     HeapSupplementable<HTMLMediaElement>::trace(visitor);
@@ -3784,6 +3785,11 @@ void HTMLMediaElement::AudioClientImpl::setFormat(size_t numberOfChannels, float
 }
 
 DEFINE_TRACE(HTMLMediaElement::AudioClientImpl)
+{
+    visitor->trace(m_client);
+}
+
+DEFINE_TRACE(HTMLMediaElement::AudioSourceProviderImpl)
 {
     visitor->trace(m_client);
 }

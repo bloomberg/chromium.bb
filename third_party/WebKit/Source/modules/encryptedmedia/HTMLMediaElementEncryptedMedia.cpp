@@ -297,14 +297,14 @@ HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia(HTMLMediaElement&
 {
 }
 
-#if !ENABLE(OILPAN)
 HTMLMediaElementEncryptedMedia::~HTMLMediaElementEncryptedMedia()
 {
+#if !ENABLE(OILPAN)
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::~HTMLMediaElementEncryptedMedia");
     if (m_mediaKeys)
         m_mediaKeys->clearMediaElement();
-}
 #endif
+}
 
 const char* HTMLMediaElementEncryptedMedia::supplementName()
 {

@@ -24,9 +24,8 @@ class ScriptState;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
 
-class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement>, public WebMediaPlayerEncryptedMediaClient {
+class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public NoBaseWillBeGarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement>, public WebMediaPlayerEncryptedMediaClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
 public:
     // encrypted media extensions (v0.1b)
     static void webkitGenerateKeyRequest(HTMLMediaElement&, const String& keySystem, PassRefPtr<DOMUint8Array> initData, ExceptionState&);
@@ -56,6 +55,8 @@ public:
 
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
     static const char* supplementName();
+
+    ~HTMLMediaElementEncryptedMedia();
 
     DECLARE_VIRTUAL_TRACE();
 

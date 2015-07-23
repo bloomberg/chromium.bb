@@ -586,6 +586,7 @@ private:
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider.
     // provideInput() calls into Chromium to get a rendered audio stream.
     class AudioSourceProviderImpl final : public AudioSourceProvider {
+        DISALLOW_ALLOCATION();
     public:
         AudioSourceProviderImpl()
             : m_webAudioSourceProvider(nullptr)
@@ -601,9 +602,11 @@ private:
         void setClient(AudioSourceProviderClient*) override;
         void provideInput(AudioBus*, size_t framesToProcess) override;
 
+        DECLARE_TRACE();
+
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;
-        Persistent<AudioClientImpl> m_client;
+        PersistentWillBeMember<AudioClientImpl> m_client;
         Mutex provideInputLock;
     };
 
