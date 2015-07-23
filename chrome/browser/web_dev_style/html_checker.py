@@ -46,9 +46,9 @@ class HtmlChecker(object):
 
   def I18nContentJavaScriptCaseCheck(self, line_number, line):
     regex = self.input_api.re.compile("""
-        (?:^|\s)           # start of line or whitespace
-        i18n-content="     # i18n-content="
-        ([A-Z]|.*[_-].*")  # starts with caps or contains '-' or '_'
+        (?:^|\s)                      # start of line or whitespace
+        i18n-content="                # i18n-content="
+        ([A-Z][^"]*|[^"]*[-_][^"]*)"  # starts with caps or contains '-' or '_'
         """,
         self.input_api.re.VERBOSE)
     return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,

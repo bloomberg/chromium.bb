@@ -140,6 +140,7 @@ class HtmlCheckerTest(SuperMoxTestBase):
     lines = [
       ' i18n-content="abc" ',
       'i18n-content="fooBar"',
+      'i18n-content="validName" attr="invalidName_"',
       '<div i18n-content="exampleTitle"',
     ]
     for line in lines:
