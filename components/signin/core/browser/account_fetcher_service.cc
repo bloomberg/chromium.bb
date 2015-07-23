@@ -22,6 +22,14 @@ namespace {
 const base::TimeDelta kRefreshFromTokenServiceDelay =
     base::TimeDelta::FromHours(24);
 
+bool AccountSupportsUserInfo(const std::string& account_id) {
+  // Supervised users use a specially scoped token which when used for general
+  // purposes causes the token service to raise spurious auth errors.
+  // TODO(treib): this string is also used in supervised_user_constants.cc.
+  // Should put in a common place.
+  return account_id != "managed_user@localhost";
+}
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // IsRefreshTokenDeviceIdExperimentEnabled is called from
 // SendRefreshTokenAnnotationRequest only on desktop platforms.
@@ -121,7 +129,7 @@ void AccountFetcherService::UpdateChildInfo() {
   if (accounts.size() == 1) {
     if (accounts[0] == child_request_account_id_)
       return;
-    if (child_info_request_)
+    if (!child_request_account_id_.empty())
       ResetChildInfo();
     StartFetchingChildInfo(accounts[0]);
   } else {
@@ -174,6 +182,8 @@ void AccountFetcherService::StartFetchingUserInfo(
 // Starts fetching whether this is a child account. Handles refresh internally.
 void AccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
+  if (!AccountSupportsUserInfo(account_id))
+    return;
   child_request_account_id_ = account_id;
   child_info_request_.reset(new ChildAccountInfoFetcher(
       token_service_, signin_client_->GetURLRequestContext(), this,
@@ -204,12 +214,7 @@ void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
   account_tracker_service_->StartTrackingAccount(account_id);
   const AccountTrackerService::AccountInfo& info =
       account_tracker_service_->GetAccountInfo(account_id);
-
-  // Don't bother fetching for supervised users since this causes the token
-  // service to raise spurious auth errors.
-  // TODO(treib): this string is also used in supervised_user_constants.cc.
-  // Should put in a common place.
-  if (account_id == "managed_user@localhost")
+  if (!AccountSupportsUserInfo(account_id))
     return;
 
 // |only_fetch_if_invalid| is false when the service is due for a timed update.
