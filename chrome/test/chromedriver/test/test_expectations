@@ -214,7 +214,11 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'])
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
-    _OS_NEGATIVE_FILTER['android:chrome']
+    _OS_NEGATIVE_FILTER['android:chrome'] + [
+        'ClickTest.testShouldClickOnFirstBoundingClientRectWithNonZeroSize',
+        'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
+        'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
+    ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_shell'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
