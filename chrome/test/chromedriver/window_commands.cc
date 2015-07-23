@@ -817,9 +817,10 @@ Status ExecuteScreenshot(
     if (status.IsError())
       return status;
     status = extension->CaptureScreenshot(&screenshot);
-    // If the screenshot was forbidden, fallback to DevTools.
-    if (status.code() == kForbidden)
+    if (status.IsError()) {
+      LOG(WARNING) << "screenshot failed with extension, fallback to DevTools";
       status = web_view->CaptureScreenshot(&screenshot);
+    }
   } else {
     status = web_view->CaptureScreenshot(&screenshot);
   }
