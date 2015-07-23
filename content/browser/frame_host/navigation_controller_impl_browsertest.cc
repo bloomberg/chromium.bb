@@ -1387,8 +1387,69 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(0U, entry->root_node()->children.size());
   }
 
-  // TODO(creis): Add tests for another subframe on B, and for a subframe on A
-  // within it.  Both are currently broken.
+  // 4. Create a third iframe on the same site as the second.  This ensures that
+  // the commit type is correct even when the subframe process already exists.
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + foo_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // The last committed NavigationEntry shouldn't have changed.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(main_url, entry->GetURL());
+  root_entry = entry->root_node()->frame_entry.get();
+  EXPECT_EQ(main_url, root_entry->url());
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should now have 3 subframe FrameNavigationEntries.
+    ASSERT_EQ(3U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[2]->frame_entry.get();
+    EXPECT_EQ(foo_url, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+
+  // 5. Create a nested iframe on the original site (A-B-A).
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + frame_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    FrameTreeNode* child = root->child_at(2);
+    EXPECT_TRUE(content::ExecuteScript(child->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // The last committed NavigationEntry shouldn't have changed.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(main_url, entry->GetURL());
+  root_entry = entry->root_node()->frame_entry.get();
+  EXPECT_EQ(main_url, root_entry->url());
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // There should be a corresponding FrameNavigationEntry.
+    ASSERT_EQ(1U, entry->root_node()->children[2]->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[2]->children[0]->frame_entry.get();
+    EXPECT_EQ(frame_url, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
 
   // Check the end result of the frame tree.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1397,8 +1458,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(
         " Site A ------------ proxies for B\n"
         "   |--Site A ------- proxies for B\n"
+        "   |--Site B ------- proxies for A\n"
+        "   |    +--Site B -- proxies for A\n"
         "   +--Site B ------- proxies for A\n"
-        "        +--Site B -- proxies for A\n"
+        "        +--Site A -- proxies for B\n"
         "Where A = http://127.0.0.1/\n"
         "      B = http://foo.com/",
         visualizer.DepictFrameTree(root));

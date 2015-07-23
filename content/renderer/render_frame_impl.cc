@@ -3156,16 +3156,9 @@ void RenderFrameImpl::willSendRequest(
     }
   }
 
-  WebFrame* top_frame = frame->top();
-  // TODO(nasko): Hack around asking about top-frame data source. This means
-  // for out-of-process iframes we are treating the current frame as the
-  // top-level frame, which is wrong.
-  if (!top_frame || top_frame->isWebRemoteFrame())
-    top_frame = frame;
-  WebDataSource* provisional_data_source = top_frame->provisionalDataSource();
-  WebDataSource* top_data_source = top_frame->dataSource();
+  WebDataSource* provisional_data_source = frame->provisionalDataSource();
   WebDataSource* data_source =
-      provisional_data_source ? provisional_data_source : top_data_source;
+      provisional_data_source ? provisional_data_source : frame->dataSource();
 
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   DCHECK(document_state);
@@ -3174,8 +3167,7 @@ void RenderFrameImpl::willSendRequest(
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   ui::PageTransition transition_type = navigation_state->GetTransitionType();
-  WebDataSource* frame_ds = frame->provisionalDataSource();
-  if (frame_ds && frame_ds->isClientRedirect()) {
+  if (provisional_data_source && provisional_data_source->isClientRedirect()) {
     transition_type = ui::PageTransitionFromInt(
         transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   }
@@ -3304,13 +3296,17 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_stream_override(stream_override.Pass());
   request.setExtraData(extra_data);
 
-  DocumentState* top_document_state =
-      DocumentState::FromDataSource(top_data_source);
-  if (top_document_state) {
-    // TODO(gavinp): separate out prefetching and prerender field trials
-    // if the rel=prerender rel type is sticking around.
-    if (request.requestContext() == WebURLRequest::RequestContextPrefetch)
-      top_document_state->set_was_prefetcher(true);
+  // TODO(creis): Update prefetching to work with out-of-process iframes.
+  WebFrame* top_frame = frame->top();
+  if (top_frame && top_frame->isWebLocalFrame()) {
+    DocumentState* top_document_state =
+        DocumentState::FromDataSource(top_frame->dataSource());
+    if (top_document_state) {
+      // TODO(gavinp): separate out prefetching and prerender field trials
+      // if the rel=prerender rel type is sticking around.
+      if (request.requestContext() == WebURLRequest::RequestContextPrefetch)
+        top_document_state->set_was_prefetcher(true);
+    }
   }
 
   // This is an instance where we embed a copy of the routing id
