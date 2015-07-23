@@ -287,6 +287,14 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
       if (alternative_service.host.empty()) {
         alternative_service.host = origin.host();
       }
+      // If the alternative service is equivalent to the origin (same host, same
+      // port, and both TCP), then there is already a Job for it, so do not
+      // return it here.
+      if (origin.Equals(alternative_service.host_port_pair()) &&
+          NPN_SPDY_MINIMUM_VERSION <= alternative_service.protocol &&
+          alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
+        continue;
+      }
       alternative_services_above_threshold.push_back(alternative_service);
     }
     return alternative_services_above_threshold;

@@ -269,6 +269,37 @@ TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  // Same hostname, same port, TCP: should be ignored.
+  AlternativeService alternative_service1(NPN_HTTP_2, "foo", 443);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service1, 1.0));
+  // Different hostname: GetAlternativeServices should return this one.
+  AlternativeService alternative_service2(NPN_HTTP_2, "bar", 443);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service2, 1.0));
+  // Different port: GetAlternativeServices should return this one too.
+  AlternativeService alternative_service3(NPN_HTTP_2, "foo", 80);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service3, 1.0));
+  // QUIC: GetAlternativeServices should return this one too.
+  AlternativeService alternative_service4(QUIC, "foo", 443);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service4, 1.0));
+
+  HostPortPair test_host_port_pair("foo", 443);
+  impl_.SetAlternativeServices(test_host_port_pair,
+                               alternative_service_info_vector);
+
+  const AlternativeServiceVector alternative_service_vector =
+      impl_.GetAlternativeServices(test_host_port_pair);
+  ASSERT_EQ(3u, alternative_service_vector.size());
+  EXPECT_EQ(alternative_service2, alternative_service_vector[0]);
+  EXPECT_EQ(alternative_service3, alternative_service_vector[1]);
+  EXPECT_EQ(alternative_service4, alternative_service_vector[2]);
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, DefaultProbabilityExcluded) {
   HostPortPair test_host_port_pair("foo", 80);
   const AlternativeService alternative_service(NPN_HTTP_2, "foo", 443);

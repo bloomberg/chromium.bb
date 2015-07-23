@@ -9127,7 +9127,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
-  const int kUnrestrictedAlternatePort = 1024;
+  const int kUnrestrictedAlternatePort = 1025;
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetParam()), "www.example.org",
       kUnrestrictedAlternatePort);

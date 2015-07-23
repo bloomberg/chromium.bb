@@ -704,7 +704,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
-  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 1234);
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
                                                     alternative_service, 1.0);
   IPAddressNumber actual_address;
@@ -776,7 +776,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   for (int i = 0; i < 200; ++i) {
     // Set up alternative_service for www.google.com:i.
     base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
-    alternative_service_dict->SetString("protocol_str", "npn-h2");
+    alternative_service_dict->SetString("protocol_str", "quic");
     alternative_service_dict->SetInteger("port", i);
     base::ListValue* alternative_service_list = new base::ListValue;
     alternative_service_list->Append(alternative_service_dict);
@@ -820,7 +820,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
         http_server_props_manager_->GetAlternativeServices(
             HostPortPair::FromString(server));
     ASSERT_EQ(1u, alternative_service_vector.size());
-    EXPECT_EQ(NPN_HTTP_2, alternative_service_vector[0].protocol);
+    EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
     EXPECT_EQ(i, alternative_service_vector[0].port);
   }
 
