@@ -106,6 +106,16 @@ Browser* CreateBrowser(ChromeUIThreadExtensionFunction* function,
   return browser;
 }
 
+// Use this function for reporting a tab id to an extension. It will
+// take care of setting the id to TAB_ID_NONE if necessary (for
+// example with devtools).
+int GetTabIdForExtensions(const WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser && !ExtensionTabUtil::BrowserSupportsTabs(browser))
+    return -1;
+  return SessionTabHelper::IdForTab(web_contents);
+}
+
 }  // namespace
 
 ExtensionTabUtil::OpenTabParams::OpenTabParams()
@@ -315,9 +325,6 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser && !ExtensionTabUtil::BrowserSupportsTabs(browser))
-    return -1;
   return SessionTabHelper::IdForTab(web_contents);
 }
 
@@ -377,7 +384,7 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
 
   base::DictionaryValue* result = new base::DictionaryValue();
   bool is_loading = contents->IsLoading();
-  result->SetInteger(keys::kIdKey, GetTabId(contents));
+  result->SetInteger(keys::kIdKey, GetTabIdForExtensions(contents));
   result->SetInteger(keys::kIndexKey, tab_index);
   result->SetInteger(keys::kWindowIdKey, GetWindowIdOfTab(contents));
   result->SetString(keys::kStatusKey, GetTabStatusText(is_loading));
@@ -415,7 +422,7 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
   if (tab_strip) {
     WebContents* opener = tab_strip->GetOpenerOfWebContentsAt(tab_index);
     if (opener)
-      result->SetInteger(keys::kOpenerTabIdKey, GetTabId(opener));
+      result->SetInteger(keys::kOpenerTabIdKey, GetTabIdForExtensions(opener));
   }
 
   return result;

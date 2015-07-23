@@ -786,6 +786,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsEventOnDevTools) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExecuteScriptOnDevTools) {
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary(
+          "{\"name\": \"Test\", \"version\": \"1.0\", \"permissions\": "
+          "[\"tabs\"]}"));
+  scoped_refptr<Extension> extension(
+      api_test_utils::CreateExtension(test_extension_value.get()));
+
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+
+  scoped_refptr<TabsExecuteScriptFunction> function =
+      new TabsExecuteScriptFunction();
+  function->set_extension(extension.get());
+
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(), base::StringPrintf("[%u, {\"code\": \"true\"}]",
+                                             api::windows::WINDOW_ID_CURRENT),
+          DevToolsWindowTesting::Get(devtools)->browser()),
+      manifest_errors::kCannotAccessPage));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
 // Tester class for the tabs.zoom* api functions.
 class ExtensionTabsZoomTest : public ExtensionTabsTest {
  public:
