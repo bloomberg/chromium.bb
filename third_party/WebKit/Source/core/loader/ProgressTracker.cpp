@@ -29,7 +29,9 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/Logging.h"
@@ -49,7 +51,7 @@ static const double initialProgressValue = 0.1;
 // until we're done.
 static const double finalProgressValue = 0.9; // 1.0 - initialProgressValue
 
-static const int progressItemDefaultEstimatedLength = 1024 * 16;
+static const int progressItemDefaultEstimatedLength = 1024 * 1024;
 
 struct ProgressItem {
     WTF_MAKE_NONCOPYABLE(ProgressItem); WTF_MAKE_FAST_ALLOCATED(ProgressItem);
@@ -69,6 +71,7 @@ PassOwnPtrWillBeRawPtr<ProgressTracker> ProgressTracker::create(LocalFrame* fram
 
 ProgressTracker::ProgressTracker(LocalFrame* frame)
     : m_frame(frame)
+    , m_mainResourceIdentifier(0)
     , m_totalPageAndResourceBytesToLoad(0)
     , m_totalBytesReceived(0)
     , m_lastNotifiedProgressValue(0)
@@ -128,19 +131,33 @@ void ProgressTracker::progressCompleted()
 {
     ASSERT(m_frame->isLoading());
     m_frame->setIsLoading(false);
+    sendFinalProgress();
+    reset();
+    m_frame->loader().client()->didStopLoading();
+    InspectorInstrumentation::frameStoppedLoading(m_frame);
+}
+
+void ProgressTracker::finishedParsing()
+{
+    if (m_frame->settings()->mainResourceOnlyProgress())
+        sendFinalProgress();
+}
+
+void ProgressTracker::sendFinalProgress()
+{
     if (!m_finalProgressChangedSent) {
         m_progressValue = 1;
         m_frame->loader().client()->progressEstimateChanged(m_progressValue);
     }
-    reset();
-    m_frame->loader().client()->didStopLoading();
-    InspectorInstrumentation::frameStoppedLoading(m_frame);
 }
 
 void ProgressTracker::incrementProgress(unsigned long identifier, const ResourceResponse& response)
 {
     if (!m_frame->isLoading())
         return;
+
+    if (m_frame->loader().provisionalDocumentLoader() && m_frame->loader().provisionalDocumentLoader()->mainResourceIdentifier() == identifier)
+        m_mainResourceIdentifier = identifier;
 
     long long estimatedLength = response.expectedContentLength();
     if (estimatedLength < 0)
@@ -156,8 +173,46 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const Resource
     }
 }
 
+void ProgressTracker::incrementProgressForMainResourceOnly(unsigned long identifier, int length)
+{
+    if (identifier != m_mainResourceIdentifier)
+        return;
+
+    ProgressItem* item = m_progressItems.get(identifier);
+    if (!item)
+        return;
+
+    item->bytesReceived += length;
+    if (item->bytesReceived > item->estimatedLength)
+        item->estimatedLength *= 2;
+    double newProgress = initialProgressValue + 0.1; // +0.1 for committing
+    if (m_frame->view()->didFirstLayout())
+        newProgress += 0.2;
+    // 0.4 possible so far, allow 0.5 from bytes loaded, for a max of 0.9.
+    newProgress += ((double) item->bytesReceived / (double) item->estimatedLength) / 2;
+
+    if (newProgress < m_progressValue)
+        return;
+
+    m_progressValue = newProgress;
+    double now = currentTime();
+    double notifiedProgressTimeDelta = now - m_lastNotifiedProgressTime;
+
+    double notificationProgressDelta = m_progressValue - m_lastNotifiedProgressValue;
+    if (notificationProgressDelta < m_progressNotificationInterval && notifiedProgressTimeDelta < m_progressNotificationTimeInterval)
+        return;
+    m_frame->loader().client()->progressEstimateChanged(m_progressValue);
+    m_lastNotifiedProgressValue = m_progressValue;
+    m_lastNotifiedProgressTime = now;
+}
+
 void ProgressTracker::incrementProgress(unsigned long identifier, int length)
 {
+    if (m_frame->settings()->mainResourceOnlyProgress()) {
+        incrementProgressForMainResourceOnly(identifier, length);
+        return;
+    }
+
     ProgressItem* item = m_progressItems.get(identifier);
 
     // FIXME: Can this ever happen?

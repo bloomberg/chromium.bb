@@ -356,3 +356,5 @@ textTrackTextSize type=String
 lowPriorityIframes initial=false
 
 reportWheelOverscroll initial=false
+
+mainResourceOnlyProgress initial=false

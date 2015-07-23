@@ -57,6 +57,8 @@ public:
     void progressStarted();
     void progressCompleted();
 
+    void finishedParsing();
+
     void incrementProgress(unsigned long identifier, const ResourceResponse&);
     void incrementProgress(unsigned long identifier, int);
     void completeProgress(unsigned long identifier);
@@ -67,9 +69,12 @@ public:
 private:
     explicit ProgressTracker(LocalFrame*);
 
+    void incrementProgressForMainResourceOnly(unsigned long identifier, int length);
+    void sendFinalProgress();
     void reset();
 
     RawPtrWillBeMember<LocalFrame> m_frame;
+    unsigned long m_mainResourceIdentifier;
     long long m_totalPageAndResourceBytesToLoad;
     long long m_totalBytesReceived;
     double m_lastNotifiedProgressValue;

@@ -475,6 +475,8 @@ void FrameLoader::finishedParsing()
     // Null-checking the FrameView indicates whether or not we're in the destructor.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame->view() ? m_frame.get() : nullptr);
 
+    m_progressTracker->finishedParsing();
+
     if (client())
         client()->dispatchDidFinishDocumentLoad(m_documentLoader->isCommittedButEmpty());
 
