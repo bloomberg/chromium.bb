@@ -59,7 +59,7 @@ var tests = [
   /**
    * Test that changes to window height bubble down to dropdowns correctly.
    */
-  function testUiManagerResizeDropdown() {
+  function testToolbarManagerResizeDropdown() {
     var mockWindow = new MockWindow(1920, 1080);
     var mockZoomToolbar = {
       clientHeight: 400
@@ -67,7 +67,8 @@ var tests = [
     var toolbar = document.getElementById('material-toolbar');
     var bookmarksDropdown = toolbar.$.bookmarks;
 
-    var uiManager = new UiManager(mockWindow, toolbar, mockZoomToolbar);
+    var toolbarManager =
+        new ToolbarManager(mockWindow, toolbar, mockZoomToolbar);
 
     chrome.test.assertTrue(bookmarksDropdown.lowerBound == 680);
 
@@ -75,10 +76,43 @@ var tests = [
     chrome.test.assertTrue(bookmarksDropdown.lowerBound == 80);
 
     chrome.test.succeed();
+  },
+
+  /**
+   * Test that the bookmarks menu can be closed by clicking the plugin and
+   * pressing escape.
+   */
+  function testOpenCloseBookmarks() {
+    var toolbar = $('material-toolbar');
+    toolbar.show();
+    var dropdown = toolbar.$.bookmarks;
+    var plugin = $('plugin');
+    var ESC_KEY = 27;
+
+    // Clicking on the plugin should close the bookmarks menu.
+    chrome.test.assertFalse(dropdown.dropdownOpen);
+    MockInteractions.tap(dropdown.$.icon);
+    chrome.test.assertTrue(dropdown.dropdownOpen);
+    MockInteractions.tap(plugin);
+    chrome.test.assertFalse(dropdown.dropdownOpen,
+        "Clicking plugin closes dropdown");
+
+    MockInteractions.tap(dropdown.$.icon);
+    chrome.test.assertTrue(dropdown.dropdownOpen);
+    MockInteractions.pressAndReleaseKeyOn(document, ESC_KEY);
+    chrome.test.assertFalse(dropdown.dropdownOpen,
+        "Escape key closes dropdown");
+    chrome.test.assertTrue(toolbar.opened,
+        "First escape key does not close toolbar");
+
+    MockInteractions.pressAndReleaseKeyOn(document, ESC_KEY);
+    chrome.test.assertFalse(toolbar.opened,
+        "Second escape key closes toolbar");
+
+    chrome.test.succeed();
   }
 ];
 
-var scriptingAPI = new PDFScriptingAPI(window, window);
-scriptingAPI.setLoadCallback(function() {
+importTestHelpers().then(function() {
   chrome.test.runTests(tests);
 });

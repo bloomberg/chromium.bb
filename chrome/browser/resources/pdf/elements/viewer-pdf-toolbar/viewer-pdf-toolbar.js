@@ -111,7 +111,16 @@
     },
 
     shouldKeepOpen: function() {
-      return this.$.bookmarks.dropdownOpen || this.loadProgress < 100;
+      return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
+          this.$.pageselector.isActive();
+    },
+
+    hideDropdowns: function() {
+      if (this.$.bookmarks.dropdownOpen) {
+        this.$.bookmarks.toggleDropdown();
+        return true;
+      }
+      return false;
     },
 
     setDropdownLowerBound: function(lowerBound) {

@@ -30,6 +30,7 @@ Polymer({
     var page = parseInt(this.pageNo);
     if (!isNaN(page)) {
       this.fire('change-page', {page: page - 1});
+      this.$.input.blur();
     }
   },
 
@@ -40,5 +41,12 @@ Polymer({
 
   select: function() {
     this.$.input.select();
+  },
+
+  /**
+   * @return {boolean} True if the selector input field is currently focused.
+   */
+  isActive: function() {
+    return this.shadowRoot.activeElement == this.$.input;
   }
 });

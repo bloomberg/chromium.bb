@@ -35,50 +35,48 @@ function shouldKeepUiOpen(e) {
 }
 
 /**
- * Creates a UI Manager to handle transitioning of toolbars.
+ * Constructs a Toolbar Manager, responsible for co-ordinating between multiple
+ * toolbar elements.
  * @constructor
  * @param {Object} window The window containing the UI.
  * @param {Object} toolbar The top toolbar element.
  * @param {Object} zoomToolbar The zoom toolbar element.
  */
-function UiManager(window, toolbar, zoomToolbar) {
+function ToolbarManager(window, toolbar, zoomToolbar) {
   this.window_ = window;
   this.toolbar_ = toolbar;
   this.zoomToolbar_ = zoomToolbar;
 
-  this.uiTimeout_ = null;
+  this.toolbarTimeout_ = null;
   this.keepOpen_ = false;
-
-  var userInputs = ['keydown', 'mousemove'];
-  for (var i = 0; i < userInputs.length; i++)
-    this.window_.addEventListener(userInputs[i], this.handleEvent.bind(this));
 
   this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
   this.resizeDropdowns_();
 }
 
-UiManager.prototype = {
-  handleEvent: function(e) {
+ToolbarManager.prototype = {
+
+  showToolbarsForMouseMove: function(e) {
     this.keepOpen_ = shouldKeepUiOpen(e);
-    if (e.type != 'mousemove' || this.keepOpen_ || isHighVelocityMouseMove(e))
-      this.showUi_();
+    if (this.keepOpen_ || isHighVelocityMouseMove(e))
+      this.showToolbars();
+    this.hideToolbarsAfterTimeout();
   },
 
   /**
-   * @private
-   * Display the toolbar and any pane that was previously opened.
+   * Display both UI toolbars.
    */
-  showUi_: function() {
+  showToolbars: function() {
     this.toolbar_.show();
     this.zoomToolbar_.show();
-    this.hideUiAfterTimeout();
   },
 
   /**
-   * @private
-   * Hide the toolbar and any pane that was previously opened.
+   * Check if the toolbars are able to be closed, and close them if they are.
+   * Toolbars may be kept open based on mouse/keyboard activity and active
+   * elements.
    */
-  hideUi_: function() {
+  hideToolbarsIfAllowed: function() {
     if (!(this.keepOpen_ || this.toolbar_.shouldKeepOpen())) {
       this.toolbar_.hide();
       this.zoomToolbar_.hide();
@@ -88,10 +86,20 @@ UiManager.prototype = {
   /**
    * Hide the toolbar after the HIDE_TIMEOUT has elapsed.
    */
-  hideUiAfterTimeout: function() {
-    if (this.uiTimeout_)
-      clearTimeout(this.uiTimeout_);
-    this.uiTimeout_ = setTimeout(this.hideUi_.bind(this), HIDE_TIMEOUT);
+  hideToolbarsAfterTimeout: function() {
+    if (this.toolbarTimeout_)
+      clearTimeout(this.toolbarTimeout_);
+    this.toolbarTimeout_ =
+        setTimeout(this.hideToolbarsIfAllowed.bind(this), HIDE_TIMEOUT);
+  },
+
+  /**
+   * Hide the 'topmost' layer of toolbars. Hides any dropdowns that are open, or
+   * hides the basic toolbars otherwise.
+   */
+  hideSingleToolbarLayer: function() {
+    if (!this.toolbar_.hideDropdowns())
+      this.hideToolbarsIfAllowed();
   },
 
   /**
