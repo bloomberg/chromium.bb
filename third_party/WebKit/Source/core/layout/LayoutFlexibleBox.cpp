@@ -247,9 +247,6 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
 
         prepareOrderIteratorAndMargins();
 
-        ChildFrameRects oldChildRects;
-        appendChildFrameRects(oldChildRects);
-
         layoutFlexItems(relayoutChildren, layoutScope);
 
         LayoutBlock::finishDelayUpdateScrollInfo();
@@ -270,14 +267,6 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
     updateScrollInfoAfterLayout();
 
     clearNeedsLayout();
-}
-
-void LayoutFlexibleBox::appendChildFrameRects(ChildFrameRects& childFrameRects)
-{
-    for (LayoutBox* child = m_orderIterator.first(); child; child = m_orderIterator.next()) {
-        if (!child->isOutOfFlowPositioned())
-            childFrameRects.append(child->frameRect());
-    }
 }
 
 void LayoutFlexibleBox::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
