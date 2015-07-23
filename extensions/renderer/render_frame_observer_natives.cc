@@ -4,8 +4,11 @@
 
 #include "extensions/renderer/render_frame_observer_natives.h"
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 
 namespace extensions {
@@ -20,7 +23,19 @@ class LoadWatcher : public content::RenderFrameObserver {
               v8::Local<v8::Function> cb)
       : content::RenderFrameObserver(frame),
         context_(context),
-        callback_(context->isolate(), cb) {}
+        callback_(context->isolate(), cb) {
+    if (ExtensionFrameHelper::Get(frame)->
+            did_create_current_document_element()) {
+      // If the document element is already created, then we can call the
+      // callback immediately (though post it to the message loop so as to not
+      // call it re-entrantly).
+      // The Unretained is safe because this class manages its own lifetime.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&LoadWatcher::CallbackAndDie, base::Unretained(this),
+                     true));
+    }
+  }
 
   void DidCreateDocumentElement() override { CallbackAndDie(true); }
 

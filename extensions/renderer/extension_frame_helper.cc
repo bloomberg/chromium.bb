@@ -54,7 +54,8 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
       view_type_(VIEW_TYPE_INVALID),
       tab_id_(-1),
       browser_window_id_(-1),
-      extension_dispatcher_(extension_dispatcher) {
+      extension_dispatcher_(extension_dispatcher),
+      did_create_current_document_element_(false) {
   g_frame_helpers.Get().insert(this);
 }
 
@@ -100,8 +101,13 @@ bool ExtensionFrameHelper::IsContextForEventPage(const ScriptContext* context) {
 }
 
 void ExtensionFrameHelper::DidCreateDocumentElement() {
+  did_create_current_document_element_ = true;
   extension_dispatcher_->DidCreateDocumentElement(
       render_frame()->GetWebFrame());
+}
+
+void ExtensionFrameHelper::DidCreateNewDocument() {
+  did_create_current_document_element_ = false;
 }
 
 void ExtensionFrameHelper::DidMatchCSS(

@@ -56,10 +56,14 @@ class ExtensionFrameHelper
   ViewType view_type() const { return view_type_; }
   int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
+  bool did_create_current_document_element() const {
+    return did_create_current_document_element_;
+  }
 
  private:
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
+  void DidCreateNewDocument() override;
   void DidMatchCSS(
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
@@ -104,6 +108,9 @@ class ExtensionFrameHelper
   int browser_window_id_;
 
   Dispatcher* extension_dispatcher_;
+
+  // Whether or not the current document element has been created.
+  bool did_create_current_document_element_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFrameHelper);
 };
