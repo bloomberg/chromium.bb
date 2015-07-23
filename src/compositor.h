@@ -147,7 +147,7 @@ struct weston_fixed_point {
 };
 
 struct weston_output_zoom {
-	int active;
+	bool active;
 	float increment;
 	float level;
 	float max_level;

@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "compositor.h"
 #include "text-cursor-position-server-protocol.h"
@@ -47,7 +48,7 @@ weston_zoom_frame_z(struct weston_animation *animation,
 
 	if (weston_spring_done(&output->zoom.spring_z)) {
 		if (output->zoom.active && output->zoom.level <= 0.0) {
-			output->zoom.active = 0;
+			output->zoom.active = false;
 			output->disable_planes--;
 			wl_list_remove(&output->zoom.motion_listener.link);
 		}
@@ -160,7 +161,7 @@ weston_output_activate_zoom(struct weston_output *output)
 	if (output->zoom.active)
 		return;
 
-	output->zoom.active = 1;
+	output->zoom.active = true;
 	output->disable_planes++;
 	wl_signal_add(&seat->pointer->motion_signal,
 		      &output->zoom.motion_listener);
@@ -169,7 +170,7 @@ weston_output_activate_zoom(struct weston_output *output)
 WL_EXPORT void
 weston_output_init_zoom(struct weston_output *output)
 {
-	output->zoom.active = 0;
+	output->zoom.active = false;
 	output->zoom.increment = 0.07;
 	output->zoom.max_level = 0.95;
 	output->zoom.level = 0.0;
