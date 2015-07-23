@@ -17,7 +17,7 @@ CredentialInfo::CredentialInfo(const autofill::PasswordForm& form,
     : type(form_type),
       id(form.username_value),
       name(form.display_name),
-      icon(form.avatar_url),
+      icon(form.icon_url),
       password(form.password_value),
       federation(form.federation_url) {
   switch (form_type) {
@@ -45,7 +45,7 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     return form.Pass();
 
   form.reset(new autofill::PasswordForm);
-  form->avatar_url = info.icon;
+  form->icon_url = info.icon;
   form->display_name = info.name;
   form->federation_url = info.federation;
   form->origin = origin;

@@ -163,7 +163,7 @@ void CheckFormsAgainstExpectations(
         created + base::TimeDelta::FromDays(
                       password_manager::kTestingDaysAfterPasswordsAreSynced),
         form->date_synced);
-    EXPECT_EQ(GURL(password_manager::kTestingAvatarUrlSpec), form->avatar_url);
+    EXPECT_EQ(GURL(password_manager::kTestingIconUrlSpec), form->icon_url);
   }
 }
 

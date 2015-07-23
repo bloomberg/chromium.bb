@@ -153,7 +153,7 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
        ForwardsAvatarFetchToManager) {
   ScopedVector<autofill::PasswordForm> local_forms;
   local_forms.push_back(Credential("taco"));
-  local_forms.back()->avatar_url = GURL("http://foo");
+  local_forms.back()->icon_url = GURL("http://foo");
   EXPECT_TRUE(ui_controller()->OnChooseCredentials(
       local_forms.Pass(),
       ScopedVector<autofill::PasswordForm>(),

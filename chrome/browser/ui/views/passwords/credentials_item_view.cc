@@ -105,10 +105,10 @@ CredentialsItemView::CredentialsItemView(
   DCHECK(image.Width() >= kAvatarImageSize &&
          image.Height() >= kAvatarImageSize);
   UpdateAvatar(image.AsImageSkia());
-  if (form_->avatar_url.is_valid()) {
+  if (form_->icon_url.is_valid()) {
     // Fetch the actual avatar.
     AccountAvatarFetcher* fetcher = new AccountAvatarFetcher(
-        form_->avatar_url, weak_ptr_factory_.GetWeakPtr());
+        form_->icon_url, weak_ptr_factory_.GetWeakPtr());
     fetcher->Start(request_context);
   }
   AddChildView(image_view_);

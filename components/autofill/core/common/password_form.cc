@@ -50,7 +50,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("form_data", form_data_string_stream.str());
   target->SetInteger("generation_upload_status", form.generation_upload_status);
   target->SetString("display_name", form.display_name);
-  target->SetString("avatar_url", form.avatar_url.possibly_invalid_spec());
+  target->SetString("icon_url", form.icon_url.possibly_invalid_spec());
   target->SetString("federation_url",
                     form.federation_url.possibly_invalid_spec());
   target->SetBoolean("skip_next_zero_click", form.skip_zero_click);
@@ -120,7 +120,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       form_data.SameFormAs(form.form_data) &&
       generation_upload_status == form.generation_upload_status &&
       display_name == form.display_name &&
-      avatar_url == form.avatar_url &&
+      icon_url == form.icon_url &&
       federation_url == form.federation_url &&
       skip_zero_click == form.skip_zero_click &&
       layout == form.layout &&

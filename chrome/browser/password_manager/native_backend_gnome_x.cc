@@ -154,7 +154,7 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   base::StringToInt64(string_attr_map["date_synced"], &date_synced);
   form->date_synced = base::Time::FromInternalValue(date_synced);
   form->display_name = UTF8ToUTF16(string_attr_map["display_name"]);
-  form->avatar_url = GURL(string_attr_map["avatar_url"]);
+  form->icon_url = GURL(string_attr_map["avatar_url"]);
   form->federation_url = GURL(string_attr_map["federation_url"]);
   form->skip_zero_click = uint_attr_map["skip_zero_click"];
   form->generation_upload_status =
@@ -370,7 +370,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "scheme", form.scheme,
       "date_synced", base::Int64ToString(date_synced).c_str(),
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
-      "avatar_url", form.avatar_url.spec().c_str(),
+      "avatar_url", form.icon_url.spec().c_str(),
       "federation_url", form.federation_url.spec().c_str(),
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,

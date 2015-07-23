@@ -294,11 +294,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
   test_form()->origin = origin;
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
-  test_form()->avatar_url = GURL("broken url");
+  test_form()->icon_url = GURL("broken url");
   local_credentials.push_back(new autofill::PasswordForm(*test_form()));
   ScopedVector<autofill::PasswordForm> federated_credentials;
-  GURL avatar_url("https://google.com/avatar.png");
-  test_form()->avatar_url = avatar_url;
+  GURL icon_url("https://google.com/icon.png");
+  test_form()->icon_url = icon_url;
   test_form()->display_name = base::ASCIIToUTF16("Peter Pen");
   test_form()->federation_url = GURL("https://google.com/federation");
   federated_credentials.push_back(new autofill::PasswordForm(*test_form()));
@@ -309,9 +309,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
       NULL,
       base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                  base::Unretained(&url_callback)));
-  factory.SetFakeResponse(avatar_url, std::string(), net::HTTP_OK,
+  factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
                           net::URLRequestStatus::FAILED);
-  EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
+  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
 
   SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
                          origin);
@@ -350,8 +350,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   test_form()->origin = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
-  GURL avatar_url("https://google.com/avatar.png");
-  test_form()->avatar_url = avatar_url;
+  GURL icon_url("https://google.com/icon.png");
+  test_form()->icon_url = icon_url;
   local_credentials.push_back(new autofill::PasswordForm(*test_form()));
 
   // Prepare to capture the network request.
@@ -360,9 +360,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
       NULL,
       base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                  base::Unretained(&url_callback)));
-  factory.SetFakeResponse(avatar_url, std::string(), net::HTTP_OK,
+  factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
                           net::URLRequestStatus::FAILED);
-  EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
+  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
 
   SetupAutoSignin(local_credentials.Pass());
   EXPECT_TRUE(IsBubbleShowing());
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
 
   // Open the bubble to manage accounts.
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, GetController()->state());
-  EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
+  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
   ManagePasswordsBubbleView::ShowBubble(
         browser()->tab_strip_model()->GetActiveWebContents(),
         ManagePasswordsBubble::USER_ACTION);

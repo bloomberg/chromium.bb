@@ -123,8 +123,8 @@ const CGFloat kVerticalPaddingBetweenLabels = 2.0f;
 
     // Use a default avatar and fetch the custom one, if it exists.
     [self updateAvatar:[[self class] defaultAvatar]];
-    if (passwordForm_.avatar_url.is_valid())
-      [delegate_ fetchAvatar:passwordForm_.avatar_url forView:self];
+    if (passwordForm_.icon_url.is_valid())
+      [delegate_ fetchAvatar:passwordForm_.icon_url forView:self];
 
     // When resizing, stick to the left (resp. right for RTL) edge.
     const NSUInteger autoresizingMask =

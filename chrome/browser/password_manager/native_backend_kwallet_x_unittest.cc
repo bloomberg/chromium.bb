@@ -169,7 +169,7 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_google_.date_synced = base::Time::Now();
     form_google_.date_created = old_form_google_.date_created;
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");
-    form_google_.avatar_url = GURL("http://www.google.com/avatar");
+    form_google_.icon_url = GURL("http://www.google.com/icon");
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::NEGATIVE_SIGNAL_SENT;
@@ -225,7 +225,7 @@ void NativeBackendKWalletTestBase::CheckPasswordForm(
   EXPECT_EQ(expected.scheme, actual.scheme);
   EXPECT_EQ(expected.date_synced, actual.date_synced);
   EXPECT_EQ(expected.display_name, actual.display_name);
-  EXPECT_EQ(expected.avatar_url, actual.avatar_url);
+  EXPECT_EQ(expected.icon_url, actual.icon_url);
   EXPECT_EQ(expected.federation_url, actual.federation_url);
   EXPECT_EQ(expected.skip_zero_click, actual.skip_zero_click);
   EXPECT_EQ(expected.generation_upload_status, actual.generation_upload_status);
@@ -984,7 +984,7 @@ void NativeBackendKWalletPickleTest::CreateVersion1PlusPickle(
   if (effective_version < 4)
     return;
   pickle->WriteString16(form.display_name);
-  pickle->WriteString(form.avatar_url.spec());
+  pickle->WriteString(form.icon_url.spec());
   pickle->WriteString(form.federation_url.spec());
   pickle->WriteBool(form.skip_zero_click);
   if (effective_version < 7)
@@ -1066,7 +1066,7 @@ void NativeBackendKWalletPickleTest::CheckVersion3Pickle() {
   PasswordForm form = form_google_;
   // Remove the fields which were not present in version #3.
   form.display_name = default_values.display_name;
-  form.avatar_url = default_values.avatar_url;
+  form.icon_url = default_values.icon_url;
   form.federation_url = default_values.federation_url;
   form.skip_zero_click = default_values.skip_zero_click;
   form.generation_upload_status = default_values.generation_upload_status;

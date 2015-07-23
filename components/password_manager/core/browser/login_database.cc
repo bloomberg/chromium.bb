@@ -112,7 +112,7 @@ void BindAddStatement(const PasswordForm& form,
               form_data_pickle.size());
   s->BindInt64(COLUMN_DATE_SYNCED, form.date_synced.ToInternalValue());
   s->BindString16(COLUMN_DISPLAY_NAME, form.display_name);
-  s->BindString(COLUMN_AVATAR_URL, form.avatar_url.spec());
+  s->BindString(COLUMN_AVATAR_URL, form.icon_url.spec());
   s->BindString(COLUMN_FEDERATION_URL, form.federation_url.spec());
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS, form.generation_upload_status);
@@ -653,7 +653,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(10, form.scheme);
   s.BindInt(11, form.type);
   s.BindString16(12, form.display_name);
-  s.BindString(13, form.avatar_url.spec());
+  s.BindString(13, form.icon_url.spec());
   s.BindString(14, form.federation_url.spec());
   s.BindInt(15, form.skip_zero_click);
   s.BindInt(16, form.generation_upload_status);
@@ -781,7 +781,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->date_synced =
       base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_SYNCED));
   form->display_name = s.ColumnString16(COLUMN_DISPLAY_NAME);
-  form->avatar_url = GURL(s.ColumnString(COLUMN_AVATAR_URL));
+  form->icon_url = GURL(s.ColumnString(COLUMN_AVATAR_URL));
   form->federation_url = GURL(s.ColumnString(COLUMN_FEDERATION_URL));
   form->skip_zero_click = (s.ColumnInt(COLUMN_SKIP_ZERO_CLICK) > 0);
   int generation_upload_status_int =

@@ -18,7 +18,7 @@ namespace password_manager {
 
 // These constants are used by CreatePasswordFormFromDataForTesting to supply
 // values not covered by PasswordFormData.
-extern const char kTestingAvatarUrlSpec[];
+extern const char kTestingIconUrlSpec[];
 extern const char kTestingFederationUrlSpec[];
 extern const int kTestingDaysAfterPasswordsAreSynced;
 

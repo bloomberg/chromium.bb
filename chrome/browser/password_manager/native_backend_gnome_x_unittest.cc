@@ -308,7 +308,7 @@ void CheckPasswordChanges(const PasswordStoreChangeList& expected_list,
     EXPECT_EQ(expected.scheme, actual.scheme);
     EXPECT_EQ(expected.date_synced, actual.date_synced);
     EXPECT_EQ(expected.display_name, actual.display_name);
-    EXPECT_EQ(expected.avatar_url, actual.avatar_url);
+    EXPECT_EQ(expected.icon_url, actual.icon_url);
     EXPECT_EQ(expected.federation_url, actual.federation_url);
     EXPECT_EQ(expected.skip_zero_click, actual.skip_zero_click);
     EXPECT_EQ(expected.generation_upload_status,
@@ -358,7 +358,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.date_created = base::Time::Now();
     form_google_.date_synced = base::Time::Now();
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");
-    form_google_.avatar_url = GURL("http://www.google.com/avatar");
+    form_google_.icon_url = GURL("http://www.google.com/icon");
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
@@ -375,7 +375,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_facebook_.date_created = base::Time::Now();
     form_facebook_.date_synced = base::Time::Now();
     form_facebook_.display_name = UTF8ToUTF16("Joe Schmoe");
-    form_facebook_.avatar_url = GURL("http://www.facebook.com/avatar");
+    form_facebook_.icon_url = GURL("http://www.facebook.com/icon");
     form_facebook_.federation_url = GURL("http://www.facebook.com/federation");
     form_facebook_.skip_zero_click = true;
     form_facebook_.generation_upload_status = PasswordForm::NO_SIGNAL_SENT;
@@ -474,7 +474,7 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckStringAttribute(item, "date_synced", base::Int64ToString(
         form.date_synced.ToInternalValue()));
     CheckStringAttribute(item, "display_name", UTF16ToUTF8(form.display_name));
-    CheckStringAttribute(item, "avatar_url", form.avatar_url.spec());
+    CheckStringAttribute(item, "avatar_url", form.icon_url.spec());
     CheckStringAttribute(item, "federation_url", form.federation_url.spec());
     CheckUint32Attribute(item, "skip_zero_click", form.skip_zero_click);
     CheckUint32Attribute(item, "generation_upload_status",

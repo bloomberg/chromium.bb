@@ -47,7 +47,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
   ASSERT_NE(nullptr, form.get());
 
-  EXPECT_EQ(info.icon, form->avatar_url);
+  EXPECT_EQ(info.icon, form->icon_url);
   EXPECT_EQ(info.name, form->display_name);
   EXPECT_EQ(origin_, form->origin);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, form->scheme);
@@ -72,7 +72,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
   ASSERT_NE(nullptr, form.get());
 
-  EXPECT_EQ(info.icon, form->avatar_url);
+  EXPECT_EQ(info.icon, form->icon_url);
   EXPECT_EQ(info.name, form->display_name);
   EXPECT_EQ(origin_, form->origin);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, form->scheme);

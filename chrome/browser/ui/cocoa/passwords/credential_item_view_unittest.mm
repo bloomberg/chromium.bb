@@ -85,7 +85,7 @@ autofill::PasswordForm CredentialWithName() {
 autofill::PasswordForm CredentialWithAvatar() {
   autofill::PasswordForm credential;
   credential.username_value = base::ASCIIToUTF16("sandwich");
-  credential.avatar_url = GURL("http://sandwich.com/pastrami.jpg");
+  credential.icon_url = GURL("http://sandwich.com/pastrami.jpg");
   return credential;
 }
 
@@ -94,7 +94,7 @@ autofill::PasswordForm CredentialWithNameAndAvatar() {
   autofill::PasswordForm credential;
   credential.username_value = base::ASCIIToUTF16("noodle");
   credential.display_name = base::ASCIIToUTF16("pasta amatriciana");
-  credential.avatar_url = GURL("http://pasta.com/amatriciana.png");
+  credential.icon_url = GURL("http://pasta.com/amatriciana.png");
   return credential;
 }
 
@@ -156,7 +156,7 @@ TEST_F(CredentialItemViewTest, CredentialWithAvatar) {
               [item upperLabel].stringValue);
   EXPECT_EQ(nil, [item lowerLabel]);
   EXPECT_TRUE([delegate() didFetchAvatar]);
-  EXPECT_EQ(form.avatar_url, [delegate() fetchedAvatarURL]);
+  EXPECT_EQ(form.icon_url, [delegate() fetchedAvatarURL]);
   EXPECT_EQ(item, [delegate() viewForFetchedAvatar]);
   EXPECT_TRUE(
       ImagesEqual([CredentialItemView defaultAvatar], [item avatarView].image));
@@ -174,7 +174,7 @@ TEST_F(CredentialItemViewTest, CredentialWithNameAndAvatar) {
   EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
               [item lowerLabel].stringValue);
   EXPECT_TRUE([delegate() didFetchAvatar]);
-  EXPECT_EQ(form.avatar_url, [delegate() fetchedAvatarURL]);
+  EXPECT_EQ(form.icon_url, [delegate() fetchedAvatarURL]);
   EXPECT_EQ(item, [delegate() viewForFetchedAvatar]);
   EXPECT_TRUE(
       ImagesEqual([CredentialItemView defaultAvatar], [item avatarView].image));

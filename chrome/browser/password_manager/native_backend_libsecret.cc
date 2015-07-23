@@ -186,7 +186,7 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->date_synced = base::Time::FromInternalValue(date_synced);
   form->display_name =
       UTF8ToUTF16(GetStringFromAttributes(attrs, "display_name"));
-  form->avatar_url = GURL(GetStringFromAttributes(attrs, "avatar_url"));
+  form->icon_url = GURL(GetStringFromAttributes(attrs, "avatar_url"));
   form->federation_url = GURL(GetStringFromAttributes(attrs, "federation_url"));
   form->skip_zero_click = GetUintFromAttributes(attrs, "skip_zero_click");
   form->generation_upload_status =
@@ -455,7 +455,7 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "scheme", form.scheme,
       "date_synced", base::Int64ToString(date_synced).c_str(),
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
-      "avatar_url", form.avatar_url.spec().c_str(),
+      "avatar_url", form.icon_url.spec().c_str(),
       "federation_url", form.federation_url.spec().c_str(),
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,

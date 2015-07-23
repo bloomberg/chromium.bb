@@ -14,7 +14,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-const char kTestingAvatarUrlSpec[] = "https://accounts.google.com/Avatar";
+const char kTestingIconUrlSpec[] = "https://accounts.google.com/Icon";
 const char kTestingFederationUrlSpec[] = "https://accounts.google.com/login";
 const int kTestingDaysAfterPasswordsAreSynced = 1;
 const wchar_t kTestingFederatedLoginMarker[] = L"__federated__";
@@ -54,7 +54,7 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
   } else {
     form->blacklisted_by_user = true;
   }
-  form->avatar_url = GURL(kTestingAvatarUrlSpec);
+  form->icon_url = GURL(kTestingIconUrlSpec);
   return form.Pass();
 }
 
