@@ -59,7 +59,6 @@ protected:
     void paintCaret(Node*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
-    LayoutBlock* caretPainter() const { return m_caretPainter; }
 
     void setCaretVisibility(CaretVisibility visibility) { m_caretVisibility = visibility; }
     bool caretIsVisible() const { return m_caretVisibility == Visible; }
@@ -69,7 +68,6 @@ protected:
     static void invalidateLocalCaretRect(Node*, const LayoutRect&);
 
 private:
-    LayoutBlock* m_caretPainter; // layout object responsible for painting the caret
     LayoutRect m_caretLocalRect; // caret rect in coords local to the layoutObject responsible for painting the caret
     CaretVisibility m_caretVisibility;
 };

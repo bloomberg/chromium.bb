@@ -36,7 +36,7 @@ class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretC
 public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 
-    LayoutBlock* caretLayoutObject() const { return CaretBase::caretPainter(); }
+    LayoutBlock* caretLayoutObject() const;
     void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
     bool isContentEditable() const { return m_position.rootEditableElement(); }

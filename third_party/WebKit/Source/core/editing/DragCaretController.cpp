@@ -102,6 +102,11 @@ DEFINE_TRACE(DragCaretController)
     visitor->trace(m_position);
 }
 
+LayoutBlock* DragCaretController::caretLayoutObject() const
+{
+    return CaretBase::caretLayoutObject(m_position.deepEquivalent().anchorNode());
+}
+
 void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
     if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)
