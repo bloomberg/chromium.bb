@@ -5,12 +5,12 @@
 -->
 <html>
 <head>
-<title>Automation Tests - Attributes</title>
+<title>Automation Tests - Mixin attributes</title>
 </head>
 <body>
-  <!-- activedescendant attribute, owns default attribute-->
+  <!-- activedescendant mixin, owns default mixin-->
   <input type="text" aria-activedescendant="opt6" aria-readonly="true"
-         aria-autocomplete="list" role="combobox"
+         aria-owns="combobox-list" aria-autocomplete="list" role="combobox"
          id="combobox-edit">
   <ul aria-expanded="true" role="listbox" id="combobox-list">
     <li role="option" id="opt1">Alabama</li>
@@ -22,14 +22,14 @@
     <li role="option" id="opt7">Colorado</li>
   </ul>
 
-  <!-- link attributes -->
+  <!-- link mixins -->
   <a href="about://blank" id="real-link">Real link</a>
   <div role="link" id="link-role">ARIA link</div>
 
-  <!-- editable text attributes -->
-  <input type="text" value="Text input" aria-label="text-input" id="text-input"></input>
-  <textarea aria-label="textarea">Textarea</textarea>
-  <div tabindex="0" contenteditable role="textbox" aria-label="textbox-role">
+  <!-- editable text mixins -->
+  <input type="text" value="Text input" id="text-input"></input>
+  <textarea id="textarea">Textarea</textarea>
+  <div tabindex="0" contenteditable role="textbox" id="textbox-role">
     Textbox
   </div>
 
@@ -37,22 +37,21 @@
     document.querySelector('#text-input').setSelectionRange(2, 8);
   </script>
 
-  <!-- range attributes -->
-  <input type="range" aria-label="range-input" max="5" value="4"></input>
+  <!-- range mixins -->
+  <input type="range" id="range-input" max="5" value="4"></input>
   <div tabindex="0" role="slider" aria-valuemin="1" aria-valuemax="10"
-       aria-valuenow="7" aria-valuetext="seven stars"
-       aria-label="slider-role"></div>
+       aria-valuenow="7" aria-valuetext="seven stars" id="slider-role"></div>
   <div tabindex="0" role="spinbutton" aria-valuemin="1" aria-valuemax="31"
        aria-valuenow="14" id="spinbutton-role"></div>
   <div tabindex="0" role="progressbar" aria-valuemin="0" aria-valuenow="0.9"
-       aria-valuemax="1.0" aria-label="progressbar-role"></div>
+       aria-valuemax="1.0" id="progressbar-role"></div>
   <div tabindex="0" role="scrollbar" aria-valuemin="0" aria-valuenow="0"
        aria-valuemax="1.0" aria-orientation="vertical" aria-controls="main"
        id="scrollbar-role"></div>
 
-  <div id="main" aria-label="main">Content for scrollbar to control</div>
+  <div id="main">Content for scrollbar to control</div>
 
-  <!-- table and cell attributes -->
+  <!-- table and cell mixins -->
   <table id="table" role="grid">
     <tr role="row">
       <td role="cell">Cell spanning one column</td>

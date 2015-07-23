@@ -5,47 +5,48 @@
 // Do not test orientation or hover attributes (similar to exclusions on native
 // accessibility), since they can be inconsistent depending on the environment.
 var RemoveUntestedStates = function(state) {
-  var result = JSON.parse(JSON.stringify(state));
-  delete result[StateType.horizontal];
-  delete result[StateType.hovered];
-  delete result[StateType.vertical];
-  return result;
+  delete state[StateType.horizontal];
+  delete state[StateType.hovered];
+  delete state[StateType.vertical];
 };
 
 var allTests = [
   function testSimplePage() {
     var title = rootNode.docTitle;
     assertEq('Automation Tests', title);
-
-    var state = RemoveUntestedStates(rootNode.state);
+    RemoveUntestedStates(rootNode.state);
     assertEq(
-        {enabled: true, focusable: true, readOnly: true},
-        state);
-
+      {enabled: true, focusable: true, readOnly: true},
+      rootNode.state);
     var children = rootNode.children;
     assertEq(RoleType.rootWebArea, rootNode.role);
     assertEq(1, children.length);
     var body = children[0];
     assertEq('body', body.htmlTag);
-    state = RemoveUntestedStates(body.state);
-    assertEq({enabled: true, readOnly: true}, state);
+
+    RemoveUntestedStates(body.state);
+    assertEq({enabled: true, readOnly: true},
+               body.state);
 
     var contentChildren = body.children;
     assertEq(3, contentChildren.length);
     var okButton = contentChildren[0];
     assertEq('Ok', okButton.name);
-    state = RemoveUntestedStates(okButton.state);
-    assertEq({enabled: true, focusable: true, readOnly: true}, state);
+    RemoveUntestedStates(okButton.state);
+    assertEq({enabled: true, focusable: true, readOnly: true},
+             okButton.state);
     var userNameInput = contentChildren[1];
     assertEq('Username',
              userNameInput.description);
-    state = RemoveUntestedStates(userNameInput.state);
-    assertEq({enabled: true, focusable: true}, state);
+    RemoveUntestedStates(userNameInput.state);
+    assertEq({enabled: true, focusable: true},
+             userNameInput.state);
     var cancelButton = contentChildren[2];
     assertEq('Cancel',
              cancelButton.name);
-    state = RemoveUntestedStates(cancelButton.state);
-    assertEq({enabled: true, focusable: true, readOnly: true}, state);
+    RemoveUntestedStates(cancelButton.state);
+    assertEq({enabled: true, focusable: true, readOnly: true},
+             cancelButton.state);
 
     // Traversal.
     assertEq(undefined, rootNode.parent);

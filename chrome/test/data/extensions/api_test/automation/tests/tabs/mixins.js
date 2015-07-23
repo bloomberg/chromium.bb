@@ -2,45 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ActiveDescendantAttribute = [ 'activedescendant' ];
-var LinkAttributes = [ 'url' ];
-var DocumentAttributes = [ 'docUrl',
-                           'docTitle',
-                           'docLoaded',
-                           'docLoadingProgress' ];
-var ScrollableAttributes = [ 'scrollX',
-                             'scrollXMin',
-                             'scrollXMax',
-                             'scrollY',
-                             'scrollYMin',
-                             'scrollYMax' ];
-var EditableTextAttributes = [ 'textSelStart',
-                               'textSelEnd' ];
-var RangeAttributes = [ 'valueForRange',
-                        'minValueForRange',
-                        'maxValueForRange' ];
-var TableAttributes = [ 'tableRowCount',
-                        'tableColumnCount' ];
-var TableCellAttributes = [ 'tableCellColumnIndex',
-                            'tableCellColumnSpan',
-                            'tableCellRowIndex',
-                            'tableCellRowSpan' ];
+var ActiveDescendantMixin = [ 'activedescendant' ];
+var LinkMixins = [ 'url' ];
+var DocumentMixins = [ 'docUrl',
+                       'docTitle',
+                       'docLoaded',
+                       'docLoadingProgress' ];
+var ScrollableMixins = [ 'scrollX',
+                         'scrollXMin',
+                         'scrollXMax',
+                         'scrollY',
+                         'scrollYMin',
+                         'scrollYMax' ];
+var EditableTextMixins = [ 'textSelStart',
+                           'textSelEnd' ];
+var RangeMixins = [ 'valueForRange',
+                    'minValueForRange',
+                    'maxValueForRange' ];
+var TableMixins = [ 'tableRowCount',
+                    'tableColumnCount' ];
+var TableCellMixins = [ 'tableCellColumnIndex',
+                        'tableCellColumnSpan',
+                        'tableCellRowIndex',
+                        'tableCellRowSpan' ];
 
 var allTests = [
-  function testDocumentAndScrollAttributes() {
-    for (var i = 0; i < DocumentAttributes.length; i++) {
-      var attribute = DocumentAttributes[i];
-      assertTrue(attribute in rootNode,
-                 'rootNode should have a ' + attribute + ' attribute');
+  function testDocumentAndScrollMixins() {
+    for (var i = 0; i < DocumentMixins.length; i++) {
+      var mixinAttribute = DocumentMixins[i];
+      assertTrue(mixinAttribute in rootNode,
+                 'rootNode should have a ' + mixinAttribute + ' attribute');
     }
-    for (var i = 0; i < ScrollableAttributes.length; i++) {
-      var attribute = ScrollableAttributes[i];
-      assertTrue(attribute in rootNode,
-                 'rootNode should have a ' + attribute + ' attribute');
+    for (var i = 0; i < ScrollableMixins.length; i++) {
+      var mixinAttribute = ScrollableMixins[i];
+      assertTrue(mixinAttribute in rootNode,
+                 'rootNode should have a ' + mixinAttribute + ' attribute');
     }
 
     assertEq(url, rootNode.docUrl);
-    assertEq('Automation Tests - Attributes', rootNode.docTitle);
+    assertEq('Automation Tests - Mixin attributes', rootNode.docTitle);
     assertEq(true, rootNode.docLoaded);
     assertEq(1, rootNode.docLoadingProgress);
     assertEq(0, rootNode.scrollX);
@@ -52,17 +52,22 @@ var allTests = [
     chrome.test.succeed();
   },
 
-  function testActiveDescendant() {
+  function testActiveDescendantAndOwns() {
     var combobox = rootNode.find({ role: 'comboBox' });
+
+    assertTrue('owns' in combobox, 'combobox should have an owns attribute');
+    assertEq(1, combobox.owns.length);
+    var listbox = rootNode.find({ role: 'listBox' });
+    assertEq(listbox, combobox.owns[0]);
+
     assertTrue('activedescendant' in combobox,
                'combobox should have an activedescendant attribute');
-    var listbox = rootNode.find({ role: 'listBox' });
     var opt6 = listbox.children[5];
     assertEq(opt6, combobox.activedescendant);
     chrome.test.succeed();
   },
 
-  function testLinkAttributes() {
+  function testLinkMixins() {
     var links = rootNode.findAll({ role: 'link' });
     assertEq(2, links.length);
 
@@ -73,56 +78,56 @@ var allTests = [
 
     var ariaLink = links[1];
     assertEq('ARIA link', ariaLink.name);
-    assertTrue('url' in ariaLink, 'ariaLink should have an empty url');
-    assertEq(undefined, ariaLink.url);
+    assertTrue('url' in ariaLink, 'ariaLink should have a url attribute');
+    assertEq('', ariaLink.url);
     chrome.test.succeed();
   },
 
-  function testEditableTextAttributes() {
+  function testEditableTextMixins() {
     var textFields = rootNode.findAll({ role: 'textField' });
     assertEq(3, textFields.length);
-    var EditableTextAttributes = [ 'textSelStart', 'textSelEnd' ];
+    var EditableTextMixins = [ 'textSelStart', 'textSelEnd' ];
     for (var i = 0; i < textFields.length; i++) {
       var textField = textFields[i];
-      var description = textField.description;
-      for (var j = 0; j < EditableTextAttributes.length; j++) {
-        var attribute = EditableTextAttributes[j];
-        assertTrue(attribute in textField,
-                   'textField (' + description + ') should have a ' +
-                   attribute + ' attribute');
+      var id = textField.attributes.id;
+      for (var j = 0; j < EditableTextMixins.length; j++) {
+        var mixinAttribute = EditableTextMixins[j];
+        assertTrue(mixinAttribute in textField,
+                   'textField (' + id + ') should have a ' + mixinAttribute +
+                   ' attribute');
       }
     }
     var input = textFields[0];
-    assertEq('text-input', input.description);
+    assertEq('text-input', input.attributes.id);
     assertEq(2, input.textSelStart);
     assertEq(8, input.textSelEnd);
 
     var textArea = textFields[1];
-    assertEq('textarea', textArea.description);
-    for (var i = 0; i < EditableTextAttributes.length; i++) {
-      var attribute = EditableTextAttributes[i];
-      assertTrue(attribute in textArea,
-                 'textArea should have a ' + attribute + ' attribute');
+    assertEq('textarea', textArea.attributes.id);
+    for (var i = 0; i < EditableTextMixins.length; i++) {
+      var mixinAttribute = EditableTextMixins[i];
+      assertTrue(mixinAttribute in textArea,
+                 'textArea should have a ' + mixinAttribute + ' attribute');
     }
     assertEq(0, textArea.textSelStart);
     assertEq(0, textArea.textSelEnd);
 
     var ariaTextbox = textFields[2];
-    assertEq('textbox-role', ariaTextbox.description);
+    assertEq('textbox-role', ariaTextbox.attributes.id);
     assertEq(0, ariaTextbox.textSelStart);
     assertEq(0, ariaTextbox.textSelEnd);
 
     chrome.test.succeed();
   },
 
-  function testRangeAttributes() {
+  function testRangeMixins() {
     var sliders = rootNode.findAll({ role: 'slider' });
     assertEq(2, sliders.length);
     var spinButtons = rootNode.findAll({ role: 'spinButton' });
     assertEq(1, spinButtons.length);
     var progressIndicators = rootNode.findAll({ role: 'progressIndicator' });
     assertEq(1, progressIndicators.length);
-    assertEq('progressbar-role', progressIndicators[0].description);
+    assertEq('progressbar-role', progressIndicators[0].attributes.id);
     var scrollBars = rootNode.findAll({ role: 'scrollBar' });
     assertEq(1, scrollBars.length);
 
@@ -131,22 +136,22 @@ var allTests = [
 
     for (var i = 0; i < ranges.length; i++) {
       var range = ranges[i];
-      for (var j = 0; j < RangeAttributes.length; j++) {
-        var attribute = RangeAttributes[j];
-        assertTrue(attribute in range,
-                   range.role + ' (' + range.description + ') should have a '
-                   + attribute + ' attribute');
+      for (var j = 0; j < RangeMixins.length; j++) {
+        var mixinAttribute = RangeMixins[j];
+        assertTrue(mixinAttribute in range,
+                   range.role + ' (' + range.attributes.id + ') should have a '
+                   + mixinAttribute + ' attribute');
       }
     }
 
     var inputRange = sliders[0];
-    assertEq('range-input', inputRange.description);
+    assertEq('range-input', inputRange.attributes.id);
     assertEq(4, inputRange.valueForRange);
     assertEq(0, inputRange.minValueForRange);
     assertEq(5, inputRange.maxValueForRange);
 
     var ariaSlider = sliders[1];
-    assertEq('slider-role', ariaSlider.description);
+    assertEq('slider-role', ariaSlider.attributes.id);
     assertEq(7, ariaSlider.valueForRange);
     assertEq(1, ariaSlider.minValueForRange);
     assertEq(10, ariaSlider.maxValueForRange);
@@ -167,7 +172,7 @@ var allTests = [
     chrome.test.succeed();
   },
 
-  function testTableAttributes() {
+  function testTableMixins() {
     var table = rootNode.find({ role: 'table' });;
     assertEq(3, table.tableRowCount);
     assertEq(3, table.tableColumnCount);
@@ -220,22 +225,22 @@ var allTests = [
     chrome.test.succeed();
   },
 
-  function testNoAttributes() {
-    var div = rootNode.find({ attributes: { description: 'main' } });
+  function testNoMixins() {
+    var div = rootNode.find({ attributes: { id: 'main' } });
     assertTrue(div !== undefined);
-    var allAttributes = [].concat(ActiveDescendantAttribute,
-                              LinkAttributes,
-                              DocumentAttributes,
-                              ScrollableAttributes,
-                              EditableTextAttributes,
-                              RangeAttributes,
-                              TableAttributes,
-                              TableCellAttributes);
-    for (var attributeAttr in allAttributes) {
-      assertFalse(attributeAttr in div);
+    var allMixins = [].concat(ActiveDescendantMixin,
+                              LinkMixins,
+                              DocumentMixins,
+                              ScrollableMixins,
+                              EditableTextMixins,
+                              RangeMixins,
+                              TableMixins,
+                              TableCellMixins);
+    for (var mixinAttr in allMixins) {
+      assertFalse(mixinAttr in div);
     }
     chrome.test.succeed();
   }
 ];
 
-setUpAndRunTests(allTests, 'attributes.html');
+setUpAndRunTests(allTests, 'mixins.html');

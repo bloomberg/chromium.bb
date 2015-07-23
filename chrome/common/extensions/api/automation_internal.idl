@@ -6,10 +6,46 @@
 // essentially a translation of the internal accessibility tree update system
 // into an extension API.
 namespace automationInternal {
+  dictionary Rect {
+    long left;
+    long top;
+    long width;
+    long height;
+  };
+
+  // A compact representation of the accessibility information for a
+  // single web object, in a form that can be serialized and sent from
+  // one process to another.
+  // See ui/accessibility/ax_node_data.h
+  dictionary AXNodeData {
+    long id;
+    DOMString role;
+    object state;
+    Rect location;
+
+    object? boolAttributes;
+    object? floatAttributes;
+    object? htmlAttributes;
+    object? intAttributes;
+    object? intlistAttributes;
+    object? stringAttributes;
+    long[] childIds;
+  };
+
+  dictionary AXTreeUpdate {
+    // ID of the node, if any, which should be invalidated before the new data
+    // is applied.
+    long nodeIdToClear;
+
+    // A vector of nodes to update according to the rules described in
+    // ui/accessibility/ax_tree_update.h.
+    AXNodeData[] nodes;
+  };
+
   // Data for an accessibility event and/or an atomic change to an accessibility
   // tree. See ui/accessibility/ax_tree_update.h for an extended explanation of
   // the tree update format.
-  [nocompile] dictionary AXEventParams {
+  dictionary AXEventParams {
     // The tree id of the web contents that this update is for.
     long treeID;
 
@@ -18,6 +54,10 @@ namespace automationInternal {
 
     // The type of event that this update represents.
     DOMString eventType;
+
+    // Serialized changes to the tree structure and node data that should be
+    // applied before processing the event.
+    AXTreeUpdate update;
   };
 
   // All possible actions that can be performed on automation nodes.
@@ -93,7 +133,5 @@ namespace automationInternal {
     static void onAccessibilityEvent(AXEventParams update);
 
     static void onAccessibilityTreeDestroyed(long treeID);
-
-    static void onTreeChange(long treeID, long nodeID, DOMString changeType);
   };
 };
