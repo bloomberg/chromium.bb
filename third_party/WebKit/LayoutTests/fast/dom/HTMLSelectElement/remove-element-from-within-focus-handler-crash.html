@@ -8,10 +8,7 @@
         testRunner.dumpAsText();
 
     var select = document.getElementById('bomb');
-
-    var rect = select.getBoundingClientRect();
-    if (window.eventSender) {
-        eventSender.mouseMoveTo(rect.left + 1, rect.top + 1);
-        eventSender.mouseDown(0);
-    }
+    var mouseEvent = document.createEvent("MouseEvents");
+    mouseEvent.initMouseEvent("mousedown", true, true, document.defaultView, 1, select.offsetLeft + 1, select.offsetTop + 1, select.offsetLeft + 1, select.offsetTop + 1, false, false, false, false, 0, document);
+    select.dispatchEvent(mouseEvent);
 </script>

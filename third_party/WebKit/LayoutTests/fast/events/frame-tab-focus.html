@@ -86,14 +86,10 @@ function setupWindow(win)
 
 function dispatchTabPress(element, shiftKey, altKey)
 {
-    if (window.eventSender) {
-        modifiers = [];
-        if (shiftKey)
-            modifiers.push("shiftKey");
-        if (altKey)
-            modifiers.push("altKey");
-        eventSender.keyDown('\u0009', modifiers);
-    }
+    var event = document.createEvent('KeyboardEvents');
+    var tabKeyIdentifier = 'U+0009';
+    event.initKeyboardEvent('keydown', true, true, document.defaultView, tabKeyIdentifier, 0, false, altKey, shiftKey, false, false);
+    element.dispatchEvent(event);
 }
 
 function test()

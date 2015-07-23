@@ -16,9 +16,16 @@
                 if (overflowElement) {
                     overflowElement.addEventListener("mousewheel", mousewheelHandler, false);
 
-                    // EventSender uses 40px per tick.
-                    eventSender.mouseMoveTo(overflowElement.offsetLeft + 5, overflowElement.offsetTop + 5);
-                    eventSender.mouseScrollBy(-2.5, -5);
+                    var deltaX = window.expectedScrollLeft;
+                    var deltaY = window.expectedScrollTop;
+                    var eventInit = {
+                        deltaX: deltaX,
+                        deltaY: deltaY,
+                        wheelDeltaX: -120 * deltaX,
+                        wheelDeltaY: -120 * deltaY,
+                    };
+                    var event = new WheelEvent("mousewheel", eventInit);
+                    overflowElement.dispatchEvent(event);
                 }
 
                 setTimeout('checkOffsets();', 100);
@@ -39,13 +46,13 @@
                 event = e;
                 shouldBe("event.deltaY", "window.expectedScrollTop");
                 shouldBe("event.deltaX", "window.expectedScrollLeft");
-                shouldBe("event.wheelDeltaY", "-5*120");
-                shouldBe("event.wheelDeltaX", "-2.5*120");
+                shouldBe("event.wheelDeltaY", "window.expectedScrollTop*-120");
+                shouldBe("event.wheelDeltaX", "window.expectedScrollLeft*-120");
 
                 if (e.wheelDeltaY)
-                    shouldBe("event.wheelDelta", "-5*120");
+                    shouldBe("event.wheelDelta", "window.expectedScrollTop*-120");
                 else
-                    shouldBe("event.wheelDelta", "-2.5*120");
+                    shouldBe("event.wheelDelta", "window.expectedScrollLeft*-120");
             }
         </script>
     </head>

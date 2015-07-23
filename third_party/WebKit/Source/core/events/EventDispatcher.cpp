@@ -203,14 +203,10 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
     // Pass the data from the preDispatchEventHandler to the postDispatchEventHandler.
     m_node->postDispatchEventHandler(m_event.get(), preDispatchEventHandlerResult);
 
-    // The DOM Events spec says that events dispatched by JS (other than "click")
-    // should not have their default handlers invoked.
-    bool isTrustedOrClick = !RuntimeEnabledFeatures::trustedEventsDefaultActionEnabled() || m_event->isTrusted() || (m_event->isMouseEvent() && toMouseEvent(*m_event).type() == EventTypeNames::click);
-
     // Call default event handlers. While the DOM does have a concept of preventing
     // default handling, the detail of which handlers are called is an internal
     // implementation detail and not part of the DOM.
-    if (!m_event->defaultPrevented() && !m_event->defaultHandled() && isTrustedOrClick) {
+    if (!m_event->defaultPrevented() && !m_event->defaultHandled()) {
         // Non-bubbling events call only one default event handler, the one for the target.
         m_node->willCallDefaultEventHandler(*m_event);
         m_node->defaultEventHandler(m_event.get());

@@ -141,10 +141,5 @@
     "base": "fast/workers",
     "args": ["--js-flags=--harmony-sharedarraybuffer",
              "--enable-blink-features=SharedArrayBuffer"]
-  },
-  {
-    "prefix": "trustedeventsdefaultaction",
-    "base": "fast/events",
-    "args": ["--enable-blink-features=TrustedEventsDefaultAction"]
   }
 ]

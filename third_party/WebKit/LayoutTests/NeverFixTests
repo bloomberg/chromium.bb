@@ -33,7 +33,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # this test will always fail.
 [ Linux Win ] fast/events/option-tab.html [ WontFix ]
 [ Linux Win ] virtual/pointerevent/fast/events/option-tab.html [ WontFix ]
-[ Linux Win ] virtual/trustedeventsdefaultaction/fast/events/option-tab.html [ WontFix ]
 
 # This test only applies to overlay scrollbar platforms.
 [ SnowLeopard Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
@@ -79,14 +78,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs.html [ WontFix ]
 [ Linux Mac ] virtual/pointerevent/fast/events/panScroll-panIcon.html [ WontFix ]
 [ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-click.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-click-hyperlink.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-drag.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-event-fired.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-in-iframe.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-nested-divs.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-panIcon.html [ WontFix ]
-[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
 
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ WontFix ]
@@ -102,9 +93,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-document.html [ WontFix ]
 [ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu.html [ WontFix ]
 [ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-position.html [ WontFix ]
-[ Mac ] virtual/trustedeventsdefaultaction/fast/events/menu-key-context-menu-document.html [ WontFix ]
-[ Mac ] virtual/trustedeventsdefaultaction/fast/events/menu-key-context-menu.html [ WontFix ]
-[ Mac ] virtual/trustedeventsdefaultaction/fast/events/menu-key-context-menu-position.html [ WontFix ]
 
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
