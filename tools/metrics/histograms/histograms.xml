@@ -16669,6 +16669,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.VideoFrameColorSpace" enum="VideoFrameColorSpace">
   <owner>mcasas@chromium.org</owner>
+  <owner>watk@chromium.org</owner>
   <summary>
     Color space or range used in HTML5 video. Emitted on video load.
   </summary>
@@ -16676,6 +16677,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.VideoFramePixelFormat" enum="VideoFramePixelFormat">
   <owner>mcasas@chromium.org</owner>
+  <owner>watk@chromium.org</owner>
   <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
 </histogram>
 
