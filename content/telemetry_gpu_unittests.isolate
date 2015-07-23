@@ -12,12 +12,13 @@
           # Other dependencies of the tests and their harness.
           '../third_party/typ/',
           '../third_party/trace-viewer/',
-          '../testing/test_env.py',
+          '../testing/scripts/common.py',
+          '../testing/scripts/run_telemetry_as_googletest.py',
           # The following represent the actual tests.
           '../content/test/gpu/',
         ],
         'command': [
-          '../testing/test_env.py',
+          '../testing/scripts/run_telemetry_as_googletest.py',
           '../content/test/gpu/run_unittests.py',
           '-v',
         ],
