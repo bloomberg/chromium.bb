@@ -239,7 +239,6 @@ DisplayInfo::DisplayInfo()
     : id_(gfx::Display::kInvalidDisplayID),
       has_overscan_(false),
       touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
-      touch_device_id_(0),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
@@ -256,7 +255,6 @@ DisplayInfo::DisplayInfo(int64 id,
       name_(name),
       has_overscan_(has_overscan),
       touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
-      touch_device_id_(0),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
@@ -292,7 +290,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   has_overscan_ = native_info.has_overscan_;
 
   touch_support_ = native_info.touch_support_;
-  touch_device_id_ = native_info.touch_device_id_;
+  input_devices_ = native_info.input_devices_;
   device_scale_factor_ = native_info.device_scale_factor_;
   DCHECK(!native_info.bounds_in_native_.IsEmpty());
   bounds_in_native_ = native_info.bounds_in_native_;
@@ -385,23 +383,30 @@ gfx::Size DisplayInfo::GetNativeModeSize() const {
 
 std::string DisplayInfo::ToString() const {
   int rotation_degree = static_cast<int>(GetActiveRotation()) * 90;
-  return base::StringPrintf(
+  std::string devices_str;
+
+  for (size_t i = 0; i < input_devices_.size(); ++i) {
+    devices_str += base::IntToString(input_devices_[i]);
+    if (i != input_devices_.size() - 1)
+      devices_str += ", ";
+  }
+
+  std::string result = base::StringPrintf(
       "DisplayInfo[%lld] native bounds=%s, size=%s, scale=%f, "
       "overscan=%s, rotation=%d, ui-scale=%f, touchscreen=%s, "
-      "touch-device-id=%d",
-      static_cast<long long int>(id_),
-      bounds_in_native_.ToString().c_str(),
-      size_in_pixel_.ToString().c_str(),
-      device_scale_factor_,
-      overscan_insets_in_dip_.ToString().c_str(),
-      rotation_degree,
+      "input_devices=[%s]",
+      static_cast<long long int>(id_), bounds_in_native_.ToString().c_str(),
+      size_in_pixel_.ToString().c_str(), device_scale_factor_,
+      overscan_insets_in_dip_.ToString().c_str(), rotation_degree,
       configured_ui_scale_,
       touch_support_ == gfx::Display::TOUCH_SUPPORT_AVAILABLE
           ? "yes"
           : touch_support_ == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE
                 ? "no"
                 : "unknown",
-      touch_device_id_);
+      devices_str.c_str());
+
+  return result;
 }
 
 std::string DisplayInfo::ToFullString() const {
@@ -435,6 +440,14 @@ bool DisplayInfo::IsColorProfileAvailable(
 
 bool DisplayInfo::Use125DSFForUIScaling() const {
   return use_125_dsf_for_ui_scaling && IsInternalDisplayId(id_);
+}
+
+void DisplayInfo::AddInputDevice(int id) {
+  input_devices_.push_back(id);
+}
+
+void DisplayInfo::ClearInputDevices() {
+  input_devices_.clear();
 }
 
 }  // namespace ash

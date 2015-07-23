@@ -125,4 +125,24 @@ TEST_F(DisplayInfoTest, DisplayModeGetSizeForExternal4K) {
   EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
 }
 
+TEST_F(DisplayInfoTest, InputDevicesTest) {
+  DisplayInfo info = DisplayInfo::CreateFromSpecWithID("200x100", 10);
+
+  EXPECT_EQ(0u, info.input_devices().size());
+
+  info.AddInputDevice(10);
+  EXPECT_EQ(1u, info.input_devices().size());
+  EXPECT_EQ(10, info.input_devices()[0]);
+  info.AddInputDevice(11);
+  EXPECT_EQ(2u, info.input_devices().size());
+  EXPECT_EQ(10, info.input_devices()[0]);
+  EXPECT_EQ(11, info.input_devices()[1]);
+
+  DisplayInfo copy_info = DisplayInfo::CreateFromSpecWithID("200x100", 10);
+  copy_info.Copy(info);
+  EXPECT_EQ(2u, copy_info.input_devices().size());
+  copy_info.ClearInputDevices();
+  EXPECT_EQ(0u, copy_info.input_devices().size());
+}
+
 }  // namespace ash

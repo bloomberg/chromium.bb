@@ -19,7 +19,7 @@ DisplayInfo CreateDisplayInfo(int64 id,
                               const gfx::Rect& bounds) {
   DisplayInfo info(id, std::string(), false);
   info.SetBounds(bounds);
-  info.set_touch_device_id(touch_device_id);
+  info.AddInputDevice(touch_device_id);
 
   // Create a default mode.
   std::vector<DisplayMode> default_modes(
@@ -70,13 +70,13 @@ TEST_F(TouchTransformerControllerTest, MirrorModeLetterboxing) {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
   device_manager->UpdateTouchInfoForDisplay(
-      internal_display_info.id(), internal_display_info.touch_device_id(),
+      internal_display_info.id(), internal_touchscreen.id,
       tt_controller->GetTouchTransform(internal_display_info,
                                        internal_display_info,
                                        internal_touchscreen, fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      internal_display_info.id(), external_display_info.touch_device_id(),
+      internal_display_info.id(), external_touchscreen.id,
       tt_controller->GetTouchTransform(external_display_info,
                                        external_display_info,
                                        external_touchscreen, fb_size));
@@ -141,13 +141,13 @@ TEST_F(TouchTransformerControllerTest, MirrorModePillarboxing) {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
   device_manager->UpdateTouchInfoForDisplay(
-      internal_display_info.id(), internal_display_info.touch_device_id(),
+      internal_display_info.id(), internal_touchscreen.id,
       tt_controller->GetTouchTransform(internal_display_info,
                                        internal_display_info,
                                        internal_touchscreen, fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      internal_display_info.id(), external_display_info.touch_device_id(),
+      internal_display_info.id(), external_touchscreen.id,
       tt_controller->GetTouchTransform(external_display_info,
                                        external_display_info,
                                        external_touchscreen, fb_size));
@@ -215,12 +215,12 @@ TEST_F(TouchTransformerControllerTest, SoftwareMirrorMode) {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
   device_manager->UpdateTouchInfoForDisplay(
-      display1_info.id(), display1_info.touch_device_id(),
+      display1_info.id(), display1_touchscreen.id,
       tt_controller->GetTouchTransform(display1_info, display1_info,
                                        display1_touchscreen, fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      display1_info.id(), display2_info.touch_device_id(),
+      display1_info.id(), display2_touchscreen.id,
       tt_controller->GetTouchTransform(display1_info, display2_info,
                                        display2_touchscreen, fb_size));
 
@@ -285,12 +285,12 @@ TEST_F(TouchTransformerControllerTest, ExtendedMode) {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
   device_manager->UpdateTouchInfoForDisplay(
-      display1.id(), display1.touch_device_id(),
+      display1.id(), touchscreen1.id,
       tt_controller->GetTouchTransform(display1, display1, touchscreen1,
                                        fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      display2.id(), display2.touch_device_id(),
+      display2.id(), touchscreen2.id,
       tt_controller->GetTouchTransform(display2, display2, touchscreen2,
                                        fb_size));
 

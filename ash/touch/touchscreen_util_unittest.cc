@@ -70,8 +70,7 @@ TEST_F(TouchscreenUtilTest, NoTouchscreens) {
   AssociateTouchscreens(&displays_, devices);
 
   for (size_t i = 0; i < displays_.size(); ++i)
-    EXPECT_EQ(ui::TouchscreenDevice::kInvalidId,
-              displays_[i].touch_device_id());
+    EXPECT_EQ(0u, displays_[i].input_devices().size());
 }
 
 TEST_F(TouchscreenUtilTest, OneToOneMapping) {
@@ -85,10 +84,12 @@ TEST_F(TouchscreenUtilTest, OneToOneMapping) {
 
   AssociateTouchscreens(&displays_, devices);
 
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(1, displays_[1].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2, displays_[3].touch_device_id());
+  EXPECT_EQ(0u, displays_[0].input_devices().size());
+  EXPECT_EQ(1u, displays_[1].input_devices().size());
+  EXPECT_EQ(1, displays_[1].input_devices()[0]);
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(1u, displays_[3].input_devices().size());
+  EXPECT_EQ(2, displays_[3].input_devices()[0]);
 }
 
 TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
@@ -99,10 +100,11 @@ TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
 
   AssociateTouchscreens(&displays_, devices);
 
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[1].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2, displays_[3].touch_device_id());
+  EXPECT_EQ(0u, displays_[0].input_devices().size());
+  EXPECT_EQ(0u, displays_[1].input_devices().size());
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(1u, displays_[3].input_devices().size());
+  EXPECT_EQ(2, displays_[3].input_devices()[0]);
 }
 
 TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
@@ -116,10 +118,12 @@ TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
 
   AssociateTouchscreens(&displays_, devices);
 
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(1, displays_[1].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2, displays_[3].touch_device_id());
+  EXPECT_EQ(0u, displays_[0].input_devices().size());
+  EXPECT_EQ(1u, displays_[1].input_devices().size());
+  EXPECT_EQ(1, displays_[1].input_devices()[0]);
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(1u, displays_[3].input_devices().size());
+  EXPECT_EQ(2, displays_[3].input_devices()[0]);
 }
 
 TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
@@ -133,10 +137,12 @@ TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
 
   AssociateTouchscreens(&displays_, devices);
 
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(1, displays_[1].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2, displays_[3].touch_device_id());
+  EXPECT_EQ(0u, displays_[0].input_devices().size());
+  EXPECT_EQ(1u, displays_[1].input_devices().size());
+  EXPECT_EQ(1, displays_[1].input_devices()[0]);
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(1u, displays_[3].input_devices().size());
+  EXPECT_EQ(2, displays_[3].input_devices()[0]);
 }
 
 TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
@@ -151,10 +157,49 @@ TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
   AssociateTouchscreens(&displays_, devices);
 
   // Internal touchscreen is always mapped to internal display.
-  EXPECT_EQ(2, displays_[0].touch_device_id());
-  EXPECT_EQ(1, displays_[1].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[3].touch_device_id());
+  EXPECT_EQ(1u, displays_[0].input_devices().size());
+  EXPECT_EQ(2, displays_[0].input_devices()[0]);
+  EXPECT_EQ(1u, displays_[1].input_devices().size());
+  EXPECT_EQ(1, displays_[1].input_devices()[0]);
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(0u, displays_[3].input_devices().size());
+}
+
+TEST_F(TouchscreenUtilTest, MultipleInternal) {
+  std::vector<ui::TouchscreenDevice> devices;
+  devices.push_back(
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "",
+                            gfx::Size(1920, 1080), 0));
+  devices.push_back(
+      ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "",
+                            gfx::Size(1920, 1080), 0));
+
+  AssociateTouchscreens(&displays_, devices);
+
+  EXPECT_EQ(2u, displays_[0].input_devices().size());
+  EXPECT_EQ(0u, displays_[1].input_devices().size());
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(0u, displays_[3].input_devices().size());
+}
+
+TEST_F(TouchscreenUtilTest, MultipleInternalAndExternal) {
+  std::vector<ui::TouchscreenDevice> devices;
+  devices.push_back(
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "",
+                            gfx::Size(1920, 1080), 0));
+  devices.push_back(
+      ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "",
+                            gfx::Size(1920, 1080), 0));
+  devices.push_back(
+      ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "",
+                            gfx::Size(1024, 768), 0));
+
+  AssociateTouchscreens(&displays_, devices);
+
+  EXPECT_EQ(2u, displays_[0].input_devices().size());
+  EXPECT_EQ(0u, displays_[1].input_devices().size());
+  EXPECT_EQ(0u, displays_[2].input_devices().size());
+  EXPECT_EQ(1u, displays_[3].input_devices().size());
 }
 
 }  // namespace ash

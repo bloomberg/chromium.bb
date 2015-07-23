@@ -109,8 +109,14 @@ class ASH_EXPORT DisplayInfo {
   }
   gfx::Display::TouchSupport touch_support() const { return touch_support_; }
 
-  void set_touch_device_id(int id) { touch_device_id_ = id; }
-  int touch_device_id() const { return touch_device_id_; }
+  // Associate the input device with identifier |id| with this display.
+  void AddInputDevice(int id);
+
+  // Clear the list of input devices associated with this display.
+  void ClearInputDevices();
+
+  // The input device ids that are associated with this display.
+  std::vector<int> input_devices() const { return input_devices_; }
 
   // Gets/Sets the device scale factor of the display.
   float device_scale_factor() const { return device_scale_factor_; }
@@ -243,9 +249,8 @@ class ASH_EXPORT DisplayInfo {
   std::map<gfx::Display::RotationSource, gfx::Display::Rotation> rotations_;
   gfx::Display::TouchSupport touch_support_;
 
-  // If the display is also a touch device, it will have a positive
-  // |touch_device_id_|. Otherwise |touch_device_id_| is 0.
-  int touch_device_id_;
+  // The set of input devices associated with this display.
+  std::vector<int> input_devices_;
 
   // This specifies the device's pixel density. (For example, a
   // display whose DPI is higher than the threshold is considered to have

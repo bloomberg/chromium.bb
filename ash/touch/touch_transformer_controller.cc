@@ -127,10 +127,11 @@ TouchTransformerController::~TouchTransformerController() {
 void TouchTransformerController::UpdateTouchRadius(
     const DisplayInfo& display) const {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  device_manager->UpdateTouchRadiusScale(
-      display.touch_device_id(),
-      GetTouchResolutionScale(display,
-                              FindTouchscreenById(display.touch_device_id())));
+  for (const auto& device_id : display.input_devices()) {
+    device_manager->UpdateTouchRadiusScale(
+        device_id,
+        GetTouchResolutionScale(display, FindTouchscreenById(device_id)));
+  }
 }
 
 void TouchTransformerController::UpdateTouchTransform(
@@ -140,11 +141,12 @@ void TouchTransformerController::UpdateTouchTransform(
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
   gfx::Size fb_size =
       Shell::GetInstance()->display_configurator()->framebuffer_size();
-  device_manager->UpdateTouchInfoForDisplay(
-      target_display_id, touch_display.touch_device_id(),
-      GetTouchTransform(target_display, touch_display,
-                        FindTouchscreenById(touch_display.touch_device_id()),
-                        fb_size));
+  for (const auto& device_id : touch_display.input_devices()) {
+    device_manager->UpdateTouchInfoForDisplay(
+        target_display_id, device_id,
+        GetTouchTransform(target_display, touch_display,
+                          FindTouchscreenById(device_id), fb_size));
+  }
 }
 
 void TouchTransformerController::UpdateTouchTransformer() const {

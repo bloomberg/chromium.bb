@@ -13,42 +13,35 @@ namespace ash {
 
 void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
                            const std::vector<ui::TouchscreenDevice>& devices) {
-  std::set<int> no_match_touchscreen;
-  int internal_touchscreen = -1;
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (devices[i].type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
-      internal_touchscreen = i;
-      break;
-    }
-  }
-
   DisplayInfo* internal_state = NULL;
   for (size_t i = 0; i < displays->size(); ++i) {
     DisplayInfo* state = &(*displays)[i];
     if (state->id() == gfx::Display::InternalDisplayId() &&
         !state->GetNativeModeSize().IsEmpty() &&
         state->touch_support() == gfx::Display::TOUCH_SUPPORT_UNKNOWN) {
+      DCHECK(!internal_state);
       internal_state = state;
-      break;
     }
+    state->ClearInputDevices();
   }
 
-  if (internal_state && internal_touchscreen >= 0) {
-    internal_state->set_touch_device_id(devices[internal_touchscreen].id);
-    internal_state->set_touch_support(gfx::Display::TOUCH_SUPPORT_AVAILABLE);
-    VLOG(2) << "Found internal touchscreen for internal display "
-            << internal_state->id() << " touch_device_id "
-            << internal_state->touch_device_id() << " size "
-            << devices[internal_touchscreen].size.ToString();
-  }
-
+  std::set<int> no_match_touchscreen;
   for (size_t i = 0; i < devices.size(); ++i) {
-    if (internal_state && internal_state->touch_device_id() == devices[i].id)
+    if (devices[i].type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+      VLOG(2) << "Found internal device for display " << internal_state->id()
+              << " with device id " << devices[i].id << " size "
+              << devices[i].size.ToString();
+      internal_state->AddInputDevice(devices[i].id);
+      internal_state->set_touch_support(gfx::Display::TOUCH_SUPPORT_AVAILABLE);
       continue;
+    }
 
     bool found_mapping = false;
     for (size_t j = 0; j < displays->size(); ++j) {
       DisplayInfo* state = &(*displays)[j];
+      if (state == internal_state)
+        continue;
+
       const gfx::Size native_size = state->GetNativeModeSize();
       if (state->touch_support() == gfx::Display::TOUCH_SUPPORT_AVAILABLE ||
           native_size.IsEmpty())
@@ -61,11 +54,11 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
       // configuration.
       if (std::abs(native_size.width() - devices[i].size.width()) <= 1 &&
           std::abs(native_size.height() - devices[i].size.height()) <= 1) {
-        state->set_touch_device_id(devices[i].id);
+        state->AddInputDevice(devices[i].id);
         state->set_touch_support(gfx::Display::TOUCH_SUPPORT_AVAILABLE);
 
         VLOG(2) << "Found touchscreen for display " << state->id()
-                << " touch_device_id " << state->touch_device_id() << " size "
+                << " with device id " << devices[i].id << " size "
                 << devices[i].size.ToString();
         found_mapping = true;
         break;
@@ -74,7 +67,7 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
 
     if (!found_mapping) {
       no_match_touchscreen.insert(devices[i].id);
-      VLOG(2) << "No matching display for touch_device_id " << devices[i].id
+      VLOG(2) << "No matching display for device id " << devices[i].id
               << " size " << devices[i].size.ToString();
     }
   }
@@ -91,10 +84,10 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
       if (state->id() != gfx::Display::InternalDisplayId() &&
           !state->GetNativeModeSize().IsEmpty() &&
           state->touch_support() == gfx::Display::TOUCH_SUPPORT_UNKNOWN) {
-        state->set_touch_device_id(*it);
+        state->AddInputDevice(*it);
         state->set_touch_support(gfx::Display::TOUCH_SUPPORT_AVAILABLE);
-        VLOG(2) << "Arbitrarily matching touchscreen "
-                << state->touch_device_id() << " to display " << state->id();
+        VLOG(2) << "Arbitrarily matching touchscreen " << *it << " to display "
+                << state->id();
         break;
       }
     }
