@@ -264,36 +264,42 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     m_compositionNode = nullptr;
     m_customCompositionUnderlines.clear();
 
-    if (!text.isEmpty()) {
-        ASSERT(frame().document());
-        TypingCommand::insertText(*frame().document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
+    if (text.isEmpty())
+        return;
+    ASSERT(frame().document());
+    TypingCommand::insertText(*frame().document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
 
-        // Find out what node has the composition now.
-        Position base = frame().selection().base().downstream();
-        Position extent = frame().selection().extent();
-        Node* baseNode = base.anchorNode();
-        unsigned baseOffset = base.deprecatedEditingOffset();
-        Node* extentNode = extent.anchorNode();
-        unsigned extentOffset = extent.deprecatedEditingOffset();
+    // Find out what node has the composition now.
+    Position base = frame().selection().base().downstream();
+    Node* baseNode = base.anchorNode();
+    if (!baseNode || !baseNode->isTextNode())
+        return;
 
-        if (baseNode && baseNode == extentNode && baseNode->isTextNode() && baseOffset + text.length() == extentOffset) {
-            m_compositionNode = toText(baseNode);
-            m_compositionStart = baseOffset;
-            m_compositionEnd = extentOffset;
-            m_customCompositionUnderlines = underlines;
-            for (auto& underline : m_customCompositionUnderlines) {
-                underline.startOffset += baseOffset;
-                underline.endOffset += baseOffset;
-            }
-            if (baseNode->layoutObject())
-                baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
+    Position extent = frame().selection().extent();
+    Node* extentNode = extent.anchorNode();
+    if (baseNode != extentNode)
+        return;
 
-            unsigned start = std::min(baseOffset + selectionStart, extentOffset);
-            unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
-            RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
-            frame().selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, FrameSelection::NonDirectional, NotUserTriggered);
-        }
+    unsigned extentOffset = extent.deprecatedEditingOffset();
+    unsigned baseOffset = base.deprecatedEditingOffset();
+    if (baseOffset + text.length() != extentOffset)
+        return;
+
+    m_compositionNode = toText(baseNode);
+    m_compositionStart = baseOffset;
+    m_compositionEnd = extentOffset;
+    m_customCompositionUnderlines = underlines;
+    for (auto& underline : m_customCompositionUnderlines) {
+        underline.startOffset += baseOffset;
+        underline.endOffset += baseOffset;
     }
+    if (baseNode->layoutObject())
+        baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
+
+    unsigned start = std::min(baseOffset + selectionStart, extentOffset);
+    unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
+    RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
+    frame().selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
 void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)
