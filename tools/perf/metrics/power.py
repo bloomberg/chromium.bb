@@ -10,6 +10,11 @@ from telemetry.value import scalar
 from metrics import Metric
 
 
+MONSOON_POWER_LABEL = 'monsoon_energy_consumption_mwh'
+FUELGAUGE_POWER_LABEL = 'fuel_gauge_energy_consumption_mwh'
+APP_POWER_LABEL = 'application_energy_consumption_mwh'
+TOTAL_POWER_LABEL = 'energy_consumption_mwh'
+
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
 
@@ -65,7 +70,7 @@ class PowerMetric(Metric):
     time.sleep(measurement_time_s)
     power_results = self._platform.StopMonitoringPower()
     PowerMetric._quiescent_power_draw_mwh = (
-        power_results.get('energy_consumption_mwh', 0))
+        power_results.get(TOTAL_POWER_LABEL, 0))
 
   def Start(self, _, tab):
     self._browser = tab.browser
@@ -99,11 +104,10 @@ class PowerMetric(Metric):
     if not self._results:
       return
 
-    application_energy_consumption_mwh = (
-        self._results.get('application_energy_consumption_mwh'))
-    total_energy_consumption_mwh = self._results.get('energy_consumption_mwh')
-    fuel_gauge_energy_consumption_mwh = (
-        self._results.get('fuel_gauge_energy_consumption_mwh'))
+    application_energy_consumption_mwh = self._results.get(APP_POWER_LABEL)
+    total_energy_consumption_mwh = self._results.get(TOTAL_POWER_LABEL)
+    fuel_gauge_energy_consumption_mwh = self._results.get(FUELGAUGE_POWER_LABEL)
+    monsoon_energy_consumption_mwh = self._results.get(MONSOON_POWER_LABEL)
 
     if (PowerMetric._quiescent_power_draw_mwh and
         application_energy_consumption_mwh is None and
@@ -114,17 +118,22 @@ class PowerMetric(Metric):
 
     if fuel_gauge_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
-          results.current_page, 'fuel_gauge_energy_consumption_mwh', 'mWh',
+          results.current_page, FUELGAUGE_POWER_LABEL, 'mWh',
           fuel_gauge_energy_consumption_mwh))
+
+    if monsoon_energy_consumption_mwh is not None:
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, MONSOON_POWER_LABEL, 'mWh',
+          monsoon_energy_consumption_mwh))
 
     if total_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
-          results.current_page, 'energy_consumption_mwh', 'mWh',
+          results.current_page, TOTAL_POWER_LABEL, 'mWh',
           total_energy_consumption_mwh))
 
     if application_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
-          results.current_page, 'application_energy_consumption_mwh', 'mWh',
+          results.current_page, APP_POWER_LABEL, 'mWh',
           application_energy_consumption_mwh))
 
     component_utilization = self._results.get('component_utilization', {})
