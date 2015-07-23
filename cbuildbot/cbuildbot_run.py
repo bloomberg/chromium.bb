@@ -39,6 +39,7 @@ from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
+from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 
 
@@ -709,15 +710,18 @@ class _BuilderRunBase(object):
     try:
       build_id = self.attrs.metadata.GetValue('build_id')
     except KeyError:
+      logging.warning('GetCIDBHandle: KeyError')
       return (None, None)
 
     if not cidb.CIDBConnectionFactory.IsCIDBSetup():
+      logging.warning('GetCIDBHandle: not IsCIDBSetup')
       return (None, None)
 
     cidb_handle = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
     if cidb_handle:
       return (build_id, cidb_handle)
     else:
+      logging.warning('GetCIDBHandle: not cidb_handle')
       return (None, None)
 
   def ShouldReexecAfterSync(self):
