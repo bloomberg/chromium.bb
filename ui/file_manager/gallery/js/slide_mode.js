@@ -410,6 +410,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.viewport_ = new Viewport(window);
+  this.viewport_.addEventListener('resize', this.onViewportResize_.bind(this));
 
   /**
    * @type {!ImageView}
@@ -1205,6 +1206,14 @@ SlideMode.prototype.onKeyDown = function(event) {
  */
 SlideMode.prototype.onResize_ = function() {
   this.touchHandlers_.stopOperation();
+};
+
+/**
+ * Handles resize event of viewport.
+ * @private
+ */
+SlideMode.prototype.onViewportResize_ = function() {
+  // This method must be called after the resize of viewport.
   this.editor_.getBuffer().draw();
 };
 

@@ -22,6 +22,7 @@ function formatString(str, var_args) {
  *
  * @param {!Window} targetWindow A window which this viewport is attached to.
  * @constructor
+ * @extends {cr.EventTarget}
  * @struct
  */
 function Viewport(targetWindow) {
@@ -133,6 +134,8 @@ function Viewport(targetWindow) {
   this.update_();
 }
 
+Viewport.prototype.__proto__ = cr.EventTarget.prototype;
+
 /**
  * Zoom ratios.
  *
@@ -158,6 +161,10 @@ Viewport.prototype.onWindowResize_ = function(event) {
   this.windowWidth_ = event.target.innerWidth;
   this.windowHeight_ = event.target.innerHeight;
   this.update_();
+
+  // Dispatches resize event of viewport.
+  var resizeEvent = new Event('resize');
+  this.dispatchEvent(resizeEvent);
 };
 
 /**

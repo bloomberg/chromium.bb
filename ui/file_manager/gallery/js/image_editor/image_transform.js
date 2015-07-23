@@ -58,7 +58,7 @@ ImageEditor.Mode.Crop = function() {
    * @type {?function()}
    * @private
    */
-  this.onResizedBound_ = null;
+  this.onViewportResizedBound_ = null;
 
   /**
    * @type {DraggableRect}
@@ -130,8 +130,8 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
       ImageEditor.Toolbar.HEIGHT * 2 + ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS);
   this.getImageView().applyViewportChange();
 
-  this.onResizedBound_ = this.onResized_.bind(this);
-  window.addEventListener('resize', this.onResizedBound_);
+  this.onViewportResizedBound_ = this.onViewportResized_.bind(this);
+  this.getViewport().addEventListener('resize', this.onViewportResizedBound_);
 
   this.createDefaultCrop();
 };
@@ -199,10 +199,10 @@ ImageEditor.Mode.Crop.prototype.onCropAspectRatioClicked_ = function(
 }
 
 /**
- * Handles resizing of the window and updates the crop rectangle.
+ * Handles resizing of the viewport and updates the crop rectangle.
  * @private
  */
-ImageEditor.Mode.Crop.prototype.onResized_ = function() {
+ImageEditor.Mode.Crop.prototype.onViewportResized_ = function() {
   this.positionDOM();
 };
 
@@ -250,8 +250,9 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
   this.editor_.hideOverlappingTools();
-  window.removeEventListener('resize', this.onResizedBound_);
-  this.onResizedBound_ = null;
+  this.getViewport().removeEventListener(
+      'resize', this.onViewportResizedBound_);
+  this.onViewportResizedBound_ = null;
 
   // Restore the screen to the full size of window.
   this.getViewport().setScreenTop(0);
