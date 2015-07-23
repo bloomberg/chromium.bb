@@ -31,8 +31,6 @@
 #ifndef WebCallbacks_h
 #define WebCallbacks_h
 
-#define CRBUG_493531 1
-
 namespace blink {
 
 template<typename S, typename T>
