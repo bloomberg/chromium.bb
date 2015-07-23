@@ -6,8 +6,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <pthread.h>
-#include <signal.h>
 #include <stdio.h>
 #include <sys/capability.h>
 #include <sys/stat.h>
@@ -237,31 +235,6 @@ SANDBOX_TEST(Credentials, SetCapabilitiesMatchesLibCap2) {
   }
 
   CHECK_EQ(0, cap_compare(expected_cap.get(), actual_cap.get()));
-}
-
-volatile sig_atomic_t signal_handler_called;
-void SignalHandler(int sig) {
-  signal_handler_called = 1;
-}
-
-// Disabled on ASAN because of crbug.com/451603.
-SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(DropFileSystemAccessPreservesTLS)) {
-  // Probably missing kernel support.
-  if (!Credentials::MoveToNewUserNS()) return;
-  CHECK(Credentials::DropFileSystemAccess(ProcUtil::OpenProc().get()));
-
-  // In glibc, pthread_getattr_np makes an assertion about the cached PID/TID in
-  // TLS.
-  pthread_attr_t attr;
-  EXPECT_EQ(0, pthread_getattr_np(pthread_self(), &attr));
-
-  // raise also uses the cached TID in glibc.
-  struct sigaction action = {};
-  action.sa_handler = &SignalHandler;
-  PCHECK(sigaction(SIGUSR1, &action, nullptr) == 0);
-
-  PCHECK(raise(SIGUSR1) == 0);
-  CHECK_EQ(1, signal_handler_called);
 }
 
 }  // namespace.
