@@ -60,15 +60,25 @@ void WebScrollbarTheme::updateScrollbars(
             animation_enabled = [value boolValue];
         animation_initialized = true;
     }
+    // More temporary logic used until the browser begins to call updateScrollbarsWithNSDefaults method.
     NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollBarVariant"];
+    ScrollbarButtonsPlacement buttons_placement;
+    if ([scrollbar_variant isEqualToString:@"Single"])
+        buttons_placement = ScrollbarButtonsPlacementSingle;
+    else if ([scrollbar_variant isEqualToString:@"DoubleMin"])
+        buttons_placement = ScrollbarButtonsPlacementDoubleStart;
+    else if ([scrollbar_variant isEqualToString:@"DoubleBoth"])
+        buttons_placement = ScrollbarButtonsPlacementDoubleBoth;
+    else
+        buttons_placement = ScrollbarButtonsPlacementDoubleEnd;
     updateScrollbarsWithNSDefaults(initialButtonDelay, autoscrollButtonDelay,
                                   preferredScrollerStyle, redraw, animation_enabled,
-                                  scrollbar_variant ? [scrollbar_variant UTF8String] : "");
+                                  buttons_placement);
 }
 
 void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
     float initialButtonDelay, float autoscrollButtonDelay,
-    ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, const std::string& buttonPlacement)
+    ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, ScrollbarButtonsPlacement buttonPlacement)
 {
     ScrollbarTheme* theme = ScrollbarTheme::theme();
     if (theme->isMockTheme())

@@ -56,18 +56,11 @@ static int cThumbMinLength[] = { 26, 20 };
 static int cOuterButtonLength[] = { 16, 14 }; // The outer button in a double button pair is a bit bigger.
 static int cOuterButtonOverlap = 2;
 
-static ScrollbarButtonsPlacement gButtonPlacement = ScrollbarButtonsDoubleEnd;
+static ScrollbarButtonsPlacement gButtonPlacement = ScrollbarButtonsPlacementDoubleEnd;
 
-void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(const std::string& buttonPlacement)
+void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(ScrollbarButtonsPlacement buttonPlacement)
 {
-    if (buttonPlacement == "Single")
-        gButtonPlacement = ScrollbarButtonsSingle;
-    else if (buttonPlacement == "DoubleMin")
-        gButtonPlacement = ScrollbarButtonsDoubleStart;
-    else if (buttonPlacement == "DoubleBoth")
-        gButtonPlacement = ScrollbarButtonsDoubleBoth;
-    else
-        gButtonPlacement = ScrollbarButtonsDoubleEnd;
+    gButtonPlacement = buttonPlacement;
 }
 
 // Override ScrollbarThemeMacCommon::paint() to add support for the following:
@@ -174,7 +167,7 @@ ScrollbarButtonsPlacement ScrollbarThemeMacNonOverlayAPI::buttonsPlacement() con
 
 bool ScrollbarThemeMacNonOverlayAPI::hasButtons(ScrollbarThemeClient* scrollbar)
 {
-    return scrollbar->enabled() && buttonsPlacement() != ScrollbarButtonsNone
+    return scrollbar->enabled() && buttonsPlacement() != ScrollbarButtonsPlacementNone
              && (scrollbar->orientation() == HorizontalScrollbar
              ? scrollbar->width()
              : scrollbar->height()) >= 2 * (cRealButtonLength[scrollbar->controlSize()] - cButtonHitInset[scrollbar->controlSize()]);
@@ -190,7 +183,7 @@ bool ScrollbarThemeMacNonOverlayAPI::hasThumb(ScrollbarThemeClient* scrollbar)
 
 static IntRect buttonRepaintRect(const IntRect& buttonRect, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, bool start)
 {
-    ASSERT(gButtonPlacement != ScrollbarButtonsNone);
+    ASSERT(gButtonPlacement != ScrollbarButtonsPlacementNone);
 
     IntRect paintRect(buttonRect);
     if (orientation == HorizontalScrollbar) {
@@ -210,14 +203,14 @@ IntRect ScrollbarThemeMacNonOverlayAPI::backButtonRect(ScrollbarThemeClient* scr
 {
     IntRect result;
 
-    if (part == BackButtonStartPart && (buttonsPlacement() == ScrollbarButtonsNone || buttonsPlacement() == ScrollbarButtonsDoubleEnd))
+    if (part == BackButtonStartPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleEnd))
         return result;
 
-    if (part == BackButtonEndPart && (buttonsPlacement() == ScrollbarButtonsNone || buttonsPlacement() == ScrollbarButtonsDoubleStart || buttonsPlacement() == ScrollbarButtonsSingle))
+    if (part == BackButtonEndPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement() == ScrollbarButtonsPlacementSingle))
         return result;
 
     int thickness = scrollbarThickness(scrollbar->controlSize());
-    bool outerButton = part == BackButtonStartPart && (buttonsPlacement() == ScrollbarButtonsDoubleStart || buttonsPlacement() == ScrollbarButtonsDoubleBoth);
+    bool outerButton = part == BackButtonStartPart && (buttonsPlacement() == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement() == ScrollbarButtonsPlacementDoubleBoth);
     if (outerButton) {
         if (scrollbar->orientation() == HorizontalScrollbar)
             result = IntRect(scrollbar->x(), scrollbar->y(), cOuterButtonLength[scrollbar->controlSize()] + (painting ? cOuterButtonOverlap : 0), thickness);
@@ -244,17 +237,17 @@ IntRect ScrollbarThemeMacNonOverlayAPI::forwardButtonRect(ScrollbarThemeClient* 
 {
     IntRect result;
 
-    if (part == ForwardButtonEndPart && (buttonsPlacement() == ScrollbarButtonsNone || buttonsPlacement() == ScrollbarButtonsDoubleStart))
+    if (part == ForwardButtonEndPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleStart))
         return result;
 
-    if (part == ForwardButtonStartPart && (buttonsPlacement() == ScrollbarButtonsNone || buttonsPlacement() == ScrollbarButtonsDoubleEnd || buttonsPlacement() == ScrollbarButtonsSingle))
+    if (part == ForwardButtonStartPart && (buttonsPlacement() == ScrollbarButtonsPlacementNone || buttonsPlacement() == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement() == ScrollbarButtonsPlacementSingle))
         return result;
 
     int thickness = scrollbarThickness(scrollbar->controlSize());
     int outerButtonLength = cOuterButtonLength[scrollbar->controlSize()];
     int buttonLength = cButtonLength[scrollbar->controlSize()];
 
-    bool outerButton = part == ForwardButtonEndPart && (buttonsPlacement() == ScrollbarButtonsDoubleEnd || buttonsPlacement() == ScrollbarButtonsDoubleBoth);
+    bool outerButton = part == ForwardButtonEndPart && (buttonsPlacement() == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement() == ScrollbarButtonsPlacementDoubleBoth);
     if (outerButton) {
         if (scrollbar->orientation() == HorizontalScrollbar) {
             result = IntRect(scrollbar->x() + scrollbar->width() - outerButtonLength, scrollbar->y(), outerButtonLength, thickness);
@@ -293,17 +286,17 @@ IntRect ScrollbarThemeMacNonOverlayAPI::trackRect(ScrollbarThemeClient* scrollba
     int buttonLength = cButtonLength[scrollbar->controlSize()];
     int doubleButtonLength = outerButtonLength + buttonLength;
     switch (buttonsPlacement()) {
-        case ScrollbarButtonsSingle:
+        case ScrollbarButtonsPlacementSingle:
             startWidth = buttonLength;
             endWidth = buttonLength;
             break;
-        case ScrollbarButtonsDoubleStart:
+        case ScrollbarButtonsPlacementDoubleStart:
             startWidth = doubleButtonLength;
             break;
-        case ScrollbarButtonsDoubleEnd:
+        case ScrollbarButtonsPlacementDoubleEnd:
             endWidth = doubleButtonLength;
             break;
-        case ScrollbarButtonsDoubleBoth:
+        case ScrollbarButtonsPlacementDoubleBoth:
             startWidth = doubleButtonLength;
             endWidth = doubleButtonLength;
             break;

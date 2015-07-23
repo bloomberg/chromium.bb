@@ -30,6 +30,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/mac/MacScrollTypes.h"
 
 namespace blink {
 
@@ -52,7 +53,7 @@ public:
     virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) { return 0; }
     virtual int scrollbarMargin() const { return 0; }
 
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const { return ScrollbarButtonsSingle; }
+    virtual ScrollbarButtonsPlacement buttonsPlacement() const { return ScrollbarButtonsPlacementSingle; }
 
     virtual bool supportsControlTints() const { return false; }
     virtual bool usesOverlayScrollbars() const { return false; }

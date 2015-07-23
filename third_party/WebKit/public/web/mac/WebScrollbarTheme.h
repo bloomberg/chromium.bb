@@ -32,8 +32,7 @@
 #define WebScrollbarTheme_h
 
 #include "public/platform/WebCommon.h"
-
-#include <string>
+#include "public/platform/mac/MacScrollTypes.h"
 
 namespace blink {
 
@@ -58,7 +57,7 @@ public:
     BLINK_EXPORT static void updateScrollbarsWithNSDefaults(
         float initialButtonDelay, float autoscrollButtonDelay,
         ScrollerStyle preferredScrollerStyle, bool redraw,
-        bool scrollAnimationEnabled, const std::string& buttonPlacement);
+        bool scrollAnimationEnabled, ScrollbarButtonsPlacement);
 };
 
 } // namespace blink

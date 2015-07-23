@@ -237,18 +237,18 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
         ScrollbarButtonsPlacement buttonsPlacement = theme()->buttonsPlacement();
         switch (partType) {
         case BackButtonStartPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsSingle || buttonsPlacement == ScrollbarButtonsDoubleStart
-                || buttonsPlacement == ScrollbarButtonsDoubleBoth);
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementSingle || buttonsPlacement == ScrollbarButtonsPlacementDoubleStart
+                || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
             break;
         case ForwardButtonStartPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsDoubleStart || buttonsPlacement == ScrollbarButtonsDoubleBoth);
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementDoubleStart || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
             break;
         case BackButtonEndPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsDoubleEnd || buttonsPlacement == ScrollbarButtonsDoubleBoth);
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
             break;
         case ForwardButtonEndPart:
-            needLayoutObject = (buttonsPlacement == ScrollbarButtonsSingle || buttonsPlacement == ScrollbarButtonsDoubleEnd
-                || buttonsPlacement == ScrollbarButtonsDoubleBoth);
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsPlacementSingle || buttonsPlacement == ScrollbarButtonsPlacementDoubleEnd
+                || buttonsPlacement == ScrollbarButtonsPlacementDoubleBoth);
             break;
         default:
             break;

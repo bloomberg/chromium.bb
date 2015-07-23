@@ -217,7 +217,7 @@ void ScrollbarThemeMacOverlayAPI::updateScrollbarOverlayStyle(ScrollbarThemeClie
 
 ScrollbarButtonsPlacement ScrollbarThemeMacOverlayAPI::buttonsPlacement() const
 {
-    return ScrollbarButtonsNone;
+    return ScrollbarButtonsPlacementNone;
 }
 
 bool ScrollbarThemeMacOverlayAPI::hasThumb(ScrollbarThemeClient* scrollbar)
@@ -232,13 +232,13 @@ bool ScrollbarThemeMacOverlayAPI::hasThumb(ScrollbarThemeClient* scrollbar)
 
 IntRect ScrollbarThemeMacOverlayAPI::backButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
 {
-    ASSERT(buttonsPlacement() == ScrollbarButtonsNone);
+    ASSERT(buttonsPlacement() == ScrollbarButtonsPlacementNone);
     return IntRect();
 }
 
 IntRect ScrollbarThemeMacOverlayAPI::forwardButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool painting)
 {
-    ASSERT(buttonsPlacement() == ScrollbarButtonsNone);
+    ASSERT(buttonsPlacement() == ScrollbarButtonsPlacementNone);
     return IntRect();
 }
 

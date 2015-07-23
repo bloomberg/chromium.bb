@@ -169,14 +169,6 @@ enum ScrollbarPart {
     AllParts = 0xffffffff
 };
 
-enum ScrollbarButtonsPlacement {
-    ScrollbarButtonsNone,
-    ScrollbarButtonsSingle,
-    ScrollbarButtonsDoubleStart,
-    ScrollbarButtonsDoubleEnd,
-    ScrollbarButtonsDoubleBoth
-};
-
 enum ScrollbarOverlayStyle {
     ScrollbarOverlayStyleDefault,
     ScrollbarOverlayStyleDark,
