@@ -205,9 +205,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void HasCookiesForETLDP1Async(const std::string& etldp1,
                                 const HasCookiesForETLDP1Callback& callback);
 
-  // Resets the list of cookieable schemes to the supplied schemes.
-  // If this this method is called, it must be called before first use of
-  // the instance (i.e. as part of the instance initialization process).
+  // Resets the list of cookieable schemes to the supplied schemes. Does
+  // nothing if called after first use of the instance (i.e. after the
+  // instance initialization process).
   void SetCookieableSchemes(const char* const schemes[], size_t num_schemes);
 
   // Instructs the cookie monster to not delete expired cookies. This is used

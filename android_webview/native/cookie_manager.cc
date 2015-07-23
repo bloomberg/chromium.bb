@@ -507,12 +507,6 @@ void CookieManager::SetAcceptFileSchemeCookies(bool accept) {
 }
 
 void CookieManager::SetAcceptFileSchemeCookiesLocked(bool accept) {
-  // The docs on CookieManager base class state the API must not be called after
-  // creating a CookieManager instance (which contradicts its own internal
-  // implementation) but this code does rely on the essence of that comment, as
-  // the monster will DCHECK here if it has already been lazy initialized (i.e.
-  // if cookies have been read or written from the store). If that turns out to
-  // be a problemin future, it looks like it maybe possible to relax the DCHECK.
   cookie_monster_->SetEnableFileScheme(accept);
 }
 
