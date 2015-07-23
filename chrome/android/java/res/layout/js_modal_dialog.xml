@@ -1,28 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright 2012 The Chromium Authors. All rights reserved.
-
      Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file.
--->
+     found in the LICENSE file. -->
 
 <!--
      Defines all the widgets that each of the types of JS modal dialogs
-     need (alerts, confirms and prompts). When we inflate the layout
-     in JSModalDialogHolder we show hide the widgets we need as appropriate
-     for the type of dialog we need to show.
-     TODO(benm): Move this into the framework once we are integrated with the
-     Android tree.
+     need (alerts, confirms and prompts). After inflating this layout, we
+     remove the widgets that aren't needed for the current dialog type.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/AlertDialogContent"
     android:orientation="vertical">
 
-    <ScrollView android:id="@+id/js_modal_dialog_scroll_view"
+    <ScrollView
+        android:id="@+id/js_modal_dialog_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <TextView android:id="@+id/js_modal_dialog_message"
+        <TextView
+            android:id="@+id/js_modal_dialog_message"
             style="@style/TextAppearance.AppCompat.Subhead"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,7 +36,8 @@
         android:contentDescription="@string/accessibility_js_modal_dialog_prompt"
         android:inputType="text" />
 
-    <CheckBox android:id="@+id/suppress_js_modal_dialogs"
+    <CheckBox
+        android:id="@+id/suppress_js_modal_dialogs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"

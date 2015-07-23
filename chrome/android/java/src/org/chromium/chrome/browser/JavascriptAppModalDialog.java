@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +21,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.WindowAndroid;
 
+/**
+ * A dialog shown via JavaScript. This can be an alert dialog, a prompt dialog, a confirm dialog,
+ * or an onbeforeunload dialog.
+ */
 public class JavascriptAppModalDialog implements DialogInterface.OnClickListener {
     private static final String TAG = "JavascriptAppModalDialog";
 
@@ -87,7 +91,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
         prepare(layout);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
                 .setView(layout)
                 .setTitle(mTitle)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -105,6 +109,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
         mDialog = builder.create();
         mDialog.setCanceledOnTouchOutside(false);
+        mDialog.getDelegate().setHandleNativeActionModesEnabled(false);
         mDialog.show();
     }
 

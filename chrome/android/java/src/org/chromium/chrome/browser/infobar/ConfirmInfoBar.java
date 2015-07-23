@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Process;
+import android.support.v7.app.AlertDialog;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
@@ -165,7 +165,8 @@ public class ConfirmInfoBar extends InfoBar {
                     TextView dialogText = (TextView) view.findViewById(R.id.text);
                     dialogText.setText(deniedStringId);
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                    AlertDialog.Builder builder =
+                            new AlertDialog.Builder(getContext(), R.style.AlertDialogTheme)
                             .setView(view)
                             .setPositiveButton(R.string.infobar_update_permissions_button_text,
                                     new DialogInterface.OnClickListener() {
