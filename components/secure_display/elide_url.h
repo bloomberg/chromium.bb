@@ -4,8 +4,8 @@
 //
 // This file defines utility functions for eliding URLs.
 
-#ifndef CHROME_BROWSER_UI_ELIDE_URL_H_
-#define CHROME_BROWSER_UI_ELIDE_URL_H_
+#ifndef COMPONENTS_SECURE_DISPLAY_ELIDE_URL_H_
+#define COMPONENTS_SECURE_DISPLAY_ELIDE_URL_H_
 
 #include <string>
 
@@ -17,6 +17,11 @@ namespace gfx {
 class FontList;
 }
 
+namespace secure_display {
+
+// ElideUrl and Elide host require
+// gfx::GetStringWidthF which is not implemented in Android
+#if !defined(OS_ANDROID)
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
@@ -44,6 +49,7 @@ base::string16 ElideUrl(const GURL& url,
 base::string16 ElideHost(const GURL& host_url,
                          const gfx::FontList& font_list,
                          float available_pixel_width);
+#endif  // !defined(OS_ANDROID)
 
 // This is a convenience function for formatting a URL in a concise and
 // human-friendly way, to help users make security-related decisions (or in
@@ -61,4 +67,6 @@ base::string16 ElideHost(const GURL& host_url,
 base::string16 FormatUrlForSecurityDisplay(const GURL& origin,
                                            const std::string& languages);
 
-#endif  // CHROME_BROWSER_UI_ELIDE_URL_H_
+}  // namespace secure_display
+
+#endif  // COMPONENTS_SECURE_DISPLAY_ELIDE_URL_H_

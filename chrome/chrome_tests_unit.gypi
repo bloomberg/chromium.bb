@@ -1546,7 +1546,6 @@
       'browser/ui/cocoa/autofill/new_credit_card_bubble_cocoa_unittest.mm',
       'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
       'browser/ui/content_settings/content_setting_image_model_unittest.cc',
-      'browser/ui/elide_url_unittest.cc',  # URL elider not used on Android.
       'browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc',
       'browser/ui/extensions/extension_action_view_controller_unittest.cc',
       'browser/ui/omnibox/omnibox_controller_unittest.cc',

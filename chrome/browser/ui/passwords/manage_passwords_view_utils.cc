@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/elide_url.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/secure_display/elide_url.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,8 +54,8 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (target_domain_differs) {
     title_id = IDS_SAVE_PASSWORD_TITLE;
-    replacements.push_back(
-        FormatUrlForSecurityDisplay(form_origin_url, std::string()));
+    replacements.push_back(secure_display::FormatUrlForSecurityDisplay(
+        form_origin_url, std::string()));
   }
 
   if (is_smartlock_branding_enabled) {

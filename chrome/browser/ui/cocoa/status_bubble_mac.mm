@@ -17,7 +17,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
-#include "chrome/browser/ui/elide_url.h"
+#include "components/secure_display/elide_url.h"
 #include "net/base/net_util.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
@@ -237,7 +237,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
 
   base::string16 original_url_text = net::FormatUrl(url, languages);
   base::string16 status =
-      ElideUrl(url, font_list_chr, text_width, languages);
+      secure_display::ElideUrl(url, font_list_chr, text_width, languages);
 
   SetText(status, true);
 
@@ -706,7 +706,7 @@ void StatusBubbleMac::ExpandBubble() {
   NSFont* font = [[window_ contentView] font];
   gfx::FontList font_list_chr(
       gfx::Font(gfx::PlatformFont::CreateFromNativeFont(font)));
-  base::string16 expanded_url = ElideUrl(
+  base::string16 expanded_url = secure_display::ElideUrl(
       url_, font_list_chr, max_bubble_width, languages_);
 
   // Scale width from gfx::Font in view coordinates to window coordinates.

@@ -91,6 +91,7 @@ source_set("ui") {
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//components/power",
+      "//components/secure_display",
       "//components/suggestions/proto",
       "//device/nfc",
       "//media",

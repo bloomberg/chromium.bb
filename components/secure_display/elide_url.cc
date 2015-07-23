@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/elide_url.h"
+#include "components/secure_display/elide_url.h"
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
@@ -23,6 +23,7 @@ using gfx::kForwardSlash;
 
 namespace {
 
+#if !defined(OS_ANDROID)
 const base::char16 kDot = '.';
 
 // Build a path from the first |num_components| elements in |path_elements|.
@@ -61,8 +62,8 @@ base::string16 ElideComponentizedPath(
 
   CHECK(url_path_number_of_elements);
   for (size_t i = url_path_number_of_elements - 1; i > 0; --i) {
-    base::string16 elided_path = BuildPathFromComponents(url_path_prefix,
-        url_path_elements, url_filename, i);
+    base::string16 elided_path = BuildPathFromComponents(
+        url_path_prefix, url_path_elements, url_filename, i);
     if (available_pixel_width >= GetStringWidthF(elided_path, font_list))
       return ElideText(elided_path + url_query, font_list,
                        available_pixel_width, gfx::ELIDE_TAIL);
@@ -81,8 +82,8 @@ void SplitHost(const GURL& url,
   *url_host = UTF8ToUTF16(url.host());
 
   // Get domain and registry information from the URL.
-  *url_domain = UTF8ToUTF16(
-      net::registry_controlled_domains::GetDomainAndRegistry(
+  *url_domain =
+      UTF8ToUTF16(net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
   if (url_domain->empty())
     *url_domain = *url_host;
@@ -99,12 +100,17 @@ void SplitHost(const GURL& url,
   if (domain_start_index != base::string16::npos)
     *url_subdomain = url_host->substr(0, domain_start_index);
   if ((*url_subdomain == kWwwPrefix || url_subdomain->empty() ||
-      url.SchemeIsFile())) {
+       url.SchemeIsFile())) {
     url_subdomain->clear();
   }
 }
 
+#endif  // !defined(OS_ANDROID)
 }  // namespace
+
+namespace secure_display {
+
+#if !defined(OS_ANDROID)
 
 // TODO(pkasting): http://crbug.com/77883 This whole function gets
 // kerning/ligatures/etc. issues potentially wrong by assuming that the width of
@@ -171,10 +177,9 @@ base::string16 ElideUrl(const GURL& url,
 
   // Second Pass - remove scheme - the rest fits.
   const float pixel_width_url_host = GetStringWidthF(url_host, font_list);
-  const float pixel_width_url_path = GetStringWidthF(url_path_query_etc,
-                                                     font_list);
-  if (available_pixel_width >=
-      pixel_width_url_host + pixel_width_url_path)
+  const float pixel_width_url_path =
+      GetStringWidthF(url_path_query_etc, font_list);
+  if (available_pixel_width >= pixel_width_url_host + pixel_width_url_path)
     return url_host + url_path_query_etc;
 
   // Third Pass: Subdomain, domain and entire path fits.
@@ -182,14 +187,13 @@ base::string16 ElideUrl(const GURL& url,
   const float pixel_width_url_subdomain =
       GetStringWidthF(url_subdomain, font_list);
   if (available_pixel_width >=
-      pixel_width_url_subdomain + pixel_width_url_domain +
-      pixel_width_url_path)
+      pixel_width_url_subdomain + pixel_width_url_domain + pixel_width_url_path)
     return url_subdomain + url_domain + url_path_query_etc;
 
   // Query element.
   base::string16 url_query;
-  const float kPixelWidthDotsTrailer = GetStringWidthF(
-      base::string16(kEllipsisUTF16), font_list);
+  const float kPixelWidthDotsTrailer =
+      GetStringWidthF(base::string16(kEllipsisUTF16), font_list);
   if (parsed.query.is_nonempty()) {
     url_query = UTF8ToUTF16("?") + url_string.substr(parsed.query.begin);
     if (available_pixel_width >=
@@ -201,9 +205,9 @@ base::string16 ElideUrl(const GURL& url,
   }
 
   // Parse url_path using '/'.
-  std::vector<base::string16> url_path_elements = base::SplitString(
-      url_path, base::string16(1, kForwardSlash),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::string16> url_path_elements =
+      base::SplitString(url_path, base::string16(1, kForwardSlash),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Get filename - note that for a path ending with /
   // such as www.google.com/intl/ads/, the file name is ads/.
@@ -213,8 +217,8 @@ base::string16 ElideUrl(const GURL& url,
   if (url_filename.empty() && (url_path_number_of_elements > 1)) {
     // Path ends with a '/'.
     --url_path_number_of_elements;
-    url_filename = url_path_elements[url_path_number_of_elements - 1] +
-        kForwardSlash;
+    url_filename =
+        url_path_elements[url_path_number_of_elements - 1] + kForwardSlash;
   }
 
   const size_t kMaxNumberOfUrlPathElementsAllowed = 1024;
@@ -233,10 +237,9 @@ base::string16 ElideUrl(const GURL& url,
       GetStringWidthF(kEllipsisAndSlash, font_list);
 
   // Check with both subdomain and domain.
-  base::string16 elided_path =
-      ElideComponentizedPath(url_subdomain + url_domain, url_path_elements,
-                             url_filename, url_query, font_list,
-                             available_pixel_width);
+  base::string16 elided_path = ElideComponentizedPath(
+      url_subdomain + url_domain, url_path_elements, url_filename, url_query,
+      font_list, available_pixel_width);
   if (!elided_path.empty())
     return elided_path;
 
@@ -262,15 +265,15 @@ base::string16 ElideUrl(const GURL& url,
 
   // Return elided domain/.../filename anyway.
   base::string16 final_elided_url_string(url_elided_domain);
-  const float url_elided_domain_width = GetStringWidthF(url_elided_domain,
-                                                        font_list);
+  const float url_elided_domain_width =
+      GetStringWidthF(url_elided_domain, font_list);
 
   // A hack to prevent trailing ".../...".
   if ((available_pixel_width - url_elided_domain_width) >
       pixel_width_ellipsis_slash + kPixelWidthDotsTrailer +
-      GetStringWidthF(base::ASCIIToUTF16("UV"), font_list)) {
-    final_elided_url_string += BuildPathFromComponents(base::string16(),
-        url_path_elements, url_filename, 1);
+          GetStringWidthF(base::ASCIIToUTF16("UV"), font_list)) {
+    final_elided_url_string += BuildPathFromComponents(
+        base::string16(), url_path_elements, url_filename, 1);
   } else {
     final_elided_url_string += url_path;
   }
@@ -299,10 +302,12 @@ base::string16 ElideHost(const GURL& url,
   if (subdomain_width <= 0)
     return base::string16(kEllipsisUTF16) + kDot + url_domain;
 
-  const base::string16 elided_subdomain = ElideText(
-      url_subdomain, font_list, subdomain_width, gfx::ELIDE_HEAD);
+  const base::string16 elided_subdomain =
+      ElideText(url_subdomain, font_list, subdomain_width, gfx::ELIDE_HEAD);
   return elided_subdomain + url_domain;
 }
+
+#endif  // !defined(OS_ANDROID)
 
 base::string16 FormatUrlForSecurityDisplay(const GURL& url,
                                            const std::string& languages) {
@@ -338,10 +343,11 @@ base::string16 FormatUrlForSecurityDisplay(const GURL& url,
   result += base::UTF8ToUTF16(host);
 
   const int port = origin.IntPort();
-  const int default_port = url::DefaultPortForScheme(origin.scheme().c_str(),
-                                                     origin.scheme().length());
+  const int default_port = url::DefaultPortForScheme(
+      scheme.c_str(), static_cast<int>(scheme.length()));
   if (port != url::PORT_UNSPECIFIED && port != default_port)
     result += colon + base::UTF8ToUTF16(origin.port());
 
   return result;
 }
+}  // namespace secure_display
