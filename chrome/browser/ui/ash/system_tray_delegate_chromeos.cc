@@ -212,6 +212,8 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
           base::Bind(&SystemTrayDelegateChromeOS::UpdateClockType,
                      base::Unretained(this)))),
       vpn_delegate_(new VPNDelegateChromeOS),
+      user_pod_was_focused_(false),
+      last_focused_pod_hour_clock_type_(base::k12HourClock),
       weak_ptr_factory_(this) {
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -987,10 +989,21 @@ bool SystemTrayDelegateChromeOS::GetShouldUse24HourClockForTesting() const {
   return ShouldUse24HourClock();
 }
 
+void SystemTrayDelegateChromeOS::SetLastFocusedPodHourClockType(
+    base::HourClockType user_hour_clock_type) {
+  user_pod_was_focused_ = true;
+  last_focused_pod_hour_clock_type_ = user_hour_clock_type;
+  UpdateClockType();
+}
+
 bool SystemTrayDelegateChromeOS::ShouldUse24HourClock() const {
   // On login screen and in guest mode owner default is used for
   // kUse24HourClock preference.
   const ash::user::LoginStatus status = GetUserLoginStatus();
+
+  if (status == ash::user::LOGGED_IN_NONE && user_pod_was_focused_)
+    return last_focused_pod_hour_clock_type_ == base::k24HourClock;
+
   const CrosSettings* const cros_settings = CrosSettings::Get();
   bool system_use_24_hour_clock = true;
   const bool system_value_found = cros_settings->GetBoolean(

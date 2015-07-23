@@ -319,6 +319,7 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
+  pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -598,6 +599,13 @@ void Preferences::ApplyPreferences(ApplyReason reason,
         }
       }
     }
+  }
+
+  if (pref_name == prefs::kUse24HourClock ||
+      reason != REASON_ACTIVE_USER_CHANGED) {
+    const bool value = prefs_->GetBoolean(prefs::kUse24HourClock);
+    user_manager::UserManager::Get()->SetKnownUserBooleanPref(
+        user_->GetUserID(), prefs::kUse24HourClock, value);
   }
 }
 
