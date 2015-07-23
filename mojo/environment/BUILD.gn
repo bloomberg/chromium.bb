@@ -56,6 +56,6 @@ component("chromium_impl") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//mojo/common:common_base",
-    "//third_party/mojo/src/mojo/public/cpp/environment:environment",
+    "//third_party/mojo/src/mojo/public/c/environment",
   ]
 }

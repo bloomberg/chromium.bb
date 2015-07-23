@@ -48,7 +48,6 @@ source_set("shell") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
-    "//mojo/application/public/cpp:sources",
     "//url",
     "//third_party/mojo/src/mojo/edk/system",
     "//mojo/environment:chromium",

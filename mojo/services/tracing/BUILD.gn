@@ -35,6 +35,5 @@ source_set("lib") {
     ":bindings",
     "//base",
     "//mojo/application/public/cpp",
-    "//mojo/common:common_base",
   ]
 }
