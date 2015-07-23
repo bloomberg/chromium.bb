@@ -402,22 +402,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} methodName
-     * @param {string} args
-     * @return {*}
-     */
-    dispatch: function(methodName, args)
-    {
-        var argsArray = /** @type {!Array.<*>} */ (InjectedScriptHost.eval("(" + args + ")"));
-        var result = InjectedScriptHost.callFunction(this[methodName], this, argsArray);
-        if (typeof result === "undefined") {
-            inspectedGlobalObject.console.error("Web Inspector error: InjectedScript.%s returns undefined", methodName);
-            result = null;
-        }
-        return result;
-    },
-
-    /**
      * @param {string} objectId
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
