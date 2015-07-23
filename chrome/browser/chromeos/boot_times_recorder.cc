@@ -81,9 +81,9 @@ const std::string GetTabUrl(RenderWidgetHost* rwh) {
 // written, or -1 on error.
 // TODO(satorux): Move this to file_util.
 int AppendFile(const base::FilePath& file_path, const char* data, int size) {
-  // Appending boot times to symlink in /tmp is a security risk for
+  // Appending boot times to (probably) a symlink in /tmp is a security risk for
   // developers with chromeos=1 builds.
-  if (!base::SysInfo::IsRunningOnChromeOS() && base::IsLink(file_path))
+  if (!base::SysInfo::IsRunningOnChromeOS())
     return -1;
 
   FILE* file = base::OpenFile(file_path, "a");
