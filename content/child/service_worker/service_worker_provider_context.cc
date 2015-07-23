@@ -26,7 +26,7 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(int provider_id)
   thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-          thread_safe_sender_.get());
+          thread_safe_sender_.get(), main_thread_task_runner_.get());
   DCHECK(dispatcher);
   dispatcher->AddProviderContext(this);
 }

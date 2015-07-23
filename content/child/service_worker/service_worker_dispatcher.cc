@@ -5,6 +5,7 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 
 #include "base/lazy_instance.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
@@ -46,8 +47,10 @@ int CurrentWorkerId() {
 }  // namespace
 
 ServiceWorkerDispatcher::ServiceWorkerDispatcher(
-    ThreadSafeSender* thread_safe_sender)
-    : thread_safe_sender_(thread_safe_sender) {
+    ThreadSafeSender* thread_safe_sender,
+    base::SingleThreadTaskRunner* main_thread_task_runner)
+    : thread_safe_sender_(thread_safe_sender),
+      main_thread_task_runner_(main_thread_task_runner) {
   g_dispatcher_tls.Pointer()->Set(this);
 }
 
@@ -235,7 +238,8 @@ void ServiceWorkerDispatcher::RemoveProviderClient(int provider_id) {
 
 ServiceWorkerDispatcher*
 ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-    ThreadSafeSender* thread_safe_sender) {
+    ThreadSafeSender* thread_safe_sender,
+    base::SingleThreadTaskRunner* main_thread_task_runner) {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
     NOTREACHED() << "Re-instantiating TLS ServiceWorkerDispatcher.";
     g_dispatcher_tls.Pointer()->Set(NULL);
@@ -244,7 +248,7 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
     return g_dispatcher_tls.Pointer()->Get();
 
   ServiceWorkerDispatcher* dispatcher =
-      new ServiceWorkerDispatcher(thread_safe_sender);
+      new ServiceWorkerDispatcher(thread_safe_sender, main_thread_task_runner);
   if (WorkerTaskRunner::Instance()->CurrentWorkerId())
     WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
   return dispatcher;

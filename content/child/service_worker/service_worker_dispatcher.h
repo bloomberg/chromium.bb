@@ -19,6 +19,10 @@
 
 class GURL;
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 class WebURL;
 }
@@ -61,7 +65,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       WebServiceWorkerGetRegistrationForReadyCallbacks
           WebServiceWorkerGetRegistrationForReadyCallbacks;
 
-  explicit ServiceWorkerDispatcher(ThreadSafeSender* thread_safe_sender);
+  ServiceWorkerDispatcher(
+      ThreadSafeSender* thread_safe_sender,
+      base::SingleThreadTaskRunner* main_thread_task_runner);
   ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
@@ -132,14 +138,17 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       const ServiceWorkerRegistrationObjectInfo& info,
       bool adopt_handle);
 
-  // |thread_safe_sender| needs to be passed in because if the call leads to
-  // construction it will be needed.
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
-      ThreadSafeSender* thread_safe_sender);
+      ThreadSafeSender* thread_safe_sender,
+      base::SingleThreadTaskRunner* main_thread_task_runner);
 
   // Unlike GetOrCreateThreadSpecificInstance() this doesn't create a new
   // instance if thread-local instance doesn't exist.
   static ServiceWorkerDispatcher* GetThreadSpecificInstance();
+
+  base::SingleThreadTaskRunner* main_thread_task_runner() {
+    return main_thread_task_runner_.get();
+  }
 
  private:
   typedef IDMap<WebServiceWorkerRegistrationCallbacks,
@@ -271,6 +280,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
   WorkerToProviderMap worker_to_provider_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcher);
 };

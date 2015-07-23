@@ -90,8 +90,7 @@ void WebServiceWorkerProviderImpl::RemoveProviderClient() {
 }
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {
-  return ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      thread_safe_sender_.get());
+  return ServiceWorkerDispatcher::GetThreadSpecificInstance();
 }
 
 }  // namespace content

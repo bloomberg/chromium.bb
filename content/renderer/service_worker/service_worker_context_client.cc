@@ -634,7 +634,8 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
     return;  // Cannot be associated with a registration in some tests.
 
   ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get());
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          sender_.get(), main_thread_task_runner_.get());
 
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.

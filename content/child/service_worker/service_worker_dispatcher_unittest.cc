@@ -38,7 +38,7 @@ class ServiceWorkerDispatcherTest : public testing::Test {
 
   void SetUp() override {
     sender_ = new ServiceWorkerTestSender(&ipc_sink_);
-    dispatcher_.reset(new ServiceWorkerDispatcher(sender_.get()));
+    dispatcher_.reset(new ServiceWorkerDispatcher(sender_.get(), nullptr));
   }
 
   void CreateObjectInfoAndVersionAttributes(
