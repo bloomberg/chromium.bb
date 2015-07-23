@@ -666,20 +666,10 @@ class _BuilderRunBase(object):
     # Metadata dictionary may not have been written at this time (it
     # should be written in the BuildStartStage), fall back to get the
     # environment variable in that case. Assume we are on the trybot
-    # waterfall if no waterfall can be found.
+    # waterfall no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
             os.environ.get('BUILDBOT_MASTERNAME') or
             constants.WATERFALL_TRYBOT)
-
-  def GetBuildbotUrl(self):
-    """Gets the URL of the waterfall hosting the current build."""
-    # Metadata dictionary may not have been written at this time (it
-    # should be written in the BuildStartStage), fall back to the
-    # environment variable in that case. Assume we are on the trybot
-    # waterfall if no waterfall can be found.
-    return (self.attrs.metadata.GetDict().get('buildbot-url') or
-            os.environ.get('BUILDBOT_BUILDBOTURL') or
-            constants.TRYBOT_DASHBOARD)
 
   def GetBuilderName(self):
     """Get the name of this builder on the current waterfall."""
@@ -697,7 +687,7 @@ class _BuilderRunBase(object):
       The fully formed URL
     """
     return tree_status.ConstructDashboardURL(
-        self.GetBuildbotUrl(),
+        self.GetWaterfall(),
         self.GetBuilderName(),
         self.options.buildnumber, stage=stage)
 

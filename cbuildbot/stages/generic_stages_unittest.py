@@ -74,7 +74,6 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
                waterfall=constants.WATERFALL_INTERNAL,
-               waterfall_url=constants.BUILD_INT_DASHBOARD,
                master_build_id=None,
                site_config=None):
     """Prepare a BuilderRun at self._run for this test.
@@ -101,9 +100,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
         Example: ['branch-name', 'some-branch-name'] will effectively cause
         self._run.options.branch_name to be set to 'some-branch-name'.
       build_id: mock build id
-      waterfall: Name of the current waterfall.
-                 Possibly from constants.CIDB_KNOWN_WATERFALLS.
-      waterfall_url: Url for the current waterfall.
+      waterfall: One of constants.CIDB_KNOWN_WATERFALLS.
       master_build_id: mock build id of master build.
       site_config: SiteConfig to use (or MockSiteConfig)
     """
@@ -163,7 +160,6 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
       self._run.options.master_build_id = master_build_id
 
     self._run.attrs.metadata.UpdateWithDict({'buildbot-master-name': waterfall})
-    self._run.attrs.metadata.UpdateWithDict({'buildbot-url': waterfall_url})
 
     if self.RELEASE_TAG is not None:
       self._run.attrs.release_tag = self.RELEASE_TAG
@@ -336,7 +332,7 @@ class BuilderStageTest(AbstractStageTestCase):
     """Basic test for the ConstructDashboardURL() function."""
     stage = self.ConstructStage()
 
-    exp_url = ('https://uberchromegw.corp.google.com/i/chromeos/builders/'
+    exp_url = ('http://build.chromium.org/p/chromiumos/builders/'
                'x86-generic-paladin/builds/%s' % DEFAULT_BUILD_NUMBER)
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
