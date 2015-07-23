@@ -17,8 +17,8 @@ import org.chromium.content.common.CleanupReference;
  */
 @JNINamespace("android_webview")
 public class AwPermissionRequest {
-    private Uri mOrigin;
-    private long mResources;
+    private final Uri mOrigin;
+    private final long mResources;
     private boolean mProcessed;
 
     // AwPermissionRequest native instance.

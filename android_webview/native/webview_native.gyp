@@ -150,5 +150,13 @@
         'cancellation_signal_android_jar_jni_headers',
       ],
     },
+    {
+      'target_name': 'android_webview_aw_permission_request_resource',
+      'type': 'none',
+      'variables': {
+        'source_file': 'permission/aw_permission_request.h',
+      },
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+    },
   ],
 }

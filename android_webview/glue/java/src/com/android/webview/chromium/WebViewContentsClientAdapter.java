@@ -45,9 +45,9 @@ import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.android_webview.permission.Resource;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -1217,23 +1217,18 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      * TODO: Move to the upstream once the PermissionRequest is part of SDK.
      */
     public static class PermissionRequestAdapter extends PermissionRequest {
-        // TODO: Move the below definitions to AwPermissionRequest.
-        private static final long BITMASK_RESOURCE_VIDEO_CAPTURE = 1 << 1;
-        private static final long BITMASK_RESOURCE_AUDIO_CAPTURE = 1 << 2;
-        private static final long BITMASK_RESOURCE_PROTECTED_MEDIA_ID = 1 << 3;
-        private static final long BITMASK_RESOURCE_MIDI_SYSEX = 1 << 4;
 
-        public static long toAwPermissionResources(String[] resources) {
+        private static long toAwPermissionResources(String[] resources) {
             long result = 0;
             for (String resource : resources) {
                 if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
-                    result |= BITMASK_RESOURCE_VIDEO_CAPTURE;
+                    result |= Resource.VideoCapture;
                 } else if (resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
-                    result |= BITMASK_RESOURCE_AUDIO_CAPTURE;
+                    result |= Resource.AudioCapture;
                 } else if (resource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
-                    result |= BITMASK_RESOURCE_PROTECTED_MEDIA_ID;
+                    result |= Resource.ProtectedMediaId;
                 } else if (resource.equals(AwPermissionRequest.RESOURCE_MIDI_SYSEX)) {
-                    result |= BITMASK_RESOURCE_MIDI_SYSEX;
+                    result |= Resource.MIDISysex;
                 }
             }
             return result;
@@ -1241,16 +1236,16 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
         private static String[] toPermissionResources(long resources) {
             ArrayList<String> result = new ArrayList<String>();
-            if ((resources & BITMASK_RESOURCE_VIDEO_CAPTURE) != 0) {
+            if ((resources & Resource.VideoCapture) != 0) {
                 result.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE);
             }
-            if ((resources & BITMASK_RESOURCE_AUDIO_CAPTURE) != 0) {
+            if ((resources & Resource.AudioCapture) != 0) {
                 result.add(PermissionRequest.RESOURCE_AUDIO_CAPTURE);
             }
-            if ((resources & BITMASK_RESOURCE_PROTECTED_MEDIA_ID) != 0) {
+            if ((resources & Resource.ProtectedMediaId) != 0) {
                 result.add(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID);
             }
-            if ((resources & BITMASK_RESOURCE_MIDI_SYSEX) != 0) {
+            if ((resources & Resource.MIDISysex) != 0) {
                 result.add(AwPermissionRequest.RESOURCE_MIDI_SYSEX);
             }
             String[] resource_array = new String[result.size()];
@@ -1258,11 +1253,12 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
 
         private AwPermissionRequest mAwPermissionRequest;
-        private String[] mResources;
+        private final String[] mResources;
 
         public PermissionRequestAdapter(AwPermissionRequest awPermissionRequest) {
             assert awPermissionRequest != null;
             mAwPermissionRequest = awPermissionRequest;
+            mResources = toPermissionResources(mAwPermissionRequest.getResources());
         }
 
         @Override
@@ -1270,15 +1266,9 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             return mAwPermissionRequest.getOrigin();
         }
 
-        @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_THIS")
         @Override
         public String[] getResources() {
-            synchronized (this) {
-                if (mResources == null) {
-                    mResources = toPermissionResources(mAwPermissionRequest.getResources());
-                }
-                return mResources;
-            }
+            return mResources.clone();
         }
 
         @Override
