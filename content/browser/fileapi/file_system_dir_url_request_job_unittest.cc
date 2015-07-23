@@ -33,6 +33,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 using storage::FileSystemContext;
@@ -270,11 +271,13 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
       EXPECT_EQ(size_string, match.group(4, status));
     }
 
-    base::Time date;
     icu::UnicodeString date_ustr(match.group(5, status));
-    std::string date_str;
-    base::UTF16ToUTF8(date_ustr.getBuffer(), date_ustr.length(), &date_str);
-    EXPECT_TRUE(base::Time::FromString(date_str.c_str(), &date));
+    scoped_ptr<icu::DateFormat> formatter(
+        icu::DateFormat::createDateTimeInstance(icu::DateFormat::kShort));
+    UErrorCode parse_status = U_ZERO_ERROR;
+    UDate udate = formatter->parse(date_ustr, parse_status);
+    EXPECT_TRUE(U_SUCCESS(parse_status));
+    base::Time date = base::Time::FromJsTime(udate);
     EXPECT_FALSE(date.is_null());
   }
 
