@@ -36,6 +36,11 @@ gfx::Size FixedSizedScrollView::GetPreferredSize() const {
 void FixedSizedScrollView::Layout() {
   gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
   bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+  // Keep the origin of the contents unchanged so that the list will not scroll
+  // away from the current visible region user is viewing. ScrollView::Layout()
+  // will make sure the contents line up with its viewport properly if
+  // the contents moves out of the viewport region.
+  bounds.set_origin(contents()->bounds().origin());
   contents()->SetBoundsRect(bounds);
 
   views::ScrollView::Layout();
