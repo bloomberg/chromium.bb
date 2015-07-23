@@ -19,7 +19,12 @@ fun:*EatResolverThunk*sandbox*
 fun:*InterceptionAgent*sandbox*
 fun:*ResolverThunk*sandbox*
 fun:*Target*SandboxFactory*sandbox*
+fun:*ProcessState*sandbox*
 src:*pe_image.h
 src:*pe_image.cc
 src:*resolver_32.cc
+src:*filesystem_interception.cc
+src:*process_thread_interception.cc
+src:*registry_interception.cc
+src:*sandbox_nt_util.cc
 ################################################################################
