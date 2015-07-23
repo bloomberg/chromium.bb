@@ -8,6 +8,8 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "content/common/mac/io_surface_manager.h"
 #include "content/common/mac/io_surface_manager_token.h"
 
@@ -34,7 +36,13 @@ class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
   }
 
   // Set the token used when communicating with the Mach service.
-  void set_token(const IOSurfaceManagerToken& token) { token_ = token; }
+  void set_token(const IOSurfaceManagerToken& token) {
+    token_ = token;
+#if !defined(NDEBUG)
+    set_token_thread_id_ = base::PlatformThread::CurrentRef();
+#endif
+    set_token_event_.Signal();
+  }
 
  private:
   friend struct DefaultSingletonTraits<ChildIOSurfaceManager>;
@@ -44,6 +52,10 @@ class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
 
   base::mac::ScopedMachSendRight service_port_;
   IOSurfaceManagerToken token_;
+#if !defined(NDEBUG)
+  base::PlatformThreadRef set_token_thread_id_;
+#endif
+  base::WaitableEvent set_token_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildIOSurfaceManager);
 };
