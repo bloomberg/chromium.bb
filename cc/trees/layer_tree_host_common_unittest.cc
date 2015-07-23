@@ -4831,65 +4831,6 @@ INSTANTIATE_TEST_CASE_P(LayerTreeHostCommonTest,
                                          testing::Bool(),
                                          testing::Bool()));
 
-TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayer) {
-  FakeImplProxy proxy;
-  TestSharedBitmapManager shared_bitmap_manager;
-  TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
-                                  &task_graph_runner);
-  host_impl.CreatePendingTree();
-  const gfx::Transform identity_matrix;
-
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  root->SetIsDrawable(true);
-
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  child->SetIsDrawable(true);
-
-  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  grand_child->SetIsDrawable(true);
-  grand_child->SetHideLayerAndSubtree(true);
-
-  child->AddChild(grand_child);
-  root->AddChild(child);
-
-  host()->SetRootLayer(root);
-
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-  // We should have one render surface and two layers. The grand child has
-  // hidden itself.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(child->id(), root->render_surface()->layer_list().at(1)->id());
-}
-
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
@@ -4935,64 +4876,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
   EXPECT_EQ(1, root->render_surface()->layer_list().at(0)->id());
   EXPECT_EQ(2, root->render_surface()->layer_list().at(1)->id());
-}
-
-TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayers) {
-  FakeImplProxy proxy;
-  TestSharedBitmapManager shared_bitmap_manager;
-  TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
-                                  &task_graph_runner);
-  host_impl.CreatePendingTree();
-  const gfx::Transform identity_matrix;
-
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  root->SetIsDrawable(true);
-
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  child->SetIsDrawable(true);
-  child->SetHideLayerAndSubtree(true);
-
-  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  grand_child->SetIsDrawable(true);
-
-  child->AddChild(grand_child);
-  root->AddChild(child);
-
-  host()->SetRootLayer(root);
-
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-  // We should have one render surface and one layers. The child has
-  // hidden itself and the grand child.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
