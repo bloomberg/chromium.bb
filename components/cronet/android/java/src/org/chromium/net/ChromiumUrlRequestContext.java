@@ -111,7 +111,9 @@ public class ChromiumUrlRequestContext {
 
     @Override
     protected void finalize() throws Throwable {
-        nativeReleaseRequestContextAdapter(mChromiumUrlRequestContextAdapter);
+        if (mChromiumUrlRequestContextAdapter != 0) {
+            nativeReleaseRequestContextAdapter(mChromiumUrlRequestContextAdapter);
+        }
         super.finalize();
     }
 
