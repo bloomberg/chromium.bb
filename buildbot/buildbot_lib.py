@@ -136,6 +136,12 @@ def SetupGyp(context, extra_vars=[]):
 
 
 def SetupLinuxEnvironment(context):
+  if context['arch'] == 'mips32':
+    # Ensure the trusted mips toolchain is installed.
+    cmd = ['build/package_version/package_version.py', '--packages',
+           'linux_x86/mips_trusted', 'sync', '-x']
+    Command(context, cmd)
+
   SetupGyp(context, ['target_arch='+context['gyp_arch']])
 
 

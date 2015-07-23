@@ -119,15 +119,12 @@ gyp-arm-build() {
     gypmode="Debug"
   fi
 
+  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
   # Setup environment for arm.
   export GYP_DEFINES="target_arch=arm"
   export GYP_CROSSCOMPILE=1
-
-  # NOTE: this step is also run implicitly as part of
-  #        gclient runhooks --force
+  # NOTE: this step is also run implicitly as part of gclient runhooks --force
   #       it uses the exported env vars so we have to run it again
-  #
-  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
   build/gyp_nacl
 
   echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
@@ -140,29 +137,18 @@ gyp-mips32-build() {
   if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
     gypmode="Debug"
   fi
-  local toolchain_dir=$(pwd)/toolchain/linux_x86/mips_trusted
-  local extra="-EL -isystem ${toolchain_dir}/usr/include \
-               -Wl,-rpath-link=${toolchain_dir}/lib/mipsel-linux-gnu \
-               -L${toolchain_dir}/lib \
-               -L${toolchain_dir}/lib/mipsel-linux-gnu \
-               -L${toolchain_dir}/usr/lib \
-               -L${toolchain_dir}/usr/lib/mipsel-linux-gnu"
-  # Setup environment for mips32.
 
-  # Check if MIPS TC has already been built. If not, build it.
-  if [ ! -f ${toolchain_dir}/bin/mipsel-linux-gnu-gcc ] ; then
-    tools/trusted_cross_toolchains/trusted-toolchain-creator.mipsel.debian.sh \
-      nacl_sdk
-  fi
+  # Ensure the trusted mips toolchain is installed.
+  build/package_version/package_version.py \
+      --packages linux_x86/mips_trusted sync -x
 
+  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
+  # Add mipsel-linux-gnu-gcc tools to the PATH
+  export PATH=$PATH:$PWD/toolchain/linux_x86/mips_trusted/bin/
   export GYP_DEFINES="target_arch=mipsel"
   export GYP_CROSSCOMPILE=1
-
-  # NOTE: this step is also run implicitly as part of
-  #        gclient runhooks --force
+  # NOTE: this step is also run implicitly as part of gclient runhooks --force
   #       it uses the exported env vars so we have to run it again
-  #
-  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
   build/gyp_nacl
 
   echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
@@ -207,10 +193,7 @@ mode-trybot-qemu() {
     gyp-mips32-build
   fi
 
-  # TODO(petarj): Enable this for MIPS arch too once all the tests pass.
-  if [[ ${arch} == "arm" ]] ; then
-    buildbot/buildbot_pnacl.py opt $arch pnacl
-  fi
+  buildbot/buildbot_pnacl.py opt $arch pnacl
 }
 
 mode-buildbot-arm-dbg() {

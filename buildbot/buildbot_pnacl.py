@@ -125,7 +125,9 @@ def RunSconsTests(status, context):
   # on the ARM bots where we don't have the pnacl_newlib drivers.
   # The mac standalone sandboxed translator is flaky.
   # https://code.google.com/p/nativeclient/issues/detail?id=3856
-  if not context.Windows() and not context.Mac():
+  # TODO(sbc): Enable these tests for mips once we build the version of the
+  # translator nexe
+  if not context.Windows() and not context.Mac() and arch != 'mips32':
     flags_run_sbtc = ['use_sandboxed_translator=1']
     sbtc_tests = ['toolchain_tests_irt']
     if arch == 'arm':

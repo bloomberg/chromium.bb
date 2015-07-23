@@ -69,8 +69,10 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'win7-64-newlib-opt-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
+    # TODO: Use buildbot_pnacl.py instead of buildbot_pnacl.sh once
+    # the gyp_build is moved to buildbot_pnacl.py.
     'precise_64-newlib-mips-pnacl':
-        echo + ' "TODO(mseaborn): add mips"',
+        bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
     # PNaCl Spec
     'precise_64-newlib-arm_qemu-pnacl-buildonly-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
@@ -158,7 +160,7 @@ BOT_ASSIGNMENT = {
     'nacl-precise_64-newlib-x86_64-pnacl':
          python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'nacl-precise_64-newlib-mips-pnacl':
-        echo + ' "TODO(mseaborn): add mips"',
+        bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
     'nacl-arm_opt_panda':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
     'nacl-arm_hw_opt_panda':
@@ -270,7 +272,6 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-linux-pnacl-x86_64':
         python +
         ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64',
-    'nacl-toolchain-linux-pnacl-mips': echo + ' "TODO(mseaborn)"',
     'nacl-toolchain-mac-pnacl-x86_32':
         python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
     'nacl-toolchain-win7-pnacl-x86_64':
