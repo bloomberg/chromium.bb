@@ -1,13 +1,15 @@
 <html>
   <head>
+    <title>Popup test page</title>
     <script type="text/javascript">
       function spawnWindows() {
         window.open('data:text/html,<html><head><title>Popup #1</title></head><body /></html>');
         window.open('data:text/html,<html><head><title>Popup #2</title></head><body /></html>');
+        window.open('data:text/html,<html><head><title>Popup #3</title></head><body /></html>');
       }
     </script>
   </head>
   <body onload="spawnWindows()">
-    Spawning two popup windows...
+    Spawning three popup windows...
   </body>
 </html>
