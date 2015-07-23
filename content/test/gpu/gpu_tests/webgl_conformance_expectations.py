@@ -30,22 +30,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
   def SetExpectations(self):
     # Fails on all platforms
-    self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/constants.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/fragdata.html',
-        bug=478572)
     self.Fail('deqp/data/gles2/shaders/functions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/linkage.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         bug=478572)
-    self.Fail('conformance/glsl/misc/const-variable-initialization.html',
-        bug=485632)
     self.Fail('conformance/misc/expando-loss.html',
         bug=485634)
 
