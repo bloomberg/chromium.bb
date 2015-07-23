@@ -41,7 +41,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
   source->AddLocalizedString("searchResultsFor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
   source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
@@ -97,6 +96,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
 
   if (switches::MdDownloadsEnabled()) {
+    source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
+
     source->AddResourcePath("action_service.html",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
     source->AddResourcePath("action_service.js",
@@ -115,6 +116,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
     source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   } else {
+    source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
+
     source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);
     source->AddResourcePath("focus_row.js", IDR_DOWNLOADS_FOCUS_ROW_JS);
     source->AddResourcePath("manager.js", IDR_DOWNLOADS_MANAGER_JS);

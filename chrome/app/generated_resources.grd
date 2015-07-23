@@ -2056,6 +2056,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
         Search downloads
       </message>
+      <message name="IDS_MD_DOWNLOAD_SEARCH" desc="Placeholder text/label for the search input in the download page">
+        Search
+      </message>
       <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
       </message>

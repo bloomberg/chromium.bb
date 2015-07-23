@@ -4,11 +4,19 @@
 
 :host {
   @apply(--downloads-shared-style);
+  -webkit-padding-end: 8px;  /* + 8px from the search/(X) icon = 16px. */
+  -webkit-padding-start: 24px;
+  align-items: center;
+  background: rgb(63, 85, 102);
   color: white;
+  content-sizing: padding-box;
+  display: flex;
+  padding-bottom: 8px;
+  padding-top: 8px;
 }
 
-paper-toolbar {
-  background: rgb(63, 85, 102);
+#title {
+  margin: 0;
 }
 
 #title,
@@ -17,15 +25,24 @@ paper-toolbar {
 }
 
 #actions {
+  display: flex;
   flex: none;
   width: var(--downloads-item-width);
 }
 
-#search,
-#actions {
+#search {
   display: flex;
+  justify-content: flex-end;
 }
 
-#search {
-  justify-content: flex-end;
+#search-term {
+  --paper-input-container-color: rgba(255, 255, 255, .5);
+  --paper-input-container-input: {
+    font-size: 14px;
+  };
+  --paper-input-container-input-color: white;
+  --paper-input-container-focus-color: white;
+  --paper-input-container-label: {
+    font-size: 14px;
+  };
 }

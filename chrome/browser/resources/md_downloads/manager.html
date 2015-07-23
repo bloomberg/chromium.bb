@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="chrome://downloads/action_service.html">
 <link rel="import" href="chrome://downloads/constants.html">
 <link rel="import" href="chrome://downloads/item_view.html">
@@ -11,9 +12,11 @@
 
 <dom-module id="downloads-manager">
   <template>
-    <downloads-toolbar id="toolbar"></downloads-toolbar>
-    <div id="downloads-list" hidden$="[[!hasDownloads_]]"></div>
-    <div id="no-downloads" hidden$="[[hasDownloads_]]"></div>
+    <paper-header-panel>
+      <downloads-toolbar class="paper-header" id="toolbar"></downloads-toolbar>
+      <div id="downloads-list" hidden$="[[!hasDownloads_]]"></div>
+      <div id="no-downloads" hidden$="[[hasDownloads_]]"></div>
+    </paper-header-panel>
   </template>
   <link rel="import" type="css" href="chrome://resources/css/roboto.css">
   <link rel="import" type="css" href="chrome://downloads/shared_style.css">
