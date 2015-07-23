@@ -268,9 +268,10 @@ class HWTestList(object):
 
   @classmethod
   def AFDORecordTest(cls, **kwargs):
-    default_dict = dict(pool=constants.HWTEST_SUITES_POOL,
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         warn_only=True, num=1, file_bugs=True,
-                        timeout=constants.AFDO_GENERATE_TIMEOUT)
+                        timeout=constants.AFDO_GENERATE_TIMEOUT,
+                        priority=constants.HWTEST_PFQ_PRIORITY)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
     return config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
