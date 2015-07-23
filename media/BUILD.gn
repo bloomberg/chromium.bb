@@ -332,6 +332,14 @@ component("media") {
     deps += [ "//third_party/libvpx" ]
   }
 
+  if (media_use_libwebm) {
+    sources += [
+      "capture/webm_muxer.cc",
+      "capture/webm_muxer.h",
+    ]
+    deps += [ "//third_party/libwebm" ]
+  }
+
   if (is_android) {
     sources += [
       "capture/video/android/video_capture_device_android.cc",
