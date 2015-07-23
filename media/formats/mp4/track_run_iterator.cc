@@ -32,13 +32,14 @@ struct TrackRunInfo {
   bool is_audio;
   const AudioSampleEntry* audio_description;
   const VideoSampleEntry* video_description;
+  const SampleGroupDescription* track_sample_encryption_group;
 
   int64 aux_info_start_offset;  // Only valid if aux_info_total_size > 0.
   int aux_info_default_size;
   std::vector<uint8> aux_info_sizes;  // Populated if default_size == 0.
   int aux_info_total_size;
 
-  std::vector<CencSampleEncryptionInfoEntry> sample_encryption_info;
+  std::vector<CencSampleEncryptionInfoEntry> fragment_sample_encryption_info;
 
   TrackRunInfo();
   ~TrackRunInfo();
@@ -164,6 +165,38 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   return true;
 }
 
+static const CencSampleEncryptionInfoEntry* GetSampleEncryptionInfoEntry(
+    const TrackRunInfo& run_info,
+    uint32 group_description_index) {
+  const std::vector<CencSampleEncryptionInfoEntry>* entries = nullptr;
+
+  // ISO-14496-12 Section 8.9.2.3 and 8.9.4 : group description index
+  // (1) ranges from 1 to the number of sample group entries in the track
+  // level SampleGroupDescription Box, or (2) takes the value 0 to
+  // indicate that this sample is a member of no group, in this case, the
+  // sample is associated with the default values specified in
+  // TrackEncryption Box, or (3) starts at 0x10001, i.e. the index value
+  // 1, with the value 1 in the top 16 bits, to reference fragment-local
+  // SampleGroupDescription Box.
+  // Case (2) is not supported here. The caller must handle it externally
+  // before invoking this function.
+  DCHECK_NE(group_description_index, 0u);
+  if (group_description_index >
+      SampleToGroupEntry::kFragmentGroupDescriptionIndexBase) {
+    group_description_index -=
+        SampleToGroupEntry::kFragmentGroupDescriptionIndexBase;
+    entries = &run_info.fragment_sample_encryption_info;
+  } else {
+    entries = &run_info.track_sample_encryption_group->entries;
+  }
+
+  // |group_description_index| is 1-based.
+  DCHECK_LE(group_description_index, entries->size());
+  return (group_description_index > entries->size())
+             ? nullptr
+             : &(*entries)[group_description_index - 1];
+}
+
 // In well-structured encrypted media, each track run will be immediately
 // preceded by its auxiliary information; this is the only optimal storage
 // pattern in terms of minimum number of bytes from a serial stream needed to
@@ -251,7 +284,10 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       tri.timescale = trak->media.header.timescale;
       tri.start_dts = run_start_dts;
       tri.sample_start_offset = trun.data_offset;
-      tri.sample_encryption_info = traf.sample_group_description.entries;
+      tri.track_sample_encryption_group =
+          &trak->media.information.sample_table.sample_group_description;
+      tri.fragment_sample_encryption_info =
+          traf.sample_group_description.entries;
 
       tri.is_audio = (stsd.type == kAudio);
       if (tri.is_audio) {
@@ -319,25 +355,10 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           continue;
         }
 
-        // ISO-14496-12 Section 8.9.2.3 and 8.9.4 : group description index
-        // (1) ranges from 1 to the number of sample group entries in the track
-        // level SampleGroupDescription Box, or (2) takes the value 0 to
-        // indicate that this sample is a member of no group, in this case, the
-        // sample is associated with the default values specified in
-        // TrackEncryption Box, or (3) starts at 0x10001, i.e. the index value
-        // 1, with the value 1 in the top 16 bits, to reference fragment-local
-        // SampleGroupDescription Box.
-        // Case (1) is not supported currently. We might not need it either as
-        // the same functionality can be better achieved using (2).
         uint32 index = sample_to_group_itr.group_description_index();
-        if (index >= SampleToGroupEntry::kFragmentGroupDescriptionIndexBase) {
-          index -= SampleToGroupEntry::kFragmentGroupDescriptionIndexBase;
-          RCHECK(index != 0 && index <= tri.sample_encryption_info.size());
-        } else if (index != 0) {
-          NOTIMPLEMENTED() << "'sgpd' box in 'moov' is not supported.";
-          return false;
-        }
         tri.samples[k].cenc_group_description_index = index;
+        if (index != 0)
+          RCHECK(GetSampleEncryptionInfoEntry(tri, index));
         is_sample_to_group_valid = sample_to_group_itr.Advance();
       }
       runs_.push_back(tri);
@@ -548,33 +569,24 @@ uint32 TrackRunIterator::GetGroupDescriptionIndex(uint32 sample_index) const {
   return run_itr_->samples[sample_index].cenc_group_description_index;
 }
 
-const CencSampleEncryptionInfoEntry&
-TrackRunIterator::GetSampleEncryptionInfoEntry(
-    uint32 group_description_index) const {
-  DCHECK(IsRunValid());
-  DCHECK_NE(group_description_index, 0u);
-  DCHECK_LE(group_description_index, run_itr_->sample_encryption_info.size());
-  // |group_description_index| is 1-based. Subtract by 1 to index the vector.
-  return run_itr_->sample_encryption_info[group_description_index - 1];
-}
-
 bool TrackRunIterator::IsSampleEncrypted(size_t sample_index) const {
   uint32 index = GetGroupDescriptionIndex(sample_index);
-  return (index == 0) ? track_encryption().is_encrypted
-                      : GetSampleEncryptionInfoEntry(index).is_encrypted;
+  return (index == 0)
+             ? track_encryption().is_encrypted
+             : GetSampleEncryptionInfoEntry(*run_itr_, index)->is_encrypted;
 }
 
 const std::vector<uint8>& TrackRunIterator::GetKeyId(
     size_t sample_index) const {
   uint32 index = GetGroupDescriptionIndex(sample_index);
   return (index == 0) ? track_encryption().default_kid
-                      : GetSampleEncryptionInfoEntry(index).key_id;
+                      : GetSampleEncryptionInfoEntry(*run_itr_, index)->key_id;
 }
 
 uint8 TrackRunIterator::GetIvSize(size_t sample_index) const {
   uint32 index = GetGroupDescriptionIndex(sample_index);
   return (index == 0) ? track_encryption().default_iv_size
-                      : GetSampleEncryptionInfoEntry(index).iv_size;
+                      : GetSampleEncryptionInfoEntry(*run_itr_, index)->iv_size;
 }
 
 }  // namespace mp4

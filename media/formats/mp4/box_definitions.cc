@@ -337,9 +337,20 @@ SampleTable::~SampleTable() {}
 FourCC SampleTable::BoxType() const { return FOURCC_STBL; }
 
 bool SampleTable::Parse(BoxReader* reader) {
-  return reader->ScanChildren() &&
-      reader->ReadChild(&description) &&
-      reader->MaybeReadChild(&sync_sample);
+  RCHECK(reader->ScanChildren() &&
+         reader->ReadChild(&description) &&
+         reader->MaybeReadChild(&sync_sample));
+  // There could be multiple SampleGroupDescription boxes with different
+  // grouping types. For common encryption, the relevant grouping type is
+  // 'seig'. Continue reading until 'seig' is found, or until running out of
+  // child boxes.
+  while (reader->HasChild(&sample_group_description)) {
+    RCHECK(reader->ReadChild(&sample_group_description));
+    if (sample_group_description.grouping_type == FOURCC_SEIG)
+      break;
+    sample_group_description.entries.clear();
+  }
+  return true;
 }
 
 EditList::EditList() {}
@@ -950,13 +961,17 @@ bool TrackFragment::Parse(BoxReader* reader) {
   // different grouping types. For common encryption, the relevant grouping type
   // is 'seig'. Continue reading until 'seig' is found, or until running out of
   // child boxes.
-  while (sample_group_description.grouping_type != FOURCC_SEIG &&
-         reader->HasChild(&sample_group_description)) {
+  while (reader->HasChild(&sample_group_description)) {
     RCHECK(reader->ReadChild(&sample_group_description));
+    if (sample_group_description.grouping_type == FOURCC_SEIG)
+      break;
+    sample_group_description.entries.clear();
   }
-  while (sample_to_group.grouping_type != FOURCC_SEIG &&
-         reader->HasChild(&sample_to_group)) {
+  while (reader->HasChild(&sample_to_group)) {
     RCHECK(reader->ReadChild(&sample_to_group));
+    if (sample_to_group.grouping_type == FOURCC_SEIG)
+      break;
+    sample_to_group.entries.clear();
   }
   return true;
 }

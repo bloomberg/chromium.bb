@@ -252,6 +252,22 @@ struct MEDIA_EXPORT SyncSample : Box {
   std::vector<uint32> entries;
 };
 
+struct MEDIA_EXPORT CencSampleEncryptionInfoEntry {
+  CencSampleEncryptionInfoEntry();
+  ~CencSampleEncryptionInfoEntry();
+
+  bool is_encrypted;
+  uint8 iv_size;
+  std::vector<uint8> key_id;
+};
+
+struct MEDIA_EXPORT SampleGroupDescription : Box {  // 'sgpd'.
+  DECLARE_BOX_METHODS(SampleGroupDescription);
+
+  uint32 grouping_type;
+  std::vector<CencSampleEncryptionInfoEntry> entries;
+};
+
 struct MEDIA_EXPORT SampleTable : Box {
   DECLARE_BOX_METHODS(SampleTable);
 
@@ -261,6 +277,7 @@ struct MEDIA_EXPORT SampleTable : Box {
   // samples in order to be compliant files.
   SampleDescription description;
   SyncSample sync_sample;
+  SampleGroupDescription sample_group_description;
 };
 
 struct MEDIA_EXPORT MediaHeader : Box {
@@ -384,22 +401,6 @@ class MEDIA_EXPORT IndependentAndDisposableSamples : public Box {
 
  private:
   std::vector<SampleDependsOn> sample_depends_on_;
-};
-
-struct MEDIA_EXPORT CencSampleEncryptionInfoEntry {
-  CencSampleEncryptionInfoEntry();
-  ~CencSampleEncryptionInfoEntry();
-
-  bool is_encrypted;
-  uint8 iv_size;
-  std::vector<uint8> key_id;
-};
-
-struct MEDIA_EXPORT SampleGroupDescription : Box {  // 'sgpd'.
-  DECLARE_BOX_METHODS(SampleGroupDescription);
-
-  uint32 grouping_type;
-  std::vector<CencSampleEncryptionInfoEntry> entries;
 };
 
 struct MEDIA_EXPORT SampleToGroupEntry {

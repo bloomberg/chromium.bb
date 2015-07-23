@@ -91,8 +91,6 @@ class MEDIA_EXPORT TrackRunIterator {
   const TrackEncryption& track_encryption() const;
 
   uint32 GetGroupDescriptionIndex(uint32 sample_index) const;
-  const CencSampleEncryptionInfoEntry& GetSampleEncryptionInfoEntry(
-      uint32 group_description_index) const;
 
   // Sample encryption information.
   bool IsSampleEncrypted(size_t sample_index) const;

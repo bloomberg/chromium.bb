@@ -36,9 +36,14 @@ static const uint8 kKeyId[] = {
   0x65, 0x73, 0x74, 0x4b, 0x65, 0x79, 0x49, 0x44
 };
 
-static const uint8 kCencSampleGroupKeyId[] = {
+static const uint8 kTrackCencSampleGroupKeyId[] = {
   0x46, 0x72, 0x61, 0x67, 0x53, 0x61, 0x6d, 0x70,
   0x6c, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x4b
+};
+
+static const uint8 kFragmentCencSampleGroupKeyId[] = {
+  0x6b, 0x46, 0x72, 0x61, 0x67, 0x6d, 0x65, 0x6e,
+  0x74, 0x43, 0x65, 0x6e, 0x63, 0x53, 0x61, 0x6d
 };
 
 namespace media {
@@ -221,11 +226,22 @@ class TrackRunIteratorTest : public testing::Test {
                                                    kKeyId + arraysize(kKeyId));
   }
 
-  // Add SampleGroupDescription Box with two entries (an unencrypted entry and
-  // an encrypted entry). Populate SampleToGroup Box from input array.
-  void AddCencSampleGroup(TrackFragment* frag,
+  // Add SampleGroupDescription Box to track level sample table and to
+  // fragment. Populate SampleToGroup Box from input array.
+  void AddCencSampleGroup(Track* track,
+                          TrackFragment* frag,
                           const SampleToGroupEntry* sample_to_group_entries,
                           size_t num_entries) {
+    auto& track_cenc_group =
+        track->media.information.sample_table.sample_group_description;
+    track_cenc_group.grouping_type = FOURCC_SEIG;
+    track_cenc_group.entries.resize(1);
+    track_cenc_group.entries[0].is_encrypted = true;
+    track_cenc_group.entries[0].iv_size = 8;
+    track_cenc_group.entries[0].key_id.assign(
+        kTrackCencSampleGroupKeyId,
+        kTrackCencSampleGroupKeyId + arraysize(kTrackCencSampleGroupKeyId));
+
     frag->sample_group_description.grouping_type = FOURCC_SEIG;
     frag->sample_group_description.entries.resize(2);
     frag->sample_group_description.entries[0].is_encrypted = false;
@@ -233,8 +249,9 @@ class TrackRunIteratorTest : public testing::Test {
     frag->sample_group_description.entries[1].is_encrypted = true;
     frag->sample_group_description.entries[1].iv_size = 8;
     frag->sample_group_description.entries[1].key_id.assign(
-        kCencSampleGroupKeyId,
-        kCencSampleGroupKeyId + arraysize(kCencSampleGroupKeyId));
+        kFragmentCencSampleGroupKeyId,
+        kFragmentCencSampleGroupKeyId +
+            arraysize(kFragmentCencSampleGroupKeyId));
 
     frag->sample_to_group.grouping_type = FOURCC_SEIG;
     frag->sample_to_group.entries.assign(sample_to_group_entries,
@@ -499,15 +516,15 @@ TEST_F(TrackRunIteratorTest, CencSampleGroupTest) {
       {1, SampleToGroupEntry::kFragmentGroupDescriptionIndexBase + 2},
       // Associated with the first entry in SampleGroupDescription Box.
       {1, SampleToGroupEntry::kFragmentGroupDescriptionIndexBase + 1}};
-  AddCencSampleGroup(
-      &moof.tracks[0], kSampleToGroupTable, arraysize(kSampleToGroupTable));
+  AddCencSampleGroup(&moov_.tracks[0], &moof.tracks[0], kSampleToGroupTable,
+                     arraysize(kSampleToGroupTable));
 
   iter_.reset(new TrackRunIterator(&moov_, media_log_));
   ASSERT_TRUE(InitMoofWithArbitraryAuxInfo(&moof));
 
   std::string cenc_sample_group_key_id(
-      kCencSampleGroupKeyId,
-      kCencSampleGroupKeyId + arraysize(kCencSampleGroupKeyId));
+      kFragmentCencSampleGroupKeyId,
+      kFragmentCencSampleGroupKeyId + arraysize(kFragmentCencSampleGroupKeyId));
   // The first sample is encrypted and the second sample is unencrypted.
   EXPECT_TRUE(iter_->is_encrypted());
   EXPECT_EQ(cenc_sample_group_key_id, iter_->GetDecryptConfig()->key_id());
@@ -522,26 +539,32 @@ TEST_F(TrackRunIteratorTest, CencSampleGroupWithTrackEncryptionBoxTest) {
   MovieFragment moof = CreateFragment();
 
   const SampleToGroupEntry kSampleToGroupTable[] = {
-      // Associated with the second entry in SampleGroupDescription Box.
+      // Associated with the 2nd entry in fragment SampleGroupDescription Box.
       {2, SampleToGroupEntry::kFragmentGroupDescriptionIndexBase + 2},
       // Associated with the default values specified in TrackEncryption Box.
-      {4, 0},
-      // Associated with the first entry in SampleGroupDescription Box.
-      {3, SampleToGroupEntry::kFragmentGroupDescriptionIndexBase + 1}};
-  AddCencSampleGroup(
-      &moof.tracks[0], kSampleToGroupTable, arraysize(kSampleToGroupTable));
+      {1, 0},
+      // Associated with the 1st entry in fragment SampleGroupDescription Box.
+      {3, SampleToGroupEntry::kFragmentGroupDescriptionIndexBase + 1},
+      // Associated with the 1st entry in track SampleGroupDescription Box.
+      {2, 1}};
+  AddCencSampleGroup(&moov_.tracks[0], &moof.tracks[0], kSampleToGroupTable,
+                     arraysize(kSampleToGroupTable));
 
   iter_.reset(new TrackRunIterator(&moov_, media_log_));
   ASSERT_TRUE(InitMoofWithArbitraryAuxInfo(&moof));
 
   std::string track_encryption_key_id(kKeyId, kKeyId + arraysize(kKeyId));
-  std::string cenc_sample_group_key_id(
-      kCencSampleGroupKeyId,
-      kCencSampleGroupKeyId + arraysize(kCencSampleGroupKeyId));
+  std::string track_cenc_sample_group_key_id(
+      kTrackCencSampleGroupKeyId,
+      kTrackCencSampleGroupKeyId + arraysize(kTrackCencSampleGroupKeyId));
+  std::string fragment_cenc_sample_group_key_id(
+      kFragmentCencSampleGroupKeyId,
+      kFragmentCencSampleGroupKeyId + arraysize(kFragmentCencSampleGroupKeyId));
 
   for (size_t i = 0; i < kSampleToGroupTable[0].sample_count; ++i) {
     EXPECT_TRUE(iter_->is_encrypted());
-    EXPECT_EQ(cenc_sample_group_key_id, iter_->GetDecryptConfig()->key_id());
+    EXPECT_EQ(fragment_cenc_sample_group_key_id,
+              iter_->GetDecryptConfig()->key_id());
     iter_->AdvanceSample();
   }
 
@@ -553,6 +576,13 @@ TEST_F(TrackRunIteratorTest, CencSampleGroupWithTrackEncryptionBoxTest) {
 
   for (size_t i = 0; i < kSampleToGroupTable[2].sample_count; ++i) {
     EXPECT_FALSE(iter_->is_encrypted());
+    iter_->AdvanceSample();
+  }
+
+  for (size_t i = 0; i < kSampleToGroupTable[3].sample_count; ++i) {
+    EXPECT_TRUE(iter_->is_encrypted());
+    EXPECT_EQ(track_cenc_sample_group_key_id,
+              iter_->GetDecryptConfig()->key_id());
     iter_->AdvanceSample();
   }
 
