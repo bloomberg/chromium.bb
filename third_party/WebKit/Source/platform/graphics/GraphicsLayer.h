@@ -45,7 +45,6 @@
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
-#include "public/platform/WebNinePatchLayer.h"
 #include "public/platform/WebScrollBlocksOn.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/OwnPtr.h"

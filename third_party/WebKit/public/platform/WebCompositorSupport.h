@@ -49,7 +49,6 @@ class WebFilterOperations;
 class WebFloatAnimationCurve;
 class WebGraphicsContext3D;
 class WebImageLayer;
-class WebNinePatchLayer;
 class WebLayer;
 class WebScrollbarLayer;
 class WebScrollbarThemeGeometry;

@@ -410,7 +410,6 @@ source_set("blink_headers") {
     "platform/WebURLLoader.h",
     "platform/WebGestureCurve.h",
     "platform/WebCompositorAnimationPlayerClient.h",
-    "platform/WebNinePatchLayer.h",
     "platform/WebMediaDeviceInfo.h",
     "platform/WebFileSystemCallbacks.h",
     "platform/WebServiceWorkerResponseType.h",
