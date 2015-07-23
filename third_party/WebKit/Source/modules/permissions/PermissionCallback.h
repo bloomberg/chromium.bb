@@ -22,7 +22,7 @@ class ScriptPromiseResolver;
 // the callback. It takes a WebPermissionType in its constructor and will pass
 // it to the PermissionStatus.
 class PermissionCallback final
-    : public WebCallbacks<WebPermissionStatus, void> {
+    : public WebCallbacks<WebPermissionStatus*, void> {
 public:
     PermissionCallback(PassRefPtr<ScriptPromiseResolver>, WebPermissionType);
     ~PermissionCallback() override;

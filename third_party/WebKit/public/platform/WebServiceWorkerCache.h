@@ -20,10 +20,10 @@ namespace blink {
 // This object is owned by Blink, and should be destroyed as each Cache instance is no longer in use.
 class WebServiceWorkerCache {
 public:
-    using CacheMatchCallbacks = WebCallbacks<WebServiceWorkerResponse, WebServiceWorkerCacheError>;
-    using CacheWithResponsesCallbacks = WebCallbacks<WebVector<WebServiceWorkerResponse>, WebServiceWorkerCacheError>;
-    using CacheWithRequestsCallbacks = WebCallbacks<WebVector<WebServiceWorkerRequest>, WebServiceWorkerCacheError>;
-    using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
+    using CacheMatchCallbacks = WebCallbacks<WebServiceWorkerResponse*, WebServiceWorkerCacheError*>;
+    using CacheWithResponsesCallbacks = WebCallbacks<WebVector<WebServiceWorkerResponse>*, WebServiceWorkerCacheError*>;
+    using CacheWithRequestsCallbacks = WebCallbacks<WebVector<WebServiceWorkerRequest>*, WebServiceWorkerCacheError*>;
+    using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError*>;
 
     virtual ~WebServiceWorkerCache() { }
 

@@ -16,8 +16,8 @@ struct WebGeofencingRegistration;
 class WebServiceWorkerRegistration;
 class WebString;
 
-typedef WebCallbacks<void, WebGeofencingError> WebGeofencingCallbacks;
-typedef WebCallbacks<WebVector<WebGeofencingRegistration>, WebGeofencingError> WebGeofencingRegionsCallbacks;
+typedef WebCallbacks<void, WebGeofencingError*> WebGeofencingCallbacks;
+typedef WebCallbacks<WebVector<WebGeofencingRegistration>*, WebGeofencingError*> WebGeofencingRegionsCallbacks;
 
 class WebGeofencingProvider {
 public:

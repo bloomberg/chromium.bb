@@ -14,7 +14,7 @@ namespace blink {
 class ScriptPromiseResolver;
 struct WebPresentationError;
 
-using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, WebPresentationError>;
+using WebPresentationAvailabilityCallbacks = WebCallbacks<bool*, WebPresentationError*>;
 
 // PresentationAvailabilityCallback is an implementation of
 // WebPresentationAvailabilityCallbacks that will resolve the underlying promise

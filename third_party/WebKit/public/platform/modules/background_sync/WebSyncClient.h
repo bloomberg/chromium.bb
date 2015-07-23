@@ -13,7 +13,7 @@ namespace blink {
 class WebServiceWorkerRegistration;
 struct WebSyncRegistration;
 
-using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration, WebSyncError>;
+using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration*, WebSyncError*>;
 
 class WebSyncClient {
 public:

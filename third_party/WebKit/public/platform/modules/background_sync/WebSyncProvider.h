@@ -17,10 +17,10 @@ namespace blink {
 class WebServiceWorkerRegistration;
 struct WebSyncError;
 
-using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration, WebSyncError>;
-using WebSyncUnregistrationCallbacks = WebCallbacks<bool, WebSyncError>;
-using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration*>, WebSyncError>;
-using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus, WebSyncError>;
+using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration*, WebSyncError*>;
+using WebSyncUnregistrationCallbacks = WebCallbacks<bool*, WebSyncError*>;
+using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration*>*, WebSyncError*>;
+using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus*, WebSyncError*>;
 
 class WebSyncProvider {
 public:

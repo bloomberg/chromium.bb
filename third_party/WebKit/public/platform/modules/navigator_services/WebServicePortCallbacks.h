@@ -10,11 +10,11 @@
 
 namespace blink {
 
-using WebServicePortConnectCallbacks = WebCallbacks<WebServicePortID, void>;
+using WebServicePortConnectCallbacks = WebCallbacks<WebServicePortID*, void>;
 
 // Ownership of the ports passed to onSuccess is kept with the caller, and its
 // lifetime does not outlive past the end of the onSuccess call.
-using WebServicePortConnectEventCallbacks = WebCallbacks<WebServicePort, void>;
+using WebServicePortConnectEventCallbacks = WebCallbacks<WebServicePort*, void>;
 
 } // namespace blink
 

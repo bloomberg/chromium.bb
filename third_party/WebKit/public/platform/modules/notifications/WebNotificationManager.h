@@ -24,7 +24,7 @@ struct WebPersistentNotificationInfo {
     WebNotificationData data;
 };
 
-using WebNotificationGetCallbacks = WebCallbacks<WebVector<WebPersistentNotificationInfo>, void>;
+using WebNotificationGetCallbacks = WebCallbacks<WebVector<WebPersistentNotificationInfo>*, void>;
 using WebNotificationShowCallbacks = WebCallbacks<void, void>;
 
 // Provides the services to show platform notifications to the user.

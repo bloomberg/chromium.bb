@@ -14,7 +14,7 @@ class WebServiceWorkerRegistration;
 struct WebPushSubscription;
 struct WebPushSubscriptionOptions;
 
-using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription, WebPushError>;
+using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription*, WebPushError*>;
 
 class WebPushClient {
 public:

@@ -53,10 +53,10 @@ public:
 
     // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
     // passed to the WebServiceWorkerRegistrationCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
-    typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerGetRegistrationCallbacks;
-    typedef WebCallbacks<WebVector<WebServiceWorkerRegistration*>, WebServiceWorkerError> WebServiceWorkerGetRegistrationsCallbacks;
-    typedef WebCallbacks<WebServiceWorkerRegistration, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
+    typedef WebCallbacks<WebServiceWorkerRegistration*, WebServiceWorkerError*> WebServiceWorkerRegistrationCallbacks;
+    typedef WebCallbacks<WebServiceWorkerRegistration*, WebServiceWorkerError*> WebServiceWorkerGetRegistrationCallbacks;
+    typedef WebCallbacks<WebVector<WebServiceWorkerRegistration*>*, WebServiceWorkerError*> WebServiceWorkerGetRegistrationsCallbacks;
+    typedef WebCallbacks<WebServiceWorkerRegistration*, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }

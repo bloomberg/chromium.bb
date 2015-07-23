@@ -15,9 +15,9 @@ struct WebPushError;
 struct WebPushSubscription;
 struct WebPushSubscriptionOptions;
 
-using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription, WebPushError>;
-using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus, WebPushError>;
-using WebPushUnsubscribeCallbacks = WebCallbacks<bool, WebPushError>;
+using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription*, WebPushError*>;
+using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus*, WebPushError*>;
+using WebPushUnsubscribeCallbacks = WebCallbacks<bool*, WebPushError*>;
 
 class WebPushProvider {
 public:

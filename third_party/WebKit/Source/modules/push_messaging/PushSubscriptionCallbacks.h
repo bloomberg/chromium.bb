@@ -22,7 +22,7 @@ struct WebPushSubscription;
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
 // will pass it to the PushSubscription.
-class PushSubscriptionCallbacks final : public WebCallbacks<WebPushSubscription, WebPushError> {
+class PushSubscriptionCallbacks final : public WebCallbacks<WebPushSubscription*, WebPushError*> {
     WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
 public:
     PushSubscriptionCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);

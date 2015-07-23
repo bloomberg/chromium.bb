@@ -21,27 +21,27 @@ struct WebRequestDeviceOptions;
 
 // Success and failure callbacks for requestDevice.
 // WebBluetoothDevice and WebBluetoothError object ownership is transferred.
-typedef WebCallbacks<WebBluetoothDevice, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
+typedef WebCallbacks<WebBluetoothDevice*, WebBluetoothError*> WebBluetoothRequestDeviceCallbacks;
 
 // Success and failure callbacks for connectGATT.
 // WebBluetoothGATTRemoteServer and WebBluetoothError object ownership is transferred.
-typedef WebCallbacks<WebBluetoothGATTRemoteServer, WebBluetoothError> WebBluetoothConnectGATTCallbacks;
+typedef WebCallbacks<WebBluetoothGATTRemoteServer*, WebBluetoothError*> WebBluetoothConnectGATTCallbacks;
 
 // Success and failure callbacks for getPrimaryService.
 // WebBluetoothGATTService and WebBluetoothError object ownership is transferred.
-typedef WebCallbacks<WebBluetoothGATTService, WebBluetoothError> WebBluetoothGetPrimaryServiceCallbacks;
+typedef WebCallbacks<WebBluetoothGATTService*, WebBluetoothError*> WebBluetoothGetPrimaryServiceCallbacks;
 
 // Success and failure callbacks for getCharacteristic.
 // WebBluetoothCharacteristic and WebBluetoothError object ownership is transferred.
-typedef WebCallbacks<WebBluetoothGATTCharacteristic, WebBluetoothError> WebBluetoothGetCharacteristicCallbacks;
+typedef WebCallbacks<WebBluetoothGATTCharacteristic*, WebBluetoothError*> WebBluetoothGetCharacteristicCallbacks;
 
 // Success and failure callbacks for readValue.
 // WebVector and WebBluetoothError object ownership is transferred.
-typedef WebCallbacks<WebVector<uint8_t>, WebBluetoothError> WebBluetoothReadValueCallbacks;
+typedef WebCallbacks<WebVector<uint8_t>*, WebBluetoothError*> WebBluetoothReadValueCallbacks;
 
 // Success and failure callbacks for writeValue.
 // WebBluetoothError object ownership is transferred.
-typedef WebCallbacks<void, WebBluetoothError> WebBluetoothWriteValueCallbacks;
+typedef WebCallbacks<void, WebBluetoothError*> WebBluetoothWriteValueCallbacks;
 
 class WebBluetooth {
 public:

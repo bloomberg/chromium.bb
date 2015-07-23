@@ -125,7 +125,7 @@ public:
     // methods of the WebCallbacks object, including constructors and
     // destructors, run in the same thread where the object is created
     // (i.e., the blink thread).
-    virtual void setSinkId(const WebString& deviceId, WebCallbacks<void, WebSetSinkIdError>*) = 0;
+    virtual void setSinkId(const WebString& deviceId, WebCallbacks<void, WebSetSinkIdError*>*) = 0;
 
     // True if the loaded media has a playable video/audio track.
     virtual bool hasVideo() const = 0;

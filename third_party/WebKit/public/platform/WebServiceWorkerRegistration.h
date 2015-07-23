@@ -18,7 +18,7 @@ class WebServiceWorkerRegistration {
 public:
     virtual ~WebServiceWorkerRegistration() { }
 
-    using WebServiceWorkerUnregistrationCallbacks = WebCallbacks<bool, WebServiceWorkerError>;
+    using WebServiceWorkerUnregistrationCallbacks = WebCallbacks<bool*, WebServiceWorkerError*>;
 
     virtual void setProxy(WebServiceWorkerRegistrationProxy*) { }
     virtual WebServiceWorkerRegistrationProxy* proxy() { return nullptr; }

@@ -19,8 +19,8 @@ class WebURL;
 // 'credentialmanager' module.
 class WebCredentialManagerClient {
 public:
-    typedef WebCallbacks<WebCredential, WebCredentialManagerError> RequestCallbacks;
-    typedef WebCallbacks<void, WebCredentialManagerError> NotificationCallbacks;
+    typedef WebCallbacks<WebCredential*, WebCredentialManagerError*> RequestCallbacks;
+    typedef WebCallbacks<void, WebCredentialManagerError*> NotificationCallbacks;
 
     // Ownership of the callback is transferred to the callee for each of
     // the following methods.

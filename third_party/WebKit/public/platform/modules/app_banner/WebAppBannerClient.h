@@ -10,7 +10,7 @@
 
 namespace blink {
 
-using WebAppBannerCallbacks = WebCallbacks<WebAppBannerPromptResult, void>;
+using WebAppBannerCallbacks = WebCallbacks<WebAppBannerPromptResult*, void>;
 
 class WebAppBannerClient {
 public:

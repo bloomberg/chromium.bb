@@ -18,7 +18,7 @@ class HTMLMediaElement;
 class ScriptPromiseResolver;
 struct WebSetSinkIdError;
 
-class SetSinkIdCallbacks final : public WebCallbacks<void, WebSetSinkIdError> {
+class SetSinkIdCallbacks final : public WebCallbacks<void, WebSetSinkIdError*> {
     WTF_MAKE_NONCOPYABLE(SetSinkIdCallbacks);
 public:
     SetSinkIdCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, HTMLMediaElement&, const String& sinkId);

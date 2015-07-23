@@ -39,8 +39,8 @@ struct WebServiceWorkerClientsInfo {
 };
 
 // Two WebCallbacks, one for one client, one for a WebVector of clients.
-typedef WebCallbacks<WebServiceWorkerClientInfo, WebServiceWorkerError> WebServiceWorkerClientCallbacks;
-typedef WebCallbacks<WebServiceWorkerClientsInfo, WebServiceWorkerError> WebServiceWorkerClientsCallbacks;
+typedef WebCallbacks<WebServiceWorkerClientInfo*, WebServiceWorkerError*> WebServiceWorkerClientCallbacks;
+typedef WebCallbacks<WebServiceWorkerClientsInfo*, WebServiceWorkerError*> WebServiceWorkerClientsCallbacks;
 
 } // namespace blink
 
