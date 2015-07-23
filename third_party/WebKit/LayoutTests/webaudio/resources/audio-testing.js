@@ -440,6 +440,24 @@ var Should = (function () {
             this._testPassed('is not equal to ' + value);
     };
 
+    // Check if |target| is greater than or equal to |value|.
+    //
+    // Example:
+    // Should("SNR", snr).greaterThanOrEqualTo(100);
+    // Result:
+    // "PASS SNR exceeds 100"
+    // "FAIL SNR (n) is not greater than or equal to 100"
+    ShouldModel.prototype.beGreaterThanOrEqualTo = function (value) {
+        var type = typeof value;
+        this._assert(type === 'number' || type === 'string',
+            'value should be number or string for');
+
+        if (this.target >= value)
+            this._testPassed("is greater than or equal to " + value);
+        else
+            this._testFailed("(" + this.target + ") is not greater than or equal to " + value);
+    }
+
     // Check if |func| throws an exception with a certain |errorType| correctly.
     // |errorType| is optional.
     //

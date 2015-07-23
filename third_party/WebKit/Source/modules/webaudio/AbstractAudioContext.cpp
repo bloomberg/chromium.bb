@@ -577,32 +577,6 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
         return nullptr;
     }
 
-    if (real->length() > PeriodicWave::kMaxPeriodicWaveArraySize) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            ExceptionMessages::indexOutsideRange(
-                "length of the real part array",
-                real->length(),
-                1u,
-                ExceptionMessages::InclusiveBound,
-                PeriodicWave::kMaxPeriodicWaveArraySize,
-                ExceptionMessages::InclusiveBound));
-        return nullptr;
-    }
-
-    if (imag->length() > PeriodicWave::kMaxPeriodicWaveArraySize) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            ExceptionMessages::indexOutsideRange(
-                "length of the imaginary part array",
-                imag->length(),
-                1u,
-                ExceptionMessages::InclusiveBound,
-                PeriodicWave::kMaxPeriodicWaveArraySize,
-                ExceptionMessages::InclusiveBound));
-        return nullptr;
-    }
-
     if (real->length() != imag->length()) {
         exceptionState.throwDOMException(
             IndexSizeError,

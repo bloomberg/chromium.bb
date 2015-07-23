@@ -1,0 +1,19 @@
+Test Different PeriodicWave Lengths at Different Sample Rates
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS At 192 kHz, PeriodicWave with 8192 coefficients vs 2048: differ as expected.
+PASS At 192 kHz, PeriodicWave with 2049 coefficients vs 2048: differ as expected.
+PASS At 192 kHz, PeriodicWave with 8192 coefficients vs 8188: differ as expected.
+PASS At 48 kHz, PeriodicWave with 8192 coefficients vs 2048: identical as expected.
+PASS At 48 kHz, PeriodicWave with 2049 coefficients vs 2048: identical as expected.
+PASS At 48 kHz, PeriodicWave with 2064 coefficients vs 2048: identical as expected.
+PASS At 48 kHz, PeriodicWave with 2048 coefficients vs 2046: differ as expected.
+PASS At 24 kHz, PeriodicWave with 8192 coefficients vs 1024: identical as expected.
+PASS At 24 kHz, PeriodicWave with 1025 coefficients vs 1024: identical as expected.
+PASS At 24 kHz, PeriodicWave with 1024 coefficients vs 1022: differ as expected.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -40,8 +40,6 @@ namespace blink {
 class PeriodicWave : public GarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    // Maximum array size allowed for creating PeriodicWave's.
-    static const unsigned kMaxPeriodicWaveArraySize;
     static PeriodicWave* createSine(float sampleRate);
     static PeriodicWave* createSquare(float sampleRate);
     static PeriodicWave* createSawtooth(float sampleRate);
@@ -61,7 +59,11 @@ public:
     // Returns the scalar multiplier to the oscillator frequency to calculate wave buffer phase increment.
     float rateScale() const { return m_rateScale; }
 
-    unsigned periodicWaveSize() const { return m_periodicWaveSize; }
+    // The size of the FFT to use based on the sampling rate.
+    unsigned periodicWaveSize() const;
+
+    // The number of ranges needed for the given sampling rate and FFT size.
+    unsigned numberOfRanges() const { return m_numberOfRanges; }
 
     DEFINE_INLINE_TRACE() { }
 
@@ -71,7 +73,6 @@ private:
     void generateBasicWaveform(int);
 
     float m_sampleRate;
-    unsigned m_periodicWaveSize;
     unsigned m_numberOfRanges;
     float m_centsPerRange;
 

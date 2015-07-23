@@ -29,11 +29,10 @@ PASS context.createChannelMerger(0) threw exception IndexSizeError: Failed to ex
 PASS context.createChannelMerger(99) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (99) is outside the range [1, 32]..
 PASS context.createPeriodicWave(null, null) threw exception SyntaxError: Failed to execute 'createPeriodicWave' on 'AudioContext': invalid real array.
 PASS context.createPeriodicWave(new Float32Array(10), null) threw exception SyntaxError: Failed to execute 'createPeriodicWave' on 'AudioContext': invalid imaginary array.
-PASS context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': The length of the real part array provided (4100) is outside the range [1, 2048]..
-PASS context.createPeriodicWave(new Float32Array(100), new Float32Array(4100)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': The length of the imaginary part array provided (4100) is outside the range [1, 2048]..
+PASS context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100)) did not throw exception.
+PASS context.createPeriodicWave(new Float32Array(8192), new Float32Array(8192)) did not throw exception.
+PASS context.createPeriodicWave(new Float32Array(10000), new Float32Array(10000)) did not throw exception.
 PASS context.createPeriodicWave(new Float32Array(10), new Float32Array(7)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': length of real array (10) and length of imaginary array (7) must match..
-PASS context.createPeriodicWave(new Float32Array(2048), new Float32Array(2048)) did not throw exception.
-PASS context.createPeriodicWave(new Float32Array(2049), new Float32Array(2049)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': The length of the real part array provided (2049) is outside the range [1, 2048]..
 PASS node.fftSize = 42 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': The value provided (42) is not a power of two..
 PASS node.fftSize is not 42
 PASS node.fftSize = 16 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': The FFT size provided (16) is outside the range [32, 32768]..

@@ -71,15 +71,12 @@ function runTest() {
     // Invalid real/imag arrays: IndexSizeError
     shouldThrow("context.createPeriodicWave(null, null)");
     shouldThrow("context.createPeriodicWave(new Float32Array(10), null)");
-    // Real array is too long.
-    shouldThrow("context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100))");
-    // Imaginary array is too long.
-    shouldThrow("context.createPeriodicWave(new Float32Array(100), new Float32Array(4100))");
+    // Verify that we can use large arrays with no limit. Roughly.
+    shouldNotThrow("context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100))");
+    shouldNotThrow("context.createPeriodicWave(new Float32Array(8192), new Float32Array(8192))");
+    shouldNotThrow("context.createPeriodicWave(new Float32Array(10000), new Float32Array(10000))");
     // Real and imaginary arrays must have the same size: IndexSizeError
     shouldThrow("context.createPeriodicWave(new Float32Array(10), new Float32Array(7))");
-    // Check upper limit is correct.
-    shouldNotThrow("context.createPeriodicWave(new Float32Array(2048), new Float32Array(2048))");
-    shouldThrow("context.createPeriodicWave(new Float32Array(2049), new Float32Array(2049))");
 
 
     // Analysers

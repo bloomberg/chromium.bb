@@ -1,0 +1,11 @@
+Test Custom Oscillator at Very Low Frequency
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS SNR of 1 Hz sine wave is greater than or equal to 130.
+PASS PeriodicWave coefficients that must be ignored were correctly ignored.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
