@@ -10,6 +10,7 @@ function testEmptySpliceEvent() {
   };
   var ribbon = new Ribbon(
       document,
+      window,
       dataModel,
       selectionModel,
       null);

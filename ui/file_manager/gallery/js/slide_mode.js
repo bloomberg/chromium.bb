@@ -329,8 +329,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.ribbon_ = new Ribbon(
-      this.document_, this.dataModel_, this.selectionModel_, thumbnailModel);
+  this.ribbon_ = new Ribbon(this.document_, window, this.dataModel_,
+      this.selectionModel_, thumbnailModel);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
   util.createChild(this.container_, 'spinner');
