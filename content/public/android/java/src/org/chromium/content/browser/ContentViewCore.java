@@ -2946,6 +2946,12 @@ public class ContentViewCore implements
     // @TargetApi(Build.VERSION_CODES.M) TODO(sgurun) add method document once API is public
     // crbug/512264
     public void onProvideVirtualStructure(final ViewStructure structure) {
+        // Do not collect accessibility tree in incognito mode
+        if (getWebContents().isIncognito()) {
+            structure.setChildCount(0);
+            return;
+        }
+
         structure.setChildCount(1);
         final ViewStructure viewRoot = structure.asyncNewChild(0);
         getWebContents().requestAccessibilitySnapshot(
