@@ -416,4 +416,27 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
   return found_violations;
 }
 
+bool SfiValidator::is_valid_inst_boundary(const CodeSegment& code,
+                                          uint32_t addr) {
+  // Check addr is on an inst boundary
+  if ((addr & 0x3) != 0) {
+    return false;
+  }
+
+  CHECK(!ConstructionFailed(NULL));
+
+  uint32_t base = code.begin_addr();
+  uint32_t size = code.end_addr() - base;
+  AddressSet branches(base, size);
+  AddressSet critical(base, size);
+
+  nacl_arm_dec::ViolationSet violations =
+        validate_fallthrough(code, NULL, &branches, &critical);
+
+  // Function should only be called after the code has already been validated.
+  CHECK(violations == nacl_arm_dec::kNoViolations);
+
+  return !critical.contains(addr);
+}
+
 }  // namespace nacl_arm_val

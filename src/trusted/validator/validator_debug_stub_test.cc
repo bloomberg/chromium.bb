@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 
 #include "native_client/src/include/build_config.h"
+#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/trusted/cpu_features/cpu_features.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
@@ -31,6 +32,22 @@ class ValidationDebugStubInterfaceTests : public ::testing::Test {
 };
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+
+// 32 NOPs.
+static const uint8_t nops[kCodeSize] = {
+  0x90, 0x90, 0x90,  // nop, nop, nop...
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90, 0x90,
+  0x90, 0x90
+};
+
 # if NACL_BUILD_SUBARCH == 32
 
 // Single 3 byte MUL instruction, followed by NOPs.
@@ -47,7 +64,6 @@ static const uint8_t mul_32[kCodeSize] = {
   0x90, 0x90, 0x90,
   0x90, 0x90
 };
-
 
 // Small block of code.
 static const uint8_t code_32[kCodeSize] = {
@@ -82,7 +98,7 @@ static const uint8_t pseudo_32[kCodeSize] = {
   0x90, 0x90, 0x90
 };
 
-// Test single mul and pseudo-instruction.
+// Test single mul and pseudo instruction.
 TEST_F(ValidationDebugStubInterfaceTests, SingleInstructions) {
   NaClValidationStatus status;
   uint32_t addr;
@@ -111,7 +127,7 @@ TEST_F(ValidationDebugStubInterfaceTests, SingleInstructions) {
 }
 
 // Checks use case on example bundle of code with both regular
-// and pseudo-instructions.
+// and pseudo instructions.
 TEST_F(ValidationDebugStubInterfaceTests, OnInstructionBoundary) {
   NaClValidationStatus status;
   uint32_t addr;
@@ -219,7 +235,7 @@ static const uint8_t chained_64[kCodeSize] = {
   0x90, 0x90, 0x90
 };
 
-// Test single mul and pseudo-instruction.
+// Test single mul and pseudo instruction.
 TEST_F(ValidationDebugStubInterfaceTests, SingleInstructions) {
   NaClValidationStatus status;
   uint32_t addr;
@@ -248,7 +264,7 @@ TEST_F(ValidationDebugStubInterfaceTests, SingleInstructions) {
 }
 
 // Checks use case on example bundle of code with both regular
-// and pseudo-instructions.
+// and pseudo instructions.
 TEST_F(ValidationDebugStubInterfaceTests, OnInstructionBoundary) {
   NaClValidationStatus status;
   uint32_t addr;
@@ -297,8 +313,8 @@ TEST_F(ValidationDebugStubInterfaceTests, ChainedInstructions) {
   EXPECT_EQ(NaClValidationSucceeded, status);
 }
 
-// Test multiple super instruction types for x86-64.
-TEST_F(ValidationDebugStubInterfaceTests, SuperIntructions) {
+// Test multiple pseudo instruction types for x86-64.
+TEST_F(ValidationDebugStubInterfaceTests, PseudoInstructions) {
   NaClValidationStatus status;
   uint32_t addr;
 
@@ -306,7 +322,7 @@ TEST_F(ValidationDebugStubInterfaceTests, SuperIntructions) {
     status = validator->IsOnInstBoundary(
       kGuestAddr, addr, many_pseudo_64, kCodeSize, cpu_features);
 
-    // These addresses are on the super instruction boundaries.
+    // These addresses are on the pseudo instruction boundaries.
     // The assembly can be seen above in the variable declaration.
     if (addr == kGuestAddr + 0x00 ||
         addr == kGuestAddr + 0x06 ||
@@ -321,22 +337,159 @@ TEST_F(ValidationDebugStubInterfaceTests, SuperIntructions) {
   }
 }
 # endif
-#endif
-
-// 32 NOPs.
-static const uint8_t nops[kCodeSize] = {
-  0x90, 0x90, 0x90,  // nop, nop, nop...
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90, 0x90,
-  0x90, 0x90
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+// ADD instruction, followed by NOPs.
+static const uint32_t add_arm[kCodeSize/4] = {
+  0xE2800001,  // add r0, r0, #1
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP
 };
+
+// Load pseudo instruction, followed by NOPs.
+static const uint32_t pseudo_arm[kCodeSize/4] = {
+  0xE3C00103,  // bic r0, r0, #0xC0000000
+  0xE4901000,  // ldr r1, [r0]
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP
+};
+
+// Many different pseudo instructions, followed by NOPs.
+static const uint32_t many_pseudo_arm[kCodeSize/4] = {
+  0xE3C00103,  // 00 bic r0, r0, #0xC0000000
+  0xE4801000,  // 04 str r1, [r0]
+  0xE3C002FC,  // 08 bic r0, r0, #0xC000000F
+  0xE12FFF10,  // 0c bx  r0
+  0xE08DD000,  // 10 add sp, sp, r0
+  0xE3CDD103,  // 14 bic sp, sp, #0xC0000000
+  0xC3C00103,  // 18 bicgt r0, #0xC0000000
+  0xC4901000   // 1c ldrgt r1, [r0]
+};
+
+// Many different ldr/str instructions around sp.
+static const uint32_t sp_insts_arm[kCodeSize/4] = {
+  0xE49D1000,  // 00 ldr r1, [sp]
+  0xE48D1000,  // 04 str r1, [sp]
+  0xE49D1004,  // 08 ldr r1, [sp], #4
+  0xE48D1004,  // 0c str r1, [sp], #4
+  0xE59D1055,  // 10 ldr r1, [sp, #0x55]
+  0xE58D1055,  // 14 str r1, [sp, #0x55]
+  0xE5BD1055,  // 18 ldr r1, [sp, #0x55]!
+  0xE5AD1055   // 1c str r1, [sp, #0x55]!
+};
+
+// Offset pseudo instruction and NOPs.
+static const uint32_t offset_pseudo_arm[kCodeSize/4] = {
+  NACL_INSTR_ARM_NOP,  // 00 nop
+  0xE3C00103,          // 04 bic r0, r0, #0xC0000000
+  0xE4801000,          // 08 str r1, [r0]
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP
+};
+
+// NOPs.
+static const uint32_t nops[kCodeSize/4] = {
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_NOP
+};
+
+// Test single add and pseudo instruction.
+TEST_F(ValidationDebugStubInterfaceTests, SingleInstructions) {
+  NaClValidationStatus status;
+  uint32_t addr;
+
+  // Add instruction is 4 bytes, so the 3 inner bytes should fail.
+  for (addr = kGuestAddr + 1; addr < kGuestAddr + 4; addr++) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)add_arm, kCodeSize, cpu_features);
+    EXPECT_EQ(NaClValidationFailed, status);
+  }
+
+  status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)add_arm, kCodeSize, cpu_features);
+  EXPECT_EQ(NaClValidationSucceeded, status);
+
+  // Pseudo instruction is 8 bytes, so the 7 inner bytes should fail.
+  for (addr = kGuestAddr + 1; addr < kGuestAddr + 8; addr++) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)pseudo_arm, kCodeSize, cpu_features);
+    EXPECT_EQ(NaClValidationFailed, status);
+  }
+
+  status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)pseudo_arm, kCodeSize, cpu_features);
+  EXPECT_EQ(NaClValidationSucceeded, status);
+}
+
+// Test multiple pseudo instruction types for arm.
+TEST_F(ValidationDebugStubInterfaceTests, PseudoInstructions) {
+  NaClValidationStatus status;
+  uint32_t addr;
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr++) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)many_pseudo_arm, kCodeSize, cpu_features);
+
+    // These addresses are on the pseudo instruction boundaries.
+    // The assembly can be seen above in the variable declaration.
+    if (addr == kGuestAddr + 0x00 ||
+        addr == kGuestAddr + 0x08 ||
+        addr == kGuestAddr + 0x10 ||
+        addr == kGuestAddr + 0x18)
+      EXPECT_EQ(NaClValidationSucceeded, status);
+    else
+      EXPECT_EQ(NaClValidationFailed, status);
+  }
+}
+
+// Test sp ldr/str instructions.
+TEST_F(ValidationDebugStubInterfaceTests, SPInstructions) {
+  NaClValidationStatus status;
+  uint32_t addr;
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr+=4) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)sp_insts_arm, kCodeSize, cpu_features);
+    EXPECT_EQ(NaClValidationSucceeded, status);
+  }
+}
+
+// Test offset pseudo instruction.
+TEST_F(ValidationDebugStubInterfaceTests, OffsetPseudoInstruction) {
+  NaClValidationStatus status;
+  uint32_t addr;
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr+=4) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)offset_pseudo_arm, kCodeSize, cpu_features);
+
+    // This address is inside the pseudo instruction.
+    if (addr == kGuestAddr + 0x08)
+      EXPECT_EQ(NaClValidationFailed, status);
+    else
+      EXPECT_EQ(NaClValidationSucceeded, status);
+  }
+}
+#else
+  #error Invalid platform
+#endif
 
 // Check that addresses will properly fail when outside the code range.
 TEST_F(ValidationDebugStubInterfaceTests, OutsideUntrustedCode) {
@@ -344,25 +497,35 @@ TEST_F(ValidationDebugStubInterfaceTests, OutsideUntrustedCode) {
 
   // 0 should obviously be outside the code.
   status = validator->IsOnInstBoundary(
-    kGuestAddr, 0, nops, kCodeSize, cpu_features);
+    kGuestAddr, 0, (uint8_t *)nops, kCodeSize, cpu_features);
   EXPECT_EQ(NaClValidationFailed, status);
 
   // Check that outer boundaries return failure.
   status = validator->IsOnInstBoundary(
-    kGuestAddr, kGuestAddr - 1, nops, kCodeSize, cpu_features);
+    kGuestAddr, kGuestAddr - 1, (uint8_t *)nops, kCodeSize, cpu_features);
   EXPECT_EQ(NaClValidationFailed, status);
 
   status = validator->IsOnInstBoundary(
-    kGuestAddr, kGuestAddr + kCodeSize, nops, kCodeSize, cpu_features);
+    kGuestAddr, kGuestAddr + kCodeSize,
+    (uint8_t *)nops, kCodeSize, cpu_features);
   EXPECT_EQ(NaClValidationFailed, status);
 
   // Check that border values work.
   status = validator->IsOnInstBoundary(
-    kGuestAddr, kGuestAddr, nops, kCodeSize, cpu_features);
+    kGuestAddr, kGuestAddr, (uint8_t *)nops, kCodeSize, cpu_features);
   EXPECT_EQ(NaClValidationSucceeded, status);
 
+  // NOP is 1 byte on x86 and 4 bytes on arm.
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   status = validator->IsOnInstBoundary(
     kGuestAddr, kGuestAddr + kCodeSize - 1, nops, kCodeSize, cpu_features);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  status = validator->IsOnInstBoundary(
+    kGuestAddr, kGuestAddr + kCodeSize - 4,
+    (uint8_t *)nops, kCodeSize, cpu_features);
+#else
+  #error Invalid platform
+#endif
   EXPECT_EQ(NaClValidationSucceeded, status);
 }
 

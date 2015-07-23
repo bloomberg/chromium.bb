@@ -221,6 +221,10 @@ class SfiValidator {
     return (address & (bytes_per_bundle_ - 1)) == 0;
   }
 
+  // Returns true if address is on a valid inst boundary
+  // and is not within a pseudo instruction
+  bool is_valid_inst_boundary(const CodeSegment& code, uint32_t addr);
+
  private:
   // The SfiValidator constructor could have been given invalid values.
   // Returns true the values were bad, and send the details to the ProblemSink.
