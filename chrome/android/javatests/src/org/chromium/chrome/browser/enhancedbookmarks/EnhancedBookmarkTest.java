@@ -11,10 +11,12 @@ import android.view.View;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -35,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the enhanced bookmark manager.
  */
+@CommandLineFlags.Add(ChromeSwitches.ENABLE_ENHANCED_BOOKMARKS + "=1")
 public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public EnhancedBookmarkTest() {

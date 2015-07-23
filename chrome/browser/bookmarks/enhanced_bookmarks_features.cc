@@ -36,15 +36,10 @@ bool IsEnhancedBookmarksEnabled() {
   if (switch_value == "0")
     return false;
 
-#if defined(OS_IOS)
   // Check that the "id" param is present. This is a legacy of the desktop
   // implementation providing the extension id via param. This probably should
   // be replaced with code that checks the experiment name instead.
-  if (variations::GetVariationParamValue(kFieldTrialName, "id").empty())
-    return false;
-#endif  // defined(OS_IOS)
-
-  return true;
+  return !variations::GetVariationParamValue(kFieldTrialName, "id").empty();
 }
 
 bool IsEnableDomDistillerSet() {
