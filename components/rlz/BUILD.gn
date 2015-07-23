@@ -21,9 +21,7 @@ source_set("rlz") {
   ]
 
   if (is_ios) {
-    deps = [
-      "//ui/base",
-    ]
+    deps += [ "//ui/base" ]
   }
 }
 
