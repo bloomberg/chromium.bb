@@ -9,7 +9,6 @@
         'depends': [
           '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           '../../../../ui/webui/resources/cr_elements/v1_0/cr_onc/cr_onc_types.js',
-          '../../../../ui/webui/resources/css/tree.css.js',
           '../../../../ui/webui/resources/js/action_link.js',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/cr/event_target.js',

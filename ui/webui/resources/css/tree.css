@@ -24,9 +24,7 @@ tree {
 .expand-icon {
   -webkit-transform: rotate(-90deg);
   -webkit-transition: all 150ms;
-  background-image: -webkit-canvas(tree-triangle);
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
+  background: url(../images/tree_triangle.svg) no-repeat center center;
   background-size: 8px 5px;
   display: inline-block;
   height: 16px;
@@ -43,7 +41,7 @@ html[dir=rtl] .expand-icon {
 
 .tree-item[expanded] > .tree-row > .expand-icon {
   -webkit-transform: rotate(0);
-  background-image: -webkit-canvas(tree-triangle);
+  background-image: url(../images/tree_triangle.svg);
   opacity: .5;
 }
 

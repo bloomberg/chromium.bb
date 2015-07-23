@@ -253,8 +253,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_CSS_TREE"
                  file="css/tree.css" type="chrome_html"
                  flattenhtml="true" />
-      <structure name="IDR_WEBUI_CSS_TREE_JS"
-                 file="css/tree.css.js" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_WIDGETS"
                  file="css/widgets.css" type="chrome_html"
                  flattenhtml="true" />
