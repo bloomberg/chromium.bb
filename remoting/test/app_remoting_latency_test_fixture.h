@@ -5,7 +5,7 @@
 #ifndef REMOTING_TEST_APP_REMOTING_LATENCY_TEST_FIXTURE_H_
 #define REMOTING_TEST_APP_REMOTING_LATENCY_TEST_FIXTURE_H_
 
-#include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -17,6 +17,7 @@
 namespace base {
 class RunLoop;
 class Timer;
+class TimeDelta;
 }
 
 namespace webrtc {
@@ -30,47 +31,64 @@ struct RemoteApplicationDetails;
 class AppRemotingConnectionHelper;
 class TestVideoRenderer;
 
+// Called to wait for expected image pattern to be matched within up to a max
+// wait time.
+typedef base::Callback<bool(const base::TimeDelta& max_wait_time)>
+    WaitForImagePatternMatchCallback;
+
 // Creates a connection to a remote host which is available for tests to use.
 // Provides convenient methods to create test cases to measure the input and
 // rendering latency between client and the remote host.
 // NOTE: This is an abstract class. To use it, please derive from this class
-// and initialize the application names in constructor.
+// and implement GetApplicationDetails to specify the application details.
 class AppRemotingLatencyTestFixture : public testing::Test {
  public:
   AppRemotingLatencyTestFixture();
   ~AppRemotingLatencyTestFixture() override;
 
  protected:
-  // Set expected image pattern for comparison and a matched reply will be
-  // called when the pattern is matched.
-  void SetExpectedImagePattern(const webrtc::DesktopRect& expected_rect,
-                               uint32_t expected_avg_color);
+  // Set expected image pattern for comparison.
+  // A WaitForImagePatternMatchCallback is returned to allow waiting for the
+  // expected image pattern to be matched.
+  WaitForImagePatternMatchCallback SetExpectedImagePattern(
+      const webrtc::DesktopRect& expected_rect,
+      uint32_t expected_avg_color);
 
-  // Waits for an image pattern matched reply up to |max_wait_time|. Returns
-  // true if we received a response within the maximum time limit.
-  // NOTE: SetExpectedImagePattern() must be called before calling this method.
-  bool WaitForImagePatternMatched(const base::TimeDelta& max_wait_time);
+  // Inject press & release key event.
+  void PressAndReleaseKey(uint32_t usb_keycode);
 
-  // Name of the application being tested.
-  // NOTE: Must be initialized in the constructor of derived class.
-  std::string application_name_;
+  // Inject press & release a combination of key events.
+  void PressAndReleaseKeyCombination(const std::vector<uint32_t>& usb_keycodes);
+
+  // Clean up the running application to initial state.
+  virtual void ResetApplicationState();
+
+  // Get the details of the application to be run.
+  virtual const RemoteApplicationDetails& GetApplicationDetails() = 0;
+
+  // Creates and manages the connection to the remote host.
+  scoped_ptr<AppRemotingConnectionHelper> connection_helper_;
 
  private:
   // testing::Test interface.
   void SetUp() override;
   void TearDown() override;
 
-  // Contains the details for the application being tested.
-  const RemoteApplicationDetails& application_details_;
+  // Inject press key event.
+  void PressKey(uint32_t usb_keycode, bool pressed);
+
+  // Waits for an image pattern matched reply up to |max_wait_time|. Returns
+  // true if we received a response within the maximum time limit.
+  // NOTE: This method should only be run when as a returned callback by
+  // SetExpectedImagePattern.
+  bool WaitForImagePatternMatch(scoped_ptr<base::RunLoop> run_loop,
+                                const base::TimeDelta& max_wait_time);
 
   // Used to run the thread's message loop.
   scoped_ptr<base::RunLoop> run_loop_;
 
   // Used for setting timeouts and delays.
   scoped_ptr<base::Timer> timer_;
-
-  // Creates and manages the connection to the remote host.
-  scoped_ptr<AppRemotingConnectionHelper> connection_helper_;
 
   // Used to ensure RemoteConnectionObserver methods are called on the same
   // thread.

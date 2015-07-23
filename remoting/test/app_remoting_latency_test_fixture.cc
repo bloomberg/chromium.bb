@@ -8,6 +8,9 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "remoting/proto/event.pb.h"
+#include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/usb_key_codes.h"
 #include "remoting/test/app_remoting_connection_helper.h"
 #include "remoting/test/app_remoting_test_driver_environment.h"
 #include "remoting/test/test_chromoting_client.h"
@@ -17,10 +20,8 @@ namespace remoting {
 namespace test {
 
 AppRemotingLatencyTestFixture::AppRemotingLatencyTestFixture()
-    : application_details_(
-          AppRemotingSharedData->GetDetailsFromAppName(application_name_)),
-      timer_(new base::Timer(true, false)) {
-  // NOTE: Derived fixture must initialize application name in constructor.
+    : timer_(new base::Timer(true, false)) {
+  // NOTE: Derived fixture must initialize application details in constructor.
 }
 
 AppRemotingLatencyTestFixture::~AppRemotingLatencyTestFixture() {
@@ -36,7 +37,7 @@ void AppRemotingLatencyTestFixture::SetUp() {
       new TestChromotingClient(test_video_renderer.Pass()));
 
   connection_helper_.reset(
-      new AppRemotingConnectionHelper(application_details_));
+      new AppRemotingConnectionHelper(GetApplicationDetails()));
   connection_helper_->Initialize(test_chromoting_client.Pass());
 
   if (!connection_helper_->StartConnection()) {
@@ -46,38 +47,107 @@ void AppRemotingLatencyTestFixture::SetUp() {
 }
 
 void AppRemotingLatencyTestFixture::TearDown() {
+  // Only reset application state when remote host connection is established.
+  if (connection_helper_->ConnectionIsReadyForTest()) {
+    ResetApplicationState();
+  }
+
   connection_helper_.reset();
 }
 
-void AppRemotingLatencyTestFixture::SetExpectedImagePattern(
+WaitForImagePatternMatchCallback
+AppRemotingLatencyTestFixture::SetExpectedImagePattern(
     const webrtc::DesktopRect& expected_rect,
     uint32_t expected_color) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!run_loop_ || !run_loop_->running());
 
-  run_loop_.reset(new base::RunLoop());
+  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&TestVideoRenderer::ExpectAverageColorInRect,
                             test_video_renderer_, expected_rect, expected_color,
-                            run_loop_->QuitClosure()));
+                            run_loop->QuitClosure()));
+
+  return base::Bind(&AppRemotingLatencyTestFixture::WaitForImagePatternMatch,
+                    base::Unretained(this), base::Passed(&run_loop));
 }
 
-bool AppRemotingLatencyTestFixture::WaitForImagePatternMatched(
+bool AppRemotingLatencyTestFixture::WaitForImagePatternMatch(
+    scoped_ptr<base::RunLoop> run_loop,
     const base::TimeDelta& max_wait_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(run_loop_);
-
+  DCHECK(run_loop);
   DCHECK(!timer_->IsRunning());
-  timer_->Start(FROM_HERE, max_wait_time, run_loop_->QuitClosure());
 
-  run_loop_->Run();
+  timer_->Start(FROM_HERE, max_wait_time, run_loop->QuitClosure());
+
+  run_loop->Run();
 
   // Image pattern is matched if we stopped because of the reply not the timer.
   bool image_pattern_is_matched = (timer_->IsRunning());
   timer_->Stop();
-  run_loop_.reset();
+  run_loop.reset();
 
   return image_pattern_is_matched;
+}
+
+void AppRemotingLatencyTestFixture::PressKey(uint32_t usb_keycode,
+                                             bool pressed) {
+  remoting::protocol::KeyEvent event;
+  event.set_usb_keycode(usb_keycode);
+  event.set_pressed(pressed);
+  connection_helper_->input_stub()->InjectKeyEvent(event);
+}
+
+void AppRemotingLatencyTestFixture::PressAndReleaseKey(uint32_t usb_keycode) {
+  PressKey(usb_keycode, true);
+  PressKey(usb_keycode, false);
+}
+
+void AppRemotingLatencyTestFixture::PressAndReleaseKeyCombination(
+    const std::vector<uint32_t>& usb_keycodes) {
+  for (std::vector<uint32_t>::const_iterator iter = usb_keycodes.begin();
+       iter != usb_keycodes.end(); ++iter) {
+    PressKey(*iter, true);
+  }
+  for (std::vector<uint32_t>::const_reverse_iterator iter =
+           usb_keycodes.rbegin();
+       iter != usb_keycodes.rend(); ++iter) {
+    PressKey(*iter, false);
+  }
+}
+
+void AppRemotingLatencyTestFixture::ResetApplicationState() {
+  DCHECK(!timer_->IsRunning());
+  DCHECK(!run_loop_ || !run_loop_->running());
+
+  // Give the app some time to settle before reseting to initial state.
+  run_loop_.reset(new base::RunLoop());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop_->QuitClosure(), base::TimeDelta::FromSeconds(1));
+  run_loop_->Run();
+
+  // Press Alt + F4 and wait for amount of time for the input to be delivered
+  // and processed.
+  std::vector<uint32_t> usb_keycodes;
+  usb_keycodes.push_back(kUsbLeftAlt);
+  usb_keycodes.push_back(kUsbF4);
+  PressAndReleaseKeyCombination(usb_keycodes);
+
+  run_loop_.reset(new base::RunLoop());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop_->QuitClosure(), base::TimeDelta::FromSeconds(2));
+  run_loop_->Run();
+
+  // Press 'N' to choose not save and wait for 1 second for the input to be
+  // delivered and processed.
+  PressAndReleaseKey(kUsbN);
+
+  run_loop_.reset(new base::RunLoop());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop_->QuitClosure(), base::TimeDelta::FromSeconds(2));
+  run_loop_->Run();
+  run_loop_.reset();
 }
 
 }  // namespace test

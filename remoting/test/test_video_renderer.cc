@@ -36,7 +36,9 @@ RGBValue ConvertUint32ToRGBValue(uint32_t color) {
 }
 
 // Used to account for frame resizing and lossy encoding error in percentage.
-const double kMaxColorError = 0.02;
+// The average color usually only varies by 1 on each channel, so 0.01 is large
+// enough to allow variations while not being flaky for false negative cases.
+const double kMaxColorError = 0.01;
 }  // namespace
 
 namespace remoting {

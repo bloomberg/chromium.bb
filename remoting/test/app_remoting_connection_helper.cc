@@ -142,6 +142,9 @@ void AppRemotingConnectionHelper::HostMessageReceived(
     const protocol::ExtensionMessage& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  VLOG(2) << "HostMessage received by HostMessageReceived()."
+          << " type: " << message.type() << " data: " << message.data();
+
   // If a callback is not registered, then the message is passed to a default
   // handler for the class based on the message type.
   if (!host_message_received_callback_.is_null()) {
@@ -150,8 +153,6 @@ void AppRemotingConnectionHelper::HostMessageReceived(
     HandleOnWindowAddedMessage(message);
   } else {
     VLOG(2) << "HostMessage not handled by HostMessageReceived().";
-    VLOG(2) << "type: " << message.type();
-    VLOG(2) << "data: " << message.data();
   }
 }
 

@@ -55,6 +55,8 @@ class AppRemotingConnectionHelper
   void SetHostMessageReceivedCallback(
       HostMessageReceivedCallback host_message_received_callback);
 
+  bool ConnectionIsReadyForTest() { return connection_is_ready_for_tests_; }
+
  private:
   // RemoteConnectionObserver interface.
   void ConnectionStateChanged(protocol::ConnectionToHost::State state,

@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _REMOTING_PROTOCOL_USB_KEY_CODES_H_
-#define _REMOTING_PROTOCOL_USB_KEY_CODES_H_
+#ifndef REMOTING_PROTOCOL_USB_KEY_CODES_H_
+#define REMOTING_PROTOCOL_USB_KEY_CODES_H_
 
 // Frequently used USB key-codes (not comprehensive--add more as needed).
 
 enum {
+  kUsbN            = 0x070011,
+  kUsbW            = 0x07001a,
+  kUsbEnter        = 0x070028,
   kUsbTab          = 0x07002b,
   kUsbCapsLock     = 0x070039,
+  kUsbF4           = 0x07003d,
   kUsbInsert       = 0x070049,
   kUsbDelete       = 0x07004c,
   kUsbLeftControl  = 0x0700e0,
@@ -22,4 +26,4 @@ enum {
   kUsbRightOs      = 0x0700e7
 };
 
-#endif
+#endif  // REMOTING_PROTOCOL_USB_KEY_CODES_H_
