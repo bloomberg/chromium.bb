@@ -60,9 +60,9 @@ NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
   if (!event_router)
     return;
   event_router->RegisterObserver(
-      this, core_api::networking_private::OnNetworksChanged::kEventName);
+      this, api::networking_private::OnNetworksChanged::kEventName);
   event_router->RegisterObserver(
-      this, core_api::networking_private::OnNetworkListChanged::kEventName);
+      this, api::networking_private::OnNetworkListChanged::kEventName);
   StartOrStopListeningForNetworkChanges();
 }
 
@@ -107,9 +107,9 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 
   bool should_listen =
       event_router->HasEventListener(
-          core_api::networking_private::OnNetworksChanged::kEventName) ||
+          api::networking_private::OnNetworksChanged::kEventName) ||
       event_router->HasEventListener(
-          core_api::networking_private::OnNetworkListChanged::kEventName);
+          api::networking_private::OnNetworkListChanged::kEventName);
 
   if (should_listen && !listening_) {
     NetworkingPrivateDelegate* delegate =
@@ -135,11 +135,10 @@ void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
-      core_api::networking_private::OnNetworksChanged::Create(network_guids));
-  scoped_ptr<Event> netchanged_event(
-      new Event(events::NETWORKING_PRIVATE_ON_NETWORKS_CHANGED,
-                core_api::networking_private::OnNetworksChanged::kEventName,
-                args.Pass()));
+      api::networking_private::OnNetworksChanged::Create(network_guids));
+  scoped_ptr<Event> netchanged_event(new Event(
+      events::NETWORKING_PRIVATE_ON_NETWORKS_CHANGED,
+      api::networking_private::OnNetworksChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(netchanged_event.Pass());
 }
 
@@ -149,12 +148,10 @@ void NetworkingPrivateEventRouterImpl::OnNetworkListChangedEvent(
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
-      core_api::networking_private::OnNetworkListChanged::Create(
-          network_guids));
-  scoped_ptr<Event> netlistchanged_event(
-      new Event(events::NETWORKING_PRIVATE_ON_NETWORK_LIST_CHANGED,
-                core_api::networking_private::OnNetworkListChanged::kEventName,
-                args.Pass()));
+      api::networking_private::OnNetworkListChanged::Create(network_guids));
+  scoped_ptr<Event> netlistchanged_event(new Event(
+      events::NETWORKING_PRIVATE_ON_NETWORK_LIST_CHANGED,
+      api::networking_private::OnNetworkListChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(netlistchanged_event.Pass());
 }
 

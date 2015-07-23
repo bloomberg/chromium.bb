@@ -8,7 +8,7 @@
 
 namespace extensions {
 
-using core_api::system_cpu::CpuInfo;
+using api::system_cpu::CpuInfo;
 
 // Static member intialization.
 base::LazyInstance<scoped_refptr<CpuInfoProvider> > CpuInfoProvider::provider_ =
@@ -35,8 +35,8 @@ bool CpuInfoProvider::QueryInfo() {
   info_.processors.clear();
   // Fill in the correct number of uninitialized ProcessorInfos.
   for (int i = 0; i < info_.num_of_processors; ++i) {
-    info_.processors.push_back(linked_ptr<core_api::system_cpu::ProcessorInfo>(
-        new core_api::system_cpu::ProcessorInfo()));
+    info_.processors.push_back(linked_ptr<api::system_cpu::ProcessorInfo>(
+        new api::system_cpu::ProcessorInfo()));
   }
   // Initialize the ProcessorInfos, or return an empty array if that fails.
   if (!QueryCpuTimePerProcessor(&info_.processors))

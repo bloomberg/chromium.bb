@@ -15,7 +15,7 @@
 #include "extensions/common/extension.h"
 
 namespace keys = extensions::idle_api_constants;
-namespace idle = extensions::core_api::idle;
+namespace idle = extensions::api::idle;
 
 namespace extensions {
 

@@ -19,7 +19,7 @@
 #include "extensions/common/api/hid.h"
 #include "net/base/io_buffer.h"
 
-namespace hid = extensions::core_api::hid;
+namespace hid = extensions::api::hid;
 
 using device::HidConnection;
 using device::HidDeviceFilter;
@@ -66,7 +66,7 @@ HidGetDevicesFunction::HidGetDevicesFunction() {}
 HidGetDevicesFunction::~HidGetDevicesFunction() {}
 
 ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
-  scoped_ptr<core_api::hid::GetDevices::Params> parameters =
+  scoped_ptr<api::hid::GetDevices::Params> parameters =
       hid::GetDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
@@ -107,7 +107,7 @@ HidGetUserSelectedDevicesFunction::~HidGetUserSelectedDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction HidGetUserSelectedDevicesFunction::Run() {
-  scoped_ptr<core_api::hid::GetUserSelectedDevices::Params> parameters =
+  scoped_ptr<api::hid::GetUserSelectedDevices::Params> parameters =
       hid::GetUserSelectedDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
@@ -151,7 +151,7 @@ HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {
 HidConnectFunction::~HidConnectFunction() {}
 
 ExtensionFunction::ResponseAction HidConnectFunction::Run() {
-  scoped_ptr<core_api::hid::Connect::Params> parameters =
+  scoped_ptr<api::hid::Connect::Params> parameters =
       hid::Connect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
@@ -199,7 +199,7 @@ HidDisconnectFunction::HidDisconnectFunction() {}
 HidDisconnectFunction::~HidDisconnectFunction() {}
 
 ExtensionFunction::ResponseAction HidDisconnectFunction::Run() {
-  scoped_ptr<core_api::hid::Disconnect::Params> parameters =
+  scoped_ptr<api::hid::Disconnect::Params> parameters =
       hid::Disconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 

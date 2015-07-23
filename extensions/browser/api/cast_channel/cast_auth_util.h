@@ -8,7 +8,7 @@
 #include <string>
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 class AuthResponse;
@@ -71,7 +71,7 @@ AuthResult VerifyCredentials(const AuthResponse& response,
                              const std::string& peer_cert);
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_AUTH_UTIL_H_

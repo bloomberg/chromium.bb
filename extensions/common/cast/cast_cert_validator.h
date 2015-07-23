@@ -12,12 +12,12 @@
 #include "base/strings/string_piece.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_crypto {
 
 // Status of a certificate or certificate verification operation.
 struct VerificationResult {
-  // Mapped to extensions::core_api::cast_channel::AuthResult::ErrorType in
+  // Mapped to extensions::api::cast_channel::AuthResult::ErrorType in
   // cast_auto_util.cc. Update the mapping code when modifying this enum.
   enum ErrorType {
     // Verification has succeeded.
@@ -94,7 +94,7 @@ bool SetTrustedCertificateAuthoritiesForTest(const std::string& keys,
                                              const std::string& signature);
 
 }  // namespace cast_crypto
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_H_

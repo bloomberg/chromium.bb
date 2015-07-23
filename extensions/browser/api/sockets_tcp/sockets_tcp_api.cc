@@ -15,8 +15,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using extensions::ResumableTCPSocket;
-using extensions::core_api::sockets_tcp::SocketInfo;
-using extensions::core_api::sockets_tcp::SocketProperties;
+using extensions::api::sockets_tcp::SocketInfo;
+using extensions::api::sockets_tcp::SocketProperties;
 
 namespace {
 
@@ -82,7 +82,7 @@ void SetSocketProperties(ResumableTCPSocket* socket,
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 using content::SocketPermissionRequest;
 
@@ -162,7 +162,7 @@ SocketsTcpSetPausedFunction::SocketsTcpSetPausedFunction()
 SocketsTcpSetPausedFunction::~SocketsTcpSetPausedFunction() {}
 
 bool SocketsTcpSetPausedFunction::Prepare() {
-  params_ = core_api::sockets_tcp::SetPaused::Params::Create(*args_);
+  params_ = api::sockets_tcp::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(browser_context());
@@ -197,7 +197,7 @@ SocketsTcpSetKeepAliveFunction::SocketsTcpSetKeepAliveFunction() {}
 SocketsTcpSetKeepAliveFunction::~SocketsTcpSetKeepAliveFunction() {}
 
 bool SocketsTcpSetKeepAliveFunction::Prepare() {
-  params_ = core_api::sockets_tcp::SetKeepAlive::Params::Create(*args_);
+  params_ = api::sockets_tcp::SetKeepAlive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -223,7 +223,7 @@ SocketsTcpSetNoDelayFunction::SocketsTcpSetNoDelayFunction() {}
 SocketsTcpSetNoDelayFunction::~SocketsTcpSetNoDelayFunction() {}
 
 bool SocketsTcpSetNoDelayFunction::Prepare() {
-  params_ = core_api::sockets_tcp::SetNoDelay::Params::Create(*args_);
+  params_ = api::sockets_tcp::SetNoDelay::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -457,7 +457,7 @@ SocketsTcpSecureFunction::~SocketsTcpSecureFunction() {
 
 bool SocketsTcpSecureFunction::Prepare() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  params_ = core_api::sockets_tcp::Secure::Params::Create(*args_);
+  params_ = api::sockets_tcp::Secure::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   url_request_getter_ = browser_context()->GetRequestContext();
   return true;
@@ -501,10 +501,9 @@ void SocketsTcpSecureFunction::AsyncWorkStart() {
 
   // UpgradeSocketToTLS() uses the older API's SecureOptions. Copy over the
   // only values inside -- TLSVersionConstraints's |min| and |max|,
-  core_api::socket::SecureOptions legacy_params;
+  api::socket::SecureOptions legacy_params;
   if (params_->options.get() && params_->options->tls_version.get()) {
-    legacy_params.tls_version.reset(
-        new core_api::socket::TLSVersionConstraints);
+    legacy_params.tls_version.reset(new api::socket::TLSVersionConstraints);
     if (params_->options->tls_version->min.get()) {
       legacy_params.tls_version->min.reset(
           new std::string(*params_->options->tls_version->min.get()));
@@ -539,7 +538,7 @@ void SocketsTcpSecureFunction::TlsConnectDone(scoped_ptr<TLSSocket> socket,
     error_ = net::ErrorToString(result);
   }
 
-  results_ = core_api::sockets_tcp::Secure::Results::Create(result);
+  results_ = api::sockets_tcp::Secure::Results::Create(result);
   AsyncWorkCompleted();
 }
 

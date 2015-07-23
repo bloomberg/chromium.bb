@@ -40,7 +40,7 @@ bool DefaultEventDelegate::HasExtensionRegisteredForEvent(
     const std::string& extension_id) const {
   return EventRouter::Get(context_)->ExtensionHasEventListener(
       extension_id,
-      core_api::networking_config::OnCaptivePortalDetected::kEventName);
+      api::networking_config::OnCaptivePortalDetected::kEventName);
 }
 
 }  // namespace

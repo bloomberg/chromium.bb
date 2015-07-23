@@ -21,7 +21,7 @@ namespace extensions {
 
 namespace {
 
-namespace api_vpn = extensions::core_api::vpn_provider;
+namespace api_vpn = extensions::api::vpn_provider;
 
 const char kCIDRSeperator[] = "/";
 

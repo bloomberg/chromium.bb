@@ -14,23 +14,21 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 extern const char kTestExtensionId[];
 
-class MockCastTransport
-    : public extensions::core_api::cast_channel::CastTransport {
+class MockCastTransport : public extensions::api::cast_channel::CastTransport {
  public:
   MockCastTransport();
   ~MockCastTransport() override;
 
   void SetReadDelegate(scoped_ptr<CastTransport::Delegate> delegate) override;
 
-  MOCK_METHOD2(
-      SendMessage,
-      void(const extensions::core_api::cast_channel::CastMessage& message,
-           const net::CompletionCallback& callback));
+  MOCK_METHOD2(SendMessage,
+               void(const extensions::api::cast_channel::CastMessage& message,
+                    const net::CompletionCallback& callback));
 
   MOCK_METHOD0(Start, void(void));
 
@@ -117,7 +115,7 @@ ACTION_TEMPLATE(RunCompletionCallback,
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_

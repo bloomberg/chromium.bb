@@ -12,7 +12,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 
-namespace usb = extensions::core_api::usb;
+namespace usb = extensions::api::usb;
 
 using content::BrowserThread;
 using device::UsbDevice;

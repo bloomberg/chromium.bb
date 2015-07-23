@@ -15,7 +15,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 
-namespace hid = extensions::core_api::hid;
+namespace hid = extensions::api::hid;
 
 using device::HidDeviceFilter;
 using device::HidDeviceId;
@@ -213,7 +213,7 @@ void HidDeviceManager::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
 
   // Don't generate events during the initial enumeration.
   if (enumeration_ready_ && event_router_) {
-    core_api::hid::HidDeviceInfo api_device_info;
+    api::hid::HidDeviceInfo api_device_info;
     api_device_info.device_id = new_id;
     PopulateHidDeviceInfo(&api_device_info, device_info);
 

@@ -34,7 +34,7 @@ MATCHER_P(IsFilterEqual, a, "") {
 
 namespace extensions {
 
-namespace bluetooth = core_api::bluetooth;
+namespace bluetooth = api::bluetooth;
 
 class BluetoothEventRouterTest : public ExtensionsTest {
  public:

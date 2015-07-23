@@ -10,7 +10,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "extensions/common/api/bluetooth.h"
 
-namespace bluetooth = extensions::core_api::bluetooth;
+namespace bluetooth = extensions::api::bluetooth;
 
 using device::BluetoothDevice;
 using bluetooth::VendorIdSource;
@@ -88,7 +88,7 @@ bool ConvertDeviceTypeToApi(const BluetoothDevice::DeviceType& input,
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace bluetooth {
 
 void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
@@ -140,5 +140,5 @@ void PopulateAdapterState(const device::BluetoothAdapter& adapter,
 }
 
 }  // namespace bluetooth
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

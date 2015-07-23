@@ -16,7 +16,7 @@ using testing::_;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 // Tests of networking_private_crypto support for Networking Private API.
 class DocumentScanScanFunctionTest : public ApiUnitTest {
@@ -115,6 +115,6 @@ TEST_F(DocumentScanScanFunctionTest, Success) {
   EXPECT_EQ(kMimeType, scan_results.mime_type);
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

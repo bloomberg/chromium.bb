@@ -92,7 +92,7 @@
       'windows.json',
     ],
     'main_schema_include_rules': [
-      'extensions/common/api:extensions::core_api::%(namespace)s',
+      'extensions/common/api:extensions::api::%(namespace)s',
     ],
     'main_non_compiled_schema_files': [
       'browsing_data.json',
@@ -170,6 +170,7 @@
     ],
     'cc_dir': 'chrome/common/extensions/api',
     'root_namespace': 'extensions::api::%(namespace)s',
+    'bundle_name': 'Chrome',
     'impl_dir_': 'chrome/browser/extensions/api',
   },
 }

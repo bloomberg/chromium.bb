@@ -17,18 +17,17 @@
 
 namespace extensions {
 
-using core_api::system_display::DisplayUnitInfo;
+using api::system_display::DisplayUnitInfo;
 
-namespace SetDisplayProperties = core_api::system_display::SetDisplayProperties;
+namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 
-typedef std::vector<linked_ptr<core_api::system_display::DisplayUnitInfo> >
+typedef std::vector<linked_ptr<api::system_display::DisplayUnitInfo>>
     DisplayInfo;
 
 bool SystemDisplayGetInfoFunction::RunSync() {
   DisplayInfo all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();
-  results_ =
-      core_api::system_display::GetInfo::Results::Create(all_displays_info);
+  results_ = api::system_display::GetInfo::Results::Create(all_displays_info);
   return true;
 }
 

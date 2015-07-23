@@ -166,7 +166,7 @@ class EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction
 };
 
 class EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction
-    : public core_api::BluetoothSocketAbstractConnectFunction {
+    : public api::BluetoothSocketAbstractConnectFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "easyUnlockPrivate.connectToBluetoothServiceInsecurely",
@@ -328,7 +328,7 @@ class EasyUnlockPrivateGetUserInfoFunction : public SyncExtensionFunction {
 };
 
 class EasyUnlockPrivateGetConnectionInfoFunction
-    : public core_api::BluetoothExtensionFunction {
+    : public api::BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getConnectionInfo",
                              EASYUNLOCKPRIVATE_GETCONNECTIONINFO)

@@ -48,7 +48,7 @@ class DefaultObserver : public SettingsObserver {
     args->Append(new base::StringValue(settings_namespace::ToString(
         settings_namespace)));
     scoped_ptr<Event> event(new Event(events::STORAGE_ON_CHANGED,
-                                      core_api::storage::OnChanged::kEventName,
+                                      api::storage::OnChanged::kEventName,
                                       args.Pass()));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, event.Pass());

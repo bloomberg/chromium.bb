@@ -15,7 +15,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 class DocumentScanScanFunction : public AsyncApiFunction {
  public:
@@ -47,7 +47,7 @@ class DocumentScanScanFunction : public AsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(DocumentScanScanFunction);
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 

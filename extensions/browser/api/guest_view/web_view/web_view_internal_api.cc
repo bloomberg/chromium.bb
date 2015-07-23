@@ -25,15 +25,15 @@
 
 using content::WebContents;
 using extensions::ExtensionResource;
-using extensions::core_api::web_view_internal::ContentScriptDetails;
-using extensions::core_api::web_view_internal::InjectionItems;
-using extensions::core_api::web_view_internal::SetPermission::Params;
-using extensions::core_api::extension_types::InjectDetails;
+using extensions::api::web_view_internal::ContentScriptDetails;
+using extensions::api::web_view_internal::InjectionItems;
+using extensions::api::web_view_internal::SetPermission::Params;
+using extensions::api::extension_types::InjectDetails;
 using extensions::UserScript;
 using ui_zoom::ZoomController;
 // error messages for content scripts:
 namespace errors = extensions::manifest_errors;
-namespace web_view_internal = extensions::core_api::web_view_internal;
+namespace web_view_internal = extensions::api::web_view_internal;
 
 namespace {
 
@@ -156,14 +156,14 @@ bool ParseContentScript(const ContentScriptDetails& script_value,
   if (script_value.run_at) {
     UserScript::RunLocation run_at = UserScript::UNDEFINED;
     switch (script_value.run_at) {
-      case extensions::core_api::extension_types::RUN_AT_NONE:
-      case extensions::core_api::extension_types::RUN_AT_DOCUMENT_IDLE:
+      case extensions::api::extension_types::RUN_AT_NONE:
+      case extensions::api::extension_types::RUN_AT_DOCUMENT_IDLE:
         run_at = UserScript::DOCUMENT_IDLE;
         break;
-      case extensions::core_api::extension_types::RUN_AT_DOCUMENT_START:
+      case extensions::api::extension_types::RUN_AT_DOCUMENT_START:
         run_at = UserScript::DOCUMENT_START;
         break;
-      case extensions::core_api::extension_types::RUN_AT_DOCUMENT_END:
+      case extensions::api::extension_types::RUN_AT_DOCUMENT_END:
         run_at = UserScript::DOCUMENT_END;
         break;
     }
@@ -744,13 +744,13 @@ bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   WebViewPermissionHelper::PermissionResponseAction action =
       WebViewPermissionHelper::DEFAULT;
   switch (params->action) {
-    case core_api::web_view_internal::SET_PERMISSION_ACTION_ALLOW:
+    case api::web_view_internal::SET_PERMISSION_ACTION_ALLOW:
       action = WebViewPermissionHelper::ALLOW;
       break;
-    case core_api::web_view_internal::SET_PERMISSION_ACTION_DENY:
+    case api::web_view_internal::SET_PERMISSION_ACTION_DENY:
       action = WebViewPermissionHelper::DENY;
       break;
-    case core_api::web_view_internal::SET_PERMISSION_ACTION_DEFAULT:
+    case api::web_view_internal::SET_PERMISSION_ACTION_DEFAULT:
       break;
     default:
       NOTREACHED();

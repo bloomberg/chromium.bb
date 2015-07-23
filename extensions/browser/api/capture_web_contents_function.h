@@ -53,7 +53,7 @@ class CaptureWebContentsFunction : public AsyncExtensionFunction {
   int context_id_;
 
   // The format (JPEG vs PNG) of the resulting image.  Set in RunAsync().
-  core_api::extension_types::ImageFormat image_format_;
+  api::extension_types::ImageFormat image_format_;
 
   // Quality setting to use when encoding jpegs.  Set in RunAsync().
   int image_quality_;

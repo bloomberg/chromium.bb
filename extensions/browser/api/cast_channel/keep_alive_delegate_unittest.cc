@@ -14,7 +14,7 @@
 using testing::_;
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -148,5 +148,5 @@ TEST_F(KeepAliveDelegateTest, TestResetTimersAndPassthroughAllOtherTraffic) {
 
 }  // namespace
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

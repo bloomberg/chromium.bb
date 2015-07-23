@@ -67,8 +67,8 @@ BluetoothManifestPermission::~BluetoothManifestPermission() {}
 scoped_ptr<BluetoothManifestPermission> BluetoothManifestPermission::FromValue(
     const base::Value& value,
     base::string16* error) {
-  scoped_ptr<core_api::extensions_manifest_types::Bluetooth> bluetooth =
-      core_api::extensions_manifest_types::Bluetooth::FromValue(value, error);
+  scoped_ptr<api::extensions_manifest_types::Bluetooth> bluetooth =
+      api::extensions_manifest_types::Bluetooth::FromValue(value, error);
   if (!bluetooth)
     return scoped_ptr<BluetoothManifestPermission>();
 
@@ -178,7 +178,7 @@ bool BluetoothManifestPermission::FromValue(const base::Value* value) {
 }
 
 scoped_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
-  core_api::extensions_manifest_types::Bluetooth bluetooth;
+  api::extensions_manifest_types::Bluetooth bluetooth;
   bluetooth.uuids.reset(new std::vector<std::string>(uuids_.begin(),
                                                      uuids_.end()));
   return bluetooth.ToValue().Pass();

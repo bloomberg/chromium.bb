@@ -75,7 +75,8 @@
       }]
     ],
     'cc_dir': 'extensions/common/api',
-    'root_namespace': 'extensions::core_api::%(namespace)s',
+    'root_namespace': 'extensions::api::%(namespace)s',
+    'bundle_name': '',
     'impl_dir_': 'extensions/browser/api',
   },
 }

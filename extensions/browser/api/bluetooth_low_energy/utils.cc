@@ -5,7 +5,7 @@
 #include "extensions/browser/api/bluetooth_low_energy/utils.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace bluetooth_low_energy {
 
 namespace {
@@ -52,5 +52,5 @@ scoped_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from) {
 }
 
 }  // namespace bluetooth_low_energy
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

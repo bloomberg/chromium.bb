@@ -33,8 +33,8 @@
 
 namespace extensions {
 
-namespace bluetooth = core_api::bluetooth;
-namespace bt_private = core_api::bluetooth_private;
+namespace bluetooth = api::bluetooth;
+namespace bt_private = api::bluetooth_private;
 
 BluetoothEventRouter::BluetoothEventRouter(content::BrowserContext* context)
     : browser_context_(context),
@@ -327,7 +327,7 @@ void BluetoothEventRouter::OnListenerRemoved() {
 
 void BluetoothEventRouter::DispatchAdapterStateEvent() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  core_api::bluetooth::AdapterState state;
+  api::bluetooth::AdapterState state;
   PopulateAdapterState(*adapter_.get(), &state);
 
   scoped_ptr<base::ListValue> args =

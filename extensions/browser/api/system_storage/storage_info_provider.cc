@@ -18,9 +18,9 @@ using storage_monitor::StorageMonitor;
 namespace extensions {
 
 using content::BrowserThread;
-using core_api::system_storage::StorageUnitInfo;
-using core_api::system_storage::STORAGE_UNIT_TYPE_FIXED;
-using core_api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
+using api::system_storage::StorageUnitInfo;
+using api::system_storage::STORAGE_UNIT_TYPE_FIXED;
+using api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
 
 namespace systeminfo {
 

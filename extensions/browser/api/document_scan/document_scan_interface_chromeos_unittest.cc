@@ -16,7 +16,7 @@ using testing::_;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 // Tests of networking_private_crypto support for Networking Private API.
 class DocumentScanInterfaceChromeosTest : public testing::Test {
@@ -122,6 +122,6 @@ TEST_F(DocumentScanInterfaceChromeosTest, ScanSuccess) {
                  base::Unretained(this)));
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

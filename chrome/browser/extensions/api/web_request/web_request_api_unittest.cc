@@ -57,7 +57,7 @@
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
-namespace web_request = extensions::core_api::web_request;
+namespace web_request = extensions::api::web_request;
 
 using base::BinaryValue;
 using base::DictionaryValue;

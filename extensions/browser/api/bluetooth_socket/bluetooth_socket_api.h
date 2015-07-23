@@ -28,7 +28,7 @@ class IOBuffer;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 class BluetoothSocketEventDispatcher;
 
@@ -346,7 +346,7 @@ class BluetoothSocketGetSocketsFunction
   void Work() override;
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_SOCKET_BLUETOOTH_SOCKET_API_H_

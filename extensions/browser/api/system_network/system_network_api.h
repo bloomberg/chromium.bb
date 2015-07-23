@@ -10,7 +10,7 @@
 #include "net/base/net_util.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 class SystemNetworkGetNetworkInterfacesFunction
     : public AsyncExtensionFunction {
@@ -32,7 +32,7 @@ class SystemNetworkGetNetworkInterfacesFunction
   void SendResponseOnUIThread(const net::NetworkInterfaceList& interface_list);
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SYSTEM_NETWORK_SYSTEM_NETWORK_API_H_

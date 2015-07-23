@@ -21,7 +21,7 @@
 #include "net/ssl/scoped_openssl_types.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_crypto {
 namespace {
 
@@ -154,5 +154,5 @@ std::string VerificationResult::GetLogString() const {
 }
 
 }  // namespace cast_crypto
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

@@ -16,7 +16,7 @@ int kDefaultBufferSize = 4096;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 using content::BrowserThread;
 
@@ -197,5 +197,5 @@ void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
     event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

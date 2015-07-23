@@ -40,7 +40,7 @@ using content::BrowserContext;
 
 namespace extensions {
 
-namespace runtime = core_api::runtime;
+namespace runtime = api::runtime;
 
 namespace {
 
@@ -378,7 +378,7 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
 void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
     content::BrowserContext* context,
     const std::string& app_id,
-    core_api::runtime::OnRestartRequiredReason reason) {
+    api::runtime::OnRestartRequiredReason reason) {
   ExtensionSystem* system = ExtensionSystem::Get(context);
   if (!system)
     return;
@@ -386,7 +386,7 @@ void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
   scoped_ptr<Event> event(
       new Event(events::RUNTIME_ON_RESTART_REQUIRED,
                 runtime::OnRestartRequired::kEventName,
-                core_api::runtime::OnRestartRequired::Create(reason)));
+                api::runtime::OnRestartRequired::Create(reason)));
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
   event_router->DispatchEventToExtension(app_id, event.Pass());

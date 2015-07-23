@@ -29,7 +29,7 @@ using device::BluetoothGattConnection;
 using device::BluetoothGattDescriptor;
 using device::BluetoothGattService;
 
-namespace apibtle = extensions::core_api::bluetooth_low_energy;
+namespace apibtle = extensions::api::bluetooth_low_energy;
 
 namespace {
 
@@ -546,7 +546,7 @@ BluetoothLowEnergyEventRouter::Status
 BluetoothLowEnergyEventRouter::GetDescriptor(
     const Extension* extension,
     const std::string& instance_id,
-    core_api::bluetooth_low_energy::Descriptor* out_descriptor) const {
+    api::bluetooth_low_energy::Descriptor* out_descriptor) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(extension);
   DCHECK(out_descriptor);

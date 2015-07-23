@@ -13,7 +13,7 @@
 #include "net/cert/x509_certificate.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -162,5 +162,5 @@ base::StringPiece GetDefaultTrustedICAPublicKey() {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

@@ -31,6 +31,11 @@
 # bundle_registration [optional, default = false]
 #   Boolean indicating if the API registration bundle files should be generated.
 #
+# bundle_name [required if bundle or bundle_registrations]:
+#     A string to prepend to generated bundle class names, so that multiple
+#     bundle rules can be used without conflicting.  Only used with one of
+#     the cpp-bundle generators.
+#
 # impl_dir [required if bundle_registration = true, otherwise unused]
 #   The path containing C++ implementations of API functions. This path is
 #   used as the root path when looking for {schema}/{schema}_api.h headers
@@ -86,6 +91,7 @@ template("json_schema_api") {
     "$compiler_root/cc_generator.py",
     "$compiler_root/code.py",
     "$compiler_root/compiler.py",
+    "$compiler_root/cpp_bundle_generator.py",
     "$compiler_root/cpp_generator.py",
     "$compiler_root/cpp_type_generator.py",
     "$compiler_root/cpp_util.py",
@@ -122,6 +128,9 @@ template("json_schema_api") {
   }
 
   if (bundle) {
+    assert(defined(invoker.bundle_name),
+           "\"bundle_name\" must be defined for bundles")
+
     uncompiled_sources = []
     if (defined(invoker.uncompiled_sources)) {
       uncompiled_sources = invoker.uncompiled_sources
@@ -139,6 +148,7 @@ template("json_schema_api") {
                "--root=" + rebase_path("//", root_build_dir),
                "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
                "--namespace=$root_namespace",
+               "--bundle-name=" + invoker.bundle_name,
                "--generator=cpp-bundle-schema",
                "--include-rules=$schema_include_rules",
              ] + rebase_path(invoker.sources, root_build_dir) +
@@ -147,6 +157,9 @@ template("json_schema_api") {
   }
 
   if (bundle_registration) {
+    assert(defined(invoker.bundle_name),
+           "\"bundle_name\" must be defined for bundle registrations")
+
     uncompiled_sources = []
     if (defined(invoker.uncompiled_sources)) {
       uncompiled_sources = invoker.uncompiled_sources
@@ -171,6 +184,7 @@ template("json_schema_api") {
                "--root=" + rebase_path("//", root_build_dir),
                "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
                "--namespace=$root_namespace",
+               "--bundle-name=" + invoker.bundle_name,
                "--generator=cpp-bundle-registration",
                "--impl-dir=$gen_child_dir",
                "--include-rules=$schema_include_rules",

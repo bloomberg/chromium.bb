@@ -18,14 +18,14 @@ class Screen;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 namespace system_display {
 struct DisplayProperties;
 struct DisplayUnitInfo;
 }
 }
 
-typedef std::vector<linked_ptr<core_api::system_display::DisplayUnitInfo> >
+typedef std::vector<linked_ptr<api::system_display::DisplayUnitInfo>>
     DisplayInfo;
 
 class DisplayInfoProvider {
@@ -44,7 +44,7 @@ class DisplayInfoProvider {
   // the display was successfully updated. On failure, no display parameters
   // should be changed, and |error| should be set to the error string.
   virtual bool SetInfo(const std::string& display_id,
-                       const core_api::system_display::DisplayProperties& info,
+                       const api::system_display::DisplayProperties& info,
                        std::string* error) = 0;
 
   // Get the screen that is always active, which will be used for monitoring
@@ -63,7 +63,7 @@ class DisplayInfoProvider {
   // platform specific method.
   virtual void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      core_api::system_display::DisplayUnitInfo* unit) = 0;
+      api::system_display::DisplayUnitInfo* unit) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProvider);
 };

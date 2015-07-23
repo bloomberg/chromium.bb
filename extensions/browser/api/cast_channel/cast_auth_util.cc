@@ -14,7 +14,7 @@
 #include "extensions/common/cast/cast_cert_validator.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -23,7 +23,7 @@ const char* const kParseErrorPrefix = "Failed to parse auth message: ";
 const unsigned char kAudioOnlyPolicy[] =
     {0x06, 0x0A, 0x2B, 0x06, 0x01, 0x04, 0x01, 0xD6, 0x79, 0x02, 0x05, 0x02};
 
-namespace cast_crypto = ::extensions::core_api::cast_crypto;
+namespace cast_crypto = ::extensions::api::cast_crypto;
 
 // Extracts an embedded DeviceAuthMessage payload from an auth challenge reply
 // message.
@@ -174,5 +174,5 @@ AuthResult VerifyCredentials(const AuthResponse& response,
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

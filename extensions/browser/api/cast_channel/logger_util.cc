@@ -7,7 +7,7 @@
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 LastErrors::LastErrors()
     : event_type(proto::EVENT_TYPE_UNKNOWN),

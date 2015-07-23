@@ -29,7 +29,7 @@ class BrowserContext;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 namespace runtime {
 struct PlatformInfo;
 }
@@ -62,7 +62,7 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   bool CheckForUpdates(const std::string& extension_id,
                        const RuntimeAPIDelegate::UpdateCheckCallback& callback);
   void OpenURL(const GURL& uninstall_url);
-  bool GetPlatformInfo(core_api::runtime::PlatformInfo* info);
+  bool GetPlatformInfo(api::runtime::PlatformInfo* info);
   bool RestartDevice(std::string* error_message);
   bool OpenOptionsPage(const Extension* extension);
 
@@ -142,7 +142,7 @@ class RuntimeEventRouter {
   static void DispatchOnRestartRequiredEvent(
       content::BrowserContext* context,
       const std::string& app_id,
-      core_api::runtime::OnRestartRequiredReason reason);
+      api::runtime::OnRestartRequiredReason reason);
 
   // Does any work needed at extension uninstall (e.g. load uninstall url).
   static void OnExtensionUninstalled(content::BrowserContext* context,

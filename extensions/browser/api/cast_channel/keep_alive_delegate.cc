@@ -15,7 +15,7 @@
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -200,5 +200,5 @@ void KeepAliveDelegate::Stop() {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

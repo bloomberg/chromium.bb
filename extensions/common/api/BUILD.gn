@@ -12,6 +12,7 @@ assert(enable_extensions)
 json_schema_api("generated_api") {
   schemas = true
   bundle = true
+  bundle_name = ""
 }
 
 # GYP version: extensions/common/api/api.gyp:extensions_api_mojom
@@ -34,6 +35,7 @@ source_set("api") {
 json_schema_api("api_registration") {
   impl_dir = "//extensions/browser/api"
   bundle_registration = true
+  bundle_name = ""
 
   deps = [
     ":api",

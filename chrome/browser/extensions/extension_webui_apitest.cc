@@ -22,7 +22,7 @@
 
 namespace extensions {
 
-namespace OnMessage = core_api::test::OnMessage;
+namespace OnMessage = api::test::OnMessage;
 
 namespace {
 

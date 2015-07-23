@@ -6,7 +6,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 MockDocumentScanInterface::MockDocumentScanInterface() {
 }
@@ -14,6 +14,6 @@ MockDocumentScanInterface::MockDocumentScanInterface() {
 MockDocumentScanInterface::~MockDocumentScanInterface() {
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

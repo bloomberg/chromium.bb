@@ -17,7 +17,7 @@ using guest_view::GuestViewBase;
 using guest_view::GuestViewManager;
 using guest_view::GuestViewManagerDelegate;
 
-namespace guest_view_internal = extensions::core_api::guest_view_internal;
+namespace guest_view_internal = extensions::api::guest_view_internal;
 
 namespace extensions {
 

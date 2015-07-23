@@ -112,7 +112,7 @@ namespace windows = api::windows;
 namespace keys = tabs_constants;
 namespace tabs = api::tabs;
 
-using core_api::extension_types::InjectDetails;
+using api::extension_types::InjectDetails;
 
 namespace {
 

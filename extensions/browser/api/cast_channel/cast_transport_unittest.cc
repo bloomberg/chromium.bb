@@ -30,7 +30,7 @@ using testing::Return;
 using testing::WithArg;
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -640,5 +640,5 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {
   transport_->Start();
 }
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

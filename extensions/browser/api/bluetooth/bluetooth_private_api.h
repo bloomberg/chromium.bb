@@ -46,7 +46,7 @@ class BluetoothPrivateAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* browser_context_;
 };
 
-namespace core_api {
+namespace api {
 
 class BluetoothPrivateSetAdapterStateFunction
     : public BluetoothExtensionFunction {
@@ -127,7 +127,7 @@ class BluetoothPrivateSetDiscoveryFilterFunction
   void OnErrorCallback();
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 

@@ -51,8 +51,8 @@ class SocketsTcpApiTest : public ShellApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketsTcpCreateGood) {
-  scoped_refptr<core_api::SocketsTcpCreateFunction> socket_create_function(
-      new core_api::SocketsTcpCreateFunction());
+  scoped_refptr<api::SocketsTcpCreateFunction> socket_create_function(
+      new api::SocketsTcpCreateFunction());
   scoped_refptr<Extension> empty_extension = test_util::CreateEmptyExtension();
 
   socket_create_function->set_extension(empty_extension.get());

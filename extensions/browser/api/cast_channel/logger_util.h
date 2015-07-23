@@ -9,7 +9,7 @@
 #include "extensions/common/api/cast_channel/logging.pb.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 // Converts an IDL "ChannelError" to a proto enum "ErrorState".
 proto::ErrorState ErrorStateToProto(ChannelError state);

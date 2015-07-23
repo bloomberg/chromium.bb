@@ -113,7 +113,7 @@ class DeclarativeApiTest : public ExtensionApiTest {
             RulesRegistryService::kDefaultRulesRegistryID,
             extensions::declarative_webrequest_constants::kOnRequest);
 
-    std::vector<linked_ptr<core_api::events::Rule>> rules;
+    std::vector<linked_ptr<api::events::Rule>> rules;
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,

@@ -77,7 +77,7 @@ namespace keys = extension_web_request_api_constants;
 namespace extensions {
 
 namespace declarative_keys = declarative_webrequest_constants;
-namespace web_request = core_api::web_request;
+namespace web_request = api::web_request;
 
 namespace {
 

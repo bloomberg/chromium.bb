@@ -45,9 +45,9 @@ class UsbConnectionFunction : public UIThreadExtensionFunction {
   ~UsbConnectionFunction() override;
 
   scoped_refptr<device::UsbDeviceHandle> GetDeviceHandle(
-      const extensions::core_api::usb::ConnectionHandle& handle);
+      const extensions::api::usb::ConnectionHandle& handle);
   void ReleaseDeviceHandle(
-      const extensions::core_api::usb::ConnectionHandle& handle);
+      const extensions::api::usb::ConnectionHandle& handle);
 };
 
 class UsbTransferFunction : public UsbConnectionFunction {
@@ -344,7 +344,7 @@ class UsbResetDeviceFunction : public UsbConnectionFunction {
 
   void OnComplete(bool success);
 
-  scoped_ptr<extensions::core_api::usb::ResetDevice::Params> parameters_;
+  scoped_ptr<extensions::api::usb::ResetDevice::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbResetDeviceFunction);
 };

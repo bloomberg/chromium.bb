@@ -175,7 +175,7 @@ ChromeContentRulesRegistry::ContentRule::~ContentRule() {}
 
 scoped_ptr<const ChromeContentRulesRegistry::ContentRule>
 ChromeContentRulesRegistry::CreateRule(const Extension* extension,
-                                       const core_api::events::Rule& api_rule,
+                                       const api::events::Rule& api_rule,
                                        std::string* error) {
   ScopedVector<const ContentCondition> conditions;
   for (const linked_ptr<base::Value>& value : api_rule.conditions) {
@@ -260,7 +260,7 @@ ChromeContentRulesRegistry::GetMatches(
 
 std::string ChromeContentRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
-    const std::vector<linked_ptr<core_api::events::Rule>>& rules) {
+    const std::vector<linked_ptr<api::events::Rule>>& rules) {
   EvaluationScope evaluation_scope(this);
   const Extension* extension = ExtensionRegistry::Get(browser_context())
       ->GetInstalledExtension(extension_id);
@@ -269,7 +269,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   std::string error;
   RulesMap new_content_rules;
 
-  for (const linked_ptr<core_api::events::Rule>& rule : rules) {
+  for (const linked_ptr<api::events::Rule>& rule : rules) {
     ExtensionRuleIdPair rule_id(extension, *rule->id);
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 

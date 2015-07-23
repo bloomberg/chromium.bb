@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 using content::BrowserThread;
 
@@ -197,5 +197,5 @@ void TCPServerSocketEventDispatcher::DispatchEvent(
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

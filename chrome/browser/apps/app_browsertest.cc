@@ -63,7 +63,7 @@
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
-namespace app_runtime = extensions::core_api::app_runtime;
+namespace app_runtime = extensions::api::app_runtime;
 
 namespace extensions {
 

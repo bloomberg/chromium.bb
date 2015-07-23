@@ -11,7 +11,7 @@ const char kNetworkListError[] = "Network lookup failed or unsupported";
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 SystemNetworkGetNetworkInterfacesFunction::
     SystemNetworkGetNetworkInterfacesFunction() {
@@ -62,24 +62,23 @@ void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
     const net::NetworkInterfaceList& interface_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::vector<linked_ptr<core_api::system_network::NetworkInterface> >
-      create_arg;
+  std::vector<linked_ptr<api::system_network::NetworkInterface>> create_arg;
   create_arg.reserve(interface_list.size());
   for (net::NetworkInterfaceList::const_iterator i = interface_list.begin();
        i != interface_list.end();
        ++i) {
-    linked_ptr<core_api::system_network::NetworkInterface> info =
-        make_linked_ptr(new core_api::system_network::NetworkInterface);
+    linked_ptr<api::system_network::NetworkInterface> info =
+        make_linked_ptr(new api::system_network::NetworkInterface);
     info->name = i->name;
     info->address = net::IPAddressToString(i->address);
     info->prefix_length = i->prefix_length;
     create_arg.push_back(info);
   }
 
-  results_ = core_api::system_network::GetNetworkInterfaces::Results::Create(
-      create_arg);
+  results_ =
+      api::system_network::GetNetworkInterfaces::Results::Create(create_arg);
   SendResponse(true);
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

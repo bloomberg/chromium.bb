@@ -16,11 +16,11 @@ class ShellDisplayInfoProvider : public DisplayInfoProvider {
 
   // DisplayInfoProvider implementation.
   bool SetInfo(const std::string& display_id,
-               const core_api::system_display::DisplayProperties& info,
+               const api::system_display::DisplayProperties& info,
                std::string* error) override;
   void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      extensions::core_api::system_display::DisplayUnitInfo* unit) override;
+      extensions::api::system_display::DisplayUnitInfo* unit) override;
   gfx::Screen* GetActiveScreen() override;
 
  private:

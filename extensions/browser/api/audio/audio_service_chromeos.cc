@@ -15,9 +15,9 @@ using content::BrowserThread;
 
 namespace extensions {
 
-using core_api::audio::OutputDeviceInfo;
-using core_api::audio::InputDeviceInfo;
-using core_api::audio::AudioDeviceInfo;
+using api::audio::OutputDeviceInfo;
+using api::audio::InputDeviceInfo;
+using api::audio::AudioDeviceInfo;
 
 class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {

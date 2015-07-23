@@ -74,7 +74,7 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
   // |PrinterProviderInternalReportPrintResultFunction|.
   void NotifyPrintResult(const Extension* extension,
                          int request_id,
-                         core_api::printer_provider_internal::PrintError error);
+                         api::printer_provider_internal::PrintError error);
 
   // Notifies observers that a printerProvider.onGetUsbPrinterInfoRequested
   // callback has been called. Called from
@@ -82,7 +82,7 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
   void NotifyGetUsbPrinterInfoResult(
       const Extension* extension,
       int request_id,
-      const core_api::printer_provider::PrinterInfo* printer_info);
+      const api::printer_provider::PrinterInfo* printer_info);
 
   base::ObserverList<PrinterProviderInternalAPIObserver> observers_;
 

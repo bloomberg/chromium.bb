@@ -16,7 +16,7 @@ DisplayInfoProviderAura::~DisplayInfoProviderAura() {
 
 bool DisplayInfoProviderAura::SetInfo(
     const std::string& display_id,
-    const core_api::system_display::DisplayProperties& info,
+    const api::system_display::DisplayProperties& info,
     std::string* error) {
   *error = "Not implemented";
   return false;
@@ -24,7 +24,7 @@ bool DisplayInfoProviderAura::SetInfo(
 
 void DisplayInfoProviderAura::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
-    extensions::core_api::system_display::DisplayUnitInfo* unit) {
+    extensions::api::system_display::DisplayUnitInfo* unit) {
   static bool logged_once = false;
   if (!logged_once) {
     NOTIMPLEMENTED();

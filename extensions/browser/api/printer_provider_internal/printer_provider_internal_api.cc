@@ -27,7 +27,7 @@
 #include "extensions/common/api/printer_provider.h"
 #include "extensions/common/api/printer_provider_internal.h"
 
-namespace internal_api = extensions::core_api::printer_provider_internal;
+namespace internal_api = extensions::api::printer_provider_internal;
 
 namespace extensions {
 
@@ -81,7 +81,7 @@ void PrinterProviderInternalAPI::NotifyGetCapabilityResult(
 void PrinterProviderInternalAPI::NotifyPrintResult(
     const Extension* extension,
     int request_id,
-    core_api::printer_provider_internal::PrintError error) {
+    api::printer_provider_internal::PrintError error) {
   FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
                     OnPrintResult(extension, request_id, error));
 }
@@ -89,7 +89,7 @@ void PrinterProviderInternalAPI::NotifyPrintResult(
 void PrinterProviderInternalAPI::NotifyGetUsbPrinterInfoResult(
     const Extension* extension,
     int request_id,
-    const core_api::printer_provider::PrinterInfo* printer_info) {
+    const api::printer_provider::PrinterInfo* printer_info) {
   FOR_EACH_OBSERVER(
       PrinterProviderInternalAPIObserver, observers_,
       OnGetUsbPrinterInfoResult(extension, request_id, printer_info));

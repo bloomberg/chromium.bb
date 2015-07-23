@@ -15,7 +15,7 @@
 #include "extensions/common/api/extension_view_internal.h"
 #include "extensions/common/constants.h"
 
-namespace extensionview = extensions::core_api::extension_view_internal;
+namespace extensionview = extensions::api::extension_view_internal;
 
 namespace extensions {
 

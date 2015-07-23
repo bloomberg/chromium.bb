@@ -144,7 +144,7 @@ class VpnService : public KeyedService,
   // Calls |success| or |failure| based on the outcome.
   void NotifyConnectionStateChanged(
       const std::string& extension_id,
-      extensions::core_api::vpn_provider::VpnConnectionState state,
+      extensions::api::vpn_provider::VpnConnectionState state,
       const SuccessCallback& success,
       const FailureCallback& failure);
 

@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-using core_api::system_cpu::CpuInfo;
+using api::system_cpu::CpuInfo;
 
 SystemCpuGetInfoFunction::SystemCpuGetInfoFunction() {
 }

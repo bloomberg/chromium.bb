@@ -15,11 +15,10 @@
 
 namespace extensions {
 
-using OutputInfo = std::vector<linked_ptr<core_api::audio::OutputDeviceInfo>>;
-using InputInfo = std::vector<linked_ptr<core_api::audio::InputDeviceInfo>>;
+using OutputInfo = std::vector<linked_ptr<api::audio::OutputDeviceInfo>>;
+using InputInfo = std::vector<linked_ptr<api::audio::InputDeviceInfo>>;
 using DeviceIdList = std::vector<std::string>;
-using DeviceInfoList =
-    std::vector<linked_ptr<core_api::audio::AudioDeviceInfo>>;
+using DeviceInfoList = std::vector<linked_ptr<api::audio::AudioDeviceInfo>>;
 
 class AudioService {
  public:

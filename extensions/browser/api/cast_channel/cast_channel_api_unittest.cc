@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 // Tests parsing of ConnectInfo.
@@ -29,5 +29,5 @@ TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

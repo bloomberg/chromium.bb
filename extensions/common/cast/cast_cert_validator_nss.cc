@@ -17,7 +17,7 @@
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_crypto {
 
 namespace {
@@ -151,5 +151,5 @@ std::string VerificationResult::GetLogString() const {
 }
 
 }  // namespace cast_crypto
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

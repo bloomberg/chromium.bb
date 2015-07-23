@@ -43,7 +43,7 @@ using content::BrowserThread;
 namespace extensions {
 class ExtensionRegistry;
 
-namespace storage = core_api::storage;
+namespace storage = api::storage;
 
 namespace {
 

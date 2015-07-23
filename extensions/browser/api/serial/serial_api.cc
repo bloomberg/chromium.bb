@@ -18,7 +18,7 @@ using content::BrowserThread;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 namespace {
 
@@ -469,19 +469,19 @@ void SerialClearBreakFunction::Work() {
   results_ = serial::ClearBreak::Results::Create(success);
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 
 namespace mojo {
 
 // static
-linked_ptr<extensions::core_api::serial::DeviceInfo> TypeConverter<
-    linked_ptr<extensions::core_api::serial::DeviceInfo>,
+linked_ptr<extensions::api::serial::DeviceInfo> TypeConverter<
+    linked_ptr<extensions::api::serial::DeviceInfo>,
     device::serial::DeviceInfoPtr>::Convert(const device::serial::DeviceInfoPtr&
                                                 device) {
-  linked_ptr<extensions::core_api::serial::DeviceInfo> info(
-      new extensions::core_api::serial::DeviceInfo);
+  linked_ptr<extensions::api::serial::DeviceInfo> info(
+      new extensions::api::serial::DeviceInfo);
   info->path = device->path;
   if (device->has_vendor_id)
     info->vendor_id.reset(new int(static_cast<int>(device->vendor_id)));

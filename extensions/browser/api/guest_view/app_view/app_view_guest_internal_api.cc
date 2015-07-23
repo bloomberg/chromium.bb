@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-namespace appview = core_api::app_view_guest_internal;
+namespace appview = api::app_view_guest_internal;
 
 AppViewGuestInternalAttachFrameFunction::
     AppViewGuestInternalAttachFrameFunction() {

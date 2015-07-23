@@ -15,9 +15,7 @@ class MemoryInfoProvider : public SystemInfoProvider {
  public:
   static MemoryInfoProvider* Get();
 
-  const core_api::system_memory::MemoryInfo& memory_info() const {
-    return info_;
-  }
+  const api::system_memory::MemoryInfo& memory_info() const { return info_; }
 
   static void InitializeForTesting(scoped_refptr<MemoryInfoProvider> provider);
 
@@ -37,7 +35,7 @@ class MemoryInfoProvider : public SystemInfoProvider {
   // |info_| is accessed on the UI thread while |is_waiting_for_completion_| is
   // false and on the sequenced worker pool while |is_waiting_for_completion_|
   // is true.
-  core_api::system_memory::MemoryInfo info_;
+  api::system_memory::MemoryInfo info_;
 
   static base::LazyInstance<scoped_refptr<MemoryInfoProvider> > provider_;
 

@@ -12,8 +12,8 @@
 
 using extensions::Extension;
 using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
-using extensions::core_api::SystemNetworkGetNetworkInterfacesFunction;
-using extensions::core_api::system_network::NetworkInterface;
+using extensions::api::SystemNetworkGetNetworkInterfacesFunction;
+using extensions::api::system_network::NetworkInterface;
 
 namespace {
 

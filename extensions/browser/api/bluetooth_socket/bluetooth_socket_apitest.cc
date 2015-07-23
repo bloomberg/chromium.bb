@@ -30,7 +30,7 @@ using device::MockBluetoothSocket;
 using extensions::Extension;
 using extensions::ResultCatcher;
 
-namespace api = extensions::core_api;
+namespace api = extensions::api;
 
 namespace {
 

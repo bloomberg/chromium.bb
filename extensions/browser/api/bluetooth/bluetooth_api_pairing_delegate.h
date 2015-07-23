@@ -38,7 +38,7 @@ class BluetoothApiPairingDelegate
  private:
   // Dispatches a pairing event to the extension.
   void DispatchPairingEvent(
-      const core_api::bluetooth_private::PairingEvent& pairing_event);
+      const api::bluetooth_private::PairingEvent& pairing_event);
 
   std::string extension_id_;
   content::BrowserContext* browser_context_;

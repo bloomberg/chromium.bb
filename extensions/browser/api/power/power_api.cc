@@ -17,12 +17,12 @@ namespace {
 const char kPowerSaveBlockerDescription[] = "extension";
 
 content::PowerSaveBlocker::PowerSaveBlockerType LevelToPowerSaveBlockerType(
-    core_api::power::Level level) {
+    api::power::Level level) {
   switch (level) {
-    case core_api::power::LEVEL_SYSTEM:
+    case api::power::LEVEL_SYSTEM:
       return content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension;
-    case core_api::power::LEVEL_DISPLAY:  // fallthrough
-    case core_api::power::LEVEL_NONE:
+    case api::power::LEVEL_DISPLAY:  // fallthrough
+    case api::power::LEVEL_NONE:
       return content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
   }
   NOTREACHED() << "Unhandled level " << level;
@@ -35,10 +35,10 @@ base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>> g_factory =
 }  // namespace
 
 bool PowerRequestKeepAwakeFunction::RunSync() {
-  scoped_ptr<core_api::power::RequestKeepAwake::Params> params(
-      core_api::power::RequestKeepAwake::Params::Create(*args_));
+  scoped_ptr<api::power::RequestKeepAwake::Params> params(
+      api::power::RequestKeepAwake::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  EXTENSION_FUNCTION_VALIDATE(params->level != core_api::power::LEVEL_NONE);
+  EXTENSION_FUNCTION_VALIDATE(params->level != api::power::LEVEL_NONE);
   PowerAPI::Get(browser_context())->AddRequest(extension_id(), params->level);
   return true;
 }
@@ -59,7 +59,7 @@ BrowserContextKeyedAPIFactory<PowerAPI>* PowerAPI::GetFactoryInstance() {
 }
 
 void PowerAPI::AddRequest(const std::string& extension_id,
-                          core_api::power::Level level) {
+                          api::power::Level level) {
   extension_levels_[extension_id] = level;
   UpdatePowerSaveBlocker();
 }
@@ -86,7 +86,7 @@ void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
 PowerAPI::PowerAPI(content::BrowserContext* context)
     : browser_context_(context),
       create_blocker_function_(base::Bind(&content::PowerSaveBlocker::Create)),
-      current_level_(core_api::power::LEVEL_SYSTEM) {
+      current_level_(api::power::LEVEL_SYSTEM) {
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }
 
@@ -99,10 +99,10 @@ void PowerAPI::UpdatePowerSaveBlocker() {
     return;
   }
 
-  core_api::power::Level new_level = core_api::power::LEVEL_SYSTEM;
+  api::power::Level new_level = api::power::LEVEL_SYSTEM;
   for (ExtensionLevelMap::const_iterator it = extension_levels_.begin();
        it != extension_levels_.end(); ++it) {
-    if (it->second == core_api::power::LEVEL_DISPLAY)
+    if (it->second == api::power::LEVEL_DISPLAY)
       new_level = it->second;
   }
 

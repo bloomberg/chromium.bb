@@ -152,10 +152,10 @@ class TestDelegate : public NetworkingPrivateDelegate {
     if (fail_)
       return result.Pass();
     result.reset(new DeviceStateList);
-    scoped_ptr<core_api::networking_private::DeviceStateProperties> properties(
-        new core_api::networking_private::DeviceStateProperties);
-    properties->type = core_api::networking_private::NETWORK_TYPE_ETHERNET;
-    properties->state = core_api::networking_private::DEVICE_STATE_TYPE_ENABLED;
+    scoped_ptr<api::networking_private::DeviceStateProperties> properties(
+        new api::networking_private::DeviceStateProperties);
+    properties->type = api::networking_private::NETWORK_TYPE_ETHERNET;
+    properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
     result->push_back(properties.Pass());
     return result.Pass();
   }

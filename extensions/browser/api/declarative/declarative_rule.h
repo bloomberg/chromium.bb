@@ -203,7 +203,7 @@ class DeclarativeRule {
   typedef int Priority;
   typedef DeclarativeConditionSet<ConditionT> ConditionSet;
   typedef DeclarativeActionSet<ActionT> ActionSet;
-  typedef extensions::core_api::events::Rule JsonRule;
+  typedef extensions::api::events::Rule JsonRule;
   typedef std::vector<std::string> Tags;
 
   // Checks whether the set of |conditions| and |actions| are consistent.

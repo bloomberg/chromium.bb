@@ -16,7 +16,7 @@ namespace extensions {
 
 class SerialConnection;
 
-namespace core_api {
+namespace api {
 
 class SerialEventDispatcher;
 
@@ -271,16 +271,16 @@ class SerialClearBreakFunction : public SerialAsyncApiFunction {
   scoped_ptr<serial::ClearBreak::Params> params_;
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 
 namespace mojo {
 
 template <>
-struct TypeConverter<linked_ptr<extensions::core_api::serial::DeviceInfo>,
+struct TypeConverter<linked_ptr<extensions::api::serial::DeviceInfo>,
                      device::serial::DeviceInfoPtr> {
-  static linked_ptr<extensions::core_api::serial::DeviceInfo> Convert(
+  static linked_ptr<extensions::api::serial::DeviceInfo> Convert(
       const device::serial::DeviceInfoPtr& input);
 };
 

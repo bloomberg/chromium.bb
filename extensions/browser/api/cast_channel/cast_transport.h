@@ -26,7 +26,7 @@ class Socket;
 }  // namespace net
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 class CastMessage;
 struct LastErrors;
@@ -214,7 +214,7 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(CastTransportImpl);
 };
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TRANSPORT_H_

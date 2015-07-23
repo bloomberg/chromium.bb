@@ -8,7 +8,7 @@
 #include <string>
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 class CastMessage;
@@ -39,7 +39,7 @@ void CreateAuthChallengeMessage(CastMessage* message_proto);
 bool IsAuthMessage(const CastMessage& message);
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_MESSAGE_UTIL_H_

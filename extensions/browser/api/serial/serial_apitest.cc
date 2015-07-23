@@ -83,7 +83,7 @@ class FakeEchoSerialIoHandler : public device::TestSerialIoHandler {
   DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialIoHandler);
 };
 
-class FakeSerialConnectFunction : public core_api::SerialConnectFunction {
+class FakeSerialConnectFunction : public api::SerialConnectFunction {
  protected:
   SerialConnection* CreateSerialConnection(
       const std::string& port,

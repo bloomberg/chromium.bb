@@ -17,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef extensions::core_api::alarms::Alarm JsAlarm;
+typedef extensions::api::alarms::Alarm JsAlarm;
 
 namespace extensions {
 

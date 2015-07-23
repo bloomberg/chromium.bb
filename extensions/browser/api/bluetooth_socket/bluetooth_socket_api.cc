@@ -20,12 +20,12 @@
 
 using content::BrowserThread;
 using extensions::BluetoothApiSocket;
-using extensions::core_api::bluetooth_socket::ListenOptions;
-using extensions::core_api::bluetooth_socket::SocketInfo;
-using extensions::core_api::bluetooth_socket::SocketProperties;
+using extensions::api::bluetooth_socket::ListenOptions;
+using extensions::api::bluetooth_socket::SocketInfo;
+using extensions::api::bluetooth_socket::SocketProperties;
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 namespace {
 
@@ -674,5 +674,5 @@ void BluetoothSocketGetSocketsFunction::Work() {
   results_ = bluetooth_socket::GetSockets::Results::Create(socket_infos);
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

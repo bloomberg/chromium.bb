@@ -39,7 +39,7 @@
 
 namespace easy_unlock_private_api = extensions::api::easy_unlock_private;
 namespace screenlock_private_api = extensions::api::screenlock_private;
-namespace app_runtime_api = extensions::core_api::app_runtime;
+namespace app_runtime_api = extensions::api::app_runtime;
 
 namespace {
 

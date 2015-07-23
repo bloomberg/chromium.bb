@@ -36,13 +36,13 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
 
   // Add rules and check that their identifiers are filled and unique.
 
-  std::vector<linked_ptr<core_api::events::Rule>> add_rules;
-  add_rules.push_back(make_linked_ptr(new core_api::events::Rule));
-  add_rules.push_back(make_linked_ptr(new core_api::events::Rule));
+  std::vector<linked_ptr<api::events::Rule>> add_rules;
+  add_rules.push_back(make_linked_ptr(new api::events::Rule));
+  add_rules.push_back(make_linked_ptr(new api::events::Rule));
   error = registry->AddRules(kExtensionId, add_rules);
   EXPECT_TRUE(error.empty()) << error;
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules;
+  std::vector<linked_ptr<api::events::Rule>> get_rules;
   registry->GetAllRules(kExtensionId, &get_rules);
 
   ASSERT_EQ(2u, get_rules.size());
@@ -60,13 +60,13 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
 
   // Check that we cannot add a new rule with the same ID.
 
-  std::vector<linked_ptr<core_api::events::Rule>> add_rules_2;
-  add_rules_2.push_back(make_linked_ptr(new core_api::events::Rule));
+  std::vector<linked_ptr<api::events::Rule>> add_rules_2;
+  add_rules_2.push_back(make_linked_ptr(new api::events::Rule));
   add_rules_2[0]->id.reset(new std::string(*get_rules[0]->id));
   error = registry->AddRules(kExtensionId, add_rules_2);
   EXPECT_FALSE(error.empty());
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules_2;
+  std::vector<linked_ptr<api::events::Rule>> get_rules_2;
   registry->GetAllRules(kExtensionId, &get_rules_2);
   ASSERT_EQ(2u, get_rules_2.size());
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
@@ -82,19 +82,19 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_EQ(1u /*extensions*/ + 1u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules_3a;
+  std::vector<linked_ptr<api::events::Rule>> get_rules_3a;
   registry->GetAllRules(kExtensionId, &get_rules_3a);
   ASSERT_EQ(1u, get_rules_3a.size());
 
-  std::vector<linked_ptr<core_api::events::Rule>> add_rules_3;
-  add_rules_3.push_back(make_linked_ptr(new core_api::events::Rule));
+  std::vector<linked_ptr<api::events::Rule>> add_rules_3;
+  add_rules_3.push_back(make_linked_ptr(new api::events::Rule));
   add_rules_3[0]->id.reset(new std::string(*get_rules[0]->id));
   error = registry->AddRules(kExtensionId, add_rules_3);
   EXPECT_TRUE(error.empty()) << error;
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules_3b;
+  std::vector<linked_ptr<api::events::Rule>> get_rules_3b;
   registry->GetAllRules(kExtensionId, &get_rules_3b);
   ASSERT_EQ(2u, get_rules_3b.size());
 
@@ -105,12 +105,12 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules_4a;
+  std::vector<linked_ptr<api::events::Rule>> get_rules_4a;
   registry->GetAllRules(kExtensionId, &get_rules_4a);
   ASSERT_TRUE(get_rules_4a.empty());
 
-  std::vector<linked_ptr<core_api::events::Rule>> add_rules_4;
-  add_rules_4.push_back(make_linked_ptr(new core_api::events::Rule));
+  std::vector<linked_ptr<api::events::Rule>> add_rules_4;
+  add_rules_4.push_back(make_linked_ptr(new api::events::Rule));
   add_rules_4[0]->id.reset(new std::string(kRuleId));
   error = registry->AddRules(kExtensionId, add_rules_4);
   EXPECT_TRUE(error.empty()) << error;
@@ -118,7 +118,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_EQ(1u /*extensions*/ + 1u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules_4b;
+  std::vector<linked_ptr<api::events::Rule>> get_rules_4b;
   registry->GetAllRules(kExtensionId, &get_rules_4b);
 
   ASSERT_EQ(1u, get_rules_4b.size());
@@ -155,14 +155,14 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
 
   // Add rules and check that their priorities are filled if they are empty.
 
-  std::vector<linked_ptr<core_api::events::Rule>> add_rules;
-  add_rules.push_back(make_linked_ptr(new core_api::events::Rule));
+  std::vector<linked_ptr<api::events::Rule>> add_rules;
+  add_rules.push_back(make_linked_ptr(new api::events::Rule));
   add_rules[0]->priority.reset(new int(2));
-  add_rules.push_back(make_linked_ptr(new core_api::events::Rule));
+  add_rules.push_back(make_linked_ptr(new api::events::Rule));
   error = registry->AddRules(kExtensionId, add_rules);
   EXPECT_TRUE(error.empty()) << error;
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules;
+  std::vector<linked_ptr<api::events::Rule>> get_rules;
   registry->GetAllRules(kExtensionId, &get_rules);
 
   ASSERT_EQ(2u, get_rules.size());
@@ -227,7 +227,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
   // Simulate what RulesRegistryService would do on extension load.
   registry->OnExtensionLoaded(extension.get());
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules;
+  std::vector<linked_ptr<api::events::Rule>> get_rules;
   registry->GetAllRules(kExtensionId, &get_rules);
 
   ASSERT_EQ(2u, get_rules.size());
@@ -294,18 +294,16 @@ TEST(RulesRegistryTest, DeleteRuleInManifest) {
   // Simulate what RulesRegistryService would do on extension load.
   registry->OnExtensionLoaded(extension.get());
   // Add some extra rules outside of the manifest.
-  std::vector<linked_ptr<core_api::events::Rule>> add_rules;
-  linked_ptr<core_api::events::Rule> rule_1 =
-      make_linked_ptr(new core_api::events::Rule);
+  std::vector<linked_ptr<api::events::Rule>> add_rules;
+  linked_ptr<api::events::Rule> rule_1 = make_linked_ptr(new api::events::Rule);
   rule_1->id.reset(new std::string("rule_1"));
-  linked_ptr<core_api::events::Rule> rule_2 =
-      make_linked_ptr(new core_api::events::Rule);
+  linked_ptr<api::events::Rule> rule_2 = make_linked_ptr(new api::events::Rule);
   rule_2->id.reset(new std::string("rule_2"));
   add_rules.push_back(rule_1);
   add_rules.push_back(rule_2);
   registry->AddRules(kExtensionId, add_rules);
 
-  std::vector<linked_ptr<core_api::events::Rule>> get_rules;
+  std::vector<linked_ptr<api::events::Rule>> get_rules;
   registry->GetAllRules(kExtensionId, &get_rules);
   ASSERT_EQ(3u, get_rules.size());
   EXPECT_EQ("manifest_rule_0", *(get_rules[0]->id));

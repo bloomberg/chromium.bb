@@ -7,7 +7,7 @@
 
 namespace extensions {
 
-using core_api::system_cpu::CpuInfo;
+using api::system_cpu::CpuInfo;
 
 class MockCpuInfoProviderImpl : public CpuInfoProvider {
  public:
@@ -23,8 +23,8 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
     info_.features.push_back("avx");
 
     info_.processors.clear();
-    info_.processors.push_back(linked_ptr<core_api::system_cpu::ProcessorInfo>(
-        new core_api::system_cpu::ProcessorInfo()));
+    info_.processors.push_back(linked_ptr<api::system_cpu::ProcessorInfo>(
+        new api::system_cpu::ProcessorInfo()));
     info_.processors[0]->usage.kernel = 1;
     info_.processors[0]->usage.user = 2;
     info_.processors[0]->usage.idle = 3;

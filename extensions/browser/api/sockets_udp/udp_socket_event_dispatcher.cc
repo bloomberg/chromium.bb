@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 using content::BrowserThread;
 
@@ -181,5 +181,5 @@ void UDPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 namespace app_window {
 struct CreateWindowOptions;
 }
@@ -27,13 +27,13 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
 
  private:
   bool GetBoundsSpec(
-      const extensions::core_api::app_window::CreateWindowOptions& options,
+      const extensions::api::app_window::CreateWindowOptions& options,
       AppWindow::CreateParams* params,
       std::string* error);
 
   AppWindow::Frame GetFrameFromString(const std::string& frame_string);
   bool GetFrameOptions(
-      const extensions::core_api::app_window::CreateWindowOptions& options,
+      const extensions::api::app_window::CreateWindowOptions& options,
       AppWindow::CreateParams* create_params);
   void UpdateFrameOptionsForChannel(AppWindow::CreateParams* create_params);
 

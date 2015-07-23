@@ -64,8 +64,7 @@ class PowerAPI : public BrowserContextKeyedAPI,
 
   // Adds an extension lock at |level| for |extension_id|, replacing the
   // extension's existing lock, if any.
-  void AddRequest(const std::string& extension_id,
-                  core_api::power::Level level);
+  void AddRequest(const std::string& extension_id, api::power::Level level);
 
   // Removes an extension lock for an extension. Calling this for an
   // extension id without a lock will do nothing.
@@ -107,11 +106,11 @@ class PowerAPI : public BrowserContextKeyedAPI,
 
   // Current level used by |power_save_blocker_|.  Meaningless if
   // |power_save_blocker_| is NULL.
-  core_api::power::Level current_level_;
+  api::power::Level current_level_;
 
   // Map from extension ID to the corresponding level for each extension
   // that has an outstanding request.
-  typedef std::map<std::string, core_api::power::Level> ExtensionLevelMap;
+  typedef std::map<std::string, api::power::Level> ExtensionLevelMap;
   ExtensionLevelMap extension_levels_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerAPI);

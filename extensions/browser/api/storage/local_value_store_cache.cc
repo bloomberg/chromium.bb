@@ -30,10 +30,8 @@ namespace {
 // extensions/common/api/storage.json.
 SettingsStorageQuotaEnforcer::Limits GetLocalQuotaLimits() {
   SettingsStorageQuotaEnforcer::Limits limits = {
-    static_cast<size_t>(core_api::storage::local::QUOTA_BYTES),
-    std::numeric_limits<size_t>::max(),
-    std::numeric_limits<size_t>::max()
-  };
+      static_cast<size_t>(api::storage::local::QUOTA_BYTES),
+      std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()};
   return limits;
 }
 

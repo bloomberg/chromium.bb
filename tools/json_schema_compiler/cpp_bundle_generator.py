@@ -40,12 +40,14 @@ class CppBundleGenerator(object):
                api_defs,
                cpp_type_generator,
                cpp_namespace_pattern,
+               bundle_name,
                source_file_dir,
                impl_dir):
     self._root = root
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
+    self._bundle_name = bundle_name
     self._source_file_dir = source_file_dir
     self._impl_dir = impl_dir
 
@@ -118,8 +120,8 @@ class CppBundleGenerator(object):
   def _GenerateFunctionRegistryRegisterAll(self):
     c = code.Code()
     c.Append('// static')
-    c.Sblock('void GeneratedFunctionRegistry::RegisterAll('
-                 'ExtensionFunctionRegistry* registry) {')
+    c.Sblock('void %s::RegisterAll(ExtensionFunctionRegistry* registry) {' %
+             self._GenerateBundleClass('GeneratedFunctionRegistry'))
     for namespace in self._model.namespaces.values():
       namespace_ifdefs = self._GetPlatformIfdefs(namespace)
       if namespace_ifdefs is not None:
@@ -144,6 +146,12 @@ class CppBundleGenerator(object):
     c.Eblock("}")
     return c
 
+  def _GenerateBundleClass(self, class_name):
+    '''Generates the C++ class name to use for a bundle class, taking into
+    account the bundle's name.
+    '''
+    return self._bundle_name + class_name
+
 
 class _APIHGenerator(object):
   """Generates the header for API registration / declaration"""
@@ -161,7 +169,8 @@ class _APIHGenerator(object):
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
-    c.Append('class GeneratedFunctionRegistry {')
+    c.Append('class %s {' %
+             self._bundle._GenerateBundleClass('GeneratedFunctionRegistry'))
     c.Sblock(' public:')
     c.Append('static void RegisterAll('
                  'ExtensionFunctionRegistry* registry);')
@@ -235,7 +244,8 @@ class _SchemasHGenerator(object):
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
-    c.Append('class GeneratedSchemas {')
+    c.Append('class %s {' %
+             self._bundle._GenerateBundleClass('GeneratedSchemas'))
     c.Sblock(' public:')
     c.Append('// Determines if schema named |name| is generated.')
     c.Append('static bool IsGenerated(std::string name);')
@@ -287,8 +297,6 @@ class _SchemasCCGenerator(object):
                   for i in xrange(0, len(json_content), max_length)]
       c.Append('const char %s[] = "%s";' %
           (_FormatNameAsConstant(namespace.name), '" "'.join(segments)))
-    c.Append('}')
-    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
     c.Sblock('struct Static {')
     c.Sblock('Static() {')
@@ -303,15 +311,20 @@ class _SchemasCCGenerator(object):
     c.Append()
     c.Append('base::LazyInstance<Static> g_lazy_instance;')
     c.Append()
+    c.Append('}  // namespace')
+    c.Append()
+    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
+    c.Append()
     c.Append('// static')
-    c.Sblock('base::StringPiece GeneratedSchemas::Get('
-                  'const std::string& name) {')
+    c.Sblock('base::StringPiece %s::Get(const std::string& name) {' %
+             self._bundle._GenerateBundleClass('GeneratedSchemas'))
     c.Append('return IsGenerated(name) ? '
              'g_lazy_instance.Get().schemas[name] : "";')
     c.Eblock('}')
     c.Append()
     c.Append('// static')
-    c.Sblock('bool GeneratedSchemas::IsGenerated(std::string name) {')
+    c.Sblock('bool %s::IsGenerated(std::string name) {' %
+             self._bundle._GenerateBundleClass('GeneratedSchemas'))
     c.Append('return g_lazy_instance.Get().schemas.count(name) > 0;')
     c.Eblock('}')
     c.Append()

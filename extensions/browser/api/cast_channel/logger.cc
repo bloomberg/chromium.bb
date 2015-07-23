@@ -15,7 +15,7 @@
 #include "third_party/zlib/zlib.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 using net::IPEndPoint;
@@ -369,5 +369,5 @@ LastErrors Logger::GetLastErrors(int channel_id) const {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

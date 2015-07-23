@@ -58,7 +58,7 @@ using extensions::ResultCatcher;
 
 namespace {
 
-namespace alarms = extensions::core_api::alarms;
+namespace alarms = extensions::api::alarms;
 
 const char kPowerTestApp[] = "ephemeral_apps/power";
 

@@ -34,7 +34,7 @@ using extensions::Extension;
 using extensions::ResultCatcher;
 
 namespace utils = extension_function_test_utils;
-namespace api = extensions::core_api;
+namespace api = extensions::api;
 
 namespace {
 

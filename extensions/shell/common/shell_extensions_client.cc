@@ -197,18 +197,18 @@ bool ShellExtensionsClient::IsScriptableURL(const GURL& url,
 
 bool ShellExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
-  return core_api::GeneratedSchemas::IsGenerated(name) ||
-         shell::api::GeneratedSchemas::IsGenerated(name);
+  return api::GeneratedSchemas::IsGenerated(name) ||
+         shell::api::ShellGeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ShellExtensionsClient::GetAPISchema(
     const std::string& name) const {
   // Schema for app_shell-only APIs.
-  if (shell::api::GeneratedSchemas::IsGenerated(name))
-    return shell::api::GeneratedSchemas::Get(name);
+  if (shell::api::ShellGeneratedSchemas::IsGenerated(name))
+    return shell::api::ShellGeneratedSchemas::Get(name);
 
   // Core extensions APIs.
-  return core_api::GeneratedSchemas::Get(name);
+  return api::GeneratedSchemas::Get(name);
 }
 
 void ShellExtensionsClient::RegisterAPISchemaResources(

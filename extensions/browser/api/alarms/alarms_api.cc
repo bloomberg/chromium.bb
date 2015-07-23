@@ -14,7 +14,7 @@
 
 namespace extensions {
 
-namespace alarms = core_api::alarms;
+namespace alarms = api::alarms;
 
 namespace {
 

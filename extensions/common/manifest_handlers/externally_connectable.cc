@@ -37,7 +37,7 @@ const char kErrorWildcardHostsNotAllowed[] =
 
 namespace keys = extensions::manifest_keys;
 namespace errors = externally_connectable_errors;
-using core_api::extensions_manifest_types::ExternallyConnectable;
+using api::extensions_manifest_types::ExternallyConnectable;
 
 namespace {
 

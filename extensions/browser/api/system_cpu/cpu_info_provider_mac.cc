@@ -12,7 +12,7 @@
 namespace extensions {
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos) {
+    std::vector<linked_ptr<api::system_cpu::ProcessorInfo>>* infos) {
   DCHECK(infos);
 
   natural_t num_of_processors;

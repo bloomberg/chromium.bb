@@ -16,9 +16,9 @@
 #include "net/log/net_log.h"
 
 using content::BrowserThread;
-using extensions::core_api::dns::ResolveCallbackResolveInfo;
+using extensions::api::dns::ResolveCallbackResolveInfo;
 
-namespace Resolve = extensions::core_api::dns::Resolve;
+namespace Resolve = extensions::api::dns::Resolve;
 
 namespace extensions {
 

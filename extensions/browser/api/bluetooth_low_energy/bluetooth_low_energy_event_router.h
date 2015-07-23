@@ -113,14 +113,14 @@ class BluetoothLowEnergyEventRouter
                   const base::Closure& callback,
                   const ErrorCallback& error_callback);
 
-  // Returns the list of core_api::bluetooth_low_energy::Service objects
+  // Returns the list of api::bluetooth_low_energy::Service objects
   // associated with the Bluetooth device with address |device_address| in
   // |out_services|.
   // Returns false, if no device with the given address is known. If the device
   // is found but it has no GATT services, then returns true and leaves
   // |out_services| empty. Returns true, on success. |out_services| must not
   // be NULL. If it is non-empty, then its contents will be cleared.
-  typedef std::vector<linked_ptr<core_api::bluetooth_low_energy::Service> >
+  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Service>>
       ServiceList;
   bool GetServices(const std::string& device_address,
                    ServiceList* out_services) const;
@@ -128,7 +128,7 @@ class BluetoothLowEnergyEventRouter
   // Populates |out_service| based on GATT service with instance ID
   // |instance_id|. |out_service| must not be NULL.
   Status GetService(const std::string& instance_id,
-                    core_api::bluetooth_low_energy::Service* out_service) const;
+                    api::bluetooth_low_energy::Service* out_service) const;
 
   // Populates |out_services| with the list of GATT services that are included
   // by the GATT service with instance ID |instance_id|. Returns false, if not
@@ -138,7 +138,7 @@ class BluetoothLowEnergyEventRouter
   Status GetIncludedServices(const std::string& instance_id,
                              ServiceList* out_services) const;
 
-  // Returns the list of core_api::bluetooth_low_energy::Characteristic objects
+  // Returns the list of api::bluetooth_low_energy::Characteristic objects
   // associated with the GATT service with instance ID |instance_id| in
   // |out_characteristics|. Returns false, if no service with the given instance
   // ID is known. If the service is found but it has no characteristics, then
@@ -146,8 +146,7 @@ class BluetoothLowEnergyEventRouter
   // |out_characteristics| must not be NULL and if it is non-empty,
   // then its contents will be cleared. |extension| is the extension that made
   // the call.
-  typedef std::vector<
-      linked_ptr<core_api::bluetooth_low_energy::Characteristic> >
+  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Characteristic>>
       CharacteristicList;
   Status GetCharacteristics(const Extension* extension,
                             const std::string& instance_id,
@@ -159,16 +158,16 @@ class BluetoothLowEnergyEventRouter
   Status GetCharacteristic(
       const Extension* extension,
       const std::string& instance_id,
-      core_api::bluetooth_low_energy::Characteristic* out_characteristic) const;
+      api::bluetooth_low_energy::Characteristic* out_characteristic) const;
 
-  // Returns the list of core_api::bluetooth_low_energy::Descriptor objects
+  // Returns the list of api::bluetooth_low_energy::Descriptor objects
   // associated with the GATT characteristic with instance ID |instance_id| in
   // |out_descriptors|. If the characteristic is found but it has no
   // descriptors, then returns true and leaves |out_descriptors| empty.
   // |out_descriptors| must not be NULL and if it is non-empty,
   // then its contents will be cleared. |extension| is the extension that made
   // the call.
-  typedef std::vector<linked_ptr<core_api::bluetooth_low_energy::Descriptor> >
+  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Descriptor>>
       DescriptorList;
   Status GetDescriptors(const Extension* extension,
                         const std::string& instance_id,
@@ -180,7 +179,7 @@ class BluetoothLowEnergyEventRouter
   Status GetDescriptor(
       const Extension* extension,
       const std::string& instance_id,
-      core_api::bluetooth_low_energy::Descriptor* out_descriptor) const;
+      api::bluetooth_low_energy::Descriptor* out_descriptor) const;
 
   // Sends a request to read the value of the characteristic with intance ID
   // |instance_id|. Invokes |callback| on success and |error_callback| on

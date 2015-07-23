@@ -24,6 +24,5 @@ if (enable_webrtc) {
 uncompiled_sources = gypi_values.main_non_compiled_schema_files
 
 root_namespace = "extensions::api::%(namespace)s"
-schema_include_rules =
-    "extensions/common/api:extensions::core_api::%(namespace)s"
+schema_include_rules = "extensions/common/api:extensions::api::%(namespace)s"
 schema_dependencies = [ "//extensions/common/api" ]

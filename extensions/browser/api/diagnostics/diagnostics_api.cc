@@ -12,7 +12,7 @@ const char kErrorPingFailed[] = "Failed to send ping packet";
 
 namespace extensions {
 
-namespace SendPacket = core_api::diagnostics::SendPacket;
+namespace SendPacket = api::diagnostics::SendPacket;
 
 DiagnosticsSendPacketFunction::DiagnosticsSendPacketFunction() {
 }
@@ -36,7 +36,7 @@ void DiagnosticsSendPacketFunction::OnCompleted(
     double latency) {
   switch (result_code) {
     case SEND_PACKET_OK: {
-      core_api::diagnostics::SendPacketResult result;
+      api::diagnostics::SendPacketResult result;
       result.ip = ip;
       result.latency = latency;
       results_ = SendPacket::Results::Create(result);

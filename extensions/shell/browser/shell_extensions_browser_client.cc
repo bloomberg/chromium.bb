@@ -178,10 +178,10 @@ ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
 void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
   // Register core extension-system APIs.
-  core_api::GeneratedFunctionRegistry::RegisterAll(registry);
+  api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // app_shell-only APIs.
-  shell::api::GeneratedFunctionRegistry::RegisterAll(registry);
+  shell::api::ShellGeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 void ShellExtensionsBrowserClient::RegisterMojoServices(

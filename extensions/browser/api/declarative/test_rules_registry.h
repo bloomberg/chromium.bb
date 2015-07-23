@@ -24,7 +24,7 @@ class TestRulesRegistry : public RulesRegistry {
   // RulesRegistry implementation:
   std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules) override;
+      const std::vector<linked_ptr<api::events::Rule>>& rules) override;
   std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) override;

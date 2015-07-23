@@ -17,7 +17,7 @@
 
 namespace extensions {
 
-using core_api::system_display::DisplayUnitInfo;
+using api::system_display::DisplayUnitInfo;
 
 namespace {
 
@@ -59,7 +59,7 @@ DisplayInfoProviderWin::~DisplayInfoProviderWin() {
 
 bool DisplayInfoProviderWin::SetInfo(
     const std::string& display_id,
-    const core_api::system_display::DisplayProperties& info,
+    const api::system_display::DisplayProperties& info,
     std::string* error) {
   *error = "Not implemented";
   return false;
@@ -67,7 +67,7 @@ bool DisplayInfoProviderWin::SetInfo(
 
 void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
-    extensions::core_api::system_display::DisplayUnitInfo* unit) {
+    extensions::api::system_display::DisplayUnitInfo* unit) {
   DisplayInfo all_displays;
   EnumDisplayMonitors(
       NULL, NULL, EnumMonitorCallback, reinterpret_cast<LPARAM>(&all_displays));

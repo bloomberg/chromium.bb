@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 class DocumentScanInterfaceChromeos : public DocumentScanInterface {
  public:
@@ -41,7 +41,7 @@ class DocumentScanInterfaceChromeos : public DocumentScanInterface {
   DISALLOW_COPY_AND_ASSIGN(DocumentScanInterfaceChromeos);
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 

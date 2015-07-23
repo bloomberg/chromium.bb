@@ -20,7 +20,7 @@ using content::BrowserContext;
 
 namespace extensions {
 
-namespace app_runtime = core_api::app_runtime;
+namespace app_runtime = api::app_runtime;
 
 namespace {
 

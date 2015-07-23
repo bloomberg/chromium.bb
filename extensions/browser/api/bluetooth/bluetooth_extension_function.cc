@@ -38,7 +38,7 @@ void GetAdapter(const device::BluetoothAdapterFactory::AdapterCallback callback,
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 BluetoothExtensionFunction::BluetoothExtensionFunction() {
 }
@@ -65,5 +65,5 @@ void BluetoothExtensionFunction::RunOnAdapterReady(
   DoWork(adapter);
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

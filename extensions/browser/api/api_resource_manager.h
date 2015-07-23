@@ -24,7 +24,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 class BluetoothSocketApiFunction;
 class BluetoothSocketEventDispatcher;
 class SerialEventDispatcher;
@@ -192,12 +192,12 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   // TODO(rockot): ApiResourceData could be moved out of ApiResourceManager and
   // we could avoid maintaining a friends list here.
   friend class BluetoothAPI;
-  friend class core_api::BluetoothSocketApiFunction;
-  friend class core_api::BluetoothSocketEventDispatcher;
-  friend class core_api::SerialEventDispatcher;
-  friend class core_api::TCPServerSocketEventDispatcher;
-  friend class core_api::TCPSocketEventDispatcher;
-  friend class core_api::UDPSocketEventDispatcher;
+  friend class api::BluetoothSocketApiFunction;
+  friend class api::BluetoothSocketEventDispatcher;
+  friend class api::SerialEventDispatcher;
+  friend class api::TCPServerSocketEventDispatcher;
+  friend class api::TCPSocketEventDispatcher;
+  friend class api::UDPSocketEventDispatcher;
   friend class BrowserContextKeyedAPIFactory<ApiResourceManager<T> >;
 
   static const bool kServiceHasOwnInstanceInIncognito = true;

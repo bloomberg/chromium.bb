@@ -32,7 +32,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-namespace app_window = extensions::core_api::app_window;
+namespace app_window = extensions::api::app_window;
 namespace Create = app_window::Create;
 
 namespace extensions {

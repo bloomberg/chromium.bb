@@ -128,7 +128,7 @@ bool ChromeExtensionsBrowserClient::IsExtensionIncognitoEnabled(
 }
 
 bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
-    const extensions::Extension* extension,
+    const Extension* extension,
     content::BrowserContext* context) const {
   return IsGuestSession(context)
       || util::CanCrossIncognito(extension, context);
@@ -243,23 +243,20 @@ ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
 void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
   // Preferences.
-  registry->RegisterFunction<extensions::GetPreferenceFunction>();
-  registry->RegisterFunction<extensions::SetPreferenceFunction>();
-  registry->RegisterFunction<extensions::ClearPreferenceFunction>();
+  registry->RegisterFunction<GetPreferenceFunction>();
+  registry->RegisterFunction<SetPreferenceFunction>();
+  registry->RegisterFunction<ClearPreferenceFunction>();
 
   // Direct Preference Access for Component Extensions.
-  registry->RegisterFunction<
-      extensions::chromedirectsetting::GetDirectSettingFunction>();
-  registry->RegisterFunction<
-      extensions::chromedirectsetting::SetDirectSettingFunction>();
-  registry->RegisterFunction<
-      extensions::chromedirectsetting::ClearDirectSettingFunction>();
+  registry->RegisterFunction<chromedirectsetting::GetDirectSettingFunction>();
+  registry->RegisterFunction<chromedirectsetting::SetDirectSettingFunction>();
+  registry->RegisterFunction<chromedirectsetting::ClearDirectSettingFunction>();
 
   // Generated APIs from lower-level modules.
-  extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
+  api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // Generated APIs from Chrome.
-  extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
+  api::ChromeGeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 void ChromeExtensionsBrowserClient::RegisterMojoServices(
@@ -269,11 +266,10 @@ void ChromeExtensionsBrowserClient::RegisterMojoServices(
   RegisterChromeServicesForFrame(render_frame_host, extension);
 }
 
-scoped_ptr<extensions::RuntimeAPIDelegate>
+scoped_ptr<RuntimeAPIDelegate>
 ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {
-  return scoped_ptr<extensions::RuntimeAPIDelegate>(
-      new ChromeRuntimeAPIDelegate(context));
+  return scoped_ptr<RuntimeAPIDelegate>(new ChromeRuntimeAPIDelegate(context));
 }
 
 const ComponentExtensionResourceManager*
@@ -332,7 +328,7 @@ ChromeExtensionsBrowserClient::GetExtensionWebContentsObserver(
 void ChromeExtensionsBrowserClient::ReportError(
     content::BrowserContext* context,
     scoped_ptr<ExtensionError> error) {
-  extensions::ErrorConsole::Get(context)->ReportError(error.Pass());
+  ErrorConsole::Get(context)->ReportError(error.Pass());
 }
 
 void ChromeExtensionsBrowserClient::CleanUpWebView(int embedder_process_id,

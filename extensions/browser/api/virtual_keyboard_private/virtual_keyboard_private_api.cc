@@ -12,7 +12,7 @@
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "ui/events/event.h"
 
-namespace SetMode = extensions::core_api::virtual_keyboard_private::SetMode;
+namespace SetMode = extensions::api::virtual_keyboard_private::SetMode;
 
 namespace extensions {
 

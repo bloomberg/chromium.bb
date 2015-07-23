@@ -11,7 +11,7 @@
 
 namespace extensions {
 
-namespace audio = core_api::audio;
+namespace audio = api::audio;
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<AudioAPI> > g_factory =
     LAZY_INSTANCE_INITIALIZER;

@@ -48,7 +48,7 @@ namespace keys = extension_management_api_constants;
 
 namespace extensions {
 
-namespace management = core_api::management;
+namespace management = api::management;
 
 namespace {
 

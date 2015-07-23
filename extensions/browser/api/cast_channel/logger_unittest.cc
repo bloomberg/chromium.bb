@@ -13,7 +13,7 @@
 #include "third_party/zlib/zlib.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 const int kTestNssErrorCode = -8164;
@@ -331,5 +331,5 @@ TEST_F(CastChannelLoggerTest, Reset) {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

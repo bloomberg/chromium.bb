@@ -35,7 +35,7 @@ class Extension;
 class RulesCacheDelegate;
 
 // A base class for RulesRegistries that takes care of storing the
-// core_api::events::Rule objects. It contains all the methods that need to run
+// api::events::Rule objects. It contains all the methods that need to run
 // on the registry thread; methods that need to run on the UI thread are
 // separated in the RulesCacheDelegate object.
 class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
@@ -73,9 +73,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   //
   // IMPORTANT: This function is atomic. Either all rules that are deemed
   // relevant are added or none.
-  std::string AddRules(
-      const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules);
+  std::string AddRules(const std::string& extension_id,
+                       const std::vector<linked_ptr<api::events::Rule>>& rules);
 
   // Unregisters all rules listed in |rule_identifiers| and owned by
   // |extension_id| from this RulesRegistry.
@@ -101,11 +100,11 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // The returned rules are stored in |out|. Ownership is passed to the caller.
   void GetRules(const std::string& extension_id,
                 const std::vector<std::string>& rule_identifiers,
-                std::vector<linked_ptr<core_api::events::Rule>>* out);
+                std::vector<linked_ptr<api::events::Rule>>* out);
 
   // Same as GetRules but returns all rules owned by |extension_id|.
   void GetAllRules(const std::string& extension_id,
-                   std::vector<linked_ptr<core_api::events::Rule>>* out);
+                   std::vector<linked_ptr<api::events::Rule>>* out);
 
   // Called to notify the RulesRegistry that the extension availability has
   // changed, so that the registry can update which rules are active.
@@ -143,7 +142,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // automatically cache the rules and re-call *Impl on browser startup.
   virtual std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules) = 0;
+      const std::vector<linked_ptr<api::events::Rule>>& rules) = 0;
   virtual std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) = 0;
@@ -157,7 +156,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   typedef std::string ExtensionId;
   typedef std::string RuleId;
   typedef std::pair<ExtensionId, RuleId> RulesDictionaryKey;
-  typedef std::map<RulesDictionaryKey, linked_ptr<core_api::events::Rule>>
+  typedef std::map<RulesDictionaryKey, linked_ptr<api::events::Rule>>
       RulesDictionary;
   enum ProcessChangedRulesState {
     // ProcessChangedRules can never be called, |cache_delegate_| is NULL.
@@ -179,7 +178,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // |from_manifest| which is true when the source is the manifest.
   std::string AddRulesInternal(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules,
+      const std::vector<linked_ptr<api::events::Rule>>& rules,
       RulesDictionary* out);
 
   // The precondition for calling this method is that all rules have unique IDs.
@@ -191,14 +190,14 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // message otherwise.
   std::string AddRulesNoFill(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules,
+      const std::vector<linked_ptr<api::events::Rule>>& rules,
       RulesDictionary* out);
 
   // Same as GetRules but returns all rules owned by |extension_id| for a given
   // |rules| dictionary.
   void GetRules(const std::string& extension_id,
                 RulesDictionary& rules,
-                std::vector<linked_ptr<core_api::events::Rule>>* out);
+                std::vector<linked_ptr<api::events::Rule>>* out);
 
   // Common processing after extension's rules have changed.
   void ProcessChangedRules(const std::string& extension_id);
@@ -264,11 +263,11 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // returns a non-empty error message.
   std::string CheckAndFillInOptionalRules(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules);
+      const std::vector<linked_ptr<api::events::Rule>>& rules);
 
   // Initializes the priority fields in case they have not been set.
   void FillInOptionalPriorities(
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules);
+      const std::vector<linked_ptr<api::events::Rule>>& rules);
 
   // Removes all |identifiers| of |extension_id| from |used_rule_identifiers_|.
   void RemoveUsedRuleIdentifiers(const std::string& extension_id,

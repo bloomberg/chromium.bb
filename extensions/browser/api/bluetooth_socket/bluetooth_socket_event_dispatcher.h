@@ -24,7 +24,7 @@ class BluetoothApiSocket;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 // Dispatch events related to "bluetooth" sockets from callback on native socket
 // instances. There is one instance per browser context.
@@ -113,7 +113,7 @@ class BluetoothSocketEventDispatcher
   scoped_refptr<SocketData> sockets_;
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_SOCKET_BLUETOOTH_SOCKET_EVENT_DISPATCHER_H_

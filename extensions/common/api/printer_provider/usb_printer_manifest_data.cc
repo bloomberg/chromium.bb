@@ -31,8 +31,8 @@ const UsbPrinterManifestData* UsbPrinterManifestData::Get(
 scoped_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
     const base::Value& value,
     base::string16* error) {
-  scoped_ptr<core_api::extensions_manifest_types::UsbPrinters> usb_printers =
-      core_api::extensions_manifest_types::UsbPrinters::FromValue(value, error);
+  scoped_ptr<api::extensions_manifest_types::UsbPrinters> usb_printers =
+      api::extensions_manifest_types::UsbPrinters::FromValue(value, error);
   if (!usb_printers) {
     return nullptr;
   }

@@ -23,7 +23,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 
-namespace usb = extensions::core_api::usb;
+namespace usb = extensions::api::usb;
 namespace BulkTransfer = usb::BulkTransfer;
 namespace ClaimInterface = usb::ClaimInterface;
 namespace CloseDevice = usb::CloseDevice;
@@ -433,7 +433,7 @@ UsbConnectionFunction::~UsbConnectionFunction() {
 }
 
 scoped_refptr<device::UsbDeviceHandle> UsbConnectionFunction::GetDeviceHandle(
-    const extensions::core_api::usb::ConnectionHandle& handle) {
+    const extensions::api::usb::ConnectionHandle& handle) {
   ApiResourceManager<UsbDeviceResource>* manager =
       ApiResourceManager<UsbDeviceResource>::Get(browser_context());
   if (!manager) {
@@ -449,7 +449,7 @@ scoped_refptr<device::UsbDeviceHandle> UsbConnectionFunction::GetDeviceHandle(
 }
 
 void UsbConnectionFunction::ReleaseDeviceHandle(
-    const extensions::core_api::usb::ConnectionHandle& handle) {
+    const extensions::api::usb::ConnectionHandle& handle) {
   ApiResourceManager<UsbDeviceResource>* manager =
       ApiResourceManager<UsbDeviceResource>::Get(browser_context());
   manager->Remove(extension_id(), handle.handle);
@@ -487,7 +487,7 @@ UsbFindDevicesFunction::~UsbFindDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::FindDevices::Params> parameters =
+  scoped_ptr<extensions::api::usb::FindDevices::Params> parameters =
       FindDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -553,7 +553,7 @@ UsbGetDevicesFunction::~UsbGetDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::GetDevices::Params> parameters =
+  scoped_ptr<extensions::api::usb::GetDevices::Params> parameters =
       GetDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -604,8 +604,8 @@ UsbGetUserSelectedDevicesFunction::~UsbGetUserSelectedDevicesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::GetUserSelectedDevices::Params>
-      parameters = GetUserSelectedDevices::Params::Create(*args_);
+  scoped_ptr<extensions::api::usb::GetUserSelectedDevices::Params> parameters =
+      GetUserSelectedDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   if (!user_gesture()) {
@@ -657,7 +657,7 @@ UsbRequestAccessFunction::~UsbRequestAccessFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbRequestAccessFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::RequestAccess::Params> parameters =
+  scoped_ptr<extensions::api::usb::RequestAccess::Params> parameters =
       RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
   return RespondNow(OneArgument(new base::FundamentalValue(true)));
@@ -670,7 +670,7 @@ UsbOpenDeviceFunction::~UsbOpenDeviceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbOpenDeviceFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::OpenDevice::Params> parameters =
+  scoped_ptr<extensions::api::usb::OpenDevice::Params> parameters =
       OpenDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -724,7 +724,7 @@ UsbSetConfigurationFunction::~UsbSetConfigurationFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbSetConfigurationFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::SetConfiguration::Params> parameters =
+  scoped_ptr<extensions::api::usb::SetConfiguration::Params> parameters =
       SetConfiguration::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -755,7 +755,7 @@ UsbGetConfigurationFunction::~UsbGetConfigurationFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::GetConfiguration::Params> parameters =
+  scoped_ptr<extensions::api::usb::GetConfiguration::Params> parameters =
       GetConfiguration::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -783,7 +783,7 @@ UsbListInterfacesFunction::~UsbListInterfacesFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::ListInterfaces::Params> parameters =
+  scoped_ptr<extensions::api::usb::ListInterfaces::Params> parameters =
       ListInterfaces::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -817,7 +817,7 @@ UsbCloseDeviceFunction::~UsbCloseDeviceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbCloseDeviceFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::CloseDevice::Params> parameters =
+  scoped_ptr<extensions::api::usb::CloseDevice::Params> parameters =
       CloseDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -839,7 +839,7 @@ UsbClaimInterfaceFunction::~UsbClaimInterfaceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbClaimInterfaceFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::ClaimInterface::Params> parameters =
+  scoped_ptr<extensions::api::usb::ClaimInterface::Params> parameters =
       ClaimInterface::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -870,7 +870,7 @@ UsbReleaseInterfaceFunction::~UsbReleaseInterfaceFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbReleaseInterfaceFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::ReleaseInterface::Params> parameters =
+  scoped_ptr<extensions::api::usb::ReleaseInterface::Params> parameters =
       ReleaseInterface::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -897,7 +897,7 @@ UsbSetInterfaceAlternateSettingFunction::
 
 ExtensionFunction::ResponseAction
 UsbSetInterfaceAlternateSettingFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::SetInterfaceAlternateSetting::Params>
+  scoped_ptr<extensions::api::usb::SetInterfaceAlternateSetting::Params>
       parameters = SetInterfaceAlternateSetting::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -928,7 +928,7 @@ UsbControlTransferFunction::~UsbControlTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbControlTransferFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::ControlTransfer::Params> parameters =
+  scoped_ptr<extensions::api::usb::ControlTransfer::Params> parameters =
       ControlTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -985,7 +985,7 @@ UsbBulkTransferFunction::~UsbBulkTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbBulkTransferFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::BulkTransfer::Params> parameters =
+  scoped_ptr<extensions::api::usb::BulkTransfer::Params> parameters =
       BulkTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -1031,7 +1031,7 @@ UsbInterruptTransferFunction::~UsbInterruptTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbInterruptTransferFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::InterruptTransfer::Params> parameters =
+  scoped_ptr<extensions::api::usb::InterruptTransfer::Params> parameters =
       InterruptTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
@@ -1077,8 +1077,8 @@ UsbIsochronousTransferFunction::~UsbIsochronousTransferFunction() {
 }
 
 ExtensionFunction::ResponseAction UsbIsochronousTransferFunction::Run() {
-  scoped_ptr<extensions::core_api::usb::IsochronousTransfer::Params>
-      parameters = IsochronousTransfer::Params::Create(*args_);
+  scoped_ptr<extensions::api::usb::IsochronousTransfer::Params> parameters =
+      IsochronousTransfer::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   scoped_refptr<UsbDeviceHandle> device_handle =

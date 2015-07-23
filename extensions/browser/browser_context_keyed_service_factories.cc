@@ -58,10 +58,10 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_CHROMEOS)
   chromeos::VpnServiceFactory::GetInstance();
 #endif
-  core_api::BluetoothSocketEventDispatcher::GetFactoryInstance();
-  core_api::TCPServerSocketEventDispatcher::GetFactoryInstance();
-  core_api::TCPSocketEventDispatcher::GetFactoryInstance();
-  core_api::UDPSocketEventDispatcher::GetFactoryInstance();
+  api::BluetoothSocketEventDispatcher::GetFactoryInstance();
+  api::TCPServerSocketEventDispatcher::GetFactoryInstance();
+  api::TCPSocketEventDispatcher::GetFactoryInstance();
+  api::UDPSocketEventDispatcher::GetFactoryInstance();
   DeclarativeUserScriptManagerFactory::GetInstance();
   EventRouterFactory::GetInstance();
   ExtensionMessageFilter::EnsureShutdownNotifierFactoryBuilt();

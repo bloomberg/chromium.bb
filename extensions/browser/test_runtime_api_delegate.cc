@@ -8,7 +8,7 @@
 
 namespace extensions {
 
-using core_api::runtime::PlatformInfo;
+using api::runtime::PlatformInfo;
 
 TestRuntimeAPIDelegate::TestRuntimeAPIDelegate() {
 }
@@ -42,7 +42,7 @@ void TestRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
 bool TestRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
   // TODO(rockot): This probably isn't right. Maybe this delegate should just
   // support manual PlatformInfo override for tests if necessary.
-  info->os = core_api::runtime::PLATFORM_OS_CROS;
+  info->os = api::runtime::PLATFORM_OS_CROS;
   return true;
 }
 

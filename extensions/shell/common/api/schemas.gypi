@@ -19,6 +19,7 @@
     'chromium_code': 1,
     'cc_dir': 'extensions/shell/common/api',
     'root_namespace': 'extensions::shell::api::%(namespace)s',
+    'bundle_name': 'Shell',
     'impl_dir_': 'extensions/shell/browser/api',
     
     'conditions': [

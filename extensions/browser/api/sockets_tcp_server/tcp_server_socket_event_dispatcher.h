@@ -19,7 +19,7 @@ class ResumableTCPSocket;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 // Dispatch events related to "sockets.tcp" sockets from callback on native
 // socket instances. There is one instance per profile.
@@ -94,7 +94,7 @@ class TCPServerSocketEventDispatcher
   scoped_refptr<ClientSocketData> client_sockets_;
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_

@@ -14,7 +14,7 @@
 
 namespace {
 
-namespace bluetooth_socket = extensions::core_api::bluetooth_socket;
+namespace bluetooth_socket = extensions::api::bluetooth_socket;
 using extensions::BluetoothApiSocket;
 
 int kDefaultBufferSize = 4096;
@@ -54,7 +54,7 @@ bluetooth_socket::AcceptError MapAcceptErrorReason(
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 using content::BrowserThread;
 
@@ -371,5 +371,5 @@ void BluetoothSocketEventDispatcher::DispatchEvent(
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

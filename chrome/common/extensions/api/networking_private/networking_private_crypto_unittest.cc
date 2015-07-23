@@ -11,7 +11,7 @@
 
 namespace {
 
-namespace cast_crypto = ::extensions::core_api::cast_crypto;
+namespace cast_crypto = ::extensions::api::cast_crypto;
 
 }  // namespace
 

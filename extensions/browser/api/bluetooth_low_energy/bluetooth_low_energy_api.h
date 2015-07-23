@@ -50,7 +50,7 @@ class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyAPI);
 };
 
-namespace core_api {
+namespace api {
 
 // Base class for bluetoothLowEnergy API functions. This class handles some of
 // the common logic involved in all API functions, such as checking for
@@ -397,7 +397,7 @@ class BluetoothLowEnergyUnregisterAdvertisementFunction
   std::string instance_id_;
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_

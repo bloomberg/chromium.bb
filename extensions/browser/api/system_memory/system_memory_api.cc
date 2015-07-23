@@ -8,7 +8,7 @@
 
 namespace extensions {
 
-using core_api::system_memory::MemoryInfo;
+using api::system_memory::MemoryInfo;
 
 SystemMemoryGetInfoFunction::SystemMemoryGetInfoFunction() {
 }

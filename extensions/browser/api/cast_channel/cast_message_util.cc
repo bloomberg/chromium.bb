@@ -20,7 +20,7 @@ static const char kPlatformReceiverId[] = "receiver-0";
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 bool MessageInfoToCastMessage(const MessageInfo& message,
@@ -157,5 +157,5 @@ bool IsAuthMessage(const CastMessage& message) {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

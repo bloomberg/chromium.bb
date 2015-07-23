@@ -6,7 +6,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 DocumentScanInterface::DocumentScanInterface() {
 }
@@ -20,6 +20,6 @@ DocumentScanInterface::ScannerDescription::ScannerDescription() {
 DocumentScanInterface::ScannerDescription::~ScannerDescription() {
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

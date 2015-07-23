@@ -11,7 +11,7 @@
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 class CastSocket;
@@ -110,7 +110,7 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 };
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_

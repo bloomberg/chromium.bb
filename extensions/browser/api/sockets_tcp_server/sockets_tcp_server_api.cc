@@ -14,8 +14,8 @@
 
 using content::SocketPermissionRequest;
 using extensions::ResumableTCPServerSocket;
-using extensions::core_api::sockets_tcp_server::SocketInfo;
-using extensions::core_api::sockets_tcp_server::SocketProperties;
+using extensions::api::sockets_tcp_server::SocketInfo;
+using extensions::api::sockets_tcp_server::SocketProperties;
 
 namespace {
 
@@ -59,7 +59,7 @@ void SetSocketProperties(ResumableTCPServerSocket* socket,
 }  // namespace
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 TCPServerSocketAsyncApiFunction::~TCPServerSocketAsyncApiFunction() {}
 
@@ -126,7 +126,7 @@ SocketsTcpServerSetPausedFunction::SocketsTcpServerSetPausedFunction()
 SocketsTcpServerSetPausedFunction::~SocketsTcpServerSetPausedFunction() {}
 
 bool SocketsTcpServerSetPausedFunction::Prepare() {
-  params_ = core_api::sockets_tcp_server::SetPaused::Params::Create(*args_);
+  params_ = api::sockets_tcp_server::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ =
@@ -163,7 +163,7 @@ SocketsTcpServerListenFunction::SocketsTcpServerListenFunction()
 SocketsTcpServerListenFunction::~SocketsTcpServerListenFunction() {}
 
 bool SocketsTcpServerListenFunction::Prepare() {
-  params_ = core_api::sockets_tcp_server::Listen::Params::Create(*args_);
+  params_ = api::sockets_tcp_server::Listen::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ =
@@ -297,5 +297,5 @@ void SocketsTcpServerGetSocketsFunction::Work() {
   results_ = sockets_tcp_server::GetSockets::Results::Create(socket_infos);
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

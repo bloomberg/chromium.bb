@@ -47,7 +47,7 @@ class DiagnosticsSendPacketFunction : public AsyncApiFunction {
                    const std::string& ip,
                    double latency);
 
-  scoped_ptr<core_api::diagnostics::SendPacket::Params> parameters_;
+  scoped_ptr<api::diagnostics::SendPacket::Params> parameters_;
 };
 
 }  // namespace extensions

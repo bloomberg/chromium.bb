@@ -14,7 +14,7 @@
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/webcam_private.h"
 
-namespace webcam_private = extensions::core_api::webcam_private;
+namespace webcam_private = extensions::api::webcam_private;
 
 namespace content {
 class BrowserContext;

@@ -24,11 +24,11 @@ namespace systeminfo {
 // Build StorageUnitInfo struct from StorageInfo instance. The |unit|
 // parameter is the output value.
 void BuildStorageUnitInfo(const storage_monitor::StorageInfo& info,
-                          core_api::system_storage::StorageUnitInfo* unit);
+                          api::system_storage::StorageUnitInfo* unit);
 
 }  // namespace systeminfo
 
-typedef std::vector<linked_ptr<core_api::system_storage::StorageUnitInfo> >
+typedef std::vector<linked_ptr<api::system_storage::StorageUnitInfo>>
     StorageUnitInfoList;
 
 class StorageInfoProvider : public SystemInfoProvider {

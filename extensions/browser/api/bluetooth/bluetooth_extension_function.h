@@ -16,7 +16,7 @@ class BluetoothAdapter;
 }  // namespace device
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 // Base class for bluetooth extension functions. This class initializes
 // bluetooth adapter and calls (on the UI thread) DoWork() implemented by
@@ -41,7 +41,7 @@ class BluetoothExtensionFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(BluetoothExtensionFunction);
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_EXTENSION_FUNCTION_H_

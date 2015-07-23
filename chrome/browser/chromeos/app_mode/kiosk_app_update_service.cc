@@ -97,24 +97,23 @@ void KioskAppUpdateService::OnAppUpdateAvailable(
       app_id_, profile_, extension);
 
   extensions::RuntimeEventRouter::DispatchOnRestartRequiredEvent(
-      profile_,
-      app_id_,
-      extensions::core_api::runtime::ON_RESTART_REQUIRED_REASON_APP_UPDATE);
+      profile_, app_id_,
+      extensions::api::runtime::ON_RESTART_REQUIRED_REASON_APP_UPDATE);
 
   StartAppUpdateRestartTimer();
 }
 
 void KioskAppUpdateService::OnRebootRequested(Reason reason) {
-  extensions::core_api::runtime::OnRestartRequiredReason restart_reason =
-      extensions::core_api::runtime::ON_RESTART_REQUIRED_REASON_NONE;
+  extensions::api::runtime::OnRestartRequiredReason restart_reason =
+      extensions::api::runtime::ON_RESTART_REQUIRED_REASON_NONE;
   switch (reason) {
     case REBOOT_REASON_OS_UPDATE:
       restart_reason =
-          extensions::core_api::runtime::ON_RESTART_REQUIRED_REASON_OS_UPDATE;
+          extensions::api::runtime::ON_RESTART_REQUIRED_REASON_OS_UPDATE;
       break;
     case REBOOT_REASON_PERIODIC:
       restart_reason =
-          extensions::core_api::runtime::ON_RESTART_REQUIRED_REASON_PERIODIC;
+          extensions::api::runtime::ON_RESTART_REQUIRED_REASON_PERIODIC;
       break;
     default:
       NOTREACHED() << "Unknown reboot reason=" << reason;
@@ -135,9 +134,8 @@ void KioskAppUpdateService::OnKioskAppCacheUpdated(const std::string& app_id) {
     return;
 
   extensions::RuntimeEventRouter::DispatchOnRestartRequiredEvent(
-      profile_,
-      app_id_,
-      extensions::core_api::runtime::ON_RESTART_REQUIRED_REASON_APP_UPDATE);
+      profile_, app_id_,
+      extensions::api::runtime::ON_RESTART_REQUIRED_REASON_APP_UPDATE);
 
   StartAppUpdateRestartTimer();
 }

@@ -34,7 +34,7 @@ namespace chromeos {
 
 namespace {
 
-namespace api_vpn = extensions::core_api::vpn_provider;
+namespace api_vpn = extensions::api::vpn_provider;
 
 void DoNothingFailureCallback(const std::string& error_name,
                               const std::string& error_message) {

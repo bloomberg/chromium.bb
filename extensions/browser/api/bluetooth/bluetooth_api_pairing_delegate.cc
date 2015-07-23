@@ -15,14 +15,14 @@
 
 namespace extensions {
 
-namespace bt_private = core_api::bluetooth_private;
+namespace bt_private = api::bluetooth_private;
 
 namespace {
 
 void PopulatePairingEvent(const device::BluetoothDevice* device,
                           bt_private::PairingEventType type,
                           bt_private::PairingEvent* out) {
-  core_api::bluetooth::BluetoothDeviceToApiDevice(*device, &out->device);
+  api::bluetooth::BluetoothDeviceToApiDevice(*device, &out->device);
   out->pairing = type;
 }
 

@@ -14,4 +14,4 @@ if (is_chromeos) {
 
 uncompiled_sources = gypi_values.non_compiled_schema_files
 
-root_namespace = "extensions::core_api::%(namespace)s"
+root_namespace = "extensions::api::%(namespace)s"

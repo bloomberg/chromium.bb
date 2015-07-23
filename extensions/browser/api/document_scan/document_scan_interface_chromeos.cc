@@ -20,7 +20,7 @@ const char kPngImageDataUrlPrefix[] = "data:image/png;base64,";
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 DocumentScanInterfaceChromeos::DocumentScanInterfaceChromeos()
     : lorgnette_manager_client_(nullptr) {
@@ -126,6 +126,6 @@ DocumentScanInterface* DocumentScanInterface::CreateInstance() {
   return new DocumentScanInterfaceChromeos();
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

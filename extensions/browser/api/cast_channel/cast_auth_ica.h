@@ -15,7 +15,7 @@
 #include "net/base/hash_value.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 typedef std::map<net::SHA256HashValue,
@@ -77,7 +77,7 @@ base::StringPiece GetTrustedICAPublicKey(const base::StringPiece& data);
 base::StringPiece GetDefaultTrustedICAPublicKey();
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_AUTH_ICA_H_

@@ -14,7 +14,7 @@ class TLSSocket;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 class TCPSocketEventDispatcher;
 
@@ -262,7 +262,7 @@ class SocketsTcpSecureFunction : public TCPSocketAsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(SocketsTcpSecureFunction);
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SOCKETS_TCP_SOCKETS_TCP_API_H_

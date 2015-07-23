@@ -43,7 +43,7 @@ using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 const char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
 
@@ -946,5 +946,5 @@ TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesVideoOut) {
   EXPECT_FALSE(socket_->TestVerifyChannelPolicyAudioOnly());
 }
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

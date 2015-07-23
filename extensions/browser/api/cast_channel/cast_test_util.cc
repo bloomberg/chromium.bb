@@ -5,7 +5,7 @@
 #include "extensions/browser/api/cast_channel/cast_test_util.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
@@ -46,5 +46,5 @@ net::IPEndPoint CreateIPEndPointForTest() {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

@@ -51,8 +51,8 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   EXPECT_EQ(0u, registry->GetActiveRulesCountForTesting());
 
   // Add a rule.
-  linked_ptr<core_api::events::Rule> rule(new core_api::events::Rule);
-  core_api::events::Rule::Populate(
+  linked_ptr<api::events::Rule> rule(new api::events::Rule);
+  api::events::Rule::Populate(
       *base::test::ParseJson(
           "{\n"
           "  \"id\": \"rule1\",\n"
@@ -67,7 +67,7 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
           "  ]\n"
           "}"),
       rule.get());
-  std::vector<linked_ptr<core_api::events::Rule>> rules;
+  std::vector<linked_ptr<api::events::Rule>> rules;
   rules.push_back(rule);
 
   const Extension* extension = env()->MakeExtension(*base::test::ParseJson(

@@ -13,7 +13,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 class MockDocumentScanInterface : public DocumentScanInterface {
  public:
@@ -29,7 +29,7 @@ class MockDocumentScanInterface : public DocumentScanInterface {
   MOCK_CONST_METHOD0(GetImageMimeType, std::string());
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 

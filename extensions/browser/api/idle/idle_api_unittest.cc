@@ -22,7 +22,7 @@
 
 using ::testing::_;
 
-namespace idle = extensions::core_api::idle;
+namespace idle = extensions::api::idle;
 
 namespace extensions {
 

@@ -111,7 +111,7 @@ void ViscaWebcam::Open(const OpenCompleteCallback& open_callback) {
 void ViscaWebcam::OpenOnIOThread(const OpenCompleteCallback& open_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  core_api::serial::ConnectionOptions options;
+  api::serial::ConnectionOptions options;
 
   // Set the receive buffer size to receive the response data 1 by 1.
   options.buffer_size.reset(new int(1));
@@ -120,9 +120,9 @@ void ViscaWebcam::OpenOnIOThread(const OpenCompleteCallback& open_callback) {
   options.cts_flow_control.reset(new bool(false));
   options.receive_timeout.reset(new int(0));
   options.send_timeout.reset(new int(0));
-  options.data_bits = core_api::serial::DATA_BITS_EIGHT;
-  options.parity_bit = core_api::serial::PARITY_BIT_NO;
-  options.stop_bits = core_api::serial::STOP_BITS_ONE;
+  options.data_bits = api::serial::DATA_BITS_EIGHT;
+  options.parity_bit = api::serial::PARITY_BIT_NO;
+  options.stop_bits = api::serial::STOP_BITS_ONE;
 
   serial_connection_.reset(new SerialConnection(path_, extension_id_));
   serial_connection_->Open(
@@ -185,8 +185,8 @@ void ViscaWebcam::Send(const std::vector<char>& command,
 
 void ViscaWebcam::OnSendCompleted(const CommandCompleteCallback& callback,
                                   int bytes_sent,
-                                  core_api::serial::SendError error) {
-  if (error == core_api::serial::SEND_ERROR_NONE) {
+                                  api::serial::SendError error) {
+  if (error == api::serial::SEND_ERROR_NONE) {
     ReceiveLoop(callback);
   } else {
     const std::vector<char> response;
@@ -202,10 +202,10 @@ void ViscaWebcam::ReceiveLoop(const CommandCompleteCallback& callback) {
 
 void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
                                      const std::vector<char>& data,
-                                     core_api::serial::ReceiveError error) {
+                                     api::serial::ReceiveError error) {
   data_buffer_.insert(data_buffer_.end(), data.begin(), data.end());
 
-  if (error == core_api::serial::RECEIVE_ERROR_NONE) {
+  if (error == api::serial::RECEIVE_ERROR_NONE) {
     // Loop until encounter the terminator.
     if (int(data_buffer_.back()) != VISCA_TERMINATOR) {
       base::MessageLoop::current()->PostTask(

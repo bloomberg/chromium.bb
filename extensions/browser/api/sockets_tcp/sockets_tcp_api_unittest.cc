@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 static scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
@@ -50,5 +50,5 @@ TEST_F(SocketsTcpUnitTest, Create) {
   ASSERT_TRUE(result.get());
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

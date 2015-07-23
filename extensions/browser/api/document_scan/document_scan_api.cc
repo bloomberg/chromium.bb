@@ -21,7 +21,7 @@ const char kUserGestureRequiredError[] =
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 DocumentScanScanFunction::DocumentScanScanFunction()
     : document_scan_interface_(DocumentScanInterface::CreateInstance()) {
@@ -119,6 +119,6 @@ bool DocumentScanScanFunction::Respond() {
   return error_.empty();
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

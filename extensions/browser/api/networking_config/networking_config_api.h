@@ -23,8 +23,7 @@ class NetworkingConfigSetNetworkFilterFunction
  protected:
   ~NetworkingConfigSetNetworkFilterFunction() override;
 
-  scoped_ptr<core_api::networking_config::SetNetworkFilter::Params>
-      parameters_;
+  scoped_ptr<api::networking_config::SetNetworkFilter::Params> parameters_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingConfigSetNetworkFilterFunction);
@@ -43,8 +42,7 @@ class NetworkingConfigFinishAuthenticationFunction
  protected:
   ~NetworkingConfigFinishAuthenticationFunction() override;
 
-  scoped_ptr<core_api::networking_config::FinishAuthentication::Params>
-      parameters_;
+  scoped_ptr<api::networking_config::FinishAuthentication::Params> parameters_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingConfigFinishAuthenticationFunction);

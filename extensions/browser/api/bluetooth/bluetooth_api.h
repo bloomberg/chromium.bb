@@ -64,7 +64,7 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   scoped_ptr<BluetoothEventRouter> event_router_;
 };
 
-namespace core_api {
+namespace api {
 
 class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
  public:
@@ -131,7 +131,7 @@ class BluetoothStopDiscoveryFunction : public BluetoothExtensionFunction {
   void OnErrorCallback();
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_API_H_

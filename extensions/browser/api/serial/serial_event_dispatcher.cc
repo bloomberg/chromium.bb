@@ -11,7 +11,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 namespace {
 
@@ -161,6 +161,6 @@ void SerialEventDispatcher::DispatchEvent(void* browser_context_id,
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

@@ -26,12 +26,12 @@
 
 namespace extensions {
 
-using core_api::system_storage::StorageUnitInfo;
+using api::system_storage::StorageUnitInfo;
 using content::BrowserThread;
 using storage_monitor::StorageMonitor;
 
-namespace system_display = core_api::system_display;
-namespace system_storage = core_api::system_storage;
+namespace system_display = api::system_display;
+namespace system_storage = api::system_storage;
 
 namespace {
 

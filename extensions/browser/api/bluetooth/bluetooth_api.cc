@@ -23,9 +23,9 @@ using content::BrowserThread;
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 
-namespace bluetooth = extensions::core_api::bluetooth;
-namespace GetDevice = extensions::core_api::bluetooth::GetDevice;
-namespace GetDevices = extensions::core_api::bluetooth::GetDevices;
+namespace bluetooth = extensions::api::bluetooth;
+namespace GetDevice = extensions::api::bluetooth::GetDevice;
+namespace GetDevices = extensions::api::bluetooth::GetDevices;
 
 namespace {
 
@@ -96,7 +96,7 @@ void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
     event_router()->OnListenerRemoved();
 }
 
-namespace core_api {
+namespace api {
 
 BluetoothGetAdapterStateFunction::~BluetoothGetAdapterStateFunction() {}
 
@@ -199,5 +199,5 @@ bool BluetoothStopDiscoveryFunction::DoWork(
   return true;
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

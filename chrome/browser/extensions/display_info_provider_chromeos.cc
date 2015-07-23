@@ -17,10 +17,10 @@ using ash::DisplayManager;
 
 namespace extensions {
 
-using core_api::system_display::Bounds;
-using core_api::system_display::DisplayUnitInfo;
-using core_api::system_display::DisplayProperties;
-using core_api::system_display::Insets;
+using api::system_display::Bounds;
+using api::system_display::DisplayUnitInfo;
+using api::system_display::DisplayProperties;
+using api::system_display::Insets;
 
 namespace {
 
@@ -357,7 +357,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 
 void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
-    extensions::core_api::system_display::DisplayUnitInfo* unit) {
+    extensions::api::system_display::DisplayUnitInfo* unit) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());

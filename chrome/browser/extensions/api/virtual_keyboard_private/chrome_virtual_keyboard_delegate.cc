@@ -23,7 +23,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
-namespace keyboard_api = extensions::core_api::virtual_keyboard_private;
+namespace keyboard_api = extensions::api::virtual_keyboard_private;
 
 namespace {
 

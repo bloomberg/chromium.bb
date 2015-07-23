@@ -23,12 +23,12 @@ namespace extensions {
 
 class NetworkingPrivateDelegateObserver;
 
-namespace core_api {
+namespace api {
 namespace networking_private {
 struct DeviceStateProperties;
 struct VerificationProperties;
 }  // networking_private
-}  // core_api
+}  // api
 
 // Base class for platform dependent networkingPrivate API implementations.
 // All inputs and results for this class use ONC values. See
@@ -43,9 +43,9 @@ class NetworkingPrivateDelegate : public KeyedService {
   using NetworkListCallback = base::Callback<void(scoped_ptr<base::ListValue>)>;
   using FailureCallback = base::Callback<void(const std::string&)>;
   using DeviceStateList =
-      ScopedVector<core_api::networking_private::DeviceStateProperties>;
+      ScopedVector<api::networking_private::DeviceStateProperties>;
   using VerificationProperties =
-      core_api::networking_private::VerificationProperties;
+      api::networking_private::VerificationProperties;
 
   // The Verify* methods will be forwarded to a delegate implementation if
   // provided, otherwise they will fail. A separate delegate it used so that the

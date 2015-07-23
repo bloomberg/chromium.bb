@@ -42,7 +42,7 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-namespace app_runtime = extensions::core_api::app_runtime;
+namespace app_runtime = extensions::api::app_runtime;
 
 using content::BrowserThread;
 using extensions::AppRuntimeEventRouter;

@@ -151,12 +151,12 @@ bool TestExtensionsClient::IsScriptableURL(const GURL& url,
 
 bool TestExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
-  return core_api::GeneratedSchemas::IsGenerated(name);
+  return api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece TestExtensionsClient::GetAPISchema(
     const std::string& name) const {
-  return core_api::GeneratedSchemas::Get(name);
+  return api::GeneratedSchemas::Get(name);
 }
 
 void TestExtensionsClient::RegisterAPISchemaResources(ExtensionAPI* api) const {

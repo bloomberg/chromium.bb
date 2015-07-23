@@ -24,7 +24,7 @@
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 
-namespace app_runtime = extensions::core_api::app_runtime;
+namespace app_runtime = extensions::api::app_runtime;
 
 using content::RenderFrameHost;
 using content::WebContents;

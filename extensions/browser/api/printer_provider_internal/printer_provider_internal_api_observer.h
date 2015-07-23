@@ -23,7 +23,7 @@ class Extension;
 class PrinterProviderInternalAPIObserver {
  public:
   using PrinterInfoVector =
-      std::vector<linked_ptr<core_api::printer_provider::PrinterInfo>>;
+      std::vector<linked_ptr<api::printer_provider::PrinterInfo>>;
 
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onGetPrintersRequested result returned by the
@@ -51,7 +51,7 @@ class PrinterProviderInternalAPIObserver {
   virtual void OnPrintResult(
       const Extension* extension,
       int request_id,
-      core_api::printer_provider_internal::PrintError error) = 0;
+      api::printer_provider_internal::PrintError error) = 0;
 
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onGetUsbPrinterInfoRequested result returned by the
@@ -61,7 +61,7 @@ class PrinterProviderInternalAPIObserver {
   virtual void OnGetUsbPrinterInfoResult(
       const Extension* extension,
       int request_id,
-      const core_api::printer_provider::PrinterInfo* printer_info) = 0;
+      const api::printer_provider::PrinterInfo* printer_info) = 0;
 
  protected:
   virtual ~PrinterProviderInternalAPIObserver() {}

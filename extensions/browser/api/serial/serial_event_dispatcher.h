@@ -20,7 +20,7 @@ namespace extensions {
 struct Event;
 class SerialConnection;
 
-namespace core_api {
+namespace api {
 
 // Per-browser-context dispatcher for events on serial connections.
 class SerialEventDispatcher : public BrowserContextKeyedAPI {
@@ -75,7 +75,7 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
   scoped_refptr<ConnectionData> connections_;
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 

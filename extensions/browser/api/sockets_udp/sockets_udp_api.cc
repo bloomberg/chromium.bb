@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 using content::SocketPermissionRequest;
 
@@ -137,7 +137,7 @@ SocketsUdpSetPausedFunction::SocketsUdpSetPausedFunction()
 SocketsUdpSetPausedFunction::~SocketsUdpSetPausedFunction() {}
 
 bool SocketsUdpSetPausedFunction::Prepare() {
-  params_ = core_api::sockets_udp::SetPaused::Params::Create(*args_);
+  params_ = api::sockets_udp::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(browser_context());
@@ -394,7 +394,7 @@ SocketsUdpLeaveGroupFunction::SocketsUdpLeaveGroupFunction() {}
 SocketsUdpLeaveGroupFunction::~SocketsUdpLeaveGroupFunction() {}
 
 bool SocketsUdpLeaveGroupFunction::Prepare() {
-  params_ = core_api::sockets_udp::LeaveGroup::Params::Create(*args_);
+  params_ = api::sockets_udp::LeaveGroup::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -428,8 +428,7 @@ SocketsUdpSetMulticastTimeToLiveFunction::
     ~SocketsUdpSetMulticastTimeToLiveFunction() {}
 
 bool SocketsUdpSetMulticastTimeToLiveFunction::Prepare() {
-  params_ =
-      core_api::sockets_udp::SetMulticastTimeToLive::Params::Create(*args_);
+  params_ = api::sockets_udp::SetMulticastTimeToLive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -454,8 +453,7 @@ SocketsUdpSetMulticastLoopbackModeFunction::
     ~SocketsUdpSetMulticastLoopbackModeFunction() {}
 
 bool SocketsUdpSetMulticastLoopbackModeFunction::Prepare() {
-  params_ =
-      core_api::sockets_udp::SetMulticastLoopbackMode::Params::Create(*args_);
+  params_ = api::sockets_udp::SetMulticastLoopbackMode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -478,7 +476,7 @@ SocketsUdpGetJoinedGroupsFunction::SocketsUdpGetJoinedGroupsFunction() {}
 SocketsUdpGetJoinedGroupsFunction::~SocketsUdpGetJoinedGroupsFunction() {}
 
 bool SocketsUdpGetJoinedGroupsFunction::Prepare() {
-  params_ = core_api::sockets_udp::GetJoinedGroups::Params::Create(*args_);
+  params_ = api::sockets_udp::GetJoinedGroups::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -510,7 +508,7 @@ SocketsUdpSetBroadcastFunction::~SocketsUdpSetBroadcastFunction() {
 }
 
 bool SocketsUdpSetBroadcastFunction::Prepare() {
-  params_ = core_api::sockets_udp::SetBroadcast::Params::Create(*args_);
+  params_ = api::sockets_udp::SetBroadcast::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -529,5 +527,5 @@ void SocketsUdpSetBroadcastFunction::Work() {
   results_ = sockets_udp::SetBroadcast::Results::Create(net_result);
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

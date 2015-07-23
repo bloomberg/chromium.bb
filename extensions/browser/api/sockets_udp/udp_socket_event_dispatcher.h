@@ -20,7 +20,7 @@ class ResumableUDPSocket;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 
 // Dispatch events related to "sockets.udp" sockets from callback on native
 // socket instances. There is one instance per profile.
@@ -89,7 +89,7 @@ class UDPSocketEventDispatcher
   scoped_refptr<SocketData> sockets_;
 };
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SOCKETS_UDP_UDP_SOCKET_EVENT_DISPATCHER_H_

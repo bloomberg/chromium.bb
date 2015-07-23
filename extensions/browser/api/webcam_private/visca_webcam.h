@@ -61,11 +61,11 @@ class ViscaWebcam : public Webcam {
             const CommandCompleteCallback& callback);
   void OnSendCompleted(const CommandCompleteCallback& callback,
                        int bytes_sent,
-                       core_api::serial::SendError error);
+                       api::serial::SendError error);
   void ReceiveLoop(const CommandCompleteCallback& callback);
   void OnReceiveCompleted(const CommandCompleteCallback& callback,
                           const std::vector<char>& data,
-                          core_api::serial::ReceiveError error);
+                          api::serial::ReceiveError error);
   // Callback function that will be called after the send and reply of a command
   // are both completed. Update |value| according to |type| and |response| if
   // necessory.

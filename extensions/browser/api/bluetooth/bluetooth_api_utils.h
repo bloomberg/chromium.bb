@@ -11,7 +11,7 @@
 #include "extensions/common/api/bluetooth.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace bluetooth {
 
 // Fill in a Device object from a BluetoothDevice.
@@ -24,7 +24,7 @@ void PopulateAdapterState(const device::BluetoothAdapter& adapter,
                           AdapterState* out);
 
 }  // namespace bluetooth
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_API_UTILS_H_

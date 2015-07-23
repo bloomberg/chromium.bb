@@ -140,7 +140,7 @@ class HidReceiveFunction : public HidConnectionIoFunction {
                   scoped_refptr<net::IOBuffer> buffer,
                   size_t size);
 
-  scoped_ptr<core_api::hid::Receive::Params> parameters_;
+  scoped_ptr<api::hid::Receive::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFunction);
 };
@@ -160,7 +160,7 @@ class HidSendFunction : public HidConnectionIoFunction {
 
   void OnFinished(bool success);
 
-  scoped_ptr<core_api::hid::Send::Params> parameters_;
+  scoped_ptr<api::hid::Send::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidSendFunction);
 };
@@ -183,7 +183,7 @@ class HidReceiveFeatureReportFunction : public HidConnectionIoFunction {
                   scoped_refptr<net::IOBuffer> buffer,
                   size_t size);
 
-  scoped_ptr<core_api::hid::ReceiveFeatureReport::Params> parameters_;
+  scoped_ptr<api::hid::ReceiveFeatureReport::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFeatureReportFunction);
 };
@@ -203,7 +203,7 @@ class HidSendFeatureReportFunction : public HidConnectionIoFunction {
 
   void OnFinished(bool success);
 
-  scoped_ptr<core_api::hid::SendFeatureReport::Params> parameters_;
+  scoped_ptr<api::hid::SendFeatureReport::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidSendFeatureReportFunction);
 };

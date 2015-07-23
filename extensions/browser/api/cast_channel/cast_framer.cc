@@ -12,7 +12,7 @@
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 MessageFramer::MessageFramer(scoped_refptr<net::GrowableIOBuffer> input_buffer)
     : input_buffer_(input_buffer), error_(false) {
@@ -175,5 +175,5 @@ void MessageFramer::Reset() {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

@@ -11,7 +11,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 namespace cast_channel {
 
@@ -146,6 +146,6 @@ TEST_F(CastChannelAuthorityKeysTest, TestSetTrustedCertificateAuthorities) {
 
 }  // namespace cast_channel
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

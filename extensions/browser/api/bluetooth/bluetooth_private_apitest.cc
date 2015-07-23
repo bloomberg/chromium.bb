@@ -30,8 +30,8 @@ using testing::ReturnPointee;
 using testing::WithArgs;
 using testing::WithoutArgs;
 
-namespace bt = extensions::core_api::bluetooth;
-namespace bt_private = extensions::core_api::bluetooth_private;
+namespace bt = extensions::api::bluetooth;
+namespace bt_private = extensions::api::bluetooth_private;
 
 namespace extensions {
 

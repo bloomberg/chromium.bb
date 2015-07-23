@@ -52,8 +52,8 @@ class SocketsUdpApiTest : public ShellApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpCreateGood) {
-  scoped_refptr<core_api::SocketsUdpCreateFunction> socket_create_function(
-      new core_api::SocketsUdpCreateFunction());
+  scoped_refptr<api::SocketsUdpCreateFunction> socket_create_function(
+      new api::SocketsUdpCreateFunction());
   scoped_refptr<Extension> empty_extension = test_util::CreateEmptyExtension();
 
   socket_create_function->set_extension(empty_extension.get());

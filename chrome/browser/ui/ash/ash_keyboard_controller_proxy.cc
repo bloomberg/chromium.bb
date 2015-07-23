@@ -27,8 +27,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
-namespace virtual_keyboard_private =
-    extensions::core_api::virtual_keyboard_private;
+namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
 typedef virtual_keyboard_private::OnTextInputBoxFocused::Context Context;
 

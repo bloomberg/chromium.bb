@@ -151,7 +151,7 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
 
 std::string WebRequestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
-    const std::vector<linked_ptr<core_api::events::Rule>>& rules) {
+    const std::vector<linked_ptr<api::events::Rule>>& rules) {
   typedef std::pair<WebRequestRule::RuleId, linked_ptr<const WebRequestRule>>
       IdRulePair;
   typedef std::vector<IdRulePair> RulesVector;
@@ -166,7 +166,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
       extension_info_map_->extensions().GetByID(extension_id);
   RulesMap& registered_rules = webrequest_rules_[extension_id];
 
-  for (const linked_ptr<core_api::events::Rule>& rule : rules) {
+  for (const linked_ptr<api::events::Rule>& rule : rules) {
     const WebRequestRule::RuleId& rule_id(*rule->id);
     DCHECK(registered_rules.find(rule_id) == registered_rules.end());
 

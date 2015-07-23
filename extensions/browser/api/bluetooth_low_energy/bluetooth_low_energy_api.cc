@@ -20,7 +20,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
-namespace apibtle = extensions::core_api::bluetooth_low_energy;
+namespace apibtle = extensions::api::bluetooth_low_energy;
 
 namespace extensions {
 
@@ -163,7 +163,7 @@ void BluetoothLowEnergyAPI::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-namespace core_api {
+namespace api {
 
 BluetoothLowEnergyExtensionFunction::BluetoothLowEnergyExtensionFunction() {
 }
@@ -1011,5 +1011,5 @@ void BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback(
   SendResponse(false);
 }
 
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

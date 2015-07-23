@@ -13,7 +13,7 @@
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 class DocumentScanInterface {
  public:
@@ -52,7 +52,7 @@ class DocumentScanInterface {
   DocumentScanInterface();
 };
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions
 

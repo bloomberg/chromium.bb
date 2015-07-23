@@ -36,7 +36,7 @@ class TransportSecurityState;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 class CastMessage;
 class Logger;
@@ -365,7 +365,7 @@ class CastSocketImpl : public CastSocket {
   DISALLOW_COPY_AND_ASSIGN(CastSocketImpl);
 };
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_

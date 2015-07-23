@@ -23,7 +23,7 @@ class TickClock;
 }
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 struct AuthResult;
@@ -136,7 +136,7 @@ class Logger : public base::RefCounted<Logger> {
   DISALLOW_COPY_AND_ASSIGN(Logger);
 };
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_H_

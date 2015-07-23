@@ -8,9 +8,9 @@ using storage_monitor::StorageMonitor;
 
 namespace extensions {
 
-using core_api::system_storage::StorageUnitInfo;
-namespace EjectDevice = core_api::system_storage::EjectDevice;
-namespace GetAvailableCapacity = core_api::system_storage::GetAvailableCapacity;
+using api::system_storage::StorageUnitInfo;
+namespace EjectDevice = api::system_storage::EjectDevice;
+namespace GetAvailableCapacity = api::system_storage::GetAvailableCapacity;
 
 SystemStorageGetInfoFunction::SystemStorageGetInfoFunction() {
 }
@@ -26,7 +26,7 @@ bool SystemStorageGetInfoFunction::RunAsync() {
 
 void SystemStorageGetInfoFunction::OnGetStorageInfoCompleted(bool success) {
   if (success) {
-    results_ = core_api::system_storage::GetInfo::Results::Create(
+    results_ = api::system_storage::GetInfo::Results::Create(
         StorageInfoProvider::Get()->storage_unit_info_list());
   } else {
     SetError("Error occurred when querying storage information.");
@@ -71,24 +71,23 @@ void SystemStorageEjectDeviceFunction::OnStorageMonitorInit(
 
 void SystemStorageEjectDeviceFunction::HandleResponse(
     StorageMonitor::EjectStatus status) {
-  core_api::system_storage::EjectDeviceResultCode result =
-      core_api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
+  api::system_storage::EjectDeviceResultCode result =
+      api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   switch (status) {
     case StorageMonitor::EJECT_OK:
-      result = core_api::system_storage::EJECT_DEVICE_RESULT_CODE_SUCCESS;
+      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_SUCCESS;
       break;
     case StorageMonitor::EJECT_IN_USE:
-      result = core_api::system_storage::EJECT_DEVICE_RESULT_CODE_IN_USE;
+      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_IN_USE;
       break;
     case StorageMonitor::EJECT_NO_SUCH_DEVICE:
-      result =
-          core_api::system_storage::EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
+      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
       break;
     case StorageMonitor::EJECT_FAILURE:
-      result = core_api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
+      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   }
 
-  SetResult(new base::StringValue(core_api::system_storage::ToString(result)));
+  SetResult(new base::StringValue(api::system_storage::ToString(result)));
   SendResponse(true);
 }
 
@@ -133,7 +132,7 @@ void SystemStorageGetAvailableCapacityFunction::OnQueryCompleted(
     double available_capacity) {
   bool success = available_capacity >= 0;
   if (success) {
-    core_api::system_storage::StorageAvailableCapacityInfo result;
+    api::system_storage::StorageAvailableCapacityInfo result;
     result.id = transient_id;
     result.available_capacity = available_capacity;
     SetResult(result.ToValue().release());

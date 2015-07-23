@@ -35,7 +35,7 @@ using chromeos::NetworkTypePattern;
 using chromeos::ShillManagerClient;
 using extensions::NetworkingPrivateDelegate;
 
-namespace private_api = extensions::core_api::networking_private;
+namespace private_api = extensions::api::networking_private;
 
 namespace {
 

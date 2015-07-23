@@ -12,7 +12,7 @@ class GURL;
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 namespace runtime {
 struct PlatformInfo;
 }
@@ -65,7 +65,7 @@ class RuntimeAPIDelegate {
 
   // Populates platform info to be provided by the getPlatformInfo function.
   // Returns false iff no info is provided.
-  virtual bool GetPlatformInfo(core_api::runtime::PlatformInfo* info) = 0;
+  virtual bool GetPlatformInfo(api::runtime::PlatformInfo* info) = 0;
 
   // Request a restart of the host device. Returns false iff the device
   // will not be restarted.

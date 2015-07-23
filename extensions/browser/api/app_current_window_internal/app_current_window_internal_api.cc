@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace app_current_window_internal =
-    extensions::core_api::app_current_window_internal;
+    extensions::api::app_current_window_internal;
 
 namespace Show = app_current_window_internal::Show;
 namespace SetBounds = app_current_window_internal::SetBounds;

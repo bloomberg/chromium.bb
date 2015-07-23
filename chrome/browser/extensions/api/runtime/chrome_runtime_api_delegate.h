@@ -47,8 +47,7 @@ class ChromeRuntimeAPIDelegate : public extensions::RuntimeAPIDelegate,
   bool CheckForUpdates(const std::string& extension_id,
                        const UpdateCheckCallback& callback) override;
   void OpenURL(const GURL& uninstall_url) override;
-  bool GetPlatformInfo(
-      extensions::core_api::runtime::PlatformInfo* info) override;
+  bool GetPlatformInfo(extensions::api::runtime::PlatformInfo* info) override;
   bool RestartDevice(std::string* error_message) override;
   bool OpenOptionsPage(const extensions::Extension* extension) override;
 

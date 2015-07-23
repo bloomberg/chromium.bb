@@ -34,12 +34,12 @@ class ExtensionRegistry;
 struct Alarm {
   Alarm();
   Alarm(const std::string& name,
-        const core_api::alarms::AlarmCreateInfo& create_info,
+        const api::alarms::AlarmCreateInfo& create_info,
         base::TimeDelta min_granularity,
         base::Time now);
   ~Alarm();
 
-  linked_ptr<core_api::alarms::Alarm> js_alarm;
+  linked_ptr<api::alarms::Alarm> js_alarm;
   // The granularity isn't exposed to the extension's javascript, but we poll at
   // least as often as the shortest alarm's granularity.  It's initialized as
   // the relative delay requested in creation, even if creation uses an absolute

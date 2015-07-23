@@ -7,7 +7,7 @@
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_crypto {
 
 VerificationResult::VerificationResult()
@@ -29,10 +29,10 @@ VerificationResult::VerificationResult(const std::string& in_error_message,
 
 bool SetTrustedCertificateAuthoritiesForTest(const std::string& keys,
                                              const std::string& signature) {
-  return extensions::core_api::cast_channel::SetTrustedCertificateAuthorities(
+  return extensions::api::cast_channel::SetTrustedCertificateAuthorities(
       keys, signature);
 }
 
 }  // namespace cast_crypto
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

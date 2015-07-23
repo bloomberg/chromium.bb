@@ -19,7 +19,7 @@ const char kProcStat[] = "/proc/stat";
 }  // namespace
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos) {
+    std::vector<linked_ptr<api::system_cpu::ProcessorInfo>>* infos) {
   DCHECK(infos);
 
   // WARNING: this method may return incomplete data because some processors may

@@ -25,7 +25,7 @@ typedef DWORD(WINAPI* NtQuerySystemInformationPF)(DWORD system_info_class,
 }  // namespace
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos) {
+    std::vector<linked_ptr<api::system_cpu::ProcessorInfo>>* infos) {
   DCHECK(infos);
 
   HMODULE ntdll = GetModuleHandle(kNtdll);

@@ -35,14 +35,13 @@ class SerialConnection : public ApiResource,
   // does not necessarily imply an empty |data| string, since a receive may
   // complete partially before being interrupted by an error condition.
   typedef base::Callback<void(const std::vector<char>& data,
-                              core_api::serial::ReceiveError error)>
+                              api::serial::ReceiveError error)>
       ReceiveCompleteCallback;
 
   // This is the callback type expected by Send. Note that an error result
   // does not necessarily imply 0 bytes sent, since a send may complete
   // partially before being interrupted by an error condition.
-  typedef base::Callback<
-      void(int bytes_sent, core_api::serial::SendError error)>
+  typedef base::Callback<void(int bytes_sent, api::serial::SendError error)>
       SendCompleteCallback;
 
   SerialConnection(const std::string& port,
@@ -73,7 +72,7 @@ class SerialConnection : public ApiResource,
   // Initiates an asynchronous Open of the device. It is the caller's
   // responsibility to ensure that this SerialConnection stays alive
   // until |callback| is run.
-  void Open(const core_api::serial::ConnectionOptions& options,
+  void Open(const api::serial::ConnectionOptions& options,
             const OpenCompleteCallback& callback);
 
   // Begins an asynchronous receive operation. Calling this while a Receive
@@ -93,24 +92,24 @@ class SerialConnection : public ApiResource,
   // Configures some subset of port options for this connection.
   // Omitted options are unchanged. Returns |true| iff the configuration
   // changes were successful.
-  bool Configure(const core_api::serial::ConnectionOptions& options);
+  bool Configure(const api::serial::ConnectionOptions& options);
 
   // Connection configuration query. Fills values in an existing
   // ConnectionInfo. Returns |true| iff the connection's information
   // was successfully retrieved.
-  bool GetInfo(core_api::serial::ConnectionInfo* info) const;
+  bool GetInfo(api::serial::ConnectionInfo* info) const;
 
   // Reads current control signals (DCD, CTS, etc.) into an existing
   // DeviceControlSignals structure. Returns |true| iff the signals were
   // successfully read.
   bool GetControlSignals(
-      core_api::serial::DeviceControlSignals* control_signals) const;
+      api::serial::DeviceControlSignals* control_signals) const;
 
   // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
   // the signals were successfully set. Unininitialized flags in the
   // HostControlSignals structure are left unchanged.
   bool SetControlSignals(
-      const core_api::serial::HostControlSignals& control_signals);
+      const api::serial::HostControlSignals& control_signals);
 
   // Suspend character transmission. Known as setting/sending 'Break' signal.
   bool SetBreak();
@@ -206,16 +205,16 @@ namespace mojo {
 
 template <>
 struct TypeConverter<device::serial::HostControlSignalsPtr,
-                     extensions::core_api::serial::HostControlSignals> {
+                     extensions::api::serial::HostControlSignals> {
   static device::serial::HostControlSignalsPtr Convert(
-      const extensions::core_api::serial::HostControlSignals& input);
+      const extensions::api::serial::HostControlSignals& input);
 };
 
 template <>
 struct TypeConverter<device::serial::ConnectionOptionsPtr,
-                     extensions::core_api::serial::ConnectionOptions> {
+                     extensions::api::serial::ConnectionOptions> {
   static device::serial::ConnectionOptionsPtr Convert(
-      const extensions::core_api::serial::ConnectionOptions& input);
+      const extensions::api::serial::ConnectionOptions& input);
 };
 
 }  // namespace mojo

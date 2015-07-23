@@ -288,17 +288,17 @@ bool ChromeExtensionsClient::IsScriptableURL(
 bool ChromeExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
   // Test from most common to least common.
-  return api::GeneratedSchemas::IsGenerated(name) ||
-         core_api::GeneratedSchemas::IsGenerated(name);
+  return api::ChromeGeneratedSchemas::IsGenerated(name) ||
+         api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ChromeExtensionsClient::GetAPISchema(
     const std::string& name) const {
   // Test from most common to least common.
-  if (api::GeneratedSchemas::IsGenerated(name))
-    return api::GeneratedSchemas::Get(name);
+  if (api::ChromeGeneratedSchemas::IsGenerated(name))
+    return api::ChromeGeneratedSchemas::Get(name);
 
-  return core_api::GeneratedSchemas::Get(name);
+  return api::GeneratedSchemas::Get(name);
 }
 
 void ChromeExtensionsClient::RegisterAPISchemaResources(

@@ -24,7 +24,7 @@ class ShellRuntimeAPIDelegate : public RuntimeAPIDelegate {
   bool CheckForUpdates(const std::string& extension_id,
                        const UpdateCheckCallback& callback) override;
   void OpenURL(const GURL& uninstall_url) override;
-  bool GetPlatformInfo(core_api::runtime::PlatformInfo* info) override;
+  bool GetPlatformInfo(api::runtime::PlatformInfo* info) override;
   bool RestartDevice(std::string* error_message) override;
 
  private:

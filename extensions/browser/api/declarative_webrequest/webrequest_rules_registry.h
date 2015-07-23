@@ -51,7 +51,7 @@ typedef DeclarativeRule<WebRequestCondition, WebRequestAction> WebRequestRule;
 //
 // Here is the high level overview of this functionality:
 //
-// core_api::events::Rule consists of Conditions and Actions, these are
+// api::events::Rule consists of Conditions and Actions, these are
 // represented as a WebRequestRule with WebRequestConditions and
 // WebRequestRuleActions.
 //
@@ -97,7 +97,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // Implementation of RulesRegistry:
   std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules) override;
+      const std::vector<linked_ptr<api::events::Rule>>& rules) override;
   std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) override;

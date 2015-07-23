@@ -32,7 +32,7 @@ NetworkingConfigSetNetworkFilterFunction::
 ExtensionFunction::ResponseAction
 NetworkingConfigSetNetworkFilterFunction::Run() {
   parameters_ =
-      core_api::networking_config::SetNetworkFilter::Params::Create(*args_);
+      api::networking_config::SetNetworkFilter::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
 
   NetworkingConfigService* service =
@@ -42,10 +42,10 @@ NetworkingConfigSetNetworkFilterFunction::Run() {
   // Remove previously registered networks.
   service->UnregisterExtension(extension_id());
 
-  for (linked_ptr<core_api::networking_config::NetworkInfo>& ni :
+  for (linked_ptr<api::networking_config::NetworkInfo>& ni :
        parameters_->networks) {
     // |Type| field must be set to |WiFi|
-    if (ni->type != core_api::networking_config::NETWORK_TYPE_WIFI)
+    if (ni->type != api::networking_config::NETWORK_TYPE_WIFI)
       return RespondNow(Error(kUnsupportedNetworkType));
 
     // Either |ssid| or |hex_ssid| must be set.
@@ -78,7 +78,7 @@ NetworkingConfigFinishAuthenticationFunction::
 ExtensionFunction::ResponseAction
 NetworkingConfigFinishAuthenticationFunction::Run() {
   parameters_ =
-      core_api::networking_config::FinishAuthentication::Params::Create(*args_);
+      api::networking_config::FinishAuthentication::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
 
   NetworkingConfigService* service =
@@ -97,22 +97,22 @@ NetworkingConfigFinishAuthenticationFunction::Run() {
       extension_id(), parameters_->guid, NetworkingConfigService::FAILED,
   };
   switch (parameters_->result) {
-    case core_api::networking_config::AUTHENTICATION_RESULT_NONE:
+    case api::networking_config::AUTHENTICATION_RESULT_NONE:
       NOTREACHED();
       break;
-    case core_api::networking_config::AUTHENTICATION_RESULT_UNHANDLED:
+    case api::networking_config::AUTHENTICATION_RESULT_UNHANDLED:
       authentication_result.authentication_state =
           NetworkingConfigService::FAILED;
       break;
-    case core_api::networking_config::AUTHENTICATION_RESULT_REJECTED:
+    case api::networking_config::AUTHENTICATION_RESULT_REJECTED:
       authentication_result.authentication_state =
           NetworkingConfigService::REJECTED;
       break;
-    case core_api::networking_config::AUTHENTICATION_RESULT_FAILED:
+    case api::networking_config::AUTHENTICATION_RESULT_FAILED:
       authentication_result.authentication_state =
           NetworkingConfigService::FAILED;
       break;
-    case core_api::networking_config::AUTHENTICATION_RESULT_SUCCEEDED:
+    case api::networking_config::AUTHENTICATION_RESULT_SUCCEEDED:
       authentication_result.authentication_state =
           NetworkingConfigService::SUCCESS;
       break;

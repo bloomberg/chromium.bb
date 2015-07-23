@@ -9,12 +9,14 @@ import("schemas.gni")
 json_schema_api("api") {
   schemas = true
   bundle = true
+  bundle_name = "Shell"
 }
 
 # GYP version: extensions/shell/browser/api/api_registration.gyp:shell_api_registration
 json_schema_api("api_registration") {
   impl_dir = "//extensions/shell/browser/api"
   bundle_registration = true
+  bundle_name = "Shell"
 
   deps = [
     ":api",

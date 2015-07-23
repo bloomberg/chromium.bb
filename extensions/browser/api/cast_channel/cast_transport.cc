@@ -23,7 +23,7 @@
               << "] "
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 
 CastTransportImpl::CastTransportImpl(net::Socket* socket,
@@ -449,5 +449,5 @@ int CastTransportImpl::DoReadError(int result) {
 }
 
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

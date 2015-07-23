@@ -27,7 +27,7 @@ extensions::NetworkingPrivateDelegate* GetDelegate(
 
 namespace extensions {
 
-namespace private_api = core_api::networking_private;
+namespace private_api = api::networking_private;
 
 namespace networking_private {
 

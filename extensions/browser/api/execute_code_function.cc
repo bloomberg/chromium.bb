@@ -33,7 +33,7 @@ const char kLoadFileError[] = "Failed to load file: \"*\". ";
 
 namespace extensions {
 
-using core_api::extension_types::InjectDetails;
+using api::extension_types::InjectDetails;
 
 ExecuteCodeFunction::ExecuteCodeFunction() {
 }
@@ -149,14 +149,14 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
 
   UserScript::RunLocation run_at = UserScript::UNDEFINED;
   switch (details_->run_at) {
-    case core_api::extension_types::RUN_AT_NONE:
-    case core_api::extension_types::RUN_AT_DOCUMENT_IDLE:
+    case api::extension_types::RUN_AT_NONE:
+    case api::extension_types::RUN_AT_DOCUMENT_IDLE:
       run_at = UserScript::DOCUMENT_IDLE;
       break;
-    case core_api::extension_types::RUN_AT_DOCUMENT_START:
+    case api::extension_types::RUN_AT_DOCUMENT_START:
       run_at = UserScript::DOCUMENT_START;
       break;
-    case core_api::extension_types::RUN_AT_DOCUMENT_END:
+    case api::extension_types::RUN_AT_DOCUMENT_END:
       run_at = UserScript::DOCUMENT_END;
       break;
   }

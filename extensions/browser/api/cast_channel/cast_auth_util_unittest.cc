@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -412,5 +412,5 @@ TEST_F(CastAuthUtilTest, VerifyBadPeerCert) {
 
 }  // namespace
 }  // namespace cast_channel
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions

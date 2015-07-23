@@ -50,7 +50,7 @@ namespace extensions {
 //
 // Here is the high level overview of this functionality:
 //
-// core_api::events::Rule consists of conditions and actions, these are
+// api::events::Rule consists of conditions and actions, these are
 // represented as a ContentRule with ContentConditions and ContentRuleActions.
 //
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
@@ -84,7 +84,7 @@ class ChromeContentRulesRegistry
   // RulesRegistry:
   std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<core_api::events::Rule>>& rules) override;
+      const std::vector<linked_ptr<api::events::Rule>>& rules) override;
   std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) override;
@@ -156,10 +156,9 @@ class ChromeContentRulesRegistry
   // and ContentAction.  |extension| may be NULL in tests.  If |error| is empty,
   // the translation was successful and the returned rule is internally
   // consistent.
-  scoped_ptr<const ContentRule> CreateRule(
-      const Extension* extension,
-      const core_api::events::Rule& api_rule,
-      std::string* error);
+  scoped_ptr<const ContentRule> CreateRule(const Extension* extension,
+                                           const api::events::Rule& api_rule,
+                                           std::string* error);
 
   // True if this object is managing the rules for |context|.
   bool ManagingRulesForBrowserContext(content::BrowserContext* context);

@@ -71,8 +71,8 @@ class RulesRegistryWithCacheTest : public testing::Test {
   std::string AddRule(const std::string& extension_id,
                       const std::string& rule_id,
                       TestRulesRegistry* registry) {
-    std::vector<linked_ptr<core_api::events::Rule>> add_rules;
-    add_rules.push_back(make_linked_ptr(new core_api::events::Rule));
+    std::vector<linked_ptr<api::events::Rule>> add_rules;
+    add_rules.push_back(make_linked_ptr(new api::events::Rule));
     add_rules[0]->id.reset(new std::string(rule_id));
     return registry->AddRules(extension_id, add_rules);
   }
@@ -91,7 +91,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
 
   int GetNumberOfRules(const std::string& extension_id,
                        TestRulesRegistry* registry) {
-    std::vector<linked_ptr<core_api::events::Rule>> get_rules;
+    std::vector<linked_ptr<api::events::Rule>> get_rules;
     registry->GetAllRules(extension_id, &get_rules);
     return get_rules.size();
   }
@@ -187,7 +187,7 @@ TEST_F(RulesRegistryWithCacheTest, GetRules) {
   std::vector<std::string> rules_to_get;
   rules_to_get.push_back(kRuleId);
   rules_to_get.push_back("unknown_rule");
-  std::vector<linked_ptr<core_api::events::Rule>> gotten_rules;
+  std::vector<linked_ptr<api::events::Rule>> gotten_rules;
   registry_->GetRules(extension1_->id(), rules_to_get, &gotten_rules);
   ASSERT_EQ(1u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());
@@ -201,7 +201,7 @@ TEST_F(RulesRegistryWithCacheTest, GetAllRules) {
   EXPECT_EQ("", AddRule(extension2_->id(), kRuleId));
 
   // Check that we get the correct rules.
-  std::vector<linked_ptr<core_api::events::Rule>> gotten_rules;
+  std::vector<linked_ptr<api::events::Rule>> gotten_rules;
   registry_->GetAllRules(extension1_->id(), &gotten_rules);
   EXPECT_EQ(2u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());

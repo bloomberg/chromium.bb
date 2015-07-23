@@ -97,7 +97,7 @@ class TLSSocket : public ResumableTCPSocket {
       net::CertVerifier* cert_verifier,
       net::TransportSecurityState* transport_security_state,
       const std::string& extension_id,
-      core_api::socket::SecureOptions* options,
+      api::socket::SecureOptions* options,
       const SecureCallback& callback);
 
  private:

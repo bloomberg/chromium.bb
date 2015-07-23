@@ -23,7 +23,7 @@ namespace extensions {
 namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
-using core_api::extensions_manifest_types::ContentCapabilities;
+using api::extensions_manifest_types::ContentCapabilities;
 
 ContentCapabilitiesInfo::ContentCapabilitiesInfo() {
 }

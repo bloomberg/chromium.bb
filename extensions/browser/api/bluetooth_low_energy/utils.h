@@ -10,7 +10,7 @@
 #include "extensions/common/api/bluetooth_low_energy.h"
 
 namespace extensions {
-namespace core_api {
+namespace api {
 namespace bluetooth_low_energy {
 
 // TODO(armansito): Remove these functions once the described bug is fixed.
@@ -28,7 +28,7 @@ scoped_ptr<base::DictionaryValue> CharacteristicToValue(Characteristic* from);
 scoped_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from);
 
 }  // namespace bluetooth_low_energy
-}  // namespace core_api
+}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_UTILS_H_

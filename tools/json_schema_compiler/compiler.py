@@ -39,6 +39,7 @@ def GenerateSchema(generator_name,
                    root,
                    destdir,
                    cpp_namespace_pattern,
+                   bundle_name,
                    impl_dir,
                    include_rules):
   # Merge the source files into a single list of schemas.
@@ -97,6 +98,7 @@ def GenerateSchema(generator_name,
                                               api_defs,
                                               type_generator,
                                               cpp_namespace_pattern,
+                                              bundle_name,
                                               src_path,
                                               impl_dir)
     if generator_name == 'cpp-bundle-registration':
@@ -153,6 +155,10 @@ if __name__ == '__main__':
       help='root directory to output generated files.')
   parser.add_option('-n', '--namespace', default='generated_api_schemas',
       help='C++ namespace for generated files. e.g extensions::api.')
+  parser.add_option('-b', '--bundle-name', default='',
+      help='A string to prepend to generated bundle class names, so that '
+           'multiple bundle rules can be used without conflicting. '
+           'Only used with one of the cpp-bundle generators.')
   parser.add_option('-g', '--generator', default=GENERATORS[0],
       choices=GENERATORS,
       help='The generator to use to build the output code. Supported values are'
@@ -188,6 +194,7 @@ if __name__ == '__main__':
                         shlex.split(opts.include_rules))
 
   result = GenerateSchema(opts.generator, file_paths, opts.root, opts.destdir,
-                          opts.namespace, opts.impl_dir, include_rules)
+                          opts.namespace, opts.bundle_name, opts.impl_dir,
+                          include_rules)
   if not opts.destdir:
     print result

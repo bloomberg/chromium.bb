@@ -30,7 +30,7 @@
 // TODO(mfoltz): Mock out the ApiResourceManager to resolve threading issues
 // (crbug.com/398242) and simulate unloading of the extension.
 
-namespace cast_channel = extensions::core_api::cast_channel;
+namespace cast_channel = extensions::api::cast_channel;
 using cast_channel::CastMessage;
 using cast_channel::CastSocket;
 using cast_channel::CastTransport;

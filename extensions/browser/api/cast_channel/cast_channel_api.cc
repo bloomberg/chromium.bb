@@ -320,14 +320,14 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   api_->GetLogger()->LogNewSocketEvent(*socket);
 
   // Construct read delegates.
-  scoped_ptr<core_api::cast_channel::CastTransport::Delegate> delegate(
+  scoped_ptr<api::cast_channel::CastTransport::Delegate> delegate(
       make_scoped_ptr(new CastMessageHandler(
           base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr()), socket,
           api_->GetLogger())));
   if (socket->keep_alive()) {
     // Wrap read delegate in a KeepAliveDelegate for timeout handling.
-    core_api::cast_channel::KeepAliveDelegate* keep_alive =
-        new core_api::cast_channel::KeepAliveDelegate(
+    api::cast_channel::KeepAliveDelegate* keep_alive =
+        new api::cast_channel::KeepAliveDelegate(
             socket, api_->GetLogger(), delegate.Pass(), ping_interval_,
             liveness_timeout_);
     scoped_ptr<base::Timer> injected_timer =

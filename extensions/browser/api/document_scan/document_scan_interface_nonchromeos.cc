@@ -12,7 +12,7 @@ const char kScanFunctionNotImplementedError[] = "Scan function not implemented";
 
 namespace extensions {
 
-namespace core_api {
+namespace api {
 
 class DocumentScanInterfaceImpl : public DocumentScanInterface {
  public:
@@ -38,6 +38,6 @@ DocumentScanInterface* DocumentScanInterface::CreateInstance() {
   return new DocumentScanInterfaceImpl();
 }
 
-}  // namespace core_api
+}  // namespace api
 
 }  // namespace extensions

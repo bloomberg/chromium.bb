@@ -15,8 +15,8 @@
 
 namespace extensions {
 
-using core_api::system_display::Bounds;
-using core_api::system_display::DisplayUnitInfo;
+using api::system_display::Bounds;
+using api::system_display::DisplayUnitInfo;
 using gfx::Screen;
 
 class MockScreen : public Screen {
@@ -73,7 +73,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   ~MockDisplayInfoProvider() override {}
 
   bool SetInfo(const std::string& display_id,
-               const core_api::system_display::DisplayProperties& params,
+               const api::system_display::DisplayProperties& params,
                std::string* error) override {
     // Should get called only once per test case.
     EXPECT_FALSE(set_info_value_);
@@ -95,7 +95,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   // platform specific method.
   void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      extensions::core_api::system_display::DisplayUnitInfo* unit) override {
+      extensions::api::system_display::DisplayUnitInfo* unit) override {
     int64 id = display.id();
     unit->name = "DISPLAY NAME FOR " + base::Int64ToString(id);
     if (id == 1)
