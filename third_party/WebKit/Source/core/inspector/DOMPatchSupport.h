@@ -58,14 +58,24 @@ public:
     Node* patchNode(Node*, const String& markup, ExceptionState&);
 
 private:
-    struct Digest;
-    typedef Vector<pair<Digest*, size_t> > ResultMap;
-    typedef HashMap<String, Digest*> UnusedNodesMap;
+    class Digest : public NoBaseWillBeGarbageCollectedFinalized<Digest> {
+    public:
+        explicit Digest(Node* node) : m_node(node) { }
+        DECLARE_TRACE();
+
+        String m_sha1;
+        String m_attrsSHA1;
+        RawPtrWillBeMember<Node> m_node;
+        WillBeHeapVector<OwnPtrWillBeMember<Digest>> m_children;
+    };
+
+    typedef WillBeHeapVector<pair<RawPtrWillBeMember<Digest>, size_t>> ResultMap;
+    typedef WillBeHeapHashMap<String, RawPtrWillBeMember<Digest>> UnusedNodesMap;
 
     bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);
-    std::pair<ResultMap, ResultMap> diff(const Vector<OwnPtr<Digest> >& oldChildren, const Vector<OwnPtr<Digest> >& newChildren);
-    bool innerPatchChildren(ContainerNode*, const Vector<OwnPtr<Digest> >& oldChildren, const Vector<OwnPtr<Digest> >& newChildren, ExceptionState&);
-    PassOwnPtr<Digest> createDigest(Node*, UnusedNodesMap*);
+    std::pair<ResultMap, ResultMap> diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldChildren, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newChildren);
+    bool innerPatchChildren(ContainerNode*, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldChildren, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newChildren, ExceptionState&);
+    PassOwnPtrWillBeRawPtr<Digest> createDigest(Node*, UnusedNodesMap*);
     bool insertBeforeAndMarkAsUsed(ContainerNode*, Digest*, Node* anchor, ExceptionState&);
     bool removeChildAndMoveToNew(Digest*, ExceptionState&);
     void markNodeAsUsed(Digest*);
