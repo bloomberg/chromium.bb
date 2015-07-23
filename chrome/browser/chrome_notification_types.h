@@ -319,11 +319,6 @@ enum NotificationType {
   // TabSpecificContentSettings object, there are no details.
   NOTIFICATION_COLLECTED_COOKIES_SHOWN,
 
-  // Sent when a non-default setting in the the notification content settings
-  // map has changed. The source is the DesktopNotificationService, the
-  // details are None.
-  NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-
   // Sent when content settings change for a tab. The source is a
   // content::WebContents object, the details are None.
   NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,

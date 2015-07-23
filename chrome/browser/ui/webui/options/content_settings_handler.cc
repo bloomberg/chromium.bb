@@ -471,9 +471,6 @@ void ContentSettingsHandler::InitializeHandler() {
       this, chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::NotificationService::AllSources());
 
-  notification_registrar_.Add(
-      this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-      content::NotificationService::AllSources());
   content::BrowserContext* context = GetBrowserContext(web_ui());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
@@ -580,11 +577,6 @@ void ContentSettingsHandler::Observe(
         UpdateAllOTRExceptionsViewsFromModel();
         observer_.Add(profile->GetHostContentSettingsMap());
       }
-      break;
-    }
-
-    case chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
-      UpdateNotificationExceptionsView();
       break;
     }
 
