@@ -721,18 +721,6 @@ inline void swap(LinkedHashSetNode<T, Allocator>& a, LinkedHashSetNode<T, Alloca
     Allocator::leaveGCForbiddenScope();
 }
 
-// Warning: After and while calling this you have a collection with deleted
-// pointers. Consider using a smart pointer like OwnPtr and calling clear()
-// instead.
-template<typename ValueType, typename T, typename U>
-void deleteAllValues(const LinkedHashSet<ValueType, T, U>& set)
-{
-    typedef typename LinkedHashSet<ValueType, T, U>::const_iterator iterator;
-    iterator end = set.end();
-    for (iterator it = set.begin(); it != end; ++it)
-        delete *it;
-}
-
 #if !ENABLE(OILPAN)
 template<typename T, typename U, typename V>
 struct NeedsTracing<LinkedHashSet<T, U, V>> {

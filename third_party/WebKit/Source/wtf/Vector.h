@@ -1283,15 +1283,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator>
-    void deleteAllValues(const Vector<T, inlineCapacity, Allocator>& collection)
-    {
-        typedef typename Vector<T, inlineCapacity, Allocator>::const_iterator iterator;
-        iterator end = collection.end();
-        for (iterator it = collection.begin(); it != end; ++it)
-            delete *it;
-    }
-
-    template<typename T, size_t inlineCapacity, typename Allocator>
     inline void swap(Vector<T, inlineCapacity, Allocator>& a, Vector<T, inlineCapacity, Allocator>& b)
     {
         a.swap(b);

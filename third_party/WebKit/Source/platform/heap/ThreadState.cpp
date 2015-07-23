@@ -138,7 +138,10 @@ ThreadState::~ThreadState()
     m_threadLocalWeakCallbackStack = nullptr;
     for (int i = 0; i < NumberOfHeaps; ++i)
         delete m_heaps[i];
-    deleteAllValues(m_interruptors);
+
+    for (Interruptor* interruptor : m_interruptors)
+        delete interruptor;
+
     **s_threadSpecific = nullptr;
     if (isMainThread()) {
         s_mainThreadStackStart = 0;
