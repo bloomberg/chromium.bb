@@ -30,7 +30,6 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/android/dev_tools_server.h"
-#include "chrome/browser/android/document/document_web_contents_delegate.h"
 #include "chrome/browser/android/dom_distiller/external_feedback_reporter_android.h"
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/favicon_helper.h"
@@ -211,7 +210,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DataReductionProxyInfoBarDelegate", DataReductionProxyInfoBar::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
     {"DevToolsServer", RegisterDevToolsServer},
-    {"DocumentWebContentsDelegate", DocumentWebContentsDelegate::Register},
     {"DomDistillerServiceFactory",
      dom_distiller::android::DomDistillerServiceFactoryAndroid::Register},
     {"DomDistillerTabUtils", RegisterDomDistillerTabUtils},
