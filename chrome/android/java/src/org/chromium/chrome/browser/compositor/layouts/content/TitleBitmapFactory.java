@@ -22,8 +22,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
- * A factory that creates text and favicon bitmaps. This is only relevant for the phone tab
- * switcher.
+ * A factory that creates text and favicon bitmaps.
  */
 public class TitleBitmapFactory {
     private static final String TAG = "TitleBitmapFactory";
