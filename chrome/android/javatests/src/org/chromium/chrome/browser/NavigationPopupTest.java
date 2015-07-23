@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser;
 
 import android.graphics.Bitmap;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -202,8 +200,12 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
     }
 
+    /*
     @MediumTest
     @Feature({"Navigation"})
+    crbug.com/513497
+    */
+    @DisabledTest
     public void testFaviconFetching() throws InterruptedException {
         final TestNavigationController controller = new TestNavigationController();
         final NavigationPopup popup = new NavigationPopup(
@@ -248,8 +250,12 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
         });
     }
 
+    /*
     @SmallTest
     @Feature({"Navigation"})
+    crbug.com/513497
+    */
+    @DisabledTest
     public void testItemSelection() {
         final TestNavigationController controller = new TestNavigationController();
         final NavigationPopup popup = new NavigationPopup(
