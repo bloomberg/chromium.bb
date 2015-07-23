@@ -106,6 +106,16 @@ def processJinjaTemplate(input_file, include_paths, output_file, context):
   rendered = template.render(context)
   io.open(output_file, 'w', encoding='utf-8').write(rendered)
 
+
+def getClientPluginType(webapp_type):
+  if webapp_type in ['v1', 'v2']:
+    return 'native'
+  elif webapp_type in ['v2_pnacl', 'shared_module']:
+    return 'pnacl'
+  elif webapp_type is 'app_remoting':
+    return ''
+
+
 def buildWebApp(buildtype, version, destination, zip_path,
                 manifest_template, webapp_type, appid, app_client_id, app_name,
                 app_description, app_capabilities, manifest_key, files,
@@ -223,11 +233,10 @@ def buildWebApp(buildtype, version, destination, zip_path,
   is_desktop_remoting = not is_app_remoting
 
   # Set client plugin type.
-  # TODO(wez): Use 'native' in app_remoting until b/17441659 is resolved.
   if not is_app_remoting_webapp:
-    client_plugin = 'pnacl' if webapp_type == 'v2_pnacl' else 'native'
+    client_plugin = getClientPluginType(webapp_type)
     findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                   "'CLIENT_PLUGIN_TYPE'", "'" + client_plugin + "'")
+                 "'CLIENT_PLUGIN_TYPE'", "'" + client_plugin + "'")
 
   # Allow host names for google services/apis to be overriden via env vars.
   oauth2AccountsHost = os.environ.get(
