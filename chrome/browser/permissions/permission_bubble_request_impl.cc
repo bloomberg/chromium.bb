@@ -40,6 +40,11 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
 #if defined(TOOLKIT_VIEWS)
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
+#if defined(ENABLE_NOTIFICATIONS)
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return gfx::VectorIconId::NOTIFICATIONS;
+      break;
+#endif
 #endif
 
     default:
