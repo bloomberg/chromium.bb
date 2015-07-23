@@ -469,7 +469,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
     PreDispatchTouchEvent(target_window, static_cast<ui::TouchEvent*>(event));
   }
   old_dispatch_target_ = event_dispatch_target_;
-  event_dispatch_target_ = static_cast<Window*>(target);
+  event_dispatch_target_ = target_window;
   return DispatchDetails();
 }
 
