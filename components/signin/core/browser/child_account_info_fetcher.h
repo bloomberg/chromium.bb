@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_H_
 
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "components/invalidation/public/invalidation_handler.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -13,19 +15,27 @@
 namespace net {
 class URLRequestContextGetter;
 }
+namespace invalidation {
+class InvalidationService;
+}
 class AccountFetcherService;
 class GaiaAuthFetcher;
 
 class ChildAccountInfoFetcher : public OAuth2TokenService::Consumer,
-                                public GaiaAuthConsumer {
+                                public GaiaAuthConsumer,
+                                public syncer::InvalidationHandler {
  public:
-  ChildAccountInfoFetcher(OAuth2TokenService* token_service,
-                          net::URLRequestContextGetter* request_context_getter,
-                          AccountFetcherService* service,
-                          const std::string& account_id);
+  ChildAccountInfoFetcher(
+      OAuth2TokenService* token_service,
+      net::URLRequestContextGetter* request_context_getter,
+      AccountFetcherService* fetcher_service,
+      invalidation::InvalidationService* invalidation_service,
+      const std::string& account_id);
   ~ChildAccountInfoFetcher() override;
 
-  const std::string& account_id() { return account_id_; }
+ private:
+  void FetchIfNotInProgress();
+  void HandleFailure();
 
   // OAuth2TokenService::Consumer:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -40,13 +50,16 @@ class ChildAccountInfoFetcher : public OAuth2TokenService::Consumer,
   void OnGetUserInfoSuccess(const UserInfoMap& data) override;
   void OnGetUserInfoFailure(const GoogleServiceAuthError& error) override;
 
- private:
-  void Fetch();
-  void HandleFailure();
+  // syncer::InvalidationHandler:
+  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
+  void OnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  std::string GetOwnerName() const override;
 
   OAuth2TokenService* token_service_;
   net::URLRequestContextGetter* request_context_getter_;
-  AccountFetcherService* service_;
+  AccountFetcherService* fetcher_service_;
+  invalidation::InvalidationService* invalidation_service_;
   const std::string account_id_;
 
   // If fetching fails, retry with exponential backoff.
@@ -55,6 +68,9 @@ class ChildAccountInfoFetcher : public OAuth2TokenService::Consumer,
 
   scoped_ptr<OAuth2TokenService::Request> login_token_request_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+
+  bool fetch_in_progress_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildAccountInfoFetcher);
 };

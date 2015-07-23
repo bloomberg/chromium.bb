@@ -21,6 +21,10 @@ class OAuth2TokenService;
 class RefreshTokenAnnotationRequest;
 class SigninClient;
 
+namespace invalidation {
+class InvalidationService;
+}
+
 class AccountFetcherService : public KeyedService,
                               public OAuth2TokenService::Observer,
                               public base::NonThreadSafe {
@@ -34,7 +38,8 @@ class AccountFetcherService : public KeyedService,
 
   void Initialize(SigninClient* signin_client,
                   OAuth2TokenService* token_service,
-                  AccountTrackerService* account_tracker_service);
+                  AccountTrackerService* account_tracker_service,
+                  invalidation::InvalidationService* invalidation_service);
 
   // KeyedService implementation
   void Shutdown() override;
@@ -98,6 +103,7 @@ class AccountFetcherService : public KeyedService,
   AccountTrackerService* account_tracker_service_;  // Not owned.
   OAuth2TokenService* token_service_;  // Not owned.
   SigninClient* signin_client_;  // Not owned.
+  invalidation::InvalidationService* invalidation_service_;  // Not owned.
   bool network_fetches_enabled_;
   std::list<std::string> pending_user_info_fetches_;
   base::Time last_updated_;

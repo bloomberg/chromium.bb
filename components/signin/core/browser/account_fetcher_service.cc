@@ -43,6 +43,7 @@ AccountFetcherService::AccountFetcherService()
     : account_tracker_service_(nullptr),
       token_service_(nullptr),
       signin_client_(nullptr),
+      invalidation_service_(nullptr),
       network_fetches_enabled_(false),
       shutdown_called_(false),
       child_info_request_(nullptr) {}
@@ -54,10 +55,12 @@ AccountFetcherService::~AccountFetcherService() {
 void AccountFetcherService::Initialize(
     SigninClient* signin_client,
     OAuth2TokenService* token_service,
-    AccountTrackerService* account_tracker_service) {
+    AccountTrackerService* account_tracker_service,
+    invalidation::InvalidationService* invalidation_service) {
   DCHECK(signin_client);
   DCHECK(!signin_client_);
   signin_client_ = signin_client;
+  invalidation_service_ = invalidation_service;
   DCHECK(account_tracker_service);
   DCHECK(!account_tracker_service_);
   account_tracker_service_ = account_tracker_service;
@@ -74,6 +77,9 @@ void AccountFetcherService::Initialize(
 
 void AccountFetcherService::Shutdown() {
   token_service_->RemoveObserver(this);
+  // child_info_request_ is an invalidation handler and needs to be
+  // unregistered during the lifetime of the invalidation service.
+  child_info_request_.reset();
   shutdown_called_ = true;
 }
 
@@ -171,7 +177,7 @@ void AccountFetcherService::StartFetchingChildInfo(
   child_request_account_id_ = account_id;
   child_info_request_.reset(new ChildAccountInfoFetcher(
       token_service_, signin_client_->GetURLRequestContext(), this,
-      child_request_account_id_));
+      invalidation_service_, child_request_account_id_));
 }
 
 void AccountFetcherService::ResetChildInfo() {

@@ -261,7 +261,7 @@ class AccountTrackerServiceTest : public testing::Test {
     account_fetcher_.reset(new AccountFetcherService());
     account_fetcher_->Initialize(signin_client_.get(),
                                  fake_oauth2_token_service_.get(),
-                                 account_tracker_.get());
+                                 account_tracker_.get(), nullptr);
 
     account_fetcher_->EnableNetworkFetches();
   }
@@ -443,7 +443,7 @@ TEST_F(AccountTrackerServiceTest, TokenAlreadyExists) {
   tracker.AddObserver(&observer);
   tracker.Initialize(signin_client());
 
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
   fetcher.EnableNetworkFetches();
   ASSERT_FALSE(fetcher.IsAllUserInfoFetched());
   ASSERT_TRUE(observer.CheckEvents());
@@ -529,7 +529,8 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
   tracker.Initialize(signin_client());
 
   AccountFetcherService fetcher_service;
-  fetcher_service.Initialize(signin_client(), token_service(), &tracker);
+  fetcher_service.Initialize(signin_client(), token_service(), &tracker,
+                             nullptr);
 
   SimulateTokenAvailable("alpha");
   IssueAccessToken("alpha");
@@ -663,7 +664,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
     fetcher.EnableNetworkFetches();
     SimulateTokenAvailable("incomplete");
     ReturnOAuthUrlFetchSuccessIncomplete("incomplete");
@@ -675,7 +676,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
     // Validate that the loaded AccountInfo from prefs is considered invalid.
     std::vector<AccountTrackerService::AccountInfo> infos =
         tracker.GetAccounts();
@@ -705,7 +706,7 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     tracker.AddObserver(&observer);
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
 
     ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "incomplete")));
     // Enabling network fetches shouldn't cause any actual fetch since the
@@ -732,7 +733,7 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
     fetcher.EnableNetworkFetches();
     SimulateTokenAvailable("alpha");
     ReturnOAuthUrlFetchSuccess("alpha");
@@ -755,7 +756,7 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
 
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     std::vector<AccountTrackerService::AccountInfo> infos =
@@ -782,7 +783,7 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
 
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     std::vector<AccountTrackerService::AccountInfo> infos =
@@ -806,7 +807,7 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
     fetcher.EnableNetworkFetches();
     SimulateTokenAvailable("foo.bar@gmail.com");
     SimulateTokenAvailable("foobar@gmail.com");
@@ -826,7 +827,7 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
 
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     std::vector<AccountTrackerService::AccountInfo> infos =
