@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
@@ -142,7 +143,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // yet.
   base::TimeDelta GetMaxInterbufferDistance() const;
 
-  void set_memory_limit(int memory_limit) {
+  void set_memory_limit(size_t memory_limit) {
     memory_limit_ = memory_limit;
   }
 
@@ -156,21 +157,21 @@ class MEDIA_EXPORT SourceBufferStream {
   // |ranges_|, starting at the front of |ranges_| and moving linearly forward
   // through the buffers. Deletes starting from the back if |reverse_direction|
   // is true. Returns the number of bytes freed.
-  int FreeBuffers(int total_bytes_to_free, bool reverse_direction);
+  size_t FreeBuffers(size_t total_bytes_to_free, bool reverse_direction);
 
   // Attempts to delete approximately |total_bytes_to_free| amount of data from
   // |ranges_|, starting after the last appended buffer before the current
   // playback position.
-  int FreeBuffersAfterLastAppended(int total_bytes_to_free);
+  size_t FreeBuffersAfterLastAppended(size_t total_bytes_to_free);
 
   // Gets the removal range to secure |byte_to_free| from
   // [|start_timestamp|, |end_timestamp|).
   // Returns the size of buffers to secure if future
   // Remove(|start_timestamp|, |removal_end_timestamp|, duration) is called.
   // Will not update |removal_end_timestamp| if the returned size is 0.
-  int GetRemovalRange(DecodeTimestamp start_timestamp,
-      DecodeTimestamp end_timestamp, int byte_to_free,
-      DecodeTimestamp* removal_end_timestamp);
+  size_t GetRemovalRange(DecodeTimestamp start_timestamp,
+                         DecodeTimestamp end_timestamp, size_t byte_to_free,
+                         DecodeTimestamp* removal_end_timestamp);
 
   // Prepares |range_for_next_append_| so |new_buffers| can be appended.
   // This involves removing buffers between the end of the previous append
@@ -396,7 +397,7 @@ class MEDIA_EXPORT SourceBufferStream {
   base::TimeDelta max_interbuffer_distance_;
 
   // The maximum amount of data in bytes the stream will keep in memory.
-  int memory_limit_;
+  size_t memory_limit_;
 
   // Indicates that a kConfigChanged status has been reported by GetNextBuffer()
   // and GetCurrentXXXDecoderConfig() must be called to update the current

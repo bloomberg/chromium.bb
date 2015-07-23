@@ -8,7 +8,7 @@ namespace media {
 
 // 2MB: approximately 1 minute of 256Kbps content.
 // 30MB: approximately 1 minute of 4Mbps content.
-const int kSourceBufferAudioMemoryLimit = 2 * 1024 * 1024;
-const int kSourceBufferVideoMemoryLimit = 30 * 1024 * 1024;
+const size_t kSourceBufferAudioMemoryLimit = 2 * 1024 * 1024;
+const size_t kSourceBufferVideoMemoryLimit = 30 * 1024 * 1024;
 
 }  // namespace media

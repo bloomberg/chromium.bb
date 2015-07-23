@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "media/base/byte_queue.h"
 #include "media/base/demuxer.h"
@@ -97,9 +98,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   TextTrackConfig text_track_config();
 
   // Sets the memory limit, in bytes, on the SourceBufferStream.
-  void set_memory_limit(int memory_limit) {
-    stream_->set_memory_limit(memory_limit);
-  }
+  void SetStreamMemoryLimit(size_t memory_limit);
 
   bool supports_partial_append_window_trimming() const {
     return partial_append_window_trimming_enabled_;
@@ -280,7 +279,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Sets the memory limit on each stream of a specific type.
   // |memory_limit| is the maximum number of bytes each stream of type |type|
   // is allowed to hold in its buffer.
-  void SetMemoryLimits(DemuxerStream::Type type, int memory_limit);
+  void SetMemoryLimits(DemuxerStream::Type type, size_t memory_limit);
 
   // Returns the ranges representing the buffered data in the demuxer.
   // TODO(wolenetz): Remove this method once MediaSourceDelegate no longer

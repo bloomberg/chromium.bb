@@ -56,6 +56,7 @@ void SourceBufferRange::AppendBuffersToEnd(const BufferQueue& new_buffers) {
        ++itr) {
     DCHECK((*itr)->GetDecodeTimestamp() != kNoDecodeTimestamp());
     buffers_.push_back(*itr);
+    DCHECK_GE((*itr)->data_size(), 0);
     size_in_bytes_ += (*itr)->data_size();
 
     if ((*itr)->is_key_frame()) {
@@ -225,12 +226,12 @@ bool SourceBufferRange::TruncateAt(
   return TruncateAt(starting_point, removed_buffers);
 }
 
-int SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
+size_t SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
   DCHECK(!FirstGOPContainsNextBufferPosition());
   DCHECK(deleted_buffers);
 
   int buffers_deleted = 0;
-  int total_bytes_deleted = 0;
+  size_t total_bytes_deleted = 0;
 
   KeyframeMap::iterator front = keyframe_map_.begin();
   DCHECK(front != keyframe_map_.end());
@@ -247,7 +248,9 @@ int SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
   // Delete buffers from the beginning of the buffered range up until (but not
   // including) the next keyframe.
   for (int i = 0; i < end_index; i++) {
-    int bytes_deleted = buffers_.front()->data_size();
+    DCHECK_GE(buffers_.front()->data_size(), 0);
+    size_t bytes_deleted = buffers_.front()->data_size();
+    DCHECK_GE(size_in_bytes_, bytes_deleted);
     size_in_bytes_ -= bytes_deleted;
     total_bytes_deleted += bytes_deleted;
     deleted_buffers->push_back(buffers_.front());
@@ -271,7 +274,7 @@ int SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
   return total_bytes_deleted;
 }
 
-int SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
+size_t SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
   DCHECK(!LastGOPContainsNextBufferPosition());
   DCHECK(deleted_buffers);
 
@@ -285,9 +288,11 @@ int SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
   size_t goal_size = back->second - keyframe_map_index_base_;
   keyframe_map_.erase(back);
 
-  int total_bytes_deleted = 0;
+  size_t total_bytes_deleted = 0;
   while (buffers_.size() != goal_size) {
-    int bytes_deleted = buffers_.back()->data_size();
+    DCHECK_GE(buffers_.back()->data_size(), 0);
+    size_t bytes_deleted = buffers_.back()->data_size();
+    DCHECK_GE(size_in_bytes_, bytes_deleted);
     size_in_bytes_ -= bytes_deleted;
     total_bytes_deleted += bytes_deleted;
     // We're removing buffers from the back, so push each removed buffer to the
@@ -300,11 +305,10 @@ int SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
   return total_bytes_deleted;
 }
 
-int SourceBufferRange::GetRemovalGOP(
+size_t SourceBufferRange::GetRemovalGOP(
     DecodeTimestamp start_timestamp, DecodeTimestamp end_timestamp,
-    int total_bytes_to_free, DecodeTimestamp* removal_end_timestamp) {
-  int bytes_to_free = total_bytes_to_free;
-  int bytes_removed = 0;
+    size_t total_bytes_to_free, DecodeTimestamp* removal_end_timestamp) {
+  size_t bytes_removed = 0;
 
   KeyframeMap::iterator gop_itr = GetFirstKeyframeAt(start_timestamp, false);
   if (gop_itr == keyframe_map_.end())
@@ -321,18 +325,19 @@ int SourceBufferRange::GetRemovalGOP(
   if (gop_itr_prev != keyframe_map_.begin() && --gop_itr_prev == gop_end)
     gop_end = gop_itr;
 
-  while (gop_itr != gop_end && bytes_to_free > 0) {
+  while (gop_itr != gop_end && bytes_removed < total_bytes_to_free) {
     ++gop_itr;
 
-    int gop_size = 0;
+    size_t gop_size = 0;
     int next_gop_index = gop_itr == keyframe_map_.end() ?
         buffers_.size() : gop_itr->second - keyframe_map_index_base_;
     BufferQueue::iterator next_gop_start = buffers_.begin() + next_gop_index;
-    for (; buffer_itr != next_gop_start; ++buffer_itr)
+    for (; buffer_itr != next_gop_start; ++buffer_itr) {
+      DCHECK_GE((*buffer_itr)->data_size(), 0);
       gop_size += (*buffer_itr)->data_size();
+    }
 
     bytes_removed += gop_size;
-    bytes_to_free -= gop_size;
   }
   if (bytes_removed > 0) {
     *removal_end_timestamp = gop_itr == keyframe_map_.end() ?
@@ -372,8 +377,10 @@ void SourceBufferRange::FreeBufferRange(
     const BufferQueue::iterator& ending_point) {
   for (BufferQueue::iterator itr = starting_point;
        itr != ending_point; ++itr) {
-    size_in_bytes_ -= (*itr)->data_size();
-    DCHECK_GE(size_in_bytes_, 0);
+    DCHECK_GE((*itr)->data_size(), 0);
+    size_t itr_data_size = static_cast<size_t>((*itr)->data_size());
+    DCHECK_GE(size_in_bytes_, itr_data_size);
+    size_in_bytes_ -= itr_data_size;
   }
   buffers_.erase(starting_point, ending_point);
 }

@@ -8,7 +8,7 @@ namespace media {
 
 // 12MB: approximately 5 minutes of 320Kbps content.
 // 150MB: approximately 5 minutes of 4Mbps content.
-const int kSourceBufferAudioMemoryLimit = 12 * 1024 * 1024;
-const int kSourceBufferVideoMemoryLimit = 150 * 1024 * 1024;
+const size_t kSourceBufferAudioMemoryLimit = 12 * 1024 * 1024;
+const size_t kSourceBufferVideoMemoryLimit = 150 * 1024 * 1024;
 
 }  // namespace media

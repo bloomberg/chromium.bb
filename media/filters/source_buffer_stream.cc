@@ -627,7 +627,7 @@ void SourceBufferStream::SetConfigIds(const BufferQueue& buffers) {
 
 void SourceBufferStream::GarbageCollectIfNeeded() {
   // Compute size of |ranges_|.
-  int ranges_size = 0;
+  size_t ranges_size = 0;
   for (RangeList::iterator itr = ranges_.begin(); itr != ranges_.end(); ++itr)
     ranges_size += (*itr)->size_in_bytes();
 
@@ -635,7 +635,7 @@ void SourceBufferStream::GarbageCollectIfNeeded() {
   if (ranges_size <= memory_limit_)
     return;
 
-  int bytes_to_free = ranges_size - memory_limit_;
+  size_t bytes_to_free = ranges_size - memory_limit_;
 
   DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName() << ": Before GC"
            << " ranges_size=" << ranges_size
@@ -643,14 +643,14 @@ void SourceBufferStream::GarbageCollectIfNeeded() {
            << " memory_limit_=" << memory_limit_;
 
   // Begin deleting after the last appended buffer.
-  int bytes_freed = FreeBuffersAfterLastAppended(bytes_to_free);
+  size_t bytes_freed = FreeBuffersAfterLastAppended(bytes_to_free);
 
   // Begin deleting from the front.
-  if (bytes_to_free - bytes_freed > 0)
+  if (bytes_freed < bytes_to_free)
     bytes_freed += FreeBuffers(bytes_to_free - bytes_freed, false);
 
   // Begin deleting from the back.
-  if (bytes_to_free - bytes_freed > 0)
+  if (bytes_freed < bytes_to_free)
     bytes_freed += FreeBuffers(bytes_to_free - bytes_freed, true);
 
   DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName() << ": After GC"
@@ -658,7 +658,8 @@ void SourceBufferStream::GarbageCollectIfNeeded() {
            << " ranges_=" << RangesToString(ranges_);
 }
 
-int SourceBufferStream::FreeBuffersAfterLastAppended(int total_bytes_to_free) {
+size_t SourceBufferStream::FreeBuffersAfterLastAppended(
+    size_t total_bytes_to_free) {
   DecodeTimestamp next_buffer_timestamp = GetNextBufferTimestamp();
   if (last_appended_buffer_timestamp_ == kNoDecodeTimestamp() ||
       next_buffer_timestamp == kNoDecodeTimestamp() ||
@@ -678,9 +679,10 @@ int SourceBufferStream::FreeBuffersAfterLastAppended(int total_bytes_to_free) {
     return 0;
 
   DecodeTimestamp remove_range_end;
-  int bytes_freed = GetRemovalRange(
-      remove_range_start, next_buffer_timestamp, total_bytes_to_free,
-      &remove_range_end);
+  size_t bytes_freed = GetRemovalRange(remove_range_start,
+                                       next_buffer_timestamp,
+                                       total_bytes_to_free,
+                                       &remove_range_end);
   if (bytes_freed > 0) {
     Remove(remove_range_start.ToPresentationTime(),
            remove_range_end.ToPresentationTime(),
@@ -690,51 +692,49 @@ int SourceBufferStream::FreeBuffersAfterLastAppended(int total_bytes_to_free) {
   return bytes_freed;
 }
 
-int SourceBufferStream::GetRemovalRange(
+size_t SourceBufferStream::GetRemovalRange(
     DecodeTimestamp start_timestamp, DecodeTimestamp end_timestamp,
-    int total_bytes_to_free, DecodeTimestamp* removal_end_timestamp) {
+    size_t total_bytes_to_free, DecodeTimestamp* removal_end_timestamp) {
   DCHECK(start_timestamp >= DecodeTimestamp()) << start_timestamp.InSecondsF();
   DCHECK(start_timestamp < end_timestamp)
       << "start " << start_timestamp.InSecondsF()
       << ", end " << end_timestamp.InSecondsF();
 
-  int bytes_to_free = total_bytes_to_free;
-  int bytes_freed = 0;
+  size_t bytes_freed = 0;
 
   for (RangeList::iterator itr = ranges_.begin();
-       itr != ranges_.end() && bytes_to_free > 0; ++itr) {
+       itr != ranges_.end() && bytes_freed < total_bytes_to_free; ++itr) {
     SourceBufferRange* range = *itr;
     if (range->GetStartTimestamp() >= end_timestamp)
       break;
     if (range->GetEndTimestamp() < start_timestamp)
       continue;
 
-    int bytes_removed = range->GetRemovalGOP(
+    size_t bytes_to_free = total_bytes_to_free - bytes_freed;
+    size_t bytes_removed = range->GetRemovalGOP(
         start_timestamp, end_timestamp, bytes_to_free, removal_end_timestamp);
-    bytes_to_free -= bytes_removed;
     bytes_freed += bytes_removed;
   }
   return bytes_freed;
 }
 
-int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
-                                    bool reverse_direction) {
+size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
+                                       bool reverse_direction) {
   TRACE_EVENT2("media", "SourceBufferStream::FreeBuffers",
                "total bytes to free", total_bytes_to_free,
                "reverse direction", reverse_direction);
 
-  DCHECK_GT(total_bytes_to_free, 0);
-  int bytes_to_free = total_bytes_to_free;
-  int bytes_freed = 0;
+  DCHECK_GT(total_bytes_to_free, 0u);
+  size_t bytes_freed = 0;
 
   // This range will save the last GOP appended to |range_for_next_append_|
   // if the buffers surrounding it get deleted during garbage collection.
   SourceBufferRange* new_range_for_append = NULL;
 
-  while (!ranges_.empty() && bytes_to_free > 0) {
+  while (!ranges_.empty() && bytes_freed < total_bytes_to_free) {
     SourceBufferRange* current_range = NULL;
     BufferQueue buffers;
-    int bytes_deleted = 0;
+    size_t bytes_deleted = 0;
 
     if (reverse_direction) {
       current_range = ranges_.back();
@@ -765,7 +765,6 @@ int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
                      base::Unretained(this)));
       range_for_next_append_ = ranges_.end();
     } else {
-      bytes_to_free -= bytes_deleted;
       bytes_freed += bytes_deleted;
     }
 

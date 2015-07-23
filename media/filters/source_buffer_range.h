@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/stream_parser_buffer.h"
@@ -111,17 +112,17 @@ class SourceBufferRange {
   // Deletes a GOP from the front or back of the range and moves these
   // buffers into |deleted_buffers|. Returns the number of bytes deleted from
   // the range (i.e. the size in bytes of |deleted_buffers|).
-  int DeleteGOPFromFront(BufferQueue* deleted_buffers);
-  int DeleteGOPFromBack(BufferQueue* deleted_buffers);
+  size_t DeleteGOPFromFront(BufferQueue* deleted_buffers);
+  size_t DeleteGOPFromBack(BufferQueue* deleted_buffers);
 
   // Gets the range of GOP to secure at least |bytes_to_free| from
   // [|start_timestamp|, |end_timestamp|).
   // Returns the size of the buffers to secure if the buffers of
   // [|start_timestamp|, |end_removal_timestamp|) is removed.
   // Will not update |end_removal_timestamp| if the returned size is 0.
-  int GetRemovalGOP(
+  size_t GetRemovalGOP(
       DecodeTimestamp start_timestamp, DecodeTimestamp end_timestamp,
-      int bytes_to_free, DecodeTimestamp* end_removal_timestamp);
+      size_t bytes_to_free, DecodeTimestamp* end_removal_timestamp);
 
   // Indicates whether the GOP at the beginning or end of the range contains the
   // next buffer position.
@@ -201,7 +202,7 @@ class SourceBufferRange {
   bool GetBuffersInRange(DecodeTimestamp start, DecodeTimestamp end,
                          BufferQueue* buffers);
 
-  int size_in_bytes() const { return size_in_bytes_; }
+  size_t size_in_bytes() const { return size_in_bytes_; }
 
  private:
   typedef std::map<DecodeTimestamp, int> KeyframeMap;
@@ -284,7 +285,7 @@ class SourceBufferRange {
   InterbufferDistanceCB interbuffer_distance_cb_;
 
   // Stores the amount of memory taken up by the data in |buffers_|.
-  int size_in_bytes_;
+  size_t size_in_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferRange);
 };

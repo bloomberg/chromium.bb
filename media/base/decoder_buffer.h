@@ -96,6 +96,7 @@ class MEDIA_EXPORT DecoderBuffer
     return data_.get();
   }
 
+  // TODO(servolk): data_size should return size_t instead of int
   int data_size() const {
     DCHECK(!end_of_stream());
     return size_;
@@ -106,6 +107,7 @@ class MEDIA_EXPORT DecoderBuffer
     return side_data_.get();
   }
 
+  // TODO(servolk): side_data_size should return size_t instead of int
   int side_data_size() const {
     DCHECK(!end_of_stream());
     return side_data_size_;
@@ -187,6 +189,7 @@ class MEDIA_EXPORT DecoderBuffer
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 
+  // TODO(servolk): Consider changing size_/side_data_size_ types to size_t.
   int size_;
   scoped_ptr<uint8, base::AlignedFreeDeleter> data_;
   int side_data_size_;

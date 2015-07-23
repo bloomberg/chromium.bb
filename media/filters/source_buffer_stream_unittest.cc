@@ -38,7 +38,7 @@ class SourceBufferStreamTest : public testing::Test {
     stream_.reset(new SourceBufferStream(video_config_, new MediaLog(), true));
   }
 
-  void SetMemoryLimit(int buffers_of_data) {
+  void SetMemoryLimit(size_t buffers_of_data) {
     stream_->set_memory_limit(buffers_of_data * kDataSize);
   }
 
