@@ -243,7 +243,7 @@ void DomDistillerViewerSource::StartDataRequest(
       dom_distiller_service_, path, request_viewer_handle,
       web_contents->GetContainerBounds().size());
 
-  GURL current_url = web_contents->GetLastCommittedURL();
+  GURL current_url(url_utils::GetValueForKeyInUrlPathQuery(path, kUrlKey));
   std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
       url_utils::GetOriginalUrlFromDistillerUrl(current_url).spec(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
