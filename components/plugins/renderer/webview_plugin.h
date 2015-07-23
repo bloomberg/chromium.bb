@@ -169,10 +169,11 @@ class WebViewPlugin : public blink::WebPlugin,
 
   blink::WebURLResponse response_;
   std::list<std::string> data_;
-  bool finished_loading_;
   scoped_ptr<blink::WebURLError> error_;
   blink::WebString old_title_;
+  bool finished_loading_;
   bool focused_;
+  bool animationNeeded_;
 };
 
 #endif  // COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_
