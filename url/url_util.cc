@@ -38,6 +38,17 @@ std::vector<const char*>* standard_schemes = NULL;
 // See the LockStandardSchemes declaration in the header.
 bool standard_schemes_locked = false;
 
+// This template converts a given character type to the corresponding
+// StringPiece type.
+template<typename CHAR> struct CharToStringPiece {
+};
+template<> struct CharToStringPiece<char> {
+  typedef base::StringPiece Piece;
+};
+template<> struct CharToStringPiece<base::char16> {
+  typedef base::StringPiece16 Piece;
+};
+
 // Ensures that the standard_schemes list is initialized, does nothing if it
 // already has values.
 void InitStandardSchemes() {
@@ -56,9 +67,10 @@ inline bool DoCompareSchemeComponent(const CHAR* spec,
                                      const char* compare_to) {
   if (!component.is_nonempty())
     return compare_to[0] == 0;  // When component is empty, match empty scheme.
-  return base::LowerCaseEqualsASCII(&spec[component.begin],
-                                    &spec[component.end()],
-                                    compare_to);
+  return base::LowerCaseEqualsASCII(
+      typename CharToStringPiece<CHAR>::Piece(
+          &spec[component.begin], component.len),
+      compare_to);
 }
 
 // Returns true if the given scheme identified by |scheme| within |spec| is one
@@ -70,8 +82,10 @@ bool DoIsStandard(const CHAR* spec, const Component& scheme) {
 
   InitStandardSchemes();
   for (size_t i = 0; i < standard_schemes->size(); i++) {
-    if (base::LowerCaseEqualsASCII(&spec[scheme.begin], &spec[scheme.end()],
-                                   standard_schemes->at(i)))
+    if (base::LowerCaseEqualsASCII(
+            typename CharToStringPiece<CHAR>::Piece(
+                &spec[scheme.begin], scheme.len),
+            standard_schemes->at(i)))
       return true;
   }
   return false;

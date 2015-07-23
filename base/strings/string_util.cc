@@ -509,66 +509,45 @@ bool IsStringUTF8(const StringPiece& str) {
   return true;
 }
 
-template<typename Iter>
-static inline bool DoLowerCaseEqualsASCII(Iter a_begin,
-                                          Iter a_end,
-                                          const char* b) {
-  for (Iter it = a_begin; it != a_end; ++it, ++b) {
-    if (!*b || ToLowerASCII(*it) != *b)
+// Implementation note: Normally this function will be called with a hardcoded
+// constant for the lowercase_ascii parameter. Constructing a StringPiece from
+// a C constant requires running strlen, so the result will be two passes
+// through the buffers, one to file the length of lowercase_ascii, and one to
+// compare each letter.
+//
+// This function could have taken a const char* to avoid this and only do one
+// pass through the string. But the strlen is faster than the case-insensitive
+// compares and lets us early-exit in the case that the strings are different
+// lengths (will often be the case for non-matches). So whether one approach or
+// the other will be faster depends on the case.
+//
+// The hardcoded strings are typically very short so it doesn't matter, and the
+// string piece gives additional flexibility for the caller (doesn't have to be
+// null terminated) so we choose the StringPiece route.
+template<typename Str>
+static inline bool DoLowerCaseEqualsASCII(BasicStringPiece<Str> str,
+                                          StringPiece lowercase_ascii) {
+  if (str.size() != lowercase_ascii.size())
+    return false;
+  for (size_t i = 0; i < str.size(); i++) {
+    if (ToLowerASCII(str[i]) != lowercase_ascii[i])
       return false;
   }
-  return *b == 0;
+  return true;
 }
 
-// Front-ends for LowerCaseEqualsASCII.
-bool LowerCaseEqualsASCII(const std::string& a, const char* b) {
-  return DoLowerCaseEqualsASCII(a.begin(), a.end(), b);
+bool LowerCaseEqualsASCII(StringPiece str, StringPiece lowercase_ascii) {
+  return DoLowerCaseEqualsASCII<std::string>(str, lowercase_ascii);
 }
 
-bool LowerCaseEqualsASCII(const string16& a, const char* b) {
-  return DoLowerCaseEqualsASCII(a.begin(), a.end(), b);
+bool LowerCaseEqualsASCII(StringPiece16 str, StringPiece lowercase_ascii) {
+  return DoLowerCaseEqualsASCII<string16>(str, lowercase_ascii);
 }
 
-bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
-                          std::string::const_iterator a_end,
-                          const char* b) {
-  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
-}
-
-bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
-                          string16::const_iterator a_end,
-                          const char* b) {
-  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
-}
-
-bool LowerCaseEqualsASCII(const char* a_begin,
-                          const char* a_end,
-                          const char* b) {
-  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
-}
-
-bool LowerCaseEqualsASCII(const char* a_begin,
-                          const char* a_end,
-                          const char* b_begin,
-                          const char* b_end) {
-  while (a_begin != a_end && b_begin != b_end &&
-         ToLowerASCII(*a_begin) == *b_begin) {
-    a_begin++;
-    b_begin++;
-  }
-  return a_begin == a_end && b_begin == b_end;
-}
-
-bool LowerCaseEqualsASCII(const char16* a_begin,
-                          const char16* a_end,
-                          const char* b) {
-  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
-}
-
-bool EqualsASCII(const string16& a, const StringPiece& b) {
-  if (a.length() != b.length())
+bool EqualsASCII(StringPiece16 str, StringPiece ascii) {
+  if (str.length() != ascii.length())
     return false;
-  return std::equal(b.begin(), b.end(), a.begin());
+  return std::equal(ascii.begin(), ascii.end(), str.begin());
 }
 
 template<typename Str>

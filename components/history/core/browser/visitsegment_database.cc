@@ -105,10 +105,9 @@ std::string VisitSegmentDatabase::ComputeSegmentName(const GURL& url) {
   const int kWWWDotLen = arraysize(kWWWDot) - 1;
 
   std::string host = url.host();
-  const char* host_c = host.c_str();
   // Remove www. to avoid some dups.
   if (static_cast<int>(host.size()) > kWWWDotLen &&
-      base::LowerCaseEqualsASCII(host_c, host_c + kWWWDotLen, kWWWDot)) {
+      base::StartsWith(host, kWWWDot, base::CompareCase::INSENSITIVE_ASCII)) {
     r.SetHost(host.c_str(),
               url::Component(kWWWDotLen,
                              static_cast<int>(host.size()) - kWWWDotLen));

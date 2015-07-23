@@ -831,11 +831,8 @@ bool DataReductionProxyConfig::MaybeDisableIfVPN() {
   // Data Saver will not be disabled on any other platform on VPN.
   const std::string vpn_interface_name_prefix = "tun";
   for (size_t i = 0; i < network_interfaces.size(); ++i) {
-    std::string interface_name = network_interfaces[i].name;
-    if (base::LowerCaseEqualsASCII(
-            interface_name.begin(),
-            interface_name.begin() + vpn_interface_name_prefix.size(),
-            vpn_interface_name_prefix.c_str())) {
+    if (base::StartsWith(network_interfaces[i].name, vpn_interface_name_prefix,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       disabled_on_vpn_ = true;
       ReloadConfig();
       RecordNetworkChangeEvent(DISABLED_ON_VPN);

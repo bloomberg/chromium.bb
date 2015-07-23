@@ -4229,7 +4229,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     bool is_form_post =
         ((info.navigationType == blink::WebNavigationTypeFormSubmitted) ||
             (info.navigationType == blink::WebNavigationTypeFormResubmitted)) &&
-        base::EqualsASCII(info.urlRequest.httpMethod(), "POST");
+        base::EqualsASCII(base::StringPiece16(info.urlRequest.httpMethod()),
+                          "POST");
     bool browser_handles_request =
         render_view_->renderer_preferences_
             .browser_handles_non_local_top_level_requests
@@ -4813,7 +4814,7 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
     blink::WebLocalFrame* frame) {
   bool show_repost_interstitial =
       (error.reason == net::ERR_CACHE_MISS &&
-       base::EqualsASCII(request.httpMethod(), "POST"));
+       base::EqualsASCII(base::StringPiece16(request.httpMethod()), "POST"));
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.error_code = error.reason;

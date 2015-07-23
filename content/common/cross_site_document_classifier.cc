@@ -40,16 +40,9 @@ bool MatchesSignature(StringPiece data,
     return false;
 
   data.remove_prefix(offset);
-  size_t length = data.length();
-
   for (size_t sig_index = 0; sig_index < arr_size; ++sig_index) {
-    const StringPiece& signature = signatures[sig_index];
-    size_t signature_length = signature.length();
-    if (length < signature_length)
-      continue;
-
-    if (base::LowerCaseEqualsASCII(
-            data.begin(), data.begin() + signature_length, signature.data()))
+    if (base::StartsWith(data, signatures[sig_index],
+                         base::CompareCase::INSENSITIVE_ASCII))
       return true;
   }
   return false;

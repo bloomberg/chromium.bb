@@ -316,35 +316,18 @@ template <class str> inline str StringToUpperASCII(const str& s) {
   StringToUpperASCII(&output);
   return output;
 }
-//
-// Compare the lower-case form of the given string against the given ASCII
-// string.  This is useful for doing checking if an input string matches some
-// token, and it is optimized to avoid intermediate string copies.  This API is
-// borrowed from the equivalent APIs in Mozilla.
-BASE_EXPORT bool LowerCaseEqualsASCII(const std::string& a, const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(const string16& a, const char* b);
 
-// Same thing, but with string iterators instead.
-BASE_EXPORT bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
-                                      std::string::const_iterator a_end,
-                                      const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
-                                      string16::const_iterator a_end,
-                                      const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
-                                      const char* a_end,
-                                      const char* b);
-BASE_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
-                                      const char* a_end,
-                                      const char* b_begin,
-                                      const char* b_end);
-BASE_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
-                                      const char16* a_end,
-                                      const char* b);
+// Compare the lower-case form of the given string against the given
+// previously-lower-cased ASCII string (typically a constant).
+BASE_EXPORT bool LowerCaseEqualsASCII(StringPiece str,
+                                      StringPiece lowecase_ascii);
+BASE_EXPORT bool LowerCaseEqualsASCII(StringPiece16 str,
+                                      StringPiece lowecase_ascii);
 
-// Performs a case-sensitive string compare. The behavior is undefined if both
-// strings are not ASCII.
-BASE_EXPORT bool EqualsASCII(const string16& a, const StringPiece& b);
+// Performs a case-sensitive string compare of the given 16-bit string against
+// the given 8-bit ASCII string (typically a constant). The behavior is
+// undefined if the |ascii| string is not ASCII.
+BASE_EXPORT bool EqualsASCII(StringPiece16 str, StringPiece ascii);
 
 // Indicates case sensitivity of comparisons. Only ASCII case insensitivity
 // is supported. Full Unicode case-insensitive conversions would need to go in

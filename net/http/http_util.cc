@@ -118,14 +118,15 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
       DCHECK(param_value_begin <= tokenizer.token_end());
       TrimLWS(&param_value_begin, &param_value_end);
 
-      if (base::LowerCaseEqualsASCII(param_name_begin, param_name_end,
-                                     "charset")) {
+      if (base::LowerCaseEqualsASCII(
+              base::StringPiece(param_name_begin, param_name_end), "charset")) {
         // TODO(abarth): Refactor this function to consistently use iterators.
         charset_val = param_value_begin - begin;
         charset_end = param_value_end - begin;
         type_has_charset = true;
-      } else if (base::LowerCaseEqualsASCII(param_name_begin, param_name_end,
-                                            "boundary")) {
+      } else if (base::LowerCaseEqualsASCII(
+                     base::StringPiece(param_name_begin, param_name_end),
+                     "boundary")) {
         if (boundary)
           boundary->assign(param_value_begin, param_value_end);
       }
@@ -162,8 +163,9 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
       content_type_str.find_first_of('/') != std::string::npos) {
     // Common case here is that mime_type is empty
     bool eq = !mime_type->empty() &&
-              base::LowerCaseEqualsASCII(begin + type_val, begin + type_end,
-                                         mime_type->data());
+              base::LowerCaseEqualsASCII(
+                  base::StringPiece(begin + type_val, begin + type_end),
+                  mime_type->data());
     if (!eq) {
       mime_type->assign(begin + type_val, begin + type_end);
       base::StringToLowerASCII(mime_type);
@@ -220,7 +222,8 @@ bool HttpUtil::ParseRangeHeader(const std::string& ranges_specifier,
 
   TrimLWS(&bytes_unit_begin, &bytes_unit_end);
   // "bytes" unit identifier is not found.
-  if (!base::LowerCaseEqualsASCII(bytes_unit_begin, bytes_unit_end, "bytes"))
+  if (!base::LowerCaseEqualsASCII(
+          base::StringPiece(bytes_unit_begin, bytes_unit_end), "bytes"))
     return false;
 
   ValuesIterator byte_range_set_iterator(byte_range_set_begin,
@@ -386,8 +389,9 @@ std::string HttpUtil::StripHeaders(const std::string& headers,
   while (it.GetNext()) {
     bool should_remove = false;
     for (size_t i = 0; i < headers_to_remove_len; ++i) {
-      if (base::LowerCaseEqualsASCII(it.name_begin(), it.name_end(),
-                                     headers_to_remove[i])) {
+      if (base::LowerCaseEqualsASCII(
+              base::StringPiece(it.name_begin(), it.name_end()),
+              headers_to_remove[i])) {
         should_remove = true;
         break;
       }
@@ -422,7 +426,7 @@ bool HttpUtil::IsNonCoalescingHeader(std::string::const_iterator name_begin,
     "strict-transport-security"
   };
   for (size_t i = 0; i < arraysize(kNonCoalescingHeaders); ++i) {
-    if (base::LowerCaseEqualsASCII(name_begin, name_end,
+    if (base::LowerCaseEqualsASCII(base::StringPiece(name_begin, name_end),
                                    kNonCoalescingHeaders[i]))
       return true;
   }
@@ -537,7 +541,8 @@ int HttpUtil::LocateStartOfStatusLine(const char* buf, int buf_len) {
   if (buf_len >= http_len) {
     int i_max = std::min(buf_len - http_len, slop);
     for (int i = 0; i <= i_max; ++i) {
-      if (base::LowerCaseEqualsASCII(buf + i, buf + i + http_len, "http"))
+      if (base::LowerCaseEqualsASCII(base::StringPiece(buf + i, http_len),
+                                     "http"))
         return i;
     }
   }
@@ -753,7 +758,7 @@ bool HttpUtil::HasStrongValidators(HttpVersion version,
     std::string::const_iterator i = etag_header.begin();
     std::string::const_iterator j = etag_header.begin() + slash;
     TrimLWS(&i, &j);
-    if (!base::LowerCaseEqualsASCII(i, j, "w"))
+    if (!base::LowerCaseEqualsASCII(base::StringPiece(i, j), "w"))
       return true;
   }
 
@@ -854,7 +859,8 @@ bool HttpUtil::HeadersIterator::AdvanceTo(const char* name) {
       << "the header name must be in all lower case";
 
   while (GetNext()) {
-    if (base::LowerCaseEqualsASCII(name_begin_, name_end_, name)) {
+    if (base::LowerCaseEqualsASCII(base::StringPiece(name_begin_, name_end_),
+                                   name)) {
       return true;
     }
   }

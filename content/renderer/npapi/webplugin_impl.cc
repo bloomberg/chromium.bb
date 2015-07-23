@@ -208,7 +208,7 @@ void GetResponseInfo(const WebURLResponse& response,
   WebString content_encoding =
       response.httpHeaderField(WebString::fromUTF8("Content-Encoding"));
   if (!content_encoding.isNull() &&
-      !base::EqualsASCII(content_encoding, "identity")) {
+      !base::EqualsASCII(base::StringPiece16(content_encoding), "identity")) {
     // Don't send the compressed content length to the plugin, which only
     // cares about the decoded length.
     response_info->expected_length = 0;

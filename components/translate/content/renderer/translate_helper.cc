@@ -116,7 +116,8 @@ bool HasNoTranslateMeta(WebDocument* document) {
       attribute = element.getAttribute(content);
     if (attribute.isNull())
       continue;
-    if (base::LowerCaseEqualsASCII(attribute, "notranslate"))
+    if (base::LowerCaseEqualsASCII(base::StringPiece16(attribute),
+                                   "notranslate"))
       return true;
   }
   return false;

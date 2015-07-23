@@ -610,7 +610,8 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
 #if defined(ENABLE_EXTENSIONS)
 const Extension* ChromeContentRendererClient::GetExtensionByOrigin(
     const WebSecurityOrigin& origin) const {
-  if (!base::EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
+  if (!base::EqualsASCII(base::StringPiece16(origin.protocol()),
+                         extensions::kExtensionScheme))
     return NULL;
 
   const std::string extension_id = origin.host().utf8().data();
@@ -1141,7 +1142,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     base::string16* error_description) {
   const GURL failed_url = error.unreachableURL;
 
-  bool is_post = base::EqualsASCII(failed_request.httpMethod(), "POST");
+  bool is_post = base::EqualsASCII(
+      base::StringPiece16(failed_request.httpMethod()), "POST");
 
   if (error_html) {
     // TODO(ellyjones): change GetNavigationErrorStrings to take a RenderFrame

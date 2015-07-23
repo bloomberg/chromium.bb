@@ -2293,7 +2293,8 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
         return true;
     }
 
-    return base::LowerCaseEqualsASCII(element.getAttribute("role"), "textbox");
+    return base::LowerCaseEqualsASCII(
+        base::StringPiece16(element.getAttribute("role")), "textbox");
   }
 
   return false;

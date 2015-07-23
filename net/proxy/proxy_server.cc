@@ -18,26 +18,24 @@ namespace {
 // Parses the proxy type from a PAC string, to a ProxyServer::Scheme.
 // This mapping is case-insensitive. If no type could be matched
 // returns SCHEME_INVALID.
-ProxyServer::Scheme GetSchemeFromPacTypeInternal(
-    std::string::const_iterator begin,
-    std::string::const_iterator end) {
-  if (base::LowerCaseEqualsASCII(begin, end, "proxy"))
+ProxyServer::Scheme GetSchemeFromPacTypeInternal(base::StringPiece type) {
+  if (base::LowerCaseEqualsASCII(type, "proxy"))
     return ProxyServer::SCHEME_HTTP;
-  if (base::LowerCaseEqualsASCII(begin, end, "socks")) {
+  if (base::LowerCaseEqualsASCII(type, "socks")) {
     // Default to v4 for compatibility. This is because the SOCKS4 vs SOCKS5
     // notation didn't originally exist, so if a client returns SOCKS they
     // really meant SOCKS4.
     return ProxyServer::SCHEME_SOCKS4;
   }
-  if (base::LowerCaseEqualsASCII(begin, end, "socks4"))
+  if (base::LowerCaseEqualsASCII(type, "socks4"))
     return ProxyServer::SCHEME_SOCKS4;
-  if (base::LowerCaseEqualsASCII(begin, end, "socks5"))
+  if (base::LowerCaseEqualsASCII(type, "socks5"))
     return ProxyServer::SCHEME_SOCKS5;
-  if (base::LowerCaseEqualsASCII(begin, end, "direct"))
+  if (base::LowerCaseEqualsASCII(type, "direct"))
     return ProxyServer::SCHEME_DIRECT;
-  if (base::LowerCaseEqualsASCII(begin, end, "https"))
+  if (base::LowerCaseEqualsASCII(type, "https"))
     return ProxyServer::SCHEME_HTTPS;
-  if (base::LowerCaseEqualsASCII(begin, end, "quic"))
+  if (base::LowerCaseEqualsASCII(type, "quic"))
     return ProxyServer::SCHEME_QUIC;
 
   return ProxyServer::SCHEME_INVALID;
@@ -46,21 +44,20 @@ ProxyServer::Scheme GetSchemeFromPacTypeInternal(
 // Parses the proxy scheme from a URL-like representation, to a
 // ProxyServer::Scheme. This corresponds with the values used in
 // ProxyServer::ToURI(). If no type could be matched, returns SCHEME_INVALID.
-ProxyServer::Scheme GetSchemeFromURIInternal(std::string::const_iterator begin,
-                                             std::string::const_iterator end) {
-  if (base::LowerCaseEqualsASCII(begin, end, "http"))
+ProxyServer::Scheme GetSchemeFromURIInternal(base::StringPiece type) {
+  if (base::LowerCaseEqualsASCII(type, "http"))
     return ProxyServer::SCHEME_HTTP;
-  if (base::LowerCaseEqualsASCII(begin, end, "socks4"))
+  if (base::LowerCaseEqualsASCII(type, "socks4"))
     return ProxyServer::SCHEME_SOCKS4;
-  if (base::LowerCaseEqualsASCII(begin, end, "socks"))
+  if (base::LowerCaseEqualsASCII(type, "socks"))
     return ProxyServer::SCHEME_SOCKS5;
-  if (base::LowerCaseEqualsASCII(begin, end, "socks5"))
+  if (base::LowerCaseEqualsASCII(type, "socks5"))
     return ProxyServer::SCHEME_SOCKS5;
-  if (base::LowerCaseEqualsASCII(begin, end, "direct"))
+  if (base::LowerCaseEqualsASCII(type, "direct"))
     return ProxyServer::SCHEME_DIRECT;
-  if (base::LowerCaseEqualsASCII(begin, end, "https"))
+  if (base::LowerCaseEqualsASCII(type, "https"))
     return ProxyServer::SCHEME_HTTPS;
-  if (base::LowerCaseEqualsASCII(begin, end, "quic"))
+  if (base::LowerCaseEqualsASCII(type, "quic"))
     return ProxyServer::SCHEME_QUIC;
   return ProxyServer::SCHEME_INVALID;
 }
@@ -108,7 +105,7 @@ ProxyServer ProxyServer::FromURI(std::string::const_iterator begin,
       (end - colon) >= 3 &&
       *(colon + 1) == '/' &&
       *(colon + 2) == '/') {
-    scheme = GetSchemeFromURIInternal(begin, colon);
+    scheme = GetSchemeFromURIInternal(base::StringPiece(begin, colon));
     begin = colon + 3;  // Skip past the "://"
   }
 
@@ -161,7 +158,7 @@ ProxyServer ProxyServer::FromPacString(std::string::const_iterator begin,
   }
 
   // Everything to the left of the space is the scheme.
-  Scheme scheme = GetSchemeFromPacTypeInternal(begin, space);
+  Scheme scheme = GetSchemeFromPacTypeInternal(base::StringPiece(begin, space));
 
   // And everything to the right of the space is the
   // <host>[":" <port>].
@@ -169,7 +166,7 @@ ProxyServer ProxyServer::FromPacString(std::string::const_iterator begin,
 }
 
 std::string ProxyServer::ToPacString() const {
-    switch (scheme_) {
+  switch (scheme_) {
     case SCHEME_DIRECT:
       return "DIRECT";
     case SCHEME_HTTP:
@@ -210,7 +207,7 @@ int ProxyServer::GetDefaultPortForScheme(Scheme scheme) {
 
 // static
 ProxyServer::Scheme ProxyServer::GetSchemeFromURI(const std::string& scheme) {
-  return GetSchemeFromURIInternal(scheme.begin(), scheme.end());
+  return GetSchemeFromURIInternal(scheme);
 }
 
 // static

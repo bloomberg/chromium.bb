@@ -175,10 +175,12 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
         if (!app_info->app_url.is_valid())
           app_info->app_url = GURL();
       } else if (name == "mobile-web-app-capable" &&
-                 base::LowerCaseEqualsASCII(content, "yes")) {
+                 base::LowerCaseEqualsASCII(base::StringPiece16(content),
+                                            "yes")) {
         app_info->mobile_capable = WebApplicationInfo::MOBILE_CAPABLE;
       } else if (name == "apple-mobile-web-app-capable" &&
-                 base::LowerCaseEqualsASCII(content, "yes") &&
+                 base::LowerCaseEqualsASCII(
+                     base::StringPiece16(content), "yes") &&
                  app_info->mobile_capable ==
                      WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED) {
         app_info->mobile_capable = WebApplicationInfo::MOBILE_CAPABLE_APPLE;

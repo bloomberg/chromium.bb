@@ -95,15 +95,13 @@ const char* const kNonUpdatedHeaderPrefixes[] = {
   "x-webkit-"
 };
 
-bool ShouldUpdateHeader(const std::string::const_iterator& name_begin,
-                        const std::string::const_iterator& name_end) {
+bool ShouldUpdateHeader(base::StringPiece name) {
   for (size_t i = 0; i < arraysize(kNonUpdatedHeaders); ++i) {
-    if (base::LowerCaseEqualsASCII(name_begin, name_end, kNonUpdatedHeaders[i]))
+    if (base::LowerCaseEqualsASCII(name, kNonUpdatedHeaders[i]))
       return false;
   }
   for (size_t i = 0; i < arraysize(kNonUpdatedHeaderPrefixes); ++i) {
-    if (base::StartsWith(base::StringPiece(name_begin, name_end),
-                         kNonUpdatedHeaderPrefixes[i],
+    if (base::StartsWith(name, kNonUpdatedHeaderPrefixes[i],
                          base::CompareCase::INSENSITIVE_ASCII))
       return false;
   }
@@ -248,16 +246,16 @@ void HttpResponseHeaders::Update(const HttpResponseHeaders& new_headers) {
     while (++k < new_parsed.size() && new_parsed[k].is_continuation()) {}
     --k;
 
-    const std::string::const_iterator& name_begin = new_parsed[i].name_begin;
-    const std::string::const_iterator& name_end = new_parsed[i].name_end;
-    if (ShouldUpdateHeader(name_begin, name_end)) {
-      std::string name(name_begin, name_end);
-      base::StringToLowerASCII(&name);
-      updated_headers.insert(name);
+    base::StringPiece name(new_parsed[i].name_begin, new_parsed[i].name_end);
+    if (ShouldUpdateHeader(name)) {
+      std::string name_lower;
+      name.CopyToString(&name_lower);
+      base::StringToLowerASCII(&name_lower);
+      updated_headers.insert(name_lower);
 
       // Preserve this header line in the merged result, making sure there is
       // a null after the value.
-      new_raw_headers.append(name_begin, new_parsed[k].value_end);
+      new_raw_headers.append(new_parsed[i].name_begin, new_parsed[k].value_end);
       new_raw_headers.push_back('\0');
     }
 
@@ -631,7 +629,8 @@ HttpVersion HttpResponseHeaders::ParseVersion(
   // TODO: (1*DIGIT apparently means one or more digits, but we only handle 1).
   // TODO: handle leading zeros, which is allowed by the rfc1616 sec 3.1.
 
-  if ((line_end - p < 4) || !base::LowerCaseEqualsASCII(p, p + 4, "http")) {
+  if (!base::StartsWith(base::StringPiece(line_begin, line_end), "http",
+                        base::CompareCase::INSENSITIVE_ASCII)) {
     DVLOG(1) << "missing status line";
     return HttpVersion();
   }
@@ -759,8 +758,8 @@ bool HttpResponseHeaders::GetCacheControlDirective(const StringPiece& directive,
   void* iter = NULL;
   while (EnumerateHeader(&iter, name, &value)) {
     if (value.size() > directive_size + 1 &&
-        base::LowerCaseEqualsASCII(
-            value.begin(), value.begin() + directive_size, directive.begin()) &&
+        base::StartsWith(value, directive,
+                         base::CompareCase::INSENSITIVE_ASCII) &&
         value[directive_size] == '=') {
       int64 seconds;
       base::StringToInt64(
@@ -1304,8 +1303,9 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
   std::string::const_iterator content_range_spec_end =
       content_range_spec.begin() + space_position;
   HttpUtil::TrimLWS(&content_range_spec_begin, &content_range_spec_end);
-  if (!base::LowerCaseEqualsASCII(content_range_spec_begin,
-                                  content_range_spec_end, "bytes")) {
+  if (!base::LowerCaseEqualsASCII(
+          base::StringPiece(content_range_spec_begin, content_range_spec_end),
+          "bytes")) {
     return false;
   }
 
@@ -1368,8 +1368,9 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
       content_range_spec.end();
   HttpUtil::TrimLWS(&instance_length_begin, &instance_length_end);
 
-  if (base::LowerCaseEqualsASCII(instance_length_begin, instance_length_end,
-                                 "*")) {
+  if (base::StartsWith(
+          base::StringPiece(instance_length_begin, instance_length_end), "*",
+          base::CompareCase::SENSITIVE)) {
     return false;
   } else if (!base::StringToInt64(StringPiece(instance_length_begin,
                                               instance_length_end),

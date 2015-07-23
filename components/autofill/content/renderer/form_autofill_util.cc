@@ -1182,7 +1182,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     // attribute was present.
     field->autocomplete_attribute = "x-max-data-length-exceeded";
   }
-  if (base::LowerCaseEqualsASCII(element.getAttribute(kRole), "presentation"))
+  if (base::LowerCaseEqualsASCII(
+          base::StringPiece16(element.getAttribute(kRole)), "presentation"))
     field->role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
 
   if (!IsAutofillableElement(element))
