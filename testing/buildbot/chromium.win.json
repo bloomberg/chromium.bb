@@ -1153,7 +1153,6 @@
       }
     ]
   },
-  "Win7 Tests (ANGLE)": {},
   "Win7 Tests (dbg)(1)": {
     "gtest_tests": [
       {
