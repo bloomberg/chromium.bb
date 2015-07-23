@@ -541,11 +541,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
       FindFrameEntry(frame_tree_node->parent());
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
-    // However, we may see commits of subframes when their parent or ancestor is
-    // still the initial about:blank page, and we don't currently keep a
-    // FrameNavigationEntry for that.  We ignore such commits, similar to how we
-    // handle them at the top level.
-    // TODO(creis): Consider creating FNEs for initial about:blank commits.
+    // TODO(creis): Kill the renderer if we get here.
+    NOTREACHED() << "Shouldn't see a commit for a subframe before parent.";
     return;
   }
 
@@ -561,11 +558,9 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
     }
   }
 
-  // No entry exists yet, so create a new one unless it's for about:blank.
+  // No entry exists yet, so create a new one.
   // Unordered list, since we expect to look up entries by frame sequence number
   // or unique name.
-  if (url == GURL(url::kAboutBlankURL))
-    return;
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
       frame_tree_node_id, item_sequence_number, document_sequence_number,
       site_instance, url, referrer);

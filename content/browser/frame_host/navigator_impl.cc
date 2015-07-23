@@ -314,7 +314,7 @@ bool NavigatorImpl::NavigateToEntry(
         entry.ConstructStartNavigationParams(),
         entry.ConstructRequestNavigationParams(
             frame_entry, navigation_start, is_same_document_history_load,
-            controller_->HasCommittedRealLoad(frame_tree_node),
+            frame_tree_node->has_committed_real_load(),
             controller_->GetPendingEntryIndex() == -1,
             controller_->GetIndexOfEntry(&entry),
             controller_->GetLastCommittedEntryIndex(),
@@ -439,10 +439,8 @@ void NavigatorImpl::DidNavigate(
   bool did_navigate = controller_->RendererDidNavigate(render_frame_host,
                                                        params, &details);
 
-  // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
-  // us estimate our process count for implementing OOP iframes.
-  // TODO(creis): Remove this when we track which pages commit in each frame.
-  render_frame_host->frame_tree_node()->set_current_url(params.url);
+  // Keep track of each frame's URL in its FrameTreeNode.
+  render_frame_host->frame_tree_node()->SetCurrentURL(params.url);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include

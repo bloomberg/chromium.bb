@@ -90,7 +90,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                             LoadFlagFromNavigationType(navigation_type), false),
       entry.ConstructRequestNavigationParams(
           frame_entry, navigation_start, is_same_document_history_load,
-          controller->HasCommittedRealLoad(frame_tree_node),
+          frame_tree_node->has_committed_real_load(),
           controller->GetPendingEntryIndex() == -1,
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),

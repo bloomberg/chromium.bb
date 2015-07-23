@@ -414,12 +414,6 @@ NavigationControllerImpl::GetEntryWithUniqueID(int nav_entry_id) const {
   return (index != -1) ? entries_[index] : nullptr;
 }
 
-bool NavigationControllerImpl::HasCommittedRealLoad(
-    FrameTreeNode* frame_tree_node) const {
-  NavigationEntryImpl* last_committed = GetLastCommittedEntry();
-  return last_committed && last_committed->GetFrameEntry(frame_tree_node);
-}
-
 void NavigationControllerImpl::LoadEntry(
     scoped_ptr<NavigationEntryImpl> entry) {
   // When navigating to a new page, we don't know for sure if we will actually

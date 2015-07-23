@@ -1131,6 +1131,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // in subframes, which should not count as real committed loads.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BlankAutoSubframe) {
+  GURL about_blank_url(url::kAboutBlankURL);
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   NavigateToURL(shell(), main_url);
@@ -1158,11 +1159,23 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
 
-  // Verify no subframe entries are created.
-  EXPECT_EQ(0U, entry->root_node()->children.size());
-  EXPECT_FALSE(controller.HasCommittedRealLoad(root->child_at(0)));
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should now have one blank subframe FrameNavigationEntry, but
+    // this does not count as committing a real load.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[0]->frame_entry.get();
+    EXPECT_EQ(about_blank_url, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+  EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
 
-  // 1a. A nested iframe with no URL should also create no subframe entries.
+  // 1a. A nested iframe with no URL should also create a subframe entry but not
+  // count as a real load.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
     std::string script = "var iframe = document.createElement('iframe');"
@@ -1172,10 +1185,23 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
   }
-  EXPECT_EQ(0U, entry->root_node()->children.size());
-  EXPECT_FALSE(controller.HasCommittedRealLoad(root->child_at(0)->child_at(0)));
 
-  // 2. Create another iframe with an about:blank URL.
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The nested entry should have one blank subframe FrameNavigationEntry, but
+    // this does not count as committing a real load.
+    ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[0]->children[0]->frame_entry.get();
+    EXPECT_EQ(about_blank_url, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+  EXPECT_FALSE(root->child_at(0)->child_at(0)->has_committed_real_load());
+
+  // 2. Create another iframe with an explicit about:blank URL.
   {
     LoadCommittedCapturer capturer(shell()->web_contents());
     std::string script = "var iframe = document.createElement('iframe');"
@@ -1190,40 +1216,54 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
-  // Verify no subframe entries are created.
-  EXPECT_EQ(0U, entry->root_node()->children.size());
-  EXPECT_FALSE(controller.HasCommittedRealLoad(root->child_at(1)));
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The new entry should have one blank subframe FrameNavigationEntry, but
+    // this does not count as committing a real load.
+    ASSERT_EQ(2U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[1]->frame_entry.get();
+    EXPECT_EQ(about_blank_url, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+  EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
 
-  // 3. A real same-site navigation in the first iframe should be AUTO.
+  // 3. A real same-site navigation in the nested iframe should be AUTO.
   GURL frame_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   {
-    LoadCommittedCapturer capturer(root->child_at(0));
+    LoadCommittedCapturer capturer(root->child_at(0)->child_at(0));
     std::string script = "var frames = document.getElementsByTagName('iframe');"
                          "frames[0].src = '" + frame_url.spec() + "';";
-    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
   }
 
-  // Check last committed NavigationEntry.
+  // Check last committed NavigationEntry.  It should have replaced the previous
+  // frame entry in the original NavigationEntry.
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
   // Verify subframe entries if we're in --site-per-process mode.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess)) {
-    // The entry should now have one subframe FrameNavigationEntry.
-    ASSERT_EQ(1U, entry->root_node()->children.size());
+    // The entry should still have one nested subframe FrameNavigationEntry.
+    ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
     FrameNavigationEntry* frame_entry =
-        entry->root_node()->children[0]->frame_entry.get();
+        entry->root_node()->children[0]->children[0]->frame_entry.get();
     EXPECT_EQ(frame_url, frame_entry->url());
-    EXPECT_TRUE(controller.HasCommittedRealLoad(root->child_at(0)));
-    EXPECT_FALSE(controller.HasCommittedRealLoad(root->child_at(1)));
   } else {
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry->root_node()->children.size());
   }
+  EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
+  EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
+  EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
 
   // 4. A real cross-site navigation in the second iframe should be AUTO.
   GURL foo_url(embedded_test_server()->GetURL(
@@ -1244,16 +1284,51 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Verify subframe entries if we're in --site-per-process mode.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess)) {
-    // The entry should now have two subframe FrameNavigationEntries.
+    // The entry should still have two subframe FrameNavigationEntries.
     ASSERT_EQ(2U, entry->root_node()->children.size());
     FrameNavigationEntry* frame_entry =
         entry->root_node()->children[1]->frame_entry.get();
     EXPECT_EQ(foo_url, frame_entry->url());
-    EXPECT_TRUE(controller.HasCommittedRealLoad(root->child_at(1)));
   } else {
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry->root_node()->children.size());
   }
+  EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
+  EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
+  EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
+
+  // 5. A new navigation to about:blank in the nested frame should count as a
+  // real load, since that frame has already committed a real load and this is
+  // not the initial blank page.
+  {
+    LoadCommittedCapturer capturer(root->child_at(0)->child_at(0));
+    std::string script = "var frames = document.getElementsByTagName('iframe');"
+                         "frames[0].src = 'about:blank';";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_MANUAL_SUBFRAME, capturer.transition_type());
+  }
+
+  // This should have created a new NavigationEntry.
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_NE(entry, controller.GetLastCommittedEntry());
+  NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    ASSERT_EQ(2U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry2->root_node()->children[0]->children[0]->frame_entry.get();
+    EXPECT_EQ(about_blank_url, frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+  EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
+  EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
+  EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
 
   // Check the end result of the frame tree.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1262,6 +1337,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(
         " Site A ------------ proxies for B\n"
         "   |--Site A ------- proxies for B\n"
+        "   |    +--Site A -- proxies for B\n"
         "   +--Site B ------- proxies for A\n"
         "Where A = http://127.0.0.1/\n"
         "      B = http://foo.com/",
@@ -1313,7 +1389,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     FrameNavigationEntry* frame_entry =
         entry->root_node()->children[0]->frame_entry.get();
     EXPECT_EQ(frame_url, frame_entry->url());
-    EXPECT_TRUE(controller.HasCommittedRealLoad(root->child_at(0)));
+    EXPECT_TRUE(root->child_at(0)->has_committed_real_load());
   } else {
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry->root_node()->children.size());
@@ -1348,7 +1424,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     FrameNavigationEntry* frame_entry =
         entry->root_node()->children[1]->frame_entry.get();
     EXPECT_EQ(foo_url, frame_entry->url());
-    EXPECT_TRUE(controller.HasCommittedRealLoad(root->child_at(1)));
+    EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
   } else {
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry->root_node()->children.size());

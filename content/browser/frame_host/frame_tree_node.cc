@@ -86,6 +86,7 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       parent_(NULL),
       opener_(nullptr),
       opener_observer_(nullptr),
+      has_committed_real_load_(false),
       replication_state_(scope, name, sandbox_flags),
       // Effective sandbox flags also need to be set, since initial sandbox
       // flags should apply to the initial empty document in the frame.
@@ -185,6 +186,12 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
       opener_observer_ = make_scoped_ptr(new OpenerDestroyedObserver(this));
     opener_->AddObserver(opener_observer_.get());
   }
+}
+
+void FrameTreeNode::SetCurrentURL(const GURL& url) {
+  if (!has_committed_real_load_ && url != GURL(url::kAboutBlankURL))
+    has_committed_real_load_ = true;
+  current_url_ = url;
 }
 
 void FrameTreeNode::SetCurrentOrigin(
