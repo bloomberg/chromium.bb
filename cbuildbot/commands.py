@@ -18,8 +18,9 @@ import shutil
 import tempfile
 
 from chromite.cbuildbot import autotest_rpc_errors
-from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -34,6 +35,8 @@ from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.scripts import pushimage
+
+site_config = config_lib.GetConfig()
 
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -2172,7 +2175,8 @@ def GetChromeLKGM(revision):
   revision = revision or 'refs/heads/master'
   lkgm_url_path = '%s/+/%s/%s?format=text' % (
       constants.CHROMIUM_SRC_PROJECT, revision, constants.PATH_TO_CHROME_LKGM)
-  contents_b64 = gob_util.FetchUrl(constants.EXTERNAL_GOB_HOST, lkgm_url_path)
+  contents_b64 = gob_util.FetchUrl(site_config.params.EXTERNAL_GOB_HOST,
+                                   lkgm_url_path)
   return base64.b64decode(contents_b64.read()).strip()
 
 

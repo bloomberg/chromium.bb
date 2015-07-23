@@ -14,6 +14,7 @@ import os
 import shutil
 import time
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -22,6 +23,9 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+
+
+site_config = config_lib.GetConfig()
 
 
 _GetNumber = iter(itertools.count()).next
@@ -676,7 +680,8 @@ class TestGerritPatch(TestGitRepoPatch):
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     json = self.test_json
     remote = kwargs.pop('remote', constants.EXTERNAL_REMOTE)
-    url_prefix = kwargs.pop('url_prefix', constants.EXTERNAL_GERRIT_URL)
+    url_prefix = kwargs.pop('url_prefix',
+                            site_config.params.EXTERNAL_GERRIT_URL)
     suppress_branch = kwargs.pop('suppress_branch', False)
     change_id = kwargs.pop('ChangeId', None)
     if change_id is None:
@@ -755,7 +760,8 @@ class TestGerritPatch(TestGitRepoPatch):
     """Verify Change-Id and Reviewed-On are set in git metadata."""
     git1, _, patch = self._CommonGitSetup()
     patch.Apply(git1, self.DEFAULT_TRACKING)
-    reviewed_on = '/'.join([constants.EXTERNAL_GERRIT_URL, patch.gerrit_number])
+    reviewed_on = '/'.join([site_config.params.EXTERNAL_GERRIT_URL,
+                            patch.gerrit_number])
     self.assertIn('Reviewed-on: %s\n' % reviewed_on, patch.commit_message)
 
   def _MakeFooters(self):

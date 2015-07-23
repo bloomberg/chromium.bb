@@ -9,10 +9,15 @@ from __future__ import print_function
 import os
 import pprint
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+
+
+site_config = config_lib.GetConfig()
+
 
 CHROME_COMMITTER_URL = 'https://chromium.googlesource.com/chromium/src'
 STATUS_URL = 'https://chromium-status.appspot.com/current?format=json'
@@ -125,7 +130,7 @@ def _GetGclientURLs(internal, rev):
   elif internal:
     # Internal buildspec: check out the buildspec repo and set deps_file to
     # the path to the desired release spec.
-    url = constants.INTERNAL_GOB_URL + '/chrome/tools/buildspec.git'
+    url = site_config.params.INTERNAL_GOB_URL + '/chrome/tools/buildspec.git'
 
     # Chromium switched to DEPS at version 45.0.2432.3.
     deps_file = '.DEPS.git' if BuildspecUsesDepsGit(rev) else 'DEPS'

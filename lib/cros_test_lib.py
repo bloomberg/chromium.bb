@@ -27,6 +27,7 @@ import time
 import unittest
 import urllib
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import blueprint_lib
 from chromite.lib import bootstrap_lib
@@ -46,6 +47,9 @@ from chromite.lib import retry_util
 from chromite.lib import terminal
 from chromite.lib import timeout_util
 from chromite.lib import workspace_lib
+
+
+site_config = config_lib.GetConfig()
 
 
 # Unit tests should never connect to the live prod or debug instances
@@ -1128,6 +1132,8 @@ class GerritTestCase(MockTempDirTestCase):
                             path ("/").
   """
 
+  # pylint: disable=protected-access
+
   TEST_USERNAME = 'test-username'
   TEST_EMAIL = 'test-username@test.org'
 
@@ -1231,18 +1237,27 @@ class GerritTestCase(MockTempDirTestCase):
       self.PatchObject(gob_util, 'GetCookies', GetCookies)
 
     # Make all chromite code point to the test server.
-    self.PatchObject(constants, 'EXTERNAL_GOB_HOST', gi.git_host)
-    self.PatchObject(constants, 'EXTERNAL_GERRIT_HOST', gi.gerrit_host)
-    self.PatchObject(constants, 'EXTERNAL_GOB_URL', gi.git_url)
-    self.PatchObject(constants, 'EXTERNAL_GERRIT_URL', gi.gerrit_url)
-    self.PatchObject(constants, 'INTERNAL_GOB_HOST', gi.git_host)
-    self.PatchObject(constants, 'INTERNAL_GERRIT_HOST', gi.gerrit_host)
-    self.PatchObject(constants, 'INTERNAL_GOB_URL', gi.git_url)
-    self.PatchObject(constants, 'INTERNAL_GERRIT_URL', gi.gerrit_url)
-    self.PatchObject(constants, 'AOSP_GOB_HOST', gi.git_host)
-    self.PatchObject(constants, 'AOSP_GERRIT_HOST', gi.gerrit_host)
-    self.PatchObject(constants, 'AOSP_GOB_URL', gi.git_url)
-    self.PatchObject(constants, 'AOSP_GERRIT_URL', gi.gerrit_url)
+    self.saved_params = {}
+    self.patched_params = {
+        'EXTERNAL_GOB_HOST': gi.git_host,
+        'EXTERNAL_GERRIT_HOST': gi.gerrit_host,
+        'EXTERNAL_GOB_URL': gi.git_url,
+        'EXTERNAL_GERRIT_URL': gi.gerrit_url,
+        'INTERNAL_GOB_HOST': gi.git_host,
+        'INTERNAL_GERRIT_HOST': gi.gerrit_host,
+        'INTERNAL_GOB_URL': gi.git_url,
+        'INTERNAL_GERRIT_URL': gi.gerrit_url,
+        'AOSP_GOB_HOST': gi.git_host,
+        'AOSP_GERRIT_HOST': gi.gerrit_host,
+        'AOSP_GOB_URL': gi.git_url,
+        'AOSP_GERRIT_URL': gi.gerrit_url
+    }
+
+    for k in self.patched_params.iterkeys():
+      self.saved_params[k] = site_config.params.get(k)
+
+    site_config._site_params.update(self.patched_params)
+
     self.PatchObject(constants, 'MANIFEST_URL', '%s/%s' % (
         gi.git_url, constants.MANIFEST_PROJECT))
     self.PatchObject(constants, 'MANIFEST_INT_URL', '%s/%s' % (
@@ -1253,6 +1268,10 @@ class GerritTestCase(MockTempDirTestCase):
         constants.CHROMIUM_REMOTE: gi.gerrit_url,
         constants.CHROME_REMOTE: gi.gerrit_url,
     })
+
+  def tearDown(self):
+    # Restore the 'patched' site parameters.
+    site_config._site_params.update(self.saved_params)
 
   def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):

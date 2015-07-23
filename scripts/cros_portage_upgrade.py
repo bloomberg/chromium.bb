@@ -15,6 +15,7 @@ import re
 import shutil
 import tempfile
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -22,6 +23,9 @@ from chromite.lib import osutils
 from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
+
+
+site_config = config_lib.GetConfig()
 
 
 oper = operation.Operation('cros_portage_upgrade')
@@ -96,7 +100,7 @@ class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
   PORTAGE_GIT_URL = '%s/chromiumos/overlays/portage.git' % (
-      constants.EXTERNAL_GOB_URL)
+      site_config.params.EXTERNAL_GOB_URL)
   ORIGIN_GENTOO = 'origin/gentoo'
 
   UPSTREAM_OVERLAY_NAME = 'portage'

@@ -748,6 +748,46 @@ def DefaultSettings():
   )
 
 
+def GerritInstanceParameters(name, instance, defaults=False):
+  GOB_HOST = '%s.googlesource.com'
+  param_names = ['_GOB_INSTANCE', '_GERRIT_INSTANCE', '_GOB_HOST',
+                 '_GERRIT_HOST', '_GOB_URL', '_GERRIT_URL']
+  if defaults:
+    return dict([('%s%s' % (name, x), None) for x in param_names])
+
+  gob_instance = instance
+  gerrit_instance = '%s-review' % instance
+  gob_host = GOB_HOST % gob_instance
+  gerrit_host = GOB_HOST % gerrit_instance
+  gob_url = 'https://%s' % gob_host
+  gerrit_url = 'https://%s' % gerrit_host
+
+  params = [gob_instance, gerrit_instance, gob_host, gerrit_host,
+            gob_url, gerrit_url]
+
+  return dict([('%s%s' % (name, pn), p) for pn, p in zip(param_names, params)])
+
+
+def DefaultSiteParameters():
+  # Enumeration of valid site parameters; any/all site parameters must be here.
+  # All site parameters should be documented.
+  default_site_params = {}
+
+  # Helper variables for defining site parameters.
+  gob_host = '%s.googlesource.com'
+
+  # Gerrit instance site parameters.
+  default_site_params.update(GOB_HOST=gob_host)
+  default_site_params.update(
+      GerritInstanceParameters('EXTERNAL', 'chromium', defaults=True))
+  default_site_params.update(
+      GerritInstanceParameters('INTERNAL', 'chrome-internal', defaults=True))
+  default_site_params.update(
+      GerritInstanceParameters('AOSP', 'android', defaults=True))
+
+  return default_site_params
+
+
 class SiteParameters(dict):
   """This holds the site-wide configuration parameters for a SiteConfig."""
 
@@ -780,7 +820,8 @@ class SiteConfig(dict):
     super(SiteConfig, self).__init__()
     self._defaults = DefaultSettings() if defaults is None else defaults
     self._templates = {} if templates is None else templates
-    self._site_params = {} if site_params is None else site_params
+    self._site_params = (
+        DefaultSiteParameters() if site_params is None else site_params)
 
   def GetDefault(self):
     """Create the cannonical default build configuration."""

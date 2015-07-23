@@ -15,6 +15,7 @@ import inspect
 import pprint
 import re
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -23,6 +24,9 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import terminal
+
+
+site_config = config_lib.GetConfig()
 
 
 COLOR = None
@@ -82,7 +86,7 @@ def GetGerrit(opts, cl=None):
   gob = opts.gob
   if cl is not None:
     if cl.startswith('*'):
-      gob = constants.INTERNAL_GOB_INSTANCE
+      gob = site_config.params.INTERNAL_GOB_INSTANCE
       cl = cl[1:]
     elif ':' in cl:
       gob, cl = cl.split(':', 1)
@@ -121,7 +125,7 @@ def PrintCl(opts, cls, lims, show_approvals=True):
   if opts.raw:
     # Special case internal Chrome GoB as that is what most devs use.
     # They can always redirect the list elsewhere via the -g option.
-    if opts.gob == constants.INTERNAL_GOB_INSTANCE:
+    if opts.gob == site_config.params.INTERNAL_GOB_INSTANCE:
       print(constants.INTERNAL_CHANGE_PREFIX, end='')
     print(cls['number'])
     return
@@ -461,13 +465,13 @@ Actions:"""
 
   parser = commandline.ArgumentParser(usage=usage)
   parser.add_argument('-i', '--internal', dest='gob', action='store_const',
-                      default=constants.EXTERNAL_GOB_INSTANCE,
-                      const=constants.INTERNAL_GOB_INSTANCE,
+                      default=site_config.params.EXTERNAL_GOB_INSTANCE,
+                      const=site_config.params.INTERNAL_GOB_INSTANCE,
                       help='Query internal Chromium Gerrit instance')
   parser.add_argument('-g', '--gob',
-                      default=constants.EXTERNAL_GOB_INSTANCE,
+                      default=site_config.params.EXTERNAL_GOB_INSTANCE,
                       help=('Gerrit (on borg) instance to query (default: %s)' %
-                            (constants.EXTERNAL_GOB_INSTANCE)))
+                            (site_config.params.EXTERNAL_GOB_INSTANCE)))
   parser.add_argument('--sort', default='number',
                       help='Key to sort on (number, project)')
   parser.add_argument('--raw', default=False, action='store_true',

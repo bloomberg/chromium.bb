@@ -110,7 +110,27 @@
         ],
         "vm_tests_override": null
     },
-    "_site_params": {},
+    "_site_params": {
+        "AOSP_GERRIT_HOST": "android-review.googlesource.com",
+        "AOSP_GERRIT_INSTANCE": "android-review",
+        "AOSP_GERRIT_URL": "https://android-review.googlesource.com",
+        "AOSP_GOB_HOST": "android.googlesource.com",
+        "AOSP_GOB_INSTANCE": "android",
+        "AOSP_GOB_URL": "https://android.googlesource.com",
+        "EXTERNAL_GERRIT_HOST": "chromium-review.googlesource.com",
+        "EXTERNAL_GERRIT_INSTANCE": "chromium-review",
+        "EXTERNAL_GERRIT_URL": "https://chromium-review.googlesource.com",
+        "EXTERNAL_GOB_HOST": "chromium.googlesource.com",
+        "EXTERNAL_GOB_INSTANCE": "chromium",
+        "EXTERNAL_GOB_URL": "https://chromium.googlesource.com",
+        "GOB_HOST": "%s.googlesource.com",
+        "INTERNAL_GERRIT_HOST": "chrome-internal-review.googlesource.com",
+        "INTERNAL_GERRIT_INSTANCE": "chrome-internal-review",
+        "INTERNAL_GERRIT_URL": "https://chrome-internal-review.googlesource.com",
+        "INTERNAL_GOB_HOST": "chrome-internal.googlesource.com",
+        "INTERNAL_GOB_INSTANCE": "chrome-internal",
+        "INTERNAL_GOB_URL": "https://chrome-internal.googlesource.com"
+    },
     "_templates": {
         "asan": {
             "_template": "asan",

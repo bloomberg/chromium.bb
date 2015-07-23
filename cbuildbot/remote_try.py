@@ -12,12 +12,16 @@ import json
 import os
 import time
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cache
 from chromite.lib import git
+
+
+site_config = config_lib.GetConfig()
 
 
 class ChromiteUpgradeNeeded(Exception):
@@ -43,9 +47,9 @@ class ValidationError(Exception):
 
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
-  EXTERNAL_URL = os.path.join(constants.EXTERNAL_GOB_URL,
+  EXTERNAL_URL = os.path.join(site_config.params.EXTERNAL_GOB_URL,
                               'chromiumos/tryjobs')
-  INTERNAL_URL = os.path.join(constants.INTERNAL_GOB_URL,
+  INTERNAL_URL = os.path.join(site_config.params.INTERNAL_GOB_URL,
                               'chromeos/tryjobs')
 
   # In version 3, remote patches have an extra field.

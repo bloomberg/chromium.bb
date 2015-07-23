@@ -13,6 +13,7 @@ import re
 import shutil
 import tempfile
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.cli import command
@@ -22,6 +23,9 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
+
+
+site_config = config_lib.GetConfig()
 
 
 class UprevNotFound(Exception):
@@ -166,12 +170,12 @@ CONF_RE = re.compile(
 # Interesting paths.
 OVERLAY = os.path.join(constants.SOURCE_ROOT,
                        constants.CHROMIUMOS_OVERLAY_DIR)
-OVERLAY_URL = (constants.EXTERNAL_GOB_URL +
+OVERLAY_URL = (site_config.params.EXTERNAL_GOB_URL +
                '/chromiumos/overlays/chromiumos-overlay')
 PRIV_OVERLAY = os.path.join(constants.SOURCE_ROOT, 'src',
                             'private-overlays',
                             'chromeos-partner-overlay')
-PRIV_OVERLAY_URL = (constants.INTERNAL_GOB_URL +
+PRIV_OVERLAY_URL = (site_config.params.INTERNAL_GOB_URL +
                     '/chromeos/overlays/chromeos-partner-overlay')
 MASK_FILE = os.path.join('profiles', 'default', 'linux',
                          'package.mask', 'chromepin')

@@ -10,9 +10,12 @@ import httplib
 import mock
 import tempfile
 
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import config_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
+
+
+site_config = config_lib.GetConfig()
 
 
 class FakeHTTPResponse(object):
@@ -95,14 +98,15 @@ class NetworkGobTest(cros_test_lib.TestCase):
 
   def test200(self):
     """Test successful loading of change."""
-    gob_util.FetchUrlJson(constants.EXTERNAL_GOB_HOST, 'changes/227254/detail')
+    gob_util.FetchUrlJson(site_config.params.EXTERNAL_GOB_HOST,
+                          'changes/227254/detail')
 
   def test404(self):
-    gob_util.FetchUrlJson(constants.EXTERNAL_GOB_HOST, 'foo/bar/baz')
+    gob_util.FetchUrlJson(site_config.params.EXTERNAL_GOB_HOST, 'foo/bar/baz')
 
   def test404Exception(self):
     with self.assertRaises(gob_util.GOBError) as ex:
-      gob_util.FetchUrlJson(constants.EXTERNAL_GOB_HOST, 'foo/bar/baz',
+      gob_util.FetchUrlJson(site_config.params.EXTERNAL_GOB_HOST, 'foo/bar/baz',
                             ignore_404=False)
     self.assertEqual(ex.exception.http_status, 404)
 

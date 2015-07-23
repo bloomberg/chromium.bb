@@ -15,6 +15,7 @@ from os.path import abspath as abspath
 
 from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
@@ -26,6 +27,9 @@ from chromite.lib import partial_mock
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.scripts import pushimage
+
+
+site_config = config_lib.GetConfig()
 
 
 class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
@@ -526,7 +530,7 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
         gob_util, 'FetchUrl',
         return_value=StringIO(base64.b64encode(chrome_lkgm))) as patcher:
       self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
-      patcher.assert_called_with(constants.EXTERNAL_GOB_HOST, url)
+      patcher.assert_called_with(site_config.params.EXTERNAL_GOB_HOST, url)
 
   def testChromeLKGM(self):
     """Verifies that we can get the chrome lkgm without a chrome revision."""

@@ -344,7 +344,7 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
       site_config.Add('bar', fake_template)
 
   def testSaveLoadEmpty(self):
-    config = config_lib.SiteConfig(defaults={})
+    config = config_lib.SiteConfig(defaults={}, site_params={})
     config_str = config.SaveConfigToString()
     loaded = config_lib.LoadConfigFromString(config_str)
 

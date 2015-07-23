@@ -658,7 +658,18 @@ _waterfall_config_map = {
 
 @factory.CachedFunctionCall
 def GetConfig():
-  site_config = config_lib.SiteConfig()
+  # Chrome OS site parameters.
+  site_params = config_lib.DefaultSiteParameters()
+
+  site_params.update(
+      config_lib.GerritInstanceParameters('EXTERNAL', 'chromium'))
+  site_params.update(
+      config_lib.GerritInstanceParameters('INTERNAL', 'chrome-internal'))
+  site_params.update(
+      config_lib.GerritInstanceParameters('AOSP', 'android'))
+
+  # Site configuration.
+  site_config = config_lib.SiteConfig(site_params=site_params)
 
   default_hw_tests_override = config_lib.BuildConfig(
       hw_tests_override=HWTestList.DefaultList(

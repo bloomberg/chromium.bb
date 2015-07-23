@@ -20,6 +20,7 @@ import random
 import tempfile
 import time
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
@@ -38,6 +39,9 @@ from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+
+
+site_config = config_lib.GetConfig()
 
 
 _GetNumber = iter(itertools.count()).next
@@ -1297,7 +1301,7 @@ class TestPickling(cros_test_lib.TempDirTestCase):
 
     repository.CloneGitRepo(
         repo,
-        '%s/chromiumos/chromite' % constants.EXTERNAL_GOB_URL,
+        '%s/chromiumos/chromite' % site_config.params.EXTERNAL_GOB_URL,
         reference=reference)
 
     code = """
@@ -1326,14 +1330,14 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return cros_patch.GerritPatch(
         patch_info,
         constants.INTERNAL_REMOTE,
-        constants.INTERNAL_GERRIT_URL)
+        site_config.params.INTERNAL_GERRIT_URL)
 
   @staticmethod
   def _GetCrosPatch(patch_info):
     return cros_patch.GerritPatch(
         patch_info,
         constants.EXTERNAL_REMOTE,
-        constants.EXTERNAL_GERRIT_URL)
+        site_config.params.EXTERNAL_GERRIT_URL)
 
   @classmethod
   def _GetTestData(cls):

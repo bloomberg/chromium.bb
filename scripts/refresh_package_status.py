@@ -16,11 +16,14 @@ from __future__ import print_function
 
 import os
 
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import config_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import operation
 from chromite.lib import osutils
+
+
+site_config = config_lib.GetConfig()
 
 
 oper = operation.Operation('refresh_package_status')
@@ -32,7 +35,8 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 GDATA_CRED_FILE = os.path.expanduser('~/.gdata_cred.txt')
 GDATA_TOKEN_FILE = os.path.expanduser('~/.gdata_token')
 GENTOO_DIR = 'gentoo-portage'
-PRTG_GIT_URL = '%s/chromiumos/overlays/portage.git' % constants.EXTERNAL_GOB_URL
+PRTG_GIT_URL = (
+    '%s/chromiumos/overlays/portage.git' % site_config.params.EXTERNAL_GOB_URL)
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
 
 

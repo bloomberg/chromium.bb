@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import operator
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -15,6 +16,9 @@ from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
+
+
+site_config = config_lib.GetConfig()
 
 
 class GerritException(Exception):
@@ -61,9 +65,9 @@ class GerritHelper(object):
   @classmethod
   def FromRemote(cls, remote, **kwargs):
     if remote == constants.INTERNAL_REMOTE:
-      host = constants.INTERNAL_GERRIT_HOST
+      host = site_config.params.INTERNAL_GERRIT_HOST
     elif remote == constants.EXTERNAL_REMOTE:
-      host = constants.EXTERNAL_GERRIT_HOST
+      host = site_config.params.EXTERNAL_GERRIT_HOST
     else:
       raise ValueError('Remote %s not supported.' % remote)
     return cls(host, remote, **kwargs)
@@ -71,7 +75,7 @@ class GerritHelper(object):
   @classmethod
   def FromGob(cls, gob, **kwargs):
     """Return a helper for a GoB instance."""
-    host = constants.GOB_HOST % ('%s-review' % gob)
+    host = site_config.params.GOB_HOST % ('%s-review' % gob)
     # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
     # We should get rid of remotes altogether and just use the host.
     return cls(host, constants.GOB_REMOTES.get(gob, gob), **kwargs)

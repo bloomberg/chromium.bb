@@ -15,6 +15,7 @@ import shutil
 import tempfile
 from xml.dom import minidom
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cidb
@@ -24,6 +25,9 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import timeout_util
+
+
+site_config = config_lib.GetConfig()
 
 
 BUILD_STATUS_URL = '%s/builder-status' % constants.MANIFEST_VERSIONS_GS_URL
@@ -438,7 +442,7 @@ class BuildSpecsManager(object):
     """
     self.cros_source = source_repo
     buildroot = source_repo.directory
-    if manifest_repo.startswith(constants.INTERNAL_GOB_URL):
+    if manifest_repo.startswith(site_config.params.INTERNAL_GOB_URL):
       self.manifest_dir = os.path.join(buildroot, 'manifest-versions-internal')
     else:
       self.manifest_dir = os.path.join(buildroot, 'manifest-versions')
