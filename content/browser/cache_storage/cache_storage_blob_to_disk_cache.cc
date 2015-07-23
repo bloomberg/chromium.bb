@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cache_storage_blob_to_disk_cache.h"
+#include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
@@ -34,10 +34,14 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
     scoped_ptr<storage::BlobDataHandle> blob_data_handle,
     const EntryAndBoolCallback& callback) {
   DCHECK(entry);
-  DCHECK(request_context_getter->GetURLRequestContext());
   DCHECK_LE(0, disk_cache_body_index);
   DCHECK(blob_data_handle);
   DCHECK(!blob_request_);
+
+  if (!request_context_getter->GetURLRequestContext()) {
+    callback.Run(entry.Pass(), false /* success */);
+    return;
+  }
 
   disk_cache_body_index_ = disk_cache_body_index;
 
