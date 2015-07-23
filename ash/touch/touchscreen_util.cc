@@ -16,7 +16,7 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
   DisplayInfo* internal_state = NULL;
   for (size_t i = 0; i < displays->size(); ++i) {
     DisplayInfo* state = &(*displays)[i];
-    if (state->id() == gfx::Display::InternalDisplayId() &&
+    if (gfx::Display::IsInternalDisplayId(state->id()) &&
         !state->GetNativeModeSize().IsEmpty() &&
         state->touch_support() == gfx::Display::TOUCH_SUPPORT_UNKNOWN) {
       DCHECK(!internal_state);
@@ -81,7 +81,7 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
        ++it) {
     for (size_t i = 0; i < displays->size(); ++i) {
       DisplayInfo* state = &(*displays)[i];
-      if (state->id() != gfx::Display::InternalDisplayId() &&
+      if (!gfx::Display::IsInternalDisplayId(state->id()) &&
           !state->GetNativeModeSize().IsEmpty() &&
           state->touch_support() == gfx::Display::TOUCH_SUPPORT_UNKNOWN) {
         state->AddInputDevice(*it);

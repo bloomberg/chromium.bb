@@ -200,12 +200,19 @@ bool Display::IsInternal() const {
 
 // static
 int64 Display::InternalDisplayId() {
+  DCHECK_NE(kInvalidDisplayID, internal_display_id_);
   return internal_display_id_;
 }
 
 // static
 void Display::SetInternalDisplayId(int64 internal_display_id) {
   internal_display_id_ = internal_display_id;
+}
+
+// static
+bool Display::IsInternalDisplayId(int64 display_id) {
+  DCHECK_NE(kInvalidDisplayID, display_id);
+  return HasInternalDisplay() && internal_display_id_ == display_id;
 }
 
 // static

@@ -56,10 +56,13 @@ bool RotationLocked() {
       ->rotation_locked();
 }
 
-void SetInternalDisplayRotation(gfx::Display::Rotation rotation) {
+void SetDisplayRotationById(int64 display_id, gfx::Display::Rotation rotation) {
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
-      gfx::Display::InternalDisplayId(), rotation,
-      gfx::Display::ROTATION_SOURCE_USER);
+      display_id, rotation, gfx::Display::ROTATION_SOURCE_USER);
+}
+
+void SetInternalDisplayRotation(gfx::Display::Rotation rotation) {
+  SetDisplayRotationById(gfx::Display::InternalDisplayId(), rotation);
 }
 
 void SetRotationLocked(bool rotation_locked) {
@@ -416,6 +419,8 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
       static_cast<test::TestSystemTrayDelegate*>(
           Shell::GetInstance()->system_tray_delegate());
   tray_delegate->set_should_show_display_notification(true);
+  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -465,6 +470,9 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
 // Tests that if a user has set a display rotation that it is restored upon
 // exiting maximize mode.
 TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
+  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
   SetInternalDisplayRotation(gfx::Display::ROTATE_90);
   EnableMaximizeMode(true);
 
@@ -589,13 +597,21 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
 // ready, that ScreenOrientationController still begins listening to events,
 // which require an internal display to be acted upon.
 TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
+  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
   int64 internal_display_id = gfx::Display::InternalDisplayId();
   gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 
   EnableMaximizeMode(true);
 
-  // Should not crash, even thought there is no internal display.
-  SetInternalDisplayRotation(gfx::Display::ROTATE_180);
+  // Should not crash, even though there is no internal display.
+  SetDisplayRotationById(internal_display_id, gfx::Display::ROTATE_180);
+  EXPECT_FALSE(RotationLocked());
+
+  // Should not crash, even though the invalid display id is requested.
+  SetDisplayRotationById(gfx::Display::kInvalidDisplayID,
+                         gfx::Display::ROTATE_180);
   EXPECT_FALSE(RotationLocked());
 
   // With an internal display now available, functionality should resume.

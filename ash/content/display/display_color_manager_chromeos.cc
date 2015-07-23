@@ -64,7 +64,7 @@ bool ParseFile(const base::FilePath& path,
 }
 
 base::FilePath PathForDisplaySnapshot(const ui::DisplaySnapshot* snapshot) {
-  if (snapshot->display_id() == gfx::Display::InternalDisplayId()) {
+  if (gfx::Display::IsInternalDisplayId(snapshot->display_id())) {
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(

@@ -167,8 +167,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
   std::set<int64> ids;
   for (const ui::DisplaySnapshot* state : display_states) {
     if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (gfx::Display::InternalDisplayId() ==
-          gfx::Display::kInvalidDisplayID) {
+      if (!gfx::Display::HasInternalDisplay()) {
         gfx::Display::SetInternalDisplayId(state->display_id());
       } else {
 #if defined(USE_OZONE)

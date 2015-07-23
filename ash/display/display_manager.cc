@@ -109,10 +109,6 @@ void MaybeInitInternalDisplay(DisplayInfo* info) {
   }
 }
 
-bool IsInternalDisplayId(int64 id) {
-  return gfx::Display::InternalDisplayId() == id;
-}
-
 }  // namespace
 
 using std::string;
@@ -236,7 +232,7 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
   } else {
     CHECK_LE(2u, active_display_list_.size());
     int64 id_at_zero = active_display_list_[0].id();
-    if (id_at_zero == gfx::Display::InternalDisplayId() ||
+    if (gfx::Display::IsInternalDisplayId(id_at_zero) ||
         id_at_zero == first_display_id()) {
       return std::make_pair(id_at_zero, active_display_list_[1].id());
     } else {
@@ -388,8 +384,8 @@ bool DisplayManager::SetDisplayUIScale(int64 display_id,
 
 void DisplayManager::SetDisplayResolution(int64 display_id,
                                           const gfx::Size& resolution) {
-  DCHECK_NE(gfx::Display::InternalDisplayId(), display_id);
-  if (gfx::Display::InternalDisplayId() == display_id)
+  DCHECK(!gfx::Display::IsInternalDisplayId(display_id));
+  if (gfx::Display::IsInternalDisplayId(display_id))
     return;
   const DisplayInfo& display_info = GetDisplayInfo(display_id);
   const std::vector<DisplayMode>& modes = display_info.display_modes();
@@ -482,7 +478,7 @@ void DisplayManager::RegisterDisplayProperty(
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
   if (!resolution_in_pixels.IsEmpty()) {
-    DCHECK(!IsInternalDisplayId(display_id));
+    DCHECK(!gfx::Display::IsInternalDisplayId(display_id));
     // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
     // actual display info, is 60 Hz.
     DisplayMode mode(resolution_in_pixels, 60.0f, false, false);
@@ -617,7 +613,8 @@ void DisplayManager::OnNativeDisplaysChanged(
        iter != updated_displays.end();
        ++iter) {
     if (!internal_display_connected)
-      internal_display_connected = IsInternalDisplayId(iter->id());
+      internal_display_connected =
+          gfx::Display::IsInternalDisplayId(iter->id());
     // Mirrored monitors have the same origins.
     gfx::Point origin = iter->bounds_in_native().origin();
     if (origins.find(origin) != origins.end()) {
@@ -959,7 +956,9 @@ std::string DisplayManager::GetDisplayNameForId(int64 id) {
 int64 DisplayManager::GetDisplayIdForUIScaling() const {
   // UI Scaling is effective on internal display or on unified desktop.
   return IsInUnifiedMode() ? kUnifiedDisplayId
-                           : gfx::Display::InternalDisplayId();
+                           : (gfx::Display::HasInternalDisplay()
+                                  ? gfx::Display::InternalDisplayId()
+                                  : gfx::Display::kInvalidDisplayID);
 }
 
 void DisplayManager::SetMirrorMode(bool mirror) {
@@ -1116,7 +1115,8 @@ void DisplayManager::CreateScreenForShutdown() const {
 }
 
 void DisplayManager::UpdateInternalDisplayModeListForTest() {
-  if (display_info_.count(gfx::Display::InternalDisplayId()) == 0)
+  if (!gfx::Display::HasInternalDisplay() ||
+      display_info_.count(gfx::Display::InternalDisplayId()) == 0)
     return;
   DisplayInfo* info = &display_info_[gfx::Display::InternalDisplayId()];
   SetInternalDisplayModeList(info);
@@ -1133,7 +1133,7 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
       case MIRRORING: {
         bool zero_is_source =
             first_display_id_ == (*display_info_list)[0].id() ||
-            gfx::Display::InternalDisplayId() == (*display_info_list)[0].id();
+            gfx::Display::IsInternalDisplayId((*display_info_list)[0].id());
         DCHECK_EQ(MIRRORING, multi_display_mode_);
         mirroring_display_id_ =
             (*display_info_list)[zero_is_source ? 1 : 0].id();
@@ -1301,11 +1301,10 @@ bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
   }
 
   int64 id_at_zero = displays->at(0).id();
-  DisplayIdPair pair =
-      (id_at_zero == first_display_id_ ||
-       id_at_zero == gfx::Display::InternalDisplayId()) ?
-      std::make_pair(id_at_zero, displays->at(1).id()) :
-      std::make_pair(displays->at(1).id(), id_at_zero);
+  DisplayIdPair pair = (id_at_zero == first_display_id_ ||
+                        gfx::Display::IsInternalDisplayId(id_at_zero))
+                           ? std::make_pair(id_at_zero, displays->at(1).id())
+                           : std::make_pair(displays->at(1).id(), id_at_zero);
   DisplayLayout layout =
       layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
 

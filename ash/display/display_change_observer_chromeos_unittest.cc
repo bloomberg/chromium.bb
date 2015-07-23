@@ -94,7 +94,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
   display_snapshot.set_modes(modes.get());
   display_snapshot.set_native_mode(modes[0]);
 
-  DisplayInfo info;
+  DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1366, 768));
 
   std::vector<DisplayMode> display_modes =
@@ -137,7 +137,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
   display_snapshot.set_modes(modes.get());
   display_snapshot.set_native_mode(modes[0]);
 
-  DisplayInfo info;
+  DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
   info.set_device_scale_factor(2.0f);
 
@@ -194,7 +194,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
   display_snapshot.set_modes(modes.get());
   display_snapshot.set_native_mode(modes[0]);
 
-  DisplayInfo info;
+  DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
   info.set_device_scale_factor(1.25);
 
@@ -259,7 +259,7 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
 
   std::vector<DisplayMode> display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
-  DisplayInfo info;
+  DisplayInfo info(1, "", false);
   info.SetDisplayModes(display_modes);  // Sort as external display.
   display_modes = info.display_modes();
 

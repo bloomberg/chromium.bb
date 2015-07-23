@@ -61,11 +61,6 @@ struct DisplayModeSorter {
   bool is_internal;
 };
 
-bool IsInternalDisplayId(int64 id) {
-  return id == gfx::Display::InternalDisplayId() &&
-         id != gfx::Display::kInvalidDisplayID;
-}
-
 }  // namespace
 
 DisplayMode::DisplayMode()
@@ -369,7 +364,7 @@ void DisplayInfo::SetDisplayModes(
     const std::vector<DisplayMode>& display_modes) {
   display_modes_ = display_modes;
   std::sort(display_modes_.begin(), display_modes_.end(),
-            DisplayModeSorter(IsInternalDisplayId(id_)));
+            DisplayModeSorter(gfx::Display::IsInternalDisplayId(id_)));
 }
 
 gfx::Size DisplayInfo::GetNativeModeSize() const {
@@ -439,7 +434,7 @@ bool DisplayInfo::IsColorProfileAvailable(
 }
 
 bool DisplayInfo::Use125DSFForUIScaling() const {
-  return use_125_dsf_for_ui_scaling && IsInternalDisplayId(id_);
+  return use_125_dsf_for_ui_scaling && gfx::Display::IsInternalDisplayId(id_);
 }
 
 void DisplayInfo::AddInputDevice(int id) {
