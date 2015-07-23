@@ -147,20 +147,25 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
 
   const gpu::GpuFeatureType kGpuFeatures[] = {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
-      gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING, gpu::GPU_FEATURE_TYPE_WEBGL};
+      gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING,
+      gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION,
+      gpu::GPU_FEATURE_TYPE_WEBGL};
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResults.GpuCompositing",
-      "GPU.BlacklistFeatureTestResults.Webgl", };
+      "GPU.BlacklistFeatureTestResults.GpuRasterization",
+      "GPU.BlacklistFeatureTestResults.Webgl"};
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableGpu),
-      command_line.HasSwitch(switches::kDisableExperimentalWebGL), };
+      command_line.HasSwitch(switches::kDisableGpuRasterization),
+      command_line.HasSwitch(switches::kDisableExperimentalWebGL)};
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
       "GPU.BlacklistFeatureTestResultsWindows.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResultsWindows.GpuCompositing",
-      "GPU.BlacklistFeatureTestResultsWindows.Webgl", };
+      "GPU.BlacklistFeatureTestResultsWindows.GpuRasterization",
+      "GPU.BlacklistFeatureTestResultsWindows.Webgl"};
 #endif
   const size_t kNumFeatures =
       sizeof(kGpuFeatures) / sizeof(gpu::GpuFeatureType);
