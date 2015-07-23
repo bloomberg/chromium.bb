@@ -849,6 +849,8 @@ bool QueryManager::ProcessPendingQueries(bool did_finish) {
     query->RunCallbacks();
     pending_queries_.pop_front();
   }
+  // If glFinish() has been called, all of our queries should be completed.
+  DCHECK(!did_finish || pending_queries_.empty());
 
   return true;
 }

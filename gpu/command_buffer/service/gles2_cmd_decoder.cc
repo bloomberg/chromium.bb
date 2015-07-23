@@ -1867,7 +1867,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // and allow context preemption and GPU watchdog checks in GpuScheduler().
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
 
-  void ProcessPendingReadPixels();
+  void ProcessPendingReadPixels(bool did_finish);
   void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
 
   // Generate a member function prototype for each command in an automated and
@@ -3566,7 +3566,7 @@ bool GLES2DecoderImpl::MakeCurrent() {
 }
 
 void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
-  ProcessPendingReadPixels();
+  ProcessPendingReadPixels(false);
   if (engine() && query_manager_.get())
     query_manager_->ProcessPendingTransferQueries();
 
@@ -4408,7 +4408,7 @@ void GLES2DecoderImpl::RemoveBuffer(GLuint client_id) {
 
 void GLES2DecoderImpl::DoFinish() {
   glFinish();
-  ProcessPendingReadPixels();
+  ProcessPendingReadPixels(true);
   ProcessPendingQueries(true);
 }
 
@@ -11563,9 +11563,13 @@ void GLES2DecoderImpl::WaitForReadPixels(base::Closure callback) {
   }
 }
 
-void GLES2DecoderImpl::ProcessPendingReadPixels() {
+void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
+  // Note: |did_finish| guarantees that the GPU has passed the fence but
+  // we cannot assume that GLFence::HasCompleted() will return true yet as
+  // that's not guaranteed by all GLFence implementations.
   while (!pending_readpixel_fences_.empty() &&
-         pending_readpixel_fences_.front()->fence->HasCompleted()) {
+         (did_finish ||
+          pending_readpixel_fences_.front()->fence->HasCompleted())) {
     std::vector<base::Closure> callbacks =
         pending_readpixel_fences_.front()->callbacks;
     pending_readpixel_fences_.pop();
@@ -11581,7 +11585,7 @@ bool GLES2DecoderImpl::HasMoreIdleWork() {
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
-  ProcessPendingReadPixels();
+  ProcessPendingReadPixels(false);
   if (!async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers())
     return;
   async_pixel_transfer_manager_->ProcessMorePendingTransfers();
