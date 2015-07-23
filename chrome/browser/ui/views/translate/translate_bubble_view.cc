@@ -478,10 +478,12 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLabelButton(
+  views::LabelButton* accept_button = CreateLabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT),
-      BUTTON_ID_TRANSLATE));
+      BUTTON_ID_TRANSLATE);
+  layout->AddView(accept_button);
+  accept_button->SetIsDefault(true);
   layout->AddView(denial_combobox_);
 
   return view;
