@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
-#include "components/dom_distiller/core/external_feedback_reporter.h"
+#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
 #include "components/dom_distiller/core/url_constants.h"
 
 #if defined(OS_ANDROID)

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_DOM_DISTILLER_EXTERNAL_FEEDBACK_REPORTER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_DOM_DISTILLER_EXTERNAL_FEEDBACK_REPORTER_ANDROID_H_
 
-#include "components/dom_distiller/core/external_feedback_reporter.h"
+#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
 #include "content/public/browser/web_contents.h"
 
 namespace dom_distiller {

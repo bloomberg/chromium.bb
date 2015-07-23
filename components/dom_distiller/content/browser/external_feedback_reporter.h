@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CORE_EXTERNAL_FEEDBACK_REPORTER_H_
-#define COMPONENTS_DOM_DISTILLER_CORE_EXTERNAL_FEEDBACK_REPORTER_H_
+#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_EXTERNAL_FEEDBACK_REPORTER_H_
+#define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_EXTERNAL_FEEDBACK_REPORTER_H_
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents.h"
@@ -29,4 +29,4 @@ class ExternalFeedbackReporter {
 
 }  // namespace dom_distiller
 
-#endif  // COMPONENTS_DOM_DISTILLER_CORE_EXTERNAL_FEEDBACK_REPORTER_H_
+#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_EXTERNAL_FEEDBACK_REPORTER_H_

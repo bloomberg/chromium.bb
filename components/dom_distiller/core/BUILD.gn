@@ -42,7 +42,6 @@ source_set("core") {
     "dom_distiller_switches.h",
     "experiments.cc",
     "experiments.h",
-    "external_feedback_reporter.h",
     "feedback_reporter.cc",
     "feedback_reporter.h",
     "page_features.cc",

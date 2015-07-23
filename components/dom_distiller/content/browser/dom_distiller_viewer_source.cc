@@ -13,10 +13,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
-#include "components/dom_distiller/core/external_feedback_reporter.h"
+#include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -154,8 +155,9 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
         IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT));
     SendJavaScript(viewer::GetSetTitleJs(title));
     SendJavaScript(viewer::GetSetTextDirectionJs(std::string("auto")));
-    SendJavaScript(viewer::GetShowFeedbackFormJs());
-
+    if (ShouldShowFeedbackForm()) {
+      SendJavaScript(viewer::GetShowFeedbackFormJs());
+    }
     Cancel(); // This will cause the object to clean itself up.
     return;
   }

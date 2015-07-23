@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/dom_distiller/core/external_feedback_reporter.h"
+#include "components/dom_distiller/content/browser/external_feedback_reporter.h"
 #include "content/public/browser/url_data_source.h"
 
 namespace dom_distiller {
