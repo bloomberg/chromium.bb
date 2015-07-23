@@ -25,7 +25,7 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
  public:
   PasswordGenerationPopupViewViews(
       PasswordGenerationPopupController* controller,
-      views::FocusManager* focus_manager);
+      views::Widget* parent_widget);
 
   // PasswordGenerationPopupView implementation
   void Show() override;

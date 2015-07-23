@@ -17,7 +17,7 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
                                public AutofillPopupView {
  public:
   AutofillPopupViewViews(AutofillPopupController* controller,
-                         views::FocusManager* focus_manager);
+                         views::Widget* parent_widget);
 
  private:
   ~AutofillPopupViewViews() override;

@@ -21,8 +21,9 @@
 namespace autofill {
 
 AutofillPopupViewViews::AutofillPopupViewViews(
-    AutofillPopupController* controller, views::FocusManager* focus_manager)
-    : AutofillPopupBaseView(controller, focus_manager),
+    AutofillPopupController* controller,
+    views::Widget* parent_widget)
+    : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {}
 
 AutofillPopupViewViews::~AutofillPopupViewViews() {}
@@ -127,8 +128,7 @@ AutofillPopupView* AutofillPopupView::Create(
   if (!observing_widget)
     return NULL;
 
-  return new AutofillPopupViewViews(controller,
-                                    observing_widget->GetFocusManager());
+  return new AutofillPopupViewViews(controller, observing_widget);
 }
 
 }  // namespace autofill

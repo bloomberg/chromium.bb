@@ -99,13 +99,13 @@ class AutofillPopupControllerBrowserTest
 };
 
 #if defined(OS_MACOSX)
-// Fails on Mac OS, see crbug/453256
-#define MAYBE_DoNotHidePopupOnWindowMove DISABLED_DoNotHidePopupOnWindowMove
+// Fails on Mac OS. http://crbug.com/453256
+#define MAYBE_PopupHidingOnWindowMove DISABLED_PopupHidingOnWindowMove
 #else
-#define MAYBE_DoNotHidePopupOnWindowMove DoNotHidePopupOnWindowMove
+#define MAYBE_PopupHidingOnWindowMove PopupHidingOnWindowMove
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
-                       MAYBE_DoNotHidePopupOnWindowMove) {
+                       MAYBE_PopupHidingOnWindowMove) {
   GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
@@ -114,7 +114,15 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
   gfx::Rect new_bounds = browser()->window()->GetBounds() - gfx::Vector2d(1, 1);
   browser()->window()->SetBounds(new_bounds);
 
+#if defined(OS_WIN)
+  // Windows draws autofill popup into a separate aura window than the main
+  // browser window. Thus, the autofill popup should hide on window move.
+  // http://crbug.com/512802
+  autofill_external_delegate_->WaitForPopupHidden();
+  EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
+#else
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,

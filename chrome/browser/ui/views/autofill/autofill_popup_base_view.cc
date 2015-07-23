@@ -30,9 +30,9 @@ const SkColor AutofillPopupBaseView::kWarningTextColor =
 
 AutofillPopupBaseView::AutofillPopupBaseView(
     AutofillPopupViewDelegate* delegate,
-    views::FocusManager* focus_manager)
+    views::Widget* parent_widget)
     : delegate_(delegate),
-      focus_manager_(focus_manager),
+      parent_widget_(parent_widget),
       weak_ptr_factory_(this) {}
 
 AutofillPopupBaseView::~AutofillPopupBaseView() {
@@ -46,11 +46,13 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 void AutofillPopupBaseView::DoShow() {
   const bool initialize_widget = !GetWidget();
   if (initialize_widget) {
-    focus_manager_->RegisterAccelerator(
+    parent_widget_->AddObserver(this);
+    views::FocusManager* focus_manager = parent_widget_->GetFocusManager();
+    focus_manager->RegisterAccelerator(
         ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE),
         ui::AcceleratorManager::kNormalPriority,
         this);
-    focus_manager_->RegisterAccelerator(
+    focus_manager->RegisterAccelerator(
         ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
         ui::AcceleratorManager::kNormalPriority,
         this);
@@ -100,8 +102,17 @@ void AutofillPopupBaseView::DoHide() {
   }
 }
 
+void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
+                                                  const gfx::Rect& new_bounds) {
+  DCHECK_EQ(widget, parent_widget_);
+#if defined(OS_WIN)
+  HideController();
+#endif
+}
+
 void AutofillPopupBaseView::RemoveObserver() {
-  focus_manager_->UnregisterAccelerators(this);
+  parent_widget_->GetFocusManager()->UnregisterAccelerators(this);
+  parent_widget_->RemoveObserver(this);
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
