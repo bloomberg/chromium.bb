@@ -251,6 +251,18 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
 
   if not options.gcc:
     cc, cxx, ar, ranlib = CompilersForHost(host)
+
+    # Introduce afl-fuzz compiler wrappers if needed.
+    if options.afl_fuzz_dir:
+      configure_args.append('AFL_CC=' + cc)
+      configure_args.append('AFL_CXX=' + cxx)
+      if options.gcc:
+        compiler_names = ('gcc', 'g++')
+      else:
+        compiler_names = ('clang', 'clang++')
+      cc = '%s/afl-%s' % (options.afl_fuzz_dir, compiler_names[0])
+      cxx = '%s/afl-%s' % (options.afl_fuzz_dir, compiler_names[1])
+
     if ProgramPath('ccache'):
       # Set CCACHE_CPP2 envvar, to avoid an error due to a strange
       # ccache/clang++ interaction.  Specifically, errors about
@@ -1112,6 +1124,9 @@ def main():
                       dest='host_flavor',
                       default='release',
                       help='Flavor of the build of the host binaries.')
+  parser.add_argument('--afl-fuzz-dir',
+                      help='Compile using afl-fuzz compiler wrappers in'
+                      + ' given directory')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
