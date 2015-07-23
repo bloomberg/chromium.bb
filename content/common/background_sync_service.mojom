@@ -13,7 +13,8 @@ enum BackgroundSyncError {
   STORAGE,
   NOT_FOUND,
   NO_SERVICE_WORKER,
-  MAX=NO_SERVICE_WORKER
+  NOT_ALLOWED,
+  MAX=NOT_ALLOWED
 };
 
 interface BackgroundSyncService {

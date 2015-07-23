@@ -49,7 +49,8 @@ class CONTENT_EXPORT BackgroundSyncManager
     ERROR_TYPE_STORAGE,
     ERROR_TYPE_NOT_FOUND,
     ERROR_TYPE_NO_SERVICE_WORKER,
-    ERROR_TYPE_MAX = ERROR_TYPE_NO_SERVICE_WORKER
+    ERROR_TYPE_NOT_ALLOWED,
+    ERROR_TYPE_MAX = ERROR_TYPE_NOT_ALLOWED
   };
 
   using StatusCallback = base::Callback<void(ErrorType)>;

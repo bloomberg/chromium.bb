@@ -159,6 +159,11 @@ void BackgroundSyncProvider::RegisterCallback(
           new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                                   "Background Sync is disabled."));
       break;
+    case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
+      callbacks->onError(new blink::WebSyncError(
+          blink::WebSyncError::ErrorTypeNoPermission,
+          "Cannot register a sync event without a window client."));
+      break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
           new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
@@ -182,6 +187,11 @@ void BackgroundSyncProvider::UnregisterCallback(
       callbacks->onError(
           new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                                   "Background Sync is disabled."));
+      break;
+    case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
+      // This error should never be returned from
+      // BackgroundSyncManager::Unregister
+      NOTREACHED();
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
@@ -212,6 +222,11 @@ void BackgroundSyncProvider::GetRegistrationCallback(
           new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                                   "Background Sync is disabled."));
       break;
+    case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
+      // This error should never be returned from
+      // BackgroundSyncManager::GetRegistration
+      NOTREACHED();
+      break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
           new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
@@ -237,7 +252,8 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
       callbacks->onSuccess(results);
       break;
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
-      // This error should never be returned from
+    case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
+      // These errors should never be returned from
       // BackgroundSyncManager::GetRegistrations
       NOTREACHED();
       break;
@@ -277,7 +293,8 @@ void BackgroundSyncProvider::GetPermissionStatusCallback(
       }
       break;
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
-      // This error should never be returned from
+    case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
+      // These errors should never be returned from
       // BackgroundSyncManager::GetPermissionStatus
       NOTREACHED();
       break;

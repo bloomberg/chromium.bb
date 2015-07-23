@@ -320,6 +320,26 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
+  ServiceWorkerRegistration* sw_registration =
+      service_worker_context_->GetLiveRegistration(sw_registration_id);
+  if (!sw_registration || !sw_registration->active_version()) {
+    BackgroundSyncMetrics::CountRegister(
+        options.periodicity, registration_could_fire,
+        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
+        ERROR_TYPE_NO_SERVICE_WORKER);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_NO_SERVICE_WORKER,
+                              BackgroundSyncRegistration()));
+    return;
+  }
+
+  if (!sw_registration->active_version()->HasWindowClients()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_ALLOWED,
+                              BackgroundSyncRegistration()));
+    return;
+  }
+
   BackgroundSyncRegistration* existing_registration =
       LookupRegistration(sw_registration_id, RegistrationKey(options));
   if (existing_registration &&
@@ -350,19 +370,6 @@ void BackgroundSyncManager::RegisterImpl(
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
   new_registration.set_id(registrations->next_id++);
-
-  ServiceWorkerRegistration* sw_registration =
-      service_worker_context_->GetLiveRegistration(sw_registration_id);
-  if (!sw_registration || !sw_registration->active_version()) {
-    BackgroundSyncMetrics::CountRegister(
-        options.periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        ERROR_TYPE_NO_SERVICE_WORKER);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_NO_SERVICE_WORKER,
-                              BackgroundSyncRegistration()));
-    return;
-  }
 
   AddRegistrationToMap(sw_registration_id,
                        sw_registration->pattern().GetOrigin(),
