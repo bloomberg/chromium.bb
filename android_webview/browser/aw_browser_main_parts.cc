@@ -10,12 +10,15 @@
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/common/aw_resource.h"
+#include "android_webview/common/aw_switches.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/android/locale_utils.h"
 #include "base/android/memory_pressure_listener_android.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -108,7 +111,12 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
   media::SetMediaClientAndroid(
       new AwMediaClientAndroid(AwResource::GetConfigKeySystemUuidMapping()));
 
-  gfx::GLSurface::InitializeOneOff();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseIpcCommandBuffer)) {
+    content::SynchronousCompositor::SetUseIpcCommandBuffer();
+  } else {
+    gfx::GLSurface::InitializeOneOff();
+  }
 
   // This is needed for WebView Classic backwards compatibility
   // See crbug.com/298495

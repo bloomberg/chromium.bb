@@ -630,8 +630,9 @@ bool RendererBlinkPlatformImpl::databaseSetFileSize(
 
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
 #if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-          SynchronousCompositorFactory::GetInstance()) {
+  SynchronousCompositorFactory* factory =
+      SynchronousCompositorFactory::GetInstance();
+  if (factory && factory->OverrideWithFactory()) {
     return factory->GetGPUInfo().SupportsAccelerated2dCanvas();
   }
 #endif
@@ -947,13 +948,13 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     return NULL;
 
 #if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-      SynchronousCompositorFactory::GetInstance()) {
+  SynchronousCompositorFactory* factory =
+      SynchronousCompositorFactory::GetInstance();
+  if (factory && factory->OverrideWithFactory()) {
     scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
         in_process_context(
             factory->CreateOffscreenGraphicsContext3D(attributes));
-    if (!in_process_context ||
-        !in_process_context->InitializeOnCurrentThread())
+    if (!in_process_context || !in_process_context->InitializeOnCurrentThread())
       return NULL;
     return in_process_context.release();
   }

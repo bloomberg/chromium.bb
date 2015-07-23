@@ -57,13 +57,17 @@ class SynchronousCompositorFactory {
 
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;
+  virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
+      int frame_id) = 0;
 
+  // Methods below should not be called if OverrideWithFactory is false.
+  // Instead, just fallback to default implementation, as if factory
+  // does not exist.
+  virtual bool OverrideWithFactory();
   virtual scoped_refptr<cc_blink::ContextProviderWebContext>
   CreateOffscreenContextProvider(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       const std::string& debug_name) = 0;
-  virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
-      int frame_id) = 0;
   virtual gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
       CreateOffscreenGraphicsContext3D(
           const blink::WebGraphicsContext3D::Attributes& attributes) = 0;

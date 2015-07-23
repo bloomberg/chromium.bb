@@ -147,6 +147,11 @@ void SynchronousCompositor::SetRecordFullDocument(bool record_full_document) {
   g_factory.Get().SetRecordFullDocument(record_full_document);
 }
 
+// static
+void SynchronousCompositor::SetUseIpcCommandBuffer() {
+  g_factory.Get().SetUseIpcCommandBuffer();
+}
+
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
     SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,

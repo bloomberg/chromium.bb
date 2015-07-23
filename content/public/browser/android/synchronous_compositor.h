@@ -50,6 +50,10 @@ class CONTENT_EXPORT SynchronousCompositor {
   // behavior.
   static void SetRecordFullDocument(bool record_full_document);
 
+  // Turn on using ipc-based command buffer at run time. This should be removed
+  // once this feature is fully launched.
+  static void SetUseIpcCommandBuffer();
+
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
   // then transformed through |transform|, and finally clipped to |view_size|.
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(

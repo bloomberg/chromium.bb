@@ -7,7 +7,7 @@
 
 namespace switches {
 
-// Intentionally empty in case Android WebView needs switches in the future.
+extern const char kUseIpcCommandBuffer[];
 
 }  // namespace switches
 

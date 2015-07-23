@@ -5,4 +5,7 @@
 #include "android_webview/common/aw_switches.h"
 
 namespace switches {
+
+const char kUseIpcCommandBuffer[] = "use-ipc-command-buffer";
+
 }  // namespace switches

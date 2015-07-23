@@ -8,6 +8,7 @@
 #include "base/synchronization/lock.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
+#include "content/common/gpu/client/command_buffer_metrics.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/stream_texture_factory_synchronous_impl.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
@@ -44,12 +45,13 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
+  scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
+      int view_id) override;
+  bool OverrideWithFactory() override;
   scoped_refptr<cc_blink::ContextProviderWebContext>
   CreateOffscreenContextProvider(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       const std::string& debug_name) override;
-  scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
-      int view_id) override;
   gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
   CreateOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) override;
@@ -64,12 +66,14 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   base::Thread* CreateInProcessGpuThread(
       const InProcessChildThreadParams& params);
   void SetRecordFullDocument(bool record_full_document);
+  void SetUseIpcCommandBuffer();
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
 
-  scoped_refptr<cc::ContextProvider> CreateContextProviderForCompositor();
 
  private:
+  scoped_refptr<cc::ContextProvider> CreateContextProviderForCompositor(
+      CommandBufferContextType type);
   bool CanCreateMainThreadContext();
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       TryCreateStreamTextureFactory();
@@ -85,6 +89,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   scoped_refptr<VideoContextProvider> video_context_provider_;
 
   bool record_full_layer_;
+  bool use_ipc_command_buffer_;
 
   // |num_hardware_compositor_lock_| is updated on UI thread only but can be
   // read on renderer main thread.

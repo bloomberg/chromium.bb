@@ -13,10 +13,14 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -76,6 +80,24 @@ ContextHolder CreateContextHolder(
   return holder;
 }
 
+scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D(
+    const blink::WebGraphicsContext3D::Attributes& attributes,
+    const content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits&
+        mem_limits) {
+  DCHECK(RenderThreadImpl::current());
+  CauseForGpuLaunch cause =
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+  scoped_refptr<GpuChannelHost> gpu_channel_host(
+      RenderThreadImpl::current()->EstablishGpuChannelSync(cause));
+  CHECK(gpu_channel_host.get());
+
+  int surface_id = 0;
+  bool lose_context_when_out_of_memory = true;
+  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
+      surface_id, GURL(), gpu_channel_host.get(), attributes,
+      lose_context_when_out_of_memory, mem_limits, NULL));
+}
+
 }  // namespace
 
 class SynchronousCompositorFactoryImpl::VideoContextProvider
@@ -123,9 +145,9 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
   DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
 };
 
-
 SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
     : record_full_layer_(true),
+      use_ipc_command_buffer_(false),
       num_hardware_compositors_(0) {
   SynchronousCompositorFactory::SetInstance(this);
 }
@@ -147,9 +169,9 @@ SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
     scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue) {
   scoped_refptr<cc::ContextProvider> onscreen_context =
-      CreateContextProviderForCompositor();
+      CreateContextProviderForCompositor(RENDER_COMPOSITOR_CONTEXT);
   scoped_refptr<cc::ContextProvider> worker_context =
-      CreateContextProviderForCompositor();
+      CreateContextProviderForCompositor(RENDER_WORKER_CONTEXT);
 
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
       onscreen_context, worker_context, routing_id, frame_swap_message_queue));
@@ -167,10 +189,15 @@ SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
              new SynchronousCompositorExternalBeginFrameSource(routing_id));
 }
 
+bool SynchronousCompositorFactoryImpl::OverrideWithFactory() {
+  return !use_ipc_command_buffer_;
+}
+
 scoped_refptr<ContextProviderWebContext>
 SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     const std::string& debug_name) {
+  DCHECK(!use_ipc_command_buffer_);
   ContextHolder holder =
       CreateContextHolder(attributes, GpuThreadService(),
                           gpu::GLInProcessContextSharedMemoryLimits(), true);
@@ -179,17 +206,25 @@ SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
 }
 
 scoped_refptr<cc::ContextProvider>
-SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor() {
-  blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
-  gpu::GLInProcessContextSharedMemoryLimits mem_limits;
+SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
+    CommandBufferContextType type) {
   // This is half of what RenderWidget uses because synchronous compositor
-  // pipeline is only one frame deep.
-  if (base::SysInfo::IsLowEndDevice()) {
-    // But twice of half here because 16bit texture is not supported.
-    mem_limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
-  } else {
-    mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
+  // pipeline is only one frame deep. But twice of half for low end here
+  // because 16bit texture is not supported.
+  unsigned int mapped_memory_reclaim_limit =
+      (base::SysInfo::IsLowEndDevice() ? 2 : 6) * 1024 * 1024;
+  blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
+
+  if (use_ipc_command_buffer_) {
+    WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits mem_limits;
+    mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
+        CreateContext3D(GetDefaultAttribs(), mem_limits);
+    return ContextProviderCommandBuffer::Create(context.Pass(), type);
   }
+
+  gpu::GLInProcessContextSharedMemoryLimits mem_limits;
+  mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
   ContextHolder holder =
       CreateContextHolder(attributes, GpuThreadService(), mem_limits, true);
   return ContextProviderInProcess::Create(holder.command_buffer.Pass(),
@@ -210,6 +245,7 @@ SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
 WebGraphicsContext3DInProcessCommandBufferImpl*
 SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
+  DCHECK(!use_ipc_command_buffer_);
   ContextHolder holder =
       CreateContextHolder(attributes, GpuThreadService(),
                           gpu::GLInProcessContextSharedMemoryLimits(), true);
@@ -217,6 +253,7 @@ SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
 }
 
 gpu::GPUInfo SynchronousCompositorFactoryImpl::GetGPUInfo() const {
+  DCHECK(!use_ipc_command_buffer_);
   return content::GpuDataManager::GetInstance()->GetGPUInfo();
 }
 
@@ -309,6 +346,10 @@ SynchronousCompositorFactoryImpl::GpuThreadService() {
 void SynchronousCompositorFactoryImpl::SetRecordFullDocument(
     bool record_full_document) {
   record_full_layer_ = record_full_document;
+}
+
+void SynchronousCompositorFactoryImpl::SetUseIpcCommandBuffer() {
+  use_ipc_command_buffer_ = true;
 }
 
 }  // namespace content
