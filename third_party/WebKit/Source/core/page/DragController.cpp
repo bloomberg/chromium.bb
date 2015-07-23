@@ -744,14 +744,7 @@ bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& 
     Node* node = state.m_dragSrc.get();
 
     if (state.m_dragType == DragSourceActionSelection) {
-        if (enclosingTextFormControl(src->selection().start())) {
-            dataTransfer->writePlainText(src->selectedTextForClipboard());
-        } else {
-            RefPtrWillBeRawPtr<Range> selectionRange = src->selection().toNormalizedRange();
-            ASSERT(selectionRange);
-
-            dataTransfer->writeRange(selectionRange.get(), src);
-        }
+        dataTransfer->writeSelection(src->selection());
     } else if (state.m_dragType == DragSourceActionImage) {
         if (imageURL.isEmpty() || !node || !node->isElementNode())
             return false;

@@ -30,12 +30,14 @@
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"
-#include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/DragImage.h"
@@ -349,33 +351,22 @@ void DataTransfer::writeURL(const KURL& url, const String& title)
     m_dataObject->setHTMLAndBaseURL(urlToMarkup(url, title), url);
 }
 
-void DataTransfer::writeRange(Range* selectedRange, LocalFrame* frame)
-{
-    ASSERT(selectedRange);
-    if (!m_dataObject)
-        return;
-
-    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange->startPosition(), selectedRange->endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs), frame->document()->url());
-
-    String str = frame->selectedTextForClipboard();
-#if OS(WIN)
-    replaceNewlinesWithWindowsStyleNewlines(str);
-#endif
-    replaceNBSPWithSpace(str);
-    m_dataObject->setData(mimeTypeTextPlain, str);
-}
-
-void DataTransfer::writePlainText(const String& text)
+void DataTransfer::writeSelection(const FrameSelection& selection)
 {
     if (!m_dataObject)
         return;
 
-    String str = text;
+    if (!enclosingTextFormControl(selection.start())) {
+        EphemeralRange selectedRange = selection.selection().toNormalizedEphemeralRange();
+        ASSERT(selectedRange.isNotNull());
+        m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange.startPosition(), selectedRange.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs), selectedRange.document().url());
+    }
+
+    String str = selection.selectedTextForClipboard();
 #if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(str);
 #endif
     replaceNBSPWithSpace(str);
-
     m_dataObject->setData(mimeTypeTextPlain, str);
 }
 

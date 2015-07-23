@@ -45,6 +45,7 @@ class DragImage;
 class Element;
 class ExceptionState;
 class FileList;
+class FrameSelection;
 class LocalFrame;
 class Node;
 class Range;
@@ -90,8 +91,7 @@ public:
     PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, LocalFrame*) const;
     void declareAndWriteDragImage(Element*, const KURL&, const String& title);
     void writeURL(const KURL&, const String&);
-    void writeRange(Range*, LocalFrame*);
-    void writePlainText(const String&);
+    void writeSelection(const FrameSelection&);
 
     void setAccessPolicy(DataTransferAccessPolicy);
     bool canReadTypes() const;
