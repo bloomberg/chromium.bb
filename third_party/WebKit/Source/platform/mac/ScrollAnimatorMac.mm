@@ -462,6 +462,7 @@ private:
     RetainPtr<WebScrollbarPartAnimation> _expansionTransitionAnimation;
 }
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar;
+- (void)updateVisibilityImmediately:(bool)show;
 - (void)cancelAnimations;
 @end
 
@@ -475,6 +476,12 @@ private:
 
     _scrollbar = scrollbar;
     return self;
+}
+
+- (void)updateVisibilityImmediately:(bool)show
+{
+    [self cancelAnimations];
+    [scrollbarPainterForScrollbar(_scrollbar) setKnobAlpha:(show ? 1.0 : 0.0)];
 }
 
 - (void)cancelAnimations
@@ -997,6 +1004,19 @@ void ScrollAnimatorMac::notifyContentAreaScrolled(const FloatSize& delta)
     // ScrollbarPainterController when we're really scrolling on an active page.
     if (scrollableArea()->scrollbarsCanBeActive())
         sendContentAreaScrolledSoon(delta);
+}
+
+void ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show)
+{
+    if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
+        if (show)
+            [m_scrollbarPainterController.get() flashScrollers];
+        else
+            [m_scrollbarPainterController.get() hideOverlayScrollers];
+
+        [m_verticalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
+        [m_verticalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
+    }
 }
 
 void ScrollAnimatorMac::cancelAnimations()

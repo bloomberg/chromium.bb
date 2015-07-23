@@ -370,6 +370,8 @@ public:
 
     void setCapsLockState(bool enabled);
 
+    void setScrollbarVisibilityInScrollableArea(Node*, bool visible);
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

@@ -114,6 +114,8 @@ private:
 
     void notifyContentAreaScrolled(const FloatSize& delta) override;
 
+    void setScrollbarsVisibleForTesting(bool) override;
+
     FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
 
     void immediateScrollTo(const FloatPoint&);

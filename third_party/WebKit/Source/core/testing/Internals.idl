@@ -328,4 +328,6 @@
 
     ClientRectList focusRingRects(Element element);
     void setCapsLockState(boolean enabled);
+
+    void setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 };
