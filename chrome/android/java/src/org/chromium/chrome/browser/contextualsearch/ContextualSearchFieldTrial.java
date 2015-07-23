@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
@@ -65,6 +64,10 @@ public class ContextualSearchFieldTrial {
 
     // Cached value to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
+    private static Boolean sArrowIconEnabled;
+    private static Boolean sSideSearchProviderIconEnabled;
+    private static Boolean sSelectionExpansionDisabled;
+    private static Boolean sNarrowPanelSupported;
 
     /**
      * Don't instantiate.
@@ -76,14 +79,14 @@ public class ContextualSearchFieldTrial {
      * Chrome preference to determine if the service is enabled.
      * @return Whether Contextual Search is enabled or not.
      */
-    public static boolean isEnabled(Context context) {
+    public static boolean isEnabled() {
         if (sEnabled == null) {
-            sEnabled = detectEnabled(context);
+            sEnabled = detectEnabled();
         }
         return sEnabled.booleanValue();
     }
 
-    private static boolean detectEnabled(Context context) {
+    private static boolean detectEnabled() {
         if (SysUtils.isLowEndDevice()) {
             return false;
         }
@@ -245,28 +248,40 @@ public class ContextualSearchFieldTrial {
      * @return {@code true} Whether the arrow icon should be displayed.
      */
     public static boolean isArrowIconEnabled() {
-        return getBooleanParam(ARROW_ICON_ENABLED);
+        if (sArrowIconEnabled == null) {
+            sArrowIconEnabled = getBooleanParam(ARROW_ICON_ENABLED);
+        }
+        return sArrowIconEnabled.booleanValue();
     }
 
     /**
      * @return {@code true} Whether the search provider icon should be displayed on the side.
      */
     public static boolean isSideSearchProviderIconEnabled() {
-        return getBooleanParam(SIDE_SEARCH_PROVIDER_ICON_ENABLED);
+        if (sSideSearchProviderIconEnabled == null) {
+            sSideSearchProviderIconEnabled = getBooleanParam(SIDE_SEARCH_PROVIDER_ICON_ENABLED);
+        }
+        return sSideSearchProviderIconEnabled.booleanValue();
     }
 
     /**
      * @return Whether the base page selection expansion after server response is disabled.
      */
     public static boolean isSelectionExpansionDisabled() {
-        return getBooleanParam(SELECTION_EXPANSION_DISABLED);
+        if (sSelectionExpansionDisabled == null) {
+            sSelectionExpansionDisabled = getBooleanParam(SELECTION_EXPANSION_DISABLED);
+        }
+        return sSelectionExpansionDisabled.booleanValue();
     }
 
     /**
      * @return Whether the narrow version of the Search Panel is supported.
      */
     public static boolean isNarrowPanelSupported() {
-        return getBooleanParam(NARROW_PANEL_SUPPORTED);
+        if (sNarrowPanelSupported == null) {
+            sNarrowPanelSupported = getBooleanParam(NARROW_PANEL_SUPPORTED);
+        }
+        return sNarrowPanelSupported.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------

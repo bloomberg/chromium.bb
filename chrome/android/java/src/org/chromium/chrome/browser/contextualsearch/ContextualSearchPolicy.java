@@ -215,8 +215,7 @@ class ContextualSearchPolicy {
      * Logs the current user's state, including preference, tap and open counters, etc.
      */
     void logCurrentState(@Nullable ContentViewCore cvc) {
-        if (cvc == null || !ContextualSearchFieldTrial.isEnabled(
-                cvc.getContext().getApplicationContext())) {
+        if (cvc == null || !ContextualSearchFieldTrial.isEnabled()) {
             return;
         }
 
