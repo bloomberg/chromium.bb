@@ -1042,7 +1042,7 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
 }
 
 void RenderWidgetHostViewAndroid::SubmitFrame(
-    scoped_ptr<cc::DelegatedFrameData> frame_data) {
+    scoped_ptr<cc::CompositorFrame> frame) {
   cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
   if (manager) {
     if (!surface_factory_) {
@@ -1062,15 +1062,11 @@ void RenderWidgetHostViewAndroid::SubmitFrame(
       current_surface_size_ = texture_size_in_layer_;
       AttachLayers();
     }
-    scoped_ptr<cc::CompositorFrame> compositor_frame =
-        make_scoped_ptr(new cc::CompositorFrame());
-    compositor_frame->delegated_frame_data = frame_data.Pass();
 
     cc::SurfaceFactory::DrawCallback ack_callback =
         base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
                    weak_ptr_factory_.GetWeakPtr());
-    surface_factory_->SubmitFrame(surface_id_, compositor_frame.Pass(),
-                                  ack_callback);
+    surface_factory_->SubmitFrame(surface_id_, frame.Pass(), ack_callback);
   } else {
     if (!resource_collection_.get()) {
       resource_collection_ = new cc::DelegatedFrameResourceCollection;
@@ -1080,19 +1076,19 @@ void RenderWidgetHostViewAndroid::SubmitFrame(
         texture_size_in_layer_ != frame_provider_->frame_size()) {
       RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
-          resource_collection_.get(), frame_data.Pass());
+          resource_collection_.get(), frame->delegated_frame_data.Pass());
       layer_ = cc::DelegatedRendererLayer::Create(Compositor::LayerSettings(),
                                                   frame_provider_);
       AttachLayers();
     } else {
-      frame_provider_->SetFrameData(frame_data.Pass());
+      frame_provider_->SetFrameData(frame->delegated_frame_data.Pass());
     }
   }
 }
 
 void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     uint32 output_surface_id,
-    scoped_ptr<cc::DelegatedFrameData> frame_data) {
+    scoped_ptr<cc::CompositorFrame> frame) {
   CheckOutputSurfaceChanged(output_surface_id);
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
@@ -1102,12 +1098,12 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   // physical pixels and set our browser CC device_scale_factor to 1, so this
   // suppresses the transform.  This line may need to be removed when fixing
   // http://crbug.com/384134 or http://crbug.com/310763
-  frame_data->device_scale_factor = 1.0f;
+  frame->delegated_frame_data->device_scale_factor = 1.0f;
 
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
-    SubmitFrame(frame_data.Pass());
+    SubmitFrame(frame.Pass());
   }
 
   if (layer_.get()) {
@@ -1153,7 +1149,8 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     return;
   }
 
-  if (layer_.get() && layer_->layer_tree_host()) {
+  if (!CompositorImpl::GetSurfaceManager() && layer_.get() &&
+      layer_->layer_tree_host()) {
     for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
       scoped_ptr<cc::SwapPromise> swap_promise(
           new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
@@ -1168,12 +1165,14 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   texture_size_in_layer_ = root_pass->output_rect.size();
   ComputeContentsSize(frame->metadata);
 
-  SwapDelegatedFrame(output_surface_id, frame->delegated_frame_data.Pass());
+  cc::CompositorFrameMetadata metadata = frame->metadata;
+
+  SwapDelegatedFrame(output_surface_id, frame.Pass());
   frame_evictor_->SwappedFrame(!host_->is_hidden());
 
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
-  OnFrameMetadataUpdated(frame->metadata);
+  OnFrameMetadataUpdated(metadata);
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
