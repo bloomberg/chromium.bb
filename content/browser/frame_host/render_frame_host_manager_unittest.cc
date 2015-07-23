@@ -1990,8 +1990,7 @@ TEST_F(RenderFrameHostManagerTest,
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   {
-    pending_rfh = contents()->GetFrameTree()->root()->render_manager()
-        ->pending_frame_host();
+    pending_rfh = contents()->GetPendingMainFrame();
     RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Cancel the navigation by simulating a declined beforeunload dialog.
@@ -2008,8 +2007,7 @@ TEST_F(RenderFrameHostManagerTest,
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   {
-    pending_rfh = contents()->GetFrameTree()->root()->render_manager()
-        ->pending_frame_host();
+    pending_rfh = contents()->GetPendingMainFrame();
     RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Increment the number of active frames in the new SiteInstance, which will
