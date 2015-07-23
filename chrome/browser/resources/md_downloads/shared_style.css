@@ -8,4 +8,6 @@
     font-family: Roboto;
     font-weight: 500;
   };
+  /* (1024 toolbar basis - 606 item width - 32 toolbar padding) / 2 = 193. */
+  --downloads-side-column-basis: 193px;
 }

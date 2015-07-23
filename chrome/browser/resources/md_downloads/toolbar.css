@@ -13,7 +13,7 @@ paper-toolbar {
 
 #title,
 #search {
-  flex: 1 0 200px;
+  flex: 1 0 var(--downloads-side-column-basis);
 }
 
 #actions {

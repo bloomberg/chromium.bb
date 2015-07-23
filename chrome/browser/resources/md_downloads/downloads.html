@@ -4,11 +4,20 @@
   <meta charset="utf-8">
   <title i18n-content="title"></title>
   <link rel="import" href="chrome://resources/html/polymer_config.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
   <link rel="import" href="chrome://downloads/manager.html">
+  <style>
+    html {
+      background: #e6e6e6;
+      min-height: 100%;
+    }
+
+    body {
+      display: flex;
+      margin: 0;
+    }
+  </style>
 </head>
-<body class="fullbleed">
+<body>
   <downloads-manager></downloads-manager>
   <command id="clear-all-command" shortcut="Alt-U+0043"><!-- Alt+C -->
 <if expr="is_macosx">
