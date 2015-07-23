@@ -19,7 +19,11 @@ cr.define('downloads', function() {
     },
 
     properties: {
-      hideDate: {type: Boolean, value: false},
+      hideDate: {
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false,
+      },
 
       isDangerous_: {type: Boolean, value: false},
 

@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://downloads/action_service.html">
@@ -9,43 +10,50 @@
 
 <dom-module id="downloads-item-view">
   <template>
-    <div id="date-container" hidden$="[[hideDate]]">
+    <div id="date-container">
       <div id="since"></div>
       <div id="date"></div>
     </div>
 
-    <div id="safe" hidden$="[[isDangerous_]]" on-dragstart="onDragStart_">
-      <img id="safe-icon" alt="">
-      <div id="title-area">
-        <cr-button id="file-link" column-type="name"
-            on-click="onFileLinkClick_"></cr-button>
-        <span id="name"></span>
-        <span id="status"></span>
+    <paper-material id="safe" hidden$="[[isDangerous_]]"
+        on-dragstart="onDragStart_">
+      <div id="safe-icon-wrapper">
+        <img id="safe-icon" alt="">
       </div>
-      <div>
-        <a id="src-url" target="_blank" column-type="url"></a>
+      <div id="details">
+        <div id="title-area">
+          <cr-button id="file-link" column-type="name"
+              on-click="onFileLinkClick_"></cr-button>
+          <span id="name"></span>
+          <span id="status"></span>
+        </div>
+        <div>
+          <a id="src-url" target="_blank" column-type="url"></a>
+        </div>
+        <div>
+          <cr-button id="show" column-type="show" on-click="onShowClick_"
+              i18n-content="controlShowInFolder"></cr-button>
+          <a id="retry" column-type="retry" i18n-content="controlRetry"
+              download></a>
+          <cr-button id="pause" column-type="pause" on-click="onPauseClick_"
+              i18n-content="controlPause"></cr-button>
+          <cr-button id="resume" column-type="resume" on-click="onResumeClick_"
+              i18n-content="controlResume"></cr-button>
+          <cr-button id="cancel" column-type="cancel" on-click="onCancelClick_"
+              i18n-content="controlCancel"></cr-button>
+          <span id="controlled-by"
+              i18n-values=".innerHTML:controlByExtension"></span>
+        </div>
+        <paper-progress id="progress"></paper-progress>
       </div>
-      <div>
-        <cr-button id="show" column-type="show" on-click="onShowClick_"
-            i18n-content="controlShowInFolder"></cr-button>
-        <a id="retry" column-type="retry" i18n-content="controlRetry"
-            download></a>
-        <cr-button id="pause" column-type="pause" on-click="onPauseClick_"
-            i18n-content="controlPause"></cr-button>
-        <cr-button id="resume" column-type="resume" on-click="onResumeClick_"
-            i18n-content="controlResume"></cr-button>
-        <cr-button id="safe-remove" column-type="remove"
+      <div id="remove-wrapper">
+        <paper-icon-button id="safe-remove" column-type="remove" icon="clear"
             on-click="onRemoveClick_"
-            i18n-content="controlRemoveFromList"></cr-button>
-        <cr-button id="cancel" column-type="cancel" on-click="onCancelClick_"
-            i18n-content="controlCancel"></cr-button>
-        <span id="controlled-by"
-            i18n-values=".innerHTML:controlByExtension"></span>
+            i18n-content="controlRemoveFromList"></paper-icon-button>
       </div>
-      <paper-progress id="progress"></paper-progress>
-    </div>
+    </paper-material>
 
-    <div id="dangerous" hidden$="[[!isDangerous_]]">
+    <paper-material id="dangerous" hidden$="[[!isDangerous_]]">
       <img id="dangerous-icon" alt="">
       <div id="description"></div>
       <div id="malware-controls" hidden$="[[!isMalware_]]">
@@ -61,7 +69,9 @@
       <button id="discard" column-type="discard" i18n-content="dangerDiscard"
           on-click="onDangerousRemoveOrDiscardClick_"
           hidden$="[[isMalware_]]"></button>
-    </div>
+    </paper-material>
+
+    <div id="end-cap"></div>
   </template>
   <link rel="import" type="css" href="chrome://downloads/shared_style.css">
   <link rel="import" type="css" href="chrome://downloads/item_view.css">

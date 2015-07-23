@@ -4,4 +4,65 @@
 
 :host {
   @apply(--downloads-shared-style);
+  display: flex;
+  padding: 0 24px;
+  margin: 34px 0;
+}
+
+:host([hide-date]) {
+  margin-top: -18px;
+}
+
+#date-container,
+#end-cap {
+  flex: 1 0 var(--downloads-side-column-basis);
+}
+
+:host([hide-date]) #date-container {
+  visibility: hidden;
+}
+
+#safe,
+#dangerous {
+  background: white;
+  border-radius: 2px;  /* TODO(dbeam): why does this differ from Polymer? */
+  flex: none;
+  width: var(--downloads-item-width);
+}
+
+#safe {
+  display: flex;
+}
+
+#details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 16px 16px 12px 16px;
+}
+
+#safe-icon-wrapper {
+  align-self: center;
+  flex: none;
+  justify-content: center;
+  margin: 0 16px;
+}
+
+#remove-wrapper {
+  align-self: top;
+  flex: none;
+  justify-content: center;
+}
+
+#remove {
+  padding: 8px;
+}
+
+paper-icon-button {
+  --paper-icon-button: {
+    height: 16px;
+    width: 16px;
+  };
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
 }
