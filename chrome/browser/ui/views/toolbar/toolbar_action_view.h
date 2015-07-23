@@ -56,6 +56,9 @@ class ToolbarActionView : public views::MenuButton,
     // reference point for a popup when this view isn't visible.
     virtual views::MenuButton* GetOverflowReferenceView() = 0;
 
+    // Notifies the delegate that the mouse entered the view.
+    virtual void OnMouseEnteredToolbarActionView() = 0;
+
    protected:
     ~Delegate() override {}
   };
@@ -86,6 +89,7 @@ class ToolbarActionView : public views::MenuButton,
   // menu buttons only enter a pressed state on release (if they're draggable).
   // We should probably just pick a behavior, and stick to it.
   bool Activate() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;

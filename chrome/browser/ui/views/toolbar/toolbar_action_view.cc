@@ -193,6 +193,11 @@ bool ToolbarActionView::Activate() {
   return false;
 }
 
+void ToolbarActionView::OnMouseEntered(const ui::MouseEvent& event) {
+  delegate_->OnMouseEnteredToolbarActionView();
+  views::MenuButton::OnMouseEntered(event);
+}
+
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsRightMouseButton()) {
     return view_controller_->HasPopup(GetCurrentWebContents()) ?

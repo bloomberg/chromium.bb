@@ -155,7 +155,8 @@ void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
     did_highlight_ = true;
     const ExtensionIdList& extension_ids = GetExtensionIdList();
     DCHECK(!extension_ids.empty());
-    ExtensionToolbarModel::Get(profile_)->HighlightExtensions(extension_ids);
+    ExtensionToolbarModel::Get(profile_)->HighlightExtensions(
+        extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   }
 }
 

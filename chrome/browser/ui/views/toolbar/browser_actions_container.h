@@ -232,6 +232,7 @@ class BrowserActionsContainer
   bool ShownInsideMenu() const override;
   void OnToolbarActionViewDragDone() override;
   views::MenuButton* GetOverflowReferenceView() override;
+  void OnMouseEnteredToolbarActionView() override;
 
   // ToolbarActionsBarDelegate:
   void AddViewForAction(ToolbarActionViewController* action,
@@ -314,7 +315,8 @@ class BrowserActionsContainer
   ChevronMenuButton* chevron_;
 
   // The painter used when we are highlighting a subset of extensions.
-  scoped_ptr<views::Painter> highlight_painter_;
+  scoped_ptr<views::Painter> info_highlight_painter_;
+  scoped_ptr<views::Painter> warning_highlight_painter_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<gfx::SlideAnimation> resize_animation_;

@@ -966,6 +966,16 @@
         <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="common/browser_tools_pressed.png" />
       </if>
 
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_BOTTOM_LEFT" file="common/toolbar_action_highlight_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_BOTTOM" file="common/toolbar_action_highlight_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_BOTTOM_RIGHT" file="common/toolbar_action_highlight_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_CENTER" file="common/toolbar_action_highlight_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_LEFT" file="common/toolbar_action_highlight_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_RIGHT" file="common/toolbar_action_highlight_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_TOP_LEFT" file="common/toolbar_action_highlight_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_TOP" file="common/toolbar_action_highlight_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_ACTION_HIGHLIGHT_TOP_RIGHT" file="common/toolbar_action_highlight_top_right.png" />
+
       <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BEZEL_HOVER" file="common/browser_toolbar_bezel_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BEZEL_PRESSED" file="common/browser_toolbar_bezel_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR" file="common/browser_tools_bar.png" />

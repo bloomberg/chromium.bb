@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_renderer_host.h"
@@ -26,6 +27,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -561,22 +563,28 @@ TEST_F(ExtensionToolbarModelUnitTest, NewToolbarExtensionsAreVisible) {
 TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightMode) {
   Init();
 
-  EXPECT_FALSE(toolbar_model()->HighlightExtensions(ExtensionIdList()));
+  EXPECT_FALSE(toolbar_model()->HighlightExtensions(
+      ExtensionIdList(), ExtensionToolbarModel::HIGHLIGHT_WARNING));
   EXPECT_EQ(0, observer()->highlight_mode_count());
 
   // Add the three browser action extensions.
   ASSERT_TRUE(AddBrowserActionExtensions());
   EXPECT_EQ(3u, num_toolbar_items());
 
+  // Start with a visible count of 2 (non-zero, and not all).
+  toolbar_model()->SetVisibleIconCount(2u);
+
   // Highlight one extension.
   ExtensionIdList extension_ids;
   extension_ids.push_back(browser_action_b()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_EQ(1, observer()->highlight_mode_count());
   EXPECT_TRUE(toolbar_model()->is_highlighting());
 
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
 
   // Stop highlighting.
   toolbar_model()->StopHighlighting();
@@ -588,6 +596,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightMode) {
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
 
   // Call stop highlighting a second time (shouldn't be notified).
   toolbar_model()->StopHighlighting();
@@ -599,17 +608,23 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightMode) {
   extension_ids.push_back(browser_action_a()->id());
   extension_ids.push_back(browser_action_b()->id());
   extension_ids.push_back(browser_action_c()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_EQ(1, observer()->highlight_mode_count());
   EXPECT_EQ(3u, num_toolbar_items());
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
+  EXPECT_EQ(3u, toolbar_model()->visible_icon_count());
+  // Even though the visible count is 3, we shouldn't adjust the stored
+  // preference.
+  EXPECT_EQ(2, profile()->GetPrefs()->GetInteger(pref_names::kToolbarSize));
 
   // Highlight only extension b (shrink the highlight list).
   extension_ids.clear();
   extension_ids.push_back(browser_action_b()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_EQ(2, observer()->highlight_mode_count());
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(0u));
@@ -618,7 +633,8 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightMode) {
   extension_ids.clear();
   extension_ids.push_back(browser_action_a()->id());
   extension_ids.push_back(browser_action_b()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_EQ(3, observer()->highlight_mode_count());
   EXPECT_EQ(2u, num_toolbar_items());
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
@@ -626,12 +642,17 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightMode) {
 
   // Highlight no extensions (empty the highlight list).
   extension_ids.clear();
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_EQ(2, observer()->highlight_mode_count());
   EXPECT_FALSE(toolbar_model()->is_highlighting());
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
+
+  // Our toolbar size should be back to normal.
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(2, profile()->GetPrefs()->GetInteger(pref_names::kToolbarSize));
 }
 
 TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightModeRemove) {
@@ -645,7 +666,8 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightModeRemove) {
   ExtensionIdList extension_ids;
   extension_ids.push_back(browser_action_a()->id());
   extension_ids.push_back(browser_action_b()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_TRUE(toolbar_model()->is_highlighting());
   EXPECT_EQ(1, observer()->highlight_mode_count());
   EXPECT_EQ(2u, num_toolbar_items());
@@ -674,7 +696,8 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightModeRemove) {
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
   extension_ids.clear();
   extension_ids.push_back(browser_action_c()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_EQ(1, observer()->highlight_mode_count());
   EXPECT_TRUE(toolbar_model()->is_highlighting());
   EXPECT_EQ(1u, num_toolbar_items());
@@ -711,7 +734,8 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightModeAdd) {
   // Highlight one of the two extensions.
   ExtensionIdList extension_ids;
   extension_ids.push_back(browser_action_a()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   EXPECT_TRUE(toolbar_model()->is_highlighting());
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
@@ -1145,6 +1169,34 @@ TEST_F(ExtensionToolbarModelUnitTest, ComponentExtesionsAddedToEnd) {
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(1));
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(2));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(3));
+}
+
+TEST_F(ExtensionToolbarModelUnitTest,
+       ToolbarModelHighlightsForToolbarRedesign) {
+  FeatureSwitch::ScopedOverride enable_redesign(
+      FeatureSwitch::extension_action_redesign(), true);
+  InitializeEmptyExtensionService();
+  EXPECT_TRUE(AddActionExtensions());
+  ExtensionToolbarModel* toolbar_model =
+      extension_action_test_util::CreateToolbarModelForProfile(profile());
+  EXPECT_TRUE(toolbar_model);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
+      profile()));
+  EXPECT_TRUE(toolbar_model->is_highlighting());
+  EXPECT_EQ(ExtensionToolbarModel::HIGHLIGHT_INFO,
+            toolbar_model->highlight_type());
+  EXPECT_EQ(3u, toolbar_model->visible_icon_count());
+  EXPECT_EQ(3u, toolbar_model->toolbar_items().size());
+
+  scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble(
+      new ExtensionToolbarIconSurfacingBubbleDelegate(profile()));
+  bubble->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
+
+  EXPECT_FALSE(toolbar_model->is_highlighting());
+  EXPECT_EQ(ExtensionToolbarModel::HIGHLIGHT_NONE,
+            toolbar_model->highlight_type());
 }
 
 }  // namespace extensions

@@ -35,6 +35,7 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
   views::MenuButton* GetOverflowReferenceView() override {
     return overflow_reference_view_;
   }
+  void OnMouseEnteredToolbarActionView() override {}
   void WriteDragDataForView(views::View* sender,
                             const gfx::Point& press_pt,
                             ui::OSExchangeData* data) override {}

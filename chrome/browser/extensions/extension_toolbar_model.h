@@ -29,6 +29,13 @@ class ExtensionToolbarModel : public ExtensionActionAPI::Observer,
                               public ExtensionRegistryObserver,
                               public KeyedService {
  public:
+  // The different options for highlighting.
+  enum HighlightType {
+    HIGHLIGHT_NONE,
+    HIGHLIGHT_INFO,
+    HIGHLIGHT_WARNING,
+  };
+
   ExtensionToolbarModel(Profile* profile, ExtensionPrefs* extension_prefs);
   ~ExtensionToolbarModel() override;
 
@@ -118,10 +125,11 @@ class ExtensionToolbarModel : public ExtensionActionAPI::Observer,
   bool extensions_initialized() const { return extensions_initialized_; }
 
   const ExtensionList& toolbar_items() const {
-    return is_highlighting_ ? highlighted_items_ : toolbar_items_;
+    return is_highlighting() ? highlighted_items_ : toolbar_items_;
   }
 
-  bool is_highlighting() const { return is_highlighting_; }
+  bool is_highlighting() const { return highlight_type_ != HIGHLIGHT_NONE; }
+  HighlightType highlight_type() const { return highlight_type_; }
 
   void OnExtensionToolbarPrefChange();
 
@@ -146,7 +154,8 @@ class ExtensionToolbarModel : public ExtensionActionAPI::Observer,
   // Highlighting mode is only entered if there is at least one extension to
   // be shown.
   // Returns true if highlighting mode is entered, false otherwise.
-  bool HighlightExtensions(const ExtensionIdList& extension_ids);
+  bool HighlightExtensions(const ExtensionIdList& extension_ids,
+                           HighlightType type);
 
   // Stop highlighting extensions. All extensions can be shown again, and the
   // number of visible icons will be reset to what it was before highlighting.
@@ -233,14 +242,9 @@ class ExtensionToolbarModel : public ExtensionActionAPI::Observer,
   // List of browser action buttons which should be highlighted.
   ExtensionList highlighted_items_;
 
-  // Indication whether or not we are currently in highlight mode; typically,
-  // this is equivalent to !highlighted_items_.empty(), but can be different
-  // if we are exiting highlight mode due to no longer having highlighted items.
-  bool is_highlighting_;
-
-  // The number of icons which were visible before highlighting a subset, in
-  // order to restore the count when finished.
-  int old_visible_icon_count_;
+  // The current type of highlight (with HIGHLIGHT_NONE indicating no current
+  // highlight).
+  HighlightType highlight_type_;
 
   ExtensionIdList last_known_positions_;
 

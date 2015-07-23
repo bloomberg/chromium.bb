@@ -201,7 +201,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   extensions::ExtensionIdList extension_ids;
   extension_ids.push_back(extension_a()->id());
   extension_ids.push_back(extension_b()->id());
-  toolbar_model()->HighlightExtensions(extension_ids);
+  toolbar_model()->HighlightExtensions(
+      extension_ids, extensions::ExtensionToolbarModel::HIGHLIGHT_WARNING);
 
   // Only two browser actions should be visible.
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());

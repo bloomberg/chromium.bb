@@ -372,7 +372,9 @@ void ToolbarActionsBar::CreateActions() {
 
   // CreateActions() can be called multiple times, so we need to make sure we
   // haven't already shown the bubble.
-  if (!checked_extension_bubble_) {
+  // Extension bubbles can also highlight a subset of actions, so don't show the
+  // bubble if the toolbar is already highlighting a different set.
+  if (!checked_extension_bubble_ && !is_highlighting()) {
     checked_extension_bubble_ = true;
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
@@ -664,6 +666,8 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
 }
 
 void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
+  if (!model_->extensions_initialized())
+    return;
   // It's a bit of a pain that we delete and recreate everything here, but given
   // everything else going on (the lack of highlight, [n] more extensions
   // appearing, etc), it's not worth the extra complexity to create and insert

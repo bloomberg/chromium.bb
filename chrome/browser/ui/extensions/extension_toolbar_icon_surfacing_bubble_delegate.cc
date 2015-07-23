@@ -103,4 +103,5 @@ void ExtensionToolbarIconSurfacingBubbleDelegate::OnBubbleClosed(
     CloseAction action) {
   if (action == CLOSE_EXECUTE)
     AcknowledgeInPrefs(profile_->GetPrefs());
+  extensions::ExtensionToolbarModel::Get(profile_)->StopHighlighting();
 }

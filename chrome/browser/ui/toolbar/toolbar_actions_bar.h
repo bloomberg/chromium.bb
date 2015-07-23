@@ -67,6 +67,12 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
     DRAG_TO_MAIN,
   };
 
+  enum HighlightType {
+    HIGHLIGHT_NONE,
+    HIGHLIGHT_INFO,
+    HIGHLIGHT_WARNING,
+  };
+
   ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
                     Browser* browser,
                     ToolbarActionsBar* main_bar);
@@ -165,6 +171,10 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
     return suppress_animation_ || disable_animations_for_testing_;
   }
   bool is_highlighting() const { return model_ && model_->is_highlighting(); }
+  extensions::ExtensionToolbarModel::HighlightType highlight_type() const {
+    return model_ ? model_->highlight_type()
+                  : extensions::ExtensionToolbarModel::HIGHLIGHT_NONE;
+  }
   const PlatformSettings& platform_settings() const {
     return platform_settings_;
   }

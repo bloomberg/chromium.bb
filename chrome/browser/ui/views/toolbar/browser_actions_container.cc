@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -199,6 +200,21 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
       static_cast<views::MenuButton*>(chevron_) :
       static_cast<views::MenuButton*>(BrowserView::GetBrowserViewForBrowser(
           browser_)->toolbar()->app_menu());
+}
+
+void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
+  if (!shown_bubble_ && !toolbar_action_views_.empty() &&
+      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
+          browser_->profile())) {
+    ExtensionToolbarIconSurfacingBubble* bubble =
+        new ExtensionToolbarIconSurfacingBubble(
+            toolbar_action_views_[0],
+            make_scoped_ptr(new ExtensionToolbarIconSurfacingBubbleDelegate(
+                browser_->profile())));
+    views::BubbleDelegateView::CreateBubble(bubble);
+    bubble->Show();
+  }
+  shown_bubble_ = true;
 }
 
 void BrowserActionsContainer::AddViewForAction(
@@ -454,18 +470,7 @@ void BrowserActionsContainer::Layout() {
 }
 
 void BrowserActionsContainer::OnMouseEntered(const ui::MouseEvent& event) {
-  if (!shown_bubble_ && !toolbar_action_views_.empty() &&
-      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-          browser_->profile())) {
-    ExtensionToolbarIconSurfacingBubble* bubble =
-        new ExtensionToolbarIconSurfacingBubble(
-            toolbar_action_views_[0],
-            make_scoped_ptr(new ExtensionToolbarIconSurfacingBubbleDelegate(
-                browser_->profile())));
-    views::BubbleDelegateView::CreateBubble(bubble);
-    bubble->Show();
-  }
-  shown_bubble_ = true;
+  OnMouseEnteredToolbarActionView();
 }
 
 bool BrowserActionsContainer::GetDropFormats(
@@ -699,10 +704,14 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // If the views haven't been initialized yet, wait for the next call to
   // paint (one will be triggered by entering highlight mode).
   if (toolbar_actions_bar_->is_highlighting() &&
-      !toolbar_action_views_.empty() &&
-      highlight_painter_) {
-    views::Painter::PaintPainterAt(
-        canvas, highlight_painter_.get(), GetLocalBounds());
+      !toolbar_action_views_.empty() && !in_overflow_mode()) {
+    extensions::ExtensionToolbarModel::HighlightType highlight_type =
+        toolbar_actions_bar_->highlight_type();
+    views::Painter* painter =
+        highlight_type == extensions::ExtensionToolbarModel::HIGHLIGHT_INFO
+            ? info_highlight_painter_.get()
+            : warning_highlight_painter_.get();
+    views::Painter::PaintPainterAt(canvas, painter, GetLocalBounds());
   }
 
   // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
@@ -783,8 +792,12 @@ void BrowserActionsContainer::LoadImages() {
                        *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
   }
 
-  const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
-  highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
+  const int kInfoImages[] = IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT);
+  info_highlight_painter_.reset(
+      views::Painter::CreateImageGridPainter(kInfoImages));
+  const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
+  warning_highlight_painter_.reset(
+      views::Painter::CreateImageGridPainter(kWarningImages));
 }
 
 void BrowserActionsContainer::ClearActiveBubble(views::Widget* widget) {

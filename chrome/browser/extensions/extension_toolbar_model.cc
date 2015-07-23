@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -45,9 +46,9 @@ ExtensionToolbarModel::ExtensionToolbarModel(Profile* profile,
       prefs_(profile_->GetPrefs()),
       extension_action_api_(ExtensionActionAPI::Get(profile_)),
       extensions_initialized_(false),
-      include_all_extensions_(
-          FeatureSwitch::extension_action_redesign()->IsEnabled()),
-      is_highlighting_(false),
+      include_all_extensions_(FeatureSwitch::extension_action_redesign()
+                                  ->IsEnabled()),
+      highlight_type_(HIGHLIGHT_NONE),
       extension_action_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
@@ -132,7 +133,7 @@ void ExtensionToolbarModel::SetVisibleIconCount(size_t count) {
   // incognito. Highlight mode is designed to be a transitory state, and should
   //  not persist across browser restarts (though it may be re-entered), and we
   // don't store anything in incognito.
-  if (!is_highlighting_ && !profile_->IsOffTheRecord()) {
+  if (!is_highlighting() && !profile_->IsOffTheRecord()) {
     // Additionally, if we are using the new toolbar, any icons which are in the
     // overflow menu are considered "hidden". But it so happens that the times
     // we are likely to call SetVisibleIconCount() are also those when we are
@@ -248,6 +249,17 @@ void ExtensionToolbarModel::OnReady() {
   // taken from prefs.
   extension_registry_observer_.Add(registry);
   extension_action_observer_.Add(extension_action_api_);
+
+  if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
+          profile_)) {
+    ExtensionIdList ids;
+    for (const auto& extension : toolbar_items_)
+      ids.push_back(extension->id());
+    HighlightExtensions(ids, HIGHLIGHT_INFO);
+  }
+
+  extensions_initialized_ = true;
+  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
 }
 
 size_t ExtensionToolbarModel::FindNewPositionFromLastKnownGood(
@@ -341,7 +353,7 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   // If we're currently highlighting, then even though we add a browser action
   // to the full list (|toolbar_items_|, there won't be another *visible*
   // browser action, which was what the observers care about.
-  if (!is_highlighting_) {
+  if (!is_highlighting()) {
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnToolbarExtensionAdded(extension, new_index));
 
@@ -391,7 +403,7 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
 
   // If we're in highlight mode, we also have to remove the extension from
   // the highlighted list.
-  if (is_highlighting_) {
+  if (is_highlighting()) {
     pos = std::find(highlighted_items_.begin(),
                     highlighted_items_.end(),
                     extension);
@@ -427,9 +439,7 @@ void ExtensionToolbarModel::InitializeExtensionList() {
   else
     Populate(&last_known_positions_);
 
-  extensions_initialized_ = true;
   MaybeUpdateVisibilityPrefs();
-  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
 }
 
 void ExtensionToolbarModel::Populate(ExtensionIdList* positions) {
@@ -657,7 +667,8 @@ void ExtensionToolbarModel::EnsureVisibility(
 }
 
 bool ExtensionToolbarModel::HighlightExtensions(
-    const ExtensionIdList& extension_ids) {
+    const ExtensionIdList& extension_ids,
+    HighlightType highlight_type) {
   highlighted_items_.clear();
 
   for (ExtensionIdList::const_iterator id = extension_ids.begin();
@@ -674,38 +685,46 @@ bool ExtensionToolbarModel::HighlightExtensions(
   // If we have any items in |highlighted_items_|, then we entered highlighting
   // mode.
   if (highlighted_items_.size()) {
-    old_visible_icon_count_ = visible_icon_count_;
+    // It's important that is_highlighting_ is changed immediately before the
+    // observers are notified since it changes the result of toolbar_items().
+    highlight_type_ = highlight_type;
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarHighlightModeChanged(true));
+
+    // We set the visible icon count after the highlight mode change because
+    // the UI actions are created/destroyed during highlight, and doing that
+    // prior to changing the size allows us to still have smooth animations.
     if (visible_icon_count() < extension_ids.size())
       SetVisibleIconCount(extension_ids.size());
 
-    // It's important that is_highlighting_ is changed immediately before the
-    // observers are notified since it changes the result of toolbar_items().
-    is_highlighting_ = true;
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarHighlightModeChanged(true));
     return true;
   }
 
   // Otherwise, we didn't enter highlighting mode (and, in fact, exited it if
   // we were otherwise in it).
-  if (is_highlighting_)
+  if (is_highlighting())
     StopHighlighting();
   return false;
 }
 
 void ExtensionToolbarModel::StopHighlighting() {
-  if (is_highlighting_) {
-    if (old_visible_icon_count_ != visible_icon_count_)
-      SetVisibleIconCount(old_visible_icon_count_);
-
+  if (is_highlighting()) {
     // It's important that is_highlighting_ is changed immediately before the
     // observers are notified since it changes the result of toolbar_items().
-    is_highlighting_ = false;
+    highlight_type_ = HIGHLIGHT_NONE;
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnToolbarHighlightModeChanged(false));
+
     // For the same reason, we don't clear highlighted_items_ until after the
     // mode changed.
     highlighted_items_.clear();
+
+    // We set the visible icon count after the highlight mode change because
+    // the UI actions are created/destroyed during highlight, and doing that
+    // prior to changing the size allows us to still have smooth animations.
+    int saved_icon_count = prefs_->GetInteger(pref_names::kToolbarSize);
+    if (saved_icon_count != visible_icon_count_)
+      SetVisibleIconCount(saved_icon_count);
   }
 }
 
