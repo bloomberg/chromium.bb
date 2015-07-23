@@ -1735,6 +1735,9 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   // http://crbug.com/304193
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
+  // http://crbug.com/508747
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return;
 #endif
 
   LoadHTML("<textarea id=\"test\"></textarea>");
