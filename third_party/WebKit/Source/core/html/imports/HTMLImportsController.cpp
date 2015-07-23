@@ -144,7 +144,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
 
 Document* HTMLImportsController::master() const
 {
-    return root()->document();
+    return root() ? root()->document() : nullptr;
 }
 
 bool HTMLImportsController::shouldBlockScriptExecution(const Document& document) const
