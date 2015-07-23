@@ -653,11 +653,38 @@ void HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings() {
       break;
     }
 
-    const AlternativeService alternative_service = it->first;
+    const AlternativeService expired_alternative_service = it->first;
     broken_alternative_services_.erase(it);
-    // TODO(bnc): Make sure broken alternative services are not in the mapping.
-    ClearAlternativeServices(
-        HostPortPair(alternative_service.host, alternative_service.port));
+
+    // Remove every occurrence of |expired_alternative_service| from
+    // |alternative_service_map_|.
+    for (AlternativeServiceMap::iterator map_it =
+             alternative_service_map_.begin();
+         map_it != alternative_service_map_.end();) {
+      for (AlternativeServiceInfoVector::iterator it = map_it->second.begin();
+           it != map_it->second.end();) {
+        AlternativeService alternative_service(it->alternative_service);
+        // Empty hostname in map means hostname of key: substitute before
+        // comparing to |expired_alternative_service|.
+        if (alternative_service.host.empty()) {
+          alternative_service.host = map_it->first.host();
+        }
+        if (alternative_service == expired_alternative_service) {
+          it = map_it->second.erase(it);
+          continue;
+        }
+        ++it;
+      }
+      // If an origin has an empty list of alternative services, then remove it
+      // from both |canonical_host_to_origin_map_| and
+      // |alternative_service_map_|.
+      if (map_it->second.empty()) {
+        RemoveCanonicalHost(map_it->first);
+        map_it = alternative_service_map_.Erase(map_it);
+        continue;
+      }
+      ++map_it;
+    }
   }
   ScheduleBrokenAlternateProtocolMappingsExpiration();
 }

@@ -731,6 +731,47 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 }
 
+// Regression test for https://crbug.com/505413.
+TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
+  HostPortPair foo_host_port_pair("foo", 443);
+  AlternativeService bar_alternative_service(QUIC, "bar", 443);
+  impl_.SetAlternativeService(foo_host_port_pair, bar_alternative_service, 1.0);
+  EXPECT_TRUE(HasAlternativeService(foo_host_port_pair));
+
+  HostPortPair bar_host_port_pair1("bar", 80);
+  AlternativeService nohost_alternative_service(QUIC, "", 443);
+  impl_.SetAlternativeService(bar_host_port_pair1, nohost_alternative_service,
+                              1.0);
+  EXPECT_TRUE(HasAlternativeService(bar_host_port_pair1));
+
+  HostPortPair bar_host_port_pair2("bar", 443);
+  AlternativeService baz_alternative_service(QUIC, "baz", 1234);
+  impl_.SetAlternativeService(bar_host_port_pair2, baz_alternative_service,
+                              1.0);
+  EXPECT_TRUE(HasAlternativeService(bar_host_port_pair2));
+
+  // Mark "bar:443" as broken.
+  base::TimeTicks past =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(42);
+  HttpServerPropertiesImplPeer::AddBrokenAlternativeServiceWithExpirationTime(
+      impl_, bar_alternative_service, past);
+
+  // Expire brokenness of "bar:443".
+  HttpServerPropertiesImplPeer::ExpireBrokenAlternateProtocolMappings(impl_);
+
+  // "foo:443" should have no alternative service now.
+  EXPECT_FALSE(HasAlternativeService(foo_host_port_pair));
+  // "bar:80" should have no alternative service now.
+  EXPECT_FALSE(HasAlternativeService(bar_host_port_pair1));
+  // The alternative service of "bar:443" should be unaffected.
+  EXPECT_TRUE(HasAlternativeService(bar_host_port_pair2));
+
+  EXPECT_TRUE(
+      impl_.WasAlternativeServiceRecentlyBroken(bar_alternative_service));
+  EXPECT_FALSE(
+      impl_.WasAlternativeServiceRecentlyBroken(baz_alternative_service));
+}
+
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
 
 TEST_F(SpdySettingsServerPropertiesTest, Initialize) {
