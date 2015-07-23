@@ -5967,7 +5967,9 @@
         ['CXX.host', '<(host_cxx)'],
       ],
     }],
-    ['OS=="linux" and target_arch=="mipsel" and clang==0', {
+    ['OS=="linux" and target_arch=="mipsel" and host_arch!="mipsel" and chromeos==0 and clang==0', {
+      # Set default mips cross tools on linux.  These can be overridden
+      # using CC,CXX,CC.host and CXX.host environment variables.
       'make_global_settings': [
         ['CC', '<!(which mipsel-linux-gnu-gcc)'],
         ['CXX', '<!(which mipsel-linux-gnu-g++)'],
@@ -5976,8 +5978,8 @@
       ],
     }],
     ['OS=="linux" and target_arch=="arm" and host_arch!="arm" and chromeos==0 and clang==0', {
-      # Set default ARM cross compiling on linux.  These can be overridden
-      # using CC/CXX/etc environment variables.
+      # Set default ARM cross tools on linux.  These can be overridden
+      # using CC,CXX,CC.host and CXX.host environment variables.
       'make_global_settings': [
         ['CC', '<!(which arm-linux-gnueabihf-gcc)'],
         ['CXX', '<!(which arm-linux-gnueabihf-g++)'],
@@ -5985,7 +5987,6 @@
         ['CXX.host', '<(host_cxx)'],
       ],
     }],
-
     # TODO(yyanagisawa): supports GENERATOR==make
     #  make generator doesn't support CC_wrapper without CC
     #  in make_global_settings yet.
