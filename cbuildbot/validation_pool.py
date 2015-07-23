@@ -1385,21 +1385,11 @@ class ValidationPool(object):
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
     for pc in pending_commits:
-      patch = cros_patch.GerritFetchOnlyPatch(
-          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_GERRIT_NUMBER_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
-          owner_email=pc.getAttribute(lkgm_manager.PALADIN_OWNER_EMAIL_ATTR),
-          fail_count=int(pc.getAttribute(lkgm_manager.PALADIN_FAIL_COUNT_ATTR)),
-          pass_count=int(pc.getAttribute(lkgm_manager.PALADIN_PASS_COUNT_ATTR)),
-          total_fail_count=int(pc.getAttribute(
-              lkgm_manager.PALADIN_TOTAL_FAIL_COUNT_ATTR)),)
+      attr_names = cros_patch.ALL_ATTRS
+      attr_dict = {}
+      for name in attr_names:
+        attr_dict[name] = pc.getAttribute(name)
+      patch = cros_patch.GerritFetchOnlyPatch.FromAttrDict(attr_dict)
 
       self.changes.append(patch)
 

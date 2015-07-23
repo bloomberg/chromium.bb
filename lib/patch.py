@@ -36,6 +36,36 @@ _GERRIT_CHANGE_ID_TOTAL_LENGTH = (_GERRIT_CHANGE_ID_LENGTH +
 REPO_NAME_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*(/[a-zA-Z0-9_-]+)*$')
 BRANCH_NAME_RE = re.compile(r'^(refs/heads/)?[a-zA-Z0-9_][a-zA-Z0-9_\-]*$')
 
+# Constants for attributes names.
+ATTR_REMOTE = 'remote'
+ATTR_GERRIT_NUMBER = 'gerrit_number'
+ATTR_PROJECT = 'project'
+ATTR_BRANCH = 'branch'
+ATTR_PROJECT_URL = 'project_url'
+ATTR_REF = 'ref'
+ATTR_CHANGE_ID = 'change_id'
+ATTR_COMMIT = 'commit'
+ATTR_PATCH_NUMBER = 'patch_number'
+ATTR_OWNER_EMAIL = 'owner_email'
+ATTR_FAIL_COUNT = 'fail_count'
+ATTR_PASS_COUNT = 'pass_count'
+ATTR_TOTAL_FAIL_COUNT = 'total_fail_count'
+
+ALL_ATTRS = (
+    ATTR_REMOTE,
+    ATTR_GERRIT_NUMBER,
+    ATTR_PROJECT,
+    ATTR_BRANCH,
+    ATTR_PROJECT_URL,
+    ATTR_REF,
+    ATTR_CHANGE_ID,
+    ATTR_COMMIT,
+    ATTR_PATCH_NUMBER,
+    ATTR_OWNER_EMAIL,
+    ATTR_FAIL_COUNT,
+    ATTR_PASS_COUNT,
+    ATTR_TOTAL_FAIL_COUNT,
+)
 
 def ParseSHA1(text, error_ok=True):
   """Checks if |text| conforms to the SHA1 format and parses it.
@@ -1476,6 +1506,28 @@ class GerritFetchOnlyPatch(GitRepoPatch):
     self.pass_count = pass_count
     self.total_fail_count = total_fail_count
 
+  @classmethod
+  def FromAttrDict(cls, attr_dict):
+    """Get a GerritFetchOnlyPatch instance from a dict.
+
+    Args:
+      attr_dict: A dictionary with the keys given in ALL_ATTRS.
+    """
+    return GerritFetchOnlyPatch(attr_dict[ATTR_PROJECT_URL],
+                                attr_dict[ATTR_PROJECT],
+                                attr_dict[ATTR_REF],
+                                attr_dict[ATTR_BRANCH],
+                                attr_dict[ATTR_REMOTE],
+                                attr_dict[ATTR_COMMIT],
+                                attr_dict[ATTR_CHANGE_ID],
+                                attr_dict[ATTR_GERRIT_NUMBER],
+                                attr_dict[ATTR_PATCH_NUMBER],
+                                owner_email=attr_dict[ATTR_OWNER_EMAIL],
+                                fail_count=int(attr_dict[ATTR_FAIL_COUNT]),
+                                pass_count=int(attr_dict[ATTR_PASS_COUNT]),
+                                total_fail_count=int(
+                                    attr_dict[ATTR_TOTAL_FAIL_COUNT]))
+
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id
 
@@ -1509,6 +1561,29 @@ class GerritFetchOnlyPatch(GitRepoPatch):
           'Change-Id into the commit message to resolve this.',
           self, self.change_id, self.sha1)
 
+  def GetAttributeDict(self):
+    """Get a dictionary of attribute used for manifest.
+
+    Returns:
+      A dictionary with the keys given in ALL_ATTRS.
+    """
+    attr_dict = {
+        ATTR_REMOTE: self.remote,
+        ATTR_GERRIT_NUMBER: self.gerrit_number,
+        ATTR_PROJECT: self.project,
+        ATTR_PROJECT_URL: self.project_url,
+        ATTR_REF: self.ref,
+        ATTR_BRANCH: self.tracking_branch,
+        ATTR_CHANGE_ID: self.change_id,
+        ATTR_COMMIT: self.commit,
+        ATTR_PATCH_NUMBER: self.patch_number,
+        ATTR_OWNER_EMAIL: self.owner_email,
+        ATTR_FAIL_COUNT: str(self.fail_count),
+        ATTR_PASS_COUNT: str(self.pass_count),
+        ATTR_TOTAL_FAIL_COUNT: str(self.total_fail_count),
+    }
+
+    return attr_dict
 
 class GerritPatch(GerritFetchOnlyPatch):
   """Object that represents a Gerrit CL."""

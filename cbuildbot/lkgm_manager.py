@@ -20,19 +20,6 @@ from chromite.lib import git
 
 # Paladin constants for manifest names.
 PALADIN_COMMIT_ELEMENT = 'pending_commit'
-PALADIN_REMOTE_ATTR = 'remote'
-PALADIN_GERRIT_NUMBER_ATTR = 'gerrit_number'
-PALADIN_PROJECT_ATTR = 'project'
-PALADIN_BRANCH_ATTR = 'branch'
-PALADIN_PROJECT_URL_ATTR = 'project_url'
-PALADIN_REF_ATTR = 'ref'
-PALADIN_CHANGE_ID_ATTR = 'change_id'
-PALADIN_COMMIT_ATTR = 'commit'
-PALADIN_PATCH_NUMBER_ATTR = 'patch_number'
-PALADIN_OWNER_EMAIL_ATTR = 'owner_email'
-PALADIN_FAIL_COUNT_ATTR = 'fail_count'
-PALADIN_PASS_COUNT_ATTR = 'pass_count'
-PALADIN_TOTAL_FAIL_COUNT_ATTR = 'total_fail_count'
 
 CHROME_ELEMENT = 'chrome'
 CHROME_VERSION_ATTR = 'version'
@@ -215,23 +202,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     manifest_dom = minidom.parse(manifest)
     for patch in patches:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
-      pending_commit.setAttribute(PALADIN_REMOTE_ATTR, patch.remote)
-      pending_commit.setAttribute(
-          PALADIN_GERRIT_NUMBER_ATTR, patch.gerrit_number)
-      pending_commit.setAttribute(PALADIN_PROJECT_ATTR, patch.project)
-      pending_commit.setAttribute(PALADIN_PROJECT_URL_ATTR, patch.project_url)
-      pending_commit.setAttribute(PALADIN_REF_ATTR, patch.ref)
-      pending_commit.setAttribute(PALADIN_BRANCH_ATTR, patch.tracking_branch)
-      pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.change_id)
-      pending_commit.setAttribute(PALADIN_COMMIT_ATTR, patch.commit)
-      pending_commit.setAttribute(PALADIN_PATCH_NUMBER_ATTR, patch.patch_number)
-      pending_commit.setAttribute(PALADIN_OWNER_EMAIL_ATTR, patch.owner_email)
-      pending_commit.setAttribute(PALADIN_FAIL_COUNT_ATTR,
-                                  str(patch.fail_count))
-      pending_commit.setAttribute(PALADIN_PASS_COUNT_ATTR,
-                                  str(patch.pass_count))
-      pending_commit.setAttribute(PALADIN_TOTAL_FAIL_COUNT_ATTR,
-                                  str(patch.total_fail_count))
+      attr_dict = patch.GetAttributeDict()
+      for k, v in attr_dict.iteritems():
+        pending_commit.setAttribute(k, v)
       manifest_dom.documentElement.appendChild(pending_commit)
 
     with open(manifest, 'w+') as manifest_file:

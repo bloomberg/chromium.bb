@@ -21,7 +21,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
-
+from chromite.lib import patch as cros_patch
 
 FAKE_VERSION_STRING = '1.2.4-rc3'
 FAKE_VERSION_STRING_NEXT = '1.2.4-rc4'
@@ -372,53 +372,55 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     the newly generated manifest has the correct patch information afterwards.
     """
     with TemporaryManifest() as f:
-      gerrit_patch = mock.MagicMock()
-      gerrit_patch.remote = 'cros-internal'
-      gerrit_patch.gerrit_number = '12345'
-      gerrit_patch.project = 'chromite/tacos'
-      gerrit_patch.project_url = 'https://host/chromite/tacos'
-      gerrit_patch.ref = 'refs/changes/11/12345/4'
-      gerrit_patch.tracking_branch = 'master'
-      gerrit_patch.change_id = '1234567890'
-      gerrit_patch.commit = '0987654321'
-      gerrit_patch.patch_number = '4'
-      gerrit_patch.owner_email = 'foo@chromium.org'
-      gerrit_patch.fail_count = 1
-      gerrit_patch.pass_count = 1
-      gerrit_patch.total_fail_count = 3
+      gerrit_patch = cros_patch.GerritFetchOnlyPatch(
+          'https://host/chromite/tacos',
+          'chromite/tacos',
+          'refs/changes/11/12345/4',
+          'master',
+          'cros-internal',
+          '7181e4b5e182b6f7d68461b04253de095bad74f9',
+          'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+          '12345',
+          '4',
+          'foo@chromium.org',
+          1,
+          1,
+          3)
+
       self.manager._AddPatchesToManifest(f.name, [gerrit_patch])
 
       new_doc = minidom.parse(f.name)
       element = new_doc.getElementsByTagName(
           lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
+
       self.assertEqual(element.getAttribute(
-          lkgm_manager.PALADIN_CHANGE_ID_ATTR), gerrit_patch.change_id)
+          cros_patch.ATTR_CHANGE_ID), gerrit_patch.change_id)
       self.assertEqual(element.getAttribute(
-          lkgm_manager.PALADIN_COMMIT_ATTR), gerrit_patch.commit)
-      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
+          cros_patch.ATTR_COMMIT), gerrit_patch.commit)
+      self.assertEqual(element.getAttribute(cros_patch.ATTR_PROJECT),
                        gerrit_patch.project)
-      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
+      self.assertEqual(element.getAttribute(cros_patch.ATTR_REMOTE),
                        gerrit_patch.remote)
-      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
+      self.assertEqual(element.getAttribute(cros_patch.ATTR_BRANCH),
                        gerrit_patch.tracking_branch)
-      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
+      self.assertEqual(element.getAttribute(cros_patch.ATTR_REF),
                        gerrit_patch.ref)
       self.assertEqual(
-          element.getAttribute(lkgm_manager.PALADIN_OWNER_EMAIL_ATTR),
+          element.getAttribute(cros_patch.ATTR_OWNER_EMAIL),
           gerrit_patch.owner_email)
       self.assertEqual(
-          element.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
+          element.getAttribute(cros_patch.ATTR_PROJECT_URL),
           gerrit_patch.project_url)
       self.assertEqual(
-          element.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
+          element.getAttribute(cros_patch.ATTR_PATCH_NUMBER),
           gerrit_patch.patch_number)
       self.assertEqual(
-          element.getAttribute(lkgm_manager.PALADIN_FAIL_COUNT_ATTR),
+          element.getAttribute(cros_patch.ATTR_FAIL_COUNT),
           str(gerrit_patch.fail_count))
       self.assertEqual(
-          element.getAttribute(lkgm_manager.PALADIN_PASS_COUNT_ATTR),
+          element.getAttribute(cros_patch.ATTR_PASS_COUNT),
           str(gerrit_patch.pass_count))
       self.assertEqual(
-          element.getAttribute(lkgm_manager.PALADIN_TOTAL_FAIL_COUNT_ATTR),
+          element.getAttribute(cros_patch.ATTR_TOTAL_FAIL_COUNT),
           str(gerrit_patch.total_fail_count))
 
