@@ -34,7 +34,7 @@ public:
     // Ownership of the callback is transferred to the callee for each of
     // the following methods.
     virtual void dispatchFailedSignIn(const WebCredential&, WebCredentialManagerClient::NotificationCallbacks*);
-    virtual void dispatchSignedIn(const WebCredential&, WebCredentialManagerClient::NotificationCallbacks*);
+    virtual void dispatchStore(const WebCredential&, WebCredentialManagerClient::NotificationCallbacks*);
     virtual void dispatchRequireUserMediation(WebCredentialManagerClient::NotificationCallbacks*);
     virtual void dispatchRequest(bool zeroClickOnly, const WebVector<WebURL>& federations, WebCredentialManagerClient::RequestCallbacks*);
 

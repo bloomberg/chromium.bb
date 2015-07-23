@@ -604,9 +604,9 @@ interface Credential
     method constructor
 interface CredentialsContainer
     method constructor
-    method notifySignedIn
     method request
     method requireUserMediation
+    method store
 interface Crypto
     getter subtle
     method constructor

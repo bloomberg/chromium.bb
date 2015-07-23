@@ -136,14 +136,14 @@ ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Cred
     return promise;
 }
 
-ScriptPromise CredentialsContainer::notifySignedIn(ScriptState* scriptState, Credential* credential)
+ScriptPromise CredentialsContainer::store(ScriptState* scriptState, Credential* credential)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchSignedIn(WebCredential::create(credential->platformCredential()), new NotificationCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchStore(WebCredential::create(credential->platformCredential()), new NotificationCallbacks(resolver));
     return promise;
 }
 
