@@ -77,7 +77,6 @@ private:
     }
 
     void restoreCachedResourceIfNeeded(Document*);
-    bool shouldSetCrossOriginAccessControl(const KURL& resource, SecurityOrigin*);
 
     String m_resource;
     String m_format;

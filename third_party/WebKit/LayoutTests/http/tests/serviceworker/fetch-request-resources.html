@@ -177,7 +177,7 @@ async_test(function(t) {
         css_test(f, REMOTE_URL, 'use-credentials', 'style', 'cors',
                  'include');
 
-        font_face_test(f, LOCAL_URL, 'font', 'no-cors', 'same-origin');
+        font_face_test(f, LOCAL_URL, 'font', 'cors', 'omit');
         font_face_test(f, REMOTE_URL, 'font', 'cors', 'omit');
 
         css_image_test(f, LOCAL_URL, 'backgroundImage', 'image',
