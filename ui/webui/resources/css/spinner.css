@@ -4,7 +4,7 @@
 
 .inline-spinner,
 .spinner {
-  background-image: url(chrome://resources/images/throbber.svg);
+  background-image: url(../images/throbber.svg);
   background-size: 100%;
 }
 

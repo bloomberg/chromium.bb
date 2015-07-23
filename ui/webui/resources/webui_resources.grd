@@ -241,7 +241,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_CSS_ROBOTO"
                  file="css/roboto.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_SPINNER"
-                 file="css/spinner.css" type="chrome_html" />
+                 file="css/spinner.css" type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_TABLE"
                  file="css/table.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_TABS"
