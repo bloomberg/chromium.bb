@@ -3342,6 +3342,17 @@
                     'angle_deqp_gles2_tests.isolate',
                   ],
                 },
+                {
+                  'target_name': 'angle_deqp_gles3_tests_run',
+                  'type': 'none',
+                  'dependencies': [
+                    '../gpu/gpu.gyp:angle_deqp_gles3_tests',
+                    'gpu_tests_base',
+                  ],
+                  'sources': [
+                    'angle_deqp_gles3_tests.isolate',
+                  ],
+                },
               ],
             }],
           ],

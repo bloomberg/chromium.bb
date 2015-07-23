@@ -796,6 +796,22 @@
             'angle_deqp_tests_main.cc',
           ],
         },
+        {
+          'target_name': 'angle_deqp_gles3_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../third_party/angle/src/tests/tests.gyp:angle_deqp_gtest_support',
+            '../third_party/angle/src/tests/tests.gyp:angle_deqp_libgles3',
+          ],
+          'includes': [
+            '../third_party/angle/build/common_defines.gypi',
+          ],
+          'sources': [
+            'angle_deqp_tests_main.cc',
+          ],
+        },
       ],
     }]
   ],

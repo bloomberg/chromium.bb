@@ -11,14 +11,14 @@
     ['OS=="win"', {
       'variables': {
         'command': [
-          '<(PRODUCT_DIR)/angle_deqp_gles2_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/angle_deqp_gles3_tests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-batch-limit=400',
         ],
         'files': [
-          '<(PRODUCT_DIR)/angle_deqp_libgles2.dll',
-          '<(PRODUCT_DIR)/angle_deqp_gles2_tests<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/deqp_support/deqp_gles2_test_expectations.txt',
-          '<(PRODUCT_DIR)/deqp_support/dEQP-GLES2-cases.txt.gz',
+          '<(PRODUCT_DIR)/angle_deqp_libgles3.dll',
+          '<(PRODUCT_DIR)/angle_deqp_gles3_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/deqp_support/deqp_gles3_test_expectations.txt',
+          '<(PRODUCT_DIR)/deqp_support/dEQP-GLES3-cases.txt.gz',
           '../third_party/deqp/src/data/',
         ],
       },
