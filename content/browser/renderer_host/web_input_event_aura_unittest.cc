@@ -70,7 +70,16 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
 }
 
 // Checks that MakeWebKeyboardEvent returns a correct windowsKeyCode.
-TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventWindowsKeyCode) {
+#if defined(OS_CHROMEOS) || defined(THREAD_SANITIZER)
+// Fails on Chrome OS and under ThreadSanitizer on Linux, see
+// https://crbug.com/449103.
+#define MAYBE_TestMakeWebKeyboardEventWindowsKeyCode \
+    DISABLED_TestMakeWebKeyboardEventWindowsKeyCode
+#else
+#define MAYBE_TestMakeWebKeyboardEventWindowsKeyCode \
+    TestMakeWebKeyboardEventWindowsKeyCode
+#endif
+TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
 #if defined(USE_X11)
   ui::ScopedXI2Event xev;
   {
