@@ -112,7 +112,7 @@ void SurfacelessGlRenderer::RenderFrame() {
   buffers_[back_buffer_].BindFramebuffer();
 
   glViewport(0, 0, size_.width(), size_.height());
-  glClearColor(1 - fraction, fraction, 0.0, 1.0);
+  glClearColor(1 - fraction, 0.0, fraction, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   buffers_[back_buffer_].SchedulePlane();
