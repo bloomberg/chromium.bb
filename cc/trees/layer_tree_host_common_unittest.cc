@@ -1500,7 +1500,6 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
     // The root layer always creates a render surface
     EXPECT_TRUE(parent->render_surface());
     EXPECT_TRUE(render_surface1->render_surface());
-    EXPECT_EQ(2U, render_surface_layer_list.size());
   }
 
   {
@@ -1512,7 +1511,6 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_TRUE(parent->render_surface());
     EXPECT_FALSE(render_surface1->render_surface());
-    EXPECT_EQ(1U, render_surface_layer_list.size());
   }
 }
 
