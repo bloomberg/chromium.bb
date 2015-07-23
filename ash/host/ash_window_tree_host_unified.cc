@@ -186,14 +186,12 @@ bool AshWindowTreeHostUnified::DispatchKeyEventPostIME(
     const ui::KeyEvent& event) {
   ui::KeyEvent event_copy(event);
   input_method_handler()->SetPostIME(true);
-  ui::EventSource::DeliverEventToProcessor(&event_copy);
+  ui::EventDispatchDetails details =
+      event_processor()->OnEventFromSource(&event_copy);
+  if (details.dispatcher_destroyed)
+    return true;
   input_method_handler()->SetPostIME(false);
   return event_copy.stopped_propagation();
-}
-
-ui::EventDispatchDetails AshWindowTreeHostUnified::DeliverEventToProcessor(
-    ui::Event* event) {
-  return ui::EventSource::DeliverEventToProcessor(event);
 }
 
 }  // namespace ash

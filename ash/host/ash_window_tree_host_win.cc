@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/window_tree_host_win.h"
+#include "ui/events/event_processor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
 
@@ -106,14 +107,12 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
     ui::KeyEvent event_copy(event);
     input_method_handler()->SetPostIME(true);
-    ui::EventSource::DeliverEventToProcessor(&event_copy);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&event_copy);
+    if (details.dispatcher_destroyed)
+      return true;
     input_method_handler()->SetPostIME(false);
     return event_copy.stopped_propagation();
-  }
-
-  // ui::EventSource:
-  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override {
-    return ui::EventSource::DeliverEventToProcessor(event);
   }
 
   bool fullscreen_;

@@ -41,9 +41,6 @@ class ASH_EXPORT AshRemoteWindowTreeHostWin
   // ui::internal::InputMethodDelegate:
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
 
-  // ui::EventSource:
-  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override;
-
   TransformerHelper transformer_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshRemoteWindowTreeHostWin);

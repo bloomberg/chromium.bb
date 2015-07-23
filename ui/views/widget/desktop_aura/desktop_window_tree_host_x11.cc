@@ -23,6 +23,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
@@ -1517,6 +1518,11 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
   }
 }
 
+void DesktopWindowTreeHostX11::DispatchKeyEvent(ui::KeyEvent* event) {
+  GetInputMethod()->DispatchKeyEvent(*event);
+  event->StopPropagation();
+}
+
 void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
     ui::LocatedEvent* located_event,
     DesktopWindowTreeHostX11* host) {
@@ -1745,7 +1751,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
     }
     case KeyPress: {
       ui::KeyEvent keydown_event(xev);
-      SendEventToProcessor(&keydown_event);
+      DispatchKeyEvent(&keydown_event);
       break;
     }
     case KeyRelease: {
@@ -1756,7 +1762,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
         break;
 
       ui::KeyEvent key_event(xev);
-      SendEventToProcessor(&key_event);
+      DispatchKeyEvent(&key_event);
       break;
     }
     case ButtonPress:
@@ -1881,7 +1887,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
         case ui::ET_KEY_PRESSED:
         case ui::ET_KEY_RELEASED: {
           ui::KeyEvent key_event(xev);
-          SendEventToProcessor(&key_event);
+          DispatchKeyEvent(&key_event);
           break;
         }
         case ui::ET_UNKNOWN:

@@ -67,9 +67,6 @@ class AshWindowTreeHostUnified : public AshWindowTreeHost,
   // ui::internal::InputMethodDelegate:
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
 
-  // ui::EventSource:
-  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override;
-
   std::vector<AshWindowTreeHost*> mirroring_hosts_;
 
   gfx::Rect bounds_;

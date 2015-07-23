@@ -170,8 +170,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void HandleNativeFocus(HWND last_focused_window) override;
   void HandleNativeBlur(HWND focused_window) override;
   bool HandleMouseEvent(const ui::MouseEvent& event) override;
-  bool HandleKeyEvent(const ui::KeyEvent& event) override;
-  bool HandleUntranslatedKeyEvent(const ui::KeyEvent& event) override;
+  void HandleKeyEvent(ui::KeyEvent* event) override;
   void HandleTouchEvent(const ui::TouchEvent& event) override;
   bool HandleIMEMessage(UINT message,
                         WPARAM w_param,

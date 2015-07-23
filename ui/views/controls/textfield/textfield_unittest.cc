@@ -27,7 +27,6 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/render_text.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -433,9 +432,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 #if defined(OS_MACOSX) && !defined(USE_AURA)
     fake_activation_ = test::WidgetTest::FakeWidgetIsActiveAlways();
 #endif
-
-    event_generator_.reset(
-        new ui::test::EventGenerator(GetContext(), widget_->GetNativeWindow()));
   }
 
   ui::MenuModel* GetContextMenuModel() {
@@ -471,7 +467,10 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
                 (command ? ui::EF_COMMAND_DOWN : 0) |
                 (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
 
-    event_generator_->PressKey(key_code, flags);
+    // TODO(shuchen): making EventGenerator support input method and using
+    // EventGenerator here. crbug.com/512315.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
+    input_method_->DispatchKeyEvent(event);
   }
 
   void SendKeyEvent(ui::KeyboardCode key_code,
@@ -642,7 +641,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
  private:
   ui::ClipboardType copied_to_clipboard_;
   scoped_ptr<test::WidgetTest::FakeActivation> fake_activation_;
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };

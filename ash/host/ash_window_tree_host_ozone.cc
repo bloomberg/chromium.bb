@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_ozone.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
@@ -49,11 +50,6 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
 
   // ui::internal::InputMethodDelegate:
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
-
-  // ui::EventSource:
-  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override {
-    return ui::EventSource::DeliverEventToProcessor(event);
-  }
 
   // Temporarily disable the tap-to-click feature. Used on CrOS.
   void SetTapToClickPaused(bool state);
@@ -145,7 +141,10 @@ bool AshWindowTreeHostOzone::DispatchKeyEventPostIME(
     const ui::KeyEvent& event) {
   ui::KeyEvent event_copy(event);
   input_method_handler()->SetPostIME(true);
-  ui::EventSource::DeliverEventToProcessor(&event_copy);
+  ui::EventDispatchDetails details =
+      event_processor()->OnEventFromSource(&event_copy);
+  if (details.dispatcher_destroyed)
+    return true;
   input_method_handler()->SetPostIME(false);
   return event_copy.stopped_propagation();
 }

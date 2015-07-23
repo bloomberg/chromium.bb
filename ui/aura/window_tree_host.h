@@ -204,7 +204,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Overridden from ui::EventSource:
   ui::EventProcessor* GetEventProcessor() override;
-  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override;
 
  private:
   friend class test::WindowTreeHostTestApi;

@@ -195,8 +195,7 @@ void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
 
 bool WindowTreeHost::DispatchKeyEventPostIME(const ui::KeyEvent& event) {
   ui::KeyEvent copied_event(event);
-  ui::EventDispatchDetails details =
-      event_processor()->OnEventFromSource(&copied_event);
+  ui::EventDispatchDetails details = SendEventToProcessor(&copied_event);
   DCHECK(!details.dispatcher_destroyed);
   return copied_event.stopped_propagation();
 }
@@ -304,18 +303,6 @@ void WindowTreeHost::OnHostLostWindowCapture() {
 
 ui::EventProcessor* WindowTreeHost::GetEventProcessor() {
   return event_processor();
-}
-
-ui::EventDispatchDetails WindowTreeHost::DeliverEventToProcessor(
-    ui::Event* event) {
-  if (event->IsKeyEvent()) {
-    GetInputMethod()->DispatchKeyEvent(*static_cast<ui::KeyEvent*>(event));
-    event->StopPropagation();
-    // TODO(shuchen): pass around the EventDispatchDetails from
-    // DispatchKeyEventPostIME instead of creating new from here.
-    return ui::EventDispatchDetails();
-  }
-  return ui::EventSource::DeliverEventToProcessor(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -166,13 +166,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // handled by the delegate.
   virtual bool HandleMouseEvent(const ui::MouseEvent& event) = 0;
 
-  // Called when a translated key event is received (i.e. post IME translation.)
-  // Returns true if the event was handled by the delegate.
-  virtual bool HandleKeyEvent(const ui::KeyEvent& event) = 0;
-
   // Called when an untranslated key event is received (i.e. pre-IME
-  // translation). Returns true if the event was sent to the input method.
-  virtual bool HandleUntranslatedKeyEvent(const ui::KeyEvent& event) = 0;
+  // translation).
+  virtual void HandleKeyEvent(ui::KeyEvent* event) = 0;
 
   // Called when a touch event is received.
   virtual void HandleTouchEvent(const ui::TouchEvent& event) = 0;

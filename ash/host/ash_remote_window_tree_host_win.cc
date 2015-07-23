@@ -6,6 +6,7 @@
 
 #include "ash/host/root_window_transformer.h"
 #include "ash/ime/input_method_event_handler.h"
+#include "ui/events/event_processor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
 
@@ -61,14 +62,12 @@ bool AshRemoteWindowTreeHostWin::DispatchKeyEventPostIME(
     const ui::KeyEvent& event) {
   ui::KeyEvent event_copy(event);
   input_method_handler()->SetPostIME(true);
-  ui::EventSource::DeliverEventToProcessor(&event_copy);
+  ui::EventDispatchDetails details =
+      event_processor()->OnEventFromSource(&event_copy);
+  if (details.dispatcher_destroyed)
+    return true;
   input_method_handler()->SetPostIME(false);
   return event_copy.stopped_propagation();
-}
-
-ui::EventDispatchDetails AshRemoteWindowTreeHostWin::DeliverEventToProcessor(
-    ui::Event* event) {
-  return ui::EventSource::DeliverEventToProcessor(event);
 }
 
 }  // namespace ash

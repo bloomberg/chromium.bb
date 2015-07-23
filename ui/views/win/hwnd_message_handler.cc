@@ -1616,7 +1616,8 @@ LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
   MSG msg = {
       hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
   ui::KeyEvent key(msg);
-  if (!delegate_->HandleUntranslatedKeyEvent(key))
+  delegate_->HandleKeyEvent(&key);
+  if (!key.handled())
     SetMsgHandled(FALSE);
   return 0;
 }
