@@ -98,6 +98,7 @@ class TooltipAura::TooltipView : public views::View {
   void SetText(const base::string16& text) {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     render_text_->SetText(text);
+    SchedulePaint();
   }
 
   void SetForegroundColor(SkColor color) {
