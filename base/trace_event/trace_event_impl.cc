@@ -443,7 +443,7 @@ void TraceBufferChunk::Reset(uint32 new_seq) {
     chunk_[i].Reset();
   next_free_ = 0;
   seq_ = new_seq;
-  cached_overhead_estimate_when_full_.reset();
+  cached_overhead_estimate_.reset();
 }
 
 TraceEvent* TraceBufferChunk::AddTraceEvent(size_t* event_index) {
@@ -462,27 +462,39 @@ scoped_ptr<TraceBufferChunk> TraceBufferChunk::Clone() const {
 
 void TraceBufferChunk::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  if (cached_overhead_estimate_when_full_) {
-    DCHECK(IsFull());
-    overhead->Update(*cached_overhead_estimate_when_full_);
+  if (!cached_overhead_estimate_) {
+    cached_overhead_estimate_.reset(new TraceEventMemoryOverhead);
+
+    // When estimating the size of TraceBufferChunk, exclude the array of trace
+    // events, as they are computed individually below.
+    cached_overhead_estimate_->Add("TraceBufferChunk",
+                                   sizeof(*this) - sizeof(chunk_));
+  }
+
+  const size_t num_cached_estimated_events =
+      cached_overhead_estimate_->GetCount("TraceEvent");
+  DCHECK_LE(num_cached_estimated_events, size());
+
+  if (IsFull() && num_cached_estimated_events == size()) {
+    overhead->Update(*cached_overhead_estimate_);
     return;
   }
 
-  // Cache the memory overhead estimate only if the chunk is full.
-  TraceEventMemoryOverhead* estimate = overhead;
-  if (IsFull()) {
-    cached_overhead_estimate_when_full_.reset(new TraceEventMemoryOverhead);
-    estimate = cached_overhead_estimate_when_full_.get();
-  }
-
-  estimate->Add("TraceBufferChunk", sizeof(*this));
-  for (size_t i = 0; i < next_free_; ++i)
-    chunk_[i].EstimateTraceMemoryOverhead(estimate);
+  for (size_t i = num_cached_estimated_events; i < size(); ++i)
+    chunk_[i].EstimateTraceMemoryOverhead(cached_overhead_estimate_.get());
 
   if (IsFull()) {
-    estimate->AddSelf();
-    overhead->Update(*estimate);
+    cached_overhead_estimate_->AddSelf();
+  } else {
+    // The unused TraceEvents in |chunks_| are not cached. They will keep
+    // changing as new TraceEvents are added to this chunk, so they are
+    // computed on the fly.
+    const size_t num_unused_trace_events = capacity() - size();
+    overhead->Add("TraceEvent (unused)",
+                  num_unused_trace_events * sizeof(TraceEvent));
   }
+
+  overhead->Update(*cached_overhead_estimate_);
 }
 
 // A helper class that allows the lock to be acquired in the middle of the scope
@@ -679,7 +691,6 @@ void TraceEvent::Reset() {
   parameter_copy_storage_ = NULL;
   for (int i = 0; i < kTraceMaxNumArgs; ++i)
     convertable_values_[i] = NULL;
-  cached_memory_overhead_estimate_.reset();
 }
 
 void TraceEvent::UpdateDuration(const TraceTicks& now,
@@ -691,25 +702,18 @@ void TraceEvent::UpdateDuration(const TraceTicks& now,
 
 void TraceEvent::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  if (!cached_memory_overhead_estimate_) {
-    cached_memory_overhead_estimate_.reset(new TraceEventMemoryOverhead);
-    cached_memory_overhead_estimate_->Add("TraceEvent", sizeof(*this));
-    // TODO(primiano): parameter_copy_storage_ is refcounted and, in theory,
-    // could be shared by several events and we might overcount. In practice
-    // this is unlikely but it's worth checking.
-    if (parameter_copy_storage_) {
-      cached_memory_overhead_estimate_->AddRefCountedString(
-          *parameter_copy_storage_.get());
-    }
-    for (size_t i = 0; i < kTraceMaxNumArgs; ++i) {
-      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-        convertable_values_[i]->EstimateTraceMemoryOverhead(
-            cached_memory_overhead_estimate_.get());
-      }
-    }
-    cached_memory_overhead_estimate_->AddSelf();
+  overhead->Add("TraceEvent", sizeof(*this));
+
+  // TODO(primiano): parameter_copy_storage_ is refcounted and, in theory,
+  // could be shared by several events and we might overcount. In practice
+  // this is unlikely but it's worth checking.
+  if (parameter_copy_storage_)
+    overhead->AddRefCountedString(*parameter_copy_storage_.get());
+
+  for (size_t i = 0; i < kTraceMaxNumArgs; ++i) {
+    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
+      convertable_values_[i]->EstimateTraceMemoryOverhead(overhead);
   }
-  overhead->Update(*cached_memory_overhead_estimate_);
 }
 
 // static
