@@ -391,7 +391,7 @@ void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource
     request.setRequestContext(requestContext);
 }
 
-void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Resource::Type type)
+void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resource::Type type)
 {
     if (request.cachePolicy() == UseProtocolCachePolicy)
         request.setCachePolicy(context().resourceRequestCachePolicy(request, type));
@@ -414,7 +414,7 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
 
     ResourceRequest revalidatingRequest(resource->resourceRequest());
     revalidatingRequest.clearHTTPReferrer();
-    addAdditionalRequestHeaders(revalidatingRequest, resource->type());
+    initializeResourceRequest(revalidatingRequest, resource->type());
 
     const AtomicString& lastModified = resource->response().httpHeaderField("Last-Modified");
     const AtomicString& eTag = resource->response().httpHeaderField("ETag");
@@ -443,7 +443,7 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& re
 
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
-    addAdditionalRequestHeaders(request.mutableResourceRequest(), factory.type());
+    initializeResourceRequest(request.mutableResourceRequest(), factory.type());
     ResourcePtr<Resource> resource = factory.create(request.resourceRequest(), charset);
     resource->setCacheIdentifier(cacheIdentifier);
 
