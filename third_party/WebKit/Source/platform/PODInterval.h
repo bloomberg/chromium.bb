@@ -26,6 +26,7 @@
 #ifndef PODInterval_h
 #define PODInterval_h
 
+#include "platform/heap/Handle.h"
 #ifndef NDEBUG
 #include "wtf/text/StringBuilder.h"
 #endif
@@ -154,6 +155,7 @@ public:
 private:
     T m_low;
     T m_high;
+    GC_PLUGIN_IGNORE("crbug.com/513116")
     UserData m_data;
     T m_maxHigh;
 };
