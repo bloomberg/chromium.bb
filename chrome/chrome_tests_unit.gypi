@@ -2205,8 +2205,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        # Only needed at runtime.
-        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'include_dirs': [
         '..',

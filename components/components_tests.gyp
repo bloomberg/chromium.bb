@@ -881,8 +881,6 @@
         'components_strings.gyp:components_strings',
         'components_tests_pak',
         'mime_util/mime_util.gyp:mime_util',
-        # Only needed at runtime.
-        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'conditions': [
         ['enable_rlz_support==1', {

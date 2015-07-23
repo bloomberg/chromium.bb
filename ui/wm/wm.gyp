@@ -136,11 +136,8 @@
         '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../resources/ui_resources.gyp:ui_test_pak',
         'wm',
         'wm_test_support',
-        # Only needed at runtime.
-        '../../third_party/mesa/mesa.gyp:osmesa',
       ],
       'sources': [
         'core/capture_controller_unittest.cc',
