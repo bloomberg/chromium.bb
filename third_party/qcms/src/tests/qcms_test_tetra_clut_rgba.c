@@ -99,7 +99,7 @@ int main(int argc, const char **argv)
     }
 
     printf("Test qcms clut transforms for %d iterations\n", iterations);
-    printf("Test image size %u x %u pixels\n", width, height);
+    printf("Test image size %u x %u pixels\n", (unsigned) width, (unsigned) height);
     length = width * height;
     fflush(stdout);
 
