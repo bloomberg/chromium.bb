@@ -43,8 +43,8 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
 <h3 id="temporary">Temporary  storage</h3>
 <p id="temporary">Temporary  storage is transient storage that is available to any web app. Chrome automatically gives your  app temporary storage, so you do not need to request allocation. </p>
 <h4>Sharing the pool</h4>
-<p>Temporary storage is shared among all web apps  running in the browser.{#It is also shared across all offline APIs, such as App Cache, IndexedDB, and Files System. However, it does not include web storage APIs like Local Storage and Session Storage, which still has a limit of  5 MB per origin.#} The shared pool can be up to half of the  of available disk space. Storage already used by apps  is included in the calculation of the shared pool; that is to say, the calculation is based on <code>(available storage space + storage being used by apps) * .5</code> . </p>
-<p>Each app  can have up to 20% of the shared pool. As an example, if the total available disk space is 50 GB, the shared pool is 25 GB, and the app can have up to 5 GB.  This is calculated from 20% (up to 5 GB) of half (up to 25 GB) of the available disk space (50 GB). </p>
+<p>Temporary storage is shared among all web apps  running in the browser.{#It is also shared across all offline APIs, such as App Cache, IndexedDB, and File System. However, it does not include web storage APIs like Local Storage and Session Storage, which still has a limit of  5 MB per origin.#} The shared pool can be up to 1/3 of the of available disk space. Storage already used by apps  is included in the calculation of the shared pool; that is to say, the calculation is based on <code>(available storage space + storage being used by apps) * .333</code> . </p>
+<p>Each app  can have up to 20% of the shared pool. As an example, if the total available disk space is 60 GB, the shared pool is 20 GB, and the app can have up to 4 GB.  This is calculated from 20% (up to 4 GB) of 1/3 (up to 20 GB) of the available disk space (60 GB). </p>
 <h4>Asking for more space</h4>
 <p>Although you can <a href="#query">query</a> for the amount of  storage space available for your app and the amount of data  already  stored for your app, you cannot ask for more temporary storage space. If  an app exceeds the  allocated quota, an error is thrown.</p>
 <h4>Running out of storage</h4>
@@ -53,7 +53,7 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
 <p>However, available storage space can shrink as users add more files on their hard drives. When the available disk space gets tight (Remember, the shared pool only gets  half of the <em>current</em> available disk space), the browser deletes all the data stored for the least recently used host. </p>
 
 <h3 id="persistent">Persistent  storage</h3>
-<p>Persistent storage is storage that stays in the browser unless the user expunges it. It is available only to apps that use the Files System API, but will eventually be available to other offline APIs like IndexedDB   and Application Cache.</p>
+<p>Persistent storage is storage that stays in the browser unless the user expunges it. It is available only to apps that use the File System API, but will eventually be available to other offline APIs like IndexedDB   and Application Cache.</p>
 <p>An application can have a larger quota for persistent storage than temporary storage, but you must request  storage using the Quota Management API and the user must grant you  permission to use more space. Chrome presents an info bar that prompts the user to grant the app more local storage space.</p>
 
 <h3 id="unlimited">Unlimited   storage</h3>
@@ -147,7 +147,7 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
 <p class="note"><strong>Note:</strong> Web storage APIs like LocalStorage and SessionStorage remain fixed at 5 MB. </p>
 
 {% endcomment %}</td>
-      <td>Files System API</td>
+      <td>File System API</td>
       <td><p>Offline APIs</p>
         <ul>
           <li>App Cache </li>
@@ -197,7 +197,7 @@ navigator.webkitTemporaryStorage.queryUsageAndQuota (
 
 <h3 id="asking_more">Asking for more storage</h3>
 <p>You don't need to ask for more temporary storage as the allocation is automatic, and you can't get beyond the maximum limit (as described in the <a href="#table">table</a>). </p>
-<p>For persistent storage for Files System API, the  default quota is 0, so you need to explicitly request storage for your application. Call <code>requestQuota()</code> with the following:</p>
+<p>For persistent storage for File System API, the  default quota is 0, so you need to explicitly request storage for your application. Call <code>requestQuota()</code> with the following:</p>
 <ul>
   <li>Type of storage</li>
   <li>Size</li>
@@ -321,4 +321,4 @@ navigator.webkitPersistentStorage.requestQuota (
 </dl>
 
 <h2 id="future">Future development</h2>
-<p>The plan is to put all HTML5 offline storage APIs—including IndexedDB, Application Cache, Files System,{# LocalStorage, SessionStorage,#} and other APIs that might be specified—under the Quota Management API. You will be able to manage all storage allocation with it. </p>
+<p>The plan is to put all HTML5 offline storage APIs—including IndexedDB, Application Cache, File System,{# LocalStorage, SessionStorage,#} and other APIs that might be specified—under the Quota Management API. You will be able to manage all storage allocation with it. </p>
