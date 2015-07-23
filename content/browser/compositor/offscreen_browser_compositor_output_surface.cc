@@ -55,6 +55,12 @@ void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
     reflector_texture_.reset(new ReflectorTexture(context_provider()));
 
     GLES2Interface* gl = context_provider_->ContextGL();
+
+    int max_texture_size =
+        context_provider_->ContextCapabilities().gpu.max_texture_size;
+    int texture_width = std::min(max_texture_size, surface_size_.width());
+    int texture_height = std::min(max_texture_size, surface_size_.height());
+
     cc::ResourceFormat format = cc::RGBA_8888;
     gl->BindTexture(GL_TEXTURE_2D, reflector_texture_->texture_id());
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -62,7 +68,7 @@ void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format),
-                   surface_size_.width(), surface_size_.height(), 0,
+                   texture_width, texture_height, 0,
                    GLDataFormat(format), GLDataType(format), nullptr);
     if (!fbo_)
       gl->GenFramebuffers(1, &fbo_);
