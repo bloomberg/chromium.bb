@@ -35,6 +35,7 @@
 #include "ui/views/examples/textfield_example.h"
 #include "ui/views/examples/throbber_example.h"
 #include "ui/views/examples/tree_view_example.h"
+#include "ui/views/examples/vector_example.h"
 #include "ui/views/examples/widget_example.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -72,6 +73,7 @@ ScopedExamples CreateExamples() {
   examples->push_back(new TextfieldExample);
   examples->push_back(new ThrobberExample);
   examples->push_back(new TreeViewExample);
+  examples->push_back(new VectorExample);
   examples->push_back(new WidgetExample);
   return examples.Pass();
 }

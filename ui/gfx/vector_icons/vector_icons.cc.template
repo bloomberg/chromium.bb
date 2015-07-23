@@ -20,11 +20,11 @@ namespace gfx {
 
 const PathElement* GetPathForVectorIcon(VectorIconId id) {
   switch (id) {
+TEMPLATE_PLACEHOLDER
+
     case VectorIconId::VECTOR_ICON_NONE:
       NOTREACHED();
       return nullptr;
-
-TEMPLATE_PLACEHOLDER
   }
 
   NOTREACHED();

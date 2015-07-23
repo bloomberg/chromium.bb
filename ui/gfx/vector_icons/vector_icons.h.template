@@ -11,8 +11,8 @@
 namespace gfx {
 
 enum class VectorIconId {
-  VECTOR_ICON_NONE,
 TEMPLATE_PLACEHOLDER
+  VECTOR_ICON_NONE,
 };
 
 }  // namespace gfx
