@@ -28,9 +28,8 @@ const uint32_t kNoParentId = 0u;
 
 FrameDataPtr FrameToFrameData(const Frame* frame) {
   FrameDataPtr frame_data(FrameData::New());
-  frame_data->frame_id = frame->view()->id();
-  frame_data->parent_id =
-      frame->parent() ? frame->parent()->view()->id() : kNoParentId;
+  frame_data->frame_id = frame->id();
+  frame_data->parent_id = frame->parent() ? frame->parent()->id() : kNoParentId;
   frame_data->name = frame->name();
   // TODO(sky): implement me.
   frame_data->origin = std::string();
@@ -41,11 +40,13 @@ FrameDataPtr FrameToFrameData(const Frame* frame) {
 
 Frame::Frame(FrameTree* tree,
              View* view,
+             uint32_t id,
              ViewOwnership view_ownership,
              FrameTreeClient* frame_tree_client,
              scoped_ptr<FrameUserData> user_data)
     : tree_(tree),
-      view_(view),
+      view_(nullptr),
+      id_(id),
       parent_(nullptr),
       view_ownership_(view_ownership),
       user_data_(user_data.Pass()),
@@ -53,8 +54,8 @@ Frame::Frame(FrameTree* tree,
       loading_(false),
       progress_(0.f),
       frame_tree_server_binding_(this) {
-  view_->SetLocalProperty(kFrame, this);
-  view_->AddObserver(this);
+  if (view)
+    SetView(view);
 }
 
 Frame::~Frame() {
@@ -64,10 +65,11 @@ Frame::~Frame() {
     delete children_[0];
   if (parent_)
     parent_->Remove(this);
-  if (view_)
+  if (view_) {
     view_->ClearLocalProperty(kFrame);
-  if (view_ownership_ == ViewOwnership::OWNS_VIEW)
-    view_->Destroy();
+    if (view_ownership_ == ViewOwnership::OWNS_VIEW)
+      view_->Destroy();
+  }
 }
 
 void Frame::Init(Frame* parent) {
@@ -84,7 +86,8 @@ void Frame::Init(Frame* parent) {
   // TODO(sky): error handling.
   FrameTreeServerPtr frame_tree_server_ptr;
   frame_tree_server_binding_.Bind(GetProxy(&frame_tree_server_ptr).Pass());
-  frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(), array.Pass());
+  if (frame_tree_client_)
+    frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(), array.Pass());
 }
 
 // static
@@ -95,7 +98,7 @@ Frame* Frame::FindFirstFrameAncestor(View* view) {
 }
 
 const Frame* Frame::FindFrame(uint32_t id) const {
-  if (id == view_->id())
+  if (id == id_)
     return this;
 
   for (const Frame* child : children_) {
@@ -131,6 +134,14 @@ double Frame::GatherProgress(int* frame_count) const {
   return progress_;
 }
 
+void Frame::SetView(mojo::View* view) {
+  DCHECK(!view_);
+  DCHECK_EQ(id_, view->id());
+  view_ = view;
+  view_->SetLocalProperty(kFrame, this);
+  view_->AddObserver(this);
+}
+
 void Frame::BuildFrameTree(std::vector<const Frame*>* frames) const {
   frames->push_back(this);
   for (const Frame* frame : children_)
@@ -156,11 +167,56 @@ void Frame::Remove(Frame* node) {
   tree_->root()->NotifyRemoved(this, node);
 }
 
+void Frame::LoadingStartedImpl() {
+  DCHECK(!loading_);
+  loading_ = true;
+  progress_ = 0.f;
+  tree_->LoadingStateChanged();
+}
+
+void Frame::LoadingStoppedImpl() {
+  DCHECK(loading_);
+  loading_ = false;
+  tree_->LoadingStateChanged();
+}
+
+void Frame::ProgressChangedImpl(double progress) {
+  DCHECK(loading_);
+  progress_ = progress;
+  tree_->ProgressChanged();
+}
+
+void Frame::SetFrameNameImpl(const mojo::String& name) {
+  if (name_ == name)
+    return;
+
+  name_ = name;
+  tree_->FrameNameChanged(this);
+}
+
+Frame* Frame::FindTargetFrame(uint32_t frame_id) {
+  if (frame_id == id_)
+    return this;  // Common case.
+
+  // TODO(sky): I need a way to sanity check frame_id here, but the connection
+  // id isn't known to us.
+
+  Frame* frame = FindFrame(frame_id);
+  if (frame->frame_tree_client_) {
+    // The frame has it's own client/server pair. It should make requests using
+    // the server it has rather than an ancestor.
+    DVLOG(1) << "ignore request for a frame that has its own client.";
+    return nullptr;
+  }
+
+  return frame;
+}
+
 void Frame::NotifyAdded(const Frame* source, const Frame* added_node) {
   if (added_node == this)
     return;
 
-  if (source != this)
+  if (source != this && frame_tree_client_)
     frame_tree_client_->OnFrameAdded(FrameToFrameData(added_node));
 
   for (Frame* child : children_)
@@ -171,20 +227,27 @@ void Frame::NotifyRemoved(const Frame* source, const Frame* removed_node) {
   if (removed_node == this)
     return;
 
-  if (source != this)
-    frame_tree_client_->OnFrameRemoved(removed_node->view_->id());
+  if (source != this && frame_tree_client_)
+    frame_tree_client_->OnFrameRemoved(removed_node->id());
 
   for (Frame* child : children_)
     child->NotifyRemoved(source, removed_node);
 }
 
 void Frame::NotifyFrameNameChanged(const Frame* source) {
-  if (this != source) {
-    frame_tree_client_->OnFrameNameChanged(source->view_->id(), source->name_);
-  }
+  if (this != source && frame_tree_client_)
+    frame_tree_client_->OnFrameNameChanged(source->id(), source->name_);
 
   for (Frame* child : children_)
     child->NotifyFrameNameChanged(source);
+}
+
+void Frame::OnTreeChanged(const TreeChangeParams& params) {
+  if (params.new_parent && this == tree_->root()) {
+    Frame* child_frame = FindFrame(params.target->id());
+    if (child_frame && !child_frame->view_)
+      child_frame->SetView(params.target);
+  }
 }
 
 void Frame::OnViewDestroying(mojo::View* view) {
@@ -214,39 +277,53 @@ void Frame::PostMessageEventToFrame(uint32_t frame_id, MessageEventPtr event) {
   NOTIMPLEMENTED();
 }
 
-void Frame::NavigateFrame(uint32_t frame_id) {
-  NOTIMPLEMENTED();
+void Frame::LoadingStarted(uint32_t frame_id) {
+  Frame* target_frame = FindTargetFrame(frame_id);
+  if (target_frame)
+    target_frame->LoadingStartedImpl();
 }
 
-void Frame::ReloadFrame(uint32_t frame_id) {
-  NOTIMPLEMENTED();
+void Frame::LoadingStopped(uint32_t frame_id) {
+  Frame* target_frame = FindTargetFrame(frame_id);
+  if (target_frame)
+    target_frame->LoadingStoppedImpl();
 }
 
-void Frame::LoadingStarted() {
-  DCHECK(!loading_);
-  loading_ = true;
-  progress_ = 0.f;
-  tree_->LoadingStateChanged();
+void Frame::ProgressChanged(uint32_t frame_id, double progress) {
+  Frame* target_frame = FindTargetFrame(frame_id);
+  if (target_frame)
+    target_frame->ProgressChangedImpl(progress);
 }
 
-void Frame::LoadingStopped() {
-  DCHECK(loading_);
-  loading_ = false;
-  tree_->LoadingStateChanged();
+void Frame::SetFrameName(uint32_t frame_id, const mojo::String& name) {
+  Frame* target_frame = FindTargetFrame(frame_id);
+  if (target_frame)
+    target_frame->SetFrameNameImpl(name);
 }
 
-void Frame::ProgressChanged(double progress) {
-  DCHECK(loading_);
-  progress_ = progress;
-  tree_->ProgressChanged();
-}
+void Frame::OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) {
+  // TODO(sky): I need a way to verify the id. Unfortunately the code here
+  // doesn't know the connection id of the embedder, so it's not possible to
+  // do it.
 
-void Frame::SetFrameName(const mojo::String& name) {
-  if (name_ == name)
+  if (FindFrame(frame_id)) {
+    // TODO(sky): kill connection here?
+    DVLOG(1) << "OnCreatedLocalFrame supplied id of existing frame.";
     return;
+  }
 
-  name_ = name;
-  tree_->FrameNameChanged(this);
+  Frame* parent_frame = FindFrame(parent_id);
+  if (!parent_frame) {
+    DVLOG(1) << "OnCreatedLocalFrame supplied invalid parent_id.";
+    return;
+  }
+
+  if (parent_frame != this && parent_frame->frame_tree_client_) {
+    DVLOG(1) << "OnCreatedLocalFrame supplied parent from another connection.";
+    return;
+  }
+
+  tree_->CreateSharedFrame(parent_frame, frame_id);
 }
 
 }  // namespace mandoline

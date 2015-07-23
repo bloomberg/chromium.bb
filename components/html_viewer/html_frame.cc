@@ -429,8 +429,10 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   child_view->SetVisible(true);
   view_->AddChild(child_view);
 
-  // TODO(sky): the act of creating needs to notify the browser side, not
-  // navigation.
+  // TODO(sky): there needs to be way to communicate properties to the
+  // FrameTreeServer.
+  frame_tree_manager_->server_->OnCreatedFrame(id_, child_view->id());
+
   HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id());
   HTMLFrame* child_frame = new HTMLFrame(params);
   child_frame->scope_ = scope;
@@ -464,6 +466,8 @@ blink::WebCookieJar* HTMLFrame::cookieJar(blink::WebLocalFrame* frame) {
 blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
   if (parent_ && parent_->IsLocal()) {
+    // TODO(sky): this may be too early. I might want to wait to see if an embed
+    // actually happens, and swap then.
     SwapToRemote(info.urlRequest);
     return blink::WebNavigationPolicyIgnore;
   }

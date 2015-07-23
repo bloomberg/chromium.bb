@@ -17,6 +17,7 @@ FrameTree::FrameTree(mojo::View* view,
       delegate_(delegate),
       root_(this,
             view,
+            view->id(),
             ViewOwnership::DOESNT_OWN_VIEW,
             root_client,
             user_data.Pass()),
@@ -31,10 +32,8 @@ Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
                                     Frame* parent,
                                     FrameTreeClient* client,
                                     scoped_ptr<FrameUserData> user_data) {
-  Frame* frame =
-      new Frame(this, view, ViewOwnership::OWNS_VIEW, client, user_data.Pass());
-  frame->Init(parent);
-  return frame;
+  return CreateAndAddFrameImpl(view, view->id(), parent, client,
+                               user_data.Pass());
 }
 
 Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
@@ -55,6 +54,24 @@ Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
   DCHECK(parent);
 
   return CreateAndAddFrame(view, parent, frame_tree_client, user_data.Pass());
+}
+
+void FrameTree::CreateSharedFrame(Frame* parent, uint32_t frame_id) {
+  mojo::View* frame_view = root_.view()->GetChildById(frame_id);
+  // |frame_view| may be null if the View hasn't been created yet. If this is
+  // the case the View will be connected to the Frame in Frame::OnTreeChanged.
+  CreateAndAddFrameImpl(frame_view, frame_id, parent, nullptr, nullptr);
+}
+
+Frame* FrameTree::CreateAndAddFrameImpl(mojo::View* view,
+                                        uint32_t frame_id,
+                                        Frame* parent,
+                                        FrameTreeClient* client,
+                                        scoped_ptr<FrameUserData> user_data) {
+  Frame* frame = new Frame(this, view, frame_id, ViewOwnership::OWNS_VIEW,
+                           client, user_data.Pass());
+  frame->Init(parent);
+  return frame;
 }
 
 void FrameTree::LoadingStateChanged() {

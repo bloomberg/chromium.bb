@@ -38,20 +38,23 @@ struct MessageEvent {
 interface FrameTreeServer {
   // TODO(sky): make these real.
   PostMessageEventToFrame(uint32 frame_id, MessageEvent event);
-  NavigateFrame(uint32 frame_id);
-  ReloadFrame(uint32 frame_id);
 
   // Notifies the server that a load has started or stopped in this frame.
   // When loading is started, progress is reset to 0, but when loading is
   // stopped progress may not have reached 1.0.
-  LoadingStarted();
-  LoadingStopped();
+  LoadingStarted(uint32 frame_id);
+  LoadingStopped(uint32 frame_id);
 
   // Called when the progress for this frame changes. Will only be called while
   // a load is in progress.
-  ProgressChanged(double progress);
+  ProgressChanged(uint32 frame_id, double progress);
 
-  SetFrameName(string? name);
+  SetFrameName(uint32 frame_id, string? name);
+
+  // Called when the client creates a new frame. |frame_id| corresponds to
+  // the id of the view hosting the frame, and |parent_id| the id of the
+  // parent.
+  OnCreatedFrame(uint32 parent_id, uint32 frame_id);
 };
 
 interface FrameTreeClient {

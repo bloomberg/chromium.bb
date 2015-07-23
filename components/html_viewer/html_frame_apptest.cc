@@ -106,7 +106,8 @@ class HTMLFrameTest : public ViewManagerTestBase {
                   AddPortToString(kAddFrameWithEmptyPageScript));
 
     // Wait for the frame to appear.
-    if (parent->children().size() != initial_frame_count + 1u &&
+    if ((parent->children().size() != initial_frame_count + 1u ||
+         !parent->children().back()->user_data()) &&
         !WaitForEmbedForDescendant()) {
       ADD_FAILURE() << "timed out waiting for child";
       return nullptr;

@@ -173,13 +173,11 @@ void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {
 
 void HTMLFrameTreeManager::OnFrameDidChangeName(HTMLFrame* frame,
                                                 const blink::WebString& name) {
-  if (frame != GetLocalFrame())
-    return;
-
+  DCHECK(frame->IsLocal());
   mojo::String mojo_name;
   if (!name.isNull())
     mojo_name = name.utf8();
-  server_->SetFrameName(mojo_name);
+  server_->SetFrameName(frame->id(), mojo_name);
 }
 
 void HTMLFrameTreeManager::OnConnect(
@@ -191,21 +189,18 @@ void HTMLFrameTreeManager::OnConnect(
 }
 
 void HTMLFrameTreeManager::LoadingStarted(HTMLFrame* frame) {
-  // TODO(sky): need way to propagate loading status for non-local frames.
-  if (frame == GetLocalFrame())
-    server_->LoadingStarted();
+  DCHECK(frame->IsLocal());
+  server_->LoadingStarted(frame->id());
 }
 
 void HTMLFrameTreeManager::LoadingStopped(HTMLFrame* frame) {
-  // TODO(sky): need way to propagate loading status for non-local frames.
-  if (frame == GetLocalFrame())
-    server_->LoadingStopped();
+  DCHECK(frame->IsLocal());
+  server_->LoadingStopped(frame->id());
 }
 
 void HTMLFrameTreeManager::ProgressChanged(HTMLFrame* frame, double progress) {
-  // TODO(sky): need way to propagate loading status for non-local frames.
-  if (frame == GetLocalFrame())
-    server_->ProgressChanged(progress);
+  DCHECK(frame->IsLocal());
+  server_->ProgressChanged(frame->id(), progress);
 }
 
 void HTMLFrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {

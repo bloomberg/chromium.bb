@@ -45,12 +45,11 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
   // mandoline::FrameTreeServer:
   void PostMessageEventToFrame(uint32_t frame_id,
                                mandoline::MessageEventPtr event) override {}
-  void NavigateFrame(uint32_t frame_id) override {}
-  void ReloadFrame(uint32_t frame_id) override {}
-  void LoadingStarted() override {}
-  void LoadingStopped() override {}
-  void ProgressChanged(double progress) override {}
-  void SetFrameName(const mojo::String& name) override {}
+  void LoadingStarted(uint32_t frame_id) override {}
+  void LoadingStopped(uint32_t frame_id) override {}
+  void ProgressChanged(uint32_t frame_id, double progress) override {}
+  void SetFrameName(uint32_t frame_id, const mojo::String& name) override {}
+  void OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);

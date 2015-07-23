@@ -44,8 +44,20 @@ class FrameTree {
                               FrameTreeClient* frame_tree_client,
                               scoped_ptr<FrameUserData> user_data);
 
+  // Creates a new Frame parented to |parent|. The Frame is considered shared in
+  // that it is sharing the FrameTreeClient/FrameTreeServer of |parent|. There
+  // may or may not be a View identified by |frame_id| yet. See Frame for
+  // details.
+  void CreateSharedFrame(Frame* parent, uint32_t frame_id);
+
  private:
   friend class Frame;
+
+  Frame* CreateAndAddFrameImpl(mojo::View* view,
+                               uint32_t frame_id,
+                               Frame* parent,
+                               FrameTreeClient* client,
+                               scoped_ptr<FrameUserData> user_data);
 
   void LoadingStateChanged();
   void ProgressChanged();
