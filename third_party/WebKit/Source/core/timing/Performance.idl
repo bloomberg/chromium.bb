@@ -53,13 +53,9 @@ interface Performance : EventTarget {
     attribute EventHandler onwebkitresourcetimingbufferfull;
 
     // Navigation Timing
-    // http://www.w3.org/TR/navigation-timing/#sec-window.performance-attribute
-    // TODO(philipj): The Navigation Timing Rec. defines the (not partial)
-    // Performance interface, while https://w3c.github.io/navigation-timing/ has
-    // changed the interface in an incompatible way:
-    // https://github.com/w3c/navigation-timing/issues/22
-    [Measure] readonly attribute PerformanceTiming timing;
-    [Measure] readonly attribute PerformanceNavigation navigation;
+    // https://w3c.github.io/navigation-timing/#extensions-to-the-performance-interface
+    [SameObject, Measure] readonly attribute PerformanceTiming timing;
+    [SameObject, Measure] readonly attribute PerformanceNavigation navigation;
 
     // User Timing
     // https://w3c.github.io/user-timing/#extensions-performance-interface
