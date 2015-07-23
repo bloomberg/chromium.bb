@@ -4481,6 +4481,173 @@
             "-chrome_internal"
         ]
     },
+    "celes-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "celes"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "name": "celes-chrome-pfq"
+    },
+    "celes-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "celes"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "celes-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "celes-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "celes"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "celes-compile-only-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "celes-full": {
+        "_template": "full",
+        "boards": [
+            "celes"
+        ],
+        "name": "celes-full",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "celes-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "celes"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "celes-no-vmtest-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "celes-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "celes"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "celes-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "celes-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "celes"
+        ],
+        "name": "celes-payloads"
+    },
+    "celes-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "celes"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "celes-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "celes-release": {
+        "_template": "release",
+        "boards": [
+            "celes"
+        ],
+        "name": "celes-release"
+    },
+    "celes-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "celes"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "celes"
+                ],
+                "grouped": true,
+                "name": "celes-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "celes"
+                ],
+                "grouped": true,
+                "name": "celes-release-afdo-use"
+            }
+        ],
+        "name": "celes-release-afdo"
+    },
+    "celes-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "celes"
+        ],
+        "name": "celes-release-afdo-generate"
+    },
+    "celes-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "celes"
+        ],
+        "name": "celes-release-afdo-use"
+    },
+    "celes-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "celes"
+        ],
+        "manifest": "official.xml",
+        "name": "celes-tot-chrome-pfq-informational"
+    },
+    "celes-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "celes"
+        ],
+        "name": "celes-tot-chromium-pfq-informational",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "chromiumos-sdk": {
         "active_waterfall": "chromiumos",
         "archive_build_debug": true,
@@ -19805,9 +19972,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "celes"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "celes-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: strago, cyan)",
+        "description": "Full Builds; Group config (boards: strago, cyan, celes)",
         "name": "strago-full-group",
         "prebuilts": "public",
         "useflags": [
@@ -19939,9 +20122,21 @@
                 "name": "cyan-release",
                 "unittests": null,
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "celes"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "celes-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan)",
+        "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan, celes)",
         "name": "strago-release-group"
     },
     "strago-tot-chrome-pfq-informational": {

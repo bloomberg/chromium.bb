@@ -387,6 +387,7 @@ _x86_internal_release_boards = frozenset([
     'butterfly',
     'butterfly_freon',
     'candy',
+    'celes',
     'cid',
     'clapper',
     'cranky',
@@ -2498,6 +2499,7 @@ def GetConfig():
   _AddGroupConfig(
       'strago', 'strago', (
           'cyan',
+          'celes',
       ),
       important=False,
   )
