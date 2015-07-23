@@ -1,0 +1,24 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+from telemetry import story
+
+from page_sets import google_pages
+
+IDLE_TIME_IN_SECONDS = 100
+
+def _CreateIdlePageClass(base_page_cls):
+  class DerivedIdlePage(base_page_cls):  # pylint: disable=W0232
+    def RunPageInteractions(self, action_runner):
+      action_runner.Wait(IDLE_TIME_IN_SECONDS)
+  return DerivedIdlePage
+
+
+class LongRunningIdleGmailPageSet(story.StorySet):
+  def __init__(self):
+    super(LongRunningIdleGmailPageSet, self).__init__(
+        archive_data_file='data/long_running_idle_gmail_page.json',
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    self.AddStory(
+        _CreateIdlePageClass(google_pages.GmailPage)(self))
