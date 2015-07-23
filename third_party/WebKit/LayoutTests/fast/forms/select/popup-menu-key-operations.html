@@ -137,16 +137,18 @@ function test5() {
     shouldBeEqualToString('menu.value', 'garply');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
+    // leftArrow doesn't change the selection in the popup. So,
+    // selectMenuListText won't change.
     eventSender.keyDown('leftArrow');
     shouldBeEqualToString('picker._selectElement.value', '0');
     shouldBeEqualToString('menu.value', 'garply');
-    shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
+    shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
 
-    // But if you press any key, the highlighted item should be selected.
     eventSender.keyDown('escape');
     shouldBeNull('window.internals.pagePopupWindow');
-    shouldBeEqualToString('menu.value', 'foo');
-    shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
+    shouldBeEqualToString('menu.value', 'garply');
+    shouldBeEqualToString('internals.selectMenuListText(menu)', 'garply');
+    menu.selectedIndex = 0;
 
     waitUntilClosing(function() {
         openPicker(menu, test6, openPickerErrorCallback);

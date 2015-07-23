@@ -168,13 +168,6 @@ ListPicker.prototype._handleKeyDown = function(event) {
             window.pagePopupController.closePopup();
         }, 0);
         event.preventDefault();
-    } else {
-        // After a key press, we need to call setValue to reflect the selection
-        // to the owner element. We can handle most cases with the change
-        // event. But we need to call setValue even when the selection hasn't
-        // changed. So we call it here too. setValue will be called twice for
-        // some key presses but it won't matter.
-        window.pagePopupController.setValue(this._selectElement.value);
     }
 };
 
