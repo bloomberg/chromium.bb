@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
-#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
+#include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
 const CGFloat kTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
@@ -120,7 +120,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
 
     // Ensure that any window changes that happen while handling this event
     // appear atomically.
-    gfx::ScopedNSDisableScreenUpdates disabler;
+    gfx::ScopedCocoaDisableScreenUpdates disabler;
 
     NSEventType type = [theEvent type];
     if (type == NSKeyUp) {

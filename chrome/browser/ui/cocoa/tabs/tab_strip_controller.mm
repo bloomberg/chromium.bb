@@ -66,7 +66,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
+#include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
@@ -614,7 +614,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   TabContentsController* controller = [tabContentsArray_ objectAtIndex:index];
 
   // Make sure we do not draw any transient arrangements of views.
-  gfx::ScopedNSDisableScreenUpdates ns_disabler;
+  gfx::ScopedCocoaDisableScreenUpdates cocoa_disabler;
   // Make sure that any layers that move are not animated to their new
   // positions.
   ScopedCAActionDisabler ca_disabler;

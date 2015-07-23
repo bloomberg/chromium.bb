@@ -216,7 +216,7 @@
         'mac/coordinate_conversion.mm',
         'mac/nswindow_frame_controls.h',
         'mac/nswindow_frame_controls.mm',
-        'mac/scoped_ns_disable_screen_updates.h',
+        'mac/scoped_cocoa_disable_screen_updates.h',
         'native_widget_types.h',
         'nine_image_painter.cc',
         'nine_image_painter.h',

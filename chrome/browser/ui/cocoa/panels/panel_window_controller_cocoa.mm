@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -35,6 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using content::WebContents;
@@ -722,23 +724,24 @@ const double kWidthOfMouseResizeArea = 15.0;
   // window state.
 
   // Before doing this, we need to disable screen updates to prevent flickering.
-  NSDisableScreenUpdates();
+  {
+    gfx::ScopedCocoaDisableScreenUpdates disabler;
 
-  // If a panel is in stacked mode, the window has a background parent window.
-  // We need to detach it from its parent window before applying the ordering
-  // change and then put it back because otherwise tha background parent window
-  // might show up.
-  NSWindow* parentWindow = [[self window] parentWindow];
-  if (parentWindow)
-    [parentWindow removeChildWindow:[self window]];
+    // If a panel is in stacked mode, the window has a background parent window.
+    // We need to detach it from its parent window before applying the ordering
+    // change and then put it back because otherwise tha background parent
+    // window might show up.
+    NSWindow* parentWindow = [[self window] parentWindow];
+    if (parentWindow)
+      [parentWindow removeChildWindow:[self window]];
 
-  [[self window] orderOut:nil];
-  [[self window] orderFront:nil];
+    [[self window] orderOut:nil];
+    [[self window] orderFront:nil];
 
-  if (parentWindow)
-    [parentWindow addChildWindow:[self window] ordered:NSWindowAbove];
+    if (parentWindow)
+      [parentWindow addChildWindow:[self window] ordered:NSWindowAbove];
 
-  NSEnableScreenUpdates();
+  }
 
   // Though the above workaround causes the window to lose its key window state,
   // it does not trigger the system to call windowDidResignKey.

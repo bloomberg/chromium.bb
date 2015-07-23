@@ -723,7 +723,7 @@ void CALayerStorageProvider::DiscardBackbuffer() {
 
   // If we remove all references to the CAContext in this process, it will be
   // blanked-out in the browser process (even if the browser process is inside
-  // a NSDisableScreenUpdates block). Ensure that the context is kept around
+  // a disable screen updates block). Ensure that the context is kept around
   // until a fixed number of frames (determined empirically) have been acked.
   // http://crbug.com/425819
   while (previously_discarded_contexts_.size() <

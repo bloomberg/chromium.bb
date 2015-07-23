@@ -17,7 +17,7 @@
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
+#include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
 using content::WebContents;
 
@@ -128,7 +128,7 @@ using content::WebContents;
       contents, &strategy);
 
   // Make sure we do not draw any transient arrangements of views.
-  gfx::ScopedNSDisableScreenUpdates disabler;
+  gfx::ScopedCocoaDisableScreenUpdates disabler;
 
   if (devTools && ![devToolsContainerView_ hasDevToolsView]) {
     focusTracker_.reset(

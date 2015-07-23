@@ -96,7 +96,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
+#include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -560,7 +560,7 @@ using content::WebContents;
 // going away) will again call to close the window when it's finally ready.
 - (BOOL)windowShouldClose:(id)sender {
   // Disable updates while closing all tabs to avoid flickering.
-  gfx::ScopedNSDisableScreenUpdates disabler;
+  gfx::ScopedCocoaDisableScreenUpdates disabler;
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.
   if (!browser_->ShouldCloseWindow())
@@ -953,7 +953,7 @@ using content::WebContents;
   // window is getting shorter, the toolbar will move up within the window.
   // Soon after, a call to layoutSubviews corrects its position. Passing NO to
   // setFrame:display: should keep the toolbarView's intermediate position
-  // hidden, as should the prior call to NSDisableScreenUpdates(). For some
+  // hidden, as should the prior call to disable screen updates. For some
   // reason, neither prevents the toolbarView's intermediate position from
   // becoming visible. Its subsequent appearance in its correct location causes
   // the flicker. It may be that the Appkit assumes that updating the window
@@ -1018,7 +1018,7 @@ using content::WebContents;
     return;
 
   // Disable screen updates to prevent flickering.
-  gfx::ScopedNSDisableScreenUpdates disabler;
+  gfx::ScopedCocoaDisableScreenUpdates disabler;
 
   // Grow or shrink the window by the amount of the height change.  We adjust
   // the window height only in two cases:
@@ -1466,7 +1466,7 @@ using content::WebContents;
   DCHECK_GT([tabViews count], 0U);
 
   // Disable screen updates so that this appears as a single visual change.
-  gfx::ScopedNSDisableScreenUpdates disabler;
+  gfx::ScopedCocoaDisableScreenUpdates disabler;
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what
