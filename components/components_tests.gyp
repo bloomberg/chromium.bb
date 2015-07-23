@@ -471,6 +471,7 @@
       'proximity_auth/cryptauth/cryptauth_gcm_manager_impl_unittest.cc',
       'proximity_auth/cryptauth/fake_secure_message_delegate_unittest.cc',
       'proximity_auth/cryptauth/sync_scheduler_impl_unittest.cc',
+      'proximity_auth/device_to_device_operations_unittest.cc',
       'proximity_auth/logging/logging_unittest.cc',
       'proximity_auth/proximity_auth_system_unittest.cc',
       'proximity_auth/proximity_monitor_impl_unittest.cc',
@@ -1142,6 +1143,7 @@
             'components.gyp:cryptauth_test_support',
             'components.gyp:feedback_component',
             'components.gyp:proximity_auth',
+            'components.gyp:proximity_auth_test_support',
           ],
         }],
         ['chromeos==1', {

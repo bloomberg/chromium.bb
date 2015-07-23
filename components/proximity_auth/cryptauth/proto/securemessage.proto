@@ -93,3 +93,24 @@ message GenericPublicKey {
   // Use only as a last resort.
   optional DhPublicKey dh2048_public_key = 4;
 }
+
+// Used by protocols for communicating between a pair of devices.
+message DeviceToDeviceMessage {
+  // The payload of the message.
+  optional bytes message = 1;
+
+  // The sequence number of the message - must be increasing.
+  optional int32 sequence_number = 2;
+}
+
+// Sent as the first message from initiator to responder in an unauthenticated
+// Diffie-Hellman Key Exchange.
+message InitiatorHello {
+  optional GenericPublicKey public_dh_key = 1;
+}
+
+// Sent inside the header of the first message from the responder to the
+// initiator in an unauthenticated Diffie-Hellman Key Exchange.
+message ResponderHello {
+  optional GenericPublicKey public_dh_key = 1;
+}

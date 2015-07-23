@@ -54,6 +54,8 @@
         "proximity_auth/connection.h",
         "proximity_auth/connection_finder.h",
         "proximity_auth/connection_observer.h",
+        "proximity_auth/device_to_device_initiator_operations.cc",
+        "proximity_auth/device_to_device_initiator_operations.h",
         "proximity_auth/metrics.cc",
         "proximity_auth/metrics.h",
         "proximity_auth/proximity_auth_client.h",
@@ -77,6 +79,21 @@
         "proximity_auth/throttled_bluetooth_connection_finder.h",
         "proximity_auth/wire_message.cc",
         "proximity_auth/wire_message.h",
+      ],
+    },
+    {
+      'target_name': 'proximity_auth_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        ':cryptauth_test_support',
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        "proximity_auth/device_to_device_responder_operations.cc",
+        "proximity_auth/device_to_device_responder_operations.h",
       ],
     },
     {
