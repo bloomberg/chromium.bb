@@ -145,6 +145,7 @@ private:
 FontFaceSet::FontFaceSet(Document& document)
     : ActiveDOMObject(&document)
     , m_shouldFireLoadingEvent(false)
+    , m_isLoading(false)
     , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
 {
     suspendIfNeeded();
@@ -185,7 +186,7 @@ AtomicString FontFaceSet::status() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, loading, ("loading", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, loaded, ("loaded", AtomicString::ConstructFromLiteral));
-    return (!m_loadingFonts.isEmpty() || hasLoadedFonts()) ? loading : loaded;
+    return m_isLoading ? loading : loaded;
 }
 
 void FontFaceSet::handlePendingEventsAndPromisesSoon()
@@ -198,7 +199,7 @@ void FontFaceSet::didLayout()
 {
     if (document()->frame()->isMainFrame() && m_loadingFonts.isEmpty())
         m_histogram.record();
-    if (!m_loadingFonts.isEmpty() || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
+    if (!m_loadingFonts.isEmpty() || (!m_isLoading && m_readyResolvers.isEmpty()))
         return;
     handlePendingEventsAndPromisesSoon();
 }
@@ -254,7 +255,8 @@ void FontFaceSet::loadError(FontFace* fontFace)
 
 void FontFaceSet::addToLoadingFonts(PassRefPtrWillBeRawPtr<FontFace> fontFace)
 {
-    if (m_loadingFonts.isEmpty() && !hasLoadedFonts()) {
+    if (!m_isLoading) {
+        m_isLoading = true;
         m_shouldFireLoadingEvent = true;
         handlePendingEventsAndPromisesSoon();
     }
@@ -404,7 +406,7 @@ void FontFaceSet::fireDoneEventIfPossible()
 {
     if (m_shouldFireLoadingEvent)
         return;
-    if (!m_loadingFonts.isEmpty() || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
+    if (!m_loadingFonts.isEmpty() || (!m_isLoading && m_readyResolvers.isEmpty()))
         return;
 
     // If the layout was invalidated in between when we thought layout
@@ -414,7 +416,7 @@ void FontFaceSet::fireDoneEventIfPossible()
     if (!d->view() || d->view()->needsLayout())
         return;
 
-    if (hasLoadedFonts()) {
+    if (m_isLoading) {
         RefPtrWillBeRawPtr<FontFaceSetLoadEvent> doneEvent = nullptr;
         RefPtrWillBeRawPtr<FontFaceSetLoadEvent> errorEvent = nullptr;
         doneEvent = FontFaceSetLoadEvent::createForFontFaces(EventTypeNames::loadingdone, m_loadedFonts);
@@ -423,6 +425,7 @@ void FontFaceSet::fireDoneEventIfPossible()
             errorEvent = FontFaceSetLoadEvent::createForFontFaces(EventTypeNames::loadingerror, m_failedFonts);
             m_failedFonts.clear();
         }
+        m_isLoading = false;
         dispatchEvent(doneEvent);
         if (errorEvent)
             dispatchEvent(errorEvent);
