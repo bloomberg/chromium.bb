@@ -329,5 +329,7 @@
     ClientRectList focusRingRects(Element element);
     void setCapsLockState(boolean enabled);
 
-    void setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
+    // Returns whether the scrollbar was able to be shown or hidden; not all platforms
+    // support overlay scrollbars.
+    bool setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 };

@@ -2462,22 +2462,22 @@ void Internals::setCapsLockState(bool enabled)
         PlatformKeyboardEvent::OverrideCapsLockState::On : PlatformKeyboardEvent::OverrideCapsLockState::Off);
 }
 
-void Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
+bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
 {
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
-        return;
+        return false;
     DeprecatedPaintLayer* layer = layoutObject->enclosingLayer();
     if (!layer)
-        return;
+        return false;
     ScrollableArea* scrollableArea = layer->scrollableArea();
     if (!scrollableArea)
-        return;
+        return false;
     ScrollAnimator* animator = layer->scrollableArea()->scrollAnimator();
     if (!animator)
-        return;
+        return false;
 
-    animator->setScrollbarsVisibleForTesting(visible);
+    return animator->setScrollbarsVisibleForTesting(visible);
 }
 
 } // namespace blink

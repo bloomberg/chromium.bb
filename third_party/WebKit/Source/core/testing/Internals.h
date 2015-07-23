@@ -370,7 +370,7 @@ public:
 
     void setCapsLockState(bool enabled);
 
-    void setScrollbarVisibilityInScrollableArea(Node*, bool visible);
+    bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 
 private:
     explicit Internals(ScriptState*);

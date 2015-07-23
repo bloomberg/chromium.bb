@@ -1006,7 +1006,7 @@ void ScrollAnimatorMac::notifyContentAreaScrolled(const FloatSize& delta)
         sendContentAreaScrolledSoon(delta);
 }
 
-void ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show)
+bool ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show)
 {
     if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
         if (show)
@@ -1016,7 +1016,9 @@ void ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show)
 
         [m_verticalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
         [m_verticalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
+        return true;
     }
+    return false;
 }
 
 void ScrollAnimatorMac::cancelAnimations()
