@@ -44,11 +44,6 @@ void WindowAndroid::OnCompositingDidCommit() {
                     OnCompositingDidCommit());
 }
 
-void WindowAndroid::OnVisibilityChanged(bool visible) {
-  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_,
-                    OnRootWindowVisibilityChanged(visible));
-}
-
 void WindowAndroid::AddObserver(WindowAndroidObserver* observer) {
   if (!observer_list_.HasObserver(observer))
     observer_list_.AddObserver(observer);
@@ -106,12 +101,19 @@ void WindowAndroid::OnVSync(JNIEnv* env,
     compositor_->OnVSync(frame_time, vsync_period);
 }
 
-void WindowAndroid::OnActivityResumed(JNIEnv* env, jobject obj) {
-  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityResumed());
+void WindowAndroid::OnVisibilityChanged(JNIEnv* env,
+                                        jobject obj,
+                                        bool visible) {
+  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_,
+                    OnRootWindowVisibilityChanged(visible));
 }
 
-void WindowAndroid::OnActivityPaused(JNIEnv* env, jobject obj) {
-  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityPaused());
+void WindowAndroid::OnActivityStopped(JNIEnv* env, jobject obj) {
+  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityStopped());
+}
+
+void WindowAndroid::OnActivityStarted(JNIEnv* env, jobject obj) {
+  FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityStarted());
 }
 
 bool WindowAndroid::HasPermission(const std::string& permission) {

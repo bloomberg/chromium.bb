@@ -22,8 +22,8 @@ class UI_ANDROID_EXPORT WindowAndroidObserver {
   // Note that activity state callbacks will only be made if the WindowAndroid
   // has been explicitly subscribed to receive them. The observer instance
   // should account for whether or not this is the case.
-  virtual void OnActivityPaused() = 0;
-  virtual void OnActivityResumed() = 0;
+  virtual void OnActivityStopped() = 0;
+  virtual void OnActivityStarted() = 0;
 
  protected:
   virtual ~WindowAndroidObserver() {}

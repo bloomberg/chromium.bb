@@ -353,21 +353,31 @@ public class WindowAndroid {
     }
 
     /**
-     * For window instances associated with an activity, notifies any listeners
-     * that the activity has been paused.
+     * Notify any observers that the visibility of the Android Window associated
+     * with this Window has changed.
+     * @param visible whether the View is visible.
      */
-    protected void onActivityPaused() {
+    public void onVisibilityChanged(boolean visible) {
         if (mNativeWindowAndroid == 0) return;
-        nativeOnActivityPaused(mNativeWindowAndroid);
+        nativeOnVisibilityChanged(mNativeWindowAndroid, visible);
     }
 
     /**
      * For window instances associated with an activity, notifies any listeners
-     * that the activity has been paused.
+     * that the activity has been stopped.
      */
-    protected void onActivityResumed() {
+    protected void onActivityStopped() {
         if (mNativeWindowAndroid == 0) return;
-        nativeOnActivityResumed(mNativeWindowAndroid);
+        nativeOnActivityStopped(mNativeWindowAndroid);
+    }
+
+    /**
+     * For window instances associated with an activity, notifies any listeners
+     * that the activity has been started.
+     */
+    protected void onActivityStarted() {
+        if (mNativeWindowAndroid == 0) return;
+        nativeOnActivityStarted(mNativeWindowAndroid);
     }
 
     @CalledByNative
@@ -579,8 +589,9 @@ public class WindowAndroid {
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
                                       long vsyncPeriodMicros);
-    private native void nativeOnActivityPaused(long nativeWindowAndroid);
-    private native void nativeOnActivityResumed(long nativeWindowAndroid);
+    private native void nativeOnVisibilityChanged(long nativeWindowAndroid, boolean visible);
+    private native void nativeOnActivityStopped(long nativeWindowAndroid);
+    private native void nativeOnActivityStarted(long nativeWindowAndroid);
     private native void nativeDestroy(long nativeWindowAndroid);
 
 }

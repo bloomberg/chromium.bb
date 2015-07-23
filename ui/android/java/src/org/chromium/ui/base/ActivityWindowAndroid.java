@@ -293,10 +293,10 @@ public class ActivityWindowAndroid
 
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.PAUSED) {
-            onActivityPaused();
-        } else if (newState == ActivityState.RESUMED) {
-            onActivityResumed();
+        if (newState == ActivityState.STOPPED) {
+            onActivityStopped();
+        } else if (newState == ActivityState.STARTED) {
+            onActivityStarted();
         }
     }
 

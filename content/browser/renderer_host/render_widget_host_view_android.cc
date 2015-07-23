@@ -1851,14 +1851,9 @@ void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
   if (visible) {
     ShowInternal();
   } else {
-    // Only hide the active frontbuffer if the Activity has been paused and
-    // we've already hidden the host. Otherwise the root window visibility is
-    // likely to be temporarily changing, e.g., with fullscreen video.
-    if (host_ && host_->is_hidden()) {
-      bool hide_frontbuffer = true;
-      bool stop_observing_root_window = false;
-      HideInternal(hide_frontbuffer, stop_observing_root_window);
-    }
+    bool hide_frontbuffer = true;
+    bool stop_observing_root_window = false;
+    HideInternal(hide_frontbuffer, stop_observing_root_window);
   }
 }
 
@@ -1904,16 +1899,16 @@ void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {
     SetNeedsAnimate();
 }
 
-void RenderWidgetHostViewAndroid::OnActivityPaused() {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityPaused");
+void RenderWidgetHostViewAndroid::OnActivityStopped() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityStopped");
   DCHECK(is_showing_);
   bool hide_frontbuffer = false;
   bool stop_observing_root_window = false;
   HideInternal(hide_frontbuffer, stop_observing_root_window);
 }
 
-void RenderWidgetHostViewAndroid::OnActivityResumed() {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityResumed");
+void RenderWidgetHostViewAndroid::OnActivityStarted() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityStarted");
   DCHECK(is_showing_);
   ShowInternal();
 }

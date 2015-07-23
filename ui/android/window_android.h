@@ -44,7 +44,6 @@ class UI_ANDROID_EXPORT WindowAndroid {
 
   // Compositor callback relay.
   void OnCompositingDidCommit();
-  void OnVisibilityChanged(bool visible);
 
   void AttachCompositor(WindowAndroidCompositor* compositor);
   void DetachCompositor();
@@ -56,13 +55,14 @@ class UI_ANDROID_EXPORT WindowAndroid {
 
   void RequestVSyncUpdate();
   void SetNeedsAnimate();
+  void Animate(base::TimeTicks begin_frame_time);
   void OnVSync(JNIEnv* env,
                jobject obj,
                jlong time_micros,
                jlong period_micros);
-  void Animate(base::TimeTicks begin_frame_time);
-  void OnActivityPaused(JNIEnv* env, jobject obj);
-  void OnActivityResumed(JNIEnv* env, jobject obj);
+  void OnVisibilityChanged(JNIEnv* env, jobject obj, bool visible);
+  void OnActivityStopped(JNIEnv* env, jobject obj);
+  void OnActivityStarted(JNIEnv* env, jobject obj);
 
   // Return whether the specified Android permission is granted.
   bool HasPermission(const std::string& permission);

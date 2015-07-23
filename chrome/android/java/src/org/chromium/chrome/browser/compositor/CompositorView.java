@@ -273,6 +273,17 @@ public class CompositorView
     @Override
     public void surfaceRedrawNeeded(SurfaceHolder holder) {}
 
+    @Override
+    public void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        if (mWindowAndroid == null) return;
+        if (visibility == View.GONE) {
+            mWindowAndroid.onVisibilityChanged(false);
+        } else if (visibility == View.VISIBLE) {
+            mWindowAndroid.onVisibilityChanged(true);
+        }
+    }
+
     @CalledByNative
     private void onCompositorLayout() {
         mRenderHost.onCompositorLayout();
