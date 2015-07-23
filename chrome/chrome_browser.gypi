@@ -3452,8 +3452,12 @@
         }],
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_browser_spellchecker_sources)' ],
-          'dependencies': [
-            '../third_party/hunspell/hunspell.gyp:hunspell',
+          'conditions': [
+            ['OS!="android"', {
+              'dependencies': [
+                '../third_party/hunspell/hunspell.gyp:hunspell',
+              ],
+            }],
           ],
         }],
         ['disable_nacl==0', {

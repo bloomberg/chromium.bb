@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_NSSPELLCHECKER_ENGINE_H_
-#define CHROME_RENDERER_SPELLCHECKER_NSSPELLCHECKER_ENGINE_H_
+#ifndef CHROME_RENDERER_SPELLCHECKER_PLATFORM_SPELLING_ENGINE_H_
+#define CHROME_RENDERER_SPELLCHECKER_PLATFORM_SPELLING_ENGINE_H_
 
 #include "base/compiler_specific.h"
 #include "chrome/renderer/spellchecker/spelling_engine.h"
 
-class CocoaSpellingEngine : public SpellingEngine {
+class PlatformSpellingEngine : public SpellingEngine {
  public:
   void Init(base::File bdict_file) override;
   bool InitializeIfNeeded() override;
@@ -19,5 +19,5 @@ class CocoaSpellingEngine : public SpellingEngine {
       std::vector<base::string16>* optional_suggestions) override;
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_NSSPELLCHECKER_ENGINE_H_
+#endif  // CHROME_RENDERER_SPELLCHECKER_PLATFORM_SPELLING_ENGINE_H_
 

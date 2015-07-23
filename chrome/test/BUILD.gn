@@ -894,6 +894,7 @@ if (!is_android) {
         "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
         "../browser/prefs/pref_hash_browsertest.cc",
         "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
+        "../renderer/spellchecker/spellcheck_unittest.cc",
       ]
     }
     if (is_chromeos) {

@@ -213,12 +213,12 @@
       'renderer/safe_browsing/scorer.h',
     ],
     'chrome_renderer_spellchecker_sources': [
-      'renderer/spellchecker/cocoa_spelling_engine_mac.cc',
-      'renderer/spellchecker/cocoa_spelling_engine_mac.h',
       'renderer/spellchecker/custom_dictionary_engine.cc',
       'renderer/spellchecker/custom_dictionary_engine.h',
       'renderer/spellchecker/hunspell_engine.cc',
       'renderer/spellchecker/hunspell_engine.h',
+      'renderer/spellchecker/platform_spelling_engine.cc',
+      'renderer/spellchecker/platform_spelling_engine.h',
       'renderer/spellchecker/spellcheck.cc',
       'renderer/spellchecker/spellcheck.h',
       'renderer/spellchecker/spellcheck_language.cc',
@@ -346,9 +346,25 @@
           'sources': [
             '<@(chrome_renderer_spellchecker_sources)',
           ],
-          'dependencies': [
-            '../third_party/hunspell/hunspell.gyp:hunspell',
+          'conditions': [
+            ['OS!="android"', {
+              'dependencies': [
+                '../third_party/hunspell/hunspell.gyp:hunspell',
+              ],
+            }],
           ],
+        }],
+        ['use_platform_spellchecker==0', {
+          'sources!': [
+            'renderer/spellchecker/platform_spelling_engine.cc',
+            'renderer/spellchecker/platform_spelling_engine.h',
+          ]
+        }],
+        ['OS=="android"', {
+          'sources!': [
+            'renderer/spellchecker/hunspell_engine.cc',
+            'renderer/spellchecker/hunspell_engine.h',
+          ]
         }],
         ['OS=="mac"', {
           'dependencies': [

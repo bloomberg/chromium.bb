@@ -5,7 +5,6 @@
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 
 #include "base/files/file_util.h"
-#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -19,8 +18,12 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/hunspell/google/bdict.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID)
+#include "base/files/memory_mapped_file.h"
+#include "third_party/hunspell/google/bdict.h"
+#endif
 
 using content::BrowserThread;
 
@@ -131,7 +134,7 @@ void SpellcheckHunspellDictionary::Load() {
       base::Bind(
           &SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete,
           weak_ptr_factory_.GetWeakPtr()));
-#endif // !OS_ANDROID
+#endif  // !OS_ANDROID
 }
 
 void SpellcheckHunspellDictionary::RetryDownloadDictionary(
@@ -196,6 +199,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
     return;
   }
 
+#if !defined(OS_ANDROID)
   // To prevent corrupted dictionary data from causing a renderer crash, scan
   // the dictionary data and verify it is sane before save it to a file.
   // TODO(rlp): Adding metrics to RecordDictionaryCorruptionStats
@@ -205,6 +209,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
     SaveDictionaryDataComplete(false);
     return;
   }
+#endif
 
   BrowserThread::PostTaskAndReplyWithResult<bool>(
       BrowserThread::FILE,
@@ -271,7 +276,9 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
 
   // Read the dictionary file and scan its data to check for corruption. The
   // scoping closes the memory-mapped file before it is opened or deleted.
-  bool bdict_is_valid;
+  bool bdict_is_valid = false;
+
+#if !defined(OS_ANDROID)
   {
     base::MemoryMappedFile map;
     bdict_is_valid =
@@ -280,6 +287,8 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
         hunspell::BDict::Verify(reinterpret_cast<const char*>(map.data()),
                                 map.length());
   }
+#endif
+
   if (bdict_is_valid) {
     dictionary.file.Initialize(dictionary.path,
                                base::File::FLAG_READ | base::File::FLAG_OPEN);

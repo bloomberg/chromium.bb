@@ -2662,6 +2662,7 @@
           ],
           'sources!': [
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
+            'renderer/spellchecker/spellcheck_unittest.cc',
           ],
           'ldflags': [
             # Some android targets still depend on --gc-sections to link.
