@@ -49,7 +49,7 @@ RestrictedToken::RestrictedToken()
 RestrictedToken::~RestrictedToken() {
 }
 
-unsigned RestrictedToken::Init(const HANDLE effective_token) {
+DWORD RestrictedToken::Init(const HANDLE effective_token) {
   if (init_)
     return ERROR_ALREADY_INITIALIZED;
 
@@ -74,7 +74,7 @@ unsigned RestrictedToken::Init(const HANDLE effective_token) {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::GetRestrictedToken(
+DWORD RestrictedToken::GetRestrictedToken(
     base::win::ScopedHandle* token) const {
   DCHECK(init_);
   if (!init_)
@@ -178,14 +178,14 @@ unsigned RestrictedToken::GetRestrictedToken(
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::GetRestrictedTokenForImpersonation(
+DWORD RestrictedToken::GetRestrictedTokenForImpersonation(
     base::win::ScopedHandle* token) const {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
 
   base::win::ScopedHandle restricted_token;
-  unsigned err_code = GetRestrictedToken(&restricted_token);
+  DWORD err_code = GetRestrictedToken(&restricted_token);
   if (ERROR_SUCCESS != err_code)
     return err_code;
 
@@ -209,7 +209,7 @@ unsigned RestrictedToken::GetRestrictedTokenForImpersonation(
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddAllSidsForDenyOnly(std::vector<Sid> *exceptions) {
+DWORD RestrictedToken::AddAllSidsForDenyOnly(std::vector<Sid> *exceptions) {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -247,7 +247,7 @@ unsigned RestrictedToken::AddAllSidsForDenyOnly(std::vector<Sid> *exceptions) {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddSidForDenyOnly(const Sid &sid) {
+DWORD RestrictedToken::AddSidForDenyOnly(const Sid &sid) {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -256,7 +256,7 @@ unsigned RestrictedToken::AddSidForDenyOnly(const Sid &sid) {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddUserSidForDenyOnly() {
+DWORD RestrictedToken::AddUserSidForDenyOnly() {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -277,7 +277,7 @@ unsigned RestrictedToken::AddUserSidForDenyOnly() {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::DeleteAllPrivileges(
+DWORD RestrictedToken::DeleteAllPrivileges(
     const std::vector<base::string16> *exceptions) {
   DCHECK(init_);
   if (!init_)
@@ -315,7 +315,7 @@ unsigned RestrictedToken::DeleteAllPrivileges(
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::DeletePrivilege(const wchar_t *privilege) {
+DWORD RestrictedToken::DeletePrivilege(const wchar_t *privilege) {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -329,7 +329,7 @@ unsigned RestrictedToken::DeletePrivilege(const wchar_t *privilege) {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddRestrictingSid(const Sid &sid) {
+DWORD RestrictedToken::AddRestrictingSid(const Sid &sid) {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -338,7 +338,7 @@ unsigned RestrictedToken::AddRestrictingSid(const Sid &sid) {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddRestrictingSidLogonSession() {
+DWORD RestrictedToken::AddRestrictingSidLogonSession() {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -366,7 +366,7 @@ unsigned RestrictedToken::AddRestrictingSidLogonSession() {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddRestrictingSidCurrentUser() {
+DWORD RestrictedToken::AddRestrictingSidCurrentUser() {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -387,7 +387,7 @@ unsigned RestrictedToken::AddRestrictingSidCurrentUser() {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::AddRestrictingSidAllSids() {
+DWORD RestrictedToken::AddRestrictingSidAllSids() {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -414,7 +414,7 @@ unsigned RestrictedToken::AddRestrictingSidAllSids() {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::SetIntegrityLevel(IntegrityLevel integrity_level) {
+DWORD RestrictedToken::SetIntegrityLevel(IntegrityLevel integrity_level) {
   integrity_level_ = integrity_level;
   return ERROR_SUCCESS;
 }
