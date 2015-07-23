@@ -37,6 +37,62 @@
 
 namespace cc {
 
+void CreateVirtualViewportLayers(Layer* root_layer,
+                                 scoped_refptr<Layer> outer_scroll_layer,
+                                 const gfx::Size& inner_bounds,
+                                 const gfx::Size& outer_bounds,
+                                 LayerTreeHost* host,
+                                 const LayerSettings& layer_settings) {
+    scoped_refptr<Layer> inner_viewport_container_layer =
+        Layer::Create(layer_settings);
+    scoped_refptr<Layer> inner_viewport_scroll_layer =
+        Layer::Create(layer_settings);
+    scoped_refptr<Layer> outer_viewport_container_layer =
+        Layer::Create(layer_settings);
+    scoped_refptr<Layer> page_scale_layer = Layer::Create(layer_settings);
+
+    root_layer->AddChild(inner_viewport_container_layer);
+    inner_viewport_container_layer->AddChild(page_scale_layer);
+    page_scale_layer->AddChild(inner_viewport_scroll_layer);
+    inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
+    outer_viewport_container_layer->AddChild(outer_scroll_layer);
+
+    inner_viewport_scroll_layer->SetScrollClipLayerId(
+        inner_viewport_container_layer->id());
+    outer_scroll_layer->SetScrollClipLayerId(
+        outer_viewport_container_layer->id());
+
+    inner_viewport_container_layer->SetBounds(inner_bounds);
+    inner_viewport_scroll_layer->SetBounds(outer_bounds);
+    outer_viewport_container_layer->SetBounds(outer_bounds);
+
+    inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+    outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+    host->RegisterViewportLayers(NULL,
+                                 root_layer,
+                                 inner_viewport_scroll_layer,
+                                 outer_scroll_layer);
+}
+
+void CreateVirtualViewportLayers(Layer* root_layer,
+                                 const gfx::Size& inner_bounds,
+                                 const gfx::Size& outer_bounds,
+                                 const gfx::Size& scroll_bounds,
+                                 LayerTreeHost* host,
+                                 const LayerSettings& layer_settings) {
+    scoped_refptr<Layer> outer_viewport_scroll_layer =
+        Layer::Create(layer_settings);
+
+    outer_viewport_scroll_layer->SetBounds(scroll_bounds);
+    outer_viewport_scroll_layer->SetIsDrawable(true);
+    CreateVirtualViewportLayers(root_layer,
+                                outer_viewport_scroll_layer,
+                                inner_bounds,
+                                outer_bounds,
+                                host,
+                                layer_settings);
+}
+
 TestHooks::TestHooks() {}
 
 TestHooks::~TestHooks() {}

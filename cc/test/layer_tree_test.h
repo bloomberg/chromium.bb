@@ -25,6 +25,25 @@ class TestContextProvider;
 class TestGpuMemoryBufferManager;
 class TestWebGraphicsContext3D;
 
+// Creates the virtual viewport layer hierarchy under the given root_layer.
+// Convenient overload of the method below that creates a scrolling layer as
+// the outer viewport scroll layer.
+void CreateVirtualViewportLayers(Layer* root_layer,
+                                 const gfx::Size& inner_bounds,
+                                 const gfx::Size& outer_bounds,
+                                 const gfx::Size& scroll_bounds,
+                                 LayerTreeHost* host,
+                                 const LayerSettings& layer_settings);
+
+// Creates the virtual viewport layer hierarchy under the given root_layer.
+// Uses the given scroll layer as the content "outer viewport scroll layer".
+void CreateVirtualViewportLayers(Layer* root_layer,
+                                 scoped_refptr<Layer> outer_scroll_layer,
+                                 const gfx::Size& outer_bounds,
+                                 const gfx::Size& scroll_bounds,
+                                 LayerTreeHost* host,
+                                 const LayerSettings& layer_settings);
+
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public AnimationDelegate {
  public:
