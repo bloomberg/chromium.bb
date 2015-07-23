@@ -127,7 +127,7 @@ void NTPUserDataLogger::EmitNtpStatistics() {
     logLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time_);
 
     // Split between Startup and non-startup.
-    std::string status = during_startup_ ? "Startup" : "Newtab";
+    std::string status = during_startup_ ? "Startup" : "NewTab";
     logLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time_);
 
     load_time_ = base::TimeDelta::FromMilliseconds(0);
