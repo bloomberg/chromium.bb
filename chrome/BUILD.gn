@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//build/config/ui.gni")
+import("//build/config/win/manifest.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/version.gni")
 
@@ -14,8 +15,9 @@ if (is_android) {
 }
 
 if (!is_android) {
-  # TODO(GYP) for Windows need to the the reorder-imports step which probably
-  # means adding another target and renaming this to chrome_initial like in GYP.
+  # TODO(GYP) bug 512599: for Windows need to the the reorder-imports step
+  # which probably means adding another target and renaming this to
+  # chrome_initial like in GYP.
   executable("chrome") {
     # Because the sources list varies so significantly per-platform, generally
     # each platform lists its own files rather than relying on filtering or
@@ -28,8 +30,6 @@ if (!is_android) {
     data_deps = []
 
     # TODO(GYP) mac_bundle_resources, xcode_settings
-
-    # TODO(GYP) order_profiling, order_text_section
 
     if (is_win) {
       sources += [
@@ -65,9 +65,9 @@ if (!is_android) {
         ":image_pre_reader",
         ":main_dll",
 
-        # 'chrome_nacl_win64" TODO(GYP)
-        # '../win8/delegate_execute/delegate_execute.gyp:*', TODO(GYP)
-        # '../win8/metro_driver/metro_driver.gyp:metro_driver', TODO(GYP)
+        # 'chrome_nacl_win64" TODO(GYP) bug 512869
+        # '../win8/delegate_execute/delegate_execute.gyp:*', TODO(GYP) bug 512867
+        # '../win8/metro_driver/metro_driver.gyp:metro_driver', TODO(GYP) bug 512864
         "//base",
         "//breakpad:breakpad_handler",
         "//breakpad:breakpad_sender",
@@ -187,6 +187,7 @@ shared_library("main_dll") {
     ]
 
     deps += [
+      ":chrome_dll_manifest",
       ":chrome_dll_version",
       "//base/trace_event/etw_manifest:chrome_events_win",
       "//chrome/app/theme:chrome_unscaled_resources",
@@ -201,8 +202,7 @@ shared_library("main_dll") {
       deps += [ "//components/policy" ]
     }
     if (current_cpu == "x86") {
-      # Add a dependency to custom import library for user32 delay imports only
-      # in x86 builds.
+      # TODO(GYP) bug 512861: Lots of VCLinkerTool stuff on Windows.
       #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
     }
 
@@ -210,9 +210,7 @@ shared_library("main_dll") {
     configs -= [ "//build/config/win:default_incremental_linking" ]
     configs += [ "//build/config/win:default_large_module_incremental_linking" ]
 
-    # TODO(GYP) Lots of VCLinkerTool stuff on Windows.
-
-    # TODO(GYP) chrome_pgo_phase on Windows.
+    # TODO(GYP) bug 512851: PGO.
   }
 
   if (use_aura) {
@@ -246,6 +244,14 @@ shared_library("main_dll") {
 }
 
 if (is_multi_dll_chrome) {
+  # This manifest matches what GYP produces. It may not even be necessary.
+  windows_manifest("chrome_child_manifest") {
+    sources = [
+      as_invoker_manifest,
+    ]
+    type = "dll"
+  }
+
   shared_library("chrome_child") {
     sources = [
       "app/chrome_main.cc",
@@ -260,13 +266,14 @@ if (is_multi_dll_chrome) {
 
     deps = [
       ":child_dependencies",
+      ":chrome_child_manifest",
       ":chrome_dll_version",
       "//chrome/browser/policy:path_parser",
       "//content/public/app:child",
     ]
 
     if (is_win) {
-      # TODO(GYP): PGO on Windows.
+      # TODO(GYP) bug 512851: PGO on Windows.
       # ['chrome_pgo_phase==1', {
       #   'msvs_settings': {
       #     'VCLinkerTool': {
@@ -365,6 +372,15 @@ if (is_win) {
       "app/chrome_dll.ver",
     ]
     output = "$target_gen_dir/chrome_dll_version.rc"
+  }
+
+  # This manifest matches what GYP produces. It may not even be necessary.
+  windows_manifest("chrome_dll_manifest") {
+    sources = [
+      as_invoker_manifest,
+      common_controls_manifest,
+    ]
+    type = "dll"
   }
 
   process_version("nacl64_exe_version") {

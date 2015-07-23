@@ -617,9 +617,8 @@ if (!is_android) {
     # Runtime dependencies
     data_deps = [
       "//ppapi:ppapi_tests",
-
-      #'../remoting/remoting.gyp:remoting_browser_test_resources',  TODO(GYP)
-      #'../remoting/remoting.gyp:remoting_webapp_unittests',  TODO(GYP)
+      "//remoting/webapp:browser_test_resources",
+      "//remoting/webapp:unit_tests",
       "//third_party/mesa:osmesa",
       "//third_party/widevine/cdm:widevine_test_license_server",
     ]
@@ -662,18 +661,18 @@ if (!is_android) {
         # to know all of the different toolchain options.
         assert(current_cpu == "x64")
         data_deps += [
-          # "test/data/nacl:shared_test_files",  # TODO(GYP)
+          # "test/data/nacl:shared_test_files",  # TODO(GYP) bug 512902
           "//ppapi/native_client:nacl_irt(//native_client/build/toolchain/nacl:irt_x64)",
-          # "../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests",  # TODO(GYP)
-          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive",  # TODO(GYP)
-          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries",  # TODO(GYP)
-          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app",  # TODO(GYP)
+          # "../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests",  # TODO(GYP) bug 512901
+          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive",  # TODO(GYP) bug 512900
+          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries",  # TODO(GYP) bug 512900
+          # "../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app",  # TODO(GYP) bug 512900
         ]
         if (is_chromeos) {
           sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
           deps += [
-            #'browser_chromeos',  TODO(GYP)
-            #'../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',  TODO(GYP)
+            "//chrome/browser/chromeos",
+            #'../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',  TODO(GYP) bug 512906
           ]
         }
       }
@@ -686,7 +685,7 @@ if (!is_android) {
         # browser process as needed by this test. See http://crbug.com/157312.
         sources -= [ "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc" ]
         deps += [
-          #'chrome.gyp:chrome_nacl_win64',  TODO(GYP)
+          #'chrome.gyp:chrome_nacl_win64',  TODO(GYP) bug 512869
         ]
         configs -= [ "//build/config/win:default_incremental_linking" ]
         configs +=
@@ -697,7 +696,7 @@ if (!is_android) {
           "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
           "//components/nacl:nacl_helper",
 
-          # "//components/nacl_nonsfi.gyp:nacl_helper_nonsfi",  # TODO(GYP)
+          # "//components/nacl_nonsfi.gyp:nacl_helper_nonsfi",  # TODO(GYP) bug 512912.
         ]
       }
     }
@@ -747,7 +746,7 @@ if (!is_android) {
         "//dbus",
         "//dbus:test_support",
 
-        #"//ui/login:resources",  TODO(GYP)
+        #"//ui/login:resources",  TODO(GYP) bug 512913
       ]
     } else {
       sources -= [
@@ -1573,19 +1572,17 @@ if (!is_android) {
       ]
     }
     if (is_win) {
-      if (!is_component_build) {
-        # Unit_tests pdb files can get too big when incremental linking is
-        # on, disabling for this target.
-        #'LinkIncremental': '<(msvs_debug_link_nonincremental)',  TODO(GYP)
-      }
+      # The PDB gets too large for incremental linking.
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs += [ "//build/config/win:no_incremental_linking" ]
 
       sources += rebase_path(
               chrome_tests_unit_gypi_values.chrome_unit_tests_win_sources,
               ".",
               "//chrome")
       deps += [
-        #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',  TODO(GYP)
-        #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',  TODO(GYP)
+        #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',  TODO(GYP) bug 512919
+        #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',  TODO(GYP) bug 512919
         "//chrome:other_version",
         "//chrome_elf:blacklist_test_dll_1",
         "//chrome/installer/util:strings",
@@ -1594,10 +1591,6 @@ if (!is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
-
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
 
       libs = [
         "comsupp.lib",

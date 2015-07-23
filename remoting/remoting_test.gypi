@@ -400,6 +400,7 @@
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
     {
+      # GN version: //remoting/webapp:browser_test_resources
       'target_name': 'remoting_browser_test_resources',
       'type': 'none',
       'copies': [
@@ -441,6 +442,7 @@
       ],  # end of actions
     },  # end of target 'remoting_webapp_browser_test_html'
     {
+      # GN version: //remoting/webapp:unit_tests
       'target_name': 'remoting_webapp_unittests',
       'type': 'none',
       'variables': {
@@ -453,6 +455,7 @@
       },
       'copies': [
         {
+          # GN version: //remoting/webapp:qunit
           'destination': '<(output_dir)/qunit',
           'files': [
             '../third_party/qunit/src/browser_test_harness.js',
@@ -461,6 +464,7 @@
           ],
         },
         {
+          # GN version: //remoting/webapp:blanketjs
           'destination': '<(output_dir)/blanketjs',
           'files': [
             '../third_party/blanketjs/src/blanket.js',
@@ -468,6 +472,7 @@
           ],
         },
         {
+          # GN version: //remoting/webapp:sinonjs
           'destination': '<(output_dir)/sinonjs',
           'files': [
             '../third_party/sinonjs/src/sinon.js',
@@ -475,6 +480,7 @@
           ],
         },
         {
+          # GN version: //remoting/webapp:js_files
           'destination': '<(output_dir)',
           'files': [
             '<@(webapp_js_files)',

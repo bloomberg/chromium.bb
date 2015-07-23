@@ -9,6 +9,7 @@
   },
   'targets': [
     {
+      # TODO bug 512913 support in GN.
       'target_name': 'login_resources',
       'type': 'none',
       'actions': [

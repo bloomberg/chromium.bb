@@ -125,6 +125,7 @@ config("mesa_internal_warnings") {
     cflags += [
       "-Wno-tautological-constant-out-of-range-compare",
       "-Wno-mismatched-tags",  # Fixed upstream.
+
       # mesa's STATIC_ASSERT() macro expands to an ununused typedef.
       "-Wno-unused-local-typedef",
     ]
@@ -669,8 +670,11 @@ static_library("mesa") {
 if (!is_android) {  # TODO(GYP) enable for Android.
   # Building this target will hide the native OpenGL shared library and
   # replace it with a slow software renderer.
-  # TODO(GYP) http://crbug.com/380327 need support for loadable_module.
-  #loadable_module("osmesa") {
+  #
+  # Note: on x64 Windows this target gives warnings to the effect of:
+  #   osmesa.osmesa.obj : warning LNK4197: export 'OSMesaGetIntegerv' specified
+  #   multiple times; using first specification
+  # This also happens with the GYP build.
   shared_library("osmesa") {
     sources = [
       "src/src/mesa/drivers/common/driverfuncs.c",

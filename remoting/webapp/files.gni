@@ -49,18 +49,20 @@ remoting_webapp_browsertest_js_mock_files = [
   "crd/js/mock_host_list_api.js",
   "crd/js/mock_identity.js",
   "crd/js/mock_oauth2_api.js",
-  "crd/js/mock_session_connector.js",
   "crd/js/mock_signal_strategy.js",
 ]
 remoting_webapp_browsertest_js_proto_files = [
-  "js_proto/sinon_proto.js",
-  "js_proto/test_proto.js",
-  "<@(remoting_webapp_js_proto_files)",
-]
-remoting_webapp_browsertest_all_js_files = [
-  "<@(remoting_webapp_browsertest_js_files)",
-  "<@(remoting_webapp_browsertest_js_mock_files)",
-]
+                                               "js_proto/sinon_proto.js",
+                                               "js_proto/test_proto.js",
+                                             ] + remoting_webapp_js_proto_files
+
+remoting_webapp_browsertest_all_js_files =
+    remoting_webapp_browsertest_js_files +
+    remoting_webapp_browsertest_js_mock_files
+
+remoting_webapp_browsertest_main_html_extra_files =
+    remoting_webapp_browsertest_all_js_files +
+    [ "//third_party/sinonjs/src/sinon.js" ]
 
 #
 # Webapp unittest JavaScript files.
@@ -126,17 +128,13 @@ remoting_webapp_unittests_js_proto_files = [
   "js_proto/remoting_proto.js",
   "js_proto/sinon_proto.js",
 ]
-remoting_webapp_unittests_all_js_files = [
-  "<@(remoting_webapp_unittests_js_files)",
-  "<@(remoting_webapp_unittests_js_mock_files)",
-  "unittests/qunit_callbacks.js",
-]
+remoting_webapp_unittests_all_js_files =
+    remoting_webapp_unittests_js_files +
+    remoting_webapp_unittests_js_mock_files + [ "unittests/qunit_callbacks.js" ]
 
 # All the files needed to run the unittests.
-remoting_webapp_unittests_all_files = [
-  "crd/html/menu_button.css",
-  "<@(remoting_webapp_unittests_all_js_files)",
-]
+remoting_webapp_unittests_all_files =
+    [ "crd/html/menu_button.css" ] + remoting_webapp_unittests_all_js_files
 remoting_webapp_unittests_template_main = "crd/html/template_unittests.html"
 
 #
@@ -196,13 +194,11 @@ remoting_webapp_shared_js_host_files = [
 remoting_webapp_shared_js_logging_files = [
   "base/js/chromoting_event.js",
   "base/js/format_iq.js",
-  "base/js/logger.js",
   "base/js/log_to_server.js",
+  "base/js/logger.js",
   "base/js/server_log_entry.js",
   "base/js/session_logger.js",
   "base/js/stats_accumulator.js",
-  "base/js/telemetry_event_writer.js",
-  "base/js/xhr_event_writer.js",
 ]
 
 # Remoting signaling files.
@@ -339,6 +335,9 @@ remoting_webapp_shared_main_html_js_files =
 # Uncomment this line to include browser test files in the web app
 # to expedite debugging or local development.
 #+ remoting_webapp_browsertest_all_js_files
+
+remoting_webapp_unittest_html_all_js_files =
+    remoting_webapp_shared_main_html_js_files + remoting_webapp_crd_js_ui_files
 
 # The CRD-specific JavaScript files required by main.html.
 remoting_webapp_crd_main_html_all_js_files =
@@ -517,15 +516,14 @@ remoting_webapp_crd_files =
     remoting_webapp_resource_files
 
 # Files that contain localizable strings.
-desktop_remoting_webapp_localizable_files = [
-  "webapp/crd/manifest.json.jinja2",
-  "<(remoting_webapp_template_background)",
-  "<(remoting_webapp_template_main)",
-  "<(remoting_webapp_template_message_window)",
-  "<(remoting_webapp_template_wcs_sandbox)",
-  "<@(remoting_webapp_template_files)",
-  "<@(remoting_webapp_crd_js_files)",
-]
+desktop_remoting_webapp_localizable_files =
+    [
+      "webapp/crd/manifest.json.jinja2",
+      remoting_webapp_template_background,
+      remoting_webapp_template_main,
+      remoting_webapp_template_message_window,
+      remoting_webapp_template_wcs_sandbox,
+    ] + remoting_webapp_template_files + remoting_webapp_crd_js_files
 
 #
 # AppRemoting Files

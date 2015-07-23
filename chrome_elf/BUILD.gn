@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/win/manifest.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
 
@@ -12,6 +13,14 @@ process_version("chrome_elf_resources") {
   output = "$target_gen_dir/chrome_elf_version.rc"
 }
 
+# This manifest matches what GYP produces. It may not even be necessary.
+windows_manifest("chrome_elf_manifest") {
+  sources = [
+    as_invoker_manifest,
+  ]
+  type = "dll"
+}
+
 shared_library("chrome_elf") {
   sources = [
     "chrome_elf_main.cc",
@@ -20,6 +29,7 @@ shared_library("chrome_elf") {
   deps = [
     ":blacklist",
     ":breakpad",
+    ":chrome_elf_manifest",
     ":lib",
     ":chrome_elf_resources",
   ]

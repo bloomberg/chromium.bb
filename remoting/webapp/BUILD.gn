@@ -6,6 +6,7 @@
 
 import("//build/config/features.gni")
 import("//remoting/webapp/build_template.gni")
+import("//remoting/webapp/files.gni")
 
 group("webapp") {
   deps = [
@@ -81,4 +82,66 @@ app_remoting_webapp("ar_sample_app") {
 app_remoting_shared_module("ar_shared_module") {
   #app_client_id = "sample_client_id"
   app_name = "shared_module"
+}
+
+# GYP version: remoting/remoting_tests.gypi:remoting_browser_test_resources
+copy("browser_test_resources") {
+  sources = remoting_webapp_browsertest_main_html_extra_files
+  outputs = [
+    "$root_out_dir/remoting/browser_test_resources/{{source_file_part}}",
+  ]
+}
+
+remoting_unit_test_out_dir = "$root_out_dir/remoting/unittests"
+
+group("unit_tests") {
+  data_deps = [
+    ":blanketjs",
+    ":js_files",
+    ":qunit",
+    ":sinonjs",
+  ]
+}
+
+copy("js_files") {
+  # This list corresponds to webapp_js_files in remoting_webapp_unittests
+  # target in GYP.
+  sources = remoting_webapp_unittest_html_all_js_files +
+            remoting_webapp_wcs_sandbox_html_js_files +
+            remoting_webapp_background_html_js_files +
+            remoting_webapp_unittests_all_files
+  outputs = [
+    "$remoting_unit_test_out_dir/{{source_file_part}}",
+  ]
+}
+
+copy("blanketjs") {
+  sources = [
+    "//third_party/blanketjs/src/blanket.js",
+    "//third_party/blanketjs/src/qunit_adapter.js",
+  ]
+  outputs = [
+    "$remoting_unit_test_out_dir/blanketjs/{{source_file_part}}",
+  ]
+}
+
+copy("sinonjs") {
+  sources = [
+    "//third_party/sinonjs/src/sinon-qunit.js",
+    "//third_party/sinonjs/src/sinon.js",
+  ]
+  outputs = [
+    "$remoting_unit_test_out_dir/sinonjs/{{source_file_part}}",
+  ]
+}
+
+copy("qunit") {
+  sources = [
+    "//third_party/qunit/src/browser_test_harness.js",
+    "//third_party/qunit/src/qunit.css",
+    "//third_party/qunit/src/qunit.js",
+  ]
+  outputs = [
+    "$remoting_unit_test_out_dir/qunit/{{source_file_part}}",
+  ]
 }

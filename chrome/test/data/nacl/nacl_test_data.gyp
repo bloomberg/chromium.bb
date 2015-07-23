@@ -8,6 +8,7 @@
   ],
   'targets': [
     {
+      # TODO bug 512902 this needs to be ported to GN.
       'target_name': 'shared_test_files',
       'type': 'none',
       'variables': {
