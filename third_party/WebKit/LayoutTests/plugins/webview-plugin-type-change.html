@@ -6,9 +6,11 @@
     border: 1px solid black;
   }
 </style>
-<embed id="plugin" type="application/x-plugin-placeholder-test"></embed>
+<embed id="plugin"></embed>
 <script>
 onload = function() {
+    document.getElementById("plugin").setAttribute('type', 'application/x-webkit-test-netscape');
+
     if (window.testRunner) {
         window.testRunner.waitUntilDone();
         // Need to paint two frames in order to allow the plugin to propery load.

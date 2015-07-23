@@ -94,9 +94,13 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
-        if (!layoutObject())
+        if (layoutObject()) {
+            setNeedsWidgetUpdate(true);
+            layoutObject()->setNeedsLayoutAndFullPaintInvalidation("Embed type changed");
+        } else {
             requestPluginCreationWithoutLayoutObjectIfPossible();
-    } else if (name == codeAttr) {
+        }
+    } else if (name == codeAttr) { // TODO(schenney): Remove this? It's not in the spec and we're not in the HTMLAppletElement hierarchy
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
     } else if (name == srcAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);

@@ -3547,6 +3547,8 @@ crbug.com/509025 [ Yosemite ] fast/text/word-break-run-rounding.html [ NeedsReba
 crbug.com/509025 [ Yosemite ] fast/text/word-break-soft-hyphen.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] fast/text/zero-font-size.html [ NeedsRebaseline ]
 
+crbug.com/512924 plugins/webview-plugin-type-change.html [ NeedsRebaseline ]
+
 # GrGLConvolutionEffect optimization causes blink layout test image differences
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
