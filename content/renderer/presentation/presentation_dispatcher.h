@@ -67,7 +67,6 @@ class CONTENT_EXPORT PresentationDispatcher
   virtual void setDefaultPresentationUrl(const blink::WebString& url);
 
   // RenderFrameObserver implementation.
-  void DidChangeDefaultPresentation() override;
   void DidCommitProvisionalLoad(
       bool is_new_navigation,
       bool is_same_page_navigation) override;

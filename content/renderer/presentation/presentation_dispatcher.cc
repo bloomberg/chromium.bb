@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
@@ -49,13 +48,6 @@ blink::WebPresentationSessionState GetWebPresentationSessionStateFromMojo(
 
   NOTREACHED();
   return blink::WebPresentationSessionState::Disconnected;
-}
-
-GURL GetPresentationURLFromFrame(content::RenderFrame* frame) {
-  DCHECK(frame);
-
-  GURL url(frame->GetWebFrame()->document().defaultPresentationURL());
-  return url.is_valid() ? url : GURL();
 }
 
 presentation::SessionMessage* GetMojoSessionMessage(
@@ -322,14 +314,6 @@ void PresentationDispatcher::setDefaultPresentationUrl(
 {
     ConnectToPresentationServiceIfNeeded();
     presentation_service_->SetDefaultPresentationURL(url.utf8());
-}
-
-// TODO(mlamouri): remove this, see https://crbug.com/510964
-void PresentationDispatcher::DidChangeDefaultPresentation() {
-  GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
-
-  ConnectToPresentationServiceIfNeeded();
-  presentation_service_->SetDefaultPresentationURL(presentation_url.spec());
 }
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
