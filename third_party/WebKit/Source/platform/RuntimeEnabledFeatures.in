@@ -159,6 +159,7 @@ ThreadedParserDataReceiver
 Touch status=stable
 TouchIconLoading
 TrustedEvents status=experimental
+TrustedEventsDefaultAction
 UnsafeES3APIs
 UnsandboxedAuxiliary status=stable
 UserSelectAll status=experimental

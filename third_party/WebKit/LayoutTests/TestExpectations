@@ -517,6 +517,7 @@ crbug.com/452018 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout
 # Disable KeyboardEvent key tests till https://codereview.chromium.org/929053004/ lands
 crbug.com/227231 fast/events/keyboardevent-key.html [ Failure Pass ]
 crbug.com/227231 virtual/pointerevent/fast/events/keyboardevent-key.html [ Failure Pass ]
+crbug.com/227231 virtual/trustedeventsdefaultaction/fast/events/keyboardevent-key.html [ Failure Pass ]
 
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
@@ -529,6 +530,7 @@ crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-4x.html [ Crash Pass ]
 
 crbug.com/489548 fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489548 virtual/pointerevent/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
+crbug.com/489548 virtual/trustedeventsdefaultaction/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489556 virtual/pointerevent/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
 
 crbug.com/467649 webaudio/audionode-disconnect-audioparam.html [ Pass Failure ]
@@ -3010,6 +3012,7 @@ crbug.com/509025 [ Yosemite ] fast/text/atsui-rtl-override-selection.html [ Imag
 crbug.com/509025 [ Yosemite ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/display_list_2d_canvas/fast/canvas/canvas-composite-video.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/reveal-link-when-focused.html [ ImageOnlyFailure ]
+crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/reveal-link-when-focused.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/scrollbars/short-scrollbar.html [ ImageOnlyFailure ]
@@ -3380,6 +3383,8 @@ crbug.com/509025 [ Yosemite ] transforms/3d/general/perspective-non-layer.html [
 crbug.com/509025 [ Yosemite ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/autoscroll.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/context-no-deselect.html [ Failure ]
+crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/autoscroll.html [ Failure ]
+crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/text/aat-morx.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] fast/text/apply-start-width-after-skipped-text.html [ NeedsRebaseline ]
