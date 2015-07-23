@@ -1663,7 +1663,7 @@ if (!is_android) {
               ".",
               "//chrome")
     }
-    if (!enable_plugin_installation) {
+    if (enable_plugins && !enable_plugin_installation) {
       sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
     }
   }
