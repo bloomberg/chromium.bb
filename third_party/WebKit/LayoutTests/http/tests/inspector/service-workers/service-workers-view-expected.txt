@@ -6,9 +6,19 @@ Register ServiceWorker for scope1
 127.0.0.1
 
 Scope: /inspector/service-workers/resources/scope1/
+State
 activated
-inspectrunning
-Script: /inspector/service-workers/resources/service-worker-empty.js
+Worker
+
+running
+inspect
+Script URL
+/inspector/service-workers/resources/service-worker-empty.js
+Updated
+RESPONSE-TIME
+Last-Modified
+LAST-MODIFIED
+Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
 
@@ -18,16 +28,36 @@ Register ServiceWorker for scope2
 127.0.0.1
 
 Scope: /inspector/service-workers/resources/scope1/
+State
 activated
-inspectrunning
-Script: /inspector/service-workers/resources/service-worker-empty.js
+Worker
+
+running
+inspect
+Script URL
+/inspector/service-workers/resources/service-worker-empty.js
+Updated
+RESPONSE-TIME
+Last-Modified
+LAST-MODIFIED
+Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
 
 Scope: /inspector/service-workers/resources/scope2/
+State
 activated
-inspectrunning
-Script: /inspector/service-workers/resources/service-worker-empty.js
+Worker
+
+running
+inspect
+Script URL
+/inspector/service-workers/resources/service-worker-empty.js
+Updated
+RESPONSE-TIME
+Last-Modified
+LAST-MODIFIED
+Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
 
@@ -37,16 +67,36 @@ Unegister ServiceWorker for scope1
 127.0.0.1
 
 Scope: /inspector/service-workers/resources/scope1/ - deleted
+State
 redundant
-inspectrunning
-Script: /inspector/service-workers/resources/service-worker-empty.js
+Worker
+
+running
+inspect
+Script URL
+/inspector/service-workers/resources/service-worker-empty.js
+Updated
+RESPONSE-TIME
+Last-Modified
+LAST-MODIFIED
+Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
 
 Scope: /inspector/service-workers/resources/scope2/
+State
 activated
-inspectrunning
-Script: /inspector/service-workers/resources/service-worker-empty.js
+Worker
+
+running
+inspect
+Script URL
+/inspector/service-workers/resources/service-worker-empty.js
+Updated
+RESPONSE-TIME
+Last-Modified
+LAST-MODIFIED
+Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
 

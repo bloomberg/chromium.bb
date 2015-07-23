@@ -44,7 +44,7 @@ InspectorTest.dumpServiceWorkersView = function(scopes)
         if (!expectedTitles.some(function(expectedTitle) { return title.indexOf(expectedTitle) != -1; }))
             continue;
         results.push(title);
-        var versionElements = registrationElement.querySelectorAll(".service-workers-version-row");
+        var versionElements = registrationElement.querySelectorAll(".service-workers-versions-panel");
         for (var j = 0; j < versionElements.length; j++) {
             if (versionElements[j].innerText.length)
                 results.push(versionElements[j].innerText);
