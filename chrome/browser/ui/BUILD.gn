@@ -61,7 +61,6 @@ source_set("ui") {
     "//skia",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
-    "//third_party/libxml",
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/base",

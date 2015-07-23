@@ -38,7 +38,6 @@ include_rules = [
 
   # Allow inclusion of third-party code:
   "+third_party/hunspell",
-  "+third_party/libxml",
   "+third_party/mojo/src/mojo/public",
   "+third_party/skia",
 

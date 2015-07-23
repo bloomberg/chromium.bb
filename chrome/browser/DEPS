@@ -163,11 +163,12 @@ include_rules = [
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
 
   # Other libraries.
-  "+libxml",  # For search engine definition parsing.
+  "+libxml",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/icu/source/common/unicode",
   "+third_party/icu/source/i18n/unicode",
   "+third_party/leveldatabase",
+  "+third_party/libxml",
   "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/re2",

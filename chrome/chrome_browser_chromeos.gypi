@@ -1194,7 +1194,6 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libevent/libevent.gyp:libevent',
         '../third_party/libusb/libusb.gyp:libusb',
-        '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',
         '../third_party/re2/re2.gyp:re2',

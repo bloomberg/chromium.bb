@@ -8,5 +8,6 @@ include_rules = [
   "+extensions/common",
   "+skia/ext",
   "+media",
+  "+third_party/libxml",
   "+third_party/zlib/google",
 ]
