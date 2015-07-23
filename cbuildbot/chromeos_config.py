@@ -404,6 +404,7 @@ _x86_internal_release_boards = frozenset([
     'heli',
     'jecht',
     'kip',
+    'kunimitsu',
     'lakitu',
     'leon',
     'link',
@@ -614,6 +615,7 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Canaries (Group)
         'glados-release-group',
+        'kunimitsu-release-group',
         'pineview-freon-release-group',
         'rambi-d-release-group',
         'rambi-e-release-group',
@@ -2520,6 +2522,13 @@ def GetConfig():
       important=False,
   )
 
+  # kunimitsu-based boards
+  _AddGroupConfig(
+      'kunimitsu', 'kunimitsu', (
+      ),
+      important=False,
+  )
+
   # Factory and Firmware releases much inherit from these classes.
   # Modifications for these release builders should go here.
 
@@ -2647,6 +2656,7 @@ def GetConfig():
       'heli',
       'jecht',
       'kip',
+      'kunimitsu',
       'leon',
       'link',
       'ninja',

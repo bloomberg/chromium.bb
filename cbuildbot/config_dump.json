@@ -9683,6 +9683,244 @@
             "-chrome_internal"
         ]
     },
+    "kunimitsu-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "kunimitsu"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "name": "kunimitsu-chrome-pfq"
+    },
+    "kunimitsu-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "kunimitsu"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "kunimitsu-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kunimitsu-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "kunimitsu"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "kunimitsu-compile-only-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kunimitsu-depthcharge-firmware": {
+        "_template": "depthcharge-firmware",
+        "boards": [
+            "kunimitsu"
+        ],
+        "manifest": "official.xml",
+        "name": "kunimitsu-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
+    },
+    "kunimitsu-depthcharge-full-firmware": {
+        "_template": "depthcharge-full-firmware",
+        "boards": [
+            "kunimitsu"
+        ],
+        "manifest": "official.xml",
+        "name": "kunimitsu-depthcharge-full-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
+    },
+    "kunimitsu-full": {
+        "_template": "full",
+        "boards": [
+            "kunimitsu"
+        ],
+        "name": "kunimitsu-full",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kunimitsu-full-group": {
+        "_template": "full",
+        "boards": [
+            "kunimitsu"
+        ],
+        "child_configs": [
+            {
+                "_template": "full",
+                "boards": [
+                    "kunimitsu"
+                ],
+                "grouped": true,
+                "name": "kunimitsu-full",
+                "prebuilts": "public",
+                "useflags": [
+                    "-chrome_internal"
+                ]
+            }
+        ],
+        "description": "Full Builds; Group config (boards: kunimitsu)",
+        "name": "kunimitsu-full-group",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kunimitsu-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "kunimitsu"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "kunimitsu-no-vmtest-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kunimitsu-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "kunimitsu"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "kunimitsu-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "kunimitsu-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "kunimitsu"
+        ],
+        "name": "kunimitsu-payloads"
+    },
+    "kunimitsu-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "kunimitsu"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "kunimitsu-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kunimitsu-release": {
+        "_template": "release",
+        "boards": [
+            "kunimitsu"
+        ],
+        "name": "kunimitsu-release"
+    },
+    "kunimitsu-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "kunimitsu"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "kunimitsu"
+                ],
+                "grouped": true,
+                "name": "kunimitsu-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "kunimitsu"
+                ],
+                "grouped": true,
+                "name": "kunimitsu-release-afdo-use"
+            }
+        ],
+        "name": "kunimitsu-release-afdo"
+    },
+    "kunimitsu-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "kunimitsu"
+        ],
+        "name": "kunimitsu-release-afdo-generate"
+    },
+    "kunimitsu-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "kunimitsu"
+        ],
+        "name": "kunimitsu-release-afdo-use"
+    },
+    "kunimitsu-release-group": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "kunimitsu"
+        ],
+        "child_configs": [
+            {
+                "_template": "release",
+                "boards": [
+                    "kunimitsu"
+                ],
+                "grouped": true,
+                "name": "kunimitsu-release"
+            }
+        ],
+        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu)",
+        "name": "kunimitsu-release-group"
+    },
+    "kunimitsu-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "kunimitsu"
+        ],
+        "manifest": "official.xml",
+        "name": "kunimitsu-tot-chrome-pfq-informational"
+    },
+    "kunimitsu-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "kunimitsu"
+        ],
+        "name": "kunimitsu-tot-chromium-pfq-informational",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "lakitu-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
