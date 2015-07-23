@@ -137,6 +137,8 @@ private:
 
     bool emitsObjectReplacementCharacter() const { return m_behavior & TextIteratorEmitsObjectReplacementCharacter; }
 
+    bool excludesAutofilledValue() const { return m_behavior & TextIteratorExcludeAutofilledValue; }
+
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
     RawPtrWillBeMember<Node> m_node;

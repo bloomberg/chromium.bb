@@ -69,12 +69,16 @@ TextIteratorBehaviorFlags adjustBehaviorFlags(TextIteratorBehaviorFlags);
 template <>
 TextIteratorBehaviorFlags adjustBehaviorFlags<EditingStrategy>(TextIteratorBehaviorFlags flags)
 {
+    if (flags & TextIteratorForSelectionToString)
+        return flags | TextIteratorExcludeAutofilledValue;
     return flags;
 }
 
 template <>
 TextIteratorBehaviorFlags adjustBehaviorFlags<EditingInComposedTreeStrategy>(TextIteratorBehaviorFlags flags)
 {
+    if (flags & TextIteratorForSelectionToString)
+        flags |= TextIteratorExcludeAutofilledValue;
     return flags & ~(TextIteratorEntersOpenShadowRoots | TextIteratorEntersTextControls);
 }
 
@@ -430,6 +434,14 @@ static bool hasVisibleTextNode(LayoutText* layoutObject)
 template<typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::handleTextNode()
 {
+    if (excludesAutofilledValue()) {
+        HTMLTextFormControlElement* control = enclosingTextFormControl(m_node);
+        // For security reason, we don't expose suggested value if it is
+        // auto-filled.
+        if (control && control->isAutofilled())
+            return true;
+    }
+
     Text* textNode = toText(m_node);
     LayoutText* layoutObject = textNode->layoutObject();
 
