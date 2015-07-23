@@ -400,9 +400,6 @@ private:
     PlatformMouseEvent m_mouseDown;
     RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
-    RefPtrWillBeMember<Node> m_latchedWheelEventNode;
-    bool m_widgetIsLatched;
-
     RefPtrWillBeMember<Node> m_previousWheelScrolledNode;
 
     // The target of each active touch point indexed by the touch ID.

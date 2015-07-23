@@ -216,7 +216,6 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_accumulatedRootOverscroll(FloatSize())
     , m_mousePositionIsUnknown(true)
     , m_mouseDownTimestamp(0)
-    , m_widgetIsLatched(false)
     , m_touchPressed(false)
     , m_inPointerCanceledState(false)
     , m_scrollGestureHandlingNode(nullptr)
@@ -246,7 +245,6 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_clickNode);
     visitor->trace(m_dragTarget);
     visitor->trace(m_frameSetBeingResized);
-    visitor->trace(m_latchedWheelEventNode);
     visitor->trace(m_previousWheelScrolledNode);
     visitor->trace(m_scrollbarHandlingScrollGesture);
     visitor->trace(m_targetForTouchID);
@@ -289,7 +287,6 @@ void EventHandler::clear()
     m_mousePressed = false;
     m_capturesDragging = false;
     m_capturingMouseEventsNode = nullptr;
-    m_latchedWheelEventNode = nullptr;
     m_previousWheelScrolledNode = nullptr;
     m_targetForTouchID.clear();
     m_touchSequenceDocument.clear();
@@ -1735,24 +1732,10 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (node && node->isTextNode())
         node = ComposedTreeTraversal::parent(*node);
 
-    bool isOverWidget;
-    if (event.useLatchedEventNode()) {
-        if (!m_latchedWheelEventNode) {
-            m_latchedWheelEventNode = node;
-            m_widgetIsLatched = result.isOverWidget();
-        } else {
-            node = m_latchedWheelEventNode.get();
-        }
+    if (m_previousWheelScrolledNode)
+        m_previousWheelScrolledNode = nullptr;
 
-        isOverWidget = m_widgetIsLatched;
-    } else {
-        if (m_latchedWheelEventNode)
-            m_latchedWheelEventNode = nullptr;
-        if (m_previousWheelScrolledNode)
-            m_previousWheelScrolledNode = nullptr;
-
-        isOverWidget = result.isOverWidget();
-    }
+    bool isOverWidget = result.isOverWidget();
 
     if (node) {
         // Figure out which view to send the event to.
@@ -1809,8 +1792,7 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
         && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition).didScroll)
         wheelEvent->setDefaultHandled();
 
-    if (!m_latchedWheelEventNode)
-        m_previousWheelScrolledNode = stopNode;
+    m_previousWheelScrolledNode = stopNode;
 }
 
 bool EventHandler::handleGestureShowPress()

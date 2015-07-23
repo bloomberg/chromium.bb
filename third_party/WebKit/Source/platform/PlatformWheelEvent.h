@@ -115,11 +115,8 @@ public:
 #if OS(MACOSX)
     PlatformWheelEventPhase phase() const { return m_phase; }
     PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
-    bool useLatchedEventNode() const { return m_momentumPhase == PlatformWheelEventPhaseBegan || m_momentumPhase == PlatformWheelEventPhaseChanged; }
     bool canRubberbandLeft() const { return m_canRubberbandLeft; }
     bool canRubberbandRight() const { return m_canRubberbandRight; }
-#else
-    bool useLatchedEventNode() const { return false; }
 #endif
 
 protected:
