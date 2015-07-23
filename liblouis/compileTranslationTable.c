@@ -350,6 +350,9 @@ static const char *opcodeNames[CTO_None] = {
 	"lastwordtransnotebefore",
 	"lastwordtransnoteafter",
 	"lentransnotephrase",
+
+	"capsmodechars",
+	"emphmodechars",
 	
   "begcomp",
   "compbegemph1",
@@ -3906,7 +3909,7 @@ compileRule (FileInfo * nested)
   TranslationTableCharacterAttributes after = 0;
   TranslationTableCharacterAttributes before = 0;
 	TranslationTableCharacter *c = NULL;
-  int k, i;
+  int k;
 
   noback = nofor = 0;
 doOpcode:
@@ -3950,7 +3953,6 @@ doOpcode:
 				 &table->capitalSign);
       break;
 	  case CTO_FirstLetterCaps:
-    case CTO_BeginCapitalSign:
       ok =
 	compileBrailleIndicator (nested, "begin capital sign",
 				 CTO_BeginCapitalRule,
@@ -3960,18 +3962,19 @@ doOpcode:
       ok = table->lenBeginCaps = compileNumber (nested);
       break;
     case CTO_CapsWord:
+    case CTO_BeginCapitalSign:
       ok =
 	compileBrailleIndicator (nested, "capital word", CTO_CapsWordRule,
 				 &table->CapsWord);
       break;
 	  
 	case CTO_CapsWordStop:
+    case CTO_EndCapitalSign:
 		ok = compileBrailleIndicator(nested, "capital word stop",
 		                             CTO_CapsWordStopRule, &table->CapsWordStop);
 		break;
 	
 	  case CTO_LastLetterCaps:
-    case CTO_EndCapitalSign:
       ok =
 	compileBrailleIndicator (nested, "end capitals sign",
 				 CTO_EndCapitalRule, &table->endCapitalSign);
@@ -4650,6 +4653,49 @@ doOpcode:
 		ok = table->lenTransNotePhrase = compileNumber(nested);
 		break;
 
+	case CTO_CapsModeChars:
+	
+		c = NULL;
+		ok = 1;
+		if(getRuleCharsText(nested, &ruleChars))
+		{
+			for(k = 0; k < ruleChars.length; k++)
+			{
+				c = compile_findCharOrDots(ruleChars.chars[k], 0);
+				if(c)
+					c->attributes |= CTC_CapsMode;
+				else
+				{
+					compileError(nested, "Capital mode character undefined");
+					ok = 0;
+					break;
+				}
+			}
+		}	
+		break;
+
+	case CTO_EmphModeChars:
+	
+		c = NULL;
+		ok = 1;
+		if(getRuleCharsText(nested, &ruleChars))
+		{
+			for(k = 0; k < ruleChars.length; k++)
+			{
+				c = compile_findCharOrDots(ruleChars.chars[k], 0);
+				if(c)
+					c->attributes |= CTC_EmphMode;
+				else
+				{
+					compileError(nested, "Emphasis mode character undefined");
+					ok = 0;
+					break;
+				}
+			}
+		}	
+		table->usesEmphMode = 1;
+		break;
+	  
     case CTO_BegComp:
       ok =
 	compileBrailleIndicator (nested, "begin computer braille",
@@ -4688,6 +4734,12 @@ doOpcode:
 	if (getRuleDotsPattern (nested, &ruleDots))
 	  if (!addRule (nested, opcode, &ruleChars, &ruleDots, after, before))
 	    ok = 0;
+		if(opcode == CTO_MidNum)
+		{
+			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
+			if(c)
+				c->attributes |= CTC_NumericMode;
+		}
       break;
     case CTO_CompDots:
     case CTO_Comp6:
@@ -4903,6 +4955,12 @@ doOpcode:
 	    if (!addRule
 		(nested, opcode, &ruleChars, &ruleDots, after, before))
 	      ok = 0;
+		if(opcode == CTO_DecPoint)
+		{
+			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
+			if(c)
+				c->attributes |= CTC_NumericMode;
+		}
 	  }
 //		if(opcode != CTO_DecPoint)
 //		{
