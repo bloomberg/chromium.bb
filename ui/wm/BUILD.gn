@@ -92,6 +92,16 @@ component("wm") {
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
   }
+
+  if (is_android) {
+    sources -= [
+      "core/nested_accelerator_controller.cc",
+      "core/nested_accelerator_controller.h",
+      "core/nested_accelerator_delegate.h",
+      "core/nested_accelerator_dispatcher.cc",
+      "core/nested_accelerator_dispatcher.h",
+    ]
+  }
 }
 
 static_library("test_support") {

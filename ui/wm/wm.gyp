@@ -100,6 +100,15 @@
             '../../build/linux/system.gyp:x11',
           ],
         }],
+        ['OS=="android"', {
+          'sources!': [
+            'core/nested_accelerator_controller.cc',
+            'core/nested_accelerator_controller.h',
+            'core/nested_accelerator_delegate.h',
+            'core/nested_accelerator_dispatcher.cc',
+            'core/nested_accelerator_dispatcher.h',
+          ],
+        }],
       ],
     },
     {
