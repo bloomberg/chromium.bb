@@ -92,12 +92,10 @@ void LayoutFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
     const UChar character = '0';
     const String characterAsString = String(&character, 1);
     const Font& font = style()->font();
-    // FIXME: Remove the need for this const_cast by making constructTextRun take a const LayoutObject*.
-    LayoutFileUploadControl* layoutObject = const_cast<LayoutFileUploadControl*>(this);
-    float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(layoutObject, font, characterAsString, styleRef(), TextRun::AllowTrailingExpansion));
+    float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(font, characterAsString, styleRef(), TextRun::AllowTrailingExpansion));
 
     const String label = toHTMLInputElement(node())->locale().queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
-    float defaultLabelWidth = font.width(constructTextRun(layoutObject, font, label, styleRef(), TextRun::AllowTrailingExpansion));
+    float defaultLabelWidth = font.width(constructTextRun(font, label, styleRef(), TextRun::AllowTrailingExpansion));
     if (HTMLInputElement* button = uploadButton()) {
         if (LayoutObject* buttonLayoutObject = button->layoutObject())
             defaultLabelWidth += buttonLayoutObject->maxPreferredLogicalWidth() + afterButtonSpacing;

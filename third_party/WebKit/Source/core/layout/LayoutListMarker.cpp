@@ -1257,7 +1257,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
         } else {
             LayoutUnit itemWidth = font.width(m_text);
             UChar suffixSpace[2] = { listMarkerSuffix(type, m_listItem->value()), ' ' };
-            LayoutUnit suffixSpaceWidth = font.width(constructTextRun(this, font, suffixSpace, 2, styleRef(), style()->direction()));
+            LayoutUnit suffixSpaceWidth = font.width(constructTextRun(font, suffixSpace, 2, styleRef(), style()->direction()));
             logicalWidth = itemWidth + suffixSpaceWidth;
         }
         break;
@@ -1435,7 +1435,7 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
         const Font& font = style()->font();
         int itemWidth = font.width(m_text);
         UChar suffixSpace[2] = { listMarkerSuffix(type, m_listItem->value()), ' ' };
-        int suffixSpaceWidth = font.width(constructTextRun(this, font, suffixSpace, 2, styleRef(), style()->direction()));
+        int suffixSpaceWidth = font.width(constructTextRun(font, suffixSpace, 2, styleRef(), style()->direction()));
         relativeRect = IntRect(0, 0, itemWidth + suffixSpaceWidth, font.fontMetrics().height());
     }
 

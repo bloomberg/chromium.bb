@@ -715,7 +715,7 @@ ALWAYS_INLINE float LayoutText::widthFromFont(const Font& f, int start, int len,
             return combineText->combinedTextWidth(f);
     }
 
-    TextRun run = constructTextRun(const_cast<LayoutText*>(this), f, this, start, len, styleRef(), textDirection);
+    TextRun run = constructTextRun(f, this, start, len, styleRef(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());
     run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
@@ -782,7 +782,7 @@ void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
             const UChar spaceChar = spaceCharacter;
-            TextRun run = constructTextRun(this, font, &spaceChar, 1, styleRef(), direction);
+            TextRun run = constructTextRun(font, &spaceChar, 1, styleRef(), direction);
             run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
             float spaceWidth = font.width(run);
             floatMaxWidth -= spaceWidth;
@@ -1002,7 +1002,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             if (isSpace && (f.fontDescription().typesettingFeatures() & Kerning)) {
                 ASSERT(textDirection >=0 && textDirection <= 1);
                 if (!cachedWordTrailingSpaceWidth[textDirection])
-                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(this, f, &spaceCharacter, 1, styleToUse, textDirection)) + wordSpacing;
+                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(f, &spaceCharacter, 1, styleToUse, textDirection)) + wordSpacing;
                 wordTrailingSpaceWidth = cachedWordTrailingSpaceWidth[textDirection];
             }
 
@@ -1071,7 +1071,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                     m_maxWidth = currMaxWidth;
                 currMaxWidth = 0;
             } else {
-                TextRun run = constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
+                TextRun run = constructTextRun(f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
                 run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
                 ASSERT(run.charactersLength() >= run.length());
@@ -1492,7 +1492,7 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, LayoutUnit x
             w = widthFromFont(f, from, len, xPos.toFloat(), 0, textDirection, fallbackFonts, glyphBounds);
         }
     } else {
-        TextRun run = constructTextRun(const_cast<LayoutText*>(this), f, this, from, len, styleRef(), textDirection);
+        TextRun run = constructTextRun(f, this, from, len, styleRef(), textDirection);
         run.setCharactersLength(textLength() - from);
         ASSERT(run.charactersLength() >= run.length());
 

@@ -230,7 +230,7 @@ inline UChar LayoutText::characterAt(unsigned i) const
 inline float LayoutText::hyphenWidth(const Font& font, TextDirection direction)
 {
     const ComputedStyle& style = styleRef();
-    return font.width(constructTextRun(this, font, style.hyphenString().string(), style, direction));
+    return font.width(constructTextRun(font, style.hyphenString().string(), style, direction));
 }
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, isText());

@@ -1172,7 +1172,7 @@ static inline void stripTrailingSpace(LayoutUnit& inlineMax, LayoutUnit& inlineM
 
         // FIXME: This ignores first-line.
         const Font& font = text->style()->font();
-        TextRun run = constructTextRun(text, font, &trailingWhitespaceChar, 1,
+        TextRun run = constructTextRun(font, &trailingWhitespaceChar, 1,
             text->styleRef(), text->style()->direction());
         run.setCodePath(text->canUseSimpleFontCodePath()
             ? TextRun::ForceSimple
@@ -1917,10 +1917,10 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
     // Full Stops (002E) can be used.
     ASSERT(firstLineFont.primaryFont());
     if (firstLineFont.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
-        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsisCharacter, 1, *firstLineStyle(), ellipsisDirection));
+        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(firstLineFont, &horizontalEllipsisCharacter, 1, *firstLineStyle(), ellipsisDirection));
     } else {
         selectedEllipsisStr = fullstopCharacterStr;
-        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, fullStopString, fullStopStringLength, *firstLineStyle(), ellipsisDirection));
+        firstLineEllipsisWidth = firstLineFont.width(constructTextRun(firstLineFont, fullStopString, fullStopStringLength, *firstLineStyle(), ellipsisDirection));
     }
     ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : 0;
 
@@ -1928,10 +1928,10 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
         ASSERT(font.primaryFont());
         if (font.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
             selectedEllipsisStr = ellipsisStr;
-            ellipsisWidth = font.width(constructTextRun(this, font, &horizontalEllipsisCharacter, 1, styleRef(), ellipsisDirection));
+            ellipsisWidth = font.width(constructTextRun(font, &horizontalEllipsisCharacter, 1, styleRef(), ellipsisDirection));
         } else {
             selectedEllipsisStr = fullstopCharacterStr;
-            ellipsisWidth = font.width(constructTextRun(this, font, fullStopString, fullStopStringLength, styleRef(), ellipsisDirection));
+            ellipsisWidth = font.width(constructTextRun(font, fullStopString, fullStopStringLength, styleRef(), ellipsisDirection));
         }
     }
 

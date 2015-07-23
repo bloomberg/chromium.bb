@@ -37,7 +37,7 @@
 namespace blink {
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(LayoutObject* context, const Font& font, const CharacterType* characters, int length, const ComputedStyle& style, TextDirection direction)
+static inline TextRun constructTextRunInternal(const Font& font, const CharacterType* characters, int length, const ComputedStyle& style, TextDirection direction)
 {
     TextRun::ExpansionBehavior expansion = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion;
     bool directionalOverride = style.rtlOrdering() == VisualOrder;
@@ -46,7 +46,7 @@ static inline TextRun constructTextRunInternal(LayoutObject* context, const Font
 }
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(LayoutObject* context, const Font& font, const CharacterType* characters, int length, const ComputedStyle& style, TextDirection direction, TextRunFlags flags)
+static inline TextRun constructTextRunInternal(const Font& font, const CharacterType* characters, int length, const ComputedStyle& style, TextDirection direction, TextRunFlags flags)
 {
     TextDirection textDirection = direction;
     bool directionalOverride = style.rtlOrdering() == VisualOrder;
@@ -62,59 +62,59 @@ static inline TextRun constructTextRunInternal(LayoutObject* context, const Font
     return run;
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const LChar* characters, int length, const ComputedStyle& style, TextDirection direction)
+TextRun constructTextRun(const Font& font, const LChar* characters, int length, const ComputedStyle& style, TextDirection direction)
 {
-    return constructTextRunInternal(context, font, characters, length, style, direction);
+    return constructTextRunInternal(font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const UChar* characters, int length, const ComputedStyle& style, TextDirection direction)
+TextRun constructTextRun(const Font& font, const UChar* characters, int length, const ComputedStyle& style, TextDirection direction)
 {
-    return constructTextRunInternal(context, font, characters, length, style, direction);
+    return constructTextRunInternal(font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, const ComputedStyle& style, TextDirection direction)
+TextRun constructTextRun(const Font& font, const LayoutText* text, const ComputedStyle& style, TextDirection direction)
 {
     if (text->hasEmptyText())
-        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), 0, style, direction);
+        return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0, style, direction);
     if (text->is8Bit())
-        return constructTextRunInternal(context, font, text->characters8(), text->textLength(), style, direction);
-    return constructTextRunInternal(context, font, text->characters16(), text->textLength(), style, direction);
+        return constructTextRunInternal(font, text->characters8(), text->textLength(), style, direction);
+    return constructTextRunInternal(font, text->characters16(), text->textLength(), style, direction);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const ComputedStyle& style, TextDirection direction)
+TextRun constructTextRun(const Font& font, const LayoutText* text, unsigned offset, unsigned length, const ComputedStyle& style, TextDirection direction)
 {
     ASSERT(offset + length <= text->textLength());
     if (text->hasEmptyText())
-        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), 0, style, direction);
+        return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0, style, direction);
     if (text->is8Bit())
-        return constructTextRunInternal(context, font, text->characters8() + offset, length, style, direction);
-    return constructTextRunInternal(context, font, text->characters16() + offset, length, style, direction);
+        return constructTextRunInternal(font, text->characters8() + offset, length, style, direction);
+    return constructTextRunInternal(font, text->characters16() + offset, length, style, direction);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const String& string, const ComputedStyle& style, TextDirection direction, TextRunFlags flags)
+TextRun constructTextRun(const Font& font, const String& string, const ComputedStyle& style, TextDirection direction, TextRunFlags flags)
 {
     unsigned length = string.length();
     if (!length)
-        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), length, style, direction, flags);
+        return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), length, style, direction, flags);
     if (string.is8Bit())
-        return constructTextRunInternal(context, font, string.characters8(), length, style, direction, flags);
-    return constructTextRunInternal(context, font, string.characters16(), length, style, direction, flags);
+        return constructTextRunInternal(font, string.characters8(), length, style, direction, flags);
+    return constructTextRunInternal(font, string.characters16(), length, style, direction, flags);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const String& string, const ComputedStyle& style, TextRunFlags flags)
+TextRun constructTextRun(const Font& font, const String& string, const ComputedStyle& style, TextRunFlags flags)
 {
-    return constructTextRun(context, font, string, style, string.isEmpty() || string.is8Bit() ? LTR : determineDirectionality(string), flags);
+    return constructTextRun(font, string, style, string.isEmpty() || string.is8Bit() ? LTR : determineDirectionality(string), flags);
 }
 
-TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const ComputedStyle& style)
+TextRun constructTextRun(const Font& font, const LayoutText* text, unsigned offset, unsigned length, const ComputedStyle& style)
 {
     ASSERT(offset + length <= text->textLength());
     if (text->hasEmptyText())
-        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), 0, style, LTR);
+        return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0, style, LTR);
     if (text->is8Bit())
-        return constructTextRunInternal(context, font, text->characters8() + offset, length, style, LTR);
+        return constructTextRunInternal(font, text->characters8() + offset, length, style, LTR);
 
-    TextRun run = constructTextRunInternal(context, font, text->characters16() + offset, length, style, LTR);
+    TextRun run = constructTextRunInternal(font, text->characters16() + offset, length, style, LTR);
     run.setDirection(directionForRun(run));
     return run;
 }

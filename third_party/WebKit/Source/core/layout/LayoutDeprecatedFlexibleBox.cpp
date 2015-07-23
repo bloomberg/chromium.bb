@@ -900,7 +900,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
 
         DEFINE_STATIC_LOCAL(AtomicString, ellipsisStr, (&horizontalEllipsisCharacter, 1));
         const Font& font = style(numVisibleLines == 1)->font();
-        float totalWidth = font.width(constructTextRun(this, font, &horizontalEllipsisCharacter, 1, styleRef(), style()->direction()));
+        float totalWidth = font.width(constructTextRun(font, &horizontalEllipsisCharacter, 1, styleRef(), style()->direction()));
 
         // See if this width can be accommodated on the last visible line
         LayoutBlockFlow& destBlock = lastVisibleLine->block();

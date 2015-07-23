@@ -36,7 +36,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
     if (paintInfo.phase == PaintPhaseForeground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutFileUploadControl, paintInfo.phase)) {
         const String& displayedFilename = m_layoutFileUploadControl.fileTextValue();
         const Font& font = m_layoutFileUploadControl.style()->font();
-        TextRun textRun = constructTextRun(&m_layoutFileUploadControl, font, displayedFilename, m_layoutFileUploadControl.styleRef(), RespectDirection | RespectDirectionOverride);
+        TextRun textRun = constructTextRun(font, displayedFilename, m_layoutFileUploadControl.styleRef(), RespectDirection | RespectDirectionOverride);
         textRun.setExpansionBehavior(TextRun::AllowTrailingExpansion);
 
         // Determine where the filename should be placed

@@ -519,7 +519,7 @@ ALWAYS_INLINE float textWidth(LayoutText* text, unsigned from, unsigned len, con
     if ((!from && len == text->textLength()) || text->style()->hasTextCombine())
         return text->width(from, len, font, xPos, text->style()->direction(), fallbackFonts, glyphBounds);
 
-    TextRun run = constructTextRun(text, font, text, from, len, text->styleRef());
+    TextRun run = constructTextRun(font, text, from, len, text->styleRef());
     run.setCodePath(text->canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTabSize(!collapseWhiteSpace, text->style()->tabSize());
     run.setXPos(xPos);
@@ -584,7 +584,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
     float wordTrailingSpaceWidth = (font.fontDescription().typesettingFeatures() & Kerning) ?
-        font.width(constructTextRun(layoutText, font, &spaceCharacter, 1, style, style.direction())) + wordSpacing
+        font.width(constructTextRun(font, &spaceCharacter, 1, style, style.direction())) + wordSpacing
         : 0;
 
     UChar lastCharacter = m_layoutTextInfo.m_lineBreakIterator.lastCharacter();
