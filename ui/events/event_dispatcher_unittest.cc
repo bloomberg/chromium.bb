@@ -110,18 +110,7 @@ class TestEventHandler : public EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-class NonCancelableEvent : public Event {
- public:
-  NonCancelableEvent()
-      : Event(ui::ET_CANCEL_MODE, ui::EventTimeForNow(), 0) {
-    set_cancelable(false);
-  }
-
-  ~NonCancelableEvent() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NonCancelableEvent);
-};
+typedef CancelModeEvent NonCancelableEvent;
 
 // Destroys the dispatcher-delegate when it receives any event.
 class EventHandlerDestroyDispatcherDelegate : public TestEventHandler {
