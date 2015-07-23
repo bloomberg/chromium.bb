@@ -87,3 +87,7 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# Remove when ViewStructure is no longer duplicated (crbug.com/513229)
+-dontwarn android.view.*
+-dontwarn android.webkit.*
