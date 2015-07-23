@@ -366,9 +366,6 @@ template("app_remoting_webapp") {
 }
 
 template("app_remoting_shared_module") {
-  # TODO(garykac): Include the PNaCl plugin in the shared module once we have
-  # a GN toolchain (crbug.com/471924).
-
   locales_listfile = target_name + "_locales"
   locales_listfile_output = "$target_gen_dir/${target_name}_locales.txt"
 
