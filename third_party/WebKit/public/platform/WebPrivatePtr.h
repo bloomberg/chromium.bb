@@ -39,7 +39,19 @@
 #include "wtf/TypeTraits.h"
 #endif
 
+namespace WTF {
+template<class T> class ThreadSafeRefCounted;
+}
+
 namespace blink {
+
+// By default, the destruction of a WebPrivatePtr<> must happen on the same
+// thread that created it, but can optionally be allowed to happen on
+// another thread.
+enum WebPrivatePtrDestruction {
+    WebPrivatePtrDestructionSameThread,
+    WebPrivatePtrDestructionCrossThread,
+};
 
 #if INSIDE_BLINK
 enum LifetimeManagementType {
@@ -58,16 +70,17 @@ public:
         isRefCountedGarbageCollected ? RefCountedGarbageCollectedLifetime : GarbageCollectedLifetime;
 };
 
-template<typename T, LifetimeManagementType lifetime>
+template<typename T, WebPrivatePtrDestruction crossThreadDestruction, LifetimeManagementType lifetime>
 class PtrStorageImpl;
 
-template<typename T>
-class PtrStorageImpl<T, RefCountedLifetime> {
+template<typename T, WebPrivatePtrDestruction crossThreadDestruction>
+class PtrStorageImpl<T, crossThreadDestruction, RefCountedLifetime> {
 public:
     typedef PassRefPtr<T> BlinkPtrType;
 
     void assign(const BlinkPtrType& val)
     {
+        static_assert(crossThreadDestruction == WebPrivatePtrDestructionSameThread || WTF::IsSubclassOfTemplate<T, WTF::ThreadSafeRefCounted>::value, "Cross thread destructible class must derive from ThreadSafeRefCounted<>");
         release();
         m_ptr = val.leakRef();
     }
@@ -99,8 +112,20 @@ private:
     T* m_ptr;
 };
 
-template<typename T>
-class PtrStorageImpl<T, GarbageCollectedLifetime> {
+template <typename T, WebPrivatePtrDestruction>
+struct WebPrivatePtrPersistentStorageType {
+public:
+    using Type = Persistent<T>;
+};
+
+template <typename T>
+struct WebPrivatePtrPersistentStorageType<T, WebPrivatePtrDestructionCrossThread> {
+public:
+    using Type = CrossThreadPersistent<T>;
+};
+
+template<typename T, WebPrivatePtrDestruction crossThreadDestruction>
+class PtrStorageImpl<T, crossThreadDestruction, GarbageCollectedLifetime> {
 public:
     void assign(const RawPtr<T>& val)
     {
@@ -110,7 +135,7 @@ public:
         }
 
         if (!m_handle)
-            m_handle = new Persistent<T>();
+            m_handle = new (typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction>::Type)();
 
         (*m_handle) = val;
     }
@@ -136,19 +161,19 @@ public:
     }
 
 private:
-    Persistent<T>* m_handle;
+    typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction>::Type* m_handle;
 };
 
-template<typename T>
-class PtrStorageImpl<T, RefCountedGarbageCollectedLifetime> : public PtrStorageImpl<T, GarbageCollectedLifetime> {
+template<typename T, WebPrivatePtrDestruction crossThreadDestruction>
+class PtrStorageImpl<T, crossThreadDestruction, RefCountedGarbageCollectedLifetime> : public PtrStorageImpl<T, crossThreadDestruction, GarbageCollectedLifetime> {
 public:
-    void assign(const PassRefPtrWillBeRawPtr<T>& val) { PtrStorageImpl<T, GarbageCollectedLifetime>::assign(val.get()); }
+    void assign(const PassRefPtrWillBeRawPtr<T>& val) { PtrStorageImpl<T, crossThreadDestruction, GarbageCollectedLifetime>::assign(val.get()); }
 
-    void assign(const PtrStorageImpl& other) { PtrStorageImpl<T, GarbageCollectedLifetime>::assign(other.get()); }
+    void assign(const PtrStorageImpl& other) { PtrStorageImpl<T, crossThreadDestruction, GarbageCollectedLifetime>::assign(other.get()); }
 };
 
-template<typename T>
-class PtrStorage : public PtrStorageImpl<T, LifetimeOf<T>::value> {
+template<typename T, WebPrivatePtrDestruction crossThreadDestruction>
+class PtrStorage : public PtrStorageImpl<T, crossThreadDestruction, LifetimeOf<T>::value> {
 public:
     static PtrStorage& fromSlot(void** slot)
     {
@@ -168,7 +193,6 @@ private:
     PtrStorage(const PtrStorage&);
 };
 #endif
-
 
 // This class is an implementation detail of the Blink API. It exists to help
 // simplify the implementation of Blink interfaces that merely wrap a reference
@@ -206,7 +230,7 @@ private:
 //    WebFoo::~WebFoo() { m_private.reset(); }
 //    void WebFoo::assign(const WebFoo& other) { ... }
 //
-template <typename T>
+template <typename T, WebPrivatePtrDestruction crossThreadDestruction = WebPrivatePtrDestructionSameThread>
 class WebPrivatePtr {
 public:
     WebPrivatePtr() : m_storage(0) { }
@@ -231,20 +255,20 @@ public:
 
     void reset() { storage().release(); }
 
-    WebPrivatePtr<T>& operator=(const WebPrivatePtr<T>& other)
+    WebPrivatePtr& operator=(const WebPrivatePtr& other)
     {
         storage().assign(other.storage());
         return *this;
     }
 
-    void moveFrom(WebPrivatePtr<T>& other)
+    void moveFrom(WebPrivatePtr& other)
     {
         storage().moveFrom(other.storage());
         return;
     }
 
     template<typename U>
-    WebPrivatePtr<T>& operator=(const U& ptr)
+    WebPrivatePtr& operator=(const U& ptr)
     {
         storage().assign(ptr);
         return *this;
@@ -267,8 +291,8 @@ public:
 
 private:
 #if INSIDE_BLINK
-    PtrStorage<T>& storage() { return PtrStorage<T>::fromSlot(&m_storage); }
-    const PtrStorage<T>& storage() const { return PtrStorage<T>::fromSlot(&m_storage); }
+    PtrStorage<T, crossThreadDestruction>& storage() { return PtrStorage<T, crossThreadDestruction>::fromSlot(&m_storage); }
+    const PtrStorage<T, crossThreadDestruction>& storage() const { return PtrStorage<T, crossThreadDestruction>::fromSlot(&m_storage); }
 #endif
 
 #if !INSIDE_BLINK
@@ -276,11 +300,11 @@ private:
     // INSIDE_BLINK is set, but we need to make sure that it is not
     // used outside there; the compiler-provided version won't handle reference
     // counting properly.
-    WebPrivatePtr<T>& operator=(const WebPrivatePtr<T>& other);
+    WebPrivatePtr& operator=(const WebPrivatePtr& other);
 #endif
     // Disable the copy constructor; classes that contain a WebPrivatePtr
     // should implement their copy constructor using assign().
-    WebPrivatePtr(const WebPrivatePtr<T>&);
+    WebPrivatePtr(const WebPrivatePtr&);
 
     void* m_storage;
 };

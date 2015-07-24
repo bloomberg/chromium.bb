@@ -66,7 +66,7 @@ private:
     BLINK_PLATFORM_EXPORT void reset();
     BLINK_PLATFORM_EXPORT void assign(const WebContentDecryptionModuleResult&);
 
-    WebPrivatePtr<ContentDecryptionModuleResult> m_impl;
+    WebPrivatePtr<ContentDecryptionModuleResult, WebPrivatePtrDestructionCrossThread> m_impl;
 };
 
 } // namespace blink
