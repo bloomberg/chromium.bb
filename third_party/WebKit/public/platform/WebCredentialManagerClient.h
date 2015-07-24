@@ -25,8 +25,6 @@ public:
     // Ownership of the callback is transferred to the callee for each of
     // the following methods.
     virtual void dispatchFailedSignIn(const WebCredential&, NotificationCallbacks*) { }
-    // TODO(dvadym): Drop this once the Chromium side is updated. https://crbug.com/494880
-    virtual void dispatchSignedIn(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchStore(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchRequireUserMediation(NotificationCallbacks*) { }
     virtual void dispatchRequest(bool zeroClickOnly, const WebVector<WebURL>& federations, RequestCallbacks*) { }

@@ -63,9 +63,6 @@ void CredentialManagerClient::dispatchStore(const WebCredential& credential, Web
     if (!m_client)
         return;
     m_client->dispatchStore(credential, callbacks);
-
-    // TODO(dvadym): Drop this once the Chromium side is updated. https://crbug.com/494880
-    m_client->dispatchSignedIn(credential, callbacks);
 }
 
 void CredentialManagerClient::dispatchRequireUserMediation(WebCredentialManagerClient::NotificationCallbacks* callbacks)
