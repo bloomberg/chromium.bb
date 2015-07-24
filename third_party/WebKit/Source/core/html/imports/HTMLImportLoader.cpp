@@ -148,6 +148,8 @@ void HTMLImportLoader::setState(State state)
     }
 
     // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_state here.
+    if (state == StateLoaded)
+        m_document->setReadyState(Document::Complete);
     if (state == StateLoaded || state == StateError)
         didFinishLoading();
 }

@@ -44,7 +44,7 @@ class HTMLImportChildClient;
 class HTMLLinkElement;
 
 //
-// An import tree node subclas to encapsulate imported document
+// An import tree node subclass to encapsulate imported document
 // lifecycle. This class is owned by HTMLImportsController. The actual loading
 // is done by HTMLImportLoader, which can be shared among multiple
 // HTMLImportChild of same link URL.
