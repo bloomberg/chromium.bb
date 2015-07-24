@@ -9,6 +9,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -23,7 +25,7 @@ import java.util.List;
  * {@link EnhancedBookmarksModel#destroy()} once you are done with it.
  */
 public class EnhancedBookmarksModel {
-
+    // TODO(ianwen): make this class a subclass of BookmarksBridge.
     /**
      * Observer that listens to delete event. This interface is used by undo controllers to know
      * which bookmarks were deleted. Note this observer only listens to events that go through
@@ -41,6 +43,7 @@ public class EnhancedBookmarksModel {
 
     private final BookmarksBridge mBookmarksBridge;
     private final EnhancedBookmarksBridge mEnhancedBookmarksBridge;
+    private LargeIconBridge mLargeIconBridge;
     private ObserverList<EnhancedBookmarkDeleteObserver> mDeleteObservers = new ObserverList<>();
 
     /**
@@ -48,15 +51,14 @@ public class EnhancedBookmarksModel {
      * cache that has the given size.
      */
     public EnhancedBookmarksModel() {
-        Profile originalProfile = Profile.getLastUsedProfile().getOriginalProfile();
-        mBookmarksBridge = new BookmarksBridge(originalProfile);
-        mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(originalProfile);
+        this(Profile.getLastUsedProfile().getOriginalProfile());
     }
 
     @VisibleForTesting
     public EnhancedBookmarksModel(Profile profile) {
         mBookmarksBridge = new BookmarksBridge(profile);
         mEnhancedBookmarksBridge = new EnhancedBookmarksBridge(profile);
+        mLargeIconBridge = new LargeIconBridge();
     }
 
     /**
@@ -65,6 +67,7 @@ public class EnhancedBookmarksModel {
     public void destroy() {
         mBookmarksBridge.destroy();
         mEnhancedBookmarksBridge.destroy();
+        mLargeIconBridge.destroy();
     }
 
     /**
@@ -279,6 +282,13 @@ public class EnhancedBookmarksModel {
     public String getBookmarkTitle(BookmarkId bookmarkId) {
         BookmarkItem item = mBookmarksBridge.getBookmarkById(bookmarkId);
         return item.getTitle();
+    }
+
+    /**
+     * @see LargeIconBridge#getLargeIconForUrl(Profile, String, int, LargeIconCallback)
+     */
+    public void getLargeIcon(String url, int minSize, LargeIconCallback callback) {
+        mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), url, minSize, callback);
     }
 
     /**

@@ -51,11 +51,16 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
         super(context, attrs);
     }
 
-    void setBookmarkId(BookmarkId bookmarkId) {
+    /**
+     * Updates this row for the given {@link BookmarkId}.
+     * @return The {@link BookmarkItem} corresponding the given {@link BookmarkId}.
+     */
+    BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
         mBookmarkId = bookmarkId;
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
         mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
         setChecked(mDelegate.isBookmarkSelected(bookmarkId));
+        return bookmarkItem;
     }
 
     /**

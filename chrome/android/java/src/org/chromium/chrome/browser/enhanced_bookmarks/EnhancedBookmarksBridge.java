@@ -13,7 +13,7 @@ import org.chromium.components.bookmarks.BookmarkId;
  */
 @JNINamespace("enhanced_bookmarks::android")
 public final class EnhancedBookmarksBridge {
-
+    // TODO(ianwen): remove this bridge.
     private long mNativeEnhancedBookmarksBridge;
 
     /**

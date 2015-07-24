@@ -15,9 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -28,10 +26,9 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
 
     private String mUrl;
     private RoundedIconGenerator mIconGenerator;
-    private LargeIconBridge mLargeIconBridge;
-    private int mMinIconSize;
-    private int mDisplayedIconSize;
-    private int mCornerRadius;
+    private final int mMinIconSize;
+    private final int mDisplayedIconSize;
+    private final int mCornerRadius;
 
     /**
      * Constructor for inflating from XML.
@@ -49,7 +46,6 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
         int iconColor = getResources().getColor(R.color.enhanced_bookmark_icon_background_color);
         mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
                 mCornerRadius, iconColor, textSize);
-        mLargeIconBridge = new LargeIconBridge();
     }
 
     // EnhancedBookmarkRow implementation.
@@ -76,14 +72,13 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
     }
 
     @Override
-    public void setBookmarkId(BookmarkId bookmarkId) {
-        super.setBookmarkId(bookmarkId);
-
-        BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
-        mUrl = bookmarkItem.getUrl();
+    BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
+        BookmarkItem item = super.setBookmarkId(bookmarkId);
+        mUrl = item.getUrl();
         mIconImageView.setImageDrawable(null);
-        mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), mUrl, mMinIconSize, this);
-        mTitleView.setText(bookmarkItem.getTitle());
+        mTitleView.setText(item.getTitle());
+        mDelegate.getModel().getLargeIcon(mUrl, mMinIconSize, this);
+        return item;
     }
 
     // LargeIconCallback implementation.
