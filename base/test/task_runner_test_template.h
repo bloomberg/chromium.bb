@@ -160,6 +160,8 @@ TYPED_TEST_P(TaskRunnerTest, Delayed) {
             this->task_tracker_->GetTaskRunCounts());
 }
 
+REGISTER_TYPED_TEST_CASE_P(TaskRunnerTest, Basic, Delayed);
+
 namespace internal {
 
 // Calls RunsTasksOnCurrentThread() on |task_runner| and expects it to
@@ -170,11 +172,16 @@ void ExpectRunsTasksOnCurrentThread(
 
 }  // namespace internal
 
+template <typename TaskRunnerTestDelegate>
+class TaskRunnerAffinityTest : public TaskRunnerTest<TaskRunnerTestDelegate> {};
+
+TYPED_TEST_CASE_P(TaskRunnerAffinityTest);
+
 // Post a bunch of tasks to the task runner as well as to a separate
 // thread, each checking the value of RunsTasksOnCurrentThread(),
 // which should return true for the tasks posted on the task runner
 // and false for the tasks posted on the separate thread.
-TYPED_TEST_P(TaskRunnerTest, RunsTasksOnCurrentThread) {
+TYPED_TEST_P(TaskRunnerAffinityTest, RunsTasksOnCurrentThread) {
   std::map<int, int> expected_task_run_counts;
 
   Thread thread("Non-task-runner thread");
@@ -209,8 +216,7 @@ TYPED_TEST_P(TaskRunnerTest, RunsTasksOnCurrentThread) {
             this->task_tracker_->GetTaskRunCounts());
 }
 
-REGISTER_TYPED_TEST_CASE_P(
-    TaskRunnerTest, Basic, Delayed, RunsTasksOnCurrentThread);
+REGISTER_TYPED_TEST_CASE_P(TaskRunnerAffinityTest, RunsTasksOnCurrentThread);
 
 }  // namespace base
 
