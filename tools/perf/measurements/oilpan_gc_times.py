@@ -155,9 +155,9 @@ class _OilpanGCTimesBase(page_test.PageTest):
       if thread.name == _CR_RENDERER_MAIN:
         _AddTracingResults(thread, results)
 
-  def CleanUpAfterPage(self, page, tab):
-    if tab.browser.platform.tracing_controller.is_tracing_running:
-      tab.browser.platform.tracing_controller.Stop()
+  def DidRunPage(self, platform):
+    if platform.tracing_controller.is_tracing_running:
+      platform.tracing_controller.Stop()
 
 
 class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):

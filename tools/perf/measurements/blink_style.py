@@ -24,9 +24,9 @@ class BlinkStyle(page_test.PageTest):
     self._controller.SetUp(page, tab)
     self._controller.Start(tab)
 
-  def CleanUpAfterPage(self, page, tab):
+  def DidRunPage(self, platform):
     if self._controller:
-      self._controller.CleanUp(tab)
+      self._controller.CleanUp(platform)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     runner = action_runner.ActionRunner(tab)

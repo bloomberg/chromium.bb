@@ -47,7 +47,7 @@ class DrawProperties(page_test.PageTest):
         results.current_page, 'PT_avg_cost', 'ms', pt_avg,
         description='Average time spent processing property trees'))
 
-  def CleanUpAfterPage(self, page, tab):
-    tracing_controller = tab.browser.platform.tracing_controller
+  def DidRunPage(self, platform):
+    tracing_controller = platform.tracing_controller
     if tracing_controller.is_tracing_running:
       tracing_controller.Stop()

@@ -89,9 +89,9 @@ class TimelineController(object):
       raise page_test.Failure('No interaction record was created.')
 
 
-  def CleanUp(self, tab):
-    if tab.browser.platform.tracing_controller.is_tracing_running:
-      tab.browser.platform.tracing_controller.Stop()
+  def CleanUp(self, platform):
+    if platform.tracing_controller.is_tracing_running:
+      platform.tracing_controller.Stop()
 
   @property
   def model(self):

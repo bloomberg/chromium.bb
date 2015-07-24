@@ -43,6 +43,6 @@ class ThreadTimes(page_test.PageTest):
     layout_metric.AddResults(self._timeline_controller.model, renderer_thread,
                              self._timeline_controller.smooth_records, results)
 
-  def CleanUpAfterPage(self, _, tab):
+  def DidRunPage(self, platform):
     if self._timeline_controller:
-      self._timeline_controller.CleanUp(tab)
+      self._timeline_controller.CleanUp(platform)
