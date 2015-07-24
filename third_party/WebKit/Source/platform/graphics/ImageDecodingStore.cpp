@@ -178,12 +178,6 @@ int ImageDecodingStore::cacheEntries()
     return m_decoderCacheMap.size();
 }
 
-int ImageDecodingStore::decoderCacheEntries()
-{
-    MutexLocker lock(m_mutex);
-    return m_decoderCacheMap.size();
-}
-
 void ImageDecodingStore::prune()
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStore::prune");
