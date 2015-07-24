@@ -322,6 +322,7 @@ interface CSSViewportRule
     method constructor
 interface Cache
     method add
+    method addAll
     method constructor
     method delete
     method keys
@@ -2676,10 +2677,6 @@ interface MIDIPort
     method constructor
     method open
     setter onstatechange
-interface MediaDevices
-    method constructor
-    method enumerateDevices
-    method getUserMedia
 interface MediaElementAudioSourceNode
     getter mediaElement
     method constructor
@@ -2911,7 +2908,6 @@ interface Navigator
     getter language
     getter languages
     getter maxTouchPoints
-    getter mediaDevices
     getter mimeTypes
     getter onLine
     getter platform
@@ -3395,6 +3391,11 @@ interface SVGDiscardElement
     method constructor
 interface SVGElement
     getter className
+    getter offsetHeight
+    getter offsetLeft
+    getter offsetParent
+    getter offsetTop
+    getter offsetWidth
     getter onabort
     getter onblur
     getter oncancel
@@ -4751,9 +4752,7 @@ interface TreeWalker
     method previousSibling
     setter currentNode
 interface UIEvent
-    getter charCode
     getter detail
-    getter keyCode
     getter view
     getter which
     method constructor
