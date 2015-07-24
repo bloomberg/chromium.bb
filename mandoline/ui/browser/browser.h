@@ -84,6 +84,9 @@ class Browser : public mojo::ViewManagerDelegate,
                                   MessageEvent* event) override;
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
+  void RequestNavigate(Frame* source,
+                       NavigationTarget target,
+                       mojo::URLRequestPtr request) override;
 
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,

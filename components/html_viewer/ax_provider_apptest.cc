@@ -50,6 +50,11 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
   void ProgressChanged(uint32_t frame_id, double progress) override {}
   void SetFrameName(uint32_t frame_id, const mojo::String& name) override {}
   void OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) override {}
+  void RequestNavigate(uint32_t frame_id,
+                       mandoline::NavigationTarget target,
+                       mojo::URLRequestPtr request) override {}
+  void DidNavigateLocally(uint32_t frame_id, const mojo::String& url) override {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);

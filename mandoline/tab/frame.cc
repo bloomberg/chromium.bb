@@ -326,4 +326,19 @@ void Frame::OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) {
   tree_->CreateSharedFrame(parent_frame, frame_id);
 }
 
+void Frame::RequestNavigate(uint32_t frame_id,
+                            mandoline::NavigationTarget target,
+                            mojo::URLRequestPtr request) {
+  Frame* frame = FindFrame(frame_id);
+  if (!frame) {
+    DVLOG(1) << "RequestNavigate for unknown frame " << frame_id;
+    return;
+  }
+  tree_->delegate_->RequestNavigate(frame, target, request.Pass());
+}
+
+void Frame::DidNavigateLocally(uint32_t frame_id, const mojo::String& url) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace mandoline

@@ -139,6 +139,9 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   }
   void LoadingStateChanged(bool loading) override {}
   void ProgressChanged(double progress) override {}
+  void RequestNavigate(Frame* source,
+                       NavigationTarget target,
+                       mojo::URLRequestPtr request) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);

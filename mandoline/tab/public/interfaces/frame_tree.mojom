@@ -4,6 +4,8 @@
 
 module mandoline;
 
+import "network/public/interfaces/url_loader.mojom";
+
 // This files defines the interfaces and structures used for frames.
 //
 // When a client in the frame tree is connected to by way of the ViewManager a
@@ -17,6 +19,18 @@ module mandoline;
 // for FrameTreeServer calls.
 // TODO(sky): there are likely timing issues here, figure out how to resolve
 // that.
+
+// Expresses a preference for where a navigation will be performed.
+enum NavigationTarget {
+  // No preference
+  DEFAULT,
+
+  // In the same ViewManager node that the navigation was initiated
+  SOURCE_NODE,
+
+  // In a new ViewManager node
+  NEW_NODE
+};
 
 // Provides information about a frame.
 struct FrameData {
@@ -55,6 +69,15 @@ interface FrameTreeServer {
   // the id of the view hosting the frame, and |parent_id| the id of the
   // parent.
   OnCreatedFrame(uint32 parent_id, uint32 frame_id);
+
+  // The specified frame is requesting a navigation.
+  RequestNavigate(uint32 frame_id,
+                  NavigationTarget target,
+                  mojo.URLRequest request);
+
+  // The frame navigated locally, for example, pushState() navigations in an
+  // HTML application.
+  DidNavigateLocally(uint32 frame_id, string url);
 };
 
 interface FrameTreeClient {

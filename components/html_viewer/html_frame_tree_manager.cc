@@ -26,18 +26,18 @@
 namespace html_viewer {
 namespace {
 
-mojo::Target WebNavigationPolicyToNavigationTarget(
+mandoline::NavigationTarget WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyCurrentTab:
-      return mojo::TARGET_SOURCE_NODE;
+      return mandoline::NAVIGATION_TARGET_SOURCE_NODE;
     case blink::WebNavigationPolicyNewBackgroundTab:
     case blink::WebNavigationPolicyNewForegroundTab:
     case blink::WebNavigationPolicyNewWindow:
     case blink::WebNavigationPolicyNewPopup:
-      return mojo::TARGET_NEW_NODE;
+      return mandoline::NAVIGATION_TARGET_NEW_NODE;
     default:
-      return mojo::TARGET_DEFAULT;
+      return mandoline::NAVIGATION_TARGET_DEFAULT;
   }
 }
 
@@ -99,7 +99,6 @@ HTMLFrameTreeManager::HTMLFrameTreeManager(
       delegate_(nullptr),
       local_frame_id_(local_frame_id),
       server_(server.Pass()),
-      navigator_host_(app_connection->GetServiceProvider()),
       root_(nullptr) {}
 
 HTMLFrameTreeManager::~HTMLFrameTreeManager() {
@@ -140,14 +139,10 @@ blink::WebNavigationPolicy HTMLFrameTreeManager::DecidePolicyForNavigation(
   if (CanNavigateLocally(info.frame, info.urlRequest))
     return info.defaultPolicy;
 
-  // TODO(sky): this is wrong for subframes. In fact NavigatorHost should likely
-  // be merged with Frame.
-  if (navigator_host_.get()) {
-    mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
-    navigator_host_->RequestNavigate(
-        WebNavigationPolicyToNavigationTarget(info.defaultPolicy),
-        url_request.Pass());
-  }
+  mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
+  server_->RequestNavigate(
+      frame->id(), WebNavigationPolicyToNavigationTarget(info.defaultPolicy),
+      url_request.Pass());
 
   return blink::WebNavigationPolicyIgnore;
 }
@@ -159,8 +154,7 @@ void HTMLFrameTreeManager::OnFrameDidFinishLoad(HTMLFrame* frame) {
 
 void HTMLFrameTreeManager::OnFrameDidNavigateLocally(HTMLFrame* frame,
                                                      const std::string& url) {
-  if (navigator_host_.get() && frame == root_)
-    navigator_host_->DidNavigateLocally(url);
+  server_->DidNavigateLocally(frame->id(), url);
 }
 
 void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {

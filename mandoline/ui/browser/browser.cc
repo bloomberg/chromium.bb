@@ -213,4 +213,11 @@ void Browser::ShowOmnibox(mojo::URLRequestPtr request) {
   omnibox_->SetVisible(true);
 }
 
+void Browser::RequestNavigate(Frame* source,
+                              NavigationTarget target,
+                              mojo::URLRequestPtr request) {
+  // TODO(sky): we shouldn't always do a top level navigation here.
+  ReplaceContentWithRequest(request.Pass());
+}
+
 }  // namespace mandoline

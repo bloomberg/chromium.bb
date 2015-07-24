@@ -125,6 +125,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void ProgressChanged(uint32_t frame_id, double progress) override;
   void SetFrameName(uint32_t frame_id, const mojo::String& name) override;
   void OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) override;
+  void RequestNavigate(uint32_t frame_id,
+                       NavigationTarget target,
+                       mojo::URLRequestPtr request) override;
+  void DidNavigateLocally(uint32_t frame_id, const mojo::String& url) override;
 
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.

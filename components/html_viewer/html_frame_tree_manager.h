@@ -7,9 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
-#include "mojo/application/public/cpp/lazy_interface_ptr.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
@@ -110,8 +108,6 @@ class HTMLFrameTreeManager : public mandoline::FrameTreeClient {
   const uint32_t local_frame_id_;
 
   mandoline::FrameTreeServerPtr server_;
-
-  mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
 
   HTMLFrame* root_;
 
