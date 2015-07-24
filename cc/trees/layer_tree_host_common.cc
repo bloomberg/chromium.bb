@@ -410,7 +410,7 @@ static gfx::Rect CalculateVisibleLayerRect(
 static inline bool TransformToParentIsKnown(LayerImpl* layer) { return true; }
 
 static inline bool TransformToParentIsKnown(Layer* layer) {
-  return !layer->TransformIsAnimating();
+  return !layer->HasPotentiallyRunningTransformAnimation();
 }
 
 static inline bool TransformToScreenIsKnown(LayerImpl* layer) { return true; }
@@ -463,7 +463,8 @@ static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
 
 template <typename LayerType>
 static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
-  return layer->transform_is_invertible() || layer->TransformIsAnimating();
+  return layer->transform_is_invertible() ||
+         layer->HasPotentiallyRunningTransformAnimation();
 }
 
 static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
@@ -492,7 +493,8 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   // If layer is on the pending tree and opacity is being animated then
   // this subtree can't be skipped as we need to create, prioritize and
   // include tiles for this layer when deciding if tree can be activated.
-  if (layer->layer_tree_impl()->IsPendingTree() && layer->OpacityIsAnimating())
+  if (layer->layer_tree_impl()->IsPendingTree() &&
+      layer->HasPotentiallyRunningOpacityAnimation())
     return false;
 
   // The opacity of a layer always applies to its children (either implicitly
@@ -503,7 +505,8 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
 
 static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
   // If the layer transform is not invertible, it should not be drawn.
-  if (!layer->transform_is_invertible() && !layer->TransformIsAnimating())
+  if (!layer->transform_is_invertible() &&
+      !layer->HasPotentiallyRunningTransformAnimation())
     return true;
 
   // When we need to do a readback/copy of a layer's output, we can not skip
@@ -526,7 +529,7 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
   // In particular, it should not cause the subtree to be skipped.
   // Similarly, for layers that might animate opacity using an impl-only
   // animation, their subtree should also not be skipped.
-  return !layer->opacity() && !layer->OpacityIsAnimating() &&
+  return !layer->opacity() && !layer->HasPotentiallyRunningOpacityAnimation() &&
          !layer->OpacityCanAnimateOnImplThread();
 }
 
@@ -576,7 +579,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
 
   // If the layer will use a CSS filter.  In this case, the animation
   // will start and add a filter to this layer, so it needs a surface.
-  if (layer->FilterIsAnimating()) {
+  if (layer->HasPotentiallyRunningFilterAnimation()) {
     DCHECK(!is_root);
     return true;
   }
@@ -1646,7 +1649,8 @@ static void CalculateDrawPropertiesInternal(
   if (layer->parent())
     accumulated_draw_opacity *= layer->parent()->draw_opacity();
 
-  bool animating_transform_to_target = layer->TransformIsAnimating();
+  bool animating_transform_to_target =
+      layer->HasPotentiallyRunningTransformAnimation();
   bool animating_transform_to_screen = animating_transform_to_target;
   if (layer->parent()) {
     animating_transform_to_target |=

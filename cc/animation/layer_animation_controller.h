@@ -36,6 +36,8 @@ class LayerAnimationValueProvider;
 class CC_EXPORT LayerAnimationController
     : public base::RefCounted<LayerAnimationController> {
  public:
+  enum class ObserverType { ACTIVE, PENDING };
+
   static scoped_refptr<LayerAnimationController> Create(int id);
 
   int id() const { return id_; }
@@ -79,10 +81,16 @@ class CC_EXPORT LayerAnimationController
   // Returns true if there are any animations at all to process.
   bool has_any_animation() const { return !animations_.empty(); }
 
-  // Returns true if there is an animation currently animating the given
-  // property, or if there is an animation scheduled to animate this property in
-  // the future.
-  bool IsAnimatingProperty(Animation::TargetProperty target_property) const;
+  // Returns true if there is an animation that is either currently animating
+  // the given property or scheduled to animate this property in the future, and
+  // that affects the given observer type.
+  bool IsPotentiallyAnimatingProperty(Animation::TargetProperty target_property,
+                                      ObserverType observer_type) const;
+
+  // Returns true if there is an animation that is currently animating the given
+  // property and that affects the given observer type.
+  bool IsCurrentlyAnimatingProperty(Animation::TargetProperty target_property,
+                                    ObserverType observer_type) const;
 
   void SetAnimationRegistrar(AnimationRegistrar* registrar);
   AnimationRegistrar* animation_registrar() { return registrar_; }

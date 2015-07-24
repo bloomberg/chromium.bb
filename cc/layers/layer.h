@@ -157,6 +157,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return filters_; }
   bool FilterIsAnimating() const;
+  bool HasPotentiallyRunningFilterAnimation() const;
 
   // Background filters are filters applied to what is behind this layer, when
   // they are viewed through non-opaque regions in this layer. They are used

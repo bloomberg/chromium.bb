@@ -93,12 +93,17 @@ class CC_EXPORT AnimationHost {
 
   bool ScrollOffsetAnimationWasInterrupted(int layer_id) const;
 
-  bool IsAnimatingFilterProperty(int layer_id) const;
-  bool IsAnimatingOpacityProperty(int layer_id) const;
-  bool IsAnimatingTransformProperty(int layer_id) const;
+  bool IsAnimatingFilterProperty(int layer_id, LayerTreeType tree_type) const;
+  bool IsAnimatingOpacityProperty(int layer_id, LayerTreeType tree_type) const;
+  bool IsAnimatingTransformProperty(int layer_id,
+                                    LayerTreeType tree_type) const;
 
-  bool HasPotentiallyRunningOpacityAnimation(int layer_id) const;
-  bool HasPotentiallyRunningTransformAnimation(int layer_id) const;
+  bool HasPotentiallyRunningFilterAnimation(int layer_id,
+                                            LayerTreeType tree_type) const;
+  bool HasPotentiallyRunningOpacityAnimation(int layer_id,
+                                             LayerTreeType tree_type) const;
+  bool HasPotentiallyRunningTransformAnimation(int layer_id,
+                                               LayerTreeType tree_type) const;
 
   bool HasAnyAnimationTargetingProperty(
       int layer_id,

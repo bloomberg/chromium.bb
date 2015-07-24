@@ -347,6 +347,7 @@ class CC_EXPORT LayerTreeImpl {
   bool IsAnimatingOpacityProperty(const LayerImpl* layer) const;
   bool IsAnimatingTransformProperty(const LayerImpl* layer) const;
 
+  bool HasPotentiallyRunningFilterAnimation(const LayerImpl* layer) const;
   bool HasPotentiallyRunningOpacityAnimation(const LayerImpl* layer) const;
   bool HasPotentiallyRunningTransformAnimation(const LayerImpl* layer) const;
 

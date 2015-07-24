@@ -168,7 +168,6 @@ bool AddTransformNodeIfNeeded(
 
   const bool has_potentially_animated_transform =
       layer->HasPotentiallyRunningTransformAnimation();
-  const bool has_animated_transform = layer->TransformIsAnimating();
 
   const bool has_surface = !!layer->render_surface();
 
@@ -255,7 +254,7 @@ bool AddTransformNodeIfNeeded(
   node->data.content_target_id =
       data_for_children->render_target->transform_tree_index();
   DCHECK_NE(node->data.target_id, -1);
-  node->data.is_animated = has_animated_transform;
+  node->data.is_animated = has_potentially_animated_transform;
 
   float post_local_scale_factor = 1.0f;
   if (is_root) {

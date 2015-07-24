@@ -1587,39 +1587,62 @@ scoped_ptr<PendingPageScaleAnimation>
 }
 
 bool LayerTreeImpl::IsAnimatingFilterProperty(const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->IsAnimatingFilterProperty(layer->id())
+                   ->IsAnimatingFilterProperty(layer->id(), tree_type)
              : false;
 }
 
 bool LayerTreeImpl::IsAnimatingOpacityProperty(const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->IsAnimatingOpacityProperty(layer->id())
+                   ->IsAnimatingOpacityProperty(layer->id(), tree_type)
              : false;
 }
 
 bool LayerTreeImpl::IsAnimatingTransformProperty(const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->IsAnimatingTransformProperty(layer->id())
+                   ->IsAnimatingTransformProperty(layer->id(), tree_type)
+             : false;
+}
+
+bool LayerTreeImpl::HasPotentiallyRunningFilterAnimation(
+    const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasPotentiallyRunningFilterAnimation(layer->id(),
+                                                          tree_type)
              : false;
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningOpacityAnimation(
     const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->HasPotentiallyRunningOpacityAnimation(layer->id())
+                   ->HasPotentiallyRunningOpacityAnimation(layer->id(),
+                                                           tree_type)
              : false;
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
     const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->HasPotentiallyRunningTransformAnimation(layer->id())
+                   ->HasPotentiallyRunningTransformAnimation(layer->id(),
+                                                             tree_type)
              : false;
 }
 

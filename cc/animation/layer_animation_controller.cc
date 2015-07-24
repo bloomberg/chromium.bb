@@ -285,13 +285,35 @@ bool LayerAnimationController::HasActiveAnimation() const {
   return false;
 }
 
-bool LayerAnimationController::IsAnimatingProperty(
-    Animation::TargetProperty target_property) const {
+bool LayerAnimationController::IsPotentiallyAnimatingProperty(
+    Animation::TargetProperty target_property,
+    ObserverType observer_type) const {
+  for (size_t i = 0; i < animations_.size(); ++i) {
+    if (!animations_[i]->is_finished() &&
+        animations_[i]->target_property() == target_property) {
+      if ((observer_type == ObserverType::ACTIVE &&
+           animations_[i]->affects_active_observers()) ||
+          (observer_type == ObserverType::PENDING &&
+           animations_[i]->affects_pending_observers()))
+        return true;
+    }
+  }
+  return false;
+}
+
+bool LayerAnimationController::IsCurrentlyAnimatingProperty(
+    Animation::TargetProperty target_property,
+    ObserverType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->InEffect(last_tick_time_) &&
-        animations_[i]->target_property() == target_property)
-      return true;
+        animations_[i]->target_property() == target_property) {
+      if ((observer_type == ObserverType::ACTIVE &&
+           animations_[i]->affects_active_observers()) ||
+          (observer_type == ObserverType::PENDING &&
+           animations_[i]->affects_pending_observers()))
+        return true;
+    }
   }
   return false;
 }
@@ -428,7 +450,10 @@ bool LayerAnimationController::HasFilterAnimationThatInflatesBounds() const {
 }
 
 bool LayerAnimationController::HasTransformAnimationThatInflatesBounds() const {
-  return IsAnimatingProperty(Animation::TRANSFORM);
+  return IsCurrentlyAnimatingProperty(Animation::TRANSFORM,
+                                      ObserverType::ACTIVE) ||
+         IsCurrentlyAnimatingProperty(Animation::TRANSFORM,
+                                      ObserverType::PENDING);
 }
 
 bool LayerAnimationController::FilterAnimationBoundsForBox(

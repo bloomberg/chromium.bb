@@ -1030,10 +1030,23 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
 }
 
 bool LayerImpl::FilterIsAnimating() const {
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
-             ? layer_animation_controller_->IsAnimatingProperty(
-                   Animation::FILTER)
+             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
+                   Animation::FILTER, observer_type)
              : layer_tree_impl_->IsAnimatingFilterProperty(this);
+}
+
+bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
+                   Animation::FILTER, observer_type)
+             : layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
 }
 
 bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
@@ -1079,22 +1092,23 @@ void LayerImpl::SetOpacity(float opacity) {
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
-             ? layer_animation_controller_->IsAnimatingProperty(
-                   Animation::OPACITY)
+             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
+                   Animation::OPACITY, observer_type)
              : layer_tree_impl_->IsAnimatingOpacityProperty(this);
 }
 
 bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
-  if (layer_animation_controller_) {
-    if (Animation* animation =
-            layer_animation_controller()->GetAnimation(Animation::OPACITY)) {
-      return !animation->is_finished();
-    }
-    return false;
-  } else {
-    return layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
-  }
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
+                   Animation::OPACITY, observer_type)
+             : layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
 bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
@@ -1179,22 +1193,23 @@ void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,
 }
 
 bool LayerImpl::TransformIsAnimating() const {
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
-             ? layer_animation_controller_->IsAnimatingProperty(
-                   Animation::TRANSFORM)
+             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
+                   Animation::TRANSFORM, observer_type)
              : layer_tree_impl_->IsAnimatingTransformProperty(this);
 }
 
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
-  if (layer_animation_controller_) {
-    if (Animation* animation =
-            layer_animation_controller()->GetAnimation(Animation::TRANSFORM)) {
-      return !animation->is_finished();
-    }
-    return false;
-  } else {
-    return layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
-  }
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
+                   Animation::TRANSFORM, observer_type)
+             : layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
 }
 
 bool LayerImpl::TransformIsAnimatingOnImplOnly() const {

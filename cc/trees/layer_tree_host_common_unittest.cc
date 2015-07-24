@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
@@ -2317,6 +2318,50 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
                   child_of_rs2->screen_space_transform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
       5.0, grand_child_of_rs2->screen_space_transform().matrix().get(1, 3));
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       ScreenSpaceTransformIsAnimatingWithDelayedAnimation) {
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  LayerImpl* great_grand_child = AddChild<LayerImpl>(grand_child);
+
+  parent->SetDrawsContent(true);
+  child->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  great_grand_child->SetDrawsContent(true);
+
+  gfx::Transform identity;
+
+  SetLayerPropertiesForTesting(parent, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(child, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(grand_child, identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(great_grand_child, identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+
+  // Add a transform animation with a start delay to |grand_child|.
+  scoped_ptr<Animation> animation = Animation::Create(
+      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)).Pass(), 0, 1,
+      Animation::TRANSFORM);
+  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  grand_child->layer_animation_controller()->AddAnimation(animation.Pass());
+
+  ExecuteCalculateDrawProperties(parent);
+
+  EXPECT_FALSE(parent->screen_space_transform_is_animating());
+  EXPECT_FALSE(child->screen_space_transform_is_animating());
+
+  EXPECT_FALSE(grand_child->TransformIsAnimating());
+  EXPECT_TRUE(grand_child->HasPotentiallyRunningTransformAnimation());
+  EXPECT_TRUE(grand_child->screen_space_transform_is_animating());
+  EXPECT_TRUE(great_grand_child->screen_space_transform_is_animating());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectForIdentityTransform) {
@@ -7512,6 +7557,59 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
   EXPECT_FALSE(grandchild->FilterIsAnimating());
 }
 
+// Verify that having a filter animation with a delayed start time creates a
+// render surface.
+TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grandchild = Layer::Create(layer_settings());
+  root->AddChild(child);
+  child->AddChild(grandchild);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(grandchild.get(), identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false);
+  host()->SetRootLayer(root);
+
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+  FilterOperations start_filters;
+  start_filters.Append(FilterOperation::CreateBrightnessFilter(0.1f));
+  FilterOperations end_filters;
+  end_filters.Append(FilterOperation::CreateBrightnessFilter(0.3f));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
+  scoped_ptr<Animation> animation =
+      Animation::Create(curve.Pass(), 0, 1, Animation::FILTER);
+  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  child->layer_animation_controller()->AddAnimation(animation.Pass());
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(root->render_surface());
+  EXPECT_TRUE(child->render_surface());
+  EXPECT_FALSE(grandchild->render_surface());
+
+  EXPECT_TRUE(root->filters().IsEmpty());
+  EXPECT_TRUE(child->filters().IsEmpty());
+  EXPECT_TRUE(grandchild->filters().IsEmpty());
+
+  EXPECT_FALSE(root->FilterIsAnimating());
+  EXPECT_FALSE(root->HasPotentiallyRunningFilterAnimation());
+  EXPECT_FALSE(child->FilterIsAnimating());
+  EXPECT_TRUE(child->HasPotentiallyRunningFilterAnimation());
+  EXPECT_FALSE(grandchild->FilterIsAnimating());
+  EXPECT_FALSE(grandchild->HasPotentiallyRunningFilterAnimation());
+}
+
 // Ensures that the property tree code accounts for offsets between fixed
 // position layers and their respective containers.
 TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
@@ -7921,6 +8019,25 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
   child->SetHideLayerAndSubtree(false);
 
+  gfx::Transform zero_z_scale;
+  zero_z_scale.Scale3d(1, 1, 0);
+  child->SetTransform(zero_z_scale);
+
+  // Add a transform animation with a start delay. Now, even though |child| has
+  // a singular transform, the subtree should still get processed.
+  int animation_id = 0;
+  scoped_ptr<Animation> animation = Animation::Create(
+      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)).Pass(),
+      animation_id, 1, Animation::TRANSFORM);
+  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  child->AddAnimation(animation.Pass());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+
+  child->RemoveAnimation(animation_id);
+  child->SetTransform(identity);
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
@@ -7939,6 +8056,18 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
 
   greatgrandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+
+  // Add an opacity animation with a start delay.
+  animation_id = 1;
+  animation = Animation::Create(
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
+      animation_id, 1, Animation::OPACITY);
+  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  child->AddAnimation(animation.Pass());
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
 }

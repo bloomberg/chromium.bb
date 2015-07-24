@@ -290,6 +290,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return filters_; }
   bool FilterIsAnimating() const;
+  bool HasPotentiallyRunningFilterAnimation() const;
   bool FilterIsAnimatingOnImplOnly() const;
 
   void SetBackgroundFilters(const FilterOperations& filters);

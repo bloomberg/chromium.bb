@@ -2524,23 +2524,75 @@ TEST(LayerAnimationControllerTest, StartAnimationsAffectingDifferentObservers) {
   EXPECT_EQ(1.f, dummy_impl.opacity());
 }
 
-TEST(LayerAnimationControllerTest, TestIsAnimatingProperty) {
+TEST(LayerAnimationControllerTest, TestIsCurrentlyAnimatingProperty) {
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
+  // Create an animation that initially affects only pending observers.
   scoped_ptr<Animation> animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
+  animation->set_affects_active_observers(false);
+
   controller->AddAnimation(animation.Pass());
   controller->Animate(kInitialTickTime);
-  EXPECT_TRUE(controller->IsAnimatingProperty(Animation::OPACITY));
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
   controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
-  EXPECT_TRUE(controller->IsAnimatingProperty(Animation::OPACITY));
-  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::FILTER));
+
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE));
+
+  controller->ActivateAnimations();
+
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE));
+
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(10));
+  controller->UpdateState(true, nullptr);
+
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE));
+
   EXPECT_EQ(0.f, dummy.opacity());
+
+  // Tick past the end of the animation.
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1100));
+  controller->UpdateState(true, nullptr);
+
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE));
+
+  EXPECT_EQ(1.f, dummy.opacity());
 }
 
 TEST(LayerAnimationControllerTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
@@ -2549,23 +2601,79 @@ TEST(LayerAnimationControllerTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
+  // Create an animation that initially affects only pending observers, and has
+  // a start delay of 2 seconds.
   scoped_ptr<Animation> animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(TimeDelta::FromMilliseconds(-2000));
+  animation->set_affects_active_observers(false);
+
   controller->AddAnimation(animation.Pass());
 
   controller->Animate(kInitialTickTime);
-  controller->UpdateState(true, nullptr);
-  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::OPACITY));
-  EXPECT_TRUE(controller->HasActiveAnimation());
-  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::OPACITY));
-  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::FILTER));
 
+  // Since the animation has a start delay, the observers it affects have a
+  // potentially running transform animation but aren't currently animating
+  // transform.
+  EXPECT_TRUE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE));
+
+  controller->ActivateAnimations();
+
+  EXPECT_TRUE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE));
+
+  controller->UpdateState(true, nullptr);
+
+  // Tick past the start delay.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   controller->UpdateState(true, nullptr);
-  EXPECT_TRUE(controller->IsAnimatingProperty(Animation::OPACITY));
+  EXPECT_TRUE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+
+  // After the animaton finishes, the observers it affects have neither a
+  // potentially running transform animation nor a currently running transform
+  // animation.
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
+  controller->UpdateState(true, nullptr);
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsPotentiallyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller->IsCurrentlyAnimatingProperty(
+      Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE));
 }
 
 }  // namespace

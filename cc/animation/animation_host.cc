@@ -357,41 +357,69 @@ bool AnimationHost::ScrollOffsetAnimationWasInterrupted(int layer_id) const {
                     : false;
 }
 
-bool AnimationHost::IsAnimatingFilterProperty(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->IsAnimatingProperty(Animation::FILTER)
-                    : false;
+static LayerAnimationController::ObserverType ObserverTypeFromTreeType(
+    LayerTreeType tree_type) {
+  return tree_type == LayerTreeType::ACTIVE
+             ? LayerAnimationController::ObserverType::ACTIVE
+             : LayerAnimationController::ObserverType::PENDING;
 }
 
-bool AnimationHost::IsAnimatingOpacityProperty(int layer_id) const {
+bool AnimationHost::IsAnimatingFilterProperty(int layer_id,
+                                              LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->IsAnimatingProperty(Animation::OPACITY)
-                    : false;
+  return controller
+             ? controller->IsCurrentlyAnimatingProperty(
+                   Animation::FILTER, ObserverTypeFromTreeType(tree_type))
+             : false;
 }
 
-bool AnimationHost::IsAnimatingTransformProperty(int layer_id) const {
+bool AnimationHost::IsAnimatingOpacityProperty(int layer_id,
+                                               LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->IsAnimatingProperty(Animation::TRANSFORM)
-                    : false;
+  return controller
+             ? controller->IsCurrentlyAnimatingProperty(
+                   Animation::OPACITY, ObserverTypeFromTreeType(tree_type))
+             : false;
 }
 
-bool AnimationHost::HasPotentiallyRunningOpacityAnimation(int layer_id) const {
+bool AnimationHost::IsAnimatingTransformProperty(
+    int layer_id,
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
-    return false;
+  return controller
+             ? controller->IsCurrentlyAnimatingProperty(
+                   Animation::TRANSFORM, ObserverTypeFromTreeType(tree_type))
+             : false;
+}
 
-  Animation* animation = controller->GetAnimation(Animation::OPACITY);
-  return animation && !animation->is_finished();
+bool AnimationHost::HasPotentiallyRunningFilterAnimation(
+    int layer_id,
+    LayerTreeType tree_type) const {
+  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
+  return controller
+             ? controller->IsPotentiallyAnimatingProperty(
+                   Animation::FILTER, ObserverTypeFromTreeType(tree_type))
+             : false;
+}
+
+bool AnimationHost::HasPotentiallyRunningOpacityAnimation(
+    int layer_id,
+    LayerTreeType tree_type) const {
+  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
+  return controller
+             ? controller->IsPotentiallyAnimatingProperty(
+                   Animation::OPACITY, ObserverTypeFromTreeType(tree_type))
+             : false;
 }
 
 bool AnimationHost::HasPotentiallyRunningTransformAnimation(
-    int layer_id) const {
+    int layer_id,
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
-    return false;
-
-  Animation* animation = controller->GetAnimation(Animation::TRANSFORM);
-  return animation && !animation->is_finished();
+  return controller
+             ? controller->IsPotentiallyAnimatingProperty(
+                   Animation::TRANSFORM, ObserverTypeFromTreeType(tree_type))
+             : false;
 }
 
 bool AnimationHost::HasAnyAnimationTargetingProperty(

@@ -511,9 +511,18 @@ void Layer::SetFilters(const FilterOperations& filters) {
 bool Layer::FilterIsAnimating() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
-             ? layer_animation_controller_->IsAnimatingProperty(
-                   Animation::FILTER)
+             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
+                   Animation::FILTER,
+                   LayerAnimationController::ObserverType::ACTIVE)
              : layer_tree_host_->IsAnimatingFilterProperty(this);
+}
+
+bool Layer::HasPotentiallyRunningFilterAnimation() const {
+  if (layer_animation_controller_) {
+    return layer_animation_controller_->IsPotentiallyAnimatingProperty(
+        Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE);
+  }
+  return layer_tree_host_->HasPotentiallyRunningFilterAnimation(this);
 }
 
 void Layer::SetBackgroundFilters(const FilterOperations& filters) {
@@ -535,22 +544,18 @@ void Layer::SetOpacity(float opacity) {
 bool Layer::OpacityIsAnimating() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
-             ? layer_animation_controller_->IsAnimatingProperty(
-                   Animation::OPACITY)
+             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
+                   Animation::OPACITY,
+                   LayerAnimationController::ObserverType::ACTIVE)
              : layer_tree_host_->IsAnimatingOpacityProperty(this);
 }
 
 bool Layer::HasPotentiallyRunningOpacityAnimation() const {
   if (layer_animation_controller_) {
-    if (Animation* animation =
-            layer_animation_controller()->GetAnimation(Animation::OPACITY)) {
-      return !animation->is_finished();
-    }
-    return false;
-  } else {
-    DCHECK(layer_tree_host_);
-    return layer_tree_host_->HasPotentiallyRunningOpacityAnimation(this);
+    return layer_animation_controller_->IsPotentiallyAnimatingProperty(
+        Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE);
   }
+  return layer_tree_host_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
 bool Layer::OpacityCanAnimateOnImplThread() const {
@@ -743,22 +748,18 @@ bool Layer::AnimationsPreserveAxisAlignment() const {
 bool Layer::TransformIsAnimating() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
-             ? layer_animation_controller_->IsAnimatingProperty(
-                   Animation::TRANSFORM)
+             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
+                   Animation::TRANSFORM,
+                   LayerAnimationController::ObserverType::ACTIVE)
              : layer_tree_host_->IsAnimatingTransformProperty(this);
 }
 
 bool Layer::HasPotentiallyRunningTransformAnimation() const {
   if (layer_animation_controller_) {
-    if (Animation* animation =
-            layer_animation_controller()->GetAnimation(Animation::TRANSFORM)) {
-      return !animation->is_finished();
-    }
-    return false;
-  } else {
-    DCHECK(layer_tree_host_);
-    return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
+    return layer_animation_controller_->IsPotentiallyAnimatingProperty(
+        Animation::TRANSFORM, LayerAnimationController::ObserverType::ACTIVE);
   }
+  return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
 }
 
 bool Layer::ScrollOffsetAnimationWasInterrupted() const {

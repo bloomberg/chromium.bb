@@ -346,6 +346,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool IsAnimatingFilterProperty(const Layer* layer) const;
   bool IsAnimatingOpacityProperty(const Layer* layer) const;
   bool IsAnimatingTransformProperty(const Layer* layer) const;
+  bool HasPotentiallyRunningFilterAnimation(const Layer* layer) const;
   bool HasPotentiallyRunningOpacityAnimation(const Layer* layer) const;
   bool HasPotentiallyRunningTransformAnimation(const Layer* layer) const;
   bool AnimationsPreserveAxisAlignment(const Layer* layer) const;
