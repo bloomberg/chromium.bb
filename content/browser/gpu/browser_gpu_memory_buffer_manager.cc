@@ -30,7 +30,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #endif
 
 namespace content {
@@ -65,8 +65,8 @@ bool IsGpuMemoryBufferFactoryConfigurationSupported(
                                                   configuration.usage);
 #endif
 #if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_BUFFER:
-      return GpuMemoryBufferFactoryOzoneNativeBuffer::
+    case gfx::OZONE_NATIVE_PIXMAP:
+      return GpuMemoryBufferFactoryOzoneNativePixmap::
           IsGpuMemoryBufferConfigurationSupported(configuration.format,
                                                   configuration.usage);
 #endif
@@ -178,7 +178,7 @@ uint32 BrowserGpuMemoryBufferManager::GetImageTextureTarget(
 
     switch (type) {
       case gfx::SURFACE_TEXTURE_BUFFER:
-      case gfx::OZONE_NATIVE_BUFFER:
+      case gfx::OZONE_NATIVE_PIXMAP:
         // GPU memory buffers that are shared with the GL using EGLImages
         // require TEXTURE_EXTERNAL_OES.
         return GL_TEXTURE_EXTERNAL_OES;

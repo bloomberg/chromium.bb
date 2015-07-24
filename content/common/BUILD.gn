@@ -272,10 +272,10 @@ source_set("common") {
     sources -= [
       "cursors/webcursor_ozone.cc",
       "font_list_ozone.cc",
-      "gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.cc",
-      "gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h",
-      "gpu/gpu_memory_buffer_factory_ozone_native_buffer.cc",
-      "gpu/gpu_memory_buffer_factory_ozone_native_buffer.h",
+      "gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.cc",
+      "gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h",
+      "gpu/gpu_memory_buffer_factory_ozone_native_pixmap.cc",
+      "gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h",
     ]
   }
 

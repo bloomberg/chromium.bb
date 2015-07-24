@@ -13,7 +13,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_linux_dma_buffer.h"
 #include "ui/gl/scoped_binders.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -128,7 +128,7 @@ bool VaapiDrmPicture::Initialize() {
 
   gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
                                           texture_id());
-  gl_image_ = ui::GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForPixmap(
+  gl_image_ = ui::GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForPixmap(
       pixmap_, size(), gfx::GpuMemoryBuffer::BGRA_8888, GL_BGRA_EXT);
   if (!gl_image_) {
     LOG(ERROR) << "Failed to create GLImage";

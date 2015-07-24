@@ -18,7 +18,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 #endif
 
 namespace content {
@@ -62,8 +62,8 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
           handle, size, format, callback);
 #endif
 #if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_BUFFER:
-      return GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
+    case gfx::OZONE_NATIVE_PIXMAP:
+      return GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
           handle, size, format, usage, callback);
 #endif
     default:

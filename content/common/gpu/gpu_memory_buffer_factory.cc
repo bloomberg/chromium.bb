@@ -16,7 +16,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #endif
 
 namespace content {
@@ -32,7 +32,7 @@ void GpuMemoryBufferFactory::GetSupportedTypes(
     gfx::SURFACE_TEXTURE_BUFFER,
 #endif
 #if defined(USE_OZONE)
-    gfx::OZONE_NATIVE_BUFFER,
+    gfx::OZONE_NATIVE_PIXMAP,
 #endif
     gfx::SHARED_MEMORY_BUFFER
   };
@@ -54,8 +54,8 @@ scoped_ptr<GpuMemoryBufferFactory> GpuMemoryBufferFactory::Create(
       return make_scoped_ptr(new GpuMemoryBufferFactorySurfaceTexture);
 #endif
 #if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_BUFFER:
-      return make_scoped_ptr(new GpuMemoryBufferFactoryOzoneNativeBuffer);
+    case gfx::OZONE_NATIVE_PIXMAP:
+      return make_scoped_ptr(new GpuMemoryBufferFactoryOzoneNativePixmap);
 #endif
     default:
       NOTREACHED();

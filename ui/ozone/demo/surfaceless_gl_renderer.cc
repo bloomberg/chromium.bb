@@ -9,7 +9,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
 namespace ui {
 
@@ -28,7 +28,7 @@ SurfacelessGlRenderer::BufferWrapper::~BufferWrapper() {
 }
 
 bool SurfacelessGlRenderer::BufferWrapper::Initialize(
-    GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory,
+    GpuMemoryBufferFactoryOzoneNativePixmap* buffer_factory,
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
   glGenFramebuffersEXT(1, &gl_fb_);
@@ -81,11 +81,10 @@ void SurfacelessGlRenderer::BufferWrapper::SchedulePlane() {
 SurfacelessGlRenderer::SurfacelessGlRenderer(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
-    GpuMemoryBufferFactoryOzoneNativeBuffer* buffer_factory)
+    GpuMemoryBufferFactoryOzoneNativePixmap* buffer_factory)
     : GlRenderer(widget, size),
       buffer_factory_(buffer_factory),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in

@@ -21,7 +21,7 @@
 #include "ui/ozone/demo/gl_renderer.h"
 #include "ui/ozone/demo/software_renderer.h"
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -59,7 +59,7 @@ class RendererFactory {
   ui::OzoneGpuTestHelper gpu_helper_;
 
   // Used by the surfaceless renderers to allocate buffers.
-  ui::GpuMemoryBufferFactoryOzoneNativeBuffer buffer_factory_;
+  ui::GpuMemoryBufferFactoryOzoneNativePixmap buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFactory);
 };

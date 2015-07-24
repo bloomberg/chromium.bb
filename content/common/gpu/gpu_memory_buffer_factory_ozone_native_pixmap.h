@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_BUFFER_H_
-#define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_BUFFER_H_
+#ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
+#define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 
 #include "base/memory/ref_counted.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
 namespace gfx {
 class GLImage;
@@ -18,11 +18,11 @@ class GLImage;
 
 namespace content {
 
-class GpuMemoryBufferFactoryOzoneNativeBuffer : public GpuMemoryBufferFactory,
+class GpuMemoryBufferFactoryOzoneNativePixmap : public GpuMemoryBufferFactory,
                                                 public gpu::ImageFactory {
  public:
-  GpuMemoryBufferFactoryOzoneNativeBuffer();
-  ~GpuMemoryBufferFactoryOzoneNativeBuffer() override;
+  GpuMemoryBufferFactoryOzoneNativePixmap();
+  ~GpuMemoryBufferFactoryOzoneNativePixmap() override;
 
   static bool IsGpuMemoryBufferConfigurationSupported(
       gfx::GpuMemoryBuffer::Format format,
@@ -51,11 +51,11 @@ class GpuMemoryBufferFactoryOzoneNativeBuffer : public GpuMemoryBufferFactory,
       int client_id) override;
 
  private:
-  ui::GpuMemoryBufferFactoryOzoneNativeBuffer ozone_native_buffer_factory_;
+  ui::GpuMemoryBufferFactoryOzoneNativePixmap ozone_native_pixmap_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryOzoneNativeBuffer);
+  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryOzoneNativePixmap);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_BUFFER_H_
+#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_

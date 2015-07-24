@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
 #include "base/logging.h"
 #include "ui/gl/gl_image_egl.h"
@@ -170,15 +170,13 @@ std::pair<uint32_t, uint32_t> GetIndex(gfx::GpuMemoryBufferId id,
 }
 }  // namespace
 
-GpuMemoryBufferFactoryOzoneNativeBuffer::
-    GpuMemoryBufferFactoryOzoneNativeBuffer() {
-}
+GpuMemoryBufferFactoryOzoneNativePixmap::
+    GpuMemoryBufferFactoryOzoneNativePixmap() {}
 
-GpuMemoryBufferFactoryOzoneNativeBuffer::
-    ~GpuMemoryBufferFactoryOzoneNativeBuffer() {
-}
+GpuMemoryBufferFactoryOzoneNativePixmap::
+    ~GpuMemoryBufferFactoryOzoneNativePixmap() {}
 
-bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
+bool GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
@@ -200,7 +198,7 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
   return true;
 }
 
-void GpuMemoryBufferFactoryOzoneNativeBuffer::DestroyGpuMemoryBuffer(
+void GpuMemoryBufferFactoryOzoneNativePixmap::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
   base::AutoLock lock(native_pixmap_map_lock_);
@@ -208,7 +206,7 @@ void GpuMemoryBufferFactoryOzoneNativeBuffer::DestroyGpuMemoryBuffer(
 }
 
 scoped_refptr<gfx::GLImage>
-GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForGpuMemoryBuffer(
+GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
@@ -228,7 +226,7 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForGpuMemoryBuffer(
 }
 
 scoped_refptr<gfx::GLImage>
-GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForPixmap(
+GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForPixmap(
     scoped_refptr<NativePixmap> pixmap,
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,

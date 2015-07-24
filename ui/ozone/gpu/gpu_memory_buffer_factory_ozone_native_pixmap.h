@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_BUFFER_H_
-#define UI_OZONE_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_BUFFER_H_
+#ifndef UI_OZONE_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
+#define UI_OZONE_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 
 #include <map>
 
@@ -22,13 +22,13 @@ class GLImage;
 namespace ui {
 class NativePixmap;
 
-class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
-  typedef std::map<std::pair<uint32_t, uint32_t>, scoped_refptr<NativePixmap> >
+class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap {
+  typedef std::map<std::pair<uint32_t, uint32_t>, scoped_refptr<NativePixmap>>
       BufferToPixmapMap;
 
  public:
-  GpuMemoryBufferFactoryOzoneNativeBuffer();
-  virtual ~GpuMemoryBufferFactoryOzoneNativeBuffer();
+  GpuMemoryBufferFactoryOzoneNativePixmap();
+  virtual ~GpuMemoryBufferFactoryOzoneNativePixmap();
 
   // Creates a GPU memory buffer identified by |id|.
   // It can be called on any thread.
@@ -64,4 +64,4 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_BUFFER_H_
+#endif  // UI_OZONE_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_

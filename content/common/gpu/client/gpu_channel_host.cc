@@ -371,7 +371,7 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
     }
     case gfx::IO_SURFACE_BUFFER:
     case gfx::SURFACE_TEXTURE_BUFFER:
-    case gfx::OZONE_NATIVE_BUFFER:
+    case gfx::OZONE_NATIVE_PIXMAP:
       *requires_sync_point = true;
       return source_handle;
     default:

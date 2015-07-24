@@ -21,8 +21,8 @@
         'OZONE_GPU_IMPLEMENTATION',
       ],
       'sources': [
-        'gpu_memory_buffer_factory_ozone_native_buffer.cc',
-        'gpu_memory_buffer_factory_ozone_native_buffer.h',
+        'gpu_memory_buffer_factory_ozone_native_pixmap.cc',
+        'gpu_memory_buffer_factory_ozone_native_pixmap.h',
       ],
     },
   ],
