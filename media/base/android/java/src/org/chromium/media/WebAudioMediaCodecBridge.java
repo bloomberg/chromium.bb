@@ -57,16 +57,45 @@ class WebAudioMediaCodecBridge {
 
         MediaFormat format = extractor.getTrackFormat(0);
 
-        // Number of channels specified in the file
-        int inputChannelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+        // If we are unable to get the input channel count, the sample
+        // rate or the mime type for any reason, just give up.
+        // Without these, we don't know what to do.
+
+        int inputChannelCount;
+        try {
+            // Number of channels specified in the file
+            inputChannelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+        } catch (Exception e) {
+            // Give up.
+            Log.w(TAG, "Unable to determine number of channels");
+            encodedFD.detachFd();
+            return false;
+        }
 
         // Number of channels the decoder will provide. (Not
         // necessarily the same as inputChannelCount.  See
         // crbug.com/266006.)
         int outputChannelCount = inputChannelCount;
 
-        int sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-        String mime = format.getString(MediaFormat.KEY_MIME);
+        int sampleRate;
+        try {
+            sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+        } catch (Exception e) {
+            // Give up.
+            Log.w(TAG, "Unable to determine sample rate");
+            encodedFD.detachFd();
+            return false;
+        }
+
+        String mime;
+        try {
+            mime = format.getString(MediaFormat.KEY_MIME);
+        } catch (Exception e) {
+            // Give up.
+            Log.w(TAG, "Unable to determine type of encoding used by the file");
+            encodedFD.detachFd();
+            return false;
+        }
 
         long durationMicroseconds = 0;
         if (format.containsKey(MediaFormat.KEY_DURATION)) {
@@ -101,12 +130,14 @@ class WebAudioMediaCodecBridge {
             codec.configure(format, null /* surface */, null /* crypto */, 0 /* flags */);
         } catch (Exception e) {
             Log.w(TAG, "Unable to configure codec for format " + format, e);
+            encodedFD.detachFd();
             return false;
         }
         try {
             codec.start();
         } catch (Exception e) {
             Log.w(TAG, "Unable to start()", e);
+            encodedFD.detachFd();
             return false;
         }
 
@@ -115,6 +146,7 @@ class WebAudioMediaCodecBridge {
             codecInputBuffers = codec.getInputBuffers();
         } catch (Exception e) {
             Log.w(TAG, "getInputBuffers() failed", e);
+            encodedFD.detachFd();
             return false;
         }
         ByteBuffer[] codecOutputBuffers;
@@ -122,6 +154,7 @@ class WebAudioMediaCodecBridge {
             codecOutputBuffers = codec.getOutputBuffers();
         } catch (Exception e) {
             Log.w(TAG, "getOutputBuffers() failed", e);
+            encodedFD.detachFd();
             return false;
         }
 
