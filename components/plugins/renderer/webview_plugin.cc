@@ -50,7 +50,8 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
       web_view_(WebView::create(this)),
       finished_loading_(false),
       focused_(false),
-      animationNeeded_(false) {
+      // At least one animation must run before any paint.
+      animationNeeded_(true) {
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
@@ -120,7 +121,7 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
     // scheduleAnimation may be invoked before this initialize call (which
     // comes through the widget update process). It doesn't hurt to mark
     // for layout again, and it does help us in the race-condition situation.
-    container_->setNeedsLayout();
+    scheduleAnimation();
 
     old_title_ = container_->element().getAttribute("title");
 
