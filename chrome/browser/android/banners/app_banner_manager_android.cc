@@ -55,7 +55,7 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
   if (!CheckPlatformAndId(platform, id))
     return false;
 
-  banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
+  banners::TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_REQUESTED);
 
   // Send the info to the Java side to get info about the app.
   JNIEnv* env = base::android::AttachCurrentThread();

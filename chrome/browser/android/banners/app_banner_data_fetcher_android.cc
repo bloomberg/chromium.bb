@@ -5,6 +5,7 @@
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
+#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -55,16 +56,20 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
 
     infobar =
         new AppBannerInfoBarAndroid(delegate.Pass(), web_app_data().start_url);
-    if (infobar)
+    if (infobar) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
+      TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
+    }
   } else {
     scoped_ptr<AppBannerInfoBarDelegateAndroid> delegate(
         new AppBannerInfoBarDelegateAndroid(
             event_request_id(), title, new SkBitmap(*icon), native_app_data_,
             native_app_package_));
     infobar = new AppBannerInfoBarAndroid(delegate.Pass(), native_app_data_);
-    if (infobar)
+    if (infobar) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
+      TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
+    }
   }
   InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(make_scoped_ptr(infobar));

@@ -5,6 +5,7 @@
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
+#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,6 +57,7 @@ void AppBannerDataFetcherDesktop::ShowBanner(const SkBitmap* icon,
       bookmark_app_helper_.get(), event_request_id());
   if (infobar) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");
+    TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
   }
 }
 

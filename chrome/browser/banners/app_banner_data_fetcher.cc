@@ -250,7 +250,6 @@ void AppBannerDataFetcher::RecordDidShowBanner(const std::string& event_name) {
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           event_name,
                                           web_contents->GetURL());
-  banners::TrackDisplayEvent(DISPLAY_EVENT_CREATED);
 }
 
 void AppBannerDataFetcher::OnDidGetManifest(
@@ -291,7 +290,7 @@ void AppBannerDataFetcher::OnDidGetManifest(
     return;
   }
 
-  banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
+  banners::TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
   // Check to see if there is a single service worker controlling this page
   // and the manifest's start url.

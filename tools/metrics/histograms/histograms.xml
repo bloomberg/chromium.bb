@@ -50564,6 +50564,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="User ignored the banner last time"/>
   <int value="7" label="Manifest lacks a service worker"/>
   <int value="8" label="Site hasn't been visited frequently enough"/>
+  <int value="9" label="Native app banner was requested by the site"/>
+  <int value="10" label="Web app banner was requested by the site"/>
+  <int value="11" label="Native app banner created"/>
+  <int value="12" label="Web app banner created"/>
 </enum>
 
 <enum name="AppBannersInstallEvent" type="int">
