@@ -78,36 +78,6 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   test_rvh()->CreateNewFullscreenWidget(routing_id);
 }
 
-// Makes sure that the RenderViewHost is not waiting for an unload ack when
-// reloading a page. If this is not the case, when reloading, the contents may
-// get closed out even though the user pressed the reload button.
-TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
-  const GURL url1("http://foo1");
-  const GURL url2("http://foo2");
-
-  // This test is for a subtle timing bug. Here's the sequence that triggered
-  // the bug:
-  // . go to a page.
-  // . go to a new page, preferably one that takes a while to resolve, such
-  //   as one on a site that doesn't exist.
-  //   . After this step IsWaitingForUnloadACK returns true on the first RVH.
-  // . click stop before the page has been commited.
-  // . click reload.
-  //   . IsWaitingForUnloadACK still returns true, and if the hang monitor fires
-  //     the contents gets closed.
-
-  NavigateAndCommit(url1);
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  // Simulate the ClosePage call which is normally sent by the net::URLRequest.
-  test_rvh()->ClosePage();
-  // Needed so that navigations are not suspended on the RFH.
-  main_test_rfh()->SendBeforeUnloadACK(true);
-  contents()->Stop();
-  controller().Reload(false);
-  EXPECT_FALSE(main_test_rfh()->IsWaitingForUnloadACK());
-}
-
 // Ensure we do not grant bindings to a process shared with unprivileged views.
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
   // Create another view in the same process.
