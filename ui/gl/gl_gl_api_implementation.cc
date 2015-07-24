@@ -334,9 +334,9 @@ const GLVersionInfo* GetGLVersionInfo() {
 }
 
 void InitializeDynamicGLBindingsGL(GLContext* context) {
+  g_real_gl->InitializeFilteredExtensions();
   g_driver_gl.InitializeCustomDynamicBindings(context);
   DCHECK(context && context->IsCurrent(NULL) && !g_version_info);
-  g_real_gl->InitializeWithContext();
   g_version_info = new GLVersionInfo(
       context->GetGLVersion().c_str(),
       context->GetGLRenderer().c_str(),
@@ -404,6 +404,9 @@ void GLApiBase::InitializeBase(DriverGL* driver) {
 }
 
 RealGLApi::RealGLApi() {
+#if DCHECK_IS_ON()
+  filtered_exts_initialized_ = false;
+#endif
 }
 
 RealGLApi::~RealGLApi() {
@@ -427,12 +430,11 @@ void RealGLApi::InitializeWithCommandLine(DriverGL* driver,
   }
 }
 
-void RealGLApi::InitializeWithContext() {
-  InitializeFilteredExtensions();
-}
-
 void RealGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
-  if (!filtered_exts_.empty() && pname == GL_NUM_EXTENSIONS) {
+  if (pname == GL_NUM_EXTENSIONS && disabled_exts_.size()) {
+#if DCHECK_IS_ON()
+    DCHECK(filtered_exts_initialized_);
+#endif
     *params = static_cast<GLint>(filtered_exts_.size());
   } else {
     GLApiBase::glGetIntegervFn(pname, params);
@@ -440,14 +442,20 @@ void RealGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
 }
 
 const GLubyte* RealGLApi::glGetStringFn(GLenum name) {
-  if (!filtered_exts_.empty() && name == GL_EXTENSIONS) {
+  if (name == GL_EXTENSIONS && disabled_exts_.size()) {
+#if DCHECK_IS_ON()
+    DCHECK(filtered_exts_initialized_);
+#endif
     return reinterpret_cast<const GLubyte*>(filtered_exts_str_.c_str());
   }
   return GLApiBase::glGetStringFn(name);
 }
 
 const GLubyte* RealGLApi::glGetStringiFn(GLenum name, GLuint index) {
-  if (!filtered_exts_str_.empty() && name == GL_EXTENSIONS) {
+  if (name == GL_EXTENSIONS && disabled_exts_.size()) {
+#if DCHECK_IS_ON()
+    DCHECK(filtered_exts_initialized_);
+#endif
     if (index >= filtered_exts_.size()) {
       return NULL;
     }
@@ -465,17 +473,15 @@ void RealGLApi::glFinishFn() {
 }
 
 void RealGLApi::InitializeFilteredExtensions() {
-  if (!disabled_exts_.empty() && filtered_exts_.empty()) {
-    DCHECK(filtered_exts_.empty() && filtered_exts_str_.empty());
-    // Fill in filtered_exts_ vector first.
+  if (disabled_exts_.size()) {
+    filtered_exts_.clear();
     if (gfx::GetGLImplementation() !=
         gfx::kGLImplementationDesktopGLCoreProfile) {
-      const char* gl_extensions = reinterpret_cast<const char*>(
-          GLApiBase::glGetStringFn(GL_EXTENSIONS));
-      if (gl_extensions) {
-        filtered_exts_ = base::SplitString(
-            gl_extensions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      }
+      filtered_exts_str_ =
+          FilterGLExtensionList(reinterpret_cast<const char*>(
+                                    GLApiBase::glGetStringFn(GL_EXTENSIONS)),
+                                disabled_exts_);
+      base::SplitString(filtered_exts_str_, ' ', &filtered_exts_);
     } else {
       GLint num_extensions = 0;
       GLApiBase::glGetIntegervFn(GL_NUM_EXTENSIONS, &num_extensions);
@@ -483,20 +489,16 @@ void RealGLApi::InitializeFilteredExtensions() {
         const char* gl_extension = reinterpret_cast<const char*>(
             GLApiBase::glGetStringiFn(GL_EXTENSIONS, i));
         DCHECK(gl_extension != NULL);
-        filtered_exts_.push_back(gl_extension);
+        if (std::find(disabled_exts_.begin(), disabled_exts_.end(),
+                      gl_extension) == disabled_exts_.end()) {
+          filtered_exts_.push_back(gl_extension);
+        }
       }
+      filtered_exts_str_ = base::JoinString(filtered_exts_, " ");
     }
-
-    // Filter out extensions from the command line.
-    for (const std::string& disabled_ext : disabled_exts_) {
-      filtered_exts_.erase(std::remove(filtered_exts_.begin(),
-                                       filtered_exts_.end(),
-                                       disabled_ext),
-                           filtered_exts_.end());
-    }
-
-    // Construct filtered extensions string for GL_EXTENSIONS string lookups.
-    filtered_exts_str_ = base::JoinString(filtered_exts_, " ");
+#if DCHECK_IS_ON()
+    filtered_exts_initialized_ = true;
+#endif
   }
 }
 

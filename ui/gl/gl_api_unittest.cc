@@ -5,11 +5,33 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_timing.h"
 
 namespace gfx {
+
+class GLContextFake : public GLContext {
+ public:
+  bool Initialize(GLSurface* compatible_surface,
+                  GpuPreference gpu_preference) override {
+    return true;
+  }
+  void Destroy() override {}
+  bool MakeCurrent(GLSurface* surface) override { return true; }
+  void ReleaseCurrent(GLSurface* surface) override {}
+  bool IsCurrent(GLSurface* surface) override { return true; }
+  void* GetHandle() override { return NULL; }
+  scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() override {
+    return NULL;
+  }
+  void OnSetSwapInterval(int interval) override {}
+  GLContextFake() : GLContext(NULL) {}
+ protected:
+  ~GLContextFake() override {}
+};
 
 class GLApiTest : public testing::Test {
  public:
@@ -18,17 +40,25 @@ class GLApiTest : public testing::Test {
     num_fake_extension_strings_ = 0;
     fake_extension_strings_ = nullptr;
 
-    driver_.reset(new DriverGL());
+    g_current_gl_context_tls = new base::ThreadLocalPointer<GLApi>;
     api_.reset(new RealGLApi());
 
-    driver_->fn.glGetStringFn = &FakeGetString;
-    driver_->fn.glGetStringiFn = &FakeGetStringi;
-    driver_->fn.glGetIntegervFn = &FakeGetIntegervFn;
+    g_driver_gl.ClearBindings();
+    g_driver_gl.fn.glGetStringFn = &FakeGetString;
+    g_driver_gl.fn.glGetStringiFn = &FakeGetStringi;
+    g_driver_gl.fn.glGetIntegervFn = &FakeGetIntegervFn;
+
+    SetGLGetProcAddressProc(
+        static_cast<GLGetProcAddressProc>(&FakeGLGetProcAddress));
+  }
+
+  static void* GL_BINDING_CALL FakeGLGetProcAddress(const char *proc) {
+    return reinterpret_cast<void*>(0x1);
   }
 
   void TearDown() override {
     api_.reset(nullptr);
-    driver_.reset(nullptr);
+    delete g_current_gl_context_tls;
 
     SetGLImplementation(kGLImplementationNone);
     fake_extension_string_ = "";
@@ -38,11 +68,15 @@ class GLApiTest : public testing::Test {
 
   void InitializeAPI(base::CommandLine* command_line) {
     api_.reset(new RealGLApi());
+    g_current_gl_context_tls->Set(api_.get());
+
+    fake_context_ = new GLContextFake();
     if (command_line)
-      api_->InitializeWithCommandLine(driver_.get(), command_line);
+      api_->InitializeWithCommandLine(&g_driver_gl, command_line);
     else
-      api_->Initialize(driver_.get());
-    api_->InitializeWithContext();
+      api_->Initialize(&g_driver_gl);
+    api_->InitializeFilteredExtensions();
+    g_driver_gl.InitializeCustomDynamicBindings(fake_context_.get());
   }
 
   void SetFakeExtensionString(const char* fake_string) {
@@ -92,6 +126,7 @@ class GLApiTest : public testing::Test {
   static uint32_t num_fake_extension_strings_;
   static const char** fake_extension_strings_;
 
+  scoped_refptr<GLContext> fake_context_;
   scoped_ptr<DriverGL> driver_;
   scoped_ptr<RealGLApi> api_;
 };
@@ -117,6 +152,25 @@ TEST_F(GLApiTest, DisabledExtensionStringTest) {
   InitializeAPI(&command_line);
 
   EXPECT_STREQ(kFilteredExtensions, GetExtensions());
+}
+
+TEST_F(GLApiTest, DisabledExtensionBitTest) {
+  static const char* kFakeExtensions[] = {
+    "GL_ARB_timer_query"
+  };
+  static const char* kFakeDisabledExtensions = "GL_ARB_timer_query";
+
+  SetFakeExtensionStrings(kFakeExtensions, arraysize(kFakeExtensions));
+  InitializeAPI(nullptr);
+
+  EXPECT_TRUE(g_driver_gl.ext.b_GL_ARB_timer_query);
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kDisableGLExtensions,
+                                 kFakeDisabledExtensions);
+  InitializeAPI(&command_line);
+
+  EXPECT_FALSE(g_driver_gl.ext.b_GL_ARB_timer_query);
 }
 
 TEST_F(GLApiTest, DisabledExtensionStringIndexTest) {
