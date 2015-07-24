@@ -1436,6 +1436,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
 
   parent->AddChild(child);
   child->SetBlendMode(blend_mode);
+  child->SetOpacity(0.5f);
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
@@ -1447,7 +1448,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   // default blend mode, since the render surface becomes responsible for
   // applying the blend mode.
   ASSERT_TRUE(child->render_surface());
-  EXPECT_EQ(1U, child->render_surface()->layer_list().size());
+  EXPECT_EQ(1.0f, child->draw_opacity());
+  EXPECT_EQ(0.5f, child->render_surface()->draw_opacity());
   EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_properties().blend_mode);
 }
 
