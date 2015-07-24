@@ -22,6 +22,7 @@ from benchmarks import image_decoding
 from benchmarks import indexeddb_perf
 from benchmarks import jetstream
 from benchmarks import kraken
+from benchmarks import memory
 from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
 from benchmarks import repaint
@@ -89,7 +90,8 @@ _BLACK_LIST_TEST_MODULES = {
 # slow on Android. So we create a separate set of black list only for Android.
 _ANDROID_BLACK_LIST_MODULES = {
     kraken,  # Takes 275 seconds on Android.
-    sunspider  # Takes 163 seconds on Android.
+    sunspider,  # Takes 163 seconds on Android.
+    memory  # Often times out on bots, crbug.com/513767
 }
 
 
