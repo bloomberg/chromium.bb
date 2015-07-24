@@ -62,17 +62,22 @@ void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {
   if (current_surface_id_ == id && device_scale_factor_ == device_scale_factor)
     return;
 
+  TRACE_EVENT0("cc", "Display::SetSurfaceId");
+
   current_surface_id_ = id;
   device_scale_factor_ = device_scale_factor;
 
   UpdateRootSurfaceResourcesLocked();
   if (scheduler_)
-    scheduler_->EntireDisplayDamaged(id);
+    scheduler_->SetNewRootSurface(id);
 }
 
 void Display::Resize(const gfx::Size& size) {
   if (size == current_surface_size_)
     return;
+
+  TRACE_EVENT0("cc", "Display::Resize");
+
   // Need to ensure all pending swaps have executed before the window is
   // resized, or D3D11 will scale the swap output.
   if (settings_.finish_rendering_on_resize) {
@@ -85,7 +90,7 @@ void Display::Resize(const gfx::Size& size) {
   swapped_since_resize_ = false;
   current_surface_size_ = size;
   if (scheduler_)
-    scheduler_->EntireDisplayDamaged(current_surface_id_);
+    scheduler_->DisplayResized();
 }
 
 void Display::SetExternalClip(const gfx::Rect& clip) {
@@ -146,22 +151,29 @@ void Display::UpdateRootSurfaceResourcesLocked() {
 }
 
 bool Display::DrawAndSwap() {
-  if (current_surface_id_.is_null())
+  TRACE_EVENT0("cc", "Display::DrawAndSwap");
+
+  if (current_surface_id_.is_null()) {
+    TRACE_EVENT_INSTANT0("cc", "No root surface.", TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   InitializeRenderer();
-  if (!output_surface_)
+  if (!output_surface_) {
+    TRACE_EVENT_INSTANT0("cc", "No output surface", TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   if (output_surface_->SurfaceIsSuspendForRecycle())
     return false;
 
   scoped_ptr<CompositorFrame> frame =
       aggregator_->Aggregate(current_surface_id_);
-  if (!frame)
+  if (!frame) {
+    TRACE_EVENT_INSTANT0("cc", "Empty aggregated frame.",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
-
-  TRACE_EVENT0("cc", "Display::DrawAndSwap");
+  }
 
   // Run callbacks early to allow pipelining.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -169,6 +181,7 @@ bool Display::DrawAndSwap() {
     if (surface)
       surface->RunDrawCallbacks(SurfaceDrawStatus::DRAWN);
   }
+
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
   frame->metadata.latency_info.insert(frame->metadata.latency_info.end(),
@@ -187,9 +200,13 @@ bool Display::DrawAndSwap() {
     have_damage =
         !frame_data->render_pass_list.back()->damage_rect.size().IsEmpty();
   }
-  bool avoid_swap = surface_size != current_surface_size_;
+
+  bool size_matches = surface_size == current_surface_size_;
+  if (!size_matches)
+    TRACE_EVENT_INSTANT0("cc", "Size missmatch.", TRACE_EVENT_SCOPE_THREAD);
+
   bool should_draw = !frame->metadata.latency_info.empty() ||
-                     have_copy_requests || (have_damage && !avoid_swap);
+                     have_copy_requests || (have_damage && size_matches);
 
   if (should_draw) {
     gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
@@ -202,9 +219,12 @@ bool Display::DrawAndSwap() {
     renderer_->DrawFrame(&frame_data->render_pass_list, device_scale_factor_,
                          device_viewport_rect, device_clip_rect,
                          disable_picture_quad_image_filtering);
+  } else {
+    TRACE_EVENT_INSTANT0("cc", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
 
-  if (should_draw && !avoid_swap) {
+  bool should_swap = should_draw && size_matches;
+  if (should_swap) {
     swapped_since_resize_ = true;
     for (auto& latency : frame->metadata.latency_info) {
       TRACE_EVENT_FLOW_STEP0(
@@ -216,6 +236,7 @@ bool Display::DrawAndSwap() {
     benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     renderer_->SwapBuffers(frame->metadata);
   } else {
+    TRACE_EVENT_INSTANT0("cc", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
     stored_latency_info_.insert(stored_latency_info_.end(),
                                 frame->metadata.latency_info.begin(),
                                 frame->metadata.latency_info.end());

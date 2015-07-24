@@ -36,7 +36,8 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
 
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();
-  virtual void EntireDisplayDamaged(SurfaceId root_surface_id);
+  virtual void DisplayResized();
+  virtual void SetNewRootSurface(SurfaceId root_surface_id);
   virtual void SurfaceDamaged(SurfaceId surface_id);
 
   virtual void DidSwapBuffers();
@@ -68,7 +69,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
 
   bool inside_begin_frame_deadline_interval_;
   bool needs_draw_;
-  bool entire_display_damaged_;
+  bool expecting_root_surface_damage_because_of_resize_;
   bool all_active_child_surfaces_ready_to_draw_;
 
   int pending_swaps_;

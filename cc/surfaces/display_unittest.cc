@@ -89,13 +89,16 @@ class TestDisplayScheduler : public DisplayScheduler {
                        base::NullTaskRunner* task_runner)
       : DisplayScheduler(client, begin_frame_source, task_runner, 1),
         damaged(false),
-        entire_display_damaged(false),
+        display_resized_(false),
+        has_new_root_surface(false),
         swapped(false) {}
 
   ~TestDisplayScheduler() override {}
 
-  void EntireDisplayDamaged(SurfaceId root_surface_id) override {
-    entire_display_damaged = true;
+  void DisplayResized() override { display_resized_ = true; }
+
+  void SetNewRootSurface(SurfaceId root_surface_id) override {
+    has_new_root_surface = true;
   }
 
   void SurfaceDamaged(SurfaceId surface_id) override {
@@ -107,11 +110,13 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   void ResetDamageForTest() {
     damaged = false;
-    entire_display_damaged = false;
+    display_resized_ = false;
+    has_new_root_surface = false;
   }
 
   bool damaged;
-  bool entire_display_damaged;
+  bool display_resized_;
+  bool has_new_root_surface;
   bool swapped;
 };
 
@@ -135,15 +140,17 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   SurfaceId surface_id(7u);
   EXPECT_FALSE(scheduler.damaged);
-  EXPECT_FALSE(scheduler.entire_display_damaged);
+  EXPECT_FALSE(scheduler.has_new_root_surface);
   display.SetSurfaceId(surface_id, 1.f);
   EXPECT_FALSE(scheduler.damaged);
-  EXPECT_TRUE(scheduler.entire_display_damaged);
+  EXPECT_FALSE(scheduler.display_resized_);
+  EXPECT_TRUE(scheduler.has_new_root_surface);
 
   scheduler.ResetDamageForTest();
   display.Resize(gfx::Size(100, 100));
   EXPECT_FALSE(scheduler.damaged);
-  EXPECT_TRUE(scheduler.entire_display_damaged);
+  EXPECT_TRUE(scheduler.display_resized_);
+  EXPECT_FALSE(scheduler.has_new_root_surface);
 
   factory_.Create(surface_id);
 
@@ -158,7 +165,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
   scheduler.ResetDamageForTest();
   SubmitFrame(&pass_list, surface_id);
   EXPECT_TRUE(scheduler.damaged);
-  EXPECT_FALSE(scheduler.entire_display_damaged);
+  EXPECT_FALSE(scheduler.display_resized_);
+  EXPECT_FALSE(scheduler.has_new_root_surface);
 
   EXPECT_FALSE(scheduler.swapped);
   EXPECT_EQ(0u, output_surface_ptr_->num_sent_frames());
@@ -183,7 +191,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.ResetDamageForTest();
     SubmitFrame(&pass_list, surface_id);
     EXPECT_TRUE(scheduler.damaged);
-    EXPECT_FALSE(scheduler.entire_display_damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
 
     scheduler.swapped = false;
     display.DrawAndSwap();
@@ -208,7 +217,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.ResetDamageForTest();
     SubmitFrame(&pass_list, surface_id);
     EXPECT_TRUE(scheduler.damaged);
-    EXPECT_FALSE(scheduler.entire_display_damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
 
     scheduler.swapped = false;
     display.DrawAndSwap();
@@ -227,7 +237,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.ResetDamageForTest();
     SubmitFrame(&pass_list, surface_id);
     EXPECT_TRUE(scheduler.damaged);
-    EXPECT_FALSE(scheduler.entire_display_damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
 
     scheduler.swapped = false;
     display.DrawAndSwap();
@@ -249,7 +260,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.ResetDamageForTest();
     SubmitFrame(&pass_list, surface_id);
     EXPECT_TRUE(scheduler.damaged);
-    EXPECT_FALSE(scheduler.entire_display_damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
 
     scheduler.swapped = false;
     display.DrawAndSwap();
@@ -277,7 +289,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     factory_.SubmitFrame(surface_id, frame.Pass(),
                          SurfaceFactory::DrawCallback());
     EXPECT_TRUE(scheduler.damaged);
-    EXPECT_FALSE(scheduler.entire_display_damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
 
     scheduler.swapped = false;
     display.DrawAndSwap();
@@ -308,7 +321,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     factory_.SubmitFrame(surface_id, frame.Pass(),
                          SurfaceFactory::DrawCallback());
     EXPECT_TRUE(scheduler.damaged);
-    EXPECT_FALSE(scheduler.entire_display_damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
 
     scheduler.swapped = false;
     display.Resize(gfx::Size(100, 100));
