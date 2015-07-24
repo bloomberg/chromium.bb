@@ -140,9 +140,14 @@ public:
         };
         class DataConsumerHandle final : public WebDataConsumerHandle {
         public:
-            DataConsumerHandle(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context) { }
+            static PassOwnPtr<WebDataConsumerHandle> create(const String& name, PassRefPtr<Context> context)
+            {
+                return adoptPtr(new DataConsumerHandle(name, context));
+            }
 
         private:
+            DataConsumerHandle(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context) { }
+
             Reader* obtainReaderInternal(Client*) { return new ReaderImpl(m_name, m_context); }
             const String m_name;
             RefPtr<Context> m_context;

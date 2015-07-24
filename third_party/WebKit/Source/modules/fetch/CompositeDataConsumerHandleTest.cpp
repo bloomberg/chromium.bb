@@ -64,7 +64,7 @@ public:
 private:
     void createHandle()
     {
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)), &m_updater);
+        m_handle = CompositeDataConsumerHandle::create(DataConsumerHandle::create("handle1", m_context), &m_updater);
         m_waitableEvent->signal();
     }
     void obtainReader()
@@ -74,7 +74,7 @@ private:
     }
     void update()
     {
-        m_updater->update(adoptPtr(new DataConsumerHandle("handle2", m_context)));
+        m_updater->update(DataConsumerHandle::create("handle2", m_context));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
@@ -98,7 +98,7 @@ public:
 private:
     void createHandle()
     {
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)), &m_updater);
+        m_handle = CompositeDataConsumerHandle::create(DataConsumerHandle::create("handle1", m_context), &m_updater);
         m_waitableEvent->signal();
     }
 
@@ -109,7 +109,7 @@ private:
     }
     void update()
     {
-        m_updater->update(adoptPtr(new DataConsumerHandle("handle2", m_context)));
+        m_updater->update(DataConsumerHandle::create("handle2", m_context));
         m_handle = nullptr;
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
@@ -134,7 +134,7 @@ public:
 private:
     void createHandle()
     {
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)), &m_updater);
+        m_handle = CompositeDataConsumerHandle::create(DataConsumerHandle::create("handle1", m_context), &m_updater);
         m_waitableEvent->signal();
     }
 
@@ -146,7 +146,7 @@ private:
     void update()
     {
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
-        m_updater->update(adoptPtr(new DataConsumerHandle("handle2", m_context)));
+        m_updater->update(DataConsumerHandle::create("handle2", m_context));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
@@ -171,7 +171,7 @@ public:
 private:
     void createHandle()
     {
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)), &m_updater);
+        m_handle = CompositeDataConsumerHandle::create(DataConsumerHandle::create("handle1", m_context), &m_updater);
         m_waitableEvent->signal();
     }
 
@@ -185,7 +185,7 @@ private:
     void update()
     {
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::reobtainReader, this)));
-        m_updater->update(adoptPtr(new DataConsumerHandle("handle2", m_context)));
+        m_updater->update(DataConsumerHandle::create("handle2", m_context));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
         m_updateEvent->signal();
@@ -217,7 +217,7 @@ public:
 private:
     void createHandle()
     {
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)), &m_updater);
+        m_handle = CompositeDataConsumerHandle::create(DataConsumerHandle::create("handle1", m_context), &m_updater);
         m_waitableEvent->signal();
     }
 
@@ -228,8 +228,8 @@ private:
     }
     void update()
     {
-        m_updater->update(adoptPtr(new DataConsumerHandle("handle2", m_context)));
-        m_updater->update(adoptPtr(new DataConsumerHandle("handle3", m_context)));
+        m_updater->update(DataConsumerHandle::create("handle2", m_context));
+        m_updater->update(DataConsumerHandle::create("handle3", m_context));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
