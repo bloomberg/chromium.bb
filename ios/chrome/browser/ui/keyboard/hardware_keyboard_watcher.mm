@@ -76,16 +76,18 @@ bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
       [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   CGRect screenBounds = [UIScreen mainScreen].bounds;
 
-  // Null frames are seen when moving a split dock. Split keyboard means
+  // CGRectZero frames are seen when moving a split dock. Split keyboard means
   // software keyboard.
-  bool hasNullFrames =
-      CGRectIsNull(beginKeyboardFrame) || CGRectIsNull(endKeyboardFrame);
+  bool hasCGRectZeroFrames =
+      CGRectEqualToRect(CGRectZero, beginKeyboardFrame) ||
+      CGRectEqualToRect(CGRectZero, endKeyboardFrame);
 
   bool keyboardIsPartiallyOnScreen =
       IntersectsButDoesNotInclude(screenBounds, beginKeyboardFrame) ||
       IntersectsButDoesNotInclude(screenBounds, endKeyboardFrame);
 
-  bool isInHarwareKeyboardMode = !hasNullFrames && keyboardIsPartiallyOnScreen;
+  bool isInHarwareKeyboardMode =
+      !hasCGRectZeroFrames && keyboardIsPartiallyOnScreen;
 
   UMA_HISTOGRAM_BOOLEAN("Omnibox.HardwareKeyboardModeEnabled",
                         isInHarwareKeyboardMode);
