@@ -792,8 +792,6 @@ void RenderWidget::Resize(const gfx::Size& new_size,
 
   // NOTE: We may have entered fullscreen mode without changing our size.
   bool fullscreen_change = is_fullscreen_granted_ != is_fullscreen_granted;
-  if (fullscreen_change)
-    WillToggleFullscreen();
   is_fullscreen_granted_ = is_fullscreen_granted;
   display_mode_ = display_mode;
 
@@ -1852,17 +1850,6 @@ void RenderWidget::SetHidden(bool hidden) {
     RenderThreadImpl::current()->WidgetHidden();
   else
     RenderThreadImpl::current()->WidgetRestored();
-}
-
-void RenderWidget::WillToggleFullscreen() {
-  if (!webwidget_)
-    return;
-
-  if (is_fullscreen_granted_) {
-    webwidget_->willExitFullScreen();
-  } else {
-    webwidget_->willEnterFullScreen();
-  }
 }
 
 void RenderWidget::DidToggleFullscreen() {

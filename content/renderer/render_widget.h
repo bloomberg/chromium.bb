@@ -506,7 +506,6 @@ class CONTENT_EXPORT RenderWidget
   // state.
   void SetHidden(bool hidden);
 
-  void WillToggleFullscreen();
   void DidToggleFullscreen();
 
   bool next_paint_is_resize_ack() const;
