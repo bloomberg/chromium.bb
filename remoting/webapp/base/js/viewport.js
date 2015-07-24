@@ -98,11 +98,12 @@ remoting.Viewport.choosePluginSize = function(
 
   // 2. If the host is still much smaller than the client, then up-scale to
   //    avoid wasting space, but only by an integer factor, to avoid blurring.
+  //    Don't drop the scale below that determined based on DPI, though.
   if (desktopSize.width * scale <= clientWidth &&
       desktopSize.height * scale <= clientHeight) {
     var scaleX = Math.floor(clientWidth / desktopSize.width);
     var scaleY = Math.floor(clientHeight / desktopSize.height);
-    scale = Math.min(scaleX, scaleY);
+    scale = Math.max(scale, Math.min(scaleX, scaleY));
     console.assert(scale >= 1.0, 'Bad scale: ' + scale + '.');
   }
 
