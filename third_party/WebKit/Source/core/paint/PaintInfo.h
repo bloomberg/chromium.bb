@@ -47,17 +47,17 @@ class LayoutBoxModelObject;
 class LayoutObject;
 
 struct PaintInfo {
-    PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior, PaintLayerFlags paintFlags,
+    PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
         LayoutObject* newPaintingRoot = 0, ListHashSet<LayoutInline*>* newOutlineObjects = 0,
         const LayoutBoxModelObject* newPaintContainer = 0)
         : context(newContext)
         , rect(newRect)
         , phase(newPhase)
-        , paintBehavior(newPaintBehavior)
         , paintingRoot(newPaintingRoot)
         , m_paintContainer(newPaintContainer)
         , m_outlineObjects(newOutlineObjects)
         , m_paintFlags(paintFlags)
+        , m_globalPaintFlags(globalPaintFlags)
     {
     }
 
@@ -83,7 +83,7 @@ struct PaintInfo {
     bool skipRootBackground() const { return m_paintFlags & PaintLayerPaintingSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return m_paintFlags & PaintLayerPaintingRootBackgroundOnly; }
 
-    bool isPrinting() const { return paintBehavior & PaintBehaviorPrinting; }
+    bool isPrinting() const { return m_globalPaintFlags & GlobalPaintPrinting; }
 
     DisplayItem::Type displayItemTypeForClipping() const { return DisplayItem::paintPhaseToClipBoxType(phase); }
 
@@ -92,8 +92,7 @@ struct PaintInfo {
     ListHashSet<LayoutInline*>* outlineObjects() const { return m_outlineObjects; }
     void setOutlineObjects(ListHashSet<LayoutInline*>* objects) { m_outlineObjects = objects; }
 
-    // TODO(jchaffraix): Split the GlobalPaintFlags out of paintBehavior into its own field.
-    GlobalPaintFlags globalPaintFlags() const { return toGlobalPaintFlags(paintBehavior); }
+    GlobalPaintFlags globalPaintFlags() const { return m_globalPaintFlags; }
 
     PaintLayerFlags paintFlags() const { return m_paintFlags; }
 
@@ -112,14 +111,14 @@ struct PaintInfo {
     GraphicsContext* context;
     IntRect rect; // dirty rect used for culling non-intersecting layoutObjects
     PaintPhase phase;
-    PaintBehavior paintBehavior; // TODO(jchaffraix): Remove once all behaviors have been moved to PaintLayerFlags.
     LayoutObject* paintingRoot; // used to draw just one element and its visual kids
 
 private:
     const LayoutBoxModelObject* m_paintContainer; // the box model object that originates the current painting
     ListHashSet<LayoutInline*>* m_outlineObjects; // used to list outlines that should be painted by a block with inline children
 
-    PaintLayerFlags m_paintFlags;
+    const PaintLayerFlags m_paintFlags;
+    const GlobalPaintFlags m_globalPaintFlags;
 };
 
 } // namespace blink

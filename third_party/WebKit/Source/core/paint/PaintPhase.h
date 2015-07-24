@@ -57,9 +57,8 @@ enum PaintPhase {
 
 enum PaintBehaviorFlags {
     PaintBehaviorNormal = 0,
-    // TODO(jchaffraix): Remove those 3 once we have migrated to GlobalPaintFlags.
+    // TODO(jchaffraix): Remove those once we have migrated to GlobalPaintFlags.
     PaintBehaviorSelectionOnly = 1 << 0,
-    PaintBehaviorPrinting = 1 << 1,
     PaintBehaviorFlattenCompositingLayers = 1 << 2,
 };
 
@@ -86,31 +85,6 @@ enum GlobalPaintFlag {
 };
 
 typedef unsigned GlobalPaintFlags;
-
-// TODO(jchaffraix): This is a scaffolding as we roll in GlobalPaintFlags
-// as a replacement for PaintBehavior. Remove when it's fully done.
-inline PaintBehavior toPaintBehavior(GlobalPaintFlags flags)
-{
-    PaintBehavior behavior = PaintBehaviorNormal;
-    if (flags & GlobalPaintSelectionOnly)
-        behavior |= PaintBehaviorSelectionOnly;
-    if (flags & GlobalPaintFlattenCompositingLayers)
-        behavior |= PaintBehaviorFlattenCompositingLayers;
-    if (flags & GlobalPaintPrinting)
-        behavior |= PaintBehaviorPrinting;
-    return behavior;
-}
-inline GlobalPaintFlags toGlobalPaintFlags(PaintBehavior behavior)
-{
-    GlobalPaintFlags flags = GlobalPaintNormalPhase;
-    if (behavior & PaintBehaviorSelectionOnly)
-        flags |= GlobalPaintSelectionOnly;
-    if (behavior & PaintBehaviorFlattenCompositingLayers)
-        flags |= GlobalPaintFlattenCompositingLayers;
-    if (behavior & PaintBehaviorPrinting)
-        flags |= GlobalPaintPrinting;
-    return flags;
-}
 
 } // namespace blink
 

@@ -489,7 +489,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
 
         // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
-        PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorNormal, 0);
+        PaintInfo info(context, maskRect, PaintPhaseTextClip, GlobalPaintNormalPhase, 0);
         if (box) {
             RootInlineBox& root = box->root();
             box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root.lineTop(), root.lineBottom());
