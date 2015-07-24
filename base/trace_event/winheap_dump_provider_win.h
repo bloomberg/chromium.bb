@@ -26,6 +26,10 @@ struct WinHeapInfo {
 // about them.
 class BASE_EXPORT WinHeapDumpProvider : public MemoryDumpProvider {
  public:
+  // Name of the allocated_objects dump. Use this to declare suballocator dumps
+  // from other dump providers.
+  static const char kAllocatedObjects[];
+
   static WinHeapDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.

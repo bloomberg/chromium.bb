@@ -7,28 +7,31 @@
 #include <windows.h>
 
 #include "base/debug/profiler.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/win/windows_version.h"
 
 namespace base {
 namespace trace_event {
 
+#define DUMP_ROOT_NAME "winheap"
+// static
+const char WinHeapDumpProvider::kAllocatedObjects[] =
+    DUMP_ROOT_NAME "/allocated_objects";
+
 namespace {
 
 // Report a heap dump to a process memory dump. The |heap_info| structure
 // contains the information about this heap, and |dump_absolute_name| will be
 // used to represent it in the report.
-void ReportHeapDump(ProcessMemoryDump* pmd,
-                    const WinHeapInfo& heap_info,
-                    const std::string& dump_absolute_name) {
-  MemoryAllocatorDump* outer_dump =
-      pmd->CreateAllocatorDump(dump_absolute_name);
+void ReportHeapDump(ProcessMemoryDump* pmd, const WinHeapInfo& heap_info) {
+  MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump(DUMP_ROOT_NAME);
   outer_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes,
                         heap_info.committed_size);
 
   MemoryAllocatorDump* inner_dump =
-      pmd->CreateAllocatorDump(dump_absolute_name + "/allocated_objects");
+      pmd->CreateAllocatorDump(WinHeapDumpProvider::kAllocatedObjects);
   inner_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes,
                         heap_info.allocated_size);
@@ -96,7 +99,7 @@ bool WinHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
     all_heap_info.block_count += heap_info.block_count;
   }
   // Report the heap dump.
-  ReportHeapDump(pmd, all_heap_info, "winheap");
+  ReportHeapDump(pmd, all_heap_info);
   return true;
 }
 

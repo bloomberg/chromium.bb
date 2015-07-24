@@ -96,6 +96,7 @@ MemoryDumpManager::MemoryDumpManager()
       delegate_(nullptr),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
+      system_allocator_pool_name_(nullptr),
       skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
@@ -120,6 +121,7 @@ void MemoryDumpManager::Initialize() {
   g_mmaps_dump_provider = ProcessMemoryMapsDumpProvider::GetInstance();
   RegisterDumpProvider(g_mmaps_dump_provider);
   RegisterDumpProvider(MallocDumpProvider::GetInstance());
+  system_allocator_pool_name_ = MallocDumpProvider::kAllocatedObjects;
 #endif
 
 #if defined(OS_ANDROID)
@@ -128,6 +130,7 @@ void MemoryDumpManager::Initialize() {
 
 #if defined(OS_WIN)
   RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
+  system_allocator_pool_name_ = WinHeapDumpProvider::kAllocatedObjects;
 #endif
 }
 

@@ -94,6 +94,13 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // without having to know its own child process id.
   uint64 tracing_process_id() const { return tracing_process_id_; }
 
+  // Returns the name for a the allocated_objects dump. Use this to declare
+  // suballocator dumps from other dump providers.
+  // It should not return nullptr after the manager has been initialized.
+  const char* system_allocator_pool_name() const {
+    return system_allocator_pool_name_;
+  };
+
  private:
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -216,6 +223,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // The unique id of the child process. This is created only for tracing and is
   // expected to be valid only when tracing is enabled.
   uint64 tracing_process_id_;
+
+  // Name of the allocated_objects dump.
+  const char* system_allocator_pool_name_;
 
   // Skips the auto-registration of the core dumpers during Initialize().
   bool skip_core_dumpers_auto_registration_for_testing_;
