@@ -457,7 +457,7 @@ std::string ChromeURLs() {
   return html;
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 const char kAboutDiscardsRunCommand[] = "run";
 
@@ -467,7 +467,7 @@ const char kAboutDiscardsRunCommand[] = "run";
 std::string WrapWithTag(const std::string& tag, const std::string& text) {
   return "<" + tag + ">" + text + "</" + tag + ">";
 }
-
+#if defined(OS_CHROMEOS)
 // Helper function to wrap Html with <td> tag.
 std::string WrapWithTD(const std::string& text) {
   return "<td>" + text + "</td>";
@@ -484,7 +484,7 @@ std::string AddStringRow(const std::string& name, const std::string& value) {
   row.append(WrapWithTD(value));
   return WrapWithTR(row);
 }
-
+#endif
 void AddContentSecurityPolicy(std::string* output) {
   output->append("<meta http-equiv='Content-Security-Policy' "
       "content='default-src 'none';'>");
@@ -945,7 +945,7 @@ void AboutUIHTMLSource::StartDataRequest(
 
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         idr).as_string();
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);
 #endif

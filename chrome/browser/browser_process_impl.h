@@ -313,7 +313,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<ChromeDeviceClient> device_client_;
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // Any change to this #ifdef must be reflected as well in
   // chrome/browser/memory/oom_priority_manager_browsertest.cc
   scoped_ptr<memory::OomPriorityManager> oom_priority_manager_;

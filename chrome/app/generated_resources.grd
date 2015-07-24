@@ -15816,7 +15816,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?
       </message>
 
-    <if expr="is_win">
+    <if expr="is_win or is_macosx">
       <!-- Tab discarding -->
       <message name="IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME" desc="Name for the flag to enable tab discarding.">
         Enable tab discarding

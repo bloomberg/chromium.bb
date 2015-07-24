@@ -139,7 +139,7 @@ extern const char kChromeUIWebRtcLogsURL[];
 extern const char kChromeUIMediaRouterURL[];
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIDiscardsURL[];
 #endif

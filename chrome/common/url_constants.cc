@@ -147,7 +147,7 @@ const char kChromeUIWebRtcLogsURL[] = "chrome://webrtc-logs/";
 const char kChromeUIMediaRouterURL[] = "chrome://media-router/";
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
 #endif

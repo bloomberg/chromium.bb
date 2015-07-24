@@ -20,7 +20,7 @@
 
 using content::OpenURLParams;
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 namespace memory {
 namespace {

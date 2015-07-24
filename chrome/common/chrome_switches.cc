@@ -1294,9 +1294,6 @@ const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
 // they use a custom-user-data-dir which disables this.
 const char kEnableProfileShortcutManager[]  = "enable-profile-shortcut-manager";
 
-// Enable tab discarding when system is under memory pressure.
-const char kEnableTabDiscarding[] = "enable-tab-discarding";
-
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                = "force-immersive";
@@ -1336,6 +1333,11 @@ const char kWaitForMutex[]                  = "wait-for-mutex";
 // Indicates that chrome was launched to service a search request in Windows 8.
 const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Enable tab discarding when system is under memory pressure.
+const char kEnableTabDiscarding[] = "enable-tab-discarding";
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(ENABLE_IPC_FUZZER)
 // Specifies the testcase used by the IPC fuzzer.

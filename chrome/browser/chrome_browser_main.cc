@@ -1124,7 +1124,7 @@ void ChromeBrowserMainParts::PreBrowserStart() {
   // now.
 #if defined(OS_CHROMEOS)
   g_browser_process->GetOomPriorityManager()->Start();
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) || defined(OS_MACOSX)
   if (parsed_command_line().HasSwitch(switches::kEnableTabDiscarding))
     g_browser_process->GetOomPriorityManager()->Start();
 #endif

@@ -2056,11 +2056,11 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads)},
 #endif
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     {"enable-tab-discarding",
      IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME,
      IDS_FLAGS_ENABLE_TAB_DISCARDING_DESCRIPTION,
-     kOsWin,
+     kOsWin | kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableTabDiscarding)},
 #endif
     {"enable-clear-browsing-data-counters",

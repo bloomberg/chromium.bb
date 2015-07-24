@@ -147,7 +147,7 @@
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #include "chrome/browser/memory/oom_priority_manager.h"
 #endif
 
@@ -774,7 +774,7 @@ gcm::GCMDriver* BrowserProcessImpl::gcm_driver() {
 
 memory::OomPriorityManager* BrowserProcessImpl::GetOomPriorityManager() {
   DCHECK(CalledOnValidThread());
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   if (!oom_priority_manager_.get())
     oom_priority_manager_.reset(new memory::OomPriorityManager());
   return oom_priority_manager_.get();
