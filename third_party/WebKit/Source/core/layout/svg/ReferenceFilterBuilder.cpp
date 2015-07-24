@@ -120,7 +120,9 @@ PassRefPtrWillBeRawPtr<ReferenceFilter> ReferenceFilterBuilder::build(float zoom
 
     SVGFilterElement& filterElement = toSVGFilterElement(*filter);
 
-    LayoutRect targetBoundingBox(element->inDocument() ? element->layoutObject()->enclosingBox()->borderBoxRect() : FloatRect());
+    FloatRect targetBoundingBox;
+    if (element->inDocument() && element->layoutObject() && element->layoutObject()->isBoxModelObject())
+        targetBoundingBox = toLayoutBoxModelObject(element->layoutObject())->borderBoundingBox();
     targetBoundingBox.scale(1.0f / zoom);
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), targetBoundingBox);
     RefPtrWillBeRawPtr<ReferenceFilter> result(ReferenceFilter::create(targetBoundingBox, filterRegion, zoom));
