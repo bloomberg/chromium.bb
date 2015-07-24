@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "remoting/test/fake_access_token_fetcher.h"
 #include "remoting/test/fake_app_remoting_report_issue_request.h"
+#include "remoting/test/fake_refresh_token_store.h"
 #include "remoting/test/fake_remote_host_info_fetcher.h"
 #include "remoting/test/mock_access_token_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
@@ -17,7 +18,6 @@
 
 namespace {
 const char kAuthCodeValue[] = "4/892379827345jkefvkdfbv";
-const char kRefreshTokenValue[] = "1/lkjalseLKJlsiJgr45jbv";
 const char kUserNameValue[] = "remoting_user@gmail.com";
 const char kTestApplicationId[] = "sadlkjlsjgadjfgoajdfgagb";
 const char kAnotherTestApplicationId[] = "waklgoisdhfnvjkdsfbljn";
@@ -30,67 +30,6 @@ namespace remoting {
 namespace test {
 
 using testing::_;
-
-// Stubs out the file API and returns fake data so we can remove
-// file system dependencies when testing the TestDriverEnvironment.
-class FakeRefreshTokenStore : public RefreshTokenStore {
- public:
-  FakeRefreshTokenStore();
-  ~FakeRefreshTokenStore() override;
-
-  // RefreshTokenStore interface.
-  std::string FetchRefreshToken() override;
-  bool StoreRefreshToken(const std::string& refresh_token) override;
-
-  bool refresh_token_write_attempted() const {
-    return refresh_token_write_attempted_;
-  }
-
-  const std::string& stored_refresh_token_value() const {
-    return stored_refresh_token_value_;
-  }
-
-  void set_refresh_token_value(const std::string& new_token_value) {
-    refresh_token_value_ = new_token_value;
-  }
-
-  void set_refresh_token_write_succeeded(bool write_succeeded) {
-    refresh_token_write_succeeded_ = write_succeeded;
-  }
-
- private:
-  // Control members used to return specific data to the caller.
-  std::string refresh_token_value_;
-  bool refresh_token_write_succeeded_;
-
-  // Verification members to observe the value of the data being written.
-  bool refresh_token_write_attempted_;
-  std::string stored_refresh_token_value_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeRefreshTokenStore);
-};
-
-FakeRefreshTokenStore::FakeRefreshTokenStore()
-    : refresh_token_value_(kRefreshTokenValue),
-      refresh_token_write_succeeded_(true),
-      refresh_token_write_attempted_(false) {
-}
-
-FakeRefreshTokenStore::~FakeRefreshTokenStore() {
-}
-
-std::string FakeRefreshTokenStore::FetchRefreshToken() {
-  return refresh_token_value_;
-}
-
-bool FakeRefreshTokenStore::StoreRefreshToken(
-    const std::string& refresh_token) {
-  // Record the information passed to us to write.
-  refresh_token_write_attempted_ = true;
-  stored_refresh_token_value_ = refresh_token;
-
-  return refresh_token_write_succeeded_;
-}
 
 class AppRemotingTestDriverEnvironmentTest : public ::testing::Test {
  public:
