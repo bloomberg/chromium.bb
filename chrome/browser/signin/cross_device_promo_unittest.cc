@@ -12,7 +12,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/cross_device_promo_factory.h"
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -129,7 +129,7 @@ void CrossDevicePromoTest::SetUp() {
       std::make_pair(GaiaCookieManagerServiceFactory::GetInstance(),
                      FakeGaiaCookieManagerService::Build));
   factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
-                                     FakeSigninManagerBase::Build));
+                                     BuildFakeSigninManagerBase));
 
   pref_service_ = new TestingPrefServiceSyncable();
   chrome::RegisterUserProfilePrefs(pref_service_->registry());

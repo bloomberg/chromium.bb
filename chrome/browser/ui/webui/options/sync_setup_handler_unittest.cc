@@ -12,7 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -182,7 +182,7 @@ class SyncSetupHandlerTest : public testing::Test {
 
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManagerBase::Build);
+                              BuildFakeSigninManagerBase);
     profile_ = builder.Build();
 
     // Sign in the user.

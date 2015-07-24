@@ -18,7 +18,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -82,25 +82,6 @@ const char kHostedDomainResponse[] =
     "{"
     "  \"hd\": \"test.com\""
     "}";
-
-class SigninManagerFake : public FakeSigninManager {
- public:
-  explicit SigninManagerFake(Profile* profile)
-      : FakeSigninManager(profile) {
-    Initialize(NULL);
-  }
-
-  void ForceSignOut() {
-    // Allow signing out now.
-    prohibit_signout_ = false;
-    SignOut(signin_metrics::SIGNOUT_TEST);
-  }
-
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
-    return make_scoped_ptr(
-        new SigninManagerFake(static_cast<Profile*>(profile)));
-  }
-};
 
 UserCloudPolicyManager* BuildCloudPolicyManager(
     content::BrowserContext* context) {
@@ -183,7 +164,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              SigninManagerFake::Build);
+                              BuildFakeSigninManagerBase);
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
@@ -194,7 +175,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     profile_ = builder.Build().Pass();
     url_factory_.set_remove_fetcher_on_delete(true);
 
-    signin_manager_ = static_cast<SigninManagerFake*>(
+    signin_manager_ = static_cast<FakeSigninManager*>(
         SigninManagerFactory::GetForProfile(profile_.get()));
     // Tests are responsible for freeing the UserCloudPolicyManager instances
     // they inject.
@@ -369,7 +350,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   net::TestURLFetcherFactory url_factory_;
 
-  SigninManagerFake* signin_manager_;
+  FakeSigninManager* signin_manager_;
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
   // callbacks.

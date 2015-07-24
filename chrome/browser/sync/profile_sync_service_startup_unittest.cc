@@ -9,7 +9,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
@@ -103,9 +103,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     CHECK(profile_manager_.SetUp());
 
     TestingProfile::TestingFactories testing_facotries;
-    testing_facotries.push_back(
-        std::make_pair(SigninManagerFactory::GetInstance(),
-                       FakeSigninManagerBase::Build));
+    testing_facotries.push_back(std::make_pair(
+        SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
     testing_facotries.push_back(
             std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
                            BuildAutoIssuingFakeProfileOAuth2TokenService));

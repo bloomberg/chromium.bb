@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_CLIENT_BROWSERTEST_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_CLIENT_BROWSERTEST_H_
 
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 
 class ProfileOAuth2TokenService;

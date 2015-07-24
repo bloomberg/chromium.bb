@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
-#define CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_SIGNIN_MANAGER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_SIGNIN_MANAGER_H_
 
 #include <string>
 
@@ -12,12 +12,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
-namespace content {
-class BrowserContext;
-}
-
-class Profile;
-
 // SigninManager to use for testing. Tests should use the type
 // SigninManagerForTesting to ensure that the right type for their platform is
 // used.
@@ -25,15 +19,9 @@ class Profile;
 // Overrides InitTokenService to do-nothing in tests.
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
-  explicit FakeSigninManagerBase(Profile* profile);
+  FakeSigninManagerBase(SigninClient* client,
+                        AccountTrackerService* account_tracker_service);
   ~FakeSigninManagerBase() override;
-
-  // Helper function to be used with
-  // KeyedService::SetTestingFactory(). In order to match
-  // the API of SigninManagerFactory::GetForProfile(), returns a
-  // FakeSigninManagerBase* on ChromeOS, and a FakeSigninManager* on all other
-  // platforms. The returned instance is initialized.
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* context);
 };
 
 #if !defined(OS_CHROMEOS)
@@ -42,7 +30,10 @@ class FakeSigninManagerBase : public SigninManagerBase {
 // and accepts the credentials provided to StartSignIn.
 class FakeSigninManager : public SigninManager {
  public:
-  explicit FakeSigninManager(Profile* profile);
+  FakeSigninManager(SigninClient* client,
+                    ProfileOAuth2TokenService* token_service,
+                    AccountTrackerService* account_tracker_service,
+                    GaiaCookieManagerService* cookie_manager_service);
   ~FakeSigninManager() override;
 
   void set_auth_in_progress(const std::string& account_id) {
@@ -54,6 +45,8 @@ class FakeSigninManager : public SigninManager {
   void SignIn(const std::string& account_id,
               const std::string& username,
               const std::string& password);
+
+  void ForceSignOut();
 
   void FailSignin(const GoogleServiceAuthError& error);
 
@@ -74,10 +67,4 @@ class FakeSigninManager : public SigninManager {
 
 #endif  // !defined (OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
-typedef FakeSigninManagerBase FakeSigninManagerForTesting;
-#else
-typedef FakeSigninManager FakeSigninManagerForTesting;
-#endif
-
-#endif  // CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_SIGNIN_MANAGER_H_

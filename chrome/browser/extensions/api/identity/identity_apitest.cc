@@ -22,7 +22,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -553,7 +553,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     // creating the browser so that a bunch of classes don't register as
     // observers and end up needing to unregister when the fake is substituted.
     SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, &FakeSigninManagerBase::Build);
+        context, &BuildFakeSigninManagerBase);
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, &BuildFakeProfileOAuth2TokenService);
     GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(

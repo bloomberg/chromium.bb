@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -63,7 +63,7 @@ class SigninErrorNotifierTest : public AshTestBase {
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManagerBase::Build);
+                              BuildFakeSigninManagerBase);
     profile_ = builder.Build();
     profile_->set_profile_name(kTestAccountId);
 

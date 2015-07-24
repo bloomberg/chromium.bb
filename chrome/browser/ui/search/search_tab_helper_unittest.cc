@@ -14,7 +14,7 @@
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -84,7 +84,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
   content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManagerBase::Build);
+                              BuildFakeSigninManagerBase);
     builder.AddTestingFactory(
         ProfileSyncServiceFactory::GetInstance(),
         ProfileSyncServiceMock::BuildMockProfileSyncService);

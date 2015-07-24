@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,7 +24,7 @@ class SyncPromoUITest : public testing::Test {
     testing::Test::SetUp();
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManagerBase::Build);
+                              BuildFakeSigninManagerBase);
     profile_ = builder.Build();
   }
 

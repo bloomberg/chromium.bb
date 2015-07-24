@@ -9,12 +9,15 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -95,9 +98,13 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
 
  private:
   static scoped_ptr<KeyedService> BuildSigninManager(
-      content::BrowserContext* profile) {
-    return make_scoped_ptr(
-        new FakeSigninManager(static_cast<Profile*>(profile)));
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
+    return make_scoped_ptr(new FakeSigninManager(
+        ChromeSigninClientFactory::GetForProfile(profile),
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+        AccountTrackerServiceFactory::GetForProfile(profile),
+        GaiaCookieManagerServiceFactory::GetForProfile(profile)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarterTest);

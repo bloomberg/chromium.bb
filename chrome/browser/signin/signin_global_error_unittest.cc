@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
@@ -48,8 +48,7 @@ class SigninGlobalErrorTest : public testing::Test {
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         BuildFakeProfileOAuth2TokenService));
     testing_factories.push_back(std::make_pair(
-        SigninManagerFactory::GetInstance(),
-        FakeSigninManagerBase::Build));
+        SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
     profile_ = profile_manager_.CreateTestingProfile(
         "Person 1", scoped_ptr<PrefServiceSyncable>(),
         base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories);

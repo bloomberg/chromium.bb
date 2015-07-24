@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -50,7 +50,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   TestingProfile* CreateProfile() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManagerBase::Build);
+                              BuildFakeSigninManagerBase);
     return builder.Build().release();
   }
 
