@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
+#include "ui/base/cocoa/appkit_utils.h"
 
 NSString* const kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";
@@ -559,7 +560,17 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   if (![self updateContainerVisibility])
     return;  // Container is hidden; no need to update.
 
-  [containerView_ setIsHighlighting:toolbarActionsBar_->is_highlighting()];
+  scoped_ptr<ui::NinePartImageIds> highlight;
+  if (toolbarActionsBar_->is_highlighting()) {
+    if (toolbarActionsBar_->highlight_type() ==
+            extensions::ExtensionToolbarModel::HIGHLIGHT_INFO)
+      highlight.reset(
+          new ui::NinePartImageIds(IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT)));
+    else
+      highlight.reset(
+          new ui::NinePartImageIds(IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT)));
+  }
+  [containerView_ setHighlight:highlight.Pass()];
 
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->GetActions();

@@ -8,7 +8,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #import "ui/base/cocoa/tracking_area.h"
+
+namespace ui {
+struct NinePartImageIds;
+}
 
 // Sent when a user-initiated drag to resize the container is initiated.
 extern NSString* const kBrowserActionGrippyDragStartedNotification;
@@ -96,9 +101,8 @@ class BrowserActionsContainerViewSizeDelegate {
   // to large.
   BOOL grippyPinned_;
 
-  // Whether the toolbar is currently highlighting its actions (in which case it
-  // is drawn with an orange background).
-  BOOL isHighlighting_;
+  // The nine-grid of the highlight to paint, if any.
+  scoped_ptr<ui::NinePartImageIds> highlight_;
 
   // A tracking area to receive mouseEntered events, if tracking is enabled.
   ui::ScopedCrTrackingArea trackingArea_;
@@ -117,7 +121,7 @@ class BrowserActionsContainerViewSizeDelegate {
 - (void)setIsOverflow:(BOOL)isOverflow;
 
 // Sets whether or not the container is highlighting.
-- (void)setIsHighlighting:(BOOL)isHighlighting;
+- (void)setHighlight:(scoped_ptr<ui::NinePartImageIds>)highlight;
 
 // Resizes the container to the given ideal width, optionally animating.
 - (void)resizeToWidth:(CGFloat)width animate:(BOOL)animate;

@@ -83,10 +83,9 @@ const CGFloat kMinimumContainerWidth = 3.0;
 
 - (void)drawRect:(NSRect)rect {
   [super drawRect:rect];
-  if (isHighlighting_) {
-    ui::NinePartImageIds imageIds = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
+  if (highlight_) {
     ui::DrawNinePartImage(
-        [self bounds], imageIds, NSCompositeSourceOver, 1.0, true);
+        [self bounds], *highlight_, NSCompositeSourceOver, 1.0, true);
   }
 }
 
@@ -167,9 +166,9 @@ const CGFloat kMinimumContainerWidth = 3.0;
   [super keyDown:theEvent];
 }
 
-- (void)setIsHighlighting:(BOOL)isHighlighting {
-  if (isHighlighting != isHighlighting_) {
-    isHighlighting_ = isHighlighting;
+- (void)setHighlight:(scoped_ptr<ui::NinePartImageIds>)highlight {
+  if (highlight || highlight_) {
+    highlight_ = highlight.Pass();
     [self setNeedsDisplay:YES];
   }
 }
