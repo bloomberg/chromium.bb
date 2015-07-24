@@ -111,13 +111,13 @@ void InsertLineBreakCommand::doApply()
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), DOWNSTREAM, endingSelection().isDirectional()));
     // If we're inserting after all of the rendered text in a text node, or into a non-text node,
     // a simple insertion is sufficient.
-    } else if (pos.deprecatedEditingOffset() >= caretMaxOffset(pos.anchorNode()) || !pos.anchorNode()->isTextNode()) {
+    } else if (!pos.anchorNode()->isTextNode() || pos.computeOffsetInContainerNode() >= caretMaxOffset(pos.anchorNode())) {
         insertNodeAt(nodeToInsert.get(), pos);
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), DOWNSTREAM, endingSelection().isDirectional()));
     } else if (pos.anchorNode()->isTextNode()) {
         // Split a text node
         Text* textNode = toText(pos.anchorNode());
-        splitTextNode(textNode, pos.deprecatedEditingOffset());
+        splitTextNode(textNode, pos.computeOffsetInContainerNode());
         insertNodeBefore(nodeToInsert, textNode);
         Position endingPosition = firstPositionInNode(textNode);
 

@@ -1130,7 +1130,7 @@ Position leadingWhitespacePosition(const Position& position, EAffinity affinity,
     Position prev = previousCharacterPosition(position, affinity);
     if (prev != position && inSameContainingBlockFlowElement(prev.anchorNode(), position.anchorNode()) && prev.anchorNode()->isTextNode()) {
         String string = toText(prev.anchorNode())->data();
-        UChar previousCharacter = string[prev.deprecatedEditingOffset()];
+        UChar previousCharacter = string[prev.computeOffsetInContainerNode()];
         bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpaceCharacter) : isCollapsibleWhitespace(previousCharacter);
         if (isSpace && isEditablePosition(prev))
             return prev;

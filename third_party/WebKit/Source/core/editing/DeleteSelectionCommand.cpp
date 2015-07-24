@@ -481,7 +481,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
             if (startNode->isTextNode()) {
                 // in a text node that needs to be trimmed
                 Text* text = toText(startNode);
-                deleteTextFromNode(text, startOffset, m_downstreamEnd.deprecatedEditingOffset() - startOffset);
+                deleteTextFromNode(text, startOffset, m_downstreamEnd.computeOffsetInContainerNode() - startOffset);
             } else {
                 removeChildrenInRange(startNode, startOffset, m_downstreamEnd.deprecatedEditingOffset());
                 m_endingPosition = m_upstreamStart;
@@ -508,7 +508,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
             }
         } else if (startNode == m_upstreamEnd.anchorNode() && startNode->isTextNode()) {
             Text* text = toText(m_upstreamEnd.anchorNode());
-            deleteTextFromNode(text, 0, m_upstreamEnd.deprecatedEditingOffset());
+            deleteTextFromNode(text, 0, m_upstreamEnd.computeOffsetInContainerNode());
         }
 
         // handle deleting all nodes that are completely selected
@@ -575,12 +575,12 @@ void DeleteSelectionCommand::fixupWhitespace()
     if (m_leadingWhitespace.isNotNull() && !m_leadingWhitespace.isRenderedCharacter() && m_leadingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(m_leadingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
-        replaceTextInNodePreservingMarkers(textNode, m_leadingWhitespace.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
+        replaceTextInNodePreservingMarkers(textNode, m_leadingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
     if (m_trailingWhitespace.isNotNull() && !m_trailingWhitespace.isRenderedCharacter() && m_trailingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(m_trailingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
-        replaceTextInNodePreservingMarkers(textNode, m_trailingWhitespace.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
+        replaceTextInNodePreservingMarkers(textNode, m_trailingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
 }
 

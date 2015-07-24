@@ -375,7 +375,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
     if (startNode == beyondEnd)
         return;
 
-    if (startNode->isTextNode() && start.deprecatedEditingOffset() >= caretMaxOffset(startNode)) {
+    if (startNode->isTextNode() && start.computeOffsetInContainerNode() >= caretMaxOffset(startNode)) {
         // Move out of text node if range does not include its characters.
         startNode = NodeTraversal::next(*startNode);
         if (!startNode)

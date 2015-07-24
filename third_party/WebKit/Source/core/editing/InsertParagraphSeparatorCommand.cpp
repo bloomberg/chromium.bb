@@ -351,18 +351,19 @@ void InsertParagraphSeparatorCommand::doApply()
     if (leadingWhitespace.isNotNull() && leadingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(leadingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
-        replaceTextInNodePreservingMarkers(textNode, leadingWhitespace.deprecatedEditingOffset(), 1, nonBreakingSpaceString());
+        replaceTextInNodePreservingMarkers(textNode, leadingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
 
     // Split at pos if in the middle of a text node.
     Position positionAfterSplit;
     if (insertionPosition.isOffsetInAnchor() && insertionPosition.containerNode()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> textNode = toText(insertionPosition.containerNode());
-        bool atEnd = static_cast<unsigned>(insertionPosition.offsetInContainerNode()) >= textNode->length();
-        if (insertionPosition.deprecatedEditingOffset() > 0 && !atEnd) {
-            splitTextNode(textNode, insertionPosition.offsetInContainerNode());
+        int textOffset = insertionPosition.offsetInContainerNode();
+        bool atEnd = static_cast<unsigned>(textOffset) >= textNode->length();
+        if (textOffset > 0 && !atEnd) {
+            splitTextNode(textNode, textOffset);
             positionAfterSplit = firstPositionInNode(textNode.get());
-            insertionPosition.moveToPosition(textNode->previousSibling(), insertionPosition.offsetInContainerNode());
+            insertionPosition.moveToPosition(textNode->previousSibling(), textOffset);
             visiblePos = VisiblePosition(insertionPosition);
         }
     }

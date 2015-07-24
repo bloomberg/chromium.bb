@@ -280,8 +280,8 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (baseNode != extentNode)
         return;
 
-    unsigned extentOffset = extent.deprecatedEditingOffset();
-    unsigned baseOffset = base.deprecatedEditingOffset();
+    unsigned extentOffset = extent.computeOffsetInContainerNode();
+    unsigned baseOffset = base.computeOffsetInContainerNode();
     if (baseOffset + text.length() != extentOffset)
         return;
 

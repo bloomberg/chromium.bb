@@ -637,7 +637,7 @@ void CompositeEditCommand::rebalanceWhitespaceAt(const Position& position)
         return;
 
     // If the rebalance is for the single offset, and neither text[offset] nor text[offset - 1] are some form of whitespace, do nothing.
-    int offset = position.deprecatedEditingOffset();
+    int offset = position.computeOffsetInContainerNode();
     String text = toText(node)->data();
     if (!isWhitespace(text[offset])) {
         offset--;
@@ -825,8 +825,8 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
 
     for (const auto& node : nodes) {
         Text* textNode = node.get();
-        int startOffset = textNode == start.anchorNode() ? start.deprecatedEditingOffset() : 0;
-        int endOffset = textNode == end.anchorNode() ? end.deprecatedEditingOffset() : static_cast<int>(textNode->length());
+        int startOffset = textNode == start.anchorNode() ? start.computeOffsetInContainerNode() : 0;
+        int endOffset = textNode == end.anchorNode() ? end.computeOffsetInContainerNode() : static_cast<int>(textNode->length());
         deleteInsignificantText(textNode, startOffset, endOffset);
     }
 }
@@ -1110,7 +1110,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
             if (textNode->length() == 1)
                 removeNodeAndPruneAncestors(node, destinationNode);
             else
-                deleteTextFromNode(textNode, position.deprecatedEditingOffset(), 1);
+                deleteTextFromNode(textNode, position.computeOffsetInContainerNode(), 1);
         }
     }
 }
@@ -1395,7 +1395,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     if (isHTMLBRElement(*caretPos.anchorNode())) {
         removeNodeAndPruneAncestors(caretPos.anchorNode());
     } else if (caretPos.anchorNode()->isTextNode()) {
-        ASSERT(caretPos.deprecatedEditingOffset() == 0);
+        ASSERT(caretPos.computeOffsetInContainerNode() == 0);
         Text* textNode = toText(caretPos.anchorNode());
         ContainerNode* parentNode = textNode->parentNode();
         // The preserved newline must be the first thing in the node, since otherwise the previous

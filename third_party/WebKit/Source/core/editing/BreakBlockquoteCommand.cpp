@@ -112,11 +112,13 @@ void BreakBlockquoteCommand::doApply()
     // Split at pos if in the middle of a text node.
     if (startNode->isTextNode()) {
         Text* textNode = toText(startNode);
-        if ((unsigned)pos.deprecatedEditingOffset() >= textNode->length()) {
+        int textOffset = pos.computeOffsetInContainerNode();
+        if ((unsigned)textOffset >= textNode->length()) {
             startNode = NodeTraversal::next(*startNode);
             ASSERT(startNode);
-        } else if (pos.deprecatedEditingOffset() > 0)
-            splitTextNode(textNode, pos.deprecatedEditingOffset());
+        } else if (textOffset > 0) {
+            splitTextNode(textNode, textOffset);
+        }
     } else if (pos.deprecatedEditingOffset() > 0) {
         Node* childAtOffset = NodeTraversal::childAt(*startNode, pos.deprecatedEditingOffset());
         startNode = childAtOffset ? childAtOffset : NodeTraversal::next(*startNode);
