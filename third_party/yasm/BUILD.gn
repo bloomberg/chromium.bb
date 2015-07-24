@@ -148,16 +148,19 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm/tools/re2c/translate.c",
     ]
 
+    config("re2c_warnings") {
+      # re2c is missing CLOSEVOP from one switch.
+      if (is_posix || is_clang) {
+        cflags = [ "-Wno-switch" ]
+      }
+    }
+
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
+      ":re2c_warnings",
     ]
-
-    # re2c is missing CLOSEVOP from one switch.
-    if (is_posix) {
-      cflags = [ "-Wno-switch" ]
-    }
     deps = [
       "//build/config/sanitizers:deps",
     ]
