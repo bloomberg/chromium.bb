@@ -148,9 +148,11 @@ def _CreateOptionParser():
                     action='store_true')
   parser.add_option('-z', '--compress', help='Compress the resulting trace '
                     'with gzip. ', action='store_true')
-  parser.add_option('-d', '--device', help='The Android device ID to use.'
-                    'If not specified, only 0 or 1 connected devices are '
-                    'supported.', default=None)
+  parser.add_option('-d', '--device', help='The Android device ID to use, '
+                    'defaults to the value of ANDROID_SERIAL environment '
+                    'variable. If not specified, only 0 or 1 connected '
+                    'devices are supported.',
+                    default=os.environ.get('ANDROID_SERIAL', None))
   return parser
 
 
