@@ -29,6 +29,10 @@ struct termios2 {
 
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_MACOSX)
+#include <IOKit/serial/ioss.h>
+#endif
+
 namespace {
 
 // Convert an integral bit rate to a nominal one. Returns |true|
@@ -69,6 +73,7 @@ bool BitrateToSpeedConstant(int bitrate, speed_t* speed) {
 #undef BITRATE_TO_SPEED_CASE
 }
 
+#if !defined(OS_LINUX)
 // Convert a known nominal speed into an integral bitrate. Returns |true|
 // if the conversion was successful and |false| otherwise.
 bool SpeedConstantToBitrate(speed_t speed, int* bitrate) {
@@ -93,47 +98,12 @@ bool SpeedConstantToBitrate(speed_t speed, int* bitrate) {
     SPEED_TO_BITRATE_CASE(9600)
     SPEED_TO_BITRATE_CASE(19200)
     SPEED_TO_BITRATE_CASE(38400)
-#if !defined(OS_MACOSX)
-    SPEED_TO_BITRATE_CASE(57600)
-    SPEED_TO_BITRATE_CASE(115200)
-    SPEED_TO_BITRATE_CASE(230400)
-    SPEED_TO_BITRATE_CASE(460800)
-    SPEED_TO_BITRATE_CASE(576000)
-    SPEED_TO_BITRATE_CASE(921600)
-#endif
     default:
       return false;
   }
 #undef SPEED_TO_BITRATE_CASE
 }
-
-bool SetCustomBitrate(base::PlatformFile file,
-                      struct termios* config,
-                      int bitrate) {
-#if defined(OS_LINUX)
-  struct termios2 tio;
-  if (ioctl(file, TCGETS2, &tio) < 0) {
-    VPLOG(1) << "Failed to get parameters to set custom bitrate";
-    return false;
-  }
-  tio.c_cflag &= ~CBAUD;
-  tio.c_cflag |= CBAUDEX;
-  tio.c_ispeed = bitrate;
-  tio.c_ospeed = bitrate;
-  if (ioctl(file, TCSETS2, &tio) < 0) {
-    VPLOG(1) << "Failed to set custom bitrate";
-    return false;
-  }
-  return true;
-#elif defined(OS_MACOSX)
-  speed_t speed = static_cast<speed_t>(bitrate);
-  cfsetispeed(config, speed);
-  cfsetospeed(config, speed);
-  return true;
-#else
-  return false;
 #endif
-}
 
 }  // namespace
 
@@ -178,9 +148,14 @@ void SerialIoHandlerPosix::CancelWriteImpl() {
 }
 
 bool SerialIoHandlerPosix::ConfigurePortImpl() {
+#if defined(OS_LINUX)
+  struct termios2 config;
+  if (ioctl(file().GetPlatformFile(), TCGETS2, &config) < 0) {
+#else
   struct termios config;
   if (tcgetattr(file().GetPlatformFile(), &config) != 0) {
-    VPLOG(1) << "Failed to get port attributes";
+#endif
+    VPLOG(1) << "Failed to get port configuration";
     return false;
   }
 
@@ -196,15 +171,31 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 
   DCHECK(options().bitrate);
   speed_t bitrate_opt = B0;
+#if defined(OS_MACOSX)
+  bool need_iossiospeed = false;
+#endif
   if (BitrateToSpeedConstant(options().bitrate, &bitrate_opt)) {
+#if defined(OS_LINUX)
+    config.c_cflag &= ~CBAUD;
+    config.c_cflag |= bitrate_opt;
+#else
     cfsetispeed(&config, bitrate_opt);
     cfsetospeed(&config, bitrate_opt);
+#endif
   } else {
     // Attempt to set a custom speed.
-    if (!SetCustomBitrate(file().GetPlatformFile(), &config,
-                          options().bitrate)) {
-      return false;
-    }
+#if defined(OS_LINUX)
+    config.c_cflag &= ~CBAUD;
+    config.c_cflag |= CBAUDEX;
+    config.c_ispeed = config.c_ospeed = options().bitrate;
+#elif defined(OS_MACOSX)
+    // cfsetispeed and cfsetospeed sometimes work for custom baud rates on OS
+    // X but the IOSSIOSPEED ioctl is more reliable but has to be done after
+    // the rest of the port parameters are set or else it will be overwritten.
+    need_iossiospeed = true;
+#else
+    return false;
+#endif
   }
 
   DCHECK(options().data_bits != serial::DATA_BITS_NONE);
@@ -252,10 +243,25 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     config.c_cflag &= ~CRTSCTS;
   }
 
+#if defined(OS_LINUX)
+  if (ioctl(file().GetPlatformFile(), TCSETS2, &config) < 0) {
+#else
   if (tcsetattr(file().GetPlatformFile(), TCSANOW, &config) != 0) {
+#endif
     VPLOG(1) << "Failed to set port attributes";
     return false;
   }
+
+#if defined(OS_MACOSX)
+  if (need_iossiospeed) {
+    speed_t bitrate = options().bitrate;
+    if (ioctl(file().GetPlatformFile(), IOSSIOSPEED, &bitrate) == -1) {
+      VPLOG(1) << "Failed to set custom baud rate";
+      return false;
+    }
+  }
+#endif
+
   return true;
 }
 
@@ -402,12 +408,22 @@ bool SerialIoHandlerPosix::SetControlSignals(
 }
 
 serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
+#if defined(OS_LINUX)
+  struct termios2 config;
+  if (ioctl(file().GetPlatformFile(), TCGETS2, &config) < 0) {
+#else
   struct termios config;
   if (tcgetattr(file().GetPlatformFile(), &config) == -1) {
+#endif
     VPLOG(1) << "Failed to get port info";
     return serial::ConnectionInfoPtr();
   }
+
   serial::ConnectionInfoPtr info(serial::ConnectionInfo::New());
+#if defined(OS_LINUX)
+  // Linux forces c_ospeed to contain the correct value, which is nice.
+  info->bitrate = config.c_ospeed;
+#else
   speed_t ispeed = cfgetispeed(&config);
   speed_t ospeed = cfgetospeed(&config);
   if (ispeed == ospeed) {
@@ -418,6 +434,8 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
       info->bitrate = static_cast<int>(ispeed);
     }
   }
+#endif
+
   if ((config.c_cflag & CSIZE) == CS7) {
     info->data_bits = serial::DATA_BITS_SEVEN;
   } else if ((config.c_cflag & CSIZE) == CS8) {
