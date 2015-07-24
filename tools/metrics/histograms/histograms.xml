@@ -49226,7 +49226,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebHistory.LocalResultMissingOnServer" units="%">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zea@chromium.org</owner>
   <summary>
     Percentage of results that are present locally but are not returned by the
     web history API call. Recorded every time a signed-in user visits the
@@ -49235,7 +49235,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebHistory.OAuthTokenCompletion" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zea@chromium.org</owner>
   <summary>
     Whether getting the OAuth token was successful for a web history query. On
     visits to the chrome://history page this token is obtained and then used to
@@ -49244,7 +49244,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebHistory.OAuthTokenResponseCode" units="code">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zea@chromium.org</owner>
   <summary>
     HTTP Response code returned by the server when trying to fetch the OAuth
     token for a web history query.
@@ -49252,7 +49252,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebHistory.QueryCompletion" enum="WebHistoryStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zea@chromium.org</owner>
   <summary>
     Whether the web history API call was successful. Every time a signed-in user
     visits the chrome://history page this query is executed to get the user's
@@ -49262,7 +49262,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebHistory.ResponseTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zea@chromium.org</owner>
   <summary>
     Time it took for the web history to reply. Recorded when the web history API
     call triggered by visiting chrome://history receives the data, measuring how
