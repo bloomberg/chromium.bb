@@ -10,8 +10,8 @@
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
+#include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/referrer.h"
-#import "ios/web/public/test/test_web_client.h"
 #import "ios/web/public/web_state/crw_web_delegate.h"
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
@@ -36,6 +36,23 @@ namespace web {
 
 #pragma mark -
 
+WebTest::WebTest() {}
+WebTest::~WebTest() {}
+
+void WebTest::SetUp() {
+  PlatformTest::SetUp();
+  web::SetWebClient(&client_);
+  BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
+}
+
+void WebTest::TearDown() {
+  BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
+  web::SetWebClient(nullptr);
+  PlatformTest::TearDown();
+}
+
+#pragma mark -
+
 WebTestBase::WebTestBase() {}
 
 WebTestBase::~WebTestBase() {}
@@ -43,8 +60,7 @@ WebTestBase::~WebTestBase() {}
 static int s_html_load_count;
 
 void WebTestBase::SetUp() {
-  client_.reset(new web::TestWebClient());
-  web::SetWebClient(client_.get());
+  WebTest::SetUp();
   BOOL success =
       [NSURLProtocol registerClass:[CRWURLVerifyingProtocolHandler class]];
   DCHECK(success);
@@ -59,7 +75,7 @@ void WebTestBase::SetUp() {
 void WebTestBase::TearDown() {
   [webController_ close];
   [NSURLProtocol unregisterClass:[CRWURLVerifyingProtocolHandler class]];
-  web::SetWebClient(nullptr);
+  WebTest::TearDown();
 }
 
 void WebTestBase::LoadHtml(NSString* html) {
@@ -233,7 +249,7 @@ void WebTestBase::DidProcessTask(const base::PendingTask& pending_task) {
 #pragma mark -
 
 CRWWebController* UIWebViewWebTest::CreateWebController() {
-  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(&browser_state_));
+  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
   return [[TestWebController alloc] initWithWebState:web_state_impl.Pass()];
 }
 
@@ -249,7 +265,7 @@ void UIWebViewWebTest::LoadCommands(NSString* commands,
 #pragma mark -
 
 CRWWebController* WKWebViewWebTest::CreateWebController() {
-  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(&browser_state_));
+  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
   return [[CRWWKWebViewWebController alloc] initWithWebState:
       web_state_impl.Pass()];
 }

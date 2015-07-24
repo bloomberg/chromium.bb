@@ -13,6 +13,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -75,21 +76,15 @@
 namespace web {
 namespace {
 
-class BrowsingDataStoreTest : public PlatformTest {
+// A test fixture for testing CRWBrowsingDataStore.
+class BrowsingDataStoreTest : public WebTest {
  protected:
   void SetUp() override {
-    PlatformTest::SetUp();
-    browser_state_.reset(new TestBrowserState());
-    BrowserState::GetActiveStateManager(browser_state_.get())->SetActive(true);
-    browsing_data_store_.reset([[CRWBrowsingDataStore alloc]
-        initWithBrowserState:browser_state_.get()]);
-  }
-  void TearDown() override {
-    // The BrowserState needs to be destroyed first so that it is outlived by
-    // the WebThreadBundle.
-    BrowserState::GetActiveStateManager(browser_state_.get())->SetActive(false);
-    browser_state_.reset();
-    PlatformTest::TearDown();
+    WebTest::SetUp();
+    ASSERT_TRUE(
+        BrowserState::GetActiveStateManager(GetBrowserState())->IsActive());
+    browsing_data_store_.reset(
+        [[CRWBrowsingDataStore alloc] initWithBrowserState:GetBrowserState()]);
   }
 
   // Sets the mode of the |browsing_data_store_| to |ACTIVE| and blocks until
@@ -129,12 +124,6 @@ class BrowsingDataStoreTest : public PlatformTest {
 
   // The CRWBrowsingDataStore used for testing purposes.
   base::scoped_nsobject<CRWBrowsingDataStore> browsing_data_store_;
-
- private:
-  // The WebThreadBundle used for testing purposes.
-  TestWebThreadBundle thread_bundle_;
-  // The BrowserState used for testing purposes.
-  scoped_ptr<BrowserState> browser_state_;
 };
 
 }  // namespace

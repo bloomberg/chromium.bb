@@ -10,6 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "ios/web/public/test/test_browser_state.h"
+#import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_ui_web_view_web_controller.h"
@@ -30,14 +31,38 @@
 
 namespace web {
 
+// A test fixture for web tests that need a minimum environment set up that
+// mimics a web embedder.
+class WebTest : public PlatformTest {
+ protected:
+  WebTest();
+  ~WebTest() override;
+
+  // PlatformTest methods.
+  void SetUp() override;
+  void TearDown() override;
+
+  // Returns the BrowserState that is used for testing.
+  BrowserState* GetBrowserState() { return &browser_state_; }
+
+ private:
+  // The WebClient used in tests.
+  TestWebClient client_;
+  // The threads used for testing.
+  web::TestWebThreadBundle thread_bundle_;
+  // The browser state used in tests.
+  TestBrowserState browser_state_;
+};
+
+#pragma mark -
+
 // An abstract test fixture that sets up a WebControllers that can be loaded
 // with test HTML and JavaScripts. Concrete subclasses override
 // |CreateWebController| specifying the test WebController object.
-// DEPRECATED. Please use WebTestWithWebController instead.
+// DEPRECATED. Please use either WebTest or WebTestWithWebController instead.
 // TODO(shreyasv): Remove this after all clients have stopped using it.
 // crbug.com/512910.
-class WebTestBase : public PlatformTest,
-                    public base::MessageLoop::TaskObserver {
+class WebTestBase : public WebTest, public base::MessageLoop::TaskObserver {
  public:
   ~WebTestBase() override;
 
@@ -77,16 +102,10 @@ class WebTestBase : public PlatformTest,
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
-  // The threads used for testing.
-  web::TestWebThreadBundle thread_bundle_;
   // The web controller for testing.
   base::scoped_nsobject<CRWWebController> webController_;
   // true if a task has been processed.
   bool processed_a_task_;
-  // The WebClient used in tests.
-  scoped_ptr<web::WebClient> client_;
-  // The browser state used in tests.
-  TestBrowserState browser_state_;
 };
 
 #pragma mark -
