@@ -786,12 +786,12 @@ static PositionInComposedTreeWithAffinity startOfLine(const PositionInComposedTr
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition startOfLine(const VisiblePosition& currentPosition)
 {
-    return VisiblePosition(startOfLine(PositionWithAffinity(currentPosition.deepEquivalent(), currentPosition.affinity()), UseInlineBoxOrdering));
+    return VisiblePosition(startOfLine(currentPosition.toPositionWithAffinity(), UseInlineBoxOrdering));
 }
 
 VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
 {
-    return VisiblePosition(startOfLine(PositionWithAffinity(currentPosition.deepEquivalent(), currentPosition.affinity()), UseLogicalOrdering));
+    return VisiblePosition(startOfLine(currentPosition.toPositionWithAffinity(), UseLogicalOrdering));
 }
 
 static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpointComputationMode mode)
@@ -926,9 +926,9 @@ bool inSameLine(const PositionInComposedTreeWithAffinity& position1, const Posit
     return inSameLineAlgorithm(position1, position2);
 }
 
-bool inSameLine(const VisiblePosition &a, const VisiblePosition &b)
+bool inSameLine(const VisiblePosition& position1, const VisiblePosition& position2)
 {
-    return inSameLine(PositionWithAffinity(a.deepEquivalent(), a.affinity()), PositionWithAffinity(b.deepEquivalent(), b.affinity()));
+    return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
 bool isStartOfLine(const VisiblePosition &p)

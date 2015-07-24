@@ -111,7 +111,7 @@ bool CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
 
 bool CaretBase::updateCaretRect(const VisiblePosition& caretPosition)
 {
-    return updateCaretRect(PositionWithAffinity(caretPosition.deepEquivalent(), caretPosition.affinity()));
+    return updateCaretRect(caretPosition.toPositionWithAffinity());
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) const

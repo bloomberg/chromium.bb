@@ -68,6 +68,7 @@ public:
 
     Position deepEquivalent() const { return m_deepPosition; }
     Position toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
+    PositionWithAffinity toPositionWithAffinity() const { return PositionWithAffinity(m_deepPosition, m_affinity); }
     EAffinity affinity() const { ASSERT(m_affinity == UPSTREAM || m_affinity == DOWNSTREAM); return m_affinity; }
 
     // FIXME: Change the following functions' parameter from a boolean to StayInEditableContent.
