@@ -3605,9 +3605,6 @@ interface Presentation
     getter defaultRequest
     getter session
     method constructor
-    method getAvailability
-    method joinSession
-    method startSession
     setter defaultRequest
 interface PresentationAvailability
     getter onchange

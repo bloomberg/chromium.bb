@@ -1198,8 +1198,6 @@
       'presentation/Presentation.h',
       'presentation/PresentationAvailability.cpp',
       'presentation/PresentationAvailability.h',
-      'presentation/PresentationAvailabilityCallback.cpp',
-      'presentation/PresentationAvailabilityCallback.h',
       'presentation/PresentationController.cpp',
       'presentation/PresentationController.h',
       'presentation/PresentationError.cpp',

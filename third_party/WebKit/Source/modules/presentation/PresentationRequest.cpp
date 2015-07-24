@@ -5,13 +5,35 @@
 #include "config.h"
 #include "modules/presentation/PresentationRequest.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/EventTargetModules.h"
+#include "modules/presentation/PresentationAvailability.h"
+#include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationError.h"
+#include "modules/presentation/PresentationSession.h"
 
 namespace blink {
+
+namespace {
+
+// TODO(mlamouri): refactor in one common place.
+WebPresentationClient* presentationClient(ExecutionContext* executionContext)
+{
+    ASSERT(executionContext && executionContext->isDocument());
+
+    Document* document = toDocument(executionContext);
+    if (!document->frame())
+        return nullptr;
+    PresentationController* controller = PresentationController::from(*document->frame());
+    return controller ? controller->client() : nullptr;
+}
+
+} // anonymous namespace
 
 // static
 PresentationRequest* PresentationRequest::create(ExecutionContext* executionContext, const String& url, ExceptionState& exceptionState)
@@ -46,25 +68,46 @@ bool PresentationRequest::hasPendingActivity() const
 
 ScriptPromise PresentationRequest::start(ScriptState* scriptState)
 {
-    // TODO(mlamouri): migrate from Presentation, see https://crbug.com/510483
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client) {
+        resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
+        return promise;
+    }
+    client->startSession(m_url.string(), new CallbackPromiseAdapter<PresentationSession, PresentationError>(resolver));
+
     return promise;
 }
 
 ScriptPromise PresentationRequest::join(ScriptState* scriptState, const String& id)
 {
-    // TODO(mlamouri): migrate from Presentation, see https://crbug.com/510483
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client) {
+        resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
+        return promise;
+    }
+    client->joinSession(m_url.string(), id, new CallbackPromiseAdapter<PresentationSession, PresentationError>(resolver));
+
     return promise;
 }
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
 {
-    // TODO(mlamouri): migrate from Presentation, see https://crbug.com/510483
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client) {
+        resolver->reject(DOMException::create(InvalidStateError, "The object is no longer associated to a frame."));
+        return promise;
+    }
+    client->getAvailability(m_url.string(), new CallbackPromiseAdapter<bool, PresentationError>(resolver));
+
     return promise;
 }
 

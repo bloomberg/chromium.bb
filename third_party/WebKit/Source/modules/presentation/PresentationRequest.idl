@@ -12,11 +12,8 @@
     GarbageCollected,
     RuntimeEnabled=Presentation,
 ] interface PresentationRequest : EventTarget {
-    // TODO(mlamouri): implement, see https://crbug.com/510483
     [CallWith=ScriptState] Promise<PresentationSession> start();
-    // TODO(mlamouri): implement, see https://crbug.com/510483
     [CallWith=ScriptState] Promise<PresentationSession> join(DOMString id);
-    // TODO(mlamouri): implement, see https://crbug.com/510483
     [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability();
 
     // TODO(mlamouri): implement, see https://crbug.com/510483

@@ -12,6 +12,8 @@ namespace blink {
 // availability change.
 class WebPresentationAvailabilityObserver {
 public:
+    virtual ~WebPresentationAvailabilityObserver() = default;
+
     virtual void availabilityChanged(bool) = 0;
 };
 

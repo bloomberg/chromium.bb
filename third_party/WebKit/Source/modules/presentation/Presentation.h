@@ -43,14 +43,10 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    PresentationSession* session() const;
-
-    ScriptPromise startSession(ScriptState*, const String& presentationUrl);
-    ScriptPromise joinSession(ScriptState*, const String& presentationUrl, const String& presentationId);
-    ScriptPromise getAvailability(ScriptState*, const String& presentationUrl);
-
     PresentationRequest* defaultRequest() const;
     void setDefaultRequest(PresentationRequest*);
+
+    PresentationSession* session() const;
 
 private:
     explicit Presentation(LocalFrame*);
