@@ -688,6 +688,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onBackButton_: function(e) {
       $('back-button-item').hidden = !e.detail;
       $('login-header-bar').updateUI_();
+      $('signin-frame').focus();
     },
 
     /**
