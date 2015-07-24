@@ -46,8 +46,9 @@ class CONTENT_EXPORT WebRTCIdentityStore
                       storage::SpecialStoragePolicy* policy);
 
   // Retrieve the cached DTLS private key and certificate, i.e. identity, for
-  // the |origin| and |identity_name| pair, or generate a new identity using
-  // |common_name| if such an identity does not exist.
+  // the |origin| and |identity_name| pair if such an identity exists and
+  // |enable_cache| is true. Otherwise, generate a new identity using
+  // |common_name|.
   // If the given |common_name| is different from the common name in the cached
   // identity that has the same origin and identity_name, a new private key and
   // a new certificate will be generated, overwriting the old one.
@@ -61,13 +62,16 @@ class CONTENT_EXPORT WebRTCIdentityStore
   // different origins or different identity names may have the same common
   // name.
   // |callback| is the callback to return the result as DER strings.
-  //
+  // |enable_cache| is true if the persistent cache should be used to return the
+  // certificate. If a new identity is generated, it will be not saved in the
+  // cache if |enable_cache| is false.
   // Returns the Closure used to cancel the request if the request is accepted.
   // The Closure can only be called before the request completes.
   virtual base::Closure RequestIdentity(const GURL& origin,
                                         const std::string& identity_name,
                                         const std::string& common_name,
-                                        const CompletionCallback& callback);
+                                        const CompletionCallback& callback,
+                                        bool enable_cache);
 
   // Delete the identities created between |delete_begin| and |delete_end|.
   // |callback| will be called when the operation is done.
@@ -98,6 +102,8 @@ class CONTENT_EXPORT WebRTCIdentityStore
                                      const std::string& common_name);
   void PostRequestResult(WebRTCIdentityRequest* request,
                          const WebRTCIdentityRequestResult& result);
+
+  void GenerateNewIdentity(WebRTCIdentityRequest* request);
 
   // The validity period of the certificates.
   base::TimeDelta validity_period_;

@@ -154,6 +154,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::string16& name,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int>>& render_frames) override;
+
+#if defined(ENABLE_WEBRTC)
+  bool AllowWebRTCIdentityCache(const GURL& url,
+                                const GURL& first_party_url,
+                                content::ResourceContext* context) override;
+#endif  // defined(ENABLE_WEBRTC)
+
   net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url,
       content::ResourceContext* context) override;

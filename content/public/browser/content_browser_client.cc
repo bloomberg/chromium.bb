@@ -182,6 +182,14 @@ bool ContentBrowserClient::AllowWorkerIndexedDB(
   return true;
 }
 
+#if defined(ENABLE_WEBRTC)
+bool ContentBrowserClient::AllowWebRTCIdentityCache(const GURL& url,
+                                                    const GURL& first_party_url,
+                                                    ResourceContext* context) {
+  return true;
+}
+#endif  // defined(ENABLE_WEBRTC)
+
 QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
 }

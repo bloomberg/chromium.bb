@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "content/common/content_export.h"
+#include "content/common/media/webrtc_identity_messages.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "url/gurl.h"
 
@@ -32,7 +33,9 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
 
   // Sends an identity request.
   //
-  // |origin| is the origin of the caller;
+  // |url| is the frame url of the caller;
+  // |first_party_for_cookies| is the first party url for checking cookie
+  // policies.
   // |identity_name| and |common_name| have the same meaning as in
   // webrtc::DTLSIdentityServiceInterface::RequestIdentity;
   // |success_callback| is the callback if the identity is successfully
@@ -41,7 +44,8 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
   //
   // The request id is returned. It's unique within the renderer and can be used
   // to cancel the request.
-  int RequestIdentity(const GURL& origin,
+  int RequestIdentity(const GURL& url,
+                      const GURL& first_party_for_cookies,
                       const std::string& identity_name,
                       const std::string& common_name,
                       const SuccessCallback& success_callback,
@@ -62,18 +66,12 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
 
  private:
   struct RequestInfo {
-    RequestInfo(int request_id,
-                const GURL& origin,
-                const std::string& identity_name,
-                const std::string& common_name,
+    RequestInfo(const WebRTCIdentityMsg_RequestIdentity_Params& params,
                 const SuccessCallback& success_callback,
                 const FailureCallback& failure_callback);
     ~RequestInfo();
 
-    int request_id;
-    GURL origin;
-    std::string identity_name;
-    std::string common_name;
+    WebRTCIdentityMsg_RequestIdentity_Params params;
     SuccessCallback success_callback;
     FailureCallback failure_callback;
   };

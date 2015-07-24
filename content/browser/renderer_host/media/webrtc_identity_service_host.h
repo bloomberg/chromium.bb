@@ -13,8 +13,11 @@
 
 class GURL;
 
+struct WebRTCIdentityMsg_RequestIdentity_Params;
+
 namespace content {
 
+class ResourceContext;
 class WebRTCIdentityStore;
 
 // This class is the host for WebRTCIdentityService in the browser process.
@@ -27,7 +30,8 @@ class WebRTCIdentityStore;
 class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
  public:
   WebRTCIdentityServiceHost(int renderer_process_id,
-                            scoped_refptr<WebRTCIdentityStore> identity_store);
+                            scoped_refptr<WebRTCIdentityStore> identity_store,
+                            ResourceContext* resource_context);
 
  protected:
   ~WebRTCIdentityServiceHost() override;
@@ -36,30 +40,30 @@ class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  // |sequence_number| is the same as in the OnRequestIdentity call.
+  // |request_id| is the same as in the OnRequestIdentity call.
   // See WebRTCIdentityStore for the meaning of the parameters.
-  void OnComplete(int sequence_number,
+  void OnComplete(int request_id,
                   int status,
                   const std::string& certificate,
                   const std::string& private_key);
 
-  // |sequence_number| is a renderer wide unique number for each request and
+  // |request_id| is a renderer wide unique number for each request and
   // will be echoed in the response to handle the possibility that the renderer
   // cancels the request after the browser sends the response and before it's
   // received by the renderer.
   // See WebRTCIdentityStore for the meaning of the other parameters.
-  void OnRequestIdentity(int sequence_number,
-                         const GURL& origin,
-                         const std::string& identity_name,
-                         const std::string& common_name);
+  void OnRequestIdentity(
+      const WebRTCIdentityMsg_RequestIdentity_Params& params);
 
   void OnCancelRequest();
 
-  void SendErrorMessage(int sequence_number, int error);
+  void SendErrorMessage(int request_id, int error);
 
   int renderer_process_id_;
   base::Closure cancel_callback_;
   scoped_refptr<WebRTCIdentityStore> identity_store_;
+  ResourceContext* resource_context_;
+
   base::WeakPtrFactory<WebRTCIdentityServiceHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCIdentityServiceHost);

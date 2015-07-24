@@ -413,6 +413,11 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   // Copy the flag from Preference associated with this WebFrame.
   bool enable_multiple_routes = true;
+  PeerConnectionIdentityService* identity_service =
+      new PeerConnectionIdentityService(
+          GURL(web_frame->document().url()),
+          GURL(web_frame->document().firstPartyForCookies()));
+
   if (web_frame && web_frame->view()) {
     RenderViewImpl* renderer_view_impl =
         RenderViewImpl::FromWebView(web_frame->view());
@@ -427,10 +432,6 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
           p2p_socket_dispatcher_.get(), network_manager_, socket_factory_.get(),
           GURL(web_frame->document().url().spec()).GetOrigin(),
           enable_multiple_routes);
-
-  PeerConnectionIdentityService* identity_service =
-      new PeerConnectionIdentityService(
-          GURL(web_frame->document().url().spec()).GetOrigin());
 
   return GetPcFactory()->CreatePeerConnection(config,
                                               constraints,

@@ -69,10 +69,9 @@ class WebRtcIdentityStoreTest : public testing::Test {
                                               std::string* certificate,
                                               std::string* private_key) {
     base::Closure cancel_callback = webrtc_identity_store_->RequestIdentity(
-        GURL(origin),
-        identity_name,
-        common_name,
-        base::Bind(&OnRequestCompleted, completed, certificate, private_key));
+        GURL(origin), identity_name, common_name,
+        base::Bind(&OnRequestCompleted, completed, certificate, private_key),
+        true /* enable_cache */);
     EXPECT_FALSE(cancel_callback.is_null());
     RunUntilIdle();
     return cancel_callback;
@@ -106,10 +105,9 @@ TEST_F(WebRtcIdentityStoreTest, CancelRequest) {
   bool completed = false;
   std::string dummy;
   base::Closure cancel_callback = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName1,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed, &dummy, &dummy));
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed, &dummy, &dummy),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback.is_null());
   cancel_callback.Run();
 
@@ -122,17 +120,15 @@ TEST_F(WebRtcIdentityStoreTest, ConcurrentUniqueRequests) {
   bool completed_2 = false;
   std::string dummy;
   base::Closure cancel_callback_1 = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName1,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed_1, &dummy, &dummy));
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_1, &dummy, &dummy),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback_1.is_null());
 
   base::Closure cancel_callback_2 = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName2,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed_2, &dummy, &dummy));
+      GURL(kFakeOrigin), kFakeIdentityName2, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_2, &dummy, &dummy),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback_2.is_null());
 
   RunUntilIdle();
@@ -160,6 +156,28 @@ TEST_F(WebRtcIdentityStoreTest, DifferentCommonNameReturnNewIdentity) {
                                     &completed_2,
                                     &cert_2,
                                     &key_2);
+
+  EXPECT_TRUE(completed_1);
+  EXPECT_TRUE(completed_2);
+  EXPECT_NE(cert_1, cert_2);
+  EXPECT_NE(key_1, key_2);
+}
+
+TEST_F(WebRtcIdentityStoreTest, DisableCacheReturnNewIdentity) {
+  bool completed_1 = false;
+  bool completed_2 = false;
+  std::string cert_1, cert_2, key_1, key_2;
+
+  base::Closure cancel_callback_1 = RequestIdentityAndRunUtilIdle(
+      kFakeOrigin, kFakeIdentityName1, kFakeCommonName1, &completed_1, &cert_1,
+      &key_1);
+
+  base::Closure cancel_callback_2 = webrtc_identity_store_->RequestIdentity(
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_2, &cert_2, &key_2),
+      false /* enable_cache */);
+  EXPECT_FALSE(cancel_callback_2.is_null());
+  RunUntilIdle();
 
   EXPECT_TRUE(completed_1);
   EXPECT_TRUE(completed_2);
@@ -200,17 +218,15 @@ TEST_F(WebRtcIdentityStoreTest, ConcurrentIdenticalRequestsJoined) {
   std::string cert_1, cert_2, key_1, key_2;
 
   base::Closure cancel_callback_1 = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName1,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed_1, &cert_1, &key_1));
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_1, &cert_1, &key_1),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback_1.is_null());
 
   base::Closure cancel_callback_2 = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName1,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed_2, &cert_2, &key_2));
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_2, &cert_2, &key_2),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback_2.is_null());
 
   RunUntilIdle();
@@ -226,17 +242,15 @@ TEST_F(WebRtcIdentityStoreTest, CancelOneOfIdenticalRequests) {
   std::string cert_1, cert_2, key_1, key_2;
 
   base::Closure cancel_callback_1 = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName1,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed_1, &cert_1, &key_1));
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_1, &cert_1, &key_1),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback_1.is_null());
 
   base::Closure cancel_callback_2 = webrtc_identity_store_->RequestIdentity(
-      GURL(kFakeOrigin),
-      kFakeIdentityName1,
-      kFakeCommonName1,
-      base::Bind(&OnRequestCompleted, &completed_2, &cert_2, &key_2));
+      GURL(kFakeOrigin), kFakeIdentityName1, kFakeCommonName1,
+      base::Bind(&OnRequestCompleted, &completed_2, &cert_2, &key_2),
+      true /* enable_cache */);
   ASSERT_FALSE(cancel_callback_2.is_null());
 
   cancel_callback_1.Run();

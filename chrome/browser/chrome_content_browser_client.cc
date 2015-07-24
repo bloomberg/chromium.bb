@@ -1753,6 +1753,20 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
   return allow;
 }
 
+#if defined(ENABLE_WEBRTC)
+bool ChromeContentBrowserClient::AllowWebRTCIdentityCache(
+    const GURL& url,
+    const GURL& first_party_url,
+    content::ResourceContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+  content_settings::CookieSettings* cookie_settings =
+      io_data->GetCookieSettings();
+  return cookie_settings->IsReadingCookieAllowed(url, first_party_url) &&
+         cookie_settings->IsSettingCookieAllowed(url, first_party_url);
+}
+#endif  // defined(ENABLE_WEBRTC)
+
 net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, content::ResourceContext* context) {

@@ -15,19 +15,21 @@ namespace {
 // signaling thread.
 class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
  public:
-  RequestHandler(const GURL& origin,
-                 webrtc::DTLSIdentityRequestObserver* observer,
-                 const std::string& identity_name,
-                 const std::string& common_name)
+  explicit RequestHandler(webrtc::DTLSIdentityRequestObserver* observer)
       : signaling_thread_(base::ThreadTaskRunnerHandle::Get()),
-        observer_(observer), origin_(origin), identity_name_(identity_name),
-        common_name_(common_name) {}
+        observer_(observer) {}
 
-  void RequestIdentityOnUIThread() {
-    int request_id = RenderThreadImpl::current()->get_webrtc_identity_service()
-        ->RequestIdentity(origin_, identity_name_, common_name_,
-            base::Bind(&RequestHandler::OnIdentityReady, this),
-            base::Bind(&RequestHandler::OnRequestFailed, this));
+  void RequestIdentityOnUIThread(const GURL& url,
+                                 const GURL& first_party_for_cookies,
+                                 const std::string& identity_name,
+                                 const std::string& common_name) {
+    int request_id =
+        RenderThreadImpl::current()
+            ->get_webrtc_identity_service()
+            ->RequestIdentity(
+                url, first_party_for_cookies, identity_name, common_name,
+                base::Bind(&RequestHandler::OnIdentityReady, this),
+                base::Bind(&RequestHandler::OnRequestFailed, this));
     DCHECK_NE(request_id, 0);
   }
 
@@ -64,14 +66,15 @@ class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
 
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   scoped_refptr<webrtc::DTLSIdentityRequestObserver> observer_;
-  const GURL origin_;
-  const std::string identity_name_;
-  const std::string common_name_;
 };
 }  // namespace
 
-PeerConnectionIdentityService::PeerConnectionIdentityService(const GURL& origin)
-    : main_thread_(base::ThreadTaskRunnerHandle::Get()), origin_(origin) {
+PeerConnectionIdentityService::PeerConnectionIdentityService(
+    const GURL& url,
+    const GURL& first_party_for_cookies)
+    : main_thread_(base::ThreadTaskRunnerHandle::Get()),
+      url_(url),
+      first_party_for_cookies_(first_party_for_cookies) {
   signaling_thread_.DetachFromThread();
   DCHECK(main_thread_.get());
 }
@@ -87,10 +90,11 @@ bool PeerConnectionIdentityService::RequestIdentity(
   DCHECK(signaling_thread_.CalledOnValidThread());
   DCHECK(observer);
 
-  scoped_refptr<RequestHandler> handler(
-      new RequestHandler(origin_, observer, identity_name, common_name));
-  main_thread_->PostTask(FROM_HERE,
-      base::Bind(&RequestHandler::RequestIdentityOnUIThread, handler));
+  scoped_refptr<RequestHandler> handler(new RequestHandler(observer));
+  main_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&RequestHandler::RequestIdentityOnUIThread, handler, url_,
+                 first_party_for_cookies_, identity_name, common_name));
 
   return true;
 }

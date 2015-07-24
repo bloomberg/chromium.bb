@@ -77,10 +77,12 @@ class WebRTCIdentityRequest {
  public:
   WebRTCIdentityRequest(const GURL& origin,
                         const std::string& identity_name,
-                        const std::string& common_name)
+                        const std::string& common_name,
+                        bool enable_cache)
       : origin_(origin),
         identity_name_(identity_name),
-        common_name_(common_name) {}
+        common_name_(common_name),
+        enable_cache_(enable_cache) {}
 
   void Cancel(WebRTCIdentityRequestHandle* handle) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -88,6 +90,8 @@ class WebRTCIdentityRequest {
       return;
     callbacks_.erase(handle);
   }
+
+  bool enable_cache() const { return enable_cache_; }
 
  private:
   friend class WebRTCIdentityStore;
@@ -117,6 +121,7 @@ class WebRTCIdentityRequest {
   typedef std::map<WebRTCIdentityRequestHandle*,
                    WebRTCIdentityStore::CompletionCallback> CallbackMap;
   CallbackMap callbacks_;
+  bool enable_cache_;
 };
 
 // The class represents an identity request which calls back to the external
@@ -183,24 +188,28 @@ base::Closure WebRTCIdentityStore::RequestIdentity(
     const GURL& origin,
     const std::string& identity_name,
     const std::string& common_name,
-    const CompletionCallback& callback) {
+    const CompletionCallback& callback,
+    bool enable_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   WebRTCIdentityRequest* request =
       FindRequest(origin, identity_name, common_name);
   // If there is no identical request in flight, create a new one, queue it,
   // and make the backend request.
   if (!request) {
-    request = new WebRTCIdentityRequest(origin, identity_name, common_name);
-    // |request| will delete itself after the result is posted.
-    if (!backend_->FindIdentity(
-            origin,
-            identity_name,
-            common_name,
-            base::Bind(
-                &WebRTCIdentityStore::BackendFindCallback, this, request))) {
-      // Bail out if the backend failed to start the task.
-      delete request;
-      return base::Closure();
+    request = new WebRTCIdentityRequest(origin, identity_name, common_name,
+                                        enable_cache);
+    // In either case, |request| will delete itself after the result is posted.
+    if (enable_cache) {
+      if (!backend_->FindIdentity(
+              origin, identity_name, common_name,
+              base::Bind(&WebRTCIdentityStore::BackendFindCallback, this,
+                         request))) {
+        // Bail out if the backend failed to start the task.
+        delete request;
+        return base::Closure();
+      }
+    } else {
+      GenerateNewIdentity(request);
     }
     in_flight_requests_.push_back(request);
   }
@@ -248,30 +257,14 @@ void WebRTCIdentityStore::BackendFindCallback(WebRTCIdentityRequest* request,
     PostRequestResult(request, result);
     return;
   }
-  // Generate a new identity if not found in the DB.
-  WebRTCIdentityRequestResult* result =
-      new WebRTCIdentityRequestResult(0, "", "");
-  if (!task_runner_->PostTaskAndReply(
-           FROM_HERE,
-           base::Bind(&GenerateIdentityWorker,
-                      request->common_name_,
-                      validity_period_,
-                      result),
-           base::Bind(&WebRTCIdentityStore::GenerateIdentityCallback,
-                      this,
-                      request,
-                      base::Owned(result)))) {
-    // Completes the request with error if failed to post the task.
-    WebRTCIdentityRequestResult result(net::ERR_UNEXPECTED, "", "");
-    PostRequestResult(request, result);
-  }
+  GenerateNewIdentity(request);
 }
 
 void WebRTCIdentityStore::GenerateIdentityCallback(
     WebRTCIdentityRequest* request,
     WebRTCIdentityRequestResult* result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (result->error == net::OK) {
+  if (result->error == net::OK && request->enable_cache()) {
     DVLOG(2) << "New identity generated and added to the backend.";
     backend_->AddIdentity(request->origin_,
                           request->identity_name_,
@@ -310,6 +303,20 @@ WebRTCIdentityRequest* WebRTCIdentityStore::FindRequest(
     }
   }
   return NULL;
+}
+
+void WebRTCIdentityStore::GenerateNewIdentity(WebRTCIdentityRequest* request) {
+  WebRTCIdentityRequestResult* result =
+      new WebRTCIdentityRequestResult(0, "", "");
+  if (!task_runner_->PostTaskAndReply(
+          FROM_HERE, base::Bind(&GenerateIdentityWorker, request->common_name_,
+                                validity_period_, result),
+          base::Bind(&WebRTCIdentityStore::GenerateIdentityCallback, this,
+                     request, base::Owned(result)))) {
+    // Completes the request with error if failed to post the task.
+    WebRTCIdentityRequestResult result(net::ERR_UNEXPECTED, "", "");
+    PostRequestResult(request, result);
+  }
 }
 
 }  // namespace content

@@ -4,7 +4,6 @@
 
 #include <deque>
 
-#include "content/common/media/webrtc_identity_messages.h"
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,7 +12,7 @@ namespace content {
 
 namespace {
 
-static const char FAKE_ORIGIN[] = "http://fake.com";
+static const char FAKE_URL[] = "http://fake.com";
 static const char FAKE_IDENTITY_NAME[] = "fake identity";
 static const char FAKE_COMMON_NAME[] = "fake common name";
 static const char FAKE_CERTIFICATE[] = "fake cert";
@@ -63,9 +62,7 @@ class WebRtcIdentityServiceTest : public ::testing::Test {
 
   int RequestIdentity() {
     return service_->RequestIdentity(
-        GURL(FAKE_ORIGIN),
-        FAKE_IDENTITY_NAME,
-        FAKE_COMMON_NAME,
+        GURL(FAKE_URL), GURL(FAKE_URL), FAKE_IDENTITY_NAME, FAKE_COMMON_NAME,
         base::Bind(&WebRtcIdentityServiceTest::OnIdentityReady,
                    base::Unretained(this)),
         base::Bind(&WebRtcIdentityServiceTest::OnRequestFailed,

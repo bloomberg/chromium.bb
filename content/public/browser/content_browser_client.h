@@ -352,6 +352,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_frames);
 
+#if defined(ENABLE_WEBRTC)
+  // Allow the embedder to control if WebRTC identities are allowed to be cached
+  // and potentially reused for future requests (within the same origin).
+  // This is called on the IO thread.
+  virtual bool AllowWebRTCIdentityCache(const GURL& url,
+                                        const GURL& first_party_url,
+                                        ResourceContext* context);
+#endif  // defined(ENABLE_WEBRTC)
+
   // Allow the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns nullptr to indicate the
   // regular request context should be used.

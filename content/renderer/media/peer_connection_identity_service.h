@@ -22,7 +22,8 @@ namespace content {
 class PeerConnectionIdentityService
     : public webrtc::DTLSIdentityServiceInterface {
  public:
-  explicit PeerConnectionIdentityService(const GURL& origin);
+  PeerConnectionIdentityService(const GURL& url,
+                                const GURL& first_party_for_cookies);
 
   ~PeerConnectionIdentityService() override;
 
@@ -36,8 +37,9 @@ class PeerConnectionIdentityService
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
-  // The origin of the DTLS connection.
-  const GURL origin_;
+  const GURL url_;
+
+  const GURL first_party_for_cookies_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionIdentityService);
 };

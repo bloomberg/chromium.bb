@@ -811,7 +811,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
   AddFilter(new WebRTCIdentityServiceHost(
-      GetID(), storage_partition_impl_->GetWebRTCIdentityStore()));
+      GetID(),
+      storage_partition_impl_->GetWebRTCIdentityStore(),
+      resource_context));
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamDispatcherHost(

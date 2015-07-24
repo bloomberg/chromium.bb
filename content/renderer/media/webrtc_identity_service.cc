@@ -7,23 +7,16 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/media/webrtc_identity_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "net/base/net_errors.h"
 
 namespace content {
 
 WebRTCIdentityService::RequestInfo::RequestInfo(
-    int request_id,
-    const GURL& origin,
-    const std::string& identity_name,
-    const std::string& common_name,
+    const WebRTCIdentityMsg_RequestIdentity_Params& params,
     const SuccessCallback& success_callback,
     const FailureCallback& failure_callback)
-    : request_id(request_id),
-      origin(origin),
-      identity_name(identity_name),
-      common_name(common_name),
+    : params(params),
       success_callback(success_callback),
       failure_callback(failure_callback) {}
 
@@ -47,19 +40,22 @@ WebRTCIdentityService::~WebRTCIdentityService() {
 }
 
 int WebRTCIdentityService::RequestIdentity(
-    const GURL& origin,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
     const std::string& identity_name,
     const std::string& common_name,
     const SuccessCallback& success_callback,
     const FailureCallback& failure_callback) {
   int request_id = next_request_id_++;
 
-  RequestInfo request_info(request_id,
-                           origin,
-                           identity_name,
-                           common_name,
-                           success_callback,
-                           failure_callback);
+  WebRTCIdentityMsg_RequestIdentity_Params params;
+  params.request_id = request_id;
+  params.url = url;
+  params.first_party_for_cookies = first_party_for_cookies;
+  params.identity_name = identity_name;
+  params.common_name = common_name;
+
+  RequestInfo request_info(params, success_callback, failure_callback);
 
   pending_requests_.push_back(request_info);
   if (pending_requests_.size() == 1)
@@ -71,7 +67,7 @@ int WebRTCIdentityService::RequestIdentity(
 void WebRTCIdentityService::CancelRequest(int request_id) {
   std::deque<RequestInfo>::iterator it;
   for (it = pending_requests_.begin(); it != pending_requests_.end(); ++it) {
-    if (it->request_id != request_id)
+    if (it->params.request_id != request_id)
       continue;
     if (it != pending_requests_.begin()) {
       pending_requests_.erase(it);
@@ -107,7 +103,7 @@ void WebRTCIdentityService::OnIdentityReady(int request_id,
   // message to cancel the request. So we need to check if the returned response
   // matches the request on the top of the queue.
   if (pending_requests_.empty() ||
-      pending_requests_.front().request_id != request_id)
+      pending_requests_.front().params.request_id != request_id)
     return;
 
   pending_requests_.front().success_callback.Run(certificate, private_key);
@@ -119,7 +115,7 @@ void WebRTCIdentityService::OnRequestFailed(int request_id, int error) {
   // message to cancel the request. So we need to check if the returned response
   // matches the request on the top of the queue.
   if (pending_requests_.empty() ||
-      pending_requests_.front().request_id != request_id)
+      pending_requests_.front().params.request_id != request_id)
     return;
 
   pending_requests_.front().failure_callback.Run(error);
@@ -127,14 +123,12 @@ void WebRTCIdentityService::OnRequestFailed(int request_id, int error) {
 }
 
 void WebRTCIdentityService::SendRequest(const RequestInfo& request_info) {
-  if (!Send(new WebRTCIdentityMsg_RequestIdentity(request_info.request_id,
-                                                  request_info.origin,
-                                                  request_info.identity_name,
-                                                  request_info.common_name))) {
+  if (!Send(new WebRTCIdentityMsg_RequestIdentity(request_info.params))) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&WebRTCIdentityService::OnRequestFailed,
-                              base::Unretained(this), request_info.request_id,
-                              net::ERR_UNEXPECTED));
+        FROM_HERE,
+        base::Bind(&WebRTCIdentityService::OnRequestFailed,
+                   base::Unretained(this), request_info.params.request_id,
+                   net::ERR_UNEXPECTED));
   }
 }
 
