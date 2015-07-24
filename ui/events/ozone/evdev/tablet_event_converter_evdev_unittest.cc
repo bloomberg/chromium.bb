@@ -141,7 +141,6 @@ MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
     : TabletEventConverterEvdev(fd,
                                 path,
                                 1,
-                                INPUT_DEVICE_UNKNOWN,
                                 cursor,
                                 devinfo,
                                 dispatcher) {

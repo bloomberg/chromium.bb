@@ -42,7 +42,6 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   EventReaderLibevdevCros(int fd,
                           const base::FilePath& path,
                           int id,
-                          InputDeviceType type,
                           const EventDeviceInfo& devinfo,
                           scoped_ptr<Delegate> delegate);
   ~EventReaderLibevdevCros() override;

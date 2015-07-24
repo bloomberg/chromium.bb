@@ -31,7 +31,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   EventConverterEvdevImpl(int fd,
                           base::FilePath path,
                           int id,
-                          InputDeviceType type,
                           const EventDeviceInfo& info,
                           CursorDelegateEvdev* cursor,
                           DeviceEventDispatcherEvdev* dispatcher);

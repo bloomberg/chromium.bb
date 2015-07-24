@@ -83,7 +83,6 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
 scoped_ptr<EventConverterEvdev> CreateConverter(
     const OpenInputDeviceParams& params,
     int fd,
-    InputDeviceType type,
     const EventDeviceInfo& devinfo) {
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
@@ -94,14 +93,14 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
             params.id, params.cursor, params.gesture_property_provider,
             params.dispatcher));
     return make_scoped_ptr(new EventReaderLibevdevCros(
-        fd, params.path, params.id, type, devinfo, gesture_interp.Pass()));
+        fd, params.path, params.id, devinfo, gesture_interp.Pass()));
   }
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasTouchscreen()) {
     scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
-        fd, params.path, params.id, type, devinfo, params.dispatcher));
+        fd, params.path, params.id, devinfo, params.dispatcher));
     converter->Initialize(devinfo);
     return converter.Pass();
   }
@@ -109,13 +108,11 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Graphics tablet
   if (devinfo.HasTablet())
     return make_scoped_ptr<EventConverterEvdev>(new TabletEventConverterEvdev(
-        fd, params.path, params.id, type, params.cursor, devinfo,
-        params.dispatcher));
+        fd, params.path, params.id, params.cursor, devinfo, params.dispatcher));
 
   // Everything else: use EventConverterEvdevImpl.
-  return make_scoped_ptr<EventConverterEvdevImpl>(
-      new EventConverterEvdevImpl(fd, params.path, params.id, type, devinfo,
-                                  params.cursor, params.dispatcher));
+  return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
+      fd, params.path, params.id, devinfo, params.cursor, params.dispatcher));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -156,9 +153,7 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
     return;
   }
 
-  InputDeviceType type = GetInputDeviceTypeFromPath(path);
-
-  converter = CreateConverter(*params, fd, type, devinfo);
+  converter = CreateConverter(*params, fd, devinfo);
 
   // Reply with the constructed converter.
   reply_runner->PostTask(FROM_HERE,

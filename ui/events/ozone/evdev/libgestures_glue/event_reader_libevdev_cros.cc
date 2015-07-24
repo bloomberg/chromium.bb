@@ -29,13 +29,12 @@ std::string FormatLog(const char* fmt, va_list args) {
 EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
                                                  const base::FilePath& path,
                                                  int id,
-                                                 InputDeviceType type,
                                                  const EventDeviceInfo& devinfo,
                                                  scoped_ptr<Delegate> delegate)
     : EventConverterEvdev(fd,
                           path,
                           id,
-                          type,
+                          devinfo.device_type(),
                           devinfo.name(),
                           devinfo.vendor_id(),
                           devinfo.product_id()),
@@ -45,7 +44,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
       has_caps_lock_led_(devinfo.HasLedEvent(LED_CAPSL)),
       delegate_(delegate.Pass()) {
   // This class assumes it does not deal with internal keyboards.
-  CHECK(!has_keyboard_ || type != INPUT_DEVICE_INTERNAL);
+  CHECK(!has_keyboard_ || type() != INPUT_DEVICE_INTERNAL);
 
   memset(&evdev_, 0, sizeof(evdev_));
   evdev_.log = OnLogMessage;

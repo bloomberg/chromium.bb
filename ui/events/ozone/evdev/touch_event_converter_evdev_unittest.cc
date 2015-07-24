@@ -128,7 +128,6 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
     : TouchEventConverterEvdev(fd,
                                path,
                                1,
-                               INPUT_DEVICE_UNKNOWN,
                                devinfo,
                                dispatcher) {
   int fds[2];
