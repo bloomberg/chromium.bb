@@ -65,7 +65,6 @@ GPUInfo::GPUInfo()
       direct_rendering(true),
       sandboxed(false),
       process_crash_count(0),
-      in_process_gpu(true),
       basic_info_state(kCollectInfoNone),
       context_info_state(kCollectInfoNone),
 #if defined(OS_WIN)
@@ -107,7 +106,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool direct_rendering;
     bool sandboxed;
     int process_crash_count;
-    bool in_process_gpu;
     CollectInfoResult basic_info_state;
     CollectInfoResult context_info_state;
 #if defined(OS_WIN)
@@ -168,7 +166,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("directRendering", direct_rendering);
   enumerator->AddBool("sandboxed", sandboxed);
   enumerator->AddInt("processCrashCount", process_crash_count);
-  enumerator->AddBool("inProcessGpu", in_process_gpu);
   enumerator->AddInt("basicInfoState", basic_info_state);
   enumerator->AddInt("contextInfoState", context_info_state);
 #if defined(OS_WIN)

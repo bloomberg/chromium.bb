@@ -723,12 +723,6 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
-  bool in_process_gpu;
-  if (value->GetBoolean("in_process_gpu", &in_process_gpu)) {
-    entry->SetInProcessGPUInfo(in_process_gpu);
-    dictionary_entry_count++;
-  }
-
   if (top_level) {
     const base::ListValue* feature_value = NULL;
     if (value->GetList("features", &feature_value)) {
@@ -984,10 +978,6 @@ bool GpuControlList::GpuControlListEntry::SetGpuCountInfo(
 
 void GpuControlList::GpuControlListEntry::SetDirectRenderingInfo(bool value) {
   direct_rendering_info_.reset(new BoolInfo(value));
-}
-
-void GpuControlList::GpuControlListEntry::SetInProcessGPUInfo(bool value) {
-  in_process_gpu_info_.reset(new BoolInfo(value));
 }
 
 bool GpuControlList::GpuControlListEntry::SetFeatures(
@@ -1252,9 +1242,6 @@ bool GpuControlList::GpuControlListEntry::Contains(
     return false;
   if (direct_rendering_info_.get() != NULL &&
       !direct_rendering_info_->Contains(gpu_info.direct_rendering))
-    return false;
-  if (in_process_gpu_info_.get() != NULL &&
-      !in_process_gpu_info_->Contains(gpu_info.in_process_gpu))
     return false;
   if (!cpu_brand_.empty()) {
     base::CPU cpu_info;
