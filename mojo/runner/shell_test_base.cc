@@ -62,7 +62,7 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
 void ShellTestBase::SetUpTestApplications() {
   // Set the URLResolver origin to be the same as the base file path for
   // local files. This is primarily for test convenience, so that references
-  // to unknown mojo: urls that do not have specific local file or custom
+  // to unknown mojo: URLs that do not have specific local file or custom
   // mappings registered on the URL resolver are treated as shared libraries.
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));

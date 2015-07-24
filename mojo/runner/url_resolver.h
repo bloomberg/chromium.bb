@@ -17,10 +17,11 @@ namespace mojo {
 namespace runner {
 
 // This class supports the mapping of URLs to other URLs.
-// It's commonly used with mojo: URL, to provide a physical location (i.e.
-// file: or https:) but works with any URL.
+// It's commonly used with mojo: URL, to provide a physical location URL
+// (i.e. file: or https:) but works with any URL.
 // By default, "mojo:" URLs resolve to a file location, with ".mojo" appended,
-// but that resolution can be customized via the AddCustomMapping method.
+// but that resolution can be customized via the AddURLMapping and
+// AddOriginMapping methods.
 class URLResolver {
  public:
   URLResolver();
@@ -36,7 +37,7 @@ class URLResolver {
   };
 
   // Returns a list of origin mappings based on command line args.
-  // The switch --map-origin can be specified multiple times. Each occurance
+  // The switch --map-origin can be specified multiple times. Each occurrence
   // has the format of --map-origin={origin}={base_url}
   // For example:
   //   --map-origin=http://domokit.org=file:///source/out
@@ -44,19 +45,20 @@ class URLResolver {
       const base::CommandLine::StringVector& argv);
 
   // Add a custom mapping for a particular URL. If |mapped_url| is
-  // itself a mojo url normal resolution rules apply.
+  // itself a mojo URL, then normal resolution rules apply.
   void AddURLMapping(const GURL& url, const GURL& mapped_url);
 
-  // Add a custom mapping for all urls rooted at |origin|.
+  // Add a custom mapping for all URLs rooted at |origin|. An origin is a
+  // combination of URL scheme, host and port.
   void AddOriginMapping(const GURL& origin, const GURL& base_url);
 
   // Applies all custom mappings for |url|, returning the last non-mapped url.
-  // For example, if 'a' maps to 'b' and 'b' maps to 'c' calling this with 'a'
+  // For example, if 'a' maps to 'b' and 'b' maps to 'c', calling this with 'a'
   // returns 'c'.
   GURL ApplyMappings(const GURL& url) const;
 
   // If specified, then "mojo:" URLs will be resolved relative to this
-  // URL. That is, the portion after the colon will be appeneded to
+  // URL. That is, the portion after the colon will be appended to
   // |mojo_base_url| with .mojo appended.
   void SetMojoBaseURL(const GURL& mojo_base_url);
 

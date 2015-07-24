@@ -8,8 +8,8 @@
 
 namespace switches {
 
-// Used just for debugging to make it easier to attach debuggers. The actual app
-// path that is used is sent over IPC.
+// Used just for debugging, to make it easier to attach debuggers. The actual
+// app path that is used is sent over IPC.
 const char kApp[] = "app";
 
 // Used internally by the main process to indicate that a new process should be
@@ -20,12 +20,12 @@ const char kChildProcess[] = "child-process";
 // text/html,mojo:html_viewer,application/bravo,https://abarth.com/bravo
 const char kContentHandlers[] = "content-handlers";
 
-// Force dynamically loaded apps / services to be loaded irrespective of cache
+// Force dynamically loaded apps or services to be loaded irrespective of cache
 // instructions.
 const char kDisableCache[] = "disable-cache";
 
 // In multiprocess mode, force these apps to be loaded in the main process.
-// Comma-separate list of URLs. Example:
+// This is a comma-separated list of URLs. Example:
 // --force-in-process=mojo:native_viewport_service,mojo:network_service
 const char kForceInProcess[] = "force-in-process";
 
@@ -44,9 +44,9 @@ const char kOrigin[] = "origin";
 // seconds or when the shell exits.
 const char kTraceStartup[] = "trace-startup";
 
-// Specifies a set of mappings to apply when resolving urls. The value is a set
-// of ',' separated mappings, where each mapping consists of a pair of urls
-// giving the to/from url to map. For example, 'a=b,c=d' contains two mappings,
+// Specifies a set of mappings to apply when resolving URLs. The value is a set
+// of comma-separated mappings, where each mapping consists of a pair of URLs
+// giving the to/from URLs to map. For example, 'a=b,c=d' contains two mappings,
 // the first maps 'a' to 'b' and the second 'c' to 'd'.
 const char kURLMappings[] = "url-mappings";
 

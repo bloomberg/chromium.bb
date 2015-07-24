@@ -22,7 +22,7 @@ namespace runner {
 // Loads the native Mojo application from the DSO specified by |app_path|.
 // Returns the |base::NativeLibrary| for the application on success (or null on
 // failure). If |cleanup| is |DELETE|, it will delete |app_path| (regardless of
-// sucess or failure).
+// success or failure).
 //
 // Note: The caller may choose to eventually unload the returned DSO. If so,
 // this should be done only after the thread on which |LoadNativeApplication()|
