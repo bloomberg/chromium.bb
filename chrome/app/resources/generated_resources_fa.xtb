@@ -611,6 +611,7 @@
 <translation id="8713570323158206935">ارسال <ph name="BEGIN_LINK1"/>اطلاعات سیستم<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">خطای دانلود</translation>
 <translation id="5941343993301164315">لطفاً به <ph name="TOKEN_NAME"/> وارد شوید.</translation>
+<translation id="1359381790106966506">مجوزهای به‌روزرسانی</translation>
 <translation id="1046059554679513793">اوه، این نام از قبل در حال استفاده است!</translation>
 <translation id="5868571107634815419">‏غیرفعال کردن Office Editing برای سندنگار، کاربرگ‌نگار و اسلایدنگار</translation>
 <translation id="1351692861129622852">وارد کردن <ph name="FILE_COUNT"/> فایل...</translation>
@@ -736,7 +737,6 @@
 <translation id="5759728514498647443">اسنادی که از طریق <ph name="APP_NAME"/> برای چاپ ارسال می‌کنید، می‌توانند توسط <ph name="APP_NAME"/> خوانده شوند.</translation>
 <translation id="2401053206567162910">‏این برنامه فعلاً در این دستگاه پشتیبانی نمی‌شود اما دست‌اندرکاران Chrome سخت تلاش می‌کنند تا به‌زودی این مورد را ممکن سازند.</translation>
 <translation id="3273410961255278341">ارسال برای:</translation>
-<translation id="4255096080864111471">حداکثر تعداد کاشی برای ناحیه مورد نظر را تعیین کنید.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">برگه جدید</translation>
 <translation id="6567688344210276845">بارگیری نماد &quot;<ph name="ICON"/>&quot; برای عملکرد صفحه ممکن نیست.</translation>
@@ -1680,7 +1680,6 @@
 <translation id="4811502511369621968">آدرس ایمیل نامعتبر است. لطفاً آن را بررسی کرده، دوباره امتحان کنید.</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="8602851771975208551">‏برنامه‌ای دیگر بر روی رایانه شما یک برنامه را اضافه کرده است که ممکن است نحوه کارکرد Chrome را تغییر دهد.</translation>
-<translation id="9154967591629748964">حداکثر تعداد کاشی برای ناحیه مورد نظر</translation>
 <translation id="2655386581175833247">گواهی کاربر:</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5435964418642993308">‏برای بازگشت به عقب، دکمه Enter و برای مشاهدهٔ سابقه، کلید منوی متن را فشار دهید</translation>
@@ -1852,7 +1851,6 @@
 <translation id="1901377140875308934">ورود به <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">کاغذدیواری فعلی توسط «<ph name="APP_NAME"/>» تنظیم شده است</translation>
 <translation id="5074318175948309511">شاید لازم باشد که این صفحه قبل از اعمال شدن تنظیمات جدید، بارگذاری مجدد شود.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">چیزی انتخاب نشده است</translation>
 <translation id="6405640832764359650">‏فعال کردن کادر تأیید ذخیره کارت Google Payments</translation>
 <translation id="1346104802985271895">‏روش ورودی ویتنامی (TELEX)</translation>
@@ -1880,7 +1878,6 @@
 <translation id="4821086771593057290">رمز ورود شما تغییر کرده است. لطفاً یک بار دیگر با رمز ورود جدید خود را امتحان کنید.</translation>
 <translation id="6080696365213338172">شما با استفاده از گواهی ارائه شده توسط سرپرست سیستم به محتوا دسترسی پیدا کرده‌اید. داده‌هایی که به <ph name="DOMAIN"/> ارائه می‌کنید ممکن است توسط سرپرست سیستم رهگیری شوند.</translation>
 <translation id="2509739495444557741">‏Plugin نصب نشده است.</translation>
-<translation id="6731638353631257659">‏حالت ذخیره در حافظه پنهان V8.</translation>
 <translation id="7075513071073410194">‏PKCS #1 MD5 با رمزگذاری RSA</translation>
 <translation id="7767646430896201896">گزینه‌ها:</translation>
 <translation id="526926484727016706">‏باعث می‌شود به‌طور پیش‌فرض همه مجوزهای iframe رد شود. اجازه دادن به مجوزهای خاصی برای یک iframe ممکن است موجب شود نام این مجوزها به‌عنوان مقادیری برای مشخصه‌های جدید iframe فهرست شود.</translation>
@@ -2008,7 +2005,6 @@
 <translation id="6589706261477377614">افزایش روشنایی کلید</translation>
 <translation id="1367951781824006909">انتخاب یک فایل</translation>
 <translation id="2897815155851085655">‏راهنمایی و درباره (‎&amp;E)</translation>
-<translation id="1425127764082410430">&amp;جستجوی <ph name="SEARCH_ENGINE"/> برای &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">تعداد خروج از حالت بی‌حرکت</translation>
 <translation id="8075539548641175231">داده‌های شما در تاریخ <ph name="TIME"/> با «رمز عبارتی همگام‌سازی» شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
 <translation id="2077084898869955643">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google. ‏<ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2114,7 +2110,6 @@
 <translation id="2031695690821674406">پرکردن گذرواژه‌ها، وقتی یک حساب مشخصاً توسط کاربر انتخاب شده، به جای پر کردن خودکار اعتبارنامه‌ها هنگام بارگیری صفحه.</translation>
 <translation id="5834581999798853053">حدود <ph name="TIME"/> دقیقه باقی مانده است</translation>
 <translation id="7839809549045544450">‏این سرور دارای یک کلید عمومی Diffie-Hellman یک بار مصرف است</translation>
-<translation id="5515806255487262353">جستجو در دیکشنری</translation>
 <translation id="5154383699530644092">‏با کلیک کردن بر روی دکمه «افزودن چاپگر» در زیر می‌توانید چاپگرها
  را به رایانه‌تان اضافه کنید.
 اگر چاپگری برای اضافه کردن ندارید، هنوز هم قادر به ذخیره یک فایل PDF
@@ -3042,7 +3037,6 @@
 <translation id="3121793941267913344">این دستگاه <ph name="IDS_SHORT_PRODUCT_NAME"/> بازنشانی شود</translation>
 <translation id="4188026131102273494">کلمه کلیدی</translation>
 <translation id="2930644991850369934">در حین دانلود تصویر بازیابی مشکلی روی داد. اتصال شبکه قطع شده است.</translation>
-<translation id="6891622577412956611">مشاهده موزائیک</translation>
 <translation id="8150722005171944719">این فایل در <ph name="URL"/> قابل خواندن نیست. ممکن است حذف شده، جابجا شده باشد و یا مجوزهای فایل از دسترسی جلوگیری می‌کنند.</translation>
 <translation id="2316129865977710310">خیر، سپاسگزارم</translation>
 <translation id="994901932508062332">ماه گذشته</translation>
@@ -3412,7 +3406,6 @@
     <ph name="LINE_BREAK1"/>
     آماده پشتیبان گرفتن در <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">فعال کردن ویرایش لمسی نوشتار</translation>
-<translation id="3909535143686058220">کد ماشینی تولیدشده در حافظه پنهان</translation>
 <translation id="9213566138414731677">‏وای، <ph name="WALLET_ERROR"/> می‌توانید این تراکنش را بدون Google Payments تکمیل کنید.</translation>
 <translation id="4680322106555328717">‏اخیراً به محتوایی ناامن (مثل اسکریپت یا iframe) اجازه داده‌اید در این سایت اجرا شود.</translation>
 <translation id="283669119850230892">برای استفاده از شبکه <ph name="NETWORK_ID"/>، ابتدا اتصال به اینترنت را در زیر تکمیل کنید.</translation>
@@ -4996,7 +4989,6 @@
 <translation id="7339763383339757376">‏PKCS #7، گواهی تکی</translation>
 <translation id="7587108133605326224">بالتیک</translation>
 <translation id="3340978935015468852">تنظیمات</translation>
-<translation id="3930208863636674029">داده‌های تفسیر حافظه پنهان.</translation>
 <translation id="3581912141526548234">اجرا (هش‌ها را دریافت کنید و در صورت موفقیت آنها را اجرا کنید)</translation>
 <translation id="1974371662733320303">راهبرد مورد استفاده برای آزادسازی حافظه</translation>
 <translation id="3991936620356087075">به دفعات زیاد کلید باز کردن قفل پین اشتباه وارد کرده‌اید. سیم کارت برای همیشه غیرفعال می‌شود.</translation>

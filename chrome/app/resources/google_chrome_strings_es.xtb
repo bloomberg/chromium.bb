@@ -49,6 +49,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="8437332772351535342">Si vuelves a iniciar el navegador en modo de escritorio, tus aplicaciones de Chrome se cerrarán y volverán a iniciarse.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
+<translation id="7788788617745289808">Chrome necesita acceder a la cámara para compartirla con este sitio web.</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
 <translation id="7054640471403081847">Este ordenador dejará de recibir actualizaciones de Google Chrome dentro de poco porque su hardware ya no es compatible.</translation>
@@ -65,6 +66,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Condiciones de servicio<ph name="END_TERMS_OF_SERVICE_LINK"/> de Google Chrome</translation>
 <translation id="4743926867934016338">Aceptar y buscar</translation>
 <translation id="1393853151966637042">Obtener ayuda de Chrome</translation>
+<translation id="1061441684050139317">Chrome necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="7398801000654795464">Habías iniciado sesión en Chrome como <ph name="USER_EMAIL_ADDRESS"/>. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
 <translation id="4513711165509885787">Se ha guardado la información de facturación en Chrome.</translation>
 <translation id="5253588388888612165">Si compartes este ordenador con <ph name="PROFILE_NAME"/>, añádete a Chrome como usuario para utilizar una sesión de navegación independiente. Si no, desvincula la cuenta de Google del otro usuario.</translation>
@@ -96,6 +98,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS"/>software libre<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="5799551393681493217">Habilita flujos de inicio de sesión en Chrome basados en marco flotante. Esta opción anula la habilitación de inicio de sesión basado en Web.</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier ordenador.</translation>
+<translation id="6012342843556706400">Chrome necesita acceder a la información de ubicación para compartirla con este sitio web.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome no está actualizado</translation>
 <translation id="4424024547088906515">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN"/>, Chrome no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
@@ -104,6 +107,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
   e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar la identidad de <ph name="SITE"/> o que una pantalla de inicio de sesión Wi-Fi haya interrumpido la conexión. No obstante, tu información sigue estando protegida porque Chrome ha detenido la conexión antes de que se intercambiaran los datos.</translation>
 <translation id="6600954340915313787">Copiada a Chrome</translation>
 <translation id="2576431527583832481">Chrome sigue mejorando. Hay una nueva versión disponible.</translation>
+<translation id="423410644998903704">Chrome necesita acceder a los permisos para compartirlos con este sitio web.</translation>
 <translation id="4633000520311261472">Para aumentar la seguridad de Chrome, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> y que podrían haberse añadido sin tu conocimiento.</translation>
 <translation id="3656661827369545115">Abrir Chromium automáticamente al iniciar el ordenador</translation>
 <translation id="1763864636252898013">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN"/>, el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>

@@ -611,6 +611,7 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi <ph name="ACCOUNT_EMAIL
 <translation id="8713570323158206935">Lähetä <ph name="BEGIN_LINK1"/>järjestelmän tiedot<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Latausvirhe</translation>
 <translation id="5941343993301164315">Kirjaudu sisään palveluun <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Päivitä käyttöoikeudet</translation>
 <translation id="1046059554679513793">Oho, tämä nimi on jo käytössä!</translation>
 <translation id="5868571107634815419">Poista offline-muokkaus käytöstä Docsissa, Sheetsissä ja Slidesissa</translation>
 <translation id="1351692861129622852">Tuodaan <ph name="FILE_COUNT"/> tiedostoa…</translation>
@@ -737,7 +738,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5759728514498647443"><ph name="APP_NAME"/> voi lukea dokumentteja, jotka lähetät tulostettavaksi sovelluksen <ph name="APP_NAME"/> kautta.</translation>
 <translation id="2401053206567162910">Tätä sovellusta ei tällä hetkellä tueta tällä laitteella, mutta Chrome-tontut tekevät kovasti töitä ja pyrkivät tuomaan sen käyttöön pian.</translation>
 <translation id="3273410961255278341">Lähetä:</translation>
-<translation id="4255096080864111471">Määritä kiinnostuksen kohteen ruutujen enimmäismäärä.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
 <translation id="6567688344210276845">Kuvakkeen <ph name="ICON"/> lataaminen sivun toimintoa varten epäonnistui.</translation>
@@ -1682,7 +1682,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="4811502511369621968">Virheellinen sähköpostiosoite. Tarkista tiedot ja yritä uudelleen.</translation>
 <translation id="175196451752279553">A&amp;vaa suljettu välilehti uudelleen</translation>
 <translation id="8602851771975208551">Toinen tietokoneellasi oleva ohjelma lisäsi sovelluksen, joka voi muuttaa Chromen toimintaa.</translation>
-<translation id="9154967591629748964">Kiinnostuksen kohteen ruutujen enimmäismäärä</translation>
 <translation id="2655386581175833247">Käyttäjävarmenne:</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5435964418642993308">Paina enteriä siirtyäksesi takaisin tai kontekstivalikkonäppäintä nähdäksesi historian</translation>
@@ -1853,7 +1852,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="1901377140875308934">Kirjaudu tuotteeseen <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697"><ph name="APP_NAME"/> asensi nykyisen taustakuvan</translation>
 <translation id="5074318175948309511">Tämä sivu on ehkä ladattava uudelleen, ennen kuin uudet asetukset tulevat voimaan.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Ei valintaa</translation>
 <translation id="6405640832764359650">Ota Google Paymentsin kortin tallennus -valintaruutu käyttöön</translation>
 <translation id="1346104802985271895">Vietnamilainen syöttötapa (TELEX)</translation>
@@ -1878,7 +1876,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="4821086771593057290">Salasanasi on muuttunut. Yritä uudelleen uudella salasanalla.</translation>
 <translation id="6080696365213338172">Käytät sisältöä järjestelmänvalvojan myöntämällä varmenteella. Järjestelmänvalvoja voi käyttää verkkotunnukselle <ph name="DOMAIN"/> lähettämiäsi tietoja.</translation>
 <translation id="2509739495444557741">Laajennuksia ei asennettu.</translation>
-<translation id="6731638353631257659">V8-välimuistitila</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 ja RSA-salaus</translation>
 <translation id="7767646430896201896">Asetukset:</translation>
 <translation id="526926484727016706">Aiheuttaa kaikkien iframe-kehysten käyttöoikeuksien epäämisen oletuksena. Tiettyjen iframe-kehysten käyttöoikeuksien salliminen saattaa sisältää näiden käyttöoikeuksien nimien määrittämisen uusien iframe-attribuuttien arvoina.</translation>
@@ -2006,7 +2003,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="6589706261477377614">Lisää näppäimistön kirkkautta</translation>
 <translation id="1367951781824006909">Valitse tiedosto</translation>
 <translation id="2897815155851085655">Ohj&amp;eita ja tietoja</translation>
-<translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/>-&amp;haku termillä: '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Käyttämätön-tilasta palautumiset</translation>
 <translation id="8075539548641175231">Tietosi on salattu synkronoinnin tunnuslauseesi avulla <ph name="TIME"/>. Kirjoita tunnuslause alle.</translation>
 <translation id="2077084898869955643">Ilmoita mahdollisista turvallisuusongelmista Googlelle automaattisesti. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2111,7 +2107,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="2031695690821674406">Kirjautumistietoja ei täytetä automaattisesti sivun latautuessa, vaan salasanat täytetään, kun käyttäjä on erikseen valinnut tilin.</translation>
 <translation id="5834581999798853053">Noin <ph name="TIME"/> minuuttia jäljellä</translation>
 <translation id="7839809549045544450">Palvelimella on heikko tilapäinen Diffie-Hellmanin julkinen avain</translation>
-<translation id="5515806255487262353">Etsi sanakirjasta</translation>
 <translation id="5154383699530644092">Voit lisätä tulostimia tietokoneelle klikkaamalla alla olevaa Lisää tulostin -painiketta. Jos sinulla ei ole tulostimia lisättäväksi, voit tallentaa PDF-tiedoston tai tallentaa tiedoston Google Driveen.</translation>
 <translation id="2790805296069989825">Näppäimistö: venäjä</translation>
 <translation id="2916974515569113497">Kun tämä vaihtoehto on käytössä, kiinteillä sijaintielementeillä on omat yhdistetyt tasot. Huomaa, että tämä toimii vain, jos kiinteät sijaintielementit luovat myös pinoamiskontekstin.</translation>
@@ -3025,7 +3020,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="3121793941267913344">Palauta <ph name="IDS_SHORT_PRODUCT_NAME"/>-laitteesi</translation>
 <translation id="4188026131102273494">Avainsana:</translation>
 <translation id="2930644991850369934">Virhe ladattaessa palautusnäköistiedostoa. Verkkoyhteys on katkennut.</translation>
-<translation id="6891622577412956611">Mosaiikkinäkymä</translation>
 <translation id="8150722005171944719">Tiedosto osoitteessa <ph name="URL"/> ei ole luettavissa. Se on voitu poistaa tai siirtää, tai tiedoston käyttöluvat voivat estää sen käytön.</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="994901932508062332">Viimeinen kuukausi</translation>
@@ -3397,7 +3391,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
     <ph name="LINE_BREAK1"/>
     Valmis varmuuskopioimaan <ph name="BEGIN_LINK"/>Google Driveen<ph name="END_LINK"/>.</translation>
 <translation id="2677924368525077324">Ota käyttöön tekstin muokkaus koskettamalla</translation>
-<translation id="3909535143686058220">Välimuistin luoma konekoodi</translation>
 <translation id="9213566138414731677">Hups, <ph name="WALLET_ERROR"/> Voit suorittaa tapahtuman loppuun ilman Google Paymentsia.</translation>
 <translation id="4680322106555328717">Olet hiljattain sallinut suojaamattoman sisällön (kuten ohjelmien tai iframe-kehysten) suorittamisen tällä sivustolla.</translation>
 <translation id="283669119850230892">Jos haluat käyttää verkkoa <ph name="NETWORK_ID"/>, määritä ensin internetyhteyden muodostus alla.</translation>
@@ -4978,7 +4971,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="7339763383339757376">PKCS #7, yksittäinen varmenne</translation>
 <translation id="7587108133605326224">baltialainen</translation>
 <translation id="3340978935015468852">asetuksissa</translation>
-<translation id="3930208863636674029">Välimuistin jäsennystiedot</translation>
 <translation id="3581912141526548234">Pakota (yritä saada hajautusarvot ja pakota ne, jos onnistut)</translation>
 <translation id="1974371662733320303">Käytettävä muistin hylkäämisstragia</translation>
 <translation id="3991936620356087075">Olet antanut PUK-koodin väärin liian monta kertaa. SIM-korttisi on poistettu käytöstä pysyvästi.</translation>

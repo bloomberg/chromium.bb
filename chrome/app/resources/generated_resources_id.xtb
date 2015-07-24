@@ -612,6 +612,7 @@
 <translation id="8713570323158206935">Kirim <ph name="BEGIN_LINK1"/>sistem informasi<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Kesalahan unduhan</translation>
 <translation id="5941343993301164315">Harap masuk ke <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Perbarui izin</translation>
 <translation id="1046059554679513793">Ups, nama ini sudah digunakan!</translation>
 <translation id="5868571107634815419">Menonaktifkan Pengeditan Office untuk Dokumen, Spreadsheet &amp; Slide</translation>
 <translation id="1351692861129622852">Mengimpor <ph name="FILE_COUNT"/> file...</translation>
@@ -737,7 +738,6 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="5759728514498647443">Dokumen yang Anda kirim untuk dicetak melalui <ph name="APP_NAME"/> dapat dibaca oleh <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Aplikasi saat ini tidak didukung pada perangkat ini, tetapi gnome Chrome bekerja keras agar ini segera bekerja.</translation>
 <translation id="3273410961255278341">Kirim untuk:</translation>
-<translation id="4255096080864111471">Menentukan ubin maksimum bagi area minat.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab baru</translation>
 <translation id="6567688344210276845">Tidak dapat memuat ikon '<ph name="ICON"/>' untuk tindakan laman.</translation>
@@ -1683,7 +1683,6 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="4811502511369621968">Alamat email tidak valid. Harap periksa dan coba lagi.</translation>
 <translation id="175196451752279553">Buka k&amp;embali tab yang tertutup</translation>
 <translation id="8602851771975208551">Program lain di komputer Anda menambahkan aplikasi yang dapat mengubah cara kerja Chrome.</translation>
-<translation id="9154967591629748964">Ubin maksimum untuk area minat</translation>
 <translation id="2655386581175833247">Sertifikat pengguna:</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5435964418642993308">Tekan enter untuk kembali, tombol menu konteks untuk melihat riwayat</translation>
@@ -1855,7 +1854,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="1901377140875308934">Masuk ke <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Wallpaper saat ini disetel dengan '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Laman ini mungkin perlu dimuat ulang sebelum setelan baru berpengaruh.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Tidak ada pilihan</translation>
 <translation id="6405640832764359650">Aktifkan kotak centang penyimpanan kartu Google Payments</translation>
 <translation id="1346104802985271895">Metode masukan Bahasa Vietnam (TELEX)</translation>
@@ -1881,7 +1879,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="4821086771593057290">Sandi Anda telah diubah. Coba lagi dengan sandi baru.</translation>
 <translation id="6080696365213338172">Anda telah mengakses konten menggunakan sertifikat yang diberikan oleh administrator. Data yang diberikan ke <ph name="DOMAIN"/> dapat dicegat oleh administrator Anda.</translation>
 <translation id="2509739495444557741">Tidak ada plugin yang dipasang.</translation>
-<translation id="6731638353631257659">Mode penyimpanan dalam cache V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 Dengan Enkripsi RSA</translation>
 <translation id="7767646430896201896">Opsi:</translation>
 <translation id="526926484727016706">Menyebabkan semua iframe ditolak oleh semua jenis izin secara default. Memungkinkan izin tertentu untuk iframe dapat mencakup pencantuman nama izin ini sebagai nilai atribut iframe yang baru.</translation>
@@ -2009,7 +2006,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="6589706261477377614">Tingkatkan kecerahan tombol</translation>
 <translation id="1367951781824006909">Pilih file</translation>
 <translation id="2897815155851085655">B&amp;antuan dan tentang</translation>
-<translation id="1425127764082410430">&amp;Telusuri dengan <ph name="SEARCH_ENGINE"/>: '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Bangun saat nganggur</translation>
 <translation id="8075539548641175231">Data dienkripsi dengan frasa sandi sinkronisasi Anda tanggal <ph name="TIME"/>. Masukkan di bawah.</translation>
 <translation id="2077084898869955643">Otomatis melaporkan detail kemungkinan insiden keamanan ke Google. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2115,7 +2111,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="2031695690821674406">Mengisi sandi saat akun dipilih secara eksplisit oleh pengguna, alih-alih mengisi kredensial saat laman dimuat secara otomatis.</translation>
 <translation id="5834581999798853053">Sekitar <ph name="TIME"/> menit lagi</translation>
 <translation id="7839809549045544450">Server memiliki kunci publik Diffie-Hellman yang singkat dan lemah</translation>
-<translation id="5515806255487262353">Cari di Kamus</translation>
 <translation id="5154383699530644092">Anda dapat menambahkan printer ke komputer dengan mengeklik tombol &quot;Tambahkan printer&quot;
         di bawah. Jika tidak ada printer yang ditambahkan, Anda tetap dapat menyimpan
         PDF atau menyimpannya di Google Drive.</translation>
@@ -3043,7 +3038,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="3121793941267913344">Setel ulang perangkat <ph name="IDS_SHORT_PRODUCT_NAME"/> ini</translation>
 <translation id="4188026131102273494">Kata kunci:</translation>
 <translation id="2930644991850369934">Ada masalah saat mengunduh citra pemulihan. Sambungan jaringan terputus.</translation>
-<translation id="6891622577412956611">Tampilan mosaik</translation>
 <translation id="8150722005171944719">File pada <ph name="URL"/> tidak dapat dibaca.  File mungkin telah dihapus, dipindahkan, atau izin file mungkin mencegah akses.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="994901932508062332">Bulan Lalu</translation>
@@ -3413,7 +3407,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
     <ph name="LINE_BREAK1"/>
     Siap mencadangkan ke <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Aktifkan pengeditan teks berbasis sentuh</translation>
-<translation id="3909535143686058220">Kode cache buatan mesin.</translation>
 <translation id="9213566138414731677">Oh, <ph name="WALLET_ERROR"/> ternyata Anda dapat menyelesaikan transaksi ini tanpa Google Payments.</translation>
 <translation id="4680322106555328717">Anda baru-baru ini mengizinkan konten yang tidak aman (seperti skrip atau iframe) dijalankan di situs ini.</translation>
 <translation id="283669119850230892">Untuk menggunakan <ph name="NETWORK_ID"/> jaringan, pertama-tama, selesaikan sambungan Anda ke Internet di bawah ini.</translation>
@@ -5000,7 +4993,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="7339763383339757376">PKCS #7, satu sertifikat</translation>
 <translation id="7587108133605326224">Baltik</translation>
 <translation id="3340978935015468852">setelan</translation>
-<translation id="3930208863636674029">Data penguraian cache.</translation>
 <translation id="3581912141526548234">Menerapkan (mencoba memperoleh potongan, dan menerapkannya jika berhasil)</translation>
 <translation id="1974371662733320303">Strategi menolak memori yang akan digunakan</translation>
 <translation id="3991936620356087075">Anda terlalu sering memasukkan Kunci Pembuka PIN yang salah. Kartu SIM Anda dinonaktifkan secara permanen.</translation>

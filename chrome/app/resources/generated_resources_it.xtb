@@ -603,6 +603,7 @@
 <translation id="8713570323158206935">Invia <ph name="BEGIN_LINK1"/>informazioni sul sistema<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Errore di download</translation>
 <translation id="5941343993301164315">Accedi a <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Aggiorna autorizzazioni</translation>
 <translation id="1046059554679513793">Spiacenti, questo nome è già in uso.</translation>
 <translation id="5868571107634815419">Disattiva l'estensione &quot;Office Editing for Docs, Sheets, and Slides&quot;</translation>
 <translation id="1351692861129622852">Importazione di <ph name="FILE_COUNT"/> file...</translation>
@@ -728,7 +729,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME"/> possono essere letti da <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Questa applicazione non è attualmente supportata su questo dispositivo, ma i tecnici di Chrome sono al lavoro per farla funzionare al più presto.</translation>
 <translation id="3273410961255278341">Invia per:</translation>
-<translation id="4255096080864111471">Specifica le sezioni massime per l'area di interesse.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
 <translation id="6567688344210276845">Impossibile caricare l'icona &quot;<ph name="ICON"/>&quot; per l'azione della pagina.</translation>
@@ -1671,7 +1671,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME"/> pu�
 <translation id="4811502511369621968">Indirizzo email non valido. Controlla e riprova.</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
 <translation id="8602851771975208551">Un altro programma sul computer ha aggiunto un'applicazione che potrebbe modificare il funzionamento di Chrome.</translation>
-<translation id="9154967591629748964">Sezioni massime per l'area di interesse</translation>
 <translation id="2655386581175833247">Certificato utente:</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5435964418642993308">Premi Invio per tornare indietro, il tasto del menu contestuale per visualizzare la cronologia</translation>
@@ -1843,7 +1842,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="1901377140875308934">Accedi a <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Lo sfondo attuale è stato impostato da &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Potrebbe essere necessario ricaricare la pagina per applicare le nuove impostazioni.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nessuna selezione</translation>
 <translation id="6405640832764359650">Attiva la casella di controllo per salvare carte Google Payments</translation>
 <translation id="1346104802985271895">Metodo di immissione vietnamita (TELEX)</translation>
@@ -1862,7 +1860,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="4821086771593057290">La tua password è stata modificata. Riprova con la nuova password.</translation>
 <translation id="6080696365213338172">Hai raggiunto i contenuti utilizzando un certificato fornito dall'amministratore. I dati che fornisci a <ph name="DOMAIN"/> possono essere intercettati dal tuo amministratore.</translation>
 <translation id="2509739495444557741">Nessun plug-in installato.</translation>
-<translation id="6731638353631257659">Modalità di memorizzazione nella cache V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 con crittografia RSA</translation>
 <translation id="7767646430896201896">Opzioni:</translation>
 <translation id="526926484727016706">Per impostazione predefinita, a tutti gli iframe vengono negate tutte le autorizzazioni. Il riconoscimento di determinate autorizzazioni per un iframe può interessare un elenco di nomi di tali autorizzazioni come valori dei nuovi attributi iframe.</translation>
@@ -1990,7 +1987,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6589706261477377614">Consente di aumentare la luminosità dei tasti</translation>
 <translation id="1367951781824006909">Scegli un file</translation>
 <translation id="2897815155851085655">G&amp;uida e informazioni</translation>
-<translation id="1425127764082410430">&amp;Cerca '<ph name="SEARCH_TERMS"/>' con <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">Riattivazioni</translation>
 <translation id="8075539548641175231">I tuoi dati sono stati crittografati con la tua passphrase di sincronizzazione in data <ph name="TIME"/>. Inseriscila qui di seguito.</translation>
 <translation id="2077084898869955643">Segnala automaticamente a Google dettagli dei possibili incidenti di sicurezza. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2096,7 +2092,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="2031695690821674406">Consente di attivare l'inserimento delle password quando l'utente seleziona esplicitamente un account anziché utilizzare la compilazione automatica delle credenziali al caricamento della pagina.</translation>
 <translation id="5834581999798853053">Circa <ph name="TIME"/> minuti rimanenti</translation>
 <translation id="7839809549045544450">Il server ha una chiave pubblica Diffie-Hellman effimera e vulnerabile</translation>
-<translation id="5515806255487262353">Cerca nel dizionario</translation>
 <translation id="5154383699530644092">Puoi aggiungere stampanti al computer facendo clic sul pulsante &quot;Aggiungi
         stampante&quot; qui di seguito. Se non hai stampanti da aggiungere, puoi comunque salvare
         un PDF o salvare in Google Drive.</translation>
@@ -3020,7 +3015,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="3121793941267913344">Ripristina questo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Parola chiave:</translation>
 <translation id="2930644991850369934">Si è verificato un problema durante il download dell'immagine di ripristino. Connessione di rete persa.</translation>
-<translation id="6891622577412956611">Visualizzazione mosaico</translation>
 <translation id="8150722005171944719">Il file all'indirizzo <ph name="URL"/> non è leggibile. Potrebbe essere stato rimosso, spostato oppure delle autorizzazioni del file potrebbero impedire l'accesso.</translation>
 <translation id="2316129865977710310">No, grazie</translation>
 <translation id="994901932508062332">Ultimo mese</translation>
@@ -3390,7 +3384,6 @@ Tentativo di identificazione del problema in corso...</translation>
     <ph name="LINE_BREAK1"/>
     Puoi effettuare il backup su <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Attiva la modifica del testo tramite tocco</translation>
-<translation id="3909535143686058220">Codice macchina generato nella cache.</translation>
 <translation id="9213566138414731677">Spiacenti, <ph name="WALLET_ERROR"/> Puoi completare questa transazione senza Google Payments.</translation>
 <translation id="4680322106555328717">Hai recentemente autorizzato contenuti non protetti (ad esempio, script o iframe) da eseguire su questo sito.</translation>
 <translation id="283669119850230892">Per poter utilizzare la rete <ph name="NETWORK_ID"/> devi completare la connessione a Internet sotto.</translation>
@@ -4967,7 +4960,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="7339763383339757376">PKCS #7, singolo certificato</translation>
 <translation id="7587108133605326224">Baltico</translation>
 <translation id="3340978935015468852">impostazioni</translation>
-<translation id="3930208863636674029">Dati di analisi nella cache</translation>
 <translation id="3581912141526548234">Consente l'applicazione (tentativo di recupero degli hash e, se vengono recuperati, vengono applicati)</translation>
 <translation id="1974371662733320303">Strategia di memory discarding da utilizzare</translation>
 <translation id="3991936620356087075">Hai inserito un codice di sblocco PIN errato per troppe volte. La tua scheda SIM è stata definitivamente disattivata.</translation>

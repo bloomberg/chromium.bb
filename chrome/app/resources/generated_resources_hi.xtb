@@ -617,6 +617,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>सिस्‍टम जानकारी<ph name="END_LINK1"/> भेजें</translation>
 <translation id="727952162645687754">डाउनलोड त्रुटि</translation>
 <translation id="5941343993301164315">कृपया <ph name="TOKEN_NAME"/> में प्रवेश करें.</translation>
+<translation id="1359381790106966506">अनुमतियां अपडेट करें</translation>
 <translation id="1046059554679513793">ओह, यह नाम पहले से ही उपयोग किया जा रहा है!</translation>
 <translation id="5868571107634815419">दस्तावेज, शीट और स्लाइड के लिए Office संपादन अक्षम करें</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> फ़ाइलें आयात की जा रही हैं...</translation>
@@ -743,7 +744,6 @@
 <translation id="5759728514498647443">आपके द्वारा <ph name="APP_NAME"/> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME"/> द्वारा पढ़े जा सकते हैं.</translation>
 <translation id="2401053206567162910">यह ऐप्स  वर्तमान में इस डिवाइस पर समर्थित नहीं है लेकिन यह जल्दी ही काम करने लगे इसके लिए Chrome gnome इसके लिए कठोर मेहनत कर रहे हैं.</translation>
 <translation id="3273410961255278341">इसके लिए भेजें:</translation>
-<translation id="4255096080864111471">रूचि क्षेत्र के लिए अधिकतम टाइल निर्दिष्ट करें.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">नया टैब</translation>
 <translation id="6567688344210276845">पृष्ठ कार्रवाई के लिए '<ph name="ICON"/>' आइकन लोड नहीं कर सका.</translation>
@@ -1694,7 +1694,6 @@
 <translation id="4811502511369621968">अमान्य ईमेल पता. कृपया जांचें और पुन: प्रयास करें.</translation>
 <translation id="175196451752279553">बंद किए गए टैब पु&amp;न: खोलें</translation>
 <translation id="8602851771975208551">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने ऐप्स  जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
-<translation id="9154967591629748964">रूचि क्षेत्र के लिए अधिकतम टाइल</translation>
 <translation id="2655386581175833247">उपयोगकर्ता प्रमाणपत्र:</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5435964418642993308">वापस जाने के लिए enter दबाएं, इतिहास देखने के लिए प्रसंग मेनू कुंजी दबाएं</translation>
@@ -1867,7 +1866,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> में प्रवेश करें...</translation>
 <translation id="5529098031581368697">वर्तमान वॉलपेपर '<ph name="APP_NAME"/>' द्वारा सेट किया गया है</translation>
 <translation id="5074318175948309511">नई सेटिंग के प्रभावी होने से पहले इस पृष्‍ठ को रीलोड करने की आवश्‍यकता हो सकती है.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">कोई चयन नहीं</translation>
 <translation id="6405640832764359650">Google पेमेंट्स कार्ड सहेजने का चेकबॉक्स सक्षम करें</translation>
 <translation id="1346104802985271895">वियतनामी इनपुट विधि (TELEX)</translation>
@@ -1893,7 +1891,6 @@
 <translation id="4821086771593057290">आपका पासवर्ड बदल गया है. कृपया अपने नए पासवर्ड के साथ पुन: प्रयास करें.</translation>
 <translation id="6080696365213338172">आपने व्यवस्थापक द्वारा प्रदत्त प्रमाणपत्र के उपयोग से सामग्री एक्सेस की है. आपके द्वारा <ph name="DOMAIN"/> को प्रदान किया गया डेटा आपके व्यवस्थापक द्वारा बीच में रोका जा सकता है.</translation>
 <translation id="2509739495444557741">कोई भी प्‍लग इन इंस्‍टॉल नहीं किया गया.</translation>
-<translation id="6731638353631257659">V8 संचय मोड.</translation>
 <translation id="7075513071073410194">RSA सुरक्षित तरीका के साथ PKCS #1 MD5</translation>
 <translation id="7767646430896201896">विकल्प:</translation>
 <translation id="526926484727016706">इसके कारण सभी iframe के लिए सभी अनुमतियां डिफ़ॉल्ट रूप से अस्वीकृत हो जाती हैं. किसी iframe के लिए विशिष्ट अनुमतियां देने से उन अनुमतियों के नामों की सूची को नई iframe विशेषताओं के मानों के रूप में शामिल किया जा सकता है.</translation>
@@ -2021,7 +2018,6 @@
 <translation id="6589706261477377614">कुंजी की स्क्रीन की रोशनी बढ़ाएं</translation>
 <translation id="1367951781824006909">कोई फ़ाइल चुनें</translation>
 <translation id="2897815155851085655">स&amp;हायता और परिचय</translation>
-<translation id="1425127764082410430">'<ph name="SEARCH_TERMS"/>' के लिए <ph name="SEARCH_ENGINE"/> &amp;खोजें</translation>
 <translation id="1187722533808055681">निष्क्रिय प्रोसेसर का सक्रियण</translation>
 <translation id="8075539548641175231">आपका डेटा आपके समन्‍वयन पासफ्रेज़ के साथ <ph name="TIME"/> पर एन्‍क्रिप्ट किया गया था. कृपया उसे नीचे डालें.</translation>
 <translation id="2077084898869955643">Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करें. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2130,7 +2126,6 @@
 <translation id="2031695690821674406">पृष्‍ठ लोड करते समय प्रमाणिकता को स्‍वत: भरण करने के बजाय उपयोगकर्ता द्वारा किसी खाते को स्‍पष्‍ट रूप से चुने जाने पर पासवर्ड डालना.</translation>
 <translation id="5834581999798853053">लगभग <ph name="TIME"/> मिनट शेष हैं</translation>
 <translation id="7839809549045544450">सर्वर में कमजोर अल्‍पकालिक Diffie-Hellman सार्वजनिक कुंजी है</translation>
-<translation id="5515806255487262353">शब्‍दकोश में खोजें</translation>
 <translation id="5154383699530644092">नीचे &quot;प्रिंटर जोड़े&quot; बटन क्लिक करके आप अपने कंप्यूटर से प्रिंटर जोड़
           सकते हैं. यदि आपके पास जोड़ने के लिए कोई प्रिंटर न हो, तो आप
           PDF सहेज सकेंगे या Google डिस्क में सहेज सकेंगे.</translation>
@@ -3069,7 +3064,6 @@
 <translation id="3121793941267913344">इस <ph name="IDS_SHORT_PRODUCT_NAME"/> डिवाइस को रीसेट करें</translation>
 <translation id="4188026131102273494">कीवर्ड:</translation>
 <translation id="2930644991850369934">पुनर्प्राप्ति चित्र डाउनलोड करते समय समस्या आई थी. नेटवर्क कनेक्शन टूट गया है.</translation>
-<translation id="6891622577412956611">मोज़ेक दृश्य</translation>
 <translation id="8150722005171944719"><ph name="URL"/> पर मौजूद फ़ाइल पढ़ने योग्य नहीं है.  हो सकता है कि इसे निकाल दिया गया हो, कहीं ले जाया गया हो, या फ़ाइल की अनुमतियां पहुंच रोक रही हों.</translation>
 <translation id="2316129865977710310">जी रहने दें</translation>
 <translation id="994901932508062332">पिछला माह</translation>
@@ -3448,7 +3442,6 @@
     <ph name="LINE_BREAK1"/>
     <ph name="BEGIN_LINK"/>Google डिस्‍क<ph name="END_LINK"/> पर बैक अप लेने के लिए तैयार</translation>
 <translation id="2677924368525077324">स्पर्श आधारित लेख संपादन सक्षम करें</translation>
-<translation id="3909535143686058220">संचय द्वारा जेनरेट किया गया मशीन कोड.</translation>
 <translation id="9213566138414731677">ओह, <ph name="WALLET_ERROR"/> आप इस लेन-देन को Google पेमेंट्स के बिना भी पूर्ण कर सकते हैं.</translation>
 <translation id="4680322106555328717">आपने हाल ही में इस साइट पर चलाने के लिए असुरक्षित सामग्री (जैसे स्क्रिप्ट या iframe) को अनुमति दी है.</translation>
 <translation id="283669119850230892">नेटवर्क <ph name="NETWORK_ID"/> का उपयोग करने के लिए, सबसे पहले नीचे इंटरनेट से अपना कनेक्‍शन पूर्ण करें.</translation>
@@ -5039,7 +5032,6 @@
 <translation id="7339763383339757376">PKCS #7, एकल प्रमाणपत्र</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="3340978935015468852">सेटिंग</translation>
-<translation id="3930208863636674029">पासिंग डेटा को संचित करें.</translation>
 <translation id="3581912141526548234">लागू करें (हैश प्राप्त करने का प्रयास करें, और सफलतापूर्वक प्राप्त कर लें तो उन्‍हें लागू करें)</translation>
 <translation id="1974371662733320303">मेमोरी छोड़ने के लिए उपयोग की जाने वाली रणनीति</translation>
 <translation id="3991936620356087075">आपने गलत पिन अनलॉकिंग कुंजी कई बार दर्ज किया है. आपका सिम कार्ड स्थायी रूप से अक्षम कर दिया गया है.</translation>

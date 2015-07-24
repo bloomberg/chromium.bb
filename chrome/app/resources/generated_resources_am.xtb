@@ -620,6 +620,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>የስርዓት መረጃ<ph name="END_LINK1"/> ላክ</translation>
 <translation id="727952162645687754">የማውረድ ስህተት</translation>
 <translation id="5941343993301164315">እባክዎ ወደ <ph name="TOKEN_NAME"/> ይግቡ።</translation>
+<translation id="1359381790106966506">ፍቃዶችን አዘምን</translation>
 <translation id="1046059554679513793">አዪ... ይህ ስም አስቀድሞ ተይዟል!</translation>
 <translation id="5868571107634815419">የሰነዶች፣ የሉሆች እና የስላይዶች የOffice አርትዖት አሰናክል</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> ፋይሎችን በማስመጣት ላይ...</translation>
@@ -746,7 +747,6 @@
 <translation id="5759728514498647443">በ <ph name="APP_NAME"/> በኩል ሊያትሙዋቸው የሚልኩዋቸው ሰነዶች በ <ph name="APP_NAME"/> ላይ ሊነበቡ ይችላሉ።</translation>
 <translation id="2401053206567162910">ይህ መተግበሪያ በአሁኑ ጊዜ በዚህ መሣሪያ ላይ አይደገፍም ግን የChrome ተዓምረኛዎች እሱን ቶሎ ብለው ለመስራት ጠንክረው እየሰሩ ነው።</translation>
 <translation id="3273410961255278341">ላክ ለ፦</translation>
-<translation id="4255096080864111471">በፍላጎት አካባቢ ላይ ከፍተኛው የሰድር ብዛት ይግለጹ።</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">አዲስ ትር</translation>
 <translation id="6567688344210276845">አዶ «<ph name="ICON"/>» ለገጽ እርምጃ መጫን አልተቻለም።</translation>
@@ -1703,7 +1703,6 @@ nil</translation>
 <translation id="4811502511369621968">ልክ ያልሆነ የኢሜይል አድራሻ። እባክዎ ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="175196451752279553">የተ&amp;ዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="8602851771975208551">በኮምፒውተርዎ ላይ ያለ ሌላ ፕሮግራም Chrome የሚሰራበት መንገድ ሊቀይር የሚችል አንድ መተግበሪያ አክሏል።</translation>
-<translation id="9154967591629748964">በፍላጎት አካባቢ ላይ ከፍተኛው የስድሮች ብዛት።</translation>
 <translation id="2655386581175833247">የተጠቃሚ እውቅና ማረጋገጫ፦</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5435964418642993308">ለመመለስ enterን፣ ታሪክን ለማየት የአገባበ ምናሌ ቁልፉን ይጫኑ</translation>
@@ -1875,7 +1874,6 @@ nil</translation>
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> ውስጥ ይግቡ...</translation>
 <translation id="5529098031581368697">የአሁኑ ልጣፍ  በ«<ph name="APP_NAME"/>» ነው የተዘጋጀው</translation>
 <translation id="5074318175948309511">አዲሶቹ ቅንብሮች ከመተግበራቸው በፊት ይህ ገጽ ዳግም መጫን ሊኖርበት ይችላል።</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">ምርጫ የለም</translation>
 <translation id="6405640832764359650">የGoogle ክፍያዎች ካርድ ቁጠባ አመልካች ሳጥኑን አንቃ</translation>
 <translation id="1346104802985271895">የቪዬትናምኛ ግቤት ስልት (TELEX)</translation>
@@ -1901,7 +1899,6 @@ nil</translation>
 <translation id="4821086771593057290">የይለፍ ቃልዎ ተቀይሯል። እባክዎ በአዲሱ የይለፍ ቃልዎ እንደገና ይሞክሩ።</translation>
 <translation id="6080696365213338172">በአስተዳዳሪ የቀረበ የእውቅና ማረጋገጫ በመጠቀም ይዘት ደርሰዋል። ለ<ph name="DOMAIN"/> የሚያቀርቡት ውሂብ በአስተዳዳሪዎ ሊያዝ ይችላል።</translation>
 <translation id="2509739495444557741">ምንም ተሰኪዎች አልተጫኑም።</translation>
-<translation id="6731638353631257659">V8 መሸጎጫ ሁነታ።</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 ከRSA ምስጠራ ጋር</translation>
 <translation id="7767646430896201896">አማራጮች፦</translation>
 <translation id="526926484727016706">ሁሉም iframes በነባሪ ሁሉንም ፍቃዶች እንዲከለከሉ ያደርጋል። የተወሰኑ ፍቃዶችን ለአንድ iframe መፍቀድ የእነዚህን ፍቃዶች ስሞች እንደ የiframe ባህሪዎች እሴቶች መዘርዘርን ሊያካትት ይችላል።</translation>
@@ -2029,7 +2026,6 @@ nil</translation>
 <translation id="6589706261477377614">የቁልፍ ብሩህነት ጨምር</translation>
 <translation id="1367951781824006909">ፋይል ይምረጡ</translation>
 <translation id="2897815155851085655">እ&amp;ገዛ እና ስለ</translation>
-<translation id="1425127764082410430">ስለ '<ph name="SEARCH_TERMS"/>' &amp;ፈልግ <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">ከመቦዘን ማንቂያዎች</translation>
 <translation id="8075539548641175231"><ph name="TIME"/> ላይ ውሂብዎ ከተመሳሰለው የይለፍ ሐረግዎ ጋር ተመስጥሯል። እባክዎ ከታች ያስገቡት።</translation>
 <translation id="2077084898869955643">የደህንነት ሊሆኑ የሚችሉ ክስተቶች ዝርዝሮችን በራስ-ሰር ለGoogle ሪፖርት አድርግ። <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2137,7 +2133,6 @@ nil</translation>
 <translation id="2031695690821674406">ገጽ ሲጫን ምስክርነቶችን ከበራስ-መሙላት ይልቅ አንድ መለያ በግልጽ በተጠቃሚው ሲመረጥ የይለፍ ቃላትን መሙላት።</translation>
 <translation id="5834581999798853053"><ph name="TIME"/> ደቂቃዎች አካባቢ ቀርቷል</translation>
 <translation id="7839809549045544450">አገልጋይ ደካማ የሆነ የአጭር ጊዜ Diffie-Hellman ይፋዊ ቁልፍ ነው ያለው</translation>
-<translation id="5515806255487262353">በመዝገበ-ቃላት ውስጥ ይፈልጉ</translation>
 <translation id="5154383699530644092">ከታች ያለውን የ«አታሚ አክል» አዝራሩን ጠቅ በማድረግ አታሚዎችን ወደ ኮምፒውተርዎ ማከል ይችላሉ።
         ምንም የሚያክሉት አታሚ ከሌልዎ አሁንም አንድ PDF ማስቀመጥ ወይም
         ወደ Google Drive ማስቀመጥ ይችላሉ።</translation>
@@ -3072,7 +3067,6 @@ nil</translation>
 <translation id="3121793941267913344">ይህን የ<ph name="IDS_SHORT_PRODUCT_NAME"/> መሣሪያ ዳግም ያስጀምሩት</translation>
 <translation id="4188026131102273494">ቁልፍ ቃል፦</translation>
 <translation id="2930644991850369934">የማግኛ ምስሉን በማውረድ ላይ ሳለ ችግር ነበር። የአውታረ መረብ ግንኙነት ጠፍቷል።</translation>
-<translation id="6891622577412956611">የህብር እይታ</translation>
 <translation id="8150722005171944719"><ph name="URL"/> ላይ ያለው ፋይል የሚነበብ አይደለም።  ተወግዶ፣ ተወስዶ ወይም የፋይል ፍቃዶቹ መዳረሻ እየከለከሉ ሊሆኑ ይችላሉ።</translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
 <translation id="994901932508062332">ባለፈው ወር</translation>
@@ -3449,7 +3443,6 @@ nil</translation>
     <ph name="LINE_BREAK1"/>
     ምትኬ ወደ <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/> ለማስቀመጥ ዝግጁ</translation>
 <translation id="2677924368525077324">ንክኪ ላይ የተመሠረተ የጽሑፍ አርትዖትን አንቃ</translation>
-<translation id="3909535143686058220">መሸጎጫ ያመነጨው የማሽን ኮድ።</translation>
 <translation id="9213566138414731677">ውይ፣ <ph name="WALLET_ERROR"/> ይህን ግብይት ያለGoogle ክፍያዎች ማጠናቀቅ ይችላሉ።</translation>
 <translation id="4680322106555328717">በቅርቡ ደህንነቱ የማያስተማምን ይዘት (እንደ ስክሪፕቶች ወይም iframes ያሉ) ይህን ጣቢያ እንዲያስኬድ ፍቅደዋል።</translation>
 <translation id="283669119850230892">የ<ph name="NETWORK_ID"/> አውታረ መረብን ለመጠቀም መጀመሪያ ከበይነመረቡ ጋር ያለዎትን ግንኙነት ከታች ያጠናቅቁ።</translation>
@@ -5041,7 +5034,6 @@ nil</translation>
 <translation id="7339763383339757376">PKCS #7፣ ነጠላ ሰርቲፊኬት</translation>
 <translation id="7587108133605326224">ባልቲክኛ</translation>
 <translation id="3340978935015468852">ቅንብሮች</translation>
-<translation id="3930208863636674029">የመሸጎጫ መተንተኛ ውሂብ።</translation>
 <translation id="3581912141526548234">ተግብር (መሰላሎችን ለማግኘት ሞክር፣ እንዲሁም ከተሳካ ተግብራቸው)</translation>
 <translation id="1974371662733320303">ስራ ላይ የሚውለው የማህደረ ትውስታ ማስወገጃ ስትራቴጂ</translation>
 <translation id="3991936620356087075">ትክክል ያልሆነ የፒን መፍቻ ቁልፍ ብዙ ጊዜ አስገብተዋል። ሲም ካርድዎ እስከመጨረሻው ተሰናክሏል።</translation>

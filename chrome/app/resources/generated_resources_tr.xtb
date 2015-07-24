@@ -623,6 +623,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>Sistem bilgilerini<ph name="END_LINK1"/> gönder</translation>
 <translation id="727952162645687754">İndirme hatası</translation>
 <translation id="5941343993301164315">Lütfen şurada oturum açın: <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">İzinleri güncelle</translation>
 <translation id="1046059554679513793">Hata! Bu ad  zaten kullanılıyor!</translation>
 <translation id="5868571107634815419">Dokümanlar, E-tablolar ve Slaytlar için Ofis Düzenlemesini Devre Dışı Bırak</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> dosya içe aktarılıyor...</translation>
@@ -748,7 +749,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME"/> aracılığıyla yazdırılmaları için gönderdiğiniz dokümanlar <ph name="APP_NAME"/> tarafından okunabilir.</translation>
 <translation id="2401053206567162910">Bu uygulama şu anda bu cihazda desteklenmiyor, ancak Chrome perileri bunun gerçekleşmesi için gece gündüz çalışıyorlar.</translation>
 <translation id="3273410961255278341">Gönder:</translation>
-<translation id="4255096080864111471">İlgilenilen alan için maksimum karo sayısını belirtin.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
 <translation id="6567688344210276845">Sayfa işlemine ilişkin '<ph name="ICON"/>' simgesi yüklenemedi.</translation>
@@ -1696,7 +1696,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="4811502511369621968">Geçersiz e-posta adresi. Lütfen kontrol edin ve tekrar deneyin.</translation>
 <translation id="175196451752279553">&amp;Kapatılan sekmeyi yeniden aç</translation>
 <translation id="8602851771975208551">Bilgisayarınızdaki başka bir program, Chrome'un çalışma şeklini değiştirebilecek bir uygulama ekledi.</translation>
-<translation id="9154967591629748964">İlgilenilen alanı için maksimum karo sayısı</translation>
 <translation id="2655386581175833247">Kullanıcı sertifikası:</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5435964418642993308">Geri gitmek için Enter tuşuna, geçmişi görmek için bağlam menüsü tuşuna basın</translation>
@@ -1868,7 +1867,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> uygulamasında oturum aç...</translation>
 <translation id="5529098031581368697">Geçerli duvar kağıdı &quot;<ph name="APP_NAME"/>&quot; tarafından ayarlandı</translation>
 <translation id="5074318175948309511">Yeni ayarların geçerli olması için bu sayfanın tekrar yüklenmesi gerekebilir.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Seçim yok</translation>
 <translation id="6405640832764359650">Google Payments kartını kaydetme onay kutusunu etkinleştir</translation>
 <translation id="1346104802985271895">Vietnamca giriş yöntemi (TELEX)</translation>
@@ -1894,7 +1892,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="4821086771593057290">Şifreniz değiştirildi. Lütfen yeni şifrenizle tekrar deneyin.</translation>
 <translation id="6080696365213338172">Yönetici tarafından sağlanmış bir sertifika kullanan içeriğe eriştiniz. <ph name="DOMAIN"/> alan adına sağladığınız verileri yöneticiniz görebilir ve bunlara müdahale edebilir.</translation>
 <translation id="2509739495444557741">Yüklü eklenti yok.</translation>
-<translation id="6731638353631257659">V8 önbelleğe alma modu.</translation>
 <translation id="7075513071073410194">PKCS #1 RSA Şifrelemeli MD5</translation>
 <translation id="7767646430896201896">Seçenekler:</translation>
 <translation id="526926484727016706">Varsayılan olarak tüm iframe'lerin tüm izinlerinin reddedilmesine neden olur. Bir iframe'e ilişkin özel izinlere olanak tanınması, yeni iframe özelliklerinin değerleri olarak bu izinlerin adlarının listelenmesini içerebilir.</translation>
@@ -2021,7 +2018,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="6589706261477377614">Tuş parlaklığını artır</translation>
 <translation id="1367951781824006909">Dosya seç</translation>
 <translation id="2897815155851085655">&amp;Yardım ve hakkında</translation>
-<translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/> &amp;arama motorunda '<ph name="SEARCH_TERMS"/>' terimlerini ara</translation>
 <translation id="1187722533808055681">Boşta kalma uyanmaları</translation>
 <translation id="8075539548641175231">Verileriniz <ph name="TIME"/> tarihinde senkronizasyon parolanızla şifrelendi. Lütfen senkronizasyon parolanızı aşağıya girin.</translation>
 <translation id="2077084898869955643">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirin. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2125,7 +2121,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="2031695690821674406">Bir hesap kullanıcı tarafından açık bir şekilde seçildiyse sayfa yüklendiğinde kimlik bilgilerini otomatik olarak doldurmak yerine şifrelerin doldurulması.</translation>
 <translation id="5834581999798853053">Yaklaşık <ph name="TIME"/> dakika kaldı</translation>
 <translation id="7839809549045544450">Sunucunun zayıf, geçici bir Diffie-Hellman genel anahtarı var</translation>
-<translation id="5515806255487262353">Sözlükte Ara</translation>
 <translation id="5154383699530644092">Aşağıdaki &quot;Yazıcı ekle&quot; düğmesini tıklayarak bilgisayarınıza yazıcılar
           ekleyebilirsiniz. Ekleyecek yazıcınız yoksa yine de bir PDF
           kaydedebilir veya dosyayı Google Drive'da saklayabilirsiniz.</translation>
@@ -3058,7 +3053,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="3121793941267913344">Bu <ph name="IDS_SHORT_PRODUCT_NAME"/> cihazını sıfırla</translation>
 <translation id="4188026131102273494">Anahtar kelime:</translation>
 <translation id="2930644991850369934">Kurtarma görüntüsü indirilirken bir sorun oluştu. Ağ bağlantısı kesildi.</translation>
-<translation id="6891622577412956611">Mozaik görünümü</translation>
 <translation id="8150722005171944719"><ph name="URL"/> konumundaki dosya okunamıyor. Kaldırılmış ya da taşınmış olabilir veya dosya izinleri erişimi önlüyordur.</translation>
 <translation id="2316129865977710310">Hayır, teşekkürler</translation>
 <translation id="994901932508062332">Son Bir Ay</translation>
@@ -3430,7 +3424,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
     <ph name="LINE_BREAK1"/>
     <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/>'a yedeklemek için hazır</translation>
 <translation id="2677924368525077324">Dokunmaya dayalı metin düzenlemeyi etkinleştir</translation>
-<translation id="3909535143686058220">Önbellek tarafından oluşturulan makine kodu.</translation>
 <translation id="9213566138414731677">Hata! <ph name="WALLET_ERROR"/> Bu işlemi Google Payments olmadan tamamlayabilirsiniz.</translation>
 <translation id="4680322106555328717">Kısa bir süre önce bu sitede güvenli olmayan içeriğin (komut dosyaları veya iframe'ler gibi) çalıştırılmasına izin verdiniz.</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID"/> ağını kullanmak için önce aşağıdan İnternet bağlantınızı yapın.</translation>
@@ -5019,7 +5012,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="7339763383339757376">PKCS #7, tek sertifika</translation>
 <translation id="7587108133605326224">Baltık</translation>
 <translation id="3340978935015468852">ayarlar</translation>
-<translation id="3930208863636674029">Önbellek ayrıştırma verileri.</translation>
 <translation id="3581912141526548234">Zorla (karmaları almayı dene ve başarılı olursa bunları zorla)</translation>
 <translation id="1974371662733320303">Kullanılacak bellek silme stratejisi</translation>
 <translation id="3991936620356087075">Yanlış PIN Kilit Açma Anahtarı kullanarak çok fazla sayıda giriş denemesi yaptınız. SIM kartınız kalıcı olarak devre dışı bırakıldı.</translation>

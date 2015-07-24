@@ -610,6 +610,7 @@
 <translation id="8713570323158206935">ส่ง<ph name="BEGIN_LINK1"/>ข้อมูลระบบ<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">ข้อผิดพลาดในการดาวน์โหลด</translation>
 <translation id="5941343993301164315">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME"/></translation>
+<translation id="1359381790106966506">อัปเดตสิทธิ์</translation>
 <translation id="1046059554679513793">ขออภัย ชื่อนี้มีการใช้งานแล้ว!</translation>
 <translation id="5868571107634815419">ปิดใช้การแก้ไข Office สำหรับเอกสาร ชีต และสไลด์</translation>
 <translation id="1351692861129622852">กำลังนำเข้า <ph name="FILE_COUNT"/> ไฟล์...</translation>
@@ -731,7 +732,6 @@
 <translation id="5759728514498647443"><ph name="APP_NAME"/> สามารถอ่านเอกสารที่คุณส่งไปพิมพ์ผ่าน <ph name="APP_NAME"/> ได้</translation>
 <translation id="2401053206567162910">ในขณะนี้ แอปพลิเคชันนี้ยังไม่ได้รับการสนับสนุนบนอุปกรณ์นี้ แต่เหล่าบรรดาโนมผู้รอบรู้ของ Chrome กำลังมุ่งมั่นทำงานอย่างหนักเพื่อให้สามารถใช้งานแอปพลิเคชันดังกล่าวได้ในเร็วๆ นี้</translation>
 <translation id="3273410961255278341">ส่งสำหรับ:</translation>
-<translation id="4255096080864111471">ระบุไทล์สูงสุดสำหรับพื้นที่ความสนใจ</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
 <translation id="6567688344210276845">ไม่สามารถโหลดไอคอน &quot;<ph name="ICON"/>&quot; เพื่อให้เกิดการทำงานบนหน้าเว็บ</translation>
@@ -1676,7 +1676,6 @@
 <translation id="4811502511369621968">ที่อยู่อีเมลไม่ถูกต้อง โปรดตรวจสอบและลองอีกครั้ง</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="8602851771975208551">โปรแกรมอื่นในคอมพิวเตอร์ของคุณเพิ่มแอปพลิเคชันที่อาจเปลี่ยนวิธีการทำงานของ Chrome</translation>
-<translation id="9154967591629748964">ไทล์สูงสุดสำหรับพื้นที่ความสนใจ</translation>
 <translation id="2655386581175833247">ใบรับรองผู้ใช้:</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5435964418642993308">กด Enter เพื่อย้อนกลับ กดแป้นเมนูตามบริบทเพื่อดูประวัติการเข้าชม</translation>
@@ -1848,7 +1847,6 @@
 <translation id="1901377140875308934">ลงชื่อเข้าใช้ <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">วอลเปเปอร์ปัจจุบันตั้งโดย &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">อาจต้องโหลดหน้านี้ซ้ำก่อนที่การตั้งค่าใหม่จะมีผล</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">ยังไม่ได้เลือก</translation>
 <translation id="6405640832764359650">เปิดใช้ช่องทำเครื่องหมายการบันทึกบัตร Google Payments</translation>
 <translation id="1346104802985271895">วิธีป้อนข้อมูลภาษาเวียดนาม (TELEX)</translation>
@@ -1874,7 +1872,6 @@
 <translation id="4821086771593057290">คุณได้เปลี่ยนรหัสผ่านของคุณแล้ว โปรดลองอีกครั้งโดยใช้รหัสผ่านใหม่ของคุณ</translation>
 <translation id="6080696365213338172">คุณเข้าถึงเนื้อหาโดยใช้ใบรับรองที่ผู้ดูแลระบบออกให้ ข้อมูลที่คุณให้กับ <ph name="DOMAIN"/> อาจถูกสกัดกั้นโดยผู้ดูแลระบบ</translation>
 <translation id="2509739495444557741">ไม่มีการติดตั้งปลั๊กอิน</translation>
-<translation id="6731638353631257659">โหมดแคช V8</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 พร้อมการเข้ารหัส RSA</translation>
 <translation id="7767646430896201896">ตัวเลือก:</translation>
 <translation id="526926484727016706">ทำให้มีการปฏิเสธ iframe ทั้งหมดจากสิทธิ์ทั้งหมดโดยค่าเริ่มต้น การให้สิทธิ์เฉพาะสำหรับ iframe อาจเกี่ยวข้องกับการแสดงรายชื่อของสิทธิ์เหล่านี้เป็นค่าแอตทริบิวต์ใหม่ของ iframe</translation>
@@ -2002,7 +1999,6 @@
 <translation id="6589706261477377614">เพิ่มความสว่างของแป้น</translation>
 <translation id="1367951781824006909">เลือกไฟล์</translation>
 <translation id="2897815155851085655">ความช่&amp;วยเหลือและเกี่ยวกับ</translation>
-<translation id="1425127764082410430">&amp;ค้นหาข้อความ '<ph name="SEARCH_TERMS"/>' จาก <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">ไม่ใช้งานการปลุก</translation>
 <translation id="8075539548641175231">ข้อมูลของคุณถูกเข้ารหัสด้วยข้อความรหัสผ่านการซิงค์ของคุณแล้วเมื่อ <ph name="TIME"/> โปรดป้อนด้านล่าง</translation>
 <translation id="2077084898869955643">รายงานรายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2108,7 +2104,6 @@
 <translation id="2031695690821674406">การเติมรหัสผ่านเมื่อมีการเลือกบัญชีอย่างชัดแจ้งโดยผู้ใช้ แทนที่จะป้อนข้อมูลรับรองโดยอัตโนมัติเมื่อโหลดหน้า</translation>
 <translation id="5834581999798853053">เหลือเวลาอีกประมาณ <ph name="TIME"/> นาที</translation>
 <translation id="7839809549045544450">เซิร์ฟเวอร์มีคีย์สาธารณะ Diffie-Hellman ชั่วคราวที่คาดเดาง่ายเกินไป</translation>
-<translation id="5515806255487262353">ค้นหาในพจนานุกรม</translation>
 <translation id="5154383699530644092">คุณสามารถเพิ่มเครื่องพิมพ์ลงในคอมพิวเตอร์ด้วยการคลิกปุ่ม &quot;เพิ่มเครื่องพิมพ์&quot;
           ด้านล่าง หากไม่มีเครื่องพิมพ์ที่จะเพิ่ม คุณจะยังคงสามารถบันทึก
           ไฟล์ PDF หรือบันทึกไว้ใน Google ไดรฟ์ได้</translation>
@@ -3024,7 +3019,6 @@
 <translation id="3121793941267913344">รีเซ็ตอุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">คำหลัก:</translation>
 <translation id="2930644991850369934">เกิดปัญหาขณะดาวน์โหลดอิมเมจการกู้คืน การเชื่อมต่อเครือข่ายขาดหาย</translation>
-<translation id="6891622577412956611">มุมมองภาพโมเสค</translation>
 <translation id="8150722005171944719">ไฟล์ที่ <ph name="URL"/> ไม่สามารถอ่านได้ เนื่องจากอาจถูกลบ ย้ายไปแล้ว หรือการอนุญาตของไฟล์อาจป้องกันการเข้าถึง</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
 <translation id="994901932508062332">เดือนล่าสุด</translation>
@@ -3394,7 +3388,6 @@
     <ph name="LINE_BREAK1"/>
     พร้อมสำรองข้อมูลไปยัง <ph name="BEGIN_LINK"/>Google ไดรฟ์<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">เปิดใช้งานการแก้ไขข้อความแบบการแตะ</translation>
-<translation id="3909535143686058220">แคชรหัสเครื่องที่สร้างขึ้น</translation>
 <translation id="9213566138414731677">อ๊ะ <ph name="WALLET_ERROR"/> คุณสามารถทำธุรกรรมนี้ให้เสร็จสมบูรณ์ได้โดยไม่ต้องใช้ Google Payments</translation>
 <translation id="4680322106555328717">เมื่อไม่นานมานี้คุณได้อนุญาตให้เรียกใช้เนื้อหาที่ไม่ปลอดภัย (เช่น สคริปต์หรือ iframes) บนเว็บไซต์นี้</translation>
 <translation id="283669119850230892">หากต้องการใช้เครือข่าย <ph name="NETWORK_ID"/> ก่อนอื่น ให้เชื่อมต่ออินเทอร์เน็ตตามด้านล่างนี้</translation>
@@ -4981,7 +4974,6 @@
 <translation id="7339763383339757376">PKCS #7, ใบรับรองแบบเดี่ยว</translation>
 <translation id="7587108133605326224">บอลติก</translation>
 <translation id="3340978935015468852">การตั้งค่า</translation>
-<translation id="3930208863636674029">แคชข้อมูลการแยกวิเคราะห์</translation>
 <translation id="3581912141526548234">บังคับใช้ (พยายามรับแฮช และบังคับใช้หากรับแฮชสำเร็จ)</translation>
 <translation id="1974371662733320303">กลยุทธ์การยกเลิกหน่วยความจำที่จะใช้</translation>
 <translation id="3991936620356087075">คุณได้ป้อนคีย์การปลดล็อก PIN ที่ไม่ถูกต้องหลายครั้งแล้ว ซิมการ์ดของคุณถูกปิดใช้งานอย่างถาวร</translation>

@@ -622,6 +622,7 @@ Pentru instrucțiuni suplimentare, verificați-vă e-mailurile la adresa <ph nam
 <translation id="8713570323158206935">Trimiteți <ph name="BEGIN_LINK1"/>informații de sistem<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Eroare la descărcare</translation>
 <translation id="5941343993301164315">Conectează-te la <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Actualizează permisiunile</translation>
 <translation id="1046059554679513793">Hopa, acest nume este deja utilizat!</translation>
 <translation id="5868571107634815419">Dezactivează Office Editing pentru Documente, Foi de calcul și Prezentări</translation>
 <translation id="1351692861129622852">Se importă <ph name="FILE_COUNT"/> (de) fișiere...</translation>
@@ -748,7 +749,6 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="5759728514498647443">Documentele pe care le trimiți prin <ph name="APP_NAME"/> pentru a fi printate pot fi citite de <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Aplicația nu este acceptată în prezent pe acest gadget, dar experții Chrome se străduie să o pună la dispoziție în curând.</translation>
 <translation id="3273410961255278341">Trimiteți pentru:</translation>
-<translation id="4255096080864111471">Specificați numărul maxim de panouri pentru zona de interes.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
 <translation id="6567688344210276845">Nu se poate încărca pictograma „<ph name="ICON"/>” pentru acțiunea paginii.</translation>
@@ -1701,7 +1701,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="4811502511369621968">Adresă de e-mail nevalidă. Verificați adresa și încercați din nou.</translation>
 <translation id="175196451752279553">R&amp;edeschide fila închisă</translation>
 <translation id="8602851771975208551">Un alt program de pe computerul dvs. a adăugat o aplicație care poate schimba modul în care funcționează Chrome.</translation>
-<translation id="9154967591629748964">Numărul maxim de panouri pentru zona de interes</translation>
 <translation id="2655386581175833247">Certificat de utilizator:</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5435964418642993308">Apasă pe Enter pentru a naviga înapoi, pe tasta pentru meniu contextual pentru a afișa istoricul</translation>
@@ -1873,7 +1872,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="1901377140875308934">Conectați-vă la <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Fundalul actual este setat de „<ph name="APP_NAME"/>”</translation>
 <translation id="5074318175948309511">Este posibil să fie necesară reîncărcarea acestei pagini înainte ca noile setări să se aplice.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nicio selecție</translation>
 <translation id="6405640832764359650">Activează caseta de selectare pentru salvarea cardului Google Payments</translation>
 <translation id="1346104802985271895">Metoda de introducere a textului în vietnameză (TELEX)</translation>
@@ -1899,7 +1897,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4821086771593057290">Parola s-a modificat. Încearcă din nou cu noua parolă.</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN"/> pot fi interceptate de administratorul dvs.</translation>
 <translation id="2509739495444557741">Nu au fost instalate pluginuri.</translation>
-<translation id="6731638353631257659">Modul de memorare în cache pentru V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 cu criptare RSA</translation>
 <translation id="7767646430896201896">Opțiuni:</translation>
 <translation id="526926484727016706">Determină neacordarea niciunei permisiuni pentru toate cadrele iframe, în mod prestabilit. Acordarea anumitor permisiuni pentru un anumit cadru iframe poate implica afișarea numelor permisiunilor respective ca valori ale noilor atribute iframe.</translation>
@@ -2027,7 +2024,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="6589706261477377614">Creșteți luminozitatea tastelor</translation>
 <translation id="1367951781824006909">Alege un fișier</translation>
 <translation id="2897815155851085655">A&amp;jutor și informații</translation>
-<translation id="1425127764082410430">&amp;Caută în <ph name="SEARCH_ENGINE"/> după „<ph name="SEARCH_TERMS"/>”</translation>
 <translation id="1187722533808055681">Ieșiri din modul inactiv</translation>
 <translation id="8075539548641175231">Datele dvs. au fost criptate cu parola dvs. de acces pentru sincronizare la <ph name="TIME"/>. Introduceți-o mai jos.</translation>
 <translation id="2077084898869955643">Raportează automat la Google detaliile eventualelor incidente privind securitatea. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2136,7 +2132,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="2031695690821674406">Completarea parolelor la selectarea explicită a unui cont de către utilizator, în loc de completarea automată a datelor de conectare la încărcarea paginii.</translation>
 <translation id="5834581999798853053">Au mai rămas aproape <ph name="TIME"/> min.</translation>
 <translation id="7839809549045544450">Serverul are o cheie publică slabă, efemeră Diffie-Hellman</translation>
-<translation id="5515806255487262353">Caută în dicționar</translation>
 <translation id="5154383699530644092">Puteți adăuga imprimante pe computer dând clic pe butonul „Adăugați o imprimantă”
           de mai jos. Dacă nu aveți nicio imprimantă de adăugat, veți putea totuși să salvați
           un fișier PDF sau să salvați în Google Drive.</translation>
@@ -3075,7 +3070,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="3121793941267913344">Resetați acest dispozitiv <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Cuvânt cheie:</translation>
 <translation id="2930644991850369934">A apărut o problemă în timpul descărcării imaginii de recuperare. Conexiunea la rețea a fost pierdută.</translation>
-<translation id="6891622577412956611">Vizualizare mozaic</translation>
 <translation id="8150722005171944719">Fișierul de la <ph name="URL"/> nu poate fi citit.  Este posibil să fi fost eliminat ori mutat sau ca permisiunile pentru fișiere să împiedice accesarea acestuia.</translation>
 <translation id="2316129865977710310">Nu, mulțumesc</translation>
 <translation id="994901932508062332">Luna trecută</translation>
@@ -3454,7 +3448,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
     <ph name="LINE_BREAK1"/>
     Gata pentru backup pe <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Activați editarea textului prin atingere</translation>
-<translation id="3909535143686058220">Memorează în cache codul generat pentru computer.</translation>
 <translation id="9213566138414731677">Hopa, <ph name="WALLET_ERROR"/> Nu poți să finalizezi această tranzacție fără Google Payments.</translation>
 <translation id="4680322106555328717">Ai permis recent rularea de conținut nesigur (cum ar fi scripturi sau cadre iframe) pe acest site.</translation>
 <translation id="283669119850230892">Pentru a utiliza rețeaua <ph name="NETWORK_ID"/>, finalizați mai întâi conexiunea la internet mai jos.</translation>
@@ -5041,7 +5034,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7339763383339757376">PKCS #7, certificat unic</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="3340978935015468852">setări</translation>
-<translation id="3930208863636674029">Memorează în cache datele analizei.</translation>
 <translation id="3581912141526548234">Impunere (se încearcă obținerea codurilor hash și se impun dacă acțiunea reușește)</translation>
 <translation id="1974371662733320303">Strategie de ștergere a memoriei de utilizat</translation>
 <translation id="3991936620356087075">Ai introdus incorect codul PIN de deblocare de prea multe ori. Cardul SIM este dezactivat definitiv.</translation>

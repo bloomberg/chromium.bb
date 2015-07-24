@@ -619,6 +619,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>Systeminformation<ph name="END_LINK1"/> senden</translation>
 <translation id="727952162645687754">Fehler beim Herunterladen</translation>
 <translation id="5941343993301164315">Melden Sie sich in <ph name="TOKEN_NAME"/> an.</translation>
+<translation id="1359381790106966506">Berechtigungen aktualisieren</translation>
 <translation id="1046059554679513793">Dieser Name wird bereits verwendet.</translation>
 <translation id="5868571107634815419">Bearbeitung von Office-Dateien in Google Docs, Tabellen und Präsentationen deaktivieren</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> Dateien werden importiert...</translation>
@@ -740,7 +741,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="5759728514498647443">Dokumente, die Sie über <ph name="APP_NAME"/> zum Druck senden, können von <ph name="APP_NAME"/> gelesen werden.</translation>
 <translation id="2401053206567162910">Diese App wird momentan auf diesem Gerät nicht unterstützt, aber die Chrome-Zwerge arbeiten bereits intensiv daran.</translation>
 <translation id="3273410961255278341">Senden für:</translation>
-<translation id="4255096080864111471">Damit wird die maximale Anzahl der Kacheln für Interessengebiete angegeben.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
 <translation id="6567688344210276845">Symbol &quot;<ph name="ICON"/>&quot; konnte nicht für die Seitenaktion geladen werden.</translation>
@@ -1685,7 +1685,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="4811502511369621968">Ungültige E-Mail-Adresse. Bitte überprüfen Sie Ihre Angaben und versuchen Sie es erneut.</translation>
 <translation id="175196451752279553">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="8602851771975208551">Ein anderes Programm auf Ihrem Computer hat eine App hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.</translation>
-<translation id="9154967591629748964">Maximale Anzahl der Kacheln für Interessengebiete</translation>
 <translation id="2655386581175833247">Nutzerzertifikat:</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5435964418642993308">Drücken Sie die Eingabetaste, um zurückzugehen, oder die Taste für das Kontextmenü, um den Verlauf aufzurufen</translation>
@@ -1854,7 +1853,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="1901377140875308934">In <ph name="SHORT_PRODUCT_NAME"/> anmelden...</translation>
 <translation id="5529098031581368697">Der aktuelle Hintergrund wurde von &quot;<ph name="APP_NAME"/>&quot; festgelegt.</translation>
 <translation id="5074318175948309511">Damit die neuen Einstellungen wirksam werden, muss die Seite eventuell neu geladen werden.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Keine Auswahl</translation>
 <translation id="6405640832764359650">Anzeige des Kontrollkästchens zum Speichern von Google Payments-Karten aktivieren</translation>
 <translation id="1346104802985271895">Vietnamesische Eingabemethode (TELEX)</translation>
@@ -1883,7 +1881,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="4821086771593057290">Ihr Passwort wurde geändert. Wiederholen Sie den Vorgang mit Ihrem neuen Passwort.</translation>
 <translation id="6080696365213338172">Sie haben über ein vom Administrator bereitgestelltes Zertifikat auf Inhalte zugegriffen. Die Daten, die Sie innerhalb von <ph name="DOMAIN"/> bereitstellen, können von Ihrem Administrator abgefangen werden.</translation>
 <translation id="2509739495444557741">Keine Plug-ins installiert</translation>
-<translation id="6731638353631257659">V8-Caching-Modus</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 mit RSA-Verschlüsselung</translation>
 <translation id="7767646430896201896">Optionen:</translation>
 <translation id="526926484727016706">Allen Iframes werden alle Berechtigungen standardmäßig verweigert. Um einem Iframe bestimmte Berechtigungen zu erteilen, müssen gegebenenfalls die Namen dieser Berechtigungen als Werte neuer Iframe-Attribute aufgeführt werden.</translation>
@@ -2011,7 +2008,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="6589706261477377614">Tastenhelligkeit erhöhen</translation>
 <translation id="1367951781824006909">Datei auswählen</translation>
 <translation id="2897815155851085655">Hilf&amp;e und Info</translation>
-<translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/> nach &quot;<ph name="SEARCH_TERMS"/>&quot; durch&amp;suchen</translation>
 <translation id="1187722533808055681">Inaktive Weckbefehle</translation>
 <translation id="8075539548641175231">Ihre Daten wurden am <ph name="TIME"/> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese unten ein.</translation>
 <translation id="2077084898869955643">Details zu möglichen sicherheitsrelevanten Zwischenfällen sollen automatisch an Google gesendet werden. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2117,7 +2113,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="2031695690821674406">Ausfüllen von Passwörtern, wenn ein Konto explizit vom Nutzer ausgewählt wird, anstelle des automatischen Ausfüllens von Anmeldedaten beim Seitenaufbau</translation>
 <translation id="5834581999798853053">Noch etwa <ph name="TIME"/> Minuten</translation>
 <translation id="7839809549045544450">Der öffentliche Ephemeral-Diffie-Hellman-Schlüssel des Servers ist unzulänglich.</translation>
-<translation id="5515806255487262353">Im Lexikon nachschlagen</translation>
 <translation id="5154383699530644092">Sie können Drucker zu Ihrem Computer hinzufügen, indem Sie unten auf die Schaltfläche &quot;Drucker hinzufügen&quot; klicken. Wenn Sie über keinen Drucker verfügen, können Sie stattdessen eine PDF-Datei erstellen oder die Daten in Google Drive speichern.</translation>
 <translation id="2790805296069989825">Russische Tastatur</translation>
 <translation id="2916974515569113497">Bei Aktivierung dieser Option erhalten Elemente mit fester Position eine eigene zusammengesetzte Ebene. Beachten Sie, dass von Elementen mit fester Position dafür auch Stapelkontexte erstellt werden müssen.</translation>
@@ -3029,7 +3024,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3121793941267913344"><ph name="IDS_SHORT_PRODUCT_NAME"/>-Gerät zurücksetzen</translation>
 <translation id="4188026131102273494">Suchkürzel:</translation>
 <translation id="2930644991850369934">Beim Download des Wiederherstellungsabbilds ist ein Problem aufgetreten. Die Netzwerkverbindung wurde unterbrochen.</translation>
-<translation id="6891622577412956611">Mosaikansicht</translation>
 <translation id="8150722005171944719">Die Datei unter <ph name="URL"/> kann nicht gelesen werden. Sie wurde möglicherweise entfernt oder verschoben oder die Dateiberechtigungen verhindern den Zugriff.</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="994901932508062332">Letzter Monat</translation>
@@ -3397,7 +3391,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
     <ph name="LINE_BREAK1"/>
     Bereit für Sicherung auf <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Textbearbeitung durch Berühren aktivieren</translation>
-<translation id="3909535143686058220">Cache-generierter Computercode</translation>
 <translation id="9213566138414731677">Hoppla! <ph name="WALLET_ERROR"/> Sie können die Transaktion ohne Google Payments nicht ausführen.</translation>
 <translation id="4680322106555328717">Sie haben vor Kurzem die Ausführung unsicherer Inhalte wie Skripts oder Iframes auf dieser Website zugelassen.</translation>
 <translation id="283669119850230892">Zur Verwendung des Netzwerks &quot;<ph name="NETWORK_ID"/>&quot; müssen Sie zuerst unten Ihre Internetverbindung herstellen.</translation>
@@ -4980,7 +4973,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="7339763383339757376">PKCS #7, Einzelzertifikat</translation>
 <translation id="7587108133605326224">Baltisch</translation>
 <translation id="3340978935015468852">Einstellungen</translation>
-<translation id="3930208863636674029">Cache mit Daten-Parsing</translation>
 <translation id="3581912141526548234">Erzwingen (versuchen, Hashes abzurufen, und im Erfolgsfall erzwingen)</translation>
 <translation id="1974371662733320303">Zu verwendende Speicherfreigabestrategie</translation>
 <translation id="3991936620356087075">Sie haben zu oft einen falschen PIN-Entsperrschlüssel eingegeben. Ihre SIM-Karte wurde dauerhaft deaktiviert.</translation>

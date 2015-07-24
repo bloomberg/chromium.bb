@@ -613,7 +613,7 @@
 <translation id="1522425503138261032">サイトに対してユーザーの物理的な現在地の追跡を許可する</translation>
 <translation id="6467433935902485842">プラグインの実行を許可しないサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultPluginsSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="4423597592074154136">プロキシ設定を手動で指定する</translation>
-<translation id="209586405398070749">公開チャンネル</translation>
+<translation id="209586405398070749">Stable チャンネル</translation>
 <translation id="8170878842291747619"><ph name="PRODUCT_NAME"/> に統合された Google 翻訳サービスを有効にします。この設定を有効にすると、必要に応じてユーザーがページを翻訳できる統合ツールバー サービスが <ph name="PRODUCT_NAME"/> に表示されます。この設定を無効にすると、翻訳バーは表示されません。この設定を有効または無効にすると、ユーザーは <ph name="PRODUCT_NAME"/> でこの設定の変更やオーバーライドができなくなります。未設定の場合は、この機能を使用するかどうかをユーザーが指定できます。</translation>
 <translation id="9035964157729712237">ブラックリストから除外する拡張機能 ID</translation>
 <translation id="8244525275280476362">ポリシーの失効から取得までの最大時間</translation>

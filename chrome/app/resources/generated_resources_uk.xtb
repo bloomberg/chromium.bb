@@ -611,6 +611,7 @@
 <translation id="8713570323158206935">Надсилати <ph name="BEGIN_LINK1"/>інформацію про систему<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Помилка завантаження</translation>
 <translation id="5941343993301164315">Увійдіть у <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Оновити дозволи</translation>
 <translation id="1046059554679513793">На жаль, це ім’я вже використовується.</translation>
 <translation id="5868571107634815419">Вимкнути редагування файлів Office у Документах, Таблицях і Презентаціях</translation>
 <translation id="1351692861129622852">Імпортування файлів (<ph name="FILE_COUNT"/>)…</translation>
@@ -731,7 +732,6 @@
 <translation id="5759728514498647443">Документи, які ви друкуєте через додаток <ph name="APP_NAME"/>, може переглядати додаток <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ця програма наразі не підтримується на цьому пристрої, але команда Chrome старанно працює, щоб зробити її доступною незабаром.</translation>
 <translation id="3273410961255278341">Надіслати:</translation>
-<translation id="4255096080864111471">Указати максимальну кількість фрагментів для області зацікавлення.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Нова вкладка</translation>
 <translation id="6567688344210276845">Не вдалося завантажити піктограму &quot;<ph name="ICON"/>&quot; для роботи сторінки.</translation>
@@ -1675,7 +1675,6 @@
 <translation id="4811502511369621968">Недійсна електронна адреса. Перевірте й повторіть спробу.</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
 <translation id="8602851771975208551">Інша програма на вашому комп’ютері додала програму, яка може змінити роботу Chrome.</translation>
-<translation id="9154967591629748964">Максимальна кількість фрагментів для області зацікавлення</translation>
 <translation id="2655386581175833247">Сертифікат користувача:</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5435964418642993308">Натисніть Enter, щоб повернутися, а кнопку контекстного меню – щоб переглянути історію</translation>
@@ -1847,7 +1846,6 @@
 <translation id="1901377140875308934">Увійти в <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Додаток &quot;<ph name="APP_NAME"/>&quot; встановив поточний фоновий малюнок</translation>
 <translation id="5074318175948309511">Щоб нові налаштування почали діяти, можливо, потрібно буде оновити цю сторінку.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Не вибрано</translation>
 <translation id="6405640832764359650">Пропонувати зберігати дані карток Google Payments</translation>
 <translation id="1346104802985271895">Метод введення для в'єтнамської мови (TELEX)</translation>
@@ -1873,7 +1871,6 @@
 <translation id="4821086771593057290">Ваш пароль змінено. Повторіть спробу з новим паролем.</translation>
 <translation id="6080696365213338172">Ви отримали доступ до вмісту, використовуючи наданий адміністратором сертифікат. Адміністратор може перехоплювати дані, які ви надасте домену <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Плагіни не встановлено.</translation>
-<translation id="6731638353631257659">Режим кешування V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 із шифруванням RSA</translation>
 <translation id="7767646430896201896">Опції:</translation>
 <translation id="526926484727016706">За умовчанням відхилятимуться всі дозволи для елементів iframe. Якщо надати елементу iframe якісь дозволи, їх може бути додано як значення нових атрибутів елемента iframe.</translation>
@@ -2001,7 +1998,6 @@
 <translation id="6589706261477377614">Збільшити яскравість клавіатури</translation>
 <translation id="1367951781824006909">Вибрати файл</translation>
 <translation id="2897815155851085655">Довідка й інформація</translation>
-<translation id="1425127764082410430">&amp;Пошук у <ph name="SEARCH_ENGINE"/> за словами &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Вихід зі стану неактивності</translation>
 <translation id="8075539548641175231">Дані зашифровано за допомогою вашої парольної фрази для синхронізації <ph name="TIME"/>. Введіть її нижче.</translation>
 <translation id="2077084898869955643">Автоматично повідомляти Google деталі щодо можливих порушень безпеки. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2107,7 +2103,6 @@
 <translation id="2031695690821674406">Вводити паролі, коли користувач вибирає обліковий запис, а не заповнювати облікові дані автоматично під час завантаження сторінки.</translation>
 <translation id="5834581999798853053">Залишилося приблизно <ph name="TIME"/> хв.</translation>
 <translation id="7839809549045544450">Сервер має слабкий недовговічний відкритий ключ Діффі-Геллмана (Diffie-Hellman)</translation>
-<translation id="5515806255487262353">Пошук у словнику</translation>
 <translation id="5154383699530644092">Можна додати принтери до комп’ютера, натиснувши кнопку &quot;Додати принтер&quot;
         нижче. Якщо у вас немає принтерів, які можна додати, ви зможете
         зберегти файл PDF або зберегти дані на Диск Google.</translation>
@@ -3017,7 +3012,6 @@
 <translation id="3121793941267913344">Скинути налаштування цього пристрою <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Ключове слово:</translation>
 <translation id="2930644991850369934">Під час завантаження образу для відновлення виникла проблема. З’єднання з мережею втрачено.</translation>
-<translation id="6891622577412956611">Режим мозаїки</translation>
 <translation id="8150722005171944719">Файл за адресою <ph name="URL"/> не читається. Можливо, його видалено, переміщено або доступ заборонено дозволами файлу.</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
 <translation id="994901932508062332">Останній місяць</translation>
@@ -3387,7 +3381,6 @@
     <ph name="LINE_BREAK1"/>
     Фотографії готові до імпорту на <ph name="BEGIN_LINK"/>Google Диск<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Увімкнути редагування тексту на основі дотиків</translation>
-<translation id="3909535143686058220">Код пристрою, згенерований кешем.</translation>
 <translation id="9213566138414731677"><ph name="WALLET_ERROR"/>. Цю трансакцію можна виконати без Google Payments.</translation>
 <translation id="4680322106555328717">Нещодавно ви дозволили показувати на цьому сайті ненадійний вміст (як-от сценарії або елементи iframe).</translation>
 <translation id="283669119850230892">Щоб використовувати мережу <ph name="NETWORK_ID"/>, спершу завершіть під’єднання до Інтернету нижче.</translation>
@@ -4967,7 +4960,6 @@
 <translation id="7339763383339757376">PKCS #7, єдиний сертифікат</translation>
 <translation id="7587108133605326224">Балтійська</translation>
 <translation id="3340978935015468852">налаштування</translation>
-<translation id="3930208863636674029">Дані аналізу кешу.</translation>
 <translation id="3581912141526548234">Застосувати (спробувати отримати хеші та застосувати їх)</translation>
 <translation id="1974371662733320303">Вибрана стратегія вивільнення пам’яті</translation>
 <translation id="3991936620356087075">Неправильний ключ для розблокування PIN-коду введено забагато разів. Вашу SIM-карту вимкнено назавжди.</translation>

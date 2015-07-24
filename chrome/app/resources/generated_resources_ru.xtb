@@ -611,6 +611,7 @@
 <translation id="8713570323158206935">Отправлять <ph name="BEGIN_LINK1"/>сведения о системе<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Не удалось скачать</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME"/>: необходимо войти.</translation>
+<translation id="1359381790106966506">Обновить разрешения</translation>
 <translation id="1046059554679513793">Ошибка! Это название уже используется.</translation>
 <translation id="5868571107634815419">Отключить редактирование файлов Office в Google Документах, Таблицах и Презентациях</translation>
 <translation id="1351692861129622852">Импорт файлов (<ph name="FILE_COUNT"/>)...</translation>
@@ -739,7 +740,6 @@
 <translation id="5759728514498647443">&quot;<ph name="APP_NAME"/>&quot; может читать документы, отправленные на печать через приложение &quot;<ph name="APP_NAME"/>&quot;.</translation>
 <translation id="2401053206567162910">Это приложение пока не поддерживается на данном устройстве, но команда Chrome прилагает все усилия, чтобы это исправить.</translation>
 <translation id="3273410961255278341">Отправка:</translation>
-<translation id="4255096080864111471">Обозначает максимальное количество изображений в просматриваемом элементе.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="6567688344210276845">Не удалось загрузить значок &quot;<ph name="ICON"/>&quot; для действия страницы.</translation>
@@ -1684,7 +1684,6 @@
 <translation id="4811502511369621968">Неверно указан адрес электронной почты. Проверьте его и повторите попытку.</translation>
 <translation id="175196451752279553">От&amp;крыть закрытую вкладку</translation>
 <translation id="8602851771975208551">Одна из программ на вашем компьютере установила приложение, которое может влиять на работу Chrome.</translation>
-<translation id="9154967591629748964">Максимальное количество изображений в интересующей категории</translation>
 <translation id="2655386581175833247">Сертификат пользователя:</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5435964418642993308">Нажмите клавишу Enter для возврата, клавишу контекстного меню для просмотра истории</translation>
@@ -1856,7 +1855,6 @@
 <translation id="1901377140875308934">Войти в <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Эти обои установлены приложением <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Чтобы настройки вступили в силу, необходимо перезагрузить страницу.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Нет</translation>
 <translation id="6405640832764359650">Включить флажок для сохранения карт из Google Payments</translation>
 <translation id="1346104802985271895">вьетнамская раскладка (TELEX)</translation>
@@ -1882,7 +1880,6 @@
 <translation id="4821086771593057290">Ваш пароль изменился. Повторите попытку и введите новый пароль.</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Плагины не установлены.</translation>
-<translation id="6731638353631257659">Режим кеширования V8</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 с шифрованием RSA</translation>
 <translation id="7767646430896201896">Варианты:</translation>
 <translation id="526926484727016706">По умолчанию запрещает окнам iframe получать разрешения. Если вы всё же предоставите их, названия разрешений могут появиться атрибутах окон iframe в качестве значений.</translation>
@@ -2010,7 +2007,6 @@
 <translation id="6589706261477377614">Увеличить яркость клавиш</translation>
 <translation id="1367951781824006909">Выберите файл</translation>
 <translation id="2897815155851085655">Сп&amp;равка/О браузере</translation>
-<translation id="1425127764082410430">&amp;Искать на <ph name="SEARCH_ENGINE"/> &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">переходы в активный режим</translation>
 <translation id="8075539548641175231">Данные зашифрованы <ph name="TIME"/> с помощью кодовой фразы. Введите ее в поле ниже.</translation>
 <translation id="2077084898869955643">Автоматически отправлять в Google информацию о возможных проблемах безопасности. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2116,7 +2112,6 @@
 <translation id="2031695690821674406">Заполняет пароли не автоматически при загрузке страницы, а при выборе пользователем нужного аккаунта.</translation>
 <translation id="5834581999798853053">Осталось <ph name="TIME"/> мин.</translation>
 <translation id="7839809549045544450">На сервере используется слабый эфемерный открытый ключ Диффи-Хелмана</translation>
-<translation id="5515806255487262353">Найти в словаре</translation>
 <translation id="5154383699530644092">Вы можете подключать принтеры к своему компьютеру с помощью кнопки &quot;Добавить принтер&quot;
         ниже. Если доступных принтеров нет, вместо печати файл можно сохранить
         на Google Диске или локально в формате PDF.</translation>
@@ -3042,7 +3037,6 @@
 <translation id="3121793941267913344">Сбросить настройки устройства <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Ключевое слово:</translation>
 <translation id="2930644991850369934">При скачивании образа для восстановления произошла ошибка. Нет подключения к сети.</translation>
-<translation id="6891622577412956611">Просмотр в виде мозаики</translation>
 <translation id="8150722005171944719">Файл по адресу <ph name="URL"/> недоступен. Возможно, он был удален или перемещен либо права доступа к нему ограничены.</translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
 <translation id="994901932508062332">Последний месяц</translation>
@@ -3412,7 +3406,6 @@
     <ph name="LINE_BREAK1"/>
     Файлы будут сохранены на <ph name="BEGIN_LINK"/>Google Диске<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Включить сенсорный режим редактирования текста</translation>
-<translation id="3909535143686058220">Машинный код, сгенерированный в кеше</translation>
 <translation id="9213566138414731677"><ph name="WALLET_ERROR"/> Вы можете завершить эту транзакцию без использования Google Payments.</translation>
 <translation id="4680322106555328717">Вы недавно разрешили запуск небезопасного контента (скриптов или окон iframe) на этом сайте.</translation>
 <translation id="283669119850230892">Для использования сети <ph name="NETWORK_ID"/> предварительно подключитесь к Интернету.</translation>
@@ -4997,7 +4990,6 @@
 <translation id="7339763383339757376">PKCS #7, единый сертификат</translation>
 <translation id="7587108133605326224">Балтийская</translation>
 <translation id="3340978935015468852">настройках</translation>
-<translation id="3930208863636674029">Данные анализа кеша</translation>
 <translation id="3581912141526548234">Принудительно (запрашивать хеши и применять их)</translation>
 <translation id="1974371662733320303">Применение стратегии сброса памяти</translation>
 <translation id="3991936620356087075">Вы ввели неверный ключ разблокировки PIN-кода слишком много раз. Ваша SIM-карта заблокирована.</translation>

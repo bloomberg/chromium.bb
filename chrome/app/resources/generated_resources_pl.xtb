@@ -612,6 +612,7 @@
 <translation id="8713570323158206935">Wyślij <ph name="BEGIN_LINK1"/>informacje o systemie<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Błąd pobierania</translation>
 <translation id="5941343993301164315">Zaloguj się do urządzenia <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Aktualizuj uprawnienia</translation>
 <translation id="1046059554679513793">Niestety, ta nazwa jest już używana.</translation>
 <translation id="5868571107634815419">Wyłącz edytowanie plików Office w Dokumentach, Arkuszach i Prezentacjach</translation>
 <translation id="1351692861129622852">Importuję <ph name="FILE_COUNT"/> pliki(ów)...</translation>
@@ -738,7 +739,6 @@ Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="5759728514498647443">Dokumenty wysłane do drukowania z aplikacji <ph name="APP_NAME"/> można odczytać w aplikacji <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ta aplikacja nie jest obecnie obsługiwana na tym urządzeniu, ale krasnoludki w Chrome już nad tym pracują.</translation>
 <translation id="3273410961255278341">Wyślij do:</translation>
-<translation id="4255096080864111471">Określ maksymalną liczbę kafelków obszaru zainteresowań.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nowa karta</translation>
 <translation id="6567688344210276845">Nie można wczytać ikony „<ph name="ICON"/>” dla czynności wykonywanej na stronie.</translation>
@@ -1683,7 +1683,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4811502511369621968">Nieprawidłowy adres e-mail. Sprawdź wpisane informacje i spróbuj ponownie.</translation>
 <translation id="175196451752279553">Prz&amp;ywróć zamkniętą kartę</translation>
 <translation id="8602851771975208551">Inny program na Twoim komputerze dodał aplikację, która może zmienić działanie Chrome.</translation>
-<translation id="9154967591629748964">Maksymalna liczba kafelków obszaru zainteresowań</translation>
 <translation id="2655386581175833247">Certyfikat użytkownika:</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5435964418642993308">Naciśnij klawisz Enter, aby przejść z powrotem, lub klawisz menu kontekstowego, aby wyświetlić historię</translation>
@@ -1855,7 +1854,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="1901377140875308934">Zaloguj się w <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Aktualna tapeta została ustawiona przez aplikację „<ph name="APP_NAME"/>”</translation>
 <translation id="5074318175948309511">Aby nowe ustawienia zaczęły działać, być może trzeba odświeżyć tę stronę.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nie wybrano</translation>
 <translation id="6405640832764359650">Włącz pole zapisywania kart w Google Payments</translation>
 <translation id="1346104802985271895">wietnamski (TELEX)</translation>
@@ -1874,7 +1872,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="4821086771593057290">Twoje hasło zostało zmienione. Spróbuj ponownie, podając nowe hasło.</translation>
 <translation id="6080696365213338172">Masz dostęp do treści dzięki certyfikatowi dostarczonemu przez administratora. Administrator może odczytać dane, jakie udostępnisz w <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Brak zainstalowanych wtyczek.</translation>
-<translation id="6731638353631257659">Tryb buforowania V8.</translation>
 <translation id="7075513071073410194">PKCS #1, MD5 z szyfrowaniem RSA</translation>
 <translation id="7767646430896201896">Opcje:</translation>
 <translation id="526926484727016706">Powoduje, że wszystkie elementy iframe domyślnie nie otrzymują żadnych uprawnień. Przyznanie konkretnych uprawnień elementowi iframe może wymagać umieszczenia ich nazw jako wartości nowych atrybutów tego elementu.</translation>
@@ -2002,7 +1999,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="6589706261477377614">Zwiększ jasność klawiszy</translation>
 <translation id="1367951781824006909">Wybierz plik</translation>
 <translation id="2897815155851085655">Pomoc i informacj&amp;e</translation>
-<translation id="1425127764082410430">&amp;Wyszukaj hasło <ph name="SEARCH_TERMS"/> w witrynie <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">Wyjścia z nieaktywności</translation>
 <translation id="8075539548641175231"><ph name="TIME"/> dane zostały zaszyfrowane z użyciem Twojego hasła. Wpisz je poniżej.</translation>
 <translation id="2077084898869955643">Automatycznie przesyłaj do Google szczegółowe informacje o możliwych zagrożeniach. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2108,7 +2104,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="2031695690821674406">Hasła są automatycznie uzupełniane, gdy użytkownik sam wybierze konto, a nie podczas wczytywania strony.</translation>
 <translation id="5834581999798853053">Zostało około <ph name="TIME"/> min</translation>
 <translation id="7839809549045544450">Serwer ma słaby, tymczasowy klucz publiczny Diffiego-Hellmana</translation>
-<translation id="5515806255487262353">Wyszukaj w słowniku</translation>
 <translation id="5154383699530644092">Możesz dodać drukarki do komputera, klikając poniżej
         przycisk „Dodaj drukarkę”. Jeśli nie masz drukarki do
         dodania, nadal będziesz mieć możliwość zapisania
@@ -3037,7 +3032,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="3121793941267913344">Zresetuj to urządzenie z <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Słowo kluczowe:</translation>
 <translation id="2930644991850369934">Wystąpił problem podczas pobierania obrazu odzyskiwania. Połączenie sieciowe zostało zerwane.</translation>
-<translation id="6891622577412956611">Widok mozaiki</translation>
 <translation id="8150722005171944719">Nie można odczytać pliku <ph name="URL"/>. Być może został usunięty lub uprawnienia dostępu uniemożliwiają jego odczyt.</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="994901932508062332">Ostatni miesiąc</translation>
@@ -3407,7 +3401,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
     <ph name="LINE_BREAK1"/>
     Gotowe do utworzenia kopii zapasowej na <ph name="BEGIN_LINK"/>Dysku Google<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Włącz dotykową edycję tekstu</translation>
-<translation id="3909535143686058220">Buforuj generowany kod maszynowy.</translation>
 <translation id="9213566138414731677">Ups, <ph name="WALLET_ERROR"/> Możesz zrealizować tę transakcję bez Google Payments.</translation>
 <translation id="4680322106555328717">Ta strona otrzymała niedawno pozwolenie na uruchamianie niezabezpieczonych funkcji (np. skryptów lub elementów iframe).</translation>
 <translation id="283669119850230892">Aby korzystać z sieci <ph name="NETWORK_ID"/>, zakończ poniższe połączenie z internetem.</translation>
@@ -4993,7 +4986,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="7339763383339757376">PKCS #7, jeden certyfikat</translation>
 <translation id="7587108133605326224">Bałtycki</translation>
 <translation id="3340978935015468852">ustawienia</translation>
-<translation id="3930208863636674029">Buforuj dane analizy.</translation>
 <translation id="3581912141526548234">Wymuś (próbuj uzyskiwać skróty i stosuj je, jeśli proces ten się powiedzie)</translation>
 <translation id="1974371662733320303">Obowiązująca strategia odrzucania zawartości pamięci</translation>
 <translation id="3991936620356087075">Zbyt wiele razy podano nieprawidłowy klucz odblokowujący kod PIN. Karta SIM została trwale wyłączona.</translation>

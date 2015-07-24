@@ -618,6 +618,7 @@
 <translation id="8713570323158206935">Enviar <ph name="BEGIN_LINK1"/>informações do sistema<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Erro de transferência</translation>
 <translation id="5941343993301164315">Inicie sessão em <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Atualizar autorizações</translation>
 <translation id="1046059554679513793">Ups, esse nome já está a ser utilizado!</translation>
 <translation id="5868571107634815419">Desativar a Edição do Office para Documentos, Folhas de cálculo e Apresentações</translation>
 <translation id="1351692861129622852">A importar <ph name="FILE_COUNT"/> ficheiros...</translation>
@@ -744,7 +745,6 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão através de <ph name="APP_NAME"/> podem ser lidos por <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Esta aplicação não é atualmente suportada neste dispositivo, mas a equipa do Chrome está a trabalhar arduamente para que funcione brevemente.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
-<translation id="4255096080864111471">Especifica o número máximo de mosaicos para a área de interesse.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone &quot;<ph name="ICON"/>&quot; para a acção da página.</translation>
@@ -1690,7 +1690,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="4811502511369621968">Endereço de email inválido. Verifique e tente novamente.</translation>
 <translation id="175196451752279553">Voltar a abrir o s&amp;eparador fechado</translation>
 <translation id="8602851771975208551">Outro programa do computador adicionou uma aplicação que pode alterar o funcionamento do Chrome</translation>
-<translation id="9154967591629748964">Número máximo de mosaicos para a área de interesse</translation>
 <translation id="2655386581175833247">Certificado de utilizador:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Prima Enter para regressar e a tecla de menu de contexto para ver o histórico</translation>
@@ -1862,7 +1861,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="1901377140875308934">Iniciar sessão no <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">A imagem de fundo atual é definida por &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Poderá ser necessário voltar a atualizar esta página antes de aplicar as novas definições.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Sem selecção</translation>
 <translation id="6405640832764359650">Ativar a caixa de verificação para guardar o cartão do Google Payments</translation>
 <translation id="1346104802985271895">Método de introdução vietnamita (TELEX)</translation>
@@ -1888,7 +1886,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="4821086771593057290">A sua palavra-passe foi alterada. Tente novamente com a nova palavra-passe.</translation>
 <translation id="6080696365213338172">Acedeu a conteúdos utilizando um certificado fornecido por um administrador. Os dados que fornecer a <ph name="DOMAIN"/> podem ser intercetados pelo seu administrador.</translation>
 <translation id="2509739495444557741">Sem plug-ins instalados.</translation>
-<translation id="6731638353631257659">Modo de colocação em cache V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 Com encriptação RSA</translation>
 <translation id="7767646430896201896">Opções:</translation>
 <translation id="526926484727016706">Faz com que sejam recusadas todas as autorizações a todos os iframes por predefinição. Para permitir autorizações particulares para um iframe, pode ser necessário listar os nomes dessas autorizações como valores de novos atributos de iframe.</translation>
@@ -2016,7 +2013,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="6589706261477377614">Aumentar o brilho das teclas</translation>
 <translation id="1367951781824006909">Selecione um ficheiro</translation>
 <translation id="2897815155851085655">A&amp;juda e acerca de</translation>
-<translation id="1425127764082410430">Pe&amp;squisar <ph name="SEARCH_TERMS"/> em <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">Reativações após inatividade</translation>
 <translation id="8075539548641175231">Os seus dados foram encriptados com a sua frase de acesso  de sincronização às <ph name="TIME"/>. Introduza-a abaixo.</translation>
 <translation id="2077084898869955643">Comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2123,7 +2119,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2031695690821674406">Preenchimento de palavras-passe quando o utilizador selecionar explicitamente uma palavra-passe, em vez de preencher automaticamente as credenciais durante o carregamento da página.</translation>
 <translation id="5834581999798853053">Faltam cerca de <ph name="TIME"/> minutos</translation>
 <translation id="7839809549045544450">O servidor tem uma chave pública Diffie-Hellman fraca e efémera</translation>
-<translation id="5515806255487262353">Procurar no dicionário</translation>
 <translation id="5154383699530644092">Pode adicionar impressoras ao computador ao clicar no botão
         &quot;Adicionar impressora&quot; abaixo. Mesmo que não tenha impressoras a adicionar, pode guardar
         um PDF ou no Google Drive.</translation>
@@ -3051,7 +3046,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="3121793941267913344">Repor este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Palavra-chave:</translation>
 <translation id="2930644991850369934">Ocorreu um problema durante a transferência da imagem de recuperação. Ligação à rede perdida.</translation>
-<translation id="6891622577412956611">Vista de mosaicos</translation>
 <translation id="8150722005171944719">O ficheiro em <ph name="URL"/> não é legível. Pode ter sido removido, movido ou as permissões do ficheiro podem estar a impedir o acesso.</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="994901932508062332">Mês Passado</translation>
@@ -3421,7 +3415,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
     <ph name="LINE_BREAK1"/>
     Pronto para criar uma cópia de segurança no <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Ativar a edição de texto com base no toque</translation>
-<translation id="3909535143686058220">Colocar em cache código do computador gerado.</translation>
 <translation id="9213566138414731677">Ups, <ph name="WALLET_ERROR"/>. Pode concluir esta transação sem o Google Payments.</translation>
 <translation id="4680322106555328717">Recentemente, permitiu a execução de conteúdos não seguros (como scripts ou iframes) neste site.</translation>
 <translation id="283669119850230892">Para utilizar a rede <ph name="NETWORK_ID"/>, conclua primeiro a sua ligação à internet abaixo.</translation>
@@ -5008,7 +5001,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="7339763383339757376">PKCS #7, certificado único</translation>
 <translation id="7587108133605326224">Báltico</translation>
 <translation id="3340978935015468852">definições</translation>
-<translation id="3930208863636674029">Colocar em cache dados de análise.</translation>
 <translation id="3581912141526548234">Aplicar (tentar obter hashes e aplicá-los caso seja bem-sucedido)</translation>
 <translation id="1974371662733320303">Estratégia de rejeição de memória a utilizar</translation>
 <translation id="3991936620356087075">Introduziu a chave de desbloqueio incorreta demasiadas vezes. O seu cartão SIM foi  desativado definitivamente.</translation>

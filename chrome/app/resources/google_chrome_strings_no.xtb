@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="8437332772351535342">Starter du på nytt i skrivebordsmodus, lukkes og startes Chrome-appene dine på nytt.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
+<translation id="7788788617745289808">Chrome må ha tilgang til kameraet for å kunne dele det med dette nettstedet.</translation>
 <translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
 <translation id="7054640471403081847">Denne datamaskinen slutter snart å motta Google Chrome-oppdateringer. Dette skjer fordi maskinvaren ikke lenger støttes.</translation>
@@ -59,6 +60,7 @@
 <translation id="5204098752394657250">Google Chrome – <ph name="TERMS_OF_SERVICE_LINK"/>vilkår for bruk<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="4743926867934016338">Godta og søk</translation>
 <translation id="1393853151966637042">Oppsøk brukerstøtten</translation>
+<translation id="1061441684050139317">Chrome må ha tilgang til mikrofonen for å kunne dele den med dette nettstedet.</translation>
 <translation id="7398801000654795464">Du ble logget på Chrome som <ph name="USER_EMAIL_ADDRESS"/>. Du må logge deg på igjen med samme konto.</translation>
 <translation id="4513711165509885787">Faktureringsdetaljene dine er lagret i Chrome.</translation>
 <translation id="5253588388888612165">Hvis du deler denne datamaskinen med <ph name="PROFILE_NAME"/>, kan du legge deg selv til i Chrome for å holde surfingen atskilt. Eventuelt kan du koble fra vedkommendes Google-konto.</translation>
@@ -90,6 +92,7 @@
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS"/>tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="5799551393681493217">Aktiverer iframe-baserte påloggingsprosesser i Chrome. Dette flagget overrstyrer --enable-web-based-signin.</translation>
 <translation id="7459554271817304652">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Google Chrome på enhver datamaskin.</translation>
+<translation id="6012342843556706400">Chrome må ha tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome er utdatert</translation>
 <translation id="4424024547088906515">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chrome. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
@@ -97,6 +100,7 @@
 <translation id="5618769508111928343"><ph name="SITE"/> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chrome forsøkte å koble til <ph name="SITE"/> denne gangen, returnerte nettstedet uvanlig og feil legitimasjon. Enten er det en hacker som gir seg ut for å være <ph name="SITE"/>, eller så har en påloggingsside for et Wi-Fi-nettverk brutt forbindelsen. Chrome brøt forbindelsen før det ble overført noen data, så informasjonen din er fortsatt sikker.</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
+<translation id="423410644998903704">Chrome må ha tilgang til tillatelsene for å kunne dele dem med dette nettstedet.</translation>
 <translation id="4633000520311261472">For å gjøre Chrome tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="3656661827369545115">Start Chromium automatisk når datamaskinen din starter</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>

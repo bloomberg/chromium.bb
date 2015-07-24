@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="8437332772351535342">Ponovnim pokretanjem u načinu radne površine zatvorit će se Chromeove aplikacije.</translation>
 <translation id="4728575227883772061">Instalacija nije uspjela zbog nepoznate pogreške. Ako je program Google Chrome trenutno otvoren, zatvorite ga i pokušajte ponovno.</translation>
+<translation id="7788788617745289808">Chrome treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="3080151273017101988">Nastavi prikazivati ​​pozadinske aplikacije po zatvaranju preglednika Google Chrome</translation>
 <translation id="4149882025268051530">Program za instalaciju nije dekomprimirao arhivu. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="7054640471403081847">Ovo će računalo uskoro prestati primati ažuriranja Google Chromea jer njegov hardver više nije podržan.</translation>
@@ -59,6 +60,7 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>Uvjeti pružanja usluge<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="4743926867934016338">Prihvati i traži</translation>
 <translation id="1393853151966637042">Pomoć za upotrebu Chromea</translation>
+<translation id="1061441684050139317">Chrome treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
 <translation id="7398801000654795464">Bili ste prijavljeni na Chrome kao <ph name="USER_EMAIL_ADDRESS"/>. Prijavite se ponovo istim računom.</translation>
 <translation id="4513711165509885787">Vaše pojedinosti o naplati spremljene su u Chrome.</translation>
 <translation id="5253588388888612165">Ako dijelite ovo računalo s korisnikom <ph name="PROFILE_NAME"/>, dodajte sebe u Chrome kako biste pregledavali odvojeno. U suprotnom odjavite njegov Google račun.</translation>
@@ -90,6 +92,7 @@
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS"/>softverom otvorenog koda<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="5799551393681493217">Omogućuje postupke prijave na Chrome na temelju iframea. Ta oznaka premošćuje omogućivanje prijave na temelju weba.</translation>
 <translation id="7459554271817304652">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Google Chrome na bilo kojem računalu.</translation>
+<translation id="6012342843556706400">Chrome treba imati pristup lokaciji da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome je zastario</translation>
 <translation id="4424024547088906515">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN"/>; Chrome smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
@@ -97,6 +100,7 @@
 <translation id="5618769508111928343"><ph name="SITE"/> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja s web-lokacijom <ph name="SITE"/>, web-lokacija je Chromeu vratila neuobičajene i netočne vjerodajnice. To može značiti dvije stvari: napadač se pokušava predstaviti kao <ph name="SITE"/> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chrome zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
 <translation id="2576431527583832481">Chrome je postao još bolji! Dostupna je nova verzija.</translation>
+<translation id="423410644998903704">Chrome treba imati pristup dopuštenjima da bi ih dijelio s ovom web-lokacijom.</translation>
 <translation id="4633000520311261472">Kako bismo Chrome učinili sigurnijim, onemogućili smo neka proširenja koja nisu navedena u trgovini <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i možda su dodana bez vašeg znanja.</translation>
 <translation id="3656661827369545115">Pokrenite Chrome automatski prilikom pokretanja računala</translation>
 <translation id="1763864636252898013">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN"/>; operativni sustav vašeg uređaja smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>

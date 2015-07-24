@@ -622,6 +622,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>સિસ્ટમ માહિતી<ph name="END_LINK1"/> મોકલો</translation>
 <translation id="727952162645687754">ડાઉનલોડ ભૂલ</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME"/> માટે કૃપા કરીને સાઇન ઇન કરો.</translation>
+<translation id="1359381790106966506">પરવાનગીઓ અપડેટ કરો</translation>
 <translation id="1046059554679513793">ઓહ, આ નામ પહેલેથી ઉપયોગમાં છે!</translation>
 <translation id="5868571107634815419">દસ્તાવેજો, શીટ્સ અને સ્લાઇડ્સ માટે Office સંપાદન અક્ષમ કરો</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> ફાઇલો આયાત કરી રહ્યું છે...</translation>
@@ -746,7 +747,6 @@
 <translation id="5759728514498647443">તમે <ph name="APP_NAME"/> મારફતે છાપવા માટે મોકલેલા દસ્તાવેજો <ph name="APP_NAME"/> દ્વારા વાંચી શકાય છે.</translation>
 <translation id="2401053206567162910">આ એપ્લિકેશન હાલમાં આ ઉપકરણ પર સમર્થિત નથી પરંતુ Chrome gnomes તેને જલ્દી કામ કરતું બનાવવા માટે સખત કાર્ય કરે છે.</translation>
 <translation id="3273410961255278341">આ માટે મોકલો:</translation>
-<translation id="4255096080864111471">રુચિ ક્ષેત્ર માટે મહત્તમ ટાઇલ્સનો ઉલ્લેખ કરો.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">નવું ટૅબ</translation>
 <translation id="6567688344210276845">પૃષ્ઠ ક્રિયા માટે આયકન '<ph name="ICON"/>' લોડ કરી શકાયું નથી.</translation>
@@ -1700,7 +1700,6 @@
 <translation id="4811502511369621968">અમાન્ય ઇમેઇલ સરનામું. કૃપા કરીને તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="175196451752279553">બંધ કરેલું ટેબ ફરિથી ખોલો</translation>
 <translation id="8602851771975208551">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક એપ્લિકેશન ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
-<translation id="9154967591629748964">રુચિ ક્ષેત્ર માટે મહત્તમ ટાઇલ્સ</translation>
 <translation id="2655386581175833247">વપરાશકર્તા પ્રમાણપત્ર:</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5435964418642993308">પાછળ જવા માટે એન્ટર અને ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ કી દબાવો</translation>
@@ -1873,7 +1872,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> પર સાઇન ઇન કરો...</translation>
 <translation id="5529098031581368697">'<ph name="APP_NAME"/>' દ્વારા વર્તમાન વૉલપેપર સેટ કરવામાં આવ્યું છે</translation>
 <translation id="5074318175948309511">નવી સેટિંગ્સ પ્રભાવમાં આવે તે પહેલાં આ પૃષ્ઠને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">પસંદગી નથી</translation>
 <translation id="6405640832764359650">Google Payments કાર્ડ સાચવવાનું ચેકબોક્સ સક્ષમ કરો</translation>
 <translation id="1346104802985271895">વિયેતનામીઝ ઇનપુટ મેથડ (ટીઇએલઇએક્સ)</translation>
@@ -1899,7 +1897,6 @@
 <translation id="4821086771593057290">તમારો પાસવર્ડ બદલાઈ ગયો છે. કૃપા કરીને તમારા નવા પાસવર્ડથી ફરીથી પ્રયત્ન કરો.</translation>
 <translation id="6080696365213338172">તમે વ્યવસ્થાપક-પ્રદત્ત પ્રમાણપત્રનો ઉપયોગ કરીને સામગ્રી ઍક્સેસ કરી છે. તમે <ph name="DOMAIN"/> ને પ્રદાન કરેલ ડેટા તમારા વ્યવસ્થાપક દ્વારા ઇન્ટરસેપ્ટ થઈ શકે છે.</translation>
 <translation id="2509739495444557741">પ્લગિન્સ ઇન્સ્ટોલ કરેલા નથી.</translation>
-<translation id="6731638353631257659">V8 કેશિંગ મોડ.</translation>
 <translation id="7075513071073410194">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD5</translation>
 <translation id="7767646430896201896">વિકલ્પો:</translation>
 <translation id="526926484727016706">તેના કારણે બધી iframes ડિફોલ્ટ રૂપે બધી પરવાનગીઓ નકારી શકે છે. iframe માટે ચોક્કસ પરવાનગીઓને મંજૂરી આપવામાં નવા iframe એટ્રિબ્યુટ્સના મૂલ્યો તરીકે આ પરવાનગીઓના નામને સૂચિબદ્ધ કરવું શામેલ હોઈ શકે છે.</translation>
@@ -2027,7 +2024,6 @@
 <translation id="6589706261477377614">કીના તેજને વધારો</translation>
 <translation id="1367951781824006909">એક ફાઇલ પસંદ કરો</translation>
 <translation id="2897815155851085655">સ&amp;હાય અને વિશે</translation>
-<translation id="1425127764082410430">'<ph name="SEARCH_TERMS"/>' માટે <ph name="SEARCH_ENGINE"/> &amp;શોધો</translation>
 <translation id="1187722533808055681">નિષ્ક્રિય વેકઅપ્સ</translation>
 <translation id="8075539548641175231">તમારો ડેટા <ph name="TIME"/> ના રોજ તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરાયો છે. કૃપા કરી તેને નીચે દાખલ કરો.</translation>
 <translation id="2077084898869955643">Google ને સંભવિત સુરક્ષા ઘટનાઓની વિગતોની આપમેળે જાણ કરો. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2133,7 +2129,6 @@
 <translation id="2031695690821674406">જ્યારે પૃષ્ઠ લોડ પર સ્વતઃભરણ ઓળખપત્રોને બદલે એકાઉન્ટ ચોક્ક્સપણે વપરાશકર્તા દ્વારા પસંદ થયેલ હોય ત્યારે પાસવર્ડ્સ ભરવા.</translation>
 <translation id="5834581999798853053">લગભગ <ph name="TIME"/> મિનિટ બાકી</translation>
 <translation id="7839809549045544450">સર્વરમાં નબળી એફેમેરલ ડિફિ-હેલમેન પબ્લિક કી છે</translation>
-<translation id="5515806255487262353">શબ્દકોશમાં શબ્દ શોધો</translation>
 <translation id="5154383699530644092">તમે નીચેના &quot;એક પ્રિન્ટર ઉમેરો&quot; બટનને ક્લિક કરીને તમારા કમ્પ્યુટર પર  પ્રિન્ટર્સ ઉમેરી શકો છો. જો તમારી પાસે ઉમેરવા માટે પ્રિન્ટર્સ નથી, તો તમે હજુ પણ PDF સાચવવા અથવા Google ડ્રાઇવ પર સાચવવા માટે સક્ષમ હશો.</translation>
 <translation id="2790805296069989825">રશિયન કીબોર્ડ</translation>
 <translation id="2916974515569113497">આ વિકલ્પ સક્રિય કરવાથી  નિશ્ચિત સ્થિતિ તત્વોને તેમના પોતાના સંમિશ્ર આવરણો ધરાવતા બનાવશે. નોંધો કે નિશ્ચિત સ્થિતિ તત્વો આ માટે કામ કરવાના સ્ટેકીંગ સંદર્ભો પણ બનાવશે.</translation>
@@ -3060,7 +3055,6 @@
 <translation id="3121793941267913344">આ <ph name="IDS_SHORT_PRODUCT_NAME"/> ઉપકરણ ફરીથી સેટ કરો</translation>
 <translation id="4188026131102273494">કીવર્ડ:</translation>
 <translation id="2930644991850369934">છબી ડાઉનલોડની પુનર્પ્રાપ્તિ દરમિયાન એક સમસ્યા આવી હતી. નેટવર્ક કનેક્શન જતું રહ્યું હતું.</translation>
-<translation id="6891622577412956611">મોઝેક દૃશ્ય</translation>
 <translation id="8150722005171944719"><ph name="URL"/> પરની ફાઇલ વાંચનયોગ્ય નથી. તે દૂર કરવામાં, ખસેડવામાં આવી હોઈ શકે છે અથવા ફાઇલ પરવાનગીઓ ઍક્સેસ કરવાથી અટકાવતી હોઈ શકે છે.</translation>
 <translation id="2316129865977710310">નહીં, આભાર</translation>
 <translation id="994901932508062332">છેલ્લો મહિનો</translation>
@@ -3436,7 +3430,6 @@
     <ph name="LINE_BREAK1"/>
     <ph name="BEGIN_LINK"/>Google ડ્રાઇવ<ph name="END_LINK"/> પર બેકઅપ લેવા માટે તૈયાર</translation>
 <translation id="2677924368525077324">ટચ આધારિત ટેક્સ્ટ સંપાદનને સક્ષમ કરો</translation>
-<translation id="3909535143686058220">કેશ દ્વારા બનાવેલ મશીન કોડ.</translation>
 <translation id="9213566138414731677">અરેરે, <ph name="WALLET_ERROR"/> તમે Google Payments વગર આ વ્યવહાર પૂર્ણ કરી શકો છો.</translation>
 <translation id="4680322106555328717">તમે આ સાઇટ પર ચાલવા માટે તાજેતરમાં અસુરક્ષિત સામગ્રી (જેમ કે સ્ક્રિપ્ટ્સ અથવા iframes) ને મંજૂરી આપી છે.</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID"/> નો નેટવર્ક ઉપયોગ કરવા માટે, પહેલાં નીચે ઇન્ટરનેટથી તમારા કનેક્શનને પૂર્ણ કરો.</translation>
@@ -5022,7 +5015,6 @@
 <translation id="7339763383339757376">PKCS #7, સિંગલ પ્રમાણપત્ર</translation>
 <translation id="7587108133605326224">બાલ્ટિક</translation>
 <translation id="3340978935015468852">સેટિંગ્સ</translation>
-<translation id="3930208863636674029">કેશ વિશ્લેષણ ડેટા.</translation>
 <translation id="3581912141526548234">અમલ કરો (હેશ મેળવવાનો પ્રયાસ કરો, અને જો સફળતા મળે તો તેમનો અમલ કરો)</translation>
 <translation id="1974371662733320303">ઉપયોગમાં લેવા માટેની મેમરી નિકાળવાની વ્યૂહરચના</translation>
 <translation id="3991936620356087075">તમે ઘણી બધી વાર ખોટી PIN અનલોકિંગ કી દાખલ કરી છે. તમારું SIM કાર્ડ કાયમી રીતે અક્ષમ થઈ ગયું છે.</translation>

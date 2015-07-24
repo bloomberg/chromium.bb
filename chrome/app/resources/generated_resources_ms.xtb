@@ -619,6 +619,7 @@
 <translation id="8713570323158206935">Hantar <ph name="BEGIN_LINK1"/>maklumat sistem<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Ralat muat turun</translation>
 <translation id="5941343993301164315">Sila log masuk ke <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Kemaskinikan kebenaran</translation>
 <translation id="1046059554679513793">Opp, nama ini sudah digunakan!</translation>
 <translation id="5868571107634815419">Lumpuhkan Pengeditan Fail Office untuk Dokumen, Helaian &amp; Slaid</translation>
 <translation id="1351692861129622852">Mengimport fail <ph name="FILE_COUNT"/>...</translation>
@@ -740,7 +741,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME"/> boleh dibaca oleh <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Apl ini tidak disokong pada peranti ini pada masa ini, tetapi gnome Chrome sedang bekerja keras untuk merealisasikannya tidak lama lagi.</translation>
 <translation id="3273410961255278341">Hantar untuk:</translation>
-<translation id="4255096080864111471">Nyatakan jubin maksimum untuk kawasan yang dipilih.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab baharu</translation>
 <translation id="6567688344210276845">Tidak dapat memuatkan ikon '<ph name="ICON"/>' untuk tindakan halaman.</translation>
@@ -1693,7 +1693,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="4811502511369621968">Alamat e-mel tidak sah. Sila semak dan cuba lagi.</translation>
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
 <translation id="8602851771975208551">Program lain pada komputer anda menambah apl yang boleh mengubah cara Chrome berfungsi.</translation>
-<translation id="9154967591629748964">Jubin maksimum untuk kawasan yang diminati.</translation>
 <translation id="2655386581175833247">Sijil pengguna:</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5435964418642993308">Tekan masuk untuk undur, kekunci menu konteks untuk melihat sejarah</translation>
@@ -1865,7 +1864,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="1901377140875308934">Log masuk ke <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Kertas dinding semasa ditetapkan oleh '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Halaman ini mungkin perlu dimuat semula sebelum tetapan baru berkesan.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Tiada pemilihan</translation>
 <translation id="6405640832764359650">Dayakan kotak pilihan penyimpanan kad Google Payments</translation>
 <translation id="1346104802985271895">Kaedah input bahasa Vietnam (TELEX)</translation>
@@ -1890,7 +1888,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="4821086771593057290">Kata laluan anda telah ditukar. Sila cuba semula dengan kata laluan baharu anda.</translation>
 <translation id="6080696365213338172">Anda telah mengakses kandungan menggunakan perakuan yang disediakan oleh pentadbir. Data yang anda berikan kepada <ph name="DOMAIN"/> boleh dipintas oleh pentadbir anda.</translation>
 <translation id="2509739495444557741">Tiada pemalam dipasang.</translation>
-<translation id="6731638353631257659">Mod cache V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 Dengan Penyulitan RSA</translation>
 <translation id="7767646430896201896">Pilihan:</translation>
 <translation id="526926484727016706">Menyebabkan semua iframe ditolak oleh semua kebenaran secara lalai. Tindakan membenarkan kebenaran tertentu untuk iframe mungkin melibatkan penyenaraian nama kebenaran ini sebagai nilai atribut iframe baharu.</translation>
@@ -2018,7 +2015,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="6589706261477377614">Tingkatkan kecerahan kekunci</translation>
 <translation id="1367951781824006909">Pilih fail</translation>
 <translation id="2897815155851085655">B&amp;antuan dan perihal</translation>
-<translation id="1425127764082410430">&amp;Cari <ph name="SEARCH_ENGINE"/> untuk '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Bangkit daripada melahu</translation>
 <translation id="8075539548641175231">Data anda telah disulitkan dengan frasa laluan segerak anda pada <ph name="TIME"/>. Sila masukkannya di bawah.</translation>
 <translation id="2077084898869955643">Laporkan butiran kemungkinan insiden keselamatan kepada Google secara automatik. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2127,7 +2123,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="2031695690821674406">Pengisian kata laluan apabila akaun dipilih dengan jelas oleh pengguna dan bukannya pengisian automatik bukti kelayakan apabila halaman dimuatkan.</translation>
 <translation id="5834581999798853053">Tinggal kira-kira <ph name="TIME"/> minit</translation>
 <translation id="7839809549045544450">Pelayan mempunyai kekunci awam Diffie-Hellman sementara yang lemah</translation>
-<translation id="5515806255487262353">Carian dalam Kamus</translation>
 <translation id="5154383699530644092">Anda boleh menambah pencetak pada komputer anda dengan mengklik butang
         &quot;Tambah pencetak&quot; di bawah. Jika anda mempunyai pencetak untuk ditambah, 
         anda masih boleh menyimpan PDF atau menyimpan ke Google Drive.</translation>
@@ -3068,7 +3063,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="3121793941267913344">Tetapkan semula peranti <ph name="IDS_SHORT_PRODUCT_NAME"/> ini</translation>
 <translation id="4188026131102273494">Kata kunci:</translation>
 <translation id="2930644991850369934">Terdapat masalah semasa muat turun imej pemulihan. Sambungan rangkaian hilang.</translation>
-<translation id="6891622577412956611">Paparan mozek</translation>
 <translation id="8150722005171944719">Fail di <ph name="URL"/> tidak boleh dibaca.  Fail mungkin telah dialih keluar, dipindahkan atau kebenaran fail mungkin menghalang akses.</translation>
 <translation id="2316129865977710310">Tidak, terima kasih</translation>
 <translation id="994901932508062332">Bulan Lepas</translation>
@@ -3447,7 +3441,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
     <ph name="LINE_BREAK1"/>
     Sedia untuk menyandarkan ke <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Dayakan pengeditan teks berdasarkan sentuhan.</translation>
-<translation id="3909535143686058220">Kod mesin dijana cache.</translation>
 <translation id="9213566138414731677">Op, <ph name="WALLET_ERROR"/> Anda boleh melengkapkan urus niaga ini tanpa Google Payments.</translation>
 <translation id="4680322106555328717">Baru-baru ini anda telah membenarkan kandungan tidak selamat (seperti skrip atau iframe) dijalankan di tapak web ini.</translation>
 <translation id="283669119850230892">Untuk menggunakan rangkaian <ph name="NETWORK_ID"/>, mula-mula lengkapkan sambungan anda ke Internet di bawah.</translation>
@@ -5036,7 +5029,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7339763383339757376">PKCS #7, sijil tunggal</translation>
 <translation id="7587108133605326224">Baltik</translation>
 <translation id="3340978935015468852">tetapan</translation>
-<translation id="3930208863636674029">Data penghurai cache.</translation>
 <translation id="3581912141526548234">Kuat kuasakan (cuba mendapatkan cincangan dan menguatkuasakannya jika berjaya)</translation>
 <translation id="1974371662733320303">Strategi pelupusan memori untuk digunakan</translation>
 <translation id="3991936620356087075">Anda telah banyak kali memasukkan Kunci Buka PIN yang salah. Kad SIM anda dilumpuhkan selama-lamanya.</translation>

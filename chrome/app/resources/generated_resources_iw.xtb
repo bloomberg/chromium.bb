@@ -613,6 +613,7 @@
 <translation id="8713570323158206935">שלח <ph name="BEGIN_LINK1"/>פרטי מערכת<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">שגיאה בהורדה</translation>
 <translation id="5941343993301164315">היכנס ל-<ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">עדכן הרשאות</translation>
 <translation id="1046059554679513793">אופס, שם זה כבר נמצא בשימוש!</translation>
 <translation id="5868571107634815419">‏השבת 'עריכת Office' של Docs,‏ Sheets‏ ו-Slides</translation>
 <translation id="1351692861129622852">מייבא <ph name="FILE_COUNT"/> קבצים...</translation>
@@ -740,7 +741,6 @@
 <translation id="5759728514498647443">תוכל להשתמש ב-<ph name="APP_NAME"/> כדי לקרוא מסמכים שתשלח להדפסה באמצעות <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">‏היישום הזה לא נתמך כרגע במכשיר הזה, אך הצוות של Chrome עובד במרץ כדי להפוך אותו לזמין בקרוב.</translation>
 <translation id="3273410961255278341">שלח עבור:</translation>
-<translation id="4255096080864111471">ציין את מספר האריחים המקסימלי עבור האזור של תחומי עניין.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
 <translation id="6567688344210276845">לא היתה אפשרות לטעון את האייקון '<ph name="ICON"/>' עבור פעולת דף.</translation>
@@ -1685,7 +1685,6 @@
 <translation id="4811502511369621968">כתובת אימייל לא חוקית. בדוק ונסה שוב.</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
 <translation id="8602851771975208551">‏תכנית אחרת במחשב שלך הוסיפה יישום שעשוי לשנות את אופן הפעולה של Chrome.</translation>
-<translation id="9154967591629748964">מספר אריחים מקסימלי עבור האזור של תחומי עניין</translation>
 <translation id="2655386581175833247">אישור משתמש:</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5435964418642993308">‏הקש Enter כדי לחזור, ועל מקש תפריט הקשר כדי להציג היסטוריה </translation>
@@ -1855,7 +1854,6 @@
 <translation id="1901377140875308934">היכנס ל-<ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">הטפט הנוכחי נקבע על ידי '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">ייתכן שיהיה צורך לטעון מחדש דף זה על מנת שההגדרות החדשות ייכנסו לתוקף.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">ללא בחירה</translation>
 <translation id="6405640832764359650">‏הצג את תיבת הסימון לשמירה של כרטיס Google Payments</translation>
 <translation id="1346104802985271895">‏שיטת קלט וייטנאמית (TELEX)</translation>
@@ -1875,7 +1873,6 @@
 <translation id="4821086771593057290">הסיסמה שלך השתנתה. נסה שוב עם הסיסמה החדשה.</translation>
 <translation id="6080696365213338172">ניגשת לתוכן באמצעות אישור שהוענק על ידי מנהל מערכת. מנהל המערכת שלך עשוי ליירט נתונים שתספק ל-<ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">לא מותקנים יישומי פלאגין.</translation>
-<translation id="6731638353631257659">‏מצב V8 להעברה לקובץ השמור.</translation>
 <translation id="7075513071073410194">‏PKCS #1 MD5 עם הצפנת RSA</translation>
 <translation id="7767646430896201896">אפשרויות:</translation>
 <translation id="526926484727016706">‏גורם לדחייה של כל ההרשאות בכל ה-iframes כברירת מחדל. התרת הרשאות ספציפיות בשביל iframe ספציפי עשויה להיות כרוכה ברישום של שמות ההרשאות כערכים של מאפייני iframe חדשים.</translation>
@@ -2003,7 +2000,6 @@
 <translation id="6589706261477377614">הגבר את בהירות המקשים</translation>
 <translation id="1367951781824006909">בחר קובץ</translation>
 <translation id="2897815155851085655">&amp;עזרה ומידע כללי</translation>
-<translation id="1425127764082410430">&amp;חפש <ph name="SEARCH_TERMS"/> ב-<ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">הוצאות לא פעילות ממצב שינה</translation>
 <translation id="8075539548641175231">הנתונים שלך הוצפנו באמצעות משפט הסיסמה שלך לסנכרון בתאריך <ph name="TIME"/>. הזן אותו למטה.</translation>
 <translation id="2077084898869955643">‏דווח אוטומטית ל-Google על פרטים של בעיות אבטחה אפשריות. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2107,7 +2103,6 @@
 <translation id="2031695690821674406">מילוי סיסמאות כשמשתמש בוחר במפורש בחשבון, במקום מילוי אוטומטי של פרטי כניסה בעת טעינת הדף.</translation>
 <translation id="5834581999798853053">נותרו בערך <ph name="TIME"/> דקות</translation>
 <translation id="7839809549045544450">‏לשרת יש מפתח ציבורי ארעי וחלש מסוג Diffie-Hellman</translation>
-<translation id="5515806255487262353">חפש במילון</translation>
 <translation id="5154383699530644092">‏ניתן להוסיף מדפסות למחשב על ידי לחיצה על הלחצן 'הוסף       
        מדפסת' שבהמשך. גם אם אין לך מדפסות שברצונך להוסיף, תוכל     
        לשמור קובץ PDF או לשמור ב-Google Drive.</translation>
@@ -3029,7 +3024,6 @@
 <translation id="3121793941267913344">אפס את מכשיר <ph name="IDS_SHORT_PRODUCT_NAME"/> זה</translation>
 <translation id="4188026131102273494">מילת מפתח:</translation>
 <translation id="2930644991850369934">אירעה בעיה במהלך ההורדה של תמונת השחזור. החיבור לרשת נותק.</translation>
-<translation id="6891622577412956611">תצוגת פסיפס</translation>
 <translation id="8150722005171944719">הקובץ הנמצא ב-<ph name="URL"/> לא ניתן לקריאה. ייתכן שהקובץ הוסר או הועבר, או שהרשאות הקובץ מונעות גישה אליו.</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
 <translation id="994901932508062332">בחודש שעבר</translation>
@@ -3397,7 +3391,6 @@
     <ph name="LINE_BREAK1"/>
     מוכנות לגיבוי ב-<ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">הפעל עריכה מבוססת-מגע</translation>
-<translation id="3909535143686058220">העבר קוד מכונה אל הקובץ השמור.</translation>
 <translation id="9213566138414731677">‏אופס, <ph name="WALLET_ERROR"/> תוכל לבצע עסקה זו ללא Google Payments.</translation>
 <translation id="4680322106555328717">‏התרת לאחרונה הפעלה של תוכן לא מאובטח באתר הזה (כמו סקריפטים ו-iframes).</translation>
 <translation id="283669119850230892">כדי להשתמש ב-<ph name="NETWORK_ID"/> של הרשת, השלם קודם את ההתחברות לאינטרנט, למטה.</translation>
@@ -4981,7 +4974,6 @@
 <translation id="7339763383339757376">‏PKCS #7, אישור יחיד</translation>
 <translation id="7587108133605326224">בלטית</translation>
 <translation id="3340978935015468852">הגדרות</translation>
-<translation id="3930208863636674029">נתוני ניתוח של הקובץ השמור.</translation>
 <translation id="3581912141526548234">‏אכיפה (נסה לקבל hashes, ואכוף אותם אם התקבלו בהצלחה)</translation>
 <translation id="1974371662733320303">אסטרטגיה למחיקת זיכרון שבה ייעשה שימוש</translation>
 <translation id="3991936620356087075">‏הזנת את המפתח השגוי של ביטול הנעילה של ה-PIN יותר מדי פעמים. כרטיס ה-SIM שלך הושבת לצמיתות.</translation>

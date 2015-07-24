@@ -607,6 +607,7 @@
 <translation id="8713570323158206935">傳送<ph name="BEGIN_LINK1"/>系統資訊<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">下載錯誤</translation>
 <translation id="5941343993301164315">請登入 <ph name="TOKEN_NAME"/>。</translation>
+<translation id="1359381790106966506">更新權限</translation>
 <translation id="1046059554679513793">糟糕，已經有人使用這個名稱！</translation>
 <translation id="5868571107634815419">停用文件、試算表和簡報的 Office 檔案編輯功能</translation>
 <translation id="1351692861129622852">正在匯入 <ph name="FILE_COUNT"/> 個檔案...</translation>
@@ -728,7 +729,6 @@
 <translation id="5759728514498647443">「<ph name="APP_NAME"/>」可以讀取您透過「<ph name="APP_NAME"/>」傳送的待列印文件。</translation>
 <translation id="2401053206567162910">這個應用程式目前不適用於這個裝置，不過 Chrome GNOME 正積極設法解決問題，希望近期內就能讓這個應用程式順利運作。</translation>
 <translation id="3273410961255278341">送至：</translation>
-<translation id="4255096080864111471">指定目標區域的圖標上限。</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">新增分頁</translation>
 <translation id="6567688344210276845">無法載入網頁動作的圖示「<ph name="ICON"/>」。</translation>
@@ -1673,7 +1673,6 @@
 <translation id="4811502511369621968">輸入的電子郵件地址有誤。請檢查拼寫是否正確，然後再試一次。</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="8602851771975208551">電腦中其他程式所新增的應用程式可能會變更 Chrome 的運作方式。</translation>
-<translation id="9154967591629748964">目標區域的圖標上限</translation>
 <translation id="2655386581175833247">使用者憑證：</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5435964418642993308">按 Enter 鍵可返回上一頁，按相關內容選單鍵可查看記錄</translation>
@@ -1846,7 +1845,6 @@
 <translation id="1901377140875308934">登入 <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">目前使用的桌布是由「<ph name="APP_NAME"/>」設定</translation>
 <translation id="5074318175948309511">您可能需要重新載入這個網頁，新設定才會生效。</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">未選取任何項目</translation>
 <translation id="6405640832764359650">啟用 Google Payments 信用卡儲存功能核取方塊</translation>
 <translation id="1346104802985271895">越南文輸入法 (TELEX)</translation>
@@ -1870,7 +1868,6 @@
 <translation id="4821086771593057290">您的密碼已變更，請使用您的新密碼再試一次。</translation>
 <translation id="6080696365213338172">您使用了管理員提供的憑證存取內容，因此管理員可攔截您傳送至「<ph name="DOMAIN"/>」的資料。</translation>
 <translation id="2509739495444557741">未安裝任何外掛程式。</translation>
-<translation id="6731638353631257659">V8 快取模式。</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 (使用 RSA 加密)</translation>
 <translation id="7767646430896201896">選項：</translation>
 <translation id="526926484727016706">預設讓所有 iframe 拒絕每一項權限。如果允許特定 iframe 權限，這些權限的名稱可能會被列為新 iframe 屬性的值。</translation>
@@ -1998,7 +1995,6 @@
 <translation id="6589706261477377614">增加按鍵亮度</translation>
 <translation id="1367951781824006909">選擇檔案</translation>
 <translation id="2897815155851085655">說明和關於(&amp;E)</translation>
-<translation id="1425127764082410430">在 <ph name="SEARCH_ENGINE"/> 上搜尋「<ph name="SEARCH_TERMS"/>」(&amp;S)</translation>
 <translation id="1187722533808055681">閒置喚醒</translation>
 <translation id="8075539548641175231">您已在 <ph name="TIME"/>使用同步通關密語對資料進行加密，請在下方輸入通關密語。</translation>
 <translation id="2077084898869955643">自動將疑似安全性事件的詳細資料回報給 Google。<ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2107,7 +2103,6 @@
 <translation id="2031695690821674406">當使用者明確選取帳戶時才填入密碼，而不要在網頁載入後自動填入憑證。</translation>
 <translation id="5834581999798853053">剩下 <ph name="TIME"/> 分鐘</translation>
 <translation id="7839809549045544450">伺服器的暫時 Diffie-Hellman 公開金鑰不足</translation>
-<translation id="5515806255487262353">查閱字典</translation>
 <translation id="5154383699530644092">您可以按下方的 [新增印表機] 按鈕，將印表機新增至電腦。
         如果沒有可供新增的印表機，您仍然可以將文件儲存為 PDF 檔案或儲存至 Google 雲端硬碟。</translation>
 <translation id="2790805296069989825">俄文鍵盤</translation>
@@ -3030,7 +3025,6 @@
 <translation id="3121793941267913344">重設這個 <ph name="IDS_SHORT_PRODUCT_NAME"/> 裝置</translation>
 <translation id="4188026131102273494">關鍵字：</translation>
 <translation id="2930644991850369934">下載還原映像檔時發生問題，網路連線已中斷。</translation>
-<translation id="6891622577412956611">方塊視圖</translation>
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL"/> 的檔案。這個檔案可能已遭移除或移動位置，或者檔案權限為禁止存取。</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="994901932508062332">上個月</translation>
@@ -3402,7 +3396,6 @@
     <ph name="LINE_BREAK1"/>
     可立即備份到 <ph name="BEGIN_LINK"/>Google 雲端硬碟<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">啟用觸控式文字編輯功能。</translation>
-<translation id="3909535143686058220">快取產生的機器碼。</translation>
 <translation id="9213566138414731677">糟糕！<ph name="WALLET_ERROR"/>您可以不必使用 Google Payments 完成交易。</translation>
 <translation id="4680322106555328717">您最近允許在這個網站上執行不安全的內容 (例如指令碼或 iframe)。</translation>
 <translation id="283669119850230892">如要使用 <ph name="NETWORK_ID"/> 網路，請先在下方連線至網際網路。</translation>
@@ -4986,7 +4979,6 @@
 <translation id="7339763383339757376">PKCS #7，單一憑證</translation>
 <translation id="7587108133605326224">波羅的海語系</translation>
 <translation id="3340978935015468852">設定</translation>
-<translation id="3930208863636674029">快取剖析資料。</translation>
 <translation id="3581912141526548234">強制 (嘗試取得雜湊，如果成功即強制使用)</translation>
 <translation id="1974371662733320303">要使用的記憶體釋放策略</translation>
 <translation id="3991936620356087075">您已輸入太多次不正確的 PIN 解鎖金鑰，您的 SIM 卡已永久停用。</translation>

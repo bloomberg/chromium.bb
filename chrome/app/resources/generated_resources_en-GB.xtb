@@ -619,6 +619,7 @@
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1"/>system information<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Download error</translation>
 <translation id="5941343993301164315">Please sign in to <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Update permissions</translation>
 <translation id="1046059554679513793">Whoops, this name is already in use!</translation>
 <translation id="5868571107634815419">Disable Office Editing for Docs, Sheets &amp; Slides</translation>
 <translation id="1351692861129622852">Importing <ph name="FILE_COUNT"/> files...</translation>
@@ -744,7 +745,6 @@ All users must sign out to continue.</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME"/> can be read by <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.</translation>
 <translation id="3273410961255278341">Send For:</translation>
-<translation id="4255096080864111471">Specify the maximum tiles for interest area.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">New tab</translation>
 <translation id="6567688344210276845">Could not load icon '<ph name="ICON"/>' for page action.</translation>
@@ -1692,7 +1692,6 @@ Calculating remaining time</translation>
 <translation id="4811502511369621968">Invalid email address. Please check and try again.</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="8602851771975208551">Another programme on your computer added an app that may change the way Chrome works.</translation>
-<translation id="9154967591629748964">Maximum tiles for interest area</translation>
 <translation id="2655386581175833247">User certificate:</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5435964418642993308">Press enter to go back, context menu key to see history</translation>
@@ -1865,7 +1864,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1901377140875308934">Sign in to <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Current wallpaper is set by '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">This page may need to be reloaded before the new settings take effect.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">No selection</translation>
 <translation id="6405640832764359650">Enable Google Payments card saving tick box</translation>
 <translation id="1346104802985271895">Vietnamese input method (TELEX)</translation>
@@ -1891,7 +1889,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="4821086771593057290">Your password has changed. Please try again with your new password.</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN"/> can be intercepted by your administrator.</translation>
 <translation id="2509739495444557741">No plug-ins installed.</translation>
-<translation id="6731638353631257659">V8 caching mode.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 With RSA Encryption</translation>
 <translation id="7767646430896201896">Options:</translation>
 <translation id="526926484727016706">Causes all iframes to be denied all permissions by default. Allowing particular permissions for an iframe may involve listing the names of these permissions as values of new iframe attributes.</translation>
@@ -2019,7 +2016,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="6589706261477377614">Increase key brightness</translation>
 <translation id="1367951781824006909">Choose a file</translation>
 <translation id="2897815155851085655">H&amp;elp and about</translation>
-<translation id="1425127764082410430">&amp;Search <ph name="SEARCH_ENGINE"/> for '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Idle wake ups</translation>
 <translation id="8075539548641175231">Your data was encrypted with your sync passphrase on <ph name="TIME"/>. Please enter it below.</translation>
 <translation id="2077084898869955643">Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2126,7 +2122,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2031695690821674406">Filling of passwords when an account is explicitly selected by the user rather than autofilling credentials on page load.</translation>
 <translation id="5834581999798853053">About <ph name="TIME"/> minutes left</translation>
 <translation id="7839809549045544450">Server has a weak, ephemeral Diffie-Hellman public key</translation>
-<translation id="5515806255487262353">Look Up in Dictionary</translation>
 <translation id="5154383699530644092">You can add printers to your computer by clicking the &quot;Add a printer&quot;
           button below. If you have no printers to add, you'll still be able to save
           a PDF or save to Google Drive.</translation>
@@ -3054,7 +3049,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="3121793941267913344">Reset this <ph name="IDS_SHORT_PRODUCT_NAME"/> device</translation>
 <translation id="4188026131102273494">Keyword:</translation>
 <translation id="2930644991850369934">There was a problem during recovery image download. Network connection has been lost.</translation>
-<translation id="6891622577412956611">Mosaic view</translation>
 <translation id="8150722005171944719">The file at <ph name="URL"/> is not readable.  It may have been removed, moved or file permissions may be preventing access.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="994901932508062332">Last Month</translation>
@@ -3426,7 +3420,6 @@ After you create a new supervised user, you can manage their settings at any tim
     <ph name="LINE_BREAK1"/>
     Ready to back up to <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Enable touch based text editing</translation>
-<translation id="3909535143686058220">Cache generated machine code.</translation>
 <translation id="9213566138414731677">Oops, <ph name="WALLET_ERROR"/> you can complete this transaction without Google Payments.</translation>
 <translation id="4680322106555328717">You have recently allowed insecure content (such as scripts or iframes) to run on this site.</translation>
 <translation id="283669119850230892">To use the network <ph name="NETWORK_ID"/>, first complete your connection to the Internet below.</translation>
@@ -5017,7 +5010,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="7339763383339757376">PKCS #7, single certificate</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="3340978935015468852">settings</translation>
-<translation id="3930208863636674029">Cache parsing data.</translation>
 <translation id="3581912141526548234">Enforce (try to get hashes, and enforce them if successful)</translation>
 <translation id="1974371662733320303">Memory discarding strategy to use</translation>
 <translation id="3991936620356087075">You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently disabled.</translation>

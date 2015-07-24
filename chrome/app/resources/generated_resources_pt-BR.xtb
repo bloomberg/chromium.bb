@@ -612,6 +612,7 @@
 <translation id="8713570323158206935">Enviar <ph name="BEGIN_LINK1"/>informações do sistema<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Erro no download</translation>
 <translation id="5941343993301164315">Faça login em <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Atualizar permissões</translation>
 <translation id="1046059554679513793">Ops. Este nome já está em uso.</translation>
 <translation id="5868571107634815419">Desativar edição do Office para o Documentos, Planilhas e Apresentações Google</translation>
 <translation id="1351692861129622852">Importando <ph name="FILE_COUNT"/> arquivos...</translation>
@@ -737,7 +738,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão pelo <ph name="APP_NAME"/> podem ser lidos pelo <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Atualmente não há suporte para este aplicativo neste dispositivo. O Chrome oferecerá este suporte em breve.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
-<translation id="4255096080864111471">Especificar a máxima divisão da imagem para a área de interesse.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone &quot;<ph name="ICON"/>&quot; para a ação da página.</translation>
@@ -1683,7 +1683,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="4811502511369621968">Endereço de e-mail inválido. Verifique e tente novamente.</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
 <translation id="8602851771975208551">Outro programa em seu computador adicionou um aplicativo que pode mudar a forma como o Google Chrome funciona.</translation>
-<translation id="9154967591629748964">Máxima divisão da imagem para a área de interesse</translation>
 <translation id="2655386581175833247">Certificado do usuário:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Pressione Enter para voltar e a tecla do menu de contexto para ver o histórico</translation>
@@ -1855,7 +1854,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="1901377140875308934">Fazer login em <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">O papel de parede atual está definido por '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Esta página pode precisar ser recarregada para que as novas configurações tenham efeito.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nenhuma seleção</translation>
 <translation id="6405640832764359650">Ativar caixa de seleção para salvar cartão do Google Payments</translation>
 <translation id="1346104802985271895">Método de entrada vietnamita (TELEX)</translation>
@@ -1882,7 +1880,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="4821086771593057290">Sua senha foi alterada. Tente novamente com a nova senha.</translation>
 <translation id="6080696365213338172">Você acessou conteúdo usando um certificado fornecido pelo administrador. Os dados fornecidos a <ph name="DOMAIN"/> podem ser interceptados por seu administrador.</translation>
 <translation id="2509739495444557741">Nenhum plug-in instalado.</translation>
-<translation id="6731638353631257659">Modo de cache do V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 com criptografia RSA</translation>
 <translation id="7767646430896201896">Opções:</translation>
 <translation id="526926484727016706">Faz com que todas as permissões de iframes sejam negadast por padrão. O consentimento de permissões específicas de um iframe pode envolver a listagem dos nomes dessas permissões como valores de novos atributos de iframe.</translation>
@@ -2010,7 +2007,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="6589706261477377614">Aumentar brilho das teclas</translation>
 <translation id="1367951781824006909">Escolher um arquivo</translation>
 <translation id="2897815155851085655">Ajuda &amp;e sobre</translation>
-<translation id="1425127764082410430">&amp;Pesquisar '<ph name="SEARCH_TERMS"/>' no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">Ativações do estado ocioso</translation>
 <translation id="8075539548641175231">Seus dados foram criptografados com sua senha de sincronização em <ph name="TIME"/>. Digite-a abaixo.</translation>
 <translation id="2077084898869955643">Informar automaticamente ao Google detalhes de possíveis incidentes de segurança. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2116,7 +2112,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="2031695690821674406">Preenchimento de senhas quando uma conta está explicitamente selecionada pelo usuário, em vez de preenchimento automático de credenciais no carregamento da página.</translation>
 <translation id="5834581999798853053">Cerca de <ph name="TIME"/> minutos restantes</translation>
 <translation id="7839809549045544450">O servidor possui uma chave pública Diffie-Hellman efêmera fraca</translation>
-<translation id="5515806255487262353">Pesquisar no dicionário</translation>
 <translation id="5154383699530644092">Você pode adicionar impressoras a seu computador clicando no botão &quot;Adicionar uma impressora&quot;
         abaixo. Se você não tem nenhuma impressora para adicionar, pode salvar um
         PDF ou salvar no Google Drive.</translation>
@@ -3044,7 +3039,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="3121793941267913344">Restaurar este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Palavra-chave:</translation>
 <translation id="2930644991850369934">Ocorreu um problema durante o download da imagem de recuperação. A conexão de rede foi perdida.</translation>
-<translation id="6891622577412956611">Visualização de mosaicos</translation>
 <translation id="8150722005171944719">O arquivo em <ph name="URL"/> não está legível. Ele pode ter sido removido ou movido, ou as permissões do arquivo podem estar impedindo o acesso.</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="994901932508062332">Último mês</translation>
@@ -3415,7 +3409,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
     <ph name="LINE_BREAK1"/>
     Pronto para fazer o backup no <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Ativar edição de texto baseada em toque</translation>
-<translation id="3909535143686058220">Código de máquina gerado por cache.</translation>
 <translation id="9213566138414731677">Ops, <ph name="WALLET_ERROR"/> Conclua esta transação sem o Google Payments.</translation>
 <translation id="4680322106555328717">Recentemente você permitiu que conteúdos não seguros (como scripts ou iframes) fossem executados neste site.</translation>
 <translation id="283669119850230892">Para usar a rede <ph name="NETWORK_ID"/>, conclua primeiro sua conexão com a Internet abaixo.</translation>
@@ -5002,7 +4995,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7339763383339757376">PKCS #7, certificado único</translation>
 <translation id="7587108133605326224">Báltico</translation>
 <translation id="3340978935015468852">configurações</translation>
-<translation id="3930208863636674029">Dados de análise de cache.</translation>
 <translation id="3581912141526548234">Aplicar (se conseguir hashes, aplicá-los)</translation>
 <translation id="1974371662733320303">Estratégia de descarte de memória a ser usada</translation>
 <translation id="3991936620356087075">Você informou uma chave incorreta para desbloqueio de PIN muitas vezes. Seu cartão SIM está desativado permanentemente.</translation>

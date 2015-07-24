@@ -49,6 +49,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="8437332772351535342">Relaunching in Desktop mode will close and relaunch your Chrome apps.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
+<translation id="7788788617745289808">Chrome needs camera access to share it with this site.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
 <translation id="7054640471403081847">This computer will soon stop receiving Google Chrome updates because its hardware is no longer supported.</translation>
@@ -65,6 +66,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="1393853151966637042">Get help with using Chrome</translation>
+<translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS"/>. Please use the same account to sign in again.</translation>
 <translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
 <translation id="5253588388888612165">If you share this computer with <ph name="PROFILE_NAME"/>, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.</translation>
@@ -96,6 +98,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="5799551393681493217">Enables iframe-based Chrome sign-in flows. This flag overrides --enable-web-based-sign-in.</translation>
 <translation id="7459554271817304652">Set up Sync to save your personalised browser features to the web and access them from Google Chrome on any computer.</translation>
+<translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -103,6 +106,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5618769508111928343"><ph name="SITE"/> normally uses encryption to protect your information. When Chrome tried to connect to <ph name="SITE"/> this time, the website sent back unusual and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE"/>, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
+<translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
 <translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
 <translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>

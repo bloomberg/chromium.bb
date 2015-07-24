@@ -607,6 +607,7 @@
 <translation id="8713570323158206935">Envia <ph name="BEGIN_LINK1"/>informació del sistema<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Error de baixada</translation>
 <translation id="5941343993301164315">Inicieu la sessió a <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Actualitza els permisos</translation>
 <translation id="1046059554679513793">Aquest nom ja s'està utilitzant.</translation>
 <translation id="5868571107634815419">Desactiva Office Editing for Docs, Sheets &amp; Slides</translation>
 <translation id="1351692861129622852">S'estan important <ph name="FILE_COUNT"/> fitxers...</translation>
@@ -732,7 +733,6 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME"/> pot llegir els documents que envieu a la impressora mitjançant <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Aquesta aplicació no és compatible amb aquest dispositiu, però els follets de Chrome treballen molt perquè ho sigui ben aviat.</translation>
 <translation id="3273410961255278341">Envia a:</translation>
-<translation id="4255096080864111471">Especifica la quantitat màxima de mosaics de l'àrea d'interès.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Pestanya nova</translation>
 <translation id="6567688344210276845">No s'ha pogut carregar la icona &quot;<ph name="ICON"/>&quot; per a l'acció de la pàgina.</translation>
@@ -1678,7 +1678,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="4811502511369621968">L'adreça electrònica no és vàlida. Comproveu-la i torneu-ho a provar.</translation>
 <translation id="175196451752279553">T&amp;orna a obrir la pestanya tancada</translation>
 <translation id="8602851771975208551">Un altre programa de l'ordinador ha afegit una aplicació que pot canviar el funcionament de Chrome.</translation>
-<translation id="9154967591629748964">Quantitat màxima de mosaics de l'àrea d'interès</translation>
 <translation id="2655386581175833247">Certificat d'usuari:</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5435964418642993308">Premeu Retorn per retrocedir i menú contextual per veure l'historial</translation>
@@ -1851,7 +1850,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="1901377140875308934">Inicia la sessió a <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697"><ph name="APP_NAME"/> ha definit el fons de pantalla actual.</translation>
 <translation id="5074318175948309511">És possible que hàgiu de tornar a carregar aquesta pàgina perquè s'apliqui la configuració nova.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Cap selecció</translation>
 <translation id="6405640832764359650">Activa la casella de selecció per desar la targeta de Google Payments</translation>
 <translation id="1346104802985271895">Mètode d'entrada de vietnamita (TELEX)</translation>
@@ -1871,7 +1869,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4821086771593057290">La contrasenya ha canviat. Torneu-ho a provar amb la contrasenya nova.</translation>
 <translation id="6080696365213338172">Heu accedit a contingut mitjançant un certificat proporcionat per l'administrador. Per tant, l'administrador por interceptar les dades que proporcioneu a <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">No hi ha cap connector instal·lat.</translation>
-<translation id="6731638353631257659">Mode d'emmagatzematge en memòria cau V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 amb encriptació RSA</translation>
 <translation id="7767646430896201896">Opcions:</translation>
 <translation id="526926484727016706">Provoca que es deneguin tots els permisos per a tots els iframes de manera predeterminada. Si es permeten permisos concrets per a un iframe, és possible que es mostrin els noms d'aquests permisos com a valors d'atributs d'iframe nous.</translation>
@@ -1999,7 +1996,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="6589706261477377614">Augmenta la brillantor de les tecles</translation>
 <translation id="1367951781824006909">Trieu un fitxer</translation>
 <translation id="2897815155851085655">&amp;Ajuda i informació</translation>
-<translation id="1425127764082410430">&amp;Cerca <ph name="SEARCH_ENGINE"/> de &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Activacions en estat de repòs</translation>
 <translation id="8075539548641175231">Les vostres dades s'han encriptat amb la vostra frase de contrasenya de sincronització el <ph name="TIME"/>. Escriviu-la a continuació.</translation>
 <translation id="2077084898869955643">Informa automàticament Google dels detalls sobre possibles incidents de seguretat. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2105,7 +2101,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="2031695690821674406">S'emplenen les contrasenyes quan l'usuari selecciona un compte de manera explícita en comptes d'emplenar automàticament les credencials en carregar la pàgina.</translation>
 <translation id="5834581999798853053">Queda cosa de <ph name="TIME"/> minuts</translation>
 <translation id="7839809549045544450">El servidor té una clau pública Diffie-Hellman dèbil i efímera</translation>
-<translation id="5515806255487262353">Busca-ho al diccionari</translation>
 <translation id="5154383699530644092">Per afegir impressores a l'ordinador, feu clic al botó Afegeix una impressora que apareix a continuació. Encara que no tingueu cap impressora per afegir, podreu desar un PDF del fitxer o desar-lo a Google Drive.</translation>
 <translation id="2790805296069989825">Teclat rus</translation>
 <translation id="2916974515569113497">Si s'activa aquesta opció, els elements de posició fixa tindran les seves pròpies capes compostes. Tingueu en compte que, perquè això funcioni, els elements de posició fixa també han de crear contexts d'apilament.</translation>
@@ -3031,7 +3026,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="3121793941267913344">Restabliu aquest dispositiu <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
 <translation id="4188026131102273494">Paraula clau:</translation>
 <translation id="2930644991850369934">S'ha produït un problema en baixar la imatge de recuperació. S'ha perdut la connexió a la xarxa.</translation>
-<translation id="6891622577412956611">Visualització de mosaic</translation>
 <translation id="8150722005171944719">El fitxer de <ph name="URL"/> no es pot llegir. Pot ser que s'hagi eliminat, que s'hagi traslladat o que els permisos del fitxer n'impedeixin l'accés.</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
 <translation id="994901932508062332">El darrer mes</translation>
@@ -3403,7 +3397,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
     <ph name="LINE_BREAK1"/>
     Ja es pot crear la còpia de seguretat a <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Activa l'edició tàctil del text</translation>
-<translation id="3909535143686058220">Emmagatzema a la memòria cau el codi de màquina generat.</translation>
 <translation id="9213566138414731677"><ph name="WALLET_ERROR"/> Podeu completar aquesta transacció sense Google Payments.</translation>
 <translation id="4680322106555328717">Fa poc heu permès que s'executi contingut no segur (com ara scripts o iframes) en aquest lloc web.</translation>
 <translation id="283669119850230892">Per fer servir la xarxa <ph name="NETWORK_ID"/>, primer cal establir la connexió a Internet a continuació.</translation>
@@ -4990,7 +4983,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="7339763383339757376">PKCS #7, certificat únic</translation>
 <translation id="7587108133605326224">Bàltic</translation>
 <translation id="3340978935015468852">configuració</translation>
-<translation id="3930208863636674029">Emmagatzema les dades d'anàlisi a la memòria cau.</translation>
 <translation id="3581912141526548234">Executa (prova d'obtenir els coixinets i els executa si té èxit)</translation>
 <translation id="1974371662733320303">Estratègia per descartar la memòria que s'ha de fer servir</translation>
 <translation id="3991936620356087075">Heu introduït una clau de desbloqueig del PIN (PUK) incorrecta massa vegades. La vostra targeta SIM s'ha desactivat de manera permanent.</translation>

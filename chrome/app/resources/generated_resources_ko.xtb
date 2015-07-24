@@ -620,6 +620,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>시스템 정보<ph name="END_LINK1"/> 전송</translation>
 <translation id="727952162645687754">다운로드 오류</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME"/>에 로그인하세요.</translation>
+<translation id="1359381790106966506">권한 업데이트</translation>
 <translation id="1046059554679513793">이미 사용 중인 이름입니다.</translation>
 <translation id="5868571107634815419">문서, 스프레드시트, 프레젠테이션에 대한 Office 수정 사용 중지</translation>
 <translation id="1351692861129622852">파일 <ph name="FILE_COUNT"/>개를 가져오는 중...</translation>
@@ -746,7 +747,6 @@
 <translation id="5759728514498647443"><ph name="APP_NAME"/>을(를) 통해 인쇄하려고 전송한 문서를 <ph name="APP_NAME"/>에서 읽을 수 있습니다.</translation>
 <translation id="2401053206567162910">이 앱은 현재 해당 기기에서 지원되지 않지만 Chrome Gnome이 지원을 위해 노력을 기울이고 있습니다.</translation>
 <translation id="3273410961255278341">다음에 대해 보내기:</translation>
-<translation id="4255096080864111471">관심 분야에 대한 최대 타일을 지정합니다.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="6567688344210276845">페이지 작업의 아이콘('<ph name="ICON"/>')을 로드하지 못했습니다.</translation>
@@ -1695,7 +1695,6 @@
 <translation id="4811502511369621968">이메일 주소가 잘못되었습니다. 확인한 다음 다시 시도하세요.</translation>
 <translation id="175196451752279553">닫은 탭 다시 열기(&amp;E)</translation>
 <translation id="8602851771975208551">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 앱을 추가했습니다.</translation>
-<translation id="9154967591629748964">관심 분야에 대한 최대 타일</translation>
 <translation id="2655386581175833247">사용자 인증서:</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5435964418642993308">돌아가려면 Enter 키를 누르고, 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
@@ -1867,7 +1866,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/>에 로그인...</translation>
 <translation id="5529098031581368697">현재 배경화면은 '<ph name="APP_NAME"/>'에서 설정했습니다.</translation>
 <translation id="5074318175948309511">새로운 설정을 적용하기 전에 페이지를 다시 로드해야 할 수도 있습니다.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">선택사항 없음</translation>
 <translation id="6405640832764359650">Google Payments 카드 저장 체크박스 사용</translation>
 <translation id="1346104802985271895">베트남어 입력 방법(TELEX)</translation>
@@ -1893,7 +1891,6 @@
 <translation id="4821086771593057290">비밀번호가 변경되었습니다. 새 비밀번호로 다시 시도해 주세요.</translation>
 <translation id="6080696365213338172">관리자 제공 인증서를 사용하여 콘텐츠에 액세스했습니다. 사용자가 <ph name="DOMAIN"/>에 제공한 데이터가 관리자에 의해 차단될 수 있습니다.</translation>
 <translation id="2509739495444557741">플러그인이 설치되지 않았습니다.</translation>
-<translation id="6731638353631257659">V8 캐싱 모드</translation>
 <translation id="7075513071073410194">PKCS #1 MD5(RSA 암호화 사용)</translation>
 <translation id="7767646430896201896">옵션:</translation>
 <translation id="526926484727016706">기본적으로 모든 iframe 권한이 거부되도록 설정되어 있습니다. 특정 iframe 권한을 허용하는 데 권한의 이름을 새 iframe 속성 값으로 설정하는 절차가 포함될 수도 있습니다.</translation>
@@ -2021,7 +2018,6 @@
 <translation id="6589706261477377614">키 밝기 높임</translation>
 <translation id="1367951781824006909">파일 선택</translation>
 <translation id="2897815155851085655">도움말 및 정보(&amp;E)</translation>
-<translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/>에서 '<ph name="SEARCH_TERMS"/>' 검색(&amp;S)</translation>
 <translation id="1187722533808055681">유휴 상태 해제</translation>
 <translation id="8075539548641175231"><ph name="TIME"/>에 동기화 암호로 데이터가 암호화되었습니다. 아래에 암호를 입력하세요.</translation>
 <translation id="2077084898869955643">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 보고합니다. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2131,7 +2127,6 @@
 <translation id="2031695690821674406">사용자가 계정을 명시적으로 선택한 경우 페이지 로드 시 사용자 인증 정보를 자동완성하지 않고 비밀번호를 입력합니다.</translation>
 <translation id="5834581999798853053">약 <ph name="TIME"/>분 남음</translation>
 <translation id="7839809549045544450">서버에 쉽게 삭제되는 Diffie-Hellman 공개 키가 있습니다.</translation>
-<translation id="5515806255487262353">사전에서 찾기</translation>
 <translation id="5154383699530644092">아래의 '프린터 추가' 버튼을 클릭하여
         프린터를 컴퓨터에 추가할 수 있습니다. 추가할 프린터가 없는 경우
         PDF 파일을 저장하거나 Google 드라이브에 저장할 수 있습니다.</translation>
@@ -3059,7 +3054,6 @@
 <translation id="3121793941267913344"><ph name="IDS_SHORT_PRODUCT_NAME"/> 기기 재설정</translation>
 <translation id="4188026131102273494">키워드:</translation>
 <translation id="2930644991850369934">복구 이미지를 다운로드하는 중에 문제가 발생했습니다. 네트워크 연결이 끊어졌습니다.</translation>
-<translation id="6891622577412956611">모자이크 보기</translation>
 <translation id="8150722005171944719"><ph name="URL"/>의 파일을 읽을 수 없습니다. 삭제 또는 이동되었거나 파일 사용 권한이 액세스를 차단할 수도 있습니다.</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="994901932508062332">지난 달</translation>
@@ -3428,7 +3422,6 @@
     <ph name="LINE_BREAK1"/>
     <ph name="BEGIN_LINK"/>Google 드라이브<ph name="END_LINK"/>로 백업할 준비가 되었습니다.</translation>
 <translation id="2677924368525077324">터치 기반 텍스트 편집 사용</translation>
-<translation id="3909535143686058220">캐시 생성 기계 코드</translation>
 <translation id="9213566138414731677"><ph name="WALLET_ERROR"/> 하지만 Google Payments를 사용하지 않고 이 거래를 완료할 수 있습니다.</translation>
 <translation id="4680322106555328717">최근에 스크립트나 iframe 등의 안전하지 않은 콘텐츠가 사이트에서 실행되도록 허용했습니다.</translation>
 <translation id="283669119850230892">네트워크 <ph name="NETWORK_ID"/>을(를) 사용하려면 먼저 아래에서 인터넷 연결을 완료합니다.</translation>
@@ -5019,7 +5012,6 @@
 <translation id="7339763383339757376">PKCS #7, 단일 인증서</translation>
 <translation id="7587108133605326224">발트어</translation>
 <translation id="3340978935015468852">설정</translation>
-<translation id="3930208863636674029">캐시 파싱 데이터</translation>
 <translation id="3581912141526548234">실행(해시를 가져 오려고 시도하며 가져오면 실행함)</translation>
 <translation id="1974371662733320303">메모리 삭제 전략을 사용합니다.</translation>
 <translation id="3991936620356087075">잘못된 PIN 잠금해제 키를 너무 많이 입력했습니다. SIM 카드가 영구적으로 사용 중지되었습니다.</translation>

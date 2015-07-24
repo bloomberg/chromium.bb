@@ -621,6 +621,7 @@
 <translation id="8713570323158206935">Gửi <ph name="BEGIN_LINK1"/>thông tin hệ thống<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Lỗi tải xuống</translation>
 <translation id="5941343993301164315">Vui lòng đăng nhập vào <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Cập nhật quyền</translation>
 <translation id="1046059554679513793">Rất tiếc, tên này đã được sử dụng!</translation>
 <translation id="5868571107634815419">Tắt Chỉnh sửa ngoại tuyến đối với Tài liệu, Trang tính và Trang trình bày</translation>
 <translation id="1351692861129622852">Đang nhập <ph name="FILE_COUNT"/> tệp...</translation>
@@ -747,7 +748,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="5759728514498647443">Tài liệu bạn gửi để in qua <ph name="APP_NAME"/> có thể đọc được bằng <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ứng dụng hiện không được hỗ trợ trên thiết bị này, nhưng các kỹ sư Chrome đang làm việc tích cực để ứng dụng này sớm hoạt động.</translation>
 <translation id="3273410961255278341">Gửi cho:</translation>
-<translation id="4255096080864111471">Chỉ định hình xếp tối đa cho khu vực yêu thích.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="6567688344210276845">Không thể tải biểu tượng '<ph name="ICON"/>' cho tác vụ trang.</translation>
@@ -1695,7 +1695,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="4811502511369621968">Địa chỉ email không hợp lệ. Vui lòng kiểm tra và thử lại.</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
 <translation id="8602851771975208551">Một chương trình khác trên máy tính của bạn đã thêm một ứng dụng có thể thay đổi cách Chrome hoạt động.</translation>
-<translation id="9154967591629748964">Phóng to hình xếp đối với khu vực yêu thích</translation>
 <translation id="2655386581175833247">Chứng chỉ người dùng:</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5435964418642993308">Nhấn enter để quay trở lại, phím menu ngữ cảnh để xem lịch sử</translation>
@@ -1868,7 +1867,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1901377140875308934">Đăng nhập vào <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Hình nền hiện tại do '<ph name="APP_NAME"/>' đặt</translation>
 <translation id="5074318175948309511">Có thể cần phải tải lại trang này trước khi cài đặt mới có hiệu lực.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Không có lựa chọn nào</translation>
 <translation id="6405640832764359650">Bật hộp kiểm lưu thẻ Google Payments</translation>
 <translation id="1346104802985271895">Phương pháp nhập tiếng Việt (TELEX)</translation>
@@ -1894,7 +1892,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="4821086771593057290">Mật khẩu của bạn đã thay đổi. Vui lòng thử lại bằng mật khẩu mới của bạn.</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN"/> có thể bị quản trị viên của bạn chặn.</translation>
 <translation id="2509739495444557741">Chưa cài đặt plugin nào.</translation>
-<translation id="6731638353631257659">Chế độ lưu vào bộ nhớ cache V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 Với Mã hóa RSA</translation>
 <translation id="7767646430896201896">Tùy chọn:</translation>
 <translation id="526926484727016706">Khiến tất cả iframe bị từ chối mọi quyền theo mặc định. Quá trình cho phép các quyền cụ thể cho iframe có thể liên quan đến việc liệt kê tên của các quyền này dưới dạng giá trị của thuộc tính iframe mới.</translation>
@@ -2022,7 +2019,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="6589706261477377614">Tăng độ sáng của phím</translation>
 <translation id="1367951781824006909">Chọn tệp</translation>
 <translation id="2897815155851085655">T&amp;rợ giúp và giới thiệu</translation>
-<translation id="1425127764082410430">&amp;Tìm kiếm <ph name="SEARCH_ENGINE"/> cho '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Đánh thức khỏi chế độ rảnh</translation>
 <translation id="8075539548641175231">Dữ liệu của bạn đã được mã hóa với cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME"/>. Vui lòng nhập cụm mật khẩu đó dưới đây.</translation>
 <translation id="2077084898869955643">Tự động báo cáo với Google chi tiết về các sự cố bảo mật có thể xảy ra. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2129,7 +2125,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2031695690821674406">Điền mật khẩu khi tài khoản được người dùng chọn một cách rõ ràng chứ không tự động điền thông tin đăng nhập khi tải trang.</translation>
 <translation id="5834581999798853053">Còn khoảng <ph name="TIME"/> phút</translation>
 <translation id="7839809549045544450">Máy chủ có chứa khóa công cộng yếu và tạm thời của Diffie-Hellman</translation>
-<translation id="5515806255487262353">Tra Từ điển</translation>
 <translation id="5154383699530644092">Bạn có thể thêm máy in vào máy tính bằng cách nhấp vào nút &quot;Thêm máy in&quot;
         bên dưới. Nếu bạn không có máy in nào để thêm, bạn vẫn có thể lưu
         một bản PDF hoặc lưu vào Google Drive.</translation>
@@ -3067,7 +3062,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="3121793941267913344">Đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME"/> này</translation>
 <translation id="4188026131102273494">Từ khóa:</translation>
 <translation id="2930644991850369934">Đã xảy ra sự cố trong quá trình tải xuống hình ảnh khôi phục. Kết nối mạng đã bị mất.</translation>
-<translation id="6891622577412956611">Chế độ xem mosaic</translation>
 <translation id="8150722005171944719">Không thể đọc được tệp tại <ph name="URL"/>.  Tệp này có thể đã bị xóa, di chuyển hoặc quyền tệp có thể đang chặn truy cập.</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="994901932508062332">Tháng vừa qua</translation>
@@ -3439,7 +3433,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
     <ph name="LINE_BREAK1"/>
     Sẵn sàng sao lưu vào <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Bật tính năng chỉnh sửa văn bản dựa trên cảm ứng</translation>
-<translation id="3909535143686058220">Mã công cụ do bộ nhớ cache tạo.</translation>
 <translation id="9213566138414731677">Rất tiếc, <ph name="WALLET_ERROR"/> Bạn có thể hoàn tất giao dịch này mà không cần dùng Google Payments.</translation>
 <translation id="4680322106555328717">Gần đây, bạn đã cho phép nội dung không an toàn (như tập lệnh hoặc iframe) chạy trên trang web này.</translation>
 <translation id="283669119850230892">Để sử dụng mạng <ph name="NETWORK_ID"/>, trước hết hãy hoàn tất kết nối Internet của bạn ở bên dưới.</translation>
@@ -5027,7 +5020,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="7339763383339757376">PKCS #7, chứng chỉ đơn</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="3340978935015468852">cài đặt</translation>
-<translation id="3930208863636674029">Dữ liệu phân tích cú pháp bộ nhớ cache.</translation>
 <translation id="3581912141526548234">Thực thi (cố gắng có được nội dung băm và thực thi chúng nếu thành công)</translation>
 <translation id="1974371662733320303">Chiến lược hủy bộ nhớ sẽ sử dụng</translation>
 <translation id="3991936620356087075">Bạn đã nhập Khóa mở mã PIN không chính xác quá nhiều lần. Thẻ SIM của bạn đã bị vô hiệu hóa vĩnh viễn.</translation>

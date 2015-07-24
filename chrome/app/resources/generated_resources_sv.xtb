@@ -623,6 +623,7 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="8713570323158206935">Skicka <ph name="BEGIN_LINK1"/>systeminformation<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Nedladdningsfel</translation>
 <translation id="5941343993301164315">Logga in på <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Uppdatera behörigheter</translation>
 <translation id="1046059554679513793">Det här namnet används redan!</translation>
 <translation id="5868571107634815419">Inaktivera Redigering av Office-filer i Dokument, Kalkylark och Presentationer</translation>
 <translation id="1351692861129622852">Importerar <ph name="FILE_COUNT"/> filer …</translation>
@@ -749,7 +750,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="5759728514498647443">Dokument som du skickar till utskrift via <ph name="APP_NAME"/> kan läsas av <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Den här appen stöds för närvarande inte på den här enheten, men tomtenissarna i Chrome-verkstaden arbetar flitigt med att få det att fungera snart.</translation>
 <translation id="3273410961255278341">Skicka för:</translation>
-<translation id="4255096080864111471">Ange maximalt antal paneler för intresseområdet.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="6567688344210276845">Det gick inte att läsa in ikonen <ph name="ICON"/> för sidåtgärden.</translation>
@@ -1695,7 +1695,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="4811502511369621968">Ogiltig e-postadress. Kontrollera den och försök igen.</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="8602851771975208551">Ett annat program i datorn har lagt till en app som kan ändra hur Chrome fungerar.</translation>
-<translation id="9154967591629748964">Maximalt antal paneler för intresseområdet.</translation>
 <translation id="2655386581175833247">Användarcertifikat:</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5435964418642993308">Tryck på Retur om du vill gå bakåt och på snabbmenyn om du vill visa historiken</translation>
@@ -1867,7 +1866,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="1901377140875308934">Logga in i <ph name="SHORT_PRODUCT_NAME"/> ...</translation>
 <translation id="5529098031581368697">Den aktuella bakgrunden har angetts av <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Den här sidan kan behöva läsas in igen innan den nya inställningen börjar gälla.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Inget val</translation>
 <translation id="6405640832764359650">Aktivera kryssrutan för att spara kort i Google Payments</translation>
 <translation id="1346104802985271895">Vietnamesisk inmatningsmetod (TELEX)</translation>
@@ -1892,7 +1890,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="4821086771593057290">Lösenordet har ändrats. Försök igen med ditt nya lösenord.</translation>
 <translation id="6080696365213338172">Du har visat innehåll med hjälp av ett certifikat från en administratör. Det innebär att data som du har angett på <ph name="DOMAIN"/> även kan visas av administratören.</translation>
 <translation id="2509739495444557741">Inga pluginprogram har installerats.</translation>
-<translation id="6731638353631257659">V8-cacheläge.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 med RSA-kryptering</translation>
 <translation id="7767646430896201896">Alternativ:</translation>
 <translation id="526926484727016706">Leder till att iframe nekas behörighet som standardinställning. Om du tillåter särskilda behörigheter för en iframe kan detta innebära att namnen på dessa behörigheter anges som värden för nya iframe-attribut.</translation>
@@ -2020,7 +2017,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="6589706261477377614">Öka tangenternas ljusstyrka</translation>
 <translation id="1367951781824006909">Välj fil</translation>
 <translation id="2897815155851085655">H&amp;jälp och information</translation>
-<translation id="1425127764082410430">&amp;Sök i <ph name="SEARCH_ENGINE"/> efter &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Antal gånger som systemets vänteprocess har väckts</translation>
 <translation id="8075539548641175231">Dina data har krypterats med din lösenfras för synkronisering den <ph name="TIME"/>. Ange den nedan.</translation>
 <translation id="2077084898869955643">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2126,7 +2122,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="2031695690821674406">Fyller i lösenord när ett konto har valts av användaren i stället för att användaruppgifterna fylls i automatiskt vid inläsning av sidan.</translation>
 <translation id="5834581999798853053">Ca <ph name="TIME"/> minuter kvar</translation>
 <translation id="7839809549045544450">Serverns tillfälliga offentliga Diffie-Hellman-nyckel är svag.</translation>
-<translation id="5515806255487262353">Slå upp i Google Ordbok</translation>
 <translation id="5154383699530644092">Du kan lägga till skrivare i datorn genom att klicka på knappen Lägg till en skrivare
         nedan. Om du inte har några skrivare som du kan lägga till kan du ändå spara
         en PDF eller spara i Google Drive.</translation>
@@ -3057,7 +3052,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="3121793941267913344">Återställ den här <ph name="IDS_SHORT_PRODUCT_NAME"/>-enheten</translation>
 <translation id="4188026131102273494">Sökord:</translation>
 <translation id="2930644991850369934">Det uppstod ett problem när återställningsavbildningen laddades ned. Nätverksanslutningen avbröts.</translation>
-<translation id="6891622577412956611">Mosaikvy</translation>
 <translation id="8150722005171944719">Det går inte att läsa filen på <ph name="URL"/>. Den kan ha tagits bort eller flyttats, eller så krävs behörighet för att få åtkomst till den.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="994901932508062332">Senaste månaden</translation>
@@ -3427,7 +3421,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
     <ph name="LINE_BREAK1"/>
     Klar att säkerhetskopiera till <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Aktivera tryckbaserad textredigering</translation>
-<translation id="3909535143686058220">Cachegenererad maskinkod.</translation>
 <translation id="9213566138414731677">Hoppsan, <ph name="WALLET_ERROR"/> Du kan slutföra transaktionen utan Google Payments.</translation>
 <translation id="4680322106555328717">Du har nyligen tillåtit osäkert innehåll (t.ex. skript eller iframe) att köras på den här webbplatsen.</translation>
 <translation id="283669119850230892">För att kunna använda nätverket <ph name="NETWORK_ID"/> måste du först ansluta till Internet nedan.</translation>
@@ -5018,7 +5011,6 @@ hanteraren
 <translation id="7339763383339757376">PKCS #7, enstaka certifikat</translation>
 <translation id="7587108133605326224">Baltiskt</translation>
 <translation id="3340978935015468852">inställningar</translation>
-<translation id="3930208863636674029">Cachelagra tolkningsdata.</translation>
 <translation id="3581912141526548234">Tvingande (försök hämta kondensat och kräv att de används om hämtningen lyckas)</translation>
 <translation id="1974371662733320303">Minnesrensningsstrategi som ska användas</translation>
 <translation id="3991936620356087075">Du har angett fel PIN-upplåsningsnyckel för många gånger. SIM-kortet är permanent inaktiverat.</translation>

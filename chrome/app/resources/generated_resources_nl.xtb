@@ -626,6 +626,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>Systeemgegevens<ph name="END_LINK1"/> verzenden</translation>
 <translation id="727952162645687754">Downloadfout</translation>
 <translation id="5941343993301164315">Log in bij <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Rechten updaten</translation>
 <translation id="1046059554679513793">Deze naam wordt al gebruikt.</translation>
 <translation id="5868571107634815419">Office-bewerkingen uitschakelen voor Documenten, Spreadsheets en Presentaties</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> bestanden importeren...</translation>
@@ -751,7 +752,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="5759728514498647443">Documenten die je via <ph name="APP_NAME"/> verzendt om af te drukken, kunnen door <ph name="APP_NAME"/> worden gelezen.</translation>
 <translation id="2401053206567162910">Deze app wordt momenteel niet ondersteund op dit apparaat, maar de Chrome-kabouters werken er hard aan dit binnenkort mogelijk te maken.</translation>
 <translation id="3273410961255278341">Verzenden voor:</translation>
-<translation id="4255096080864111471">Hiermee geef je het maximum aantal tegels voor het interessegebied op.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
 <translation id="6567688344210276845">Kan pictogram '<ph name="ICON"/>' voor pagina-actie niet laden.</translation>
@@ -1700,7 +1700,6 @@ Resterende tijd berekenen</translation>
 <translation id="4811502511369621968">Ongeldig e-mailadres. Controleer het adres en probeer het opnieuw.</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
 <translation id="8602851771975208551">Een ander programma op je computer heeft een app toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>
-<translation id="9154967591629748964">Maximum aantal tegels voor interessegebied</translation>
 <translation id="2655386581175833247">Gebruikerscertificaat:</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5435964418642993308">Druk op Enter om terug te gaan. Druk op de knop van het contextmenu om de geschiedenis te bekijken</translation>
@@ -1873,7 +1872,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="1901377140875308934">Inloggen op <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Huidige achtergrond is ingesteld door '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Deze pagina moet eventueel opnieuw worden geladen voordat de nieuwe instellingen van kracht zijn.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Geen selectie</translation>
 <translation id="6405640832764359650">Selectievakje voor het opslaan van Google Payments-kaarten inschakelen</translation>
 <translation id="1346104802985271895">Vietnamese invoermethode (TELEX)</translation>
@@ -1899,7 +1897,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="4821086771593057290">Je wachtwoord is gewijzigd. Probeer het opnieuw met je nieuwe wachtwoord.</translation>
 <translation id="6080696365213338172">Je hebt toegang tot inhoud gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN"/>, kunnen door je beheerder worden onderschept.</translation>
 <translation id="2509739495444557741">Er zijn geen plug-ins geïnstalleerd.</translation>
-<translation id="6731638353631257659">V8-cachingmodus.</translation>
 <translation id="7075513071073410194">PKCS nr. 1 MD5 met RSA-encryptie</translation>
 <translation id="7767646430896201896">Opties:</translation>
 <translation id="526926484727016706">Hiermee worden alle rechten voor iframes standaard afgewezen. Voor het toestaan van bepaalde rechten voor een iframe moeten de namen van deze rechten mogelijk als waarden van nieuwe iframe-kenmerken worden vermeld.</translation>
@@ -2027,7 +2024,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="6589706261477377614">Helderheid van het toetsenbord verhogen</translation>
 <translation id="1367951781824006909">Een bestand selecteren</translation>
 <translation id="2897815155851085655">H&amp;elp en over</translation>
-<translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/> door&amp;zoeken op '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Activeringen vanuit inactief</translation>
 <translation id="8075539548641175231">Je gegevens zijn op <ph name="TIME"/> versleuteld met je wachtwoordzin voor synchronisatie. Geef deze hieronder op.</translation>
 <translation id="2077084898869955643">Automatisch informatie over mogelijke beveiligingsincidenten aan Google melden. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2133,7 +2129,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="2031695690821674406">Wachtwoord invullen wanneer een account expliciet wordt geselecteerd door de gebruiker in plaats van inloggegevens automatisch aan te vullen wanneer de pagina wordt geladen.</translation>
 <translation id="5834581999798853053">Ongeveer <ph name="TIME"/> minuten resterend</translation>
 <translation id="7839809549045544450">Server bevat een slechte, kort geldige openbare Diffie-Hellman-sleutel</translation>
-<translation id="5515806255487262353">Zoek op in Woordenboek</translation>
 <translation id="5154383699530644092">Je kunt printers aan je computer toevoegen door op de onderstaande knop 'Een printer toevoegen' te klikken. Als je geen printers hebt om toe te voegen, kun je nog steeds een pdf opslaan of opslaan naar Google Drive.</translation>
 <translation id="2790805296069989825">Russisch toetsenbord</translation>
 <translation id="2916974515569113497">Als je deze optie inschakelt, krijgen elementen met een vaste positie hun eigen samengestelde lagen. Om dit te laten werken, moeten elementen met een vaste positie ook gestapelde contexten maken.</translation>
@@ -3064,7 +3059,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="3121793941267913344">Dit <ph name="IDS_SHORT_PRODUCT_NAME"/>-apparaat herstellen</translation>
 <translation id="4188026131102273494">Zoekwoord:</translation>
 <translation id="2930644991850369934">Er is een probleem opgetreden tijdens het downloaden van de herstelkopie. De netwerkverbinding is verbroken.</translation>
-<translation id="6891622577412956611">Mozaïekweergave</translation>
 <translation id="8150722005171944719">Het bestand op <ph name="URL"/> is onleesbaar. Het bestand is mogelijk verwijderd of verplaatst of de bestandsrechten zorgen ervoor dat het bestand niet kan worden geopend.</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
 <translation id="994901932508062332">Afgelopen maand</translation>
@@ -3441,7 +3435,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
     <ph name="LINE_BREAK1"/>
     Klaar om een back-up te maken in <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Tekstbewerking op basis van aanraken inschakelen</translation>
-<translation id="3909535143686058220">Door het cachegeheugen gegenereerde machinecode.</translation>
 <translation id="9213566138414731677">Oeps, <ph name="WALLET_ERROR"/> Je kunt deze transactie voltooien zonder Google Payments.</translation>
 <translation id="4680322106555328717">Je hebt onlangs toegestaan dat onveilige inhoud (zoals scripts of iframes) op deze site wordt uitgevoerd.</translation>
 <translation id="283669119850230892">Als je het netwerk <ph name="NETWORK_ID"/> wilt gebruiken, moet je eerst hieronder verbinding maken met internet.</translation>
@@ -5031,7 +5024,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="7339763383339757376">PKCS nr. 7, één certificaat</translation>
 <translation id="7587108133605326224">Baltisch</translation>
 <translation id="3340978935015468852">instellingen</translation>
-<translation id="3930208863636674029">Verwerkingsgegevens van cachegeheugen.</translation>
 <translation id="3581912141526548234">Afdwingen (probeer hashes te verkrijgen en dwing ze af indien geslaagd)</translation>
 <translation id="1974371662733320303">Te gebruiken strategie voor geheugenverwijdering</translation>
 <translation id="3991936620356087075">Je hebt te vaak een onjuiste ontgrendelingscode voor je pin opgegeven. Je simkaart is permanent uitgeschakeld.</translation>

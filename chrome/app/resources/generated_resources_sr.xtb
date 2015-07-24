@@ -618,6 +618,7 @@
 <translation id="8713570323158206935">Шаљи <ph name="BEGIN_LINK1"/>информације о систему<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Грешка при преузимању</translation>
 <translation id="5941343993301164315">Пријавите се на <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Ажурирај дозволе</translation>
 <translation id="1046059554679513793">Упс, овај назив се већ користи!</translation>
 <translation id="5868571107634815419">Онемогући Измене у Office-у за Документе, Табеле и Презентације</translation>
 <translation id="1351692861129622852">Увозе се датотеке (<ph name="FILE_COUNT"/>)...</translation>
@@ -743,7 +744,6 @@
 <translation id="5759728514498647443">Документе које шаљете на штампање преко <ph name="APP_NAME"/> може да чита <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ова апликација тренутно није подржана на овом уређају, али Chrome патуљци вредно раде да је ускоро поправе.</translation>
 <translation id="3273410961255278341">Пошаљи за:</translation>
-<translation id="4255096080864111471">Наведите максимални број плочица за област за интересовање.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Нова картица</translation>
 <translation id="6567688344210276845">Није могуће учитати икону „<ph name="ICON"/>“ за радњу странице.</translation>
@@ -1691,7 +1691,6 @@
 <translation id="4811502511369621968">Неважећа имејл адреса. Проверите и покушајте поново.</translation>
 <translation id="175196451752279553">П&amp;оново отвори затворену картицу</translation>
 <translation id="8602851771975208551">Други програм на рачунару је додао апликацију која може да промени начин на који Chrome функционише.</translation>
-<translation id="9154967591629748964">Максимални број плочица за област од интересовања</translation>
 <translation id="2655386581175833247">Сертификат корисника:</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5435964418642993308">Притисните enter да бисте се вратили, а тастер контекстуалног менија да бисте видели историју</translation>
@@ -1864,7 +1863,6 @@
 <translation id="1901377140875308934">Пријави ме на <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Актуелну позадину подешава „<ph name="APP_NAME"/>“</translation>
 <translation id="5074318175948309511">Можда треба поново да учитате ову страницу да би нова подешавања ступила на снагу.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Није изабрана ниједна ставка</translation>
 <translation id="6405640832764359650">Омогући поље за потврду за чување картице за Google Payments</translation>
 <translation id="1346104802985271895">Вијетнамски метод уноса (TELEX)</translation>
@@ -1884,7 +1882,6 @@
 <translation id="4821086771593057290">Лозинка је промењена. Покушајте поново са новом лозинком.</translation>
 <translation id="6080696365213338172">Приступали сте садржају помоћу сертификата који је обезбедио администратор. Администратор може да пресретне податке које обезбедите домену <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Није инсталирана ниједна додатна компонента.</translation>
-<translation id="6731638353631257659">Режим кеширања за V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 са RSA шифровањем</translation>
 <translation id="7767646430896201896">Опције:</translation>
 <translation id="526926484727016706">Доводи до тога да све дозволе за све iframe-ове буду подразумевано одбијене. Ако омогућите одређене дозволе за iframe, то може да подразумева навођење назива тих дозвола као вредности за нове iframe атрибуте.</translation>
@@ -2010,7 +2007,6 @@
 <translation id="6589706261477377614">Повећавање осветљености тастера</translation>
 <translation id="1367951781824006909">Изабери датотеку</translation>
 <translation id="2897815155851085655">П&amp;омоћ и основни подаци</translation>
-<translation id="1425127764082410430">&amp;Претражи „<ph name="SEARCH_TERMS"/>“ на <ph name="SEARCH_ENGINE"/> претраживачу</translation>
 <translation id="1187722533808055681">Буђења из стања мировања</translation>
 <translation id="8075539548641175231">Подаци су шифровани помоћу приступне фразе за синхронизацију <ph name="TIME"/>. Унесите је у наставку.</translation>
 <translation id="2077084898869955643">Аутоматски пријави Google-у детаље о могућим безбедносним инцидентима. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2120,7 +2116,6 @@
 <translation id="2031695690821674406">Попуњавање лозинки када је налог изричито изабран од стране корисника уместо аутоматског попуњавања акредитива при учитавању странице.</translation>
 <translation id="5834581999798853053">Остало је око <ph name="TIME"/> минута</translation>
 <translation id="7839809549045544450">Привремена Diffie-Hellman јавна шифра сервера је слаба</translation>
-<translation id="5515806255487262353">Потражи у речнику</translation>
 <translation id="5154383699530644092">Можете да додате штампаче на рачунар кликом на дугме „Додај штампач“
           у наставку. Ако немате штампаче за додавање, моћи ћете да сачувате
           PDF локално или на Google диску.</translation>
@@ -3056,7 +3051,6 @@
 <translation id="3121793941267913344">Ресетовање овог <ph name="IDS_SHORT_PRODUCT_NAME"/> уређаја</translation>
 <translation id="4188026131102273494">Кључна реч:</translation>
 <translation id="2930644991850369934">Дошло је до проблема при преузимању слике за обнављање. Прекинута је веза са мрежом.</translation>
-<translation id="6891622577412956611">Мозаички приказ</translation>
 <translation id="8150722005171944719">Датотека на адреси <ph name="URL"/> не може да се чита. Можда је уклоњена или премештена или дозволе за датотеке спречавају приступ.</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="994901932508062332">Претходни месец</translation>
@@ -3428,7 +3422,6 @@
     <ph name="LINE_BREAK1"/>
     Све је спремно за прављење резервних копија на <ph name="BEGIN_LINK"/>Google диску<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Омогући измену текста засновану на додиру</translation>
-<translation id="3909535143686058220">Машински кôд генерисан из кеша.</translation>
 <translation id="9213566138414731677">Упс, <ph name="WALLET_ERROR"/> Можете да довршите ову трансакцију без Google Payments-а.</translation>
 <translation id="4680322106555328717">Недавно сте дозволили покретање небезбедног садржаја (попут скрипта или iframe-ова) на овом сајту.</translation>
 <translation id="283669119850230892">Да бисте користили мрежу <ph name="NETWORK_ID"/>, најпре успоставите везу са интернетом у наставку.</translation>
@@ -5015,7 +5008,6 @@
 <translation id="7339763383339757376">PKCS #7, један сертификат</translation>
 <translation id="7587108133605326224">балтички</translation>
 <translation id="3340978935015468852">подешавања</translation>
-<translation id="3930208863636674029">Подаци о рашчлањивању кеша.</translation>
 <translation id="3581912141526548234">Спровођење (покушајте да добијете хешеве и спроводите их ако успете)</translation>
 <translation id="1974371662733320303">Стратегија пражњења меморије која ће се користити</translation>
 <translation id="3991936620356087075">Много пута сте унели нетачну шифру за откључавање PIN-а. Ваша SIM картица је трајно онемогућена.</translation>

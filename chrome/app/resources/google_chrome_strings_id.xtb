@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="8437332772351535342">Meluncurkan kembali dalam mode Desktop akan ditutup dan meluncurkan kembali aplikasi Chrome Anda.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
+<translation id="7788788617745289808">Chrome memerlukan akses kamera untuk berbagi dengan situs ini.</translation>
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
 <translation id="7054640471403081847">Komputer ini akan segera berhenti menerima pembaruan Google Chrome karena perangkat kerasnya tidak didukung lagi.</translation>
@@ -59,6 +60,7 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
+<translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS"/>. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="4513711165509885787">Detail penagihan Anda telah disimpan di Chrome.</translation>
 <translation id="5253588388888612165">Jika Anda membagikan komputer ini dengan <ph name="PROFILE_NAME"/>, tambahkan diri Anda ke Chrome untuk menjelajah secara terpisah. Jika tidak, putuskan dari Akun Google-nya.</translation>
@@ -90,6 +92,7 @@
 <translation id="6368958679917195344">Chrome OS terwujud karena <ph name="BEGIN_LINK_CROS_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
 <translation id="5799551393681493217">Mengaktifkan alur masuk Chrome berbasis iframe. Tanda ini menggantikan pengaktifan opsi masuk berbasis web.</translation>
 <translation id="7459554271817304652">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Google Chrome di komputer mana pun.</translation>
+<translation id="6012342843556706400">Chrome memerlukan akses lokasi untuk berbagi dengan situs ini.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
 <translation id="4424024547088906515">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN"/>; sertifikat keamanannya tidak dipercaya oleh Chrome. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
@@ -98,6 +101,7 @@
   dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chrome menghentikan sambungan sebelum data apa pun dipertukarkan.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="2576431527583832481">Chrome jadi semakin baik! Versi baru telah tersedia.</translation>
+<translation id="423410644998903704">Chrome memerlukan akses izin untuk berbagi dengan situs ini.</translation>
 <translation id="4633000520311261472">Agar Chrome lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum pada <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="3656661827369545115">Meluncurkan Chromium secara otomatis saat komputer Anda dimulai</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN"/>; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>

@@ -616,6 +616,7 @@ Esto puede deberse a que tu cortafuegos o software antivirus haya considerado er
 <translation id="8713570323158206935">Enviar <ph name="BEGIN_LINK1"/>información del sistema<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Error de descarga</translation>
 <translation id="5941343993301164315">Inicia sesión en <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Actualizar permisos</translation>
 <translation id="1046059554679513793">¡Vaya! Este nombre ya está en uso.</translation>
 <translation id="5868571107634815419">Inhabilitar Office Editing para Documentos, Hojas de Cálculo y Presentaciones de Google</translation>
 <translation id="1351692861129622852">Importando <ph name="FILE_COUNT"/> archivos...</translation>
@@ -742,7 +743,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME"/> puede leer los documentos que envías para imprimirse a través de <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Esta aplicación no se admite actualmente en este dispositivo, pero los gnomos de Chrome están trabajando para que puedas utilizarla lo antes posible.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
-<translation id="4255096080864111471">Permite especificar el número máximo de mosaicos del área de interés.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="6567688344210276845">No se ha podido cargar el icono &quot;<ph name="ICON"/>&quot; para la acción de la página.</translation>
@@ -1688,7 +1688,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME"/> p
 <translation id="4811502511369621968">La dirección de correo electrónico no es válida. Compruébala y vuelve a intentarlo.</translation>
 <translation id="175196451752279553">Volv&amp;er a abrir pestaña cerrada</translation>
 <translation id="8602851771975208551">Otro programa de tu ordenador ha añadido una aplicación que puede cambiar el funcionamiento de Chrome.</translation>
-<translation id="9154967591629748964">Número máximo de mosaicos del área de interés</translation>
 <translation id="2655386581175833247">Certificado usuario:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Pulsa Intro para volver atrás y la tecla del menú contextual para ver el historial</translation>
@@ -1860,7 +1859,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="1901377140875308934">Iniciar sesión en <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697"><ph name="APP_NAME"/> ha establecido el fondo de pantalla actual</translation>
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Ninguna red seleccionada</translation>
 <translation id="6405640832764359650">Habilitar casilla de verificación para guardar tarjetas de Google Payments</translation>
 <translation id="1346104802985271895">Método de entrada de vietnamita (Telex)</translation>
@@ -1885,7 +1883,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="4821086771593057290">Se ha modificado tu contraseña. Intenta acceder de nuevo con la nueva contraseña.</translation>
 <translation id="6080696365213338172">Has accedido al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN"/> pueden ser interceptados por tu administrador.</translation>
 <translation id="2509739495444557741">No se han instalado complementos.</translation>
-<translation id="6731638353631257659">Modo de almacenamiento en caché V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 con cifrado RSA</translation>
 <translation id="7767646430896201896">Opciones:</translation>
 <translation id="526926484727016706">Provoca que se denieguen todos los permisos para los iframes de forma predeterminada. Si se conceden permisos particulares para un iframe, es posible que haya que incluir los nombres de esos permisos como valores de los atributos de los nuevos iframe.</translation>
@@ -2013,7 +2010,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="6589706261477377614">Aumentar brillo de teclado</translation>
 <translation id="1367951781824006909">Selecciona un archivo</translation>
 <translation id="2897815155851085655">Información y ayu&amp;da</translation>
-<translation id="1425127764082410430">Bu&amp;scar '<ph name="SEARCH_TERMS"/>' con <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">Activación inactiva</translation>
 <translation id="8075539548641175231">Tus datos se encriptaron con tu frase de contraseña de sincronización el <ph name="TIME"/>. Debes introducir esa frase a continuación.</translation>
 <translation id="2077084898869955643">Enviar a Google automáticamente información sobre posibles incidentes de seguridad. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2114,7 +2110,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="2031695690821674406">Completa las contraseñas cuando el usuario selecciona explícitamente una cuenta en lugar de autocompletar las credenciales al cargar la página.</translation>
 <translation id="5834581999798853053">Unos <ph name="TIME"/> minutos</translation>
 <translation id="7839809549045544450">El servidor dispone de una clave pública Diffie-Hellman efímera débil</translation>
-<translation id="5515806255487262353">Buscar en el diccionario</translation>
 <translation id="5154383699530644092">Para añadir impresoras a tu ordenador, haz clic en el botón &quot;Añadir una impresora&quot; que aparece a continuación. Si no tienes ninguna impresora que añadir, puedes guardar tus documentos como archivos PDF o usar Google Drive.</translation>
 <translation id="2790805296069989825">Teclado ruso</translation>
 <translation id="2916974515569113497">Al habilitar esta opción, se permitirá que los elementos de posición fija tengan sus propias capas compuestas. Ten en cuenta que los elementos de posición fija también deben crear contextos de apilamiento para que esto funcione.</translation>
@@ -3041,7 +3036,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="3121793941267913344">Restablece este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Palabra clave:</translation>
 <translation id="2930644991850369934">Se ha producido un error durante la descarga de la imagen de recuperación. Se ha perdido la conexión de red.</translation>
-<translation id="6891622577412956611">Vista de mosaico</translation>
 <translation id="8150722005171944719">El archivo que se encuentra en <ph name="URL"/> no se puede leer. Puede que se haya eliminado o movido o que los permisos del archivo impidan acceder a él.</translation>
 <translation id="2316129865977710310">No, gracias</translation>
 <translation id="994901932508062332">Mes pasado</translation>
@@ -3411,7 +3405,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
     <ph name="LINE_BREAK1"/>
     Ya se puede hacer la copia de seguridad en <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Habilitar edición de texto con toques</translation>
-<translation id="3909535143686058220">Código generado automáticamente en caché.</translation>
 <translation id="9213566138414731677">¡Vaya! <ph name="WALLET_ERROR"/> Puedes completar la transacción sin utilizar Google Payments.</translation>
 <translation id="4680322106555328717">Has permitido recientemente que se ejecute contenido no seguro (por ejemplo, secuencias de comandos o iframes) en este sitio web.</translation>
 <translation id="283669119850230892">Para utilizar la red <ph name="NETWORK_ID"/>, primero debes establecer la conexión a Internet que se especifica a continuación.</translation>
@@ -4998,7 +4991,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="7339763383339757376">Certificado único PKCS #7</translation>
 <translation id="7587108133605326224">Báltico</translation>
 <translation id="3340978935015468852">configuración</translation>
-<translation id="3930208863636674029">Datos de análisis de caché.</translation>
 <translation id="3581912141526548234">Modo de aplicación (intenta obtener hashes y los aplica si los obtiene)</translation>
 <translation id="1974371662733320303">La estrategia de prescindencia de memoria que se debe utilizar</translation>
 <translation id="3991936620356087075">Has introducido el código PIN de desbloqueo demasiadas veces. Tu tarjeta SIM se ha inhabilitado permanentemente.</translation>

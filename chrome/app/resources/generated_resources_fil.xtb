@@ -619,6 +619,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="8713570323158206935">Ipadala ang <ph name="BEGIN_LINK1"/>impormasyon ng system<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Error sa pag-download</translation>
 <translation id="5941343993301164315">Mangyaring mag-sign in sa <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">I-update ang mga pahintulot</translation>
 <translation id="1046059554679513793">Naku, ginagamit na ang pangalang ito!</translation>
 <translation id="5868571107634815419">I-disable ang Office Editing para sa Docs, Sheets at Slides</translation>
 <translation id="1351692861129622852">Nag-i-import ng <ph name="FILE_COUNT"/> (na) file...</translation>
@@ -745,7 +746,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="5759728514498647443">Ang mga dokumentong ipinadadala mo upang i-print sa pamamagitan ng <ph name="APP_NAME"/> ay maaaring buksan ng <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Kasalukuyang hindi sinusuportahan ang app na ito sa device na ito ngunit nagsusumikap nang mabuti ang mga gnome ng Chrome upang mapagana ito sa lalong madaling panahon.</translation>
 <translation id="3273410961255278341">Magpadala para sa:</translation>
-<translation id="4255096080864111471">Tukuyin ang maximum na mga tile para sa lugar ng interes.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Bagong tab</translation>
 <translation id="6567688344210276845">Maaaring hindi mai-load ang icon '<ph name="ICON"/>' para sa pagkilos sa pahina.</translation>
@@ -1694,7 +1694,6 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="4811502511369621968">Di-wasto ang email address. Pakitingnan at subukang muli.</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="8602851771975208551">Ang isa pang program sa iyong computer ay nagdagdag ng app na maaaring magpabago sa paraan ng paggana ng Chrome.</translation>
-<translation id="9154967591629748964">Maximum na mga tile para sa lugar ng interes</translation>
 <translation id="2655386581175833247">Certificate ng user:</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5435964418642993308">Pindutin ang enter upang bumalik, key ng menu ng konteksto upang makita ang kasaysayan</translation>
@@ -1867,7 +1866,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="1901377140875308934">Mag-sign in sa <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Ang kasalukuyang wallpaper ay itinakda ng '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Maaaring kailangan na muling i-load ang page na ito bago gumana ang mga bagong setting.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Walang pagpipilian</translation>
 <translation id="6405640832764359650">I-enable ang checkbox para sa pagse-save ng Google Payments card</translation>
 <translation id="1346104802985271895">Paraan ng pag-input na Vietnamese (TELEX)</translation>
@@ -1893,7 +1891,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="4821086771593057290">Nabago ang iyong password. Pakisubukang muli gamit ang iyong bagong password.</translation>
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Walang naka-install na mga plugin.</translation>
-<translation id="6731638353631257659">V8 caching mode.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 na May RSA Encryption</translation>
 <translation id="7767646430896201896">Mga Pagpipilian:</translation>
 <translation id="526926484727016706">Nagsasanhi ng hindi pagbibigay ng lahat ng pahintulot sa lahat ng iframe bilang default. Ang pagpayag sa ilang partikular na pahintulot para sa isang iframe ay maaaring magsangkot ng paglilista sa mga pangalan ng mga pahintulot na ito bilang mga value ng mga bagong attribute ng iframe.</translation>
@@ -2021,7 +2018,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="6589706261477377614">Dagdagan ang brightness ng key</translation>
 <translation id="1367951781824006909">Pumili ng isang file</translation>
 <translation id="2897815155851085655">T&amp;ulong at tungkol sa</translation>
-<translation id="1425127764082410430">&amp;Paghahanap <ph name="SEARCH_ENGINE"/> para sa '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Mga idle na pag-wake up</translation>
 <translation id="8075539548641175231">Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name="TIME"/>. Pakilagay ito sa ibaba.</translation>
 <translation id="2077084898869955643">Awtomatikong iulat sa Google ang mga detalye ng mga posibleng isyu sa seguridad. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2130,7 +2126,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2031695690821674406">Pupunan ang mga password kapag malinaw na pinili ng user ang isang account sa halip na i-autofill ang mga kredensyal kapag na-load ang page.</translation>
 <translation id="5834581999798853053">Mga <ph name="TIME"/> (na) minuto ang natitira</translation>
 <translation id="7839809549045544450">May mahinang ephemeral na pampublikong key ng Diffie-Hellman ang server</translation>
-<translation id="5515806255487262353">Tingnan sa Diksyunaryo</translation>
 <translation id="5154383699530644092">Maaari kang magdagdag ng mga printer sa iyong computer sa pamamagitan ng pag-click sa button na &quot;Magdagdag ng printer&quot;
           sa ibaba. Kung wala kang mga printer na idaragdag, magagawa mo pa ring mag-save
           ng PDF o mag-save sa Google Drive.</translation>
@@ -3064,7 +3059,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="3121793941267913344">I-reset ang <ph name="IDS_SHORT_PRODUCT_NAME"/> device na ito</translation>
 <translation id="4188026131102273494">Keyword:</translation>
 <translation id="2930644991850369934">Nagkaproblema habang dina-download ang larawan ng pagbawi. Nawala ang koneksyon sa network.</translation>
-<translation id="6891622577412956611">Mosaic na view</translation>
 <translation id="8150722005171944719">Hindi nababasa ang file sa <ph name="URL"/>. Maaaring ito ay naalis, nalipat, o maaaring pinipigilan ng mga pagpapahintulot ng file ang access.</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="994901932508062332">Nakaraang Buwan</translation>
@@ -3435,7 +3429,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
     <ph name="LINE_BREAK1"/>
     Handa nang i-backup sa <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Paganahin ang pag-edit ng teksto gamit ang pagpindot</translation>
-<translation id="3909535143686058220">Nabuo ng cache na machine code.</translation>
 <translation id="9213566138414731677">Oops, <ph name="WALLET_ERROR"/> Makukumpleto mo ang transaksyong ito nang hindi gumagamit ng Google Payments.</translation>
 <translation id="4680322106555328717">Nagpahintulot ka kamakailan ng hindi ligtas na content (gaya ng mga script o iframe) upang patakbuhin sa site na ito.</translation>
 <translation id="283669119850230892">Upang gamitin ang network na <ph name="NETWORK_ID"/>, kumpletuhin muna ang iyong koneksyon sa Internet sa ibaba.</translation>
@@ -5029,7 +5022,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7339763383339757376">PKCS #7, isahang certificate</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="3340978935015468852">mga setting</translation>
-<translation id="3930208863636674029">Data ng nagsusuri ng cache.</translation>
 <translation id="3581912141526548234">Ipatupad (subukang makakuha ng mga hash, at ipatupad ang mga ito kung matagumpay)</translation>
 <translation id="1974371662733320303">Diskarteng gagamitin sa pagdi-discard ng memory</translation>
 <translation id="3991936620356087075">Ipinasok mo ang maling PIN Unlocking Key nang masyadong maraming beses. Permanente nang hindi gumagana ang iyong SIM card.</translation>

@@ -600,6 +600,7 @@
 <translation id="8713570323158206935">发送<ph name="BEGIN_LINK1"/>系统信息<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">下载错误</translation>
 <translation id="5941343993301164315">请登录 <ph name="TOKEN_NAME"/>。</translation>
+<translation id="1359381790106966506">更新权限</translation>
 <translation id="1046059554679513793">糟糕，此名称已有人使用！</translation>
 <translation id="5868571107634815419">停用Google文档、表格和幻灯片的Office编辑扩展程序</translation>
 <translation id="1351692861129622852">正在导入 <ph name="FILE_COUNT"/> 个文件…</translation>
@@ -725,7 +726,6 @@
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME"/>”发送以进行打印的文档可由“<ph name="APP_NAME"/>”读取。</translation>
 <translation id="2401053206567162910">目前此设备不支持该应用，但 Chrome Gnomes 正设法解决这一问题，使该应用能够尽快在此设备上顺利运行。</translation>
 <translation id="3273410961255278341">发送用途：</translation>
-<translation id="4255096080864111471">指定关注区域的图块数上限。</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="6567688344210276845">无法加载网页操作的“<ph name="ICON"/>”图标。</translation>
@@ -1668,7 +1668,6 @@
 <translation id="4811502511369621968">电子邮件地址无效。请进行检查，然后重试。</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="8602851771975208551">您计算机上的其他程序添加了一个应用，该应用可能会改变 Chrome 的工作方式。</translation>
-<translation id="9154967591629748964">关注区域的图块数上限</translation>
 <translation id="2655386581175833247">用户证书：</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5435964418642993308">按 Enter 键即可返回，按右键菜单键即可查看历史记录</translation>
@@ -1839,7 +1838,6 @@
 <translation id="1901377140875308934">登录到 <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">当前壁纸是由“<ph name="APP_NAME"/>”设置的</translation>
 <translation id="5074318175948309511">您可能需要重新加载此页面，才能使新设置生效。</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">未选择</translation>
 <translation id="6405640832764359650">显示用于指定是否保存 Google Payments 卡数据的复选框</translation>
 <translation id="1346104802985271895">越南语输入法 (TELEX)</translation>
@@ -1858,7 +1856,6 @@
 <translation id="4821086771593057290">您的密码已更改。请使用新密码重试。</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN"/> 的数据。</translation>
 <translation id="2509739495444557741">未安装任何插件。</translation>
-<translation id="6731638353631257659">V8 缓存模式。</translation>
 <translation id="7075513071073410194">PKCS #1，带有 RSA 加密的 MD5</translation>
 <translation id="7767646430896201896">选项：</translation>
 <translation id="526926484727016706">启用此项后，默认情况下，将不会向任何 iframe 授予任何权限。如果要向某个 iframe 授予特定权限，可能需要将相应权限的名称指定为新 iframe 属性的值。</translation>
@@ -1985,7 +1982,6 @@
 <translation id="6589706261477377614">提高键盘亮度</translation>
 <translation id="1367951781824006909">选择文件</translation>
 <translation id="2897815155851085655">帮助和简介(&amp;E)</translation>
-<translation id="1425127764082410430">用 <ph name="SEARCH_ENGINE"/> 搜索“<ph name="SEARCH_TERMS"/>”(&amp;S)</translation>
 <translation id="1187722533808055681">闲置状态唤醒</translation>
 <translation id="8075539548641175231">您的数据已于 <ph name="TIME"/>使用您的同步密码加密，请在下方输入该密码。</translation>
 <translation id="2077084898869955643">自动向Google报告可能出现的安全事件详情。<ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2089,7 +2085,6 @@
 <translation id="2031695690821674406">在用户明确选择了帐户时填充密码，而不是在页面加载时自动填充凭据。</translation>
 <translation id="5834581999798853053">约剩 <ph name="TIME"/> 分钟</translation>
 <translation id="7839809549045544450">服务器的瞬时 Diffie-Hellman 公共密钥过弱</translation>
-<translation id="5515806255487262353">在字典中查找</translation>
 <translation id="5154383699530644092">通过点击下面的“添加打印机”按钮，您可以为计算机添加打印机。如果没有可添加的打印机，您可以保存PDF文件或保存到Google云端硬盘。</translation>
 <translation id="2790805296069989825">俄语键盘</translation>
 <translation id="2916974515569113497">启用此选项会向固定位置的元素赋予其自己的合成层。请注意，固定位置的元素还必须创建堆叠环境才能让此选项生效。</translation>
@@ -3017,7 +3012,6 @@
 <translation id="3121793941267913344">重置这台<ph name="IDS_SHORT_PRODUCT_NAME"/>设备</translation>
 <translation id="4188026131102273494">关键字：</translation>
 <translation id="2930644991850369934">下载恢复映像时出现问题。网络连接已断开。</translation>
-<translation id="6891622577412956611">拼接视图</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL"/> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="994901932508062332">上个月</translation>
@@ -3387,7 +3381,6 @@
     <ph name="LINE_BREAK1"/>
     可以开始备份到 <ph name="BEGIN_LINK"/>Google 云端硬盘<ph name="END_LINK"/>了</translation>
 <translation id="2677924368525077324">启用触摸式文字修改功能</translation>
-<translation id="3909535143686058220">缓存生成的机器代码。</translation>
 <translation id="9213566138414731677">糟糕，<ph name="WALLET_ERROR"/>您可以在不使用 Google Payments 的情况下完成此交易。</translation>
 <translation id="4680322106555328717">您最近已允许在此网站上运行不安全的内容（如脚本或 iframe）。</translation>
 <translation id="283669119850230892">要使用网络“<ph name="NETWORK_ID"/>”，请先在下方连接互联网。</translation>
@@ -4967,7 +4960,6 @@
 <translation id="7339763383339757376">PKCS #7，单一证书</translation>
 <translation id="7587108133605326224">波罗的海周边语言</translation>
 <translation id="3340978935015468852">设置</translation>
-<translation id="3930208863636674029">缓存解析数据。</translation>
 <translation id="3581912141526548234">强制实施模式（可尝试获得哈希值，并在成功后强制实施）</translation>
 <translation id="1974371662733320303">要使用的内存抛弃策略</translation>
 <translation id="3991936620356087075">PIN 解锁密钥输入错误次数过多。您的 SIM 卡已遭到永久停用。</translation>

@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="8437332772351535342">A reinicialização no modo de ambiente de trabalho fecha e reinicia as aplicações do Chrome.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver atualmente em execução, feche-o e tente de novo.</translation>
+<translation id="7788788617745289808">O Chrome necessita de acesso à câmara para a partilhar com este site.</translation>
 <translation id="3080151273017101988">Continuar a executar aplicações em segundo plano quando o Google Chrome está fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira de novo o Google Chrome.</translation>
 <translation id="7054640471403081847">Este computador deixará de receber em breve atualizações do Google Chrome porque o seu hardware já não é suportado.</translation>
@@ -59,6 +60,7 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK"/> do Google Chrome</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="1393853151966637042">Obter ajuda para utilizar o Chrome</translation>
+<translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS"/>. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="4513711165509885787">Os seus detalhes de faturação foram guardados no Chrome.</translation>
 <translation id="5253588388888612165">Se partilha este computador com <ph name="PROFILE_NAME"/>, adicione-se ao Chrome para navegar em separado. Caso contrário, desassocie a Conta Google do outro utilizador.</translation>
@@ -90,6 +92,7 @@
 <translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="5799551393681493217">Ativa os fluxos de início de sessão do Chrome baseados em iframe. Este sinalizador substitui inícios de sessão baseados na Web.</translation>
 <translation id="7459554271817304652">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Google Chrome em qualquer computador.</translation>
+<translation id="6012342843556706400">O Chrome necessita de acesso à localização para a partilhar com este site.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
@@ -97,6 +100,7 @@
 <translation id="5618769508111928343">O <ph name="SITE"/> normalmente utiliza a encriptação para proteger as suas informações. Quando o Chrome tentou ligar-se a <ph name="SITE"/> desta vez, o Website devolveu credenciais invulgares e incorretas. É possível que um utilizador mal intencionado esteja a tentar simular ser <ph name="SITE"/> ou que um ecrã de início de sessão Wi-Fi tenha interrompido a ligação. As suas informações ainda estão seguras, porque o Chrome interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
+<translation id="423410644998903704">O Chrome necessita de acesso às autorizações para as partilhar com este site.</translation>
 <translation id="4633000520311261472">Para tornar o Chrome mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
 <translation id="3656661827369545115">Iniciar automaticamente o Chromium quando o computador arranca</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>

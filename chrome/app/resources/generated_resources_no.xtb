@@ -614,6 +614,7 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1"/>systeminformasjon<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Nedlastingsfeil</translation>
 <translation id="5941343993301164315">Logg på <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Oppdater tillatelser</translation>
 <translation id="1046059554679513793">Dette navnet er allerede i bruk!</translation>
 <translation id="5868571107634815419">Deaktiver Office-redigering for Dokumenter, Regneark og Presentasjoner</translation>
 <translation id="1351692861129622852">Importerer <ph name="FILE_COUNT"/> filer ...</translation>
@@ -739,7 +740,6 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="5759728514498647443">Dokumenter du sender til utskrift via <ph name="APP_NAME"/>, kan leses av <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Denne appen støttes foreløpig ikke på denne enheten, men Chrome-gjengen jobber hardt for å få den til å fungere snart.</translation>
 <translation id="3273410961255278341">Send til:</translation>
-<translation id="4255096080864111471">Angi maks antall paneler for interesseområdet.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="6567688344210276845">Kan ikke laste inn ikonet «<ph name="ICON"/>» for sidehandling.</translation>
@@ -1685,7 +1685,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="4811502511369621968">Ugyldig e-postadresse. Sjekk den og prøv på nytt.</translation>
 <translation id="175196451752279553">Gj&amp;enåpne den lukkede fanen</translation>
 <translation id="8602851771975208551">Et annet program på datamaskinen la til en app som kan endre måten Chrome fungerer på.</translation>
-<translation id="9154967591629748964">Maks antall paneler for interesseområde</translation>
 <translation id="2655386581175833247">Brukersertifikat:</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5435964418642993308">Trykk på Enter for å gå tilbake, eller hurtigmenyknappen for å se på loggen</translation>
@@ -1855,7 +1854,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="1901377140875308934">Logg på <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="5529098031581368697">Gjeldende bakgrunn er angitt av «<ph name="APP_NAME"/>»</translation>
 <translation id="5074318175948309511">Du må kanskje laste inn denne siden på nytt for at innstillingene skal bli gjeldende.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Ingen valgt</translation>
 <translation id="6405640832764359650">Slå på avmerkingsboksen for lagring av Google Payments-kort</translation>
 <translation id="1346104802985271895">Vietnamesisk inndatametode (TELEX)</translation>
@@ -1875,7 +1873,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="4821086771593057290">Passordet er endret. Prøv på nytt med ditt nye passord.</translation>
 <translation id="6080696365213338172">Du har åpnet innhold via et administratorlevert sertifikat. Data du sender til <ph name="DOMAIN"/> kan stoppes av administratoren din.</translation>
 <translation id="2509739495444557741">Ingen programtillegg er installert.</translation>
-<translation id="6731638353631257659">Modus for V8-bufring.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 med RSA-kryptering</translation>
 <translation id="7767646430896201896">Alternativer:</translation>
 <translation id="526926484727016706">Gjør at alle iframes som standard blir nektet alle tillatelser. Hvis du gir en iframe spesifikke tillatelser, kan det hende at navnene på disse tillatelsene listes opp som verdier for nye iframe-attributter.</translation>
@@ -2003,7 +2000,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="6589706261477377614">Øk lysstyrke for taster</translation>
 <translation id="1367951781824006909">Velg en fil</translation>
 <translation id="2897815155851085655">H&amp;jelp og informasjon</translation>
-<translation id="1425127764082410430">&amp;Søk på <ph name="SEARCH_ENGINE"/> etter «<ph name="SEARCH_TERMS"/>»</translation>
 <translation id="1187722533808055681">Inaktive oppvåkninger</translation>
 <translation id="8075539548641175231">Dataene dine ble kryptert med passordfrasen din <ph name="TIME"/>. Skriv den inn nedenfor.</translation>
 <translation id="2077084898869955643">Rapportér detaljer om mulige sikkerhetsbrudd til Google automatisk. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2112,7 +2108,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="2031695690821674406">Inntasting av passord når en konto er uttrykkelig valgt av brukeren i stedet for autoutfylling av påloggingsinformasjon under innlasting av siden.</translation>
 <translation id="5834581999798853053">Omtrent <ph name="TIME"/> minutter igjen</translation>
 <translation id="7839809549045544450">Tjeneren har en feil midlertidig Diffie-Hellman-nøkkel</translation>
-<translation id="5515806255487262353">Slå opp i ordbok</translation>
 <translation id="5154383699530644092">Du kan legge skrivere til datamaskinen ved å klikke på «Legg til skriver»-knappen nedenfor. Hvis du ikke har noen skrivere å legge til, kan du fortsatt lagre en PDF-fil eller lagre i Google Disk.</translation>
 <translation id="2790805296069989825">Russisk tastatur</translation>
 <translation id="2916974515569113497">Ved å aktivere dette alternativet får elementer med faste posisjoner sine egne sammensatte lag. Vær oppmerksom på at elementene også må opprette stablingskontekst for at dette skal fungere.</translation>
@@ -3042,7 +3037,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="3121793941267913344">Tilbakestill denne <ph name="IDS_SHORT_PRODUCT_NAME"/>-enheten</translation>
 <translation id="4188026131102273494">Søkeord:</translation>
 <translation id="2930644991850369934">Det oppstod et problem under nedlasting av gjenopprettingsbilde. Nettverkstilkoblingen ble brutt.</translation>
-<translation id="6891622577412956611">Mosaikkvisning</translation>
 <translation id="8150722005171944719">Kunne ikke lese filen på <ph name="URL"/> Den kan ha blitt fjernet eller flyttet. Det kan også være filtillatelser som forhindrer tilgang.</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="994901932508062332">Den siste måneden</translation>
@@ -3412,7 +3406,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
     <ph name="LINE_BREAK1"/>
     Klar til å sikkerhetskopiere til <ph name="BEGIN_LINK"/>Google Disk<ph name="END_LINK"/>.</translation>
 <translation id="2677924368525077324">Aktiver berøringsbasert tekstredigering</translation>
-<translation id="3909535143686058220">Buffergenerert maskinkode.</translation>
 <translation id="9213566138414731677">Beklager, men <ph name="WALLET_ERROR"/>. Du kan gjennomføre denne transaksjonen uten Google Payments.</translation>
 <translation id="4680322106555328717">Du har nylig gitt tillatelse til at usikkert innhold (for eksempel skript eller iframes) kan kjøre på dette nettstedet.</translation>
 <translation id="283669119850230892">Fullfør tilkoblingen til Internett nedenfor for å bruke nettverket <ph name="NETWORK_ID"/>.</translation>
@@ -4995,7 +4988,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7339763383339757376">PKCS #7, enkelt sertifikat</translation>
 <translation id="7587108133605326224">Baltisk</translation>
 <translation id="3340978935015468852">innstillinger</translation>
-<translation id="3930208863636674029">Buffer som analyserer data</translation>
 <translation id="3581912141526548234">Håndhev (prøv å få hash-samsvar, og håndhev de du får)</translation>
 <translation id="1974371662733320303">Minneforkastingsstrategien som skal brukes.</translation>
 <translation id="3991936620356087075">Du har angitt feil opplåsingskode for mange ganger. SIM-kortet er permanent deaktivert.</translation>

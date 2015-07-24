@@ -611,6 +611,7 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="8713570323158206935">Pošalji <ph name="BEGIN_LINK1"/>informacije o sustavu<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Pogreška preuzimanja</translation>
 <translation id="5941343993301164315">Prijavite se na <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Ažuriraj dopuštenja</translation>
 <translation id="1046059554679513793">Ups, to je ime već u upotrebi!</translation>
 <translation id="5868571107634815419">Onemogućivanje Office Editinga za Dokumente, Tablice i Prezentacije</translation>
 <translation id="1351692861129622852">Uvoz datoteka (<ph name="FILE_COUNT"/>)...</translation>
@@ -732,7 +733,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="5759728514498647443">Dokumente koje šaljete za ispis putem aplikacije <ph name="APP_NAME"/> može čitati aplikacija <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ova aplikacija trenutačno nije podržana na ovom uređaju, ali patuljci u Chromeu vrijedno rade na rješavanju tog slučaja.</translation>
 <translation id="3273410961255278341">Prima:</translation>
-<translation id="4255096080864111471">Odredi maksimalan broj razlomljenih elemenata za područje interesa.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nova kartica</translation>
 <translation id="6567688344210276845">Nije uspjelo učitavanje ikone &quot;<ph name="ICON"/>&quot; za radnju stranice.</translation>
@@ -1677,7 +1677,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="4811502511369621968">E-adresa nije važeća. Provjerite i pokušajte ponovo.</translation>
 <translation id="175196451752279553">P&amp;onovo otvori zatvorenu karticu</translation>
 <translation id="8602851771975208551">Drugi program na vašem računalu dodao je aplikaciju koja može promijeniti način na koji radi Chrome.</translation>
-<translation id="9154967591629748964">Maksimalan broj razlomljenih elemenata za područje interesa</translation>
 <translation id="2655386581175833247">Korisnički certifikat:</translation>
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="5435964418642993308">Pritisnite tipku Enter za povratak ili tipku kontekstnog izbornika da biste vidjeli povijest</translation>
@@ -1849,7 +1848,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="1901377140875308934">Prijava na uslugu <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Trenutačnu pozadinu postavila je aplikacija &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Ovu stranicu možda će biti potrebno ponovo učitati kako bi nove postavke stupile na snagu.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Bez odabira</translation>
 <translation id="6405640832764359650">Omogući potvrdni okvir za spremanje kartice Google Paymentsa</translation>
 <translation id="1346104802985271895">Vijetnamski način unosa (TELEX)</translation>
@@ -1874,7 +1872,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="4821086771593057290">Vaša je zaporka promijenjena. Pokušajte ponovno s novom.</translation>
 <translation id="6080696365213338172">Pristupili ste sadržaju pomoću certifikata koji je izdao administrator. Administrator može presresti podatke koje dostavljate domeni <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Nije instaliran nijedan dodatak.</translation>
-<translation id="6731638353631257659">Način predmemoriranja V8.</translation>
 <translation id="7075513071073410194">PKCS br. 1 MD5 s RSA enkripcijom</translation>
 <translation id="7767646430896201896">Opcije:</translation>
 <translation id="526926484727016706">Prema zadanim postavkama odbija sva dopuštenja za sve iframeove. Odobravanje određenih dopuštenja za određeni iframe može uključivati navođenje naziva tih dopuštenja kao vrijednosti atributa novog iframea.</translation>
@@ -2002,7 +1999,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6589706261477377614">Povećanje svjetline tipke</translation>
 <translation id="1367951781824006909">Odaberite datoteku</translation>
 <translation id="2897815155851085655">P&amp;omoć i informacije</translation>
-<translation id="1425127764082410430">&amp;Pretraži <ph name="SEARCH_ENGINE"/> za &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Buđenja iz stanja mirovanja</translation>
 <translation id="8075539548641175231">Vaši su podaci šifrirani vašom zaporkom za sinkronizaciju dana <ph name="TIME"/>. Unesite je u nastavku.</translation>
 <translation id="2077084898869955643">Automatski prijavi Googleu pojedinosti o mogućim sigurnosnim incidentima. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2108,7 +2104,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="2031695690821674406">Popunjavanje zaporki kada korisnik izričito odabere račun, a ne automatsko popunjavanje vjerodajnica prilikom učitavanja stranice.</translation>
 <translation id="5834581999798853053">Preostalo je oko <ph name="TIME"/> min</translation>
 <translation id="7839809549045544450">Poslužitelj ima slab efemerni Diffie-Hellman javni ključ</translation>
-<translation id="5515806255487262353">Potražite u rječniku</translation>
 <translation id="5154383699530644092">Možete dodati pisače na svoje računalo klikom na gumb &quot;Dodaj pisač&quot; u
         nastavku. Ako nemate pisače koje želite dodati, moći ćete i dalje
         spremiti PDF ili spremiti dokument na Google disk.</translation>
@@ -3033,7 +3028,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="3121793941267913344">Vraćanje uređaja <ph name="IDS_SHORT_PRODUCT_NAME"/> na zadano</translation>
 <translation id="4188026131102273494">Ključna riječ:</translation>
 <translation id="2930644991850369934">Došlo je do pogreške tijekom preuzimanja slike za oporavak sustava. Izgubljena je mrežna veza.</translation>
-<translation id="6891622577412956611">Prikaz mozaika</translation>
 <translation id="8150722005171944719">Datoteka na adresi <ph name="URL"/> nije čitljiva. Možda je uklonjena ili premještena ili dozvole datoteka sprječavaju pristup.</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="994901932508062332">Prošli mjesec</translation>
@@ -3403,7 +3397,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
     <ph name="LINE_BREAK1"/>
     Spremno za izradu sigurnosne kopije na <ph name="BEGIN_LINK"/>Google disku<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Omogući uređivanje teksta dodirom</translation>
-<translation id="3909535143686058220">Strojni kôd generiran u predmemoriji.</translation>
 <translation id="9213566138414731677">Ups, <ph name="WALLET_ERROR"/> Tu transakciju možete dovršiti bez Google Paymentsa.</translation>
 <translation id="4680322106555328717">Nedavno ste dopustili izvođenje nesigurnog sadržaja (kao što su skripte ili iframeovi) na ovoj web-lokaciji.</translation>
 <translation id="283669119850230892">Da biste upotrebljavali mrežu <ph name="NETWORK_ID"/>, prvo se povežite s internetom prema uputama u nastavku.</translation>
@@ -4988,7 +4981,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="7339763383339757376">PKCS br. 7, jedan certifikat</translation>
 <translation id="7587108133605326224">baltički</translation>
 <translation id="3340978935015468852">postavke</translation>
-<translation id="3930208863636674029">Podaci o analizi predmemorije.</translation>
 <translation id="3581912141526548234">Primjena (pokušaj dohvaćanja hash vrijednosti i njihova primjena ako dohvaćanje uspije)</translation>
 <translation id="1974371662733320303">Strategija odbacivanja memorije za upotrebu</translation>
 <translation id="3991936620356087075">Unijeli ste netočan ključ za otključavanje PIN-a previše puta. Vaša SIM kartica trajno je onemogućena.</translation>

@@ -49,6 +49,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="8437332772351535342">데스크톱 모드로 다시 실행하면 Chrome 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
+<translation id="7788788617745289808">이 사이트에 공유하려면 Chrome에 카메라 액세스 권한이 있어야 합니다.</translation>
 <translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="7054640471403081847">이 컴퓨터의 하드웨어가 더 이상 지원되지 않으므로 Chrome 업데이트가 곧 중단됩니다.</translation>
@@ -65,6 +66,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5204098752394657250">Chrome <ph name="TERMS_OF_SERVICE_LINK"/>서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="1393853151966637042">Chrome 사용에 대한 도움말</translation>
+<translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS"/>(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="4513711165509885787">결제 세부정보가 Chrome에 저장되었습니다.</translation>
 <translation id="5253588388888612165"><ph name="PROFILE_NAME"/>님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chrome에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
@@ -96,6 +98,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS"/>오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS"/>를 사용했습니다.</translation>
 <translation id="5799551393681493217">iframe 기반 Chrome 로그인 절차 사용(이 플래그는 웹 기반 로그인 사용보다 우선함)</translation>
 <translation id="7459554271817304652">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chrome에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
+<translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome이 이전 버전임</translation>
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
@@ -103,6 +106,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5618769508111928343"><ph name="SITE"/>은(는) 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. Chrome이 이번에 <ph name="SITE"/>에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 공격자가 <ph name="SITE"/>인 것처럼 가장하고 있거나 Wi-Fi 로그인 화면이 연결을 차단했기 때문일 수 있습니다. 데이터 교환이 이뤄지기 전에 Chrome에서 연결을 차단했기 때문에 사용자 정보는 안전합니다.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
+<translation id="423410644998903704">이 사이트에 공유하려면 Chrome에 액세스 권한이 있어야 합니다.</translation>
 <translation id="4633000520311261472">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="3656661827369545115">컴퓨터를 시작하면 Chromium 자동 실행</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>

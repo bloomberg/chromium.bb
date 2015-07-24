@@ -620,6 +620,7 @@
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1"/>systemoplysninger<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Downloadfejl</translation>
 <translation id="5941343993301164315">Log ind på <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Opdater tilladelser</translation>
 <translation id="1046059554679513793">Hov, dette navn er allerede i brug!</translation>
 <translation id="5868571107634815419">Deaktiver Office-redigering af dokumenter, regneark og præsentationer</translation>
 <translation id="1351692861129622852">Importerer <ph name="FILE_COUNT"/> filer...</translation>
@@ -746,7 +747,6 @@
 <translation id="5759728514498647443">De dokumenter, du sender til udskrift via <ph name="APP_NAME"/>, kan læses af <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Denne app understøttes ikke på denne enhed på nuværende tidspunkt, men Chrome-nisserne arbejder hårdt på snart at få den til at fungere.</translation>
 <translation id="3273410961255278341">Send ved:</translation>
-<translation id="4255096080864111471">Angiv det maksimale antal felter for interesseområdet.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="6567688344210276845">Ikonet '<ph name="ICON"/>' for sidehandling kunne ikke indlæses.</translation>
@@ -1690,7 +1690,6 @@ Beregner resterende tid</translation>
 <translation id="4811502511369621968">Ugyldig e-mailadresse. Kontrollér for fejl, og prøv igen.</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
 <translation id="8602851771975208551">Et andet program på din computer tilføjede en app, der kan ændre den måde, hvorpå Chrome fungerer.</translation>
-<translation id="9154967591629748964">Maksimalt antal felter for interesseområdet</translation>
 <translation id="2655386581175833247">Brugercertifikat:</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5435964418642993308">Tryk på Enter for at gå tilbage og på tasten for genvejsmenu for at se historik</translation>
@@ -1862,7 +1861,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="1901377140875308934">Log ind på <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Den nuværende baggrund er angivet af &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Det kan være nødvendigt at genindlæse siden, så de nye indstillinger kan træde i kraft.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Intet er valgt</translation>
 <translation id="6405640832764359650">Aktivér afkrydsningsfeltet til lagring af Google Payments-kort</translation>
 <translation id="1346104802985271895">Vietnamesisk indtastningsmetode (TELEX)</translation>
@@ -1888,7 +1886,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="4821086771593057290">Din adgangskode er ændret. Prøv igen med din nye adgangskode.</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN"/>, kan indhentes af din administrator.</translation>
 <translation id="2509739495444557741">Der er ikke installeret nogen plugins.</translation>
-<translation id="6731638353631257659">V8-cachetilstand.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 med RSA-kryptering</translation>
 <translation id="7767646430896201896">Indstillinger:</translation>
 <translation id="526926484727016706">Bevirker, at alle iframes som standard nægtes alle tilladelser. Hvis du vil godkende bestemte tilladelser for en iframe, er du muligvis nødt til at angive navnene på disse tilladelser som værdier af nye iframe-attributter.</translation>
@@ -2016,7 +2013,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="6589706261477377614">Forøg lysstyrken på tastaturet</translation>
 <translation id="1367951781824006909">Vælg en fil</translation>
 <translation id="2897815155851085655">Hjælp og om</translation>
-<translation id="1425127764082410430">&amp;Søg på <ph name="SEARCH_ENGINE"/> efter '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="1187722533808055681">Aktivering efter dvale</translation>
 <translation id="8075539548641175231">Dine data blev krypteret med din adgangssætning den <ph name="TIME"/>. Angiv den nedenfor.</translation>
 <translation id="2077084898869955643">Rapportér automatisk oplysninger om mulige sikkerhedsproblemer til Google. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2122,7 +2118,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2031695690821674406">Indtastning af adgangskoder, når en konto angives af brugeren, i stedet for automatisk indtastning af loginoplysningerne under sideindlæsning.</translation>
 <translation id="5834581999798853053">Omkring <ph name="TIME"/> minutter tilbage</translation>
 <translation id="7839809549045544450">Serveren har en svag midlertidig Diffie-Hellman-nøgle</translation>
-<translation id="5515806255487262353">Slå op i ordbog</translation>
 <translation id="5154383699530644092">Du kan føje printere til din computer ved at klikke på knappen &quot;Tilføj en printer&quot;
         nedenfor. Hvis du ikke skal tilføje en printer, kan du stadig gemme en PDF-fil eller gemme på Google Drev.</translation>
 <translation id="2790805296069989825">Russisk tastatur</translation>
@@ -3049,7 +3044,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="3121793941267913344">Nulstil denne <ph name="IDS_SHORT_PRODUCT_NAME"/>-enhed</translation>
 <translation id="4188026131102273494">Søgeord:</translation>
 <translation id="2930644991850369934">Der opstod et problem under download af genoprettelsesbilledet. Netværksforbindelsen er mistet.</translation>
-<translation id="6891622577412956611">Mosaikvisning</translation>
 <translation id="8150722005171944719">Filen i <ph name="URL"/> kan ikke læses. Den kan være blevet fjernet, flyttet, eller også forhindrer filtilladelser muligvis adgangen.</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="994901932508062332">Den seneste måned</translation>
@@ -3420,7 +3414,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
     <ph name="LINE_BREAK1"/>
     Klar til at sikkerhedskopiere til <ph name="BEGIN_LINK"/>Google Drev<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Aktivér tekstredigering ved tryk</translation>
-<translation id="3909535143686058220">Cachegenereret maskinkode.</translation>
 <translation id="9213566138414731677">Ups! <ph name="WALLET_ERROR"/> Du kan gennemføre denne transaktion uden Google Payments.</translation>
 <translation id="4680322106555328717">Du har for nylig givet usikkert indhold (som f.eks. scripts eller iframes) tilladelse til at køre på dette website.</translation>
 <translation id="283669119850230892">Hvis du vil bruge netværket <ph name="NETWORK_ID"/>, skal du først oprette forbindelse til internettet nedenfor.</translation>
@@ -5007,7 +5000,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7339763383339757376">PKCS #7, enkeltcertifikat</translation>
 <translation id="7587108133605326224">Baltisk</translation>
 <translation id="3340978935015468852">indstillinger</translation>
-<translation id="3930208863636674029">Cacheparsing af data.</translation>
 <translation id="3581912141526548234">Gennemtving (prøv at hente hashes, og gennemtving dem, hvis det lykkes)</translation>
 <translation id="1974371662733320303">Foreslået strategi for kassering af hukommelse</translation>
 <translation id="3991936620356087075">Du har angivet den forkert nøgle til oplåsning af pinkode for mange gange. Dit SIM-kort deaktiveres permanent.</translation>

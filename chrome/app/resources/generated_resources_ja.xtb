@@ -613,6 +613,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>システム情報<ph name="END_LINK1"/>を送信する</translation>
 <translation id="727952162645687754">ダウンロード エラー</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME"/> にログインしてください。</translation>
+<translation id="1359381790106966506">権限を更新</translation>
 <translation id="1046059554679513793">この名前は既に使用されています。</translation>
 <translation id="5868571107634815419">ドキュメント、スプレッドシート、スライドでの Office 編集を無効にする</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> 件のファイルをインポートしています...</translation>
@@ -739,7 +740,6 @@
 <translation id="5759728514498647443">「<ph name="APP_NAME"/>」を使用して印刷に送信したドキュメントは「<ph name="APP_NAME"/>」で読めます。</translation>
 <translation id="2401053206567162910">このアプリは現在このデバイスではサポートされていませんが、今後ご利用いただけるように取り組んでおります。</translation>
 <translation id="3273410961255278341">送信先:</translation>
-<translation id="4255096080864111471">対象領域の最大タイル数を指定します。</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="6567688344210276845">ページ操作のアイコン「<ph name="ICON"/>」を読み込むことができませんでした。</translation>
@@ -1685,7 +1685,6 @@
 <translation id="4811502511369621968">メール アドレスが無効です。確認してから、もう一度お試しください。</translation>
 <translation id="175196451752279553">閉じたタブを開く(&amp;R)</translation>
 <translation id="8602851771975208551">パソコン上の別のプログラムにより、Chrome の動作方法を変更する可能性のあるアプリが追加されました。</translation>
-<translation id="9154967591629748964">対象領域の最大タイル数</translation>
 <translation id="2655386581175833247">ユーザー証明書:</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5435964418642993308">Enter キーを押すと前に戻り、コンテキスト メニュー キーを押すと履歴が表示されます</translation>
@@ -1858,7 +1857,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> にログイン...</translation>
 <translation id="5529098031581368697">現在の壁紙は「<ph name="APP_NAME"/>」により設定されています</translation>
 <translation id="5074318175948309511">新しい設定を有効にするには、ページの再読み込みが必要な可能性があります。</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">未選択</translation>
 <translation id="6405640832764359650">Google ペイメント カードの保存チェックボックスを有効にする</translation>
 <translation id="1346104802985271895">ベトナム語の入力方法（TELEX）</translation>
@@ -1885,7 +1883,6 @@
 <translation id="4821086771593057290">パスワードが変更されました。新しいパスワードでもう一度お試しください。</translation>
 <translation id="6080696365213338172">管理者が提供する証明書を使用してコンテンツにアクセスしています。<ph name="DOMAIN"/> に提供するデータは管理者によって傍受される可能性があります。</translation>
 <translation id="2509739495444557741">プラグインはインストールされていません。</translation>
-<translation id="6731638353631257659">V8 キャッシュ モード。</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 with RSA 暗号化</translation>
 <translation id="7767646430896201896">オプション:</translation>
 <translation id="526926484727016706">すべての iframe ですべての権限が既定で拒否されます。iframe に対して特定の権限を許可した場合、その権限の名前が新しい iframe 属性の値として表示されることがあります。</translation>
@@ -2013,7 +2010,6 @@
 <translation id="6589706261477377614">キーの明るさを上げる</translation>
 <translation id="1367951781824006909">ファイルを選択</translation>
 <translation id="2897815155851085655">ヘルプと概要(&amp;E)</translation>
-<translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/> で「<ph name="SEARCH_TERMS"/>」を検索(&amp;S)</translation>
 <translation id="1187722533808055681">アイドル状態からの復帰</translation>
 <translation id="8075539548641175231">データは <ph name="TIME"/> に同期パスフレーズで暗号化されました。同期パスフレーズを入力してください。</translation>
 <translation id="2077084898869955643">セキュリティに関する事象についての詳細を Google に自動送信します。<ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2123,7 +2119,6 @@
 <translation id="2031695690821674406">ユーザーがアカウントを明示的に選択した場合に、ページの読み込み時に認証情報を自動入力するのではなくパスワードの入力を求めます。</translation>
 <translation id="5834581999798853053">あと約 <ph name="TIME"/> 分</translation>
 <translation id="7839809549045544450">サーバーは短い一時 Diffie-Hellman 公開鍵を使用しています</translation>
-<translation id="5515806255487262353">辞書を検索</translation>
 <translation id="5154383699530644092">下の [プリンタを追加] ボタンをクリックすると、パソコンにプリンタを
         追加できます。追加するプリンタがなくても PDF を保存したり
         Google ドライブに保存したりできます。</translation>
@@ -3055,7 +3050,6 @@
 <translation id="3121793941267913344">この <ph name="IDS_SHORT_PRODUCT_NAME"/> 搭載デバイスをリセットします</translation>
 <translation id="4188026131102273494">キーワード:</translation>
 <translation id="2930644991850369934">リカバリ イメージのダウンロード中に問題が発生しました。ネットワーク接続が切断されました。</translation>
-<translation id="6891622577412956611">モザイク モード</translation>
 <translation id="8150722005171944719"><ph name="URL"/> のファイルを読むことができません。削除されたか移動された可能性があります。ファイルに対するアクセス権がない場合もあります。</translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="994901932508062332">1 か月以内</translation>
@@ -3427,7 +3421,6 @@
     <ph name="LINE_BREAK1"/>
     <ph name="BEGIN_LINK"/>Google ドライブ<ph name="END_LINK"/>にバックアップできます</translation>
 <translation id="2677924368525077324">テキストのタップ編集を有効にする</translation>
-<translation id="3909535143686058220">生成されたマシンコードをキャッシュする。</translation>
 <translation id="9213566138414731677"><ph name="WALLET_ERROR"/>Google ペイメントを使わずにこの取引を完了できます。</translation>
 <translation id="4680322106555328717">最近このサイトで、保護されていないコンテンツ（スクリプトや iframe など）の実行を許可しました。</translation>
 <translation id="283669119850230892">ネットワーク <ph name="NETWORK_ID"/> を使用するには、まずインターネット接続を完了してください（下記参照）。</translation>
@@ -5015,7 +5008,6 @@
 <translation id="7339763383339757376">PKCS #7、単一の証明書</translation>
 <translation id="7587108133605326224">バルト語</translation>
 <translation id="3340978935015468852">設定</translation>
-<translation id="3930208863636674029">解析データをキャッシュする。</translation>
 <translation id="3581912141526548234">強制モード（ハッシュを取得できれば強制）</translation>
 <translation id="1974371662733320303">使用するメモリ破棄の方法</translation>
 <translation id="3991936620356087075">誤った PIN が一定回数以上入力されたため、SIM カードが完全に無効になりました。</translation>

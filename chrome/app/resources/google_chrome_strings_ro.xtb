@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="8437332772351535342">Repornirea în modul Desktop va închide și relansa aplicațiile Chrome.</translation>
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
+<translation id="7788788617745289808">Chrome are nevoie de acces la camera foto pentru a-l acorda acestui site.</translation>
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descarcă din nou Google Chrome.</translation>
 <translation id="7054640471403081847">În curând, acest computer nu va mai primi actualizări Google Chrome, deoarece hardware-ul său nu mai este acceptat.</translation>
@@ -59,6 +60,7 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Termeni și condiții<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="4743926867934016338">Acceptă și caută</translation>
 <translation id="1393853151966637042">Obțineți ajutor în legătură cu utilizarea Chrome</translation>
+<translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS"/>. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="4513711165509885787">Detaliile de facturare au fost salvate în Chrome.</translation>
 <translation id="5253588388888612165">Dacă folosești acest computer în comun cu <ph name="PROFILE_NAME"/>, adaugă-te în Chrome pentru a naviga separat. În caz contrar, deconectează Contul Google al celuilalt utilizator.</translation>
@@ -90,6 +92,7 @@
 <translation id="6368958679917195344">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS"/>software open source<ph name="END_LINK_CROS_OSS"/> suplimentar.</translation>
 <translation id="5799551393681493217">Activează fluxurile de conectare la Chrome bazate pe iframe. Acest marcaj înlocuiește --enable-web-based-signin.</translation>
 <translation id="7459554271817304652">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Google Chrome de pe orice computer.</translation>
+<translation id="6012342843556706400">Chrome are nevoie de acces la locație pentru a-l acorda acestui site.</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
 <translation id="8823341990149967727">Chrome nu este actualizat</translation>
 <translation id="4424024547088906515">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
@@ -97,6 +100,7 @@
 <translation id="5618769508111928343"><ph name="SITE"/> folosește în mod normal criptarea pentru a proteja informațiile tale. Când Chrome a încercat să se conecteze la <ph name="SITE"/> de această dată, site-ul a trimis înapoi date de conectare neobișnuite și incorecte. Fie un atacator pretinde că este <ph name="SITE"/>, fie un ecran de conectare Wi-Fi a întrerupt conectarea. Informațiile tale sunt încă în siguranță. Chrome a oprit conectarea înainte de transferul datelor.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="2576431527583832481">Chrome a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
+<translation id="423410644998903704">Chrome are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
 <translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="3656661827369545115">Chromium se lansează automat la pornirea computerului</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>

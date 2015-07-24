@@ -612,6 +612,7 @@
 <translation id="8713570323158206935">إرسال <ph name="BEGIN_LINK1"/>معلومات النظام<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">خطأ في التنزيل</translation>
 <translation id="5941343993301164315">الرجاء تسجيل الدخول إلى <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">تحديث الأذونات</translation>
 <translation id="1046059554679513793">عذرًا، هذا الاسم قيد الاستخدام فعلاً!</translation>
 <translation id="5868571107634815419">‏تعطيل تعديل Office للمستندات، والأوراق، والشرائح</translation>
 <translation id="1351692861129622852">جار استيراد ملفات <ph name="FILE_COUNT"/> ...</translation>
@@ -731,7 +732,6 @@
 <translation id="5759728514498647443">يمكن قراءة المستندات التي ترسلها إلى الطباعة عبر <ph name="APP_NAME"/> بواسطة <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">‏هذا التطبيق ليس متوافقًا حاليًا مع هذا الجهاز ولكن يسعى المختصون في Chrome جاهدين لجعله متوافقًا قريبًا.</translation>
 <translation id="3273410961255278341">الإرسال إلى:</translation>
-<translation id="4255096080864111471">حدد الحد الأقصى لعدد الأجزاء لمنطقة الاهتمامات.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="6567688344210276845">تعذر تحميل الرمز '<ph name="ICON"/>' لإجراء المتصفح.</translation>
@@ -1677,7 +1677,6 @@
 <translation id="4811502511369621968">عنوان بريد إلكتروني غير صالح. الرجاء التحقق وإعادة المحاولة.</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="8602851771975208551">‏أضاف برنامج آخر بجهاز الكمبيوتر تطبيقًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
-<translation id="9154967591629748964">الحد الأقصى لعدد الأجزاء لمنطقة الاهتمامات</translation>
 <translation id="2655386581175833247">شهادة المستخدم:</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5435964418642993308">‏اضغط على مفتاح enter للرجوع، ومفتاح قائمة السياقات لعرض السجلّ</translation>
@@ -1850,7 +1849,6 @@
 <translation id="1901377140875308934">تسجيل الدخول إلى <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">الخلفية الحالية من إعداد &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">قد تحتاج هذه الصفحة إلى إعادة التحميل قبل تنفيذ الإعدادات الجديدة.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">لم يتم التحديد</translation>
 <translation id="6405640832764359650">‏تمكين مربع اختيار حفظ Google Payments</translation>
 <translation id="1346104802985271895">‏أسلوب الإدخال الفيتنامي (TELEX)</translation>
@@ -1876,7 +1874,6 @@
 <translation id="4821086771593057290">تم تغيير كلمة المرور. الرجاء المحاولة مرة أخرى باستخدام كلمة مرورك الجديدة.</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">لم يتم تثبيت أي مكونات إضافية.</translation>
-<translation id="6731638353631257659">‏وضع التخزين المؤقت V8.</translation>
 <translation id="7075513071073410194">‏PKCS #1 MD5 مع تشفير RSA</translation>
 <translation id="7767646430896201896">الخيارات:</translation>
 <translation id="526926484727016706">‏يؤدي إلى رفض جميع أذونات أطر iFrame على نحو افتراضي. وقد يتضمن السماح لأذونات معينة لأحد إطارات iFrame إدراج أسماء هذه الأذونات كقيم لسمات إطار iFrame الجديد.</translation>
@@ -2004,7 +2001,6 @@
 <translation id="6589706261477377614">زيادة سطوع المفاتيح</translation>
 <translation id="1367951781824006909">اختيار ملف</translation>
 <translation id="2897815155851085655">الم&amp;ساعدة ونبذة عن</translation>
-<translation id="1425127764082410430">البح&amp;ث في <ph name="SEARCH_ENGINE"/> عن &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">عمليات التنشيط من الوضع بعيد</translation>
 <translation id="8075539548641175231">تم تشفير بياناتك باستخدام عبارة مرور المزامنة في <ph name="TIME"/>. الرجاء إدخالها أدناه.</translation>
 <translation id="2077084898869955643">‏إبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2111,7 +2107,6 @@
 <translation id="2031695690821674406">ملء كلمات المرور عند تحديد الحساب صراحةً من قبل المستخدم بدلاً من الملء التلقائي لبيانات الاعتماد عند تحميل الصفحة.</translation>
 <translation id="5834581999798853053">تتبقى <ph name="TIME"/> دقيقة تقريبًا</translation>
 <translation id="7839809549045544450">‏يحتوي الخادم على مفتاح عمومي Diffie-Hellman يومي ضعيف</translation>
-<translation id="5515806255487262353">بحث في القاموس</translation>
 <translation id="5154383699530644092">‏يمكنك إضافة طابعات إلى جهاز الكمبيوتر من خلال النقر على زر &quot;إضافة طابعة&quot;
         أدناه. إذا لم يكن لديك أي طابعات لإضافتها، فسيظل بمقدورك حفظ
         ملف PDF أو الحفظ إلى Google Drive.</translation>
@@ -3030,7 +3025,6 @@
 <translation id="3121793941267913344">إعادة تعيين جهاز <ph name="IDS_SHORT_PRODUCT_NAME"/> هذا</translation>
 <translation id="4188026131102273494">الكلمة المفتاحية:</translation>
 <translation id="2930644991850369934">حدثت مشكلة أثناء تنزيل ملف الاستعادة. حيث فُقد الاتصال بالشبكة.</translation>
-<translation id="6891622577412956611">عرض الفسيفساء</translation>
 <translation id="8150722005171944719">الملف الموجود على <ph name="URL"/> غير قابل للقراءة. ربما تمت إزالته، أو ربما تكون أذونات الملف هي التي تمنع الدخول.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="994901932508062332">الشهر الماضي</translation>
@@ -3403,7 +3397,6 @@
     <ph name="LINE_BREAK1"/>
     جاهز لإجراء نسخ احتياطي في <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">تمكين تعديل النص المستند إلى اللمس</translation>
-<translation id="3909535143686058220">أنشأت ذاكرة التخزين المؤقت شفرة الجهاز.</translation>
 <translation id="9213566138414731677">‏عفوًا، <ph name="WALLET_ERROR"/> يمكنك إكمال هذه المعاملة بدون استخدام Google Payments.</translation>
 <translation id="4680322106555328717">‏لقد سمحت مؤخرًا بتشغيل محتوى غير آمن على هذا الموقع (مثل النصوص البرمجية أو إطارات iFrame).</translation>
 <translation id="283669119850230892">لاستخدام الشبكة <ph name="NETWORK_ID"/>، أكمل أولاً اتصالك بالإنترنت أدناه.</translation>
@@ -4358,6 +4351,7 @@
 <translation id="884923133447025588">لم يتمّ العثور على أي آلبة إبطال.</translation>
 <translation id="8830796635868321089">أخفق البحث عن التحديثات باستخدام إعدادات الخادم الوكيل الحالية. الرجاء ضبط <ph name="PROXY_SETTINGS_LINK_START"/>إعدادات الخادم الوكيل<ph name="PROXY_SETTINGS_LINK_END"/>.</translation>
 <translation id="7801746894267596941">‏لا يمكن لأحد قراءة بياناتك المشفّرة سوى من يعرف عبارة المرور؛ حيث إنه لا يتم إرسال عبارة المرور إلى Google ولا يتم تخزينها لديها. إذا نسيت عبارة المرور، فسيلزمك</translation>
+<translation id="5967271952920681214">https://passwords.google.com/?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="9218350802691534808">تمكين الإظهار مع أول عملية رسم للتطبيقات.</translation>
 <translation id="5771849619911534867">تم إيقاف فحص الجهاز.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -4987,7 +4981,6 @@
 <translation id="7339763383339757376">‏حفظ شهادة واحدة بتشفير PKCS #7</translation>
 <translation id="7587108133605326224">البلطيقيّة</translation>
 <translation id="3340978935015468852">الإعدادات</translation>
-<translation id="3930208863636674029">بيانات تحليل ذاكرة التخزين المؤقت.</translation>
 <translation id="3581912141526548234">الفرض (محاولة الحصول على علامات تجزئة، وفرضها في حالة نجاحها)</translation>
 <translation id="1974371662733320303">إستراتيجية تجاهل الذاكرة للاستخدام</translation>
 <translation id="3991936620356087075">‏لقد أدخلت مفتاحًا غير صحيح لإلغاء تأمين رقم التعريف الشخصي عدد مرات أكثر من المسموح بها. وقد تم تعطيل شريحة SIM نهائيًا.</translation>

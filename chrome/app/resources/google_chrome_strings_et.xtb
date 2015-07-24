@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="8437332772351535342">Töölauarežiimis taaskäivitamine suleb ja taaskäivitab teie Chrome'i rakendused.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
+<translation id="7788788617745289808">Chrome vajab selle saidiga jagamiseks juurdepääsu kaamerale.</translation>
 <translation id="3080151273017101988">Jätka taustal olevate rakenduste tööd, kui Google Chrome on suletud</translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="7054640471403081847">See arvuti ei saa enam peagi Google Chrome'i värskendusi, kuna selle riistvara ei toetata enam.</translation>
@@ -61,6 +62,7 @@
 <translation id="5204098752394657250">Google Chrome'i <ph name="TERMS_OF_SERVICE_LINK"/>teenusetingimused<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="4743926867934016338">Nõustun, otsi</translation>
 <translation id="1393853151966637042">Hankige abi Chrome'i kasutamise kohta</translation>
+<translation id="1061441684050139317">Chrome vajab selle saidiga jagamiseks juurdepääsu mikrofonile.</translation>
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS"/>. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="4513711165509885787">Teie arvelduse detailid on salvestatud Chrome'i.</translation>
 <translation id="5253588388888612165">Kui jagate seda arvutit kasutajaga <ph name="PROFILE_NAME"/>, lisage ennast Chrome'i, et saaksite eraldi sirvida. Muidu katkestage ühendus nende Google'i kontoga.</translation>
@@ -92,6 +94,7 @@
 <translation id="6368958679917195344">Chrome OS on võimalik tänu <ph name="BEGIN_LINK_CROS_OSS"/>avatud lähtekoodiga lisatarkvarale<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="5799551393681493217">Lubab iframe-põhised Chrome'i sisselogimisvood. See märgistus tühistab käsu --enable-web-based-signin.</translation>
 <translation id="7459554271817304652">Seadistage sünkroonimine, et salvestada brauseri isikupärastatud funktsioonid veebi, misjuhul pääsete Google Chrome'i kaudu igast arvutist nende juurde.</translation>
+<translation id="6012342843556706400">Chrome vajab selle saidiga jagamiseks juurdepääsu asukohale.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome on aegunud</translation>
 <translation id="4424024547088906515">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN"/>, Chrome ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -100,6 +103,7 @@
 ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE"/>, või on WiFi-sisselogimisekraan ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chrome peatas ühenduse enne andmevahetust.</translation>
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
 <translation id="2576431527583832481">Chrome muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
+<translation id="423410644998903704">Chrome vajab selle saidiga jagamiseks juurdepääsu lubadele.</translation>
 <translation id="4633000520311261472">Chrome'i turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="3656661827369545115">Käivita Chromium automaatselt, kui arvuti käivitub</translation>
 <translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN"/>, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>

@@ -618,6 +618,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>सिस्टम माहिती<ph name="END_LINK1"/> पाठवा</translation>
 <translation id="727952162645687754">डाउनलोड त्रुटी</translation>
 <translation id="5941343993301164315">कृपया <ph name="TOKEN_NAME"/> मध्ये साइन इन करा.</translation>
+<translation id="1359381790106966506">परवानग्या अद्यतनित करा</translation>
 <translation id="1046059554679513793">अरेरे, हे नाव आधीच वापरात आहे!</translation>
 <translation id="5868571107634815419">दस्तऐवज, पत्रक आणि स्लाइड करिता Office संपादन अक्षम करा</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> फायली आयात करीत आहे...</translation>
@@ -744,7 +745,6 @@
 <translation id="5759728514498647443">आपण <ph name="APP_NAME"/> द्वारे मुद्रण करण्यासाठी पाठविलेले दस्तऐवज <ph name="APP_NAME"/> द्वारे वाचले जाऊ शकतात.</translation>
 <translation id="2401053206567162910">हा अ‍ॅप सध्या या डिव्हाइसवर समर्थित नाही परंतु कार्य करण्यास Chrome gnomes ते लवकर कार्य करण्यासाठी कठीण आहेत.</translation>
 <translation id="3273410961255278341">यासाठी पाठवा:</translation>
-<translation id="4255096080864111471">स्वारस्य क्षेत्रासाठी कमाल टाइल निर्दिष्ट करा.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">नवीन टॅब</translation>
 <translation id="6567688344210276845">पृष्ठ क्रियांसाठी प्रतीक '<ph name="ICON"/>' लोड करणे शक्य नाही.</translation>
@@ -1696,7 +1696,6 @@
 <translation id="4811502511369621968">अवैध ईमेल पत्ता. कृपया तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="8602851771975208551">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारा अ‍ॅप जोडला.</translation>
-<translation id="9154967591629748964">स्वारस्य क्षेत्रासाठी कमाल टाइल</translation>
 <translation id="2655386581175833247">वापरकर्ता प्रमाणपत्र:</translation>
 <translation id="5039804452771397117">परवानगी द्या</translation>
 <translation id="5435964418642993308">परत जाण्यासाठी enter, इतिहास पाहण्यासाठी संदर्भ मेनू की दाबा</translation>
@@ -1868,7 +1867,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> मध्ये साइन इन करा...</translation>
 <translation id="5529098031581368697">वर्तमान वॉलपेपर '<ph name="APP_NAME"/>' द्वारे सेट केला आहे</translation>
 <translation id="5074318175948309511">नवीन सेटिंग्ज प्रभावी होण्यापूर्वी या पृष्ठास रीलोड करण्याची आवश्यकता असू शकते.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">निवड नाही</translation>
 <translation id="6405640832764359650">चेकबॉक्स जतन करून Google Payments कार्ड सक्षम करा</translation>
 <translation id="1346104802985271895">व्हिएतनामी इनपुट पद्धत (टेलेक्स)</translation>
@@ -1894,7 +1892,6 @@
 <translation id="4821086771593057290">आपला संकेतशब्द बदलला आहे. कृपया आपल्या नवीन संकेतशब्दासह पुन्हा प्रयत्न करा.</translation>
 <translation id="6080696365213338172">आपण प्रशासकाने-प्रदान केलेले प्रमाणपत्र वापरून सामग्रीमध्ये प्रवेश केला. आपण <ph name="DOMAIN"/> वर प्रदान करता तो डेटा आपल्या प्रशासकाद्वारे अंतःखंडित केला जाऊ शकतो.</translation>
 <translation id="2509739495444557741">कोणतेही प्लगिन स्थापित केलेले नाहीत.</translation>
-<translation id="6731638353631257659">V8 कॅशिंग मोड</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 With RSA कूटबद्धीकरण</translation>
 <translation id="7767646430896201896">पर्याय:</translation>
 <translation id="526926484727016706">यामुळे डीफॉल्टनुसार नकार दिल्या जाणार्‍या सर्व iframes ना सर्व परवानग्या दिल्या जातात. iframe साठी विशिष्ट परवानग्यांना अनुमती देण्यामध्‍ये या परवानग्यांची नावे नवीन iframe वैशिष्ट्यांची मूल्ये म्हणून सूचीबद्ध करण्‍याचा समावेश असतो.</translation>
@@ -2022,7 +2019,6 @@
 <translation id="6589706261477377614">की चकाकी वाढवा</translation>
 <translation id="1367951781824006909">फाइल निवडा</translation>
 <translation id="2897815155851085655">म&amp;दत आणि याविषयी</translation>
-<translation id="1425127764082410430">'<ph name="SEARCH_TERMS"/>' साठी <ph name="SEARCH_ENGINE"/> &amp;शोधा</translation>
 <translation id="1187722533808055681">निष्क्रियता समाप्त करणे</translation>
 <translation id="8075539548641175231">आपल्या समक्रमित वाक्यांशासह <ph name="TIME"/> वाजता आपला डेटा कूटबद्ध करण्यात आला. कृपया तो खाली प्रविष्ट करा.</translation>
 <translation id="2077084898869955643">Google कडे संभाव्य सुरक्षितता घटनांच्या तपशीलांचा अहवाल स्वयंचलितपणे द्या. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2127,7 +2123,6 @@
 <translation id="2031695690821674406">पृष्‍ठ लोडवर क्रेडेन्‍शियल स्‍वयं-भरण करण्‍यापेक्षा वापरकर्त्याद्वारे खाते स्पष्‍टपणे निवडले जाते तेव्‍हा संकेतशब्द भरणे.</translation>
 <translation id="5834581999798853053">सुमारे <ph name="TIME"/> मिनिटे बाकी</translation>
 <translation id="7839809549045544450">सर्व्हरकडे कमकुवत तात्पुरती Diffie-Hellman सार्वजनिक की आहे</translation>
-<translation id="5515806255487262353">शब्दकोशात शोधा</translation>
 <translation id="5154383699530644092">आपण खाली &quot;एक प्रिंटर जोडा&quot; क्लिक करून आपल्या संगणकावर प्रिंटर जोडू शकता.
         आपल्याकडे जोडण्यासाठी कोणतेही प्रिंटर नसले, तरीही आपण एक PDF जतन
         करण्यात किंवा Google ड्राइव्हमध्ये जतन करण्यात सक्षम व्हाल.</translation>
@@ -3063,7 +3058,6 @@
 <translation id="3121793941267913344">हा <ph name="IDS_SHORT_PRODUCT_NAME"/> डिव्हाइस रीसेट करा</translation>
 <translation id="4188026131102273494">कीवर्ड:</translation>
 <translation id="2930644991850369934">पुनर्प्राप्ती प्रतिमा डाउनलोड करताना एक समस्या आली. नेटवर्क कनेक्शन गमावले गेले आहे.</translation>
-<translation id="6891622577412956611">मोझिअ‍ॅक दृश्य</translation>
 <translation id="8150722005171944719"><ph name="URL"/> येथील फाइल वाचनीय नाही. ती काढून टाकलेली, हलविलेली असू शकते किंवा फाइल परवानग्या प्रवेश प्रतिबंधित करत असू शकतात.</translation>
 <translation id="2316129865977710310">नाही, धन्यवाद</translation>
 <translation id="994901932508062332">अंतिम महिना</translation>
@@ -3436,7 +3430,6 @@
     <ph name="LINE_BREAK1"/>
     <ph name="BEGIN_LINK"/>Google ड्राइव्ह<ph name="END_LINK"/> वर बॅकअप घेण्‍यास सज्ज</translation>
 <translation id="2677924368525077324">स्पर्श आधारित मजकूर संपादन सक्षम करा</translation>
-<translation id="3909535143686058220">कॅशे व्युत्पन्न मशीन कोड.</translation>
 <translation id="9213566138414731677">अरेरे, <ph name="WALLET_ERROR"/> Google Payments शिवाय हा व्यवहार आपण पूर्ण करू शकता.</translation>
 <translation id="4680322106555328717">या साइटवर चालविण्यासाठी आपण अलीकडे असुरक्षित सामग्रीस (जसे की स्क्रिप्ट किंवा iframes) अनुमती दिली आहे.</translation>
 <translation id="283669119850230892">नेटवर्क <ph name="NETWORK_ID"/> वापरण्‍यासाठी, प्रथम खालील इंटरनेटचे आपले कनेक्शन पूर्ण करा.</translation>
@@ -5026,7 +5019,6 @@
 <translation id="7339763383339757376">PKCS #7, एकल प्रमाणपत्र</translation>
 <translation id="7587108133605326224">बाल्टिक</translation>
 <translation id="3340978935015468852">सेटिंग्ज</translation>
-<translation id="3930208863636674029">कॅशे विश्लेषण डेटा.</translation>
 <translation id="3581912141526548234">लागू करा (हॅश मिळवण्याचा प्रयत्न करा आणि यशस्वी झाल्यास ते लागू करा)</translation>
 <translation id="1974371662733320303">वापरण्यासाठी मेमरी टाकून देण्याची योजना</translation>
 <translation id="3991936620356087075">आपण बर्‍याच वेळा चुकीची पिन अनलॉकिंग की प्रविष्ट केली आहे. आपले सिम कार्ड कायमचे अक्षम झाले आहे.</translation>

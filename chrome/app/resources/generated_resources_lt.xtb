@@ -618,6 +618,7 @@
 <translation id="8713570323158206935">Siųsti <ph name="BEGIN_LINK1"/>sistemos informaciją<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Atsisiuntimo klaida</translation>
 <translation id="5941343993301164315">Prisijunkite prie <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Atnaujinti leidimus</translation>
 <translation id="1046059554679513793">Oi! Šis vardas jau naudojamas!</translation>
 <translation id="5868571107634815419">Išjungti Dokumentų, Skaičiuoklių ir Skaidrių „Office“ redagavimo funkciją</translation>
 <translation id="1351692861129622852">Importuojami failai (<ph name="FILE_COUNT"/>)...</translation>
@@ -744,7 +745,6 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="5759728514498647443">Dokumentus, kuriuos siunčiate spausdinti naudodami „<ph name="APP_NAME"/>“, gali skaityti „<ph name="APP_NAME"/>“.</translation>
 <translation id="2401053206567162910">Šiuo metu programa šiame įrenginyje nepalaikoma, bet „Chrome“ specialistai daug dirba, kad galėtumėte ją naudoti.</translation>
 <translation id="3273410961255278341">Siųsti:</translation>
-<translation id="4255096080864111471">Nurodykite didžiausią išklotinės dalių skaičių pomėgių srityje.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Naujas skirtukas</translation>
 <translation id="6567688344210276845">Puslapio veiksmui „<ph name="ICON"/>“ piktogramos įkelti nepavyko.</translation>
@@ -1693,7 +1693,6 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="4811502511369621968">Netinkamas el. pašto adresas. Patikrinkite ir bandykite dar kartą.</translation>
 <translation id="175196451752279553">I&amp;š naujo atidaryti uždarytą skirtuką</translation>
 <translation id="8602851771975208551">Kita jūsų kompiuteryje esanti programa pridėjo programą, kuri gali pakeisti „Chrome“ veikimo būdą.</translation>
-<translation id="9154967591629748964">Didžiausias išklotinės dalių skaičius pomėgių srityje</translation>
 <translation id="2655386581175833247">Naudotojo sertifikatas:</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="5435964418642993308">Jei norite grįžti, paspauskite „Enter“; jei norite peržiūrėti istoriją – kontekstinio meniu klavišą</translation>
@@ -1867,7 +1866,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="1901377140875308934">Prisijungti prie <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Dabartinį ekrano foną nustatė „<ph name="APP_NAME"/>“</translation>
 <translation id="5074318175948309511">Kad nauji nustatymai įsigaliotų, šį puslapį gali tekti įkelti iš naujo.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nepasirinkta</translation>
 <translation id="6405640832764359650">Įgalinti „Google Payments“ kortelės išsaugojimo žymimąjį laukelį</translation>
 <translation id="1346104802985271895">Įvesties vietnamiečių k. metodas (TELEX)</translation>
@@ -1893,7 +1891,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="4821086771593057290">Slaptažodis pakeistas. Bandykite dar kartą nurodydami naują slaptažodį.</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN"/>, gali būti perimti administratoriaus.</translation>
 <translation id="2509739495444557741">Neįdiegta jokių papildinių.</translation>
-<translation id="6731638353631257659">V8 talpyklos režimas.</translation>
 <translation id="7075513071073410194">PKCS Nr. 1 MD5 su RSA šifruote</translation>
 <translation id="7767646430896201896">Parinktys:</translation>
 <translation id="526926484727016706">Pagal numatytuosius nustatymus visų „iframe“ atributų leidimai bus išjungti. Kad galėtumėte įgalinti tam tikrą leidimą „iframe“ atributui, gali reikėti pateikti tuos leidimus kaip naujų „iframe“ atributų vertes.</translation>
@@ -2021,7 +2018,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="6589706261477377614">Padidinti klaviatūros šviesumą</translation>
 <translation id="1367951781824006909">Pasirinkti failą</translation>
 <translation id="2897815155851085655">P&amp;agalba ir apie</translation>
-<translation id="1425127764082410430">&amp;Ieškoti <ph name="SEARCH_ENGINE"/> (ko) „<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Neaktyvumo režimo nutraukimo veiksmai</translation>
 <translation id="8075539548641175231"><ph name="TIME"/> jūsų duomenys užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją toliau.</translation>
 <translation id="2077084898869955643">Automatiškai pateikti išsamią informaciją apie galimas saugos problemas „Google“. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2130,7 +2126,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="2031695690821674406">Slaptažodžiai įvedami, kai naudotojas aiškiai pasirenka paskyrą, užuot automatiškai užpildžius prisijungimo duomenis, kai įkeliamas puslapis.</translation>
 <translation id="5834581999798853053">Liko apie <ph name="TIME"/> min.</translation>
 <translation id="7839809549045544450">Nesaugus serverio trumpalaikis „Diffie-Hellman“ viešasis raktas</translation>
-<translation id="5515806255487262353">Rasti žodyne</translation>
 <translation id="5154383699530644092">Spausdintuvų prie kompiuterio galite pridėti spustelėję toliau pateiktą mygtuką
         „Pridėti spausdintuvą“. Jei neturite pridėtinų spausdintuvų, vis tiek galėsite išsaugoti
         PDF failą arba išsaugoti „Google“ diske.</translation>
@@ -3068,7 +3063,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="3121793941267913344">Nustatyti iš naujo šį „<ph name="IDS_SHORT_PRODUCT_NAME"/>“ įrenginį</translation>
 <translation id="4188026131102273494">Raktinis žodis:</translation>
 <translation id="2930644991850369934">Atsisiunčiant atkūrimo vaizdą iškilo problema. Nutrūko interneto ryšys.</translation>
-<translation id="6891622577412956611">Mozaikos rodinys</translation>
 <translation id="8150722005171944719"><ph name="URL"/> nurodyto failo negalima skaityti. Gali būti, kad jis pašalintas, perkeltas arba neleidžiama prieiga prie jo dėl failo leidimų.</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="994901932508062332">Pastarasis mėnuo</translation>
@@ -3440,7 +3434,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
     <ph name="LINE_BREAK1"/>
     Paruošta kurti atsargines kopijas <ph name="BEGIN_LINK"/>„Google“ diske<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Įgalinti palietimu pagrįstą teksto redagavimą</translation>
-<translation id="3909535143686058220">Talpyklos sugeneruotas įrenginio kodas.</translation>
 <translation id="9213566138414731677">Oi, <ph name="WALLET_ERROR"/> Galite užbaigti šią operaciją nenaudodami „Google Payments“.</translation>
 <translation id="4680322106555328717">Neseniai šioje svetainėje leidote vykdyti nesaugų turinį (pvz., scenarijus arba „iframe“ atributus).</translation>
 <translation id="283669119850230892">Jei norite naudoti tinklą <ph name="NETWORK_ID"/>, pirmiausia baikite prisijungti prie toliau nurodyto interneto.</translation>
@@ -5031,7 +5024,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="7339763383339757376">PKCS Nr. 7, vienas sertifikatas</translation>
 <translation id="7587108133605326224">Baltijos šalių</translation>
 <translation id="3340978935015468852">nustatymų</translation>
-<translation id="3930208863636674029">Talpykloje išsaugoti analizavimo duomenys.</translation>
 <translation id="3581912141526548234">Vykdyti (bandyti gauti maišų ir, jei pavyko, vykdyti jas)</translation>
 <translation id="1974371662733320303">Naudotina atminties atmetimo strategija</translation>
 <translation id="3991936620356087075">Per daug kartų įvedėte neteisingą PIN kodo atrakinimo raktą. SIM kortelė visam laikui neleidžiama.</translation>

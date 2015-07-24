@@ -45,6 +45,7 @@
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="8437332772351535342">A reinicialização no modo de área de trabalho fecha e reinicia seus aplicativos do Google Chrome.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
+<translation id="7788788617745289808">O Chrome precisa ter acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="3080151273017101988">Executar aplicativos em segundo plano quando o Google Chrome estiver fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
 <translation id="7054640471403081847">Este computador em breve parará de receber atualizações do Google Chrome, porque seu hardware não é mais suportado.</translation>
@@ -59,6 +60,7 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Termos de Serviço<ph name="END_TERMS_OF_SERVICE_LINK"/> do Google Chrome</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="1393853151966637042">Obter ajuda para usar o Google Chrome</translation>
+<translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="7398801000654795464">Você estava conectado ao Google Chrome como <ph name="USER_EMAIL_ADDRESS"/>. Use a mesma conta para fazer login novamente.</translation>
 <translation id="4513711165509885787">Seus dados para cobrança foram salvos no Google Chrome.</translation>
 <translation id="5253588388888612165">Se você compartilha este computador com <ph name="PROFILE_NAME"/>, adicione seu perfil ao Chrome para navegar separadamente. Caso contrário, desconecte sua Conta do Google.</translation>
@@ -90,6 +92,7 @@
 <translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="5799551393681493217">Ativa fluxos de login do Google Chrome baseados em iframe. Esta sinalização modifica login com ativação baseada na Web.</translation>
 <translation id="7459554271817304652">Configure a sincronização para salvar seus recursos de navegador personalizados na web e acessá-los do Google Chrome em qualquer computador.</translation>
+<translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="8823341990149967727">O Google Chrome está desatualizado</translation>
@@ -99,6 +102,7 @@
 incomuns e incorretas. Isso significa que um invasor está fingindo ser <ph name="SITE"/>, ou que uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chrome interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
 <translation id="2576431527583832481">O Google Chrome ficou ainda melhor! Uma nova versão está disponível.</translation>
+<translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
 <translation id="4633000520311261472">Para tornar o Google Chrome mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> e podem ser sido adicionadas sem seu conhecimento.</translation>
 <translation id="3656661827369545115">Iniciar o Chromium automaticamente ao iniciar o computador</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é <ph name="DOMAIN"/>. O certificado de segurança não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>

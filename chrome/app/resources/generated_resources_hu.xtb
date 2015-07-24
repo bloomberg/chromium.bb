@@ -612,6 +612,7 @@
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1"/>Rendszeradatok<ph name="END_LINK1"/> küldése</translation>
 <translation id="727952162645687754">Letöltési hiba</translation>
 <translation id="5941343993301164315">Kérjük, jelentkezzen be ide: <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Engedélyek frissítése</translation>
 <translation id="1046059554679513793">Hoppá, ez a név már foglalt!</translation>
 <translation id="5868571107634815419">Office-szerkesztés letiltása a Dokumentumok, Táblázatok és Diák szolgáltatásoknál</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT"/> fájl importálása folyamatban…</translation>
@@ -738,7 +739,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5759728514498647443">A(z) <ph name="APP_NAME"/> alkalmazáson keresztül nyomtatásra küldött dokumentumait a(z) <ph name="APP_NAME"/> is elolvashatja.</translation>
 <translation id="2401053206567162910">Az alkalmazást az eszköz jelenleg nem támogatja, de a Chrome-gnómok keményen dolgoznak azon, hogy hamarosan működjön.</translation>
 <translation id="3273410961255278341">Küldés:</translation>
-<translation id="4255096080864111471">Egy érdeklődési terület maximális mozaikszámának meghatározása.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Új lap</translation>
 <translation id="6567688344210276845">Nem sikerült a(z) '<ph name="ICON"/>' ikon betöltése az oldalművelethez.</translation>
@@ -1684,7 +1684,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="4811502511369621968">Érvénytelen e-mail cím. Ellenőrizze, majd próbálja újra.</translation>
 <translation id="175196451752279553">Bezárt lap m&amp;egnyitása</translation>
 <translation id="8602851771975208551">A számítógépen lévő egyik program olyan alkalmazást adott hozzá, amely módosíthatja a Chrome működését.</translation>
-<translation id="9154967591629748964">Egy érdeklődési terület maximális mozaikszáma</translation>
 <translation id="2655386581175833247">Felhasználói tanúsítvány:</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5435964418642993308">A visszatéréshez nyomja meg az Entert, az előzmények megtekintéséhez a helyi menü billentyűt</translation>
@@ -1854,7 +1853,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="1901377140875308934">Bejelentkezés a <ph name="SHORT_PRODUCT_NAME"/>-ba...</translation>
 <translation id="5529098031581368697">Az aktuális háttérképet a(z) „<ph name="APP_NAME"/>” állította be</translation>
 <translation id="5074318175948309511">Előfordulhat, hogy az új beállítások életbe lépéséhez az oldal újratöltése szükséges.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nincs kiválasztva</translation>
 <translation id="6405640832764359650">Google Payments-kártya mentésének engedélyezése jelölőnégyzet</translation>
 <translation id="1346104802985271895">Vietnami beviteli mód (TELEX)</translation>
@@ -1880,7 +1878,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="4821086771593057290">Jelszava megváltozott. Kérjük, próbálja újra új jelszavával.</translation>
 <translation id="6080696365213338172">A tartalmat egy rendszergazda által biztosított tanúsítványon keresztül érte el. A(z) <ph name="DOMAIN"/> számára megadott adatok a rendszergazda számára is elérhetők.</translation>
 <translation id="2509739495444557741">Nincsenek telepített beépülő modulok.</translation>
-<translation id="6731638353631257659">V8 gyorsítótárazási mód.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 RSA titkosítással</translation>
 <translation id="7767646430896201896">Beállítások:</translation>
 <translation id="526926484727016706">Beállításával alapértelmezés szerint az összes iframe-től meg lesz tagadva minden engedély. Ha meg szeretne adni egyes engedélyeket egy adott iframe számára, akkor az új iframe attribútumainak értékeiként fel kell vennie a listára az adott engedélyek nevét.</translation>
@@ -2008,7 +2005,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="6589706261477377614">Billentyűfényerő növelése</translation>
 <translation id="1367951781824006909">Válasszon egy fájlt</translation>
 <translation id="2897815155851085655">Sú&amp;gó és névjegy</translation>
-<translation id="1425127764082410430">&amp;Keresés <ph name="SEARCH_ENGINE"/> keresővel a következő kifejezésre: &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Tétlen aktiválások</translation>
 <translation id="8075539548641175231">Adatai titkosítva lettek összetett szinkronizálási jelszavával ekkor: <ph name="TIME"/>. Kérjük, adja meg alább a jelszót.</translation>
 <translation id="2077084898869955643">A lehetséges biztonsági események adatainak automatikus jelentése a Google-nak. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2114,7 +2110,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="2031695690821674406">Jelszavak kitöltése olyankor, amikor a felhasználó kifejezetten kiválasztja a fiókot – a hitelesítő adatok oldalbetöltésnél való automatikus kitöltése helyett.</translation>
 <translation id="5834581999798853053">Körülbelül <ph name="TIME"/> perc van hátra</translation>
 <translation id="7839809549045544450">A szerver Diffie-Hellman kulcsa gyenge</translation>
-<translation id="5515806255487262353">Keresés a szótárban</translation>
 <translation id="5154383699530644092">Úgy adhat hozzá nyomtatókat számítógépéhez, hogy rákattint az alábbi „Nyomtató hozzáadása”
         gombra. Ha nincsenek hozzáadható nyomtatói, menthet
         PDF-fájlként, vagy menthet a Google Drive-ra.</translation>
@@ -3041,7 +3036,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="3121793941267913344">A(z) <ph name="IDS_SHORT_PRODUCT_NAME"/> eszköz visszaállítása</translation>
 <translation id="4188026131102273494">Kulcsszó:</translation>
 <translation id="2930644991850369934">Probléma lépett fel a helyreállító képfájl letöltése során. A hálózati kapcsolat megszakadt.</translation>
-<translation id="6891622577412956611">Mozaik nézet</translation>
 <translation id="8150722005171944719">A fájl (<ph name="URL"/>) nem olvasható. Lehet, hogy eltávolították, áthelyezték, vagy a fájlengedélyek megakadályozzák a hozzáférést.</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="994901932508062332">Múlt hónap</translation>
@@ -3409,7 +3403,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
     <ph name="LINE_BREAK1"/>
     Készen állnak a biztonsági mentés végrehajtására a <ph name="BEGIN_LINK"/>Google Drive-on<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Érintésalapú szövegszerkesztés engedélyezése</translation>
-<translation id="3909535143686058220">Létrehozott gépi kód gyorsítótárba helyezése.</translation>
 <translation id="9213566138414731677">Hoppá! <ph name="WALLET_ERROR"/> A Google Payments nélkül kell végigcsinálnia a tranzakciót.</translation>
 <translation id="4680322106555328717">Nemrégiben engedélyezte nem biztonságos tartalmak (pl. szkriptek vagy iframe-ek) futtatását ezen a webhelyen.</translation>
 <translation id="283669119850230892">A hálózat (<ph name="NETWORK_ID"/>) használatához először fejezze be csatlakozást az internethez alább.</translation>
@@ -4995,7 +4988,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="7339763383339757376">PKCS #7, egyedüli tanúsítvány</translation>
 <translation id="7587108133605326224">Balti</translation>
 <translation id="3340978935015468852">beállítások</translation>
-<translation id="3930208863636674029">Elemzési adatok gyorsítótárba helyezése.</translation>
 <translation id="3581912141526548234">Végrehajtás (hash-értékek lekérése, és siker esetén végrehajtás)</translation>
 <translation id="1974371662733320303">Használni kívánt memóriafelszabadítási stratégia</translation>
 <translation id="3991936620356087075">Túl sokszor adott meg helytelen PIN-feloldó kulcsot. A SIM-kártya állandó jelleggel tiltásra kerül.</translation>

@@ -615,6 +615,7 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="8713570323158206935">Envoyer des <ph name="BEGIN_LINK1"/>informations système<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Erreur lors du téléchargement.</translation>
 <translation id="5941343993301164315">Veuillez vous connecter à <ph name="TOKEN_NAME"/>.</translation>
+<translation id="1359381790106966506">Modifier les autorisations</translation>
 <translation id="1046059554679513793">Petit problème... Ce nom est déjà utilisé.</translation>
 <translation id="5868571107634815419">Désactiver Office Editing for Docs, Sheets &amp; Slides</translation>
 <translation id="1351692861129622852">Importation de <ph name="FILE_COUNT"/> fichiers en cours…</translation>
@@ -742,7 +743,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="5759728514498647443">Les documents envoyés pour impression via &quot;<ph name="APP_NAME"/>&quot; sont lisibles avec &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="2401053206567162910">Cette application n'est pas compatible avec cet appareil pour le moment, mais les petits lutins de Google Chrome sont à pied d'œuvre pour qu'elle le devienne rapidement.</translation>
 <translation id="3273410961255278341">Envoyer pour :</translation>
-<translation id="4255096080864111471">Indiquer le nombre maximal de mosaïques pour la zone qui vous intéresse</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="6567688344210276845">Impossible de charger l'icône &quot;<ph name="ICON"/>&quot; d'action de page.</translation>
@@ -1691,7 +1691,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="4811502511369621968">Adresse e-mail non valide. Veuillez la vérifier, puis réessayer.</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="8602851771975208551">Un autre programme sur votre ordinateur a ajouté une application qui risque de modifier le fonctionnement de Google Chrome.</translation>
-<translation id="9154967591629748964">Nombre maximal de mosaïques pour la zone qui vous intéresse</translation>
 <translation id="2655386581175833247">Certificat utilisateur :</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5435964418642993308">Appuyer sur Entrée pour revenir en arrière et sur la touche de menu contextuel pour afficher l'historique</translation>
@@ -1863,7 +1862,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="1901377140875308934">Se connecter à <ph name="SHORT_PRODUCT_NAME"/>…</translation>
 <translation id="5529098031581368697">Le fond d'écran actuel a été défini par <ph name="APP_NAME"/>.</translation>
 <translation id="5074318175948309511">Vous devrez peut-être actualiser cette page pour que les nouveaux paramètres soient appliqués.</translation>
-<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Aucune sélection</translation>
 <translation id="6405640832764359650">Activer la case à cocher permettant d'enregistrer des cartes Google Payments</translation>
 <translation id="1346104802985271895">Mode de saisie du vietnamien (TELEX)</translation>
@@ -1889,7 +1887,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="4821086771593057290">Votre mot de passe a changé. Veuillez réessayer avec votre nouveau mot de passe.</translation>
 <translation id="6080696365213338172">Vous avez accédé à du contenu à l'aide d'un certificat fourni par l'administrateur. Les données que vous fournissez à <ph name="DOMAIN"/> peuvent être interceptées par votre administrateur.</translation>
 <translation id="2509739495444557741">Aucun plug-in n'est installé.</translation>
-<translation id="6731638353631257659">Mode de mise en cache V8</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 avec chiffrement RSA</translation>
 <translation id="7767646430896201896">Options :</translation>
 <translation id="526926484727016706">Entraîne le refus par défaut de toutes les autorisations aux cadres iFrame. Pour accorder certaines autorisations à un cadre iFrame, vous devrez peut-être indiquer leurs noms en tant que valeurs de nouveaux attributs iFrame.</translation>
@@ -2017,7 +2014,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="6589706261477377614">Augmenter la luminosité du clavier</translation>
 <translation id="1367951781824006909">Choisir un fichier</translation>
 <translation id="2897815155851085655">&amp;Aide et À propos</translation>
-<translation id="1425127764082410430">&amp;Rechercher <ph name="SEARCH_TERMS"/> avec <ph name="SEARCH_ENGINE"/></translation>
 <translation id="1187722533808055681">Sorties de veille</translation>
 <translation id="8075539548641175231">Vos données ont été chiffrées avec votre phrase secrète de synchronisation le <ph name="TIME"/>. Veuillez la saisir ci-dessous.</translation>
 <translation id="2077084898869955643">Signaler automatiquement les incidents de sécurité potentiels à Google. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -2126,7 +2122,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2031695690821674406">Renseigne des mots de passe lorsqu'un compte est explicitement sélectionné par l'utilisateur, plutôt que de compléter automatiquement les identifiants lors du chargement de la page.</translation>
 <translation id="5834581999798853053">Environ <ph name="TIME"/> minutes restantes</translation>
 <translation id="7839809549045544450">La clé publique éphémère Diffie-Hellman associée au serveur est peu sûre.</translation>
-<translation id="5515806255487262353">Rechercher dans Dictionnaire</translation>
 <translation id="5154383699530644092">Vous pouvez ajouter des imprimantes à votre ordinateur en cliquant sur le bouton &quot;Ajouter une imprimante&quot;
         ci-dessous. Si vous n'avez pas d'imprimante à ajouter, vous pouvez enregistrer
         un document PDF ou enregistrer votre fichier sur Google Drive.</translation>
@@ -3064,7 +3059,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3121793941267913344">Réinitialiser cet appareil <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
 <translation id="4188026131102273494">Mot clé :</translation>
 <translation id="2930644991850369934">Un problème est survenu lors du téléchargement de l'image de récupération. La connexion réseau a été perdue.</translation>
-<translation id="6891622577412956611">Affichage Mosaïque</translation>
 <translation id="8150722005171944719">Le fichier disponible à l'adresse <ph name="URL"/> n'est pas lisible. Il est possible qu'il ait été supprimé ou déplacé, ou que les autorisations associées empêchent d'y accéder.</translation>
 <translation id="2316129865977710310">Non merci</translation>
 <translation id="994901932508062332">Le mois dernier</translation>
@@ -3436,7 +3430,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
     <ph name="LINE_BREAK1"/>
     Prêt pour la sauvegarde dans <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/>.</translation>
 <translation id="2677924368525077324">Activer la modification tactile du texte</translation>
-<translation id="3909535143686058220">Code machine généré par le cache</translation>
 <translation id="9213566138414731677">Petit problème… <ph name="WALLET_ERROR"/>. Vous pouvez réaliser cette transaction sans Google Payments.</translation>
 <translation id="4680322106555328717">Vous avez récemment autorisé l'exécution sur ce site de contenus non sécurisés (tels que des scripts ou des cadres iFrame).</translation>
 <translation id="283669119850230892">Pour utiliser le réseau <ph name="NETWORK_ID"/>, finalisez d'abord la connexion à Internet ci-dessous</translation>
@@ -5022,7 +5015,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="7339763383339757376">PKCS #7, certificat unique</translation>
 <translation id="7587108133605326224">Langues baltes</translation>
 <translation id="3340978935015468852">paramètres</translation>
-<translation id="3930208863636674029">Données d'analyse du cache</translation>
 <translation id="3581912141526548234">Appliquer (tenter d'obtenir le hachage et l'appliquer si obtenu)</translation>
 <translation id="1974371662733320303">Stratégie de suppression de la mémoire à utiliser</translation>
 <translation id="3991936620356087075">Vous avez saisi un trop grand nombre de clés de verrouillage du code PIN incorrectes. Votre carte SIM est définitivement désactivée.</translation>
