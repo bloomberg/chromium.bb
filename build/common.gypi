@@ -305,7 +305,7 @@
           }], # OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0
 
           ['OS=="linux" and target_arch=="mipsel"', {
-            'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/debian_wheezy_mips-sysroot',
+            'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_mips-sysroot',
           }],
         ],
       },
