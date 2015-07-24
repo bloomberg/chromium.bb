@@ -92,6 +92,12 @@ struct WebPluginGeometry;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
+//
+// RenderWidget is used to implement:
+// - RenderViewImpl (deprecated)
+// - Fullscreen mode (RenderWidgetFullScreen)
+// - Popup "menus" (like the color chooser and date picker)
+// - Widgets for frames (for out-of-process iframe support)
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
@@ -397,7 +403,6 @@ class CONTENT_EXPORT RenderWidget
   void FlushPendingInputEventAck();
   void DoDeferredClose();
   void NotifyOnClose();
-  void CloseInternal(bool close_synchronously);
 
   // Close the underlying WebWidget.
   virtual void Close();
