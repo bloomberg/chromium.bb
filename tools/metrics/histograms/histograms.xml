@@ -12884,7 +12884,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GPU.AcceleratedSurfaceRefreshRate" units="hz">
-  <owner>vangelis@chromium.org</owner>
+  <owner>vmiura@chromium.org</owner>
   <summary>
     Refresh rate of the display in Hz.  This is recorded every time we present a
     frame.
@@ -12971,7 +12971,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GPU.CollectContextGraphicsInfo" units="microseconds">
-  <owner>vangelis@chromium.org</owner>
+  <owner>vmiura@chromium.org</owner>
   <summary>
     The time that the GPU process spends collecting driver information during
     startup.
@@ -12986,7 +12986,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GPU.CreateBrowserCompositor" units="microseconds">
-  <owner>vangelis@chromium.org</owner>
+  <owner>vmiura@chromium.org</owner>
   <summary>
     The time that the browser process takes to create the compositor from its
     point of view. One of these is created for each top-level window (browser
@@ -13023,7 +13023,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 4/2015.
   </obsolete>
-  <owner>vangelis@chromium.org</owner>
+  <owner>vmiura@chromium.org</owner>
   <summary>
     The time that the GPU process spends in initializing the GL surface, and
     collecting graphics information.
