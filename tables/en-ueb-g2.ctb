@@ -163,37 +163,145 @@ word wh =
 
 #   10.5   Lower Wordsigns
 
-#class lowerdotspunc ,.?!-—"'“”‘’
-#class upperdotspunc ()<>{}[]
-
 class lowerdotspunc +=*,.?!-—‐‑–—"'“”‘’
-class upperdotspunc ()<>{}[]%$#@~^&:;|_\\/
+#class upperdotspunc ()<>{}[]%$#@~^&:;|_\\/
 
+# be
+
+before uppercase begword be 12-15   10.6.3
+begword be 23                       10.6.2
 word be 23
+always be 12-15
+always ber 12-12456                 10.10.4
 
-context ["enough"]%lowerdotspunc%lowerdotspunc @26-1256-126
-context ["enough"]%lowerdotspunc~ @26-1256-126 
-context %lowerdotspunc%lowerdotspunc["enough"] @26-1256-126
-context `%lowerdotspunc["enough"] @26-1256-126 
+# enough
+
+context %space%lowerdotspunc%lowerdotspunc["enough"]%space @26-1256-126
+context %space%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc%space @26-1256-126
+context %space%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc%space @26-1256-126
+
+context %space%lowerdotspunc["enough"]%space @26-1256-126
+context %space%lowerdotspunc["enough"]%lowerdotspunc%space @26-1256-126
+context %space%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc%space @26-1256-126
+
+context %space["enough"]%lowerdotspunc%space @26-1256-126
+context %space["enough"]%lowerdotspunc%lowerdotspunc%space @26-1256-126
+
+
+context `%lowerdotspunc%lowerdotspunc["enough"]%space @26-1256-126
+context `%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc%space @26-1256-126
+context `%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc%space @26-1256-126
+
+context `%lowerdotspunc["enough"]%space @26-1256-126
+context `%lowerdotspunc["enough"]%lowerdotspunc%space @26-1256-126
+context `%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc%space @26-1256-126
+
+context `["enough"]%lowerdotspunc%space @26-1256-126
+context `["enough"]%lowerdotspunc%lowerdotspunc%space @26-1256-126
+
+
+context %space%lowerdotspunc%lowerdotspunc["enough"]~ @26-1256-126
+context %space%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc~ @26-1256-126
+context %space%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc~ @26-1256-126
+
+context %space%lowerdotspunc["enough"]~ @26-1256-126
+context %space%lowerdotspunc["enough"]%lowerdotspunc~ @26-1256-126
+context %space%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc~ @26-1256-126
+
+context %space["enough"]%lowerdotspunc~ @26-1256-126
+context %space["enough"]%lowerdotspunc%lowerdotspunc~ @26-1256-126
+
+
+context `%lowerdotspunc%lowerdotspunc["enough"]~ @26-1256-126
+context `%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc~ @26-1256-126
+context `%lowerdotspunc%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc~ @26-1256-126
+
+context `%lowerdotspunc["enough"]~ @26-1256-126
+context `%lowerdotspunc["enough"]%lowerdotspunc~ @26-1256-126
+context `%lowerdotspunc["enough"]%lowerdotspunc%lowerdotspunc~ @26-1256-126
+
+context `["enough"]%lowerdotspunc~ @26-1256-126
+context `["enough"]%lowerdotspunc%lowerdotspunc~ @26-1256-126
 
 word enough 26
 word enough's 26-3-234
+always enough 26-1256-126
 
-lowword his 236
-word His 6-236
+# his
+
+context %lowerdotspunc["his"] @125-24-234
+context ["his"]%lowerdotspunc @125-24-234
+word his 236
+#word His 6-236
+
+# in
+
+
+context %space%lowerdotspunc%lowerdotspunc["in"]%space @24-1345
+context %space%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc%space @24-1345
+context %space%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc%space @24-1345
+
+context %space%lowerdotspunc["in"]%space @24-1345
+context %space%lowerdotspunc["in"]%lowerdotspunc%space @24-1345
+context %space%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc%space @24-1345
+
+context %space["in"]%lowerdotspunc%space @24-1345
+context %space["in"]%lowerdotspunc%lowerdotspunc%space @24-1345
+
+
+context `%lowerdotspunc%lowerdotspunc["in"]%space @24-1345
+context `%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc%space @24-1345
+context `%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc%space @24-1345
+
+context `%lowerdotspunc["in"]%space @24-1345
+context `%lowerdotspunc["in"]%lowerdotspunc%space @24-1345
+context `%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc%space @24-1345
+
+context `["in"]%lowerdotspunc%space @24-1345
+context `["in"]%lowerdotspunc%lowerdotspunc%space @24-1345
+
+
+context %space%lowerdotspunc%lowerdotspunc["in"]~ @24-1345
+context %space%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc~ @24-1345
+context %space%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc~ @24-1345
+
+context %space%lowerdotspunc["in"]~ @24-1345
+context %space%lowerdotspunc["in"]%lowerdotspunc~ @24-1345
+context %space%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc~ @24-1345
+
+context %space["in"]%lowerdotspunc~ @24-1345
+context %space["in"]%lowerdotspunc%lowerdotspunc~ @24-1345
+
+
+context `%lowerdotspunc%lowerdotspunc["in"]~ @24-1345
+context `%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc~ @24-1345
+context `%lowerdotspunc%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc~ @24-1345
+
+context `%lowerdotspunc["in"]~ @24-1345
+context `%lowerdotspunc["in"]%lowerdotspunc~ @24-1345
+context `%lowerdotspunc["in"]%lowerdotspunc%lowerdotspunc~ @24-1345
+
+context `["in"]%lowerdotspunc~ @24-1345
+context `["in"]%lowerdotspunc%lowerdotspunc~ @24-1345
 
 always in 35
-#after lowerdotspunc word in 24-1345
-#before lowerdotspunc word in 24-1345
+always "In 236-3-24-1345
 
-lowword was 356
+# was
 
-lowword were 2356
-lowword Were 6-2356 for back-translation
+context %lowerdotspunc["was"] @2456-1-234
+context ["was"]%lowerdotspunc @2456-1-234
+word was 356
+
+# were
+
+context %lowerdotspunc["were"] @2456-12456-15
+context ["were"]%lowerdotspunc @2456-12456-15
+word were 2356
 
 #   10.6   Lower Groupsigns
 
-begword be 23
+#   be handled in 10.5   
 begword con 25
 begword dis 256
 
