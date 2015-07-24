@@ -9,11 +9,15 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 #if defined(OS_ANDROID)
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_driver_android.h"
+#include "content/public/browser/browser_thread.h"
 #else
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -23,7 +27,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
@@ -153,7 +156,16 @@ GCMProfileService::GCMProfileService(Profile* profile)
   }
   debug_instance = this;
 
-  driver_.reset(new GCMDriverAndroid);
+  scoped_refptr<base::SequencedWorkerPool> worker_pool(
+      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+  driver_.reset(new GCMDriverAndroid(
+      profile_->GetPath().Append(chrome::kGCMStoreDirname),
+      blocking_task_runner));
 }
 #else
 GCMProfileService::GCMProfileService(

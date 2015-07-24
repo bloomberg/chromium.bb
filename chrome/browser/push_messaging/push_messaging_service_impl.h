@@ -143,11 +143,24 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& subscription_id,
       gcm::GCMClient::Result result);
 
+  void DidSubscribeWithPublicKey(
+      const PushMessagingAppIdentifier& app_identifier,
+      const content::PushMessagingService::RegisterCallback& callback,
+      const std::string& subscription_id,
+      const std::string& public_key);
+
   void DidRequestPermission(
       const PushMessagingAppIdentifier& app_identifier,
       const std::string& sender_id,
       const content::PushMessagingService::RegisterCallback& callback,
       content::PermissionStatus permission_status);
+
+  // GetPublicEncryptionKey method ---------------------------------------------
+
+  void DidGetPublicKey(
+      const PushMessagingService::PublicKeyCallback& callback,
+      const std::string& public_key) const;
+
 
   // Unsubscribe methods -------------------------------------------------------
 
@@ -172,6 +185,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // Checks if a given origin is allowed to use Push.
   bool IsPermissionSet(const GURL& origin);
+
+  // Returns whether incoming messages should support payloads.
+  bool AreMessagePayloadsEnabled() const;
 
   gcm::GCMDriver* GetGCMDriver() const;
 

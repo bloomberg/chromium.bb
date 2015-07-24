@@ -504,7 +504,8 @@ GCMDriverDesktop::GCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : gcm_channel_status_syncer_(
+    : GCMDriver(store_path, blocking_task_runner),
+      gcm_channel_status_syncer_(
           new GCMChannelStatusSyncer(this,
                                      prefs,
                                      channel_status_request_url,

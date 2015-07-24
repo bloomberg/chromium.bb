@@ -3160,6 +3160,7 @@
         '../components/components.gyp:favicon_base',
         '../components/components.gyp:favicon_core',
         '../components/components.gyp:gcm_driver',
+        '../components/components.gyp:gcm_driver_crypto',
         '../components/components.gyp:google_core_browser',
         '../components/components.gyp:handoff',
         '../components/components.gyp:history_core_browser',
