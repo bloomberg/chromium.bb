@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
-#include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -64,6 +63,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -1138,7 +1138,7 @@ void ExistingUserController::DoCompleteLogin(
     bool is_ephemeral =
         ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
         user_context.GetUserID() != ChromeUserManager::Get()->GetOwnerEmail();
-    device_id = ChromeSigninClient::GenerateSigninScopedDeviceID(is_ephemeral);
+    device_id = SigninClient::GenerateSigninScopedDeviceID(is_ephemeral);
   }
   user_context.SetDeviceId(device_id);
 

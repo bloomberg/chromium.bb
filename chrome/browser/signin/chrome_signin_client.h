@@ -40,10 +40,6 @@ class ChromeSigninClient
   // Utility method.
   static bool ProfileAllowsSigninCookies(Profile* profile);
 
-  // If |for_ephemeral| is true, special kind of device ID for ephemeral users
-  // is generated.
-  static std::string GenerateSigninScopedDeviceID(bool for_ephemeral);
-
   // SigninClient implementation.
   PrefService* GetPrefs() override;
   scoped_refptr<TokenWebData> GetDatabase() override;

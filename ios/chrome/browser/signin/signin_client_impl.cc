@@ -15,9 +15,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_cookie_changed_subscription.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/common/profile_management_switches.h"
-#include "components/signin/core/common/signin_pref_names.h"
-#include "components/signin/core/common/signin_switches.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -31,10 +28,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
-
-namespace {
-const char kEphemeralUserDeviceIDPrefix[] = "t_";
-}
 
 SigninClientImpl::SigninClientImpl(
     ios::ChromeBrowserState* browser_state,
@@ -65,12 +58,6 @@ bool SigninClientImpl::AllowsSigninCookies(
   return signin::SettingsAllowSigninCookies(cookie_settings.get());
 }
 
-// static
-std::string SigninClientImpl::GenerateSigninScopedDeviceID(bool for_ephemeral) {
-  std::string guid = base::GenerateGUID();
-  return for_ephemeral ? kEphemeralUserDeviceIDPrefix + guid : guid;
-}
-
 PrefService* SigninClientImpl::GetPrefs() {
   return browser_state_->GetPrefs();
 }
@@ -85,20 +72,10 @@ bool SigninClientImpl::CanRevokeCredentials() {
 }
 
 std::string SigninClientImpl::GetSigninScopedDeviceId() {
-  std::string signin_scoped_device_id =
-      GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
-  if (signin_scoped_device_id.empty()) {
-    // If device_id doesn't exist then generate new and save in prefs.
-    signin_scoped_device_id = GenerateSigninScopedDeviceID(false);
-    DCHECK(!signin_scoped_device_id.empty());
-    GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
-                          signin_scoped_device_id);
-  }
-  return signin_scoped_device_id;
+  return GetOrCreateScopedDeviceIdPref(GetPrefs());
 }
 
 void SigninClientImpl::OnSignedOut() {
-  GetPrefs()->ClearPref(prefs::kGoogleServicesSigninScopedDeviceId);
   ios::BrowserStateInfoCache* cache = GetApplicationContext()
                                           ->GetChromeBrowserStateManager()
                                           ->GetBrowserStateInfoCache();

@@ -71,6 +71,7 @@
         'signin/core/browser/profile_oauth2_token_service.h',
         'signin/core/browser/refresh_token_annotation_request.cc',
         'signin/core/browser/refresh_token_annotation_request.h',
+        'signin/core/browser/signin_client.cc',
         'signin/core/browser/signin_client.h',
         'signin/core/browser/signin_cookie_changed_subscription.cc',
         'signin/core/browser/signin_cookie_changed_subscription.h',

@@ -5,7 +5,6 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 
 #include "base/command_line.h"
-#include "base/guid.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -44,10 +43,6 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
 #endif
-
-namespace {
-const char kEphemeralUserDeviceIDPrefix[] = "t_";
-}
 
 ChromeSigninClient::ChromeSigninClient(
     Profile* profile, SigninErrorController* signin_error_controller)
@@ -108,13 +103,6 @@ bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
   return signin::SettingsAllowSigninCookies(cookie_settings);
 }
 
-// static
-std::string ChromeSigninClient::GenerateSigninScopedDeviceID(
-    bool for_ephemeral) {
-  std::string guid = base::GenerateGUID();
-  return for_ephemeral ? kEphemeralUserDeviceIDPrefix + guid : guid;
-}
-
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
 
 scoped_refptr<TokenWebData> ChromeSigninClient::GetDatabase() {
@@ -152,16 +140,7 @@ std::string ChromeSigninClient::GetSigninScopedDeviceId() {
   }
 
 #if !defined(OS_CHROMEOS)
-  std::string signin_scoped_device_id =
-      GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
-  if (signin_scoped_device_id.empty()) {
-    // If device_id doesn't exist then generate new and save in prefs.
-    signin_scoped_device_id = GenerateSigninScopedDeviceID(false);
-    DCHECK(!signin_scoped_device_id.empty());
-    GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
-                          signin_scoped_device_id);
-  }
-  return signin_scoped_device_id;
+  return SigninClient::GetOrCreateScopedDeviceIdPref(GetPrefs());
 #else
   // UserManager may not exist in unit_tests.
   if (!user_manager::UserManager::IsInitialized())
@@ -181,7 +160,6 @@ std::string ChromeSigninClient::GetSigninScopedDeviceId() {
 }
 
 void ChromeSigninClient::OnSignedOut() {
-  GetPrefs()->ClearPref(prefs::kGoogleServicesSigninScopedDeviceId);
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
