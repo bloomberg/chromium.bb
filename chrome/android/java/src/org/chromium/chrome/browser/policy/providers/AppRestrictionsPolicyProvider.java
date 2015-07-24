@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.policy.providers;
 import android.content.Context;
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.policy.PolicyProvider;
 import org.chromium.policy.AppRestrictionsProvider;
+import org.chromium.policy.PolicyProvider;
 
 /**
  * Policy provider for Android's App Restriction Schema.

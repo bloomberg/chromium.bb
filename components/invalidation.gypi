@@ -231,23 +231,6 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          'target_name': 'invalidation_junit_tests',
-          'type': 'none',
-          'dependencies': [
-            'invalidation_java',
-            '../base/base.gyp:base_java',
-            '../base/base.gyp:base_java_test_support',
-            '../testing/android/junit/junit_test.gyp:junit_test_support',
-          ],
-          'variables': {
-            'main_class': 'org.chromium.testing.local.JunitTestMain',
-            'src_paths': [
-              'invalidation/impl/android/junit/'
-            ],
-          },
-          'includes': [ '../build/host_jar.gypi' ],
-        },
-        {
           'target_name': 'invalidation_jni_headers',
           'type': 'none',
           'sources': [

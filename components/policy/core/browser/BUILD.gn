@@ -30,6 +30,18 @@ source_set("browser") {
     "//ui/base",
   ]
 
+  if (is_android) {
+    sources += [
+      "android/android_combined_policy_provider.cc",
+      "android/android_combined_policy_provider.h",
+      "android/component_jni_registrar.cc",
+      "android/component_jni_registrar.h",
+      "android/policy_converter.cc",
+      "android/policy_converter.h",
+    ]
+    deps += [ "//components/policy/android:jni_headers" ]
+  }
+
   if (enable_configuration_policy) {
     sources += [
       "autofill_policy_handler.cc",
@@ -60,15 +72,5 @@ source_set("browser") {
       "//components/policy/proto",
       "//third_party/icu",
     ]
-
-    if (is_android) {
-      sources += [
-        "android/component_jni_registrar.cc",
-        "android/component_jni_registrar.h",
-        "android/policy_converter.cc",
-        "android/policy_converter.h",
-      ]
-      deps += [ "//components/policy/android:jni_headers" ]
-    }
   }
 }

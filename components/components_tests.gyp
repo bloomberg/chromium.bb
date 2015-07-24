@@ -396,6 +396,7 @@
       'password_manager/core/common/credential_manager_types_unittest.cc',
     ],
     'policy_unittest_sources': [
+      'policy/core/browser/android/android_combined_policy_provider_unittest.cc',
       'policy/core/browser/android/policy_converter_unittest.cc',
       'policy/core/browser/autofill_policy_handler_unittest.cc',
       'policy/core/browser/browser_policy_connector_unittest.cc',
@@ -429,7 +430,6 @@
       'policy/core/common/policy_loader_mac_unittest.cc',
       'policy/core/common/policy_loader_win_unittest.cc',
       'policy/core/common/policy_map_unittest.cc',
-      'policy/core/common/policy_provider_android_unittest.cc',
       'policy/core/common/policy_service_impl_unittest.cc',
       'policy/core/common/policy_statistics_collector_unittest.cc',
       'policy/core/common/preg_parser_win_unittest.cc',
@@ -990,6 +990,7 @@
           'conditions': [
             ['OS=="android"', {
               'dependencies': [
+                'components.gyp:policy_java',
                 '../build/android/ndk.gyp:cpu_features',
               ],
             }],
@@ -1556,6 +1557,25 @@
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
+        {
+          'target_name': 'components_junit_tests',
+          'type': 'none',
+          'dependencies': [
+            'components.gyp:invalidation_java',
+            'components.gyp:policy_java',
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'variables': {
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              'invalidation/impl/android/junit/',
+              'policy/android/junit/'
+            ],
+          },
+          'includes': [ '../build/host_jar.gypi' ],
+         },
       ],
     }],
   ],

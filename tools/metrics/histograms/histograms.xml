@@ -8145,6 +8145,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.AppRestrictionLoadTime" units="milliseconds">
+  <owner>aberent@chromium.org</owner>
+  <summary>
+    Android Only - Time to load the App Restrictions from the O.S..
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.AppRestrictionsCacheLoad" enum="BooleanSuccess">
+  <owner>aberent@chromium.org</owner>
+  <summary>
+    Android Only - Whether Chrome was able to read and decode the
+    AppRestrictions policy cache on startup.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.AttributesTPMConsistency"
     enum="EnterpriseAttributesTPMConsistencyType">
   <owner>tnagel@chromium.org</owner>

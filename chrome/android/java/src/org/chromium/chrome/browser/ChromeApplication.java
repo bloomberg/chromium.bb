@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyManager;
-import org.chromium.chrome.browser.policy.PolicyManager.PolicyChangeListener;
 import org.chromium.chrome.browser.policy.providers.AppRestrictionsPolicyProvider;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -92,6 +91,8 @@ import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
+import org.chromium.policy.CombinedPolicyProvider;
+import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintingController;
 import org.chromium.sync.signin.AccountManagerDelegate;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -183,7 +184,6 @@ public class ChromeApplication extends ContentApplication {
 
     private ChromeLifetimeController mChromeLifetimeController;
     private PrintingController mPrintingController;
-    private PolicyManager mPolicyManager = new PolicyManager();
 
     /**
      * This is called once per ChromeApplication instance, which get created per process
@@ -319,8 +319,7 @@ public class ChromeApplication extends ContentApplication {
             stopApplicationActivityTracker();
             PartnerBrowserCustomizations.destroy();
             ShareHelper.clearSharedScreenshots(this);
-            mPolicyManager.destroy();
-            mPolicyManager = null;
+            CombinedPolicyProvider.get().destroy();
         }
     }
 
@@ -476,9 +475,6 @@ public class ChromeApplication extends ContentApplication {
         AppBannerManager.setAppDetailsDelegate(createAppDetailsDelegate());
         mChromeLifetimeController = new ChromeLifetimeController(this);
 
-        mPolicyManager.initializeNative();
-        registerPolicyProviders(mPolicyManager);
-
         PrefServiceBridge.getInstance().migratePreferences(this);
     }
 
@@ -500,6 +496,9 @@ public class ChromeApplication extends ContentApplication {
     public void startChromeBrowserProcessesAsync(BrowserStartupController.StartupCallback callback)
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
+        // The policies are used by browser startup, so we need to register the policy providers
+        // before starting the browser process.
+        registerPolicyProviders(CombinedPolicyProvider.get());
         Context applicationContext = getApplicationContext();
         BrowserStartupController.get(applicationContext, LibraryProcessType.PROCESS_BROWSER)
                 .startBrowserProcessesAsync(callback);
@@ -520,6 +519,9 @@ public class ChromeApplication extends ContentApplication {
         LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
         libraryLoader.ensureInitialized(context);
         libraryLoader.asyncPrefetchLibrariesToMemory();
+        // The policies are used by browser startup, so we need to register the policy providers
+        // before starting the browser process.
+        registerPolicyProviders(CombinedPolicyProvider.get());
         BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
                 .startBrowserProcessesSync(false);
         if (initGoogleServicesManager) {
@@ -698,33 +700,47 @@ public class ChromeApplication extends ContentApplication {
         return new GSAHelper();
     }
 
+    // TODO(aberent): Change return type and remove cast once downstream CL has landed.
     @VisibleForTesting
     public PolicyManager getPolicyManagerForTesting() {
-        return mPolicyManager;
+        return (PolicyManager) CombinedPolicyProvider.get();
     }
 
     /**
      * Registers various policy providers with the policy manager.
      * Providers are registered in increasing order of precedence so overrides should call this
      * method in the end for this method to maintain the highest precedence.
-     * @param manager The {@link PolicyManager} to register the providers with.
+     * @param combinedProvider The {@link CombinedPolicyProvider} to register the providers with.
+     */
+    protected void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
+        combinedProvider.registerProvider(
+                new AppRestrictionsPolicyProvider(getApplicationContext()));
+    }
+
+    /**
+     * Temp - for compatibility with existing downstream code, which overrides this.
+     * @param manager The {@link PolicyManager} to register the providers with
+     *
+     * TODO(aberent): Remove once the downstream CL lands.
      */
     protected void registerPolicyProviders(PolicyManager manager) {
-        manager.registerProvider(new AppRestrictionsPolicyProvider(getApplicationContext()));
+        // Cast the manager's type to force a call to the other overload, avoiding infinite
+        // recursion
+        registerPolicyProviders((CombinedPolicyProvider) manager);
     }
 
     /**
      * Add a listener to be notified upon policy changes.
      */
     public void addPolicyChangeListener(PolicyChangeListener listener) {
-        mPolicyManager.addPolicyChangeListener(listener);
+        CombinedPolicyProvider.get().addPolicyChangeListener(listener);
     }
 
     /**
      * Remove a listener to be notified upon policy changes.
      */
     public void removePolicyChangeListener(PolicyChangeListener listener) {
-        mPolicyManager.removePolicyChangeListener(listener);
+        CombinedPolicyProvider.get().removePolicyChangeListener(listener);
     }
 
     /**

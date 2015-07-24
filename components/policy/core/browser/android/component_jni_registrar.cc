@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/basictypes.h"
+#include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #include "components/policy/core/browser/android/policy_converter.h"
 
 namespace policy {
@@ -14,6 +15,7 @@ namespace android {
 
 static base::android::RegistrationMethod kPolicyRegisteredMethods[] = {
     {"PolicyConverter", PolicyConverter::Register},
+    {"AndroidCombinedPolicyProvider", AndroidCombinedPolicyProvider::Register},
 };
 
 bool RegisterPolicy(JNIEnv* env) {

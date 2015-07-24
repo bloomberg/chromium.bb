@@ -614,6 +614,7 @@ android_library("chrome_shared_test_java") {
     "//components/invalidation/impl:java",
     "//components/invalidation/impl:javatests",
     "//components/navigation_interception/android:navigation_interception_java",
+    "//components/policy/android:policy_java",
     "//components/precache/android:precache_java",
     "//components/precache/android:precache_javatests",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",

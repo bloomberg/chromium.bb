@@ -66,6 +66,8 @@
       'conditions': [
         ['OS=="android"', {
           'sources': [
+            'core/browser/android/android_combined_policy_provider.cc',
+            'core/browser/android/android_combined_policy_provider.h',
             'core/browser/android/component_jni_registrar.cc',
             'core/browser/android/component_jni_registrar.h',
             'core/browser/android/policy_converter.cc',

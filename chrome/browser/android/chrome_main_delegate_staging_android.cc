@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "components/policy/core/common/policy_provider_android.h"
+#include "components/policy/core/browser/android/android_combined_policy_provider.h"
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
@@ -36,7 +36,7 @@ bool ChromeMainDelegateStagingAndroid::BasicStartupComplete(int* exit_code) {
   SafeBrowsingResourceThrottleFactory::RegisterFactory(
       data_reduction_proxy_throttle_factory_.get());
 #endif
-  policy::PolicyProviderAndroid::SetShouldWaitForPolicy(true);
+  policy::android::AndroidCombinedPolicyProvider::SetShouldWaitForPolicy(true);
 
   return ChromeMainDelegateAndroid::BasicStartupComplete(exit_code);
 }

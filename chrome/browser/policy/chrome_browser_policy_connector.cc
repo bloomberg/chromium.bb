@@ -37,7 +37,7 @@
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "components/policy/core/common/config_dir_policy_loader.h"
 #elif defined(OS_ANDROID)
-#include "components/policy/core/common/policy_provider_android.h"
+#include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #endif
 
 using content::BrowserThread;
@@ -114,7 +114,8 @@ ConfigurationPolicyProvider*
     return NULL;
   }
 #elif defined(OS_ANDROID)
-  return new PolicyProviderAndroid();
+  return new policy::android::AndroidCombinedPolicyProvider(
+      GetSchemaRegistry());
 #else
   return NULL;
 #endif
