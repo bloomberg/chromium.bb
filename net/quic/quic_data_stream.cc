@@ -114,7 +114,7 @@ void QuicDataStream::OnStreamHeadersPriority(QuicPriority priority) {
 void QuicDataStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
   headers_decompressed_ = true;
   if (fin) {
-    sequencer()->OnStreamFrame(QuicStreamFrame(id(), fin, 0, StringPiece()));
+    OnStreamFrame(QuicStreamFrame(id(), fin, 0, StringPiece()));
   }
   if (FinishedReadingHeaders()) {
     sequencer()->FlushBufferedFrames();

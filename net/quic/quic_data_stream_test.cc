@@ -127,6 +127,23 @@ TEST_P(QuicDataStreamTest, ProcessHeaders) {
   EXPECT_FALSE(stream_->IsDoneReading());
 }
 
+TEST_P(QuicDataStreamTest, ProcessHeadersWithFin) {
+  Initialize(kShouldProcessData);
+
+  string headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  stream_->OnStreamHeadersPriority(QuicUtils::HighestPriority());
+  stream_->OnStreamHeaders(headers);
+  EXPECT_EQ("", stream_->data());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
+  stream_->OnStreamHeadersComplete(true, headers.size());
+  EXPECT_EQ(QuicUtils::HighestPriority(), stream_->EffectivePriority());
+  EXPECT_EQ("", stream_->data());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
+  EXPECT_FALSE(stream_->IsDoneReading());
+  EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
+}
+
 TEST_P(QuicDataStreamTest, MarkHeadersConsumed) {
   Initialize(kShouldProcessData);
 
