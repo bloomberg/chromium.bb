@@ -2754,8 +2754,6 @@
             'html/LabelableElement.cpp',
             'html/LabelsNodeList.cpp',
             'html/LabelsNodeList.h',
-            'html/LinkDefaultPresentation.cpp',
-            'html/LinkDefaultPresentation.h',
             'html/LinkManifest.cpp',
             'html/LinkManifest.h',
             'html/LinkRelAttribute.cpp',

@@ -177,8 +177,6 @@ public:
 
     void dispatchDidChangeManifest() override;
 
-    void dispatchDidChangeDefaultPresentation() override;
-
     unsigned backForwardLength() override;
 
     void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;

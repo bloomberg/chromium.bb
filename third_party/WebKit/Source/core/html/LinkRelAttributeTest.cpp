@@ -42,18 +42,15 @@ protected:
     void SetUp() override
     {
         m_touchIconLoadingEnabled = RuntimeEnabledFeatures::touchIconLoadingEnabled();
-        m_presentationEnabled = RuntimeEnabledFeatures::presentationEnabled();
     }
 
     void TearDown() override
     {
         RuntimeEnabledFeatures::setTouchIconLoadingEnabled(m_touchIconLoadingEnabled);
-        RuntimeEnabledFeatures::setPresentationEnabled(m_presentationEnabled);
     }
 
 private:
     bool m_touchIconLoadingEnabled;
-    bool m_presentationEnabled;
 };
 
 static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender, bool isImport = false, bool isPreconnect = false)
@@ -142,15 +139,6 @@ TEST_F(LinkRelAttributeTest, ConstructorTouchIconLoadingEnabled)
 
     testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false, false, false, true);
     testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false, false, false, true);
-}
-
-TEST_F(LinkRelAttributeTest, ConstructorDefaultPresentation)
-{
-    RuntimeEnabledFeatures::setPresentationEnabled(false);
-    EXPECT_FALSE(LinkRelAttribute("default-presentation").isDefaultPresentation());
-
-    RuntimeEnabledFeatures::setPresentationEnabled(true);
-    EXPECT_TRUE(LinkRelAttribute("default-presentation").isDefaultPresentation());
 }
 
 } // namespace blink

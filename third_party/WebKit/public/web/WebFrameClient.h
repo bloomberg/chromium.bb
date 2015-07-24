@@ -321,9 +321,6 @@ public:
     // The frame's manifest has changed.
     virtual void didChangeManifest(WebLocalFrame*) { }
 
-    // The frame's presentation URL has changed.
-    virtual void didChangeDefaultPresentation(WebLocalFrame*) { }
-
     // The frame's theme color has changed.
     virtual void didChangeThemeColor() { }
 

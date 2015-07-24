@@ -4745,22 +4745,6 @@ HTMLLinkElement* Document::linkManifest() const
     return 0;
 }
 
-HTMLLinkElement* Document::linkDefaultPresentation() const
-{
-    HTMLHeadElement* head = this->head();
-    if (!head)
-        return nullptr;
-
-    // The first link element with a presentation URL rel must be used. Others are ignored.
-    for (HTMLLinkElement* linkElement = Traversal<HTMLLinkElement>::firstChild(*head); linkElement; linkElement = Traversal<HTMLLinkElement>::nextSibling(*linkElement)) {
-        if (!linkElement->relAttribute().isDefaultPresentation())
-            continue;
-        return linkElement;
-    }
-
-    return nullptr;
-}
-
 void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard)
 {
     if (m_useSecureKeyboardEntryWhenActive == usesSecureKeyboard)

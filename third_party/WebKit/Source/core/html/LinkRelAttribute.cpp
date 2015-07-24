@@ -49,7 +49,6 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkNext(false)
     , m_isImport(false)
     , m_isManifest(false)
-    , m_isDefaultPresentation(false)
 {
     if (rel.isEmpty())
         return;
@@ -95,9 +94,6 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
                 m_iconType = TouchPrecomposedIcon;
         } else if (equalIgnoringCase(linkType, "manifest")) {
             m_isManifest = true;
-        } else if (equalIgnoringCase(linkType, "default-presentation")) {
-            if (RuntimeEnabledFeatures::presentationEnabled())
-                m_isDefaultPresentation = true;
         }
     }
 }
