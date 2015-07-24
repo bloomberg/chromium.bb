@@ -687,8 +687,6 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
   // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.
-  // TODO(crogers): WebKit should give the channel layout instead of the hard
-  // channel count.
   media::ChannelLayout layout = media::CHANNEL_LAYOUT_UNSUPPORTED;
   switch (channels) {
     case 1:
@@ -716,7 +714,9 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
       layout = media::CHANNEL_LAYOUT_7_1;
       break;
     default:
-      layout = media::CHANNEL_LAYOUT_STEREO;
+      // If the layout is not supported (more than 9 channels), falls back to
+      // discrete mode.
+      layout = media::CHANNEL_LAYOUT_DISCRETE;
   }
 
   int session_id = 0;
@@ -728,9 +728,11 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
     input_channels = 0;
   }
 
+  // For CHANNEL_LAYOUT_DISCRETE, pass the explicit channel count along with
+  // the channel layout when creating an |AudioParameters| object.
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      layout, static_cast<int>(sample_rate), 16, buffer_size,
+      layout, channels, static_cast<int>(sample_rate), 16, buffer_size,
       media::AudioParameters::NO_EFFECTS);
 
   return new RendererWebAudioDeviceImpl(params, callback, session_id);
