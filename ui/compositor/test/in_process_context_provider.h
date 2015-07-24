@@ -30,22 +30,19 @@ class InProcessContextProvider : public cc::ContextProvider {
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
-      bool lose_context_when_out_of_memory,
       gfx::AcceleratedWidget window,
       const std::string& debug_name);
 
   // Uses default attributes for creating an offscreen context.
   static scoped_refptr<InProcessContextProvider> CreateOffscreen(
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      gpu::ImageFactory* image_factory,
-      bool lose_context_when_out_of_memory);
+      gpu::ImageFactory* image_factory);
 
  private:
   InProcessContextProvider(
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
-      bool lose_context_when_out_of_memory,
       gfx::AcceleratedWidget window,
       const std::string& debug_name);
   ~InProcessContextProvider() override;
@@ -79,7 +76,6 @@ class InProcessContextProvider : public cc::ContextProvider {
   gpu::gles2::ContextCreationAttribHelper attribs_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
-  bool lose_context_when_out_of_memory_;
   gfx::AcceleratedWidget window_;
   std::string debug_name_;
   cc::ContextProvider::Capabilities capabilities_;
