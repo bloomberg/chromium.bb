@@ -350,6 +350,20 @@ var renderTile = function(data) {
       }
     });
   }
+  // For local suggestions, we use navigateContentWindow instead of the default
+  // action, since it includes support for file:// urls.
+  if (data.rid) {
+    tile.addEventListener('click', function(ev) {
+      ev.preventDefault();
+      var disp = chrome.embeddedSearch.newTabPage.getDispositionFromClick(
+        ev.button == 1,  // MIDDLE BUTTON
+        ev.altKey, ev.ctrlKey, ev.metaKey, ev.shiftKey);
+
+      window.chrome.embeddedSearch.newTabPage.navigateContentWindow(this.href,
+                                                                    disp);
+    });
+  }
+
   tile.addEventListener('keydown', function(event) {
     if (event.keyCode == 46 /* DELETE */ ||
         event.keyCode == 8 /* BACKSPACE */) {
