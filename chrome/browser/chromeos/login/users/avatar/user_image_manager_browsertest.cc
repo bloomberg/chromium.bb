@@ -230,6 +230,7 @@ class UserImageManagerTest : public LoginManagerTest,
     info.hosted_domain = std::string();
     info.locale = username;
     info.picture_url = "http://localhost/avatar.jpg";
+    info.is_child_account = false;
 
     AccountTrackerServiceFactory::GetForProfile(profile)->SeedAccountInfo(info);
   }
