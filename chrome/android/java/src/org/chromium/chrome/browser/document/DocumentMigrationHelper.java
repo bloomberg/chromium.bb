@@ -59,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The class that carries out migration of tab states from/to document mode.
@@ -382,6 +383,7 @@ public class DocumentMigrationHelper {
             return;
         }
 
+        final AtomicInteger completedCount = new AtomicInteger();
         final TabContentManager contentManager =
                 new TabContentManager(activity, new ContentOffsetProvider() {
                     @Override
@@ -394,7 +396,6 @@ public class DocumentMigrationHelper {
             final int tabId = tabModel.getTabAt(i).getId();
             String currentUrl = tabModel.getCurrentUrlForDocument(tabId);
             String currentTitle = tabModel.getTitleForDocument(tabId);
-            final boolean finalizeWhenDone =  i == tabModel.getCount() - 1;
 
             // Use placeholders if we can't find anything for url and title.
             if (TextUtils.isEmpty(currentUrl)) currentUrl = UrlConstants.NTP_URL;
@@ -424,9 +425,8 @@ public class DocumentMigrationHelper {
                                                 tabModel.getTabStateForDocument(tabId),
                                                 url, title, favicon, bitmap);
                                     }
-                                    // TODO(yusufo) : Have a counter here to make sure all tabs
-                                    //                before this one has been added.
-                                    if (finalizeWhenDone) {
+                                    if (completedCount.incrementAndGet() == tabModel.getCount()) {
+                                        contentManager.destroy();
                                         finalizeMigration(activity, finalizeMode);
                                     }
                                 }
