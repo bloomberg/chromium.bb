@@ -277,14 +277,12 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
 
-    // TODO(fmalita): get rid of the bitmap, switch to SkImage drawing
-    SkBitmap bitmap;
     RefPtr<SkImage> image = imageForCurrentFrame();
-    if (!image || !image->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode))
+    if (!image)
         return; // It's too early and we don't have an image yet.
 
     FloatRect adjustedSrcRect = srcRect;
-    adjustedSrcRect.intersect(FloatRect(0, 0, bitmap.width(), bitmap.height()));
+    adjustedSrcRect.intersect(FloatRect(0, 0, image->width(), image->height()));
 
     if (adjustedSrcRect.isEmpty() || dstRect.isEmpty())
         return; // Nothing to draw.
@@ -312,9 +310,8 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     }
 
     SkRect skSrcRect = adjustedSrcRect;
-    SkCanvas::SrcRectConstraint constraint =
-        clampMode == ClampImageToSourceRect ? SkCanvas::kStrict_SrcRectConstraint : SkCanvas::kFast_SrcRectConstraint;
-    canvas->drawBitmapRect(bitmap, &skSrcRect, adjustedDstRect, &paint, constraint);
+    canvas->drawImageRect(image.get(), &skSrcRect, adjustedDstRect, &paint,
+        WebCoreClampingModeToSkiaRectConstraint(clampMode));
     canvas->restoreToCount(initialSaveCount);
 
     if (currentFrameIsLazyDecoded())

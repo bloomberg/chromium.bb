@@ -113,6 +113,8 @@ crbug.com/510337 inspector/sources/debugger/live-edit.html [ Slow ]
 
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 
+crbug.com/449197 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
+
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 

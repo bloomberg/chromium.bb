@@ -32,9 +32,9 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 
-#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -78,11 +78,12 @@ const SkBitmap& ImageBufferSurface::bitmap()
 
 void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
-    SkBitmap bmp = bitmap();
+    RefPtr<SkImage> snapshot = newImageSnapshot();
+    if (!snapshot)
+        return;
 
-    RefPtr<Image> image = BitmapImage::create(bmp);
-
-    context->drawImage(image.get(), destRect, srcRect, op, DoNotRespectImageOrientation);
+    RefPtr<Image> image = StaticBitmapImage::create(snapshot.release());
+    context->drawImage(image.get(), destRect, srcRect, op);
 }
 
 } // namespace blink
