@@ -30,8 +30,6 @@ namespace blink {
 
 namespace {
 
-const double webGLTimeoutIgnored = static_cast<double>(0xFFFFFFFFFFFFFFFF);
-
 WGC3Dsync syncObjectOrZero(const WebGLSync* object)
 {
     return object ? object->object() : 0;
@@ -1396,21 +1394,31 @@ void WebGL2RenderingContextBase::deleteSync(WebGLSync* sync)
     deleteObject(sync);
 }
 
-GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync, GLbitfield flags, double timeout)
+GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync, GLbitfield flags, GLint64 timeout)
 {
     if (isContextLost() || !validateWebGLObject("clientWaitSync", sync))
         return GL_WAIT_FAILED;
 
-    GLuint64 timeout64 = (timeout == webGLTimeoutIgnored ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout));
+    if (timeout < -1) {
+        synthesizeGLError(GL_INVALID_VALUE, "clientWaitSync", "timeout < -1");
+        return GL_WAIT_FAILED;
+    }
+
+    GLuint64 timeout64 = timeout == -1 ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout);
     return webContext()->clientWaitSync(syncObjectOrZero(sync), flags, timeout64);
 }
 
-void WebGL2RenderingContextBase::waitSync(WebGLSync* sync, GLbitfield flags, double timeout)
+void WebGL2RenderingContextBase::waitSync(WebGLSync* sync, GLbitfield flags, GLint64 timeout)
 {
     if (isContextLost() || !validateWebGLObject("waitSync", sync))
         return;
 
-    GLuint64 timeout64 = (timeout == webGLTimeoutIgnored ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout));
+    if (timeout < -1) {
+        synthesizeGLError(GL_INVALID_VALUE, "waitSync", "timeout < -1");
+        return;
+    }
+
+    GLuint64 timeout64 = timeout == -1 ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout);
     webContext()->waitSync(syncObjectOrZero(sync), flags, timeout64);
 }
 

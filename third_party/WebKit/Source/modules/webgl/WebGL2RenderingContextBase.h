@@ -125,8 +125,8 @@ public:
     PassRefPtrWillBeRawPtr<WebGLSync> fenceSync(GLenum, GLbitfield);
     GLboolean isSync(WebGLSync*);
     void deleteSync(WebGLSync*);
-    GLenum clientWaitSync(WebGLSync*, GLbitfield, double);
-    void waitSync(WebGLSync*, GLbitfield, double);
+    GLenum clientWaitSync(WebGLSync*, GLbitfield, GLint64);
+    void waitSync(WebGLSync*, GLbitfield, GLint64);
 
     ScriptValue getSyncParameter(ScriptState*, WebGLSync*, GLenum);
 

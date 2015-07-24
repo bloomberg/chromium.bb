@@ -17,7 +17,6 @@ typedef unsigned long  GLuint;
 typedef unrestricted float GLfloat;
 typedef unrestricted float GLclampf;
 typedef long long      GLint64;
-typedef double         GLuint64; // This is the best approximation Javascript can give us.
 
 [
     RuntimeEnabled=UnsafeES3APIs,
@@ -298,7 +297,7 @@ typedef double         GLuint64; // This is the best approximation Javascript ca
     const GLenum MAX_ELEMENT_INDEX                             = 0x8D6B;
     const GLenum NUM_SAMPLE_COUNTS                             = 0x9380;
     const GLenum TEXTURE_IMMUTABLE_LEVELS                      = 0x82DF;
-    const GLuint64 TIMEOUT_IGNORED                             = 0xFFFFFFFFFFFFFFFF;
+    const GLint TIMEOUT_IGNORED                                = -1;
 
     /* WebGL-specific enums */
     const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL                 = 0x9247;
@@ -400,8 +399,8 @@ typedef double         GLuint64; // This is the best approximation Javascript ca
     WebGLSync fenceSync(GLenum condition, GLbitfield flags);
     GLboolean isSync(WebGLSync? sync);
     void deleteSync(WebGLSync? sync);
-    GLenum clientWaitSync(WebGLSync? sync, GLbitfield flags, GLuint64 timeout);
-    void waitSync(WebGLSync? sync, GLbitfield flags, GLuint64 timeout);
+    GLenum clientWaitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
+    void waitSync(WebGLSync? sync, GLbitfield flags, GLint64 timeout);
 
     [CallWith=ScriptState] any getSyncParameter(WebGLSync sync, GLenum pname);
 
