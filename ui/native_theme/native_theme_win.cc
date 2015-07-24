@@ -666,9 +666,10 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableNegativeSelectedText:
       return color_utils::GetReadableColor(kNegativeTextColor,
                                            system_colors_[COLOR_HIGHLIGHT]);
+    default:
+      NOTREACHED();
+      return kInvalidColorIdColor;
   }
-  NOTREACHED();
-  return kInvalidColorIdColor;
 }
 
 void NativeThemeWin::PaintIndirect(SkCanvas* canvas,

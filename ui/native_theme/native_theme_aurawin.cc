@@ -26,8 +26,9 @@ bool IsScrollbarPart(NativeTheme::Part part) {
     case NativeTheme::kScrollbarVerticalGripper:
     case NativeTheme::kScrollbarCorner:
       return true;
+    default:
+      return false;
   }
-  return false;
 }
 
 }  // namespace

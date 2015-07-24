@@ -171,6 +171,13 @@ bool GLSurface::InitializeOneOffInternal() {
         return false;
       }
       break;
+    case kGLImplementationNone:
+    case kGLImplementationDesktopGLCoreProfile:
+    case kGLImplementationAppleGL:
+      NOTREACHED();
+    case kGLImplementationOSMesaGL:
+    case kGLImplementationMockGL:
+      break;
   }
   return true;
 }
