@@ -707,6 +707,9 @@ IntRect VisiblePosition::absoluteCaretBounds() const
 
 int VisiblePosition::lineDirectionPointForBlockDirectionNavigation() const
 {
+    if (isNull())
+        return 0;
+
     LayoutObject* layoutObject;
     LayoutRect localRect = localCaretRect(layoutObject);
     if (localRect.isEmpty() || !layoutObject)

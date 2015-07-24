@@ -1191,7 +1191,7 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
         VisiblePosition visiblePosition(pos, m_selection.affinity());
         // VisiblePosition creation can fail here if a node containing the selection becomes visibility:hidden
         // after the selection is created and before this function is called.
-        x = visiblePosition.isNotNull() ? visiblePosition.lineDirectionPointForBlockDirectionNavigation() : 0;
+        x = visiblePosition.lineDirectionPointForBlockDirectionNavigation();
         m_xPosForVerticalArrowNavigation = x;
     } else
         x = m_xPosForVerticalArrowNavigation;
