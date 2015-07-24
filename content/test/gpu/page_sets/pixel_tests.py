@@ -28,7 +28,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_canvas2d.html',
       name=base_name + '.Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=5,
+      revision=6,
       story_set=self,
       expectations=expectations))
 
@@ -36,7 +36,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_css3d.html',
       name=base_name + '.CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],
-      revision=13,
+      revision=14,
       story_set=self,
       expectations=expectations))
 
@@ -44,6 +44,6 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_webgl.html',
       name=base_name + '.WebGLGreenTriangle',
       test_rect=[0, 0, 300, 300],
-      revision=10,
+      revision=11,
       story_set=self,
       expectations=expectations))
