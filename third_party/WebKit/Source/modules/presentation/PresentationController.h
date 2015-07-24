@@ -57,7 +57,6 @@ public:
 
     // Handling of running sessions.
     void registerSession(PresentationSession*);
-    void unregisterSession(PresentationSession*);
 
 private:
     PresentationController(LocalFrame&, WebPresentationClient*);
@@ -75,10 +74,13 @@ private:
     // client can't be used.
     WebPresentationClient* m_client;
 
-    // Default PermissionRequest used by the embedder.
+    // Default PresentationRequest used by the embedder.
     PersistentWillBeMember<PresentationRequest> m_defaultRequest;
 
     // The presentation sessions associated with that frame.
+    // TODO(mlamouri): the PresentationController will keep any created session
+    // alive until the frame is detached. These should be weak ptr so that the
+    // session can be GC'd.
     PersistentHeapHashSetWillBeHeapHashSet<Member<PresentationSession>> m_sessions;
 };
 

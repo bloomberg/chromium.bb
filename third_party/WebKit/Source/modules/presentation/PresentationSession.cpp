@@ -111,11 +111,6 @@ PresentationSession::PresentationSession(LocalFrame* frame, const String& id, co
 PresentationSession::~PresentationSession()
 {
     ASSERT(!m_blobLoader);
-    if (frame()) {
-        PresentationController* controller = PresentationController::from(*frame());
-        if (controller)
-            controller->unregisterSession(this);
-    }
 }
 
 // static

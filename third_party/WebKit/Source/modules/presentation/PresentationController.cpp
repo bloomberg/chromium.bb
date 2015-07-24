@@ -123,11 +123,6 @@ void PresentationController::registerSession(PresentationSession* session)
     m_sessions.add(session);
 }
 
-void PresentationController::unregisterSession(PresentationSession* session)
-{
-    m_sessions.remove(session);
-}
-
 void PresentationController::willDetachFrameHost()
 {
     if (m_client) {
