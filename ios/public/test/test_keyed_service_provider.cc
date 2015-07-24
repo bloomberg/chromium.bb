@@ -82,15 +82,6 @@ TestKeyedServiceProvider::GetBookmarkModelForBrowserState(
   return nullptr;
 }
 
-KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSigninManagerFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-SigninManager* TestKeyedServiceProvider::GetSigninManagerForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
   return FakeSyncServiceFactory::GetInstance();
 }

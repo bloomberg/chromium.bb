@@ -20,9 +20,6 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   KeyedServiceBaseFactory* GetBookmarkModelFactory() override;
   bookmarks::BookmarkModel* GetBookmarkModelForBrowserState(
       ChromeBrowserState* browser_state) override;
-  KeyedServiceBaseFactory* GetSigninManagerFactory() override;
-  SigninManager* GetSigninManagerForBrowserState(
-      ChromeBrowserState* browser_state) override;
   KeyedServiceBaseFactory* GetSyncServiceFactory() override;
   sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state) override;

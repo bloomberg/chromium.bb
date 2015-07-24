@@ -95,6 +95,8 @@
         'browser/net/mock_image_fetcher.mm',
         'browser/signin/fake_oauth2_token_service_builder.cc',
         'browser/signin/fake_oauth2_token_service_builder.h',
+        'browser/signin/fake_signin_manager_builder.cc',
+        'browser/signin/fake_signin_manager_builder.h',
         'browser/sync/sync_setup_service_mock.cc',
         'browser/sync/sync_setup_service_mock.h',
         'test/ios_chrome_unit_test_suite.cc',

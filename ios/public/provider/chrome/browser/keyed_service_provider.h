@@ -11,7 +11,6 @@
 enum class ServiceAccessType;
 
 class KeyedServiceBaseFactory;
-class SigninManager;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -47,13 +46,6 @@ class KeyedServiceProvider {
 
   // Returns an instance of bookmarks::BookmarkModel tied to |browser_state|.
   virtual bookmarks::BookmarkModel* GetBookmarkModelForBrowserState(
-      ChromeBrowserState* browser_state) = 0;
-
-  // Returns the SigninManager factory for dependencies.
-  virtual KeyedServiceBaseFactory* GetSigninManagerFactory() = 0;
-
-  // Returns an instance of SigninManager tied to |browser_state|.
-  virtual SigninManager* GetSigninManagerForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
   // Returns the sync_driver::SyncService factory for dependencies.

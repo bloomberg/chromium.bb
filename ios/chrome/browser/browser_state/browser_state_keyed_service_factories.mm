@@ -12,11 +12,17 @@
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
+#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
+#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
@@ -38,17 +44,23 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   enhanced_bookmarks::BookmarkServerClusterServiceFactory::GetInstance();
   enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
+  ios::AccountTrackerServiceFactory::GetInstance();
   ios::BookmarkUndoServiceFactory::GetInstance();
   ios::CookieSettingsFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
+  ios::GaiaCookieManagerServiceFactory::GetInstance();
+  ios::GoogleURLTrackerFactory::GetInstance();
   ios::HistoryServiceFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();
+  ios::SigninManagerFactory::GetInstance();
   ios::StartupTaskRunnerServiceFactory::GetInstance();
   ios::TemplateURLServiceFactory::GetInstance();
   ios::TopSitesFactory::GetInstance();
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
+  OAuth2TokenServiceFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
+  SigninClientFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
