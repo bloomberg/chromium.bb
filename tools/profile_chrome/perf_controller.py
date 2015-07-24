@@ -22,7 +22,7 @@ sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'telemetry'))
 try:
   # pylint: disable=F0401
-  from telemetry.core.platform.profiler import android_profiling_helper
+  from telemetry.internal.platform.profiler import android_profiling_helper
   from catapult_base import binary_manager
 except ImportError:
   android_profiling_helper = None
