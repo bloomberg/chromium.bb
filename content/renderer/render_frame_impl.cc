@@ -1969,7 +1969,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     return plugin;
   }
 
-  if (base::UTF16ToUTF8(params.mimeType) == kBrowserPluginMimeType) {
+  if (base::UTF16ToUTF8(base::StringPiece16(params.mimeType)) ==
+      kBrowserPluginMimeType) {
     return BrowserPluginManager::Get()->CreateBrowserPlugin(
         this, GetContentClient()
                   ->renderer()
@@ -2144,9 +2145,10 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
-  Send(new FrameHostMsg_CreateChildFrame(routing_id_, scope,
-                                         base::UTF16ToUTF8(name), sandbox_flags,
-                                         &child_routing_id));
+  Send(new FrameHostMsg_CreateChildFrame(
+      routing_id_, scope,
+      base::UTF16ToUTF8(base::StringPiece16(name)), sandbox_flags,
+      &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
@@ -2263,7 +2265,8 @@ void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
       switches::kSitePerProcess);
   if (is_site_per_process ||
       render_view_->renderer_preferences_.report_frame_name_changes) {
-    Send(new FrameHostMsg_DidChangeName(routing_id_, base::UTF16ToUTF8(name)));
+    Send(new FrameHostMsg_DidChangeName(
+        routing_id_, base::UTF16ToUTF8(base::StringPiece16(name))));
   }
 }
 
@@ -3777,20 +3780,22 @@ void RenderFrameImpl::registerProtocolHandler(const WebString& scheme,
                                               const WebURL& url,
                                               const WebString& title) {
   bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  Send(new FrameHostMsg_RegisterProtocolHandler(routing_id_,
-                                                base::UTF16ToUTF8(scheme),
-                                                url,
-                                                title,
-                                                user_gesture));
+  Send(new FrameHostMsg_RegisterProtocolHandler(
+      routing_id_,
+      base::UTF16ToUTF8(base::StringPiece16(scheme)),
+      url,
+      title,
+      user_gesture));
 }
 
 void RenderFrameImpl::unregisterProtocolHandler(const WebString& scheme,
                                                 const WebURL& url) {
   bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  Send(new FrameHostMsg_UnregisterProtocolHandler(routing_id_,
-                                                  base::UTF16ToUTF8(scheme),
-                                                  url,
-                                                  user_gesture));
+  Send(new FrameHostMsg_UnregisterProtocolHandler(
+      routing_id_,
+      base::UTF16ToUTF8(base::StringPiece16(scheme)),
+      url,
+      user_gesture));
 }
 
 blink::WebBluetooth* RenderFrameImpl::bluetooth() {

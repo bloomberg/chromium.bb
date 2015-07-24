@@ -426,7 +426,8 @@ RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
       return IsNotSupported;
 
     std::string key_system_ascii =
-        media::GetUnprefixedKeySystemName(base::UTF16ToASCII(key_system));
+        media::GetUnprefixedKeySystemName(base::UTF16ToASCII(
+            base::StringPiece16(key_system)));
     std::vector<std::string> strict_codecs;
     media::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, true);
 
@@ -721,7 +722,8 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
 
   int session_id = 0;
   if (input_device_id.isNull() ||
-      !base::StringToInt(base::UTF16ToUTF8(input_device_id), &session_id)) {
+      !base::StringToInt(base::UTF16ToUTF8(
+          base::StringPiece16(input_device_id)), &session_id)) {
     if (input_channels > 0)
       DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
 

@@ -17,7 +17,8 @@ std::string URLToMarkup(const blink::WebURL& url,
   markup.append(url.spec());
   markup.append("\">");
   // TODO(darin): HTML escape this
-  markup.append(net::EscapeForHTML(base::UTF16ToUTF8(title)));
+  markup.append(
+      net::EscapeForHTML(base::UTF16ToUTF8(base::StringPiece16(title))));
   markup.append("</a>");
   return markup;
 }
@@ -29,7 +30,8 @@ std::string URLToImageMarkup(const blink::WebURL& url,
   markup.append("\"");
   if (!title.isEmpty()) {
     markup.append(" alt=\"");
-    markup.append(net::EscapeForHTML(base::UTF16ToUTF8(title)));
+    markup.append(
+        net::EscapeForHTML(base::UTF16ToUTF8(base::StringPiece16(title))));
     markup.append("\"");
   }
   markup.append("/>");

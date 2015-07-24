@@ -25,8 +25,10 @@ class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
 
   virtual void visitHeader(const blink::WebString& name,
                            const blink::WebString& value) {
-    const std::string header_name = base::UTF16ToASCII(name);
-    const std::string header_value = base::UTF16ToASCII(value);
+    const std::string header_name =
+        base::UTF16ToASCII(base::StringPiece16(name));
+    const std::string header_value =
+        base::UTF16ToASCII(base::StringPiece16(value));
     CHECK(header_name.find('\0') == std::string::npos);
     CHECK(header_value.find('\0') == std::string::npos);
     headers_->insert(ServiceWorkerHeaderMap::value_type(

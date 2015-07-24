@@ -93,13 +93,13 @@ static string SerializeMediaConstraints(
 
 static string SerializeMediaStreamComponent(
     const blink::WebMediaStreamTrack component) {
-  string id = base::UTF16ToUTF8(component.source().id());
+  string id = base::UTF16ToUTF8(base::StringPiece16(component.source().id()));
   return id;
 }
 
 static string SerializeMediaDescriptor(
     const blink::WebMediaStream& stream) {
-  string label = base::UTF16ToUTF8(stream.id());
+  string label = base::UTF16ToUTF8(base::StringPiece16(stream.id()));
   string result = "label: " + label;
   blink::WebVector<blink::WebMediaStreamTrack> tracks;
   stream.audioTracks(tracks);
@@ -494,9 +494,11 @@ void PeerConnectionTracker::TrackAddIceCandidate(
       bool succeeded) {
   DCHECK(main_thread_.CalledOnValidThread());
   string value =
-      "sdpMid: " + base::UTF16ToUTF8(candidate.sdpMid()) + ", " +
-      "sdpMLineIndex: " + base::IntToString(candidate.sdpMLineIndex()) + ", " +
-      "candidate: " + base::UTF16ToUTF8(candidate.candidate());
+      "sdpMid: " +
+      base::UTF16ToUTF8(base::StringPiece16(candidate.sdpMid())) + ", " +
+      "sdpMLineIndex: " + base::IntToString(candidate.sdpMLineIndex()) +
+      ", " + "candidate: " +
+      base::UTF16ToUTF8(base::StringPiece16(candidate.candidate()));
 
   // OnIceCandidate always succeeds as it's a callback from the browser.
   DCHECK(source != SOURCE_LOCAL || succeeded);
@@ -611,7 +613,7 @@ void PeerConnectionTracker::TrackCreateDTMFSender(
     const blink::WebMediaStreamTrack& track) {
   DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(pc_handler, "createDTMFSender",
-                           base::UTF16ToUTF8(track.id()));
+                           base::UTF16ToUTF8(base::StringPiece16(track.id())));
 }
 
 void PeerConnectionTracker::TrackGetUserMedia(

@@ -347,8 +347,10 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
     if (!base::IsStringASCII(capability.mimeType) ||
         !base::IsStringASCII(capability.codecs) ||
         !IsSupportedContentType(key_system, media_type,
-                                base::UTF16ToASCII(capability.mimeType),
-                                base::UTF16ToASCII(capability.codecs),
+                                base::UTF16ToASCII(
+                                    base::StringPiece16(capability.mimeType)),
+                                base::UTF16ToASCII(
+                                    base::StringPiece16(capability.codecs)),
                                 &proposed_config_state)) {
       continue;
     }
@@ -360,7 +362,8 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
       if (!base::IsStringASCII(capability.robustness))
         continue;
       EmeConfigRule robustness_rule = key_systems_->GetRobustnessConfigRule(
-          key_system, media_type, base::UTF16ToASCII(capability.robustness));
+          key_system, media_type, base::UTF16ToASCII(
+              base::StringPiece16(capability.robustness)));
       if (!proposed_config_state.IsRuleSupported(robustness_rule))
         continue;
       proposed_config_state.AddRule(robustness_rule);
@@ -688,7 +691,8 @@ void KeySystemConfigSelector::SelectConfig(
     return;
   }
 
-  std::string key_system_ascii = base::UTF16ToASCII(key_system);
+  std::string key_system_ascii =
+      base::UTF16ToASCII(base::StringPiece16(key_system));
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {
     not_supported_cb.Run("Unsupported keySystem");
     return;

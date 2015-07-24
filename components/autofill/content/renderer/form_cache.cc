@@ -43,7 +43,8 @@ namespace {
 
 void LogDeprecationMessages(const WebFormControlElement& element) {
   std::string autocomplete_attribute =
-      base::UTF16ToUTF8(element.getAttribute("autocomplete"));
+      base::UTF16ToUTF8(base::StringPiece16(
+          element.getAttribute("autocomplete")));
 
   static const char* const deprecated[] = { "region", "locality" };
   for (size_t i = 0; i < arraysize(deprecated); ++i) {

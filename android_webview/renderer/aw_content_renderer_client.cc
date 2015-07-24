@@ -111,7 +111,8 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     base::string16* error_description) {
   if (error_html) {
     GURL error_url(failed_request.url());
-    std::string err = base::UTF16ToUTF8(error.localizedDescription);
+    std::string err =
+        base::UTF16ToUTF8(base::StringPiece16(error.localizedDescription));
     std::string contents;
     if (err.empty()) {
       contents = AwResource::GetNoDomainPageContent();

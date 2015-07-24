@@ -181,8 +181,10 @@ void GetNativeRtcConfiguration(
     webrtc::PeerConnectionInterface::IceServer server;
     const blink::WebRTCICEServer& webkit_server =
         blink_config.server(i);
-    server.username = base::UTF16ToUTF8(webkit_server.username());
-    server.password = base::UTF16ToUTF8(webkit_server.credential());
+    server.username =
+        base::UTF16ToUTF8(base::StringPiece16(webkit_server.username()));
+    server.password =
+        base::UTF16ToUTF8(base::StringPiece16(webkit_server.credential()));
     server.uri = webkit_server.uri().spec();
     webrtc_config->servers.push_back(server);
   }
@@ -905,8 +907,9 @@ void RTCPeerConnectionHandler::setLocalDescription(
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
 
-  std::string sdp = base::UTF16ToUTF8(description.sdp());
-  std::string type = base::UTF16ToUTF8(description.type());
+  std::string sdp = base::UTF16ToUTF8(base::StringPiece16(description.sdp()));
+  std::string type =
+      base::UTF16ToUTF8(base::StringPiece16(description.type()));
 
   webrtc::SdpParseError error;
   // Since CreateNativeSessionDescription uses the dependency factory, we need
@@ -947,8 +950,9 @@ void RTCPeerConnectionHandler::setRemoteDescription(
     const blink::WebRTCSessionDescription& description) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setRemoteDescription");
-  std::string sdp = base::UTF16ToUTF8(description.sdp());
-  std::string type = base::UTF16ToUTF8(description.type());
+  std::string sdp = base::UTF16ToUTF8(base::StringPiece16(description.sdp()));
+  std::string type =
+      base::UTF16ToUTF8(base::StringPiece16(description.type()));
 
   webrtc::SdpParseError error;
   // Since CreateNativeSessionDescription uses the dependency factory, we need
@@ -1063,9 +1067,9 @@ bool RTCPeerConnectionHandler::addICECandidate(
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(
-          base::UTF16ToUTF8(candidate.sdpMid()),
+          base::UTF16ToUTF8(base::StringPiece16(candidate.sdpMid())),
           candidate.sdpMLineIndex(),
-          base::UTF16ToUTF8(candidate.candidate())));
+          base::UTF16ToUTF8(base::StringPiece16(candidate.candidate()))));
   bool return_value = false;
 
   if (native_candidate) {
@@ -1219,7 +1223,8 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
     const blink::WebString& label, const blink::WebRTCDataChannelInit& init) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDataChannel");
-  DVLOG(1) << "createDataChannel label " << base::UTF16ToUTF8(label);
+  DVLOG(1) << "createDataChannel label "
+           << base::UTF16ToUTF8(base::StringPiece16(label));
 
   webrtc::DataChannelInit config;
   // TODO(jiayl): remove the deprecated reliable field once Libjingle is updated
@@ -1230,11 +1235,11 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
   config.negotiated = init.negotiated;
   config.maxRetransmits = init.maxRetransmits;
   config.maxRetransmitTime = init.maxRetransmitTime;
-  config.protocol = base::UTF16ToUTF8(init.protocol);
+  config.protocol = base::UTF16ToUTF8(base::StringPiece16(init.protocol));
 
   rtc::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel(
-      native_peer_connection_->CreateDataChannel(base::UTF16ToUTF8(label),
-                                                 &config));
+      native_peer_connection_->CreateDataChannel(
+          base::UTF16ToUTF8(base::StringPiece16(label)), &config));
   if (!webrtc_channel) {
     DLOG(ERROR) << "Could not create native data channel.";
     return NULL;

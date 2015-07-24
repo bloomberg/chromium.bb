@@ -20,9 +20,9 @@ PlatformNotificationData ToPlatformNotificationData(
       web_data.direction == WebNotificationData::DirectionLeftToRight
           ? PlatformNotificationData::NotificationDirectionLeftToRight
           : PlatformNotificationData::NotificationDirectionRightToLeft;
-  platform_data.lang = base::UTF16ToUTF8(web_data.lang);
+  platform_data.lang = base::UTF16ToUTF8(base::StringPiece16(web_data.lang));
   platform_data.body = web_data.body;
-  platform_data.tag = base::UTF16ToUTF8(web_data.tag);
+  platform_data.tag = base::UTF16ToUTF8(base::StringPiece16(web_data.tag));
   platform_data.icon = GURL(web_data.icon.string());
   platform_data.vibration_pattern.assign(web_data.vibrate.begin(),
                                          web_data.vibrate.end());

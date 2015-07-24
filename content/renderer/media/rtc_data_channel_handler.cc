@@ -234,7 +234,7 @@ unsigned long RtcDataChannelHandler::bufferedAmount() {
 
 bool RtcDataChannelHandler::sendStringData(const blink::WebString& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::string utf8_buffer = base::UTF16ToUTF8(data);
+  std::string utf8_buffer = base::UTF16ToUTF8(base::StringPiece16(data));
   rtc::Buffer buffer(utf8_buffer.c_str(), utf8_buffer.length());
   webrtc::DataBuffer data_buffer(buffer, false);
   RecordMessageSent(data_buffer.size());

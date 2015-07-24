@@ -79,7 +79,7 @@ bool RtcDtmfSenderHandler::canInsertDTMF() {
 bool RtcDtmfSenderHandler::insertDTMF(const blink::WebString& tones,
                                       long duration,
                                       long interToneGap) {
-  std::string utf8_tones = base::UTF16ToUTF8(tones);
+  std::string utf8_tones = base::UTF16ToUTF8(base::StringPiece16(tones));
   return dtmf_sender_->InsertDtmf(utf8_tones, static_cast<int>(duration),
                                   static_cast<int>(interToneGap));
 }

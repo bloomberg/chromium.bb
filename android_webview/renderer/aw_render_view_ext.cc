@@ -80,9 +80,8 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
     url::DecodeURLEscapeSequences(spec.data() + prefix.length(),
                                   spec.length() - prefix.length(),
                                   &output);
-    std::string decoded_url = base::UTF16ToUTF8(
-        base::string16(output.data(), output.length()));
-    dest->assign(decoded_url.begin(), decoded_url.end());
+    *dest = base::UTF16ToUTF8(
+        base::StringPiece16(output.data(), output.length()));
     return true;
   }
   return false;

@@ -272,8 +272,8 @@ PP_Bool BrowserFontResource_Trusted::Describe(
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
   WebFontDescription web_desc = font_->fontDescription();
-  description->face =
-      StringVar::StringToPPVar(base::UTF16ToUTF8(web_desc.family));
+  description->face = StringVar::StringToPPVar(base::UTF16ToUTF8(
+      base::StringPiece16(web_desc.family)));
   description->family =
       static_cast<PP_BrowserFont_Trusted_Family>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);

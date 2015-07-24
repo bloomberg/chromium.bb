@@ -161,7 +161,7 @@ void NotificationManager::getNotifications(
           request_id,
           service_worker_registration_id,
           origin,
-          base::UTF16ToUTF8(filter_tag)));
+          base::UTF16ToUTF8(base::StringPiece16(filter_tag))));
 }
 
 void NotificationManager::close(blink::WebNotificationDelegate* delegate) {

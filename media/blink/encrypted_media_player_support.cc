@@ -38,8 +38,9 @@ static const char* kMediaEme = "Media.EME.";
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
 static std::string ToASCIIOrEmpty(const WebString& string) {
-  return base::IsStringASCII(string) ? base::UTF16ToASCII(string)
-                                     : std::string();
+  return base::IsStringASCII(string)
+      ? base::UTF16ToASCII(base::StringPiece16(string))
+      : std::string();
 }
 
 // Helper functions to report media EME related stats to UMA. They follow the

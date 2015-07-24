@@ -1343,8 +1343,8 @@ TEST_F(RenderViewImplTest, OnHandleKeyboardEvent) {
         // text created from a virtual-key code, a character code, and the
         // modifier-key status.
         const int kMaxOutputCharacters = 1024;
-        std::string output = base::UTF16ToUTF8(
-            GetMainFrame()->contentAsText(kMaxOutputCharacters));
+        std::string output = base::UTF16ToUTF8(base::StringPiece16(
+            GetMainFrame()->contentAsText(kMaxOutputCharacters)));
         EXPECT_EQ(expected_result, output);
       }
     }
@@ -1912,8 +1912,8 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   // Copy the document content to std::wstring and compare with the
   // expected result.
   const int kMaxOutputCharacters = 256;
-  std::string output = base::UTF16ToUTF8(
-      GetMainFrame()->contentAsText(kMaxOutputCharacters));
+  std::string output = base::UTF16ToUTF8(base::StringPiece16(
+      GetMainFrame()->contentAsText(kMaxOutputCharacters)));
   EXPECT_EQ(output, "hello \n\nworld");
 }
 
@@ -2034,8 +2034,8 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   main_frame->didFailProvisionalLoad(web_frame, error,
                                      blink::WebStandardCommit);
   const int kMaxOutputCharacters = 22;
-  EXPECT_EQ("",
-            base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
+  EXPECT_EQ("", base::UTF16ToASCII(
+      base::StringPiece16(web_frame->contentAsText(kMaxOutputCharacters))));
 }
 
 #if defined(OS_ANDROID)
@@ -2069,7 +2069,8 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
+            base::UTF16ToASCII(base::StringPiece16(
+                web_frame->contentAsText(kMaxOutputCharacters))));
 }
 
 #if defined(OS_ANDROID)
@@ -2102,7 +2103,8 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
+            base::UTF16ToASCII(base::StringPiece16(
+                web_frame->contentAsText(kMaxOutputCharacters))));
 }
 
 // Ensure the render view sends favicon url update events correctly.

@@ -553,7 +553,7 @@ WebPluginImpl::WebPluginImpl(
       first_geometry_update_(true),
       ignore_response_error_(false),
       file_path_(file_path),
-      mime_type_(base::UTF16ToASCII(params.mimeType)),
+      mime_type_(base::UTF16ToASCII(base::StringPiece16(params.mimeType))),
       loader_client_(this),
       weak_factory_(this) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
@@ -804,7 +804,8 @@ std::string WebPluginImpl::GetCookies(const GURL& url,
     return std::string();
   }
 
-  return base::UTF16ToUTF8(cookie_jar->cookies(url, first_party_for_cookies));
+  return base::UTF16ToUTF8(base::StringPiece16(
+      cookie_jar->cookies(url, first_party_for_cookies)));
 }
 
 void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {

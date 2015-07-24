@@ -120,7 +120,7 @@ MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
   DCHECK(!web_stream.isNull());
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoFrameProvider stream:"
-           << base::UTF16ToUTF8(web_stream.id());
+           << base::UTF16ToUTF8(base::StringPiece16(web_stream.id()));
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   web_stream.videoTracks(video_tracks);
@@ -142,7 +142,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(const GURL& url,
     return NULL;  // This is not a valid stream.
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetAudioRenderer stream:"
-           << base::UTF16ToUTF8(web_stream.id());
+           << base::UTF16ToUTF8(base::StringPiece16(web_stream.id()));
 
   MediaStream* native_stream = MediaStream::GetMediaStream(web_stream);
 

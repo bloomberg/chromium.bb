@@ -44,7 +44,8 @@ ServiceWorkerFetchRequest FetchRequestFromWebRequest(
   GetServiceWorkerHeaderMapFromWebRequest(web_request, &headers);
 
   return ServiceWorkerFetchRequest(
-      web_request.url(), base::UTF16ToASCII(web_request.method()), headers,
+      web_request.url(),
+      base::UTF16ToASCII(base::StringPiece16(web_request.method())), headers,
       Referrer(web_request.referrerUrl(), web_request.referrerPolicy()),
       web_request.isReload());
 }
@@ -82,10 +83,11 @@ ServiceWorkerResponse ResponseFromWebResponse(
   DCHECK(web_response.streamURL().isEmpty());
   return ServiceWorkerResponse(
       web_response.url(), web_response.status(),
-      base::UTF16ToASCII(web_response.statusText()),
+      base::UTF16ToASCII(base::StringPiece16(web_response.statusText())),
       web_response.responseType(), headers,
-      base::UTF16ToASCII(web_response.blobUUID()), web_response.blobSize(),
-      web_response.streamURL(), blink::WebServiceWorkerResponseErrorUnknown);
+      base::UTF16ToASCII(base::StringPiece16(web_response.blobUUID())),
+      web_response.blobSize(), web_response.streamURL(),
+      blink::WebServiceWorkerResponseErrorUnknown);
 }
 
 CacheStorageCacheQueryParams QueryParamsFromWebQueryParams(

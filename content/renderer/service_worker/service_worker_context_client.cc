@@ -555,7 +555,7 @@ void ServiceWorkerContextClient::postMessageToClient(
       base::Bind(&SendPostMessageToClientOnMainThread,
                  sender_,
                  GetRoutingID(),
-                 base::UTF16ToUTF8(uuid),
+                 base::UTF16ToUTF8(base::StringPiece16(uuid)),
                  static_cast<base::string16>(message),
                  base::Passed(&channel_array)));
 }
@@ -582,8 +582,9 @@ void ServiceWorkerContextClient::focus(
     blink::WebServiceWorkerClientCallbacks* callback) {
   DCHECK(callback);
   int request_id = context_->client_callbacks.Add(callback);
-  Send(new ServiceWorkerHostMsg_FocusClient(GetRoutingID(), request_id,
-                                            base::UTF16ToUTF8(uuid)));
+  Send(new ServiceWorkerHostMsg_FocusClient(
+      GetRoutingID(), request_id,
+      base::UTF16ToUTF8(base::StringPiece16(uuid))));
 }
 
 void ServiceWorkerContextClient::skipWaiting(

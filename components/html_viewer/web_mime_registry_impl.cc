@@ -19,8 +19,9 @@ namespace html_viewer {
 namespace {
 
 std::string ToASCIIOrEmpty(const blink::WebString& string) {
-  return base::IsStringASCII(string) ? base::UTF16ToASCII(string)
-                                     : std::string();
+  return base::IsStringASCII(string)
+      ? base::UTF16ToASCII(base::StringPiece16(string))
+      : std::string();
 }
 
 }  // namespace

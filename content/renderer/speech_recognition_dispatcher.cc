@@ -99,7 +99,8 @@ void SpeechRecognitionDispatcher::start(
     msg_params.grammars.push_back(
         SpeechRecognitionGrammar(grammar.src().spec(), grammar.weight()));
   }
-  msg_params.language = base::UTF16ToUTF8(params.language());
+  msg_params.language =
+      base::UTF16ToUTF8(base::StringPiece16(params.language()));
   msg_params.max_hypotheses = static_cast<uint32>(params.maxAlternatives());
   msg_params.continuous = params.continuous();
   msg_params.interim_results = params.interimResults();

@@ -1603,7 +1603,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   params.window_container_type = WindowFeaturesToContainerType(features);
   params.session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
-    params.frame_name = base::UTF16ToUTF8(frame_name);
+    params.frame_name = base::UTF16ToUTF8(base::StringPiece16(frame_name));
   params.opener_render_frame_id =
       RenderFrameImpl::FromWebFrame(creator)->GetRoutingID();
   params.opener_url = creator->document().url();
