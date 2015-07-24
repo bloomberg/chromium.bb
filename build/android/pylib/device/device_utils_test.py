@@ -1292,20 +1292,27 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsTest):
          ('/test/host/path/file2', '/test/device/path/file2')])
 
 
-class DeviceUtilsFileExistsTest(DeviceUtilsTest):
+class DeviceUtilsPathExistsTest(DeviceUtilsTest):
 
-  def testFileExists_usingTest_fileExists(self):
+  def testPathExists_usingTest_pathExists(self):
     with self.assertCall(
         self.call.device.RunShellCommand(
             ['test', '-e', '/path/file.exists'], check_return=True), ''):
-      self.assertTrue(self.device.FileExists('/path/file.exists'))
+      self.assertTrue(self.device.PathExists('/path/file.exists'))
 
-  def testFileExists_usingTest_fileDoesntExist(self):
+  def testPathExists_usingTest_pathDoesntExist(self):
     with self.assertCall(
         self.call.device.RunShellCommand(
-            ['test', '-e', '/does/not/exist'], check_return=True),
+            ['test', '-e', '/path/does/not/exist'], check_return=True),
         self.ShellError('', 1)):
-      self.assertFalse(self.device.FileExists('/does/not/exist'))
+      self.assertFalse(self.device.PathExists('/path/does/not/exist'))
+
+  def testFileExists_usingTest_pathDoesntExist(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['test', '-e', '/does/not/exist.html'], check_return=True),
+        self.ShellError('', 1)):
+      self.assertFalse(self.device.FileExists('/does/not/exist.html'))
 
 
 class DeviceUtilsPullFileTest(DeviceUtilsTest):

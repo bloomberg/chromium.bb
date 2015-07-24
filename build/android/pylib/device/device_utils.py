@@ -1126,9 +1126,17 @@ class DeviceUtils(object):
       for host_path, device_path in host_device_tuples:
         zip_utils.WriteToZipFile(zip_file, host_path, device_path)
 
-  @decorators.WithTimeoutAndRetriesFromInstance()
+  # TODO(nednguyen): remove this and migrate the callsite to PathExists().
   def FileExists(self, device_path, timeout=None, retries=None):
     """Checks whether the given file exists on the device.
+
+    Arguments are the same as PathExists.
+    """
+    return self.PathExists(device_path, timeout=timeout, retries=retries)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def PathExists(self, device_path, timeout=None, retries=None):
+    """Checks whether the given path exists on the device.
 
     Args:
       device_path: A string containing the absolute path to the file on the
