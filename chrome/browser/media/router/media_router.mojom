@@ -26,6 +26,10 @@ struct MediaRoute {
   string description;
   // Specifies that the route is requested locally.
   bool is_local;
+  // An optional path to an HTML page bundled bundled with the media router
+  // component extension. When set, the route can have custom route detail as
+  // well as its own route controls in the media router dialog.
+  string? custom_controller_path;
 };
 
 // Notifications or an actionable events to be shown to the user.

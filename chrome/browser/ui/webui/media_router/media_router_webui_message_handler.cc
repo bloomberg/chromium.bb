@@ -62,6 +62,7 @@ scoped_ptr<base::DictionaryValue> RouteToValue(const MediaRoute& route) {
   dictionary->SetString("sinkId", route.media_sink().id());
   dictionary->SetString("title", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
+  dictionary->SetString("customControllerPath", route.custom_controller_path());
 
   return dictionary.Pass();
 }
@@ -230,6 +231,9 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       // is upstreamed.
       std::string()));
   initial_data.Set("castModes", cast_modes.release());
+
+  initial_data.SetString("routeProviderExtensionId",
+                         GetMediaRouterUI()->GetRouteProviderExtensionId());
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui->UIInitialized();

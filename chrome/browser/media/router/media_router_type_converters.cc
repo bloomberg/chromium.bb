@@ -33,7 +33,7 @@ TypeConverter<media_router::MediaRoute, MediaRoutePtr>::Convert(
   return media_router::MediaRoute(
       input->media_route_id, media_router::MediaSource(input->media_source),
       input->media_sink.To<media_router::MediaSink>(), input->description,
-      input->is_local);
+      input->is_local, input->custom_controller_path);
 }
 
 // static
@@ -43,7 +43,7 @@ TypeConverter<scoped_ptr<media_router::MediaRoute>, MediaRoutePtr>::Convert(
   return make_scoped_ptr(new media_router::MediaRoute(
       input->media_route_id, media_router::MediaSource(input->media_source),
       input->media_sink.To<media_router::MediaSink>(), input->description,
-      input->is_local));
+      input->is_local, input->custom_controller_path));
 }
 
 // static
@@ -58,6 +58,7 @@ MediaRoutePtr TypeConverter<MediaRoutePtr, media_router::MediaRoute>::Convert(
           input.media_sink());
   output->description = input.description();
   output->is_local = input.is_local();
+  output->custom_controller_path = input.custom_controller_path();
   return output.Pass();
 }
 

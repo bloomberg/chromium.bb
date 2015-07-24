@@ -142,7 +142,7 @@ class RegisterMediaRouteProviderHandler {
 
 TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   MediaRoute expected_route(kRouteId, MediaSource(std::string(kSource)),
-                            MediaSink(kSink, kSinkName), "", false);
+                            MediaSink(kSink, kSinkName), "", false, "");
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
   route->media_sink = interfaces::MediaSink::New();
@@ -199,7 +199,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
 
 TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   MediaRoute expected_route(kRouteId, MediaSource(std::string(kSource)),
-                            MediaSink(kSink, kSinkName), "", false);
+                            MediaSink(kSink, kSinkName), "", false, "");
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
   route->media_sink = interfaces::MediaSink::New();
@@ -333,10 +333,10 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   std::vector<MediaRoute> expected_routes;
   expected_routes.push_back(MediaRoute(kRouteId, MediaSource(kSource),
                                        MediaSink(kSink, kSink), kDescription,
-                                       false));
+                                       false, ""));
   expected_routes.push_back(MediaRoute(kRouteId2, MediaSource(kSource),
                                        MediaSink(kSink, kSink), kDescription,
-                                       false));
+                                       false, ""));
 
   mojo::Array<interfaces::MediaRoutePtr> mojo_routes(2);
   mojo_routes[0] = interfaces::MediaRoute::New();

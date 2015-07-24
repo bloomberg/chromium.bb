@@ -83,6 +83,10 @@ class MediaRouterMojoImpl : public MediaRouter,
   void RegisterIssuesObserver(IssuesObserver* observer) override;
   void UnregisterIssuesObserver(IssuesObserver* observer) override;
 
+  const std::string& media_route_provider_extension_id() const {
+    return media_route_provider_extension_id_;
+  }
+
   void set_instance_id_for_test(const std::string& instance_id) {
     instance_id_ = instance_id;
   }

@@ -49,12 +49,14 @@ cr.define('media_router.ui', function() {
    *   sinks - list of sinks to be displayed.
    *   routes - list of routes that are associated with the sinks.
    *   castModes - list of available cast modes.
+   *   routeProviderExtensionId - the ID of the media route provider extension.
    */
   function setInitialData(data) {
     container.headerText = data['headerText'];
     container.sinkList = data['sinks'];
     container.routeList = data['routes'];
     container.castModeList = data['castModes'];
+    container.routeProviderExtensionId = data['routeProviderExtensionId'];
   }
 
   /**

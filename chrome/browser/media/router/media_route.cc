@@ -17,13 +17,14 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
                        const MediaSource& media_source,
                        const MediaSink& media_sink,
                        const std::string& description,
-                       bool is_local)
+                       bool is_local,
+                       const std::string& custom_controller_path)
     : media_route_id_(media_route_id),
       media_source_(media_source),
       media_sink_(media_sink),
       description_(description),
-      is_local_(is_local) {
-}
+      is_local_(is_local),
+      custom_controller_path_(custom_controller_path) {}
 
 MediaRoute::~MediaRoute() {
 }

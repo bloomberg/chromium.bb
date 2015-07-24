@@ -73,7 +73,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   std::vector<MediaRoute> routes;
   routes.push_back(MediaRoute(route_id, MediaSource("mediaSource"),
                               MediaSink(sink_id, "The sink"), description,
-                              is_local));
+                              is_local, ""));
 
   handler_.UpdateRoutes(routes);
   EXPECT_EQ(1u, web_ui_.call_data().size());
@@ -105,7 +105,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, AddRoute) {
   std::string description("This is a route");
   bool is_local = true;
   MediaRoute route(route_id, MediaSource("mediaSource"),
-                   MediaSink(sink_id, "The sink"), description, is_local);
+                   MediaSink(sink_id, "The sink"), description, is_local, "");
 
   handler_.AddRoute(route);
   EXPECT_EQ(1u, web_ui_.call_data().size());

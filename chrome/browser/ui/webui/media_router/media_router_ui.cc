@@ -116,8 +116,8 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
   content::WebContents* wc = web_ui->GetWebContents();
   DCHECK(wc);
 
-  router_ = MediaRouterFactory::GetApiForBrowserContext(
-      wc->GetBrowserContext());
+  router_ = static_cast<MediaRouterMojoImpl*>(
+      MediaRouterFactory::GetApiForBrowserContext(wc->GetBrowserContext()));
   DCHECK(router_);
 
   AddLocalizedStrings(html_source.get());
@@ -348,6 +348,10 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
 
 std::string MediaRouterUI::GetFrameURLHost() const {
   return GetHostFromURL(frame_url_);
+}
+
+const std::string& MediaRouterUI::GetRouteProviderExtensionId() const {
+  return router_->media_route_provider_extension_id();
 }
 
 }  // namespace media_router

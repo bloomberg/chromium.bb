@@ -32,11 +32,14 @@ class MediaRoute {
   // |media_sink|: The sink that is receiving the media.
   // |description|: Description of the route to be displayed.
   // |is_local|: true if the route was created from this browser.
+  // |custom_controller_path|: custom controller path if it is given by route
+  //                      provider. empty otherwise.
   MediaRoute(const MediaRoute::Id& media_route_id,
              const MediaSource& media_source,
              const MediaSink& media_sink,
              const std::string& description,
-             bool is_local);
+             bool is_local,
+             const std::string& custom_controller_path);
   ~MediaRoute();
 
   // The media route identifier.
@@ -57,6 +60,13 @@ class MediaRoute {
   // by a media route provider.)
   bool is_local() const { return is_local_; }
 
+  // The custom controller path. This allows route provider to have custom route
+  // detail as well as its own route control features route control features in
+  // the media router dialog.
+  const std::string& custom_controller_path() const {
+    return custom_controller_path_;
+  }
+
   bool Equals(const MediaRoute& other) const;
 
  private:
@@ -65,6 +75,7 @@ class MediaRoute {
   MediaSink media_sink_;
   std::string description_;
   bool is_local_;
+  std::string custom_controller_path_;
 };
 
 class MediaRouteIdToPresentationSessionMapping {

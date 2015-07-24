@@ -112,6 +112,15 @@ Polymer({
     },
 
     /**
+     * The ID of the media route provider extension.
+     * @type {string}
+     */
+    routeProviderExtensionId: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The header text when the cast mode list is shown.
      * @private {string}
      */

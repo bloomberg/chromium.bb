@@ -36,7 +36,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   MediaSource expected_source(MediaSourceForTab(123));
   MediaRoute expected_media_route("routeId1", expected_source,
                                   MediaSink("sinkId", "sinkName"),
-                                  "Description", false);
+                                  "Description", false, "cast_view.html");
   interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
   expected_mojo_route->media_route_id = "routeId1";
   expected_mojo_route->media_source = expected_source.id();
@@ -45,6 +45,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   expected_mojo_route->media_sink->name = "sinkName";
   expected_mojo_route->description = "Description";
   expected_mojo_route->is_local = false;
+  expected_mojo_route->custom_controller_path = "cast_view.html";
 
   interfaces::MediaRoutePtr mojo_route = mojo::TypeConverter<
       media_router::interfaces::MediaRoutePtr,
@@ -63,12 +64,14 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   EXPECT_EQ(expected_media_route.media_source().id(),
             media_route.media_source().id());
   EXPECT_EQ(expected_media_route.is_local(), media_route.is_local());
+  EXPECT_EQ(expected_media_route.custom_controller_path(),
+            media_route.custom_controller_path());
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   MediaRoute expected_media_route("routeId1", MediaSource(),
                                   MediaSink("sinkId", "sinkName"),
-                                  "Description", false);
+                                  "Description", false, "");
   interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
   // MediaRoute::media_source is omitted.
   expected_mojo_route->media_route_id = "routeId1";

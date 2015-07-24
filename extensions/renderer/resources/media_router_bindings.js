@@ -50,7 +50,8 @@ define('media_router_bindings', [
       }),
       'description': route.description,
       'icon_url': route.iconUrl,
-      'is_local': route.isLocal
+      'is_local': route.isLocal,
+      'custom_controller_path': route.customControllerPath,
     });
   }
 

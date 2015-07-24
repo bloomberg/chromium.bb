@@ -32,6 +32,7 @@ class IssuesObserver;
 class MediaRoute;
 class MediaRouter;
 class MediaRouterDialogCallbacks;
+class MediaRouterMojoImpl;
 class MediaRouterWebUIMessageHandler;
 class MediaRoutesObserver;
 class MediaSink;
@@ -116,6 +117,8 @@ class MediaRouterUI
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
   const content::WebContents* initiator() const { return initiator_; }
 
+  const std::string& GetRouteProviderExtensionId() const;
+
  private:
   class UIIssuesObserver;
   class UIMediaRoutesObserver;
@@ -193,8 +196,8 @@ class MediaRouterUI
 
   content::WebContents* initiator_;
 
-  // Cached pointer to the MediaRouter for this instance's BrowserContext.
-  MediaRouter* router_;
+  // Pointer to the MediaRouter for this instance's BrowserContext.
+  MediaRouterMojoImpl* router_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.

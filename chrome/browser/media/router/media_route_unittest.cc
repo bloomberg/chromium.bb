@@ -19,28 +19,28 @@ namespace media_router {
 // Tests the == operator to ensure that only route ID equality is being checked.
 TEST(MediaRouteTest, Equals) {
   MediaRoute route1(kRouteId1, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName"), "Description", false);
+                    MediaSink("sinkId", "sinkName"), "Description", false, "");
 
   // Same as route1 with different sink ID.
   MediaRoute route2(kRouteId1, MediaSourceForCastApp("DialApp"),
                     MediaSink("differentSinkId", "different sink"),
-                    "Description", false);
+                    "Description", false, "");
   EXPECT_TRUE(route1.Equals(route2));
 
   // Same as route1 with different description.
   MediaRoute route3(kRouteId1, MediaSourceForCastApp("DialApp"),
                     MediaSink("sinkId", "sinkName"), "differentDescription",
-                    false);
+                    false, "");
   EXPECT_TRUE(route1.Equals(route3));
 
   // Same as route1 with different is_local.
   MediaRoute route4(kRouteId1, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName"), "Description", true);
+                    MediaSink("sinkId", "sinkName"), "Description", true, "");
   EXPECT_TRUE(route1.Equals(route4));
 
   // The ID is different from route1's.
   MediaRoute route5(kRouteId2, MediaSourceForCastApp("DialApp"),
-                    MediaSink("sinkId", "sinkName"), "Description", false);
+                    MediaSink("sinkId", "sinkName"), "Description", false, "");
   EXPECT_FALSE(route1.Equals(route5));
 }
 
