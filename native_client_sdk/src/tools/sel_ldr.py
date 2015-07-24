@@ -111,7 +111,18 @@ def main(argv):
     cmd.append('--r_debug=0xXXXXXXXXXXXXXXXX')
     cmd.append('--reserved_at_zero=0xXXXXXXXXXXXXXXXX')
 
-  cmd += ['-a', '-B', irt]
+  # This script is provided mostly as way to run binaries during testing, not
+  # to run untrusted code in a production environment.  As such we want it be
+  # as invisible as possible.  So we pass -q (quiet) to disable most of output
+  # of sel_ldr itself, and -a (disable ACL) to enable local filesystem access.
+  cmd += ['-q', '-a', '-B', irt]
+
+  # Set the default NACLVERBOSITY level LOG_ERROR (-3).  This can still be
+  # overridden in the environment if debug information is desired.  However
+  # in most cases we don't want the application stdout/stderr polluted with
+  # sel_ldr logging.
+  if 'NACLVERBOSITY' not in os.environ and not options.verbose:
+    os.environ['NACLVERBOSITY'] = "-3"
 
   if options.debug:
     cmd.append('-g')
@@ -121,9 +132,6 @@ def main(argv):
 
   if options.passthrough_environment:
     cmd.append('-p')
-
-  if not options.verbose:
-    cmd += ['-l', os.devnull]
 
   if arch == 'arm':
     # Use the QEMU arm emulator if available.
