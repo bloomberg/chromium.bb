@@ -284,6 +284,17 @@ void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
     setEncodedSize(0);
 }
 
+void Resource::markComplete()
+{
+    setLoading(false);
+    checkNotify();
+    for (auto& client : m_finishedClientsDuringRevalidation) {
+        for (unsigned i = 0; i < client.value; i++)
+            m_clients.add(client.key);
+    }
+    m_finishedClientsDuringRevalidation.clear();
+}
+
 void Resource::error(Resource::Status status)
 {
     if (!m_revalidatingRequest.isNull())
@@ -295,15 +306,12 @@ void Resource::error(Resource::Status status)
     setStatus(status);
     ASSERT(errorOccurred());
     m_data.clear();
-
-    setLoading(false);
-    checkNotify();
+    markComplete();
 }
 
 void Resource::finishOnePart()
 {
-    setLoading(false);
-    checkNotify();
+    markComplete();
 }
 
 void Resource::finish()
@@ -758,6 +766,12 @@ void Resource::revalidationFailed()
     m_revalidatingRequest = ResourceRequest();
     m_data.clear();
     destroyDecodedDataForFailedRevalidation();
+}
+
+void Resource::prepareForRevalidation(const ResourceRequest& request)
+{
+    m_revalidatingRequest = request;
+    m_finishedClientsDuringRevalidation.swap(m_clients);
 }
 
 void Resource::registerHandle(ResourcePtrBase* h)

@@ -121,7 +121,7 @@ public:
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
     const ResourceRequest& lastResourceRequest() const;
 
-    void setRevalidatingRequest(const ResourceRequest& request) { m_revalidatingRequest = request; }
+    void prepareForRevalidation(const ResourceRequest&);
 
     const KURL& url() const { return m_resourceRequest.url();}
     Type type() const { return static_cast<Type>(m_type); }
@@ -132,7 +132,7 @@ public:
 
     void addClient(ResourceClient*);
     void removeClient(ResourceClient*);
-    bool hasClients() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty(); }
+    bool hasClients() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClientsDuringRevalidation.isEmpty(); }
     bool deleteIfPossible();
 
     enum PreloadResult {
@@ -277,8 +277,11 @@ protected:
 
     void finishPendingClients();
 
+    void markComplete();
+
     HashCountedSet<ResourceClient*> m_clients;
     HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
+    HashCountedSet<ResourceClient*> m_finishedClientsDuringRevalidation;
 
     class ResourceCallback : public NoBaseWillBeGarbageCollectedFinalized<ResourceCallback> {
     public:
@@ -294,7 +297,7 @@ protected:
         WillBeHeapHashSet<RawPtrWillBeMember<Resource>> m_resourcesWithPendingClients;
     };
 
-    bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client); }
+    bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClientsDuringRevalidation.contains(client); }
 
     struct RedirectPair {
     public:

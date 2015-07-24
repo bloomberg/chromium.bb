@@ -70,7 +70,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     memoryCache()->add(resource.get());
 
     // Simulate a successful revalidation.
-    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+    resource->prepareForRevalidation(ResourceRequest("data:text/html,"));
     ResourceResponse revalidatingResponse;
     revalidatingResponse.setHTTPStatusCode(304);
     resource->responseReceived(revalidatingResponse, nullptr);

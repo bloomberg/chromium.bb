@@ -433,7 +433,7 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
         revalidatingRequest.setHTTPHeaderField("Resource-Freshness", AtomicString(String::format("max-age=%.0lf,stale-while-revalidate=%.0lf,age=%.0lf", resource->freshnessLifetime(), stalenessLifetime, resource->currentAge())));
     }
 
-    resource->setRevalidatingRequest(revalidatingRequest);
+    resource->prepareForRevalidation(revalidatingRequest);
 }
 
 ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
