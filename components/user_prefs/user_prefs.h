@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_USER_PREFS_USER_PREFS_H_
 #define COMPONENTS_USER_PREFS_USER_PREFS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "components/user_prefs/user_prefs_export.h"
 
 class PrefService;
 
@@ -18,7 +17,7 @@ namespace user_prefs {
 //
 // It is up to the embedder to create and own the PrefService and attach it to
 // base::SupportsUserData using the UserPrefs::Set() function.
-class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
+class UserPrefs : public base::SupportsUserData::Data {
  public:
   // Retrieves the PrefService for a given context, or null if none is attached.
   static PrefService* Get(base::SupportsUserData* context);
