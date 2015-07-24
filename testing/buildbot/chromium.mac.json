@@ -144,6 +144,12 @@
         "test": "gcm_unit_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
+      },
+      {
         "test": "gl_unittests"
       },
       {
@@ -157,6 +163,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -213,6 +225,9 @@
         "test": "mojo_public_utility_unittests"
       },
       {
+        "test": "mojo_system_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -250,6 +265,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sql_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sync_integration_tests"
       },
       {
         "swarming": {
