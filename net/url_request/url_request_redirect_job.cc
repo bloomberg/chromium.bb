@@ -65,6 +65,11 @@ void URLRequestRedirectJob::Start() {
                             weak_factory_.GetWeakPtr()));
 }
 
+void URLRequestRedirectJob::Kill() {
+  weak_factory_.InvalidateWeakPtrs();
+  URLRequestJob::Kill();
+}
+
 bool URLRequestRedirectJob::CopyFragmentOnRedirect(const GURL& location) const {
   // The instantiators have full control over the desired redirection target,
   // including the reference fragment part of the URL.
@@ -81,6 +86,9 @@ int URLRequestRedirectJob::GetResponseCode() const {
 URLRequestRedirectJob::~URLRequestRedirectJob() {}
 
 void URLRequestRedirectJob::StartAsync() {
+  DCHECK(request_);
+  DCHECK(request_->status().is_success());
+
   receive_headers_end_ = base::TimeTicks::Now();
   response_time_ = base::Time::Now();
 

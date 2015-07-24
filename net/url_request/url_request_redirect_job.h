@@ -45,6 +45,7 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   void GetResponseInfo(HttpResponseInfo* info) override;
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void Start() override;
+  void Kill() override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   int GetResponseCode() const override;
 

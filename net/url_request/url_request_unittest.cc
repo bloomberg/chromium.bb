@@ -9207,4 +9207,26 @@ TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
   EXPECT_TRUE(req->response_info().network_accessed);
 }
 
+// Test that URLRequest is canceled correctly and with detached request
+// URLRequestRedirectJob does not crash in StartAsync.
+// See http://crbug.com/508900
+TEST_F(URLRequestTest, URLRequestRedirectJobDetachRequestNoCrash) {
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(default_context_.CreateRequest(
+      GURL("http://not-a-real-domain/"), DEFAULT_PRIORITY, &d));
+
+  URLRequestRedirectJob* job = new URLRequestRedirectJob(
+      req.get(), &default_network_delegate_,
+      GURL("http://this-should-never-be-navigated-to/"),
+      URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "Jumbo shrimp");
+  AddTestInterceptor()->set_main_intercept_job(job);
+
+  req->Start();
+  req->Cancel();
+  job->DetachRequest();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(URLRequestStatus::CANCELED, req->status().status());
+  EXPECT_EQ(0, d.received_redirect_count());
+}
+
 }  // namespace net
