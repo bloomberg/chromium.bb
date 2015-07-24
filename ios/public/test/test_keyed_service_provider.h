@@ -23,9 +23,6 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   KeyedServiceBaseFactory* GetSigninManagerFactory() override;
   SigninManager* GetSigninManagerForBrowserState(
       ChromeBrowserState* browser_state) override;
-  KeyedServiceBaseFactory* GetPersonalDataManagerFactory() override;
-  autofill::PersonalDataManager* GetPersonalDataManagerForBrowserState(
-      ChromeBrowserState* browser_state) override;
   KeyedServiceBaseFactory* GetSyncServiceFactory() override;
   sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state) override;

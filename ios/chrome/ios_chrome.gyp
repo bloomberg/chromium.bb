@@ -126,6 +126,8 @@
         'browser/autofill/form_suggestion_view.h',
         'browser/autofill/form_suggestion_view.mm',
         'browser/autofill/form_suggestion_view_client.h',
+        'browser/autofill/personal_data_manager_factory.cc',
+        'browser/autofill/personal_data_manager_factory.h',
         'browser/bookmarks/startup_task_runner_service_factory.cc',
         'browser/bookmarks/startup_task_runner_service_factory.h',
         'browser/browser_state/browser_state_keyed_service_factories.h',

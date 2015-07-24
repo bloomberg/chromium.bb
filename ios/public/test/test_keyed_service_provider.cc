@@ -91,17 +91,6 @@ SigninManager* TestKeyedServiceProvider::GetSigninManagerForBrowserState(
   return nullptr;
 }
 
-KeyedServiceBaseFactory*
-TestKeyedServiceProvider::GetPersonalDataManagerFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-autofill::PersonalDataManager*
-TestKeyedServiceProvider::GetPersonalDataManagerForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
   return FakeSyncServiceFactory::GetInstance();
 }

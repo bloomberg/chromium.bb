@@ -14,10 +14,10 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "google_apis/gaia/identity_provider.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace autofill {
 
@@ -47,7 +47,7 @@ AutofillClientIOS::~AutofillClientIOS() {
 }
 
 PersonalDataManager* AutofillClientIOS::GetPersonalDataManager() {
-  return ios::GetKeyedServiceProvider()->GetPersonalDataManagerForBrowserState(
+  return PersonalDataManagerFactory::GetForBrowserState(
       browser_state_->GetOriginalChromeBrowserState());
 }
 

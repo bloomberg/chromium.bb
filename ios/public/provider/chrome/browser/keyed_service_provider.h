@@ -13,10 +13,6 @@ enum class ServiceAccessType;
 class KeyedServiceBaseFactory;
 class SigninManager;
 
-namespace autofill {
-class PersonalDataManager;
-}
-
 namespace bookmarks {
 class BookmarkModel;
 }
@@ -58,14 +54,6 @@ class KeyedServiceProvider {
 
   // Returns an instance of SigninManager tied to |browser_state|.
   virtual SigninManager* GetSigninManagerForBrowserState(
-      ChromeBrowserState* browser_state) = 0;
-
-  // Returns the autofill::PersonalDataManager factory for dependencies.
-  virtual KeyedServiceBaseFactory* GetPersonalDataManagerFactory() = 0;
-
-  // Returns an instance of autofill::PersonalDataManager tied to
-  // |browser_state|.
-  virtual autofill::PersonalDataManager* GetPersonalDataManagerForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
   // Returns the sync_driver::SyncService factory for dependencies.

@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -47,6 +48,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::TopSitesFactory::GetInstance();
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
+  PersonalDataManagerFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();

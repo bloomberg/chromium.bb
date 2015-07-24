@@ -28,6 +28,11 @@ class PrefService;
 class RemoveAutofillTester;
 class AccountTrackerService;
 
+#if defined(OS_IOS)
+// TODO(sdefresne): Remove this. See http://crbug.com/513344.
+class PersonalDataManagerFactory;
+#endif
+
 namespace autofill {
 class AutofillInteractiveTest;
 class AutofillTest;
@@ -251,6 +256,10 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
+#if defined(OS_IOS)
+  // TODO(sdefresne): Remove this. See http://crbug.com/513344.
+  friend class ::PersonalDataManagerFactory;
+#endif
   friend class ProfileSyncServiceAutofillTest;
   friend class ::RemoveAutofillTester;
   friend struct base::DefaultDeleter<PersonalDataManager>;
