@@ -52,6 +52,7 @@ source_set("proximity_auth") {
   ]
 
   deps = [
+    "cryptauth/proto",
     "logging",
     "//base",
     "//device/bluetooth",
