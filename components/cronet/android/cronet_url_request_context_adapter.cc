@@ -125,6 +125,7 @@ bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env) {
 CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
     scoped_ptr<URLRequestContextConfig> context_config)
     : network_thread_(new base::Thread("network")),
+      http_server_properties_manager_(nullptr),
       context_config_(context_config.Pass()),
       is_context_initialized_(false),
       default_load_flags_(net::LOAD_NORMAL) {
