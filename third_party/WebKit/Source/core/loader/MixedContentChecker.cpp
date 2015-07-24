@@ -322,13 +322,15 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
             client->didDisplayInsecureContent();
         break;
 
-    case ContextTypeBlockable:
-        allowed = !strictMode && !settings->strictlyBlockBlockableMixedContent() && client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
+    case ContextTypeBlockable: {
+        bool shouldAskEmbedder = !strictMode && settings && (!settings->strictlyBlockBlockableMixedContent() || settings->allowRunningOfInsecureContent());
+        allowed = shouldAskEmbedder && client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
         if (allowed) {
             client->didRunInsecureContent(securityOrigin, url);
             UseCounter::count(mixedFrame, UseCounter::MixedContentBlockableAllowed);
         }
         break;
+    }
 
     case ContextTypeShouldBeBlockable:
         allowed = !strictMode;
