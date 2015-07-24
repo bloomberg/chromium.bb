@@ -282,9 +282,8 @@ class CONTENT_EXPORT RenderViewImpl
   // supported PPAPI plugins.
   bool HasIMETextFocus();
 
-  // Dispatches the current navigation state to the browser. Called on a
-  // periodic timer so we don't send too many messages.
-  void SyncNavigationState();
+  // Synchronously sends the current navigation state to the browser.
+  void SendUpdateState();
 
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
@@ -580,9 +579,6 @@ class CONTENT_EXPORT RenderViewImpl
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
-  void UpdateSessionHistory(blink::WebFrame* frame);
-  void SendUpdateState(HistoryEntry* entry);
-
   void ApplyWebPreferencesInternal(const WebPreferences& prefs,
                                    blink::WebView* web_view,
                                    CompositorDependencies* compositor_deps);
@@ -821,7 +817,8 @@ class CONTENT_EXPORT RenderViewImpl
   // PageGroupLoadDeferrer on the stack that interferes with swapping out.
   bool suppress_dialogs_until_swap_out_;
 
-  // Timer used to delay the updating of nav state (see SyncNavigationState).
+  // Timer used to delay the updating of nav state (see
+  // StartNavStateSyncTimerIfNecessary).
   base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;
 
   // Page IDs ------------------------------------------------------------------

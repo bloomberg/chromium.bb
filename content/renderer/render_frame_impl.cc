@@ -1146,7 +1146,7 @@ void RenderFrameImpl::OnSwapOut(
     // other active RenderFrames in it.
 
     // Send an UpdateState message before we get swapped out.
-    render_view_->SyncNavigationState();
+    render_view_->SendUpdateState();
 
     // If we need a proxy to replace this, create it now so its routing id is
     // registered for receiving IPC messages.
@@ -2662,7 +2662,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // When we perform a new navigation, we need to update the last committed
   // session history entry with state for the page we are leaving. Do this
   // before updating the HistoryController state.
-  render_view_->UpdateSessionHistory(frame);
+  render_view_->SendUpdateState();
 
   render_view_->history_controller()->UpdateForCommit(
       this, item, commit_type, navigation_state->WasWithinSamePage());
@@ -2686,7 +2686,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // Don't update history list values for kSwappedOutURL, since
     // we don't want to forget the entry that was there, and since we will
     // never come back to kSwappedOutURL.  Note that we have to call
-    // UpdateSessionHistory and update page_id_ even in this case, so that
+    // SendUpdateState and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
     DCHECK_IMPLIES(

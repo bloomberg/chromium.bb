@@ -162,7 +162,7 @@ int GetLocalSessionHistoryLength(RenderView* render_view) {
 }
 
 void SyncNavigationState(RenderView* render_view) {
-  static_cast<RenderViewImpl*>(render_view)->SyncNavigationState();
+  static_cast<RenderViewImpl*>(render_view)->SendUpdateState();
 }
 
 void SetFocusAndActivate(RenderView* render_view, bool enable) {

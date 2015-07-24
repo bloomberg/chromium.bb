@@ -1524,18 +1524,8 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Sends the current history state to the browser so it will be saved before we
-// navigate to a new page.
-void RenderViewImpl::UpdateSessionHistory(WebFrame* frame) {
-  // If we have a valid page ID at this point, then it corresponds to the page
-  // we are navigating away from.  Otherwise, this is the first navigation, so
-  // there is no past session history to record.
-  if (page_id_ == -1)
-    return;
-  SendUpdateState(history_controller_->GetCurrentEntry());
-}
-
-void RenderViewImpl::SendUpdateState(HistoryEntry* entry) {
+void RenderViewImpl::SendUpdateState() {
+  HistoryEntry* entry = history_controller_->GetCurrentEntry();
   if (!entry)
     return;
 
@@ -1906,10 +1896,6 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
-  // No need to update state if no page has committed yet.
-  if (page_id_ == -1)
-    return;
-
   int delay;
   if (send_content_state_immediately_)
     delay = 0;
@@ -1928,7 +1914,7 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
   }
 
   nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                              &RenderViewImpl::SyncNavigationState);
+                              &RenderViewImpl::SendUpdateState);
 }
 
 void RenderViewImpl::setMouseOverURL(const WebURL& url) {
@@ -2324,12 +2310,6 @@ void RenderViewImpl::DidStartLoading() {
 
 void RenderViewImpl::DidStopLoading() {
   main_render_frame_->didStopLoading();
-}
-
-void RenderViewImpl::SyncNavigationState() {
-  if (!webview())
-    return;
-  SendUpdateState(history_controller_->GetCurrentEntry());
 }
 
 blink::WebElement RenderViewImpl::GetFocusedElement() const {
