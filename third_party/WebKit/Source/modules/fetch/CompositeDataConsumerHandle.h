@@ -44,7 +44,7 @@ public:
     // associated updater will be bound to the calling thread.
     // |handle| must not be null and must not be locked.
     template<typename T>
-    static PassOwnPtr<CompositeDataConsumerHandle> create(PassOwnPtr<WebDataConsumerHandle> handle, T* updater)
+    static PassOwnPtr<WebDataConsumerHandle> create(PassOwnPtr<WebDataConsumerHandle> handle, T* updater)
     {
         ASSERT(handle);
         Updater* u = nullptr;

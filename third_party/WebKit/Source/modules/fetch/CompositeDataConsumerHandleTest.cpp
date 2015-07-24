@@ -79,7 +79,7 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
 
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
 };
 
@@ -115,7 +115,7 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
 
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
 };
 
@@ -151,7 +151,7 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
 
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
 };
 
@@ -197,7 +197,7 @@ private:
         m_reader = m_handle->obtainReader(&m_client);
     }
 
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
     OwnPtr<WebWaitableEvent> m_updateEvent;
 };
@@ -234,7 +234,7 @@ private:
         readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
     }
 
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
 };
 
@@ -266,9 +266,9 @@ TEST(CompositeDataConsumerHandleTest, Read)
     ASSERT_TRUE(reader2.leakPtr());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
-    OwnPtr<CompositeDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
+    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
     checkpoint.Call(0);
-    OwnPtr<CompositeDataConsumerHandle::Reader> reader = handle->obtainReader(&client);
+    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(&client);
     checkpoint.Call(1);
     EXPECT_EQ(kOk, reader->read(buffer, sizeof(buffer), kNone, &size));
     checkpoint.Call(2);
@@ -309,9 +309,9 @@ TEST(CompositeDataConsumerHandleTest, TwoPhaseRead)
     ASSERT_TRUE(reader2.leakPtr());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
-    OwnPtr<CompositeDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
+    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
     checkpoint.Call(0);
-    OwnPtr<CompositeDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     checkpoint.Call(1);
     EXPECT_EQ(kOk, reader->beginRead(&p, kNone, &size));
     checkpoint.Call(2);
@@ -363,9 +363,9 @@ TEST(CompositeDataConsumerHandleTest, HangingTwoPhaseRead)
     ASSERT_TRUE(reader3.leakPtr());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
-    OwnPtr<CompositeDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
+    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
     checkpoint.Call(0);
-    OwnPtr<CompositeDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     checkpoint.Call(1);
     EXPECT_EQ(kOk, reader->beginRead(&p, kNone, &size));
     checkpoint.Call(2);
