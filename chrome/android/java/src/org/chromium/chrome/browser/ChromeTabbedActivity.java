@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome.OverviewLayoutFactoryDelegate;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
@@ -1092,16 +1093,22 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             if (contentViewCore != null) {
                 contentViewCore.setAccessibilityState(false);
             }
-        } else if (getCurrentTabModel().getCount() != 0) {
-            // Don't hide overview if current tab stack is empty()
-            mLayoutManager.hideOverview(true);
+        } else {
+            Layout activeLayout = mLayoutManager.getActiveLayout();
+            if (activeLayout instanceof StackLayout) {
+                ((StackLayout) activeLayout).commitOutstandingModelState(LayoutManager.time());
+            }
+            if (getCurrentTabModel().getCount() != 0) {
+                // Don't hide overview if current tab stack is empty()
+                mLayoutManager.hideOverview(true);
 
-            // hideOverview could change the current tab.  Update the local variables.
-            currentTab = getActivityTab();
-            contentViewCore = currentTab != null ? currentTab.getContentViewCore() : null;
+                // hideOverview could change the current tab.  Update the local variables.
+                currentTab = getActivityTab();
+                contentViewCore = currentTab != null ? currentTab.getContentViewCore() : null;
 
-            if (contentViewCore != null) {
-                contentViewCore.setAccessibilityState(true);
+                if (contentViewCore != null) {
+                    contentViewCore.setAccessibilityState(true);
+                }
             }
         }
     }
