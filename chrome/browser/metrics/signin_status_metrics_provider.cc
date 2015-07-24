@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "components/signin/core/browser/signin_manager.h"
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/ui/browser_finder.h"
 #endif
 
@@ -61,8 +61,9 @@ SigninStatusMetricsProvider::SigninStatusMetricsProvider(bool is_test)
 SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {
   if (is_test_)
     return;
-
-#if !defined(OS_ANDROID)
+  // TODO(ios): should we provide an implementation of BrowserListObserver
+  // that works on iOS, http://crbug.com/403371
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   BrowserList::RemoveObserver(this);
 #endif
 
@@ -154,7 +155,9 @@ void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& account_id,
 
 void SigninStatusMetricsProvider::Initialize() {
   // Add observers.
-#if !defined(OS_ANDROID)
+  // TODO(ios): should we provide an implementation of BrowserListObserver
+  // that works on iOS, http://crbug.com/403371
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // On Android, there is always only one profile in any situation, opening new
   // windows (which is possible with only some Android devices) will not change
   // the opened profiles signin status.
@@ -198,7 +201,7 @@ void SigninStatusMetricsProvider::UpdateInitialSigninStatus(
 }
 
 void SigninStatusMetricsProvider::UpdateStatusWhenBrowserAdded(bool signed_in) {
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   SigninStatus recorded_signin_status = signin_status();
   if ((recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN && signed_in) ||
       (recorded_signin_status == ALL_PROFILES_SIGNED_IN && !signed_in)) {
@@ -223,7 +226,7 @@ void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
   size_t signed_in_profiles_count = 0;
 
   for (size_t i = 0; i < profile_list.size(); ++i) {
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     if (chrome::GetTotalBrowserCountForProfile(profile_list[i]) == 0) {
       // The profile is loaded, but there's no opened browser for this profile.
       continue;

@@ -73,9 +73,9 @@
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/signin_status_metrics_provider.h"
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#endif  // !defined(OS_CHROMEOS)
 
 namespace {
 
@@ -410,11 +410,11 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(signin_metrics_provider_cros));
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(
           SigninStatusMetricsProvider::CreateInstance()));
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#endif  // !defined(OS_CHROMEOS)
 
   // Clear stability metrics if it is the first time cellular upload logic
   // should apply to avoid sudden bulk uploads. It needs to be done after all

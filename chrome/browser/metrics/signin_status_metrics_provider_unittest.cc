@@ -22,7 +22,7 @@ TEST(SigninStatusMetricsProvider, UpdateInitialSigninStatus) {
             metrics_provider.GetSigninStatusForTesting());
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST(SigninStatusMetricsProvider, UpdateStatusWhenBrowserAdded) {
   SigninStatusMetricsProvider metrics_provider(true);
 

@@ -3399,13 +3399,7 @@
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
         }],
-        ['OS=="ios"', {
-          'sources!': [
-            'browser/metrics/signin_status_metrics_provider_base.cc',
-            'browser/metrics/signin_status_metrics_provider_base.h',
-          ],
-        }],
-        ['OS=="ios" or chromeos==1', {
+        ['chromeos==1', {
           'sources!': [
             'browser/metrics/signin_status_metrics_provider.cc',
             'browser/metrics/signin_status_metrics_provider.h',
