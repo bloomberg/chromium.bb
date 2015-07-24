@@ -1818,6 +1818,7 @@
       'tools/quic/quic_spdy_client_stream_test.cc',
       'tools/quic/quic_spdy_server_stream_test.cc',
       'tools/quic/quic_time_wait_list_manager_test.cc',
+      'tools/quic/spdy_balsa_utils_test.cc',
       'tools/quic/test_tools/http_message.cc',
       'tools/quic/test_tools/http_message.h',
       'tools/quic/test_tools/limited_mtu_test_writer.cc',

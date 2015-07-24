@@ -34,6 +34,10 @@ class SpdyBalsaUtils {
                                            BalsaHeaders* headers,
                                            QuicVersion quic_version);
 
+  static void SpdyHeadersToRequestHeaders(const SpdyHeaderBlock& block,
+                                          BalsaHeaders* headers,
+                                          QuicVersion quic_version);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyBalsaUtils);
 };

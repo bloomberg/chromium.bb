@@ -174,6 +174,97 @@ bool ParseReasonAndStatus(StringPiece status_and_reason,
   return true;
 }
 
+// static
+void SpdyHeadersToResponseHeaders(const SpdyHeaderBlock& header_block,
+                                  BalsaHeaders* request_headers,
+                                  QuicVersion quic_version) {
+  typedef SpdyHeaderBlock::const_iterator BlockIt;
+
+  BlockIt status_it = header_block.find(kV3Status);
+  BlockIt version_it = header_block.find(kV3Version);
+  BlockIt end_it = header_block.end();
+  if (quic_version > QUIC_VERSION_24) {
+    if (status_it == end_it) {
+      return;
+    }
+  } else {
+    if (status_it == end_it || version_it == end_it) {
+      return;
+    }
+  }
+
+  if (!ParseReasonAndStatus(status_it->second, request_headers, quic_version)) {
+    return;
+  }
+
+  if (quic_version <= QUIC_VERSION_24) {
+    request_headers->SetResponseVersion(version_it->second);
+  }
+  for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
+    if (!IsSpecialSpdyHeader(it, request_headers)) {
+      request_headers->AppendHeader(it->first, it->second);
+    }
+  }
+}
+
+// static
+void SpdyHeadersToRequestHeaders(const SpdyHeaderBlock& header_block,
+                                 BalsaHeaders* request_headers,
+                                 QuicVersion quic_version) {
+  typedef SpdyHeaderBlock::const_iterator BlockIt;
+
+  BlockIt authority_it = header_block.find(kV4Host);
+  BlockIt host_it = header_block.find(kV3Host);
+  BlockIt method_it = header_block.find(kV3Method);
+  BlockIt path_it = header_block.find(kV3Path);
+  BlockIt scheme_it = header_block.find(kV3Scheme);
+  BlockIt end_it = header_block.end();
+
+  string method;
+  if (method_it == end_it) {
+    method = "GET";
+  } else {
+    method = method_it->second;
+  }
+  string uri;
+  if (path_it == end_it) {
+    uri = "/";
+  } else {
+    uri = path_it->second;
+  }
+  request_headers->SetRequestFirstlineFromStringPieces(
+      method, uri, net::kHttp2VersionString);
+
+  if (scheme_it == end_it) {
+    request_headers->AppendHeader("Scheme", "https");
+  } else {
+    request_headers->AppendHeader("Scheme", scheme_it->second);
+  }
+  if (authority_it != end_it) {
+    request_headers->AppendHeader("host", authority_it->second);
+  } else if (host_it != end_it) {
+    request_headers->AppendHeader("host", host_it->second);
+  }
+
+  for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
+    if (!IsSpecialSpdyHeader(it, request_headers)) {
+      request_headers->AppendHeader(it->first, it->second);
+    }
+  }
+}
+
+// static
+void SpdyHeadersToBalsaHeaders(const SpdyHeaderBlock& block,
+                               BalsaHeaders* headers,
+                               QuicVersion quic_version,
+                               SpdyHeaderValidatorType type) {
+  if (type == SpdyHeaderValidatorType::RESPONSE) {
+    SpdyHeadersToResponseHeaders(block, headers, quic_version);
+    return;
+  }
+  SpdyHeadersToRequestHeaders(block, headers, quic_version);
+}
+
 }  // namespace
 
 // static
@@ -213,8 +304,13 @@ SpdyHeaderBlock SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
     PopulateSpdy4RequestHeaderBlock(request_headers, scheme, host_and_port,
                                     path, &block);
   }
+  // TODO(alyssar) do this for all headers in kInvalidRequestHeaders, ideally in
+  // PopulateSpdyHeaderBlock
   if (block.find("host") != block.end()) {
     block.erase(block.find("host"));
+  }
+  if (block.find("connection") != block.end()) {
+    block.erase(block.find("connection"));
   }
   return block;
 }
@@ -241,37 +337,19 @@ string SpdyBalsaUtils::SerializeResponseHeaders(
 }
 
 // static
-void SpdyBalsaUtils::SpdyHeadersToResponseHeaders(
-    const SpdyHeaderBlock& header_block,
-    BalsaHeaders* request_headers,
-    QuicVersion quic_version) {
-  typedef SpdyHeaderBlock::const_iterator BlockIt;
+void SpdyBalsaUtils::SpdyHeadersToResponseHeaders(const SpdyHeaderBlock& block,
+                                                  BalsaHeaders* headers,
+                                                  QuicVersion quic_version) {
+  SpdyHeadersToBalsaHeaders(block, headers, quic_version,
+                            SpdyHeaderValidatorType::RESPONSE);
+}
 
-  BlockIt status_it = header_block.find(kV3Status);
-  BlockIt version_it = header_block.find(kV3Version);
-  BlockIt end_it = header_block.end();
-  if (quic_version > QUIC_VERSION_24) {
-    if (status_it == end_it) {
-      return;
-    }
-  } else {
-    if (status_it == end_it || version_it == end_it) {
-      return;
-    }
-  }
-
-  if (!ParseReasonAndStatus(status_it->second, request_headers, quic_version)) {
-    return;
-  }
-
-  if (quic_version <= QUIC_VERSION_24) {
-    request_headers->SetResponseVersion(version_it->second);
-  }
-  for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
-    if (!IsSpecialSpdyHeader(it, request_headers)) {
-      request_headers->AppendHeader(it->first, it->second);
-    }
-  }
+// static
+void SpdyBalsaUtils::SpdyHeadersToRequestHeaders(const SpdyHeaderBlock& block,
+                                                 BalsaHeaders* headers,
+                                                 QuicVersion quic_version) {
+  SpdyHeadersToBalsaHeaders(block, headers, quic_version,
+                            SpdyHeaderValidatorType::REQUEST);
 }
 
 }  // namespace tools
