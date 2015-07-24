@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 
-#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
 class Browser;
+
+namespace base {
+class TimeTicks;
+}
 
 namespace gfx {
 class Canvas;
@@ -21,6 +24,10 @@ class Rect;
 namespace content {
 class DownloadItem;
 class DownloadManager;
+}
+
+namespace ui {
+class ThemeProvider;
 }
 
 // This is an abstract base class for platform specific download shelf
@@ -43,37 +50,15 @@ class DownloadShelf {
   // Download progress animations ----------------------------------------------
 
   enum {
-    // Arc sweep angle for use with downloads of unknown size.
-    kUnknownAngleDegrees = 50,
-
-    // Rate of progress for use with downloads of unknown size.
-    kUnknownIncrementDegrees = 12,
-
-    // Start angle for downloads with known size (midnight position).
-    kStartAngleDegrees = -90,
-
-    // A the maximum number of degrees of a circle.
-    kMaxDegrees = 360,
-
     // Progress animation timer period, in milliseconds.
-    kProgressRateMs = 150,
+    kProgressRateMs = 30,
 
-    // Size of the filetype icon.
-    kSmallIconSize = 16,
+    // Size of the space used for the progress indicator, including padding.
+    kProgressIndicatorSize = 39,
 
-    // Size of the progress asset that's painted behind the filetype icon.
-    kSmallProgressIconSize = 39,
-
-    kSmallProgressIconOffset = (kSmallProgressIconSize - kSmallIconSize) / 2
+    // x/y offset for the file type icon.
+    kFiletypeIconOffset = (kProgressIndicatorSize - 16) / 2
   };
-
-  // Type of the callback used on toolkit-views platforms for the |rtl_mirror|
-  // argument of the PaintDownload functions. It captures the View subclass
-  // within which the progress animation is drawn and is used to update the
-  // correct 'left' value for the given rectangle in RTL locales. This is used
-  // to mirror the position of the progress animation. The callback is
-  // guaranteed to be invoked before the paint function returns.
-  typedef base::Callback<void(gfx::Rect*)> BoundsAdjusterCallback;
 
   DownloadShelf();
   virtual ~DownloadShelf();
@@ -81,32 +66,18 @@ class DownloadShelf {
   // Paint the common download animation progress foreground and background,
   // clipping the foreground to 'percent' full. If percent is -1, then we don't
   // know the total size, so we just draw a rotating segment until we're done.
-  static void PaintCustomDownloadProgress(
-      gfx::Canvas* canvas,
-      const gfx::ImageSkia& background_image,
-      const gfx::ImageSkia& foreground_image,
-      int image_size,
-      const gfx::Rect& bounds,
-      int start_angle,
-      int percent_done);
-
+  // |progress_start_time| is only used for these unknown size downloads.
   static void PaintDownloadProgress(gfx::Canvas* canvas,
-                                    const BoundsAdjusterCallback& rtl_mirror,
-                                    int origin_x,
-                                    int origin_y,
-                                    int start_angle,
+                                    const ui::ThemeProvider& theme_provider,
+                                    const base::TimeTicks& progress_start_time,
                                     int percent);
 
   static void PaintDownloadComplete(gfx::Canvas* canvas,
-                                    const BoundsAdjusterCallback& rtl_mirror,
-                                    int origin_x,
-                                    int origin_y,
+                                    const ui::ThemeProvider& theme_provider,
                                     double animation_progress);
 
   static void PaintDownloadInterrupted(gfx::Canvas* canvas,
-                                       const BoundsAdjusterCallback& rtl_mirror,
-                                       int origin_x,
-                                       int origin_y,
+                                       const ui::ThemeProvider& theme_provider,
                                        double animation_progress);
 
   // A new download has started. Add it to our shelf and show the download

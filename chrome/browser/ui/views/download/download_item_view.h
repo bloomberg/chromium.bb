@@ -264,8 +264,8 @@ class DownloadItemView : public views::ButtonListener,
   // Mode of the download item view.
   Mode mode_;
 
-  // In degrees, for downloads with no known total size.
-  int progress_angle_;
+  // When download progress began animating. Used for downloads of unknown size.
+  base::TimeTicks progress_start_time_;
 
   // The left and right x coordinates of the drop-down button.
   int drop_down_x_left_;

@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 
 class DownloadItemModel;
 @class IndeterminateProgressTimer;
@@ -39,8 +40,7 @@ enum DownloadItemMousePosition {
   int percentDone_;
   base::scoped_nsobject<NSAnimation> completionAnimation_;
 
-  // In degrees, for downloads with no known total size.
-  int indeterminateProgressAngle_;
+  base::TimeTicks progressStartTime_;
   base::scoped_nsobject<IndeterminateProgressTimer> indeterminateProgressTimer_;
 
   BOOL isStatusTextVisible_;
