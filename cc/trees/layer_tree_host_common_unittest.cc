@@ -4934,122 +4934,106 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  root->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  root->SetDrawsContent(true);
 
-  scoped_refptr<Layer> copy_grand_parent = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_grand_parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  copy_grand_parent->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> copy_grand_parent =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
+  SetLayerPropertiesForTesting(copy_grand_parent.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  copy_grand_parent->SetDrawsContent(true);
+  LayerImpl* copy_grand_parent_layer = copy_grand_parent.get();
 
-  scoped_refptr<Layer> copy_parent = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  copy_parent->SetIsDrawable(true);
-  copy_parent->SetForceRenderSurface(true);
+  scoped_ptr<LayerImpl> copy_parent =
+      LayerImpl::Create(host_impl.pending_tree(), 3);
+  SetLayerPropertiesForTesting(copy_parent.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, true);
+  copy_parent->SetDrawsContent(true);
+  LayerImpl* copy_parent_layer = copy_parent.get();
 
-  scoped_refptr<Layer> copy_layer = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_layer.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  copy_layer->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> copy_request =
+      LayerImpl::Create(host_impl.pending_tree(), 4);
+  SetLayerPropertiesForTesting(copy_request.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, true);
+  copy_request->SetDrawsContent(true);
+  LayerImpl* copy_layer = copy_request.get();
 
-  scoped_refptr<Layer> copy_child = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  copy_child->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> copy_child =
+      LayerImpl::Create(host_impl.pending_tree(), 5);
+  SetLayerPropertiesForTesting(copy_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, false);
+  copy_child->SetDrawsContent(true);
+  LayerImpl* copy_child_layer = copy_child.get();
 
-  scoped_refptr<Layer> copy_grand_parent_sibling_before =
-      Layer::Create(layer_settings());
+  scoped_ptr<LayerImpl> copy_grand_parent_sibling_before =
+      LayerImpl::Create(host_impl.pending_tree(), 6);
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_before.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  copy_grand_parent_sibling_before->SetIsDrawable(true);
+                               identity_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(40, 40), true, false, false);
+  copy_grand_parent_sibling_before->SetDrawsContent(true);
+  LayerImpl* copy_grand_parent_sibling_before_layer =
+      copy_grand_parent_sibling_before.get();
 
-  scoped_refptr<Layer> copy_grand_parent_sibling_after =
-      Layer::Create(layer_settings());
+  scoped_ptr<LayerImpl> copy_grand_parent_sibling_after =
+      LayerImpl::Create(host_impl.pending_tree(), 7);
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_after.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  copy_grand_parent_sibling_after->SetIsDrawable(true);
+                               identity_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(40, 40), true, false, false);
+  copy_grand_parent_sibling_after->SetDrawsContent(true);
+  LayerImpl* copy_grand_parent_sibling_after_layer =
+      copy_grand_parent_sibling_after.get();
 
-  copy_layer->AddChild(copy_child);
-  copy_parent->AddChild(copy_layer);
-  copy_grand_parent->AddChild(copy_parent);
-  root->AddChild(copy_grand_parent_sibling_before);
-  root->AddChild(copy_grand_parent);
-  root->AddChild(copy_grand_parent_sibling_after);
-
-  host()->SetRootLayer(root);
+  copy_request->AddChild(copy_child.Pass());
+  copy_parent->AddChild(copy_request.Pass());
+  copy_grand_parent->AddChild(copy_parent.Pass());
+  root->AddChild(copy_grand_parent_sibling_before.Pass());
+  root->AddChild(copy_grand_parent.Pass());
+  root->AddChild(copy_grand_parent_sibling_after.Pass());
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
   // hidden subtree on copy_layer.
-  copy_grand_parent->SetHideLayerAndSubtree(true);
-  copy_grand_parent_sibling_before->SetHideLayerAndSubtree(true);
-  copy_grand_parent_sibling_after->SetHideLayerAndSubtree(true);
-  copy_layer->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
-      base::Bind(&EmptyCopyOutputCallback)));
+  copy_grand_parent_layer->SetHideLayerAndSubtree(true);
+  copy_grand_parent_sibling_before_layer->SetHideLayerAndSubtree(true);
+  copy_grand_parent_sibling_after_layer->SetHideLayerAndSubtree(true);
+
+  ScopedPtrVector<CopyOutputRequest> copy_requests;
+  copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+  copy_layer->PassCopyRequests(&copy_requests);
   EXPECT_TRUE(copy_layer->HasCopyRequest());
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
-  EXPECT_TRUE(copy_grand_parent->draw_properties().
-              layer_or_descendant_has_copy_request);
-  EXPECT_TRUE(copy_parent->draw_properties().
-              layer_or_descendant_has_copy_request);
-  EXPECT_TRUE(copy_layer->draw_properties().
-              layer_or_descendant_has_copy_request);
-  EXPECT_FALSE(copy_child->draw_properties().
-               layer_or_descendant_has_copy_request);
-  EXPECT_FALSE(copy_grand_parent_sibling_before->draw_properties().
-               layer_or_descendant_has_copy_request);
-  EXPECT_FALSE(copy_grand_parent_sibling_after->draw_properties().
-               layer_or_descendant_has_copy_request);
+  EXPECT_TRUE(copy_grand_parent_layer->draw_properties()
+                  .layer_or_descendant_has_copy_request);
+  EXPECT_TRUE(copy_parent_layer->draw_properties()
+                  .layer_or_descendant_has_copy_request);
+  EXPECT_TRUE(
+      copy_layer->draw_properties().layer_or_descendant_has_copy_request);
+  EXPECT_FALSE(
+      copy_child_layer->draw_properties().layer_or_descendant_has_copy_request);
+  EXPECT_FALSE(copy_grand_parent_sibling_before_layer->draw_properties()
+                   .layer_or_descendant_has_copy_request);
+  EXPECT_FALSE(copy_grand_parent_sibling_after_layer->draw_properties()
+                   .layer_or_descendant_has_copy_request);
 
   // We should have three render surfaces, one for the root, one for the parent
   // since it owns a surface, and one for the copy_layer.
   ASSERT_EQ(3u, render_surface_layer_list.size());
   EXPECT_EQ(root->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(copy_parent->id(), render_surface_layer_list.at(1)->id());
+  EXPECT_EQ(copy_parent_layer->id(), render_surface_layer_list.at(1)->id());
   EXPECT_EQ(copy_layer->id(), render_surface_layer_list.at(2)->id());
 
   // The root render surface should have 2 contributing layers. The
@@ -5058,20 +5042,20 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // request.
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
   EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(copy_parent->id(),
+  EXPECT_EQ(copy_parent_layer->id(),
             root->render_surface()->layer_list().at(1)->id());
 
   // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
-  ASSERT_EQ(1u, copy_parent->render_surface()->layer_list().size());
+  ASSERT_EQ(1u, copy_parent_layer->render_surface()->layer_list().size());
   EXPECT_EQ(copy_layer->id(),
-            copy_parent->render_surface()->layer_list().at(0)->id());
+            copy_parent_layer->render_surface()->layer_list().at(0)->id());
 
   // The copy_layer's render surface should have two contributing layers.
   ASSERT_EQ(2u, copy_layer->render_surface()->layer_list().size());
   EXPECT_EQ(copy_layer->id(),
             copy_layer->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(copy_child->id(),
+  EXPECT_EQ(copy_child_layer->id(),
             copy_layer->render_surface()->layer_list().at(1)->id());
 }
 
@@ -5084,59 +5068,46 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  root->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  root->SetDrawsContent(true);
 
-  scoped_refptr<Layer> copy_parent = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(),
-                               true,
-                               false);
-  copy_parent->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> copy_parent =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
+  SetLayerPropertiesForTesting(copy_parent.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(), true,
+                               false, false);
+  copy_parent->SetDrawsContent(true);
   copy_parent->SetMasksToBounds(true);
 
-  scoped_refptr<Layer> copy_layer = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_layer.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  copy_layer->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> copy_layer =
+      LayerImpl::Create(host_impl.pending_tree(), 3);
+  SetLayerPropertiesForTesting(copy_layer.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, true);
+  copy_layer->SetDrawsContent(true);
 
-  scoped_refptr<Layer> copy_child = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(copy_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  copy_child->SetIsDrawable(true);
+  scoped_ptr<LayerImpl> copy_child =
+      LayerImpl::Create(host_impl.pending_tree(), 4);
+  SetLayerPropertiesForTesting(copy_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, false);
+  copy_child->SetDrawsContent(true);
 
-  copy_layer->AddChild(copy_child);
-  copy_parent->AddChild(copy_layer);
-  root->AddChild(copy_parent);
-
-  host()->SetRootLayer(root);
-
-  copy_layer->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
-      base::Bind(&EmptyCopyOutputCallback)));
+  ScopedPtrVector<CopyOutputRequest> copy_requests;
+  copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+  copy_layer->PassCopyRequests(&copy_requests);
   EXPECT_TRUE(copy_layer->HasCopyRequest());
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+  copy_layer->AddChild(copy_child.Pass());
+  copy_parent->AddChild(copy_layer.Pass());
+  root->AddChild(copy_parent.Pass());
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
