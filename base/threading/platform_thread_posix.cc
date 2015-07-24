@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -126,8 +127,13 @@ bool CreateThread(size_t stack_size, bool joinable,
 
   // Don't let this call complete until the thread id
   // is set in the handle.
-  if (success)
+  if (success) {
+    // TODO(toyoshim): Remove this after a few days (crbug.com/495097)
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "495097 pthread_create and handle_set.Wait"));
     params.handle_set.Wait();
+  }
   CHECK_EQ(handle, thread_handle->platform_handle());
 
   return success;
