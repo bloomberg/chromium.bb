@@ -817,20 +817,6 @@ protected:
     // Generates GL error and returns false if parameters are invalid.
     bool validateTexFuncFormatAndType(const char* functionName, GLenum internalformat, GLenum format, GLenum type, GLint level);
 
-    // Helper function to check readbuffer validity for readPixels and copyTex{Sub}Image.
-    // If yes, obtains the readbuffer's format, type, the bound read framebuffer, returns true.
-    // If not, generates a GL error, returns false.
-    // Note: it's OK to pass format == nullptr and type == nullptr.
-    bool validateReadBufferAndGetInfo(const char* functionName, WebGLFramebuffer*& readFramebufferBinding, GLenum* format, GLenum* type);
-
-    // Helper function to check format/type enums for readPixels.
-    // Generates INVALID_ENUM and returns false if parameters are invalid.
-    virtual bool validateReadPixelsFormatAndType(GLenum format, GLenum type);
-
-    // Helper function to check format/type combination for readPixels.
-    // Generates INVALID_OPERATION and returns false if the combination is unsupported.
-    bool validateReadPixelsFormatTypeCombination(GLenum format, GLenum type, GLenum readBufferInternalFormat, GLenum readBufferType);
-
     virtual GLint getMaxTextureLevelForTarget(GLenum target);
 
     // Helper function to check input level for functions {copy}Tex{Sub}Image.
@@ -892,6 +878,10 @@ protected:
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
     bool validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, WebGLTexture*);
+
+    // Helper function to validate that the image is attached to read buffer
+    // when reading from FBO (readPixels/copyTexImage2D/copyTexSubImage2D).
+    bool validateReadBufferAttachment(const char* functionName, const WebGLFramebuffer* readFramebufferBinding);
 
     // Helper function to validate mode for draw{Arrays/Elements}.
     bool validateDrawMode(const char* functionName, GLenum);

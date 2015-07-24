@@ -648,20 +648,6 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
     return GL_NONE;
 }
 
-bool WebGLFramebuffer::getReadBufferFormatAndType(GLenum* format, GLenum* type) const
-{
-    if (m_readBuffer == GL_NONE)
-        return false;
-    WebGLAttachment* image = getAttachment(m_readBuffer);
-    if (!image)
-        return false;
-    if (format)
-        *format = image->format();
-    if (type)
-        *type = image->type();
-    return true;
-}
-
 DEFINE_TRACE(WebGLFramebuffer)
 {
 #if ENABLE(OILPAN)

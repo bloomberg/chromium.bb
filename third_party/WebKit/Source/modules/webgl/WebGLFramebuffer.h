@@ -107,10 +107,6 @@ public:
 
     GLenum getReadBuffer() const { return m_readBuffer; }
 
-    // If readbuffer is GL_NONE or no image is attached, return false.
-    // Note: it's ok for format or type to be nullptr.
-    bool getReadBufferFormatAndType(GLenum* format, GLenum* type) const;
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:

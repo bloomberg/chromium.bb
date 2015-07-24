@@ -1845,6 +1845,26 @@ bool WebGLRenderingContextBase::validateSettableTexFormat(const char* functionNa
     return true;
 }
 
+bool WebGLRenderingContextBase::validateReadBufferAttachment(const char* functionName, const WebGLFramebuffer* readFramebufferBinding)
+{
+    if (readFramebufferBinding) {
+        GLenum readBuffer = readFramebufferBinding->getReadBuffer();
+        if (readBuffer == GL_NONE) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "read buffer is GL_NONE");
+            return false;
+        }
+        WebGLSharedObject* attachmentObject = readFramebufferBinding->getAttachmentObject(readBuffer);
+        if (!attachmentObject) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image attached to read buffer");
+            return false;
+        }
+    } else if (m_readBufferOfDefaultFramebuffer == GL_NONE) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "read buffer is GL_NONE");
+        return false;
+    }
+    return true;
+}
+
 void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
     if (isContextLost())
@@ -1868,8 +1888,14 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         synthesizeGLError(GL_INVALID_VALUE, "copyTexImage2D", "level > 0 not power of 2");
         return;
     }
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
-    if (!validateReadBufferAndGetInfo("copyTexImage2D", readFramebufferBinding, nullptr, nullptr))
+    const char* reason = "framebuffer incomplete";
+    GLenum framebufferTarget = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(framebufferTarget);
+    if (readFramebufferBinding && !readFramebufferBinding->onAccess(webContext(), &reason)) {
+        synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexImage2D", reason);
+        return;
+    }
+    if (!validateReadBufferAttachment("copyTexImage2D", readFramebufferBinding))
         return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
@@ -1909,8 +1935,14 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
         synthesizeGLError(GL_INVALID_OPERATION, "copyTexSubImage2D", "framebuffer is incompatible format");
         return;
     }
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
-    if (!validateReadBufferAndGetInfo("copyTexSubImage2D", readFramebufferBinding, nullptr, nullptr))
+    const char* reason = "framebuffer incomplete";
+    GLenum framebufferTarget = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(framebufferTarget);
+    if (readFramebufferBinding && !readFramebufferBinding->onAccess(webContext(), &reason)) {
+        synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexSubImage2D", reason);
+        return;
+    }
+    if (!validateReadBufferAttachment("copyTexSubImage2D", readFramebufferBinding))
         return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
@@ -3579,135 +3611,6 @@ void WebGLRenderingContextBase::polygonOffset(GLfloat factor, GLfloat units)
     webContext()->polygonOffset(factor, units);
 }
 
-bool WebGLRenderingContextBase::validateReadBufferAndGetInfo(const char* functionName, WebGLFramebuffer*& readFramebufferBinding, GLenum* format, GLenum* type)
-{
-    GLenum target = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
-    readFramebufferBinding = getFramebufferBinding(target);
-    if (readFramebufferBinding) {
-        const char* reason = "framebuffer incomplete";
-        if (!readFramebufferBinding->onAccess(webContext(), &reason)) {
-            synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
-            return false;
-        }
-        if (!readFramebufferBinding->getReadBufferFormatAndType(format, type)) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image to read from");
-            return false;
-        }
-    } else {
-        if (m_readBufferOfDefaultFramebuffer == GL_NONE) {
-            ASSERT(isWebGL2OrHigher());
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image to read from");
-            return false;
-        }
-        // Obtain the default drawing buffer's format and type.
-        if (format)
-            *format = drawingBuffer()->getActualAttributes().alpha ? GL_RGBA : GL_RGB;
-        if (type)
-            *type = GL_UNSIGNED_BYTE;
-    }
-    return true;
-}
-
-bool WebGLRenderingContextBase::validateReadPixelsFormatAndType(GLenum format, GLenum type)
-{
-    switch (format) {
-    case GL_ALPHA:
-    case GL_RGB:
-    case GL_RGBA:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid format");
-        return false;
-    }
-
-    switch (type) {
-    case GL_UNSIGNED_BYTE:
-    case GL_UNSIGNED_SHORT_5_6_5:
-    case GL_UNSIGNED_SHORT_4_4_4_4:
-    case GL_UNSIGNED_SHORT_5_5_5_1:
-    case GL_FLOAT:
-    case GL_HALF_FLOAT_OES:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid type");
-        return false;
-    }
-
-    return true;
-}
-
-bool WebGLRenderingContextBase::validateReadPixelsFormatTypeCombination(GLenum format, GLenum type, GLenum readBufferInternalFormat, GLenum readBufferType)
-{
-    GLenum acceptedFormat = 0, acceptedType = 0;
-    switch (readBufferInternalFormat) { // This is internalformat.
-    case GL_R8UI:
-    case GL_R8I:
-    case GL_R16UI:
-    case GL_R16I:
-    case GL_R32UI:
-    case GL_R32I:
-    case GL_RG8UI:
-    case GL_RG8I:
-    case GL_RG16UI:
-    case GL_RG16I:
-    case GL_RG32UI:
-    case GL_RG32I:
-    // All the RGB_INTEGER formats are not renderable.
-    case GL_RGBA8UI:
-    case GL_RGBA8I:
-    case GL_RGB10_A2UI:
-    case GL_RGBA16UI:
-    case GL_RGBA16I:
-    case GL_RGBA32UI:
-    case GL_RGBA32I:
-        acceptedFormat = GL_RGBA_INTEGER;
-        break;
-    default:
-        acceptedFormat = GL_RGBA;
-        break;
-    }
-    switch (readBufferType) {
-    case GL_HALF_FLOAT:
-    case GL_FLOAT:
-    case GL_UNSIGNED_INT_10F_11F_11F_REV:
-        acceptedType = GL_FLOAT;
-        break;
-    case GL_UNSIGNED_BYTE:
-    case GL_UNSIGNED_SHORT:
-    case GL_UNSIGNED_SHORT_5_6_5:
-    case GL_UNSIGNED_SHORT_5_5_5_1:
-    case GL_UNSIGNED_SHORT_4_4_4_4:
-    case GL_UNSIGNED_INT:
-    case GL_UNSIGNED_INT_2_10_10_10_REV:
-        if (acceptedFormat == GL_RGBA_INTEGER)
-            acceptedType = GL_UNSIGNED_INT;
-        else
-            acceptedType = GL_UNSIGNED_BYTE;
-        break;
-    case GL_BYTE:
-    case GL_SHORT:
-    case GL_INT:
-        if (acceptedFormat == GL_RGBA_INTEGER)
-            acceptedType = GL_INT;
-        break;
-    default:
-        break;
-    }
-
-    if (!(format == acceptedFormat && type == acceptedType)
-        && !(readBufferInternalFormat == GL_RGB10_A2 && format == GL_RGBA && type == GL_UNSIGNED_INT_2_10_10_10_REV)) {
-        // Check against the implementation color read format and type.
-        WGC3Dint implFormat = 0, implType = 0;
-        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &implFormat);
-        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &implType);
-        if (!implFormat || !implType || format != static_cast<GLenum>(implFormat) || type != static_cast<GLenum>(implType)) {
-            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "invalid format/type combination");
-            return false;
-        }
-    }
-    return true;
-}
-
 void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost())
@@ -3720,22 +3623,21 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         synthesizeGLError(GL_INVALID_VALUE, "readPixels", "no destination ArrayBufferView");
         return;
     }
-    if (!validateReadPixelsFormatAndType(format, type))
+    switch (format) {
+    case GL_ALPHA:
+    case GL_RGB:
+    case GL_RGBA:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid format");
         return;
-    GLenum readBufferInternalFormat = 0, readBufferType = 0;
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
-    if (!validateReadBufferAndGetInfo("readPixels", readFramebufferBinding, &readBufferInternalFormat, &readBufferType))
-        return;
-    if (!validateReadPixelsFormatTypeCombination(format, type, readBufferInternalFormat, readBufferType))
-        return;
+    }
 
     DOMArrayBufferView::ViewType expectedViewType;
+
     switch (type) {
     case GL_UNSIGNED_BYTE:
         expectedViewType = DOMArrayBufferView::TypeUint8;
-        break;
-    case GL_BYTE:
-        expectedViewType = DOMArrayBufferView::TypeInt8;
         break;
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
@@ -3745,30 +3647,35 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
     case GL_FLOAT:
         expectedViewType = DOMArrayBufferView::TypeFloat32;
         break;
-    case GL_HALF_FLOAT:
     case GL_HALF_FLOAT_OES:
         expectedViewType = DOMArrayBufferView::TypeUint16;
         break;
-    case GL_UNSIGNED_INT:
-    case GL_UNSIGNED_INT_2_10_10_10_REV:
-    case GL_UNSIGNED_INT_10F_11F_11F_REV:
-    case GL_UNSIGNED_INT_5_9_9_9_REV:
-        expectedViewType = DOMArrayBufferView::TypeUint32;
-        break;
-    case GL_INT:
-        expectedViewType = DOMArrayBufferView::TypeInt32;
-        break;
     default:
-        ASSERT_NOT_REACHED();
-        expectedViewType = DOMArrayBufferView::TypeUint8;
-        break;
+        synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid type");
+        return;
+    }
+    if (format != GL_RGBA || type != GL_UNSIGNED_BYTE) {
+        // Check against the implementation color read format and type.
+        WGC3Dint implFormat = 0, implType = 0;
+        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &implFormat);
+        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &implType);
+        if (!implFormat || !implType || format != static_cast<GLenum>(implFormat) || type != static_cast<GLenum>(implType)) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "format/type not RGBA/UNSIGNED_BYTE or implementation-defined values");
+            return;
+        }
     }
     // Validate array type against pixel type.
     if (pixels->type() != expectedViewType) {
         synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView was the wrong type for the pixel format");
         return;
     }
-
+    const char* reason = "framebuffer incomplete";
+    GLenum target = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(target);
+    if (readFramebufferBinding && !readFramebufferBinding->onAccess(webContext(), &reason)) {
+        synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
+        return;
+    }
     // Calculate array size, taking into consideration of PACK_ALIGNMENT.
     unsigned totalBytesRequired = 0;
     unsigned padding = 0;
@@ -3782,6 +3689,9 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         return;
     }
 
+    if (!validateReadBufferAttachment("readPixels", readFramebufferBinding))
+        return;
+
     clearIfComposited();
     void* data = pixels->baseAddress();
 
@@ -3789,6 +3699,21 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
         webContext()->readPixels(x, y, width, height, format, type, data);
     }
+
+#if OS(MACOSX)
+    // FIXME: remove this section when GL driver bug on Mac is fixed, i.e.,
+    // when alpha is off, readPixels should set alpha to 255 instead of 0.
+    if (!readFramebufferBinding && !drawingBuffer()->getActualAttributes().alpha) {
+        unsigned char* pixels = reinterpret_cast<unsigned char*>(data);
+        for (GLsizei iy = 0; iy < height; ++iy) {
+            for (GLsizei ix = 0; ix < width; ++ix) {
+                pixels[3] = 255;
+                pixels += 4;
+            }
+            pixels += padding;
+        }
+    }
+#endif
 }
 
 void WebGLRenderingContextBase::renderbufferStorageImpl(
