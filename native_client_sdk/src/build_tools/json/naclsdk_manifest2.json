@@ -105,6 +105,16 @@
     },
     {
       "archives": [],
+      "description": "Chrome 45 bundle, revision xxxxx",
+      "name": "pepper_45",
+      "recommended": "no",
+      "repath": "pepper_45",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 45
+    },
+    {
+      "archives": [],
       "description": "Chrome Canary",
       "name": "pepper_canary",
       "recommended": "no",
