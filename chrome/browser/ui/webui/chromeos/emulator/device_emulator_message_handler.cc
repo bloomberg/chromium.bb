@@ -14,8 +14,9 @@
 
 namespace {
 
-// Define request function that will request the values that are set in
-// power manager properties. Used to initialize the web UI values.
+// Define the name of the callback functions that will be used by JavaScript.
+const char kBluetoothDiscoverFunction[] = "requestBluetoothDiscover";
+const char kBluetoothPairFunction[] = "requestBluetoothPair";
 const char kRequestPowerInfo[] = "requestPowerInfo";
 
 // Define update functions that will update the power properties to the
@@ -48,6 +49,21 @@ void DeviceEmulatorMessageHandler::Init() {
 void DeviceEmulatorMessageHandler::RequestPowerInfo(
     const base::ListValue* args) {
   fake_power_manager_client_->RequestStatusUpdate();
+}
+
+void DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover(
+    const base::ListValue* args) {
+  const base::DictionaryValue* device = NULL;
+  args->GetDictionary(0, &device);
+  // TODO(rfrapp): Create device if it doesn't exist and discover it.
+}
+
+void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
+    const base::ListValue* args) {
+  const base::DictionaryValue* device = NULL;
+  args->GetDictionary(0, &device);
+  // TODO(rfrapp): Create device if it doesn't exist and pair it to the main
+  // adapter.
 }
 
 void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
@@ -129,5 +145,13 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kUpdateTimeToFull,
       base::Bind(&DeviceEmulatorMessageHandler::UpdateTimeToFull,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kBluetoothDiscoverFunction,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kBluetoothPairFunction,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestBluetoothPair,
                  base::Unretained(this)));
 }

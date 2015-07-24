@@ -25,6 +25,18 @@ class DeviceEmulatorMessageHandler
   // asynchronously.
   void RequestPowerInfo(const base::ListValue* args);
 
+  // Callback for the "requestBluetoothDiscover" message. This asynchronously
+  // requests for the system to discover a certain device. The device's data
+  // should be passed into |args| as a dictionary. If the device does not
+  // already exist, then it will be created and attached to the main adapter.
+  void HandleRequestBluetoothDiscover(const base::ListValue* args);
+
+  // Callback for the "requestBluetoothPair" message. This asynchronously
+  // requests for the system to pair a certain device. The device's data should
+  // be passed into |args| as a dictionary. If the device does not already
+  // exist, then it will be created and attached to the main adapter.
+  void HandleRequestBluetoothPair(const base::ListValue* args);
+
   // Callbacks for JS update methods. All these methods work
   // asynchronously.
   void UpdateBatteryPercent(const base::ListValue* args);

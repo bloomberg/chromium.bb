@@ -1,0 +1,31 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+paper-input {
+  -webkit-margin-start: 15px;
+  display: inline-block;
+  width: 200px;
+}
+
+paper-toggle-button {
+  -webkit-margin-start: 15px;
+}
+
+paper-slider {
+  -webkit-margin-start: 15px;
+}
+
+paper-radio-button {
+  display: inline-block;
+}
+
+.element-label {
+  -webkit-padding-start: 0;
+  color: rgb(82, 101, 162);
+  font-size: 24px;
+  font-weight: normal;
+  height: 80px;
+  letter-spacing: 0.05em;
+  line-height: 80px;
+}

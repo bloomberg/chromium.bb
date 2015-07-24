@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="chrome://resources/css/roboto.css">
   <link rel="stylesheet" href="device_emulator.css">
   <link rel="import" href="battery_settings.html">
+  <link rel="import" href="bluetooth_settings.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
@@ -35,7 +36,7 @@
     paper-drawer-panel .card {
       display: block;
       margin: 20px 20px 60px 20px;
-      width: 80%;
+      width: 95%;
       background-color: #fff;
       box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
       border-radius: 2px;
@@ -61,8 +62,17 @@
         <paper-item>
           <div class="menu-item">
             <span>Battery/Power Settings</span>
-            <paper-checkbox checked="true" data-section-id="battery-settings"
+            <paper-checkbox checked
+                data-content-id="battery-settings-card"
                 class="menu-item-toggle"></paper-checkbox>
+          </div>
+        </paper-item>
+        <paper-item>
+          <div class="menu-item">
+            <span>Bluetooth Settings</span>
+            <paper-checkbox checked
+                class="menu-item-toggle"
+                data-content-id="bluetooth-settings-card"></paper-checkbox>
           </div>
         </paper-item>
       </div>
@@ -72,10 +82,15 @@
       </paper-toolbar>
       <div>
         <div id="cards-container">
-          <div class="card">
+          <div class="card" id="battery-settings-card">
             <div class="card-body">
               <battery-settings id="battery-settings">
               </battery-settings>
+            </div>
+          </div>
+          <div class="card" id="bluetooth-settings-card">
+            <div class="card-body">
+              <bluetooth-settings id="bluetooth-settings"></bluetooth-settings>
             </div>
           </div>
         </div>

@@ -28,9 +28,11 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
   html->AddResourcePath("device_emulator.css", IDR_DEVICE_EMULATOR_CSS);
   html->AddResourcePath("device_emulator.js", IDR_DEVICE_EMULATOR_JS);
   html->AddResourcePath("battery_settings.html", IDR_BATTERY_SETTINGS_HTML);
-  html->AddResourcePath("battery_settings_styles.html",
-                        IDR_BATTERY_SETTINGS_STYLES_HTML);
+  html->AddResourcePath("battery_settings.css", IDR_BATTERY_SETTINGS_CSS);
   html->AddResourcePath("battery_settings.js", IDR_BATTERY_SETTINGS_JS);
+  html->AddResourcePath("bluetooth_settings.html", IDR_BLUETOOTH_SETTINGS_HTML);
+  html->AddResourcePath("bluetooth_settings.css", IDR_BLUETOOTH_SETTINGS_CSS);
+  html->AddResourcePath("bluetooth_settings.js", IDR_BLUETOOTH_SETTINGS_JS);
   html->SetDefaultResource(IDR_DEVICE_EMULATOR_HTML);
 
   return html;

@@ -1,0 +1,95 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+
+<dom-module id="bluetooth-settings">
+  <link rel="import" type="css" href="bluetooth_settings.css">
+  <template>
+    <div class="layout vertical">
+      <div class="element-label">{{title}}</div>
+      <form id="bluetooth-settings-form">
+        <div class="layout vertical">
+          <p>
+            <label>
+              <span class="form-label">Toggle bluetooth</span>
+              <paper-toggle-button
+                  checked="{{powerToMainAdapter}}"></paper-toggle-button>
+            </label>
+          </p>
+        </div>
+        <div class="layout vertical">
+          <p>
+            <label>
+              <span class="form-label">Devices</span>
+              <template is="dom-repeat" items="{{devices}}">
+                <div class="device-container">
+                  <div class="bluetooth-device">
+                    <div class="element-label">[[item.name]]</div>
+                    <paper-input value="{{item.name}}"
+                        label="Name"></paper-input>
+                    <paper-input value="{{item.path}}"
+                        label="Path"></paper-input>
+                    <paper-input value="{{item.address}}"
+                        label="Address"></paper-input>
+                    <paper-input value="{{item.alias}}"
+                        label="Alias"></paper-input>
+                    <span class="toggle-button-label">Trusted</span>
+                    <paper-toggle-button
+                        checked="{{item.isTrusted}}"></paper-toggle-button>
+                    <span class="toggle-button-label">Pairable</span>
+                    <paper-toggle-button
+                        checked="{{item.isPairable}}"></paper-toggle-button>
+                    <div class="device-field">
+                      <p>
+                        <label>
+                          <span class="form-label">Class/Type</span>
+                          <paper-radio-group selected="{{item.class}}">
+                            <template is="dom-repeat"
+                                items="{{deviceClassOptions}}" as="option"
+                                index-as="option_index">
+                              <paper-radio-button name="{{option.text}}"
+                                  >{{option.text}}</paper-radio-button>
+                            </template>
+                          </paper-radio-group>
+                        </label>
+                      </p>
+                    </div>
+                    <div class="device-field">
+                      <p>
+                        <label>
+                          <span class="form-label">Pair Authentication Type</span>
+                          <paper-radio-group selected="{{item.pairMethod}}">
+                            <template is="dom-repeat"
+                                items="{{deviceAuthenticationMethods}}" as="method"
+                                index-as="method_index">
+                              <paper-radio-button name="{{method}}"
+                                  >{{method}}</paper-radio-button>
+                            </template>
+                          </paper-radio-group>
+                        </label>
+                      </p>
+                    </div>
+                    <paper-button raised class="colored" on-click="pairDevice"
+                        data-index="[[index]]">
+                      Pair
+                    </paper-button>
+                    <paper-button raised class="colored"
+                        on-click="discoverDevice" data-index="[[index]]">
+                      Make Discoverable
+                    </paper-button>
+                  </div>
+                </div>
+              </template>
+              <paper-button on-click="appendNewDevice">
+                [+] New Device
+              </paper-button>
+            </label>
+          </p>
+        </div>
+      </form>
+    </div>
+  </template>
+  <script src="bluetooth_settings.js"></script>
+</dom-module>
