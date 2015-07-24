@@ -269,8 +269,7 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
     }
 
     if (it->offset + it->segment.length() <= end_offset) {
-      num_bytes_consumed_ += it->segment.length();
-      num_bytes_buffered_ -= it->segment.length();
+      RecordBytesConsumed(it->segment.length());
       // This chunk is entirely consumed.
       buffered_frames_.erase(it);
       continue;

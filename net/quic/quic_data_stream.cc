@@ -67,6 +67,11 @@ int QuicDataStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
   return sequencer()->GetReadableRegions(iov, iov_len);
 }
 
+void QuicDataStream::MarkConsumed(size_t num_bytes) {
+  DCHECK(FinishedReadingHeaders());
+  return sequencer()->MarkConsumed(num_bytes);
+}
+
 bool QuicDataStream::IsDoneReading() const {
   if (!headers_decompressed_ || !decompressed_headers_.empty()) {
     return false;

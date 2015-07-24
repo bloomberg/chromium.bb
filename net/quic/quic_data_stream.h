@@ -99,6 +99,8 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   // been fully processed.  Then they simply delegate to the sequencer.
   virtual size_t Readv(const struct iovec* iov, size_t iov_len);
   virtual int GetReadableRegions(iovec* iov, size_t iov_len) const;
+  void MarkConsumed(size_t num_bytes);
+
   // Returns true when all data has been read from the peer, including the fin.
   bool IsDoneReading() const;
   bool HasBytesToRead() const;

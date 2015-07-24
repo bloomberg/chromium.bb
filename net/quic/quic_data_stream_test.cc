@@ -270,6 +270,29 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyReadv) {
   EXPECT_EQ(body, string(buffer, bytes_read));
 }
 
+TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyMarkConsumed) {
+  Initialize(!kShouldProcessData);
+
+  string headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string body = "this is the body";
+
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+  QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
+  stream_->OnStreamFrame(frame);
+  stream_->MarkHeadersConsumed(headers.length());
+
+  struct iovec vec;
+
+  EXPECT_EQ(1, stream_->GetReadableRegions(&vec, 1));
+  EXPECT_EQ(body.length(), vec.iov_len);
+  EXPECT_EQ(body, string(static_cast<char*>(vec.iov_base), vec.iov_len));
+
+  stream_->MarkConsumed(body.length());
+  EXPECT_EQ(body.length(), stream_->flow_controller()->bytes_consumed());
+}
+
 TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   Initialize(!kShouldProcessData);
 

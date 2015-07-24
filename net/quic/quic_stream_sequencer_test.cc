@@ -143,6 +143,7 @@ TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
   OnFrame(0, "abc");
   EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(3u, stream_.flow_controller()->bytes_consumed());
   // Ignore this - it matches a past sequence number and we should not see it
   // again.
   OnFrame(0, "def");
@@ -451,6 +452,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
 
   // Consume 1 byte.
   sequencer_->MarkConsumed(1);
+  EXPECT_EQ(1u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
   const char* expected2[] = {"bc", "def", "ghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
@@ -458,6 +460,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
 
   // Consume 2 bytes.
   sequencer_->MarkConsumed(2);
+  EXPECT_EQ(3u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
   const char* expected3[] = {"def", "ghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected3, arraysize(expected3)));
@@ -465,6 +468,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
 
   // Consume 5 bytes.
   sequencer_->MarkConsumed(5);
+  EXPECT_EQ(8u, stream_.flow_controller()->bytes_consumed());
   // Verify data.
   const char* expected4[] = {"i"};
   ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
