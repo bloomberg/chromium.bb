@@ -73,7 +73,7 @@ class RenderViewTest : public testing::Test {
 
   // Executes the given JavaScript in the context of the main frame. The input
   // is a NULL-terminated UTF-8 string.
-  void ExecuteJavaScript(const char* js);
+  void ExecuteJavaScriptForTests(const char* js);
 
   // Executes the given JavaScript and sets the int value it evaluates to in
   // |result|.

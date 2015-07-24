@@ -1263,14 +1263,15 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void RemoveLinkElement(int i) const {
-    GetActiveWebContents()->GetMainFrame()->ExecuteJavaScript(
+    GetActiveWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
   }
 
   void ClickToNextPageAfterPrerender() {
     TestNavigationObserver nav_observer(GetActiveWebContents());
     RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
-    render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16("ClickOpenLink()"));
+    render_frame_host->ExecuteJavaScriptForTests(
+        base::ASCIIToUTF16("ClickOpenLink()"));
     nav_observer.Wait();
   }
 
@@ -1528,7 +1529,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     std::string javascript = base::StringPrintf(
         "AddPrerender('%s', %d)", url.spec().c_str(), index);
     RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
-    render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16(javascript));
+    render_frame_host->ExecuteJavaScriptForTests(
+        base::ASCIIToUTF16(javascript));
   }
 
   // Returns a string for pattern-matching TaskManager tab entries.
@@ -1678,7 +1680,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     } else {
       NavigationOrSwapObserver observer(current_browser()->tab_strip_model(),
                                         web_contents);
-      render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16(javascript));
+      render_frame_host->ExecuteJavaScriptForTests(
+          base::ASCIIToUTF16(javascript));
       observer.Wait();
     }
   }

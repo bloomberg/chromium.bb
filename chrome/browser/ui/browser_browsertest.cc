@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   WebContents* second_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(second_tab);
-  second_tab->GetMainFrame()->ExecuteJavaScript(
+  second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("alert('Activate!');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
@@ -651,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
   // even if the renderer tries to synchronously create more.
   // See http://crbug.com/312490.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetMainFrame()->ExecuteJavaScript(
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("alert('one'); alert('two');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
@@ -677,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
 
   // Start a navigation to trigger the beforeunload dialog.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetMainFrame()->ExecuteJavaScript(
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("window.location.href = 'data:text/html,foo'"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
   // Navigate to an iframe that opens an alert dialog.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetMainFrame()->ExecuteJavaScript(
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("window.location.href = 'data:text/html,"
                    "<iframe srcdoc=\"<script>alert(1)</script>\">'"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
-      ExecuteJavaScript(ASCIIToUTF16("onbeforeunload=null;"));
+      ExecuteJavaScriptForTests(ASCIIToUTF16("onbeforeunload=null;"));
 }
 
 class RedirectObserver : public content::WebContentsObserver {
@@ -928,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
-      ExecuteJavaScript(ASCIIToUTF16("onbeforeunload=null;"));
+      ExecuteJavaScriptForTests(ASCIIToUTF16("onbeforeunload=null;"));
 }
 
 // Test for crbug.com/11647.  A page closed with window.close() should not have
@@ -2068,7 +2068,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetMainFrame()->ExecuteJavaScript(
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("alert('Dialog showing!');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());

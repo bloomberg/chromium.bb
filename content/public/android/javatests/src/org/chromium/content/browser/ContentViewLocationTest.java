@@ -45,7 +45,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
     }
 
     private void pollForPositionCallback() throws Throwable {
-        mJavascriptHelper.evaluateJavaScript(getWebContents(),
+        mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(),
                 "positionCount = 0");
         mJavascriptHelper.waitUntilHasValue();
         assertEquals(0, Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()));
@@ -53,7 +53,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
-                    mJavascriptHelper.evaluateJavaScript(getWebContents(), "positionCount");
+                    mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(), "positionCount");
                     try {
                         mJavascriptHelper.waitUntilHasValue();
                     } catch (Exception e) {
@@ -65,7 +65,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
     }
 
     private void startGeolocationWatchPosition() throws Throwable {
-        mJavascriptHelper.evaluateJavaScript(getWebContents(),
+        mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(),
                 "initiate_watchPosition();");
         mJavascriptHelper.waitUntilHasValue();
     }
@@ -116,7 +116,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         hideContentViewOnUiThread();
         ensureGeolocationRunning(false);
 
-        mJavascriptHelper.evaluateJavaScript(getWebContents(),
+        mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(),
                 "positionCount = 0");
         mJavascriptHelper.waitUntilHasValue();
 

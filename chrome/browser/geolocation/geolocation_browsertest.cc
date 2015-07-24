@@ -90,7 +90,8 @@ IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
       iframe_id, url.spec().c_str()));
-  web_contents->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(script));
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16(script));
   content::RunMessageLoop();
 
   EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);

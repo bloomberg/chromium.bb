@@ -568,7 +568,7 @@ class SafeBrowsingBlockingPageBrowserTest
     // We don't use ExecuteScriptAndGetValue for this one, since clicking
     // the button/link may navigate away before the injected javascript can
     // reply, hanging the test.
-    rvh->GetMainFrame()->ExecuteJavaScript(
+    rvh->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16(
             "document.getElementById('" + node_id + "').click();\n"));
     return true;

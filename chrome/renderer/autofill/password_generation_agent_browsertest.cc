@@ -51,7 +51,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     blink::WebElement element =
         document.getElementById(blink::WebString::fromUTF8(element_id));
     ASSERT_FALSE(element.isNull());
-    ExecuteJavaScript(
+    ExecuteJavaScriptForTests(
         base::StringPrintf("document.getElementById('%s').focus();",
                            element_id).c_str());
   }
@@ -418,12 +418,13 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
 
   // Change focus. Bubble should be hidden, but that is handled by AutofilAgent,
   // so no messages are sent.
-  ExecuteJavaScript("document.getElementById('username').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('username').focus();");
   EXPECT_EQ(0u, password_generation_->messages().size());
   password_generation_->clear_messages();
 
   // Focusing the password field will bring up the generation UI again.
-  ExecuteJavaScript("document.getElementById('first_password').focus();");
+  ExecuteJavaScriptForTests(
+      "document.getElementById('first_password').focus();");
   ASSERT_EQ(1u, password_generation_->messages().size());
   EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
             password_generation_->messages()[0]->type());
@@ -443,7 +444,7 @@ TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
   LoadHTMLWithUserGesture(kSigninFormHTML);
   SetNotBlacklistedMessage(password_generation_, kSigninFormHTML);
 
-  ExecuteJavaScript(
+  ExecuteJavaScriptForTests(
       "var form = document.createElement('form');"
       "var username = document.createElement('input');"
       "username.type = 'text';"

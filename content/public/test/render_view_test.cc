@@ -145,7 +145,7 @@ WebLocalFrame* RenderViewTest::GetMainFrame() {
   return view_->GetWebView()->mainFrame()->toWebLocalFrame();
 }
 
-void RenderViewTest::ExecuteJavaScript(const char* js) {
+void RenderViewTest::ExecuteJavaScriptForTests(const char* js) {
   GetMainFrame()->executeScript(WebScriptSource(WebString::fromUTF8(js)));
 }
 

@@ -37,7 +37,8 @@ void WebUITestHandler::PreloadJavaScript(const base::string16& js_text,
 }
 
 void WebUITestHandler::RunJavaScript(const base::string16& js_text) {
-  web_ui()->GetWebContents()->GetMainFrame()->ExecuteJavaScript(js_text);
+  web_ui()->GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      js_text);
 }
 
 bool WebUITestHandler::RunJavaScriptTestWithResult(
@@ -45,9 +46,9 @@ bool WebUITestHandler::RunJavaScriptTestWithResult(
   test_succeeded_ = false;
   run_test_succeeded_ = false;
   content::RenderFrameHost* frame = web_ui()->GetWebContents()->GetMainFrame();
-  frame->ExecuteJavaScript(js_text,
-                           base::Bind(&WebUITestHandler::JavaScriptComplete,
-                                      base::Unretained(this)));
+  frame->ExecuteJavaScriptForTests(
+      js_text, base::Bind(&WebUITestHandler::JavaScriptComplete,
+                          base::Unretained(this)));
   return WaitForResult();
 }
 

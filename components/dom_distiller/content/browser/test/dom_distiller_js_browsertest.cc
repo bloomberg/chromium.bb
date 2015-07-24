@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
   // QuitClosure multiple times.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(15));
-  web_contents->GetMainFrame()->ExecuteJavaScript(
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(kRunJsTestsJs),
       base::Bind(&DomDistillerJsTest::OnJsTestExecutionDone,
                  base::Unretained(this)));

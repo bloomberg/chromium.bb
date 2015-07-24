@@ -2132,7 +2132,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
   ASSERT_TRUE(forms.empty());
 
   // Append to the current form will re-extract.
-  ExecuteJavaScript(
+  ExecuteJavaScriptForTests(
       "var newInput = document.createElement('input');"
       "newInput.setAttribute('type', 'text');"
       "newInput.setAttribute('id', 'telephone');"
@@ -2169,7 +2169,7 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
   forms.clear();
 
   // Completely new form will also be extracted.
-  ExecuteJavaScript(
+  ExecuteJavaScriptForTests(
       "var newForm=document.createElement('form');"
       "newForm.id='new_testform';"
       "newForm.action='http://google.com';"

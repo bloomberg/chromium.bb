@@ -153,7 +153,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   }
 
   void PrintWithJavaScript() {
-    ExecuteJavaScript("window.print();");
+    ExecuteJavaScriptForTests("window.print();");
     ProcessPendingMessages();
   }
   // The renderer should be done calculating the number of rendered pages
