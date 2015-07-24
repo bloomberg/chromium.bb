@@ -28529,6 +28529,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.StoreReadyWhenWiping" enum="Boolean">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    When the user logs in with their sync credential, PasswordManager checks if
+    there are any outdated copies of it in the password store, in order to purge
+    them. This histogram records whether password store data are ready during
+    this check.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SubmitNavigatesToDifferentDomain"
     enum="PostSubmitNavigation">
   <owner>vabr@chromium.org</owner>

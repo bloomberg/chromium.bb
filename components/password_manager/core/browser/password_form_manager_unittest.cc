@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -41,6 +42,16 @@ using ::testing::SaveArg;
 namespace password_manager {
 
 namespace {
+
+// Invokes the password store consumer with a copy of all forms.
+ACTION_P4(InvokeConsumer, form1, form2, form3, form4) {
+  ScopedVector<PasswordForm> result;
+  result.push_back(make_scoped_ptr(new PasswordForm(form1)));
+  result.push_back(make_scoped_ptr(new PasswordForm(form2)));
+  result.push_back(make_scoped_ptr(new PasswordForm(form3)));
+  result.push_back(make_scoped_ptr(new PasswordForm(form4)));
+  arg0->OnGetPasswordStoreResults(result.Pass());
+}
 
 void RunAllPendingTasks() {
   base::RunLoop run_loop;
@@ -218,6 +229,8 @@ class PasswordFormManagerTest : public testing::Test {
 
   void SimulateMatchingPhase(PasswordFormManager* p,
                              ResultOfSimulatedMatching result) {
+    // TODO(vabr): This should use the mock store instead of private methods of
+    // PasswordFormManager.
     // Roll up the state to mock out the matching phase.
     p->state_ = PasswordFormManager::POST_MATCHING_PHASE;
     if (result == RESULT_NO_MATCH)
@@ -1557,6 +1570,104 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
   // Check that we suggest, not autofill.
   EXPECT_TRUE(password_manager.GetLatestWaitForUsername());
+}
+
+TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
+  PasswordForm form(*saved_match());
+  ASSERT_FALSE(form.password_value.empty());
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), form, false);
+
+  // Do not notify the store observer after this GetLogins call.
+  EXPECT_CALL(*mock_store(), GetLogins(_, _, _));
+  form_manager.FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::DISALLOW_PROMPT);
+
+  PasswordForm submitted_form(form);
+  submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+  form_manager.WipeStoreCopyIfOutdated();
+  histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 0,
+                                      1);
+}
+
+TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_NotOutdated) {
+  PasswordForm form(*saved_match());
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  ASSERT_FALSE(form.password_value.empty());
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), form, false);
+
+  // For GAIA authentication, the first two usernames are equivalent to
+  // test@gmail.com, but the third is not.
+  PasswordForm form_related(form);
+  form_related.username_value = ASCIIToUTF16("test@googlemail.com");
+  PasswordForm form_related2(form);
+  form_related2.username_value = ASCIIToUTF16("test");
+  PasswordForm form_unrelated(form);
+  form_unrelated.username_value = ASCIIToUTF16("test.else");
+  EXPECT_CALL(*mock_store(), GetLogins(_, _, _))
+      .WillOnce(testing::WithArg<2>(
+          InvokeConsumer(form, form_related, form_related2, form_unrelated)));
+  form_manager.FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::DISALLOW_PROMPT);
+
+  form_manager.ProvisionallySave(
+      form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+  form_manager.WipeStoreCopyIfOutdated();
+  histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 1,
+                                      1);
+}
+
+TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_Outdated) {
+  PasswordForm form(*saved_match());
+  ASSERT_FALSE(form.password_value.empty());
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), form, false);
+
+  // For GAIA authentication, the first two usernames are equivalent to
+  // test@gmail.com, but the third is not.
+  PasswordForm form_related(form);
+  form_related.username_value = ASCIIToUTF16("test@googlemail.com");
+  PasswordForm form_related2(form);
+  form_related2.username_value = ASCIIToUTF16("test");
+  PasswordForm form_unrelated(form);
+  form_unrelated.username_value = ASCIIToUTF16("test.else");
+  EXPECT_CALL(*mock_store(), GetLogins(_, _, _))
+      .WillOnce(testing::WithArg<2>(
+          InvokeConsumer(form, form_related, form_related2, form_unrelated)));
+  form_manager.FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::DISALLOW_PROMPT);
+
+  PasswordForm submitted_form(form);
+  submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*mock_store(), RemoveLogin(form));
+  EXPECT_CALL(*mock_store(), RemoveLogin(form_related));
+  EXPECT_CALL(*mock_store(), RemoveLogin(form_related2));
+  EXPECT_CALL(*mock_store(), RemoveLogin(form_unrelated)).Times(0);
+  form_manager.WipeStoreCopyIfOutdated();
+  histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 1,
+                                      1);
 }
 
 }  // namespace password_manager

@@ -154,9 +154,11 @@ class PasswordManager : public LoginModel {
   // |provisional_save_manager_|.
   bool ShouldPromptUserToSavePassword() const;
 
-  // Called when we already decided that login was correct and we want to save
-  // password.
-  void AskUserOrSavePassword();
+  // Called when the login was deemed successful. It handles the special case
+  // when the provisionally saved password is a sync credential, and otherwise
+  // asks the user about saving the password or saves it directly, as
+  // appropriate.
+  void OnLoginSuccessful();
 
   // Checks for every from in |forms| whether |pending_login_managers_| already
   // contain a manager for that form. If not, adds a manager for each such form.

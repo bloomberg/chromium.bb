@@ -530,8 +530,6 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
-      .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, GetLogins(_, _, _))
       .WillRepeatedly(WithArg<2>(InvokeEmptyConsumer()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
@@ -545,10 +543,106 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
 
+  // Recognise the stored credential as a sync one. Make sure that the
+  // credentials are identified by the realm, not origin with path.
+  EXPECT_CALL(client_, IsSyncAccountCredential(_, form.signon_realm))
+      .WillRepeatedly(Return(true));
+
   OnPasswordFormSubmitted(form);
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// When there is a sync password saved, and the user successfully uses the
+// stored version of it, PasswordManager should not drop that password.
+TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
+  PasswordForm form(MakeSimpleForm());
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillRepeatedly(WithArg<2>(InvokeConsumer(form)));
+
+  // Start recognising the stored credential as a sync one.
+  EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Submit form and finish navigation.
+  EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+  manager()->ProvisionallySavePassword(form);
+
+  // Chrome should not remove the sync credential, because it was successfully
+  // used as stored, and therefore is up to date.
+  EXPECT_CALL(*store_, RemoveLogin(_)).Times(0);
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// When there is a sync password saved, and the user successfully uses an
+// updated version of it, the obsolete one should be dropped, to avoid filling
+// it later.
+TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
+  PasswordForm form(MakeSimpleForm());
+  form.password_value = ASCIIToUTF16("old pa55word");
+  // Pretend that the password store contains "old pa55word" stored for |form|.
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillRepeatedly(WithArg<2>(InvokeConsumer(form)));
+
+  // Load the page, pretend the password was updated.
+  PasswordForm updated_form(form);
+  updated_form.password_value = ASCIIToUTF16("n3w passw0rd");
+  std::vector<PasswordForm> observed;
+  observed.push_back(updated_form);
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Submit form and finish navigation.
+  EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+  manager()->ProvisionallySavePassword(updated_form);
+
+  // Recognise the stored credential as a sync one. Make sure that the
+  // credentials are identified by the realm, not origin with path.
+  EXPECT_CALL(client_, IsSyncAccountCredential(_, form.signon_realm))
+      .WillRepeatedly(Return(true));
+
+  // Because the user successfully uses an updated sync password, Chrome should
+  // remove the obsolete copy of it.
+  EXPECT_CALL(*store_, RemoveLogin(form));
+  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// While sync credentials are not saved, they are still filled to avoid users
+// thinking they lost access to their accounts.
+TEST_F(PasswordManagerTest, SyncCredentialsStillFilled) {
+  PasswordForm form(MakeSimpleForm());
+  // Pretend that the password store contains credentials stored for |form|.
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillRepeatedly(WithArg<2>(InvokeConsumer(form)));
+
+  // Start recognising the stored credential as a sync one.
+  EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
+      .WillRepeatedly(Return(true));
+
+  // Load the page.
+  autofill::PasswordFormFillData form_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  EXPECT_EQ(form.password_value, form_data.password_field.value);
 }
 
 // On failed login attempts, the retry-form can have action scheme changed from

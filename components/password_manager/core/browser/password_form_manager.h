@@ -204,6 +204,16 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
 
+  // Use this to wipe copies of |pending_credentials_| from the password store
+  // (and |best_matches_| as well. It will only wipe if:
+  // 1. The stored password differs from the one in |pending_credentials_|.
+  // 2. And the store already returned results for the observed form.
+  // This is designed for use with sync credentials, so it will use GAIA utils
+  // to catch equivalent usernames (e.g., if |pending_credentials_| have
+  // username 'test', and the store also contains outdated entries for
+  // 'test@gmail.com' and 'test@googlemail.com', those will be wiped).
+  void WipeStoreCopyIfOutdated();
+
  private:
   friend class PasswordFormManagerTest;
 

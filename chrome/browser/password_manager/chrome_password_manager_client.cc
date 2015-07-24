@@ -203,9 +203,10 @@ std::string ChromePasswordManagerClient::GetSyncUsername() const {
 }
 
 bool ChromePasswordManagerClient::IsSyncAccountCredential(
-    const std::string& username, const std::string& origin) const {
+    const std::string& username,
+    const std::string& realm) const {
   return password_manager_sync_metrics::IsSyncAccountCredential(
-      profile_, username, origin);
+      profile_, username, realm);
 }
 
 void ChromePasswordManagerClient::AutofillResultsComputed() {

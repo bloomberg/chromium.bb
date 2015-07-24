@@ -33,8 +33,8 @@ std::string GetSyncUsername(Profile* profile) {
 
 bool IsSyncAccountCredential(Profile* profile,
                              const std::string& username,
-                             const std::string& origin) {
-  if (origin != GaiaUrls::GetInstance()->gaia_url().GetOrigin().spec())
+                             const std::string& realm) {
+  if (realm != GaiaUrls::GetInstance()->gaia_url().GetOrigin().spec())
     return false;
 
   return gaia::AreEmailsSame(username, GetSyncUsername(profile));

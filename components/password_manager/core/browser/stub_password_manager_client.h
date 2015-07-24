@@ -20,7 +20,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   // PasswordManagerClient:
   std::string GetSyncUsername() const override;
   bool IsSyncAccountCredential(const std::string& username,
-                               const std::string& origin) const override;
+                               const std::string& realm) const override;
   bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   bool PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> form_to_save,

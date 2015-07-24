@@ -67,10 +67,10 @@ class PasswordManagerClient {
   // string if sync is not enabled for passwords.
   virtual std::string GetSyncUsername() const = 0;
 
-  // Returns true if |username| and |origin| correspond to the account which is
-  // syncing.
+  // Returns true if |username| and signon |realm| correspond to the account
+  // which is syncing.
   virtual bool IsSyncAccountCredential(const std::string& username,
-                                       const std::string& origin) const = 0;
+                                       const std::string& realm) const = 0;
 
   // Called when all autofill results have been computed. Client can use
   // this signal to report statistics. Default implementation is a noop.

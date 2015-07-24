@@ -17,11 +17,11 @@ namespace password_manager_sync_metrics {
 // since this code can be called during sync setup (http://crbug.com/393626).
 std::string GetSyncUsername(Profile* profile);
 
-// Returns true if |username| and |origin| correspond to the account which is
-// syncing. Will return false if |profile| is not syncing.
+// Returns true if |username| and signon |realm| correspond to the account which
+// is syncing. Will return false if |profile| is not syncing.
 bool IsSyncAccountCredential(Profile* profile,
                              const std::string& username,
-                             const std::string& origin);
+                             const std::string& realm);
 
 }  // namespace password_manager_sync_metrics
 

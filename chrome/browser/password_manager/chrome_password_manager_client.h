@@ -48,7 +48,7 @@ class ChromePasswordManagerClient
   bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   std::string GetSyncUsername() const override;
   bool IsSyncAccountCredential(const std::string& username,
-                               const std::string& origin) const override;
+                               const std::string& realm) const override;
   void AutofillResultsComputed() override;
   bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,

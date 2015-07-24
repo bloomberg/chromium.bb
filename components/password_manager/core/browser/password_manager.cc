@@ -324,15 +324,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
   }
 
-  // Don't save credentials for the syncing account. See crbug.com/365832 for
-  // background.
-  if (ShouldDropSyncCredential() &&
-      client_->IsSyncAccountCredential(base::UTF16ToUTF8(form.username_value),
-                                       form.signon_realm)) {
-    RecordFailure(SYNC_CREDENTIAL, form.origin, logger.get());
-    return;
-  }
-
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid =
       form.origin.SchemeIsCryptographic() &&
@@ -442,7 +433,7 @@ void PasswordManager::OnPasswordFormForceSaveRequested(
   // mark the form as force saved, and recreate the pending login managers,
   // because the password store might have changed.
   ProvisionallySavePassword(password_form);
-  AskUserOrSavePassword();
+  OnLoginSuccessful();
 }
 
 void PasswordManager::OnPasswordFormsParsed(
@@ -644,7 +635,7 @@ void PasswordManager::OnPasswordFormsRendered(
     // automatically save the login data. We prompt when the user hasn't
     // already given consent, either through previously accepting the infobar
     // or by having the browser generate the password.
-    AskUserOrSavePassword();
+    OnLoginSuccessful();
   }
 }
 
@@ -662,15 +653,28 @@ void PasswordManager::OnInPageNavigation(
   if (!CanProvisionalManagerSave())
     return;
 
-  AskUserOrSavePassword();
+  OnLoginSuccessful();
 }
 
-void PasswordManager::AskUserOrSavePassword() {
+void PasswordManager::OnLoginSuccessful() {
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
+
+  if (ShouldDropSyncCredential() &&
+      client_->IsSyncAccountCredential(
+          base::UTF16ToUTF8(provisional_save_manager_->associated_username()),
+          provisional_save_manager_->realm())) {
+    provisional_save_manager_->WipeStoreCopyIfOutdated();
+    RecordFailure(SYNC_CREDENTIAL,
+                  provisional_save_manager_->observed_form().origin,
+                  logger.get());
+    provisional_save_manager_.reset();
+    return;
+  }
+
   provisional_save_manager_->SubmitPassed();
 
   RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
