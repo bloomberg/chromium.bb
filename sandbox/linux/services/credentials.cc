@@ -53,7 +53,16 @@ bool GetRESIds(uid_t* resuid, gid_t* resgid) {
 
 const int kExitSuccess = 0;
 
+#if defined(__clang__)
+// Disable sanitizers that rely on TLS and may write to non-stack memory.
+__attribute__((no_sanitize_address))
+__attribute__((no_sanitize_thread))
+__attribute__((no_sanitize_memory))
+#endif
 int ChrootToSelfFdinfo(void*) {
+  // This function can be run from a vforked child, so it should not write to
+  // any memory other than the stack or errno. Reads from TLS may be different
+  // from in the parent process.
   RAW_CHECK(sys_chroot("/proc/self/fdinfo/") == 0);
 
   // CWD is essentially an implicit file descriptor, so be careful to not
@@ -91,9 +100,22 @@ bool ChrootToSafeEmptyDir() {
 #error "Unsupported architecture"
 #endif
 
-  pid = clone(ChrootToSelfFdinfo, stack,
-              CLONE_VM | CLONE_VFORK | CLONE_FS | LINUX_SIGCHLD, nullptr,
-              nullptr, nullptr, nullptr);
+  int clone_flags = CLONE_FS | LINUX_SIGCHLD;
+  void* tls = nullptr;
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM_FAMILY)
+  // Use CLONE_VM | CLONE_VFORK as an optimization to avoid copying page tables.
+  // Since clone writes to the new child's TLS before returning, we must set a
+  // new TLS to avoid corrupting the current process's TLS. On ARCH_CPU_X86,
+  // glibc performs syscalls by calling a function pointer in TLS, so we do not
+  // attempt this optimization.
+  clone_flags |= CLONE_VM | CLONE_VFORK | CLONE_SETTLS;
+
+  char tls_buf[PTHREAD_STACK_MIN] = {0};
+  tls = tls_buf;
+#endif
+
+  pid = clone(ChrootToSelfFdinfo, stack, clone_flags, nullptr, nullptr, tls,
+              nullptr);
   PCHECK(pid != -1);
 
   int status = -1;
