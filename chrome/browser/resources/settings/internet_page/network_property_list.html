@@ -10,7 +10,7 @@
       <div class="layout vertical">
         <template is="dom-repeat" items="[[fields]]">
           <div class="layout horizontal"
-              hidden$="[[!hasPropertyValue_(networkState, item)]]">
+              hidden$="[[!showProperty_(networkState, editFieldTypes, item)]]">
             <span>[[getPropertyLabel_(item)]]</span>
             <span class="flex fill"></span>
           </div>

@@ -828,6 +828,26 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kRoamingStateProperty,
                                  base::StringValue(shill_roaming_state));
+
+    base::DictionaryValue apn;
+    apn.SetStringWithoutPathExpansion(shill::kApnProperty, "testapn");
+    apn.SetStringWithoutPathExpansion(shill::kApnNameProperty, "Test APN");
+    apn.SetStringWithoutPathExpansion(shill::kApnLocalizedNameProperty,
+                                      "Localized Test APN");
+    apn.SetStringWithoutPathExpansion(shill::kApnUsernameProperty, "User1");
+    apn.SetStringWithoutPathExpansion(shill::kApnPasswordProperty, "password");
+    base::DictionaryValue apn2;
+    apn2.SetStringWithoutPathExpansion(shill::kApnProperty, "testapn2");
+    services->SetServiceProperty(kCellularServicePath,
+                                 shill::kCellularApnProperty, apn);
+    services->SetServiceProperty(kCellularServicePath,
+                                 shill::kCellularLastGoodApnProperty, apn);
+    base::ListValue apn_list;
+    apn_list.Append(apn.DeepCopy());
+    apn_list.Append(apn2.DeepCopy());
+    devices->SetDeviceProperty("/device/cellular1",
+                               shill::kCellularApnListProperty, apn_list);
+
     profiles->AddService(shared_profile, kCellularServicePath);
   }
 

@@ -81,15 +81,27 @@ Polymer({
    * @private
    */
   hasPropertyValue_: function(state, key) {
-    if (!state)
-      return false;
-    var value = this.get(key, state);
+    var value = (state && this.get(key, state)) || undefined;
     return (value !== undefined && value !== '');
   },
 
   /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @param {Object} editFields The editFieldTypes object.
+   * @param {Object} editFieldTypes The editFieldTypes object.
+   * @param {string} key The property key.
+   * @return {boolean} Whether or not to show the property. Editable properties
+   *     are always shown.
+   * @private
+   */
+  showProperty_: function(state, editFieldTypes, key) {
+    if (editFieldTypes.hasOwnProperty(key))
+      return true;
+    return this.hasPropertyValue_(state, key);
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {Object} editFieldTypes The editFieldTypes object.
    * @param {string} key The property key.
    * @return {boolean} True if |key| exists in |state| and is not editable.
    * @private
@@ -103,7 +115,7 @@ Polymer({
 
   /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @param {Object} editFields The editFieldTypes object.
+   * @param {Object} editFieldTypes The editFieldTypes object.
    * @param {string} key The property key.
    * @param {string} type The field type.
    * @return {boolean} True if |key| exists in |state| and is of editable
@@ -111,10 +123,7 @@ Polymer({
    * @private
    */
   showEdit_: function(state, editFieldTypes, key, type) {
-    if (!this.hasPropertyValue_(state, key))
-      return false;
-    var editType = editFieldTypes[key];
-    return editType == type;
+    return editFieldTypes[key] == type;
   },
 
   /**

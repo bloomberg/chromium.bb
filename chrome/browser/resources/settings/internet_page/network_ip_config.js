@@ -55,6 +55,7 @@ Polymer({
 
     /**
      * Array of properties to pass to the property list.
+     * @type {!Array<string>}
      */
     ipConfigFields_: {
       type: Array,
@@ -191,8 +192,6 @@ Polymer({
    * @private
    */
   onIPChange_: function(event) {
-    event.stopPropagation();
-
     var field = event.detail.field;
     var value = event.detail.value;
     // Note: |field| includes the 'ipv4.' prefix.

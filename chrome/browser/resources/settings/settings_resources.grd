@@ -244,6 +244,15 @@
         <structure name="IDR_SETTINGS_INTERNET_PAGE_JS"
                    file="internet_page/internet_page.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_APNLIST_CSS"
+                   file="internet_page/network_apnlist.css"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_APNLIST_HTML"
+                   file="internet_page/network_apnlist.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_APNLIST_JS"
+                   file="internet_page/network_apnlist.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_IP_CONFIG_CSS"
                    file="internet_page/network_ip_config.css"
                    type="chrome_html" />

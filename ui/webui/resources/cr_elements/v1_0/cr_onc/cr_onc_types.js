@@ -90,6 +90,19 @@ CrOnc.ManualProxySettings;
  */
 CrOnc.ProxySettings;
 
+// TODO(stevenjb): Update chrome_extensions.js to include APNProperties
+// in chrome.networkingPrivate and use that.
+/** @typedef {{
+ *    AccessPointName: string,
+ *    Language: (string|undefined),
+ *    LocalizedName: (string|undefined),
+ *    Name: (string|undefined),
+ *    Password: (string|undefined),
+ *    Username: (string|undefined)
+ * }}
+ */
+CrOnc.APNProperties;
+
 /** @enum {string} */
 CrOnc.Type = {
   CELLULAR: 'Cellular',

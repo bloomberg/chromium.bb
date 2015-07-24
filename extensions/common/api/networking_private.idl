@@ -64,7 +64,7 @@ namespace networkingPrivate {
   };
 
   dictionary APNProperties {
-    DOMString? AccessPointName;
+    DOMString AccessPointName;
     DOMString? Language;
     DOMString? LocalizedName;
     DOMString? Name;

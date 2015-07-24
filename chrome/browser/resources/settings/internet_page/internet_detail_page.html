@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
+<link rel="import" href="network_apnlist.html">
 <link rel="import" href="network_ip_config.html">
 <link rel="import" href="network_nameservers.html">
 <link rel="import" href="network_property_list.html">
@@ -81,7 +82,7 @@
               </network-property-list>
             </div>
 
-            <!-- Address and nameservers -->
+            <!-- Network (APN, address, nameservers) -->
             <div id="addressDiv" class="layout vertical"
                 hidden$="[[!hasNetworkSection_(networkState)]]">
               <cr-button toggles active="{{addressExpanded}}">
@@ -89,6 +90,12 @@
               </cr-button>
               <cr-collapse opened="[[addressExpanded]]">
                 <div class="layout vertical flex">
+                  <network-apnlist editable
+                      hidden$="[[!isType_(networkState, 'Cellular')]]"
+                      network-state="[[networkState]]"
+                      apnlist="[[networkState.Cellular.APNList]]"
+                      on-apn-change="onApnChange_">
+                  </network-apnlist>
                   <network-ip-config editable
                       network-state="[[networkState]]"
                       on-ip-change="onIPConfigChange_">
@@ -128,7 +135,6 @@
                     fields="[[getDeviceFields_(networkState)]]"
                     network-state="[[networkState]]">
                 </network-property-list>
-                <!-- TODO(stevenjb): Cellular APN -->
                 <!-- TODO(stevenjb): Cellular SIM -->
               </cr-collapse>
             </div>

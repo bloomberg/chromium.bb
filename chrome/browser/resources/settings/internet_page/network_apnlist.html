@@ -1,0 +1,33 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+<link rel="import" href="network_property_list.html">
+
+<dom-module id="network-apnlist">
+  <link rel="import" type="css" href="network_apnlist.css">
+  <template>
+    <div id="outerDiv" class="layout vertical">
+      <div id="selectDiv" class="layout horizontal center">
+        <span>Access Point:</span>
+        <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->
+        <select id="selectApn" value="{{selectedApn::change}}"
+            on-change="onSelectApnChange_">
+          <template is="dom-repeat"
+              items="[[apnSelectList]]" on-dom-change="onSelectApnUpdated_">
+            <option value="[[item.AccessPointName]]">[[apnDesc_(item)]]</option>
+          </template>
+        </select>
+      </div>
+      <div id="otherDiv" class="layout vertical"
+          hidden$="[[!isOtherSelected_(networkState, selectedApn)]]">
+        <network-property-list
+            fields="[[otherApnFields_]]" network-state="[[otherApn]]"
+            edit-field-types="[[otherApnEditTypes_]]"
+            on-property-change="onOtherApnChange_">
+        </network-property-list>
+        <cr-button on-click="onSaveOther_">Save</cr-button>
+      </div>
+    </div>
+  </template>
+  <script src="network_apnlist.js"></script>
+</dom-module>

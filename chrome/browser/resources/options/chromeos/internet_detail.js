@@ -872,20 +872,14 @@ cr.define('options.internet', function() {
       assert(apnSelector.length == 1);
       var otherOption = apnSelector[0];
       var activeApn = onc.getActiveValue('Cellular.APN.AccessPointName');
-      var activeUsername = onc.getActiveValue('Cellular.APN.Username');
-      var activePassword = onc.getActiveValue('Cellular.APN.Password');
       var lastGoodApn =
           onc.getActiveValue('Cellular.LastGoodAPN.AccessPointName');
-      var lastGoodUsername =
-          onc.getActiveValue('Cellular.LastGoodAPN.Username');
-      var lastGoodPassword =
-          onc.getActiveValue('Cellular.LastGoodAPN.Password');
       for (var i = 0; i < apnList.length; i++) {
         var apnDict = apnList[i];
-        var option = document.createElement('option');
         var localizedName = apnDict['LocalizedName'];
         var name = localizedName ? localizedName : apnDict['Name'];
         var accessPointName = apnDict['AccessPointName'];
+        var option = document.createElement('option');
         option.textContent =
             name ? (name + ' (' + accessPointName + ')') : accessPointName;
         option.value = i;

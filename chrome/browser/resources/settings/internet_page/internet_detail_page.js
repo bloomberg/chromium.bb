@@ -243,6 +243,8 @@ Polymer({
    * @private
    */
   setNetworkProperties_: function(onc) {
+    if (!this.guid)
+      return;
     chrome.networkingPrivate.setProperties(this.guid, onc, function() {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties
@@ -323,6 +325,18 @@ Polymer({
    */
   onDisconnectClicked_: function() {
     chrome.networkingPrivate.startDisconnect(this.guid);
+  },
+
+  /**
+   * Event triggered when the apnlist element changes.
+   * @param {!{detail: { field: string, value: CrOnc.APNProperties}}} event
+   *     The network-apnlist change event.
+   * @private
+   */
+  onApnChange_: function(event) {
+    if (event.detail.field != 'APN')
+      return;
+    this.setNetworkProperties_({Cellular: {APN: event.detail.value}});
   },
 
   /**
@@ -541,5 +555,15 @@ Polymer({
    */
   hasNetworkSection_: function(state) {
     return state && state.Type != 'VPN';
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {string} type The network type.
+   * @return {boolean} True if the network type matches 'type'.
+   * @private
+   */
+  isType_: function(state, type) {
+    return state && (state.Type == type);
   }
 });
