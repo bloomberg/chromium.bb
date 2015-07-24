@@ -161,5 +161,32 @@
                 "backgroundHtmlParserPendingTokenLimit": "100"
             }
         }
+    ],
+    "SpeculativeResourcePrefetching": [
+        {
+            "group_name": "v=1a:Prefetching=Enabled:Predictor=Url"
+        },
+        {
+            "group_name":
+                "v=1b:Prefetching=Enabled:Predictor=Url:Confidence=High"
+        },
+        {
+            "group_name":
+                "v=1c:Prefetching=Enabled:Predictor=Url:Confidence=Low"
+        },
+        {
+            "group_name": "v=1d:Prefetching=Enabled:Predictor=Host"
+        },
+        {
+            "group_name":
+                "v=1e:Prefetching=Enabled:Predictor=Host:Confidence=High"
+        },
+        {
+            "group_name":
+                "v=1f:Prefetching=Enabled:Predictor=Host:Confidence=Low"
+        },
+        {
+            "group_name": "v=1:Prefetching=Learning"
+        }
     ]
 }
