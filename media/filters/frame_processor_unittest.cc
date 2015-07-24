@@ -54,15 +54,16 @@ class FrameProcessorTestCallbackHelper {
 class FrameProcessorTest : public testing::TestWithParam<bool> {
  protected:
   FrameProcessorTest()
-      : frame_processor_(new FrameProcessor(base::Bind(
-            &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
-            base::Unretained(&callbacks_)))),
+      : frame_processor_(new FrameProcessor(
+            base::Bind(
+                &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
+                base::Unretained(&callbacks_)),
+            new MediaLog())),
         append_window_end_(kInfiniteDuration()),
         new_media_segment_(false),
         audio_id_(FrameProcessor::kAudioTrackId),
         video_id_(FrameProcessor::kVideoTrackId),
-        frame_duration_(base::TimeDelta::FromMilliseconds(10)) {
-  }
+        frame_duration_(base::TimeDelta::FromMilliseconds(10)) {}
 
   enum StreamFlags {
     HAS_AUDIO = 1 << 0,

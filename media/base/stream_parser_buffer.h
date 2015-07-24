@@ -134,6 +134,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   // Gets the parser's media type associated with this buffer. Value is
   // meaningless for EOS buffers.
   Type type() const { return type_; }
+  const char* GetTypeName() const;
 
   // Gets the parser's track ID associated with this buffer. Value is
   // meaningless for EOS buffers.

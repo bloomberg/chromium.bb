@@ -12,6 +12,9 @@
 
 namespace media {
 
+const int kMaxDroppedPrerollWarnings = 10;
+const int kMaxDtsBeyondPtsWarnings = 10;
+
 // Helper class to capture per-track details needed by a frame processor. Some
 // of this information may be duplicated in the short-term in the associated
 // ChunkDemuxerStream and SourceBufferStream for a track.
@@ -148,16 +151,21 @@ bool MseTrackBuffer::FlushProcessedFrames() {
 
   bool result = stream_->Append(processed_frames_);
   processed_frames_.clear();
+
   DVLOG_IF(3, !result) << __FUNCTION__
                        << "(): Failure appending processed frames to stream";
 
   return result;
 }
 
-FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb)
+FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
+                               const scoped_refptr<MediaLog>& media_log)
     : sequence_mode_(false),
       group_start_timestamp_(kNoTimestamp()),
-      update_duration_cb_(update_duration_cb) {
+      update_duration_cb_(update_duration_cb),
+      media_log_(media_log),
+      num_dropped_preroll_warnings_(0),
+      num_dts_beyond_pts_warnings_(0) {
   DVLOG(2) << __FUNCTION__ << "()";
   DCHECK(!update_duration_cb.is_null());
 }
@@ -193,7 +201,7 @@ bool FrameProcessor::ProcessFrames(
     base::TimeDelta* timestamp_offset) {
   StreamParser::BufferQueue frames;
   if (!MergeBufferQueues(audio_buffers, video_buffers, text_map, &frames)) {
-    DVLOG(2) << "Parse error discovered while merging parser's buffers";
+    MEDIA_LOG(ERROR, media_log_) << "Parsed buffers not in DTS sequence";
     return false;
   }
 
@@ -243,8 +251,11 @@ bool FrameProcessor::AddTrack(StreamParser::TrackId id,
 
   MseTrackBuffer* existing_track = FindTrack(id);
   DCHECK(!existing_track);
-  if (existing_track)
+  if (existing_track) {
+    MEDIA_LOG(ERROR, media_log_) << "Failure adding track with duplicate ID "
+                                 << id;
     return false;
+  }
 
   track_buffers_[id] = new MseTrackBuffer(stream);
   return true;
@@ -254,8 +265,11 @@ bool FrameProcessor::UpdateTrack(StreamParser::TrackId old_id,
                                  StreamParser::TrackId new_id) {
   DVLOG(2) << __FUNCTION__ << "() : old_id=" << old_id << ", new_id=" << new_id;
 
-  if (old_id == new_id || !FindTrack(old_id) || FindTrack(new_id))
+  if (old_id == new_id || !FindTrack(old_id) || FindTrack(new_id)) {
+    MEDIA_LOG(ERROR, media_log_) << "Failure updating track id from " << old_id
+                                 << " to " << new_id;
     return false;
+  }
 
   track_buffers_[new_id] = track_buffers_[old_id];
   CHECK_EQ(1u, track_buffers_.erase(old_id));
@@ -359,10 +373,11 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
   if (audio_preroll_buffer_.get()) {
     // We only want to use the preroll buffer if it directly precedes (less
     // than one sample apart) the current buffer.
-    const int64 delta = std::abs((audio_preroll_buffer_->timestamp() +
-                                  audio_preroll_buffer_->duration() -
-                                  buffer->timestamp()).InMicroseconds());
-    if (delta < sample_duration_.InMicroseconds()) {
+    const int64 delta =
+        (audio_preroll_buffer_->timestamp() +
+         audio_preroll_buffer_->duration() - buffer->timestamp())
+            .InMicroseconds();
+    if (std::abs(delta) < sample_duration_.InMicroseconds()) {
       DVLOG(1) << "Attaching audio preroll buffer ["
                << audio_preroll_buffer_->timestamp().InSecondsF() << ", "
                << (audio_preroll_buffer_->timestamp() +
@@ -371,7 +386,14 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
       buffer->SetPrerollBuffer(audio_preroll_buffer_);
       processed_buffer = true;
     } else {
-      // TODO(dalecurtis): Add a MEDIA_LOG() for when this is dropped unused.
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_dropped_preroll_warnings_,
+                        kMaxDroppedPrerollWarnings)
+          << "Partial append window trimming dropping unused audio preroll "
+             "buffer with PTS "
+          << audio_preroll_buffer_->timestamp().InMicroseconds()
+          << "us that ends too far (" << delta
+          << "us) from next buffer with PTS "
+          << buffer->timestamp().InMicroseconds() << "us";
     }
     audio_preroll_buffer_ = NULL;
   }
@@ -451,31 +473,44 @@ bool FrameProcessor::ProcessFrame(
 
     // Sanity check the timestamps.
     if (presentation_timestamp == kNoTimestamp()) {
-      DVLOG(2) << __FUNCTION__ << ": Unknown frame PTS";
+      MEDIA_LOG(ERROR, media_log_) << "Unknown PTS for " << frame->GetTypeName()
+                                   << " frame";
       return false;
     }
     if (decode_timestamp == kNoDecodeTimestamp()) {
-      DVLOG(2) << __FUNCTION__ << ": Unknown frame DTS";
+      MEDIA_LOG(ERROR, media_log_) << "Unknown DTS for " << frame->GetTypeName()
+                                   << " frame";
       return false;
     }
     if (decode_timestamp.ToPresentationTime() > presentation_timestamp) {
       // TODO(wolenetz): Determine whether DTS>PTS should really be allowed. See
       // http://crbug.com/354518.
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_dts_beyond_pts_warnings_,
+                        kMaxDtsBeyondPtsWarnings)
+          << "Parsed " << frame->GetTypeName() << " frame has DTS "
+          << decode_timestamp.InMicroseconds()
+          << "us, which is after the frame's PTS "
+          << presentation_timestamp.InMicroseconds() << "us";
       DVLOG(2) << __FUNCTION__ << ": WARNING: Frame DTS("
                << decode_timestamp.InSecondsF() << ") > PTS("
-               << presentation_timestamp.InSecondsF() << ")";
+               << presentation_timestamp.InSecondsF()
+               << "), frame type=" << frame->GetTypeName();
     }
 
     // TODO(acolwell/wolenetz): All stream parsers must emit valid (positive)
     // frame durations. For now, we allow non-negative frame duration.
     // See http://crbug.com/351166.
     if (frame_duration == kNoTimestamp()) {
-      DVLOG(2) << __FUNCTION__ << ": Frame missing duration (kNoTimestamp())";
+      MEDIA_LOG(ERROR, media_log_)
+          << "Unknown duration for " << frame->GetTypeName() << " frame at PTS "
+          << presentation_timestamp.InMicroseconds() << "us";
       return false;
     }
     if (frame_duration <  base::TimeDelta()) {
-      DVLOG(2) << __FUNCTION__ << ": Frame duration negative: "
-               << frame_duration.InSecondsF();
+      MEDIA_LOG(ERROR, media_log_)
+          << "Negative duration " << frame_duration.InMicroseconds()
+          << "us for " << frame->GetTypeName() << " frame at PTS "
+          << presentation_timestamp.InMicroseconds() << "us";
       return false;
     }
 
@@ -534,9 +569,10 @@ bool FrameProcessor::ProcessFrame(
 
     MseTrackBuffer* track_buffer = FindTrack(track_id);
     if (!track_buffer) {
-      DVLOG(2) << __FUNCTION__ << ": Unknown track: type=" << frame->type()
-               << ", frame processor track id=" << track_id
-               << ", parser track id=" << frame->track_id();
+      MEDIA_LOG(ERROR, media_log_)
+          << "Unknown track with type " << frame->GetTypeName()
+          << ", frame processor track id " << track_id
+          << ", and parser track id " << frame->track_id();
       return false;
     }
 
@@ -625,11 +661,12 @@ bool FrameProcessor::ProcessFrame(
     if (decode_timestamp < DecodeTimestamp()) {
       // B-frames may still result in negative DTS here after being shifted by
       // |timestamp_offset_|.
-      DVLOG(2) << __FUNCTION__
-               << ": frame PTS=" << presentation_timestamp.InSecondsF()
-               << " has negative DTS=" << decode_timestamp.InSecondsF()
-               << " after applying timestampOffset, handling any discontinuity,"
-               << " and filtering against append window";
+      MEDIA_LOG(ERROR, media_log_)
+          << frame->GetTypeName() << " frame with PTS "
+          << presentation_timestamp.InMicroseconds() << "us has negative DTS "
+          << decode_timestamp.InMicroseconds()
+          << "us after applying timestampOffset, handling any discontinuity, "
+             "and filtering against append window";
       return false;
     }
 

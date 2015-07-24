@@ -1274,7 +1274,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   scoped_ptr<FrameProcessor> frame_processor(
       new FrameProcessor(base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
-                         base::Unretained(this))));
+                                    base::Unretained(this)),
+                         media_log_));
 
   scoped_ptr<SourceState> source_state(new SourceState(
       stream_parser.Pass(), frame_processor.Pass(),

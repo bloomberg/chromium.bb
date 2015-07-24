@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/filters/chunk_demuxer.h"
 
@@ -33,7 +34,8 @@ class MEDIA_EXPORT FrameProcessor {
     kVideoTrackId = -3
   };
 
-  explicit FrameProcessor(const UpdateDurationCB& update_duration_cb);
+  FrameProcessor(const UpdateDurationCB& update_duration_cb,
+                 const scoped_refptr<MediaLog>& media_log);
   ~FrameProcessor();
 
   // Get/set the current append mode, which if true means "sequence" and if
@@ -164,6 +166,13 @@ class MEDIA_EXPORT FrameProcessor {
   base::TimeDelta group_end_timestamp_;
 
   UpdateDurationCB update_duration_cb_;
+
+  // MediaLog for reporting messages and properties to debug content and engine.
+  scoped_refptr<MediaLog> media_log_;
+
+  // Counters that limit spam to |media_log_| for frame processor warnings.
+  int num_dropped_preroll_warnings_;
+  int num_dts_beyond_pts_warnings_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameProcessor);
 };
