@@ -500,7 +500,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   }
 // Times out on ASAN bots.
 #if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-  timeout *= 2;
+  timeout *= 4;
 #endif
 #endif
   lock_fail_timer_.Start(
