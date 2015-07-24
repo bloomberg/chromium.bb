@@ -6,17 +6,12 @@
 
 #include <algorithm>
 
+#include "base/bits.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/values.h"
-
-namespace {
-size_t RoundUp(size_t size, size_t alignment) {
-  return (size + alignment - 1) & ~(alignment - 1);
-}
-}  // namespace
 
 namespace base {
 namespace trace_event {
@@ -61,9 +56,9 @@ void TraceEventMemoryOverhead::AddString(const std::string& str) {
   // The number below are empirical and mainly based on profiling of real-world
   // std::string implementations:
   //  - even short string end up malloc()-inc at least 32 bytes.
-  //  - longer stings seem to malloc() multiples of 16 bytes.
-  Add("std::string",
-      sizeof(std::string) + std::max<size_t>(RoundUp(str.capacity(), 16), 32u));
+  //  - longer strings seem to malloc() multiples of 16 bytes.
+  const size_t capacity = bits::Align(str.capacity(), 16);
+  Add("std::string", sizeof(std::string) + std::max<size_t>(capacity, 32u));
 }
 
 void TraceEventMemoryOverhead::AddRefCountedString(

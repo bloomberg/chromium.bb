@@ -5,6 +5,9 @@
 // This file contains the unit tests for the bit utilities.
 
 #include "base/bits.h"
+
+#include <limits>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -42,6 +45,18 @@ TEST(BitsTest, Log2Ceiling) {
     EXPECT_EQ(i, Log2Ceiling(value - 2));
   }
   EXPECT_EQ(32, Log2Ceiling(0xffffffffU));
+}
+
+TEST(BitsTest, Align) {
+  const size_t kSizeTMax = std::numeric_limits<size_t>::max();
+  EXPECT_EQ(0ul, Align(0, 4));
+  EXPECT_EQ(4ul, Align(1, 4));
+  EXPECT_EQ(4096ul, Align(1, 4096));
+  EXPECT_EQ(4096ul, Align(4096, 4096));
+  EXPECT_EQ(4096ul, Align(4095, 4096));
+  EXPECT_EQ(8192ul, Align(4097, 4096));
+  EXPECT_EQ(kSizeTMax - 31, Align(kSizeTMax - 62, 32));
+  EXPECT_EQ(kSizeTMax / 2 + 1, Align(1, kSizeTMax / 2 + 1));
 }
 
 }  // namespace bits

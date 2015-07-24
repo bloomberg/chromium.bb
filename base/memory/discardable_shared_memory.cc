@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "base/atomicops.h"
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
@@ -89,15 +90,9 @@ SharedState* SharedStateFromSharedMemory(const SharedMemory& shared_memory) {
   return static_cast<SharedState*>(shared_memory.memory());
 }
 
-// Round up |size| to a multiple of alignment, which must be a power of two.
-size_t Align(size_t alignment, size_t size) {
-  DCHECK_EQ(alignment & (alignment - 1), 0u);
-  return (size + alignment - 1) & ~(alignment - 1);
-}
-
 // Round up |size| to a multiple of page size.
 size_t AlignToPageSize(size_t size) {
-  return Align(base::GetPageSize(), size);
+  return bits::Align(size, base::GetPageSize());
 }
 
 }  // namespace

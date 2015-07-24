@@ -41,6 +41,12 @@ inline int Log2Ceiling(uint32 n) {
   }
 }
 
+// Round up |size| to a multiple of alignment, which must be a power of two.
+inline size_t Align(size_t size, size_t alignment) {
+  DCHECK_EQ(alignment & (alignment - 1), 0u);
+  return (size + alignment - 1) & ~(alignment - 1);
+}
+
 }  // namespace bits
 }  // namespace base
 

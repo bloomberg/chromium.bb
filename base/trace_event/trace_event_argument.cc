@@ -4,6 +4,7 @@
 
 #include "base/trace_event/trace_event_argument.h"
 
+#include "base/bits.h"
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "base/values.h"
@@ -453,9 +454,14 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
 
 void TracedValue::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
+  const size_t kPickleHeapAlign = 4096;  // Must be == Pickle::kPickleHeapAlign.
   overhead->Add("TracedValue",
-                pickle_.GetTotalAllocatedSize() /* allocated size */,
-                pickle_.size() /* resident size */);
+
+                /* allocated size */
+                bits::Align(pickle_.GetTotalAllocatedSize(), kPickleHeapAlign),
+
+                /* resident size */
+                bits::Align(pickle_.size(), kPickleHeapAlign));
 }
 
 }  // namespace trace_event
