@@ -276,6 +276,7 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
       frame_source_->SetNeedsBeginFrames(true);
       devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                        true);
+      UpdateCompositorTimingHistoryRecordingEnabled();
     } else if (state_machine_.begin_impl_frame_state() ==
                SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE) {
       // Call SetNeedsBeginFrames(false) in between frames only.
@@ -283,6 +284,7 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
       client_->SendBeginMainFrameNotExpectedSoon();
       devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                        false);
+      UpdateCompositorTimingHistoryRecordingEnabled();
     }
   }
 
@@ -721,8 +723,6 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary("scheduler_state");
   state->SetDouble("estimated_parent_draw_time_ms",
                    estimated_parent_draw_time_.InMillisecondsF());
-  state->SetBoolean("last_set_needs_begin_frame_",
-                    frame_source_->NeedsBeginFrames());
   state->SetInteger("begin_retro_frame_args",
                     static_cast<int>(begin_retro_frame_args_.size()));
   state->SetBoolean("begin_retro_frame_task",
@@ -748,7 +748,8 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
 
 void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
   compositor_timing_history_->SetRecordingEnabled(
-      state_machine_.HasInitializedOutputSurface() && state_machine_.visible());
+      state_machine_.HasInitializedOutputSurface() &&
+      state_machine_.visible() && frame_source_->NeedsBeginFrames());
 }
 
 bool Scheduler::ShouldRecoverMainLatency(const BeginFrameArgs& args) const {

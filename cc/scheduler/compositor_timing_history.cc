@@ -39,6 +39,7 @@ namespace {
 // we attempt to recovery latency or not and use the 50th percentile.
 // TODO(brianderson): Fine tune the percentiles below.
 const size_t kDurationHistorySize = 60;
+const size_t kDrawsBeforeEstimatesAffected = 2;
 const double kBeginMainFrameToCommitEstimationPercentile = 50.0;
 const double kCommitToReadyToActivateEstimationPercentile = 50.0;
 const double kPrepareTilesEstimationPercentile = 100.0;
@@ -199,6 +200,7 @@ CompositorTimingHistory::CompositorTimingHistory(
     UMACategory uma_category,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : enabled_(false),
+      draws_left_before_estimates_affected_(0),
       begin_main_frame_to_commit_duration_history_(kDurationHistorySize),
       commit_to_ready_to_activate_duration_history_(kDurationHistorySize),
       prepare_tiles_duration_history_(kDurationHistorySize),
@@ -245,8 +247,18 @@ base::TimeTicks CompositorTimingHistory::Now() const {
   return base::TimeTicks::Now();
 }
 
+bool CompositorTimingHistory::AffectsEstimate() const {
+  return enabled_ && (draws_left_before_estimates_affected_ == 0);
+}
+
 void CompositorTimingHistory::SetRecordingEnabled(bool enabled) {
+  if (enabled == enabled_)
+    return;
+
   enabled_ = enabled;
+
+  if (enabled_)
+    draws_left_before_estimates_affected_ = kDrawsBeforeEstimatesAffected;
 }
 
 base::TimeDelta
@@ -296,13 +308,15 @@ void CompositorTimingHistory::DidCommit() {
   // of our predictions.
   base::TimeDelta begin_main_frame_to_commit_estimate =
       BeginMainFrameToCommitDurationEstimate();
-  uma_reporter_->AddBeginMainFrameToCommitDuration(
-      begin_main_frame_to_commit_duration, begin_main_frame_to_commit_estimate,
-      enabled_);
+
   rendering_stats_instrumentation_->AddBeginMainFrameToCommitDuration(
       begin_main_frame_to_commit_duration, begin_main_frame_to_commit_estimate);
 
-  if (enabled_) {
+  bool affects_estimate = AffectsEstimate();
+  uma_reporter_->AddBeginMainFrameToCommitDuration(
+      begin_main_frame_to_commit_duration, begin_main_frame_to_commit_estimate,
+      affects_estimate);
+  if (affects_estimate) {
     begin_main_frame_to_commit_duration_history_.InsertSample(
         begin_main_frame_to_commit_duration);
   }
@@ -319,9 +333,11 @@ void CompositorTimingHistory::DidPrepareTiles() {
   DCHECK_NE(base::TimeTicks(), start_prepare_tiles_time_);
 
   base::TimeDelta prepare_tiles_duration = Now() - start_prepare_tiles_time_;
+
+  bool affects_estimate = AffectsEstimate();
   uma_reporter_->AddPrepareTilesDuration(
-      prepare_tiles_duration, PrepareTilesDurationEstimate(), enabled_);
-  if (enabled_)
+      prepare_tiles_duration, PrepareTilesDurationEstimate(), affects_estimate);
+  if (affects_estimate)
     prepare_tiles_duration_history_.InsertSample(prepare_tiles_duration);
 
   start_prepare_tiles_time_ = base::TimeTicks();
@@ -341,12 +357,14 @@ void CompositorTimingHistory::ReadyToActivate() {
 
   base::TimeDelta commit_to_ready_to_activate_estimate =
       CommitToReadyToActivateDurationEstimate();
-  uma_reporter_->AddCommitToReadyToActivateDuration(
-      time_since_commit, commit_to_ready_to_activate_estimate, enabled_);
   rendering_stats_instrumentation_->AddCommitToActivateDuration(
       time_since_commit, commit_to_ready_to_activate_estimate);
 
-  if (enabled_) {
+  bool affects_estimate = AffectsEstimate();
+  uma_reporter_->AddCommitToReadyToActivateDuration(
+      time_since_commit, commit_to_ready_to_activate_estimate,
+      affects_estimate);
+  if (affects_estimate) {
     commit_to_ready_to_activate_duration_history_.InsertSample(
         time_since_commit);
   }
@@ -363,9 +381,10 @@ void CompositorTimingHistory::DidActivate() {
   DCHECK_NE(base::TimeTicks(), start_activate_time_);
   base::TimeDelta activate_duration = Now() - start_activate_time_;
 
-  uma_reporter_->AddActivateDuration(activate_duration,
-                                     ActivateDurationEstimate(), enabled_);
-  if (enabled_)
+  bool affects_estimate = AffectsEstimate();
+  uma_reporter_->AddActivateDuration(
+      activate_duration, ActivateDurationEstimate(), affects_estimate);
+  if (affects_estimate)
     activate_duration_history_.InsertSample(activate_duration);
 
   start_activate_time_ = base::TimeTicks();
@@ -387,11 +406,14 @@ void CompositorTimingHistory::DidDraw() {
   rendering_stats_instrumentation_->AddDrawDuration(draw_duration,
                                                     draw_estimate);
 
-  uma_reporter_->AddDrawDuration(draw_duration, draw_estimate, enabled_);
-
-  if (enabled_) {
+  bool affects_estimate = AffectsEstimate();
+  uma_reporter_->AddDrawDuration(draw_duration, draw_estimate,
+                                 affects_estimate);
+  if (affects_estimate)
     draw_duration_history_.InsertSample(draw_duration);
-  }
+
+  if (draws_left_before_estimates_affected_ > 0)
+    draws_left_before_estimates_affected_--;
 
   start_draw_time_ = base::TimeTicks();
 }
