@@ -214,7 +214,7 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
     } else if (m_originalBase.isNotNull()) {
         if (Strategy::selectionBase(m_selection) == Strategy::selectionBase(newSelection))
             newSelection.setBase(m_originalBase);
-        m_originalBase.clear();
+        m_originalBase = VisiblePosition();
     }
 
     newSelection.setIsDirectional(isDirectional); // Adjusting base and extent will make newSelection always directional

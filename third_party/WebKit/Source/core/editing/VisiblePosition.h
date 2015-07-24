@@ -50,17 +50,31 @@ namespace blink {
 class InlineBox;
 class Range;
 
+// |VisiblePosition| is an immutable object representing "canonical position"
+// with affinity.
+//
+// "canonical position" is roughly equivalent to a position where we can place
+// caret, see |canonicalPosition()| for actual definition.
+//
+// "affinity" represents a place of caret at wrapped line. UPSTREAM affinity
+// means caret is placed at end of line. DOWNSTREAM affinity means caret is
+// placed at start of line.
+//
+// Example of affinity:
+//    abc^def where "^" represent |Position|
+// When above text line wrapped after "abc"
+//    abc|  UPSTREAM |VisiblePosition|
+//    |def  DOWNSTREAM |VisiblePosition|
+//
+// NOTE: UPSTREAM affinity will be used only if pos is at end of a wrapped line,
+// otherwise it will be converted to DOWNSTREAM.
 class CORE_EXPORT VisiblePosition final {
     DISALLOW_ALLOCATION();
 public:
-    // NOTE: UPSTREAM affinity will be used only if pos is at end of a wrapped line,
-    // otherwise it will be converted to DOWNSTREAM
     VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
     explicit VisiblePosition(const Position&, EAffinity = VP_DEFAULT_AFFINITY);
     explicit VisiblePosition(const PositionInComposedTree&, EAffinity = VP_DEFAULT_AFFINITY);
     explicit VisiblePosition(const PositionWithAffinity&);
-
-    void clear() { m_deepPosition.clear(); }
 
     bool isNull() const { return m_deepPosition.isNull(); }
     bool isNotNull() const { return m_deepPosition.isNotNull(); }
