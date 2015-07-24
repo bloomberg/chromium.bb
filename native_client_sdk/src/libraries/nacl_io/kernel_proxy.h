@@ -110,7 +110,7 @@ class KernelProxy : protected KernelObject {
   virtual int fchmod(int fd, mode_t mode);
   virtual int fcntl(int fd, int request, va_list args);
   virtual int fstat(int fd, struct stat* buf);
-  virtual int getdents(int fd, void* buf, unsigned int count);
+  virtual int getdents(int fd, struct dirent* buf, unsigned int count);
   virtual int fchdir(int fd);
   virtual int ftruncate(int fd, off_t length);
   virtual int fsync(int fd);

@@ -171,6 +171,7 @@
         "ioctl.h",
         "jsfs/js_fs.h",
         "jsfs/js_fs_node.h",
+        "nacl_abi_dirent.h",
         "kernel_handle.h",
         "kernel_intercept.h",
         "kernel_object.h",

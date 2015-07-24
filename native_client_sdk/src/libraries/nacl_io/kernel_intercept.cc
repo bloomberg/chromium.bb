@@ -242,7 +242,7 @@ int ki_fstat(int fd, struct stat* buf) {
   KP_CALL(fstat, (fd, buf));
 }
 
-int ki_getdents(int fd, void* buf, unsigned int count) {
+int ki_getdents(int fd, struct dirent* buf, unsigned int count) {
   KP_CALL(getdents, (fd, buf, count));
 }
 

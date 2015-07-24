@@ -23,6 +23,7 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/memfs/mem_fs.h"
+#include "nacl_io/nacl_abi_dirent.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ostime.h"
 #include "nacl_io/path.h"
