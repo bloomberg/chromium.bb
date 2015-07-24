@@ -17,7 +17,6 @@ uint32_t LockFlags(gfx::GpuMemoryBuffer::Usage usage) {
     case gfx::GpuMemoryBuffer::PERSISTENT_MAP:
       return 0;
     case gfx::GpuMemoryBuffer::SCANOUT:
-      NOTREACHED();
       return 0;
   }
   NOTREACHED();

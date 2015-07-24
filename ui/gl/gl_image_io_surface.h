@@ -12,6 +12,12 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_image.h"
 
+#if defined(__OBJC__)
+@class CALayer;
+#else
+typedef void* CALayer;
+#endif
+
 namespace gfx {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
@@ -38,6 +44,9 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                             OverlayTransform transform,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+
+  static void SetLayerForWidget(gfx::AcceleratedWidget widget,
+                                CALayer* layer);
 
  protected:
   ~GLImageIOSurface() override;

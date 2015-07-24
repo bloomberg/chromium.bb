@@ -277,15 +277,23 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           context_provider, compositor->vsync_manager(),
           scoped_ptr<BrowserCompositorOverlayCandidateValidator>()));
     } else if (capabilities.gpu.surfaceless) {
+      GLenum target = GL_TEXTURE_2D;
+      GLenum format = GL_RGB;
+#if defined(OS_MACOSX)
+      target = GL_TEXTURE_RECTANGLE_ARB;
+      format = GL_BGRA_EXT;
+#endif
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
               context_provider, data->surface_id, compositor->vsync_manager(),
-              CreateOverlayCandidateValidator(compositor->widget()),
-              GL_TEXTURE_2D, GL_RGB, BrowserGpuMemoryBufferManager::current()));
+              CreateOverlayCandidateValidator(compositor->widget()), target,
+              format, BrowserGpuMemoryBufferManager::current()));
     } else {
-      surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
-          context_provider, compositor->vsync_manager(),
-          CreateOverlayCandidateValidator(compositor->widget())));
+      if (!surface) {
+        surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
+            context_provider, compositor->vsync_manager(),
+            CreateOverlayCandidateValidator(compositor->widget())));
+      }
     }
   }
 

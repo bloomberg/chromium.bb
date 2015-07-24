@@ -106,7 +106,7 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
     }
   }
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_MACOSX)
   const GpuMemoryBufferFactory::Configuration kScanoutConfigurations[] = {
       {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::SCANOUT},
       {gfx::GpuMemoryBuffer::RGBX_8888, gfx::GpuMemoryBuffer::SCANOUT}};

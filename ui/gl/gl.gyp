@@ -225,7 +225,7 @@
             'gl_context_cgl.h',
             'gl_fence_apple.cc',
             'gl_fence_apple.h',
-            'gl_image_io_surface.cc',
+            'gl_image_io_surface.mm',
             'gl_image_io_surface.h',
             'scoped_cgl.cc',
             'scoped_cgl.h',
@@ -234,6 +234,7 @@
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Quartz.framework',
             ],
           },
         }],

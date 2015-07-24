@@ -57,7 +57,7 @@ AcceleratedWidgetMac::AcceleratedWidgetMac(bool needs_gl_finish_workaround)
 
   // Use a sequence number as the accelerated widget handle that we can use
   // to look up the internals structure.
-  static uintptr_t last_sequence_number = 0;
+  static intptr_t last_sequence_number = 0;
   last_sequence_number += 1;
   native_widget_ = reinterpret_cast<gfx::AcceleratedWidget>(
       last_sequence_number);

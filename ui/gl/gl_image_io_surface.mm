@@ -4,14 +4,22 @@
 
 #include "ui/gl/gl_image_io_surface.h"
 
+#include <map>
+
+#include "base/lazy_instance.h"
+#include "base/mac/foundation_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
+#include <Quartz/Quartz.h>
 
 namespace gfx {
 namespace {
+
+typedef std::map<gfx::AcceleratedWidget,CALayer*> WidgetToLayerMap;
+base::LazyInstance<WidgetToLayerMap> g_widget_to_layer_map;
 
 bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
@@ -192,7 +200,31 @@ bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                             OverlayTransform transform,
                                             const Rect& bounds_rect,
                                             const RectF& crop_rect) {
-  return false;
+  // Only simple overlay planes are currently supported.
+  DCHECK_EQ(0, z_order);
+  DCHECK_EQ(gfx::RectF(0, 0, 1, 1).ToString(), crop_rect.ToString());
+  DCHECK_EQ(gfx::OVERLAY_TRANSFORM_NONE, transform);
+
+  // Convert the phony widget to the appropriate CALayer.
+  auto found = g_widget_to_layer_map.Pointer()->find(widget);
+  if (found == g_widget_to_layer_map.Pointer()->end())
+    return false;
+  CALayer* layer = found->second;
+
+  // Also note that transactions are not disabled. The caller must ensure that
+  // all changes to the CALayer tree happen atomically.
+  [layer setContents:static_cast<id>(io_surface_.get())];
+  [layer setFrame:bounds_rect.ToCGRect()];
+  return true;
+}
+
+// static
+void GLImageIOSurface::SetLayerForWidget(
+    gfx::AcceleratedWidget widget, CALayer* layer) {
+  if (layer)
+    g_widget_to_layer_map.Pointer()->insert(std::make_pair(widget, layer));
+  else
+    g_widget_to_layer_map.Pointer()->erase(widget);
 }
 
 }  // namespace gfx
