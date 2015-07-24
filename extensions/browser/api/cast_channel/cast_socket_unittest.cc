@@ -578,6 +578,10 @@ TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_TRANSPORT_ERROR,
             socket_->error_state());
+
+  // Verifies that the CastSocket's resources were torn down during channel
+  // close. (see http://crbug.com/504078)
+  EXPECT_EQ(nullptr, socket_->transport());
 }
 
 // Test connection error - TCP connect fails (async)

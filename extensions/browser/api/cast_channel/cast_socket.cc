@@ -279,7 +279,6 @@ void CastSocketImpl::Connect(scoped_ptr<CastTransport::Delegate> delegate,
 }
 
 CastTransport* CastSocketImpl::transport() const {
-  DCHECK_EQ(ready_state_, READY_STATE_OPEN);
   return transport_.get();
 }
 
@@ -528,7 +527,6 @@ void CastSocketImpl::DoConnectCallback() {
     SetReadyState(READY_STATE_OPEN);
     transport_->SetReadDelegate(delegate_.Pass());
   } else {
-    SetReadyState(READY_STATE_CLOSED);
     CloseInternal();
   }
   base::ResetAndReturn(&connect_callback_).Run(error_state_);
