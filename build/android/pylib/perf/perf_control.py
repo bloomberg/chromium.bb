@@ -17,8 +17,7 @@ class PerfControl(object):
 
   def __init__(self, device):
     # TODO(jbudorick) Remove once telemetry gets switched over.
-    if isinstance(device, android_commands.AndroidCommands):
-      device = device_utils.DeviceUtils(device)
+    assert not isinstance(device, android_commands.AndroidCommands)
     self._device = device
     # this will raise an AdbCommandFailedError if no CPU files are found
     self._cpu_files = self._device.RunShellCommand(

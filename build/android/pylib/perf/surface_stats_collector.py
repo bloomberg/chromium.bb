@@ -25,8 +25,7 @@ class SurfaceStatsCollector(object):
 
   def __init__(self, device):
     # TODO(jbudorick) Remove once telemetry gets switched over.
-    if isinstance(device, android_commands.AndroidCommands):
-      device = device_utils.DeviceUtils(device)
+    assert not isinstance(device, android_commands.AndroidCommands)
     self._device = device
     self._collector_thread = None
     self._surface_before = None

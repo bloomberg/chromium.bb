@@ -31,8 +31,7 @@ class VideoRecorder(object):
   def __init__(self, device, megabits_per_second=4, size=None,
                rotate=False):
     # TODO(jbudorick) Remove once telemetry gets switched over.
-    if isinstance(device, pylib.android_commands.AndroidCommands):
-      device = pylib.device.device_utils.DeviceUtils(device)
+    assert not isinstance(device, pylib.android_commands.AndroidCommands)
     self._device = device
     self._device_file = (
         '%s/screen-recording.mp4' % device.GetExternalStoragePath())

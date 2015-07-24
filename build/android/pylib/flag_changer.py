@@ -28,8 +28,7 @@ class FlagChanger(object):
       cmdline_file: Path to the command line file on the device.
     """
     # TODO(jbudorick) Remove once telemetry switches over.
-    if isinstance(device, pylib.android_commands.AndroidCommands):
-      device = pylib.device.device_utils.DeviceUtils(device)
+    assert not isinstance(device, pylib.android_commands.AndroidCommands)
     self._device = device
     self._cmdline_file = cmdline_file
 
