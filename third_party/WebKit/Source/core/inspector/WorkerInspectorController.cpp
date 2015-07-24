@@ -137,8 +137,9 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     m_agents.append(workerDebuggerAgent.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(m_workerDebuggerAgent, m_instrumentingAgents.get()));
 
-    m_agents.append(InspectorProfilerAgent::create(m_injectedScriptManager.get(), 0));
-    m_agents.append(InspectorHeapProfilerAgent::create(workerGlobalScope->thread()->isolate(), m_injectedScriptManager.get()));
+    v8::Isolate* isolate = workerGlobalScope->thread()->isolate();
+    m_agents.append(InspectorProfilerAgent::create(isolate, m_injectedScriptManager.get(), 0));
+    m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_injectedScriptManager.get()));
 
     OwnPtrWillBeRawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_injectedScriptManager.get(), workerGlobalScope);
     WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();

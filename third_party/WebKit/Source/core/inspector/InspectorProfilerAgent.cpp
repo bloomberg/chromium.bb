@@ -31,8 +31,7 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "bindings/core/v8/ScriptProfiler.h"
-#include "core/frame/ConsoleTypes.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
@@ -40,9 +39,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/inspector/ScriptProfile.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/text/StringConcatenate.h"
+#include <v8-profiler.h>
 
 namespace blink {
 
@@ -53,18 +50,86 @@ static const char profilerEnabled[] = "profilerEnabled";
 static const char nextProfileId[] = "nextProfileId";
 }
 
-static PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(const ScriptProfile& scriptProfile)
+namespace {
+
+PassRefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> buildInspectorObjectForPositionTicks(const v8::CpuProfileNode* node)
+{
+    RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> array = TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>::create();
+    unsigned lineCount = node->GetHitLineCount();
+    if (!lineCount)
+        return array.release();
+
+    Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
+    if (node->GetLineTicks(&entries[0], lineCount)) {
+        for (unsigned i = 0; i < lineCount; i++) {
+            RefPtr<TypeBuilder::Profiler::PositionTickInfo> line = TypeBuilder::Profiler::PositionTickInfo::create()
+                .setLine(entries[i].line)
+                .setTicks(entries[i].hit_count);
+            array->addItem(line);
+        }
+    }
+
+    return array.release();
+}
+
+PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(const v8::CpuProfileNode* node)
+{
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+
+    RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::CPUProfileNode>> children = TypeBuilder::Array<TypeBuilder::Profiler::CPUProfileNode>::create();
+    const int childrenCount = node->GetChildrenCount();
+    for (int i = 0; i < childrenCount; i++) {
+        const v8::CpuProfileNode* child = node->GetChild(i);
+        children->addItem(buildInspectorObjectFor(child));
+    }
+
+    RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
+
+    RefPtr<TypeBuilder::Profiler::CPUProfileNode> result = TypeBuilder::Profiler::CPUProfileNode::create()
+        .setFunctionName(toCoreString(node->GetFunctionName()))
+        .setScriptId(String::number(node->GetScriptId()))
+        .setUrl(toCoreString(node->GetScriptResourceName()))
+        .setLineNumber(node->GetLineNumber())
+        .setColumnNumber(node->GetColumnNumber())
+        .setHitCount(node->GetHitCount())
+        .setCallUID(node->GetCallUid())
+        .setChildren(children.release())
+        .setPositionTicks(positionTicks.release())
+        .setDeoptReason(node->GetBailoutReason())
+        .setId(node->GetNodeId());
+    return result.release();
+}
+
+PassRefPtr<TypeBuilder::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* v8profile)
+{
+    RefPtr<TypeBuilder::Array<int>> array = TypeBuilder::Array<int>::create();
+    int count = v8profile->GetSamplesCount();
+    for (int i = 0; i < count; i++)
+        array->addItem(v8profile->GetSample(i)->GetNodeId());
+    return array.release();
+}
+
+PassRefPtr<TypeBuilder::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
+{
+    RefPtr<TypeBuilder::Array<double>> array = TypeBuilder::Array<double>::create();
+    int count = v8profile->GetSamplesCount();
+    for (int i = 0; i < count; i++)
+        array->addItem(v8profile->GetSampleTimestamp(i));
+    return array.release();
+}
+
+PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::CpuProfile* v8profile)
 {
     RefPtr<TypeBuilder::Profiler::CPUProfile> profile = TypeBuilder::Profiler::CPUProfile::create()
-        .setHead(scriptProfile.buildInspectorObjectForHead())
-        .setStartTime(scriptProfile.startTime())
-        .setEndTime(scriptProfile.endTime());
-    profile->setSamples(scriptProfile.buildInspectorObjectForSamples());
-    profile->setTimestamps(scriptProfile.buildInspectorObjectForTimestamps());
+        .setHead(buildInspectorObjectFor(v8profile->GetTopDownRoot()))
+        .setStartTime(static_cast<double>(v8profile->GetStartTime()) / 1000000)
+        .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000);
+    profile->setSamples(buildInspectorObjectForSamples(v8profile));
+    profile->setTimestamps(buildInspectorObjectForTimestamps(v8profile));
     return profile.release();
 }
 
-static PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
+PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
 {
     RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStack(1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
@@ -75,6 +140,8 @@ static PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
     return location.release();
 }
 
+} // namespace
+
 class InspectorProfilerAgent::ProfileDescriptor {
 public:
     ProfileDescriptor(const String& id, const String& title)
@@ -84,17 +151,16 @@ public:
     String m_title;
 };
 
-PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(v8::Isolate* isolate, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new InspectorProfilerAgent(injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new InspectorProfilerAgent(isolate, injectedScriptManager, overlay));
 }
 
-InspectorProfilerAgent::InspectorProfilerAgent(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorProfilerAgent::InspectorProfilerAgent(v8::Isolate* isolate, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorProfilerAgent, InspectorFrontend::Profiler>("Profiler")
+    , m_isolate(isolate)
     , m_injectedScriptManager(injectedScriptManager)
     , m_recordingCPUProfile(false)
-    , m_profileNameIdleTimeMap(ScriptProfiler::currentProfileNameIdleTimeMap())
-    , m_idleStartTime(0.0)
     , m_overlay(overlay)
 {
 }
@@ -109,7 +175,7 @@ void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const Str
     ASSERT(frontend() && enabled());
     String id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
-    ScriptProfiler::start(id);
+    startProfiling(id);
     frontend()->consoleProfileStarted(id, currentDebugLocation(), title.isNull() ? 0 : &title);
 }
 
@@ -137,11 +203,11 @@ void InspectorProfilerAgent::consoleProfileEnd(const String& title)
         if (id.isEmpty())
             return;
     }
-    RefPtrWillBeRawPtr<ScriptProfile> profile = ScriptProfiler::stop(id);
+    RefPtr<TypeBuilder::Profiler::CPUProfile> profile = stopProfiling(id, true);
     if (!profile)
         return;
     RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation();
-    frontend()->consoleProfileFinished(id, location, createCPUProfile(*profile), resolvedTitle.isNull() ? 0 : &resolvedTitle);
+    frontend()->consoleProfileFinished(id, location, profile, resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 
 void InspectorProfilerAgent::enable(ErrorString*)
@@ -158,7 +224,7 @@ void InspectorProfilerAgent::doEnable()
 void InspectorProfilerAgent::disable(ErrorString*)
 {
     for (Vector<ProfileDescriptor>::reverse_iterator it = m_startedProfiles.rbegin(); it != m_startedProfiles.rend(); ++it)
-        ScriptProfiler::stop(it->m_id);
+        stopProfiling(it->m_id, false);
     m_startedProfiles.clear();
     stop(0, 0);
     m_instrumentingAgents->setInspectorProfilerAgent(nullptr);
@@ -177,7 +243,7 @@ void InspectorProfilerAgent::setSamplingInterval(ErrorString* error, int interva
         return;
     }
     m_state->setLong(ProfilerAgentState::samplingInterval, interval);
-    ScriptProfiler::setSamplingInterval(interval);
+    m_isolate->GetCpuProfiler()->SetSamplingInterval(interval);
 }
 
 void InspectorProfilerAgent::restore()
@@ -185,7 +251,7 @@ void InspectorProfilerAgent::restore()
     if (m_state->getBoolean(ProfilerAgentState::profilerEnabled))
         doEnable();
     if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, 0))
-        ScriptProfiler::setSamplingInterval(interval);
+        m_isolate->GetCpuProfiler()->SetSamplingInterval(interval);
     if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling)) {
         ErrorString error;
         start(&error);
@@ -204,7 +270,7 @@ void InspectorProfilerAgent::start(ErrorString* error)
     if (m_overlay)
         m_overlay->suspendUpdates();
     m_frontendInitiatedProfileId = nextProfileId();
-    ScriptProfiler::start(m_frontendInitiatedProfileId);
+    startProfiling(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
 
@@ -223,12 +289,13 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
     m_recordingCPUProfile = false;
     if (m_overlay)
         m_overlay->resumeUpdates();
-    RefPtrWillBeRawPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(m_frontendInitiatedProfileId);
+    RefPtr<TypeBuilder::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
+    if (profile) {
+        *profile = cpuProfile;
+        if (!cpuProfile && errorString)
+            *errorString = "Profile wasn't found";
+    }
     m_frontendInitiatedProfileId = String();
-    if (scriptProfile && profile)
-        *profile = createCPUProfile(*scriptProfile);
-    else if (errorString)
-        *errorString = "Profile wasn't found";
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
 }
 
@@ -239,26 +306,42 @@ String InspectorProfilerAgent::nextProfileId()
     return String::number(nextId);
 }
 
+void InspectorProfilerAgent::startProfiling(const String& title)
+{
+    v8::HandleScope handleScope(m_isolate);
+    m_isolate->GetCpuProfiler()->StartProfiling(v8String(m_isolate, title), true);
+}
+
+PassRefPtr<TypeBuilder::Profiler::CPUProfile> InspectorProfilerAgent::stopProfiling(const String& title, bool serialize)
+{
+    v8::HandleScope handleScope(m_isolate);
+    v8::CpuProfile* profile = m_isolate->GetCpuProfiler()->StopProfiling(v8String(m_isolate, title));
+    if (!profile)
+        return nullptr;
+    RefPtr<TypeBuilder::Profiler::CPUProfile> result;
+    if (serialize)
+        result = createCPUProfile(profile);
+    profile->Delete();
+    return result.release();
+}
+
+bool InspectorProfilerAgent::isRecording() const
+{
+    return m_recordingCPUProfile || !m_startedProfiles.isEmpty();
+}
+
 void InspectorProfilerAgent::idleFinished()
 {
-    if (!m_profileNameIdleTimeMap || !m_profileNameIdleTimeMap->size())
+    if (!isRecording())
         return;
-    ScriptProfiler::setIdle(false);
-    if (!m_idleStartTime)
-        return;
-
-    double idleTime = WTF::monotonicallyIncreasingTime() - m_idleStartTime;
-    m_idleStartTime = 0.0;
-    for (auto& map : *m_profileNameIdleTimeMap)
-        map.value += idleTime;
+    m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
 void InspectorProfilerAgent::idleStarted()
 {
-    if (!m_profileNameIdleTimeMap || !m_profileNameIdleTimeMap->size())
+    if (!isRecording())
         return;
-    m_idleStartTime = WTF::monotonicallyIncreasingTime();
-    ScriptProfiler::setIdle(true);
+    m_isolate->GetCpuProfiler()->SetIdle(true);
 }
 
 void InspectorProfilerAgent::willProcessTask()

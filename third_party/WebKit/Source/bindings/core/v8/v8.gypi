@@ -66,8 +66,6 @@
             'ScriptFunction.h',
             'ScriptFunctionCall.cpp',
             'ScriptFunctionCall.h',
-            'ScriptProfiler.cpp',
-            'ScriptProfiler.h',
             'ScriptPromise.cpp',
             'ScriptPromise.h',
             'ScriptPromiseProperties.h',

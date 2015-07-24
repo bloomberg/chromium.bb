@@ -1690,8 +1690,6 @@
             'inspector/ScriptCallStack.h',
             'inspector/ScriptDebuggerBase.cpp',
             'inspector/ScriptDebuggerBase.h',
-            'inspector/ScriptProfile.cpp',
-            'inspector/ScriptProfile.h',
             'inspector/V8AsyncCallTracker.cpp',
             'inspector/V8AsyncCallTracker.h',
             'inspector/v8/InspectorWrapper.cpp',

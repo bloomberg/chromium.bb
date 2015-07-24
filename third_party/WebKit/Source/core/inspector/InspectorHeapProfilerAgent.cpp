@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 
-#include "bindings/core/v8/ScriptProfiler.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"

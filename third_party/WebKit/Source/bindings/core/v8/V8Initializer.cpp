@@ -31,7 +31,6 @@
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptProfiler.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
