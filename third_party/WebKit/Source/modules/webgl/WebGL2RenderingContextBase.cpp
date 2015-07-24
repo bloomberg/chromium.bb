@@ -2074,6 +2074,48 @@ bool WebGL2RenderingContextBase::validateFramebufferTarget(GLenum target)
     }
 }
 
+bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, GLenum type)
+{
+    switch (format) {
+    case GL_RED:
+    case GL_RED_INTEGER:
+    case GL_RG:
+    case GL_RG_INTEGER:
+    case GL_RGB:
+    case GL_RGB_INTEGER:
+    case GL_RGBA:
+    case GL_RGBA_INTEGER:
+    case GL_LUMINANCE_ALPHA:
+    case GL_LUMINANCE:
+    case GL_ALPHA:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid format");
+        return false;
+    }
+
+    switch (type) {
+    case GL_UNSIGNED_BYTE:
+    case GL_BYTE:
+    case GL_HALF_FLOAT:
+    case GL_FLOAT:
+    case GL_UNSIGNED_SHORT_5_6_5:
+    case GL_UNSIGNED_SHORT_4_4_4_4:
+    case GL_UNSIGNED_SHORT_5_5_5_1:
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+    case GL_INT:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid type");
+        return false;
+    }
+
+    return true;
+}
+
 WebGLFramebuffer* WebGL2RenderingContextBase::getFramebufferBinding(GLenum target)
 {
     if (target == GL_READ_FRAMEBUFFER)
