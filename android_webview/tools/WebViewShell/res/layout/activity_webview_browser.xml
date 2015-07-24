@@ -27,7 +27,7 @@
             android:layout_width="wrap_content" 
             android:layout_height="match_parent" 
             android:src="@drawable/breadcrumb_arrow_black"
-            android:contentDescription="load url"
+            android:contentDescription="@string/load_url"
             android:onClick="loadUrlFromUrlBar" />
         <ImageButton
             android:layout_width="wrap_content" 
