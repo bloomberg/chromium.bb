@@ -496,6 +496,11 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   }
 }
 
+- (gfx::Size)sizeForOverflowWidth:(int)maxWidth {
+  toolbarActionsBar_->SetOverflowRowWidth(maxWidth);
+  return [self preferredSize];
+}
+
 #pragma mark -
 #pragma mark NSMenuDelegate
 

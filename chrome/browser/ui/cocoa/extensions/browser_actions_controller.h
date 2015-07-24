@@ -122,6 +122,9 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // Sets whether or not the overflow container is focused in the wrench menu.
 - (void)setFocusedInOverflow:(BOOL)focused;
 
+// Returns the size for the provided |maxWidth| of the overflow menu.
+- (gfx::Size)sizeForOverflowWidth:(int)maxWidth;
+
 @end  // @interface BrowserActionsController
 
 @interface BrowserActionsController(TestingAPI)

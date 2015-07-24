@@ -33,6 +33,13 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace {
+// Padding amounts on the left/right of a custom menu item (like the browser
+// actions overflow container).
+const int kLeftPadding = 16;
+const int kRightPadding = 10;
+}
+
 namespace wrench_menu_controller {
 const CGFloat kWrenchBubblePointOffsetY = 6;
 }
@@ -173,21 +180,6 @@ class ZoomLevelObserver {
               initWithBrowser:browser_
                 containerView:containerView
                mainController:mainController]);
-
-      // Set the origins and preferred size for the container.
-      gfx::Size preferredSize = [browserActionsController_ preferredSize];
-      NSSize preferredNSSize = NSMakeSize(preferredSize.width(),
-                                          preferredSize.height());
-      // View hierarchy is as follows (from parent > child):
-      // |view| > |anonymous view| > containerView. We have to set the origin
-      // and size of each for it display properly.
-      [view setFrameSize:preferredNSSize];
-      [view setFrameOrigin:NSMakePoint(0, 0)];
-      [[containerView superview] setFrameSize:preferredNSSize];
-      [[containerView superview] setFrameOrigin:NSMakePoint(0, 0)];
-      [containerView setFrameSize:preferredNSSize];
-      [containerView setFrameOrigin:NSMakePoint(0, 0)];
-      [browserActionsController_ update];
       break;
     }
     case IDC_EDIT_MENU:
@@ -259,6 +251,39 @@ class ZoomLevelObserver {
                              bookmarkMenu));
 }
 
+- (void)updateBrowserActionsSubmenu {
+  MenuTrackedRootView* view =
+      [buttonViewController_ toolbarActionsOverflowItem];
+  BrowserActionsContainerView* containerView =
+      [buttonViewController_ overflowActionsContainerView];
+
+  // Find the preferred container size for the menu width.
+  int maxContainerWidth =
+      [[self menu] size].width - kLeftPadding - kRightPadding;
+  gfx::Size preferredContainerSize =
+      [browserActionsController_ sizeForOverflowWidth:maxContainerWidth];
+
+  // Set the origins and preferred size for the container.
+  // View hierarchy is as follows (from parent > child):
+  // |view| > |anonymous view| > containerView. We have to set the origin
+  // and size of each for it display properly.
+  // The parent views each have a size of the full width of the menu, so we can
+  // properly position the container.
+  NSSize parentSize =
+      NSMakeSize([[self menu] size].width, preferredContainerSize.height());
+  [view setFrameSize:parentSize];
+  [[containerView superview] setFrameSize:parentSize];
+
+  // The container view gets its preferred size.
+  [containerView setFrameSize:NSMakeSize(preferredContainerSize.width(),
+                                         preferredContainerSize.height())];
+  [browserActionsController_ update];
+
+  [view setFrameOrigin:NSZeroPoint];
+  [[containerView superview] setFrameOrigin:NSZeroPoint];
+  [containerView setFrameOrigin:NSMakePoint(kLeftPadding, 0)];
+}
+
 - (void)menuWillOpen:(NSMenu*)menu {
   [super menuWillOpen:menu];
 
@@ -290,6 +315,7 @@ class ZoomLevelObserver {
 
   [self updateRecentTabsSubmenu];
   [self updateBookmarkSubMenu];
+  [self updateBrowserActionsSubmenu];
 }
 
 // Used to dispatch commands from the Wrench menu. The custom items within the
