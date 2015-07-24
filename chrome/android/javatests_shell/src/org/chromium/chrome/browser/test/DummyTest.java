@@ -5,20 +5,12 @@
 package org.chromium.chrome.browser.test;
 
 import org.chromium.base.test.util.HostDrivenTest;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 
 /**
  * Dummy test suite for verifying the host-driven test framework.
  */
-public class DummyTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-    public DummyTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() {}
-
+public class DummyTest extends ChromeShellTestBase {
     @HostDrivenTest
     public void testPass() {}
 }
