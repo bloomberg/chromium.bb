@@ -1520,9 +1520,6 @@ crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
-crbug.com/511458 [ Win ] svg/filters/feSpecularLight-linearrgb-lighting-color.svg [ ImageOnlyFailure ]
-crbug.com/511458 [ Win ] svg/filters/feSpotLight-primitiveUnits-objectBoundingBox-animated.html [ ImageOnlyFailure ]
-
 crbug.com/487878 [ Linux ] compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass ImageOnlyFailure ]
