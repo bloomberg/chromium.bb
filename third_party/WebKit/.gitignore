@@ -10,7 +10,9 @@ autoinstall.cache.d
 
 # Ignore auto-generated files by VS2005 and VS2010.
 *.ncb
+*.opensdf
 *.props
+*.sdf
 *.sln
 *.suo
 *.targets
