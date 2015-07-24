@@ -67,7 +67,7 @@ private:
     void setScrollTop(LayoutUnit) final;
 
     int textBlockWidth() const;
-    float getAvgCharWidth(AtomicString family) final;
+    float getAvgCharWidth(const AtomicString& family) const final;
     LayoutUnit preferredContentLogicalWidth(float charWidth) const final;
     LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
 

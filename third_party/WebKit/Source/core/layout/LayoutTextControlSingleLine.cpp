@@ -297,7 +297,7 @@ LayoutRect LayoutTextControlSingleLine::controlClipRect(const LayoutPoint& addit
     return clipRect;
 }
 
-float LayoutTextControlSingleLine::getAvgCharWidth(AtomicString family)
+float LayoutTextControlSingleLine::getAvgCharWidth(const AtomicString& family) const
 {
     // Since Lucida Grande is the default font, we want this to match the width
     // of MS Shell Dlg, the default font for textareas in Firefox, Safari Win and

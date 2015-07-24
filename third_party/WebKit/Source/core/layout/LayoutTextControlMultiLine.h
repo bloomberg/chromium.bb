@@ -38,7 +38,7 @@ private:
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    float getAvgCharWidth(AtomicString family) override;
+    float getAvgCharWidth(const AtomicString& family) const override;
     LayoutUnit preferredContentLogicalWidth(float charWidth) const override;
     LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
     // We override the two baseline functions because we want our baseline to be the bottom of our margin box.

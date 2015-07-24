@@ -48,7 +48,7 @@ bool LayoutTextControlMultiLine::nodeAtPoint(HitTestResult& result, const HitTes
     return true;
 }
 
-float LayoutTextControlMultiLine::getAvgCharWidth(AtomicString family)
+float LayoutTextControlMultiLine::getAvgCharWidth(const AtomicString& family) const
 {
     // Since Lucida Grande is the default font, we want this to match the width
     // of Courier New, the default font for textareas in IE, Firefox and Safari Win.
