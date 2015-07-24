@@ -248,10 +248,10 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   WebAXObject node_c = node_b.childAt(0);
 
   // Hide node 'B' ('C' stays visible).
-  ExecuteJavaScript(
+  ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'hidden';");
   // Force layout now.
-  ExecuteJavaScript("document.getElementById('B').offsetLeft;");
+  ExecuteJavaScriptForTests("document.getElementById('B').offsetLeft;");
 
   // Send a childrenChanged on 'A'.
   sink_->ClearMessages();
@@ -294,9 +294,9 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 
   // Show node 'B', then send a childrenChanged on 'A'.
-  ExecuteJavaScript(
+  ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'visible';");
-  ExecuteJavaScript("document.getElementById('B').offsetLeft;");
+  ExecuteJavaScriptForTests("document.getElementById('B').offsetLeft;");
 
   sink_->ClearMessages();
   WebDocument document = view()->GetWebView()->mainFrame()->document();
@@ -355,10 +355,10 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
 
   // Change the display of the second 'span' back to inline, which causes the
   // anonymous block to be destroyed.
-  ExecuteJavaScript(
+  ExecuteJavaScriptForTests(
       "document.querySelectorAll('span')[1].style.display = 'inline';");
   // Force layout now.
-  ExecuteJavaScript("document.body.offsetLeft;");
+  ExecuteJavaScriptForTests("document.body.offsetLeft;");
 
   // Send a childrenChanged on the body.
   sink_->ClearMessages();

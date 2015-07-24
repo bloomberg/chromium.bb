@@ -440,6 +440,39 @@ void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
       ConvertJavaStringToUTF16(env, script), js_callback);
 }
 
+void WebContentsAndroid::EvaluateJavaScriptForTests(JNIEnv* env,
+                                                    jobject obj,
+                                                    jstring script,
+                                                    jobject callback) {
+  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  DCHECK(rvh);
+
+  if (!rvh->IsRenderViewLive()) {
+    if (!static_cast<WebContentsImpl*>(web_contents_)->
+        CreateRenderViewForInitialEmptyDocument()) {
+      LOG(ERROR) << "Failed to create RenderView in EvaluateJavaScriptForTests";
+      return;
+    }
+  }
+
+  if (!callback) {
+    // No callback requested.
+    web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
+        ConvertJavaStringToUTF16(env, script));
+    return;
+  }
+
+  // Secure the Java callback in a scoped object and give ownership of it to the
+  // base::Callback.
+  ScopedJavaGlobalRef<jobject> j_callback;
+  j_callback.Reset(env, callback);
+  RenderFrameHost::JavaScriptResultCallback js_callback =
+      base::Bind(&JavaScriptResultCallback, j_callback);
+
+  web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
+      ConvertJavaStringToUTF16(env, script), js_callback);
+}
+
 void WebContentsAndroid::AddMessageToDevToolsConsole(JNIEnv* env,
                                                      jobject jobj,
                                                      jint level,

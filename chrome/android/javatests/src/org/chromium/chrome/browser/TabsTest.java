@@ -133,7 +133,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                tab.getWebContents().evaluateJavaScript(
+                tab.getWebContents().evaluateJavaScriptForTests(
                         "(function() {"
                         + "  window.open('www.google.com');"
                         + "})()",
@@ -158,7 +158,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                tab.getWebContents().evaluateJavaScript(
+                tab.getWebContents().evaluateJavaScriptForTests(
                         "(function() {"
                         + "  alert('hi');"
                         + "})()",

@@ -47,7 +47,7 @@ public class JSUtils {
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.getWebContents().evaluateJavaScript(
+                awContents.getWebContents().evaluateJavaScriptForTests(
                         "var evObj = document.createEvent('Events'); "
                                 + "evObj.initEvent('click', true, false); "
                                 + "document.getElementById('" + linkId + "').dispatchEvent(evObj);"
@@ -65,7 +65,7 @@ public class JSUtils {
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                onEvaluateJavaScriptResultHelper.evaluateJavaScript(
+                onEvaluateJavaScriptResultHelper.evaluateJavaScriptForTests(
                         awContents.getWebContents(), code);
             }
         });

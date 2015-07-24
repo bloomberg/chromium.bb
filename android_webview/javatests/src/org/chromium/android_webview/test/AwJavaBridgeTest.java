@@ -70,7 +70,7 @@ public class AwJavaBridgeTest extends AwTestBase {
         assertEquals("\"function\"", executeJavaScriptAndWaitForResult(
                 awContents, mContentsClient, "typeof test.destroy"));
         int currentCallCount = client2.getOnPageFinishedHelper().getCallCount();
-        awContents.evaluateJavaScript("test.destroy()", null);
+        awContents.evaluateJavaScriptForTests("test.destroy()", null);
 
         client2.getOnPageFinishedHelper().waitForCallback(currentCallCount);
     }

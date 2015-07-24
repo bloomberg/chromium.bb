@@ -39,7 +39,7 @@ public class TestsJavaScriptEvalTest extends ContentShellTestBase {
         for (int i = 0; i < 30; ++i) {
             for (int j = 0; j < 10; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
-                webContents.evaluateJavaScript("foobar();", null);
+                webContents.evaluateJavaScriptForTests("foobar();", null);
             }
             // DOMUtils does need to evaluate a JavaScript and get its result to get DOM bounds.
             assertNotNull("Failed to get bounds",

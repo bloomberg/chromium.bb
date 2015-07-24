@@ -427,7 +427,8 @@ TEST_F(RenderViewImplTest, DISABLED_OnNavStateChanged) {
 
   // Change the value of the input. We should have gotten an update state
   // notification. We need to spin the message loop to catch this update.
-  ExecuteJavaScript("document.getElementById('elt_text').value = 'foo';");
+  ExecuteJavaScriptForTests(
+      "document.getElementById('elt_text').value = 'foo';");
   ProcessPendingMessages();
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID));
@@ -963,7 +964,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
   for (int i = 0; i < kRepeatCount; i++) {
     // Move the input focus to the first <input> element, where we should
     // activate IMEs.
-    ExecuteJavaScript("document.getElementById('test1').focus();");
+    ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
     ProcessPendingMessages();
     render_thread_->sink().ClearMessages();
 
@@ -983,7 +984,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Move the input focus to the second <input> element, where we should
     // de-activate IMEs.
-    ExecuteJavaScript("document.getElementById('test2').focus();");
+    ExecuteJavaScriptForTests("document.getElementById('test2').focus();");
     ProcessPendingMessages();
     render_thread_->sink().ClearMessages();
 
@@ -1033,7 +1034,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 // the window focus while composing a CJK text. To handle such complicated
 // cases, this test should not only call IME-related functions in the
 // RenderWidget class, but also call some RenderWidget members, e.g.
-// ExecuteJavaScript(), RenderWidget::OnSetFocus(), etc.
+// ExecuteJavaScriptForTests(), RenderWidget::OnSetFocus(), etc.
 TEST_F(RenderViewImplTest, ImeComposition) {
   enum ImeCommand {
     IME_INITIALIZE,
@@ -1108,7 +1109,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
                 "<div id=\"test1\" contenteditable=\"true\"></div>"
                 "</body>"
                 "</html>");
-        ExecuteJavaScript("document.getElementById('test1').focus();");
+        ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
         break;
 
       case IME_SETINPUTMODE:
@@ -1186,17 +1187,18 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   };
   for (size_t i = 0; i < arraysize(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.
-    ExecuteJavaScript("document.getElementById('test').focus();");
+    ExecuteJavaScriptForTests("document.getElementById('test').focus();");
     view()->OnSetTextDirection(kTextDirection[i].direction);
 
     // Write the values of its DOM 'dir' attribute and its CSS 'direction'
     // property to the <div> element.
-    ExecuteJavaScript("var result = document.getElementById('result');"
-                      "var node = document.getElementById('test');"
-                      "var style = getComputedStyle(node, null);"
-                      "result.innerText ="
-                      "    node.getAttribute('dir') + ',' +"
-                      "    style.getPropertyValue('direction');");
+    ExecuteJavaScriptForTests(
+        "var result = document.getElementById('result');"
+        "var node = document.getElementById('test');"
+        "var style = getComputedStyle(node, null);"
+        "result.innerText ="
+        "    node.getAttribute('dir') + ',' +"
+        "    style.getPropertyValue('direction');");
 
     // Copy the document content to std::wstring and compare with the
     // expected result.
@@ -1248,7 +1250,7 @@ TEST_F(RenderViewImplTest, OnHandleKeyboardEvent) {
            "</div>"
            "</body>"
            "</html>");
-  ExecuteJavaScript("document.getElementById('test').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
   render_thread_->sink().ClearMessages();
 
   static const MockKeyboard::Layout kLayouts[] = {
@@ -1515,7 +1517,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
              "</div>"
              "</body>"
              "</html>");
-    ExecuteJavaScript("document.getElementById('test').focus();");
+    ExecuteJavaScriptForTests("document.getElementById('test').focus();");
     render_thread_->sink().ClearMessages();
 
     // For each key code, we send three keyboard events.
@@ -1741,7 +1743,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 #endif
 
   LoadHTML("<textarea id=\"test\"></textarea>");
-  ExecuteJavaScript("document.getElementById('test').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   const base::string16 empty_string;
   const std::vector<blink::WebCompositionUnderline> empty_underline;
@@ -1843,7 +1845,7 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
            "<input id=\"test1\" value=\"some test text hello\"></input>"
            "</body>"
            "</html>");
-  ExecuteJavaScript("document.getElementById('test1').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
   frame()->SetEditableSelectionOffsets(4, 8);
   const std::vector<blink::WebCompositionUnderline> empty_underline;
   frame()->SetCompositionFromExistingText(7, 10, empty_underline);
@@ -1868,7 +1870,7 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
            "<input id=\"test1\" value=\"abcdefghijklmnopqrstuvwxyz\"></input>"
            "</body>"
            "</html>");
-  ExecuteJavaScript("document.getElementById('test1').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
   frame()->SetEditableSelectionOffsets(10, 10);
   frame()->ExtendSelectionAndDelete(3, 4);
   blink::WebTextInputInfo info = view()->webview()->textInputInfo();
@@ -1941,7 +1943,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
   LoadHTML("<textarea id=\"test\"></textarea>");
 
   view()->handling_input_event_ = true;
-  ExecuteJavaScript("document.getElementById('test').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   bool is_input_type_called = false;
   bool is_selection_called = false;
@@ -2129,7 +2131,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   LoadHTML("<input id='test1' value='hello1'></input>"
            "<input id='test2' value='hello2'></input>");
 
-  ExecuteJavaScript("document.getElementById('test1').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
   const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
       ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg1);
@@ -2139,7 +2141,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   EXPECT_TRUE(base::get<0>(params));
   render_thread_->sink().ClearMessages();
 
-  ExecuteJavaScript("document.getElementById('test2').focus();");
+  ExecuteJavaScriptForTests("document.getElementById('test2').focus();");
   const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
         ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg2);
@@ -2354,7 +2356,7 @@ TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DevToolsAgentTest::CloseWhilePaused, base::Unretained(this)));
-  ExecuteJavaScript("debugger;");
+  ExecuteJavaScriptForTests("debugger;");
 
   // CloseWhilePaused should resume execution and continue here.
   EXPECT_FALSE(IsPaused());

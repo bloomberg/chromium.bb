@@ -218,6 +218,21 @@ public interface WebContents extends Parcelable {
      * Injects the passed Javascript code in the current page and evaluates it.
      * If a result is required, pass in a callback.
      *
+     * It is not possible to use this method to evaluate JavaScript on web
+     * content, only on WebUI pages.
+     *
+     * @param script The Javascript to execute.
+     * @param callback The callback to be fired off when a result is ready. The script's
+     *                 result will be json encoded and passed as the parameter, and the call
+     *                 will be made on the main thread.
+     *                 If no result is required, pass null.
+     */
+    void evaluateJavaScript(String script, JavaScriptCallback callback);
+
+    /**
+     * Injects the passed Javascript code in the current page and evaluates it.
+     * If a result is required, pass in a callback.
+     *
      * @param script The Javascript to execute.
      * @param callback The callback to be fired off when a result is ready. The script's
      *                 result will be json encoded and passed as the parameter, and the call
@@ -225,7 +240,7 @@ public interface WebContents extends Parcelable {
      *                 If no result is required, pass null.
      */
     @VisibleForTesting
-    void evaluateJavaScript(String script, JavaScriptCallback callback);
+    void evaluateJavaScriptForTests(String script, JavaScriptCallback callback);
 
     /**
      * Adds a log message to dev tools console. |level| must be a value of

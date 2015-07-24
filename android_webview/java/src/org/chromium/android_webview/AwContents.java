@@ -2069,6 +2069,22 @@ public class AwContents implements SmartClipProvider,
         mWebContents.evaluateJavaScript(script, jsCallback);
     }
 
+    public void evaluateJavaScriptForTests(String script, final ValueCallback<String> callback) {
+        if (TRACE) Log.d(TAG, "evaluateJavascriptForTests=" + script);
+        if (isDestroyed()) return;
+        JavaScriptCallback jsCallback = null;
+        if (callback != null) {
+            jsCallback = new JavaScriptCallback() {
+                @Override
+                public void handleJavaScriptResult(String jsonResult) {
+                    callback.onReceiveValue(jsonResult);
+                }
+            };
+        }
+
+        mWebContents.evaluateJavaScriptForTests(script, jsCallback);
+    }
+
     /**
      * Post a message to a frame.
      *
