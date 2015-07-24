@@ -44,7 +44,7 @@ ProgressEvent::ProgressEvent(const AtomicString& type, const ProgressEventInit& 
 }
 
 ProgressEvent::ProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
-    : Event(type, false, true)
+    : Event(type, false, false)
     , m_lengthComputable(lengthComputable)
     , m_loaded(loaded)
     , m_total(total)
