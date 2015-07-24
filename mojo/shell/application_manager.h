@@ -77,15 +77,21 @@ class ApplicationManager {
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
+  // |originator| can be NULL (e.g. for the first application or in tests), but
+  // typically is non-NULL and identifies the instance initiating the
+  // connection.
   void ConnectToApplication(
-      mojo::URLRequestPtr requested_url,
+      ApplicationInstance* originator,
+      URLRequestPtr requested_url,
       const std::string& qualifier,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
+      CapabilityFilterPtr filter,
       const base::Closure& on_application_end);
 
-
+  // Must only be used by shell internals and test code as it does not forward
+  // capability filters.
   template <typename Interface>
   inline void ConnectToService(const GURL& application_url,
                                InterfacePtr<Interface>* ptr) {
@@ -93,10 +99,6 @@ class ApplicationManager {
         ConnectToServiceByName(application_url, Interface::Name_);
     ptr->Bind(InterfacePtrInfo<Interface>(service_handle.Pass(), 0u));
   }
-
-  ScopedMessagePipeHandle ConnectToServiceByName(
-      const GURL& application_url,
-      const std::string& interface_name);
 
   void RegisterContentHandler(const std::string& mime_type,
                               const GURL& content_handler_url);
@@ -162,46 +164,48 @@ class ApplicationManager {
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
-  bool ConnectToRunningApplication(const GURL& resolved_url,
+  bool ConnectToRunningApplication(ApplicationInstance* originator,
+                                   const GURL& resolved_url,
                                    const std::string& qualifier,
                                    const GURL& requestor_url,
                                    InterfaceRequest<ServiceProvider>* services,
-                                   ServiceProviderPtr* exposed_services);
+                                   ServiceProviderPtr* exposed_services,
+                                   CapabilityFilterPtr* filter);
 
   bool ConnectToApplicationWithLoader(
+      ApplicationInstance* originator,
       const GURL& requested_url,
       const std::string& qualifier,
       const GURL& resolved_url,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider>* services,
       ServiceProviderPtr* exposed_services,
+      CapabilityFilterPtr* filter,
       const base::Closure& on_application_end,
       ApplicationLoader* loader);
 
   InterfaceRequest<Application> RegisterInstance(
+      ApplicationInstance* originator,
       const GURL& app_url,
       const std::string& qualifier,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
+      CapabilityFilterPtr filter,
       const base::Closure& on_application_end);
 
   ApplicationInstance* GetApplicationInstance(const GURL& url,
                                               const std::string& qualifier);
 
-  void ConnectToClient(ApplicationInstance* instance,
-                       const GURL& resolved_url,
-                       const GURL& requestor_url,
-                       InterfaceRequest<ServiceProvider> services,
-                       ServiceProviderPtr exposed_services);
-
   // Called once |fetcher| has found app. |requested_url| is the url of the
   // requested application before any mappings/resolution have been applied.
-  void HandleFetchCallback(const GURL& requested_url,
+  void HandleFetchCallback(ApplicationInstance* originator,
+                           const GURL& requested_url,
                            const std::string& qualifier,
                            const GURL& requestor_url,
                            InterfaceRequest<ServiceProvider> services,
                            ServiceProviderPtr exposed_services,
+                           CapabilityFilterPtr filter,
                            const base::Closure& on_application_end,
                            NativeApplicationCleanup cleanup,
                            scoped_ptr<Fetcher> fetcher);
@@ -224,6 +228,10 @@ class ApplicationManager {
   ApplicationLoader* GetLoaderForURL(const GURL& url);
 
   void CleanupRunner(NativeRunner* runner);
+
+  ScopedMessagePipeHandle ConnectToServiceByName(
+      const GURL& application_url,
+      const std::string& interface_name);
 
   Delegate* const delegate_;
   // Loader management.

@@ -81,7 +81,11 @@ class ApplicationImpl : public Application {
   // valid until an error occurs on the connection with the Shell, until the
   // ApplicationImpl is destroyed, or until the connection is closed through a
   // call to ApplicationConnection::CloseConnection.
-  ApplicationConnection* ConnectToApplication(mojo::URLRequestPtr request);
+  // TODO(beng): consider replacing default value in a separate CL per style
+  //             guide.
+  ApplicationConnection* ConnectToApplication(
+      URLRequestPtr request,
+      CapabilityFilterPtr filter = nullptr);
 
   // Closes the |connection|.
   void CloseConnection(ApplicationConnection* connection);
@@ -121,6 +125,7 @@ class ApplicationImpl : public Application {
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
+                        Array<String> allowed_interfaces,
                         const String& url) override;
   void OnQuitRequested(const Callback<void(bool)>& callback) override;
 

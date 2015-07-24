@@ -16,33 +16,51 @@ ServiceRegistry::ServiceRegistry(
     const std::string& connection_url,
     const std::string& remote_url,
     ServiceProviderPtr remote_services,
-    InterfaceRequest<ServiceProvider> local_services)
+    InterfaceRequest<ServiceProvider> local_services,
+    const std::set<std::string>& allowed_interfaces)
     : application_impl_(application_impl),
       connection_url_(connection_url),
       remote_url_(remote_url),
       local_binding_(this),
-      remote_service_provider_(remote_services.Pass()) {
+      remote_service_provider_(remote_services.Pass()),
+      allowed_interfaces_(allowed_interfaces),
+      allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
+                            allowed_interfaces_.count("*") == 1) {
   if (local_services.is_pending())
     local_binding_.Bind(local_services.Pass());
 }
 
 ServiceRegistry::ServiceRegistry()
-    : application_impl_(nullptr), local_binding_(this) {
+    : application_impl_(nullptr),
+      local_binding_(this),
+      allow_all_interfaces_(true) {
 }
 
 void ServiceRegistry::SetServiceConnector(ServiceConnector* connector) {
   service_connector_registry_.set_service_connector(connector);
 }
 
-void ServiceRegistry::SetServiceConnectorForName(
+bool ServiceRegistry::SetServiceConnectorForName(
     ServiceConnector* service_connector,
     const std::string& interface_name) {
-  service_connector_registry_.SetServiceConnectorForName(service_connector,
-                                                         interface_name);
+  if (allow_all_interfaces_ ||
+      allowed_interfaces_.count(interface_name)) {
+    service_connector_registry_.SetServiceConnectorForName(service_connector,
+                                                           interface_name);
+    return true;
+  }
+  DVLOG(2) << "CapabilityFilter prevented connection to interface: " <<
+      interface_name;
+  return false;
 }
 
 ServiceProvider* ServiceRegistry::GetLocalServiceProvider() {
   return this;
+}
+
+void ServiceRegistry::SetRemoteServiceProviderConnectionErrorHandler(
+    const Closure& handler) {
+  remote_service_provider_.set_connection_error_handler(handler);
 }
 
 void ServiceRegistry::RemoveServiceConnectorForName(

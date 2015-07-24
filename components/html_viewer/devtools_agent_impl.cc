@@ -28,8 +28,10 @@ DevToolsAgentImpl::DevToolsAgentImpl(blink::WebLocalFrame* frame,
   mojo::ServiceProviderPtr devtools_service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:devtools_service";
-  shell->ConnectToApplication(
-      request.Pass(), mojo::GetProxy(&devtools_service_provider), nullptr);
+  shell->ConnectToApplication(request.Pass(),
+                              mojo::GetProxy(&devtools_service_provider),
+                              nullptr,
+                              nullptr);
   devtools_service::DevToolsRegistryPtr devtools_registry;
   mojo::ConnectToService(devtools_service_provider.get(), &devtools_registry);
 

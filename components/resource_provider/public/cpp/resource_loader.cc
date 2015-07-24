@@ -31,6 +31,7 @@ ResourceLoader::ResourceLoader(mojo::Shell* shell,
   mojo::ServiceProviderPtr resource_provider_service_provider;
   shell->ConnectToApplication(request.Pass(),
                               GetProxy(&resource_provider_service_provider),
+                              nullptr,
                               nullptr);
   mojo::ConnectToService(resource_provider_service_provider.get(),
                          &resource_provider_);

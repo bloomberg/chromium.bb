@@ -7,25 +7,40 @@ module mojo;
 import "mojo/application/public/interfaces/service_provider.mojom";
 import "network/public/interfaces/url_loader.mojom";
 
+// Specifies a whitelist of applications and services an application can connect
+// to. Connections to applications not explicitly specified here as a key are
+// rejected. Connections to services not specified in an application's allowed
+// interfaces value are not made.
+// A "*" value as the only key in an otherwise empty map means the application
+// may connect to any other application.
+// A "*" value as the only string in an otherwise empty array of interface names
+// means the application may connect to any service in that application.
+// An empty interface name array means the application may not connect to any
+// services exposed by the application it is connecting to.
+struct CapabilityFilter {
+  map<string, array<string>> filter;
+};
+
 // An interface through which a Mojo application may communicate with the Mojo
 // system and request connections to other applications.
 interface Shell {
-  // Establishes a connection with another application (located at
-  // |request->url|) through which the calling application and the other
-  // application may request services from one another. |application_url| is a
-  // URLRequest in case this is called for an HTTP navigation, in which case
-  // HTTP specific information like POST data, referrer header etc... needed.
+  // Establishes a connection with another application ("target application")
+  // (located at |request->url|) through which the calling application and the
+  // target application may request services from one another.
+  // |application_url| is a URLRequest in case this is called for an HTTP
+  // navigation, in which case HTTP specific information like POST data,
+  // referrer header etc... needed.
   //
-  // If the calling application would like to request services from the other
+  // If the calling application would like to request services from the target
   // application, it should pass a valid interface request in the |services|
-  // parameter (i.e. one containing a valid message pipe endpoint). If the other
-  // application does not wish to offer services, it may either not bind an
-  // implementation to the interface request, or else bind an implementation
+  // parameter (i.e. one containing a valid message pipe endpoint). If the
+  // target application does not wish to offer services, it may either not bind
+  // an implementation to the interface request, or else bind an implementation
   // that will reject some or all service requests.
   //
-  // If the calling application would like to offer services to the other
+  // If the calling application would like to offer services to the target
   // application, it should pass a bound interface through the
-  // |exposed_services| parameter. The other application may then request
+  // |exposed_services| parameter. The target application may then request
   // services through that interface.
   //
   // At least one of |services| or |exposed_services| should be valid/bound in
@@ -35,9 +50,16 @@ interface Shell {
   // "mojo:{service}", it is up to the Mojo shell to select an appropriate
   // application for the service. Currently, the shell does this based on the
   // value of its --origin flag.
+  //
+  // |filter| is a whitelist of application URLs and services that the target
+  // application is permitted to connect to. See documentation for
+  // CapabilityFilter above. Note also that this parameter may be NULL, which
+  // has the same meaning as allowing the target application to connect to
+  // any application and service.
   ConnectToApplication(URLRequest application_url,
                        ServiceProvider&? services,
-                       ServiceProvider? exposed_services);
+                       ServiceProvider? exposed_services,
+                       CapabilityFilter? filter);
 
   // When there are no more instantiated services in an application, it should
   // start its shutdown process by calling this method. Additionally, it should

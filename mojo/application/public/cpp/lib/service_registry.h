@@ -5,6 +5,7 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_LIB_SERVICE_REGISTRY_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_LIB_SERVICE_REGISTRY_H_
 
+#include <set>
 #include <string>
 
 #include "mojo/application/public/cpp/application_connection.h"
@@ -24,20 +25,26 @@ namespace internal {
 class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
  public:
   ServiceRegistry();
+  // |allowed_interfaces| are the set of interfaces that the shell has allowed
+  // an application to expose to another application. If this set contains only
+  // the string value "*" all interfaces may be exposed.
   ServiceRegistry(ApplicationImpl* application_impl,
                   const std::string& connection_url,
                   const std::string& remote_url,
                   ServiceProviderPtr remote_services,
-                  InterfaceRequest<ServiceProvider> local_services);
+                  InterfaceRequest<ServiceProvider> local_services,
+                  const std::set<std::string>& allowed_interfaces);
 
   // ApplicationConnection overrides.
   void SetServiceConnector(ServiceConnector* service_connector) override;
-  void SetServiceConnectorForName(ServiceConnector* service_connector,
+  bool SetServiceConnectorForName(ServiceConnector* service_connector,
                                   const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
   ServiceProvider* GetServiceProvider() override;
   ServiceProvider* GetLocalServiceProvider() override;
+  void SetRemoteServiceProviderConnectionErrorHandler(
+      const Closure& handler) override;
 
   void RemoveServiceConnectorForName(const std::string& interface_name);
 
@@ -57,6 +64,8 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   Binding<ServiceProvider> local_binding_;
   ServiceProviderPtr remote_service_provider_;
   ServiceConnectorRegistry service_connector_registry_;
+  const std::set<std::string> allowed_interfaces_;
+  const bool allow_all_interfaces_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceRegistry);
 };

@@ -59,6 +59,7 @@ source_set("shell") {
 test("mojo_shell_unittests") {
   sources = [
     "application_manager_unittest.cc",
+    "capability_filter_unittest.cc",
     "query_util_unittest.cc",
   ]
 
@@ -75,6 +76,7 @@ test("mojo_shell_unittests") {
 
 mojom("test_bindings") {
   sources = [
+    "capability_filter_unittest.mojom",
     "test.mojom",
   ]
 }

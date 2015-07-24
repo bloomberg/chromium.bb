@@ -1,0 +1,21 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.shell;
+
+// The following two interfaces are implemented by a service application. Two
+// applications are started by a broker that connect to this service
+// application, one is limited by the broker to only see Safe while the other
+// can see both Safe and Unsafe.
+interface Safe { };
+interface Unsafe { };
+
+// Implemented by a test application to allow service applications to inform it
+// of services/connections blocked.
+interface Client {
+  AddServiceCalled(string app_url,
+                   string service_url,
+                   string name,
+                   bool blocked);
+};

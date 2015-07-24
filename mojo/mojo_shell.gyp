@@ -54,6 +54,7 @@
     'type': 'executable',
     'sources': [
       'shell/application_manager_unittest.cc',
+      'shell/capability_filter_unittest.cc',
       'shell/query_util_unittest.cc',
     ],
     'dependencies': [
@@ -74,6 +75,7 @@
     'type': 'static_library',
     'variables': {
       'mojom_files': [
+        'shell/capability_filter_unittest.mojom',
         'shell/test.mojom',
       ],
     },

@@ -49,6 +49,7 @@ class ShellGrabber : public Application {
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
+                        Array<String> allowed_interfaces,
                         const String& url) override {
     MOJO_CHECK(false);
   }

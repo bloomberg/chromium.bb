@@ -46,12 +46,21 @@ interface Application {
   // This application is free to ignore the |services| or |exposed_services|
   // parameters if it does not wish to offer or request services.
   //
-  // resolved_url is the URL that was requested to create this connection, after
-  // all mappings, resolutions, and redirects. This will include any querystring
-  // that was part of the request.
+  // |allowed_interfaces| is a set of interface names that the shell has
+  // determined can be exposed by this application to the connecting
+  // application. When this parameter is empty, this application should expose
+  // no services to the connecting application. When this parameter contains
+  // only the single string value "*" the application may expose all of its
+  // services to the connecting application.
+  //
+  // |resolved_url| is the URL that was requested to create this connection,
+  // after all mappings, resolutions, and redirects. This will include any
+  // querystring that was part of the request.
+  //
   AcceptConnection(string requestor_url,
                    ServiceProvider&? services,
                    ServiceProvider? exposed_services,
+                   array<string> allowed_interfaces,
                    string resolved_url);
 
   // Called by the shell in response to calling Shell's QuitApplication. The

@@ -31,14 +31,15 @@ void FrameMojoShell::BindRequest(
 void FrameMojoShell::ConnectToApplication(
     mojo::URLRequestPtr application_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr /* exposed_services */) {
+    mojo::ServiceProviderPtr /* exposed_services */,
+    mojo::CapabilityFilterPtr filter) {
   mojo::ServiceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
 
   MojoShellContext::ConnectToApplication(
       GURL(application_url->url), frame_host_->GetSiteInstance()->GetSiteURL(),
-      services.Pass(), frame_services.Pass());
+      services.Pass(), frame_services.Pass(), filter.Pass());
 }
 
 void FrameMojoShell::QuitApplication() {

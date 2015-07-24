@@ -56,9 +56,11 @@ class ApplicationConnection {
 
   // Makes Interface available as a service to the remote application.
   // |factory| will create implementations of Interface on demand.
+  // Returns true if the service was exposed, false if capability filtering
+  // from the shell prevented the service from being exposed.
   template <typename Interface>
-  void AddService(InterfaceFactory<Interface>* factory) {
-    SetServiceConnectorForName(
+  bool AddService(InterfaceFactory<Interface>* factory) {
+    return SetServiceConnectorForName(
         new internal::InterfaceFactoryConnector<Interface>(factory),
         Interface::Name_);
   }
@@ -99,6 +101,11 @@ class ApplicationConnection {
   // value is owned by this connection.
   virtual ServiceProvider* GetLocalServiceProvider() = 0;
 
+  // Register a handler to receive an error notification on the pipe to the
+  // remote application's service provider.
+  virtual void SetRemoteServiceProviderConnectionErrorHandler(
+      const Closure& handler) = 0;
+
  protected:
   virtual ~ApplicationConnection();
 
@@ -106,7 +113,9 @@ class ApplicationConnection {
   virtual void OnCloseConnection() = 0;
 
  private:
-  virtual void SetServiceConnectorForName(ServiceConnector* service_connector,
+  // Returns true if the connector was set, false if it was not set (e.g. by
+  // some filtering policy preventing this interface from being exposed).
+  virtual bool SetServiceConnectorForName(ServiceConnector* service_connector,
                                           const std::string& name) = 0;
 
   // Ensures that CloseConnection can only be called once and the

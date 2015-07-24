@@ -120,7 +120,7 @@ media::interfaces::ServiceFactory* MediaFactory::GetMediaServiceFactory() {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:media");
     shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                 nullptr);
+                                 nullptr, nullptr);
     mojo::ConnectToService(service_provider.get(), &media_service_factory_);
   }
 

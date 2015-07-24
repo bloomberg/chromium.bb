@@ -194,8 +194,8 @@ void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
   URLRequestPtr request(URLRequest::New());
   request->url = "mojo:devtools_service";
   manager->ConnectToApplication(
-      request.Pass(), std::string(), GURL("mojo:shell"),
-      GetProxy(&devtools_service_provider), nullptr, base::Closure());
+      nullptr, request.Pass(), std::string(), GURL("mojo:shell"),
+      GetProxy(&devtools_service_provider), nullptr, nullptr, base::Closure());
 
   devtools_service::DevToolsCoordinatorPtr devtools_coordinator;
   devtools_service_provider->ConnectToService(
@@ -309,8 +309,8 @@ bool Context::Init() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:tracing");
   application_manager_.ConnectToApplication(
-      request.Pass(), std::string(), GURL(""), nullptr,
-      tracing_service_provider_ptr.Pass(), base::Closure());
+      nullptr, request.Pass(), std::string(), GURL(""), nullptr,
+      tracing_service_provider_ptr.Pass(), nullptr, base::Closure());
 
   InitDevToolsServiceIfNeeded(&application_manager_, command_line);
 
@@ -355,8 +355,8 @@ void Context::Run(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
   application_manager_.ConnectToApplication(
-      request.Pass(), std::string(), GURL(), GetProxy(&services),
-      exposed_services.Pass(),
+      nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
+      exposed_services.Pass(), nullptr,
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
 }
 

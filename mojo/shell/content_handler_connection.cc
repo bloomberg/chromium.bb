@@ -21,9 +21,11 @@ ContentHandlerConnection::ContentHandlerConnection(
   ServiceProviderPtr services;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(content_handler_url.spec());
+  // TODO(beng): Need to figure out how to deal with originator and
+  //             CapabilityFilter here.
   manager->ConnectToApplication(
-      request.Pass(), qualifier, requestor_url, GetProxy(&services),
-      nullptr, base::Closure());
+      nullptr, request.Pass(), qualifier, requestor_url, GetProxy(&services),
+      nullptr, nullptr, base::Closure());
   MessagePipe pipe;
   content_handler_.Bind(
       InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));

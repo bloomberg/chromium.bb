@@ -24,9 +24,12 @@ ApplicationInstance::ApplicationInstance(
     ApplicationPtr application,
     ApplicationManager* manager,
     const Identity& identity,
+    const CapabilityFilter& filter,
     const base::Closure& on_application_end)
     : manager_(manager),
       identity_(identity),
+      filter_(filter),
+      allow_any_application_(filter.size() == 1 && filter.count("*") == 1),
       on_application_end_(on_application_end),
       application_(application.Pass()),
       binding_(this),
@@ -45,37 +48,64 @@ void ApplicationInstance::InitializeApplication() {
 }
 
 void ApplicationInstance::ConnectToClient(
+    ApplicationInstance* originator,
     const GURL& requested_url,
     const GURL& requestor_url,
     InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services) {
+    ServiceProviderPtr exposed_services,
+    CapabilityFilterPtr filter) {
   if (queue_requests_) {
     QueuedClientRequest* queued_request = new QueuedClientRequest;
+    queued_request->originator = originator;
     queued_request->requested_url = requested_url;
     queued_request->requestor_url = requestor_url;
     queued_request->services = services.Pass();
     queued_request->exposed_services = exposed_services.Pass();
+    queued_request->filter = filter.Pass(),
     queued_client_requests_.push_back(queued_request);
     return;
   }
 
-  application_->AcceptConnection(requestor_url.spec(), services.Pass(),
-                                 exposed_services.Pass(), requested_url.spec());
+  CallAcceptConnection(originator, requestor_url, services.Pass(),
+                       exposed_services.Pass(), requested_url);
+}
+
+ApplicationInstance::AllowedInterfaces
+    ApplicationInstance::GetAllowedInterfaces(
+        const Identity& identity) const {
+  // Start by looking for interfaces specific to the supplied identity.
+  auto it = filter_.find(identity.url.spec());
+  if (it != filter_.end())
+    return it->second;
+
+  // Fall back to looking for a wildcard rule.
+  it = filter_.find("*");
+  if (filter_.size() == 1 && it != filter_.end())
+    return it->second;
+
+  // Finally, nothing is allowed.
+  return AllowedInterfaces();
 }
 
 // Shell implementation:
 void ApplicationInstance::ConnectToApplication(
-    mojo::URLRequestPtr app_request,
+    URLRequestPtr app_request,
     InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services) {
-  GURL app_gurl(app_request->url.To<std::string>());
-  if (!app_gurl.is_valid()) {
-    LOG(ERROR) << "Error: invalid URL: " << app_request;
+    ServiceProviderPtr exposed_services,
+    CapabilityFilterPtr filter) {
+  std::string url_string = app_request->url.To<std::string>();
+  if (!GURL(url_string).is_valid()) {
+    LOG(ERROR) << "Error: invalid URL: " << url_string;
     return;
   }
-  manager_->ConnectToApplication(app_request.Pass(), std::string(),
-                                 identity_.url, services.Pass(),
-                                 exposed_services.Pass(), base::Closure());
+  if (allow_any_application_ || filter_.find(url_string) != filter_.end()) {
+    manager_->ConnectToApplication(this, app_request.Pass(), std::string(),
+                                   identity_.url, services.Pass(),
+                                   exposed_services.Pass(), filter.Pass(),
+                                   base::Closure());
+  } else {
+    DVLOG(2) << "CapabilityFilter prevented connection to: " << url_string;
+  }
 }
 
 void ApplicationInstance::QuitApplication() {
@@ -83,6 +113,23 @@ void ApplicationInstance::QuitApplication() {
   application_->OnQuitRequested(
       base::Bind(&ApplicationInstance::OnQuitRequestedResult,
                  base::Unretained(this)));
+}
+
+void ApplicationInstance::CallAcceptConnection(
+    ApplicationInstance* originator,
+    const GURL& requestor_url,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services,
+    const GURL& requested_url) {
+  AllowedInterfaces interfaces;
+  interfaces.insert("*");
+  if (originator)
+    interfaces = originator->GetAllowedInterfaces(identity_);
+  application_->AcceptConnection(requestor_url.spec(),
+                                 services.Pass(),
+                                 exposed_services.Pass(),
+                                 Array<String>::From(interfaces).Pass(),
+                                 requested_url.spec());
 }
 
 void ApplicationInstance::OnConnectionError() {
@@ -97,10 +144,11 @@ void ApplicationInstance::OnConnectionError() {
   for (auto request : queued_client_requests) {
     mojo::URLRequestPtr url(mojo::URLRequest::New());
     url->url = mojo::String::From(request->requested_url.spec());
-    manager->ConnectToApplication(url.Pass(), std::string(),
+    manager->ConnectToApplication(this, url.Pass(), std::string(),
                                   request->requestor_url,
                                   request->services.Pass(),
                                   request->exposed_services.Pass(),
+                                  request->filter.Pass(),
                                   base::Closure());
   }
   STLDeleteElements(&queued_client_requests);
@@ -112,10 +160,11 @@ void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {
 
   queue_requests_ = false;
   for (auto request : queued_client_requests_) {
-    application_->AcceptConnection(request->requestor_url.spec(),
-                                   request->services.Pass(),
-                                   request->exposed_services.Pass(),
-                                   request->requested_url.spec());
+    CallAcceptConnection(request->originator,
+                         request->requestor_url,
+                         request->services.Pass(),
+                         request->exposed_services.Pass(),
+                         request->requested_url);
   }
   STLDeleteElements(&queued_client_requests_);
 }

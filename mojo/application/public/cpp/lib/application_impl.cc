@@ -25,6 +25,19 @@ void DefaultTerminationClosure() {
 
 }  // namespace
 
+// TODO(beng): upstream this into mojo repo, array.h
+template <typename E, typename T>
+struct TypeConverter<std::set<E>, Array<T>> {
+  static std::set<E> Convert(const Array<T>& input) {
+    std::set<E> result;
+    if (!input.is_null()) {
+      for (size_t i = 0; i < input.size(); ++i)
+        result.insert(TypeConverter<E, T>::Convert(input[i]));
+    }
+    return result;
+  }
+};
+
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request)
     : ApplicationImpl(delegate, request.Pass(),
@@ -65,7 +78,8 @@ ApplicationImpl::~ApplicationImpl() {
 }
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
-    mojo::URLRequestPtr request) {
+    mojo::URLRequestPtr request,
+    CapabilityFilterPtr filter) {
   if (!shell_)
     return nullptr;
   ServiceProviderPtr local_services;
@@ -73,10 +87,16 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   ServiceProviderPtr remote_services;
   std::string application_url = request->url.To<std::string>();
   shell_->ConnectToApplication(request.Pass(), GetProxy(&remote_services),
-                               local_services.Pass());
+                               local_services.Pass(), filter.Pass());
+  // We allow all interfaces on outgoing connections since we are presumably in
+  // a position to know who we're talking to.
+  // TODO(beng): is this a valid assumption or do we need to figure some way to
+  //             filter here too?
+  std::set<std::string> allowed;
+  allowed.insert("*");
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
       this, application_url, application_url, remote_services.Pass(),
-      local_request.Pass());
+      local_request.Pass(), allowed);
   if (!delegate_->ConfigureOutgoingConnection(registry)) {
     registry->CloseConnection();
     return nullptr;
@@ -141,9 +161,11 @@ void ApplicationImpl::AcceptConnection(
     const String& requestor_url,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
+    Array<String> allowed_interfaces,
     const String& url) {
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, url, requestor_url, exposed_services.Pass(), services.Pass());
+      this, url, requestor_url, exposed_services.Pass(), services.Pass(),
+      allowed_interfaces.To<std::set<std::string>>());
   if (!delegate_->ConfigureIncomingConnection(registry)) {
     registry->CloseConnection();
     return;
