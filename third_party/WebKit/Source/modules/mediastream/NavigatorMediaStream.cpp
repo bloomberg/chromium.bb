@@ -29,6 +29,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
@@ -65,6 +66,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
         UseCounter::count(navigator.frame(), UseCounter::GetUserMediaSecureOrigin);
     } else {
         UseCounter::countDeprecation(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);
+        OriginsUsingFeatures::countAnyWorld(*navigator.frame()->document(), OriginsUsingFeatures::Feature::GetUserMediaInsecureOrigin);
         if (navigator.frame()->settings()->strictPowerfulFeatureRestrictions()) {
             exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("webkitGetUserMedia", "Navigator", errorMessage));
             return;

@@ -34,6 +34,7 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -203,10 +204,12 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
     // actually used. This could be used later if a warning is shown in the
     // developer console.
     String errorMessage;
-    if (document()->isPrivilegedContext(errorMessage))
+    if (document()->isPrivilegedContext(errorMessage)) {
         UseCounter::count(document(), UseCounter::FullscreenSecureOrigin);
-    else
+    } else {
         UseCounter::countDeprecation(document(), UseCounter::FullscreenInsecureOrigin);
+        OriginsUsingFeatures::countAnyWorld(*document(), OriginsUsingFeatures::Feature::FullscreenInsecureOrigin);
+    }
 
     // Ignore this request if the document is not in a live frame.
     if (!document()->isActive())

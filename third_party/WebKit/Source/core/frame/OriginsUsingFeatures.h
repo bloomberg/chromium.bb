@@ -27,11 +27,17 @@ public:
         ElementCreateShadowRoot,
         DocumentRegisterElement,
         EventPath,
+        DeviceMotionInsecureOrigin,
+        DeviceOrientationInsecureOrigin,
+        FullscreenInsecureOrigin,
+        GeolocationInsecureOrigin,
+        GetUserMediaInsecureOrigin,
 
         NumberOfFeatures // This must be the last item.
     };
 
-    static void count(const ScriptState*, Document&, Feature);
+    static void countAnyWorld(Document&, Feature);
+    static void countMainWorldOnly(const ScriptState*, Document&, Feature);
     static void countOriginOrIsolatedWorldHumanReadableName(const ScriptState*, EventTarget&, Feature);
 
     void documentDetached(Document&);

@@ -29,6 +29,7 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "modules/geolocation/Coordinates.h"
@@ -152,10 +153,12 @@ void Geolocation::recordOriginTypeAccess() const
     // actually used. This could be used later if a warning is shown in the
     // developer console.
     String insecureOriginMsg;
-    if (document->isPrivilegedContext(insecureOriginMsg))
+    if (document->isPrivilegedContext(insecureOriginMsg)) {
         UseCounter::count(document, UseCounter::GeolocationSecureOrigin);
-    else
+    } else {
         UseCounter::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
+        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GeolocationInsecureOrigin);
+    }
 }
 
 void Geolocation::getCurrentPosition(PositionCallback* successCallback, PositionErrorCallback* errorCallback, const PositionOptions& options)

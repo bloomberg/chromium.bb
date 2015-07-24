@@ -760,7 +760,7 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
-    OriginsUsingFeatures::count(scriptState, *this, OriginsUsingFeatures::Feature::DocumentRegisterElement);
+    OriginsUsingFeatures::countMainWorldOnly(scriptState, *this, OriginsUsingFeatures::Feature::DocumentRegisterElement);
 
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");

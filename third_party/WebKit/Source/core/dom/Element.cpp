@@ -1839,7 +1839,7 @@ CustomElementDefinition* Element::customElementDefinition() const
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
     return createShadowRoot(exceptionState);
 }
 
@@ -1848,7 +1848,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
     ASSERT(RuntimeEnabledFeatures::createShadowRootWithParameterEnabled());
     UseCounter::count(document(), UseCounter::ElementCreateShadowRootWithParameter);
 
-    OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
 
     if (shadowRootInitDict.hasMode()) {
         if (shadowRoot()) {
