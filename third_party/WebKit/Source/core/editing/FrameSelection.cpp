@@ -732,8 +732,9 @@ VisiblePosition FrameSelection::modifyMovingRight(TextGranularity granularity)
                 pos = VisiblePosition(m_selection.end(), m_selection.affinity());
             else
                 pos = VisiblePosition(m_selection.start(), m_selection.affinity());
-        } else
-            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).right(true);
+        } else {
+            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).right();
+        }
         break;
     case WordGranularity: {
         bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight();
@@ -895,13 +896,14 @@ VisiblePosition FrameSelection::modifyMovingLeft(TextGranularity granularity)
     VisiblePosition pos;
     switch (granularity) {
     case CharacterGranularity:
-        if (isRange())
+        if (isRange()) {
             if (directionOfSelection() == LTR)
                 pos = VisiblePosition(m_selection.start(), m_selection.affinity());
             else
                 pos = VisiblePosition(m_selection.end(), m_selection.affinity());
-        else
-            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).left(true);
+        } else {
+            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).left();
+        }
         break;
     case WordGranularity: {
         bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight();

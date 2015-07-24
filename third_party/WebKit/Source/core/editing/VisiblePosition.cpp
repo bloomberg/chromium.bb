@@ -257,7 +257,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
     }
 }
 
-VisiblePosition VisiblePosition::left(bool stayInEditableContent) const
+VisiblePosition VisiblePosition::left() const
 {
     Position pos = leftVisuallyDistinctCandidate();
     // FIXME: Why can't we move left from the last position in a tree?
@@ -266,9 +266,6 @@ VisiblePosition VisiblePosition::left(bool stayInEditableContent) const
 
     VisiblePosition left = VisiblePosition(pos, DOWNSTREAM);
     ASSERT(left != *this);
-
-    if (!stayInEditableContent)
-        return left;
 
     return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left) : honorEditingBoundaryAtOrAfter(left);
 }
@@ -422,7 +419,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
     }
 }
 
-VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
+VisiblePosition VisiblePosition::right() const
 {
     Position pos = rightVisuallyDistinctCandidate();
     // FIXME: Why can't we move left from the last position in a tree?
@@ -431,9 +428,6 @@ VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
 
     VisiblePosition right = VisiblePosition(pos, DOWNSTREAM);
     ASSERT(right != *this);
-
-    if (!stayInEditableContent)
-        return right;
 
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
 }

@@ -368,7 +368,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
     Vector<UChar, 1024> string;
 
     while (1) {
-        VisiblePosition adjacentCharacterPosition = direction == MoveRight ? current.right(true) : current.left(true);
+        VisiblePosition adjacentCharacterPosition = direction == MoveRight ? current.right() : current.left();
         if (adjacentCharacterPosition == current || adjacentCharacterPosition.isNull())
             return VisiblePosition();
 

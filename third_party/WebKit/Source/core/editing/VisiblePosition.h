@@ -71,8 +71,6 @@ public:
     PositionWithAffinity toPositionWithAffinity() const { return PositionWithAffinity(m_deepPosition, m_affinity); }
     EAffinity affinity() const { ASSERT(m_affinity == UPSTREAM || m_affinity == DOWNSTREAM); return m_affinity; }
 
-    // FIXME: Change the following functions' parameter from a boolean to StayInEditableContent.
-
     // next() and previous() will increment/decrement by a character cluster.
     VisiblePosition next(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
     VisiblePosition previous(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
@@ -81,8 +79,8 @@ public:
     VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&) const;
     VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition&) const;
 
-    VisiblePosition left(bool stayInEditableContent = false) const;
-    VisiblePosition right(bool stayInEditableContent = false) const;
+    VisiblePosition left() const;
+    VisiblePosition right() const;
 
     UChar32 characterAfter() const;
     UChar32 characterBefore() const { return previous().characterAfter(); }
