@@ -28,6 +28,8 @@ def main():
                       default='localhost')
   parser.add_argument('--device', help='Serial number of the target device.')
   parser.add_argument('--verbose', default=False, action='store_true')
+  parser.add_argument('--apk', help='Name of the APK to run.',
+                      default='MojoRunner.apk')
   runner_args, args = parser.parse_known_args()
 
   logger = logging.getLogger()
@@ -38,7 +40,7 @@ def main():
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=runner_args.target_cpu,
                   is_debug=runner_args.debug,
-                  apk_name='MojoRunner.apk')
+                  apk_name=runner_args.apk)
   shell = AndroidShell(config)
   shell.InitShell(runner_args.origin, runner_args.device)
   p = shell.ShowLogs()

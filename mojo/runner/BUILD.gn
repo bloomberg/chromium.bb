@@ -17,10 +17,6 @@ group("runner") {
   deps = [
     ":mojo_runner",
   ]
-
-  if (is_android) {
-    deps += [ ":mojo_runner_apk" ]
-  }
 }
 
 if (is_android) {
@@ -279,33 +275,52 @@ if (is_android) {
     custom_package = "org.chromium.mojo.shell"
   }
 
-  mojo_runner_assets_dir = "$root_build_dir/mojo_runner_assets"
   mojo_runner_test_assets_dir = "$root_build_dir/mojo_runner_test_assets"
+  mojo_runner_apptests_assets_dir =
+      "$root_build_dir/mojo_runner_apptests_assets"
 
-  copy_ex("copy_mojo_runner_assets") {
+  copy_ex("copy_mojo_runner_apptests_assets") {
+    testonly = true
     clear_dir = true
-    dest = mojo_runner_assets_dir
+    dest = mojo_runner_apptests_assets_dir
+
     deps = [
       ":bootstrap",
       ":bootstrap_java",
-      ":copy_mojo_runner",
-      "//mojo/services/network",
+      "//components/clipboard:apptests",
+      "//components/resource_provider:apptests",
+      "//components/view_manager:apptests",
+      "//mojo/services/network:apptests",
     ]
+
     sources = [
       "$root_out_dir/lib.stripped/libbootstrap$android_product_extension",
       "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
     ]
 
-    # Directories can't be specified as sources so pass manually to the script.
-    args = [ "--files=" +
-             rebase_path("$root_out_dir/network_service", root_build_dir) ]
+    apptest_outputs = [
+      "clipboard",
+      "clipboard_apptests",
+      "resource_provider",
+      "resource_provider_apptests",
+      "view_manager_apptests",
+      "network_service",
+      "network_service_apptests",
+    ]
+
+    args = []
+    foreach(path, apptest_outputs) {
+      args +=
+          [ "--files=" + rebase_path("$root_out_dir/$path", root_build_dir) ]
+    }
   }
 
-  generate_mojo_shell_assets_list("build_mojo_runner_assets") {
+  generate_mojo_shell_assets_list("build_mojo_runner_apptests_assets") {
+    testonly = true
     deps = [
-      ":copy_mojo_runner_assets",
+      ":copy_mojo_runner_apptests_assets",
     ]
-    dir = mojo_runner_assets_dir
+    dir = mojo_runner_apptests_assets_dir
   }
 
   copy("copy_mojo_runner") {
@@ -321,6 +336,7 @@ if (is_android) {
   }
 
   copy_ex("copy_mojo_runner_test_assets") {
+    testonly = true
     clear_dir = true
     dest = mojo_runner_test_assets_dir
     deps = [
@@ -336,17 +352,15 @@ if (is_android) {
     ]
   }
 
-  android_apk("mojo_runner_apk") {
-    apk_name = "MojoRunner"
-
+  android_apk("mojo_runner_apptests_apk") {
+    testonly = true
+    apk_name = "MojoRunnerApptests"
     android_manifest = "android/apk/AndroidManifest.xml"
-
     native_libs = [ "libmojo_runner$android_product_extension" ]
-
-    asset_location = mojo_runner_assets_dir
+    asset_location = mojo_runner_apptests_assets_dir
 
     deps = [
-      ":build_mojo_runner_assets",
+      ":build_mojo_runner_apptests_assets",
       ":copy_mojo_runner",
       ":java",
       ":resources",
@@ -357,6 +371,7 @@ if (is_android) {
   }
 
   generate_mojo_shell_assets_list("build_mojo_runner_test_assets") {
+    testonly = true
     deps = [
       ":copy_mojo_runner_test_assets",
     ]
@@ -442,7 +457,7 @@ mojo_native_application("apptests") {
   testonly = true
 
   sources = [
-    # TODO(jam): needs http_server service.
+    # TODO(jam): needs http_server service. http://crbug.com/479316
     #"shell_apptest.cc",
   ]
 

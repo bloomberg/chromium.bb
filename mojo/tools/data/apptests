@@ -30,6 +30,10 @@ tests = [
     'test': 'mojo:network_service_apptests',
     'type': 'gtest_isolated',
   },
+  {
+    'test': 'mojo:resource_provider_apptests',
+    'type': 'gtest_isolated',
+  },
   # TODO(msw|jam): Fix and enable the runner_apptests: http://crbug.com/479316
   #{
   #  'test': 'mojo:runner_apptests',
@@ -74,10 +78,6 @@ if config.target_os != config.OS_ANDROID:
     # http://crbug.com/501417
     {
       'test': 'mojo:media_apptests',
-      'type': 'gtest_isolated',
-    },
-    {
-      'test': 'mojo:resource_provider_apptests',
       'type': 'gtest_isolated',
     },
     {

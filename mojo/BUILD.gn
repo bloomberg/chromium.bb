@@ -47,5 +47,9 @@ group("tests") {
       "//mojo/services/network:apptests",
       "//mojo/shell:mojo_shell_unittests",
     ]
+
+    if (is_android) {
+      deps += [ "//mojo/runner:mojo_runner_apptests_apk" ]
+    }
   }
 }

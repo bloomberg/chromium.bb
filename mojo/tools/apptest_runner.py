@@ -40,7 +40,7 @@ def main():
   logger.debug('Initialized logging: level=%s' % logger.level)
 
   logger.debug('Test list file: %s', args.test_list_file)
-  config = Config(args.build_dir)
+  config = Config(args.build_dir, apk_name='MojoRunnerApptests.apk')
   execution_globals = {'config': config}
   exec args.test_list_file in execution_globals
   test_list = execution_globals['tests']
@@ -50,7 +50,7 @@ def main():
   if config.target_os == Config.OS_ANDROID:
     from mopy.android import AndroidShell
     shell = AndroidShell(config)
-    result = shell.InitShell()
+    result = shell.InitShell(origin=None)
     if result != 0:
       return result
 
