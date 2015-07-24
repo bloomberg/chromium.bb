@@ -1669,6 +1669,8 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
 
 WebLocalFrameImpl::~WebLocalFrameImpl()
 {
+    // The widget for the frame, if any, must have already been closed.
+    ASSERT(!m_frameWidget);
     Platform::current()->decrementStatsCounter(webFrameActiveCount);
     frameCount--;
 
