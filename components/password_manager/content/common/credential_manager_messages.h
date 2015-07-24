@@ -37,11 +37,11 @@ IPC_STRUCT_TRAITS_END()
 // ----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser
 
-// Passes the notification from 'navigator.credentials.notifySignedIn()' up to
+// Passes the notification from 'navigator.credentials.store()' up to
 // the browser process in order to (among other things) prompt the user to save
 // the credential she used for signin. The browser process will respond with a
-// CredentialManagerMsg_AcknowledgeSignedIn message.
-IPC_MESSAGE_ROUTED2(CredentialManagerHostMsg_NotifySignedIn,
+// CredentialManagerMsg_AcknowledgeStore message.
+IPC_MESSAGE_ROUTED2(CredentialManagerHostMsg_Store,
                     int /* request_id */,
                     password_manager::CredentialInfo /* credential */)
 
@@ -64,9 +64,8 @@ IPC_MESSAGE_ROUTED3(CredentialManagerHostMsg_RequestCredential,
 // Messages sent from the browser to the renderer
 
 // Notify the renderer that the browser process has finished processing a
-// CredentialManagerHostMsg_NotifySignedIn message.
-IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeSignedIn,
-                    int /* request_id */)
+// CredentialManagerHostMsg_Store message.
+IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeStore, int /* request_id */)
 
 // Notify the renderer that the browser process has finished processing a
 // CredentialManagerHostMsg_RequireUserMediation message.

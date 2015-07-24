@@ -40,7 +40,7 @@ CredentialManagerClient::CredentialManagerClient(
 
 CredentialManagerClient::~CredentialManagerClient() {
   ClearCallbacksMapWithErrors(&failed_sign_in_callbacks_);
-  ClearCallbacksMapWithErrors(&signed_in_callbacks_);
+  ClearCallbacksMapWithErrors(&store_callbacks_);
   ClearCallbacksMapWithErrors(&require_user_mediation_callbacks_);
   ClearCallbacksMapWithErrors(&request_callbacks_);
 }
@@ -51,8 +51,8 @@ CredentialManagerClient::~CredentialManagerClient() {
 bool CredentialManagerClient::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CredentialManagerClient, message)
-    IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeSignedIn,
-                        OnAcknowledgeSignedIn)
+    IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeStore,
+                        OnAcknowledgeStore)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeRequireUserMediation,
                         OnAcknowledgeRequireUserMediation)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_SendCredential, OnSendCredential)
@@ -63,8 +63,8 @@ bool CredentialManagerClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void CredentialManagerClient::OnAcknowledgeSignedIn(int request_id) {
-  RespondToNotificationCallback(request_id, &signed_in_callbacks_);
+void CredentialManagerClient::OnAcknowledgeStore(int request_id) {
+  RespondToNotificationCallback(request_id, &store_callbacks_);
 }
 
 void CredentialManagerClient::OnAcknowledgeRequireUserMediation(
@@ -108,13 +108,12 @@ void CredentialManagerClient::OnRejectCredentialRequest(
 // -----------------------------------------------------------------------------
 // Dispatch messages from the renderer to the browser.
 
-void CredentialManagerClient::dispatchSignedIn(
+void CredentialManagerClient::dispatchStore(
     const blink::WebCredential& credential,
     blink::WebCredentialManagerClient::NotificationCallbacks* callbacks) {
-  int request_id = signed_in_callbacks_.Add(callbacks);
+  int request_id = store_callbacks_.Add(callbacks);
   CredentialInfo info(WebCredentialToCredentialInfo(credential));
-  Send(new CredentialManagerHostMsg_NotifySignedIn(
-      routing_id(), request_id, info));
+  Send(new CredentialManagerHostMsg_Store(routing_id(), request_id, info));
 }
 
 void CredentialManagerClient::dispatchRequireUserMediation(

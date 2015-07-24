@@ -214,7 +214,7 @@ class CredentialManagerDispatcherTest
   scoped_ptr<CredentialManagerDispatcher> dispatcher_;
 };
 
-TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
+TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {
   CredentialInfo info(
       form_, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_CALL(
@@ -223,9 +223,9 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
           _, password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(1));
 
-  dispatcher()->OnNotifySignedIn(kRequestId, info);
+  dispatcher()->OnStore(kRequestId, info);
 
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -258,9 +258,9 @@ TEST_F(CredentialManagerDispatcherTest,
           _, password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(0));
 
-  dispatcher()->OnNotifySignedIn(kRequestId, info);
+  dispatcher()->OnStore(kRequestId, info);
 
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);

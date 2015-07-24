@@ -52,9 +52,9 @@ class CredentialManagerClientTest : public content::RenderViewTest {
       return false;
 
     switch (message_id) {
-      case CredentialManagerHostMsg_NotifySignedIn::ID: {
+      case CredentialManagerHostMsg_Store::ID: {
         base::Tuple<int, CredentialInfo> param;
-        CredentialManagerHostMsg_NotifySignedIn::Read(message, &param);
+        CredentialManagerHostMsg_Store::Read(message, &param);
         request_id = base::get<0>(param);
         break;
       }
@@ -139,19 +139,18 @@ class TestRequestCallbacks
 
 }  // namespace
 
-TEST_F(CredentialManagerClientTest, SendNotifySignedIn) {
+TEST_F(CredentialManagerClientTest, SendStore) {
   int request_id;
-  EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedIn::ID,
-                                request_id));
+  EXPECT_FALSE(
+      ExtractRequestId(CredentialManagerHostMsg_Store::ID, request_id));
 
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_->dispatchSignedIn(*credential(), callbacks.release());
+  client_->dispatchStore(*credential(), callbacks.release());
 
-  EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedIn::ID,
-                               request_id));
+  EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_Store::ID, request_id));
 
-  client_->OnAcknowledgeSignedIn(request_id);
+  client_->OnAcknowledgeStore(request_id);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
 }

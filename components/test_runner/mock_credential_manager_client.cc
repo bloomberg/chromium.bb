@@ -19,7 +19,7 @@ void MockCredentialManagerClient::SetResponse(
   credential_.reset(credential);
 }
 
-void MockCredentialManagerClient::dispatchSignedIn(
+void MockCredentialManagerClient::dispatchStore(
     const blink::WebCredential&,
     blink::WebCredentialManagerClient::NotificationCallbacks* callbacks) {
   callbacks->onSuccess();
