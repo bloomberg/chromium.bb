@@ -94,9 +94,7 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     // we should always be able to make the affinity DOWNSTREAM, because going previous from an
     // UPSTREAM position can never yield another UPSTREAM position (unless line wrap length is 0!).
     if (prev.isNotNull() && m_affinity == UPSTREAM) {
-        VisiblePosition temp = prev;
-        temp.setAffinity(UPSTREAM);
-        ASSERT(inSameLine(temp, prev));
+        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent(), DOWNSTREAM), PositionWithAffinity(prev.deepEquivalent(), UPSTREAM)));
     }
 #endif
 
