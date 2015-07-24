@@ -266,6 +266,15 @@ if (is_linux && !is_chromeos) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("app_list_unittests_run") {
+  testonly = true
+  deps = [
+    ":app_list_unittests",
+  ]
+}
+
 test("app_list_unittests") {
   sources = [
     "app_list_item_list_unittest.cc",
@@ -279,6 +288,11 @@ test("app_list_unittests") {
     "search/tokenized_string_match_unittest.cc",
     "search/tokenized_string_unittest.cc",
     "test/run_all_unittests.cc",
+  ]
+
+  # TODO: Add to data_deps instead once GN has rolled past #339778.
+  data = [
+    "$root_out_dir/ui_test.pak",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -298,6 +312,8 @@ test("app_list_unittests") {
     "//ui/resources",
     "//ui/resources:ui_test_pak",
   ]
+
+  data_deps = [ "//third_party/mesa:osmesa" ]
 
   if (toolkit_views) {
     sources += [

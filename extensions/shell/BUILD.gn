@@ -156,10 +156,27 @@ if (!(is_chromeos && !use_ozone)) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("app_shell_unittests_run") {
+  testonly = true
+  deps = [
+    ":app_shell_unittests",
+  ]
+}
+
 test("app_shell_unittests") {
   sources = rebase_path(app_shell_gypi_values.app_shell_unittests_sources,
                         ".",
                         "//extensions/shell")
+
+  data = [
+    "//extensions/test/data/",
+    "$root_out_dir/extensions_shell_and_test.pak",
+
+    #"$root_out_dir/natives_blob.bin", # move to gin
+    #"$root_out_dir/snapshot_blob.bin",
+  ]
 
   deps = [
     ":app_shell_lib",
@@ -169,6 +186,11 @@ test("app_shell_unittests") {
     "//extensions:shell_and_test_pak",
     "//extensions:test_support",
     "//testing/gtest",
+  ]
+
+  data_deps = [
+    # "//gin", # TODO(dpranke): Either gin or v8 data is needed ...
+    "//third_party/mesa:osmesa",
   ]
 
   if (use_aura) {

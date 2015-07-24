@@ -53,6 +53,15 @@ component("touch_selection") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("ui_touch_selection_unittests_run") {
+  testonly = true
+  deps = [
+    ":ui_touch_selection_unittests",
+  ]
+}
+
 test("ui_touch_selection_unittests") {
   sources = [
     "longpress_drag_selector_unittest.cc",
@@ -70,6 +79,8 @@ test("ui_touch_selection_unittests") {
     "//ui/gfx:gfx",
     "//ui/gfx:test_support",
   ]
+
+  data_deps = [ "//third_party/mesa:osmesa" ]
 }
 
 if (is_android) {

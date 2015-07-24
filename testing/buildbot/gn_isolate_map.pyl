@@ -42,11 +42,11 @@
   },
   "app_list_unittests": {
     "label": "//ui/app_list:app_list_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "app_shell_unittests": {
     "label": "//extensions/shell:app_shell_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "ash_unittests": {
     "label": "//ash:ash_unittests",
@@ -54,7 +54,7 @@
   },
   "aura_unittests": {
     "label": "//ui/aura:aura_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "base_unittests": {
     "label": "//base:base_unittests",
@@ -92,8 +92,8 @@
     "type": "unknown",
   },
   "cast_unittests": {
-    "label": "//cast:cast_unittests",
-    "type": "unknown",
+    "label": "//media/cast:cast_unittests",
+    "type": "windowed_test_launcher",
   },
   "cc_unittests": {
     "label": "//cc:cc_unittests",
@@ -352,7 +352,7 @@
   },
   "ui_touch_selection_unittests": {
     "label": "//ui/touch_selection:ui_touch_selection_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "unit_tests": {
     "label": "//chrome/test:unit_tests",
@@ -376,7 +376,7 @@
   },
   "wm_unittests": {
     "label": "//ui/wm:wm_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "wtf_unittests": {
     "label": "//third_party/WebKit/public:wtf_unittests",

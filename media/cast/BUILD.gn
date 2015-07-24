@@ -266,6 +266,15 @@ static_library("test_support") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("cast_unittests_run") {
+  testonly = true
+  deps = [
+    ":cast_unittests",
+  ]
+}
+
 test("cast_unittests") {
   sources = [
     "logging/encoding_event_subscriber_unittest.cc",
