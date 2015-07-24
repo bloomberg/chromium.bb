@@ -33,6 +33,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
@@ -192,6 +193,24 @@ TEST_F(SecurityOriginTest, IsSecure)
         EXPECT_EQ(test.isSecure, SecurityOrigin::isSecure(KURL(ParsedURLString, test.url))) << "URL: '" << test.url << "'";
 
     EXPECT_FALSE(SecurityOrigin::isSecure(KURL()));
+}
+
+TEST_F(SecurityOriginTest, IsSecureViaTrustworthy)
+{
+    const char* urls[] = {
+        "http://localhost/",
+        "http://localhost:8080/",
+        "http://127.0.0.1/",
+        "http://127.0.0.1:8080/",
+        "http://[::1]/"
+    };
+
+    for (const char* test : urls) {
+        KURL url(ParsedURLString, test);
+        EXPECT_FALSE(SecurityOrigin::isSecure(url));
+        SecurityPolicy::addOriginTrustworthyWhiteList(SecurityOrigin::create(url));
+        EXPECT_TRUE(SecurityOrigin::isSecure(url));
+    }
 }
 
 TEST_F(SecurityOriginTest, Suborigins)

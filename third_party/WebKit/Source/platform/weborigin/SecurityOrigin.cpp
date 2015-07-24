@@ -235,6 +235,9 @@ bool SecurityOrigin::isSecure(const KURL& url)
     if (shouldUseInnerURL(url) && SchemeRegistry::shouldTreatURLSchemeAsSecure(extractInnerURL(url).protocol()))
         return true;
 
+    if (SecurityPolicy::isOriginWhiteListedTrustworthy(*SecurityOrigin::create(url).get()))
+        return true;
+
     return false;
 }
 
