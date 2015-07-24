@@ -101,7 +101,7 @@ void AXInlineTextBox::textCharacterOffsets(Vector<int>& offsets) const
     }
 }
 
-void AXInlineTextBox::wordBoundaries(Vector<PlainTextRange>& words) const
+void AXInlineTextBox::wordBoundaries(Vector<AXRange>& words) const
 {
     if (!m_inlineTextBox)
         return;
@@ -110,7 +110,7 @@ void AXInlineTextBox::wordBoundaries(Vector<PlainTextRange>& words) const
     m_inlineTextBox->wordBoundaries(wordBoundaries);
     words.resize(wordBoundaries.size());
     for (unsigned i = 0; i < wordBoundaries.size(); i++)
-        words[i] = PlainTextRange(wordBoundaries[i].startIndex, wordBoundaries[i].endIndex - wordBoundaries[i].startIndex);
+        words[i] = AXRange(wordBoundaries[i].startIndex, wordBoundaries[i].endIndex);
 }
 
 String AXInlineTextBox::stringValue() const

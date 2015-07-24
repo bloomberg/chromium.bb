@@ -43,7 +43,6 @@ class FrameView;
 class HTMLAreaElement;
 class IntPoint;
 class Node;
-class VisibleSelection;
 class Widget;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
@@ -151,6 +150,12 @@ protected:
     // Accessibility Text - (To be deprecated).
     String deprecatedHelpText() const override;
 
+    // Methods that retrieve or manipulate the current selection.
+
+    AXRange selection() const override;
+    AXRange selectionUnderObject() const override;
+    void setSelection(const AXRange&) override;
+
     // Location and click point in frame-relative coordinates.
     void markCachedElementRectDirty() const override;
     IntPoint clickPoint() override;
@@ -183,11 +188,6 @@ protected:
     Element* anchorElement() const override;
     Widget* widgetForAttachmentView() const override;
 
-    // Selected text.
-    PlainTextRange selectedTextRange() const override;
-
-    // Modify or take an action on an object.
-    void setSelectedTextRange(const PlainTextRange&) override;
     void setValue(const String&) override;
 
     // Notifications that this object may have changed.
@@ -203,9 +203,9 @@ protected:
 private:
     AXObject* treeAncestorDisallowingChild() const;
     void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
-    PlainTextRange visibleSelectionUnderObject() const;
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
+    bool isValidSelectionBound(const AXObject*) const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
     LayoutObject* layoutParentObject() const;
     bool isSVGImage() const;
@@ -225,7 +225,7 @@ private:
     void ariaSelectedRows(AccessibilityChildrenVector&);
     bool elementAttributeValue(const QualifiedName&) const;
     LayoutRect computeElementRect() const;
-    VisibleSelection selection() const;
+    AXRange textControlSelection() const;
     int indexForVisiblePosition(const VisiblePosition&) const;
 };
 

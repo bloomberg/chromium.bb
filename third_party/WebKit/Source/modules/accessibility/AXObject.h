@@ -377,22 +377,54 @@ class MODULES_EXPORT AXObject : public RefCountedWillBeGarbageCollectedFinalized
 public:
     typedef WillBeHeapVector<RefPtrWillBeMember<AXObject>> AccessibilityChildrenVector;
 
-    struct PlainTextRange {
+    struct AXRange {
+        // The deepest descendant in which the range starts.
+        // (nullptr means the current object.)
+        RefPtrWillBePersistent<AXObject> anchorObject;
+        // The number of characters and child objects in the anchor object
+        // before the range starts.
+        int anchorOffset;
+        // The deepest descendant in which the range ends.
+        // (nullptr means the current object.)
+        RefPtrWillBePersistent<AXObject> focusObject;
+        // The number of characters and child objects in the focus object
+        // before the range ends.
+        int focusOffset;
 
-        unsigned start;
-        unsigned length;
-
-        PlainTextRange()
-            : start(0)
-            , length(0)
+        AXRange()
+            : anchorObject(nullptr)
+            , anchorOffset(-1)
+            , focusObject(nullptr)
+            , focusOffset(-1)
         { }
 
-        PlainTextRange(unsigned s, unsigned l)
-            : start(s)
-            , length(l)
+        AXRange(int startOffset, int endOffset)
+            : anchorObject(nullptr)
+            , anchorOffset(startOffset)
+            , focusObject(nullptr)
+            , focusOffset(endOffset)
         { }
 
-        bool isNull() const { return !start && !length; }
+        AXRange(PassRefPtrWillBeRawPtr<AXObject> anchorObject, int anchorOffset,
+            PassRefPtrWillBeRawPtr<AXObject> focusObject, int focusOffset)
+            : anchorObject(anchorObject)
+            , anchorOffset(anchorOffset)
+            , focusObject(focusObject)
+            , focusOffset(focusOffset)
+        { }
+
+        bool isValid() const
+        {
+            return ((anchorObject && focusObject)
+                || (!anchorObject && !focusObject))
+                && anchorOffset >= 0 && focusOffset >= 0;
+        }
+
+        // Determines if the range only refers to text offsets under the current object.
+        bool isSimple() const
+        {
+            return anchorObject == focusObject || !anchorObject || !focusObject;
+        }
     };
 
 protected:
@@ -612,7 +644,7 @@ public:
     // The integer horizontal pixel offset of each character in the string; negative values for RTL.
     virtual void textCharacterOffsets(Vector<int>&) const { }
     // The start and end character offset of each word in the inline text box.
-    virtual void wordBoundaries(Vector<PlainTextRange>& words) const { }
+    virtual void wordBoundaries(Vector<AXRange>& words) const { }
 
     // Properties of interactive elements.
     virtual String actionVerb() const;
@@ -726,8 +758,15 @@ public:
     bool hasAttribute(const QualifiedName&) const;
     const AtomicString& getAttribute(const QualifiedName&) const;
 
-    // Selected text.
-    virtual PlainTextRange selectedTextRange() const { return PlainTextRange(); }
+    // Methods that retrieve or manipulate the current selection.
+
+    // Get the current selection from anywhere in the accessibility tree.
+    virtual AXRange selection() const { return AXRange(); }
+    // Gets only the start and end offsets of the selection computed using the
+    // current object as the starting point. Returns a null selection if there is
+    // no selection in the subtree rooted at this object.
+    virtual AXRange selectionUnderObject() const { return AXRange(); }
+    virtual void setSelection(const AXRange&) { }
 
     // Scrollable containers.
     bool isScrollableContainer() const;
@@ -753,7 +792,6 @@ public:
     virtual void setFocused(bool) { }
     virtual void setSelected(bool) { }
     void setSelectedText(const String&) { }
-    virtual void setSelectedTextRange(const PlainTextRange&) { }
     virtual void setValue(const String&) { }
     virtual void setValue(float) { }
 

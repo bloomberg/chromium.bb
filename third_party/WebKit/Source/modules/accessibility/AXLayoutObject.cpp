@@ -33,6 +33,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
@@ -57,6 +58,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutTextControl.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
@@ -1834,46 +1836,211 @@ Widget* AXLayoutObject::widgetForAttachmentView() const
 }
 
 //
-// Selected text.
+// Functions that retrieve the current selection.
 //
 
-AXObject::PlainTextRange AXLayoutObject::selectedTextRange() const
+AXObject::AXRange AXLayoutObject::selection() const
 {
-    if (!isTextControl())
-        return PlainTextRange();
+    AXRange textSelection = textControlSelection();
+    if (textSelection.isValid())
+        return textSelection;
 
-    if (m_layoutObject->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
-        return PlainTextRange(textControl->selectionStart(), textControl->selectionEnd() - textControl->selectionStart());
+    if (!layoutObject() || !layoutObject()->frame())
+        return AXRange();
+
+    VisibleSelection selection = layoutObject()->frame()->selection().selection();
+    RefPtrWillBeRawPtr<Range> selectionRange = selection.firstRange();
+    if (!selectionRange)
+        return AXRange();
+
+    int anchorOffset = selectionRange->startOffset();
+    ASSERT(anchorOffset >= 0);
+    int focusOffset = selectionRange->endOffset();
+    ASSERT(focusOffset >= 0);
+
+    Node* anchorNode = selectionRange->startContainer();
+    ASSERT(anchorNode);
+
+    RefPtrWillBeRawPtr<AXObject> anchorObject = nullptr;
+    // Find the closest node that has a corresponding AXObject.
+    // This is because some nodes may be aria hidden or might not even have
+    // a layout object if they are part of the shadow DOM.
+    while (anchorNode && !(anchorObject = axObjectCache().getOrCreate(anchorNode))
+        && (!anchorObject->isAXLayoutObject() || !anchorObject->node() || anchorObject->accessibilityIsIgnored())) {
+        if (anchorNode->nextSibling())
+            anchorNode = anchorNode->nextSibling();
+        else
+            anchorNode = anchorNode->parentNode();
     }
+    if (anchorNode != selectionRange->startContainer())
+        anchorOffset = 0;
 
-    return visibleSelectionUnderObject();
+    Node* focusNode = selectionRange->endContainer();
+    ASSERT(focusNode);
+
+    RefPtrWillBeRawPtr<AXObject> focusObject = nullptr;
+    while (focusNode && !(focusObject = axObjectCache().getOrCreate(focusNode))
+        && (!focusObject->isAXLayoutObject() || !focusObject->node() || focusObject->accessibilityIsIgnored())) {
+        if (focusNode->previousSibling())
+            focusNode = focusNode->previousSibling();
+        else
+            focusNode = focusNode->parentNode();
+    }
+    if (focusNode != selectionRange->endContainer())
+        focusOffset = 0;
+
+    if (!anchorObject || !focusObject)
+        return AXRange();
+
+    return AXRange(
+        anchorObject, anchorOffset,
+        focusObject, focusOffset);
 }
 
-VisibleSelection AXLayoutObject::selection() const
+// Gets only the start and end offsets of the selection computed using the
+// current object as the starting point. Returns a null selection if there is
+// no selection in the subtree rooted at this object.
+AXObject::AXRange AXLayoutObject::selectionUnderObject() const
 {
-    return m_layoutObject->frame()->selection().selection();
+    AXRange textSelection = textControlSelection();
+    if (textSelection.isValid())
+        return textSelection;
+
+    if (!layoutObject() || !layoutObject()->frame())
+        return AXRange();
+
+    VisibleSelection selection = layoutObject()->frame()->selection().selection();
+    RefPtrWillBeRawPtr<Range> selectionRange = selection.firstRange();
+    ContainerNode* parentNode = node()->parentNode();
+    int nodeIndex = node()->nodeIndex();
+    if (!selectionRange
+        // Selection is contained in node.
+        || !(parentNode
+        && selectionRange->comparePoint(parentNode, nodeIndex, IGNORE_EXCEPTION) < 0
+        && selectionRange->comparePoint(parentNode, nodeIndex + 1, IGNORE_EXCEPTION) > 0)) {
+        return AXRange();
+    }
+
+    int start = indexForVisiblePosition(selection.visibleStart());
+    ASSERT(start >= 0);
+    int end = indexForVisiblePosition(selection.visibleEnd());
+    ASSERT(end >= 0);
+
+    return AXRange(start, end);
+}
+
+AXObject::AXRange AXLayoutObject::textControlSelection() const
+{
+    if (!layoutObject())
+        return AXRange();
+
+    LayoutObject* layout = nullptr;
+    if (layoutObject()->isTextControl()) {
+        layout = layoutObject();
+    } else {
+        Element* focusedElement = document()->focusedElement();
+        if (focusedElement && focusedElement->layoutObject()
+            && focusedElement->layoutObject()->isTextControl())
+            layout = focusedElement->layoutObject();
+    }
+
+    if (!layout)
+        return AXRange();
+
+    AXObject* axObject = axObjectCache().getOrCreate(layout);
+    if (!axObject || !axObject->isAXLayoutObject())
+        return AXRange();
+
+    HTMLTextFormControlElement* textControl = toLayoutTextControl(
+        layout)->textFormControlElement();
+    ASSERT(textControl);
+    int start = textControl->selectionStart();
+    int end = textControl->selectionEnd();
+    return AXRange(axObject, start, axObject, end);
+}
+
+int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& position) const
+{
+    if (layoutObject() && layoutObject()->isTextControl()) {
+        HTMLTextFormControlElement* textControl = toLayoutTextControl(
+            layoutObject())->textFormControlElement();
+        return textControl->indexForVisiblePosition(position);
+    }
+
+    if (!node())
+        return 0;
+
+    Position indexPosition = position.deepEquivalent();
+    if (indexPosition.isNull())
+        return 0;
+
+    RefPtrWillBeRawPtr<Range> range = Range::create(*document());
+    range->setStart(node(), 0, IGNORE_EXCEPTION);
+    range->setEnd(indexPosition, IGNORE_EXCEPTION);
+
+    return TextIterator::rangeLength(range->startPosition(), range->endPosition());
 }
 
 //
 // Modify or take an action on an object.
 //
 
-void AXLayoutObject::setSelectedTextRange(const PlainTextRange& range)
+void AXLayoutObject::setSelection(const AXRange& selection)
 {
-    if (m_layoutObject->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
-        textControl->setSelectionRange(range.start, range.start + range.length, SelectionHasNoDirection, NotDispatchSelectEvent);
+    if (!layoutObject() || !selection.isValid())
+        return;
+
+    if (selection.anchorObject && !isValidSelectionBound(selection.anchorObject.get()))
+        return;
+
+    if (selection.focusObject && !isValidSelectionBound(selection.focusObject.get()))
+        return;
+
+    AXObject* anchorObject = selection.anchorObject ?
+        selection.anchorObject.get() : this;
+    AXObject* focusObject = selection.focusObject ?
+        selection.focusObject.get() : this;
+
+    if (anchorObject == this && anchorObject == focusObject
+        && layoutObject()->isTextControl()) {
+        HTMLTextFormControlElement* textControl = toLayoutTextControl(
+            layoutObject())->textFormControlElement();
+        textControl->setSelectionRange(selection.anchorOffset, selection.focusOffset,
+            SelectionHasNoDirection, NotDispatchSelectEvent);
         return;
     }
 
-    Document& document = m_layoutObject->document();
-    LocalFrame* frame = document.frame();
+    Node* anchorNode = nullptr;
+    while (anchorObject && !anchorNode) {
+        anchorNode = anchorObject->node();
+        anchorObject = anchorObject->parentObject();
+    }
+
+    Node* focusNode = nullptr;
+    while (focusObject && !focusNode) {
+        focusNode = focusObject->node();
+        focusObject = focusObject->parentObject();
+    }
+
+    if (!anchorNode || !focusNode)
+        return;
+
+    LocalFrame* frame = layoutObject()->frame();
     if (!frame)
         return;
-    Node* node = m_layoutObject->node();
-    frame->selection().setSelection(VisibleSelection(Position(node, range.start),
-        Position(node, range.start + range.length), DOWNSTREAM));
+
+    frame->selection().setSelection(VisibleSelection(
+        Position(anchorNode, selection.anchorOffset),
+        Position(focusNode, selection.focusOffset),
+        DOWNSTREAM));
+}
+
+bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const
+{
+    return boundObject && !boundObject->isDetached()
+        && boundObject->isAXLayoutObject()
+        && boundObject->layoutObject()->frame() == layoutObject()->frame()
+        && &boundObject->axObjectCache() == &axObjectCache();
 }
 
 void AXLayoutObject::setValue(const String& string)
@@ -2008,33 +2175,6 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
     return VisiblePosition(Position(it.currentContainer(), it.endOffset()), UPSTREAM);
 }
 
-int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& pos) const
-{
-    if (m_layoutObject->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
-        return textControl->indexForVisiblePosition(pos);
-    }
-
-    if (!isTextControl())
-        return 0;
-
-    Node* node = m_layoutObject->node();
-    if (!node)
-        return 0;
-
-    Position indexPosition = pos.deepEquivalent();
-    if (indexPosition.isNull()
-        || (highestEditableRoot(indexPosition) != node
-        && highestEditableRoot(indexPosition, HasEditableAXRole) != node))
-        return 0;
-
-    RefPtrWillBeRawPtr<Range> range = Range::create(m_layoutObject->document());
-    range->setStart(node, 0, IGNORE_EXCEPTION);
-    range->setEnd(indexPosition, IGNORE_EXCEPTION);
-
-    return TextIterator::rangeLength(range->startPosition(), range->endPosition());
-}
-
 void AXLayoutObject::addInlineTextBoxChildren(bool force)
 {
     Settings* settings = document()->settings();
@@ -2114,23 +2254,6 @@ void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& re
                 return;
         }
     }
-}
-
-AXObject::PlainTextRange AXLayoutObject::visibleSelectionUnderObject() const
-{
-    Node* node = m_layoutObject->node();
-    if (!node)
-        return PlainTextRange();
-
-    VisibleSelection visibleSelection = selection();
-    RefPtrWillBeRawPtr<Range> currentSelectionRange = visibleSelection.toNormalizedRange();
-    if (!currentSelectionRange || !currentSelectionRange->intersectsNode(node, IGNORE_EXCEPTION))
-        return PlainTextRange();
-
-    int start = indexForVisiblePosition(visibleSelection.visibleStart());
-    int end = indexForVisiblePosition(visibleSelection.visibleEnd());
-
-    return PlainTextRange(start, end - start);
 }
 
 bool AXLayoutObject::nodeIsTextControl(const Node* node) const

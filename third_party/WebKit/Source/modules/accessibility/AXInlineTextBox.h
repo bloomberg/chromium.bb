@@ -52,7 +52,7 @@ public:
     AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
     String stringValue() const override;
     void textCharacterOffsets(Vector<int>&) const override;
-    void wordBoundaries(Vector<PlainTextRange>& words) const override;
+    void wordBoundaries(Vector<AXRange>& words) const override;
     LayoutRect elementRect() const override;
     AXObject* computeParent() const override;
     AccessibilityTextDirection textDirection() const override;

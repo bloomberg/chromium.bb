@@ -816,12 +816,47 @@ WebAXRole WebAXObject::role() const
     return static_cast<WebAXRole>(m_private->roleValue());
 }
 
+void WebAXObject::selection(WebAXObject& anchorObject, int& anchorOffset,
+    WebAXObject& focusObject, int& focusOffset) const
+{
+    if (isDetached()) {
+        anchorObject = WebAXObject();
+        anchorOffset = -1;
+        focusObject = WebAXObject();
+        focusOffset = -1;
+        return;
+    }
+
+    AXObject::AXRange axSelection = m_private->selection();
+    anchorObject = WebAXObject(axSelection.anchorObject);
+    anchorOffset = axSelection.anchorOffset;
+    focusObject = WebAXObject(axSelection.focusObject);
+    focusOffset = axSelection.focusOffset;
+    return;
+}
+
+void WebAXObject::setSelection(const WebAXObject& anchorObject, int anchorOffset,
+    const WebAXObject& focusObject, int focusOffset) const
+{
+    if (isDetached())
+        return;
+
+    AXObject::AXRange axSelection(anchorObject, anchorOffset,
+        focusObject, focusOffset);
+    m_private->setSelection(axSelection);
+    return;
+}
+
 unsigned WebAXObject::selectionEnd() const
 {
     if (isDetached())
         return 0;
 
-    return m_private->selectedTextRange().start + m_private->selectedTextRange().length;
+    AXObject::AXRange axSelection = m_private->selectionUnderObject();
+    if (axSelection.focusOffset < 0)
+        return 0;
+
+    return axSelection.focusOffset;
 }
 
 unsigned WebAXObject::selectionStart() const
@@ -829,7 +864,11 @@ unsigned WebAXObject::selectionStart() const
     if (isDetached())
         return 0;
 
-    return m_private->selectedTextRange().start;
+    AXObject::AXRange axSelection = m_private->selectionUnderObject();
+    if (axSelection.anchorOffset < 0)
+        return 0;
+
+    return axSelection.anchorOffset;
 }
 
 unsigned WebAXObject::selectionEndLineNumber() const
@@ -841,6 +880,7 @@ unsigned WebAXObject::selectionEndLineNumber() const
     int lineNumber = m_private->lineForPosition(position);
     if (lineNumber < 0)
         return 0;
+
     return lineNumber;
 }
 
@@ -853,6 +893,7 @@ unsigned WebAXObject::selectionStartLineNumber() const
     int lineNumber = m_private->lineForPosition(position);
     if (lineNumber < 0)
         return 0;
+
     return lineNumber;
 }
 
@@ -867,7 +908,7 @@ void WebAXObject::setSelectedTextRange(int selectionStart, int selectionEnd) con
     if (isDetached())
         return;
 
-    m_private->setSelectedTextRange(AXObject::PlainTextRange(selectionStart, selectionEnd - selectionStart));
+    m_private->setSelection(AXObject::AXRange(selectionStart, selectionEnd));
 }
 
 void WebAXObject::setValue(WebString value) const
@@ -1489,17 +1530,19 @@ void WebAXObject::wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) c
     if (isDetached())
         return;
 
-    Vector<AXObject::PlainTextRange> words;
-    m_private->wordBoundaries(words);
+    Vector<AXObject::AXRange> wordBoundaries;
+    m_private->wordBoundaries(wordBoundaries);
 
-    WebVector<int> startsWebVector(words.size());
-    WebVector<int> endsWebVector(words.size());
-    for (size_t i = 0; i < words.size(); i++) {
-        startsWebVector[i] = words[i].start;
-        endsWebVector[i] = words[i].start + words[i].length;
+    WebVector<int> wordStartOffsets(wordBoundaries.size());
+    WebVector<int> wordEndOffsets(wordBoundaries.size());
+    for (size_t i = 0; i < wordBoundaries.size(); ++i) {
+        ASSERT(wordBoundaries[i].isSimple());
+        wordStartOffsets[i] = wordBoundaries[i].anchorOffset;
+        wordEndOffsets[i] = wordBoundaries[i].focusOffset;
     }
-    starts.swap(startsWebVector);
-    ends.swap(endsWebVector);
+
+    starts.swap(wordStartOffsets);
+    ends.swap(wordEndOffsets);
 }
 
 bool WebAXObject::isScrollableContainer() const
