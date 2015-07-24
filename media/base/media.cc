@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/yuv_convert.h"
 
@@ -23,6 +24,9 @@ class MediaInitializer {
   friend struct base::DefaultLazyInstanceTraits<MediaInitializer>;
 
   MediaInitializer() {
+    TRACE_EVENT_WARMUP_CATEGORY("audio");
+    TRACE_EVENT_WARMUP_CATEGORY("media");
+
     // Perform initialization of libraries which require runtime CPU detection.
     InitializeCPUSpecificYUVConversions();
 

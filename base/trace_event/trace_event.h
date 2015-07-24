@@ -917,6 +917,14 @@
       } \
     } while (0)
 
+// Macro to explicitly warm up a given category group. This could be useful in
+// cases where we want to initialize a category group before any trace events
+// for that category group is reported. For example, to have a category group
+// always show up in the "record categories" list for manually selecting
+// settings in about://tracing.
+#define TRACE_EVENT_WARMUP_CATEGORY(category_group) \
+  INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group)
+
 // Macro to efficiently determine, through polling, if a new trace has begun.
 #define TRACE_EVENT_IS_NEW_TRACE(ret) \
     do { \
