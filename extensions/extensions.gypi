@@ -894,6 +894,8 @@
       'renderer/extensions_renderer_client.h',
       'renderer/file_system_natives.cc',
       'renderer/file_system_natives.h',
+      'renderer/gc_callback.cc',
+      'renderer/gc_callback.h',
       'renderer/guest_view/extensions_guest_view_container.cc',
       'renderer/guest_view/extensions_guest_view_container.h',
       'renderer/guest_view/extensions_guest_view_container_dispatcher.cc',

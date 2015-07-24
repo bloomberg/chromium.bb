@@ -145,6 +145,7 @@
       'renderer/api_test_base.h',
       'renderer/api_test_base_unittest.cc',
       'renderer/event_unittest.cc',
+      'renderer/gc_callback_unittest.cc',
       'renderer/json_schema_unittest.cc',
       'renderer/messaging_utils_unittest.cc',
       'renderer/module_system_test.cc',

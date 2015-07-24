@@ -25,6 +25,7 @@
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
+#include "extensions/renderer/gc_callback.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -57,72 +58,6 @@ using v8_helpers::ToV8StringUnsafe;
 using v8_helpers::IsEmptyOrUndefied;
 
 namespace {
-
-// Binds |callback| to run when |object| is garbage collected. So as to not
-// re-entrantly call into v8, we execute this function asynchronously, at
-// which point |context| may have been invalidated. If so, |callback| is not
-// run, and |fallback| will be called instead.
-//
-// Deletes itself when the object args[0] is garbage collected or when the
-// context is invalidated.
-class GCCallback : public base::SupportsWeakPtr<GCCallback> {
- public:
-  GCCallback(ScriptContext* context,
-             const v8::Local<v8::Object>& object,
-             const v8::Local<v8::Function>& callback,
-             const base::Closure& fallback)
-      : context_(context),
-        object_(context->isolate(), object),
-        callback_(context->isolate(), callback),
-        fallback_(fallback) {
-    object_.SetWeak(this, FirstWeakCallback, v8::WeakCallbackType::kParameter);
-    context->AddInvalidationObserver(
-        base::Bind(&GCCallback::OnContextInvalidated, AsWeakPtr()));
-  }
-
- private:
-  static void FirstWeakCallback(const v8::WeakCallbackInfo<GCCallback>& data) {
-    // v8 says we need to explicitly reset weak handles from their callbacks.
-    // It's not implicit as one might expect.
-    data.GetParameter()->object_.Reset();
-    data.SetSecondPassCallback(SecondWeakCallback);
-  }
-
-  static void SecondWeakCallback(const v8::WeakCallbackInfo<GCCallback>& data) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&GCCallback::RunCallback, data.GetParameter()->AsWeakPtr()));
-  }
-
-  void RunCallback() {
-    CHECK(context_);
-    v8::Isolate* isolate = context_->isolate();
-    v8::HandleScope handle_scope(isolate);
-    context_->CallFunction(v8::Local<v8::Function>::New(isolate, callback_));
-    delete this;
-  }
-
-  void OnContextInvalidated() {
-    fallback_.Run();
-    context_ = NULL;
-    delete this;
-  }
-
-  // ScriptContext which owns this GCCallback.
-  ScriptContext* context_;
-
-  // Holds a global handle to the object this GCCallback is bound to.
-  v8::Global<v8::Object> object_;
-
-  // Function to run when |object_| bound to this GCCallback is GC'd.
-  v8::Global<v8::Function> callback_;
-
-  // Function to run if context is invalidated before we have a chance
-  // to execute |callback_|.
-  base::Closure fallback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GCCallback);
-};
 
 // Tracks every reference between ScriptContexts and Ports, by ID.
 class PortTracker {
