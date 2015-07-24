@@ -21,10 +21,7 @@ using base::android::JavaByteArrayToByteVector;
 
 namespace gcm {
 
- GCMDriverAndroid::GCMDriverAndroid(
-     const base::FilePath& store_path,
-     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-     : GCMDriver(store_path, blocking_task_runner) {
+ GCMDriverAndroid::GCMDriverAndroid() {
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(
       Java_GCMDriver_create(env,

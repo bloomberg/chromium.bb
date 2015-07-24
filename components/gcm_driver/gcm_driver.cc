@@ -7,13 +7,14 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
 
+namespace {
 const size_t kMaxSenders = 100;
+}  // namespace
 
 InstanceIDHandler::InstanceIDHandler() {
 }
@@ -26,14 +27,7 @@ void InstanceIDHandler::DeleteAllTokensForApp(
   DeleteToken(app_id, "*", "*", callback);
 }
 
-GCMDriver::GCMDriver(
-    const base::FilePath& store_path,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : weak_ptr_factory_(this) {
-  // The |blocking_task_runner| can be NULL for tests that do not need the
-  // encryption capabilities of the GCMDriver class.
-  if (blocking_task_runner)
-    encryption_provider_.Init(store_path, blocking_task_runner);
+GCMDriver::GCMDriver() : weak_ptr_factory_(this) {
 }
 
 GCMDriver::~GCMDriver() {
@@ -153,12 +147,6 @@ void GCMDriver::Send(const std::string& app_id,
   send_callbacks_[key] = callback;
 
   SendImpl(app_id, receiver_id, message);
-}
-
-void GCMDriver::GetPublicKey(
-    const std::string& app_id,
-    const GetPublicKeyCallback& callback) {
-  encryption_provider_.GetPublicKey(app_id, callback);
 }
 
 void GCMDriver::UnregisterWithSenderIdImpl(const std::string& app_id,

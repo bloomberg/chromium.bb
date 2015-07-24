@@ -51,8 +51,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
 };
 
 CustomFakeGCMDriver::CustomFakeGCMDriver(FakeGCMProfileService* service)
-    : FakeGCMDriver(base::ThreadTaskRunnerHandle::Get()),
-      service_(service) {
+    : service_(service) {
 }
 
 CustomFakeGCMDriver::~CustomFakeGCMDriver() {

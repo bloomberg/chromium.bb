@@ -1094,27 +1094,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_TRUE(stored_app_identifier2.is_null());
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, EncryptionKeyUniqueness) {
-  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
-
-  std::string first_public_key;
-  ASSERT_TRUE(RunScript("getCurve25519dh()", &first_public_key));
-  EXPECT_GE(first_public_key.size(), 32u);
-
-  std::string script_result;
-  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
-  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
-  EXPECT_EQ("unsubscribe result: true", script_result);
-
-  TryToSubscribeSuccessfully("1-1" /* expected_push_subscription_id */);
-
-  std::string second_public_key;
-  ASSERT_TRUE(RunScript("getCurve25519dh()", &second_public_key));
-  EXPECT_GE(second_public_key.size(), 32u);
-
-  EXPECT_NE(first_public_key, second_public_key);
-}
-
 class PushMessagingIncognitoBrowserTest : public PushMessagingBrowserTest {
  public:
   ~PushMessagingIncognitoBrowserTest() override {}

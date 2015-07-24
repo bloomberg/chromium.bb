@@ -207,8 +207,6 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
-        'gcm_driver/crypto/gcm_encryption_provider.cc',
-        'gcm_driver/crypto/gcm_encryption_provider.h',
         'gcm_driver/crypto/gcm_key_store.cc',
         'gcm_driver/crypto/gcm_key_store.h',
         'gcm_driver/crypto/gcm_message_cryptographer.cc',

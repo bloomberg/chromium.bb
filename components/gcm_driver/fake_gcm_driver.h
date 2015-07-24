@@ -14,9 +14,6 @@ namespace gcm {
 class FakeGCMDriver : public GCMDriver {
  public:
   FakeGCMDriver();
-  explicit FakeGCMDriver(
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
-
   ~FakeGCMDriver() override;
 
   // GCMDriver overrides:

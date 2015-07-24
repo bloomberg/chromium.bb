@@ -58,7 +58,7 @@ enum PushRegistrationStatus {
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
   PUSH_REGISTRATION_STATUS_LAST =
-      PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE
+      PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED
 };
 
 // Push unregistration success/error codes for internal use & reporting in UMA.
@@ -124,7 +124,7 @@ enum PushGetRegistrationStatus {
   // update PUSH_GETREGISTRATION_STATUS_LAST below.
 
   PUSH_GETREGISTRATION_STATUS_LAST =
-      PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE
+      PUSH_GETREGISTRATION_STATUS_INCOGNITO_REGISTRATION_NOT_FOUND
 };
 
 // Push message event success/error codes for internal use & reporting in UMA.

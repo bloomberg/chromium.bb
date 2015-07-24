@@ -68,7 +68,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   scoped_refptr<GCMKeyStore> gcm_key_store_;
 };
 
-TEST_F(GCMKeyStoreTest, CreatedByDefault) {
+TEST_F(GCMKeyStoreTest, EmptyByDefault) {
   KeyPair pair;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,

@@ -10,22 +10,14 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/gcm_driver/gcm_driver.h"
-
-namespace base {
-class FilePath;
-class SequencedTaskRunner;
-}
 
 namespace gcm {
 
 // GCMDriver implementation for Android, using Android GCM APIs.
 class GCMDriverAndroid : public GCMDriver {
  public:
-  GCMDriverAndroid(
-      const base::FilePath& store_path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+  GCMDriverAndroid();
   ~GCMDriverAndroid() override;
 
   // Methods called from Java via JNI:

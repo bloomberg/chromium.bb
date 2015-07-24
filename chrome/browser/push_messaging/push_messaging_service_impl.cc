@@ -211,7 +211,8 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   std::string data;
   // TODO(peter): Message payloads are disabled pending mandatory encryption.
   // https://crbug.com/449184
-  if (AreMessagePayloadsEnabled()) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePushMessagePayload)) {
     gcm::MessageData::const_iterator it = message.data.find("data");
     if (it != message.data.end())
       data = it->second;
@@ -312,6 +313,17 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
 
 GURL PushMessagingServiceImpl::GetPushEndpoint() {
   return GURL(std::string(kPushMessagingEndpoint));
+}
+
+// GetPublicEncryptionKey method -----------------------------------------------
+
+void PushMessagingServiceImpl::GetPublicEncryptionKey(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const PushMessagingService::PublicKeyCallback& callback) {
+  // TODO(peter): Get the public key from the GCM Driver. Right now we have to
+  // return success=true here, otherwise subscriptions would fail.
+  callback.Run(true /* success */, std::vector<uint8_t>());
 }
 
 // Subscribe and GetPermissionStatus methods -----------------------------------
@@ -435,32 +447,19 @@ void PushMessagingServiceImpl::DidSubscribe(
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& subscription_id,
     gcm::GCMClient::Result result) {
-  DecreasePushSubscriptionCount(1, true /* was_pending */);
-
   content::PushRegistrationStatus status =
       content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
+  std::vector<uint8_t> curve25519dh;
 
   switch (result) {
     case gcm::GCMClient::SUCCESS:
-      // Do not get a certificate if message payloads have not been enabled.
-      if (!AreMessagePayloadsEnabled()) {
-        DidSubscribeWithPublicKey(
-            app_identifier, callback, subscription_id,
-            std::string() /* public_key */);
-        return;
-      }
+      status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
+      app_identifier.PersistToPrefs(profile_);
 
-      // Make sure that this subscription has associated encryption keys prior
-      // to returning it to the developer - they'll need this information in
-      // order to send payloads to the user.
-      GetGCMDriver()->GetPublicKey(
-          app_identifier.app_id(),
-          base::Bind(
-              &PushMessagingServiceImpl::DidSubscribeWithPublicKey,
-              weak_factory_.GetWeakPtr(), app_identifier, callback,
-              subscription_id));
+      // TODO(peter): Hook up getting the keys from the GCM Driver.
 
-      return;
+      IncreasePushSubscriptionCount(1, false /* is_pending */);
+      break;
     case gcm::GCMClient::INVALID_PARAMETER:
     case gcm::GCMClient::GCM_DISABLED:
     case gcm::GCMClient::ASYNC_OPERATION_PENDING:
@@ -474,27 +473,8 @@ void PushMessagingServiceImpl::DidSubscribe(
       break;
   }
 
-  SubscribeEndWithError(callback, status);
-}
-
-void PushMessagingServiceImpl::DidSubscribeWithPublicKey(
-    const PushMessagingAppIdentifier& app_identifier,
-    const content::PushMessagingService::RegisterCallback& callback,
-    const std::string& subscription_id,
-    const std::string& public_key) {
-  if (!public_key.size() && AreMessagePayloadsEnabled()) {
-    SubscribeEndWithError(
-        callback, content::PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
-    return;
-  }
-
-  app_identifier.PersistToPrefs(profile_);
-
-  IncreasePushSubscriptionCount(1, false /* is_pending */);
-
-  SubscribeEnd(callback, subscription_id,
-               std::vector<uint8_t>(public_key.begin(), public_key.end()),
-               content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
+  SubscribeEnd(callback, subscription_id, curve25519dh, status);
+  DecreasePushSubscriptionCount(1, true /* was_pending */);
 }
 
 void PushMessagingServiceImpl::DidRequestPermission(
@@ -514,40 +494,6 @@ void PushMessagingServiceImpl::DidRequestPermission(
                            base::Bind(&PushMessagingServiceImpl::DidSubscribe,
                                       weak_factory_.GetWeakPtr(),
                                       app_identifier, register_callback));
-}
-
-// GetPublicEncryptionKey methods ----------------------------------------------
-
-void PushMessagingServiceImpl::GetPublicEncryptionKey(
-    const GURL& origin,
-    int64_t service_worker_registration_id,
-    const PushMessagingService::PublicKeyCallback& callback) {
-  // An empty public key will be returned if payloads are not enabled.
-  if (!AreMessagePayloadsEnabled()) {
-    callback.Run(true /* success */, std::vector<uint8_t>());
-    return;
-  }
-
-  PushMessagingAppIdentifier app_identifier =
-      PushMessagingAppIdentifier::FindByServiceWorker(
-          profile_, origin, service_worker_registration_id);
-
-  DCHECK(!app_identifier.is_null());
-
-  GetGCMDriver()->GetPublicKey(
-      app_identifier.app_id(),
-      base::Bind(&PushMessagingServiceImpl::DidGetPublicKey,
-                 weak_factory_.GetWeakPtr(), callback));
-}
-
-void PushMessagingServiceImpl::DidGetPublicKey(
-    const PushMessagingService::PublicKeyCallback& callback,
-    const std::string& public_key) const {
-  // I/O errors might prevent the GCM Driver from retrieving a key-pair.
-  const bool success = !!public_key.size();
-
-  callback.Run(success, std::vector<uint8_t>(public_key.begin(),
-                                             public_key.end()));
 }
 
 // Unsubscribe methods ---------------------------------------------------------
@@ -724,11 +670,6 @@ void PushMessagingServiceImpl::Shutdown() {
 bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
   return GetPermissionStatus(origin, origin, true /* user_visible */) ==
          blink::WebPushPermissionStatusGranted;
-}
-
-bool PushMessagingServiceImpl::AreMessagePayloadsEnabled() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePushMessagePayload);
 }
 
 gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {

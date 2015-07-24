@@ -4,16 +4,9 @@
 
 #include "components/gcm_driver/fake_gcm_driver.h"
 
-#include "base/files/file_path.h"
-
 namespace gcm {
 
-FakeGCMDriver::FakeGCMDriver() : GCMDriver(base::FilePath(), nullptr) {
-}
-
-FakeGCMDriver::FakeGCMDriver(
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : GCMDriver(base::FilePath(), blocking_task_runner) {
+FakeGCMDriver::FakeGCMDriver() {
 }
 
 FakeGCMDriver::~FakeGCMDriver() {
