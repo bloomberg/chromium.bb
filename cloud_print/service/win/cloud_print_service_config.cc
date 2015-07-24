@@ -179,6 +179,8 @@ void SetupDialog::SetState(ServiceController::State status,
   case ServiceController::STATE_RUNNING:
     status_string = IDS_SERVICE_RUNNING;
     break;
+  case ServiceController::STATE_UNKNOWN:
+    break;
   }
   SetDlgItemText(IDC_STATUS,
                  status_string ? LoadLocalString(status_string).c_str() : L"");
