@@ -32,8 +32,7 @@ base::Value* BuildUserActionValue(const SpellcheckAction& action) {
 }  // namespace
 
 Misspelling::Misspelling()
-    : location(0), length(0), hash(0), timestamp(base::Time::Now()) {
-}
+    : location(0), length(0), hash(0), timestamp(base::Time::Now()) {}
 
 Misspelling::Misspelling(const base::string16& context,
                          size_t location,
@@ -45,17 +44,14 @@ Misspelling::Misspelling(const base::string16& context,
       length(length),
       suggestions(suggestions),
       hash(hash),
-      timestamp(base::Time::Now()) {
-}
+      timestamp(base::Time::Now()) {}
 
-Misspelling::~Misspelling() {
-}
+Misspelling::~Misspelling() {}
 
 base::DictionaryValue* Misspelling::Serialize() const {
   base::DictionaryValue* result = new base::DictionaryValue;
-  result->SetString(
-      "timestamp",
-      base::Int64ToString(static_cast<long>(timestamp.ToJsTime())));
+  result->SetString("timestamp", base::Int64ToString(
+                                     static_cast<long>(timestamp.ToJsTime())));
   result->SetInteger("misspelledLength", length);
   result->SetInteger("misspelledStart", location);
   result->SetString("originalText", context);

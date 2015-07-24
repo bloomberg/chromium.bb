@@ -142,8 +142,7 @@ TEST_F(FeedbackTest, FinalizeAllMisspellings) {
   {
     std::vector<Misspelling> pending = feedback_.GetAllMisspellings();
     for (std::vector<Misspelling>::const_iterator it = pending.begin();
-         it != pending.end();
-         ++it) {
+         it != pending.end(); ++it) {
       EXPECT_FALSE(it->action.IsFinal());
     }
   }
@@ -151,8 +150,7 @@ TEST_F(FeedbackTest, FinalizeAllMisspellings) {
   {
     std::vector<Misspelling> final = feedback_.GetAllMisspellings();
     for (std::vector<Misspelling>::const_iterator it = final.begin();
-         it != final.end();
-         ++it) {
+         it != final.end(); ++it) {
       EXPECT_TRUE(it->action.IsFinal());
     }
   }
@@ -198,11 +196,9 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
     for (int j = 0; j < kNumberOfSentences; ++j) {
       feedback_.AddMisspelling(
           renderer_process_id,
-          Misspelling(kMisspelledText,
-                      kMisspellingStart + j * kSentenceLength,
+          Misspelling(kMisspelledText, kMisspellingStart + j * kSentenceLength,
                       kMisspellingLength,
-                      std::vector<base::string16>(1, kSuggestion),
-                      ++hash));
+                      std::vector<base::string16>(1, kSuggestion), ++hash));
     }
   }
 
@@ -213,11 +209,9 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
   static const int kOtherMisspellingLength = 9;
   feedback_.AddMisspelling(
       kRendererProcessId,
-      Misspelling(kOtherMisspelledText,
-                  kOtherMisspellingStart,
+      Misspelling(kOtherMisspelledText, kOtherMisspellingStart,
                   kOtherMisspellingLength,
-                  std::vector<base::string16>(1, kOtherSuggestion),
-                  hash + 1));
+                  std::vector<base::string16>(1, kOtherSuggestion), hash + 1));
 
   static const base::string16 kMisspelledWord = ASCIIToUTF16("Helllo");
   const std::set<uint32>& misspellings =
@@ -226,8 +220,7 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
             misspellings.size());
 
   for (std::set<uint32>::const_iterator it = misspellings.begin();
-       it != misspellings.end();
-      ++it) {
+       it != misspellings.end(); ++it) {
     Misspelling* misspelling = feedback_.GetMisspelling(*it);
     EXPECT_NE(static_cast<Misspelling*>(NULL), misspelling);
     EXPECT_TRUE(misspelling->hash >= kMisspellingHash &&
@@ -246,9 +239,7 @@ TEST_F(FeedbackTest, CannotFindMisspellingsByTextAfterErased) {
   static const int kMisspellingLength = 6;
   feedback_.AddMisspelling(
       kRendererProcessId,
-      Misspelling(kMisspelledText,
-                  kMisspellingStart,
-                  kMisspellingLength,
+      Misspelling(kMisspelledText, kMisspellingStart, kMisspellingLength,
                   std::vector<base::string16>(1, kSuggestion),
                   kMisspellingHash));
   feedback_.GetMisspelling(kMisspellingHash)->action.Finalize();
