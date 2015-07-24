@@ -142,8 +142,7 @@ ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::AccountInfo(
     const std::string& account_id)
     : signin_error_controller_(signin_error_controller),
       account_id_(account_id),
-      last_auth_error_(GoogleServiceAuthError::NONE),
-      marked_for_removal_(false) {
+      last_auth_error_(GoogleServiceAuthError::NONE) {
   DCHECK(signin_error_controller_);
   DCHECK(!account_id_.empty());
   signin_error_controller_->AddProvider(this);
@@ -308,8 +307,7 @@ bool ProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  AccountInfoMap::const_iterator iter = accounts_.find(account_id);
-  return iter != accounts_.end() && !iter->second->marked_for_removal();
+  return accounts_.count(account_id) > 0;
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
@@ -326,7 +324,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
   }
 
   if (accounts_.count(account_id) == 0) {
-    NOTREACHED();
+    // Nothing to update as the account has already been removed.
     return;
   }
   accounts_[account_id]->SetLastAuthError(error);
@@ -363,11 +361,6 @@ void ProfileOAuth2TokenServiceIOSDelegate::RemoveAccount(
   DCHECK(!account_id.empty());
 
   if (accounts_.count(account_id) > 0) {
-    // This is needed to ensure that refresh token for |acccount_id| is not
-    // available while the account is removed. Thus all access token requests
-    // for |account_id| triggered while an account is being removed will get a
-    // user not signed up error response.
-    accounts_[account_id]->set_marked_for_removal(true);
     accounts_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
   }

@@ -93,16 +93,10 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
     std::string GetAccountId() const override;
     GoogleServiceAuthError GetAuthStatus() const override;
 
-    bool marked_for_removal() const { return marked_for_removal_; }
-    void set_marked_for_removal(bool marked_for_removal) {
-      marked_for_removal_ = marked_for_removal;
-    }
-
    private:
     SigninErrorController* signin_error_controller_;
     std::string account_id_;
     GoogleServiceAuthError last_auth_error_;
-    bool marked_for_removal_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountInfo);
   };

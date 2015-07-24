@@ -20,7 +20,8 @@
 class ProfileOAuth2TokenServiceIOSDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenService::Observer {
+      public OAuth2TokenService::Observer,
+      public SigninErrorController::Observer {
  public:
   ProfileOAuth2TokenServiceIOSDelegateTest()
       : factory_(NULL),
@@ -43,9 +44,11 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     oauth2_service_delegate_.reset(new ProfileOAuth2TokenServiceIOSDelegate(
         &client_, &fake_provider_, &signin_error_controller_));
     oauth2_service_delegate_->AddObserver(this);
+    signin_error_controller_.AddObserver(this);
   }
 
   void TearDown() override {
+    signin_error_controller_.RemoveObserver(this);
     oauth2_service_delegate_->RemoveObserver(this);
     oauth2_service_delegate_->Shutdown();
   }
@@ -70,12 +73,15 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   }
   void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
 
+  void OnErrorChanged() override { ++error_changed_count_; }
+
   void ResetObserverCounts() {
     token_available_count_ = 0;
     token_revoked_count_ = 0;
     tokens_loaded_count_ = 0;
     token_available_count_ = 0;
     access_token_failure_ = 0;
+    error_changed_count_ = 0;
   }
 
  protected:
@@ -92,6 +98,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   int tokens_loaded_count_;
   int access_token_success_;
   int access_token_failure_;
+  int error_changed_count_;
   GoogleServiceAuthError last_access_token_error_;
 };
 
@@ -376,4 +383,24 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
   ResetObserverCounts();
   oauth2_service_delegate_->RevokeAllCredentials();
   EXPECT_TRUE(oauth2_service_delegate_->GetExcludedSecondaryAccounts().empty());
+}
+
+// Verifies that UpdateAuthError does nothing after the credentials have been
+// revoked.
+TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
+       UpdateAuthErrorAfterRevokeCredentials) {
+  fake_provider_.AddAccount("account_id_1");
+  oauth2_service_delegate_->LoadCredentials("account_id_1");
+  base::RunLoop().RunUntilIdle();
+
+  ResetObserverCounts();
+  GoogleServiceAuthError cancelled_error(
+      GoogleServiceAuthError::REQUEST_CANCELED);
+  oauth2_service_delegate_->UpdateAuthError("account_id_1", cancelled_error);
+  EXPECT_EQ(1, error_changed_count_);
+
+  oauth2_service_delegate_->RevokeAllCredentials();
+  ResetObserverCounts();
+  oauth2_service_delegate_->UpdateAuthError("account_id_1", cancelled_error);
+  EXPECT_EQ(0, error_changed_count_);
 }
