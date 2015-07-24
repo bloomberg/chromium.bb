@@ -32,7 +32,6 @@ import java.util.List;
 public class FeatureUtilities {
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
-    private static Boolean sDocumentModeDisabled;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -96,13 +95,11 @@ public class FeatureUtilities {
      * @return Whether Chrome should be running on document mode.
      */
     public static boolean isDocumentMode(Context context) {
-        if (sDocumentModeDisabled == null && CommandLine.getInstance() != null) {
-            sDocumentModeDisabled = CommandLine.getInstance().hasSwitch(
-                    ChromeSwitches.DISABLE_DOCUMENT_MODE);
-        }
         return isDocumentModeEligible(context)
                 && !DocumentModeManager.getInstance(context).isOptedOutOfDocumentMode()
-                && (sDocumentModeDisabled == null || !sDocumentModeDisabled.booleanValue());
+                && ((CommandLine.getInstance() == null)
+                    || !CommandLine.getInstance().hasSwitch(
+                            ChromeSwitches.DISABLE_DOCUMENT_MODE));
     }
 
     /**
