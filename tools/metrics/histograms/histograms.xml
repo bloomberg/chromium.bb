@@ -8364,6 +8364,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.PolicyKeyVerification"
+    enum="EnterprisePolicyKeyVerification">
+  <owner>atwilson@chromium.org</owner>
+  <summary>Tracking the results of policy key verification.</summary>
+</histogram>
+
 <histogram name="Enterprise.PolicyLoadStatus" enum="EnterprisePolicyLoadStatus">
   <owner>mnissler@chromium.org</owner>
   <summary>
@@ -54802,6 +54808,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Payload; not expired"/>
   <int value="3" label="No payload; expired"/>
   <int value="4" label="Payload; expired"/>
+</enum>
+
+<enum name="EnterprisePolicyKeyVerification" type="int">
+  <summary>
+    Defined as MetricPolicyKeyVerification in
+    components/policy/core/common/cloud/cloud_policy_validator.cc.
+  </summary>
+  <int value="0" label="Key missing">Client has no verification key.</int>
+  <int value="1" label="Signature missing">
+    The Policy being verified has no key signature (e.g. policy fetched before
+    the server supported the verification key).
+  </int>
+  <int value="2" label="Verification failed">
+    The key signature did not match the expected value (in theory, this should
+    only happen after key rotation or if the policy cached on disk has been
+    modified).
+  </int>
+  <int value="3" label="Verification succeeded">
+    Key verification succeeded.
+  </int>
 </enum>
 
 <enum name="EnterprisePolicyLoadStatus" type="int">
