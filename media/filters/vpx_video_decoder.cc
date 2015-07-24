@@ -18,6 +18,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -73,7 +77,8 @@ static int GetThreadCount(const VideoDecoderConfig& config) {
 }
 
 class VpxVideoDecoder::MemoryPool
-    : public base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool> {
+    : public base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>,
+      public base::trace_event::MemoryDumpProvider {
  public:
   MemoryPool();
 
@@ -97,9 +102,11 @@ class VpxVideoDecoder::MemoryPool
   // to this pool.
   base::Closure CreateFrameCallback(void* fb_priv_data);
 
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
-  ~MemoryPool();
+  ~MemoryPool() override;
 
   // Reference counted frame buffers used for VP9 decoding. Reference counting
   // is done manually because both chromium and libvpx has to release this
@@ -184,6 +191,35 @@ base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
   return BindToCurrentLoop(
              base::Bind(&MemoryPool::OnVideoFrameDestroyed, this,
                         frame_buffer));
+}
+
+bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  base::trace_event::MemoryAllocatorDump* memory_dump =
+      pmd->CreateAllocatorDump("media/vpx/memory_pool");
+  base::trace_event::MemoryAllocatorDump* used_memory_dump =
+      pmd->CreateAllocatorDump("media/vpx/memory_pool/used");
+
+  pmd->AddSuballocation(memory_dump->guid(),
+                        base::trace_event::MemoryDumpManager::GetInstance()
+                            ->system_allocator_pool_name());
+  size_t bytes_used = 0;
+  size_t bytes_reserved = 0;
+  for (const VP9FrameBuffer* frame_buffer : frame_buffers_) {
+    if (frame_buffer->ref_cnt) {
+      bytes_used += frame_buffer->data.size();
+    }
+    bytes_reserved += frame_buffer->data.size();
+  }
+
+  memory_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                         bytes_reserved);
+  used_memory_dump->AddScalar(
+      base::trace_event::MemoryAllocatorDump::kNameSize,
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes, bytes_used);
+
+  return true;
 }
 
 void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
@@ -271,6 +307,8 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   // decoding.
   if (config.codec() == kCodecVP9) {
     memory_pool_ = new MemoryPool();
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        memory_pool_.get(), task_runner_);
     if (vpx_codec_set_frame_buffer_functions(vpx_codec_,
                                              &MemoryPool::GetVP9FrameBuffer,
                                              &MemoryPool::ReleaseVP9FrameBuffer,
@@ -294,6 +332,8 @@ void VpxVideoDecoder::CloseDecoder() {
     vpx_codec_destroy(vpx_codec_);
     delete vpx_codec_;
     vpx_codec_ = NULL;
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        memory_pool_.get());
     memory_pool_ = NULL;
   }
   if (vpx_codec_alpha_) {
