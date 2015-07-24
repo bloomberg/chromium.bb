@@ -356,7 +356,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
     // Split at pos if in the middle of a text node.
     Position positionAfterSplit;
-    if (insertionPosition.anchorType() == PositionAnchorType::OffsetInAnchor && insertionPosition.containerNode()->isTextNode()) {
+    if (insertionPosition.isOffsetInAnchor() && insertionPosition.containerNode()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> textNode = toText(insertionPosition.containerNode());
         bool atEnd = static_cast<unsigned>(insertionPosition.offsetInContainerNode()) >= textNode->length();
         if (insertionPosition.deprecatedEditingOffset() > 0 && !atEnd) {

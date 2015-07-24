@@ -39,7 +39,7 @@ std::ostream& printPosition(std::ostream& ostream, const PositionType& position)
     if (position.isNull())
         return ostream << "null";
     ostream << position.anchorNode() << "@";
-    if (position.anchorType() == PositionAnchorType::OffsetInAnchor)
+    if (position.isOffsetInAnchor())
         return ostream << position.offsetInContainerNode();
     return ostream << position.anchorType();
 }

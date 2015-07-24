@@ -730,7 +730,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
 {
-    ASSERT(position.isNull() || position.anchorType() == PositionAnchorType::OffsetInAnchor
+    ASSERT(position.isNull() || position.isOffsetInAnchor()
         || position.containerNode() || !position.anchorNode()->shadowHost()
         || (position.anchorNode()->parentNode() && position.anchorNode()->parentNode()->isShadowRoot()));
     return enclosingTextFormControl(position.containerNode());
@@ -814,9 +814,9 @@ static Position findWordBoundary(const HTMLElement* innerEditor, const Position&
     Vector<Text*> textList;
 
     if (startPosition.anchorNode()->isTextNode())
-        ASSERT(startPosition.anchorType() == PositionAnchorType::OffsetInAnchor);
+        ASSERT(startPosition.isOffsetInAnchor());
     if (endPosition.anchorNode()->isTextNode())
-        ASSERT(endPosition.anchorType() == PositionAnchorType::OffsetInAnchor);
+        ASSERT(endPosition.isOffsetInAnchor());
 
     // Traverse text nodes.
     for (Node* node = startPosition.anchorNode(); node; node = NodeTraversal::next(*node, innerEditor)) {
@@ -960,7 +960,7 @@ Position HTMLTextFormControlElement::startOfSentence(const Position& position)
     for (Node* node = pivotPosition.anchorNode(); node; node = NodeTraversal::previous(*node, innerEditor)) {
         bool isPivotNode = (node == pivotPosition.anchorNode());
 
-        if (isHTMLBRElement(node) && (!isPivotNode || pivotPosition.anchorType() == PositionAnchorType::AfterAnchor))
+        if (isHTMLBRElement(node) && (!isPivotNode || pivotPosition.isAfterAnchor()))
             return Position(node, PositionAnchorType::AfterAnchor);
 
         if (node->isTextNode()) {

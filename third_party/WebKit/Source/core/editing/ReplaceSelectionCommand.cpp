@@ -1310,7 +1310,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
     Position endUpstream = endOfInsertedContent.deepEquivalent().upstream();
     Node* endNode = endUpstream.computeNodeBeforePosition();
     int endOffset = endNode && endNode->isTextNode() ? toText(endNode)->length() : 0;
-    if (endUpstream.anchorType() == PositionAnchorType::OffsetInAnchor) {
+    if (endUpstream.isOffsetInAnchor()) {
         endNode = endUpstream.containerNode();
         endOffset = endUpstream.offsetInContainerNode();
     }
@@ -1334,7 +1334,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
     Position startDownstream = startOfInsertedContent.deepEquivalent().downstream();
     Node* startNode = startDownstream.computeNodeAfterPosition();
     unsigned startOffset = 0;
-    if (startDownstream.anchorType() == PositionAnchorType::OffsetInAnchor) {
+    if (startDownstream.isOffsetInAnchor()) {
         startNode = startDownstream.containerNode();
         startOffset = startDownstream.offsetInContainerNode();
     }
@@ -1389,8 +1389,8 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
 
 void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, Position& positionOnlyToBeUpdated)
 {
-    bool positionIsOffsetInAnchor = position.anchorType() == PositionAnchorType::OffsetInAnchor;
-    bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.anchorType() == PositionAnchorType::OffsetInAnchor;
+    bool positionIsOffsetInAnchor = position.isOffsetInAnchor();
+    bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.isOffsetInAnchor();
     RefPtrWillBeRawPtr<Text> text = nullptr;
     if (positionIsOffsetInAnchor && position.containerNode() && position.containerNode()->isTextNode())
         text = toText(position.containerNode());

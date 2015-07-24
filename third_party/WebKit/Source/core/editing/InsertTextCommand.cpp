@@ -190,7 +190,7 @@ void InsertTextCommand::doApply()
     } else {
         // Make sure the document is set up to receive m_text
         startPosition = positionInsideTextNode(startPosition);
-        ASSERT(startPosition.anchorType() == PositionAnchorType::OffsetInAnchor);
+        ASSERT(startPosition.isOffsetInAnchor());
         ASSERT(startPosition.containerNode());
         ASSERT(startPosition.containerNode()->isTextNode());
         if (placeholder.isNotNull())

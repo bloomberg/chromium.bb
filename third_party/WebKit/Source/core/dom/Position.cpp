@@ -173,7 +173,7 @@ template <typename Strategy>
 void PositionAlgorithm<Strategy>::moveToPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
     ASSERT(!Strategy::editingIgnoresContent(node.get()));
-    ASSERT(anchorType() == PositionAnchorType::OffsetInAnchor || m_isLegacyEditingPosition);
+    ASSERT(isOffsetInAnchor() || m_isLegacyEditingPosition);
     m_anchorNode = node;
     m_offset = offset;
     if (!m_isLegacyEditingPosition)
@@ -185,7 +185,7 @@ void PositionAlgorithm<Strategy>::moveToPosition(PassRefPtrWillBeRawPtr<Node> no
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::moveToOffset(int offset)
 {
-    ASSERT(anchorType() == PositionAnchorType::OffsetInAnchor || m_isLegacyEditingPosition);
+    ASSERT(isOffsetInAnchor() || m_isLegacyEditingPosition);
     m_offset = offset;
     if (!m_isLegacyEditingPosition)
         return;
@@ -255,7 +255,7 @@ int PositionAlgorithm<Strategy>::computeOffsetInContainerNode() const
 template <typename Strategy>
 int PositionAlgorithm<Strategy>::offsetForPositionAfterAnchor() const
 {
-    ASSERT(m_anchorType == PositionAnchorType::AfterAnchor || m_anchorType == PositionAnchorType::AfterChildren);
+    ASSERT(isAfterAnchorOrAfterChildren());
     ASSERT(!m_isLegacyEditingPosition);
     return Strategy::lastOffsetForEditing(m_anchorNode.get());
 }
@@ -269,13 +269,13 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::parentAnchoredEquivalen
         return PositionAlgorithm<Strategy>();
 
     // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
-    if (m_offset <= 0 && (m_anchorType != PositionAnchorType::AfterAnchor && m_anchorType != PositionAnchorType::AfterChildren)) {
+    if (m_offset <= 0 && !isAfterAnchorOrAfterChildren()) {
         if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
             return inParentBeforeNode(*m_anchorNode);
         return PositionAlgorithm<Strategy>(m_anchorNode.get(), 0);
     }
     if (!m_anchorNode->offsetInCharacters()
-        && (m_anchorType == PositionAnchorType::AfterAnchor || m_anchorType == PositionAnchorType::AfterChildren || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
+        && (isAfterAnchorOrAfterChildren() || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
         && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get()))
         && containerNode()) {
         return inParentAfterNode(*m_anchorNode);
@@ -342,7 +342,7 @@ Node* PositionAlgorithm<Strategy>::nodeAsRangeFirstNode() const
 {
     if (!m_anchorNode)
         return nullptr;
-    if (m_anchorType != PositionAnchorType::OffsetInAnchor)
+    if (!isOffsetInAnchor())
         return toOffsetInAnchor().nodeAsRangeFirstNode();
     if (m_anchorNode->offsetInCharacters())
         return m_anchorNode.get();
@@ -369,7 +369,7 @@ Node* PositionAlgorithm<Strategy>::nodeAsRangePastLastNode() const
 {
     if (!m_anchorNode)
         return nullptr;
-    if (m_anchorType != PositionAnchorType::OffsetInAnchor)
+    if (!isOffsetInAnchor())
         return toOffsetInAnchor().nodeAsRangePastLastNode();
     if (m_anchorNode->offsetInCharacters())
         return Strategy::nextSkippingChildren(*m_anchorNode);
@@ -545,7 +545,7 @@ bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
         return true;
     // FIXME: Position after anchor shouldn't be considered as at the first editing position for node
     // since that position resides outside of the node.
-    return m_anchorType == PositionAnchorType::AfterAnchor || m_anchorType == PositionAnchorType::AfterChildren || m_offset >= lastOffsetForEditing(anchorNode());
+    return isAfterAnchorOrAfterChildren() || m_offset >= lastOffsetForEditing(anchorNode());
 }
 
 // A position is considered at editing boundary if one of the following is true:
@@ -700,7 +700,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
     // iterate backward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(m_anchorType == PositionAnchorType::AfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -822,7 +822,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
     // iterate forward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(m_anchorType == PositionAnchorType::AfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -1001,7 +1001,7 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
         // TODO(leviw) The condition should be
         // m_anchorType == PositionAnchorType::BeforeAnchor, but for now we
         // still need to support legacy positions.
-        return !m_offset && m_anchorType != PositionAnchorType::AfterAnchor && !nodeIsUserSelectNone(Strategy::parent(*anchorNode()));
+        return !m_offset && !isAfterAnchor() && !nodeIsUserSelectNone(Strategy::parent(*anchorNode()));
     }
 
     if (layoutObject->isText())
@@ -1437,7 +1437,7 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
         return PositionInComposedTree();
 
     PositionInComposedTree position;
-    if (pos.anchorType() == PositionAnchorType::OffsetInAnchor) {
+    if (pos.isOffsetInAnchor()) {
         Node* anchor = pos.anchorNode();
         if (anchor->offsetInCharacters())
             return PositionInComposedTree(anchor, pos.computeOffsetInContainerNode());

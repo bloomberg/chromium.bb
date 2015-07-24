@@ -417,7 +417,7 @@ void CompositeEditCommand::moveRemainingSiblingsToNewParent(Node* node, Node* pa
 
 void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Position& position, Node& node)
 {
-    int offset = (position.anchorType() == PositionAnchorType::OffsetInAnchor) ? position.offsetInContainerNode() : 0;
+    int offset = position.isOffsetInAnchor() ? position.offsetInContainerNode() : 0;
     updatePositionForNodeRemoval(position, node);
     if (offset)
         position.moveToOffset(offset);

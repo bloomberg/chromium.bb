@@ -1177,14 +1177,14 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
                 if (s.anchorNode() == elem) {
                     // Since elem must have been fully selected, and it is at the start
                     // of the selection, it is clear we can set the new s offset to 0.
-                    ASSERT(s.anchorType() == PositionAnchorType::BeforeAnchor || s.anchorType() == PositionAnchorType::BeforeChildren || s.offsetInContainerNode() <= 0);
+                    ASSERT(s.isBeforeAnchor() || s.isBeforeChildren() || s.offsetInContainerNode() <= 0);
                     s = firstPositionInOrBeforeNode(next.get());
                 }
                 if (e.anchorNode() == elem) {
                     // Since elem must have been fully selected, and it is at the end
                     // of the selection, it is clear we can set the new e offset to
                     // the max range offset of prev.
-                    ASSERT(s.anchorType() == PositionAnchorType::AfterAnchor || !offsetIsBeforeLastNodeOffset(s.offsetInContainerNode(), s.containerNode()));
+                    ASSERT(s.isAfterAnchor() || !offsetIsBeforeLastNodeOffset(s.offsetInContainerNode(), s.containerNode()));
                     e = lastPositionInOrAfterNode(prev.get());
                 }
             }
@@ -1216,7 +1216,7 @@ void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& 
     ASSERT(start.containerNode()->isTextNode());
 
     Position newEnd;
-    if (end.anchorType() == PositionAnchorType::OffsetInAnchor && start.containerNode() == end.containerNode())
+    if (end.isOffsetInAnchor() && start.containerNode() == end.containerNode())
         newEnd = Position(end.containerText(), end.offsetInContainerNode() - start.offsetInContainerNode());
     else
         newEnd = end;
@@ -1230,7 +1230,7 @@ void ApplyStyleCommand::splitTextAtEnd(const Position& start, const Position& en
 {
     ASSERT(end.containerNode()->isTextNode());
 
-    bool shouldUpdateStart = start.anchorType() == PositionAnchorType::OffsetInAnchor && start.containerNode() == end.containerNode();
+    bool shouldUpdateStart = start.isOffsetInAnchor() && start.containerNode() == end.containerNode();
     Text* text = toText(end.anchorNode());
     splitTextNode(text, end.offsetInContainerNode());
 
@@ -1578,9 +1578,9 @@ void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& 
             continue;
 
         Text* nextText = toText(next);
-        if (start.anchorType() == PositionAnchorType::OffsetInAnchor && next == start.containerNode())
+        if (start.isOffsetInAnchor() && next == start.containerNode())
             newStart = Position(childText, childText->length() + start.offsetInContainerNode());
-        if (end.anchorType() == PositionAnchorType::OffsetInAnchor && next == end.containerNode())
+        if (end.isOffsetInAnchor() && next == end.containerNode())
             newEnd = Position(childText, childText->length() + end.offsetInContainerNode());
         String textToMove = nextText->data();
         insertTextIntoNode(childText, childText->length(), textToMove);

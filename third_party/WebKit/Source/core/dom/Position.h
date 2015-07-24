@@ -101,6 +101,11 @@ public:
     PositionAlgorithm(const PositionAlgorithm&);
 
     PositionAnchorType anchorType() const { return m_anchorType; }
+    bool isAfterAnchor() const { return m_anchorType == PositionAnchorType::AfterAnchor; }
+    bool isAfterChildren() const { return m_anchorType == PositionAnchorType::AfterChildren; }
+    bool isBeforeAnchor() const { return m_anchorType == PositionAnchorType::BeforeAnchor; }
+    bool isBeforeChildren() const { return m_anchorType == PositionAnchorType::BeforeChildren; }
+    bool isOffsetInAnchor() const { return m_anchorType == PositionAnchorType::OffsetInAnchor; }
 
     void clear() { m_anchorNode.clear(); m_offset = 0; m_anchorType = PositionAnchorType::OffsetInAnchor; m_isLegacyEditingPosition = false; }
 
@@ -121,14 +126,14 @@ public:
     // Inline O(1) access for Positions which callers know to be parent-anchored
     int offsetInContainerNode() const
     {
-        ASSERT(anchorType() == PositionAnchorType::OffsetInAnchor);
+        ASSERT(isOffsetInAnchor());
         return m_offset;
     }
 
     // New code should not use this function.
     int deprecatedEditingOffset() const
     {
-        if (m_isLegacyEditingPosition || (m_anchorType != PositionAnchorType::AfterAnchor && m_anchorType != PositionAnchorType::AfterChildren))
+        if (m_isLegacyEditingPosition || !isAfterAnchorOrAfterChildren())
             return m_offset;
         return offsetForPositionAfterAnchor();
     }
@@ -243,6 +248,11 @@ public:
     }
 
 private:
+    bool isAfterAnchorOrAfterChildren() const
+    {
+        return isAfterAnchor() || isAfterChildren();
+    }
+
     int offsetForPositionAfterAnchor() const;
 
     int renderedOffset() const;

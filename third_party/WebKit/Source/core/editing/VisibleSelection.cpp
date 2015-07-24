@@ -779,7 +779,7 @@ void VisibleSelection::setWithoutValidation(const PositionInComposedTree& base, 
 static PositionInComposedTree adjustPositionInComposedTreeForStart(const PositionInComposedTree& position, Node* shadowHost)
 {
     if (isEnclosedBy(position, *shadowHost)) {
-        if (position.anchorType() == PositionAnchorType::BeforeChildren)
+        if (position.isBeforeChildren())
             return PositionInComposedTree::beforeNode(shadowHost);
         return PositionInComposedTree::afterNode(shadowHost);
     }
@@ -813,7 +813,7 @@ static Position adjustPositionForEnd(const Position& currentPosition, Node* star
 PositionInComposedTree adjustPositionInComposedTreeForEnd(const PositionInComposedTree& position, Node* shadowHost)
 {
     if (isEnclosedBy(position, *shadowHost)) {
-        if (position.anchorType() == PositionAnchorType::AfterChildren)
+        if (position.isAfterChildren())
             return PositionInComposedTree::afterNode(shadowHost);
         return PositionInComposedTree::beforeNode(shadowHost);
     }
