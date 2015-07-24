@@ -4,6 +4,7 @@
 
 #include "components/secure_display/elide_url.h"
 
+#include "base/ios/ios_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"
@@ -170,6 +171,13 @@ TEST(TextEliderTest, TestFileURLEliding) {
 }
 
 TEST(TextEliderTest, TestHostEliding) {
+#if defined(OS_IOS)
+  // TODO(eugenebut): Disable test on iOS9 crbug.com/513703
+  if (base::ios::IsRunningOnIOS9OrLater()) {
+    LOG(WARNING) << "Test disabled on iOS9.";
+    return;
+  }
+#endif
   const std::string kEllipsisStr(kEllipsis);
   Testcase testcases[] = {
     {"http://google.com", "google.com"},
