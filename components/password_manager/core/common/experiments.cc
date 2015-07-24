@@ -21,7 +21,10 @@ bool ManageAccountLinkExperimentEnabled() {
   if (command_line->HasSwitch(switches::kEnablePasswordLink))
     return true;
 
-  return group_name == "Enabled";
+  // To match Finch enabling the experiment by default, this method returns true
+  // unless explicitly told the experiment is disabled. This ensures trybot
+  // coverage of the enabled case.
+  return group_name != "Disabled";
 }
 
 bool ForceSavingExperimentEnabled() {
