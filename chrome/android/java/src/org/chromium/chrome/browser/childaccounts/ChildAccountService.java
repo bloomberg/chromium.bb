@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.signin.ChromeSigninController;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -276,12 +277,11 @@ public class ChildAccountService {
         Log.v(TAG, "hasChildAccount: " + mHasChildAccount + " oldHasChildAccount: " + oldValue);
         if (mHasChildAccount) {
             if (oldValue == null) {
-                // This is the first time we have determined the child account status,
-                // which means the browser is starting up. The startup code will sign in
-                // and call us back in onChildAccountSigninComplete().
-                return;
-            }
-            if (!oldValue.booleanValue()) {
+                // This is the first time we have determined the child account status, which means
+                // the browser is starting up. If we are not signed in yet, the startup code will
+                // sign in and call us back in onChildAccountSigninComplete().
+                if (ChromeSigninController.get(mContext).getSignedInUser() == null) return;
+            } else if (!oldValue.booleanValue()) {
                 // We have switched from no child account to child account while the browser
                 // is running. Sign in (which will call us back in onChildAccountSigninComplete()).
                 SigninManager signinManager = SigninManager.get(mContext);
