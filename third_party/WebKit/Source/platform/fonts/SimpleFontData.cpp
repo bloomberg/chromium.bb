@@ -54,7 +54,7 @@ const float emphasisMarkFontSizeMultiplier = 0.5f;
 static const size_t maxVDMXTableSize = 1024 * 1024; // 1 MB
 #endif
 
-SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtrWillBeRawPtr<CustomFontData> customData, bool isTextOrientationFallback)
+SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData, bool isTextOrientationFallback)
     : m_maxCharWidth(-1)
     , m_avgCharWidth(-1)
     , m_platformData(platformData)
@@ -71,7 +71,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtrW
     }
 }
 
-SimpleFontData::SimpleFontData(PassRefPtrWillBeRawPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
+SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
     : m_platformData(FontPlatformData(fontSize, syntheticBold, syntheticItalic))
     , m_isTextOrientationFallback(false)
     , m_verticalData(nullptr)

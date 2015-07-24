@@ -26,9 +26,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeR
 RemoteFontFaceSource::~RemoteFontFaceSource()
 {
     m_font->removeClient(this);
-#if ENABLE(OILPAN)
     pruneTable();
-#endif
 }
 
 void RemoteFontFaceSource::pruneTable()
@@ -119,7 +117,7 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(c
         ASSERT_NOT_REACHED();
         return nullptr;
     }
-    RefPtrWillBeRawPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(this, m_font->exceedsFontLoadWaitLimit() ? CSSCustomFontData::VisibleFallback : CSSCustomFontData::InvisibleFallback);
+    RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(this, m_font->exceedsFontLoadWaitLimit() ? CSSCustomFontData::VisibleFallback : CSSCustomFontData::InvisibleFallback);
     return SimpleFontData::create(temporaryFont->platformData(), cssFontData);
 }
 
