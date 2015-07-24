@@ -73,3 +73,6 @@ bool FLAGS_increase_time_wait_list = true;
 
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
+
+// If true, don't serialize invalid HTTP headers when converting HTTP to SPDY.
+bool FLAGS_spdy_strip_invalid_headers = true;

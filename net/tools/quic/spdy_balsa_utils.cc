@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
@@ -304,13 +305,13 @@ SpdyHeaderBlock SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
     PopulateSpdy4RequestHeaderBlock(request_headers, scheme, host_and_port,
                                     path, &block);
   }
-  // TODO(alyssar) do this for all headers in kInvalidRequestHeaders, ideally in
-  // PopulateSpdyHeaderBlock
-  if (block.find("host") != block.end()) {
-    block.erase(block.find("host"));
-  }
-  if (block.find("connection") != block.end()) {
-    block.erase(block.find("connection"));
+  if (!FLAGS_spdy_strip_invalid_headers) {
+    if (block.find("host") != block.end()) {
+      block.erase(block.find("host"));
+    }
+    if (block.find("connection") != block.end()) {
+      block.erase(block.find("connection"));
+    }
   }
   return block;
 }

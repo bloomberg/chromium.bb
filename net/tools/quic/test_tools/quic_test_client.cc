@@ -10,6 +10,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -265,11 +266,19 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
 
   scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
                                           secure_));
+  SpdyHeaderBlock spdy_headers = SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
+      munged_headers.get() ? *munged_headers : *message.headers(),
+      stream->version());
+  if (FLAGS_spdy_strip_invalid_headers) {
+    // We have tests which rely on sending a non-standards-compliant T-E header.
+    if (message.headers()->HasHeader("transfer-encoding")) {
+      string encoding;
+      message.headers()->GetAllOfHeaderAsString("transfer-encoding", &encoding);
+      spdy_headers.insert(std::make_pair("transfer-encoding", encoding));
+    }
+  }
   ssize_t ret = GetOrCreateStream()->SendRequest(
-      SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
-          munged_headers.get() ? *munged_headers : *message.headers(),
-          stream->version()),
-      message.body(), message.has_complete_message());
+      spdy_headers, message.body(), message.has_complete_message());
   WaitForWriteToFlush();
   return ret;
 }

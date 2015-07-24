@@ -27,5 +27,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_ip_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_conservative_receive_buffer;
 NET_EXPORT_PRIVATE extern bool FLAGS_increase_time_wait_list;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd;
+NET_EXPORT_PRIVATE extern bool FLAGS_spdy_strip_invalid_headers;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_
