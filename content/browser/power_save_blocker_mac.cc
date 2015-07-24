@@ -60,7 +60,7 @@ class PowerSaveBlockerImpl::Delegate
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
-            g_power_thread.Pointer()->thread_id());
+            g_power_thread.Pointer()->GetThreadId());
 
   CFStringRef level = NULL;
   // See QA1340 <http://developer.apple.com/library/mac/#qa/qa1340/> for more
@@ -88,7 +88,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
-            g_power_thread.Pointer()->thread_id());
+            g_power_thread.Pointer()->GetThreadId());
 
   if (assertion_ != kIOPMNullAssertionID) {
     IOReturn result = IOPMAssertionRelease(assertion_);

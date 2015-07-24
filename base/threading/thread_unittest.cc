@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -105,6 +106,15 @@ void RegisterDestructionObserver(
   base::MessageLoop::current()->AddDestructionObserver(observer);
 }
 
+// Task that calls GetThreadId() of |thread|, stores the result into |id|, then
+// signal |event|.
+void ReturnThreadId(base::Thread* thread,
+                    base::PlatformThreadId* id,
+                    base::WaitableEvent* event) {
+  *id = thread->GetThreadId();
+  event->Signal();
+}
+
 }  // namespace
 
 TEST_F(ThreadTest, Restart) {
@@ -192,6 +202,47 @@ TEST_F(ThreadTest, ThreadName) {
   Thread a("ThreadName");
   EXPECT_TRUE(a.Start());
   EXPECT_EQ("ThreadName", a.thread_name());
+}
+
+TEST_F(ThreadTest, ThreadId) {
+  Thread a("ThreadId0");
+  Thread b("ThreadId1");
+  a.Start();
+  b.Start();
+
+  // Post a task that calls GetThreadId() on the created thread.
+  base::WaitableEvent event(false, false);
+  base::PlatformThreadId id_from_new_thread;
+  a.task_runner()->PostTask(
+      FROM_HERE, base::Bind(ReturnThreadId, &a, &id_from_new_thread, &event));
+
+  // Call GetThreadId() on the current thread before calling event.Wait() so
+  // that this test can find a race issue with TSAN.
+  base::PlatformThreadId id_from_current_thread = a.GetThreadId();
+
+  // Check if GetThreadId() returns consistent value in both threads.
+  event.Wait();
+  EXPECT_EQ(id_from_current_thread, id_from_new_thread);
+
+  // A started thread should have a valid ID.
+  EXPECT_NE(base::kInvalidThreadId, a.GetThreadId());
+  EXPECT_NE(base::kInvalidThreadId, b.GetThreadId());
+
+  // Each thread should have a different thread ID.
+  EXPECT_NE(a.GetThreadId(), b.GetThreadId());
+}
+
+TEST_F(ThreadTest, ThreadIdWithRestart) {
+  Thread a("ThreadIdWithRestart");
+  base::PlatformThreadId previous_id = base::kInvalidThreadId;
+
+  for (size_t i = 0; i < 16; ++i) {
+    EXPECT_TRUE(a.Start());
+    base::PlatformThreadId current_id = a.GetThreadId();
+    EXPECT_NE(previous_id, current_id);
+    previous_id = current_id;
+    a.Stop();
+  }
 }
 
 // Make sure Init() is called after Start() and before

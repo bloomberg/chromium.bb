@@ -73,26 +73,9 @@ class PlatformThreadHandle {
   typedef pthread_t Handle;
 #endif
 
-  PlatformThreadHandle()
-      : handle_(0),
-        id_(0) {
-  }
+  PlatformThreadHandle() : handle_(0) {}
 
-  explicit PlatformThreadHandle(Handle handle)
-      : handle_(handle),
-        id_(0) {
-  }
-
-  PlatformThreadHandle(Handle handle,
-                       PlatformThreadId id)
-      : handle_(handle),
-        id_(id) {
-  }
-
-  // TODO(toyoshim): Remove id() and use PlatformThread::CurrentId() instead.
-  PlatformThreadId id() const {
-    return id_;
-  }
+  explicit PlatformThreadHandle(Handle handle) : handle_(handle) {}
 
   bool is_equal(const PlatformThreadHandle& other) const {
     return handle_ == other.handle_;
@@ -108,7 +91,6 @@ class PlatformThreadHandle {
 
  private:
   Handle handle_;
-  PlatformThreadId id_;
 };
 
 const PlatformThreadId kInvalidThreadId(0);

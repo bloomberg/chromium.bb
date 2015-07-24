@@ -14,12 +14,12 @@
 #include "base/message_loop/timer_slack.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
 
 class MessagePump;
-class WaitableEvent;
 
 // A simple thread abstraction that establishes a MessageLoop on a new thread.
 // The consumer uses the MessageLoop of the thread to cause code to execute on
@@ -170,8 +170,13 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // The native thread handle.
   PlatformThreadHandle thread_handle() { return thread_; }
 
-  // The thread ID.
-  PlatformThreadId thread_id() const;
+  // Returns the thread ID.  Should not be called before the first Start*()
+  // call.  Keeps on returning the same ID even after a Stop() call. The next
+  // Start*() call renews the ID.
+  //
+  // WARNING: This function will block if the thread hasn't started yet.
+  //
+  PlatformThreadId GetThreadId() const;
 
   // Returns true if the thread has been started, and not yet stopped.
   bool IsRunning() const;
@@ -216,11 +221,15 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
   // True while inside of Run().
   bool running_;
-  mutable base::Lock running_lock_;  // Protects running_.
+  mutable base::Lock running_lock_;  // Protects |running_|.
 
   // The thread's handle.
   PlatformThreadHandle thread_;
-  mutable base::Lock thread_lock_;  // Protects thread_.
+  mutable base::Lock thread_lock_;  // Protects |thread_|.
+
+  // The thread's id once it has started.
+  PlatformThreadId id_;
+  mutable WaitableEvent id_event_;  // Protects |id_|.
 
   // The thread's message loop.  Valid only while the thread is alive.  Set
   // by the created thread.

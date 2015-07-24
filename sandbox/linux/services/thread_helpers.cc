@@ -132,7 +132,7 @@ bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_fd,
                                              base::Thread* thread) {
   DCHECK_LE(0, proc_fd);
   DCHECK(thread);
-  const base::PlatformThreadId thread_id = thread->thread_id();
+  const base::PlatformThreadId thread_id = thread->GetThreadId();
   const std::string thread_id_dir_str =
       "self/task/" + base::IntToString(thread_id) + "/";
 

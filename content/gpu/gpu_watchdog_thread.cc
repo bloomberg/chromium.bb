@@ -142,7 +142,7 @@ GpuWatchdogThread::~GpuWatchdogThread() {
 }
 
 void GpuWatchdogThread::OnAcknowledge() {
-  CHECK(base::PlatformThread::CurrentId() == thread_id());
+  CHECK(base::PlatformThread::CurrentId() == GetThreadId());
 
   // The check has already been acknowledged and another has already been
   // scheduled by a previous call to OnAcknowledge. It is normal for a
@@ -170,7 +170,7 @@ void GpuWatchdogThread::OnAcknowledge() {
 }
 
 void GpuWatchdogThread::OnCheck(bool after_suspend) {
-  CHECK(base::PlatformThread::CurrentId() == thread_id());
+  CHECK(base::PlatformThread::CurrentId() == GetThreadId());
 
   // Do not create any new termination tasks if one has already been created
   // or the system is suspended.

@@ -24,8 +24,8 @@ TEST_F(ThreadIdNameManagerTest, AddThreads) {
   thread_a.StartAndWaitForTesting();
   thread_b.StartAndWaitForTesting();
 
-  EXPECT_STREQ(kAThread, manager->GetName(thread_a.thread_id()));
-  EXPECT_STREQ(kBThread, manager->GetName(thread_b.thread_id()));
+  EXPECT_STREQ(kAThread, manager->GetName(thread_a.GetThreadId()));
+  EXPECT_STREQ(kBThread, manager->GetName(thread_b.GetThreadId()));
 
   thread_b.Stop();
   thread_a.Stop();
@@ -41,10 +41,10 @@ TEST_F(ThreadIdNameManagerTest, RemoveThreads) {
     thread_b.StartAndWaitForTesting();
     thread_b.Stop();
   }
-  EXPECT_STREQ(kAThread, manager->GetName(thread_a.thread_id()));
+  EXPECT_STREQ(kAThread, manager->GetName(thread_a.GetThreadId()));
 
   thread_a.Stop();
-  EXPECT_STREQ("", manager->GetName(thread_a.thread_id()));
+  EXPECT_STREQ("", manager->GetName(thread_a.GetThreadId()));
 }
 
 TEST_F(ThreadIdNameManagerTest, RestartThread) {
@@ -52,13 +52,13 @@ TEST_F(ThreadIdNameManagerTest, RestartThread) {
   base::Thread thread_a(kAThread);
 
   thread_a.StartAndWaitForTesting();
-  base::PlatformThreadId a_id = thread_a.thread_id();
+  base::PlatformThreadId a_id = thread_a.GetThreadId();
   EXPECT_STREQ(kAThread, manager->GetName(a_id));
   thread_a.Stop();
 
   thread_a.StartAndWaitForTesting();
   EXPECT_STREQ("", manager->GetName(a_id));
-  EXPECT_STREQ(kAThread, manager->GetName(thread_a.thread_id()));
+  EXPECT_STREQ(kAThread, manager->GetName(thread_a.GetThreadId()));
   thread_a.Stop();
 }
 

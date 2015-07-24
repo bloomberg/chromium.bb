@@ -1201,8 +1201,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   allowed_clipboard_threads.push_back(base::PlatformThread::CurrentId());
 #if defined(OS_WIN)
   // On Windows, clipboards are also used on the FILE or IO threads.
-  allowed_clipboard_threads.push_back(file_thread_->thread_id());
-  allowed_clipboard_threads.push_back(io_thread_->thread_id());
+  allowed_clipboard_threads.push_back(file_thread_->GetThreadId());
+  allowed_clipboard_threads.push_back(io_thread_->GetThreadId());
 #endif
   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
 

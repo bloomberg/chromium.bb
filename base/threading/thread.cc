@@ -62,6 +62,8 @@ Thread::Thread(const std::string& name)
       stopping_(false),
       running_(false),
       thread_(0),
+      id_(kInvalidThreadId),
+      id_event_(true, false),
       message_loop_(nullptr),
       message_loop_timer_slack_(TIMER_SLACK_NONE),
       name_(name) {
@@ -86,6 +88,10 @@ bool Thread::StartWithOptions(const Options& options) {
   DCHECK((com_status_ != STA) ||
       (options.message_loop_type == MessageLoop::TYPE_UI));
 #endif
+
+  // Reset |id_| here to support restarting the thread.
+  id_event_.Reset();
+  id_ = kInvalidThreadId;
 
   SetThreadWasQuitProperly(false);
 
@@ -161,7 +167,7 @@ void Thread::Stop() {
 void Thread::StopSoon() {
   // We should only be called on the same thread that started us.
 
-  DCHECK_NE(thread_id(), PlatformThread::CurrentId());
+  DCHECK_NE(GetThreadId(), PlatformThread::CurrentId());
 
   if (stopping_ || !message_loop_)
     return;
@@ -170,9 +176,11 @@ void Thread::StopSoon() {
   task_runner()->PostTask(FROM_HERE, base::Bind(&ThreadQuitHelper));
 }
 
-PlatformThreadId Thread::thread_id() const {
-  AutoLock lock(thread_lock_);
-  return thread_.id();
+PlatformThreadId Thread::GetThreadId() const {
+  // If the thread is created but not started yet, wait for |id_| being ready.
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  id_event_.Wait();
+  return id_;
 }
 
 bool Thread::IsRunning() const {
@@ -205,6 +213,12 @@ bool Thread::GetThreadWasQuitProperly() {
 }
 
 void Thread::ThreadMain() {
+  // First, make GetThreadId() available to avoid deadlocks. It could be called
+  // any place in the following thread initialization code.
+  id_ = PlatformThread::CurrentId();
+  DCHECK_NE(kInvalidThreadId, id_);
+  id_event_.Signal();
+
   // Complete the initialization of our Thread object.
   PlatformThread::SetName(name_.c_str());
   ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
@@ -224,10 +238,6 @@ void Thread::ThreadMain() {
         new win::ScopedCOMInitializer(win::ScopedCOMInitializer::kMTA));
   }
 #endif
-
-  // Make sure the thread_id() returns current thread.
-  // (This internally acquires lock against PlatformThread::Create)
-  DCHECK_EQ(thread_id(), PlatformThread::CurrentId());
 
   // Let the thread do extra initialization.
   Init();

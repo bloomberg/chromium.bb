@@ -63,8 +63,7 @@ void* ThreadFunc(void* params) {
 
   // Stash the id in the handle so the calling thread has a complete
   // handle, and unblock the parent thread.
-  *(thread_params->handle) = PlatformThreadHandle(pthread_self(),
-                                                  PlatformThread::CurrentId());
+  *(thread_params->handle) = PlatformThreadHandle(pthread_self());
   thread_params->handle_set.Signal();
 
   ThreadIdNameManager::GetInstance()->RegisterThread(
@@ -165,7 +164,7 @@ PlatformThreadRef PlatformThread::CurrentRef() {
 
 // static
 PlatformThreadHandle PlatformThread::CurrentHandle() {
-  return PlatformThreadHandle(pthread_self(), CurrentId());
+  return PlatformThreadHandle(pthread_self());
 }
 
 // static

@@ -1549,7 +1549,7 @@ TEST_F(TraceEventTestFixture, ThreadNames) {
   for (int i = 0; i < kNumThreads; i++) {
     task_complete_events[i] = new WaitableEvent(false, false);
     threads[i]->Start();
-    thread_ids[i] = threads[i]->thread_id();
+    thread_ids[i] = threads[i]->GetThreadId();
     threads[i]->task_runner()->PostTask(
         FROM_HERE, base::Bind(&TraceManyInstantEvents, i, kNumEvents,
                               task_complete_events[i]));

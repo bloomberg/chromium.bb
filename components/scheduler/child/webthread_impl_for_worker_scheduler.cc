@@ -70,7 +70,7 @@ void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
 }
 
 blink::PlatformThreadId WebThreadImplForWorkerScheduler::threadId() const {
-  return thread_->thread_id();
+  return thread_->GetThreadId();
 }
 
 blink::WebScheduler* WebThreadImplForWorkerScheduler::scheduler() const {

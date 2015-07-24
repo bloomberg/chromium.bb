@@ -898,7 +898,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
   /////////////////////////////////////////////////////////////////////////////
 
   void AssertOnSenderThread() {
-    DCHECK_EQ(sender_thread_.thread_id(), base::PlatformThread::CurrentId());
+    DCHECK_EQ(sender_thread_.GetThreadId(), base::PlatformThread::CurrentId());
   }
 
   void SendOnSenderThread(uint32 port_number,
@@ -954,7 +954,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
   /////////////////////////////////////////////////////////////////////////////
 
   void AssertOnTaskThread() {
-    DCHECK_EQ(task_thread_.thread_id(), base::PlatformThread::CurrentId());
+    DCHECK_EQ(task_thread_.GetThreadId(), base::PlatformThread::CurrentId());
   }
 
   void UpdateDeviceListOnTaskThread() {

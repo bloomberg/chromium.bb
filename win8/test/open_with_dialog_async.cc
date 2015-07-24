@@ -79,7 +79,7 @@ void OnOpenWithDialogDone(OpenWithContext* context, HRESULT result) {
 // Calls SHOpenWithDialog (blocking), and returns the result back to the client
 // thread.
 void OpenWithDialogTask(OpenWithContext* context) {
-  DCHECK_EQ(context->thread.thread_id(), base::PlatformThread::CurrentId());
+  DCHECK_EQ(context->thread.GetThreadId(), base::PlatformThread::CurrentId());
   OPENASINFO open_as_info = {
     context->file_name.c_str(),
     context->file_type_class.c_str(),
