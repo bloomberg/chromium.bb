@@ -160,10 +160,20 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         }));
 
         // Verify that the renderer visibility was flipped.
-        assertTrue(mBindingManager.isInBackground(
-                tabs[0].getContentViewCore().getCurrentRenderProcessId()));
-        assertTrue(mBindingManager.isInForeground(
-                tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+        assertTrue("Renderer wasn't in background", CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mBindingManager.isInBackground(
+                        tabs[0].getContentViewCore().getCurrentRenderProcessId());
+            }
+        }));
+        assertTrue("Renderer wasn't in foreground", CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mBindingManager.isInForeground(
+                        tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            }
+        }));
     }
 
     /**
