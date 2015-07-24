@@ -30,22 +30,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
   def SetExpectations(self):
     # Fails on all platforms
-    self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/constants.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/fragdata.html',
-        bug=478572)
     self.Fail('deqp/data/gles2/shaders/functions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/linkage.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         bug=478572)
-    self.Fail('conformance/glsl/misc/const-variable-initialization.html',
-        bug=485632)
     self.Fail('conformance/misc/expando-loss.html',
         bug=485634)
 
@@ -140,6 +130,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('deqp/data/gles2/shaders/qualification_order.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/linkage.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
 
     # Win / OpenGL / AMD failures
     self.Fail('conformance/extensions/oes-texture-half-float-linear.html',
@@ -194,6 +186,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/state/gl-get-calls.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/uniforms/gl-uniform-arrays.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/constants.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
 
     # Skip all WebGL CTS on OpenGL+Intel
