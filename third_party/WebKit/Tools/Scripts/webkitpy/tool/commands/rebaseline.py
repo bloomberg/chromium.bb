@@ -664,6 +664,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
     name = "auto-rebaseline"
     help_text = "Rebaselines any NeedsRebaseline lines in TestExpectations that have cycled through all the bots."
     AUTO_REBASELINE_BRANCH_NAME = "auto-rebaseline-temporary-branch"
+    AUTO_REBASELINE_ALT_BRANCH_NAME = "auto-rebaseline-alt-temporary-branch"
 
     # Rietveld uploader stinks. Limit the number of rebaselines in a given patch to keep upload from failing.
     # FIXME: http://crbug.com/263676 Obviously we should fix the uploader here.
@@ -843,6 +844,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         did_finish = False
         old_branch_name_or_ref = ''
+        rebaseline_branch_name = self.AUTO_REBASELINE_BRANCH_NAME
         try:
             # Setup git-svn for dcommit if necessary.
             if tool.executive.run_command(
@@ -852,8 +854,10 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
             # Save the current branch name and checkout a clean branch for the patch.
             old_branch_name_or_ref = _get_branch_name_or_ref(tool)
-            tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
-            tool.scm().create_clean_branch(self.AUTO_REBASELINE_BRANCH_NAME)
+            if old_branch_name_or_ref == self.AUTO_REBASELINE_BRANCH_NAME:
+                rebaseline_branch_name = self.AUTO_REBASELINE_ALT_BRANCH_NAME
+            tool.scm().delete_branch(rebaseline_branch_name)
+            tool.scm().create_clean_branch(rebaseline_branch_name)
 
             # If the tests are passing everywhere, then this list will be empty. We don't need
             # to rebaseline, but we'll still need to update TestExpectations.
@@ -880,15 +884,16 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         finally:
             if did_finish:
                 # Close the issue if dcommit failed.
-                issue = tool.executive.run_command(
-                    ['git', 'config', 'branch.%s.rietveldissue' % self.AUTO_REBASELINE_BRANCH_NAME])
-                if issue.strip():
+                issue_already_closed = tool.executive.run_command(
+                    ['git', 'config', 'branch.%s.rietveldissue' % rebaseline_branch_name],
+                    return_exit_code=True)
+                if not issue_already_closed:
                     self._run_git_cl_command(options, ['set_close'])
 
             tool.scm().ensure_cleanly_tracking_remote_master()
             if old_branch_name_or_ref:
                 tool.scm().checkout_branch(old_branch_name_or_ref)
-            tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
+            tool.scm().delete_branch(rebaseline_branch_name)
 
 
 class RebaselineOMatic(AbstractDeclarativeCommand):

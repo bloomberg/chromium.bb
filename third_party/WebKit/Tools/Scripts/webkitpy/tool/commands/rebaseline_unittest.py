@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
+import webkitpy.tool.commands.rebaseline
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
@@ -1290,6 +1291,131 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.assertEqual(self.tool.executive.calls, [
                 self.SVN_REMOTE_CMD,
                 ['git', 'auto-svn'],
+                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
+                ['git', 'cl', 'upload', '-f'],
+                ['git', 'pull'],
+                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
+            ])
+
+            self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
+Bug(foo) [ Linux Mac XP ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+        finally:
+            builders._exact_matches = old_exact_matches
+
+    def test_execute_use_alternate_rebaseline_branch(self):
+        def blame(path):
+            return """
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+"""
+        self.tool.scm().blame = blame
+
+        test_port = self._setup_test_port()
+
+        old_builder_data = self.command.builder_data
+
+        def builder_data():
+            self.command._builder_data['MOCK Win'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-taco.html": {
+                    "expected": "FAIL",
+                    "actual": "PASS",
+                    "is_unexpected": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
+Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+
+        self.tool.executive = MockLineRemovingExecutive(
+            should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK Win": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
+            }
+
+            self.command.tree_status = lambda: 'open'
+            webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-temporary-branch'
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.assertEqual(self.tool.executive.calls, [
+                self.SVN_REMOTE_CMD,
+                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
+                ['git', 'cl', 'upload', '-f'],
+                ['git', 'pull'],
+                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'config', 'branch.auto-rebaseline-alt-temporary-branch.rietveldissue'],
+                ['git', 'cl', 'set_close'],
+            ])
+
+            self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
+Bug(foo) [ Linux Mac XP ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+        finally:
+            builders._exact_matches = old_exact_matches
+
+    def test_execute_stuck_on_alternate_rebaseline_branch(self):
+        def blame(path):
+            return """
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+"""
+        self.tool.scm().blame = blame
+
+        test_port = self._setup_test_port()
+
+        old_builder_data = self.command.builder_data
+
+        def builder_data():
+            self.command._builder_data['MOCK Win'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-taco.html": {
+                    "expected": "FAIL",
+                    "actual": "PASS",
+                    "is_unexpected": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
+Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+
+        self.tool.executive = MockLineRemovingExecutive(
+            should_return_zero_when_run=set(self.SVN_REMOTE_CMD))
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK Win": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
+            }
+
+            self.command.tree_status = lambda: 'open'
+            webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-alt-temporary-branch'
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.assertEqual(self.tool.executive.calls, [
+                self.SVN_REMOTE_CMD,
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
