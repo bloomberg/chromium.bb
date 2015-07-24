@@ -906,7 +906,7 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
     // start end resident privateresident obj(?) prot refcnt shadowcnt
     // flags copy_on_write needs_copy type filename:
     // 0x8048000 0x804a000 2 0 0xc104ce70 r-x 1 0 0x0 COW NC vnode /bin/cat
-    if (sscanf(stext_, "0x%"SCNx64" 0x%"SCNx64" %*d %*d %*p %3s %*d %*d 0x%*x %*s %*s %*s %n",
+    if (sscanf(stext_, "0x%" SCNx64 " 0x%" SCNx64 " %*d %*d %*p %3s %*d %*d 0x%*x %*s %*s %*s %n",
                start ? start : &tmpstart,
                end ? end : &tmpend,
                flags_,
