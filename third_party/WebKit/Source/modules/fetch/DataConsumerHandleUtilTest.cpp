@@ -29,7 +29,7 @@ TEST(DataConsumerHandleUtilTest, CreateWaitingHandle)
     EXPECT_EQ(kUnexpectedError, reader->endRead(99));
 }
 
-TEST(CompositeDataConsumerHandleTest, WaitingHandleNoNotification)
+TEST(DataConsumerHandleUtilTest, WaitingHandleNoNotification)
 {
     DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
     // Test this function doesn't crash.
@@ -56,7 +56,7 @@ TEST(DataConsumerHandleUtilTest, DoneHandleNotification)
     test.run(createDoneDataConsumerHandle());
 }
 
-TEST(CompositeDataConsumerHandleTest, DoneHandleNoNotification)
+TEST(DataConsumerHandleUtilTest, DoneHandleNoNotification)
 {
     DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
     // Test this function doesn't crash.
@@ -83,7 +83,7 @@ TEST(DataConsumerHandleUtilTest, UnexpectedErrorHandleNotification)
     test.run(createUnexpectedErrorDataConsumerHandle());
 }
 
-TEST(CompositeDataConsumerHandleTest, UnexpectedErrorHandleNoNotification)
+TEST(DataConsumerHandleUtilTest, UnexpectedErrorHandleNoNotification)
 {
     DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
     // Test this function doesn't crash.
