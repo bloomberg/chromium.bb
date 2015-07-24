@@ -126,7 +126,7 @@ public class TestCallbackHelperContainer {
          * @param webContents A WebContents instance to be used.
          * @param code A JavaScript code to be evaluated.
          */
-        public void evaluateJavaScriptForTests(WebContents webContents, String code) {
+        public void evaluateJavaScript(WebContents webContents, String code) {
             JavaScriptCallback callback =
                     new JavaScriptCallback() {
                     @Override
@@ -134,12 +134,12 @@ public class TestCallbackHelperContainer {
                             notifyCalled(jsonResult);
                         }
                     };
-            webContents.evaluateJavaScriptForTests(code, callback);
+            webContents.evaluateJavaScript(code, callback);
             mJsonResult = null;
         }
 
         /**
-         * Returns true if the evaluation started by evaluateJavaScriptForTests() has completed.
+         * Returns true if the evaluation started by evaluateJavaScript() has completed.
          */
         public boolean hasValue() {
             return mJsonResult != null;

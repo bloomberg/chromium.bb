@@ -257,7 +257,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                webContents.evaluateJavaScriptForTests(script, resultCallback);
+                webContents.evaluateJavaScript(script, resultCallback);
             }
         });
         resultCallback.waitForResult();

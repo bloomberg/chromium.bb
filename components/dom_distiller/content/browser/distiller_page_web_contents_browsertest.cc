@@ -504,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
 
   // Execute the JS to run the tests, and wait until it has finished.
   base::RunLoop run_loop;
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16("(function() {return pinchtest.run();})();"),
       base::Bind(&DistillerPageWebContentsTest::OnJsExecutionDone,
                  base::Unretained(this), run_loop.QuitClosure()));

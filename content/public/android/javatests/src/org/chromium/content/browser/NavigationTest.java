@@ -118,8 +118,7 @@ public class NavigationTest extends ContentShellTestBase {
         OnEvaluateJavaScriptResultHelper javascriptHelper = new OnEvaluateJavaScriptResultHelper();
 
         // Grab the first timestamp.
-        javascriptHelper.evaluateJavaScriptForTests(
-                contentViewCore.getWebContents(), "getLoadtime();");
+        javascriptHelper.evaluateJavaScript(contentViewCore.getWebContents(), "getLoadtime();");
         javascriptHelper.waitUntilHasValue();
         String firstTimestamp = javascriptHelper.getJsonResultAndClear();
         assertNotNull("Timestamp was null.", firstTimestamp);
@@ -127,8 +126,7 @@ public class NavigationTest extends ContentShellTestBase {
         // Grab the timestamp after a reload and make sure they don't match.
         reload(contentViewCore.getWebContents().getNavigationController(),
                 testCallbackHelperContainer);
-        javascriptHelper.evaluateJavaScriptForTests(
-                contentViewCore.getWebContents(), "getLoadtime();");
+        javascriptHelper.evaluateJavaScript(contentViewCore.getWebContents(), "getLoadtime();");
         javascriptHelper.waitUntilHasValue();
         String secondTimestamp = javascriptHelper.getJsonResultAndClear();
         assertNotNull("Timestamp was null.", secondTimestamp);

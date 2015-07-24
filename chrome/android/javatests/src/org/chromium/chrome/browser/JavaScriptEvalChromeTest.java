@@ -55,8 +55,8 @@ public class JavaScriptEvalChromeTest extends ChromeTabbedActivityTestBase {
         for (int i = 1; i <= 30; ++i) {
             for (int j = 0; j < 5; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
-                tab1.getWebContents().evaluateJavaScriptForTests("foobar();", null);
-                tab2.getWebContents().evaluateJavaScriptForTests("foobar();", null);
+                tab1.getWebContents().evaluateJavaScript("foobar();", null);
+                tab2.getWebContents().evaluateJavaScript("foobar();", null);
             }
             assertEquals("Incorrect JavaScript evaluation result on tab1",
                     i * 2,
@@ -65,8 +65,8 @@ public class JavaScriptEvalChromeTest extends ChromeTabbedActivityTestBase {
                                     tab1.getWebContents(), "add2()")));
             for (int j = 0; j < 5; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
-                tab1.getWebContents().evaluateJavaScriptForTests("foobar();", null);
-                tab2.getWebContents().evaluateJavaScriptForTests("foobar();", null);
+                tab1.getWebContents().evaluateJavaScript("foobar();", null);
+                tab2.getWebContents().evaluateJavaScript("foobar();", null);
             }
             assertEquals("Incorrect JavaScript evaluation result on tab2",
                     i * 2 + 1,

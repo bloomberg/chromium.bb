@@ -58,8 +58,7 @@ class SystemStorageEjectApiTest : public extensions::ShellApiTest {
                                const std::string& js_command,
                                const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
-    host->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16(js_command));
+    host->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 

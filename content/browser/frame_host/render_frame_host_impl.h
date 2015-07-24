@@ -139,10 +139,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          const JavaScriptResultCallback& callback) override;
-  void ExecuteJavaScriptForTests(const base::string16& javascript) override;
-  void ExecuteJavaScriptForTests(
-      const base::string16& javascript,
-      const JavaScriptResultCallback& callback) override;
   void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript) override;
   void ExecuteJavaScriptInIsolatedWorld(
@@ -587,9 +583,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdatePermissionsForNavigation(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params);
-
-  // Returns true if the ExecuteJavaScript() API can be used on this host.
-  bool CanExecuteJavaScript();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

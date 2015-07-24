@@ -257,8 +257,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   tab1->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
       base::ASCIIToUTF16("window.open('title3.html', '_blank');"));
   // ... then immediately hang the renderer so that title3.html can't load.
-  tab1->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("while(1);"));
+  tab1->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("while(1);"));
 
   // Blocks until a new WebContents appears.
   WebContents* tab2 = web_contents_added_observer.GetWebContents();

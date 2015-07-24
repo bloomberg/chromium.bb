@@ -19,7 +19,6 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "content/public/browser/android/synchronous_compositor.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -118,8 +117,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
   } else {
     gfx::GLSurface::InitializeOneOff();
   }
-
-  content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
   // This is needed for WebView Classic backwards compatibility
   // See crbug.com/298495

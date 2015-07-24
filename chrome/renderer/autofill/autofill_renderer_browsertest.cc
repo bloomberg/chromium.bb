@@ -122,7 +122,7 @@ TEST_F(AutofillRendererTest, SendForms) {
 
   // Dynamically create a new form. A new message should be sent for it, but
   // not for the previous form.
-  ExecuteJavaScriptForTests(
+  ExecuteJavaScript(
       "var newForm=document.createElement('form');"
       "newForm.id='new_testform';"
       "newForm.action='http://google.com';"
@@ -220,7 +220,7 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
 
   render_thread_->sink().ClearMessages();
 
-  ExecuteJavaScriptForTests("AddFields()");
+  ExecuteJavaScript("AddFields()");
   msg_loop_.RunUntilIdle();
 
   message = render_thread_->sink().GetFirstMessageMatching(

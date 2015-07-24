@@ -50,7 +50,7 @@ public class JavaScriptUtils {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                helper.evaluateJavaScriptForTests(webContents, code);
+                helper.evaluateJavaScript(webContents, code);
             }
         });
         helper.waitUntilHasValue(timeout, timeoutUnits);
@@ -65,7 +65,7 @@ public class JavaScriptUtils {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                webContents.evaluateJavaScriptForTests(code, null);
+                webContents.evaluateJavaScript(code, null);
             }
         });
     }

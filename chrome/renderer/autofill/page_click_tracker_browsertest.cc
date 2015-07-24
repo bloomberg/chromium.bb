@@ -126,7 +126,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputRightClicked) {
 
 TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusedAndClicked) {
   // Focus the text field without a click.
-  ExecuteJavaScriptForTests("document.getElementById('text_1').focus();");
+  ExecuteJavaScript("document.getElementById('text_1').focus();");
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
   test_listener_.ClearResults();
 
@@ -161,7 +161,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaClicked) {
 
 TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaFocusedAndClicked) {
   // Focus the textarea without a click.
-  ExecuteJavaScriptForTests("document.getElementById('textarea_1').focus();");
+  ExecuteJavaScript("document.getElementById('textarea_1').focus();");
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
   test_listener_.ClearResults();
 

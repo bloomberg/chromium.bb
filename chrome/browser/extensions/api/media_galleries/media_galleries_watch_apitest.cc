@@ -108,7 +108,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
   void ExecuteCmdAndCheckReply(const std::string& js_command,
                                const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
-    background_host_->GetMainFrame()->ExecuteJavaScriptForTests(
+    background_host_->GetMainFrame()->ExecuteJavaScript(
         base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }

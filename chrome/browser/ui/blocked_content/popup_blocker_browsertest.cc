@@ -491,13 +491,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
 
   // Navigate it elsewhere.
   content::TestNavigationObserver nav_observer(popup);
-  popup->GetMainFrame()->ExecuteJavaScriptForTests(
+  popup->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16("location.href = '/empty.html'"));
   nav_observer.Wait();
 
   // Have it close itself.
   CloseObserver close_observer(popup);
-  popup->GetMainFrame()->ExecuteJavaScriptForTests(
+  popup->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16("window.close()"));
   close_observer.Wait();
 }
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   ASSERT_NE(popup_browser, browser());
 
   // Showing an alert will raise the tab over the popup.
-  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  tab->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16("alert()"));
   app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
 
   // Verify that after the dialog was closed, the popup is in front again.

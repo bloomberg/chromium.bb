@@ -113,7 +113,7 @@ public class GeolocationTest extends AwTestBase {
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 RAW_HTML, "text/html", false);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
 
         poll(new Callable<Boolean>() {
             @Override
@@ -122,7 +122,7 @@ public class GeolocationTest extends AwTestBase {
             }
         });
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
         poll(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -140,7 +140,7 @@ public class GeolocationTest extends AwTestBase {
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 RAW_HTML, "text/html", false);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
+        mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
 
         poll(new Callable<Boolean>() {
             @Override
@@ -157,7 +157,7 @@ public class GeolocationTest extends AwTestBase {
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 RAW_HTML, "text/html", false);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
+        mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
 
         poll(new Callable<Boolean>() {
             @Override
@@ -215,7 +215,7 @@ public class GeolocationTest extends AwTestBase {
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 RAW_HTML, "text/html", false);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
+        mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
 
         assertEquals(0, getPositionCountFromJS());
 

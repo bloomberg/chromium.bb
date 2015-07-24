@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoSearch) {
   // Can't use content::ExecuteScript because it waits for scripts to send
   // notification that they've run, and scripts that trigger a navigation may
   // not send that notification.
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("document.getElementById('search-button').click();"));
   nav_observer.Wait();
   EXPECT_EQ(base::ASCIIToUTF16("Title Of More Awesomeness"),
@@ -666,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoReload) {
   // Can't use content::ExecuteScript because it waits for scripts to send
   // notification that they've run, and scripts that trigger a navigation may
   // not send that notification.
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer.Wait();
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -699,12 +699,12 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoClickLink) {
       "document.querySelector('a[href=\"http://mock.http/title2.html\"]')";
   // The tracking request is triggered by onmousedown, so it catches middle
   // mouse button clicks, as well as left clicks.
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16(link_selector + ".onmousedown();"));
   // Can't use content::ExecuteScript because it waits for scripts to send
   // notification that they've run, and scripts that trigger a navigation may
   // not send that notification.
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16(link_selector + ".click();"));
   EXPECT_EQ(base::ASCIIToUTF16("Title Of Awesomeness"),
             title_watcher.WaitAndGetTitle());
@@ -790,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     content::WindowedNotificationObserver load_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
-    wc->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(script));
+    wc->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
     load_observer.Wait();
 
     // Ensure we saw the expected failure.
@@ -810,7 +810,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     content::WindowedNotificationObserver load_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
-    wc->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(script));
+    wc->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
     load_observer.Wait();
   }
 
@@ -821,7 +821,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     content::WindowedNotificationObserver load_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
-    wc->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(script));
+    wc->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
     load_observer.Wait();
 
     EXPECT_EQ(fail_url, fail_observer.fail_url());
@@ -1000,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(web_contents, 1);
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer.Wait();
   EXPECT_FALSE(IsDisplayingText(browser(), "error.page.auto.reload"));

@@ -89,7 +89,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
       shell(), AccessibilityModeComplete, ui::AX_EVENT_NONE));
 
 
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("go()"));
 
   // Wait for at least one accessibility event generated in response to

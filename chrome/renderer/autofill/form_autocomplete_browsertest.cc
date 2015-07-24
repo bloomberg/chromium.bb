@@ -74,7 +74,7 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
            "<input name='lname' value='Deckard'/></form></html>");
 
   // Submit the form.
-  ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
+  ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
   VerifyReceivedRendererMessages(render_thread_.get(),
@@ -91,7 +91,7 @@ TEST_F(FormAutocompleteTest, SubmitEventPrevented) {
       "</html>");
 
   // Submit the form.
-  ExecuteJavaScriptForTests(
+  ExecuteJavaScript(
       "var form = document.forms[0];"
       "form.onsubmit = function(event) { event.preventDefault(); };"
       "document.querySelector('input[type=submit]').click();");
@@ -111,7 +111,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
            "</form></html>");
 
   // Submit the form.
-  ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
+  ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
   VerifyReceivedRendererMessages(render_thread_.get(),
@@ -127,7 +127,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
            "</form></html>");
 
   // Submit the form.
-  ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
+  ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
   VerifyReceivedRendererMessages(render_thread_.get(),
@@ -148,14 +148,13 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   EXPECT_TRUE(form.autoComplete());
 
   // Dynamically mark the form as autocomplete off.
-  ExecuteJavaScriptForTests(
-      "document.getElementById('myForm')."
-      "setAttribute('autocomplete', 'off');");
+  ExecuteJavaScript("document.getElementById('myForm')."
+                    "setAttribute('autocomplete', 'off');");
   ProcessPendingMessages();
   EXPECT_FALSE(form.autoComplete());
 
   // Submit the form.
-  ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
+  ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
   VerifyReceivedRendererMessages(render_thread_.get(),

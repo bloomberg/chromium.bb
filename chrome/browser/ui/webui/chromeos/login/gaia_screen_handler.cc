@@ -765,20 +765,20 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
     code += "document.getElementById('Passwd').value = '" + test_pass_ + "';";
     code += "document.getElementById('signIn').click();";
 
-    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
   } else {
     std::string code;
 
     code =
         "document.getElementById('identifier').value = '" + test_user_ + "';";
     code += "document.getElementById('nextButton').click();";
-    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
 
     if (!test_pass_.empty()) {
       code =
           "document.getElementById('password').value = '" + test_pass_ + "';";
       code += "document.getElementById('nextButton').click();";
-      frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+      frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
     }
   }
 

@@ -103,7 +103,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   ProcessPendingMessages();
-  ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowDownScrollDown, base::UTF16ToASCII(output));
 
@@ -112,21 +112,21 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   ProcessPendingMessages();
-  ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowUpScrollUp, base::UTF16ToASCII(output));
 
   // Now let javascript eat the key events -- no scrolling should happen.
   // Set a scroll position slightly down the page to ensure that it does not
   // move.
-  ExecuteJavaScriptForTests("allowKeyEvents = false; window.scrollTo(0, 100)");
+  ExecuteJavaScript("allowKeyEvents = false; window.scrollTo(0, 100)");
 
   const char* kArrowDownNoScroll = "40,false,false,true,false\n100\np1";
   view->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   ProcessPendingMessages();
-  ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowDownNoScroll, base::UTF16ToASCII(output));
 
@@ -135,7 +135,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   ProcessPendingMessages();
-  ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowUpNoScroll, base::UTF16ToASCII(output));
 }

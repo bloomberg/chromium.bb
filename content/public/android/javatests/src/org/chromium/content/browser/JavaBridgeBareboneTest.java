@@ -40,7 +40,7 @@ public class JavaBridgeBareboneTest extends ContentShellTestBase {
 
     private String evaluateJsSync(String jsCode) throws Exception {
         OnEvaluateJavaScriptResultHelper javascriptHelper = new OnEvaluateJavaScriptResultHelper();
-        javascriptHelper.evaluateJavaScriptForTests(getWebContents(), jsCode);
+        javascriptHelper.evaluateJavaScript(getWebContents(), jsCode);
         javascriptHelper.waitUntilHasValue();
         return javascriptHelper.getJsonResultAndClear();
     }

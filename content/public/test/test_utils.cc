@@ -175,7 +175,7 @@ scoped_ptr<base::Value> ExecuteScriptAndGetValue(
     RenderFrameHost* render_frame_host, const std::string& script) {
   ScriptCallback observer;
 
-  render_frame_host->ExecuteJavaScriptForTests(
+  render_frame_host->ExecuteJavaScript(
       base::UTF8ToUTF16(script),
       base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
   base::MessageLoop* loop = base::MessageLoop::current();

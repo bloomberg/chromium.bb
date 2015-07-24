@@ -108,7 +108,7 @@ IAccessible* AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(const std::wstring& script) {
-  shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(script);
+  shell()->web_contents()->GetMainFrame()->ExecuteJavaScript(script);
 }
 
 // Loads a page with  an input text field and places sample text in it. Also,

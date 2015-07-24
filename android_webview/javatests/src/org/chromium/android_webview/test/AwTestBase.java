@@ -588,7 +588,7 @@ public class AwTestBase
         TestAwContentsClient.OnCreateWindowHelper onCreateWindowHelper =
                 parentAwContentsClient.getOnCreateWindowHelper();
         int currentCallCount = onCreateWindowHelper.getCallCount();
-        parentAwContents.evaluateJavaScriptForTests(triggerScript, null);
+        parentAwContents.evaluateJavaScript(triggerScript, null);
         onCreateWindowHelper.waitForCallback(
                 currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }

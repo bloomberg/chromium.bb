@@ -293,14 +293,9 @@ import java.util.UUID;
     }
 
     @Override
+    @VisibleForTesting
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
-    }
-
-    @Override
-    @VisibleForTesting
-    public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {
-        nativeEvaluateJavaScriptForTests(mNativeWebContentsAndroid, script, callback);
     }
 
     @Override
@@ -425,8 +420,6 @@ import java.util.UUID;
     private native boolean nativeIsIncognito(long nativeWebContentsAndroid);
     private native void nativeResumeLoadingCreatedWebContents(long nativeWebContentsAndroid);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
-            String script, JavaScriptCallback callback);
-    private native void nativeEvaluateJavaScriptForTests(long nativeWebContentsAndroid,
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);

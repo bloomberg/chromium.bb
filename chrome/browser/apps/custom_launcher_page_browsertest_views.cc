@@ -113,8 +113,8 @@ class CustomLauncherPageBrowserTest
         enabled ? "launcherPageEnabled" : "launcherPageDisabled";
 
     ExtensionTestMessageListener listener(test_message, false);
-    custom_page_frame->ExecuteJavaScriptForTests(
-        enabled ? kLauncherPageEnableScript : kLauncherPageDisableScript);
+    custom_page_frame->ExecuteJavaScript(enabled ? kLauncherPageEnableScript
+                                                 : kLauncherPageDisableScript);
     listener.WaitUntilSatisfied();
   }
 
@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
   // if the app launcher is already showing.
   {
     ExtensionTestMessageListener listener("onPageProgressAt1", false);
-    custom_page_frame->ExecuteJavaScriptForTests(kLauncherPageShowScript);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageShowScript);
 
     listener.WaitUntilSatisfied();
     EXPECT_TRUE(contents_view->IsStateActive(
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
     app_list_view->GetWidget()->Close();
 
     ExtensionTestMessageListener listener("onPageProgressAt1", false);
-    custom_page_frame->ExecuteJavaScriptForTests(kLauncherPageShowScript);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageShowScript);
 
     listener.WaitUntilSatisfied();
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
   // Ensure launcherPage.hide() hides the launcher page when it's showing.
   {
     ExtensionTestMessageListener listener("onPageProgressAt0", false);
-    custom_page_frame->ExecuteJavaScriptForTests(kLauncherPageHideScript);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageHideScript);
 
     listener.WaitUntilSatisfied();
 
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
     contents_view->SetActiveState(app_list::AppListModel::STATE_APPS, false);
 
     ExtensionTestMessageListener listener("launcherPageHidden", false);
-    custom_page_frame->ExecuteJavaScriptForTests(kLauncherPageHideScript);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageHideScript);
     listener.WaitUntilSatisfied();
 
     EXPECT_TRUE(

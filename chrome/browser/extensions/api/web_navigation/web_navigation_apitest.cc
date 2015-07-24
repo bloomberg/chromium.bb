@@ -213,8 +213,7 @@ class DelayLoadStartAndExecuteJavascript
       rvh_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
           base::UTF8ToUTF16(script_));
     } else {
-      rvh_->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::UTF8ToUTF16(script_));
+      rvh_->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(script_));
     }
     script_was_executed_ = true;
   }
@@ -675,8 +674,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessAbort) {
   // Ensure the cross-site navigation has started, then execute JavaScript
   // to cause the renderer-initiated, non-user navigation.
   cross_site_load.Wait();
-  tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("navigate2()"));
+  tab->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16("navigate2()"));
 
   // Wait for the same-site navigation to start and resume the cross-site
   // one, allowing it to commit.

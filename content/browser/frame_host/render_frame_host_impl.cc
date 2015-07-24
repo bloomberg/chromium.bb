@@ -92,10 +92,6 @@ int g_next_accessibility_reset_token = 1;
 // The next value to use for the javascript callback id.
 int g_next_javascript_callback_id = 1;
 
-// Whether to allow injecting javascript into any kind of frame (for Android
-// WebView).
-bool g_allow_injecting_javascript = false;
-
 // The (process id, routing id) pair that identifies one RenderFrame.
 typedef std::pair<int32, int32> RenderFrameHostID;
 typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
@@ -128,11 +124,6 @@ bool RenderFrameHostImpl::IsRFHStateActive(RenderFrameHostImplState rfh_state) {
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
   return RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-}
-
-// static
-void RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView() {
-  g_allow_injecting_javascript = true;
 }
 
 // static
@@ -281,7 +272,6 @@ void RenderFrameHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
 
 void RenderFrameHostImpl::ExecuteJavaScript(
     const base::string16& javascript) {
-  CHECK(CanExecuteJavaScript());
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
                                              javascript,
                                              0, false));
@@ -290,30 +280,12 @@ void RenderFrameHostImpl::ExecuteJavaScript(
 void RenderFrameHostImpl::ExecuteJavaScript(
      const base::string16& javascript,
      const JavaScriptResultCallback& callback) {
-  CHECK(CanExecuteJavaScript());
   int key = g_next_javascript_callback_id++;
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
                                              javascript,
                                              key, true));
   javascript_callbacks_.insert(std::make_pair(key, callback));
 }
-
-void RenderFrameHostImpl::ExecuteJavaScriptForTests(
-    const base::string16& javascript) {
-  Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_,
-                                                     javascript,
-                                                     0, false, false));
-}
-
-void RenderFrameHostImpl::ExecuteJavaScriptForTests(
-     const base::string16& javascript,
-     const JavaScriptResultCallback& callback) {
-  int key = g_next_javascript_callback_id++;
-  Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_, javascript,
-                                                     key, true, false));
-  javascript_callbacks_.insert(std::make_pair(key, callback));
-}
-
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
     const base::string16& javascript) {
@@ -2158,18 +2130,6 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   if (request_params.page_state.IsValid()) {
     render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
   }
-}
-
-bool RenderFrameHostImpl::CanExecuteJavaScript() {
-  return g_allow_injecting_javascript ||
-         frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
-         ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-             GetProcess()->GetID()) ||
-         // It's possible to load about:blank in a Web UI renderer.
-         // See http://crbug.com/42547
-         (frame_tree_node_->current_url().spec() == url::kAboutBlankURL) ||
-         // InterstitialPageImpl should be the only case matching this.
-         (delegate_->GetAsWebContents() == nullptr);
 }
 
 }  // namespace content

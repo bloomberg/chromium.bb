@@ -805,7 +805,7 @@ TEST_F(PasswordAutofillAgentTest, NoDOMActivationTest) {
   // Trigger the initial autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
 
-  ExecuteJavaScriptForTests(kJavaScriptClick);
+  ExecuteJavaScript(kJavaScriptClick);
   CheckTextFieldsDOMState(kAliceUsername, true, "", true);
 }
 
@@ -1680,7 +1680,7 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
       "new_input.setAttribute('type', 'text');"
       "new_input.setAttribute('id', 'other_field');"
       "form.appendChild(new_input);";
-  ExecuteJavaScriptForTests(add_field_to_form.c_str());
+  ExecuteJavaScript(add_field_to_form.c_str());
 
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->WillSendSubmitEvent(username_element_.form());

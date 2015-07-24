@@ -264,8 +264,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         clickCancel(jsDialog);
         scriptEvent.waitUntilHasValue();
 
-        scriptEvent.evaluateJavaScriptForTests(
-                getActivity().getCurrentContentViewCore().getWebContents(),
+        scriptEvent.evaluateJavaScript(getActivity().getCurrentContentViewCore().getWebContents(),
                 "alert('Android');");
         assertTrue("No further dialog boxes should be shown.", scriptEvent.waitUntilHasValue());
     }
@@ -311,8 +310,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(
             final OnEvaluateJavaScriptResultHelper helper, String script)
             throws InterruptedException {
-        helper.evaluateJavaScriptForTests(
-                getActivity().getCurrentContentViewCore().getWebContents(),
+        helper.evaluateJavaScript(getActivity().getCurrentContentViewCore().getWebContents(),
                 script);
         boolean criteriaSatisfied = CriteriaHelper.pollForCriteria(
                 new JavascriptAppModalDialogShownCriteria(true));

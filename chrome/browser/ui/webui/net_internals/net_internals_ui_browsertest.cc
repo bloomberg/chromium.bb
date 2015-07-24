@@ -248,7 +248,7 @@ void NetInternalsTest::MessageHandler::NavigateToPrerender(
   ASSERT_TRUE(list_value->GetString(0, &url));
   content::RenderFrameHost* frame =
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetMainFrame();
-  frame->ExecuteJavaScriptForTests(
+  frame->ExecuteJavaScript(
       base::ASCIIToUTF16(base::StringPrintf("Click('%s')", url.c_str())));
 }
 
