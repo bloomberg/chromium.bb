@@ -79,7 +79,14 @@ def ArchiveCoverage(context):
 
 
 def CommandGypBuild(context):
-  use_goma = RunningOnBuildbot() and not context['no_goma']
+  # Do not use goma when inside a toolchain build, because the
+  # freshly-built NaCl compilers will never be available via goma.
+  # This sacrifices the benefits of goma for building the trusted
+  # code too, but it's not clear how to teach Gyp to use goma for
+  # some compilers and not others.
+  use_goma = (RunningOnBuildbot() and
+              not context['no_goma'] and
+              not context['inside_toolchain'])
 
   if use_goma:
     # Since this is for buildbot, it should not be good to use the result
