@@ -135,4 +135,52 @@ TEST_F(SchedulerHelperTest, DefaultTaskRunnerRegistration) {
   EXPECT_EQ(nullptr, main_task_runner_->default_task_runner());
 }
 
+namespace {
+class MockTaskObserver : public base::MessageLoop::TaskObserver {
+ public:
+  MOCK_METHOD1(DidProcessTask, void(const base::PendingTask& task));
+  MOCK_METHOD1(WillProcessTask, void(const base::PendingTask& task));
+};
+
+void NopTask() {}
+} // namespace
+
+TEST_F(SchedulerHelperTest, ObserversNotifiedFor_DefaultTaskRunner) {
+  MockTaskObserver observer;
+  scheduler_helper_->AddTaskObserver(&observer);
+
+  scheduler_helper_->DefaultTaskRunner()->PostTask(FROM_HERE,
+                                                   base::Bind(&NopTask));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
+  RunUntilIdle();
+}
+
+TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskRunner) {
+  MockTaskObserver observer;
+  scheduler_helper_->AddTaskObserver(&observer);
+
+  scheduler_helper_->ControlTaskRunner()->PostTask(FROM_HERE,
+                                                   base::Bind(&NopTask));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
+  RunUntilIdle();
+}
+
+TEST_F(SchedulerHelperTest,
+       ObserversNotNotifiedFor_ControlAfterWakeUpTaskRunner) {
+  MockTaskObserver observer;
+  scheduler_helper_->AddTaskObserver(&observer);
+
+  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
+  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PumpQueue();
+  RunUntilIdle();
+}
+
 }  // namespace scheduler

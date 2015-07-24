@@ -194,8 +194,10 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
   } else {
     TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
                          pending_task);
-    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                      WillProcessTask(pending_task));
+    if (queue->GetShouldNotifyObservers()) {
+      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                        WillProcessTask(pending_task));
+    }
     task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 
     // Detect if the TaskQueueManager just got deleted.  If this happens we must
@@ -203,8 +205,10 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     if (protect->HasOneRef())
       return true;
 
-    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                      DidProcessTask(pending_task));
+    if (queue->GetShouldNotifyObservers()) {
+      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                        DidProcessTask(pending_task));
+    }
 
     pending_task.task.Reset();
     *out_previous_task = pending_task;

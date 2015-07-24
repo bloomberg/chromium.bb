@@ -25,12 +25,14 @@ SchedulerHelper::SchedulerHelper(
       control_task_runner_(NewTaskQueue(
           TaskQueue::Spec("control_tq")
               .SetWakeupPolicy(
-                  TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES))),
+                  TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
+              .SetShouldNotifyObservers(false))),
       control_after_wakeup_task_runner_(NewTaskQueue(
           TaskQueue::Spec("control_after_wakeup_tq")
               .SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP)
               .SetWakeupPolicy(
-                  TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES))),
+                  TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
+              .SetShouldNotifyObservers(false))),
       default_task_runner_(NewTaskQueue(TaskQueue::Spec("default_tq")
                                             .SetShouldMonitorQuiescence(true))),
       time_source_(new base::DefaultTickClock),

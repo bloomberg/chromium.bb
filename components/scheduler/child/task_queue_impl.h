@@ -76,6 +76,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool GetWorkQueueFrontTaskAge(int* age) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
+  bool GetShouldNotifyObservers() const { return should_notify_observers_; }
 
   // Test support functions.  These should not be used in production code.
   void PushTaskOntoWorkQueueForTest(const base::PendingTask& task);
@@ -164,6 +165,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   WakeupPolicy wakeup_policy_;
   size_t set_index_;
   bool should_monitor_quiescence_;
+  bool should_notify_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueImpl);
 };

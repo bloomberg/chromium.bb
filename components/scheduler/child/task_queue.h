@@ -96,7 +96,8 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
         : name(name),
           should_monitor_quiescence(false),
           pump_policy(TaskQueue::PumpPolicy::AUTO),
-          wakeup_policy(TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES) {}
+          wakeup_policy(TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES),
+          should_notify_observers(true) {}
 
     Spec SetShouldMonitorQuiescence(bool should_monitor) {
       should_monitor_quiescence = should_monitor;
@@ -113,10 +114,16 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       return *this;
     }
 
+    Spec SetShouldNotifyObservers(bool run_observers) {
+      should_notify_observers = run_observers;
+      return *this;
+    }
+
     const char* name;
     bool should_monitor_quiescence;
     TaskQueue::PumpPolicy pump_policy;
     TaskQueue::WakeupPolicy wakeup_policy;
+    bool should_notify_observers;
   };
 
   // Returns true if the queue priority is not

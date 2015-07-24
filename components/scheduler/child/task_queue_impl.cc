@@ -25,7 +25,8 @@ TaskQueueImpl::TaskQueueImpl(
           disabled_by_default_verbose_tracing_category),
       wakeup_policy_(spec.wakeup_policy),
       set_index_(0),
-      should_monitor_quiescence_(spec.should_monitor_quiescence) {}
+      should_monitor_quiescence_(spec.should_monitor_quiescence),
+      should_notify_observers_(spec.should_notify_observers) {}
 
 TaskQueueImpl::~TaskQueueImpl() {}
 
