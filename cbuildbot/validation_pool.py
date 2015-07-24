@@ -1150,9 +1150,8 @@ class ValidationPool(object):
   @property
   def build_log(self):
     if self._run:
-      waterfall = self._run.attrs.metadata.GetValue('buildbot-master-name')
       return tree_status.ConstructDashboardURL(
-          waterfall, self._builder_name, self._build_number)
+          self._run.GetBuildbotUrl(), self._builder_name, self._build_number)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):

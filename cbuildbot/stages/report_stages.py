@@ -169,8 +169,11 @@ class BuildStartStage(generic_stages.BuilderStage):
         master_build_id = d['master_build_id']
         if master_build_id is not None:
           master_build_status = db.GetBuildStatus(master_build_id)
+          master_waterfall_url = constants.WATERFALL_TO_DASHBOARD[
+              master_build_status['waterfall']]
+
           master_url = tree_status.ConstructDashboardURL(
-              master_build_status['waterfall'],
+              master_waterfall_url,
               master_build_status['builder_name'],
               master_build_status['build_number'])
           logging.PrintBuildbotLink('Link to master build', master_url)
