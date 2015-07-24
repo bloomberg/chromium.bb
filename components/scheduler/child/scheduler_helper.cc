@@ -43,8 +43,7 @@ SchedulerHelper::SchedulerHelper(
   control_after_wakeup_task_runner_->SetQueuePriority(
       TaskQueue::CONTROL_PRIORITY);
 
-  // TODO(skyostil): Increase this to 4 (crbug.com/444764).
-  task_queue_manager_->SetWorkBatchSize(1);
+  task_queue_manager_->SetWorkBatchSize(4);
 
   main_task_runner_->SetDefaultTaskRunner(default_task_runner_.get());
 }
