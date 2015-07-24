@@ -66,7 +66,7 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
         clearCaretRect();
     } else {
         document->updateLayoutTreeIfNeeded();
-        updateCaretRect(document, m_position);
+        updateCaretRect(m_position);
     }
 }
 

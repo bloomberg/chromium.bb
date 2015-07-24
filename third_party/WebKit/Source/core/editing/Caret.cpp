@@ -87,7 +87,7 @@ static void mapCaretRectToCaretPainter(LayoutObject* caretLayoutObject, LayoutBl
         caretRect = LayoutRect();
 }
 
-bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& caretPosition)
+bool CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition)
 {
     m_caretLocalRect = LayoutRect();
 
@@ -109,9 +109,9 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
     return true;
 }
 
-bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caretPosition)
+bool CaretBase::updateCaretRect(const VisiblePosition& caretPosition)
 {
-    return updateCaretRect(document, PositionWithAffinity(caretPosition.deepEquivalent(), caretPosition.affinity()));
+    return updateCaretRect(PositionWithAffinity(caretPosition.deepEquivalent(), caretPosition.affinity()));
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) const

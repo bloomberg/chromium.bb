@@ -1272,9 +1272,9 @@ IntRect FrameSelection::absoluteCaretBounds()
         clearCaretRect();
     } else {
         if (isTextFormControl(m_selection))
-            updateCaretRect(m_frame->document(), PositionWithAffinity(m_selection.start().isCandidate() ? m_selection.start() : Position(), m_selection.affinity()));
+            updateCaretRect(PositionWithAffinity(m_selection.start().isCandidate() ? m_selection.start() : Position(), m_selection.affinity()));
         else
-            updateCaretRect(m_frame->document(), VisiblePosition(m_selection.start(), m_selection.affinity()));
+            updateCaretRect(VisiblePosition(m_selection.start(), m_selection.affinity()));
     }
     return absoluteBoundsForLocalRect(m_selection.start().anchorNode(), localCaretRectWithoutUpdate());
 }
@@ -1318,7 +1318,7 @@ void FrameSelection::invalidateCaretRect()
 void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect)
 {
     if (m_selection.isCaret() && m_shouldPaintCaret) {
-        updateCaretRect(m_frame->document(), PositionWithAffinity(m_selection.start(), m_selection.affinity()));
+        updateCaretRect(PositionWithAffinity(m_selection.start(), m_selection.affinity()));
         CaretBase::paintCaret(m_selection.start().anchorNode(), context, paintOffset, clipRect);
     }
 }
