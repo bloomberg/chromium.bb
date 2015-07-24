@@ -353,12 +353,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
     if (args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
       NaClDebugSetBoundSocket(args->debug_stub_server_bound_socket_fd);
     }
-#elif NACL_WINDOWS
-    if (!NaClDebugBindSocket()) {
-      goto done;
-    }
-#else
-# error Unknown host OS
 #endif
     if (!NaClDebugInit(nap)) {
       goto done;

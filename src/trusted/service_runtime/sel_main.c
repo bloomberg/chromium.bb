@@ -760,8 +760,11 @@ int NaClSelLdrMain(int argc, char **argv) {
    * Tell the debug stub to bind a TCP port before enabling the outer
    * sandbox.  This is only needed on Mac OS X since that is the only
    * platform where we have an outer sandbox in standalone sel_ldr.
+   * In principle this call should work on all platforms, but Windows
+   * XP seems to have some problems when we do bind()/listen() on a
+   * separate thread from accept().
    */
-  if (options->enable_debug_stub) {
+  if (options->enable_debug_stub && NACL_OSX) {
     if (!NaClDebugBindSocket()) {
       exit(1);
     }

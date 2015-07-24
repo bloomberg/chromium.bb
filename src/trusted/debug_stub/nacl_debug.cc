@@ -115,8 +115,6 @@ static const struct NaClDebugCallbacks debug_callbacks = {
  * declares the function so it does not need to be declared in our header.
  */
 int NaClDebugInit(struct NaClApp *nap) {
-  CHECK(g_socket_binding != NULL);
-
   if (!NaClFaultedThreadQueueEnable(nap)) {
     NaClLog(LOG_ERROR, "NaClDebugInit: Failed to initialize fault handling\n");
     return 0;
@@ -128,6 +126,9 @@ int NaClDebugInit(struct NaClApp *nap) {
   CHECK(g_target != NULL);
   g_target->Init();
 
+  if (!NaClDebugBindSocket()) {
+    return 0;
+  }
 #if NACL_WINDOWS
   nap->debug_stub_port = g_socket_binding->GetBoundPort();
 #endif
