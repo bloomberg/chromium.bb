@@ -47,6 +47,16 @@ const char kTargetUrlField[] = "url";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 
+std::string GetHeaderValue(const mojo::HttpRequest& request,
+                           const std::string& name) {
+  for (size_t i = 0; i < request.headers.size(); ++i) {
+    if (name == request.headers[i]->name)
+      return request.headers[i]->value;
+  }
+
+  return std::string();
+}
+
 bool ParseJsonPath(const std::string& path,
                    std::string* command,
                    std::string* target_id) {
@@ -459,6 +469,12 @@ mojo::HttpResponsePtr DevToolsHttpServer::ProcessJsonRequest(
       return nullptr;
     }
 
+    std::string host = GetHeaderValue(*request, "host");
+    if (host.empty()) {
+      host = base::StringPrintf("127.0.0.1:%u",
+                                static_cast<unsigned>(remote_debugging_port_));
+    }
+
     base::ListValue list_value;
     for (; !iter.IsAtEnd(); iter.Advance()) {
       scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
@@ -472,9 +488,8 @@ mojo::HttpResponsePtr DevToolsHttpServer::ProcessJsonRequest(
       dict_value->SetString(kTargetUrlField, std::string());
       dict_value->SetString(
           kTargetWebSocketDebuggerUrlField,
-          base::StringPrintf("ws://127.0.0.1:%u%s%s",
-                             static_cast<unsigned>(remote_debugging_port_),
-                             kPageUrlPrefix, iter.value()->id().c_str()));
+          base::StringPrintf("ws://%s%s%s", host.c_str(), kPageUrlPrefix,
+                             iter.value()->id().c_str()));
       list_value.Append(dict_value.Pass());
     }
     return MakeJsonResponse(200, &list_value, std::string());
