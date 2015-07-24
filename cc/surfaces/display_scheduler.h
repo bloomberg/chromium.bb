@@ -54,6 +54,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   void AttemptDrawAndSwap();
   void OnBeginFrameDeadline();
   void DrawAndSwap();
+  void UpdateActiveSurfaces();
 
   DisplaySchedulerClient* client_;
   BeginFrameSource* begin_frame_source_;
@@ -69,19 +70,23 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
 
   bool inside_begin_frame_deadline_interval_;
   bool needs_draw_;
-  bool expecting_root_surface_damage_because_of_resize_;
-  bool all_active_child_surfaces_ready_to_draw_;
+  bool child_surfaces_ready_to_draw_;
 
   int pending_swaps_;
   int max_pending_swaps_;
 
   SurfaceId root_surface_id_;
   bool root_surface_damaged_;
-  bool expect_damage_from_root_surface_;
+  bool root_surface_active_;
+  bool expecting_root_surface_damage_because_of_resize_;
 
+  // We currently use a heuristic that considers a child surface
+  // active if it has submitted a frame anytime within the last 3
+  // vsyncs.
+  static const int kNumFramesSurfaceIsActive = 3;
   std::set<SurfaceId> child_surface_ids_damaged_;
-  std::set<SurfaceId> child_surface_ids_damaged_prev_;
-  std::vector<SurfaceId> child_surface_ids_to_expect_damage_from_;
+  std::set<SurfaceId> active_child_surface_ids_[kNumFramesSurfaceIsActive];
+  int active_child_surface_ids_index_;
 
   base::WeakPtrFactory<DisplayScheduler> weak_ptr_factory_;
 

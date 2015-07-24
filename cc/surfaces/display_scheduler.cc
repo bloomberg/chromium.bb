@@ -23,12 +23,13 @@ DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
       root_surface_resources_locked_(true),
       inside_begin_frame_deadline_interval_(false),
       needs_draw_(false),
-      expecting_root_surface_damage_because_of_resize_(false),
-      all_active_child_surfaces_ready_to_draw_(false),
+      child_surfaces_ready_to_draw_(false),
       pending_swaps_(0),
       max_pending_swaps_(max_pending_swaps),
       root_surface_damaged_(false),
-      expect_damage_from_root_surface_(false),
+      root_surface_active_(false),
+      expecting_root_surface_damage_because_of_resize_(false),
+      active_child_surface_ids_index_(0),
       weak_ptr_factory_(this) {
   begin_frame_source_->AddObserver(this);
   begin_frame_deadline_closure_ = base::Bind(
@@ -59,7 +60,7 @@ void DisplayScheduler::ForceImmediateSwapIfPossible() {
 
 void DisplayScheduler::DisplayResized() {
   expecting_root_surface_damage_because_of_resize_ = true;
-  expect_damage_from_root_surface_ = true;
+  root_surface_active_ = true;
   ScheduleBeginFrameDeadline();
 }
 
@@ -86,9 +87,14 @@ void DisplayScheduler::SurfaceDamaged(SurfaceId surface_id) {
   } else {
     child_surface_ids_damaged_.insert(surface_id);
 
+    // Update future expectations for active child surfaces.
+    for (int i = 0; i < kNumFramesSurfaceIsActive; i++)
+      active_child_surface_ids_[i].insert(surface_id);
+
     // TODO(mithro): Use hints from SetNeedsBeginFrames and SwapAborts.
-    all_active_child_surfaces_ready_to_draw_ = base::STLIncludes(
-        child_surface_ids_damaged_, child_surface_ids_to_expect_damage_from_);
+    child_surfaces_ready_to_draw_ = base::STLIncludes(
+        child_surface_ids_damaged_,
+        active_child_surface_ids_[active_child_surface_ids_index_]);
   }
 
   begin_frame_source_->SetNeedsBeginFrames(!output_surface_lost_);
@@ -111,19 +117,12 @@ void DisplayScheduler::DrawAndSwap() {
   if (!success)
     return;
 
-  child_surface_ids_to_expect_damage_from_ =
-      base::STLSetIntersection<std::vector<SurfaceId>>(
-          child_surface_ids_damaged_, child_surface_ids_damaged_prev_);
+  UpdateActiveSurfaces();
 
-  child_surface_ids_damaged_prev_.swap(child_surface_ids_damaged_);
-  child_surface_ids_damaged_.clear();
-
+  // Update state regarding what needs to be drawn.
   needs_draw_ = false;
-  all_active_child_surfaces_ready_to_draw_ =
-      child_surface_ids_to_expect_damage_from_.empty();
-
-  expect_damage_from_root_surface_ = root_surface_damaged_;
   root_surface_damaged_ = false;
+  child_surface_ids_damaged_.clear();
 }
 
 bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
@@ -172,10 +171,9 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
            current_begin_frame_args_.interval;
   }
 
-  bool root_ready_to_draw =
-      !expect_damage_from_root_surface_ || root_surface_damaged_;
+  bool root_ready_to_draw = !root_surface_active_ || root_surface_damaged_;
 
-  if (all_active_child_surfaces_ready_to_draw_ && root_ready_to_draw) {
+  if (child_surfaces_ready_to_draw_ && root_ready_to_draw) {
     TRACE_EVENT_INSTANT0("cc", "All active surfaces ready",
                          TRACE_EVENT_SCOPE_THREAD);
     return base::TimeTicks();
@@ -193,8 +191,7 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
   // in case our expect_damage_from_root_surface heuristic is incorrect.
   // TODO(mithro): Replace this with SetNeedsBeginFrame and SwapAbort
   // logic.
-  if (all_active_child_surfaces_ready_to_draw_ &&
-      expect_damage_from_root_surface_) {
+  if (child_surfaces_ready_to_draw_ && root_surface_active_) {
     TRACE_EVENT_INSTANT0("cc", "Waiting for damage from root surface",
                          TRACE_EVENT_SCOPE_THREAD);
     // This adjusts the deadline by DefaultEstimatedParentDrawTime for
@@ -255,19 +252,37 @@ void DisplayScheduler::AttemptDrawAndSwap() {
   begin_frame_deadline_task_.Cancel();
   begin_frame_deadline_task_time_ = base::TimeTicks();
 
-  if (needs_draw_ && !output_surface_lost_) {
-    if (pending_swaps_ < max_pending_swaps_ && !root_surface_resources_locked_)
-      DrawAndSwap();
-  } else {
-    // We are going idle, so reset expectations.
-    child_surface_ids_to_expect_damage_from_.clear();
-    child_surface_ids_damaged_prev_.clear();
-    child_surface_ids_damaged_.clear();
-    all_active_child_surfaces_ready_to_draw_ = true;
-    expect_damage_from_root_surface_ = false;
+  bool stay_active =
+      !output_surface_lost_ &&
+      (needs_draw_ || root_surface_active_ ||
+       !active_child_surface_ids_[active_child_surface_ids_index_].empty());
 
+  if (!stay_active) {
+    // We are going idle, so reset expectations.
+    root_surface_active_ = false;
+    child_surfaces_ready_to_draw_ = true;
+    active_child_surface_ids_index_ = 0;
+    for (int i = 0; i < kNumFramesSurfaceIsActive; i++)
+      active_child_surface_ids_[i].clear();
     begin_frame_source_->SetNeedsBeginFrames(false);
+    return;
   }
+
+  if (!needs_draw_) {
+    // In order to properly go idle, make sure to update expectations that
+    // will cause |stay_active| to go false even if we have nothing to draw.
+    // Verify no child surfaces are currently damaged, since
+    // UpdateSurfaceDamageExpectatations will clear that list.
+    DCHECK(child_surface_ids_damaged_.empty());
+    DCHECK(!root_surface_damaged_);
+    UpdateActiveSurfaces();
+    return;
+  }
+
+  if (pending_swaps_ >= max_pending_swaps_ || root_surface_resources_locked_)
+    return;
+
+  DrawAndSwap();
 }
 
 void DisplayScheduler::OnBeginFrameDeadline() {
@@ -288,6 +303,15 @@ void DisplayScheduler::DidSwapBuffersComplete() {
   TRACE_EVENT1("cc", "DisplayScheduler::DidSwapBuffersComplete",
                "pending_frames", pending_swaps_);
   ScheduleBeginFrameDeadline();
+}
+
+void DisplayScheduler::UpdateActiveSurfaces() {
+  root_surface_active_ = root_surface_damaged_;
+  active_child_surface_ids_[active_child_surface_ids_index_].clear();
+  active_child_surface_ids_index_ =
+      (active_child_surface_ids_index_ + 1) % kNumFramesSurfaceIsActive;
+  child_surfaces_ready_to_draw_ =
+      active_child_surface_ids_[active_child_surface_ids_index_].empty();
 }
 
 }  // namespace cc

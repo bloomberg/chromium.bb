@@ -228,6 +228,159 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   scheduler_->BeginFrameDeadlineForTest();
   BeginFrameForTest();
   scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline should trigger early if child surfaces are idle and
+  // we get damage on the root surface.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(root_surface_id);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+}
+
+TEST_F(DisplaySchedulerTest, SurfaceActiveAt30fps) {
+  SurfaceId root_surface_id(0);
+  SurfaceId sid1(1);
+  SurfaceId sid2(2);
+
+  // Set the root surface
+  scheduler_->SetNewRootSurface(root_surface_id);
+
+  // Get scheduler to detect surface 1 and 2 as active by drawing
+  // two frames in a row. First frame with damage only from surface 1
+  // and the second frame only with damage from surface 2.
+  BeginFrameForTest();
+  scheduler_->SurfaceDamaged(sid1);
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->SurfaceDamaged(sid2);
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline doesn't trigger early until surface 1 and 2 are both damaged.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(sid1);
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(sid2);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Make the system idle
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline should trigger early if child surfaces are idle and
+  // we get damage on the root surface.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(root_surface_id);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+}
+
+TEST_F(DisplaySchedulerTest, SurfaceActiveAt20fps) {
+  SurfaceId root_surface_id(0);
+  SurfaceId sid1(1);
+  SurfaceId sid2(2);
+  SurfaceId sid3(3);
+
+  // Set the root surface
+  scheduler_->SetNewRootSurface(root_surface_id);
+
+  // Get scheduler to detect surface 1, 2, and 3 as active by drawing
+  // 3 frames in a row. With damage from each surface in succession.
+  BeginFrameForTest();
+  scheduler_->SurfaceDamaged(sid1);
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->SurfaceDamaged(sid2);
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->SurfaceDamaged(sid3);
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline doesn't trigger early until surface 1, 2, and 3 are all damaged.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(sid1);
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(sid2);
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(sid3);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Make the system idle
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline should trigger early if child surfaces are idle and
+  // we get damage on the root surface.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(root_surface_id);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+}
+
+TEST_F(DisplaySchedulerTest, SurfaceActiveAt20fps_SingleSurface) {
+  SurfaceId root_surface_id(0);
+  SurfaceId sid1(1);
+  SurfaceId sid2(2);
+  SurfaceId sid3(3);
+
+  // Set the root surface
+  scheduler_->SetNewRootSurface(root_surface_id);
+
+  // Get scheduler to detect surface 1 as active even though
+  // it only swaps at 20fps.
+  BeginFrameForTest();
+  scheduler_->SurfaceDamaged(sid1);
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline doesn't trigger early until surface 1 is damaged.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(sid1);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Make the system idle
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
 
   // Deadline should trigger early if child surfaces are idle and
   // we get damage on the root surface.
