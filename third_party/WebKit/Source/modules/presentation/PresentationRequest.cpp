@@ -106,7 +106,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer associated to a frame."));
         return promise;
     }
-    client->getAvailability(m_url.string(), new CallbackPromiseAdapter<bool, PresentationError>(resolver));
+    client->getAvailability(m_url.string(), new CallbackPromiseAdapter<PresentationAvailability, PresentationError>(resolver));
 
     return promise;
 }

@@ -28,6 +28,9 @@ class PresentationAvailability final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
     DEFINE_WRAPPERTYPEINFO();
 public:
+    // For CallbackPromiseAdapter.
+    using WebType = bool;
+
     static PresentationAvailability* take(ScriptPromiseResolver*, bool);
     ~PresentationAvailability() override;
 
