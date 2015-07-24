@@ -229,11 +229,13 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
         PanelState projectedState = findNearestPanelStateFromHeight(projectedHeight);
 
         // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED if the Panel
-        // Promo is available. This is to make sure the Promo will be visible, considering that
-        // the EXPANDED state is the only one that will show the Promo.
+        // Promo is available and we are running in full screen panel mode. This is to make sure
+        // the Promo will be visible, considering that the EXPANDED state is the only one that will
+        // show the Promo in full screen panel mode. In narrow panel UI the Promo is visible in
+        // maximized so this project state change is not needed.
         if (projectedState == PanelState.MAXIMIZED
                 && getPanelState() == PanelState.PEEKED
-                && isPromoAvailable()) {
+                && isPromoAvailable() && isFullscreenSizePanel()) {
             projectedState = PanelState.EXPANDED;
         }
 

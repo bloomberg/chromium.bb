@@ -963,7 +963,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             destroyPromoView();
             destroyContextualSearchControl();
             onClose(reason);
-        } else if (state == PanelState.EXPANDED) {
+        } else if (state == PanelState.EXPANDED && isFullscreenSizePanel()
+                || (state == PanelState.MAXIMIZED && !isFullscreenSizePanel())) {
             showPromoViewAtYPosition(getPromoYPx());
         }
     }
@@ -1199,7 +1200,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private void updatePanelForMaximization(float percentage) {
         // Update the opt out promo.
-        updatePromoVisibility(1.f - percentage);
+        float promoVisibilityPercentage = isFullscreenSizePanel() ? 1.f - percentage : 1.f;
+        updatePromoVisibility(promoVisibilityPercentage);
 
         // Base page offset.
         mBasePageY = getBasePageTargetY();
