@@ -15,7 +15,7 @@
 namespace ash {
 
 TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder()
-    : LabelButtonBorder(views::Button::STYLE_TEXTBUTTON) {
+    : LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON) {
   const int kTrayPopupLabelButtonBorderImagesNormal[] = {
       IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
       IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,

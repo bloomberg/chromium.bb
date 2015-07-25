@@ -42,6 +42,14 @@ TEST_F(BlueButtonTest, Border) {
 
   widget->GetContentsView()->AddChildView(blue_button);
   blue_button->SizeToPreferredSize();
+#if defined(OS_MACOSX)
+  // On Mac, the default styled border has a large minimum width. To ensure that
+  // the bitmaps are comparable, the size needs to match (checked below).
+  // Increase the minimum size of the blue button to pass the size check.
+  EXPECT_NE(button->size(), blue_button->size());  // Verify this is needed.
+  blue_button->SetMinSize(button->border()->GetMinimumSize());
+  blue_button->SizeToPreferredSize();
+#endif
 
   gfx::Canvas canvas(blue_button->size(), 1.0, true);
   blue_button->border()->Paint(*blue_button, &canvas);

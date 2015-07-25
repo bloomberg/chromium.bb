@@ -137,8 +137,7 @@ void Gtk2Border::PaintState(const ui::NativeTheme::State state,
   bool focused = extra.button.is_focused;
   Button::ButtonState views_state = Button::GetButtonStateFrom(state);
 
-  if (border_->GetPainter(focused, views_state) ||
-      (focused && border_->GetPainter(false, views_state))) {
+  if (border_->PaintsButtonState(focused, views_state)) {
     gfx::ImageSkia* image = &button_images_[focused][views_state];
 
     if (image->isNull() || image->size() != rect.size()) {

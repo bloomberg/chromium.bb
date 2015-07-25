@@ -1240,8 +1240,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
             views::LabelButton::STATE_NORMAL,
             views::Link::GetDefaultEnabledColor());
         auth_error_email_button_->SetFocusable(true);
-        gfx::Insets insets = views::LabelButtonBorder::GetDefaultInsetsForStyle(
-            views::Button::STYLE_TEXTBUTTON);
+        gfx::Insets insets =
+            views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
+                views::Button::STYLE_TEXTBUTTON);
         auth_error_email_button_->SetBorder(views::Border::CreateEmptyBorder(
             insets.top(), insets.left(), insets.bottom(), insets.right()));
         layout->AddView(auth_error_email_button_);

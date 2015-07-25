@@ -15,11 +15,8 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/views/linux_ui/linux_ui.h"
-#endif
 
 namespace {
 
@@ -340,7 +337,7 @@ const char* LabelButton::GetClassName() const {
 }
 
 scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
-  return make_scoped_ptr(new LabelButtonBorder(style_));
+  return PlatformStyle::CreateLabelButtonBorder(style());
 }
 
 void LabelButton::SetBorder(scoped_ptr<Border> border) {
@@ -439,19 +436,7 @@ void LabelButton::UpdateThemedBorder() {
   if (!border_is_themed_border_)
     return;
 
-  scoped_ptr<LabelButtonBorder> label_button_border = CreateDefaultBorder();
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  views::LinuxUI* linux_ui = views::LinuxUI::instance();
-  if (linux_ui) {
-    SetBorder(linux_ui->CreateNativeBorder(
-        this, label_button_border.Pass()));
-  } else
-#endif
-  {
-    SetBorder(label_button_border.Pass());
-  }
-
+  SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
   border_is_themed_border_ = true;
 }
 

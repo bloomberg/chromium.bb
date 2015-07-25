@@ -158,22 +158,23 @@ void ToolbarButton::GetAccessibleState(ui::AXViewState* state) {
 
 scoped_ptr<views::LabelButtonBorder>
 ToolbarButton::CreateDefaultBorder() const {
-  scoped_ptr<views::LabelButtonBorder> border =
-      LabelButton::CreateDefaultBorder();
-
+  scoped_ptr<views::LabelButtonBorder> border;
   if (ui::MaterialDesignController::IsModeMaterial()) {
+#if defined(OS_CHROMEOS)
+    border.reset(new views::LabelButtonBorder());
+    border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
+        Button::STYLE_TEXTBUTTON));
+#else
+    scoped_ptr<views::LabelButtonAssetBorder> asset_border(
+        new views::LabelButtonAssetBorder(Button::STYLE_TEXTBUTTON));
     // The material design spec does not include a visual effect for the
     // STATE_HOVERED button state so we have to remove the default one added by
-    // LabelButton::CreateDefaultBorder().
-    border->SetPainter(true, Button::STATE_HOVERED, nullptr);
-    border->SetPainter(false, Button::STATE_HOVERED, nullptr);
-
-#if defined(OS_CHROMEOS)
-    // The default STATE_PRESSED painters need to be removed so that they do not
-    // conflict with the ink drop ripple effect.
-    border->SetPainter(true, Button::STATE_PRESSED, nullptr);
-    border->SetPainter(false, Button::STATE_PRESSED, nullptr);
-#endif  // defined(OS_CHROMEOS)
+    // LabelButtonAssetBorder.
+    asset_border->SetPainter(false, Button::STATE_HOVERED, nullptr);
+    border = asset_border.Pass();
+#endif
+  } else {
+    border.reset(new views::LabelButtonAssetBorder(Button::STYLE_TEXTBUTTON));
   }
 
   ui::ThemeProvider* provider = GetThemeProvider();

@@ -50,6 +50,11 @@ void ButtonExample::CreateExampleView(View* container) {
   label_button_->SetFocusable(true);
   container->AddChildView(label_button_);
 
+  LabelButton* styled_button =
+      new LabelButton(this, ASCIIToUTF16("Styled Button"));
+  styled_button->SetStyle(Button::STYLE_BUTTON);
+  container->AddChildView(styled_button);
+
   LabelButton* disabled_button =
       new LabelButton(this, ASCIIToUTF16("Disabled Button"));
   disabled_button->SetStyle(Button::STYLE_BUTTON);

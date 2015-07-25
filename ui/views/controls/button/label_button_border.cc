@@ -33,7 +33,7 @@ const int kTextHoveredImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
 const int kTextPressedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
 
 // A helper function to paint the appropriate broder images.
-void PaintHelper(LabelButtonBorder* border,
+void PaintHelper(LabelButtonAssetBorder* border,
                  gfx::Canvas* canvas,
                  ui::NativeTheme::State state,
                  const gfx::Rect& rect,
@@ -50,7 +50,25 @@ void PaintHelper(LabelButtonBorder* border,
 
 }  // namespace
 
-LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style) {
+LabelButtonBorder::LabelButtonBorder() {}
+LabelButtonBorder::~LabelButtonBorder() {}
+
+bool LabelButtonBorder::PaintsButtonState(bool focused,
+                                          Button::ButtonState state) {
+  return false;
+}
+
+void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {}
+
+gfx::Insets LabelButtonBorder::GetInsets() const {
+  return insets_;
+}
+
+gfx::Size LabelButtonBorder::GetMinimumSize() const {
+  return gfx::Size();
+}
+
+LabelButtonAssetBorder::LabelButtonAssetBorder(Button::ButtonStyle style) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::Insets insets(kButtonInsets,
                            kButtonInsets,
@@ -91,10 +109,10 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style) {
   }
 }
 
-LabelButtonBorder::~LabelButtonBorder() {}
+LabelButtonAssetBorder::~LabelButtonAssetBorder() {}
 
 // static
-gfx::Insets LabelButtonBorder::GetDefaultInsetsForStyle(
+gfx::Insets LabelButtonAssetBorder::GetDefaultInsetsForStyle(
     Button::ButtonStyle style) {
   gfx::Insets insets;
   if (style == Button::STYLE_BUTTON) {
@@ -107,7 +125,14 @@ gfx::Insets LabelButtonBorder::GetDefaultInsetsForStyle(
   return insets;
 }
 
-void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
+bool LabelButtonAssetBorder::PaintsButtonState(bool focused,
+                                               Button::ButtonState state) {
+  // PaintHelper() above will paint the unfocused painter for a given state if
+  // the button is focused, but there is no focused painter.
+  return GetPainter(focused, state) || (focused && GetPainter(false, state));
+}
+
+void LabelButtonAssetBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const NativeThemeDelegate* native_theme_delegate =
       static_cast<const LabelButton*>(&view);
   gfx::Rect rect(native_theme_delegate->GetThemePaintRect());
@@ -137,11 +162,7 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   }
 }
 
-gfx::Insets LabelButtonBorder::GetInsets() const {
-  return insets_;
-}
-
-gfx::Size LabelButtonBorder::GetMinimumSize() const {
+gfx::Size LabelButtonAssetBorder::GetMinimumSize() const {
   gfx::Size minimum_size;
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < Button::STATE_COUNT; ++j) {
@@ -152,14 +173,14 @@ gfx::Size LabelButtonBorder::GetMinimumSize() const {
   return minimum_size;
 }
 
-Painter* LabelButtonBorder::GetPainter(bool focused,
-                                       Button::ButtonState state) {
+Painter* LabelButtonAssetBorder::GetPainter(bool focused,
+                                            Button::ButtonState state) {
   return painters_[focused ? 1 : 0][state].get();
 }
 
-void LabelButtonBorder::SetPainter(bool focused,
-                                   Button::ButtonState state,
-                                   Painter* painter) {
+void LabelButtonAssetBorder::SetPainter(bool focused,
+                                        Button::ButtonState state,
+                                        Painter* painter) {
   painters_[focused ? 1 : 0][state].reset(painter);
 }
 

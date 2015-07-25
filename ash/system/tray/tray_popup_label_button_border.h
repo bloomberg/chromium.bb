@@ -13,7 +13,7 @@ namespace ash {
 
 // A border for label buttons that paints a vertical separator in normal state
 // and a custom hover effect in hovered or pressed state.
-class TrayPopupLabelButtonBorder : public views::LabelButtonBorder {
+class TrayPopupLabelButtonBorder : public views::LabelButtonAssetBorder {
  public:
   TrayPopupLabelButtonBorder();
   ~TrayPopupLabelButtonBorder() override;

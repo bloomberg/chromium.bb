@@ -576,7 +576,7 @@ void NotifierSettingsView::UpdateContentsView(
     notifier_group_selector_ =
         new views::MenuButton(NULL, notifier_group_text, this, true);
     notifier_group_selector_->SetBorder(scoped_ptr<views::Border>(
-        new views::LabelButtonBorder(views::Button::STYLE_BUTTON)).Pass());
+        new views::LabelButtonAssetBorder(views::Button::STYLE_BUTTON)));
     notifier_group_selector_->SetFocusPainter(nullptr);
     notifier_group_selector_->set_animate_on_state_change(false);
     notifier_group_selector_->SetFocusable(true);

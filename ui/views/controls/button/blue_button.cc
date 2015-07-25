@@ -52,7 +52,8 @@ const char* BlueButton::GetClassName() const {
 scoped_ptr<LabelButtonBorder> BlueButton::CreateDefaultBorder() const {
   // Insets for splitting the images.
   const gfx::Insets insets(5, 5, 5, 5);
-  scoped_ptr<LabelButtonBorder> button_border(new LabelButtonBorder(style()));
+  scoped_ptr<LabelButtonAssetBorder> button_border(
+      new LabelButtonAssetBorder(style()));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   button_border->SetPainter(false, STATE_NORMAL, Painter::CreateImagePainter(
       *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_NORMAL), insets));

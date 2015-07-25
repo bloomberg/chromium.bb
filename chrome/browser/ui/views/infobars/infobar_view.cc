@@ -100,8 +100,8 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
 views::LabelButton* InfoBarView::CreateLabelButton(
     views::ButtonListener* listener,
     const base::string16& text) {
-  scoped_ptr<views::LabelButtonBorder> label_button_border(
-      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
+  scoped_ptr<views::LabelButtonAssetBorder> label_button_border(
+      new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
   const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
   label_button_border->SetPainter(
       false, views::Button::STATE_NORMAL,

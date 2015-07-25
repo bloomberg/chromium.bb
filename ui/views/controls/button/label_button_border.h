@@ -15,24 +15,47 @@
 
 namespace views {
 
-// A Border that paints a LabelButton's background frame.
+// An empty Border with customizable insets used by a LabelButton.
 class VIEWS_EXPORT LabelButtonBorder : public Border {
  public:
-  explicit LabelButtonBorder(Button::ButtonStyle style);
+  LabelButtonBorder();
   ~LabelButtonBorder() override;
 
-  // Returns the default insets for a given |style|.
-  static gfx::Insets GetDefaultInsetsForStyle(Button::ButtonStyle style);
+  void set_insets(const gfx::Insets& insets) { insets_ = insets; }
+
+  // Returns true if |this| is able to paint for the given |focused| and |state|
+  // values.
+  virtual bool PaintsButtonState(bool focused, Button::ButtonState state);
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
   gfx::Insets GetInsets() const override;
   gfx::Size GetMinimumSize() const override;
 
-  void set_insets(const gfx::Insets& insets) { insets_ = insets; }
+ private:
+  gfx::Insets insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(LabelButtonBorder);
+};
+
+// A Border that paints a LabelButton's background frame using image assets.
+class VIEWS_EXPORT LabelButtonAssetBorder : public LabelButtonBorder {
+ public:
+  explicit LabelButtonAssetBorder(Button::ButtonStyle style);
+  ~LabelButtonAssetBorder() override;
+
+  // Returns the default insets for a given |style|.
+  static gfx::Insets GetDefaultInsetsForStyle(Button::ButtonStyle style);
+
+  // Overridden from LabelButtonBorder:
+  bool PaintsButtonState(bool focused, Button::ButtonState state) override;
+
+  // Overridden from Border:
+  void Paint(const View& view, gfx::Canvas* canvas) override;
+  gfx::Size GetMinimumSize() const override;
 
   // Get or set the painter used for the specified |focused| button |state|.
-  // LabelButtonBorder takes and retains ownership of |painter|.
+  // LabelButtonAssetBorder takes and retains ownership of |painter|.
   Painter* GetPainter(bool focused, Button::ButtonState state);
   void SetPainter(bool focused, Button::ButtonState state, Painter* painter);
 
@@ -40,9 +63,7 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   // The painters used for each unfocused or focused button state.
   scoped_ptr<Painter> painters_[2][Button::STATE_COUNT];
 
-  gfx::Insets insets_;
-
-  DISALLOW_COPY_AND_ASSIGN(LabelButtonBorder);
+  DISALLOW_COPY_AND_ASSIGN(LabelButtonAssetBorder);
 };
 
 }  // namespace views

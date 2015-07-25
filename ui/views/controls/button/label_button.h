@@ -85,6 +85,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
   Painter* focus_painter() { return focus_painter_.get(); }
 
+  // Creates the default border for this button. This can be overridden by
+  // subclasses.
+  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const;
+
   // View:
   void SetBorder(scoped_ptr<Border> border) override;
   gfx::Size GetPreferredSize() const override;
@@ -111,10 +115,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   virtual void ResetColorsFromNativeTheme();
-
-  // Creates the default border for this button. This can be overridden by
-  // subclasses or by LinuxUI.
-  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const;
 
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();

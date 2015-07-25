@@ -71,8 +71,8 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   for (size_t state = 0; state < views::Button::STATE_COUNT; ++state)
     SetTextColor(static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
 
-  scoped_ptr<views::LabelButtonBorder> border(
-      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
+  scoped_ptr<views::LabelButtonAssetBorder> border(
+      new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
   border->SetPainter(false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
   border->SetPainter(false, views::Button::STATE_HOVERED,
