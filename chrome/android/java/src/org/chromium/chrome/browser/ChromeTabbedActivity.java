@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.Context;
@@ -171,6 +172,22 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs = 0;
+
+    private class TabbedAssistStatusHandler extends AssistStatusHandler {
+        public TabbedAssistStatusHandler(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public boolean isAssistSupported() {
+            // If we are in the tab switcher and any incognito tabs are present, disable assist.
+            if (isInOverviewMode() && mTabModelSelectorImpl != null
+                    && mTabModelSelectorImpl.getModel(true).getCount() > 0) {
+                return false;
+            }
+            return super.isAssistSupported();
+        }
+    }
 
     @Override
     public void initializeCompositor() {
@@ -344,6 +361,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
         TabCreator tabCreator = super.getCurrentTabCreator();
         assert tabCreator instanceof ChromeTabCreator;
         return (ChromeTabCreator) tabCreator;
+    }
+
+    @Override
+    protected AssistStatusHandler createAssistStatusHandler() {
+        return new TabbedAssistStatusHandler(this);
     }
 
     private void handleDebugIntent(Intent intent) {
@@ -1263,17 +1285,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
 
     @Override
     public boolean isInOverviewMode() {
-        return mLayoutManager.overviewVisible();
+        return mLayoutManager != null && mLayoutManager.overviewVisible();
     }
 
     @Override
     protected IntentHandlerDelegate createIntentHandlerDelegate() {
         return new InternalIntentDelegate();
-    }
-
-    @Override
-    public void onOverviewModeStartedShowing(boolean showToolbar) {
-        if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
     }
 
     @Override
@@ -1283,11 +1300,19 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
     }
 
     @Override
-    public void onOverviewModeFinishedShowing() { }
+    public void onOverviewModeStartedShowing(boolean showToolbar) {
+        if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
+        if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
+    }
+
+    @Override
+    public void onOverviewModeFinishedShowing() {}
 
     @Override
     public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {}
 
     @Override
-    public void onOverviewModeFinishedHiding() {}
+    public void onOverviewModeFinishedHiding() {
+        if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
+    }
 }

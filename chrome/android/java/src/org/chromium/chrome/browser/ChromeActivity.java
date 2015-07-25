@@ -210,6 +210,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private final Locale mCurrentLocale = Locale.getDefault();
 
+    private AssistStatusHandler mAssistStatusHandler;
+
     private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
         @Override
         public AppMenuHandler get(
@@ -244,6 +246,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(getWindow());
         mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());
+
+        mAssistStatusHandler = createAssistStatusHandler();
+        if (mAssistStatusHandler != null) {
+            if (mTabModelSelector != null) {
+                mAssistStatusHandler.setTabModelSelector(mTabModelSelector);
+            }
+            mAssistStatusHandler.updateAssistState();
+        }
 
         // Low end device UI should be allowed only after a fresh install or when the data has
         // been cleared. This must happen before anyone calls SysUtils.isLowEndDevice() or
@@ -384,6 +394,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * @return The assist handler for this activity.
+     */
+    protected AssistStatusHandler getAssistStatusHandler() {
+        return mAssistStatusHandler;
+    }
+
+    /**
+     * @return A newly constructed assist handler for this given activity type.
+     */
+    protected AssistStatusHandler createAssistStatusHandler() {
+        return new AssistStatusHandler(this);
+    }
+
+    /**
      * @return The resource id for the layout to use for {@link ControlContainer}. 0 by default.
      */
     protected int getControlContainerLayoutId() {
@@ -482,6 +506,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 postDeferredStartupIfNeeded();
             }
         };
+
+        if (mAssistStatusHandler != null) {
+            mAssistStatusHandler.setTabModelSelector(tabModelSelector);
+        }
     }
 
     @Override
