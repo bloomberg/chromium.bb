@@ -202,17 +202,7 @@ void WebFrameWidgetImpl::willEndLiveResize()
         m_localRoot->frameView()->willEndLiveResize();
 }
 
-void WebFrameWidgetImpl::willEnterFullScreen()
-{
-    // FIXME: Implement full screen for out-of-process iframes.
-}
-
 void WebFrameWidgetImpl::didEnterFullScreen()
-{
-    // FIXME: Implement full screen for out-of-process iframes.
-}
-
-void WebFrameWidgetImpl::willExitFullScreen()
 {
     // FIXME: Implement full screen for out-of-process iframes.
 }

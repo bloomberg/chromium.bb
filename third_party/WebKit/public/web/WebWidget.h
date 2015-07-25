@@ -83,12 +83,8 @@ public:
     // willStartLiveResize.
     virtual void willEndLiveResize() { }
 
-    // Called to notify the WebWidget of entering/exiting fullscreen mode. The
-    // resize method may be called between will{Enter,Exit}FullScreen and
-    // did{Enter,Exit}FullScreen.
-    virtual void willEnterFullScreen() { }
+    // Called to notify the WebWidget of entering/exiting fullscreen mode.
     virtual void didEnterFullScreen() { }
-    virtual void willExitFullScreen() { }
     virtual void didExitFullScreen() { }
 
     // Called to update imperative animation state. This should be called before

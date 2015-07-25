@@ -71,9 +71,7 @@ public:
     void resize(const WebSize&) override;
     void resizePinchViewport(const WebSize&) override;
     void willEndLiveResize() override;
-    void willEnterFullScreen() override;
     void didEnterFullScreen() override;
-    void willExitFullScreen() override;
     void didExitFullScreen() override;
     void beginFrame(const WebBeginFrameArgs&) override;
     void layout() override;
