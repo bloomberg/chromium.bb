@@ -269,26 +269,33 @@ class Manager(object):
         try:
             self._start_servers(tests_to_run)
 
-            initial_results = self._run_tests(tests_to_run, tests_to_skip, self._options.repeat_each, self._options.iterations,
-                self._port.num_workers(int(self._options.child_processes)), retrying=False)
+            initial_results = self._run_tests(
+                tests_to_run, tests_to_skip, self._options.repeat_each, self._options.iterations,
+                self._port.num_workers(int(self._options.child_processes)))
 
             # Don't retry failures when interrupted by user or failures limit exception.
             should_retry_failures = should_retry_failures and not (initial_results.interrupted or initial_results.keyboard_interrupted)
 
             tests_to_retry = self._tests_to_retry(initial_results)
+            all_retry_results = []
             if should_retry_failures and tests_to_retry:
                 enabled_pixel_tests_in_retry = self._force_pixel_tests_if_needed()
 
-                _log.info('')
-                _log.info("Retrying %d unexpected failure(s) ..." % len(tests_to_retry))
-                _log.info('')
-                retry_results = self._run_tests(tests_to_retry, tests_to_skip=set(), repeat_each=1, iterations=1,
-                    num_workers=1, retrying=True)
+                for retry_attempt in xrange(1, self._options.num_retries + 1):
+                    _log.info('')
+                    _log.info('Retrying %d unexpected failure(s), attempt %d of %d...' %
+                              (len(tests_to_retry), retry_attempt, self._options.num_retries + 1))
+                    _log.info('')
+                    all_retry_results.append(
+                        self._run_tests(tests_to_retry,
+                                        tests_to_skip=set(),
+                                        repeat_each=1,
+                                        iterations=1,
+                                        num_workers=1,
+                                        retry_attempt=retry_attempt))
 
                 if enabled_pixel_tests_in_retry:
                     self._options.pixel_tests = False
-            else:
-                retry_results = None
         finally:
             self._stop_servers()
             self._clean_up_run()
@@ -297,12 +304,16 @@ class Manager(object):
         # for new logs after the test run finishes.
         self._printer.write_update("looking for new crash logs")
         self._look_for_new_crash_logs(initial_results, start_time)
-        if retry_results:
-            self._look_for_new_crash_logs(retry_results, start_time)
+        for retry_attempt_results in all_retry_results:
+            self._look_for_new_crash_logs(retry_attempt_results, start_time)
 
         _log.debug("summarizing results")
-        summarized_full_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry)
-        summarized_failing_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=True)
+        summarized_full_results = test_run_results.summarize_results(
+            self._port, self._expectations, initial_results, all_retry_results,
+            enabled_pixel_tests_in_retry)
+        summarized_failing_results = test_run_results.summarize_results(
+            self._port, self._expectations, initial_results, all_retry_results,
+            enabled_pixel_tests_in_retry, only_include_failing=True)
 
         exit_code = summarized_failing_results['num_regressions']
         if exit_code > test_run_results.MAX_FAILURES_EXIT_STATUS:
@@ -332,16 +343,20 @@ class Manager(object):
 
         self._check_for_stale_w3c_dir()
 
-        return test_run_results.RunDetails(exit_code, summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
+        return test_run_results.RunDetails(
+            exit_code, summarized_full_results, summarized_failing_results,
+            initial_results, all_retry_results, enabled_pixel_tests_in_retry)
 
-    def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations, num_workers, retrying):
+    def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations,
+                   num_workers, retry_attempt=0):
 
         test_inputs = []
         for _ in xrange(iterations):
             for test in tests_to_run:
                 for _ in xrange(repeat_each):
                     test_inputs.append(self._test_input_for_file(test))
-        return self._runner.run_tests(self._expectations, test_inputs, tests_to_skip, num_workers, retrying)
+        return self._runner.run_tests(self._expectations, test_inputs,
+                                      tests_to_skip, num_workers, retry_attempt)
 
     def _start_servers(self, tests_to_run):
         if self._port.is_wpt_enabled() and any(self._port.is_wpt_test(test) for test in tests_to_run):

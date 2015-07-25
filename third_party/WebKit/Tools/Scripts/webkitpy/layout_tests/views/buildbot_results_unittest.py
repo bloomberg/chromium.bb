@@ -72,6 +72,8 @@ class BuildBotPrinterTests(unittest.TestCase):
         summary = test_run_results_unittest.summarized_results(port, expected=False, passing=False, flaky=True)
         printer.print_unexpected_results(summary)
         self.assertNotEmpty(out)
+        self.assertIn('Unexpected flakiness: timeouts (3)\n  failures/expected/crash.html '
+                      '[ Leak Failure Crash Timeout ]', out.getvalue())
 
         printer, out = self.get_printer()
         summary = test_run_results_unittest.summarized_results(port, expected=False, passing=False, flaky=False)
@@ -93,10 +95,12 @@ class BuildBotPrinterTests(unittest.TestCase):
     def test_print_unexpected_results_fail_on_retry_also(self):
         port = MockHost().port_factory.get('test')
         printer, out = self.get_printer()
-        summary = test_run_results_unittest.summarized_results(port, expected=False, passing=False, flaky=True, fail_on_retry=True)
+        summary = test_run_results_unittest.summarized_results(
+            port, expected=False, passing=False, flaky=False, fail_on_retry=True)
         printer.print_unexpected_results(summary)
         output = out.getvalue()
-        self.assertIn('Regressions: Unexpected crashes (1)\n  failures/expected/timeout.html [ Crash Failure ]', output)
+        self.assertIn('Unexpected crashes (2)\n  failures/expected/audio.html [ Crash Leak ]\n  '
+                      'failures/expected/timeout.html [ Crash Failure Leak ]', output)
 
     def test_print_results(self):
         port = MockHost().port_factory.get('test')

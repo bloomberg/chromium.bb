@@ -71,14 +71,14 @@ class LayoutTestRunner(object):
 
         self._expectations = None
         self._test_inputs = []
-        self._retrying = False
+        self._retry_attempt = 0
 
         self._current_run_results = None
 
-    def run_tests(self, expectations, test_inputs, tests_to_skip, num_workers, retrying):
+    def run_tests(self, expectations, test_inputs, tests_to_skip, num_workers, retry_attempt):
         self._expectations = expectations
         self._test_inputs = test_inputs
-        self._retrying = retrying
+        self._retry_attempt = retry_attempt
         self._shards_to_redo = []
 
         # FIXME: rename all variables to test_run_results or some such ...
@@ -87,7 +87,7 @@ class LayoutTestRunner(object):
         self._printer.num_tests = len(test_inputs)
         self._printer.num_completed = 0
 
-        if not retrying:
+        if retry_attempt < 1:
             self._printer.print_expected(run_results, self._expectations.get_tests_with_result_type)
 
         for test_name in set(tests_to_skip):
@@ -139,9 +139,10 @@ class LayoutTestRunner(object):
 
     def _worker_factory(self, worker_connection):
         results_directory = self._results_directory
-        if self._retrying:
-            self._filesystem.maybe_make_directory(self._filesystem.join(self._results_directory, 'retries'))
-            results_directory = self._filesystem.join(self._results_directory, 'retries')
+        if self._retry_attempt > 0:
+            results_directory = self._filesystem.join(self._results_directory,
+                                                      'retry_%d' % self._retry_attempt)
+            self._filesystem.maybe_make_directory(results_directory)
         return Worker(worker_connection, results_directory, self._options)
 
     def _mark_interrupted_tests_as_skipped(self, run_results):

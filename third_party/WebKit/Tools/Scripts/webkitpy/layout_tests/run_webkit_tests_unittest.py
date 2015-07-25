@@ -154,8 +154,8 @@ def get_test_results(args, host=None, port_obj=None):
     if run_details.initial_results:
         all_results.extend(run_details.initial_results.all_results)
 
-    if run_details.retry_results:
-        all_results.extend(run_details.retry_results.all_results)
+    for retry_results in run_details.all_retry_results:
+        all_results.extend(retry_results.all_results)
     return all_results
 
 
@@ -199,7 +199,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.initial_results.expected_skips, test.TOTAL_SKIPS)
         self.assertEqual(len(details.initial_results.unexpected_results_by_name), test.UNEXPECTED_PASSES + test.UNEXPECTED_FAILURES)
         self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES)
-        self.assertEqual(details.retry_results.total, test.UNEXPECTED_FAILURES)
+        self.assertEqual(details.all_retry_results[0].total, test.UNEXPECTED_FAILURES)
 
         expected_tests = details.initial_results.total - details.initial_results.expected_skips - len(details.initial_results.unexpected_results_by_name)
         expected_summary_str = ''
@@ -677,7 +677,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 0)
         self.assertTrue('Retrying' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/flaky/text-actual.txt'))
-        self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retries/failures/flaky/text-actual.txt'))
+        self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/flaky/text-actual.txt'))
+        self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/flaky/text-actual.txt'))
+        self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/flaky/text-actual.txt'))
         self.assertEqual(len(host.user.opened_urls), 0)
 
         # Now we test that --clobber-old-results does remove the old entries and the old retries,
@@ -688,7 +690,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue('Clobbering old results' in err.getvalue())
         self.assertTrue('flaky/text.html' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/flaky/text-actual.txt'))
-        self.assertFalse(host.filesystem.exists('retries'))
+        self.assertFalse(host.filesystem.exists('retry_1'))
+        self.assertFalse(host.filesystem.exists('retry_2'))
+        self.assertFalse(host.filesystem.exists('retry_3'))
         self.assertEqual(len(host.user.opened_urls), 1)
 
     def test_retrying_crashed_tests(self):
@@ -710,8 +714,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue('Retrying' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.png'))
-        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retries/failures/unexpected/text-image-checksum-actual.txt'))
-        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retries/failures/unexpected/text-image-checksum-actual.png'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/unexpected/text-image-checksum-actual.txt'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/unexpected/text-image-checksum-actual.txt'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.txt'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/unexpected/text-image-checksum-actual.png'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/unexpected/text-image-checksum-actual.png'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.png'))
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         json = parse_full_results(json_string)
         self.assertEqual(json["tests"]["failures"]["unexpected"]["text-image-checksum.html"],
@@ -719,12 +727,14 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertFalse(json["pixel_tests_enabled"])
         self.assertEqual(details.enabled_pixel_tests_in_retry, True)
 
-    def test_retrying_uses_retries_directory(self):
+    def test_retrying_uses_retry_directories(self):
         host = MockHost()
         details, err, _ = logging_run(['--debug-rwt-logging', '--retry-failures', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 1)
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
-        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retries/failures/unexpected/text-image-checksum-actual.txt'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/unexpected/text-image-checksum-actual.txt'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/unexpected/text-image-checksum-actual.txt'))
+        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.txt'))
 
     def test_run_order__inline(self):
         # These next tests test that we run the tests in ascending alphabetical

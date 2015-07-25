@@ -211,9 +211,6 @@ def parse_args(args):
         optparse.make_option("--iterations", type="int", default=1, help="Number of times to run the set of tests (e.g. ABCABCABC)"),
         optparse.make_option("--max-locked-shards", type="int", default=0,
             help="Set the maximum number of locked shards"),
-        optparse.make_option("--no-retry-failures", action="store_false",
-            dest="retry_failures",
-            help="Don't re-try any tests that produce unexpected results."),
         optparse.make_option("--nocheck-sys-deps", action="store_true",
             default=False,
             help="Don't check the system dependencies (themes)"),
@@ -228,8 +225,15 @@ def parse_args(args):
         optparse.make_option("--profiler", action="store",
             help="Output per-test profile information, using the specified profiler."),
         optparse.make_option("--repeat-each", type="int", default=1, help="Number of times to run each test (e.g. AAABBBCCC)"),
+        # TODO(joelo): Delete --retry-failures and --no-retry-failures as they
+        # are redundant with --num-retries.
         optparse.make_option("--retry-failures", action="store_true",
             help="Re-try any tests that produce unexpected results. Default is to not retry if an explicit list of tests is passed to run-webkit-tests."),
+        optparse.make_option("--no-retry-failures", action="store_false", dest="retry_failures",
+                             help="Don't re-try any tests that produce unexpected results."),
+        optparse.make_option("--num-retries", type="int", default=3,
+                             help=("Number of times to retry failures, default is 3. "
+                                   "Only relevant when failure retries are enabled.")),
         optparse.make_option("--run-chunk",
             help=("Run a specified chunk (n:l), the nth of len l, "
                  "of the layout tests")),

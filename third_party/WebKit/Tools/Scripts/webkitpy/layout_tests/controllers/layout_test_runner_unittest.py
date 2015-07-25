@@ -104,7 +104,7 @@ class LayoutTestRunnerTests(unittest.TestCase):
     def _run_tests(self, runner, tests):
         test_inputs = [TestInput(test, 6000) for test in tests]
         expectations = TestExpectations(runner._port, tests)
-        runner.run_tests(expectations, test_inputs, set(), num_workers=1, retrying=False)
+        runner.run_tests(expectations, test_inputs, set(), num_workers=1)
 
     def test_interrupt_if_at_failure_limits(self):
         runner = self._runner()
