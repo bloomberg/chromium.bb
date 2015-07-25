@@ -58,6 +58,16 @@ WebSecurityOrigin WebSecurityOrigin::create(const WebURL& url)
     return WebSecurityOrigin(SecurityOrigin::create(url));
 }
 
+WebSecurityOrigin WebSecurityOrigin::createFromTuple(const WebString& protocol, const WebString& host, int port)
+{
+    return WebSecurityOrigin(SecurityOrigin::create(protocol, host, port));
+}
+
+WebSecurityOrigin WebSecurityOrigin::createUnique()
+{
+    return WebSecurityOrigin(SecurityOrigin::createUnique());
+}
+
 void WebSecurityOrigin::reset()
 {
     assign(0);

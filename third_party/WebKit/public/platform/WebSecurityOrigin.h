@@ -32,16 +32,18 @@
 #define WebSecurityOrigin_h
 
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 #if INSIDE_BLINK
 #include "wtf/PassRefPtr.h"
+#else
+#include <url/origin.h>
 #endif
 
 namespace blink {
 
 class SecurityOrigin;
 class WebSecurityOriginPrivate;
-class WebString;
 class WebURL;
 
 class WebSecurityOrigin {
@@ -59,6 +61,7 @@ public:
     BLINK_PLATFORM_EXPORT static WebSecurityOrigin createFromDatabaseIdentifier(const WebString& databaseIdentifier);
     BLINK_PLATFORM_EXPORT static WebSecurityOrigin createFromString(const WebString&);
     BLINK_PLATFORM_EXPORT static WebSecurityOrigin create(const WebURL&);
+    BLINK_PLATFORM_EXPORT static WebSecurityOrigin createUnique();
 
     BLINK_PLATFORM_EXPORT void reset();
     BLINK_PLATFORM_EXPORT void assign(const WebSecurityOrigin&);
@@ -110,9 +113,35 @@ public:
     BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(const WTF::PassRefPtr<SecurityOrigin>&);
     BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<SecurityOrigin>() const;
     BLINK_PLATFORM_EXPORT SecurityOrigin* get() const;
+#else
+    // TODO(mkwst): A number of properties don't survive a round-trip ('document.domain', for instance).
+    // We'll need to fix that for OOPI-enabled embedders: https://crbug.com/490074.
+    operator url::Origin() const
+    {
+        return isUnique()
+            ? url::Origin()
+            : url::Origin::UnsafelyCreateOriginWithoutNormalization(protocol().utf8(), host().utf8(), port());
+    }
+
+    WebSecurityOrigin(const url::Origin& origin)
+        : m_private(0)
+    {
+        if (origin.unique()) {
+            assign(WebSecurityOrigin::createUnique());
+            return;
+        }
+
+        // TODO(mkwst): This might open up issues by double-canonicalizing the host.
+        assign(WebSecurityOrigin::createFromTuple(WebString::fromUTF8(origin.scheme()),
+            WebString::fromUTF8(origin.host()),
+            origin.port()));
+    }
 #endif
 
 private:
+    // Present only to facilitate conversion from 'url::Origin'; this constructor shouldn't be used anywhere else.
+    BLINK_PLATFORM_EXPORT static WebSecurityOrigin createFromTuple(const WebString& protocol, const WebString& host, int port);
+
     void assign(WebSecurityOriginPrivate*);
     WebSecurityOriginPrivate* m_private;
 };
