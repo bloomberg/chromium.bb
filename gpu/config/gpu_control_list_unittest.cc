@@ -627,4 +627,39 @@ TEST_F(GpuControlListTest, DisabledExtensionTest) {
   ASSERT_STREQ("test_extension3", disabled_extensions[2].c_str());
 }
 
+TEST_F(GpuControlListTest, DisabledInProcessGPUTest) {
+  const std::string exact_list_json = LONG_STRING_CONST(
+      {
+        "name": "gpu control list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "win"
+            },
+            "in_process_gpu": true,
+            "features": [
+              "test_feature_0"
+            ]
+          }
+        ]
+      }
+  );
+  scoped_ptr<GpuControlList> control_list(Create());
+
+  EXPECT_TRUE(control_list->LoadList(exact_list_json, GpuControlList::kAllOs));
+  GPUInfo gpu_info;
+
+  gpu_info.in_process_gpu = true;
+  std::set<int> features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
+
+  gpu_info.in_process_gpu = false;
+  features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+  EXPECT_EMPTY_SET(features);
+}
+
 }  // namespace gpu
