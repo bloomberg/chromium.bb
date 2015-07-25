@@ -123,7 +123,9 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
 void SingleThreadProxy::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "SingleThreadProxy::SetVisible", "visible", visible);
   DebugScopedSetImplThread impl(this);
+
   layer_tree_host_impl_->SetVisible(visible);
+
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
   // Changing visibility could change ShouldComposite().
@@ -448,11 +450,6 @@ void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
 void SingleThreadProxy::DidActivateSyncTree() {
-  // This is required because NotifyReadyToActivate gets called immediately
-  // after commit since single thread commits directly to the active tree.
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetWaitForReadyToDraw();
-
   // Synchronously call to CommitComplete. Resetting
   // |commit_blocking_task_runner| would make sure all tasks posted during
   // commit/activation before CommitComplete.

@@ -272,6 +272,79 @@ class LayerTreeHostTestReadyToDrawNonEmpty
 // single threaded mode.
 SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawNonEmpty);
 
+// This tests if we get the READY_TO_DRAW signal and draw if we become invisible
+// and then become visible again.
+class LayerTreeHostTestReadyToDrawVisibility : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestReadyToDrawVisibility()
+      : LayerTreeHostTest(),
+        toggled_visibility_(false),
+        did_notify_ready_to_draw_(false),
+        did_draw_(false) {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(layer_settings(), &client_);
+    root_layer->SetBounds(gfx::Size(1024, 1024));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (!toggled_visibility_) {
+      {
+        DebugScopedSetMainThread main(proxy());
+        layer_tree_host()->SetVisible(false);
+      }
+      toggled_visibility_ = true;
+      EXPECT_FALSE(host_impl->visible());
+    }
+  }
+
+  void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) override {
+    // Sometimes the worker thread posts NotifyReadyToDraw in the extremely
+    // short duration of time between PrepareTiles and SetVisible(false) so we
+    // might get two NotifyReadyToDraw signals for this test.
+    did_notify_ready_to_draw_ = true;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(did_draw_);
+    did_draw_ = true;
+    EndTest();
+  }
+
+  void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) override {
+    if (!host_impl->visible()) {
+      {
+        DebugScopedSetMainThread main(proxy());
+        layer_tree_host()->SetVisible(true);
+      }
+      EXPECT_TRUE(host_impl->visible());
+    }
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(did_notify_ready_to_draw_);
+    EXPECT_TRUE(did_draw_);
+  }
+
+ private:
+  FakeContentLayerClient client_;
+  bool toggled_visibility_;
+  bool did_notify_ready_to_draw_;
+  bool did_draw_;
+};
+
+// Note: With this test setup, we only get tiles flagged as REQUIRED_FOR_DRAW in
+// single threaded mode.
+SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
+
 class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
  public:
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {

@@ -54,7 +54,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       defer_commits_(false),
       video_needs_begin_frames_(false),
       last_commit_had_no_updates_(false),
-      wait_for_active_tree_ready_to_draw_(false),
+      wait_for_ready_to_draw_(false),
       did_request_swap_in_last_frame_(false),
       did_perform_swap_in_last_draw_(false) {}
 
@@ -233,8 +233,7 @@ void SchedulerStateMachine::AsValueInto(
                     pending_tree_is_ready_for_activation_);
   state->SetBoolean("active_tree_needs_first_draw",
                     active_tree_needs_first_draw_);
-  state->SetBoolean("wait_for_active_tree_ready_to_draw",
-                    wait_for_active_tree_ready_to_draw_);
+  state->SetBoolean("wait_for_ready_to_draw", wait_for_ready_to_draw_);
   state->SetBoolean("did_create_and_initialize_first_output_surface",
                     did_create_and_initialize_first_output_surface_);
   state->SetBoolean("impl_latency_takes_priority",
@@ -646,6 +645,9 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
   // If the commit was aborted, then there is no pending tree.
   has_pending_tree_ = !commit_has_no_updates;
 
+  wait_for_ready_to_draw_ =
+      !commit_has_no_updates && settings_.commit_to_active_tree;
+
   // Update state related to forced draws.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT) {
     forced_redraw_state_ = has_pending_tree_
@@ -757,6 +759,7 @@ void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
 bool SchedulerStateMachine::BeginFrameRequiredForChildren() const {
   return children_need_begin_frames_;
 }
+
 bool SchedulerStateMachine::BeginFrameNeededForVideo() const {
   return video_needs_begin_frames_;
 }
@@ -904,12 +907,12 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
   if (settings_.using_synchronous_renderer_compositor) {
     // No deadline for synchronous compositor.
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE;
-  } else if (wait_for_active_tree_ready_to_draw_) {
+  } else if (ShouldTriggerBeginImplFrameDeadlineImmediately()) {
+    return BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE;
+  } else if (wait_for_ready_to_draw_) {
     // When we are waiting for ready to draw signal, we do not wait to post a
     // deadline yet.
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW;
-  } else if (ShouldTriggerBeginImplFrameDeadlineImmediately()) {
-    return BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE;
   } else if (needs_redraw_ && !SwapThrottled()) {
     // We have an animation or fast input path on the impl thread that wants
     // to draw, so don't wait too long for a new active tree.
@@ -925,12 +928,14 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
 
 bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
     const {
-  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
-    return false;
-
   // If we just forced activation, we should end the deadline right now.
   if (PendingActivationsShouldBeForced() && !has_pending_tree_)
     return true;
+
+  // Do not trigger deadline immediately if we're waiting for READY_TO_DRAW
+  // unless it's one of the forced cases.
+  if (wait_for_ready_to_draw_)
+    return false;
 
   // SwapAck throttle the deadline since we wont draw and swap anyway.
   if (SwapThrottled())
@@ -977,6 +982,7 @@ void SchedulerStateMachine::SetVisible(bool visible) {
 
   // TODO(sunnyps): Change the funnel to a bool to avoid hacks like this.
   prepare_tiles_funnel_ = 0;
+  wait_for_ready_to_draw_ = false;
 }
 
 void SchedulerStateMachine::SetCanDraw(bool can_draw) { can_draw_ = can_draw; }
@@ -985,10 +991,6 @@ void SchedulerStateMachine::SetNeedsRedraw() { needs_redraw_ = true; }
 
 void SchedulerStateMachine::SetNeedsAnimate() {
   needs_animate_ = true;
-}
-
-void SchedulerStateMachine::SetWaitForReadyToDraw() {
-  wait_for_active_tree_ready_to_draw_ = true;
 }
 
 bool SchedulerStateMachine::OnlyImplSideUpdatesExpected() const {
@@ -1116,7 +1118,7 @@ void SchedulerStateMachine::DidLoseOutputSurface() {
     return;
   output_surface_state_ = OUTPUT_SURFACE_LOST;
   needs_redraw_ = false;
-  wait_for_active_tree_ready_to_draw_ = false;
+  wait_for_ready_to_draw_ = false;
 }
 
 void SchedulerStateMachine::NotifyReadyToActivate() {
@@ -1125,7 +1127,7 @@ void SchedulerStateMachine::NotifyReadyToActivate() {
 }
 
 void SchedulerStateMachine::NotifyReadyToDraw() {
-  wait_for_active_tree_ready_to_draw_ = false;
+  wait_for_ready_to_draw_ = false;
 }
 
 void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {

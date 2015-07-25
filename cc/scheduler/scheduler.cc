@@ -183,11 +183,6 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetWaitForReadyToDraw() {
-  state_machine_.SetWaitForReadyToDraw();
-  ProcessScheduledActions();
-}
-
 void Scheduler::SetMaxSwapsPending(int max) {
   state_machine_.SetMaxSwapsPending(max);
 }

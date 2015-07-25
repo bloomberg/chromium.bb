@@ -167,9 +167,6 @@ class CC_EXPORT SchedulerStateMachine {
   // PrepareTiles will occur shortly (even if no redraw is required).
   void SetNeedsPrepareTiles();
 
-  // Make deadline wait for ReadyToDraw signal.
-  void SetWaitForReadyToDraw();
-
   // Sets how many swaps can be pending to the OutputSurface.
   void SetMaxSwapsPending(int max);
 
@@ -272,6 +269,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
 
   // True if we need to force activations to make forward progress.
+  // TODO(sunnyps): Rename this to ShouldAbortCurrentFrame or similar.
   bool PendingActivationsShouldBeForced() const;
 
   // TODO(brianderson): Remove this once NPAPI support is removed.
@@ -346,7 +344,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool defer_commits_;
   bool video_needs_begin_frames_;
   bool last_commit_had_no_updates_;
-  bool wait_for_active_tree_ready_to_draw_;
+  bool wait_for_ready_to_draw_;
   bool did_request_swap_in_last_frame_;
   bool did_perform_swap_in_last_draw_;
 

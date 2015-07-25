@@ -312,6 +312,7 @@ class SchedulerTest : public testing::Test {
       scheduler_->NotifyBeginMainFrameStarted();
       scheduler_->NotifyReadyToCommit();
       scheduler_->NotifyReadyToActivate();
+      scheduler_->NotifyReadyToDraw();
 
       EXPECT_FALSE(scheduler_->CommitPending());
 
@@ -1251,6 +1252,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.commit_to_active_tree = true;
   SetUpScheduler(make_scoped_ptr(client).Pass(), true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
@@ -1272,9 +1274,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   scheduler_->NotifyReadyToActivate();
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
-  // Set scheduler to wait for ready to draw. Schedule won't post deadline in
-  // the mode.
-  scheduler_->SetWaitForReadyToDraw();
+  // Scheduler won't post deadline in the mode.
   client_->Reset();
   task_runner().RunPendingTasks();  // Try to run posted deadline.
   // There is no posted deadline.
@@ -1292,6 +1292,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.commit_to_active_tree = true;
   SetUpScheduler(make_scoped_ptr(client).Pass(), true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
@@ -1313,9 +1314,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
   scheduler_->NotifyReadyToActivate();
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
-  // Set scheduler to wait for ready to draw. Schedule won't post deadline in
-  // the mode.
-  scheduler_->SetWaitForReadyToDraw();
+  // Scheduler won't post deadline in the mode.
   client_->Reset();
   task_runner().RunPendingTasks();  // Try to run posted deadline.
   // There is no posted deadline.
