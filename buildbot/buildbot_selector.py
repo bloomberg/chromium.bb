@@ -451,10 +451,13 @@ def Main():
       'step_name': 'naclperf',  # Seems unused, but is required.
       'test_name': 'naclperf',  # Really "Test Suite"
   }
-  # Locate the buildbot build directory by relative path, as it's absolute
-  # location varies by platform and configuration.
-  buildbot_build_dir = os.path.join(* [os.pardir] * 4)
-  runtest = os.path.join(buildbot_build_dir, 'scripts', 'slave', 'runtest.py')
+  # Get runtest from the environment, is available.
+  runtest = os.environ.get('RUNTEST')
+  if runtest is None:
+    # Locate the buildbot build directory by relative path, as it's absolute
+    # location varies by platform and configuration.
+    buildbot_build_dir = os.path.join(* [os.pardir] * 4)
+    runtest = os.path.join(buildbot_build_dir, 'scripts', 'slave', 'runtest.py')
   # For builds with an actual build number, require that the script is present
   # (i.e. that we're run from an actual buildbot).
   if build_number is not None and not os.path.exists(runtest):
