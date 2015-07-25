@@ -283,3 +283,8 @@ GURL GaiaUrls::GetCheckConnectionInfoURLWithSource(const std::string& source) {
       : get_check_connection_info_url_.Resolve(
             base::StringPrintf("?source=%s", source.c_str()));
 }
+
+GURL GaiaUrls::signin_completed_continue_url() const {
+  return
+      GURL("chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html");
+}

@@ -577,7 +577,7 @@ void FakeGaia::HandleEmbeddedLookupAccountLookup(
   url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
   url = net::AppendQueryParameter(
       url, "RelayState",
-      "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html");
+      GaiaUrls::GetInstance()->signin_completed_continue_url().spec());
   std::string redirect_url = url.spec();
   http_response->AddCustomHeader("Google-Accounts-SAML", "Start");
 

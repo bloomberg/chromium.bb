@@ -244,6 +244,18 @@ const char kUserManagerSelectProfileChromeSettings[] = "#chrome-settings";
 const char kUserManagerSelectProfileChromeMemory[] = "#chrome-memory";
 const char kUserManagerSelectProfileAppLauncher[] = "#app-launcher";
 
+base::FilePath GetPathOfProfileWithEmail(ProfileManager* profile_manager,
+                                         const std::string& email) {
+  base::string16 profile_email = base::UTF8ToUTF16(email);
+  std::vector<ProfileAttributesEntry*> entries =
+      profile_manager->GetProfileInfoCache().GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
+    if (entry->GetUserName() == profile_email)
+      return entry->GetPath();
+  }
+  return base::FilePath();
+}
+
 void FindOrCreateNewWindowForProfile(
     Profile* profile,
     chrome::startup::IsProcessStartup process_startup,

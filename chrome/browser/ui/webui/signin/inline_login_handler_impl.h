@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -59,6 +60,50 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   // InlineLoginHandler overrides:
   void SetExtraInitParams(base::DictionaryValue& params) override;
   void CompleteLogin(const base::ListValue* args) override;
+
+  // This struct exists to pass paramters to the FinishCompleteLogin() method,
+  // since the base::Bind() call does not support this many template args.
+  struct FinishCompleteLoginParams {
+   public:
+    FinishCompleteLoginParams(InlineLoginHandlerImpl* handler,
+                              content::StoragePartition* partition,
+                              const GURL& url,
+                              const base::FilePath& profile_path,
+                              bool confirm_untrusted_signin,
+                              const std::string& email,
+                              const std::string& gaia_id,
+                              const std::string& password,
+                              const std::string& session_index,
+                              bool choose_what_to_sync);
+    ~FinishCompleteLoginParams();
+
+    // Pointer to WebUI handler.  May be nullptr.
+    InlineLoginHandlerImpl* handler;
+    // The isolate storage partition containing sign in cookies.
+    content::StoragePartition* partition;
+    // URL of sign in containing parameters such as email, source, etc.
+    GURL url;
+    // Path to profile being signed in.  Non empty only when signing
+    // in to the profile from the user manager.
+    base::FilePath profile_path;
+    // When true, an extra prompt will be shown to the user before sign in
+    // completes.
+    bool confirm_untrusted_signin;
+    // Email address of the account used to sign in.
+    std::string email;
+    // Obfustcated gaia id of the account used to sign in.
+    std::string gaia_id;
+    // Password of the account used to sign in.
+    std::string password;
+    // Index within gaia cookie of the account used to sign in.
+    std::string session_index;
+    // True if the user wants to configure sync before signing in.
+    bool choose_what_to_sync;
+  };
+
+  static void FinishCompleteLogin(const FinishCompleteLoginParams& params,
+                                  Profile* profile,
+                                  Profile::CreateStatus status);
 
   // Overridden from content::WebContentsObserver overrides.
   void DidCommitProvisionalLoadForFrame(

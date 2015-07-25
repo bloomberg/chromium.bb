@@ -42,6 +42,11 @@ extern const char kUserManagerSelectProfileChromeSettings[];
 extern const char kUserManagerSelectProfileChromeMemory[];
 extern const char kUserManagerSelectProfileAppLauncher[];
 
+// Returns the path of the profile connected to the given email.  If no profile
+// is found an empty file path is returned.
+base::FilePath GetPathOfProfileWithEmail(ProfileManager* profile_manager,
+                                         const std::string& email);
+
 // Activates a window for |profile| on the desktop specified by
 // |desktop_type|. If no such window yet exists, or if |always_create| is
 // true, this first creates a new window, then activates

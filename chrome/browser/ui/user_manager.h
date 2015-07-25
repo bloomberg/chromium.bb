@@ -32,10 +32,20 @@ class UserManager {
   // To be called once the User Manager's contents are showing.
   static void OnUserManagerShown();
 
+  // Shows a dialog where the user can re-authenticate when their profile is
+  // not yet open.  This is called from the user manager when a profile is
+  // locked and it has detected that the user's password has changed since the
+  // profile was locked.
+  static void ShowReauthDialog(content::BrowserContext* browser_context,
+                               const std::string& email);
+
   // TODO(noms): Figure out if this size can be computed dynamically or adjusted
   // for smaller screens.
   static const int kWindowWidth = 800;
   static const int kWindowHeight = 600;
+
+  static const int kReauthDialogWidth = 360;
+  static const int kReauthDialogHeight = 440;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserManager);

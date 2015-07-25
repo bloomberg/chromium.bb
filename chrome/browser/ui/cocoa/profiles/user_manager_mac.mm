@@ -186,6 +186,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
 @end
 
 
+// static
 void UserManager::Show(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
@@ -217,18 +218,27 @@ void UserManager::Show(
       base::Bind(&UserManagerMac::OnSystemProfileCreated, base::Time::Now()));
 }
 
+// static
 void UserManager::Hide() {
   if (instance_)
     [instance_->window_controller() close];
 }
 
+// static
 bool UserManager::IsShowing() {
   return instance_ ? [instance_->window_controller() isVisible]: false;
 }
 
+// static
 void UserManager::OnUserManagerShown() {
   if (instance_)
     instance_->LogTimeToOpen();
+}
+
+// static
+void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
+                                   const std::string& email) {
+  // TODO(rogerta): See equivalent views implementation in user_manager_view.cc.
 }
 
 UserManagerMac::UserManagerMac(Profile* profile) {

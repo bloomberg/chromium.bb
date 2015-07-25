@@ -58,6 +58,9 @@ GURL GetPromoURL(signin_metrics::Source source,
 // Returns a sign in promo URL specifically for reauthenticating |account_id|.
 GURL GetReauthURL(Profile* profile, const std::string& account_id);
 
+// Returns a sign in promo URL specifically for reauthenticating |email|.
+GURL GetReauthURLWithEmail(const std::string& email);
+
 // Gets the next page URL from the query portion of the sign in promo URL.
 GURL GetNextPageURLForPromoURL(const GURL& url);
 
