@@ -831,6 +831,13 @@ void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
+    // Handle the case where the keepalive count was increased after the
+    // OnSuspend event was sent.
+    if (background_page_data_[extension_id].lazy_keepalive_count > 0) {
+      CancelSuspend(host->extension());
+      return;
+    }
+
     // Close remaining views.
     std::vector<content::RenderFrameHost*> frames_to_close;
     for (const auto& key_value : all_extension_frames_) {
