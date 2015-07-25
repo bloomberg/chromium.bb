@@ -25,10 +25,6 @@ SchemeHostPort::SchemeHostPort(base::StringPiece scheme,
     : scheme_(scheme.data(), scheme.length()),
       host_(host.data(), host.length()),
       port_(port) {
-#if DCHECK_IS_ON()
-  DCHECK(url::IsStandard(scheme.data(),
-                         url::Component(0, static_cast<int>(scheme.length()))));
-
   // Try to canonicalize the host (copy/pasted from net/base. :( ).
   const url::Component raw_host_component(0, static_cast<int>(host.length()));
   std::string canon_host;
@@ -46,11 +42,28 @@ SchemeHostPort::SchemeHostPort(base::StringPiece scheme,
     // Empty host, or canonicalization failed.
     canon_host.clear();
   }
-  DCHECK_EQ(host, canon_host);
 
-  DCHECK(scheme == kFileScheme ? port == 0 : port != 0);
-  DCHECK(!host.empty() || port == 0);
-#endif
+  // Return an invalid SchemeHostPort object if any of the following conditions
+  // hold:
+  //
+  // 1. The provided scheme is non-standard, 'blob:', or 'filesystem:'.
+  // 2. The provided host is non-canonical.
+  // 3. The scheme is 'file' and the port is non-zero.
+  // 4. The scheme is not 'file', and the port is zero or the host is empty.
+  bool isUnsupportedScheme =
+      !url::IsStandard(scheme.data(),
+                       url::Component(0, static_cast<int>(scheme.length()))) ||
+      scheme == kFileSystemScheme || scheme == kBlobScheme;
+  bool isNoncanonicalHost = host != canon_host;
+  bool isFileSchemeWithPort = scheme == kFileScheme && port != 0;
+  bool isNonFileSchemeWithoutPortOrHost =
+      scheme != kFileScheme && (port == 0 || host.empty());
+  if (isUnsupportedScheme || isNoncanonicalHost || isFileSchemeWithPort ||
+      isNonFileSchemeWithoutPortOrHost) {
+    scheme_.clear();
+    host_.clear();
+    port_ = 0;
+  }
 }
 
 SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {

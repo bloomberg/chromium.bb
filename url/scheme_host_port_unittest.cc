@@ -62,6 +62,68 @@ TEST(SchemeHostPortTest, ExplicitConstruction) {
   }
 }
 
+TEST(SchemeHostPortTest, InvalidConstruction) {
+  struct TestCases {
+    const char* scheme;
+    const char* host;
+    uint16 port;
+  } cases[] = {{"", "", 0},
+               {"data", "", 0},
+               {"blob", "", 0},
+               {"filesystem", "", 0},
+               {"http", "", 80},
+               {"data", "example.com", 80},
+               {"http", "☃.net", 80},
+               {"http\nmore", "example.com", 80},
+               {"http\rmore", "example.com", 80},
+               {"http\n", "example.com", 80},
+               {"http\r", "example.com", 80},
+               {"http", "example.com\nnot-example.com", 80},
+               {"http", "example.com\rnot-example.com", 80},
+               {"http", "example.com\n", 80},
+               {"http", "example.com\r", 80},
+               {"http", "example.com", 0},
+               {"file", "", 80}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
+                                    << test.port);
+    url::SchemeHostPort tuple(test.scheme, test.host, test.port);
+    EXPECT_EQ("", tuple.scheme());
+    EXPECT_EQ("", tuple.host());
+    EXPECT_EQ(0, tuple.port());
+    EXPECT_TRUE(tuple.IsInvalid());
+    EXPECT_TRUE(tuple.Equals(tuple));
+  }
+}
+
+TEST(SchemeHostPortTest, InvalidConstructionWithEmbeddedNulls) {
+  struct TestCases {
+    const char* scheme;
+    size_t scheme_length;
+    const char* host;
+    size_t host_length;
+    uint16 port;
+  } cases[] = {{"http\0more", 9, "example.com", 11, 80},
+               {"http\0", 5, "example.com", 11, 80},
+               {"\0http", 5, "example.com", 11, 80},
+               {"http", 4, "example.com\0not-example.com", 27, 80},
+               {"http", 4, "example.com\0", 12, 80},
+               {"http", 4, "\0example.com", 12, 80}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
+                                    << test.port);
+    url::SchemeHostPort tuple(std::string(test.scheme, test.scheme_length),
+                              std::string(test.host, test.host_length),
+                              test.port);
+    EXPECT_EQ("", tuple.scheme());
+    EXPECT_EQ("", tuple.host());
+    EXPECT_EQ(0, tuple.port());
+    EXPECT_TRUE(tuple.IsInvalid());
+  }
+}
+
 TEST(SchemeHostPortTest, GURLConstruction) {
   struct TestCases {
     const char* url;

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "url/scheme_host_port.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -86,6 +87,19 @@ class URL_EXPORT Origin {
   // 3. 'file' URLs all parse as ("file", "", 0).
   explicit Origin(const GURL& url);
 
+  // Creates an Origin from a |scheme|, |host|, and |port|. All the parameters
+  // must be valid and canonicalized. In particular, note that this cannot be
+  // used to create unique origins; 'url::Origin()' is the right way to do that.
+  //
+  // This constructor should be used in order to pass 'Origin' objects back and
+  // forth over IPC (as transitioning through GURL would risk potentially
+  // dangerous recanonicalization); other potential callers should prefer the
+  // 'GURL'-based constructor.
+  static Origin UnsafelyCreateOriginWithoutNormalization(
+      base::StringPiece scheme,
+      base::StringPiece host,
+      uint16 port);
+
   ~Origin();
 
   // For unique origins, these return ("", "", 0).
@@ -108,10 +122,10 @@ class URL_EXPORT Origin {
   bool operator<(const Origin& other) const;
 
  private:
+  Origin(base::StringPiece scheme, base::StringPiece host, uint16 port);
+
   SchemeHostPort tuple_;
   bool unique_;
-
-  DISALLOW_COPY_AND_ASSIGN(Origin);
 };
 
 URL_EXPORT std::ostream& operator<<(std::ostream& out,

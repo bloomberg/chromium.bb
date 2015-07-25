@@ -81,6 +81,43 @@ void ParamTraits<url::DeprecatedSerializedOrigin>::Log(
   l->append(p.string());
 }
 
+void ParamTraits<url::Origin>::Write(Message* m, const url::Origin& p) {
+  WriteParam(m, p.unique());
+  WriteParam(m, p.scheme());
+  WriteParam(m, p.host());
+  WriteParam(m, p.port());
+}
+
+bool ParamTraits<url::Origin>::Read(const Message* m,
+                                    base::PickleIterator* iter,
+                                    url::Origin* p) {
+  bool unique;
+  std::string scheme;
+  std::string host;
+  uint16 port;
+  if (!ReadParam(m, iter, &unique) || !ReadParam(m, iter, &scheme) ||
+      !ReadParam(m, iter, &host) || !ReadParam(m, iter, &port)) {
+    *p = url::Origin();
+    return false;
+  }
+
+  *p = unique ? url::Origin()
+              : url::Origin::UnsafelyCreateOriginWithoutNormalization(
+                    scheme, host, port);
+
+  // If a unique origin was created, but the unique flag wasn't set, then
+  // the values provided to 'UnsafelyCreateOriginWithoutNormalization' were
+  // invalid; kill the renderer.
+  if (!unique && p->unique())
+    return false;
+
+  return true;
+}
+
+void ParamTraits<url::Origin>::Log(const url::Origin& p, std::string* l) {
+  l->append(p.Serialize());
+}
+
 void ParamTraits<net::HostPortPair>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.host());
   WriteParam(m, p.port());

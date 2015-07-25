@@ -38,7 +38,20 @@ Origin::Origin(const GURL& url) : unique_(true) {
   unique_ = tuple_.IsInvalid();
 }
 
+Origin::Origin(base::StringPiece scheme, base::StringPiece host, uint16 port)
+    : tuple_(scheme, host, port) {
+  unique_ = tuple_.IsInvalid();
+}
+
 Origin::~Origin() {
+}
+
+// static
+Origin Origin::UnsafelyCreateOriginWithoutNormalization(
+    base::StringPiece scheme,
+    base::StringPiece host,
+    uint16 port) {
+  return Origin(scheme, host, port);
 }
 
 std::string Origin::Serialize() const {
