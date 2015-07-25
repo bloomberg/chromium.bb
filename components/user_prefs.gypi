@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'user_prefs',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
@@ -14,9 +14,13 @@
       'include_dirs': [
         '..',
       ],
+      'defines': [
+        'USER_PREFS_IMPLEMENTATION',
+      ],
       'sources': [
         'user_prefs/user_prefs.cc',
         'user_prefs/user_prefs.h',
+        'user_prefs/user_prefs_export.h',
       ],
     },
   ],
