@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,13 @@ namespace ios {
 class ChromeBrowserState;
 
 // Singleton that owns the GaiaCookieManagerService(s) and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up.
+// browser states.
 class GaiaCookieManagerServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   // Returns the instance of GaiaCookieManagerService associated with this
-  // profile (creating one if none exists). Returns NULL if this profile cannot
-  // have an GaiaCookieManagerService (for example, if |profile| is incognito).
+  // browser state (creating one if none exists). Returns null if this browser
+  // state cannot have an GaiaCookieManagerService (for example, if it is
+  // incognito).
   static GaiaCookieManagerService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
