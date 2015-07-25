@@ -4537,8 +4537,6 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	weston_compositor_add_debug_binding(ec, KEY_T,
 					    timeline_key_binding_handler, ec);
 
-	weston_compositor_schedule_repaint(ec);
-
 	return ec;
 
 fail:
