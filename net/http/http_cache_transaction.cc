@@ -327,7 +327,7 @@ bool HttpCache::Transaction::AddTruncatedFlag() {
   DCHECK(mode_ & WRITE || mode_ == NONE);
 
   // Don't set the flag for sparse entries.
-  if (is_sparse_)
+  if (partial_ && !truncated_)
     return true;
 
   if (!CanResume(true))
