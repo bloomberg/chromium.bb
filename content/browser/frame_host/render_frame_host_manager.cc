@@ -1521,6 +1521,37 @@ void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
   }
 }
 
+void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
+  // TODO(alexmos): use SiteIsolationPolicy::AreCrossProcessFramesPossible once
+  // https://codereview.chromium.org/1208143002/ lands.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
+  DCHECK(!frame_tree_node_->frame_name().empty());
+
+  // If this is a top-level frame, create proxies for this node in the
+  // SiteInstances of its opener's ancestors, which are allowed to discover
+  // this frame by name (see https://crbug.com/511474 and part 4 of
+  // https://html.spec.whatwg.org/#the-rules-for-choosing-a-browsing-context-
+  // given-a-browsing-context-name).
+  FrameTreeNode* opener = frame_tree_node_->opener();
+  if (!opener || !frame_tree_node_->IsMainFrame())
+    return;
+  SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
+
+  // Start from opener's parent.  There's no need to create a proxy in the
+  // opener's SiteInstance, since new windows are always first opened in the
+  // same SiteInstance as their opener, and if the new window navigates
+  // cross-site, that proxy would be created as part of swapping out.
+  for (FrameTreeNode* ancestor = opener->parent(); ancestor;
+       ancestor = ancestor->parent()) {
+    RenderFrameHostImpl* ancestor_rfh = ancestor->current_frame_host();
+    if (ancestor_rfh->GetSiteInstance() != current_instance)
+      CreateRenderFrameProxy(ancestor_rfh->GetSiteInstance());
+  }
+}
+
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
     SiteInstance* site_instance,
     int view_routing_id,

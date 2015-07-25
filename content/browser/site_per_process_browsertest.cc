@@ -76,6 +76,20 @@ int GetReceivedMessages(FrameTreeNode* ftn) {
   return received_messages;
 }
 
+// Helper function to perform a window.open from the |caller_frame| targeting a
+// frame with the specified name.
+void NavigateNamedFrame(const ToRenderFrameHost& caller_frame,
+                        const GURL& url,
+                        const std::string& name) {
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      caller_frame,
+      "window.domAutomationController.send("
+      "    !!window.open('" + url.spec() + "', '" + name + "'));",
+      &success));
+  EXPECT_TRUE(success);
+}
+
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -2778,6 +2792,111 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
       "    window.opener === window.opener.top.frames[0]);",
       &success));
   EXPECT_TRUE(success);
+}
+
+// Verify that named frames are discoverable from their opener's ancestors.
+// See https://crbug.com/511474.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DiscoverNamedFrameFromAncestorOfOpener) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Navigate first child cross-site.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  // Open a popup named "foo" from the first child.
+  Shell* foo_shell = OpenPopup(root->child_at(0)->current_frame_host(),
+                               GURL(url::kAboutBlankURL), "foo");
+  EXPECT_TRUE(foo_shell);
+
+  // Check that a proxy was created for the "foo" popup in a.com.
+  FrameTreeNode* foo_root =
+      static_cast<WebContentsImpl*>(foo_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  SiteInstance* site_instance_a = root->current_frame_host()->GetSiteInstance();
+  RenderFrameProxyHost* popup_rfph_for_a =
+      foo_root->render_manager()->GetRenderFrameProxyHost(site_instance_a);
+  EXPECT_TRUE(popup_rfph_for_a);
+
+  // Verify that the main frame can find the "foo" popup by name.  If
+  // window.open targets the correct frame, the "foo" popup's current URL
+  // should be updated to |named_frame_url|.
+  GURL named_frame_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+  NavigateNamedFrame(shell()->web_contents(), named_frame_url, "foo");
+  EXPECT_TRUE(WaitForLoadStop(foo_shell->web_contents()));
+  EXPECT_EQ(named_frame_url, foo_root->current_url());
+
+  // Navigate the popup cross-site and ensure it's still reachable via
+  // window.open from the main frame.
+  GURL d_url(embedded_test_server()->GetURL("d.com", "/title3.html"));
+  NavigateToURL(foo_shell, d_url);
+  EXPECT_EQ(d_url, foo_root->current_url());
+  NavigateNamedFrame(shell()->web_contents(), named_frame_url, "foo");
+  EXPECT_TRUE(WaitForLoadStop(foo_shell->web_contents()));
+  EXPECT_EQ(named_frame_url, foo_root->current_url());
+}
+
+// Similar to DiscoverNamedFrameFromAncestorOfOpener, but check that if a
+// window is created without a name and acquires window.name later, it will
+// still be discoverable from its opener's ancestors.  Also, instead of using
+// an opener's ancestor, this test uses a popup with same origin as that
+// ancestor. See https://crbug.com/511474.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DiscoverFrameAfterSettingWindowName) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Open a same-site popup from the main frame.
+  GURL a_com_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  Shell* a_com_shell =
+      OpenPopup(root->child_at(0)->current_frame_host(), a_com_url, "");
+  EXPECT_TRUE(a_com_shell);
+
+  // Navigate first child on main frame cross-site.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  // Open an unnamed popup from the first child frame.
+  Shell* foo_shell = OpenPopup(root->child_at(0)->current_frame_host(),
+                               GURL(url::kAboutBlankURL), "");
+  EXPECT_TRUE(foo_shell);
+
+  // There should be no proxy created for the "foo" popup in a.com, since
+  // there's no way for the two a.com frames to access it yet.
+  FrameTreeNode* foo_root =
+      static_cast<WebContentsImpl*>(foo_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  SiteInstance* site_instance_a = root->current_frame_host()->GetSiteInstance();
+  EXPECT_FALSE(
+      foo_root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+
+  // Set window.name in the popup's frame.
+  EXPECT_TRUE(ExecuteScript(foo_shell->web_contents(), "window.name = 'foo'"));
+
+  // A proxy for the popup should now exist in a.com.
+  EXPECT_TRUE(
+      foo_root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+
+  // Verify that the a.com popup can now find the "foo" popup by name.
+  GURL named_frame_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+  NavigateNamedFrame(a_com_shell->web_contents(), named_frame_url, "foo");
+  EXPECT_TRUE(WaitForLoadStop(foo_shell->web_contents()));
+  EXPECT_EQ(named_frame_url, foo_root->current_url());
 }
 
 }  // namespace content

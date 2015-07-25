@@ -1276,7 +1276,10 @@ void RenderFrameHostImpl::OnDidDisownOpener() {
 }
 
 void RenderFrameHostImpl::OnDidChangeName(const std::string& name) {
+  std::string old_name = frame_tree_node()->frame_name();
   frame_tree_node()->SetFrameName(name);
+  if (old_name.empty() && !name.empty())
+    frame_tree_node_->render_manager()->CreateProxiesForNewNamedFrame();
   delegate_->DidChangeName(this, name);
 }
 

@@ -1734,6 +1734,13 @@ void WebContentsImpl::CreateNewWindow(
       partition_id,
       session_storage_namespace);
 
+  // If the new frame has a name, make sure any SiteInstances that can find
+  // this named frame have proxies for it.  Must be called after
+  // SetSessionStorageNamespace, since this calls CreateRenderView, which uses
+  // GetSessionStorageNamespace.
+  if (!params.frame_name.empty())
+    new_contents->GetRenderManager()->CreateProxiesForNewNamedFrame();
+
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately).
   if (!params.opener_suppressed) {

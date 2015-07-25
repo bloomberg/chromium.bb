@@ -462,6 +462,11 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // supporting calls like window.opener.opener.frames[x][y]).
   void CreateOpenerProxies(SiteInstance* instance);
 
+  // Ensure that this frame has proxies in all SiteInstances that can discover
+  // this frame by name (e.g., via window.open("", "frame_name")).  See
+  // https://crbug.com/511474.
+  void CreateProxiesForNewNamedFrame();
+
   // Returns a routing ID for the current FrameTreeNode's opener node in the
   // given SiteInstance.  May return a routing ID of either a RenderFrameHost
   // (if opener's current or pending RFH has SiteInstance |instance|) or a
