@@ -21,6 +21,7 @@
 #ifndef RootInlineBox_h
 #define RootInlineBox_h
 
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "platform/text/BidiContext.h"
 
@@ -80,7 +81,7 @@ public:
 
     LayoutObject* lineBreakObj() const { return m_lineBreakObj; }
     BidiStatus lineBreakBidiStatus() const;
-    void setLineBreakInfo(LayoutObject*, unsigned breakPos, const BidiStatus&);
+    void setLineBreakInfo(LineLayoutItem, unsigned breakPos, const BidiStatus&);
 
     unsigned lineBreakPos() const { return m_lineBreakPos; }
     void setLineBreakPos(unsigned p) { m_lineBreakPos = p; }
@@ -185,7 +186,7 @@ private:
 
     // Where this line ended.  The exact object and the position within that object are stored so that
     // we can create an InlineIterator beginning just after the end of this line.
-    LayoutObject* m_lineBreakObj;
+    LineLayoutItem m_lineBreakObj;
     RefPtr<BidiContext> m_lineBreakContext;
 
     // Floats hanging off the line are pushed into this vector during layout. It is only

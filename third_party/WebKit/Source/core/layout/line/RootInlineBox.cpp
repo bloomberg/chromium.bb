@@ -521,14 +521,14 @@ BidiStatus RootInlineBox::lineBreakBidiStatus() const
     return BidiStatus(static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusEor), static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusLastStrong), static_cast<WTF::Unicode::Direction>(m_lineBreakBidiStatusLast), m_lineBreakContext);
 }
 
-void RootInlineBox::setLineBreakInfo(LayoutObject* obj, unsigned breakPos, const BidiStatus& status)
+void RootInlineBox::setLineBreakInfo(LineLayoutItem obj, unsigned breakPos, const BidiStatus& status)
 {
     // When setting lineBreakObj, the LayoutObject must not be a LayoutInline
     // with no line boxes, otherwise all sorts of invariants are broken later.
     // This has security implications because if the LayoutObject does not
     // point to at least one line box, then that LayoutInline can be deleted
     // later without resetting the lineBreakObj, leading to use-after-free.
-    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj->isText() || !(obj->isLayoutInline() && obj->isBox() && !toLayoutBox(obj)->inlineBoxWrapper()));
+    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj.isText() || !(obj.isLayoutInline() && obj.isBox() && !toLayoutBox(obj)->inlineBoxWrapper()));
 
     m_lineBreakObj = obj;
     m_lineBreakPos = breakPos;
