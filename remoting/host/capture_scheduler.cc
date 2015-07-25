@@ -36,14 +36,6 @@ static const int kMaxFramesInEncodingQueue = 2;
 // keeping round-trip latency low.
 static const int kMaxUnacknowledgedFrames = 4;
 
-// Maximum number of frames that can be processed (captured, encoded or sent)
-// simultaneously. It's used only in the case when the client doesn't support
-// ACKs.
-//
-// TODO(sergeyu): Remove this once all current versions support ACKs.
-// crbug.com/460963 .
-static const int kMaxPendingFrames = 2;
-
 }  // namespace
 
 namespace remoting {
@@ -51,7 +43,6 @@ namespace remoting {
 // We assume that the number of available cores is constant.
 CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
     : capture_closure_(capture_closure),
-      acks_supported_(false),
       tick_clock_(new base::DefaultTickClock()),
       capture_timer_(new base::Timer(false, false)),
       minimum_interval_(
@@ -60,7 +51,6 @@ CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
       capture_time_(kStatisticsWindow),
       encode_time_(kStatisticsWindow),
       num_encoding_frames_(0),
-      num_sending_frames_(0),
       num_unacknowledged_frames_(0),
       capture_pending_(false),
       is_paused_(false),
@@ -114,7 +104,6 @@ void CaptureScheduler::OnFrameEncoded(VideoPacket* packet) {
   encode_time_.Record(packet->encode_time_ms());
 
   --num_encoding_frames_;
-  ++num_sending_frames_;
   ++num_unacknowledged_frames_;
 
   ScheduleNextCapture();
@@ -123,19 +112,11 @@ void CaptureScheduler::OnFrameEncoded(VideoPacket* packet) {
 void CaptureScheduler::OnFrameSent() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  --num_sending_frames_;
-  DCHECK_GE(num_sending_frames_, 0);
-
   ScheduleNextCapture();
 }
 
 void CaptureScheduler::ProcessVideoAck(scoped_ptr<VideoAck> video_ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Host always sets |frame_id| field to indicated that it expects ACK from the
-  // client. It's assumed that the client doesn't support ACKs until the first
-  // ACK message is received.
-  acks_supported_ = true;
 
   --num_unacknowledged_frames_;
   DCHECK_GE(num_unacknowledged_frames_, 0);
@@ -164,17 +145,9 @@ void CaptureScheduler::ScheduleNextCapture() {
     return;
   }
 
-  if (acks_supported_) {
-    if (num_encoding_frames_ + num_unacknowledged_frames_ >=
-        kMaxUnacknowledgedFrames) {
-      return;
-    }
-  } else {
-    // TODO(sergeyu): Remove this once all current versions support ACKs.
-    // crbug.com/460963 .
-    if (num_encoding_frames_ + num_sending_frames_ >= kMaxPendingFrames) {
-      return;
-    }
+  if (num_encoding_frames_ + num_unacknowledged_frames_ >=
+      kMaxUnacknowledgedFrames) {
+    return;
   }
 
   // Delay by an amount chosen such that if capture and encode times

@@ -73,9 +73,6 @@ class CaptureScheduler : public protocol::VideoFeedbackStub {
 
   base::Closure capture_closure_;
 
-  // Set to true if the connection supports video frame acknowledgments.
-  bool acks_supported_;
-
   scoped_ptr<base::TickClock> tick_clock_;
 
   // Timer used to schedule CaptureNextFrame().
@@ -91,9 +88,6 @@ class CaptureScheduler : public protocol::VideoFeedbackStub {
 
   // Number of frames pending encoding.
   int num_encoding_frames_;
-
-  // Number of frames in the sending queue.
-  int num_sending_frames_;
 
   // Number of outgoing frames for which we haven't received an acknowledgment.
   int num_unacknowledged_frames_;

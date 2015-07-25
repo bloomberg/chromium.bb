@@ -192,23 +192,4 @@ TEST_F(CaptureSchedulerTest, MaximumPendingFrames) {
   EXPECT_TRUE(capture_timer_->IsRunning());
 }
 
-// Verify that the scheduler doesn't exceed maximum number of pending frames
-// when acks are not supported.
-TEST_F(CaptureSchedulerTest, MaximumPendingFramesNoAcks) {
-  InitScheduler();
-
-  // Queue some frames until the sender is blocked.
-  while (capture_timer_->IsRunning()) {
-    capture_timer_->Fire();
-    CheckCaptureCalled();
-    scheduler_->OnCaptureCompleted();
-    VideoPacket packet;
-    scheduler_->OnFrameEncoded(&packet);
-  }
-
-  // Next frame should be scheduled, once one of the queued frames is sent.
-  EXPECT_FALSE(capture_timer_->IsRunning());
-  scheduler_->OnFrameSent();
-  EXPECT_TRUE(capture_timer_->IsRunning());
-}
 }  // namespace remoting
