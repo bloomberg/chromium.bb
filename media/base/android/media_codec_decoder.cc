@@ -50,6 +50,9 @@ MediaCodecDecoder::MediaCodecDecoder(
       last_frame_posted_(false),
       is_data_request_in_progress_(false),
       is_incoming_data_invalid_(false),
+#ifndef NDEBUG
+      verify_next_frame_is_key_(false),
+#endif
       weak_factory_(this) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -99,6 +102,15 @@ void MediaCodecDecoder::Flush() {
   eos_enqueued_ = false;
   completed_ = false;
   au_queue_.Flush();
+
+#ifndef NDEBUG
+  // We check and reset |verify_next_frame_is_key_| on Decoder thread.
+  // This DCHECK ensures we won't need to lock this variable.
+  DCHECK(!decoder_thread_.IsRunning());
+
+  // For video the first frame after flush must be key frame.
+  verify_next_frame_is_key_ = true;
+#endif
 
   if (media_codec_bridge_) {
     // MediaCodecBridge::Reset() performs MediaCodecBridge.flush()
@@ -171,16 +183,26 @@ MediaCodecDecoder::ConfigStatus MediaCodecDecoder::Configure() {
     return CONFIG_FAILURE;
   }
 
-  // Here I assume that OnDemuxerConfigsAvailable won't come
-  // in the middle of demuxer data.
-
+  MediaCodecDecoder::ConfigStatus result;
   if (media_codec_bridge_) {
     DVLOG(1) << class_name() << "::" << __FUNCTION__
              << ": reconfiguration is not required, ignoring";
-    return CONFIG_OK;
+    result = CONFIG_OK;
+  } else {
+    result = ConfigureInternal();
+
+#ifndef NDEBUG
+    // We check and reset |verify_next_frame_is_key_| on Decoder thread.
+    // This DCHECK ensures we won't need to lock this variable.
+    DCHECK(!decoder_thread_.IsRunning());
+
+    // For video the first frame after reconfiguration must be key frame.
+    if (result == CONFIG_OK)
+      verify_next_frame_is_key_ = true;
+#endif
   }
 
-  return ConfigureInternal();
+  return result;
 }
 
 bool MediaCodecDecoder::Start(base::TimeDelta current_time) {
@@ -297,25 +319,32 @@ void MediaCodecDecoder::OnLastFrameRendered(bool completed) {
 void MediaCodecDecoder::OnDemuxerDataAvailable(const DemuxerData& data) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  const char* explain_if_skipped =
-      is_incoming_data_invalid_ ? " skipped as invalid" : "";
+  // If |data| contains an aborted data, the last AU will have kAborted status.
+  bool aborted_data =
+      !data.access_units.empty() &&
+      data.access_units.back().status == DemuxerStream::kAborted;
 
-  DVLOG(2) << class_name() << "::" << __FUNCTION__ << explain_if_skipped
-           << " #AUs:" << data.access_units.size()
-           << " #Configs:" << data.demuxer_configs.size();
-#if !defined(NDEBUG)
+#ifndef NDEBUG
+  const char* explain_if_skipped =
+      is_incoming_data_invalid_ ? " skipped as invalid"
+                                : (aborted_data ? " skipped as aborted" : "");
+
   for (const auto& unit : data.access_units)
-    DVLOG(2) << class_name() << "::" << __FUNCTION__ << explain_if_skipped
+    DVLOG(1) << class_name() << "::" << __FUNCTION__ << explain_if_skipped
              << " au: " << unit;
+  for (const auto& configs : data.demuxer_configs)
+    DVLOG(1) << class_name() << "::" << __FUNCTION__ << " configs: " << configs;
 #endif
 
-  if (!is_incoming_data_invalid_)
+  if (!is_incoming_data_invalid_ && !aborted_data)
     au_queue_.PushBack(data);
 
   is_incoming_data_invalid_ = false;
   is_data_request_in_progress_ = false;
 
-  if (state_ == kPrefetching)
+  // Do not request data if we got kAborted. There is no point to request the
+  // data after kAborted and before the OnDemuxerSeekDone.
+  if (state_ == kPrefetching && !aborted_data)
     PrefetchNextChunk();
 }
 
@@ -471,6 +500,15 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
     media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
     return false;
   }
+
+  // We are ready to enqueue the front unit.
+
+#ifndef NDEBUG
+  if (verify_next_frame_is_key_) {
+    verify_next_frame_is_key_ = false;
+    VerifyUnitIsKeyFrame(au_info.front_unit);
+  }
+#endif
 
   // Dequeue input buffer
 

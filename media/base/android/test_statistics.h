@@ -28,6 +28,12 @@ class Minimax {
     ++num_values_;
   }
 
+  void Clear() {
+    min_ = T();
+    max_ = T();
+    num_values_ = 0;
+  }
+
   const T& min() const { return min_; }
   const T& max() const { return max_; }
   int num_values() const { return num_values_; }

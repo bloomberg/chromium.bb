@@ -64,6 +64,10 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   int NumDelayedRenderTasks() const override;
   void ReleaseDelayedBuffers() override;
 
+#ifndef NDEBUG
+  void VerifyUnitIsKeyFrame(const AccessUnit* unit) const override;
+#endif
+
  private:
   // A helper method that releases output buffers and does
   // post-release checks. Might be called by Render() or posted

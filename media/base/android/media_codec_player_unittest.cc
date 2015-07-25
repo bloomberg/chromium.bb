@@ -11,6 +11,7 @@
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
+#include "media/base/buffers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/surface_texture.h"
 
@@ -41,6 +42,16 @@ const base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMilliseconds(200);
 const base::TimeDelta kAudioFramePeriod =
     base::TimeDelta::FromSecondsD(1024.0 / 44100);  // 1024 samples @ 44100 Hz
 const base::TimeDelta kVideoFramePeriod = base::TimeDelta::FromMilliseconds(20);
+
+// The predicate that always returns false, used for WaitForDelay implementation
+bool AlwaysFalse() {
+  return false;
+}
+
+// The method used to compare two TimeDelta values in expectations.
+bool AlmostEqual(base::TimeDelta a, base::TimeDelta b, double tolerance_ms) {
+  return (a - b).magnitude().InMilliseconds() <= tolerance_ms;
+}
 
 // Mock of MediaPlayerManager for testing purpose.
 
@@ -95,6 +106,10 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   // Conditions to wait for.
   bool IsMetadataChanged() const { return media_metadata_.modified; }
   bool IsPlaybackCompleted() const { return playback_completed_; }
+  bool IsPlaybackStarted() const { return pts_stat_.num_values() > 0; }
+  bool IsPlaybackBeyondPosition(const base::TimeDelta& pts) const {
+    return pts_stat_.max() > pts;
+  }
 
   struct MediaMetadata {
     base::TimeDelta duration;
@@ -209,7 +224,7 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   void Initialize(DemuxerAndroidClient* client) override;
   void RequestDemuxerData(DemuxerStream::Type type) override;
   void RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
-                          bool is_browser_seek) override {}
+                          bool is_browser_seek) override;
 
   // Sets the audio data factory.
   void SetAudioFactory(scoped_ptr<TestDataFactory> factory) {
@@ -272,6 +287,23 @@ void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
       delay);
 }
 
+void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
+                                            bool is_browser_seek) {
+  // Tell data factories to start next chunk with the new timestamp.
+  if (audio_factory_)
+    audio_factory_->SeekTo(time_to_seek);
+  if (video_factory_)
+    video_factory_->SeekTo(time_to_seek);
+
+  // Post OnDemuxerSeekDone() to the player.
+  DCHECK(client_);
+  base::TimeDelta reported_seek_time =
+      is_browser_seek ? time_to_seek : kNoTimestamp();
+  GetMediaTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&DemuxerAndroidClient::OnDemuxerSeekDone,
+                            base::Unretained(client_), reported_seek_time));
+}
+
 void MockDemuxerAndroid::PostConfigs(const DemuxerConfigs& configs) {
   RUN_ON_MEDIA_THREAD(MockDemuxerAndroid, PostConfigs, configs);
 
@@ -307,6 +339,9 @@ class MediaCodecPlayerTest : public testing::Test {
   MediaCodecPlayerTest();
   ~MediaCodecPlayerTest() override;
 
+  // Conditions to wait for.
+  bool IsPaused() const { return !(player_ && player_->IsPlaying()); }
+
  protected:
   typedef base::Callback<bool()> Predicate;
 
@@ -317,6 +352,16 @@ class MediaCodecPlayerTest : public testing::Test {
   // Returns true if the condition becomes true.
   bool WaitForCondition(const Predicate& condition,
                         const base::TimeDelta& timeout = kDefaultTimeout);
+
+  // Waits for timeout to expire.
+  void WaitForDelay(const base::TimeDelta& timeout);
+
+  // Waits till playback position as determined by maximal reported pts
+  // reaches the given value or for timeout to expire. Returns true if the
+  // playback has passed the given position.
+  bool WaitForPlaybackBeyondPosition(
+      const base::TimeDelta& pts,
+      const base::TimeDelta& timeout = kDefaultTimeout);
 
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
@@ -384,6 +429,19 @@ bool MediaCodecPlayerTest::WaitForCondition(const Predicate& condition,
 
   DCHECK(!timer.IsRunning());
   return false;
+}
+
+void MediaCodecPlayerTest::WaitForDelay(const base::TimeDelta& timeout) {
+  WaitForCondition(base::Bind(&AlwaysFalse), timeout);
+}
+
+bool MediaCodecPlayerTest::WaitForPlaybackBeyondPosition(
+    const base::TimeDelta& pts,
+    const base::TimeDelta& timeout) {
+  return WaitForCondition(
+      base::Bind(&MockMediaPlayerManager::IsPlaybackBeyondPosition,
+                 base::Unretained(&manager_), pts),
+      timeout);
 }
 
 TEST_F(MediaCodecPlayerTest, SetAudioConfigsBeforePlayerCreation) {
@@ -517,6 +575,171 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
                        timeout));
 
   EXPECT_LE(duration, manager_.pts_stat_.max());
+}
+
+TEST_F(MediaCodecPlayerTest, AudioSeekAfterStop) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Play for 300 ms, then Pause, then Seek to beginning. The playback should
+  // start from the beginning.
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+
+  CreatePlayer();
+
+  // Post configuration.
+  demuxer_->PostInternalConfigs();
+
+  // Start the player.
+  player_->Start();
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_))));
+
+  // Wait for 300 ms and stop. The 300 ms interval takes into account potential
+  // audio delay: audio takes time reconfiguring after the first several packets
+  // get written to the audio track.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(300));
+
+  player_->Pause(true);
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // Wait till the Pause is completed.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayerTest::IsPaused, base::Unretained(this))));
+
+  // Clear statistics.
+  manager_.pts_stat_.Clear();
+
+  // Now we can seek to the beginning and start the playback.
+  player_->SeekTo(base::TimeDelta());
+
+  player_->Start();
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_))));
+
+  // Make sure we started from the beginninig
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(40), manager_.pts_stat_.min());
+}
+
+TEST_F(MediaCodecPlayerTest, AudioSeekThenPlay) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Issue Seek command immediately followed by Start. The playback should
+  // start at the seek position.
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+
+  CreatePlayer();
+
+  // Post configuration.
+  demuxer_->PostInternalConfigs();
+
+  // Seek and immediately start.
+  player_->SeekTo(seek_position);
+  player_->Start();
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_))));
+
+  // The playback should start at |seek_position|
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+}
+
+TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Issue Seek command immediately followed by Start but without prior demuxer
+  // configuration. Start should wait for configuration. After it has been
+  // posted the playback should start at the seek position.
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+
+  CreatePlayer();
+
+  // Seek and immediately start.
+  player_->SeekTo(seek_position);
+  player_->Start();
+
+  // Make sure the player is waiting.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+  EXPECT_FALSE(player_->IsPlaying());
+
+  // Post configuration.
+  demuxer_->PostInternalConfigs();
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_))));
+
+  // The playback should start at |seek_position|
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+}
+
+TEST_F(MediaCodecPlayerTest, AudioSeekWhilePlaying) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Play for 300 ms, then issue several Seek commands in the row.
+  // The playback should continue at the last seek position.
+
+  // To test this condition without analyzing the reported time details
+  // and without introducing dependency on implementation I make a long (10s)
+  // duration and test that the playback resumes after big time jump (5s) in a
+  // short period of time (200 ms).
+  base::TimeDelta duration = base::TimeDelta::FromSeconds(10);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+
+  CreatePlayer();
+
+  // Post configuration.
+  demuxer_->PostInternalConfigs();
+
+  // Start the player.
+  player_->Start();
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_))));
+
+  // Wait for 300 ms.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(300));
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // Seek forward several times.
+  player_->SeekTo(base::TimeDelta::FromSeconds(3));
+  player_->SeekTo(base::TimeDelta::FromSeconds(4));
+  player_->SeekTo(base::TimeDelta::FromSeconds(5));
+
+  // Make sure that we reached the last timestamp within default timeout,
+  // i.e. 200 ms.
+  EXPECT_TRUE(WaitForPlaybackBeyondPosition(base::TimeDelta::FromSeconds(5)));
+  EXPECT_TRUE(player_->IsPlaying());
 }
 
 }  // namespace media

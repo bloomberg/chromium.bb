@@ -244,6 +244,16 @@ void MediaCodecVideoDecoder::ReleaseDelayedBuffers() {
   delayed_buffers_.clear();
 }
 
+#ifndef NDEBUG
+void MediaCodecVideoDecoder::VerifyUnitIsKeyFrame(
+    const AccessUnit* unit) const {
+  // The first video frame in a sequence must be a key frame or stand-alone EOS.
+  DCHECK(unit);
+  bool stand_alone_eos = unit->is_end_of_stream && unit->data.empty();
+  DCHECK(stand_alone_eos || unit->is_key_frame);
+}
+#endif
+
 void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
                                                  base::TimeDelta pts,
                                                  size_t size,

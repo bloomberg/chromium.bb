@@ -39,7 +39,7 @@ void AccessUnitQueue::PushBack(const DemuxerData& data) {
   for (size_t i = 0; i < data.access_units.size(); ++i) {
     const AccessUnit& unit = data.access_units[i];
 
-    // EOS must be the last unit in the chunk
+    // EOS must be the last unit in the chunk.
     if (unit.is_end_of_stream) {
       DCHECK(i == data.access_units.size() - 1);
     }

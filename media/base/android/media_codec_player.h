@@ -31,18 +31,18 @@
 //        | <------------------[ WaitingForConfig ]               [ Error ]
 //        |
 //        |
-//        |
-//        v
-//   [ Prefetching ] -------------------
-//        |                             |
-//        |                             v
-//        | <-----------------[ WaitingForSurface ]
-//        v
-//   [ Playing ]
-//        |
-//        |
-//        v
-//   [ Stopping ]
+//        | <----------------------------------------------
+//        v                                                |
+//   [ Prefetching ] -------------------                   |
+//        |                             |                  |
+//        |                             v                  |
+//        | <-----------------[ WaitingForSurface ]        |
+//        v                                                |
+//   [ Playing ]                                           |
+//        |                                                |
+//        |                                                |
+//        v                                                |
+//   [ Stopping ] --------------------------------> [ WaitingForSeek ]
 
 
 //  Events and actions for pause/resume workflow.
@@ -89,6 +89,50 @@
 //    |   |
 //    ------------------------- [ Stopping ]
 
+
+//   Events and actions for seek workflow.
+//   -------------------------------------
+//
+//                   Seek:                   --       --
+//                       demuxer.RequestSeek |         |
+//  [   Paused    ] -----------------------> |         |
+//  [             ] <----------------------- |         |--
+//                      SeekDone:            |         |  |
+//                                           |         |  |
+//                                           |         |  |
+//                                           |         |  |
+//                                           |         |  | Start:
+//                    Seek:                  |         |  |   SetPendingStart
+//                      dec.Stop             |         |  |
+//                      SetPendingSeek       |         |  |
+//                      demuxer.RequestSeek  |         |  |
+//  [ Prefetching ] -----------------------> |         |  |
+//  [             ] <----------------------  |         |  | Pause:
+//        |          SeekDone                |         |  |   RemovePendingStart
+//        |          w/pending start:        |         |  |
+//        |            dec.Prefetch          | Waiting |  |
+//        |                                  |   for   |  | Seek:
+//        |                                  |   seek  |  |   SetPendingSeek
+//        |                                  |         |  |
+//        | PrefetchDone: dec.Start          |         |  |
+//        |                                  |         |  | SeekDone
+//        v                                  |         |  | w/pending seek:
+//                                           |         |  | demuxer.RequestSeek
+//  [   Playing   ]                          |         |  |
+//                                           |         |  |
+//        |                                  |         |<-
+//        | Seek: SetPendingStart            |         |
+//        |       SetPendingSeek             |         |
+//        |       dec.RequestToStop          |         |
+//        |                                  |         |
+//        |                                  |         |
+//        v                                  |         |
+//                                           |         |
+//  [  Stopping   ] -----------------------> |         |
+//                  StopDone                 --       --
+//                    w/pending seek:
+//                      demuxer.RequestSeek
+
 namespace media {
 
 class BrowserCdm;
@@ -107,6 +151,9 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   typedef base::Callback<void(base::TimeDelta, base::TimeTicks)>
       TimeUpdateCallback;
+
+  typedef base::Callback<void(const base::TimeDelta& current_timestamp)>
+      SeekDoneCallback;
 
   // Constructs a player with the given ID and demuxer. |manager| must outlive
   // the lifetime of this object.
@@ -154,6 +201,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
     STATE_PLAYING,
     STATE_STOPPING,
     STATE_WAITING_FOR_SURFACE,
+    STATE_WAITING_FOR_SEEK,
     STATE_ERROR,
   };
 
@@ -161,6 +209,14 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   struct MediaMetadata {
     base::TimeDelta duration;
     gfx::Size video_size;
+  };
+
+  // Information about current seek in progress.
+  struct SeekInfo {
+    const base::TimeDelta seek_time;
+    const bool is_browser_seek;
+    SeekInfo(base::TimeDelta time, bool browser_seek)
+        : seek_time(time), is_browser_seek(browser_seek) {}
   };
 
   // MediaPlayerAndroid implementation.
@@ -189,22 +245,26 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // Operations called from the state machine.
   void SetState(PlayerState new_state);
   void SetPendingSurface(gfx::ScopedJavaSurface surface);
-  bool HasPendingSurface();
+  bool HasPendingSurface() const;
   void SetPendingStart(bool need_to_start);
-  bool HasPendingStart();
-  bool HasVideo();
-  bool HasAudio();
+  bool HasPendingStart() const;
+  void SetPendingSeek(base::TimeDelta timestamp);
+  base::TimeDelta GetPendingSeek() const;
+  bool HasVideo() const;
+  bool HasAudio() const;
   void SetDemuxerConfigs(const DemuxerConfigs& configs);
   void StartPrefetchDecoders();
   void StartPlaybackDecoders();
   void StopDecoders();
   void RequestToStopDecoders();
+  void RequestDemuxerSeek(base::TimeDelta seek_time,
+                          bool is_browser_seek = false);
   void ReleaseDecoderResources();
 
   // Helper methods.
   void CreateDecoders();
-  bool AudioFinished();
-  bool VideoFinished();
+  bool AudioFinished() const;
+  bool VideoFinished() const;
   base::TimeDelta GetInterpolatedTime();
 
   static const char* AsString(PlayerState state);
@@ -226,6 +286,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   base::Closure request_resources_cb_;
   TimeUpdateCallback time_update_cb_;
   base::Closure completion_cb_;
+  SeekDoneCallback seek_done_cb_;
 
   // A callback that updates metadata cache and calls the manager.
   MetadataChangedCallback metadata_changed_cb_;
@@ -252,6 +313,10 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // Pending data to be picked up by the upcoming state.
   gfx::ScopedJavaSurface pending_surface_;
   bool pending_start_;
+  base::TimeDelta pending_seek_;
+
+  // Data associated with a seek in progress.
+  scoped_ptr<SeekInfo> seek_info_;
 
   // Configuration data for the manager, accessed on the UI thread.
   MediaMetadata metadata_cache_;

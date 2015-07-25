@@ -101,6 +101,11 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
   return true;
 }
 
+void TestDataFactory::SeekTo(const base::TimeDelta& seek_time) {
+  regular_pts_ = seek_time;
+  last_pts_ = base::TimeDelta();
+}
+
 void TestDataFactory::LoadPackets(const char* file_name_template) {
   for (int i = 0; i < 4; ++i) {
     scoped_refptr<DecoderBuffer> buffer =

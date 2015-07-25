@@ -71,6 +71,19 @@ const char* AsString(VideoCodec codec) {
   return nullptr;  // crash early
 }
 
+const char* AsString(DemuxerStream::Status status) {
+  switch (status) {
+    case DemuxerStream::kOk:
+      return "kOk";
+    case DemuxerStream::kAborted:
+      return "kAborted";
+    case DemuxerStream::kConfigChanged:
+      return "kConfigChanged";
+  }
+  NOTREACHED();
+  return nullptr;  // crash early
+}
+
 #undef RETURN_STRING
 
 }  // namespace (anonymous)
@@ -78,7 +91,8 @@ const char* AsString(VideoCodec codec) {
 }  // namespace media
 
 std::ostream& operator<<(std::ostream& os, const media::AccessUnit& au) {
-  os << "status:" << au.status << (au.is_end_of_stream ? " EOS" : "")
+  os << "status:" << media::AsString(au.status)
+     << (au.is_end_of_stream ? " EOS" : "")
      << (au.is_key_frame ? " KEY_FRAME" : "") << " pts:" << au.timestamp
      << " size:" << au.data.size();
   return os;

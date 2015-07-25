@@ -50,6 +50,11 @@ class TestDataFactory {
   // In starvation mode we do not add EOS at the end.
   void SetStarvationMode(bool value) { starvation_mode_ = value; }
 
+  // Resets the timestamp for the next access unit.
+  void SeekTo(const base::TimeDelta& seek_time);
+
+  // Returns the maximum PTS, taking into account possible modifications
+  // by subclasses. The SeekTo() resets this value.
   base::TimeDelta last_pts() const { return last_pts_; }
 
  protected:
@@ -64,7 +69,7 @@ class TestDataFactory {
   base::TimeDelta frame_period_;
   std::vector<uint8_t> packet_[4];
   base::TimeDelta regular_pts_;  // monotonically increasing PTS
-  base::TimeDelta last_pts_;     // subclass can modify PTS, maintains the last
+  base::TimeDelta last_pts_;     // subclass can modify PTS, maintain the last
   bool starvation_mode_;         // true means no EOS at the end
 };
 
