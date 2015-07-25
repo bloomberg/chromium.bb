@@ -192,9 +192,6 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/active-
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Crash Pass ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
-crbug.com/502927 paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ NeedsRebaseline ]
-crbug.com/502927 paint/frames/frameset-with-stacking-contexts.html [ NeedsRebaseline ]
-
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
