@@ -76,7 +76,7 @@ Canvas log:
             image : {
                 height : 21
                 opaque : false
-                uniqueID : 1
+                uniqueID : 30
                 width : 19
             }
             paint : {
