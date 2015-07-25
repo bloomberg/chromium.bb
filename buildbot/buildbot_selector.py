@@ -341,7 +341,7 @@ for platform in [
       for libc in ['newlib', 'glibc']:
         # Buildbots.
         for bare in ['', '-bare']:
-          for test in ['', 'test']:
+          for test in ['', '-test']:
             name = platform + arch_part + bare + '-' + libc + '-' + mode + test
             assert name not in BOT_ASSIGNMENT, name
             BOT_ASSIGNMENT[name] = (
