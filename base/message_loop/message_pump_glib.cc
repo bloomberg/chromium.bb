@@ -52,7 +52,7 @@ int GetTimeIntervalMilliseconds(const TimeTicks& from) {
 // returns FALSE, GLib will destroy the source.  Dispatch calls may be recursive
 // (i.e., you can call Run from them), but Prepare and Check cannot.
 //     Finalize is called when the source is destroyed.
-// NOTE: It is common for subsytems to want to process pending events while
+// NOTE: It is common for subsystems to want to process pending events while
 // doing intensive work, for example the flash plugin. They usually use the
 // following pattern (recommended by the GTK docs):
 // while (gtk_events_pending()) {
@@ -350,7 +350,7 @@ void MessagePumpGlib::ScheduleWork() {
 
 void MessagePumpGlib::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // We need to wake up the loop in case the poll timeout needs to be
-  // adjusted.  This will cause us to try to do work, but that's ok.
+  // adjusted.  This will cause us to try to do work, but that's OK.
   delayed_work_time_ = delayed_work_time;
   ScheduleWork();
 }

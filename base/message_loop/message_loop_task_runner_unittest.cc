@@ -30,7 +30,7 @@ class MessageLoopTaskRunnerTest : public testing::Test {
  protected:
   void SetUp() override {
     // Use SetUp() instead of the constructor to avoid posting a task to a
-    // partialy constructed object.
+    // partially constructed object.
     task_thread_.Start();
 
     // Allow us to pause the |task_thread_|'s MessageLoop.
@@ -41,7 +41,7 @@ class MessageLoopTaskRunnerTest : public testing::Test {
 
   void TearDown() override {
     // Make sure the |task_thread_| is not blocked, and stop the thread
-    // fully before destuction because its tasks may still depend on the
+    // fully before destruction because its tasks may still depend on the
     // |thread_sync_| event.
     thread_sync_.Signal();
     task_thread_.Stop();
@@ -244,7 +244,7 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_DeadReplyLoopDoesNotDelete) {
   // it, we cannot just delete it because PostTaskAndReplyRelay's destructor
   // checks that MessageLoop::current() is the the same as when the
   // PostTaskAndReplyRelay object was constructed.  However, this loop must have
-  // aleady been deleted in order to perform this test.  See
+  // already been deleted in order to perform this test.  See
   // http://crbug.com/86301.
 }
 

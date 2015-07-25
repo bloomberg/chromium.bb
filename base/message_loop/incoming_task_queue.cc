@@ -147,7 +147,7 @@ bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
   }
 
   // Initialize the sequence number. The sequence number is used for delayed
-  // tasks (to faciliate FIFO sorting when two tasks have the same
+  // tasks (to facilitate FIFO sorting when two tasks have the same
   // delayed_run_time value) and for identifying the task in about:tracing.
   pending_task->sequence_num = next_sequence_num_++;
 

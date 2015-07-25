@@ -78,7 +78,7 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
 // message.  MessageLoop extends that bare-bones message pump to also service
 // Tasks, at the cost of some complexity.
 //
-// The basic structure of the extension (refered to as a sub-pump) is that a
+// The basic structure of the extension (referred to as a sub-pump) is that a
 // special message, kMsgHaveWork, is repeatedly injected into the Windows
 // Message queue.  Each time the kMsgHaveWork message is peeked, checks are
 // made for an extended set of events, including the availability of Tasks to

@@ -44,7 +44,7 @@ namespace {
 LazyInstance<base::ThreadLocalPointer<MessageLoop> >::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
 
-// Logical events for Histogram profiling. Run with -message-loop-histogrammer
+// Logical events for Histogram profiling. Run with --message-loop-histogrammer
 // to get an accounting of messages and actions taken on each thread.
 const int kTaskRunEvent = 0x1;
 #if !defined(OS_NACL)
@@ -56,9 +56,9 @@ const int kMaxMessageId = 1099;
 const int kNumberOfDistinctMessagesDisplayed = 1100;
 
 // Provide a macro that takes an expression (such as a constant, or macro
-// constant) and creates a pair to initalize an array of pairs.  In this case,
+// constant) and creates a pair to initialize an array of pairs.  In this case,
 // our pair consists of the expressions value, and the "stringized" version
-// of the expression (i.e., the exrpression put in quotes).  For example, if
+// of the expression (i.e., the expression put in quotes).  For example, if
 // we have:
 //    #define FOO 2
 //    #define BAR 5
@@ -79,7 +79,7 @@ const LinearHistogram::DescriptionPair event_descriptions_[] = {
   VALUE_TO_NUMBER_AND_NAME(kTaskRunEvent)
   VALUE_TO_NUMBER_AND_NAME(kTimerEvent)
 
-  {-1, NULL}  // The list must be null terminated, per API to histogram.
+  {-1, NULL}  // The list must be null-terminated, per API to histogram.
 };
 #endif  // !defined(OS_NACL)
 
@@ -362,7 +362,7 @@ bool MessageLoop::HasHighResolutionTasks() {
 }
 
 bool MessageLoop::IsIdleForTesting() {
-  // We only check the imcoming queue|, since we don't want to lock the work
+  // We only check the incoming queue, since we don't want to lock the work
   // queue.
   return incoming_task_queue_->IsIdleForTesting();
 }
@@ -423,7 +423,7 @@ void MessageLoop::SetTaskRunner(
 
 void MessageLoop::SetThreadTaskRunnerHandle() {
   DCHECK_EQ(this, current());
-  // Clear the previous thread task runner first because only one can exist at
+  // Clear the previous thread task runner first, because only one can exist at
   // a time.
   thread_task_runner_handle_.reset();
   thread_task_runner_handle_.reset(new ThreadTaskRunnerHandle(task_runner_));
@@ -615,7 +615,7 @@ bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
     return false;
   }
 
-  // When we "fall behind," there will be a lot of tasks in the delayed work
+  // When we "fall behind", there will be a lot of tasks in the delayed work
   // queue that are ready to run.  To increase efficiency when we fall behind,
   // we will only call Time::Now() intermittently, and then process all tasks
   // that are ready to run before calling it again.  As a result, the more we

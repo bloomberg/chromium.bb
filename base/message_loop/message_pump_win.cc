@@ -319,7 +319,7 @@ void MessagePumpForUI::RescheduleTimer() {
   //
   // We use a single SetTimer corresponding to the timer that will expire
   // soonest.  As new timers are created and destroyed, we update SetTimer.
-  // Getting a spurrious SetTimer event firing is benign, as we'll just be
+  // Getting a spurious SetTimer event firing is benign, as we'll just be
   // processing an empty timer queue.
   //
   int delay_msec = GetCurrentDelay();
