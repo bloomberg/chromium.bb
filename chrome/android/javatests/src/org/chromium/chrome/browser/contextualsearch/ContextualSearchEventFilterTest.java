@@ -417,7 +417,7 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     // --------------------------------------------------------------------------------------------
 
     @Override
-    public void onDown(float x, float y) {}
+    public void onDown(float x, float y, boolean fromMouse) {}
 
     @Override
     public void onUpOrCancel() {}

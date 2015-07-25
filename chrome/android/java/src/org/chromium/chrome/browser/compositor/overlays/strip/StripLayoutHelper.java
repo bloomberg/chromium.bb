@@ -594,11 +594,12 @@ public class StripLayoutHelper {
 
     /**
      * Called on onDown event.
-     * @param time The time stamp in millisecond of the event.
-     * @param x    The x position of the event.
-     * @param y    The y position of the event.
+     * @param time      The time stamp in millisecond of the event.
+     * @param x         The x position of the event.
+     * @param y         The y position of the event.
+     * @param fromMouse Whether the event originates from a mouse.
      */
-    public void onDown(long time, float x, float y) {
+    public void onDown(long time, float x, float y, boolean fromMouse) {
         resetResizeTimeout(false);
 
         if (mNewTabButton.onDown(x, y)) {
@@ -616,7 +617,9 @@ public class StripLayoutHelper {
         mInteractingTab = index != TabModel.INVALID_TAB_INDEX && index < mStripTabs.length
                 ? mStripTabs[index]
                 : null;
-        if (clickedTab != null && clickedTab.checkCloseHitTest(x, y)) {
+        boolean clickedClose = clickedTab != null
+                               && clickedTab.checkCloseHitTest(x, y);
+        if (clickedClose) {
             clickedTab.setClosePressed(true);
             mLastPressedCloseButton = clickedTab.getCloseButton();
             mRenderHost.requestRender();
@@ -625,6 +628,10 @@ public class StripLayoutHelper {
         if (!mScroller.isFinished()) {
             mScroller.forceFinished(true);
             mInteractingTab = null;
+        }
+
+        if (fromMouse && !clickedClose) {
+            startReorderMode(time, x, x);
         }
     }
 

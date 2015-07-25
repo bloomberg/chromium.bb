@@ -312,13 +312,14 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     /**
      * Called on onDown event.
-     * @param time The time stamp in millisecond of the event.
-     * @param x    The x position of the event.
-     * @param y    The y position of the event.
+     * @param time      The time stamp in millisecond of the event.
+     * @param x         The x position of the event.
+     * @param y         The y position of the event.
+     * @param fromMouse Whether the event originates from a mouse.
      */
-    public void onDown(long time, float x, float y) {
+    public void onDown(long time, float x, float y, boolean fromMouse) {
         if (mModelSelectorButton.onDown(x, y)) return;
-        getActiveStripLayoutHelper().onDown(time, x, y);
+        getActiveStripLayoutHelper().onDown(time, x, y, fromMouse);
     }
 
     /**

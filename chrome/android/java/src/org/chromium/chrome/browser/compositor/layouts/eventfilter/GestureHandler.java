@@ -14,8 +14,9 @@ public interface GestureHandler {
      *
      * @param x The X position of the event in the host view space in dp.
      * @param y The Y position of the event in the host view space in dp.
+     * @param fromMouse Whether the event originates from a mouse.
      */
-    void onDown(float x, float y);
+    void onDown(float x, float y, boolean fromMouse);
 
     /**
     * Called on up or cancel touch event.

@@ -150,7 +150,9 @@ public class GestureEventFilter extends EventFilter {
                 mInLongPress = false;
                 mSeenFirstScrollEvent = false;
                 if (mHandler != null && mSingleInput) {
-                    mHandler.onDown(e.getX() * mPxToDp, e.getY() * mPxToDp);
+                    mHandler.onDown(e.getX() * mPxToDp,
+                                    e.getY() * mPxToDp,
+                                    e.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE);
                 }
                 return true;
             }
