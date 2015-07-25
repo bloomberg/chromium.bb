@@ -10,3 +10,7 @@
 paper-button[toggles][active] {
   background-color: lightgrey;
 }
+
+paper-button {
+  margin: 0;
+}

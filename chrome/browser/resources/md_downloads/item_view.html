@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
@@ -22,19 +23,18 @@
       </div>
       <div id="details">
         <div id="title-area">
-          <cr-button id="file-link" column-type="name"
-              on-click="onFileLinkClick_"></cr-button>
-          <span id="name"></span>
-          <span id="status"></span>
+          <a is="action-link" id="file-link" column-type="name"
+              on-click="onFileLinkClick_"></a>
+          <div id="name"></div>
         </div>
-        <div>
-          <a id="src-url" target="_blank" column-type="url"></a>
-        </div>
-        <div>
+        <a id="src-url" target="_blank" column-type="url"></a>
+        <div id="status"></div>
+        <paper-progress id="progress"></paper-progress>
+        <div id="button-container">
           <cr-button id="show" column-type="show" on-click="onShowClick_"
               i18n-content="controlShowInFolder"></cr-button>
-          <a id="retry" column-type="retry" i18n-content="controlRetry"
-              download></a>
+          <cr-button id="retry" column-type="retry" on-click="onRetryClick_"
+              i18n-content="controlRetry"></cr-button>
           <cr-button id="pause" column-type="pause" on-click="onPauseClick_"
               i18n-content="controlPause"></cr-button>
           <cr-button id="resume" column-type="resume" on-click="onResumeClick_"
@@ -44,7 +44,6 @@
           <span id="controlled-by"
               i18n-values=".innerHTML:controlByExtension"></span>
         </div>
-        <paper-progress id="progress"></paper-progress>
       </div>
       <div id="remove-wrapper">
         <paper-icon-button id="safe-remove" column-type="remove" icon="clear"
@@ -73,6 +72,7 @@
 
     <div id="end-cap"></div>
   </template>
+  <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <link rel="import" type="css" href="chrome://downloads/shared_style.css">
   <link rel="import" type="css" href="chrome://downloads/item_view.css">
   <script src="chrome://downloads/item_view.js"></script>

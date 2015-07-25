@@ -203,6 +203,8 @@ without changes to the corresponding grd file. -->
       <part file="cr_elements_images.grdp" />
     </includes>
     <structures>
+      <structure name="IDR_WEBUI_CSS_ACTION_LINK"
+                 file="css/action_link.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_ALERT_OVERLAY"
                  file="css/alert_overlay.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_APPS_COMMON"

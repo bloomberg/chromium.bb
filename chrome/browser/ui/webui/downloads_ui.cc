@@ -74,7 +74,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("controlPause", IDS_DOWNLOAD_LINK_PAUSE);
   if (browser_defaults::kDownloadPageHasShowInFolder)
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
-  source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
   source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
   source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
   source->AddLocalizedString("controlRemoveFromList",
@@ -97,6 +96,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
   if (switches::MdDownloadsEnabled()) {
     source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
+    source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
 
     source->AddResourcePath("action_service.html",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
@@ -117,6 +117,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   } else {
     source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
+    source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
 
     source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);
     source->AddResourcePath("focus_row.js", IDR_DOWNLOADS_FOCUS_ROW_JS);

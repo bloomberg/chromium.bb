@@ -32,6 +32,14 @@ cr.define('downloads', function() {
     /** @param {string} id ID of the download that the user started dragging. */
     drag: chromeSendWithId('drag'),
 
+    /** @param {string} url URL of a file to download. */
+    download: function(url) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.setAttribute('download', '');
+      a.click();
+    },
+
     /** Opens the current local destination for downloads. */
     openDownloadsFolder: chrome.send.bind(chrome, 'openDownloadsFolder'),
 

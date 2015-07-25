@@ -30,22 +30,72 @@
   width: var(--downloads-item-width);
 }
 
+#safe.no-file {
+  background: rgba(255, 255, 255, .5);
+}
+
+.no-file #safe-icon-wrapper,
+.no-file #details {
+  opacity: .5;
+}
+
 #safe {
   display: flex;
 }
 
 #details {
+  -webkit-border-start: 1px #e6e6e6 solid;
   display: flex;
   flex: 1;
   flex-direction: column;
   padding: 16px 16px 12px 16px;
 }
 
+#title-area {
+  display: flex;
+}
+
 #safe-icon-wrapper {
   align-self: center;
   flex: none;
   justify-content: center;
-  margin: 0 16px;
+  margin: 0 32px;
+}
+
+#name,
+#file-link,
+#src-url {
+  display: inline-block;
+  max-width: 100%;
+}
+
+#name,
+#file-link {
+  word-break: break-all;
+}
+
+#src-url {
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#progress,
+#status:not(:empty),
+#button-container {
+  margin-top: 16px;
+}
+
+#progress {
+  --paper-progress-active-color: rgb(54, 126, 237);
+  --paper-progress-container-color: rgb(223, 222, 223);
+  width: auto;
+}
+
+/* TODO(dbeam): open up a CSS mixin instead in Polymer. */
+#progress /deep/ #progressContainer {
+  border-radius: 2px;
 }
 
 #remove-wrapper {
@@ -54,11 +104,7 @@
   justify-content: center;
 }
 
-#remove {
-  padding: 8px;
-}
-
-paper-icon-button {
+#safe-remove {
   --paper-icon-button: {
     height: 16px;
     width: 16px;

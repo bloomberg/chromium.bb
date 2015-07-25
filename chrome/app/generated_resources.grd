@@ -2084,6 +2084,10 @@ Even if you have downloaded files from this website before, the website might ha
                desc="In the download view, 'Retry download' link text">
         Retry download
       </message>
+      <message name="IDS_MD_DOWNLOAD_LINK_RETRY"
+               desc="In the download view, 'Retry' button text to retry downloading a file.">
+        Retry
+      </message>
       <if expr="not is_macosx">
         <message name="IDS_DOWNLOAD_LINK_SHOW"
                  desc="In the download view, 'Show in folder' link text">

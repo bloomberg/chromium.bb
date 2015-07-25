@@ -39,6 +39,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -172,7 +173,7 @@ base::DictionaryValue* CreateDownloadItemValue(
   file_value->SetBoolean("resume", download_item->CanResume());
 
   switch (download_item->GetState()) {
-    case content::DownloadItem::IN_PROGRESS:
+    case content::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
         file_value->SetString("state", "DANGEROUS");
         // These are the only danger states that the UI is equipped to handle.
@@ -199,11 +200,15 @@ base::DictionaryValue* CreateDownloadItemValue(
       file_value->SetString("progress_status_text",
                             download_model.GetTabProgressStatusText());
 
-      file_value->SetInteger("percent",
-          std::max(0, static_cast<int>(download_item->PercentComplete())));
+      int percent = download_item->PercentComplete();
+      if (!switches::MdDownloadsEnabled())
+        percent = std::max(0, percent);
+      file_value->SetInteger("percent", percent);
+
       file_value->SetInteger("received",
           static_cast<int>(download_item->GetReceivedBytes()));
       break;
+    }
 
     case content::DownloadItem::INTERRUPTED:
       file_value->SetString("state", "INTERRUPTED");

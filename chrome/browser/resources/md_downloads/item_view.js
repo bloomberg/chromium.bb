@@ -36,8 +36,6 @@ cr.define('downloads', function() {
       assert(!this.id_ || data.id == this.id_);
       this.id_ = data.id;  // This is the only thing saved from |data|.
 
-      this.classList.toggle('otr', data.otr);
-
       this.ensureTextIs_(this.$.since, data.since_string);
       this.ensureTextIs_(this.$.date, data.date_string);
 
@@ -64,9 +62,11 @@ cr.define('downloads', function() {
         var iconUrl = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
         this.iconLoader_.loadScaledIcon(this.$['safe-icon'], iconUrl);
 
-        /** @const */ var isInProgress =
-            data.state == downloads.States.IN_PROGRESS;
-        this.classList.toggle('in-progress', isInProgress);
+        /** @const */ var noFile =
+            data.state == downloads.States.CANCELLED ||
+            data.state == downloads.States.INTERRUPTED ||
+            data.file_externally_removed;
+        this.$.safe.classList.toggle('no-file', noFile);
 
         /** @const */ var completelyOnDisk =
             data.state == downloads.States.COMPLETE &&
@@ -76,17 +76,15 @@ cr.define('downloads', function() {
         this.ensureTextIs_(this.$['file-link'], data.file_name);
         this.$['file-link'].hidden = !completelyOnDisk;
 
-        /** @const */ var isInterrupted =
-            data.state == downloads.States.INTERRUPTED;
-        this.$.name.classList.toggle('interrupted', isInterrupted);
         this.ensureTextIs_(this.$.name, data.file_name);
         this.$.name.hidden = completelyOnDisk;
 
         this.$.show.hidden = !completelyOnDisk;
 
-        this.$.retry.href = data.url;
         this.$.retry.hidden = !data.retry;
 
+        /** @const */ var isInProgress =
+            data.state == downloads.States.IN_PROGRESS;
         this.$.pause.hidden = !isInProgress;
 
         this.$.resume.hidden = !data.resume;
@@ -110,12 +108,17 @@ cr.define('downloads', function() {
 
         this.ensureTextIs_(this.$['src-url'], data.url);
         this.$['src-url'].href = data.url;
+
+        // TODO(dbeam): "Cancelled" should show status next to the file name.
         this.ensureTextIs_(this.$.status, this.getStatusText_(data));
 
-        this.$.progress.hidden = !isInProgress;
+        /** @const */ var hasPercent = isFinite(data.percent);
+        this.$.progress.hidden = !hasPercent;
 
-        if (isInProgress)
+        if (hasPercent) {
+          this.$.progress.indeterminate = data.percent < 0;
           this.$.progress.value = data.percent;
+        }
       }
     },
 
@@ -225,6 +228,10 @@ cr.define('downloads', function() {
     /** @private */
     onResumeClick_: function() {
       this.actionService_.resume(this.id_);
+    },
+
+    onRetryClick_: function() {
+      this.actionService_.download(this.$['file-link'].href);
     },
 
     /** @private */

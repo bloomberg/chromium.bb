@@ -242,33 +242,7 @@ input:disabled:-webkit-any([type='password'],
   outline: none;
 }
 
-/* Action links ***************************************************************/
-
-[is='action-link'] {
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: none;
-}
-
-[is='action-link']:hover {
-  text-decoration: underline;
-}
-
-[is='action-link']:active {
-  color: rgb(5, 37, 119);
-  text-decoration: underline;
-}
-
-[is='action-link'][disabled] {
-  color: #999;
-  cursor: default;
-  pointer-events: none;
-  text-decoration: none;
-}
-
-[is='action-link'].no-outline {
-  outline: none;
-}
+@import url(chrome://resources/css/action_link.css);
 
 /* Checkbox/radio helpers ******************************************************
  *
