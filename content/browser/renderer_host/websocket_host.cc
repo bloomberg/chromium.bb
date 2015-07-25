@@ -25,7 +25,7 @@
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "url/deprecated_serialized_origin.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -348,13 +348,13 @@ bool WebSocketHost::OnMessageReceived(const IPC::Message& message) {
 void WebSocketHost::OnAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
-    const url::DeprecatedSerializedOrigin& origin,
+    const url::Origin& origin,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin.string() << "\"";
+           << origin << "\"";
 
   DCHECK(!channel_);
   if (delay_ > base::TimeDelta()) {
@@ -372,13 +372,13 @@ void WebSocketHost::OnAddChannelRequest(
 void WebSocketHost::AddChannel(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
-    const url::DeprecatedSerializedOrigin& origin,
+    const url::Origin& origin,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::AddChannel"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin.string() << "\"";
+           << origin << "\"";
 
   DCHECK(!channel_);
 

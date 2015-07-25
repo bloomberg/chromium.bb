@@ -27,7 +27,7 @@ class Timer;
 }
 
 namespace url {
-class DeprecatedSerializedOrigin;
+class Origin;
 }  // namespace url
 
 namespace net {
@@ -108,7 +108,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   static scoped_ptr<WebSocketStreamRequest> CreateAndConnectStream(
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
-      const url::DeprecatedSerializedOrigin& origin,
+      const url::Origin& origin,
       URLRequestContext* url_request_context,
       const BoundNetLog& net_log,
       scoped_ptr<ConnectDelegate> connect_delegate);
@@ -223,7 +223,7 @@ NET_EXPORT_PRIVATE scoped_ptr<WebSocketStreamRequest>
 CreateAndConnectStreamForTesting(
     const GURL& socket_url,
     scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
-    const url::DeprecatedSerializedOrigin& origin,
+    const url::Origin& origin,
     URLRequestContext* url_request_context,
     const BoundNetLog& net_log,
     scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,

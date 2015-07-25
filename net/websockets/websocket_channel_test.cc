@@ -33,8 +33,8 @@
 #include "net/websockets/websocket_mux.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 // Hacky macros to construct the body of a Close message from a code and a
 // string, while ensuring the result is a compile-time constant string.
@@ -686,7 +686,7 @@ struct ArgumentCopyingWebSocketStreamCreator {
   scoped_ptr<WebSocketStreamRequest> Create(
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
-      const url::DeprecatedSerializedOrigin& origin,
+      const url::Origin& origin,
       URLRequestContext* url_request_context,
       const BoundNetLog& net_log,
       scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
@@ -700,7 +700,7 @@ struct ArgumentCopyingWebSocketStreamCreator {
   }
 
   GURL socket_url;
-  url::DeprecatedSerializedOrigin origin;
+  url::Origin origin;
   std::vector<std::string> requested_subprotocols;
   URLRequestContext* url_request_context;
   BoundNetLog net_log;
@@ -767,7 +767,7 @@ class WebSocketChannelTest : public ::testing::Test {
   // A struct containing the data that will be used to connect the channel.
   // Grouped for readability.
   struct ConnectData {
-    ConnectData() : socket_url("ws://ws/"), origin("http://ws") {}
+    ConnectData() : socket_url("ws://ws/"), origin(GURL("http://ws")) {}
 
     // URLRequestContext object.
     URLRequestContext url_request_context;
@@ -777,7 +777,7 @@ class WebSocketChannelTest : public ::testing::Test {
     // Requested protocols for the request.
     std::vector<std::string> requested_subprotocols;
     // Origin of the request
-    url::DeprecatedSerializedOrigin origin;
+    url::Origin origin;
 
     // A fake WebSocketStreamCreator that just records its arguments.
     ArgumentCopyingWebSocketStreamCreator creator;
@@ -992,7 +992,7 @@ class WebSocketChannelReceiveUtf8Test : public WebSocketChannelStreamTest {
 // passed to the creator function.
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
-  connect_data_.origin = url::DeprecatedSerializedOrigin("http://example.com");
+  connect_data_.origin = url::Origin(GURL("http://example.com"));
   connect_data_.requested_subprotocols.push_back("Sinbad");
 
   CreateChannelAndConnect();
@@ -1004,7 +1004,7 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   EXPECT_EQ(connect_data_.socket_url, actual.socket_url);
   EXPECT_EQ(connect_data_.requested_subprotocols,
             actual.requested_subprotocols);
-  EXPECT_EQ(connect_data_.origin.string(), actual.origin.string());
+  EXPECT_EQ(connect_data_.origin.Serialize(), actual.origin.Serialize());
 }
 
 // Verify that calling SendFlowControl before the connection is established does

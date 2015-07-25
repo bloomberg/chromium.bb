@@ -19,7 +19,7 @@ class Timer;
 }  // namespace base
 
 namespace url {
-class DeprecatedSerializedOrigin;
+class Origin;
 }  // namespace url
 
 namespace net {
@@ -45,7 +45,7 @@ class LinearCongruentialGenerator {
 // with "\r\n".
 std::string WebSocketStandardRequest(const std::string& path,
                                      const std::string& host,
-                                     const std::string& origin,
+                                     const url::Origin& origin,
                                      const std::string& extra_headers);
 
 // Generates a standard WebSocket handshake request. The challenge key used is
@@ -54,7 +54,7 @@ std::string WebSocketStandardRequest(const std::string& path,
 std::string WebSocketStandardRequestWithCookies(
     const std::string& path,
     const std::string& host,
-    const std::string& origin,
+    const url::Origin& origin,
     const std::string& cookies,
     const std::string& extra_headers);
 

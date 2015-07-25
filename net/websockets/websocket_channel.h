@@ -25,7 +25,7 @@
 #include "url/gurl.h"
 
 namespace url {
-class DeprecatedSerializedOrigin;
+class Origin;
 }  // namespace url
 
 namespace net {
@@ -48,7 +48,7 @@ class NET_EXPORT WebSocketChannel {
   typedef base::Callback<scoped_ptr<WebSocketStreamRequest>(
       const GURL&,
       const std::vector<std::string>&,
-      const url::DeprecatedSerializedOrigin&,
+      const url::Origin&,
       URLRequestContext*,
       const BoundNetLog&,
       scoped_ptr<WebSocketStream::ConnectDelegate>)> WebSocketStreamCreator;
@@ -64,7 +64,7 @@ class NET_EXPORT WebSocketChannel {
   void SendAddChannelRequest(
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
-      const url::DeprecatedSerializedOrigin& origin);
+      const url::Origin& origin);
 
   // Sends a data frame to the remote side. The frame should usually be no
   // larger than 32KB to prevent the time required to copy the buffers from from
@@ -102,7 +102,7 @@ class NET_EXPORT WebSocketChannel {
   void SendAddChannelRequestForTesting(
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
-      const url::DeprecatedSerializedOrigin& origin,
+      const url::Origin& origin,
       const WebSocketStreamCreator& creator);
 
   // The default timout for the closing handshake is a sensible value (see
@@ -198,7 +198,7 @@ class NET_EXPORT WebSocketChannel {
   void SendAddChannelRequestWithSuppliedCreator(
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
-      const url::DeprecatedSerializedOrigin& origin,
+      const url::Origin& origin,
       const WebSocketStreamCreator& creator);
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports

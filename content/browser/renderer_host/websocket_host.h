@@ -17,7 +17,7 @@
 class GURL;
 
 namespace url {
-class DeprecatedSerializedOrigin;
+class Origin;
 }  // namespace url
 
 namespace net {
@@ -62,12 +62,12 @@ class CONTENT_EXPORT WebSocketHost {
 
   void OnAddChannelRequest(const GURL& socket_url,
                            const std::vector<std::string>& requested_protocols,
-                           const url::DeprecatedSerializedOrigin& origin,
+                           const url::Origin& origin,
                            int render_frame_id);
 
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
-                  const url::DeprecatedSerializedOrigin& origin,
+                  const url::Origin& origin,
                   int render_frame_id);
 
   void OnSendFrame(bool fin,

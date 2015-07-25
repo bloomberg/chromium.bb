@@ -39,7 +39,7 @@ class WebSocketStreamCreateTestBase {
   // parameters.
   void CreateAndConnectStream(const std::string& socket_url,
                               const std::vector<std::string>& sub_protocols,
-                              const std::string& origin,
+                              const url::Origin& origin,
                               scoped_ptr<base::Timer> timer);
 
   static std::vector<HeaderKeyValuePair> RequestHeadersToVector(

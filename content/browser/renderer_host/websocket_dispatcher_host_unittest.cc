@@ -18,8 +18,8 @@
 #include "ipc/ipc_message.h"
 #include "net/websockets/websocket_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -119,7 +119,7 @@ class WebSocketDispatcherHostTest : public ::testing::Test {
   bool AddMultipleChannels(int number_of_channels) {
     GURL socket_url("ws://example.com/test");
     std::vector<std::string> requested_protocols;
-    url::DeprecatedSerializedOrigin origin("http://example.com");
+    url::Origin origin(GURL("http://example.com"));
     int render_frame_id = -3;
 
     for (int i = 0; i < number_of_channels; ++i) {
@@ -141,7 +141,7 @@ class WebSocketDispatcherHostTest : public ::testing::Test {
   bool AddAndCancelMultipleChannels(int number_of_channels) {
     GURL socket_url("ws://example.com/test");
     std::vector<std::string> requested_protocols;
-    url::DeprecatedSerializedOrigin origin("http://example.com");
+    url::Origin origin(GURL("http://example.com"));
     int render_frame_id = -3;
 
     for (int i = 0; i < number_of_channels; ++i) {
@@ -223,7 +223,7 @@ TEST_F(WebSocketDispatcherHostTest, AddChannelRequest) {
   GURL socket_url("ws://example.com/test");
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
-  url::DeprecatedSerializedOrigin origin("http://example.com");
+  url::Origin origin(GURL("http://example.com"));
   int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest message(
       routing_id, socket_url, requested_protocols, origin, render_frame_id);
@@ -257,7 +257,7 @@ TEST_F(WebSocketDispatcherHostTest, SendFrame) {
   GURL socket_url("ws://example.com/test");
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
-  url::DeprecatedSerializedOrigin origin("http://example.com");
+  url::Origin origin(GURL("http://example.com"));
   int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest add_channel_message(
       routing_id, socket_url, requested_protocols, origin, render_frame_id);
@@ -289,10 +289,10 @@ TEST_F(WebSocketDispatcherHostTest, SendFrame) {
 TEST_F(WebSocketDispatcherHostTest, Destruct) {
   WebSocketHostMsg_AddChannelRequest message1(
       123, GURL("ws://example.com/test"), std::vector<std::string>(),
-      url::DeprecatedSerializedOrigin("http://example.com"), -1);
+      url::Origin(GURL("http://example.com")), -1);
   WebSocketHostMsg_AddChannelRequest message2(
       456, GURL("ws://example.com/test2"), std::vector<std::string>(),
-      url::DeprecatedSerializedOrigin("http://example.com"), -1);
+      url::Origin(GURL("http://example.com")), -1);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message1));
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message2));
@@ -416,7 +416,7 @@ TEST_F(WebSocketDispatcherHostTest, InvalidScheme) {
   GURL socket_url("http://example.com/test");
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
-  url::DeprecatedSerializedOrigin origin("http://example.com");
+  url::Origin origin(GURL("http://example.com"));
   int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest message(
       routing_id, socket_url, requested_protocols, origin, render_frame_id);

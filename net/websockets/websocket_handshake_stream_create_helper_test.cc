@@ -20,6 +20,7 @@
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 namespace {
@@ -88,7 +89,8 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
 
     scoped_ptr<ClientSocketHandle> socket_handle =
         socket_handle_factory_.CreateClientSocketHandle(
-            WebSocketStandardRequest(socket_path, socket_host, origin,
+            WebSocketStandardRequest(socket_path, socket_host,
+                                     url::Origin(GURL(origin)),
                                      extra_request_headers),
             WebSocketStandardResponse(extra_response_headers));
 
@@ -145,7 +147,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
 TEST_F(WebSocketHandshakeStreamCreateHelperTest, BasicStream) {
   scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
       "ws://localhost/", "localhost", "/", std::vector<std::string>(),
-      "http://localhost/", "", "");
+      "http://localhost", "", "");
   EXPECT_EQ("", stream->GetExtensions());
   EXPECT_EQ("", stream->GetSubProtocol());
 }
@@ -156,7 +158,7 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, SubProtocols) {
   sub_protocols.push_back("chat");
   sub_protocols.push_back("superchat");
   scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
-      "ws://localhost/", "localhost", "/", sub_protocols, "http://localhost/",
+      "ws://localhost/", "localhost", "/", sub_protocols, "http://localhost",
       "Sec-WebSocket-Protocol: chat, superchat\r\n",
       "Sec-WebSocket-Protocol: superchat\r\n");
   EXPECT_EQ("superchat", stream->GetSubProtocol());
@@ -167,7 +169,7 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, SubProtocols) {
 TEST_F(WebSocketHandshakeStreamCreateHelperTest, Extensions) {
   scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
       "ws://localhost/", "localhost", "/", std::vector<std::string>(),
-      "http://localhost/", "",
+      "http://localhost", "",
       "Sec-WebSocket-Extensions: permessage-deflate\r\n");
   EXPECT_EQ("permessage-deflate", stream->GetExtensions());
 }
@@ -177,7 +179,7 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, Extensions) {
 TEST_F(WebSocketHandshakeStreamCreateHelperTest, ExtensionParameters) {
   scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
       "ws://localhost/", "localhost", "/", std::vector<std::string>(),
-      "http://localhost/", "",
+      "http://localhost", "",
       "Sec-WebSocket-Extensions: permessage-deflate;"
       " client_max_window_bits=14; server_max_window_bits=14;"
       " server_no_context_takeover; client_no_context_takeover\r\n");

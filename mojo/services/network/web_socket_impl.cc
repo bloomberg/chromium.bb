@@ -16,7 +16,7 @@
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "url/deprecated_serialized_origin.h"
+#include "url/origin.h"
 
 namespace mojo {
 
@@ -200,9 +200,9 @@ void WebSocketImpl::Connect(const String& url,
       new WebSocketEventHandler(client.Pass()));
   channel_.reset(new net::WebSocketChannel(event_interface.Pass(),
                                            context_->url_request_context()));
-  channel_->SendAddChannelRequest(
-      GURL(url.get()), protocols.To<std::vector<std::string>>(),
-      url::DeprecatedSerializedOrigin(origin.get()));
+  channel_->SendAddChannelRequest(GURL(url.get()),
+                                  protocols.To<std::vector<std::string>>(),
+                                  url::Origin(GURL(origin.get())));
 }
 
 void WebSocketImpl::Send(bool fin,
