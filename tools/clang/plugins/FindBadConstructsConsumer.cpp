@@ -619,6 +619,7 @@ void FindBadConstructsConsumer::CountType(const Type* type,
 // a type that is.
 // If there are issues, update |loc| with the SourceLocation of the issue
 // and returns appropriately, or returns None if there are no issues.
+// static
 FindBadConstructsConsumer::RefcountIssue
 FindBadConstructsConsumer::CheckRecordForRefcountIssue(
     const CXXRecordDecl* record,
@@ -640,13 +641,20 @@ FindBadConstructsConsumer::CheckRecordForRefcountIssue(
 
 // Returns true if |base| specifies one of the Chromium reference counted
 // classes (base::RefCounted / base::RefCountedThreadSafe).
+#if defined(LLVM_FORCE_HEAD_REVISION)
+bool FindBadConstructsConsumer::IsRefCounted(
+    const CXXBaseSpecifier* base,
+    CXXBasePath& path) {
+  FindBadConstructsConsumer* self = this;
+#else
+// static
 bool FindBadConstructsConsumer::IsRefCountedCallback(
     const CXXBaseSpecifier* base,
     CXXBasePath& path,
     void* user_data) {
   FindBadConstructsConsumer* self =
       static_cast<FindBadConstructsConsumer*>(user_data);
-
+#endif
   const TemplateSpecializationType* base_type =
       dyn_cast<TemplateSpecializationType>(
           UnwrapType(base->getType().getTypePtr()));
@@ -674,6 +682,7 @@ bool FindBadConstructsConsumer::IsRefCountedCallback(
 
 // Returns true if |base| specifies a class that has a public destructor,
 // either explicitly or implicitly.
+// static
 bool FindBadConstructsConsumer::HasPublicDtorCallback(
     const CXXBaseSpecifier* base,
     CXXBasePath& path,
@@ -731,9 +740,17 @@ void FindBadConstructsConsumer::CheckRefCountedDtors(
 
   // Determine if the current type is even ref-counted.
   CXXBasePaths refcounted_path;
+#if defined(LLVM_FORCE_HEAD_REVISION)
+  if (!record->lookupInBases(
+          [this](const CXXBaseSpecifier* base, CXXBasePath& path) {
+            return IsRefCounted(base, path);
+          },
+          refcounted_path)) {
+#else
   if (!record->lookupInBases(&FindBadConstructsConsumer::IsRefCountedCallback,
                              this,
                              refcounted_path)) {
+#endif
     return;  // Class does not derive from a ref-counted base class.
   }
 
@@ -783,9 +800,18 @@ void FindBadConstructsConsumer::CheckRefCountedDtors(
   // Find all public destructors. This will record the class hierarchy
   // that leads to the public destructor in |dtor_paths|.
   CXXBasePaths dtor_paths;
+#if defined(LLVM_FORCE_HEAD_REVISION)
+  if (!record->lookupInBases(
+          [](const CXXBaseSpecifier* base, CXXBasePath& path) {
+            // TODO(thakis): Inline HasPublicDtorCallback() after clang roll.
+            return HasPublicDtorCallback(base, path, nullptr);
+          },
+          dtor_paths)) {
+#else
   if (!record->lookupInBases(&FindBadConstructsConsumer::HasPublicDtorCallback,
-                             this,
+                             nullptr,
                              dtor_paths)) {
+#endif
     return;
   }
 
