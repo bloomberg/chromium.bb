@@ -6,32 +6,12 @@
 </head>
 <body>
 <canvas id="canvas" width="400" height="400"></canvas>
+<script src="./resources/canvas-hit-region-event.js"></script>
 <script>
 
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
   var testSet = [];
-
-  function clickCanvas(x, y)
-  {
-    if (!window.eventSender)
-      return "This test requires eventSender";
-
-    var result = null;
-    function listener(event)
-    {
-      canvas.removeEventListener("click", listener, false);
-      result = event.region;
-    }
-
-    var rect = canvas.getBoundingClientRect();
-    canvas.addEventListener("click", listener, false);
-    eventSender.mouseMoveTo(rect.left + x, rect.top + y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-
-    return result;
-  }
 
   function clickTests(message, tests)
   {

@@ -87,7 +87,6 @@
             'dom/SharedArrayBuffer.idl',
             'dom/StringCallback.idl',
             'dom/Text.idl',
-            'dom/Touch.idl',
             'dom/TouchList.idl',
             'dom/TreeWalker.idl',
             'dom/Uint16Array.idl',
@@ -400,6 +399,7 @@
         # core IDL files that have partial interfaces in modules.
         'core_idl_with_modules_dependency_files': [
             'clipboard/DataTransferItem.idl',
+            'dom/Touch.idl',
             'dom/URL.idl',
             'events/MouseEvent.idl',
             'frame/Navigator.idl',

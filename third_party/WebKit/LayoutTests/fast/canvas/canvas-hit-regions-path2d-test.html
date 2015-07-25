@@ -9,31 +9,12 @@
   <button id="face"></button>
   <button id="eyes"></button>
 </canvas>
+
+<script src="./resources/canvas-hit-region-event.js"></script>
 <script>
 
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
-
-  function clickCanvas(x, y)
-  {
-    if (!window.eventSender)
-      return "This test requires eventSender";
-
-    var result = null;
-    function listener(event)
-    {
-      result = event.region;
-    }
-
-    var rect = canvas.getBoundingClientRect();
-    canvas.addEventListener("click", listener, false);
-    eventSender.mouseMoveTo(rect.left + x, rect.top + y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    canvas.removeEventListener("click", listener, false);
-
-    return result;
-  }
 
   var face = new Path2D();
   context.fillStyle = "pink";

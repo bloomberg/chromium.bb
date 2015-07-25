@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MouseEventHitRegion_h
-#define MouseEventHitRegion_h
+#ifndef TouchHitRegion_h
+#define TouchHitRegion_h
 
 #include "modules/canvas2d/EventHitRegion.h"
 
 namespace blink {
 
-class MouseEvent;
+class Touch;
 
-class MouseEventHitRegion : public EventHitRegion {
+class TouchHitRegion : public EventHitRegion {
 public:
-    static String region(MouseEvent&);
+    static String region(Touch&);
 };
 
 } // namespace blink

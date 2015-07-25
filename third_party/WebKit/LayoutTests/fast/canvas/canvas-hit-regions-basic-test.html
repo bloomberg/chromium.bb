@@ -9,31 +9,11 @@
   <button id="face"></button>
   <button id="eyes"></button>
 </canvas>
+<script src="./resources/canvas-hit-region-event.js"></script>
 <script>
 
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
-
-  function clickCanvas(x, y)
-  {
-    if (!window.eventSender)
-      return "This test requires eventSender";
-
-    var result = null;
-    function listener(event)
-    {
-      result = event.region;
-    }
-
-    var rect = canvas.getBoundingClientRect();
-    canvas.addEventListener("click", listener, false);
-    eventSender.mouseMoveTo(rect.left + x, rect.top + y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    canvas.removeEventListener("click", listener, false);
-
-    return result;
-  }
 
   context.fillStyle = "pink";
   context.arc(200, 175, 150, 0, Math.PI * 2, true); 
@@ -72,6 +52,46 @@
   shouldBe("clickCanvas(250, 125)", "'eye'");
   shouldBe("clickCanvas(200, 125)", "'face'");
   shouldBe("clickCanvas(20, 10)", "null");
+  debug("");
+
+  debug("Hit detection and mouse/touch event tests with CSS sizing");
+  canvas.style.width = "220px";
+  canvas.style.height = "220px";
+  shouldBe("clickCanvas(100, 100)", "'face'");
+  shouldBe("clickCanvas(200, 200)", "'nose'");
+  shouldBe("clickCanvas(127, 242)", "'no event sent to canvas'");
+  shouldBe("clickCanvas(150, 125)", "'eye'");
+  shouldBe("clickCanvas(250, 125)", "'no event sent to canvas'");
+  shouldBe("clickCanvas(200, 125)", "'face'");
+  shouldBe("clickCanvas(20, 10)", "null");
+  canvas.style.width = "400px";
+  canvas.style.height = "400px";
+  debug("");
+
+  debug("Hit detection and mouse/touch event tests with adjusted pixel ratio");
+  eventSender.setPageZoomFactor(0.5);
+  shouldBe("clickCanvas(50, 50)", "'face'");
+  shouldBe("clickCanvas(100, 100)", "'nose'");
+  shouldBe("clickCanvas(64, 121)", "'mouth'");
+  shouldBe("clickCanvas(75, 63)", "'eye'");
+  shouldBe("clickCanvas(125, 63)", "'eye'");
+  shouldBe("clickCanvas(100, 63)", "'face'");
+  shouldBe("clickCanvas(10, 5)", "null");
+  eventSender.setPageZoomFactor(1);
+  debug("");
+
+  debug("Hit detection and mouse/touch event tests with adjusted page scale factor");
+  window.internals.setPageScaleFactorLimits(0.5, 0.5);
+  window.internals.setPageScaleFactor(0.5);
+  shouldBe("clickCanvas(50, 50, 0.5)", "'face'");
+  shouldBe("clickCanvas(100, 100, 0.5)", "'nose'");
+  shouldBe("clickCanvas(64, 121, 0.5)", "'mouth'");
+  shouldBe("clickCanvas(75, 63, 0.5)", "'eye'");
+  shouldBe("clickCanvas(125, 63, 0.5)", "'eye'");
+  shouldBe("clickCanvas(100, 63, 0.5)", "'face'");
+  shouldBe("clickCanvas(10, 5, 0.5)", "null");
+  window.internals.setPageScaleFactorLimits(1, 1);
+  window.internals.setPageScaleFactor(1);
   debug("");
 
   debug("NotSupportedError exception tests");

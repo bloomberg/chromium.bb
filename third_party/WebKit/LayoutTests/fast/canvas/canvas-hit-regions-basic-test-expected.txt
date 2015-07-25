@@ -7,6 +7,33 @@ PASS clickCanvas(250, 125) is 'eye'
 PASS clickCanvas(200, 125) is 'face'
 PASS clickCanvas(20, 10) is null
 
+Hit detection and mouse/touch event tests with CSS sizing
+PASS clickCanvas(100, 100) is 'face'
+PASS clickCanvas(200, 200) is 'nose'
+PASS clickCanvas(127, 242) is 'no event sent to canvas'
+PASS clickCanvas(150, 125) is 'eye'
+PASS clickCanvas(250, 125) is 'no event sent to canvas'
+PASS clickCanvas(200, 125) is 'face'
+PASS clickCanvas(20, 10) is null
+
+Hit detection and mouse/touch event tests with adjusted pixel ratio
+PASS clickCanvas(50, 50) is 'face'
+PASS clickCanvas(100, 100) is 'nose'
+PASS clickCanvas(64, 121) is 'mouth'
+PASS clickCanvas(75, 63) is 'eye'
+PASS clickCanvas(125, 63) is 'eye'
+PASS clickCanvas(100, 63) is 'face'
+PASS clickCanvas(10, 5) is null
+
+Hit detection and mouse/touch event tests with adjusted page scale factor
+PASS clickCanvas(50, 50, 0.5) is 'face'
+PASS clickCanvas(100, 100, 0.5) is 'nose'
+PASS clickCanvas(64, 121, 0.5) is 'mouth'
+PASS clickCanvas(75, 63, 0.5) is 'eye'
+PASS clickCanvas(125, 63, 0.5) is 'eye'
+PASS clickCanvas(100, 63, 0.5) is 'face'
+PASS clickCanvas(10, 5, 0.5) is null
+
 NotSupportedError exception tests
 PASS context.addHitRegion() threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
 PASS context.addHitRegion({ id : '' }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..

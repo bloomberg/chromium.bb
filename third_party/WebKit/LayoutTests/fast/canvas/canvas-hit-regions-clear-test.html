@@ -8,31 +8,11 @@
 <canvas id="canvas" width="400" height="400">
   <button id="yellow"></button>
 </canvas>
+<script src="./resources/canvas-hit-region-event.js"></script>
 <script>
 
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
-
-  function clickCanvas(x, y)
-  {
-    if (!window.eventSender)
-      return "This test requires eventSender";
-
-    var result = null;
-    function listener(event)
-    {
-      result = event.region;
-    }
-
-    var rect = canvas.getBoundingClientRect();
-    canvas.addEventListener("click", listener, false);
-    eventSender.mouseMoveTo(rect.left + x, rect.top + y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    canvas.removeEventListener("click", listener, false);
-
-    return result;
-  }
 
   shouldBe("internals.countHitRegions(context)", "0");
 
