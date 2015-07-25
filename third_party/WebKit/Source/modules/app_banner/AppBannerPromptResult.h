@@ -19,9 +19,7 @@ class AppBannerPromptResult final : public GarbageCollectedFinalized<AppBannerPr
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(AppBannerPromptResult);
 public:
-    // Support for CallbackPromiseAdapter:
-    typedef blink::WebAppBannerPromptResult WebType;
-    static AppBannerPromptResult* take(ScriptPromiseResolver*, PassOwnPtr<WebAppBannerPromptResult> webInstance);
+    static AppBannerPromptResult* take(PassOwnPtr<WebAppBannerPromptResult> webInstance);
 
     static AppBannerPromptResult* create(const AtomicString& platform, WebAppBannerPromptResult::Outcome outcome)
     {

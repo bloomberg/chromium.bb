@@ -6,13 +6,19 @@
 #define BeforeInstallPromptEvent_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "modules/EventModules.h"
+#include "modules/app_banner/AppBannerPromptResult.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class BeforeInstallPromptEvent;
 class BeforeInstallPromptEventInit;
 class WebAppBannerClient;
+
+using UserChoiceProperty = ScriptPromiseProperty<RawPtrWillBeMember<BeforeInstallPromptEvent>, Member<AppBannerPromptResult>, ToV8UndefinedGenerator>;
+using PromptProperty = ScriptPromiseProperty<RawPtrWillBeMember<BeforeInstallPromptEvent>, ToV8UndefinedGenerator, Member<DOMException>>;
 
 class BeforeInstallPromptEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
@@ -25,9 +31,9 @@ public:
         return adoptRefWillBeNoop(new BeforeInstallPromptEvent());
     }
 
-    static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, const Vector<String>& platforms, int requestId, WebAppBannerClient*client)
+    static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, ExecutionContext* executionContext, const Vector<String>& platforms, int requestId, WebAppBannerClient* client)
     {
-        return adoptRefWillBeNoop(new BeforeInstallPromptEvent(name, platforms, requestId, client));
+        return adoptRefWillBeNoop(new BeforeInstallPromptEvent(name, executionContext, platforms, requestId, client));
     }
 
     static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, const BeforeInstallPromptEventInit& init)
@@ -37,22 +43,25 @@ public:
 
     Vector<String> platforms() const;
     ScriptPromise userChoice(ScriptState*);
+    ScriptPromise prompt(ScriptState*);
 
     const AtomicString& interfaceName() const override;
 
-    ScriptPromise prompt(ScriptState*);
+    UserChoiceProperty* userChoiceProperty() { return m_userChoice.get(); };
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     BeforeInstallPromptEvent();
-    BeforeInstallPromptEvent(const AtomicString& name, const Vector<String>& platforms, int requestId, WebAppBannerClient*);
+    BeforeInstallPromptEvent(const AtomicString& name, ExecutionContext*, const Vector<String>& platforms, int requestId, WebAppBannerClient*);
     BeforeInstallPromptEvent(const AtomicString& name, const BeforeInstallPromptEventInit&);
 
     Vector<String> m_platforms;
-    ScriptPromise m_userChoice;
 
     int m_requestId;
     WebAppBannerClient* m_client;
-    bool m_redispatched;
+    PersistentWillBeMember<UserChoiceProperty> m_userChoice;
+    PersistentWillBeMember<PromptProperty> m_prompt;
 };
 
 DEFINE_TYPE_CASTS(BeforeInstallPromptEvent, Event, event, event->interfaceName() == EventNames::BeforeInstallPromptEvent, event.interfaceName() == EventNames::BeforeInstallPromptEvent);
