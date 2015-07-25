@@ -70,8 +70,11 @@ public class AppBannerManager extends EmptyTabObserver {
      * @param tab Tab that the AppBannerManager will be attached to.
      */
     public AppBannerManager(Tab tab, Context context) {
-        int iconSize = context.getResources().getDimensionPixelSize(R.dimen.app_banner_icon_size);
-        mNativePointer = nativeInit(iconSize);
+        int iconSizePx = context.getResources().getDimensionPixelSize(R.dimen.app_banner_icon_size);
+        float density = context.getResources().getDisplayMetrics().density;
+        int iconSizeDp = (int) (iconSizePx / density);
+
+        mNativePointer = nativeInit(iconSizeDp);
         mTab = tab;
         updatePointers();
     }
