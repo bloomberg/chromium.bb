@@ -4,12 +4,12 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 #define SHADER(Src) #Src
 
@@ -298,6 +298,65 @@ TEST_F(GLVirtualContextsTest, VertexArrayObjectRestoreDefault) {
   glFinish();
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
+TEST_F(GLVirtualContextsTest, VirtualQueries) {
+  const GLenum query_targets[] = {
+    GL_ANY_SAMPLES_PASSED_EXT,
+    GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
+    GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM,
+    GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM,
+    GL_COMMANDS_COMPLETED_CHROMIUM,
+    GL_COMMANDS_ISSUED_CHROMIUM,
+    GL_GET_ERROR_QUERY_CHROMIUM,
+    GL_LATENCY_QUERY_CHROMIUM,
+    GL_TIME_ELAPSED_EXT,
+  };
+
+  for (GLenum query_target : query_targets) {
+    GLuint query1 = 0;
+    gl1_.MakeCurrent();
+    glGenQueriesEXT(1, &query1);
+    glBeginQueryEXT(query_target, query1);
+    const GLenum begin_error = glGetError();
+    if (GL_INVALID_OPERATION == begin_error) {
+      // Not supported, simply skip.
+      glDeleteQueriesEXT(1, &query1);
+      continue;
+    }
+    ASSERT_TRUE(GL_NO_ERROR == begin_error);
+
+    GLuint query2 = 0;
+    gl2_.MakeCurrent();
+    glGenQueriesEXT(1, &query2);
+    glBeginQueryEXT(query_target, query2);
+    EXPECT_TRUE(GL_NO_ERROR == glGetError())
+        << "Virtualized Query " << query_target << " failed.";
+
+    gl1_.MakeCurrent();
+    glEndQueryEXT(query_target);
+    glFinish();
+
+    GLuint query1_available = 0;
+    glGetQueryObjectuivEXT(query1, GL_QUERY_RESULT_AVAILABLE_EXT,
+                           &query1_available);
+    EXPECT_TRUE(query1_available);
+
+    glDeleteQueriesEXT(1, &query1);
+    GLTestHelper::CheckGLError("no errors", __LINE__);
+
+    gl2_.MakeCurrent();
+    glEndQueryEXT(query_target);
+    glFinish();
+
+    GLuint query2_available = 0;
+    glGetQueryObjectuivEXT(query2, GL_QUERY_RESULT_AVAILABLE_EXT,
+                           &query2_available);
+    EXPECT_TRUE(query2_available);
+
+    glDeleteQueriesEXT(1, &query2);
+    GLTestHelper::CheckGLError("no errors", __LINE__);
+  }
 }
 
 }  // namespace gpu

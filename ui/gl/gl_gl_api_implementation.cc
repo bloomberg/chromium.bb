@@ -576,9 +576,19 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
     GLApi* temp = GetCurrentGLApi();
     SetGLToRealGLApi();
     if (virtual_context->GetGLStateRestorer()->IsInitialized()) {
-      virtual_context->GetGLStateRestorer()->RestoreState(
-          (current_context_ && !state_dirtied_externally && !switched_contexts)
-              ? current_context_->GetGLStateRestorer()
+      GLStateRestorer* virtual_state = virtual_context->GetGLStateRestorer();
+      GLStateRestorer* current_state = current_context_ ?
+                                       current_context_->GetGLStateRestorer() :
+                                       nullptr;
+      if (switched_contexts || virtual_context != current_context_) {
+        if (current_state)
+          current_state->PauseQueries();
+        virtual_state->ResumeQueries();
+      }
+
+      virtual_state->RestoreState(
+          (current_state && !state_dirtied_externally && !switched_contexts)
+              ? current_state
               : NULL);
     }
     SetGLApi(temp);

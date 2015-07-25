@@ -8,6 +8,12 @@
 #include "base/basictypes.h"
 #include "ui/gl/gl_export.h"
 
+namespace gpu {
+namespace gles2 {
+  class GLES2Decoder;
+}  // namespace gles2
+}  // namespace gpu
+
 namespace gfx {
 
 // An interface for Restoring GL State.
@@ -22,6 +28,8 @@ class GL_EXPORT GLStateRestorer {
   virtual void RestoreAllTextureUnitBindings() = 0;
   virtual void RestoreActiveTextureUnitBinding(unsigned int target) = 0;
   virtual void RestoreFramebufferBindings() = 0;
+  virtual void PauseQueries() = 0;
+  virtual void ResumeQueries() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GLStateRestorer);
 };

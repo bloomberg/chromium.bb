@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
@@ -26,6 +25,7 @@ class ErrorState;
 class ErrorStateClient;
 class FeatureInfo;
 class Framebuffer;
+class Logger;
 class Program;
 class Renderbuffer;
 
@@ -273,10 +273,6 @@ struct GPU_EXPORT ContextState {
 
   // The currently bound valuebuffer
   scoped_refptr<Valuebuffer> bound_valuebuffer;
-
-  // A map of of target -> Query for current queries
-  typedef std::map<GLuint, scoped_refptr<QueryManager::Query> > QueryMap;
-  QueryMap current_queries;
 
   bool pack_reverse_row_order;
   bool ignore_cached_state;

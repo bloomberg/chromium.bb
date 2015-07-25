@@ -3924,7 +3924,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.bound_pixel_unpack_buffer = NULL;
   state_.bound_transform_feedback_buffer = NULL;
   state_.bound_uniform_buffer = NULL;
-  state_.current_queries.clear();
   framebuffer_state_.bound_read_framebuffer = NULL;
   framebuffer_state_.bound_draw_framebuffer = NULL;
   state_.bound_renderbuffer = NULL;
@@ -11530,15 +11529,6 @@ bool GLES2DecoderImpl::GenQueriesEXTHelper(
 void GLES2DecoderImpl::DeleteQueriesEXTHelper(
     GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    QueryManager::Query* query = query_manager_->GetQuery(client_ids[ii]);
-    if (query && !query->IsDeleted()) {
-      ContextState::QueryMap::iterator it =
-          state_.current_queries.find(query->target());
-      if (it != state_.current_queries.end())
-        state_.current_queries.erase(it);
-
-      query->Destroy(true);
-    }
     query_manager_->RemoveQuery(client_ids[ii]);
   }
 }
@@ -11661,7 +11651,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
       return error::kNoError;
   }
 
-  if (state_.current_queries.find(target) != state_.current_queries.end()) {
+  if (query_manager_->GetActiveQuery(target)) {
 #if defined(OS_MACOSX)
     // TODO(dyen): Remove once we know what is failing.
     CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM)
@@ -11715,7 +11705,6 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
     return error::kOutOfBounds;
   }
 
-  state_.current_queries[target] = query;
   return error::kNoError;
 }
 
@@ -11725,22 +11714,20 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(uint32 immediate_data_size,
       *static_cast<const gles2::cmds::EndQueryEXT*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   uint32 submit_count = static_cast<GLuint>(c.submit_count);
-  ContextState::QueryMap::iterator it = state_.current_queries.find(target);
 
-  if (it == state_.current_queries.end()) {
+  QueryManager::Query* query = query_manager_->GetActiveQuery(target);
+  if (!query) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glEndQueryEXT", "No active query");
     return error::kNoError;
   }
 
-  QueryManager::Query* query = it->second.get();
   if (!query_manager_->EndQuery(query, submit_count)) {
     return error::kOutOfBounds;
   }
 
   query_manager_->ProcessPendingTransferQueries();
 
-  state_.current_queries.erase(it);
   return error::kNoError;
 }
 

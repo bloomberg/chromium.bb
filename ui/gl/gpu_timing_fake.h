@@ -21,7 +21,10 @@ class GPUTimingFake {
   void Reset();
 
   // Used to set the current GPU time queries will return.
+  static int64_t GetFakeCPUTime(); // Useful for binding for Fake CPU time.
+  void SetCurrentCPUTime(int64_t current_time);
   void SetCurrentGLTime(GLint64 current_time);
+  void SetCPUGLOffset(int64_t offset);
 
   // Used to signal a disjoint occurred for disjoint timer queries.
   void SetDisjoint();
@@ -51,7 +54,9 @@ class GPUTimingFake {
 
  protected:
   bool disjointed_ = false;
-  GLint64 current_time_ = 0;
+  static int64_t fake_cpu_time_;
+  GLint64 current_gl_time_ = 0;
+  int64_t gl_cpu_time_offset_ = 0;
   GLuint next_query_id_ = 0;
   std::set<GLuint> allocated_queries_;
   struct QueryResult {

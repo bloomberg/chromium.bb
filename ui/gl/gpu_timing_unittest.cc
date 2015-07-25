@@ -19,7 +19,6 @@ class GPUTimingTest : public testing::Test {
  public:
   void SetUp() override {
     setup_ = false;
-    fake_cpu_time_ = 0;
     cpu_time_bounded_ = false;
   }
 
@@ -58,23 +57,13 @@ class GPUTimingTest : public testing::Test {
 
     scoped_refptr<GPUTimingClient> client = context_->CreateGPUTimingClient();
     if (!cpu_time_bounded_) {
-      client->SetCpuTimeForTesting(base::Bind(&GetFakeCPUTime));
+      client->SetCpuTimeForTesting(base::Bind(&GPUTimingFake::GetFakeCPUTime));
       cpu_time_bounded_ = true;
     }
     return client;
   }
 
-  void SetFakeCPUTime(int64_t fake_cpu_time) {
-    fake_cpu_time_ = fake_cpu_time;
-  }
-
  protected:
-  static int64_t GetFakeCPUTime() {
-    return fake_cpu_time_;
-  }
-
-  static int64_t fake_cpu_time_;
-
   bool setup_ = false;
   bool cpu_time_bounded_ = false;
   scoped_ptr< ::testing::StrictMock<MockGLInterface> > gl_;
@@ -82,13 +71,11 @@ class GPUTimingTest : public testing::Test {
   GPUTimingFake gpu_timing_fake_queries_;
 };
 
-int64_t GPUTimingTest::fake_cpu_time_ = 0;
-
 TEST_F(GPUTimingTest, FakeTimerTest) {
-  // Tests that we can properly set fake cpu times.
-  SetFakeCPUTime(123);
-
   scoped_refptr<GPUTimingClient> gpu_timing_client = CreateGPUTimingClient();
+
+  // Tests that we can properly set fake cpu times.
+  gpu_timing_fake_queries_.SetCurrentCPUTime(123);
   EXPECT_EQ(123, gpu_timing_client->GetCurrentCPUTime());
 
   base::Callback<int64_t(void)> empty;
@@ -117,28 +104,31 @@ TEST_F(GPUTimingTest, QueryTimeStampTest) {
   scoped_refptr<GPUTimingClient> client = CreateGPUTimingClient();
   scoped_ptr<GPUTimer> gpu_timer = client->CreateGPUTimer(false);
 
-  SetFakeCPUTime(123);
-  gpu_timing_fake_queries_.SetCurrentGLTime(
-      10 * base::Time::kNanosecondsPerMicrosecond);
+  const int64_t begin_cpu_time = 123;
+  const int64_t begin_gl_time = 10 * base::Time::kNanosecondsPerMicrosecond;
+  const int64_t cpu_gl_offset =
+      begin_gl_time / base::Time::kNanosecondsPerMicrosecond - begin_cpu_time;
+  gpu_timing_fake_queries_.SetCPUGLOffset(cpu_gl_offset);
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time);
   gpu_timing_fake_queries_.ExpectGPUTimeStampQuery(*gl_, false);
 
   gpu_timer->QueryTimeStamp();
 
-  SetFakeCPUTime(122);
-  gpu_timing_fake_queries_.SetCurrentGLTime(
-      9 * base::Time::kNanosecondsPerMicrosecond);
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time - 1);
   EXPECT_FALSE(gpu_timer->IsAvailable());
 
-  SetFakeCPUTime(124);
-  gpu_timing_fake_queries_.SetCurrentGLTime(
-      11 * base::Time::kNanosecondsPerMicrosecond);
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time);
   EXPECT_TRUE(gpu_timer->IsAvailable());
+
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time + 1);
+  EXPECT_TRUE(gpu_timer->IsAvailable());
+
   EXPECT_EQ(0, gpu_timer->GetDeltaElapsed());
 
   int64 start, end;
   gpu_timer->GetStartEndTimestamps(&start, &end);
-  EXPECT_EQ(123, start);
-  EXPECT_EQ(123, end);
+  EXPECT_EQ(begin_cpu_time, start);
+  EXPECT_EQ(begin_cpu_time, end);
 }
 
 TEST_F(GPUTimingTest, QueryTimeStampUsingElapsedTest) {
@@ -149,28 +139,26 @@ TEST_F(GPUTimingTest, QueryTimeStampUsingElapsedTest) {
   scoped_ptr<GPUTimer> gpu_timer = client->CreateGPUTimer(false);
   ASSERT_TRUE(client->IsForceTimeElapsedQuery());
 
-  SetFakeCPUTime(123);
-  gpu_timing_fake_queries_.SetCurrentGLTime(
-      10 * base::Time::kNanosecondsPerMicrosecond);
+  const int64_t begin_cpu_time = 123;
+  const int64_t begin_gl_time = 10 * base::Time::kNanosecondsPerMicrosecond;
+  const int64_t cpu_gl_offset = begin_gl_time - begin_cpu_time;
+  gpu_timing_fake_queries_.SetCPUGLOffset(cpu_gl_offset);
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time);
   gpu_timing_fake_queries_.ExpectGPUTimeStampQuery(*gl_, true);
 
   gpu_timer->QueryTimeStamp();
 
-  SetFakeCPUTime(122);
-  gpu_timing_fake_queries_.SetCurrentGLTime(
-      9 * base::Time::kNanosecondsPerMicrosecond);
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time - 1);
   EXPECT_FALSE(gpu_timer->IsAvailable());
 
-  SetFakeCPUTime(124);
-  gpu_timing_fake_queries_.SetCurrentGLTime(
-      11 * base::Time::kNanosecondsPerMicrosecond);
+  gpu_timing_fake_queries_.SetCurrentCPUTime(begin_cpu_time + 1);
   EXPECT_TRUE(gpu_timer->IsAvailable());
   EXPECT_EQ(0, gpu_timer->GetDeltaElapsed());
 
   int64 start, end;
   gpu_timer->GetStartEndTimestamps(&start, &end);
-  EXPECT_EQ(123, start);
-  EXPECT_EQ(123, end);
+  EXPECT_EQ(begin_cpu_time, start);
+  EXPECT_EQ(begin_cpu_time, end);
 }
 
 }  // namespace gpu

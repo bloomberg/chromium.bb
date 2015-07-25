@@ -50,8 +50,20 @@ class GPU_EXPORT QueryManager {
       return target() && !IsDeleted();
     }
 
-    bool pending() const {
-      return pending_;
+    bool IsActive() const {
+      return query_state_ == kQueryState_Active;
+    }
+
+    bool IsPaused() const {
+      return query_state_ == kQueryState_Paused;
+    }
+
+    bool IsPending() const {
+      return query_state_ == kQueryState_Pending;
+    }
+
+    bool IsFinished() const {
+      return query_state_ == kQueryState_Finished;
     }
 
     int32 shm_id() const {
@@ -74,6 +86,12 @@ class GPU_EXPORT QueryManager {
     // Returns false if shared memory for sync is invalid.
     virtual bool Process(bool did_finish) = 0;
 
+    // Pauses active query to be resumed later.
+    virtual void Pause() = 0;
+
+    // Resume from a paused active query.
+    virtual void Resume() = 0;
+
     virtual void Destroy(bool have_context) = 0;
 
     void AddCallback(base::Closure callback);
@@ -89,18 +107,30 @@ class GPU_EXPORT QueryManager {
       deleted_ = true;
     }
 
-    // Returns false if shared memory for sync is invalid.
-    bool MarkAsCompleted(uint64 result);
+    void MarkAsActive() {
+      DCHECK(query_state_ == kQueryState_Initialize ||
+             query_state_ == kQueryState_Paused ||
+             query_state_ == kQueryState_Finished);
+      query_state_ = kQueryState_Active;
+    }
+
+    void MarkAsPaused() {
+      DCHECK(query_state_ == kQueryState_Active);
+      query_state_ = kQueryState_Paused;
+    }
 
     void MarkAsPending(base::subtle::Atomic32 submit_count) {
-      DCHECK(!pending_);
-      pending_ = true;
+      DCHECK(query_state_ == kQueryState_Active);
+      query_state_ = kQueryState_Pending;
       submit_count_ = submit_count;
     }
 
+    // Returns false if shared memory for sync is invalid.
+    bool MarkAsCompleted(uint64 result);
+
     void UnmarkAsPending() {
-      DCHECK(pending_);
-      pending_ = false;
+      DCHECK(query_state_ == kQueryState_Pending);
+      query_state_ = kQueryState_Finished;
     }
 
     // Returns false if shared memory for sync is invalid.
@@ -143,8 +173,14 @@ class GPU_EXPORT QueryManager {
     // Count to set process count do when completed.
     base::subtle::Atomic32 submit_count_;
 
-    // True if in the queue.
-    bool pending_;
+    // Current state of the query.
+    enum QueryState {
+      kQueryState_Initialize, // Has not been queried yet.
+      kQueryState_Active, // Query began but has not ended.
+      kQueryState_Paused, // Query was active but is now paused.
+      kQueryState_Pending, // Query ended, waiting for result.
+      kQueryState_Finished, // Query received result.
+    } query_state_;
 
     // True if deleted.
     bool deleted_;
@@ -168,6 +204,9 @@ class GPU_EXPORT QueryManager {
   // Gets the query info for the given query.
   Query* GetQuery(GLuint client_id);
 
+  // Gets the currently active query for a target.
+  Query* GetActiveQuery(GLenum target);
+
   // Removes a query info for the given query.
   void RemoveQuery(GLuint client_id);
 
@@ -179,6 +218,9 @@ class GPU_EXPORT QueryManager {
 
   // Returns false if any query is pointing to invalid shared memory.
   bool QueryCounter(Query* query, base::subtle::Atomic32 submit_count);
+
+  void PauseQueries();
+  void ResumeQueries();
 
   // Processes pending queries. Returns false if any queries are pointing
   // to invalid shared memory. |did_finish| is true if this is called as
@@ -247,6 +289,10 @@ class GPU_EXPORT QueryManager {
 
   typedef base::hash_set<GLuint> GeneratedQueryIds;
   GeneratedQueryIds generated_query_ids_;
+
+  // A map of targets -> Query for current active queries.
+  typedef std::map<GLenum, scoped_refptr<Query> > ActiveQueryMap;
+  ActiveQueryMap active_queries_;
 
   // Queries waiting for completion.
   typedef std::deque<scoped_refptr<Query> > QueryQueue;
