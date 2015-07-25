@@ -905,10 +905,12 @@ IN_PROC_BROWSER_TEST_P(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   WaitForEnrollmentSuccess();
 }
 
-// TODO(xiyuan): Update once webview flow is implemented.
+// TODO(dzhioev): fix the tests for webview case. http://crbug.com/513955
+/*
 INSTANTIATE_TEST_CASE_P(SamlSuite,
                         SAMLEnrollmentTest,
-                        testing::Values(false));
+                        testing::Values(true));
+*/
 
 class SAMLPolicyTest : public SamlTest {
  public:

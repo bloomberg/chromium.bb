@@ -184,20 +184,11 @@ std::string StartupUtils::GetInitialLocale() {
 
 // static
 bool StartupUtils::IsWebviewSigninEnabled() {
-  const policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-
-  const bool is_shark =
-      policy_manager ? policy_manager->IsSharkRequisition() : false;
-
   const bool is_webview_disabled_pref =
       g_browser_process->local_state()->GetBoolean(
           prefs::kWebviewSigninDisabled);
 
-  // TODO(achuith): Remove is_shark when crbug.com/471744 is resolved.
-  return !is_shark && !IsWebViewDisabledCmdLine() && !is_webview_disabled_pref;
+  return !IsWebViewDisabledCmdLine() && !is_webview_disabled_pref;
 }
 
 // static

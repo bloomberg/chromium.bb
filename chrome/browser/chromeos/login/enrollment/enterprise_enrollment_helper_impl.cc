@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -71,52 +69,29 @@ EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl(
     : EnterpriseEnrollmentHelper(status_consumer),
       enrollment_config_(enrollment_config),
       enrolling_user_domain_(enrolling_user_domain),
-      profile_(NULL),
-      fetch_additional_token_(false),
       started_(false),
-      oauth_fetchers_finished_(0),
-      last_auth_error_(GoogleServiceAuthError::AuthErrorNone()),
       finished_(false),
       success_(false),
       auth_data_cleared_(false),
-      browsing_data_remover_(NULL),
       weak_ptr_factory_(this) {
 }
 
 EnterpriseEnrollmentHelperImpl::~EnterpriseEnrollmentHelperImpl() {
   DCHECK(g_browser_process->IsShuttingDown() || !started_ ||
-         (finished_ && (success_ || !profile_ || auth_data_cleared_)));
-  if (browsing_data_remover_)
-    browsing_data_remover_->RemoveObserver(this);
-}
-
-void EnterpriseEnrollmentHelperImpl::EnrollUsingProfile(
-    Profile* profile,
-    bool fetch_additional_token) {
-  DCHECK(!started_);
-  started_ = true;
-  profile_ = profile;
-  fetch_additional_token_ = fetch_additional_token;
-  oauth_fetchers_.resize(fetch_additional_token_ ? 2 : 1);
-  for (size_t i = 0; i < oauth_fetchers_.size(); ++i) {
-    oauth_fetchers_[i] = new policy::PolicyOAuth2TokenFetcher();
-    oauth_fetchers_[i]->StartWithSigninContext(
-        profile_->GetRequestContext(),
-        g_browser_process->system_request_context(),
-        base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
-                   weak_ptr_factory_.GetWeakPtr(), i));
-  }
+         (finished_ && (success_ || auth_data_cleared_)));
 }
 
 void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
-    const std::string& auth_code) {
+    const std::string& auth_code,
+    bool fetch_additional_token) {
   DCHECK(!started_);
   started_ = true;
-  oauth_fetchers_.push_back(new policy::PolicyOAuth2TokenFetcher());
-  oauth_fetchers_[0]->StartWithAuthCode(
+  oauth_fetcher_.reset(new policy::PolicyOAuth2TokenFetcher());
+  oauth_fetcher_->StartWithAuthCode(
       auth_code, g_browser_process->system_request_context(),
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
-                 weak_ptr_factory_.GetWeakPtr(), 0));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 fetch_additional_token /* is_additional_token */));
 }
 
 void EnterpriseEnrollmentHelperImpl::EnrollUsingToken(
@@ -127,34 +102,27 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingToken(
 }
 
 void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
-  for (size_t i = 0; i < oauth_fetchers_.size(); ++i) {
-    // Do not revoke the additional token if enrollment has finished
-    // successfully.
-    if (i == 1 && success_)
-      continue;
+  // Do not revoke the additional token if enrollment has finished
+  // successfully.
+  if (!success_ && additional_token_.length())
+    (new TokenRevoker())->Start(additional_token_);
 
-    if (!oauth_fetchers_[i]->oauth2_access_token().empty())
-      (new TokenRevoker())->Start(oauth_fetchers_[i]->oauth2_access_token());
+  if (oauth_fetcher_) {
+    if (!oauth_fetcher_->oauth2_access_token().empty())
+      (new TokenRevoker())->Start(oauth_fetcher_->oauth2_access_token());
 
-    if (!oauth_fetchers_[i]->oauth2_refresh_token().empty())
-      (new TokenRevoker())->Start(oauth_fetchers_[i]->oauth2_refresh_token());
+    if (!oauth_fetcher_->oauth2_refresh_token().empty())
+      (new TokenRevoker())->Start(oauth_fetcher_->oauth2_refresh_token());
+
+    oauth_fetcher_.reset();
+  } else if (oauth_token_.length()) {
+    // EnrollUsingToken was called.
+    (new TokenRevoker())->Start(oauth_token_);
   }
-  oauth_fetchers_.clear();
 
-  if (!profile_) {
-    chromeos::ProfileHelper::Get()->ClearSigninProfile(callback);
-    return;
-  }
-
-  auth_clear_callbacks_.push_back(callback);
-  if (browsing_data_remover_)
-    return;
-
-  browsing_data_remover_ =
-      BrowsingDataRemover::CreateForUnboundedRange(profile_);
-  browsing_data_remover_->AddObserver(this);
-  browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
-                                 BrowsingDataHelper::UNPROTECTED_WEB);
+  chromeos::ProfileHelper::Get()->ClearSigninProfile(
+      base::Bind(&EnterpriseEnrollmentHelperImpl::OnSigninProfileCleared,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void EnterpriseEnrollmentHelperImpl::DoEnrollUsingToken(
@@ -220,30 +188,29 @@ void EnterpriseEnrollmentHelperImpl::UpdateDeviceAttributes(
 }
 
 void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
-    size_t fetcher_index,
+    bool is_additional_token,
     const std::string& token,
     const GoogleServiceAuthError& error) {
-  CHECK_LT(fetcher_index, oauth_fetchers_.size());
-
-  if (error.state() != GoogleServiceAuthError::NONE)
-    last_auth_error_ = error;
-
-  ++oauth_fetchers_finished_;
-  if (oauth_fetchers_finished_ != oauth_fetchers_.size())
-    return;
-
-  if (last_auth_error_.state() != GoogleServiceAuthError::NONE) {
-    ReportAuthStatus(last_auth_error_);
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    ReportAuthStatus(error);
     finished_ = true;
-    status_consumer()->OnAuthError(last_auth_error_);
+    status_consumer()->OnAuthError(error);
     return;
   }
 
-  if (oauth_fetchers_.size() == 2)
-    additional_token_ = oauth_fetchers_[1]->oauth2_access_token();
+  if (!is_additional_token) {
+    DoEnrollUsingToken(token);
+    return;
+  }
 
-  oauth_token_ = oauth_fetchers_[0]->oauth2_access_token();
-  DoEnrollUsingToken(oauth_token_);
+  additional_token_ = token;
+  std::string refresh_token = oauth_fetcher_->oauth2_refresh_token();
+  oauth_fetcher_.reset(new policy::PolicyOAuth2TokenFetcher());
+  oauth_fetcher_->StartWithRefreshToken(
+      refresh_token, g_browser_process->system_request_context(),
+      base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 false /* is_additional_token */));
 }
 
 void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
@@ -252,7 +219,6 @@ void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
   finished_ = true;
   if (status.status() == policy::EnrollmentStatus::STATUS_SUCCESS) {
     success_ = true;
-    DCHECK(!fetch_additional_token_ || !additional_token_.empty());
     StartupUtils::MarkOobeCompleted();
     status_consumer()->OnDeviceEnrolled(additional_token_);
   } else {
@@ -436,21 +402,10 @@ void EnterpriseEnrollmentHelperImpl::UMA(policy::MetricEnrollment sample) {
   EnrollmentUMA(sample, enrollment_config_.mode);
 }
 
-void EnterpriseEnrollmentHelperImpl::OnBrowsingDataRemoverDone() {
-  browsing_data_remover_->RemoveObserver(this);
-
-  // BrowsingDataRemover deletes itself.
-  browsing_data_remover_ = nullptr;
-
+void EnterpriseEnrollmentHelperImpl::OnSigninProfileCleared(
+    const base::Closure& callback) {
   auth_data_cleared_ = true;
-
-  std::vector<base::Closure> callbacks_to_run;
-  callbacks_to_run.swap(auth_clear_callbacks_);
-  for (std::vector<base::Closure>::iterator callback(callbacks_to_run.begin());
-       callback != callbacks_to_run.end();
-       ++callback) {
-    callback->Run();
-  }
+  callback.Run();
 }
 
 }  // namespace chromeos

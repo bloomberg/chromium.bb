@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
@@ -27,8 +26,7 @@ class PolicyOAuth2TokenFetcher;
 
 namespace chromeos {
 
-class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
-                                       public BrowsingDataRemover::Observer {
+class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
  public:
   EnterpriseEnrollmentHelperImpl(
       EnrollmentStatusConsumer* status_consumer,
@@ -37,9 +35,8 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   ~EnterpriseEnrollmentHelperImpl() override;
 
   // Overridden from EnterpriseEnrollmentHelper:
-  void EnrollUsingProfile(Profile* profile,
-                          bool fetch_additional_token) override;
-  void EnrollUsingAuthCode(const std::string& auth_code) override;
+  void EnrollUsingAuthCode(const std::string& auth_code,
+                           bool fetch_additional_token) override;
   void EnrollUsingToken(const std::string& token) override;
   void ClearAuth(const base::Closure& callback) override;
   void GetDeviceAttributeUpdatePermission() override;
@@ -50,7 +47,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   void DoEnrollUsingToken(const std::string& token);
 
   // Handles completion of the OAuth2 token fetch attempt.
-  void OnTokenFetched(size_t fetcher_index,
+  void OnTokenFetched(bool is_additional_token,
                       const std::string& token,
                       const GoogleServiceAuthError& error);
 
@@ -70,30 +67,22 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   // histogram, depending on |enrollment_mode_|.
   void UMA(policy::MetricEnrollment sample);
 
-  // Overridden from BrowsingDataRemover::Observer:
-  void OnBrowsingDataRemoverDone() override;
+  // Called by ProfileHelper when a signin profile clearance has finished.
+  // |callback| is a callback, that was passed to ClearAuth() before.
+  void OnSigninProfileCleared(const base::Closure& callback);
 
   const policy::EnrollmentConfig enrollment_config_;
   const std::string enrolling_user_domain_;
-  Profile* profile_;
   bool fetch_additional_token_;
 
   bool started_;
-  size_t oauth_fetchers_finished_;
-  GoogleServiceAuthError last_auth_error_;
   std::string additional_token_;
   bool finished_;
   bool success_;
   bool auth_data_cleared_;
   std::string oauth_token_;
 
-  // The browsing data remover instance currently active, if any.
-  BrowsingDataRemover* browsing_data_remover_;
-
-  // The callbacks to invoke after browsing data has been cleared.
-  std::vector<base::Closure> auth_clear_callbacks_;
-
-  ScopedVector<policy::PolicyOAuth2TokenFetcher> oauth_fetchers_;
+  scoped_ptr<policy::PolicyOAuth2TokenFetcher> oauth_fetcher_;
 
   base::WeakPtrFactory<EnterpriseEnrollmentHelperImpl> weak_ptr_factory_;
 
