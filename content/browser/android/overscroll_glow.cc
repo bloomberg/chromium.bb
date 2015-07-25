@@ -77,7 +77,11 @@ gfx::SizeF ComputeSize(OverscrollGlow::Edge edge,
 }  // namespace
 
 OverscrollGlow::OverscrollGlow(OverscrollGlowClient* client)
-    : client_(client), edge_offsets_(), initialized_(false) {
+    : client_(client),
+      edge_offsets_(),
+      initialized_(false),
+      allow_horizontal_overscroll_(true),
+      allow_vertical_overscroll_(true) {
   DCHECK(client);
 }
 
@@ -116,11 +120,20 @@ bool OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
           const gfx::Vector2dF& accumulated_overscroll,
           gfx::Vector2dF overscroll_delta,
           gfx::Vector2dF velocity,
-          const gfx::Vector2dF& displacement) {
+          const gfx::Vector2dF& overscroll_location) {
   // The size of the glow determines the relative effect of the inputs; an
   // empty-sized effect is effectively disabled.
   if (viewport_size_.IsEmpty())
     return false;
+
+  if (!allow_horizontal_overscroll_) {
+    overscroll_delta.set_x(0);
+    velocity.set_x(0);
+  }
+  if (!allow_vertical_overscroll_) {
+    overscroll_delta.set_y(0);
+    velocity.set_y(0);
+  }
 
   // Ignore sufficiently small values that won't meaningfuly affect animation.
   overscroll_delta = ZeroSmallComponents(overscroll_delta);
@@ -143,7 +156,7 @@ bool OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
   if (!velocity.IsZero())
     Absorb(current_time, velocity, x_overscroll_started, y_overscroll_started);
   else
-    Pull(current_time, overscroll_delta, displacement);
+    Pull(current_time, overscroll_delta, overscroll_location);
 
   return CheckNeedsAnimate();
 }
@@ -180,6 +193,12 @@ void OverscrollGlow::OnFrameUpdated(
                                                viewport_size.height();
   edge_offsets_[OverscrollGlow::EDGE_RIGHT] =
       content_size.width() - content_scroll_offset.x() - viewport_size.width();
+
+  // Only allow overscroll on scrollable axes, matching platform behavior.
+  allow_horizontal_overscroll_ =
+      std::ceil(viewport_size_.width()) < std::floor(content_size.width());
+  allow_vertical_overscroll_ =
+      std::ceil(viewport_size_.height()) < std::floor(content_size.height());
 }
 
 bool OverscrollGlow::CheckNeedsAnimate() {

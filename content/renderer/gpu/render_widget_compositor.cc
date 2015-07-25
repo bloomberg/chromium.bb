@@ -242,8 +242,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
-  settings.report_overscroll_only_for_scrollable_axes =
-      !compositor_deps_->IsElasticOverscrollEnabled();
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   const std::string slimming_group =
@@ -400,8 +398,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.using_synchronous_renderer_compositor =
       synchronous_compositor_factory;
   settings.record_full_layer = widget_->DoesRecordFullLayer();
-  settings.report_overscroll_only_for_scrollable_axes =
-      !synchronous_compositor_factory;
   settings.max_partial_texture_updates = 0;
   if (synchronous_compositor_factory) {
     // Android WebView uses system scrollbars, so make ours invisible.

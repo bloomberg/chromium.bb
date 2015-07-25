@@ -45,6 +45,7 @@ class OverscrollGlow {
   // Called when the root content layer overscrolls.
   // |accumulated_overscroll| and |overscroll_delta| are in device pixels, while
   // |velocity| is in device pixels / second.
+  // |overscroll_location| is the coordinate of the causal overscrolling event.
   // Returns true if the effect still needs animation ticks.
   bool OnOverscrolled(base::TimeTicks current_time,
                       const gfx::Vector2dF& accumulated_overscroll,
@@ -98,6 +99,8 @@ class OverscrollGlow {
   gfx::SizeF viewport_size_;
   float edge_offsets_[EDGE_COUNT];
   bool initialized_;
+  bool allow_horizontal_overscroll_;
+  bool allow_vertical_overscroll_;
 
   scoped_refptr<cc::Layer> root_layer_;
 

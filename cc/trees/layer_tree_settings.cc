@@ -24,7 +24,6 @@ LayerTreeSettings::LayerTreeSettings()
       use_external_begin_frame_source(false),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
-      report_overscroll_only_for_scrollable_axes(false),
       accelerated_animation_enabled(true),
       can_use_lcd_text(true),
       use_distance_field_text(false),
