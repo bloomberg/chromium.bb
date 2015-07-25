@@ -341,11 +341,12 @@ for platform in [
       for libc in ['newlib', 'glibc']:
         # Buildbots.
         for bare in ['', '-bare']:
-          name = platform + arch_part + bare + '-' + libc + '-' + mode
-          assert name not in BOT_ASSIGNMENT, name
-          BOT_ASSIGNMENT[name] = (
-              python + ' buildbot/buildbot_standard.py ' +
-              mode + ' ' + real_arch + ' ' + libc + arch_flags)
+          for test in ['', 'test']:
+            name = platform + arch_part + bare + '-' + libc + '-' + mode + test
+            assert name not in BOT_ASSIGNMENT, name
+            BOT_ASSIGNMENT[name] = (
+                python + ' buildbot/buildbot_standard.py ' +
+                mode + ' ' + real_arch + ' ' + libc + arch_flags)
         # Trybots
         for arch_sep in ['', '-', '_']:
           name = 'nacl-' + platform + arch_sep + arch + '_' + libc + '_' + mode
