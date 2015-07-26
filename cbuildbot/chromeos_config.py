@@ -616,6 +616,7 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Canaries (Group)
+        'auron-b-release-group',
         'glados-release-group',
         'kunimitsu-release-group',
         'pineview-freon-release-group',

@@ -1613,6 +1613,7 @@
     },
     "auron-b-release-group": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "lulu"
         ],
