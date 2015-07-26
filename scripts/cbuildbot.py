@@ -746,7 +746,8 @@ def _FinishParsing(options, args):
       cros_build_lib.Die('Cannot specify both --remote and --local')
 
     # options.channels is a convenient way to detect payloads builds.
-    if not options.buildbot and not options.channels and not patches:
+    if (not options.list and not options.buildbot and not options.channels and
+        not patches):
       prompt = ('No patches were provided; are you sure you want to just '
                 'run a remote build of %s?' % (
                     options.branch if options.branch else 'ToT'))
@@ -941,7 +942,6 @@ def _ParseCommandLine(parser, argv):
   # TODO(rcui): Remove when buildbot is fixed
   args = [arg for arg in args if arg]
 
-  # A couple options, like --list, trigger a quick exit.
   if options.output_api_version:
     print(constants.REEXEC_API_VERSION)
     sys.exit(0)
