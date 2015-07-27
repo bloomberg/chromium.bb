@@ -47,7 +47,7 @@ bool g_glx_get_msc_rate_oml_supported = false;
 
 bool g_glx_sgi_video_sync_supported = false;
 
-static const base::TimeDelta kGetVSyncParametersMinPeriod =
+static const int kGetVSyncParametersMinSeconds =
 #if defined(OS_LINUX)
     // See crbug.com/373489
     // On Linux, querying the vsync parameters might burn CPU for up to an
@@ -55,9 +55,9 @@ static const base::TimeDelta kGetVSyncParametersMinPeriod =
     // 5 seconds is chosen somewhat abitrarily as a balance between:
     //  a) Drift in the phase of our signal.
     //  b) Potential janks from periodically pegging the CPU.
-    base::TimeDelta::FromSeconds(5);
+    5;
 #else
-    base::TimeDelta::FromSeconds(0);
+    0;
 #endif
 
 class OMLSyncControlVSyncProvider
@@ -261,10 +261,10 @@ class SGIVideoSyncVSyncProvider
 
   void GetVSyncParameters(
       const VSyncProvider::UpdateVSyncCallback& callback) override {
-    if (kGetVSyncParametersMinPeriod > base::TimeDelta()) {
+    if (kGetVSyncParametersMinSeconds > 0) {
       base::TimeTicks now = base::TimeTicks::Now();
       base::TimeDelta delta = now - last_get_vsync_parameters_time_;
-      if (delta < kGetVSyncParametersMinPeriod)
+      if (delta.InSeconds() < kGetVSyncParametersMinSeconds)
         return;
       last_get_vsync_parameters_time_ = now;
     }

@@ -57,8 +57,7 @@ const float kMaxStableAngle = 340.0f;
 // This is used to prevent entering maximize mode if an erroneous accelerometer
 // reading makes the lid appear to be fully open when the user is opening the
 // lid from a closed position.
-const base::TimeDelta kLidRecentlyOpenedDuration =
-    base::TimeDelta::FromSeconds(2);
+const int kLidRecentlyOpenedDurationSeconds = 2;
 
 #if defined(OS_CHROMEOS)
 // When the device approaches vertical orientation (i.e. portrait orientation)
@@ -369,7 +368,7 @@ bool MaximizeModeController::WasLidOpenedRecently() const {
   base::TimeTicks now = tick_clock_->NowTicks();
   DCHECK(now >= last_lid_open_time_);
   base::TimeDelta elapsed_time = now - last_lid_open_time_;
-  return elapsed_time <= kLidRecentlyOpenedDuration;
+  return elapsed_time.InSeconds() <= kLidRecentlyOpenedDurationSeconds;
 }
 
 void MaximizeModeController::SetTickClockForTest(

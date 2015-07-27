@@ -46,8 +46,8 @@ const double kPrepareTilesEstimationPercentile = 100.0;
 const double kActivateEstimationPercentile = 100.0;
 const double kDrawEstimationPercentile = 100.0;
 
-const base::TimeDelta kUmaDurationMin = base::TimeDelta::FromMicroseconds(1);
-const base::TimeDelta kUmaDurationMax = base::TimeDelta::FromSeconds(1);
+const int kUmaDurationMin_uS = 1;
+const int64 kUmaDurationMax_uS = 1 * base::Time::kMicrosecondsPerSecond;
 const size_t kUmaDurationBucketCount = 100;
 
 // Deprecated because they combine Browser and Renderer stats and have low
@@ -74,10 +74,10 @@ void DeprecatedDrawDurationUMA(base::TimeDelta duration,
                              base::TimeDelta::FromMilliseconds(100), 50);
 }
 
-#define UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample)                \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(                                         \
-      name, sample.InMicroseconds(), kUmaDurationMin.InMicroseconds(), \
-      kUmaDurationMax.InMicroseconds(), kUmaDurationBucketCount);
+#define UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample)  \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                           \
+      name, sample.InMicroseconds(), kUmaDurationMin_uS, \
+      kUmaDurationMax_uS, kUmaDurationBucketCount);
 
 #define REPORT_COMPOSITOR_TIMING_HISTORY_UMA(category, subcategory)            \
   do {                                                                         \

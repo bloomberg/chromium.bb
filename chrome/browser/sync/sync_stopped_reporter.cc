@@ -27,7 +27,7 @@ const char kEventEndpoint[] = "event";
 // plenty of time. Since sync is off when this request is started, we don't
 // want anything sync-related hanging around for very long from a human
 // perspective either. This seems like a good compromise.
-const base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
+const int kRequestTimeoutSeconds = 10;
 
 std::string GetUserAgent() {
   chrome::VersionInfo version_info;
@@ -85,8 +85,8 @@ void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
                          net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher_->Start();
-  timer_.Start(FROM_HERE, kRequestTimeout, this,
-               &SyncStoppedReporter::OnTimeout);
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRequestTimeoutSeconds),
+               this, &SyncStoppedReporter::OnTimeout);
 }
 
 void SyncStoppedReporter::OnURLFetchComplete(const net::URLFetcher* source) {
