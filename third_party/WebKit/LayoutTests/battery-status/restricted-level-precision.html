@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Test to ensure level is reported with restricted precision.");
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+// Clean-up any unused battery manager objects from previous tests.
+gc();
+jsTestIsAsync = true;
+testRunner.waitUntilDone();
+
+var levelFullPrecision = 0.556789;
+var levelRounded = 0.56;
+
+function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
+    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+}
+
+var battery;
+function batteryStatusSuccess(batteryManager) {
+    debug('batteryStatusSuccess invoked');
+    battery = batteryManager;
+    shouldBe('battery.level', 'levelRounded');
+    setTimeout(finishJSTest, 0);
+}
+
+function batteryStatusFailure() {
+    testFailed('failed to successfully resolve the promise');
+    setTimeout(finishJSTest, 0);
+}
+
+navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
+setAndFireMockBatteryInfo(false, 10, 20, levelFullPrecision); 
+</script>
+</body>
+</html>

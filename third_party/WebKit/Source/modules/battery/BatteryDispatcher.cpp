@@ -10,6 +10,23 @@
 
 namespace blink {
 
+namespace {
+
+double ensureTwoSignificantDigits(double level)
+{
+    // Convert battery level value which should be in [0, 1] to a value in [0, 1]
+    // with 2 digits of precision. This is to provide a consistent experience
+    // across platforms (e.g. on Mac and Android the battery changes are generally
+    // reported with 1% granularity). It also serves the purpose of reducing the
+    // possibility of fingerprinting and triggers less level change events on
+    // platforms where the granularity is high.
+    ASSERT(level >= 0 && level <= 1);
+    return round(level * 100) / 100.f;
+}
+
+} // namespace
+
+
 BatteryDispatcher& BatteryDispatcher::instance()
 {
     DEFINE_STATIC_LOCAL(Persistent<BatteryDispatcher>, batteryDispatcher, (new BatteryDispatcher()));
@@ -32,7 +49,9 @@ DEFINE_TRACE(BatteryDispatcher)
 
 void BatteryDispatcher::updateBatteryStatus(const WebBatteryStatus& batteryStatus)
 {
-    m_batteryStatus = BatteryStatus::create(batteryStatus.charging, batteryStatus.chargingTime, batteryStatus.dischargingTime, batteryStatus.level);
+    m_batteryStatus = BatteryStatus::create(
+        batteryStatus.charging, batteryStatus.chargingTime, batteryStatus.dischargingTime,
+        ensureTwoSignificantDigits(batteryStatus.level));
     notifyControllers();
 }
 
