@@ -1742,8 +1742,7 @@ const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
 const PPB_OpenGLES2InstancedArrays*
 PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {
   static const struct PPB_OpenGLES2InstancedArrays ppb_opengles2 = {
-      &DrawArraysInstancedANGLE,
-      &DrawElementsInstancedANGLE,
+      &DrawArraysInstancedANGLE, &DrawElementsInstancedANGLE,
       &VertexAttribDivisorANGLE};
   return &ppb_opengles2;
 }
@@ -1768,29 +1767,20 @@ PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {
 const PPB_OpenGLES2ChromiumMapSub*
 PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {
   static const struct PPB_OpenGLES2ChromiumMapSub ppb_opengles2 = {
-      &MapBufferSubDataCHROMIUM,
-      &UnmapBufferSubDataCHROMIUM,
-      &MapTexSubImage2DCHROMIUM,
-      &UnmapTexSubImage2DCHROMIUM};
+      &MapBufferSubDataCHROMIUM, &UnmapBufferSubDataCHROMIUM,
+      &MapTexSubImage2DCHROMIUM, &UnmapTexSubImage2DCHROMIUM};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2Query* PPB_OpenGLES2_Shared::GetQueryInterface() {
   static const struct PPB_OpenGLES2Query ppb_opengles2 = {
-      &GenQueriesEXT,
-      &DeleteQueriesEXT,
-      &IsQueryEXT,
-      &BeginQueryEXT,
-      &EndQueryEXT,
-      &GetQueryivEXT,
-      &GetQueryObjectuivEXT};
+      &GenQueriesEXT, &DeleteQueriesEXT, &IsQueryEXT,          &BeginQueryEXT,
+      &EndQueryEXT,   &GetQueryivEXT,    &GetQueryObjectuivEXT};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2VertexArrayObject*
 PPB_OpenGLES2_Shared::GetVertexArrayObjectInterface() {
   static const struct PPB_OpenGLES2VertexArrayObject ppb_opengles2 = {
-      &GenVertexArraysOES,
-      &DeleteVertexArraysOES,
-      &IsVertexArrayOES,
+      &GenVertexArraysOES, &DeleteVertexArraysOES, &IsVertexArrayOES,
       &BindVertexArrayOES};
   return &ppb_opengles2;
 }

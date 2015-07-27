@@ -24,8 +24,9 @@ void GL_APIENTRY glAttachShader(GLuint program, GLuint shader) {
                                       shader);
 }
 
-void GL_APIENTRY
-glBindAttribLocation(GLuint program, GLuint index, const char* name) {
+void GL_APIENTRY glBindAttribLocation(GLuint program,
+                                      GLuint index,
+                                      const char* name) {
   glGetInterfacePPAPI()->BindAttribLocation(glGetCurrentContextPPAPI(), program,
                                             index, name);
 }
@@ -49,8 +50,10 @@ void GL_APIENTRY glBindTexture(GLenum target, GLuint texture) {
                                      texture);
 }
 
-void GL_APIENTRY
-glBlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+void GL_APIENTRY glBlendColor(GLclampf red,
+                              GLclampf green,
+                              GLclampf blue,
+                              GLclampf alpha) {
   glGetInterfacePPAPI()->BlendColor(glGetCurrentContextPPAPI(), red, green,
                                     blue, alpha);
 }
@@ -77,8 +80,10 @@ void GL_APIENTRY glBlendFuncSeparate(GLenum srcRGB,
                                            dstRGB, srcAlpha, dstAlpha);
 }
 
-void GL_APIENTRY
-glBufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
+void GL_APIENTRY glBufferData(GLenum target,
+                              GLsizeiptr size,
+                              const void* data,
+                              GLenum usage) {
   glGetInterfacePPAPI()->BufferData(glGetCurrentContextPPAPI(), target, size,
                                     data, usage);
 }
@@ -100,8 +105,10 @@ void GL_APIENTRY glClear(GLbitfield mask) {
   glGetInterfacePPAPI()->Clear(glGetCurrentContextPPAPI(), mask);
 }
 
-void GL_APIENTRY
-glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+void GL_APIENTRY glClearColor(GLclampf red,
+                              GLclampf green,
+                              GLclampf blue,
+                              GLclampf alpha) {
   glGetInterfacePPAPI()->ClearColor(glGetCurrentContextPPAPI(), red, green,
                                     blue, alpha);
 }
@@ -114,8 +121,10 @@ void GL_APIENTRY glClearStencil(GLint s) {
   glGetInterfacePPAPI()->ClearStencil(glGetCurrentContextPPAPI(), s);
 }
 
-void GL_APIENTRY
-glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
+void GL_APIENTRY glColorMask(GLboolean red,
+                             GLboolean green,
+                             GLboolean blue,
+                             GLboolean alpha) {
   glGetInterfacePPAPI()->ColorMask(glGetCurrentContextPPAPI(), red, green, blue,
                                    alpha);
 }
@@ -247,8 +256,10 @@ void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
                                     count);
 }
 
-void GL_APIENTRY
-glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) {
+void GL_APIENTRY glDrawElements(GLenum mode,
+                                GLsizei count,
+                                GLenum type,
+                                const void* indices) {
   glGetInterfacePPAPI()->DrawElements(glGetCurrentContextPPAPI(), mode, count,
                                       type, indices);
 }
@@ -356,8 +367,9 @@ void GL_APIENTRY glGetBooleanv(GLenum pname, GLboolean* params) {
   glGetInterfacePPAPI()->GetBooleanv(glGetCurrentContextPPAPI(), pname, params);
 }
 
-void GL_APIENTRY
-glGetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
+void GL_APIENTRY glGetBufferParameteriv(GLenum target,
+                                        GLenum pname,
+                                        GLint* params) {
   glGetInterfacePPAPI()->GetBufferParameteriv(glGetCurrentContextPPAPI(),
                                               target, pname, params);
 }
@@ -395,8 +407,9 @@ void GL_APIENTRY glGetProgramInfoLog(GLuint program,
                                            bufsize, length, infolog);
 }
 
-void GL_APIENTRY
-glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
+void GL_APIENTRY glGetRenderbufferParameteriv(GLenum target,
+                                              GLenum pname,
+                                              GLint* params) {
   glGetInterfacePPAPI()->GetRenderbufferParameteriv(glGetCurrentContextPPAPI(),
                                                     target, pname, params);
 }
@@ -434,20 +447,23 @@ const GLubyte* GL_APIENTRY glGetString(GLenum name) {
   return glGetInterfacePPAPI()->GetString(glGetCurrentContextPPAPI(), name);
 }
 
-void GL_APIENTRY
-glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
+void GL_APIENTRY glGetTexParameterfv(GLenum target,
+                                     GLenum pname,
+                                     GLfloat* params) {
   glGetInterfacePPAPI()->GetTexParameterfv(glGetCurrentContextPPAPI(), target,
                                            pname, params);
 }
 
-void GL_APIENTRY
-glGetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
+void GL_APIENTRY glGetTexParameteriv(GLenum target,
+                                     GLenum pname,
+                                     GLint* params) {
   glGetInterfacePPAPI()->GetTexParameteriv(glGetCurrentContextPPAPI(), target,
                                            pname, params);
 }
 
-void GL_APIENTRY
-glGetUniformfv(GLuint program, GLint location, GLfloat* params) {
+void GL_APIENTRY glGetUniformfv(GLuint program,
+                                GLint location,
+                                GLfloat* params) {
   glGetInterfacePPAPI()->GetUniformfv(glGetCurrentContextPPAPI(), program,
                                       location, params);
 }
@@ -462,20 +478,23 @@ GLint GL_APIENTRY glGetUniformLocation(GLuint program, const char* name) {
                                                    program, name);
 }
 
-void GL_APIENTRY
-glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
+void GL_APIENTRY glGetVertexAttribfv(GLuint index,
+                                     GLenum pname,
+                                     GLfloat* params) {
   glGetInterfacePPAPI()->GetVertexAttribfv(glGetCurrentContextPPAPI(), index,
                                            pname, params);
 }
 
-void GL_APIENTRY
-glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
+void GL_APIENTRY glGetVertexAttribiv(GLuint index,
+                                     GLenum pname,
+                                     GLint* params) {
   glGetInterfacePPAPI()->GetVertexAttribiv(glGetCurrentContextPPAPI(), index,
                                            pname, params);
 }
 
-void GL_APIENTRY
-glGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {
+void GL_APIENTRY glGetVertexAttribPointerv(GLuint index,
+                                           GLenum pname,
+                                           void** pointer) {
   glGetInterfacePPAPI()->GetVertexAttribPointerv(glGetCurrentContextPPAPI(),
                                                  index, pname, pointer);
 }
@@ -586,8 +605,10 @@ void GL_APIENTRY glStencilFunc(GLenum func, GLint ref, GLuint mask) {
                                      mask);
 }
 
-void GL_APIENTRY
-glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask) {
+void GL_APIENTRY glStencilFuncSeparate(GLenum face,
+                                       GLenum func,
+                                       GLint ref,
+                                       GLuint mask) {
   glGetInterfacePPAPI()->StencilFuncSeparate(glGetCurrentContextPPAPI(), face,
                                              func, ref, mask);
 }
@@ -606,8 +627,10 @@ void GL_APIENTRY glStencilOp(GLenum fail, GLenum zfail, GLenum zpass) {
                                    zpass);
 }
 
-void GL_APIENTRY
-glStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass) {
+void GL_APIENTRY glStencilOpSeparate(GLenum face,
+                                     GLenum fail,
+                                     GLenum zfail,
+                                     GLenum zpass) {
   glGetInterfacePPAPI()->StencilOpSeparate(glGetCurrentContextPPAPI(), face,
                                            fail, zfail, zpass);
 }
@@ -631,8 +654,9 @@ void GL_APIENTRY glTexParameterf(GLenum target, GLenum pname, GLfloat param) {
                                        pname, param);
 }
 
-void GL_APIENTRY
-glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params) {
+void GL_APIENTRY glTexParameterfv(GLenum target,
+                                  GLenum pname,
+                                  const GLfloat* params) {
   glGetInterfacePPAPI()->TexParameterfv(glGetCurrentContextPPAPI(), target,
                                         pname, params);
 }
@@ -642,8 +666,9 @@ void GL_APIENTRY glTexParameteri(GLenum target, GLenum pname, GLint param) {
                                        pname, param);
 }
 
-void GL_APIENTRY
-glTexParameteriv(GLenum target, GLenum pname, const GLint* params) {
+void GL_APIENTRY glTexParameteriv(GLenum target,
+                                  GLenum pname,
+                                  const GLint* params) {
   glGetInterfacePPAPI()->TexParameteriv(glGetCurrentContextPPAPI(), target,
                                         pname, params);
 }
@@ -790,8 +815,10 @@ void GL_APIENTRY glVertexAttrib2fv(GLuint indx, const GLfloat* values) {
                                          values);
 }
 
-void GL_APIENTRY
-glVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
+void GL_APIENTRY glVertexAttrib3f(GLuint indx,
+                                  GLfloat x,
+                                  GLfloat y,
+                                  GLfloat z) {
   glGetInterfacePPAPI()->VertexAttrib3f(glGetCurrentContextPPAPI(), indx, x, y,
                                         z);
 }
@@ -894,8 +921,9 @@ void GL_APIENTRY glGetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
     ext->GetQueryivEXT(glGetCurrentContextPPAPI(), target, pname, params);
 }
 
-void GL_APIENTRY
-glGetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
+void GL_APIENTRY glGetQueryObjectuivEXT(GLuint id,
+                                        GLenum pname,
+                                        GLuint* params) {
   const struct PPB_OpenGLES2Query* ext = glGetQueryInterfacePPAPI();
   if (ext)
     ext->GetQueryObjectuivEXT(glGetCurrentContextPPAPI(), id, pname, params);
