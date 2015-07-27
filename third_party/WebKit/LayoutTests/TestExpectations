@@ -1622,11 +1622,6 @@ crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageO
 
 crbug.com/508252 fast/forms/time-multiple-fields/time-multiple-fields-preserve-value-after-history-back.html [ Pass Failure ]
 
-# Waiting on a v8 roll to fix.
-crbug.com/509936 http/tests/security/cross-frame-access-enumeration.html [ Pass Failure ]
-crbug.com/509936 http/tests/security/cross-frame-access-object-getPrototypeOf.html [ Pass Failure ]
-crbug.com/509936 http/tests/security/w3c/cross-origin-objects.html [ NeedsManualRebaseline ]
-
 # Yosemite-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just

@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Basic sanity-checking 
 FAIL Only whitelisted properties are accessible cross-origin Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
-FAIL [[GetPrototypeOf]] should return null Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
+PASS [[GetPrototypeOf]] should return null 
 PASS [[SetPrototypeOf]] should throw 
 PASS [[IsExtensible]] should return true for cross-origin objects 
 PASS [[PreventExtensions]] should throw for cross-origin objects 
@@ -9,8 +9,8 @@ FAIL [[GetOwnProperty]] - Properties on cross-origin objects should be reported 
 FAIL [[GetOwnProperty]] - Property descriptors for cross-origin properties should be set up correctly assert_equals: property descriptor for location should be non-enumerable expected false but got true
 PASS [[Delete]] Should throw on cross-origin objects 
 FAIL [[DefineOwnProperty]] Should throw for cross-origin objects assert_throws: Can't define cross-origin value property length function "function () { Object.defineProperty(obj, prop, valueDesc); }" did not throw
-FAIL [[Enumerate]] should return an empty iterator Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
-FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
+PASS [[Enumerate]] should return an empty iterator 
+FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Window lengths differ, expected 13 got 9
 PASS A and B jointly observe the same identity for cross-origin Window and Location 
 PASS Cross-origin functions get local Function.prototype 
 FAIL Cross-origin Window accessors get local Function.prototype Cannot read property 'name' of undefined

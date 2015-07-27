@@ -54,39 +54,25 @@
 
             // Test enumerating the Location object
             var b_win_location = b_win.location;
-            try {
-                for (var k in b_win_location) {
-                    if (k == "customLocationProperty") {
-                        log("FAIL: Cross frame access by enumerating the Location object was allowed.");
-                        return;
-                    }
-                }
-                log("FAIL: Cross frame access to Location object didn't throw an exception.");
-            } catch (e) {
-                log("PASS: Cross frame access by enumerating the Location object was denied.");
+            for (var k in b_win_location) {
+                log("FAIL: Cross frame access by enumerating the Location object was allowed.");
+                return;
             }
+            log("PASS: Cross frame access by enumerating the Location object revealed no properties.");
 
-            try {
-                var b_winLocationKeys = Object.keys(b_win_location);
-                log("FAIL: Cross frame access to Location object didn't throw an exception.");
-                if (b_winLocationKeys.indexOf("customLocationProperty") != -1) {
-                    log("FAIL: Cross frame access by getting the keys of the Location object was allowed.");
-                    return;
-                }
-            } catch (e) {
-                log("PASS: Cross frame access by getting the keys of the Location object was denied.");
+            var b_winLocationKeys = Object.keys(b_win_location);
+            if (b_winLocationKeys.length != 0) {
+                log("FAIL: Cross frame access by getting the keys of the Location object was allowed.");
+                return;
             }
+            log("PASS: Cross frame access by getting the keys of the Location object revealed no keys.");
 
-            try {
-                var b_winLocationPropertyNames = Object.getOwnPropertyNames(b_win_location);
-                log("FAIL: Cross frame access to Location object didn't throw an exception.");
-                if (b_winLocationPropertyNames.indexOf("customLocationProperty") != -1) {
-                    log("FAIL: Cross frame access by getting the property names of the Location object was allowed.");
-                    return;
-                }
-            } catch (e) {
-                log("PASS: Cross frame access by getting the property names of the Location object was denied.");
+            var b_winLocationPropertyNames = Object.getOwnPropertyNames(b_win_location);
+            if (b_winLocationPropertyNames.indexOf("customLocationProperty") != -1) {
+                log("FAIL: Cross frame access by getting the property names of the Location object was allowed.");
+                 return;
             }
+            log("PASS: Cross frame access by getting the property names of the Location object revealed no custom properties.");
         }
     </script>
 </head>
