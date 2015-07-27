@@ -19,8 +19,12 @@ component("views") {
   all_dependent_configs = [ ":flags" ]
   sources = gypi_values.views_sources
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
@@ -137,6 +141,8 @@ component("views") {
 static_library("test_support") {
   testonly = true
   sources = gypi_values.views_test_support_sources
+
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     ":views",

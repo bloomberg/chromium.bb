@@ -645,7 +645,10 @@ component("base") {
 
   data = []
 
-  configs += [ ":base_implementation" ]
+  configs += [
+    ":base_implementation",
+    "//build/config:precompiled_headers",
+  ]
 
   deps = [
     ":base_static",

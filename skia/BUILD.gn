@@ -441,6 +441,7 @@ component("skia") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":skia_library_config",
+    "//build/config:precompiled_headers",
     "//build/config/compiler:no_chromium_code",
   ]
   public_configs = [ ":skia_config" ]

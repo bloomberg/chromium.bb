@@ -52,6 +52,7 @@ static_library("devtools") {
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
+    "//build/config:precompiled_headers",
     "//third_party/WebKit/public:debug_devtools",
   ]
 

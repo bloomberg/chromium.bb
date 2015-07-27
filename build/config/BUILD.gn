@@ -418,9 +418,7 @@ config("default_libs") {
 #
 # Recommend precompiled headers for targets with more than 50 .cc files.
 config("precompiled_headers") {
-  # TODO(brettw) enable this when GN support in the binary has been rolled.
-  #if (is_win) {
-  if (false) {
+  if (is_win) {
     # This is a string rather than a file GN knows about. It has to match
     # exactly what's in the /FI flag below, and what might appear in the source
     # code in quotes for an #include directive.

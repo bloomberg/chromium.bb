@@ -21,6 +21,7 @@ source_set("extensions") {
                          ".",
                          "//chrome")
 
+  configs += [ "//build/config:precompiled_headers" ]
   defines = []
 
   # Since browser and browser_extensions actually depend on each other,

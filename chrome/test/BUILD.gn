@@ -84,6 +84,8 @@ source_set("test_support") {
     "logging/win/test_log_collector.h",
   ]
 
+  configs += [ "//build/config:precompiled_headers" ]
+
   # New deps should go in the non-iOS section below.
   public_deps = [
     "//content/test:test_support",
@@ -228,6 +230,7 @@ if (!is_android) {
                     ".",
                     "//chrome")
 
+    configs += [ "//build/config:precompiled_headers" ]
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
     ldflags = []
 
@@ -546,6 +549,8 @@ if (!is_android) {
             chrome_tests_gypi_values.chrome_browser_extensions_test_support_sources,
             ".",
             "//chrome")
+
+    configs += [ "//build/config:precompiled_headers" ]
 
     deps = [
       ":browser_tests_js_webui",
@@ -1154,6 +1159,7 @@ if (!is_android) {
                     ".",
                     "//chrome")
 
+    configs += [ "//build/config:precompiled_headers" ]
     defines = []
 
     deps = [
