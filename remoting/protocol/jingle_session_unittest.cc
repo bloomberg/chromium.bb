@@ -414,25 +414,30 @@ TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
   EXPECT_FALSE(host_session_);
 }
 
-// Verify that we can still connect using legacy GICE transport.
+// Verify that GICE-only client is rejected with an appropriate error code.
 TEST_F(JingleSessionTest, TestLegacyIceConnection) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+
+  EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _)).Times(0);
+
+  EXPECT_CALL(client_session_event_handler_,
+              OnSessionStateChange(Session::FAILED))
+      .Times(1);
+
+  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
 
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   config->set_standard_ice(false);
-  host_server_->set_protocol_config(config.Pass());
+  client_server_->set_protocol_config(config.Pass());
+  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_session_->SetEventHandler(&client_session_event_handler_);
 
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+  base::RunLoop().RunUntilIdle();
 
-  ASSERT_NO_FATAL_FAILURE(CreateChannel());
-
-  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, kMessages);
-  tester.Start();
-  message_loop_->Run();
-  tester.CheckResults();
+  EXPECT_EQ(INCOMPATIBLE_PROTOCOL, client_session_->error());
+  EXPECT_FALSE(host_session_);
 }
 
 TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {

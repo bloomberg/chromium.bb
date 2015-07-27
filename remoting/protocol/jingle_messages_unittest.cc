@@ -115,7 +115,6 @@ TEST(JingleMessageTest, SessionInitiate) {
                 "j7whCMii0Z0AAPwj7whCM/j7whCMii0Z0AAPw="
               "</auth-token></authentication>"
           "</description>"
-          "<transport xmlns='http://www.google.com/transport/p2p'/>"
           "</content>"
         "</jingle>"
       "</iq>";
@@ -156,7 +155,6 @@ TEST(JingleMessageTest, SessionAccept) {
                 "MIICpjCCAY6gW0Cert0TANBgkqhkiG9w0BAQUFA="
               "</certificate></authentication>"
             "</description>"
-            "<transport xmlns='http://www.google.com/transport/p2p'/>"
           "</content>"
         "</jingle>"
       "</cli:iq>";
@@ -197,7 +195,6 @@ TEST(JingleMessageTest, SessionAcceptNoIce) {
                 "MIICpjCCAY6gW0Cert0TANBgkqhkiG9w0BAQUFA="
               "</certificate></authentication>"
             "</description>"
-            "<transport xmlns='http://www.google.com/transport/p2p'/>"
           "</content>"
         "</jingle>"
       "</cli:iq>";
@@ -245,46 +242,6 @@ TEST(JingleMessageTest, IceTransportInfo) {
 
   scoped_ptr<XmlElement> source_message(
       XmlElement::ForStr(kTestIceTransportInfoMessage));
-  ASSERT_TRUE(source_message.get());
-
-  EXPECT_TRUE(JingleMessage::IsJingleMessage(source_message.get()));
-
-  JingleMessage message;
-  std::string error;
-  EXPECT_TRUE(message.ParseXml(source_message.get(), &error)) << error;
-
-  EXPECT_EQ(message.action, JingleMessage::TRANSPORT_INFO);
-  EXPECT_EQ(message.candidates.size(), 2U);
-
-  scoped_ptr<XmlElement> formatted_message(message.ToXml());
-  ASSERT_TRUE(formatted_message.get());
-  EXPECT_TRUE(VerifyXml(source_message.get(), formatted_message.get(), &error))
-      << error;
-}
-
-TEST(JingleMessageTest, GiceTransportInfo) {
-  const char* kTestGiceTransportInfoMessage =
-      "<cli:iq to='user@gmail.com/chromoting016DBB07' type='set' "
-              "xmlns:cli='jabber:client'>"
-        "<jingle xmlns='urn:xmpp:jingle:1' action='transport-info' "
-                "sid='2227053353'>"
-          "<content name='chromoting' creator='initiator'>"
-            "<transport  xmlns='http://www.google.com/transport/p2p'>"
-              "<candidate name='event' address='172.23.164.186' port='57040' "
-                        "preference='1' username='tPUyEAmQrEw3y7hi' "
-                        "protocol='udp' generation='0' "
-                        "password='2iRdhLfawKZC5ydJ' type='local'/>"
-              "<candidate name='video' address='172.23.164.186' port='42171' "
-                         "preference='1' username='EPK3CXo5sTLJSez0' "
-                         "protocol='udp' generation='0' "
-                         "password='eM0VUfUkZ+1Pyi0M' type='local'/>"
-            "</transport>"
-          "</content>"
-        "</jingle>"
-      "</cli:iq>";
-
-  scoped_ptr<XmlElement> source_message(
-      XmlElement::ForStr(kTestGiceTransportInfoMessage));
   ASSERT_TRUE(source_message.get());
 
   EXPECT_TRUE(JingleMessage::IsJingleMessage(source_message.get()));
@@ -441,7 +398,6 @@ TEST(JingleMessageTest, ErrorMessage) {
                 "j7whCMii0Z0AAPwj7whCM/j7whCMii0Z0AAPw="
               "</auth-token></authentication>"
             "</description>"
-            "<transport xmlns='http://www.google.com/transport/p2p'/>"
           "</content>"
         "</jingle>"
         "<error code='501' type='cancel'>"

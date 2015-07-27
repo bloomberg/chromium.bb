@@ -81,7 +81,6 @@ struct JingleMessage {
 
   scoped_ptr<ContentDescription> description;
 
-  bool standard_ice = true;
   std::list<IceCredentials> ice_credentials;
   std::list<NamedCandidate> candidates;
 

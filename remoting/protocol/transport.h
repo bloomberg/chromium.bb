@@ -118,12 +118,6 @@ class Transport : public base::NonThreadSafe {
   // Returns true if the channel is already connected.
   virtual bool is_connected() const = 0;
 
-  // Sets ICE version for the transport.
-  //
-  // TODO(sergeyu): Remove this when support for legacy ICE is removed.
-  // crbug.com/473758
-  virtual void SetUseStandardIce(bool use_standard_ice) {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(Transport);
 };

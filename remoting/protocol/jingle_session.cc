@@ -264,7 +264,6 @@ void JingleSession::CreateChannel(const std::string& name,
 
   scoped_ptr<Transport> channel =
       session_manager_->transport_factory_->CreateTransport();
-  channel->SetUseStandardIce(config_->standard_ice());
   channel->Connect(name, this, callback);
   AddPendingRemoteTransportInfo(channel.get());
   channels_[name] = channel.release();
@@ -374,8 +373,6 @@ void JingleSession::EnsurePendingTransportInfoMessage() {
   if (!pending_transport_info_message_) {
     pending_transport_info_message_.reset(new JingleMessage(
         peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_));
-    pending_transport_info_message_->standard_ice = config_->standard_ice();
-
     // Delay sending the new candidates in case we get more candidates
     // that we can send in one message.
     transport_info_timer_.Start(
@@ -516,14 +513,6 @@ void JingleSession::OnSessionInfo(const JingleMessage& message,
 }
 
 void JingleSession::ProcessTransportInfo(const JingleMessage& message) {
-  // Check if the transport information version matches what was negotiated.
-  if (message.standard_ice != config_->standard_ice()) {
-    LOG(ERROR) << "Received transport-info message in format different from "
-                  "negotiated.";
-    CloseInternal(INCOMPATIBLE_PROTOCOL);
-    return;
-  }
-
   for (std::list<JingleMessage::IceCredentials>::const_iterator it =
            message.ice_credentials.begin();
        it != message.ice_credentials.end(); ++it) {

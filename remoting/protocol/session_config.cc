@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
+
 namespace remoting {
 namespace protocol {
 
@@ -63,8 +65,11 @@ scoped_ptr<SessionConfig> SessionConfig::SelectCommon(
   ChannelConfig video_config;
   ChannelConfig audio_config;
 
-  result->standard_ice_ =
-      host_config->standard_ice() && client_config->standard_ice();
+  DCHECK(host_config->standard_ice());
+
+  // Reject connection if the peer doesn't support ICE.
+  if (!client_config->standard_ice())
+    return nullptr;
 
   if (!SelectCommonChannelConfig(host_config->control_configs(),
                                  client_config->control_configs(),
@@ -107,7 +112,6 @@ scoped_ptr<SessionConfig> SessionConfig::GetFinalConfig(
 // static
 scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   scoped_ptr<SessionConfig> result(new SessionConfig());
-  result->standard_ice_ = true;
   result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                                           kControlStreamVersion,
                                           ChannelConfig::CODEC_UNDEFINED);
@@ -133,13 +137,12 @@ CandidateSessionConfig::CandidateSessionConfig(
 
 CandidateSessionConfig::~CandidateSessionConfig() { }
 
-bool CandidateSessionConfig::IsSupported(
-    const SessionConfig& config) const {
-  return
-      IsChannelConfigSupported(control_configs_, config.control_config()) &&
-      IsChannelConfigSupported(event_configs_, config.event_config()) &&
-      IsChannelConfigSupported(video_configs_, config.video_config()) &&
-      IsChannelConfigSupported(audio_configs_, config.audio_config());
+bool CandidateSessionConfig::IsSupported(const SessionConfig& config) const {
+  return config.standard_ice() &&
+         IsChannelConfigSupported(control_configs_, config.control_config()) &&
+         IsChannelConfigSupported(event_configs_, config.event_config()) &&
+         IsChannelConfigSupported(video_configs_, config.video_config()) &&
+         IsChannelConfigSupported(audio_configs_, config.audio_config());
 }
 
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::Clone() const {
@@ -166,8 +169,6 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateFrom(
 // static
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   scoped_ptr<CandidateSessionConfig> result = CreateEmpty();
-
-  result->set_standard_ice(true);
 
   // Control channel.
   result->mutable_control_configs()->push_back(

@@ -73,7 +73,6 @@ class LibjingleTransport
   void AddRemoteCandidate(const cricket::Candidate& candidate) override;
   const std::string& name() const override;
   bool is_connected() const override;
-  void SetUseStandardIce(bool use_standard_ice) override;
 
  private:
   void DoStart();
@@ -99,8 +98,6 @@ class LibjingleTransport
   cricket::PortAllocator* port_allocator_;
   NetworkSettings network_settings_;
   TransportRole role_;
-
-  bool use_standard_ice_ = true;
 
   std::string name_;
   EventHandler* event_handler_;
@@ -164,10 +161,6 @@ void LibjingleTransport::OnCanStart() {
   }
 
   while (!pending_candidates_.empty()) {
-    if (!use_standard_ice_) {
-      channel_->SetRemoteIceCredentials(pending_candidates_.front().username(),
-                                        pending_candidates_.front().password());
-    }
     channel_->OnCandidate(pending_candidates_.front());
     pending_candidates_.pop_front();
   }
@@ -199,16 +192,12 @@ void LibjingleTransport::DoStart() {
   channel_.reset(new cricket::P2PTransportChannel(
       std::string(), 0, nullptr, port_allocator_));
   std::string ice_password = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
-  if (use_standard_ice_) {
-    channel_->SetIceProtocolType(cricket::ICEPROTO_RFC5245);
-    channel_->SetIceRole((role_ == TransportRole::CLIENT)
-                             ? cricket::ICEROLE_CONTROLLING
-                             : cricket::ICEROLE_CONTROLLED);
-    event_handler_->OnTransportIceCredentials(this, ice_username_fragment_,
-                                              ice_password);
-  } else {
-    channel_->SetIceProtocolType(cricket::ICEPROTO_GOOGLE);
-  }
+  channel_->SetIceProtocolType(cricket::ICEPROTO_RFC5245);
+  channel_->SetIceRole((role_ == TransportRole::CLIENT)
+                           ? cricket::ICEROLE_CONTROLLING
+                           : cricket::ICEROLE_CONTROLLED);
+  event_handler_->OnTransportIceCredentials(this, ice_username_fragment_,
+                                            ice_password);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password);
   channel_->SignalRequestSignaling.connect(
       this, &LibjingleTransport::OnRequestSignaling);
@@ -267,10 +256,6 @@ void LibjingleTransport::AddRemoteCandidate(
     return;
 
   if (channel_) {
-    if (!use_standard_ice_) {
-      channel_->SetRemoteIceCredentials(candidate.username(),
-                                        candidate.password());
-    }
     channel_->OnCandidate(candidate);
   } else {
     pending_candidates_.push_back(candidate);
@@ -285,12 +270,6 @@ const std::string& LibjingleTransport::name() const {
 bool LibjingleTransport::is_connected() const {
   DCHECK(CalledOnValidThread());
   return callback_.is_null();
-}
-
-void LibjingleTransport::SetUseStandardIce(bool use_standard_ice) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!channel_);
-  use_standard_ice_ = use_standard_ice;
 }
 
 void LibjingleTransport::OnRequestSignaling(
