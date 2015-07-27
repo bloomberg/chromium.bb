@@ -79,6 +79,7 @@ class ContentCondition {
   // a match for |url_matcher_condition_set_|.
   bool IsFulfilled(const RendererContentMatchData& renderer_data) const;
 
+  // Returns null if there are no URLMatcher conditions.
   url_matcher::URLMatcherConditionSet* url_matcher_condition_set() const {
     return url_matcher_condition_set_.get();
   }

@@ -198,17 +198,7 @@ TEST(DeclarativeContentConditionTest, IsBookmarkedTrue) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(result);
 
-  // TODO(wittman): Getting/adding URL matcher condition sets should not be
-  // necessary when we haven't specified any pageUrl conditions. Remove this and
-  // the MatchURL call below, and refactor ContentCondition and
-  // ChromeContentRulesRegistry to not depend on a ContentCondition always
-  // having a URL matcher condition.
-  URLMatcherConditionSet::Vector all_new_condition_sets;
-  all_new_condition_sets.push_back(result->url_matcher_condition_set());
-  matcher.AddConditionSets(all_new_condition_sets);
-
   RendererContentMatchData data;
-  data.page_url_matches = matcher.MatchURL(GURL("http://test/"));
   data.is_bookmarked = true;
   EXPECT_TRUE(result->IsFulfilled(data));
   data.is_bookmarked = false;
@@ -234,17 +224,7 @@ TEST(DeclarativeContentConditionTest, IsBookmarkedFalse) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(result);
 
-  // TODO(wittman): Getting/adding URL matcher condition sets should not be
-  // necessary when we haven't specified any pageUrl conditions. Remove this and
-  // the MatchURL call below, and refactor ContentCondition and
-  // ChromeContentRulesRegistry to not depend on a ContentCondition always
-  // having a URL matcher condition.
-  URLMatcherConditionSet::Vector all_new_condition_sets;
-  all_new_condition_sets.push_back(result->url_matcher_condition_set());
-  matcher.AddConditionSets(all_new_condition_sets);
-
   RendererContentMatchData data;
-  data.page_url_matches = matcher.MatchURL(GURL("http://test/"));
   data.is_bookmarked = true;
   EXPECT_FALSE(result->IsFulfilled(data));
   data.is_bookmarked = false;

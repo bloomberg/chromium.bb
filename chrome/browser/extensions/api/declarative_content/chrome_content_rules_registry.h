@@ -174,8 +174,10 @@ class ChromeContentRulesRegistry
   // selectors.
   void EvaluateConditionsForTab(content::WebContents* tab);
 
-  // Evaluates the conditions for tabs in each browser window.
-  void EvaluateConditionsForAllTabs();
+  // Returns true if a rule created by |extension| should be evaluated for an
+  // incognito renderer.
+  bool ShouldEvaluateExtensionRulesForIncognitoRenderer(
+      const Extension* extension) const;
 
   using ExtensionRuleIdPair = std::pair<const Extension*, std::string>;
   using RuleAndConditionForURLMatcherId =
@@ -186,6 +188,10 @@ class ChromeContentRulesRegistry
   // Map that tells us which ContentRules and ContentConditions may
   // match for a URLMatcherConditionSet::ID returned by the |url_matcher_|.
   RuleAndConditionForURLMatcherId rule_and_conditions_for_match_id_;
+
+  // Set of conditions that participate in URL matching. Supports early-out
+  // during evaluation of conditions that have failing URL matches.
+  std::set<const ContentCondition*> url_matcher_conditions_;
 
   RulesMap content_rules_;
 

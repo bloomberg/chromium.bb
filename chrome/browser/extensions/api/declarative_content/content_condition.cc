@@ -51,16 +51,17 @@ ContentCondition::ContentCondition(
       url_matcher_condition_set_(url_matcher_condition_set),
       css_selectors_(css_selectors),
       bookmarked_state_(bookmarked_state) {
-  DCHECK(url_matcher_condition_set_.get());
 }
 
 ContentCondition::~ContentCondition() {}
 
 bool ContentCondition::IsFulfilled(
     const RendererContentMatchData& renderer_data) const {
-  if (!ContainsKey(renderer_data.page_url_matches,
-                   url_matcher_condition_set_->id()))
+  if (url_matcher_condition_set_ &&
+      !ContainsKey(renderer_data.page_url_matches,
+                   url_matcher_condition_set_->id())) {
     return false;
+  }
 
   // All attributes must be fulfilled for a fulfilled condition.
   for (const std::string& css_selector : css_selectors_) {
@@ -156,14 +157,6 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
       return scoped_ptr<ContentCondition>();
   }
 
-  if (!url_matcher_condition_set.get()) {
-    URLMatcherConditionSet::Conditions url_matcher_conditions;
-    url_matcher_conditions.insert(
-        url_matcher_condition_factory->CreateHostPrefixCondition(
-            std::string()));
-    url_matcher_condition_set =
-        new URLMatcherConditionSet(++g_next_id, url_matcher_conditions);
-  }
   return make_scoped_ptr(
       new ContentCondition(extension.Pass(), url_matcher_condition_set,
                            css_rules, bookmarked_state));

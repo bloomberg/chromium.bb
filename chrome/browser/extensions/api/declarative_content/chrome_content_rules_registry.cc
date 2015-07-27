@@ -215,45 +215,38 @@ std::set<const ChromeContentRulesRegistry::ContentRule*>
 ChromeContentRulesRegistry::GetMatches(
     const RendererContentMatchData& renderer_data,
     bool is_incognito_renderer) const {
-  std::set<const ContentRule*> matching_rules;
-
-  // First get the (rule, condition) pairs that have URL matches. Then for
-  // those, evaluate whether all the sub-conditions are fulfilled. Since a rule
-  // matches if *any* of its conditions match, immediately record the rule
-  // as matching if all the sub-conditions are fulfilled.
+  // Create the set of conditions that have matching page URL predicates
+  // according to |renderer_data.page_url_matches|.
+  std::set<const ContentCondition*> conditions_with_page_url_match;
   for (URLMatcherConditionSet::ID url_match : renderer_data.page_url_matches) {
     RuleAndConditionForURLMatcherId::const_iterator rule_condition_iter =
         rule_and_conditions_for_match_id_.find(url_match);
     CHECK(rule_condition_iter != rule_and_conditions_for_match_id_.end());
 
-    const std::pair<const ContentRule*, const ContentCondition*>&
-        rule_condition_pair = rule_condition_iter->second;
-    const ContentRule* rule = rule_condition_pair.first;
-    if (is_incognito_renderer) {
-      if (!util::IsIncognitoEnabled(rule->extension->id(), browser_context()))
+    const ContentCondition* condition = rule_condition_iter->second.second;
+    conditions_with_page_url_match.insert(condition);
+  }
+
+  std::set<const ContentRule*> matching_rules;
+  for (const RulesMap::value_type& rule_id_rule_pair : content_rules_) {
+    const ContentRule* rule = rule_id_rule_pair.second.get();
+    if (is_incognito_renderer &&
+        !ShouldEvaluateExtensionRulesForIncognitoRenderer(rule->extension))
+      continue;
+
+    for (const ContentCondition* condition : rule->conditions) {
+      // If we already know the URL matcher predicate within |condition| doesn't
+      // match, we don't need to check whether the other predicates are
+      // fulfilled.
+      if (ContainsKey(url_matcher_conditions_, condition) &&
+          !ContainsKey(conditions_with_page_url_match, condition))
         continue;
 
-      // Split-mode incognito extensions register their rules with separate
-      // RulesRegistries per Original/OffTheRecord browser contexts, whereas
-      // spanning-mode extensions share the Original browser context.
-      if (util::CanCrossIncognito(rule->extension, browser_context())) {
-        // The extension uses spanning mode incognito. No rules should have been
-        // registered for the extension in the OffTheRecord registry so
-        // execution for that registry should never reach this point.
-        CHECK(!browser_context()->IsOffTheRecord());
-      } else {
-        // The extension uses split mode incognito. Both the Original and
-        // OffTheRecord registries may have (separate) rules for this extension.
-        // We've established above that we are looking at an incognito renderer,
-        // so only the OffTheRecord registry should process its rules.
-        if (!browser_context()->IsOffTheRecord())
-          continue;
-      }
-    }
+      if (!condition->IsFulfilled(renderer_data))
+        continue;
 
-    const ContentCondition* condition = rule_condition_pair.second;
-    if (condition->IsFulfilled(renderer_data))
       matching_rules.insert(rule);
+    }
   }
   return matching_rules;
 }
@@ -290,28 +283,32 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   // Wohoo, everything worked fine.
   content_rules_.insert(new_content_rules.begin(), new_content_rules.end());
 
-  // Create the triggers.
-  for (const RulesMap::value_type& rule_id_rule_pair : new_content_rules) {
-    const linked_ptr<const ContentRule>& rule = rule_id_rule_pair.second;
-    for (const ContentCondition* condition : rule->conditions) {
-      URLMatcherConditionSet::ID condition_set_id =
-          condition->url_matcher_condition_set()->id();
-      rule_and_conditions_for_match_id_[condition_set_id] =
-          std::make_pair(rule.get(), condition);
-    }
-  }
-
-  // Register url patterns in the URL matcher.
+  // Record the URL matcher condition set to rule condition pair mappings, and
+  // register URL patterns in the URL matcher.
   URLMatcherConditionSet::Vector all_new_condition_sets;
   for (const RulesMap::value_type& rule_id_rule_pair : new_content_rules) {
     const linked_ptr<const ContentRule>& rule = rule_id_rule_pair.second;
-    for (const ContentCondition* condition : rule->conditions)
-      all_new_condition_sets.push_back(condition->url_matcher_condition_set());
+    for (const ContentCondition* condition : rule->conditions) {
+      if (condition->url_matcher_condition_set()) {
+        URLMatcherConditionSet::ID condition_set_id =
+            condition->url_matcher_condition_set()->id();
+        rule_and_conditions_for_match_id_[condition_set_id] =
+            std::make_pair(rule.get(), condition);
+        all_new_condition_sets.push_back(
+            condition->url_matcher_condition_set());
+        url_matcher_conditions_.insert(condition);
+      }
+    }
   }
   page_url_condition_tracker_.AddConditionSets(
       all_new_condition_sets);
 
   UpdateCssSelectorsFromRules();
+
+  // Request evaluation for all WebContents, under the assumption that a
+  // non-empty condition has been added.
+  for (auto web_contents_rules_pair : active_rules_)
+    EvaluateConditionsForTab(web_contents_rules_pair.first);
 
   return std::string();
 }
@@ -335,14 +332,18 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     if (content_rules_entry == content_rules_.end())
       continue;
 
-    // Remove all triggers but collect their IDs.
+    // Remove state associated with URL matcher conditions, and collect the
+    // URLMatcherConditionSet::IDs to remove later.
     URLMatcherConditionSet::Vector condition_sets;
     const ContentRule* rule = content_rules_entry->second.get();
     for (const ContentCondition* condition : rule->conditions) {
-      URLMatcherConditionSet::ID condition_set_id =
-          condition->url_matcher_condition_set()->id();
-      condition_set_ids_to_remove.push_back(condition_set_id);
-      rule_and_conditions_for_match_id_.erase(condition_set_id);
+      if (condition->url_matcher_condition_set()) {
+        URLMatcherConditionSet::ID condition_set_id =
+            condition->url_matcher_condition_set()->id();
+        condition_set_ids_to_remove.push_back(condition_set_id);
+        rule_and_conditions_for_match_id_.erase(condition_set_id);
+        url_matcher_conditions_.erase(condition);
+      }
     }
 
     // Remove the ContentRule from active_rules_.
@@ -366,6 +367,11 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
       condition_set_ids_to_remove);
 
   UpdateCssSelectorsFromRules();
+
+  // Request evaluation for all WebContents, under the assumption that a
+  // non-empty condition has been removed.
+  for (auto web_contents_rules_pair : active_rules_)
+    EvaluateConditionsForTab(web_contents_rules_pair.first);
 
   return std::string();
 }
@@ -436,6 +442,32 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     active_rules_[tab].clear();
   else
     swap(matching_rules, prev_matching_rules);
+}
+
+bool
+ChromeContentRulesRegistry::ShouldEvaluateExtensionRulesForIncognitoRenderer(
+    const Extension* extension) const {
+  if (!util::IsIncognitoEnabled(extension->id(), browser_context()))
+    return false;
+
+  // Split-mode incognito extensions register their rules with separate
+  // RulesRegistries per Original/OffTheRecord browser contexts, whereas
+  // spanning-mode extensions share the Original browser context.
+  if (util::CanCrossIncognito(extension, browser_context())) {
+    // The extension uses spanning mode incognito. No rules should have been
+    // registered for the extension in the OffTheRecord registry so
+    // execution for that registry should never reach this point.
+    CHECK(!browser_context()->IsOffTheRecord());
+  } else {
+    // The extension uses split mode incognito. Both the Original and
+    // OffTheRecord registries may have (separate) rules for this extension.
+    // Since we're looking at an incognito renderer, so only the OffTheRecord
+    // registry should process its rules.
+    if (!browser_context()->IsOffTheRecord())
+      return false;
+  }
+
+  return true;
 }
 
 bool ChromeContentRulesRegistry::IsEmpty() const {
