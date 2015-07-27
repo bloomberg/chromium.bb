@@ -529,30 +529,19 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  root->AddChild(parent);
-  parent->AddChild(child);
-  child->AddChild(grand_child);
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
 
-  host()->SetRootLayer(root);
-
-  // One-time setup of root layer
   gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(1, 2),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false,
+                               true);
 
   // Child is set up so that a new render surface should be created.
   child->SetOpacity(0.5f);
-  child->SetForceRenderSurface(true);
 
   gfx::Transform parent_layer_transform;
   parent_layer_transform.Scale3d(1.f, 0.9f, 1.f);
@@ -571,35 +560,20 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
   gfx::Transform surface_sublayer_composite_transform =
       parent_composite_transform * Inverse(surface_sublayer_transform);
 
-  // Child's render surface should not exist yet.
-  ASSERT_FALSE(child->render_surface());
-
-  SetLayerPropertiesForTesting(parent.get(),
-                               parent_layer_transform,
-                               gfx::Point3F(25.0f, 30.0f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(100, 120),
-                               true,
+  SetLayerPropertiesForTesting(parent, parent_layer_transform,
+                               gfx::Point3F(25.0f, 30.0f, 0.f), gfx::PointF(),
+                               gfx::Size(100, 120), true, false, false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(16, 18), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(8, 10), true, false,
                                false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(16, 18),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(8, 10),
-                               true,
-                               false);
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   // Render surface should have been created now.
   ASSERT_TRUE(child->render_surface());
-  ASSERT_EQ(child.get(), child->render_target());
+  ASSERT_EQ(child, child->render_target());
 
   // The child layer's draw transform should refer to its new render surface.
   // The screen-space transform, however, should still refer to the root.
@@ -623,28 +597,19 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_replica = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  root->AddChild(parent);
-  parent->AddChild(child);
-  child->AddChild(grand_child);
-  child->SetReplicaLayer(child_replica.get());
-
-  host()->SetRootLayer(root);
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
+  scoped_ptr<LayerImpl> child_replica =
+      LayerImpl::Create(host_impl()->active_tree(), 100);
 
   // One-time setup of root layer
   gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(1, 2),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false,
+                               true);
 
   // Child is set up so that a new render surface should be created.
   child->SetOpacity(0.5f);
@@ -667,43 +632,29 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
   gfx::Transform replica_composite_transform =
       parent_composite_transform * replica_layer_transform *
       Inverse(surface_sublayer_transform);
-  child_replica->SetIsDrawable(true);
+  child_replica->SetDrawsContent(true);
   // Child's render surface should not exist yet.
   ASSERT_FALSE(child->render_surface());
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               parent_layer_transform,
-                               gfx::Point3F(2.5f, 3.0f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(16, 18),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(-0.5f, -0.5f),
-                               gfx::Size(1, 1),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_replica.get(),
-                               replica_layer_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(),
-                               true,
-                               false);
-  ExecuteCalculateDrawProperties(root.get());
+  SetLayerPropertiesForTesting(parent, parent_layer_transform,
+                               gfx::Point3F(2.5f, 3.0f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 12), true, false, false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(16, 18), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(-0.5f, -0.5f), gfx::Size(1, 1), true,
+                               false, false);
+  SetLayerPropertiesForTesting(child_replica.get(), replica_layer_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(), true,
+                               false, false);
+  child->SetReplicaLayer(child_replica.Pass());
+
+  ExecuteCalculateDrawProperties(root);
 
   // Render surface should have been created now.
   ASSERT_TRUE(child->render_surface());
-  ASSERT_EQ(child.get(), child->render_target());
+  ASSERT_EQ(child, child->render_target());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       replica_composite_transform,
@@ -728,33 +679,23 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   //   - verifying that each layer has a reference to the correct render surface
   //   and render target values.
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_of_root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_of_rs1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_of_rs2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> replica_of_rs1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> replica_of_rs2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child_of_root = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  root->AddChild(parent);
-  parent->AddChild(render_surface1);
-  parent->AddChild(child_of_root);
-  render_surface1->AddChild(child_of_rs1);
-  render_surface1->AddChild(render_surface2);
-  render_surface2->AddChild(child_of_rs2);
-  child_of_root->AddChild(grand_child_of_root);
-  child_of_rs1->AddChild(grand_child_of_rs1);
-  child_of_rs2->AddChild(grand_child_of_rs2);
-  render_surface1->SetReplicaLayer(replica_of_rs1.get());
-  render_surface2->SetReplicaLayer(replica_of_rs2.get());
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(parent);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* child_of_root = AddChild<LayerImpl>(parent);
+  LayerImpl* child_of_rs1 = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* child_of_rs2 = AddChild<LayerImpl>(render_surface2);
+  LayerImpl* grand_child_of_root = AddChild<LayerImpl>(child_of_root);
+  LayerImpl* grand_child_of_rs1 = AddChild<LayerImpl>(child_of_rs1);
+  grand_child_of_rs1->SetDrawsContent(true);
+  LayerImpl* grand_child_of_rs2 = AddChild<LayerImpl>(child_of_rs2);
+  grand_child_of_rs2->SetDrawsContent(true);
 
-  host()->SetRootLayer(root);
+  scoped_ptr<LayerImpl> replica_of_rs1 =
+      LayerImpl::Create(host_impl()->active_tree(), 101);
+  scoped_ptr<LayerImpl> replica_of_rs2 =
+      LayerImpl::Create(host_impl()->active_tree(), 102);
 
   // In combination with descendant draws content, opacity != 1 forces the layer
   // to have a new render surface.
@@ -763,13 +704,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
 
   // One-time setup of root layer
   gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(1, 2),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false,
+                               true);
 
   // All layers in the tree are initialized with an anchor at .25 and a size of
   // (10,10).  matrix "A" is the composite layer transform used in all layers,
@@ -810,85 +747,43 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   // the owning layer
   gfx::Transform S2 = Inverse(surface2_sublayer_transform);
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface1.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface2.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_root.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_rs1.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_rs2.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child_of_root.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child_of_rs1.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child_of_rs2.get(),
-                               layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(replica_of_rs1.get(),
-                               replica_layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(replica_of_rs2.get(),
-                               replica_layer_transform,
-                               gfx::Point3F(2.5f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(parent, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(render_surface1, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(render_surface2, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(child_of_root, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(child_of_rs1, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(child_of_rs2, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(grand_child_of_root, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(grand_child_of_rs1, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(grand_child_of_rs2, layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(replica_of_rs1.get(), replica_layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(), true, false, false);
+  SetLayerPropertiesForTesting(replica_of_rs2.get(), replica_layer_transform,
+                               gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(), true, false, false);
 
-  ExecuteCalculateDrawProperties(root.get());
+  render_surface1->SetReplicaLayer(replica_of_rs1.Pass());
+  render_surface2->SetReplicaLayer(replica_of_rs2.Pass());
+  ExecuteCalculateDrawProperties(root);
 
   // Only layers that are associated with render surfaces should have an actual
   // RenderSurface() value.
@@ -905,17 +800,17 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   ASSERT_FALSE(grand_child_of_rs2->render_surface());
 
   // Verify all render target accessors
-  EXPECT_EQ(root.get(), parent->render_target());
-  EXPECT_EQ(root.get(), child_of_root->render_target());
-  EXPECT_EQ(root.get(), grand_child_of_root->render_target());
+  EXPECT_EQ(root, parent->render_target());
+  EXPECT_EQ(root, child_of_root->render_target());
+  EXPECT_EQ(root, grand_child_of_root->render_target());
 
-  EXPECT_EQ(render_surface1.get(), render_surface1->render_target());
-  EXPECT_EQ(render_surface1.get(), child_of_rs1->render_target());
-  EXPECT_EQ(render_surface1.get(), grand_child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1, render_surface1->render_target());
+  EXPECT_EQ(render_surface1, child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1, grand_child_of_rs1->render_target());
 
-  EXPECT_EQ(render_surface2.get(), render_surface2->render_target());
-  EXPECT_EQ(render_surface2.get(), child_of_rs2->render_target());
-  EXPECT_EQ(render_surface2.get(), grand_child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2, render_surface2->render_target());
+  EXPECT_EQ(render_surface2, child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2, grand_child_of_rs2->render_target());
 
   // Verify layer draw transforms note that draw transforms are described with
   // respect to the nearest ancestor render surface but screen space transforms
@@ -1013,48 +908,29 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   // Note that the way the code is currently implemented, it is not expected to
   // use a canonical orthographic projection.
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> great_grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
+  LayerImpl* great_grand_child = AddChild<LayerImpl>(grand_child);
+  great_grand_child->SetDrawsContent(true);
 
   gfx::Transform rotation_about_y_axis;
   rotation_about_y_axis.RotateAboutYAxis(30.0);
 
   const gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               rotation_about_y_axis,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               rotation_about_y_axis,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(great_grand_child.get(), identity_matrix,
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, rotation_about_y_axis, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, rotation_about_y_axis,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
-                               true, false);
-
-  root->AddChild(child);
-  child->AddChild(grand_child);
-  grand_child->AddChild(great_grand_child);
-  child->SetForceRenderSurface(true);
-
-  host()->SetRootLayer(root);
+                               true, false, false);
+  SetLayerPropertiesForTesting(great_grand_child, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false, false);
 
   // No layers in this test should preserve 3d.
   ASSERT_TRUE(root->should_flatten_transform());
@@ -1075,7 +951,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   gfx::Transform expected_great_grand_child_screen_space_transform =
       flattened_rotation_about_y * flattened_rotation_about_y;
 
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   // The child's draw transform should have been taken by its surface.
   ASSERT_TRUE(child->render_surface());
