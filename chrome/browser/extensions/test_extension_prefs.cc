@@ -116,7 +116,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
       pref_service_.get(),
       temp_dir_.path(),
       extension_pref_value_map_.get(),
-      ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
+      ExtensionsBrowserClient::Get()->CreateAppSorting(nullptr).Pass(),
       extensions_disabled_,
       std::vector<ExtensionPrefsObserver*>(),
       // Guarantee that no two extensions get the same installation time

@@ -11,8 +11,6 @@
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
-class ExtensionSyncService;
-
 namespace extensions {
 
 class ExtensionScopedPrefs;
@@ -31,10 +29,6 @@ class AppSorting {
   // TODO(mgiuca): Added this to try and diagnose http://crbug.com/476648.
   // Remove it after the investigation is concluded.
   virtual void CheckExtensionScopedPrefs() const = 0;
-
-  // Sets up the ExtensionSyncService to inform of changes that require syncing.
-  virtual void SetExtensionSyncService(
-      ExtensionSyncService* extension_sync_service) = 0;
 
   // Properly initializes internal values that require |extension_ids|.
   // SetExtensionScopedPrefs must have been called prior to this.

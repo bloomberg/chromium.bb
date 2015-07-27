@@ -46,8 +46,6 @@ class ExtensionSyncService : public syncer::SyncableService,
   // Notifies Sync that the given |extension| has been uninstalled.
   void SyncUninstallExtension(const extensions::Extension& extension);
 
-  void SyncOrderingChange(const std::string& extension_id);
-
   // Notifies Sync (if needed) of a newly-installed extension or a change to
   // an existing extension.
   void SyncExtensionChangeIfNeeded(const extensions::Extension& extension);

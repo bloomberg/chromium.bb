@@ -15,7 +15,6 @@
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
-class ExtensionSyncService;
 class PrefService;
 
 namespace extensions {
@@ -24,14 +23,12 @@ class ExtensionScopedPrefs;
 
 class ChromeAppSorting : public AppSorting {
  public:
-  ChromeAppSorting();
+  explicit ChromeAppSorting(content::BrowserContext* browser_context);
   ~ChromeAppSorting() override;
 
   // AppSorting implementation:
   void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) override;
   void CheckExtensionScopedPrefs() const override;
-  void SetExtensionSyncService(
-      ExtensionSyncService* extension_sync_service) override;
   void Initialize(const extensions::ExtensionIdList& extension_ids) override;
   void FixNTPOrdinalCollisions() override;
   void EnsureValidOrdinals(
@@ -156,7 +153,7 @@ class ChromeAppSorting : public AppSorting {
   size_t CountItemsVisibleOnNtp(const AppLaunchOrdinalMap& m) const;
 
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
-  ExtensionSyncService* extension_sync_service_;  // Weak.
+  content::BrowserContext* browser_context_;
 
   // A map of all the StringOrdinal page ordinals mapping to the collections of
   // app launch ordinals that exist on that page. This is used for mapping

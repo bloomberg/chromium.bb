@@ -221,8 +221,9 @@ void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
   ExternalProtocolHandler::PermitLaunchUrl();
 }
 
-scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
-  return scoped_ptr<AppSorting>(new ChromeAppSorting());
+scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting(
+    content::BrowserContext* context) {
+  return scoped_ptr<AppSorting>(new ChromeAppSorting(context));
 }
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {

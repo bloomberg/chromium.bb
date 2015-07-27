@@ -51,7 +51,7 @@ KeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
       client->GetPrefServiceForContext(context),
       context->GetPath().AppendASCII(extensions::kInstallDirectoryName),
       ExtensionPrefValueMapFactory::GetForBrowserContext(context),
-      client->CreateAppSorting().Pass(),
+      client->CreateAppSorting(context).Pass(),
       client->AreExtensionsDisabled(*base::CommandLine::ForCurrentProcess(),
                                     context),
       prefs_observers);

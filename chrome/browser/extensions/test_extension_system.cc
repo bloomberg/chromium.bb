@@ -58,7 +58,7 @@ scoped_ptr<ExtensionPrefs> TestExtensionSystem::CreateExtensionPrefs(
   return make_scoped_ptr(ExtensionPrefs::Create(
       profile_->GetPrefs(), install_directory,
       ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
-      ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
+      ExtensionsBrowserClient::Get()->CreateAppSorting(profile_).Pass(),
       extensions_disabled, std::vector<ExtensionPrefsObserver*>()));
 }
 

@@ -162,7 +162,8 @@ class ExtensionsBrowserClient {
   virtual void PermitExternalProtocolHandler() = 0;
 
   // Creates a new AppSorting instance.
-  virtual scoped_ptr<AppSorting> CreateAppSorting() = 0;
+  virtual scoped_ptr<AppSorting> CreateAppSorting(
+      content::BrowserContext* context) = 0;
 
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;

@@ -156,7 +156,8 @@ bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
 void ShellExtensionsBrowserClient::PermitExternalProtocolHandler() {
 }
 
-scoped_ptr<AppSorting> ShellExtensionsBrowserClient::CreateAppSorting() {
+scoped_ptr<AppSorting> ShellExtensionsBrowserClient::CreateAppSorting(
+    content::BrowserContext* context) {
   return scoped_ptr<AppSorting>(new NullAppSorting);
 }
 

@@ -9,9 +9,12 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_scoped_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
@@ -47,9 +50,9 @@ ChromeAppSorting::AppOrdinals::~AppOrdinals() {}
 ////////////////////////////////////////////////////////////////////////////////
 // ChromeAppSorting
 
-ChromeAppSorting::ChromeAppSorting()
+ChromeAppSorting::ChromeAppSorting(content::BrowserContext* browser_context)
     : extension_scoped_prefs_(NULL),
-      extension_sync_service_(NULL),
+      browser_context_(browser_context),
       default_ordinals_created_(false) {
 }
 
@@ -62,11 +65,6 @@ void ChromeAppSorting::SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) {
 
 void ChromeAppSorting::CheckExtensionScopedPrefs() const {
   CHECK(extension_scoped_prefs_);
-}
-
-void ChromeAppSorting::SetExtensionSyncService(
-    ExtensionSyncService* extension_sync_service) {
-  extension_sync_service_ = extension_sync_service;
 }
 
 void ChromeAppSorting::Initialize(
@@ -543,8 +541,16 @@ void ChromeAppSorting::RemoveOrdinalMapping(
 }
 
 void ChromeAppSorting::SyncIfNeeded(const std::string& extension_id) {
-  if (extension_sync_service_)
-    extension_sync_service_->SyncOrderingChange(extension_id);
+  // Can be null in tests.
+  if (!browser_context_)
+    return;
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  if (extension) {
+    Profile* profile = Profile::FromBrowserContext(browser_context_);
+    ExtensionSyncService::Get(profile)->SyncExtensionChangeIfNeeded(*extension);
+  }
 }
 
 void ChromeAppSorting::CreateDefaultOrdinals() {

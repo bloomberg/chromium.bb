@@ -29,10 +29,6 @@ void NullAppSorting::SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) {
 void NullAppSorting::CheckExtensionScopedPrefs() const {
 }
 
-void NullAppSorting::SetExtensionSyncService(
-    ExtensionSyncService* extension_sync_service) {
-}
-
 void NullAppSorting::Initialize(const ExtensionIdList& extension_ids) {
 }
 

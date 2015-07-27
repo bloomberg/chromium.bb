@@ -97,8 +97,6 @@ ExtensionSyncService::ExtensionSyncService(Profile* profile,
       extension_service_(extension_service) {
   SetSyncStartFlare(sync_start_util::GetFlareForSyncableService(
       profile_->GetPath()));
-
-  extension_prefs_->app_sorting()->SetExtensionSyncService(this);
 }
 
 ExtensionSyncService::~ExtensionSyncService() {}
@@ -341,14 +339,6 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
                                             web_app_info,
                                             extension_service_->AsWeakPtr()));
   }
-}
-
-void ExtensionSyncService::SyncOrderingChange(const std::string& extension_id) {
-  const Extension* ext =
-      extension_service_->GetInstalledExtension(extension_id);
-
-  if (ext)
-    SyncExtensionChangeIfNeeded(*ext);
 }
 
 void ExtensionSyncService::SetSyncStartFlare(
