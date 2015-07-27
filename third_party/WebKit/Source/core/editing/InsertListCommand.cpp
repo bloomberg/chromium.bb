@@ -91,7 +91,7 @@ bool InsertListCommand::selectionHasListOfType(const VisibleSelection& selection
         return false;
 
     VisiblePosition end = startOfParagraph(selection.visibleEnd());
-    while (start.isNotNull() && start != end) {
+    while (start.isNotNull() && start.deepEquivalent() != end.deepEquivalent()) {
         HTMLElement* listElement = enclosingList(start.deepEquivalent().anchorNode());
         if (!listElement || !listElement->hasTagName(listTag))
             return false;
@@ -124,7 +124,7 @@ void InsertListCommand::doApply()
     // FIXME: We paint the gap before some paragraphs that are indented with left
     // margin/padding, but not others.  We should make the gap painting more consistent and
     // then use a left margin/padding rule here.
-    if (visibleEnd != visibleStart && isStartOfParagraph(visibleEnd, CanSkipOverEditingBoundary)) {
+    if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraph(visibleEnd, CanSkipOverEditingBoundary)) {
         setEndingSelection(VisibleSelection(visibleStart, visibleEnd.previous(CannotCrossEditingBoundary), endingSelection().isDirectional()));
         if (!endingSelection().rootEditableElement())
             return;
@@ -149,7 +149,7 @@ void InsertListCommand::doApply()
         int indexForStartOfSelection = indexForVisiblePosition(startOfSelection, scopeForStartOfSelection);
         int indexForEndOfSelection = indexForVisiblePosition(endOfSelection, scopeForEndOfSelection);
 
-        if (startOfParagraph(startOfSelection, CanSkipOverEditingBoundary) != startOfLastParagraph) {
+        if (startOfParagraph(startOfSelection, CanSkipOverEditingBoundary).deepEquivalent() != startOfLastParagraph.deepEquivalent()) {
             forceListCreation = !selectionHasListOfType(selection, listTag);
 
             VisiblePosition startOfCurrentParagraph = startOfSelection;
@@ -225,8 +225,8 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
 
         // If the entire list is selected, then convert the whole list.
         if (switchListType && isNodeVisiblyContainedWithin(*listElement, currentSelection)) {
-            bool rangeStartIsInList = visiblePositionBeforeNode(*listElement) == VisiblePosition(currentSelection.startPosition());
-            bool rangeEndIsInList = visiblePositionAfterNode(*listElement) == VisiblePosition(currentSelection.endPosition());
+            bool rangeStartIsInList = visiblePositionBeforeNode(*listElement).deepEquivalent() == VisiblePosition(currentSelection.startPosition()).deepEquivalent();
+            bool rangeEndIsInList = visiblePositionAfterNode(*listElement).deepEquivalent() == VisiblePosition(currentSelection.endPosition()).deepEquivalent();
 
             RefPtrWillBeRawPtr<HTMLElement> newList = createHTMLElement(document(), listTag);
             insertNodeBefore(newList, listElement);
@@ -366,7 +366,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         listElement = createHTMLElement(document(), listTag);
         appendNode(listItemElement, listElement);
 
-        if (start == end && isBlock(start.deepEquivalent().anchorNode())) {
+        if (start.deepEquivalent() == end.deepEquivalent() && isBlock(start.deepEquivalent().anchorNode())) {
             // Inserting the list into an empty paragraph that isn't held open
             // by a br or a '\n', will invalidate start and end.  Insert
             // a placeholder and then recompute start and end.

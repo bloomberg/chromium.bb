@@ -1077,7 +1077,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
 {
     VisiblePosition caretAfterDelete = endingSelection().visibleStart();
     Node* destinationNode = destination.deepEquivalent().anchorNode();
-    if (caretAfterDelete != destination && isStartOfParagraph(caretAfterDelete) && isEndOfParagraph(caretAfterDelete)) {
+    if (caretAfterDelete.deepEquivalent() != destination.deepEquivalent() && isStartOfParagraph(caretAfterDelete) && isEndOfParagraph(caretAfterDelete)) {
         // Note: We want the rightmost candidate.
         Position position = caretAfterDelete.deepEquivalent().downstream();
         Node* node = position.anchorNode();
@@ -1132,7 +1132,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
     Position start = startOfParagraphToMove.deepEquivalent().downstream();
-    Position end = startOfParagraphToMove == endOfParagraphToMove ? start : endOfParagraphToMove.deepEquivalent().upstream();
+    Position end = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent() ? start : endOfParagraphToMove.deepEquivalent().upstream();
     if (comparePositions(start, end) > 0)
         end = start;
 
@@ -1158,7 +1158,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     afterParagraph = VisiblePosition(afterParagraph.deepEquivalent());
 
     if (beforeParagraph.isNotNull() && !isRenderedTableElement(beforeParagraph.deepEquivalent().anchorNode())
-        && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph == afterParagraph)) {
+        && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(createBreakElement(document()), beforeParagraph.deepEquivalent());
     }
@@ -1173,7 +1173,7 @@ void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraph
 
 void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
 {
-    if (startOfParagraphToMove == destination || startOfParagraphToMove.isNull())
+    if (startOfParagraphToMove.deepEquivalent() == destination.deepEquivalent() || startOfParagraphToMove.isNull())
         return;
 
     int startIndex = -1;
@@ -1211,14 +1211,14 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     // FIXME: This is an inefficient way to preserve style on nodes in the paragraph to move. It
     // shouldn't matter though, since moved paragraphs will usually be quite small.
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = startOfParagraphToMove != endOfParagraphToMove ?
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = startOfParagraphToMove.deepEquivalent() != endOfParagraphToMove.deepEquivalent() ?
         createFragmentFromMarkup(document(), createMarkup(start.parentAnchoredEquivalent(), end.parentAnchoredEquivalent(), DoNotAnnotateForInterchange, ConvertBlocksToInlines::Convert, DoNotResolveURLs, constrainingAncestor), "") : nullptr;
 
     // A non-empty paragraph's style is moved when we copy and move it.  We don't move
     // anything if we're given an empty paragraph, but an empty paragraph can have style
     // too, <div><b><br></b></div> for example.  Save it so that we can preserve it later.
     RefPtrWillBeRawPtr<EditingStyle> styleInEmptyParagraph = nullptr;
-    if (startOfParagraphToMove == endOfParagraphToMove && preserveStyle) {
+    if (startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent() && preserveStyle) {
         styleInEmptyParagraph = EditingStyle::create(startOfParagraphToMove.deepEquivalent());
         styleInEmptyParagraph->mergeTypingStyle(&document());
         // The moved paragraph should assume the block style of the destination.
@@ -1244,7 +1244,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // Must recononicalize these two VisiblePositions after the pruning above.
     beforeParagraph = VisiblePosition(beforeParagraph.deepEquivalent());
     afterParagraph = VisiblePosition(afterParagraph.deepEquivalent());
-    if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph == afterParagraph)) {
+    if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(createBreakElement(document()), beforeParagraph.deepEquivalent());
         // Need an updateLayout here in case inserting the br has split a text node.
@@ -1307,7 +1307,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
     RefPtrWillBeRawPtr<HTMLElement> newBlock = nullptr;
     if (ContainerNode* blockEnclosingList = listNode->parentNode()) {
         if (isHTMLLIElement(*blockEnclosingList)) { // listNode is inside another list item
-            if (visiblePositionAfterNode(*blockEnclosingList) == visiblePositionAfterNode(*listNode)) {
+            if (visiblePositionAfterNode(*blockEnclosingList).deepEquivalent() == visiblePositionAfterNode(*listNode).deepEquivalent()) {
                 // If listNode appears at the end of the outer list item, then move listNode outside of this list item
                 // e.g. <ul><li>hello <ul><li><br></li></ul> </li></ul> should become <ul><li>hello</li> <ul><li><br></li></ul> </ul> after this section
                 // If listNode does NOT appear at the end, then we should consider it as a regular paragraph.
@@ -1429,7 +1429,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         VisiblePosition lastInAnchor(lastPositionInNode(enclosingAnchor));
         // If visually just after the anchor, insert *inside* the anchor unless it's the last
         // VisiblePosition in the document, to match NSTextView.
-        if (visiblePos == lastInAnchor) {
+        if (visiblePos.deepEquivalent() == lastInAnchor.deepEquivalent()) {
             // Make sure anchors are pushed down before avoiding them so that we don't
             // also avoid structural elements like lists and blocks (5142012).
             if (original.anchorNode() != enclosingAnchor && original.anchorNode()->parentNode() != enclosingAnchor) {
@@ -1448,7 +1448,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         }
         // If visually just before an anchor, insert *outside* the anchor unless it's the first
         // VisiblePosition in a paragraph, to match NSTextView.
-        if (visiblePos == firstInAnchor) {
+        if (visiblePos.deepEquivalent() == firstInAnchor.deepEquivalent()) {
             // Make sure anchors are pushed down before avoiding them so that we don't
             // also avoid structural elements like lists and blocks (5142012).
             if (original.anchorNode() != enclosingAnchor && original.anchorNode()->parentNode() != enclosingAnchor) {
@@ -1490,7 +1490,7 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, 
         // Do not split a node when doing so introduces an empty node.
         VisiblePosition positionInParent(firstPositionInNode(parentElement));
         VisiblePosition positionInNode(firstPositionInOrBeforeNode(node.get()));
-        if (positionInParent != positionInNode)
+        if (positionInParent.deepEquivalent() != positionInNode.deepEquivalent())
             splitElement(parentElement, node);
     }
 

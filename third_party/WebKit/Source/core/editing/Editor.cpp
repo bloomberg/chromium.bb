@@ -1025,7 +1025,7 @@ void Editor::transpose()
     VisiblePosition caret = selection.visibleStart();
     VisiblePosition next = isEndOfParagraph(caret) ? caret : caret.next();
     VisiblePosition previous = next.previous();
-    if (next == previous)
+    if (next.deepEquivalent() == previous.deepEquivalent())
         return;
     previous = previous.previous();
     if (!inSameParagraph(next, previous))

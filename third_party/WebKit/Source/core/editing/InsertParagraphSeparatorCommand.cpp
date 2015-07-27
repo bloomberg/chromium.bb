@@ -392,7 +392,7 @@ void InsertParagraphSeparatorCommand::doApply()
         appendNode(createBreakElement(document()).get(), blockToInsert.get());
 
     // Move the start node and the siblings of the start node.
-    if (VisiblePosition(insertionPosition) != VisiblePosition(positionBeforeNode(blockToInsert.get()))) {
+    if (VisiblePosition(insertionPosition).deepEquivalent() != VisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {
         Node* n;
         if (insertionPosition.containerNode() == startBlock)
             n = insertionPosition.computeNodeAfterPosition();

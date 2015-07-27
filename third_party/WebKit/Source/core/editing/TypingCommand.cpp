@@ -313,7 +313,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
         frame->spellChecker().markMisspellingsAfterLineBreak(words);
     } else if (previous.isNotNull()) {
         VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
-        if (p1 != p2)
+        if (p1.deepEquivalent() != p2.deepEquivalent())
             frame->spellChecker().markMisspellingsAfterTypingToWord(p1, endingSelection());
     }
 }
@@ -453,7 +453,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
 
         // If we have a caret selection at the beginning of a cell, we have nothing to do.
         Node* enclosingTableCell = enclosingNodeOfType(visibleStart.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleStart == VisiblePosition(firstPositionInNode(enclosingTableCell)))
+        if (enclosingTableCell && visibleStart.deepEquivalent() == VisiblePosition(firstPositionInNode(enclosingTableCell)).deepEquivalent())
             return;
 
         // If the caret is at the start of a paragraph after a table, move content into the last table cell.
@@ -543,9 +543,9 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         Position downstreamEnd = endingSelection().end().downstream();
         VisiblePosition visibleEnd = endingSelection().visibleEnd();
         Node* enclosingTableCell = enclosingNodeOfType(visibleEnd.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleEnd == VisiblePosition(lastPositionInNode(enclosingTableCell)))
+        if (enclosingTableCell && visibleEnd.deepEquivalent() == VisiblePosition(lastPositionInNode(enclosingTableCell)).deepEquivalent())
             return;
-        if (visibleEnd == endOfParagraph(visibleEnd))
+        if (visibleEnd.deepEquivalent() == endOfParagraph(visibleEnd).deepEquivalent())
             downstreamEnd = visibleEnd.next(CannotCrossEditingBoundary).deepEquivalent().downstream();
         // When deleting tables: Select the table first, then perform the deletion
         if (isRenderedTableElement(downstreamEnd.containerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.containerNode())) {

@@ -139,7 +139,7 @@ void testFunctionEquivalence(const Position& position, PositionFunction position
     VisiblePosition visiblePosition(position);
     VisiblePosition expected = visibleFunction(visiblePosition);
     VisiblePosition actual = VisiblePosition(positionFunction(position));
-    EXPECT_EQ(expected, actual);
+    EXPECT_EQ(expected.deepEquivalent(), actual.deepEquivalent());
 }
 
 static VisiblePosition startOfWord(const VisiblePosition& position)

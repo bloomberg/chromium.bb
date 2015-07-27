@@ -805,7 +805,7 @@ void LayoutView::commitPendingSelectionAlgorithm()
 
     // We can get into a state where the selection endpoints map to the same VisiblePosition when a selection is deleted
     // because we don't yet notify the FrameSelection of text removal.
-    if (startPos.isNull() || endPos.isNull() || Strategy::selectionVisibleStart(selection) == Strategy::selectionVisibleEnd(selection))
+    if (startPos.isNull() || endPos.isNull() || Strategy::selectionVisibleStart(selection).deepEquivalent() == Strategy::selectionVisibleEnd(selection).deepEquivalent())
         return;
     LayoutObject* startLayoutObject = startPos.anchorNode()->layoutObject();
     LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();

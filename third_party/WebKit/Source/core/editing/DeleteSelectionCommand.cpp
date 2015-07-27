@@ -50,7 +50,7 @@ using namespace HTMLNames;
 static bool isTableCellEmpty(Node* cell)
 {
     ASSERT(isTableCell(cell));
-    return VisiblePosition(firstPositionInNode(cell)) == VisiblePosition(lastPositionInNode(cell));
+    return VisiblePosition(firstPositionInNode(cell)).deepEquivalent() == VisiblePosition(lastPositionInNode(cell)).deepEquivalent();
 }
 
 static bool isTableRowEmpty(Node* row)
@@ -129,7 +129,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
         if (!startSpecialContainer && !endSpecialContainer)
             break;
 
-        if (VisiblePosition(start) != m_selectionToDelete.visibleStart() || VisiblePosition(end) != m_selectionToDelete.visibleEnd())
+        if (VisiblePosition(start).deepEquivalent() != m_selectionToDelete.visibleStart().deepEquivalent() || VisiblePosition(end).deepEquivalent() != m_selectionToDelete.visibleEnd().deepEquivalent())
             break;
 
         // If we're going to expand to include the startSpecialContainer, it must be fully selected.
@@ -626,17 +626,17 @@ void DeleteSelectionCommand::mergeParagraphs()
     }
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
-    if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.containerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination != startOfParagraphToMove)) {
+    if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.containerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
         insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
         mergeDestination = VisiblePosition(m_upstreamStart);
     }
 
-    if (mergeDestination == startOfParagraphToMove)
+    if (mergeDestination.deepEquivalent() == startOfParagraphToMove.deepEquivalent())
         return;
 
     VisiblePosition endOfParagraphToMove = endOfParagraph(startOfParagraphToMove, CanSkipOverEditingBoundary);
 
-    if (mergeDestination == endOfParagraphToMove)
+    if (mergeDestination.deepEquivalent() == endOfParagraphToMove.deepEquivalent())
         return;
 
     // If the merge destination and source to be moved are both list items of different lists, merge them into single list.
@@ -671,7 +671,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     // moveParagraphs will insert placeholders if it removes blocks that would require their use, don't let block
     // removals that it does cause the insertion of *another* placeholder.
     bool needPlaceholder = m_needPlaceholder;
-    bool paragraphToMergeIsEmpty = (startOfParagraphToMove == endOfParagraphToMove);
+    bool paragraphToMergeIsEmpty = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent();
     moveParagraph(startOfParagraphToMove, endOfParagraphToMove, mergeDestination, false, !paragraphToMergeIsEmpty);
     m_needPlaceholder = needPlaceholder;
     // The endingPosition was likely clobbered by the move, so recompute it (moveParagraph selects the moved paragraph).

@@ -369,7 +369,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
 
     while (1) {
         VisiblePosition adjacentCharacterPosition = direction == MoveRight ? current.right() : current.left();
-        if (adjacentCharacterPosition == current || adjacentCharacterPosition.isNull())
+        if (adjacentCharacterPosition.deepEquivalent() == current.deepEquivalent() || adjacentCharacterPosition.isNull())
             return VisiblePosition();
 
         InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().computeInlineBoxPosition(UPSTREAM);
@@ -604,7 +604,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         if (charIt.characterAt(0) == '\n') {
             // FIXME: workaround for collapsed range (where only start position is correct) emitted for some emitted newlines (see rdar://5192593)
             VisiblePosition visPos = VisiblePosition(pos);
-            if (visPos == VisiblePosition(charIt.startPosition())) {
+            if (visPos.deepEquivalent() == VisiblePosition(charIt.startPosition()).deepEquivalent()) {
                 charIt.advance(1);
                 pos = charIt.startPosition();
             }
@@ -849,7 +849,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
 
 static bool inSameLogicalLine(const VisiblePosition& a, const VisiblePosition& b)
 {
-    return a.isNotNull() && logicalStartOfLine(a) == logicalStartOfLine(b);
+    return a.isNotNull() && logicalStartOfLine(a).deepEquivalent() == logicalStartOfLine(b).deepEquivalent();
 }
 
 static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputationMode mode)
@@ -933,17 +933,17 @@ bool inSameLine(const VisiblePosition& position1, const VisiblePosition& positio
 
 bool isStartOfLine(const VisiblePosition &p)
 {
-    return p.isNotNull() && p == startOfLine(p);
+    return p.isNotNull() && p.deepEquivalent() == startOfLine(p).deepEquivalent();
 }
 
 bool isEndOfLine(const VisiblePosition &p)
 {
-    return p.isNotNull() && p == endOfLine(p);
+    return p.isNotNull() && p.deepEquivalent() == endOfLine(p).deepEquivalent();
 }
 
 bool isLogicalEndOfLine(const VisiblePosition &p)
 {
-    return p.isNotNull() && p == logicalEndOfLine(p);
+    return p.isNotNull() && p.deepEquivalent() == logicalEndOfLine(p).deepEquivalent();
 }
 
 static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, LayoutUnit lineDirectionPoint)
@@ -1288,17 +1288,17 @@ VisiblePosition startOfNextParagraph(const VisiblePosition& visiblePosition)
 
 bool inSameParagraph(const VisiblePosition &a, const VisiblePosition &b, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return a.isNotNull() && startOfParagraph(a, boundaryCrossingRule) == startOfParagraph(b, boundaryCrossingRule);
+    return a.isNotNull() && startOfParagraph(a, boundaryCrossingRule).deepEquivalent() == startOfParagraph(b, boundaryCrossingRule).deepEquivalent();
 }
 
 bool isStartOfParagraph(const VisiblePosition &pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return pos.isNotNull() && pos == startOfParagraph(pos, boundaryCrossingRule);
+    return pos.isNotNull() && pos.deepEquivalent() == startOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
 }
 
 bool isEndOfParagraph(const VisiblePosition &pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return pos.isNotNull() && pos == endOfParagraph(pos, boundaryCrossingRule);
+    return pos.isNotNull() && pos.deepEquivalent() == endOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
 }
 
 VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x)
@@ -1306,7 +1306,7 @@ VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x
     VisiblePosition pos = p;
     do {
         VisiblePosition n = previousLinePosition(pos, x);
-        if (n.isNull() || n == pos)
+        if (n.isNull() || n.deepEquivalent() == pos.deepEquivalent())
             break;
         pos = n;
     } while (inSameParagraph(p, pos));
@@ -1318,7 +1318,7 @@ VisiblePosition nextParagraphPosition(const VisiblePosition& p, LayoutUnit x)
     VisiblePosition pos = p;
     do {
         VisiblePosition n = nextLinePosition(pos, x);
-        if (n.isNull() || n == pos)
+        if (n.isNull() || n.deepEquivalent() == pos.deepEquivalent())
             break;
         pos = n;
     } while (inSameParagraph(p, pos));
@@ -1348,12 +1348,12 @@ bool inSameBlock(const VisiblePosition &a, const VisiblePosition &b)
 
 bool isStartOfBlock(const VisiblePosition &pos)
 {
-    return pos.isNotNull() && pos == startOfBlock(pos, CanCrossEditingBoundary);
+    return pos.isNotNull() && pos.deepEquivalent() == startOfBlock(pos, CanCrossEditingBoundary).deepEquivalent();
 }
 
 bool isEndOfBlock(const VisiblePosition &pos)
 {
-    return pos.isNotNull() && pos == endOfBlock(pos, CanCrossEditingBoundary);
+    return pos.isNotNull() && pos.deepEquivalent() == endOfBlock(pos, CanCrossEditingBoundary).deepEquivalent();
 }
 
 // ---------

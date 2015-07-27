@@ -71,7 +71,7 @@ VisibleSelection CharacterGranularityStrategy::updateExtent(const IntPoint& exte
 {
     const VisiblePosition& extentPosition = visiblePositionForContentsPoint(extentPoint, frame);
     const VisibleSelection& selection = frame->selection().selection();
-    if (selection.visibleBase() == extentPosition)
+    if (selection.visibleBase().deepEquivalent() == extentPosition.deepEquivalent())
         return selection;
     return VisibleSelection(selection.visibleBase(), extentPosition);
 }
@@ -136,7 +136,7 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(const IntPoint& exte
     const VisiblePosition base = selection.visibleBase();
 
     // Do not allow empty selection.
-    if (newOffsetExtentPosition == base)
+    if (newOffsetExtentPosition.deepEquivalent() == base.deepEquivalent())
         return selection;
 
     // The direction granularity strategy, particularly the "offset" feature
@@ -151,7 +151,7 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(const IntPoint& exte
 
     int newExtentBaseOrder;
     bool thisMoveShrunkSelection;
-    if (newOffsetExtentPosition == oldOffsetExtentPosition) {
+    if (newOffsetExtentPosition.deepEquivalent() == oldOffsetExtentPosition.deepEquivalent()) {
         if (m_granularity == CharacterGranularity)
             return selection;
 
@@ -219,7 +219,7 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(const IntPoint& exte
         bool offsetExtentBeforeMiddle = newOffsetExtentPoint.x() < xMiddleBetweenBounds;
         newSelectionExtent = offsetExtentBeforeMiddle ? boundBeforeExtent : boundAfterExtent;
         // Update the offset if selection expanded in word granularity.
-        if (newSelectionExtent != selection.visibleExtent()
+        if (newSelectionExtent.deepEquivalent() != selection.visibleExtent().deepEquivalent()
             && ((newExtentBaseOrder > 0 && !offsetExtentBeforeMiddle) || (newExtentBaseOrder < 0 && offsetExtentBeforeMiddle))) {
             m_offset = positionLocation(newSelectionExtent).x() - extentPoint.x();
         }
@@ -227,7 +227,7 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(const IntPoint& exte
 
     // Only update the state if the selection actually changed as a result of
     // this move.
-    if (newSelectionExtent != selection.visibleExtent())
+    if (newSelectionExtent.deepEquivalent() != selection.visibleExtent().deepEquivalent())
         m_state = thisMoveShrunkSelection ? StrategyState::Shrinking : StrategyState::Expanding;
 
     m_diffExtentPointFromExtentPosition = extentPoint + IntSize(m_offset, 0) - positionLocation(newSelectionExtent);

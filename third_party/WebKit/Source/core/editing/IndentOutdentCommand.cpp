@@ -157,8 +157,8 @@ void IndentOutdentCommand::outdentParagraph()
     VisiblePosition startOfEnclosingBlock = (enclosingElement->layoutObject() && enclosingElement->layoutObject()->isInline()) ? positionInEnclosingBlock : startOfBlock(positionInEnclosingBlock);
     VisiblePosition lastPositionInEnclosingBlock = VisiblePosition(lastPositionInNode(enclosingElement));
     VisiblePosition endOfEnclosingBlock = endOfBlock(lastPositionInEnclosingBlock);
-    if (visibleStartOfParagraph == startOfEnclosingBlock &&
-        visibleEndOfParagraph == endOfEnclosingBlock) {
+    if (visibleStartOfParagraph.deepEquivalent() == startOfEnclosingBlock.deepEquivalent()
+        && visibleEndOfParagraph.deepEquivalent() == endOfEnclosingBlock.deepEquivalent()) {
         // The blockquote doesn't contain anything outside the paragraph, so it can be totally removed.
         Node* splitPoint = enclosingElement->nextSibling();
         removeNodePreservingChildren(enclosingElement);
@@ -208,7 +208,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
     VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
     VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
 
-    if (endOfCurrentParagraph == endOfLastParagraph) {
+    if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph.deepEquivalent()) {
         outdentParagraph();
         return;
     }
@@ -216,9 +216,9 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
     Position originalSelectionEnd = endingSelection().end();
     VisiblePosition endAfterSelection = endOfParagraph(endOfLastParagraph.next());
 
-    while (endOfCurrentParagraph != endAfterSelection) {
+    while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection.deepEquivalent()) {
         VisiblePosition endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
-        if (endOfCurrentParagraph == endOfLastParagraph)
+        if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph.deepEquivalent())
             setEndingSelection(VisibleSelection(originalSelectionEnd, DOWNSTREAM));
         else
             setEndingSelection(endOfCurrentParagraph);

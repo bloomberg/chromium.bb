@@ -705,19 +705,19 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
 
     // If doNotRemoveIfSelectionAtWordBoundary is true, and first word ends at the start of selection,
     // we choose next word as the first word.
-    if (doNotRemoveIfSelectionAtWordBoundary && endOfFirstWord == startOfSelection) {
+    if (doNotRemoveIfSelectionAtWordBoundary && endOfFirstWord.deepEquivalent() == startOfSelection.deepEquivalent()) {
         startOfFirstWord = nextWordPosition(startOfFirstWord);
         endOfFirstWord = endOfWord(startOfFirstWord, RightWordIfOnBoundary);
-        if (startOfFirstWord == endOfSelection)
+        if (startOfFirstWord.deepEquivalent() == endOfSelection.deepEquivalent())
             return;
     }
 
     // If doNotRemoveIfSelectionAtWordBoundary is true, and last word begins at the end of selection,
     // we choose previous word as the last word.
-    if (doNotRemoveIfSelectionAtWordBoundary && startOfLastWord == endOfSelection) {
+    if (doNotRemoveIfSelectionAtWordBoundary && startOfLastWord.deepEquivalent() == endOfSelection.deepEquivalent()) {
         startOfLastWord = previousWordPosition(startOfLastWord);
         endOfLastWord = endOfWord(startOfLastWord, RightWordIfOnBoundary);
-        if (endOfLastWord == startOfSelection)
+        if (endOfLastWord.deepEquivalent() == startOfSelection.deepEquivalent())
             return;
     }
 

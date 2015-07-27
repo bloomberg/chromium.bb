@@ -207,7 +207,7 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
 
-    if (newBase != base || newExtent != extent) {
+    if (newBase.deepEquivalent() != base.deepEquivalent() || newExtent.deepEquivalent() != extent.deepEquivalent()) {
         m_originalBase = base;
         newSelection.setBase(newBase);
         newSelection.setExtent(newExtent);
@@ -624,10 +624,10 @@ VisiblePosition FrameSelection::nextWordPositionForPlatform(const VisiblePositio
         // semantics of previousWordPosition() this will put us at the
         // beginning of the word following.
         VisiblePosition positionAfterSpacingAndFollowingWord = nextWordPosition(positionAfterCurrentWord);
-        if (positionAfterSpacingAndFollowingWord.isNotNull() && positionAfterSpacingAndFollowingWord != positionAfterCurrentWord)
+        if (positionAfterSpacingAndFollowingWord.isNotNull() && positionAfterSpacingAndFollowingWord.deepEquivalent() != positionAfterCurrentWord.deepEquivalent())
             positionAfterCurrentWord = previousWordPosition(positionAfterSpacingAndFollowingWord);
 
-        bool movingBackwardsMovedPositionToStartOfCurrentWord = positionAfterCurrentWord == previousWordPosition(nextWordPosition(originalPosition));
+        bool movingBackwardsMovedPositionToStartOfCurrentWord = positionAfterCurrentWord.deepEquivalent() == previousWordPosition(nextWordPosition(originalPosition)).deepEquivalent();
         if (movingBackwardsMovedPositionToStartOfCurrentWord)
             positionAfterCurrentWord = positionAfterSpacingAndFollowingWord;
     }
@@ -1020,7 +1020,7 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
         return false;
 
     if (isSpatialNavigationEnabled(m_frame))
-        if (!wasRange && alter == AlterationMove && position == originalStartPosition)
+        if (!wasRange && alter == AlterationMove && position.deepEquivalent() == originalStartPosition.deepEquivalent())
             return false;
 
     // Some of the above operations set an xPosForVerticalArrowNavigation.
@@ -1127,7 +1127,7 @@ bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, Vertic
         else
             next = nextLinePosition(p, xPos);
 
-        if (next.isNull() || next == p)
+        if (next.isNull() || next.deepEquivalent() == p.deepEquivalent())
             break;
         int nextY;
         if (!absoluteCaretY(next, nextY))

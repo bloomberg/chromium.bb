@@ -139,7 +139,7 @@ static Position positionAvoidingPrecedingNodes(Position pos)
 
         if (nextPosition == pos
             || enclosingBlock(nextPosition.containerNode()) != enclosingBlockElement
-            || VisiblePosition(pos) != VisiblePosition(nextPosition))
+            || VisiblePosition(pos).deepEquivalent() != VisiblePosition(nextPosition).deepEquivalent())
             break;
     }
     return pos;
@@ -543,8 +543,8 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
         // FIXME: Tolerate differences in id, class, and style attributes.
         if (element->parentNode() && isNonTableCellHTMLBlockElement(element) && areIdenticalElements(element, element->parentNode())
-            && VisiblePosition(firstPositionInNode(element->parentNode())) == VisiblePosition(firstPositionInNode(element))
-            && VisiblePosition(lastPositionInNode(element->parentNode())) == VisiblePosition(lastPositionInNode(element))) {
+            && VisiblePosition(firstPositionInNode(element->parentNode())).deepEquivalent() == VisiblePosition(firstPositionInNode(element)).deepEquivalent()
+            && VisiblePosition(lastPositionInNode(element->parentNode())).deepEquivalent() == VisiblePosition(lastPositionInNode(element)).deepEquivalent()) {
             insertedNodes.willRemoveNodePreservingChildren(*element);
             removeNodePreservingChildren(element);
             continue;
@@ -667,7 +667,7 @@ void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<El
 
     VisiblePosition positionAtEndOfNode(lastPositionInOrAfterNode(element.get()));
     VisiblePosition lastPositionInParagraph(lastPositionInNode(ancestor.get()));
-    if (positionAtEndOfNode == lastPositionInParagraph) {
+    if (positionAtEndOfNode.deepEquivalent() == lastPositionInParagraph.deepEquivalent()) {
         removeNode(element);
         if (ancestor->nextSibling())
             insertNodeBefore(element, ancestor->nextSibling());
@@ -847,7 +847,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
 
     // Merging forward could result in deleting the destination anchor node.
     // To avoid this, we add a placeholder node before the start of the paragraph.
-    if (endOfParagraph(startOfParagraphToMove) == destination) {
+    if (endOfParagraph(startOfParagraphToMove).deepEquivalent() == destination.deepEquivalent()) {
         RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
         insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().anchorNode());
         destination = VisiblePosition(positionBeforeNode(placeholder.get()));
@@ -1204,7 +1204,7 @@ void ReplaceSelectionCommand::doApply()
         // Insert a line break just after the inserted content to separate it from what
         // comes after and prevent that from happening.
         VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
-        if (startOfParagraph(endOfInsertedContent) == startOfParagraphToMove) {
+        if (startOfParagraph(endOfInsertedContent).deepEquivalent() == startOfParagraphToMove.deepEquivalent()) {
             insertNodeAt(createBreakElement(document()).get(), endOfInsertedContent.deepEquivalent());
             // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move
             if (!startOfParagraphToMove.deepEquivalent().inDocument())
@@ -1273,7 +1273,7 @@ bool ReplaceSelectionCommand::shouldRemoveEndBR(HTMLBRElement* endBR, const Visi
     VisiblePosition visiblePos(positionBeforeNode(endBR));
 
     // Don't remove the br if nothing was inserted.
-    if (visiblePos.previous() == originalVisPosBeforeEndBR)
+    if (visiblePos.previous().deepEquivalent() == originalVisPosBeforeEndBR.deepEquivalent())
         return false;
 
     // Remove the br if it is collapsed away and so is unnecessary.

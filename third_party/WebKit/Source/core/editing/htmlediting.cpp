@@ -605,9 +605,9 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(specialElement), DOWNSTREAM);
-            if (isRenderedTableElement(specialElement) && vPos == firstInElement.next())
+            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == firstInElement.next().deepEquivalent())
                 return specialElement;
-            if (vPos == firstInElement)
+            if (vPos.deepEquivalent() == firstInElement.deepEquivalent())
                 return specialElement;
         }
     }
@@ -622,9 +622,9 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(specialElement), DOWNSTREAM);
-            if (isRenderedTableElement(specialElement) && vPos == lastInElement.previous())
+            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == lastInElement.previous().deepEquivalent())
                 return specialElement;
-            if (vPos == lastInElement)
+            if (vPos.deepEquivalent() == lastInElement.deepEquivalent())
                 return specialElement;
         }
     }
@@ -901,7 +901,7 @@ Node* enclosingEmptyListItem(const VisiblePosition& visiblePos)
     VisiblePosition firstInListChild(firstPositionInOrBeforeNode(listChildNode));
     VisiblePosition lastInListChild(lastPositionInOrAfterNode(listChildNode));
 
-    if (firstInListChild != visiblePos || lastInListChild != visiblePos)
+    if (firstInListChild.deepEquivalent() != visiblePos.deepEquivalent() || lastInListChild.deepEquivalent() != visiblePos.deepEquivalent())
         return 0;
 
     return listChildNode;
@@ -926,7 +926,7 @@ HTMLElement* outermostEnclosingList(Node* node, HTMLElement* rootList)
 // while ignoring whitespaces and unrendered nodes
 static bool isVisiblyAdjacent(const Position& first, const Position& second)
 {
-    return VisiblePosition(first) == VisiblePosition(second.upstream());
+    return VisiblePosition(first).deepEquivalent() == VisiblePosition(second.upstream()).deepEquivalent();
 }
 
 bool canMergeLists(Element* firstList, Element* secondList)
@@ -1319,11 +1319,11 @@ bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange)
     if (selectedRange.isNodeFullyContained(node))
         return true;
 
-    bool startIsVisuallySame = visiblePositionBeforeNode(node) == VisiblePosition(selectedRange.startPosition());
+    bool startIsVisuallySame = visiblePositionBeforeNode(node).deepEquivalent() == VisiblePosition(selectedRange.startPosition()).deepEquivalent();
     if (startIsVisuallySame && comparePositions(positionInParentAfterNode(node), selectedRange.endPosition()) < 0)
         return true;
 
-    bool endIsVisuallySame = visiblePositionAfterNode(node) == VisiblePosition(selectedRange.endPosition());
+    bool endIsVisuallySame = visiblePositionAfterNode(node).deepEquivalent() == VisiblePosition(selectedRange.endPosition()).deepEquivalent();
     if (endIsVisuallySame && comparePositions(selectedRange.startPosition(), positionInParentBeforeNode(node)) < 0)
         return true;
 

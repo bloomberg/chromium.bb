@@ -74,7 +74,7 @@ void ApplyBlockElementCommand::doApply()
     // FIXME: We paint the gap before some paragraphs that are indented with left
     // margin/padding, but not others.  We should make the gap painting more consistent and
     // then use a left margin/padding rule here.
-    if (visibleEnd != visibleStart && isStartOfParagraph(visibleEnd)) {
+    if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraph(visibleEnd)) {
         VisibleSelection newSelection(visibleStart, visibleEnd.previous(CannotCrossEditingBoundary), endingSelection().isDirectional());
         if (newSelection.isNone())
             return;
@@ -128,7 +128,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
 
     bool atEnd = false;
     Position end;
-    while (endOfCurrentParagraph != endAfterSelection && !atEnd) {
+    while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection.deepEquivalent() && !atEnd) {
         if (endOfCurrentParagraph.deepEquivalent() == m_endOfLastParagraph)
             atEnd = true;
 

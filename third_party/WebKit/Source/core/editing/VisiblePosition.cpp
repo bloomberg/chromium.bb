@@ -88,7 +88,7 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
         return VisiblePosition();
 
     VisiblePosition prev = VisiblePosition(pos, DOWNSTREAM);
-    ASSERT(prev != *this);
+    ASSERT(prev.deepEquivalent() != m_deepPosition);
 
 #if ENABLE(ASSERT)
     // we should always be able to make the affinity DOWNSTREAM, because going previous from an
@@ -265,7 +265,7 @@ VisiblePosition VisiblePosition::left() const
         return VisiblePosition();
 
     VisiblePosition left = VisiblePosition(pos, DOWNSTREAM);
-    ASSERT(left != *this);
+    ASSERT(left.deepEquivalent() != m_deepPosition);
 
     return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left) : honorEditingBoundaryAtOrAfter(left);
 }
@@ -427,7 +427,7 @@ VisiblePosition VisiblePosition::right() const
         return VisiblePosition();
 
     VisiblePosition right = VisiblePosition(pos, DOWNSTREAM);
-    ASSERT(right != *this);
+    ASSERT(right.deepEquivalent() != m_deepPosition);
 
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
 }

@@ -76,6 +76,13 @@ public:
     explicit VisiblePosition(const PositionInComposedTree&, EAffinity = VP_DEFAULT_AFFINITY);
     explicit VisiblePosition(const PositionWithAffinity&);
 
+    // Intentionally delete |operator==()| and |operator!=()| for reducing
+    // compilation error message.
+    // TODO(yosin) We'll have |equals()| when we have use cases of checking
+    // equality of both position and affinity.
+    bool operator==(const VisiblePosition&) const = delete;
+    bool operator!=(const VisiblePosition&) const = delete;
+
     bool isNull() const { return m_deepPosition.isNull(); }
     bool isNotNull() const { return m_deepPosition.isNotNull(); }
     bool isOrphan() const { return m_deepPosition.isOrphan(); }
@@ -133,17 +140,6 @@ private:
     Position m_deepPosition;
     EAffinity m_affinity;
 };
-
-// FIXME: This shouldn't ignore affinity.
-inline bool operator==(const VisiblePosition& a, const VisiblePosition& b)
-{
-    return a.deepEquivalent() == b.deepEquivalent();
-}
-
-inline bool operator!=(const VisiblePosition& a, const VisiblePosition& b)
-{
-    return !(a == b);
-}
 
 PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition&, const VisiblePosition&);
 bool setStart(Range*, const VisiblePosition&);

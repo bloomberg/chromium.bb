@@ -268,7 +268,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
     VisiblePosition paragraphStart(startOfParagraph(visibleStart));
     VisiblePosition nextParagraphStart(endOfParagraph(paragraphStart).next());
     VisiblePosition beyondEnd(endOfParagraph(visibleEnd).next());
-    while (paragraphStart.isNotNull() && paragraphStart != beyondEnd) {
+    while (paragraphStart.isNotNull() && paragraphStart.deepEquivalent() != beyondEnd.deepEquivalent()) {
         StyleChange styleChange(style, paragraphStart.deepEquivalent());
         if (styleChange.cssStyle().length() || m_removeOnly) {
             RefPtrWillBeRawPtr<Element> block = enclosingBlock(paragraphStart.deepEquivalent().anchorNode());
