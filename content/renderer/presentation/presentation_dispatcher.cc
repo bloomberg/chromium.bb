@@ -288,7 +288,7 @@ void PresentationDispatcher::getAvailability(
     const blink::WebString& presentationUrl,
     blink::WebPresentationAvailabilityCallbacks* callbacks) {
   if (listening_state_ == ListeningState::Active) {
-    callbacks->onSuccess(&last_known_availability_);
+    callbacks->onSuccess(new bool(last_known_availability_));
     delete callbacks;
     return;
   }
@@ -342,7 +342,7 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
 
   for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
        !iter.IsAtEnd(); iter.Advance()) {
-    iter.GetCurrentValue()->onSuccess(&available);
+    iter.GetCurrentValue()->onSuccess(new bool(available));
   }
   availability_callbacks_.Clear();
 
