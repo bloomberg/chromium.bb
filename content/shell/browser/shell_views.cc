@@ -166,7 +166,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
 
   void ShowWebViewContextMenu(const content::ContextMenuParams& params) {
-    gfx::Point screen_point(params.x, params.y);
+    gfx::Point point(params.x, params.y);
 
     // Convert from content coordinates to window coordinates.
     // This code copied from chrome_web_contents_view_delegate_views.cc
@@ -177,7 +177,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
         aura::client::GetScreenPositionClient(root_window);
     if (screen_position_client) {
         screen_position_client->ConvertPointToScreen(web_contents_window,
-                &screen_point);
+                &point);
     }
 
     context_menu_model_.reset(new ContextMenuModel(shell_, params));
@@ -186,7 +186,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
     if (context_menu_runner_->RunMenuAt(web_view_->GetWidget(),
                                         NULL,
-                                        gfx::Rect(screen_point, gfx::Size()),
+                                        gfx::Rect(point, gfx::Size()),
                                         views::MENU_ANCHOR_TOPRIGHT,
                                         ui::MENU_SOURCE_NONE) ==
         views::MenuRunner::MENU_DELETED) {
