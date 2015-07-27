@@ -56,6 +56,8 @@
         "proximity_auth/connection_observer.h",
         "proximity_auth/device_to_device_initiator_operations.cc",
         "proximity_auth/device_to_device_initiator_operations.h",
+        "proximity_auth/device_to_device_secure_context.cc",
+        "proximity_auth/device_to_device_secure_context.h",
         "proximity_auth/metrics.cc",
         "proximity_auth/metrics.h",
         "proximity_auth/proximity_auth_client.h",

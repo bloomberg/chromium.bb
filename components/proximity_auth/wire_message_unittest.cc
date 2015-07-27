@@ -200,7 +200,7 @@ TEST(ProximityAuthWireMessage, Deserialize_SizeEquals0x01FF) {
 }
 
 TEST(ProximityAuthWireMessage, Serialize_WithPermitId) {
-  WireMessage message1("example id", "example payload");
+  WireMessage message1("example payload", "example id");
   std::string bytes = message1.Serialize();
   ASSERT_FALSE(bytes.empty());
 
@@ -214,7 +214,7 @@ TEST(ProximityAuthWireMessage, Serialize_WithPermitId) {
 }
 
 TEST(ProximityAuthWireMessage, Serialize_WithoutPermitId) {
-  WireMessage message1(std::string(), "example payload");
+  WireMessage message1("example payload");
   std::string bytes = message1.Serialize();
   ASSERT_FALSE(bytes.empty());
 
@@ -228,7 +228,7 @@ TEST(ProximityAuthWireMessage, Serialize_WithoutPermitId) {
 }
 
 TEST(ProximityAuthWireMessage, Serialize_FailsWithoutPayload) {
-  WireMessage message1("example id", std::string());
+  WireMessage message1(std::string(), "example id");
   std::string bytes = message1.Serialize();
   EXPECT_TRUE(bytes.empty());
 }

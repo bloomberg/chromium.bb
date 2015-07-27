@@ -76,7 +76,7 @@ class MockConnectionObserver : public ConnectionObserver {
 // Unlike WireMessage, offers a public constructor.
 class TestWireMessage : public WireMessage {
  public:
-  TestWireMessage() : WireMessage(std::string(), std::string()) {}
+  TestWireMessage() : WireMessage(std::string()) {}
   ~TestWireMessage() override {}
 
  private:

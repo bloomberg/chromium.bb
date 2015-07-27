@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_SECURE_CONTEXT_H
 #define COMPONENTS_PROXIMITY_AUTH_SECURE_CONTEXT_H
 
+#include "base/callback_forward.h"
+
 namespace proximity_auth {
 
 // An interface used to decode and encode messages.
 class SecureContext {
  public:
+  typedef base::Callback<void(const std::string& message)> MessageCallback;
+
   // The protocol version used during authentication.
   enum ProtocolVersion {
     PROTOCOL_VERSION_THREE_ZERO,  // 3.0
@@ -19,15 +23,16 @@ class SecureContext {
   virtual ~SecureContext() {}
 
   // Decodes the |encoded_message| and returns the result.
-  virtual std::string Decode(const std::string& encoded_message) = 0;
+  // This function is asynchronous because the ChromeOS implementation requires
+  // a DBus call.
+  virtual void Decode(const std::string& encoded_message,
+                      const MessageCallback& callback) = 0;
 
   // Encodes the |message| and returns the result.
-  virtual std::string Encode(const std::string& message) = 0;
-
-  // Returns the message received from the remote device that authenticates it.
-  // This message should have been received during the handshake that
-  // establishes the secure channel.
-  virtual std::string GetReceivedAuthMessage() const = 0;
+  // This function is asynchronous because the ChromeOS implementation requires
+  // a DBus call.
+  virtual void Encode(const std::string& message,
+                      const MessageCallback& callback) = 0;
 
   // Returns the protocol version that was used during authentication.
   virtual ProtocolVersion GetProtocolVersion() const = 0;

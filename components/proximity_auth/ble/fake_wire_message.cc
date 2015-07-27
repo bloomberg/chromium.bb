@@ -12,8 +12,7 @@
 namespace proximity_auth {
 
 FakeWireMessage::FakeWireMessage(const std::string& payload)
-    : WireMessage("", payload) {
-}
+    : WireMessage(payload) {}
 
 scoped_ptr<FakeWireMessage> FakeWireMessage::Deserialize(
     const std::string& serialized_message,

@@ -4,12 +4,14 @@
 
 #include "components/proximity_auth/client_impl.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "components/proximity_auth/client_observer.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
@@ -54,7 +56,9 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 
 ClientImpl::ClientImpl(scoped_ptr<Connection> connection,
                        scoped_ptr<SecureContext> secure_context)
-    : connection_(connection.Pass()), secure_context_(secure_context.Pass()) {
+    : connection_(connection.Pass()),
+      secure_context_(secure_context.Pass()),
+      weak_ptr_factory_(this) {
   DCHECK(connection_->IsConnected());
   connection_->AddObserver(this);
 }
@@ -87,8 +91,8 @@ void ClientImpl::DispatchUnlockEvent() {
 
 void ClientImpl::RequestDecryption(const std::string& challenge) {
   if (!SupportsSignIn()) {
-    VLOG(1) << "[Client] Dropping decryption request, as remote device "
-            << "does not support protocol v3.1.";
+    PA_LOG(WARNING) << "Dropping decryption request, as remote device "
+                    << "does not support protocol v3.1.";
     FOR_EACH_OBSERVER(ClientObserver, observers_,
                       OnDecryptResponse(scoped_ptr<std::string>()));
     return;
@@ -108,8 +112,8 @@ void ClientImpl::RequestDecryption(const std::string& challenge) {
 
 void ClientImpl::RequestUnlock() {
   if (!SupportsSignIn()) {
-    VLOG(1) << "[Client] Dropping unlock request, as remote device does not "
-            << "support protocol v3.1.";
+    PA_LOG(WARNING) << "Dropping unlock request, as remote device does not "
+                    << "support protocol v3.1.";
     FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockResponse(false));
     return;
   }
@@ -139,8 +143,72 @@ void ClientImpl::ProcessMessageQueue() {
   pending_message_.reset(new PendingMessage(queued_messages_.front()));
   queued_messages_.pop_front();
 
-  connection_->SendMessage(make_scoped_ptr(new WireMessage(
-      std::string(), secure_context_->Encode(pending_message_->json_message))));
+  secure_context_->Encode(pending_message_->json_message,
+                          base::Bind(&ClientImpl::OnMessageEncoded,
+                                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ClientImpl::OnMessageEncoded(const std::string& encoded_message) {
+  connection_->SendMessage(make_scoped_ptr(new WireMessage(encoded_message)));
+}
+
+void ClientImpl::OnMessageDecoded(const std::string& decoded_message) {
+  // The decoded message should be a JSON string.
+  scoped_ptr<base::Value> message_value =
+      base::JSONReader::Read(decoded_message);
+  if (!message_value || !message_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    PA_LOG(ERROR) << "Unable to parse message as JSON:\n" << decoded_message;
+    return;
+  }
+
+  base::DictionaryValue* message;
+  bool success = message_value->GetAsDictionary(&message);
+  DCHECK(success);
+
+  std::string type;
+  if (!message->GetString(kTypeKey, &type)) {
+    PA_LOG(ERROR) << "Missing '" << kTypeKey << "' key in message:\n "
+                  << decoded_message;
+    return;
+  }
+
+  // Remote status updates can be received out of the blue.
+  if (type == kMessageTypeRemoteStatusUpdate) {
+    HandleRemoteStatusUpdateMessage(*message);
+    return;
+  }
+
+  // All other messages should only be received in response to a message that
+  // the client sent.
+  if (!pending_message_) {
+    PA_LOG(WARNING) << "Unexpected message received:\n" << decoded_message;
+    return;
+  }
+
+  std::string expected_type;
+  if (pending_message_->type == kMessageTypeDecryptRequest)
+    expected_type = kMessageTypeDecryptResponse;
+  else if (pending_message_->type == kMessageTypeUnlockRequest)
+    expected_type = kMessageTypeUnlockResponse;
+  else
+    NOTREACHED();  // There are no other message types that expect a response.
+
+  if (type != expected_type) {
+    PA_LOG(ERROR) << "Unexpected '" << kTypeKey << "' value in message. "
+                  << "Expected '" << expected_type << "' but received '" << type
+                  << "'.";
+    return;
+  }
+
+  if (type == kMessageTypeDecryptResponse)
+    HandleDecryptResponseMessage(*message);
+  else if (type == kMessageTypeUnlockResponse)
+    HandleUnlockResponseMessage(*message);
+  else
+    NOTREACHED();  // There are no other message types that expect a response.
+
+  pending_message_.reset();
+  ProcessMessageQueue();
 }
 
 void ClientImpl::HandleRemoteStatusUpdateMessage(
@@ -148,7 +216,7 @@ void ClientImpl::HandleRemoteStatusUpdateMessage(
   scoped_ptr<RemoteStatusUpdate> status_update =
       RemoteStatusUpdate::Deserialize(message);
   if (!status_update) {
-    VLOG(1) << "[Client] Unexpected remote status update: " << message;
+    PA_LOG(ERROR) << "Unexpected remote status update: " << message;
     return;
   }
 
@@ -162,9 +230,9 @@ void ClientImpl::HandleDecryptResponseMessage(
   std::string decrypted_data;
   scoped_ptr<std::string> response;
   if (!message.GetString(kDataKey, &base64_data) || base64_data.empty()) {
-    VLOG(1) << "[Client] Decrypt response missing '" << kDataKey << "' value.";
+    PA_LOG(ERROR) << "Decrypt response missing '" << kDataKey << "' value.";
   } else if (!Base64UrlDecode(base64_data, &decrypted_data)) {
-    VLOG(1) << "[Client] Unable to base64-decode decrypt response.";
+    PA_LOG(ERROR) << "Unable to base64-decode decrypt response.";
   } else {
     response.reset(new std::string(decrypted_data));
   }
@@ -181,8 +249,8 @@ void ClientImpl::OnConnectionStatusChanged(Connection* connection,
                                            Connection::Status old_status,
                                            Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
-  if (new_status != Connection::CONNECTED) {
-    VLOG(1) << "[Client] Secure channel disconnected...";
+  if (new_status == Connection::DISCONNECTED) {
+    PA_LOG(INFO) << "Secure channel disconnected...";
     connection_->RemoveObserver(this);
     connection_.reset();
     FOR_EACH_OBSERVER(ClientObserver, observers_, OnDisconnected());
@@ -193,69 +261,16 @@ void ClientImpl::OnConnectionStatusChanged(Connection* connection,
 
 void ClientImpl::OnMessageReceived(const Connection& connection,
                                    const WireMessage& wire_message) {
-  std::string json_message = secure_context_->Decode(wire_message.payload());
-  scoped_ptr<base::Value> message_value = base::JSONReader::Read(json_message);
-  if (!message_value || !message_value->IsType(base::Value::TYPE_DICTIONARY)) {
-    VLOG(1) << "[Client] Unable to parse message as JSON: " << json_message
-            << ".";
-    return;
-  }
-
-  base::DictionaryValue* message;
-  bool success = message_value->GetAsDictionary(&message);
-  DCHECK(success);
-
-  std::string type;
-  if (!message->GetString(kTypeKey, &type)) {
-    VLOG(1) << "[Client] Missing '" << kTypeKey
-            << "' key in message: " << json_message << ".";
-    return;
-  }
-
-  // Remote status updates can be received out of the blue.
-  if (type == kMessageTypeRemoteStatusUpdate) {
-    HandleRemoteStatusUpdateMessage(*message);
-    return;
-  }
-
-  // All other messages should only be received in response to a message that
-  // the client sent.
-  if (!pending_message_) {
-    VLOG(1) << "[Client] Unexpected message received: " << json_message;
-    return;
-  }
-
-  std::string expected_type;
-  if (pending_message_->type == kMessageTypeDecryptRequest)
-    expected_type = kMessageTypeDecryptResponse;
-  else if (pending_message_->type == kMessageTypeUnlockRequest)
-    expected_type = kMessageTypeUnlockResponse;
-  else
-    NOTREACHED();  // There are no other message types that expect a response.
-
-  if (type != expected_type) {
-    VLOG(1) << "[Client] Unexpected '" << kTypeKey << "' value in message. "
-            << "Expected '" << expected_type << "' but received '" << type
-            << "'.";
-    return;
-  }
-
-  if (type == kMessageTypeDecryptResponse)
-    HandleDecryptResponseMessage(*message);
-  else if (type == kMessageTypeUnlockResponse)
-    HandleUnlockResponseMessage(*message);
-  else
-    NOTREACHED();  // There are no other message types that expect a response.
-
-  pending_message_.reset();
-  ProcessMessageQueue();
+  secure_context_->Decode(wire_message.payload(),
+                          base::Bind(&ClientImpl::OnMessageDecoded,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientImpl::OnSendCompleted(const Connection& connection,
                                  const WireMessage& wire_message,
                                  bool success) {
   if (!pending_message_) {
-    VLOG(1) << "[Client] Unexpected message sent.";
+    PA_LOG(ERROR) << "Unexpected message sent.";
     return;
   }
 
@@ -277,8 +292,8 @@ void ClientImpl::OnSendCompleted(const Connection& connection,
   } else if (pending_message_->type == kMessageTypeLocalEvent) {
     FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockEventSent(success));
   } else {
-    VLOG(1) << "[Client] Message of unknown type '" << pending_message_->type
-            << "sent.";
+    PA_LOG(ERROR) << "Message of unknown type '" << pending_message_->type
+                  << "' sent.";
   }
 
   pending_message_.reset();

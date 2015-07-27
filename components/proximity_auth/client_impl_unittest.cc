@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/client_impl.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/client_observer.h"
@@ -44,15 +45,17 @@ class MockSecureContext : public SecureContext {
   MOCK_CONST_METHOD0(GetReceivedAuthMessage, std::string());
   MOCK_CONST_METHOD0(GetProtocolVersion, ProtocolVersion());
 
-  std::string Encode(const std::string& message) override {
-    return message + kFakeEncodingSuffix;
+  void Encode(const std::string& message,
+              const MessageCallback& callback) override {
+    callback.Run(message + kFakeEncodingSuffix);
   }
 
-  std::string Decode(const std::string& encoded_message) override {
+  void Decode(const std::string& encoded_message,
+              const MessageCallback& callback) override {
     EXPECT_THAT(encoded_message, EndsWith(kFakeEncodingSuffix));
     std::string decoded_message = encoded_message;
     decoded_message.erase(decoded_message.rfind(kFakeEncodingSuffix));
-    return decoded_message;
+    callback.Run(decoded_message);
   }
 
  private:
@@ -94,7 +97,7 @@ class FakeConnection : public Connection {
   scoped_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message) override {
     *is_incomplete_message = false;
-    return make_scoped_ptr(new WireMessage(std::string(), pending_payload_));
+    return make_scoped_ptr(new WireMessage(pending_payload_));
   }
 
   WireMessage* current_message() { return current_message_.get(); }

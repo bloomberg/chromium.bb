@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/proximity_auth/client.h"
 #include "components/proximity_auth/connection_observer.h"
@@ -65,6 +66,12 @@ class ClientImpl : public Client, public ConnectionObserver {
   // Pops the first of the |queued_messages_| and sends it to the remote device.
   void ProcessMessageQueue();
 
+  // Called when the message is encoded so it can be sent over the connection.
+  void OnMessageEncoded(const std::string& encoded_message);
+
+  // Called when the message is decoded so it can be parsed.
+  void OnMessageDecoded(const std::string& decoded_message);
+
   // Handles an incoming "status_update" |message|, parsing and notifying
   // observers of the content.
   void HandleRemoteStatusUpdateMessage(const base::DictionaryValue& message);
@@ -103,6 +110,8 @@ class ClientImpl : public Client, public ConnectionObserver {
   // The current message being sent or waiting on the remote device for a
   // response. Null if there is no message currently in this state.
   scoped_ptr<PendingMessage> pending_message_;
+
+  base::WeakPtrFactory<ClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientImpl);
 };

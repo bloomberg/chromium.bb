@@ -14,7 +14,12 @@ namespace proximity_auth {
 
 class WireMessage {
  public:
-  WireMessage(const std::string& permit_id, const std::string& payload);
+  // Creates a WireMessage containing |payload|.
+  explicit WireMessage(const std::string& payload);
+
+  // Creates a WireMessage containing |payload| and |permit_id| in the metadata.
+  WireMessage(const std::string& payload, const std::string& permit_id);
+
   virtual ~WireMessage();
 
   // Returns the deserialized message from |serialized_message|, or NULL if the
@@ -28,16 +33,19 @@ class WireMessage {
   // Returns a serialized representation of |this| message.
   virtual std::string Serialize() const;
 
-  const std::string& permit_id() const { return permit_id_; }
   const std::string& payload() const { return payload_; }
+  const std::string& permit_id() const { return permit_id_; }
 
  private:
-  // Identifier of the permit being used.
-  // TODO(isherman): Describe in a bit more detail.
-  const std::string permit_id_;
-
   // The message payload.
   const std::string payload_;
+
+  // Identifier of the permit being used. A permit contains the credentials used
+  // to authenticate a device. For example, when sending a WireMessage to the
+  // remote device the |permit_id_| indexes a permit possibly containing the
+  // public key
+  // of the local device or a symmetric key shared between the devices.
+  const std::string permit_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WireMessage);
 };

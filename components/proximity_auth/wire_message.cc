@@ -111,7 +111,7 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
     return scoped_ptr<WireMessage>();
   }
 
-  return scoped_ptr<WireMessage>(new WireMessage(permit_id, payload));
+  return make_scoped_ptr(new WireMessage(payload, permit_id));
 }
 
 std::string WireMessage::Serialize() const {
@@ -155,9 +155,11 @@ std::string WireMessage::Serialize() const {
   return header_string + json_body;
 }
 
-WireMessage::WireMessage(const std::string& permit_id,
-                         const std::string& payload)
-    : permit_id_(permit_id), payload_(payload) {
-}
+WireMessage::WireMessage(const std::string& payload)
+    : WireMessage(payload, std::string()) {}
+
+WireMessage::WireMessage(const std::string& payload,
+                         const std::string& permit_id)
+    : payload_(payload), permit_id_(permit_id) {}
 
 }  // namespace proximity_auth
