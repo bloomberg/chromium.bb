@@ -3070,8 +3070,7 @@ void HTMLMediaElement::userCancelledLoad()
 void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLocking()
 {
 #if ENABLE(WEB_AUDIO)
-    if (audioSourceProvider())
-        audioSourceProvider()->setClient(nullptr);
+    audioSourceProvider().setClient(nullptr);
 #endif
     if (m_webMediaPlayer) {
         m_audioSourceProvider.wrap(nullptr);
@@ -3504,7 +3503,7 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource()
 
 #if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode)
-        audioSourceProvider()->setClient(m_audioSourceNode);
+        audioSourceProvider().setClient(m_audioSourceNode);
 #endif
 }
 
@@ -3515,8 +3514,7 @@ void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
     m_audioSourceNode = sourceNode;
 
     AudioSourceProviderClientLockScope scope(*this);
-    if (audioSourceProvider())
-        audioSourceProvider()->setClient(m_audioSourceNode);
+    audioSourceProvider().setClient(m_audioSourceNode);
 }
 #endif
 
@@ -3724,8 +3722,8 @@ void HTMLMediaElement::selectInitialTracksIfNecessary()
 #if ENABLE(WEB_AUDIO)
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
-    if (!Heap::isHeapObjectAlive(m_audioSourceNode) && audioSourceProvider())
-        audioSourceProvider()->setClient(nullptr);
+    if (!Heap::isHeapObjectAlive(m_audioSourceNode))
+        audioSourceProvider().setClient(nullptr);
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)

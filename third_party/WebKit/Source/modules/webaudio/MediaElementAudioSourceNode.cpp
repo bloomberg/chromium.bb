@@ -163,35 +163,30 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
             outputBus->zero();
             return;
         }
-        if (AudioSourceProvider* provider = mediaElement()->audioSourceProvider()) {
-            // Grab data from the provider so that the element continues to make progress, even if
-            // we're going to output silence anyway.
-            if (m_multiChannelResampler.get()) {
-                ASSERT(m_sourceSampleRate != sampleRate());
-                m_multiChannelResampler->process(provider, outputBus, numberOfFrames);
-            } else {
-                // Bypass the resampler completely if the source is at the context's sample-rate.
-                ASSERT(m_sourceSampleRate == sampleRate());
-                provider->provideInput(outputBus, numberOfFrames);
-            }
-            // Output silence if we don't have access to the element.
-            if (!passesCORSAccessCheck()) {
-                if (m_maybePrintCORSMessage) {
-                    // Print a CORS message, but just once for each change in the current media
-                    // element source, and only if we have a document to print to.
-                    m_maybePrintCORSMessage = false;
-                    if (context()->executionContext()) {
-                        context()->executionContext()->postTask(FROM_HERE,
-                            createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
-                                this,
-                                m_currentSrcString));
-                    }
-                }
-                outputBus->zero();
-            }
+        AudioSourceProvider& provider = mediaElement()->audioSourceProvider();
+        // Grab data from the provider so that the element continues to make progress, even if
+        // we're going to output silence anyway.
+        if (m_multiChannelResampler.get()) {
+            ASSERT(m_sourceSampleRate != sampleRate());
+            m_multiChannelResampler->process(&provider, outputBus, numberOfFrames);
         } else {
-            // Either this port doesn't yet support HTMLMediaElement audio stream access,
-            // or the stream is not yet available.
+            // Bypass the resampler completely if the source is at the context's sample-rate.
+            ASSERT(m_sourceSampleRate == sampleRate());
+            provider.provideInput(outputBus, numberOfFrames);
+        }
+        // Output silence if we don't have access to the element.
+        if (!passesCORSAccessCheck()) {
+            if (m_maybePrintCORSMessage) {
+                // Print a CORS message, but just once for each change in the current media
+                // element source, and only if we have a document to print to.
+                m_maybePrintCORSMessage = false;
+                if (context()->executionContext()) {
+                    context()->executionContext()->postTask(FROM_HERE,
+                        createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
+                            this,
+                            m_currentSrcString));
+                }
+            }
             outputBus->zero();
         }
     } else {

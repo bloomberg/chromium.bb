@@ -242,7 +242,7 @@ public:
     AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
     void setAudioSourceNode(AudioSourceProviderClient*);
 
-    AudioSourceProvider* audioSourceProvider() { return &m_audioSourceProvider; }
+    AudioSourceProvider& audioSourceProvider() { return m_audioSourceProvider; }
 #endif
 
     enum InvalidURLAction { DoNothing, Complain };
