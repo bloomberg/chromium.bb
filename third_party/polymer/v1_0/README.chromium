@@ -37,11 +37,11 @@ Local Modifications:
 only difference that all inline JavaScript blocks are extracted from Polymer
 HTML elements to external JS files. This version of the Polymer is used in a web
 UI, where CSP forbids an execution of inline scripts. The extraction was made
-with the help of the Vulcanize tool (https://github.com/Polymer/vulcanize).
+using Crisper (https://github.com/PolymerLabs/crisper).
 - Replaced CRLF line endings with LF line endings in text files.
 
-To restore a content of the 'components', 'components-chromium' directorires
-from scratch, run ./reproduce.sh (requires bower and vulcanize >= 1.2).
+To restore the contents of the 'components' and 'components-chromium'
+directories from scratch, run ./reproduce.sh (requires bower and crisper).
 
 Note on Bower:
 The directory can be updated by running "bower update". A new component can be
