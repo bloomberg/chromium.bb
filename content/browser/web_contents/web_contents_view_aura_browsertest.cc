@@ -258,7 +258,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     NavigationControllerImpl* controller = &web_contents->GetController();
 
     screenshot_manager_ = new ScreenshotTracker(controller);
-    controller->SetScreenshotManager(screenshot_manager_);
+    controller->SetScreenshotManager(make_scoped_ptr(screenshot_manager_));
 
     frame_watcher_ = new FrameWatcher();
     GetRenderWidgetHost()->GetProcess()->AddFilter(frame_watcher_.get());

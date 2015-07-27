@@ -85,8 +85,7 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
   if (!owner_->delegate()->CanOverscrollContent())
     return;
 
-  RenderViewHost* render_view_host =
-      owner_->delegate()->GetRenderViewHost();
+  RenderViewHost* render_view_host = owner_->delegate()->GetRenderViewHost();
   content::RenderWidgetHostView* view = render_view_host->GetView();
   if (!view)
     return;
@@ -137,16 +136,7 @@ void NavigationEntryScreenshotManager::OnScreenshotTaken(
     int unique_id,
     const SkBitmap& bitmap,
     ReadbackResponse response) {
-  NavigationEntryImpl* entry = NULL;
-  int entry_count = owner_->GetEntryCount();
-  for (int i = 0; i < entry_count; ++i) {
-    NavigationEntryImpl* iter = owner_->GetEntryAtIndex(i);
-    if (iter->GetUniqueID() == unique_id) {
-      entry = iter;
-      break;
-    }
-  }
-
+  NavigationEntryImpl* entry = owner_->GetEntryWithUniqueID(unique_id);
   if (!entry) {
     LOG(ERROR) << "Invalid entry with unique id: " << unique_id;
     return;
@@ -181,15 +171,7 @@ int NavigationEntryScreenshotManager::GetScreenshotCount() const {
 void NavigationEntryScreenshotManager::OnScreenshotEncodeComplete(
     int unique_id,
     scoped_refptr<ScreenshotData> screenshot) {
-  NavigationEntryImpl* entry = NULL;
-  int entry_count = owner_->GetEntryCount();
-  for (int i = 0; i < entry_count; ++i) {
-    NavigationEntryImpl* iter = owner_->GetEntryAtIndex(i);
-    if (iter->GetUniqueID() == unique_id) {
-      entry = iter;
-      break;
-    }
-  }
+  NavigationEntryImpl* entry = owner_->GetEntryWithUniqueID(unique_id);
   if (!entry)
     return;
   entry->SetScreenshotPNGData(screenshot->data());

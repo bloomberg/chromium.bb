@@ -198,12 +198,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Takes a screenshot of the page at the current state.
   void TakeScreenshot();
 
-  // Sets the screenshot manager for this NavigationControllerImpl. The
-  // controller takes ownership of the screenshot manager and destroys it when
-  // a new screenshot-manager is set, or when the controller is destroyed.
-  // Setting a NULL manager recreates the default screenshot manager and uses
-  // that.
-  void SetScreenshotManager(NavigationEntryScreenshotManager* manager);
+  // Sets the screenshot manager for this NavigationControllerImpl. Setting a
+  // NULL manager recreates the default screenshot manager and uses that.
+  void SetScreenshotManager(
+      scoped_ptr<NavigationEntryScreenshotManager> manager);
 
   // Discards only the pending entry. |was_failure| should be set if the pending
   // entry is being discarded because it failed to load.

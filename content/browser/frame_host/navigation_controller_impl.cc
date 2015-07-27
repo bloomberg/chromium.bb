@@ -529,9 +529,11 @@ void NavigationControllerImpl::TakeScreenshot() {
 }
 
 void NavigationControllerImpl::SetScreenshotManager(
-    NavigationEntryScreenshotManager* manager) {
-  screenshot_manager_.reset(manager ? manager :
-                            new NavigationEntryScreenshotManager(this));
+    scoped_ptr<NavigationEntryScreenshotManager> manager) {
+  if (manager.get())
+    screenshot_manager_ = manager.Pass();
+  else
+    screenshot_manager_.reset(new NavigationEntryScreenshotManager(this));
 }
 
 bool NavigationControllerImpl::CanGoBack() const {

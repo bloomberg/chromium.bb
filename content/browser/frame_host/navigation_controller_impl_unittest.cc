@@ -4688,7 +4688,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
 
   MockScreenshotManager* screenshot_manager =
       new MockScreenshotManager(&controller);
-  controller.SetScreenshotManager(screenshot_manager);
+  controller.SetScreenshotManager(make_scoped_ptr(screenshot_manager));
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = controller.GetEntryAtIndex(i);
     screenshot_manager->TakeScreenshotFor(entry);
