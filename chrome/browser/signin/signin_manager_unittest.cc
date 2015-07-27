@@ -10,7 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -117,9 +119,8 @@ class SigninManagerTest : public testing::Test {
                               FakeAccountFetcherService::BuildForTests);
     profile_ = builder.Build();
 
-    TestSigninClient* client =
-        static_cast<TestSigninClient*>(
-            ChromeSigninClientFactory::GetForProfile(profile()));
+    TestSigninClient* client = static_cast<TestSigninClient*>(
+        ChromeSigninClientFactory::GetForProfile(profile()));
     client->SetURLRequestContext(profile_->GetRequestContext());
   }
 
@@ -402,7 +403,7 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted(account_id);
+  manager_->OnExternalSigninCompleted("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
@@ -430,17 +431,24 @@ TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
   manager_->Initialize(g_browser_process->local_state());
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
 
-  // TODO(rogerta): until the migration to gaia id, the account id will remain
-  // the old username.
+  AccountTrackerService* service =
+      AccountTrackerServiceFactory::GetForProfile(profile());
+  if (service->GetMigrationState() ==
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    // TODO(rogerta): until the migration to gaia id, the account id will remain
+    // the old username.
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ("user@gmail.com",
             profile()->GetPrefs()->GetString(prefs::kGoogleServicesAccountId));
+  } else {
+    EXPECT_EQ("account_id", manager_->GetAuthenticatedAccountId());
+    EXPECT_EQ("account_id", profile()->GetPrefs()->GetString(
+                                prefs::kGoogleServicesAccountId));
+  }
   EXPECT_EQ("",
             profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
 
   // Make sure account tracker was updated.
-  AccountTrackerService* service =
-      AccountTrackerServiceFactory::GetForProfile(profile());
   AccountTrackerService::AccountInfo info = service->GetAccountInfo(
       manager_->GetAuthenticatedAccountId());
   EXPECT_EQ("user@gmail.com", info.email);
@@ -448,25 +456,138 @@ TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
 }
 
 TEST_F(SigninManagerTest, CanonicalizesPrefs) {
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                   "user.C@gmail.com");
-  CreateNakedSigninManager();
-  manager_->Initialize(g_browser_process->local_state());
-  EXPECT_EQ("user.C@gmail.com", manager_->GetAuthenticatedUsername());
-
-  // TODO(rogerta): until the migration to gaia id, the account id will remain
-  // the old username.
-  EXPECT_EQ("userc@gmail.com", manager_->GetAuthenticatedAccountId());
-  EXPECT_EQ("userc@gmail.com",
-            profile()->GetPrefs()->GetString(prefs::kGoogleServicesAccountId));
-  EXPECT_EQ("",
-            profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
-
-  // Make sure account tracker has a canonicalized username.
   AccountTrackerService* service =
       AccountTrackerServiceFactory::GetForProfile(profile());
-  AccountTrackerService::AccountInfo info = service->GetAccountInfo(
-      manager_->GetAuthenticatedAccountId());
-  EXPECT_EQ("user.C@gmail.com", info.email);
-  EXPECT_EQ("userc@gmail.com", info.account_id);
+
+  // This unit test is not needed after migrating to gaia id.
+  if (service->GetMigrationState() ==
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                     "user.C@gmail.com");
+
+    CreateNakedSigninManager();
+    manager_->Initialize(g_browser_process->local_state());
+    EXPECT_EQ("user.C@gmail.com", manager_->GetAuthenticatedUsername());
+
+    // TODO(rogerta): until the migration to gaia id, the account id will remain
+    // the old username.
+    EXPECT_EQ("userc@gmail.com", manager_->GetAuthenticatedAccountId());
+    EXPECT_EQ("userc@gmail.com", profile()->GetPrefs()->GetString(
+                                     prefs::kGoogleServicesAccountId));
+    EXPECT_EQ("",
+              profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
+
+    // Make sure account tracker has a canonicalized username.
+    AccountTrackerService::AccountInfo info =
+        service->GetAccountInfo(manager_->GetAuthenticatedAccountId());
+    EXPECT_EQ("user.C@gmail.com", info.email);
+    EXPECT_EQ("userc@gmail.com", info.account_id);
+  }
+}
+
+TEST_F(SigninManagerTest, GaiaIdMigration) {
+  AccountTrackerService* tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile());
+  if (tracker->GetMigrationState() !=
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    std::string email = "user@gmail.com";
+    std::string gaia_id = "account_gaia_id";
+
+    CreateNakedSigninManager();
+
+    PrefService* client_prefs = signin_client()->GetPrefs();
+    client_prefs->SetInteger(prefs::kAccountIdMigrationState,
+                             AccountTrackerService::MIGRATION_NOT_STARTED);
+    ListPrefUpdate update(client_prefs,
+                          AccountTrackerService::kAccountInfoPref);
+    update->Clear();
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    update->Append(dict);
+    dict->SetString("account_id", base::UTF8ToUTF16(email));
+    dict->SetString("email", base::UTF8ToUTF16(email));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+
+    tracker->Shutdown();
+    tracker->Initialize(signin_client());
+
+    client_prefs->SetString(prefs::kGoogleServicesAccountId, email);
+    manager_->Initialize(g_browser_process->local_state());
+
+    EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
+    EXPECT_EQ(gaia_id, profile()->GetPrefs()->GetString(
+                           prefs::kGoogleServicesAccountId));
+  }
+}
+
+TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
+  AccountTrackerService* tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile());
+  if (tracker->GetMigrationState() !=
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    std::string email = "user@gmail.com";
+    std::string gaia_id = "account_gaia_id";
+
+    CreateNakedSigninManager();
+
+    PrefService* client_prefs = signin_client()->GetPrefs();
+    client_prefs->SetInteger(prefs::kAccountIdMigrationState,
+                             AccountTrackerService::MIGRATION_NOT_STARTED);
+    ListPrefUpdate update(client_prefs,
+                          AccountTrackerService::kAccountInfoPref);
+    update->Clear();
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    update->Append(dict);
+    dict->SetString("account_id", base::UTF8ToUTF16(email));
+    dict->SetString("email", base::UTF8ToUTF16(email));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+
+    tracker->Shutdown();
+    tracker->Initialize(signin_client());
+
+    client_prefs->ClearPref(prefs::kGoogleServicesAccountId);
+    client_prefs->SetString(prefs::kGoogleServicesUsername, email);
+    manager_->Initialize(g_browser_process->local_state());
+
+    EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
+    EXPECT_EQ(gaia_id, profile()->GetPrefs()->GetString(
+                           prefs::kGoogleServicesAccountId));
+  }
+}
+
+TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
+  AccountTrackerService* tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile());
+  if (tracker->GetMigrationState() !=
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    std::string email = "user@gmail.com";
+    std::string gaia_id = "account_gaia_id";
+
+    CreateNakedSigninManager();
+
+    PrefService* client_prefs = signin_client()->GetPrefs();
+    client_prefs->SetInteger(prefs::kAccountIdMigrationState,
+                             AccountTrackerService::MIGRATION_NOT_STARTED);
+    ListPrefUpdate update(client_prefs,
+                          AccountTrackerService::kAccountInfoPref);
+    update->Clear();
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    update->Append(dict);
+    dict->SetString("account_id", base::UTF8ToUTF16(email));
+    dict->SetString("email", base::UTF8ToUTF16(email));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+
+    tracker->Shutdown();
+    tracker->Initialize(signin_client());
+
+    client_prefs->SetString(prefs::kGoogleServicesAccountId, gaia_id);
+    manager_->Initialize(g_browser_process->local_state());
+
+    EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
+    EXPECT_EQ(gaia_id, profile()->GetPrefs()->GetString(
+                           prefs::kGoogleServicesAccountId));
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(AccountTrackerService::MIGRATION_DONE,
+              tracker->GetMigrationState());
+  }
 }

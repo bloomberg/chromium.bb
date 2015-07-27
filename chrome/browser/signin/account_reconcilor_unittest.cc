@@ -576,7 +576,7 @@ TEST_P(AccountReconcilorTest, StartReconcileRemoveFromCookie) {
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 
   base::RunLoop().RunUntilIdle();
-  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
@@ -663,7 +663,7 @@ TEST_P(AccountReconcilorTest, StartReconcileBadPrimary) {
 
   token_service()->UpdateCredentials(account_id2, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseTwoAccounts(
-      "other@gmail.com", "12345", "user@gmail.com", "67890");
+      "other@gmail.com", "67890", "user@gmail.com", "12345");
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
@@ -716,7 +716,7 @@ TEST_P(AccountReconcilorTest, StartReconcileWithSessionInfoExpiredDefault) {
       PickAccountIdForAccount("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseTwoAccountsWithExpiry(
-      "user@gmail.com", true, "other@gmail.com", false);
+      "user@gmail.com", "12345", true, "other@gmail.com", "67890", false);
 
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
 

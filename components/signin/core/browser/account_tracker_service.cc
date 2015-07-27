@@ -83,6 +83,8 @@ void AccountTrackerService::Initialize(SigninClient* signin_client) {
 }
 
 void AccountTrackerService::Shutdown() {
+  signin_client_ = nullptr;
+  accounts_.clear();
 }
 
 void AccountTrackerService::AddObserver(Observer* observer) {
@@ -152,6 +154,15 @@ AccountTrackerService::FindAccountInfoByEmail(
 AccountTrackerService::AccountIdMigrationState
 AccountTrackerService::GetMigrationState() {
   return GetMigrationState(signin_client_->GetPrefs());
+}
+
+void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
+  signin_client_->GetPrefs()->SetInteger(prefs::kAccountIdMigrationState,
+                                         state);
+}
+
+void AccountTrackerService::SetMigrationDone() {
+  SetMigrationState(MIGRATION_DONE);
 }
 
 // static
@@ -254,6 +265,57 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
   SaveToPrefs(state);
 }
 
+bool AccountTrackerService::IsMigratable() {
+#if !defined(OS_IOS) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  for (std::map<std::string, AccountState>::const_iterator it =
+           accounts_.begin();
+       it != accounts_.end(); ++it) {
+    const AccountState& state = it->second;
+    if ((it->first).empty() || state.info.gaia.empty())
+      return false;
+  }
+  return true;
+#else
+  return false;
+#endif
+}
+
+void AccountTrackerService::MigrateToGaiaId() {
+  std::set<std::string> to_remove;
+  std::map<std::string, AccountState> migrated_accounts;
+  for (std::map<std::string, AccountState>::const_iterator it =
+           accounts_.begin();
+       it != accounts_.end(); ++it) {
+    const AccountState& state = it->second;
+    std::string account_id = it->first;
+    if (account_id != state.info.gaia) {
+      std::string new_account_id = state.info.gaia;
+      if (!ContainsKey(accounts_, new_account_id)) {
+        AccountState new_state = state;
+        new_state.info.account_id = new_account_id;
+        migrated_accounts.insert(make_pair(new_account_id, new_state));
+        SaveToPrefs(new_state);
+      }
+      to_remove.insert(account_id);
+    }
+  }
+
+  // Remove any obsolete account.
+  for (auto account_id : to_remove) {
+    if (ContainsKey(accounts_, account_id)) {
+      AccountState& state = accounts_[account_id];
+      RemoveFromPrefs(state);
+      accounts_.erase(account_id);
+    }
+  }
+
+  for (std::map<std::string, AccountState>::const_iterator it =
+           migrated_accounts.begin();
+       it != migrated_accounts.end(); ++it) {
+    accounts_.insert(*it);
+  }
+}
+
 void AccountTrackerService::LoadFromPrefs() {
   const base::ListValue* list =
       signin_client_->GetPrefs()->GetList(kAccountInfoPref);
@@ -324,6 +386,17 @@ void AccountTrackerService::LoadFromPrefs() {
     state.info.account_id = account_id;
     RemoveFromPrefs(state);
   }
+
+  if (GetMigrationState() != MIGRATION_DONE) {
+    if (IsMigratable()) {
+      if (accounts_.empty()) {
+        SetMigrationDone();
+      } else {
+        SetMigrationState(MIGRATION_IN_PROGRESS);
+        MigrateToGaiaId();
+      }
+    }
+  }
 }
 
 void AccountTrackerService::SaveToPrefs(const AccountState& state) {
@@ -391,11 +464,11 @@ std::string AccountTrackerService::PickAccountIdForAccount(
   DCHECK(!email.empty());
   switch(GetMigrationState(pref_service)) {
     case MIGRATION_NOT_STARTED:
-    case MIGRATION_IN_PROGRESS:
       // Some tests don't use a real email address.  To support these cases,
       // don't try to canonicalize these strings.
       return (email.find('@') == std::string::npos) ? email :
           gaia::CanonicalizeEmail(email);
+    case MIGRATION_IN_PROGRESS:
     case MIGRATION_DONE:
       return gaia;
     default:

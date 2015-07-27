@@ -305,12 +305,11 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
 TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
   // Log in.
   EXPECT_CALL(*service(), Update());
-  std::string account_id =
-        AccountTrackerServiceFactory::GetForProfile(profile())
-            ->SeedAccountInfo("gaia_id", "pat@example.com");
+  AccountTrackerServiceFactory::GetForProfile(profile())
+      ->SeedAccountInfo("gaia_id", "pat@example.com");
   SigninManager* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
-  signin_manager->OnExternalSigninCompleted(account_id);
+  signin_manager->OnExternalSigninCompleted("pat@example.com");
 }
 
 #endif

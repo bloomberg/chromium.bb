@@ -11,17 +11,8 @@
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TestSigninClient::TestSigninClient()
-    : request_context_(new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get())),
-      pref_service_(NULL),
-      are_signin_cookies_allowed_(true) {
-  LoadDatabase();
-}
-
 TestSigninClient::TestSigninClient(PrefService* pref_service)
-    : pref_service_(pref_service),
-      are_signin_cookies_allowed_(true) {}
+    : pref_service_(pref_service), are_signin_cookies_allowed_(true) {}
 
 TestSigninClient::~TestSigninClient() {}
 
@@ -60,7 +51,7 @@ void TestSigninClient::SetURLRequestContext(
 
 std::string TestSigninClient::GetProductVersion() { return ""; }
 
-void TestSigninClient::LoadDatabase() {
+void TestSigninClient::LoadTokenDatabase() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
   scoped_refptr<WebDatabaseService> web_database =

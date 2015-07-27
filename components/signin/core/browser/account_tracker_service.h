@@ -126,6 +126,7 @@ class AccountTrackerService : public KeyedService,
   void SeedAccountInfo(AccountInfo info);
 
   AccountIdMigrationState GetMigrationState();
+  void SetMigrationDone();
   static AccountIdMigrationState GetMigrationState(PrefService* pref_service);
 
  protected:
@@ -153,6 +154,11 @@ class AccountTrackerService : public KeyedService,
   void LoadFromPrefs();
   void SaveToPrefs(const AccountState& account);
   void RemoveFromPrefs(const AccountState& account);
+
+  // Gaia id migration.
+  bool IsMigratable();
+  void MigrateToGaiaId();
+  void SetMigrationState(AccountIdMigrationState state);
 
   SigninClient* signin_client_;  // Not owned.
   std::map<std::string, AccountState> accounts_;

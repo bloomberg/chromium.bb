@@ -122,12 +122,14 @@ MutableProfileOAuth2TokenServiceDelegate::AccountInfo::GetAuthStatus() const {
 MutableProfileOAuth2TokenServiceDelegate::
     MutableProfileOAuth2TokenServiceDelegate(
         SigninClient* client,
-        SigninErrorController* signin_error_controller)
+        SigninErrorController* signin_error_controller,
+        AccountTrackerService* account_tracker_service)
     : web_data_service_request_(0),
       backoff_entry_(&backoff_policy_),
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
-      signin_error_controller_(signin_error_controller) {
+      signin_error_controller_(signin_error_controller),
+      account_tracker_service_(account_tracker_service) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
   DCHECK(signin_error_controller);
@@ -303,6 +305,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 
     VLOG(1) << "MutablePO2TS::LoadAllCredentialsIntoMemory; "
             << db_tokens.size() << " Credential(s).";
+    AccountTrackerService::AccountIdMigrationState migration_state =
+        account_tracker_service_->GetMigrationState();
     for (std::map<std::string, std::string>::const_iterator iter =
              db_tokens.begin();
          iter != db_tokens.end(); ++iter) {
@@ -319,6 +323,25 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
       } else {
         DCHECK(!refresh_token.empty());
         std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
+
+        if (migration_state == AccountTrackerService::MIGRATION_IN_PROGRESS) {
+          // Migrate to gaia-ids.
+          AccountTrackerService::AccountInfo account_info =
+              account_tracker_service_->FindAccountInfoByEmail(account_id);
+          // |account_info.gaia| could be empty if |account_id| is already gaia
+          // id. This could happen if the chrome was closed in the middle of
+          // migration.
+          if (!account_info.gaia.empty()) {
+            PersistCredentials(account_info.gaia, refresh_token);
+            ClearPersistedCredentials(account_id);
+            account_id = account_info.gaia;
+          }
+
+          // Skip duplicate accounts, this could happen if migration was
+          // crashed in the middle.
+          if (refresh_tokens_.count(account_id) != 0)
+            continue;
+        }
 
         // If the account_id is an email address, then canonicalize it.  This
         // is to support legacy account_ids, and will not be needed after

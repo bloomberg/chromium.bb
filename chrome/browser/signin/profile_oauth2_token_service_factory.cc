@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -26,6 +27,7 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
+  DependsOn(AccountTrackerServiceFactory::GetInstance());
 }
 
 ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {
@@ -54,7 +56,8 @@ KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
   MutableProfileOAuth2TokenServiceDelegate* delegate =
       new MutableProfileOAuth2TokenServiceDelegate(
           ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
-          SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
+          SigninErrorControllerFactory::GetInstance()->GetForProfile(profile),
+          AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));
 #endif
   ProfileOAuth2TokenService* service = new ProfileOAuth2TokenService(delegate);
   return service;

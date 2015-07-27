@@ -20,7 +20,6 @@ class PrefService;
 // part of its interface.
 class TestSigninClient : public SigninClient {
  public:
-  TestSigninClient();
   TestSigninClient(PrefService* pref_service);
   ~TestSigninClient() override;
 
@@ -94,10 +93,10 @@ class TestSigninClient : public SigninClient {
       const std::string& source,
       net::URLRequestContextGetter* getter) override;
 
- private:
   // Loads the token database.
-  void LoadDatabase();
+  void LoadTokenDatabase();
 
+ private:
   base::ScopedTempDir temp_dir_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;

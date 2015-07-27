@@ -96,19 +96,22 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccountsWithExpiry(
-    const char* account1, bool account1_expired,
-    const char* account2, bool account2_expired) {
+    const char* email1,
+    const char* gaia_id1,
+    bool account1_expired,
+    const char* email2,
+    const char* gaia_id2,
+    bool account2_expired) {
   DCHECK(url_fetcher_factory_);
   url_fetcher_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"28\"], "
-          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"29\"]]]",
-          account1, account1_expired ? 0 : 1,
-          account2, account2_expired ? 0 : 1),
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"%s\"], "
+          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"%s\"]]]",
+          email1, account1_expired ? 0 : 1, gaia_id1, email2,
+          account2_expired ? 0 : 1, gaia_id2),
+      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 }
 
 // static

@@ -5,10 +5,14 @@
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 
 #include "base/run_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "base/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -50,8 +54,19 @@ class MutableProfileOAuth2TokenServiceDelegateTest
 
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+    pref_service_.registry()->RegisterListPref(
+        AccountTrackerService::kAccountInfoPref);
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kAccountIdMigrationState,
+        AccountTrackerService::MIGRATION_NOT_STARTED);
+    client_.reset(new TestSigninClient(&pref_service_));
+    client_->SetURLRequestContext(new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get()));
+    client_->LoadTokenDatabase();
+    account_tracker_service_.Initialize(client_.get());
     oauth2_service_delegate_.reset(new MutableProfileOAuth2TokenServiceDelegate(
-        &client_, &signin_error_controller_));
+        client_.get(), &signin_error_controller_, &account_tracker_service_));
     // Make sure PO2TS has a chance to load itself before continuing.
     base::RunLoop().RunUntilIdle();
     oauth2_service_delegate_->AddObserver(this);
@@ -64,7 +79,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
 
   void AddAuthTokenManually(const std::string& service,
                             const std::string& value) {
-    scoped_refptr<TokenWebData> token_web_data = client_.GetDatabase();
+    scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
     if (token_web_data.get())
       token_web_data->SetTokenForService(service, value);
   }
@@ -132,10 +147,12 @@ class MutableProfileOAuth2TokenServiceDelegateTest
  protected:
   base::MessageLoop message_loop_;
   net::FakeURLFetcherFactory factory_;
-  TestSigninClient client_;
+  scoped_ptr<TestSigninClient> client_;
   scoped_ptr<MutableProfileOAuth2TokenServiceDelegate> oauth2_service_delegate_;
   TestingOAuth2TokenServiceConsumer consumer_;
   SigninErrorController signin_error_controller_;
+  TestingPrefServiceSimple pref_service_;
+  AccountTrackerService account_tracker_service_;
   int access_token_success_count_;
   int access_token_failure_count_;
   GoogleServiceAuthError access_token_failure_;
@@ -448,4 +465,126 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownService) {
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   EXPECT_TRUE(oauth2_service_delegate_->refresh_tokens_.empty());
   EXPECT_EQ(0, oauth2_service_delegate_->web_data_service_request_);
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
+  if (account_tracker_service_.GetMigrationState() !=
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    std::string email = "foo@gmail.com";
+    std::string gaia_id = "foo's gaia id";
+
+    pref_service_.SetInteger(prefs::kAccountIdMigrationState,
+                             AccountTrackerService::MIGRATION_NOT_STARTED);
+
+    ListPrefUpdate update(&pref_service_,
+                          AccountTrackerService::kAccountInfoPref);
+    update->Clear();
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    update->Append(dict);
+    dict->SetString("account_id", base::UTF8ToUTF16(email));
+    dict->SetString("email", base::UTF8ToUTF16(email));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    account_tracker_service_.Shutdown();
+    account_tracker_service_.Initialize(client_.get());
+
+    AddAuthTokenManually("AccountId-" + email, "refresh_token");
+    oauth2_service_delegate_->LoadCredentials(gaia_id);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, tokens_loaded_count_);
+    EXPECT_EQ(1, token_available_count_);
+    EXPECT_EQ(1, start_batch_changes_);
+    EXPECT_EQ(1, end_batch_changes_);
+
+    std::vector<std::string> accounts = oauth2_service_delegate_->GetAccounts();
+    EXPECT_EQ(1u, accounts.size());
+
+    EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email));
+    EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(gaia_id));
+
+    account_tracker_service_.SetMigrationDone();
+    oauth2_service_delegate_->Shutdown();
+    ResetObserverCounts();
+
+    oauth2_service_delegate_->LoadCredentials(gaia_id);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, tokens_loaded_count_);
+    EXPECT_EQ(1, token_available_count_);
+    EXPECT_EQ(1, start_batch_changes_);
+    EXPECT_EQ(1, end_batch_changes_);
+
+    EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email));
+    EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(gaia_id));
+    accounts = oauth2_service_delegate_->GetAccounts();
+    EXPECT_EQ(1u, accounts.size());
+  }
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       GaiaIdMigrationCrashInTheMiddle) {
+  if (account_tracker_service_.GetMigrationState() !=
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    std::string email1 = "foo@gmail.com";
+    std::string gaia_id1 = "foo's gaia id";
+    std::string email2 = "bar@gmail.com";
+    std::string gaia_id2 = "bar's gaia id";
+
+    pref_service_.SetInteger(prefs::kAccountIdMigrationState,
+                             AccountTrackerService::MIGRATION_NOT_STARTED);
+
+    ListPrefUpdate update(&pref_service_,
+                          AccountTrackerService::kAccountInfoPref);
+    update->Clear();
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    update->Append(dict);
+    dict->SetString("account_id", base::UTF8ToUTF16(email1));
+    dict->SetString("email", base::UTF8ToUTF16(email1));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id1));
+    dict = new base::DictionaryValue();
+    update->Append(dict);
+    dict->SetString("account_id", base::UTF8ToUTF16(email2));
+    dict->SetString("email", base::UTF8ToUTF16(email2));
+    dict->SetString("gaia", base::UTF8ToUTF16(gaia_id2));
+    account_tracker_service_.Shutdown();
+    account_tracker_service_.Initialize(client_.get());
+
+    AddAuthTokenManually("AccountId-" + email1, "refresh_token");
+    AddAuthTokenManually("AccountId-" + email2, "refresh_token");
+    AddAuthTokenManually("AccountId-" + gaia_id1, "refresh_token");
+    oauth2_service_delegate_->LoadCredentials(gaia_id1);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, tokens_loaded_count_);
+    EXPECT_EQ(2, token_available_count_);
+    EXPECT_EQ(1, start_batch_changes_);
+    EXPECT_EQ(1, end_batch_changes_);
+
+    std::vector<std::string> accounts = oauth2_service_delegate_->GetAccounts();
+    EXPECT_EQ(2u, accounts.size());
+
+    EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email1));
+    EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(gaia_id1));
+    EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email2));
+    EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(gaia_id2));
+
+    account_tracker_service_.SetMigrationDone();
+    oauth2_service_delegate_->Shutdown();
+    ResetObserverCounts();
+
+    oauth2_service_delegate_->LoadCredentials(gaia_id1);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, tokens_loaded_count_);
+    EXPECT_EQ(2, token_available_count_);
+    EXPECT_EQ(1, start_batch_changes_);
+    EXPECT_EQ(1, end_batch_changes_);
+
+    EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email1));
+    EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(gaia_id1));
+    EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email2));
+    EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(gaia_id2));
+    accounts = oauth2_service_delegate_->GetAccounts();
+    EXPECT_EQ(2u, accounts.size());
+  }
 }

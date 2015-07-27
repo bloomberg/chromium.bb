@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -19,7 +20,8 @@ class MutableProfileOAuth2TokenServiceDelegate
  public:
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
-      SigninErrorController* signin_error_controller);
+      SigninErrorController* signin_error_controller,
+      AccountTrackerService* account_tracker_service);
   ~MutableProfileOAuth2TokenServiceDelegate() override;
 
   // OAuth2TokenServiceDelegate overrides.
@@ -146,6 +148,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   SigninClient* client_;
   SigninErrorController* signin_error_controller_;
+  AccountTrackerService* account_tracker_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
 };

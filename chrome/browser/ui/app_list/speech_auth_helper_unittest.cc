@@ -60,7 +60,9 @@ class SpeechAuthHelperTest : public testing::Test {
 
  protected:
   void SetupRefreshToken() {
-    GetFakeProfileOAuth2TokenService()->UpdateCredentials(kTestUser,
+    std::string account_id = SigninManagerFactory::GetForProfile(profile_)
+                                 ->GetAuthenticatedAccountId();
+    GetFakeProfileOAuth2TokenService()->UpdateCredentials(account_id,
                                                           "fake_refresh_token");
   }
 

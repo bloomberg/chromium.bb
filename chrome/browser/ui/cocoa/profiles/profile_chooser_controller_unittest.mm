@@ -16,6 +16,7 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/fake_account_fetcher_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -33,6 +34,7 @@
 const std::string kGaiaId = "gaiaid-user@gmail.com";
 const std::string kEmail = "user@gmail.com";
 const std::string kSecondaryEmail = "user2@gmail.com";
+const std::string kSecondaryGaiaId = "gaiaid-user2@gmail.com";
 const std::string kLoginToken = "oauth2_login_token";
 
 class ProfileChooserControllerTest : public CocoaProfileTest {
@@ -401,14 +403,22 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   // should be used.
   cache->SetProfileIsUsingDefaultNameAtIndex(0, false);
 
-  // Set up the signin manager and the OAuth2Tokens.
+  // Set up the AccountTrackerService, signin manager and the OAuth2Tokens.
   Profile* profile = browser()->profile();
-  SigninManagerFactory::GetForProfile(profile)->
-      SetAuthenticatedAccountInfo(kEmail, kEmail);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-      UpdateCredentials(kEmail, kLoginToken);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-      UpdateCredentials(kSecondaryEmail, kLoginToken);
+  AccountTrackerServiceFactory::GetForProfile(profile)
+      ->SeedAccountInfo(kGaiaId, kEmail);
+  AccountTrackerServiceFactory::GetForProfile(profile)
+      ->SeedAccountInfo(kSecondaryGaiaId, kSecondaryEmail);
+  SigninManagerFactory::GetForProfile(profile)
+      ->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
+  std::string account_id =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)
+      ->UpdateCredentials(account_id, kLoginToken);
+  account_id = AccountTrackerServiceFactory::GetForProfile(profile)
+                   ->PickAccountIdForAccount(kSecondaryGaiaId, kSecondaryEmail);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)
+      ->UpdateCredentials(account_id, kLoginToken);
 
   StartProfileChooserController();
   [controller() initMenuContentsWithView:

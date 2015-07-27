@@ -91,22 +91,24 @@ class ProfileDownloaderTest : public testing::Test,
 };
 
 TEST_F(ProfileDownloaderTest, AccountInfoReady) {
-  account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
+  std::string account_id =
+      account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
   SimulateUserInfoSuccess();
 
   ASSERT_EQ(ProfileDownloader::PICTURE_FAILED,
             profile_downloader_->GetProfilePictureStatus());
-  profile_downloader_->StartForAccount(kTestEmail);
+  profile_downloader_->StartForAccount(account_id);
   profile_downloader_->StartFetchingImage();
   ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());
 }
 
 TEST_F(ProfileDownloaderTest, AccountInfoNotReady) {
-  account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
+  std::string account_id =
+      account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
 
   ASSERT_EQ(ProfileDownloader::PICTURE_FAILED,
             profile_downloader_->GetProfilePictureStatus());
-  profile_downloader_->StartForAccount(kTestEmail);
+  profile_downloader_->StartForAccount(account_id);
   profile_downloader_->StartFetchingImage();
   SimulateUserInfoSuccess();
   ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());

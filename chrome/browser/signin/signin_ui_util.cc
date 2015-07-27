@@ -161,11 +161,6 @@ void InitializePrefsForProfile(Profile* profile) {
     // Suppresses the upgrade tutorial for a new profile.
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
-    profile->GetPrefs()->SetInteger(
-        prefs::kAccountIdMigrationState, AccountTrackerService::MIGRATION_DONE);
-#endif
   }
 }
 

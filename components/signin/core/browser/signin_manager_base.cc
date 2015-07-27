@@ -107,7 +107,8 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
       // from there.
       if (pref_gaia_id.empty()) {
         AccountTrackerService::AccountInfo info =
-            account_tracker_service_->GetAccountInfo(pref_account_username);
+            account_tracker_service_->FindAccountInfoByEmail(
+                pref_account_username);
         pref_gaia_id = info.gaia;
       }
 
@@ -121,6 +122,11 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
       account_id = account_tracker_service_->SeedAccountInfo(
           pref_gaia_id, pref_account_username);
 
+      // Set account id before removing obsolete user name in case crash in the
+      // middle.
+      client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
+                                     account_id);
+
       // Now remove obsolete preferences.
       client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
     }
@@ -130,8 +136,20 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
     // kGoogleServicesAccountId.
   }
 
-  if (!account_id.empty())
+  if (!account_id.empty()) {
+    if (account_tracker_service_->GetMigrationState() ==
+        AccountTrackerService::MIGRATION_IN_PROGRESS) {
+      AccountTrackerService::AccountInfo account_info =
+          account_tracker_service_->FindAccountInfoByEmail(account_id);
+      // |account_info.gaia| could be empty if |account_id| is already gaia id.
+      if (!account_info.gaia.empty()) {
+        account_id = account_info.gaia;
+        client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
+                                       account_id);
+      }
+    }
     SetAuthenticatedAccountId(account_id);
+  }
 }
 
 bool SigninManagerBase::IsInitialized() const { return initialized_; }
