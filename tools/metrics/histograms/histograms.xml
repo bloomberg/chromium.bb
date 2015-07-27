@@ -9798,13 +9798,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Extensions.AllocatePortIdPairOverflow">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Records when the allocation of IDs for chrome.runtime.Port overflows.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.APIUse_RelativeURL" enum="UrlResolutionResult">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

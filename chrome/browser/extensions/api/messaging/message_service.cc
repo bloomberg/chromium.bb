@@ -171,7 +171,6 @@ struct MessageService::OpenChannelParams {
 namespace {
 
 static base::StaticAtomicSequenceNumber g_next_channel_id;
-static base::StaticAtomicSequenceNumber g_channel_id_overflow_count;
 
 static content::RenderProcessHost* GetExtensionProcess(
     BrowserContext* context,
@@ -193,13 +192,6 @@ content::RenderProcessHost*
 void MessageService::AllocatePortIdPair(int* port1, int* port2) {
   unsigned channel_id =
       static_cast<unsigned>(g_next_channel_id.GetNext()) % (kint32max/2);
-
-  if (channel_id == 0) {
-    int overflow_count = g_channel_id_overflow_count.GetNext();
-    if (overflow_count > 0)
-      UMA_HISTOGRAM_BOOLEAN("Extensions.AllocatePortIdPairOverflow", true);
-  }
-
   unsigned port1_id = channel_id * 2;
   unsigned port2_id = channel_id * 2 + 1;
 
