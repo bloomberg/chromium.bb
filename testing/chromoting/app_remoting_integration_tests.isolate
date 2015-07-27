@@ -14,7 +14,8 @@
           '--refresh-token-file=../../remoting/tools/internal/refresh_tokens.json',
           '--show-host-availability',
           '--release-hosts-after-tests',
-          '--verbosity=1',
+          '--verbosity=2',
+          '--v=2',
         ],
         'files': [
           '../xvfb.py',
