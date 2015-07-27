@@ -42,9 +42,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   virtual bool Initialize(
       GLSurface* compatible_surface, GpuPreference gpu_preference) = 0;
 
-  // Destroys the GL context.
-  virtual void Destroy() = 0;
-
   // Makes the GL context and a surface current on the current thread.
   virtual bool MakeCurrent(GLSurface* surface) = 0;
 

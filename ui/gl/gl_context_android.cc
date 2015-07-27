@@ -28,7 +28,6 @@ class GLNonOwnedContext : public GLContextReal {
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,
                   GpuPreference gpu_preference) override;
-  void Destroy() override {}
   bool MakeCurrent(GLSurface* surface) override;
   void ReleaseCurrent(GLSurface* surface) override {}
   bool IsCurrent(GLSurface* surface) override { return true; }
@@ -40,9 +39,9 @@ class GLNonOwnedContext : public GLContextReal {
   ~GLNonOwnedContext() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GLNonOwnedContext);
-
   EGLDisplay display_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLNonOwnedContext);
 };
 
 GLNonOwnedContext::GLNonOwnedContext(GLShareGroup* share_group)

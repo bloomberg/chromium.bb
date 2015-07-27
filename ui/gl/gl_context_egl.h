@@ -26,7 +26,6 @@ class GLContextEGL : public GLContextReal {
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,
                   GpuPreference gpu_preference) override;
-  void Destroy() override;
   bool MakeCurrent(GLSurface* surface) override;
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;
@@ -41,6 +40,8 @@ class GLContextEGL : public GLContextReal {
   ~GLContextEGL() override;
 
  private:
+  void Destroy();
+
   EGLContext context_;
   EGLDisplay display_;
   EGLConfig config_;

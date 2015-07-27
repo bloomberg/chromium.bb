@@ -17,7 +17,6 @@ class GL_EXPORT GLContextStub : public GLContextReal {
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,
                   GpuPreference gpu_preference) override;
-  void Destroy() override;
   bool MakeCurrent(GLSurface* surface) override;
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;

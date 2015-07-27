@@ -34,7 +34,6 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   // Implement GLContext.
   bool Initialize(gfx::GLSurface* compatible_surface,
                   gfx::GpuPreference gpu_preference) override;
-  void Destroy() override;
   bool MakeCurrent(gfx::GLSurface* surface) override;
   void ReleaseCurrent(gfx::GLSurface* surface) override;
   bool IsCurrent(gfx::GLSurface* surface) override;
@@ -53,6 +52,8 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   ~GLContextVirtual() override;
 
  private:
+  void Destroy();
+
   scoped_refptr<gfx::GLContext> shared_context_;
   base::WeakPtr<gles2::GLES2Decoder> decoder_;
 

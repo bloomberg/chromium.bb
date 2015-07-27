@@ -26,7 +26,6 @@ class GL_EXPORT GLContextGLX : public GLContextReal {
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,
                   GpuPreference gpu_preference) override;
-  void Destroy() override;
   bool MakeCurrent(GLSurface* surface) override;
   void ReleaseCurrent(GLSurface* surface) override;
   bool IsCurrent(GLSurface* surface) override;
@@ -40,6 +39,8 @@ class GL_EXPORT GLContextGLX : public GLContextReal {
   ~GLContextGLX() override;
 
  private:
+  void Destroy();
+
   void* context_;
   XDisplay* display_;
 

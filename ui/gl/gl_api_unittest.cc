@@ -19,7 +19,6 @@ class GLContextFake : public GLContext {
                   GpuPreference gpu_preference) override {
     return true;
   }
-  void Destroy() override {}
   bool MakeCurrent(GLSurface* surface) override { return true; }
   void ReleaseCurrent(GLSurface* surface) override {}
   bool IsCurrent(GLSurface* surface) override { return true; }
