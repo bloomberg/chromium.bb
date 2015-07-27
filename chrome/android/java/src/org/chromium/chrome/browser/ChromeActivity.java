@@ -918,10 +918,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (tabToBookmark == null || tabToBookmark.isFrozen()) {
             return;
         }
-        assert BookmarksBridge.isEditBookmarksEnabled(tabToBookmark.getProfile());
 
-        // Managed bookmarks can't be edited. If the current URL is only bookmarked by managed
-        // bookmarks then fall back on adding a new bookmark instead.
+        assert mToolbarManager.getBookmarksBridge().isEditBookmarksEnabled();
+
+        // Note the use of getUserBookmarkId() over getBookmarkId() here: Managed bookmarks can't be
+        // edited. If the current URL is only bookmarked by managed bookmarks, this will return
+        // INVALID_BOOKMARK_ID, so the code below will fall back on adding a new bookmark instead.
+        // TODO(bauerb): This does not take partner bookmarks into account.
         final long bookmarkId = tabToBookmark.getUserBookmarkId();
 
         if (EnhancedBookmarkUtils.isEnhancedBookmarkEnabled(tabToBookmark.getProfile())) {
@@ -951,9 +954,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
         } else {
             Intent intent = new Intent(this, ManageBookmarkActivity.class);
-            // Managed bookmarks can't be edited. Fallback on adding a new bookmark if the current
-            // URL is bookmarked by a managed bookmark.
-
             if (bookmarkId == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
                 intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_IS_FOLDER, false);
                 intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_TITLE,

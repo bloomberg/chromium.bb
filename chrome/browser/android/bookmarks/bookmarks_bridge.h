@@ -36,6 +36,8 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
 
   bool IsDoingExtensiveChanges(JNIEnv* env, jobject obj);
 
+  jboolean IsEditBookmarksEnabled(JNIEnv* env, jobject obj);
+
   void LoadEmptyPartnerBookmarkShimForTesting(JNIEnv* env, jobject obj);
 
   base::android::ScopedJavaLocalRef<jobject> GetBookmarkByID(
@@ -161,6 +163,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   const bookmarks::BookmarkNode* GetNodeByID(long node_id, int type);
   const bookmarks::BookmarkNode* GetFolderWithFallback(long folder_id,
                                                        int type);
+  bool IsEditBookmarksEnabled() const;
   // Returns whether |node| can be modified by the user.
   bool IsEditable(const bookmarks::BookmarkNode* node) const;
   // Returns whether |node| is a managed bookmark.

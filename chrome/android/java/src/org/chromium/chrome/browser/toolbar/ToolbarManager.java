@@ -122,6 +122,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private final LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
+    private final ChromeAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
 
     private final TabObserver mTabObserver;
     private final BookmarksBridge.BookmarkModelObserver mBookmarksObserver;
@@ -155,7 +156,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public ToolbarManager(final ChromeActivity activity,
             ToolbarControlContainer controlContainer, final AppMenuHandler menuHandler,
-            final ChromeAppMenuPropertiesDelegate appMenuPropertiesDelegate,
+            ChromeAppMenuPropertiesDelegate appMenuPropertiesDelegate,
             Invalidator invalidator) {
         mActionBarDelegate = new ContextualMenuBar.ActionBarDelegate() {
             @Override
@@ -200,8 +201,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         MenuDelegatePhone menuDelegate = new MenuDelegatePhone() {
             @Override
             public void updateReloadButtonState(boolean isLoading) {
-                if (appMenuPropertiesDelegate != null) {
-                    appMenuPropertiesDelegate.loadingStateChanged(isLoading);
+                if (mAppMenuPropertiesDelegate != null) {
+                    mAppMenuPropertiesDelegate.loadingStateChanged(isLoading);
                     menuHandler.menuItemContentChanged(R.id.icon_row_menu_id);
                 }
             }
@@ -221,6 +222,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         setMenuHandler(menuHandler);
         mToolbar.initialize(mToolbarModel, this, mAppMenuButtonHelper);
+
+        mAppMenuPropertiesDelegate = appMenuPropertiesDelegate;
 
         mHomepageStateListener = new HomepageStateListener() {
             @Override
@@ -580,6 +583,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return The bookmarks bridge.
+     */
+    public BookmarksBridge getBookmarksBridge() {
+        return mBookmarksBridge;
+    }
+
+    /**
      * @return The toolbar interface that this manager handles.
      */
     public Toolbar getToolbar() {
@@ -908,8 +918,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         boolean isBookmarked = currentTab != null
                 && currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-        boolean editingAllowed = currentTab == null
-                || BookmarksBridge.isEditBookmarksEnabled(currentTab.getProfile());
+        boolean editingAllowed = currentTab == null || mBookmarksBridge == null
+                || mBookmarksBridge.isEditBookmarksEnabled();
         mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);
     }
 
@@ -966,6 +976,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             if (mBookmarksBridge != null) mBookmarksBridge.destroy();
             mBookmarksBridge = new BookmarksBridge(profile);
             mBookmarksBridge.addObserver(mBookmarksObserver);
+            mAppMenuPropertiesDelegate.setBookmarksBridge(mBookmarksBridge);
             mLocationBar.setAutocompleteProfile(profile);
             mCurrentProfile = profile;
         }

@@ -542,8 +542,8 @@ public class BookmarksBridge {
         nativeEndGroupingUndos(mNativeBookmarksBridge);
     }
 
-    public static boolean isEditBookmarksEnabled(Profile profile) {
-        return nativeIsEditBookmarksEnabled(profile);
+    public boolean isEditBookmarksEnabled() {
+        return nativeIsEditBookmarksEnabled(mNativeBookmarksBridge);
     }
 
     public static boolean isEnhancedBookmarksEnabled(Profile profile) {
@@ -716,7 +716,7 @@ public class BookmarksBridge {
     private native long nativeInit(Profile profile);
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
     private native void nativeDestroy(long nativeBookmarksBridge);
-    private static native boolean nativeIsEditBookmarksEnabled(Profile profile);
+    private static native boolean nativeIsEditBookmarksEnabled(long nativeBookmarksBridge);
 
     /**
      * Simple object representing the bookmark item.

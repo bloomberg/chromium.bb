@@ -145,15 +145,8 @@ static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
   return IsEnhancedBookmarksEnabled();
 }
 
-static bool IsEditBookmarksEnabled(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(
-      bookmarks::prefs::kEditBookmarksEnabled);
-}
-
-static jboolean IsEditBookmarksEnabled(JNIEnv* env,
-                                       jclass clazz,
-                                       jobject j_profile) {
-  return IsEditBookmarksEnabled(ProfileAndroid::FromProfileAndroid(j_profile));
+jboolean BookmarksBridge::IsEditBookmarksEnabled(JNIEnv* env, jobject obj) {
+  return IsEditBookmarksEnabled();
 }
 
 void BookmarksBridge::LoadEmptyPartnerBookmarkShimForTesting(JNIEnv* env,
@@ -785,12 +778,17 @@ const BookmarkNode* BookmarksBridge::GetFolderWithFallback(long folder_id,
   return folder;
 }
 
+bool BookmarksBridge::IsEditBookmarksEnabled() const {
+  return profile_->GetPrefs()->GetBoolean(
+      bookmarks::prefs::kEditBookmarksEnabled);
+}
+
 bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
   if (!node || (node->type() != BookmarkNode::FOLDER &&
       node->type() != BookmarkNode::URL)) {
     return false;
   }
-  if (!IsEditBookmarksEnabled(profile_))
+  if (!IsEditBookmarksEnabled())
     return false;
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->IsEditable(node);
