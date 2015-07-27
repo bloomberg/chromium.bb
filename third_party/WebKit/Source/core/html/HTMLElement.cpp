@@ -819,8 +819,11 @@ void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style, CSSProper
             if (cc > '9')
                 break;
             if (cc < '0') {
-                if (cc == '%' || cc == '*')
+                if (cc == '%' || cc == '*') {
+                    if (propertyID == CSSPropertyWidth)
+                        UseCounter::count(document(), UseCounter::HTMLElementDeprecatedWidth);
                     length++;
+                }
                 if (cc != '.')
                     break;
             }

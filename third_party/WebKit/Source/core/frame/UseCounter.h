@@ -798,7 +798,8 @@ public:
         LinkRelPreload = 901,
         LinkHeaderDnsPrefetch = 902,
         LinkHeaderPreconnect = 903,
-        ClientHintsMetaAcceptCH = 906,
+        ClientHintsMetaAcceptCH = 904,
+        HTMLElementDeprecatedWidth = 905,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
