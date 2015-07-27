@@ -369,11 +369,11 @@ var renderTile = function(data) {
         event.keyCode == 8 /* BACKSPACE */) {
       event.preventDefault();
       event.stopPropagation();
-      blacklistTile(tile);
+      blacklistTile(this);
     } else if (event.keyCode == 13 /* ENTER */ ||
                event.keyCode == 32 /* SPACE */) {
       event.preventDefault();
-      tile.click();
+      this.click();
     } else if (event.keyCode >= 37 && event.keyCode <= 40 /* ARROWS */) {
       var tiles = document.querySelectorAll('#mv-tiles .mv-tile');
       var nextTile = null;
