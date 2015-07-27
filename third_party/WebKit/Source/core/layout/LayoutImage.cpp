@@ -96,6 +96,8 @@ void LayoutImage::setImageResource(PassOwnPtrWillBeRawPtr<LayoutImageResource> i
 
 void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
+    ASSERT(view());
+    ASSERT(view()->frameView());
     if (documentBeingDestroyed())
         return;
 
@@ -110,8 +112,10 @@ void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 
     // Per the spec, we let the server-sent header override srcset/other sources of dpr.
     // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
-    if (m_imageResource->cachedImage() && m_imageResource->cachedImage()->hasDevicePixelRatioHeaderValue())
+    if (m_imageResource->cachedImage() && m_imageResource->cachedImage()->hasDevicePixelRatioHeaderValue()) {
+        UseCounter::count(&(view()->frameView()->frame()), UseCounter::ClientHintsContentDPR);
         m_imageDevicePixelRatio = 1 / m_imageResource->cachedImage()->devicePixelRatioHeaderValue();
+    }
 
     if (!m_didIncrementVisuallyNonEmptyPixelCount) {
         // At a zoom level of 1 the image is guaranteed to have an integer size.

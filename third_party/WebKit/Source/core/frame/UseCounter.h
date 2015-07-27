@@ -800,6 +800,7 @@ public:
         LinkHeaderPreconnect = 903,
         ClientHintsMetaAcceptCH = 904,
         HTMLElementDeprecatedWidth = 905,
+        ClientHintsContentDPR = 906,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
