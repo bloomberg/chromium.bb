@@ -1242,23 +1242,21 @@ bool TabsUpdateFunction::RunAsync() {
   }
 
   if (params->update_properties.muted.get()) {
-    if (chrome::IsTabAudioMutingFeatureEnabled()) {
-      if (!chrome::CanToggleAudioMute(contents)) {
-        WriteToConsole(
-            content::CONSOLE_MESSAGE_LEVEL_WARNING,
-            base::StringPrintf(
-                "Cannot update mute state for tab %d, tab has audio or video "
-                "currently being captured",
-                tab_id));
-      } else {
-        chrome::SetTabAudioMuted(contents, *params->update_properties.muted,
-                                 extension()->id());
-      }
-    } else {
-      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
-                     base::StringPrintf(
-                         "Failed to update mute state, --%s must be enabled",
-                         switches::kEnableTabAudioMuting));
+    TabMutedResult tab_muted_result = chrome::SetTabAudioMuted(
+        contents, *params->update_properties.muted, extension()->id());
+
+    switch (tab_muted_result) {
+      case TAB_MUTED_RESULT_SUCCESS:
+        break;
+      case TAB_MUTED_RESULT_FAIL_NOT_ENABLED:
+        error_ = ErrorUtils::FormatErrorMessage(
+            keys::kCannotUpdateMuteDisabled, base::IntToString(tab_id),
+            switches::kEnableTabAudioMuting);
+        return false;
+      case TAB_MUTED_RESULT_FAIL_TABCAPTURE:
+        error_ = ErrorUtils::FormatErrorMessage(keys::kCannotUpdateMuteCaptured,
+                                                base::IntToString(tab_id));
+        return false;
     }
   }
 

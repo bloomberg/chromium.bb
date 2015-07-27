@@ -33,6 +33,12 @@ enum TabMediaState {
   TAB_MEDIA_STATE_AUDIO_MUTING,  // Tab audio is being muted.
 };
 
+enum TabMutedResult {
+  TAB_MUTED_RESULT_SUCCESS,
+  TAB_MUTED_RESULT_FAIL_NOT_ENABLED,
+  TAB_MUTED_RESULT_FAIL_TABCAPTURE,
+};
+
 namespace chrome {
 
 // String to indicate reason for muted state change (user, capture, extension
@@ -109,9 +115,9 @@ bool IsTabAudioMuted(content::WebContents* contents);
 
 // Sets whether all audio output from |contents| is muted.
 // Cause is extensionid, kMutedToggleCause constant, or empty string
-void SetTabAudioMuted(content::WebContents* contents,
-                      bool mute,
-                      const std::string& cause);
+TabMutedResult SetTabAudioMuted(content::WebContents* contents,
+                                bool mute,
+                                const std::string& cause);
 
 // Get cause of mute (extensionid, kMutedToggleCause constant, or empty string)
 const std::string& GetTabAudioMutedCause(content::WebContents* contents);

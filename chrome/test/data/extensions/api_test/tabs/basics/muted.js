@@ -30,8 +30,7 @@ chrome.test.runTests([
   },
 
   function testStaysMutedAfterChangingWindow() {
-    chrome.windows.create({}, pass(function(window)
-    {
+    chrome.windows.create({}, pass(function(window) {
       chrome.tabs.move(testTabId_, {windowId: window.id, index: -1},
                        pass(function(tab) {
         assertEq(true, tab.muted);
