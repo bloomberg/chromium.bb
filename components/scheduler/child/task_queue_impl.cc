@@ -226,24 +226,22 @@ bool TaskQueueImpl::NextPendingDelayedTaskRunTime(
   return true;
 }
 
-bool TaskQueueImpl::UpdateWorkQueue(LazyNow* lazy_now,
+void TaskQueueImpl::UpdateWorkQueue(LazyNow* lazy_now,
                                     bool should_trigger_wakeup,
                                     const base::PendingTask* previous_task) {
-  if (!work_queue_.empty())
-    return true;
-
-  {
-    base::AutoLock lock(lock_);
-    if (!ShouldAutoPumpQueueLocked(should_trigger_wakeup, previous_task))
-      return false;
-    MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
-    work_queue_.Swap(&incoming_queue_);
-    if (!work_queue_.empty()) {
-      DCHECK(task_queue_manager_);
-      task_queue_manager_->selector_.GetTaskQueueSets()->OnPushQueue(this);
-    }
+  DCHECK(work_queue_.empty());
+  base::AutoLock lock(lock_);
+  if (!ShouldAutoPumpQueueLocked(should_trigger_wakeup, previous_task))
+    return;
+  MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
+  work_queue_.Swap(&incoming_queue_);
+  // |incoming_queue_| is now empty so TaskQueueManager::UpdateQueues no
+  // longer needs to consider this queue for reloading.
+  task_queue_manager_->UnregisterAsUpdatableTaskQueue(this);
+  if (!work_queue_.empty()) {
+    DCHECK(task_queue_manager_);
+    task_queue_manager_->selector_.GetTaskQueueSets()->OnPushQueue(this);
     TraceQueueSize(true);
-    return true;
   }
 }
 
@@ -277,6 +275,8 @@ void TaskQueueImpl::EnqueueTaskLocked(const base::PendingTask& pending_task) {
   lock_.AssertAcquired();
   if (!task_queue_manager_)
     return;
+  if (incoming_queue_.empty())
+    task_queue_manager_->RegisterAsUpdatableTaskQueue(this);
   if (pump_policy_ == PumpPolicy::AUTO && incoming_queue_.empty())
     task_queue_manager_->MaybePostDoWorkOnMainRunner();
   incoming_queue_.push(pending_task);
@@ -312,6 +312,9 @@ void TaskQueueImpl::PumpQueueLocked() {
     work_queue_.push(incoming_queue_.front());
     incoming_queue_.pop();
   }
+  // |incoming_queue_| is now empty so TaskQueueManager::UpdateQueues no longer
+  // needs to consider this queue for reloading.
+  task_queue_manager_->UnregisterAsUpdatableTaskQueue(this);
   if (!work_queue_.empty()) {
     if (was_empty)
       task_queue_manager_->selector_.GetTaskQueueSets()->OnPushQueue(this);

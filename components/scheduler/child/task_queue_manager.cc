@@ -90,17 +90,40 @@ base::TimeTicks TaskQueueManager::NextPendingDelayedTaskRunTime() {
   return next_pending_delayed_task;
 }
 
-bool TaskQueueManager::UpdateWorkQueues(
+void TaskQueueManager::RegisterAsUpdatableTaskQueue(
+    internal::TaskQueueImpl* queue) {
+  base::AutoLock lock(newly_updatable_lock_);
+  newly_updatable_.push_back(queue);
+}
+
+void TaskQueueManager::UnregisterAsUpdatableTaskQueue(
+    internal::TaskQueueImpl* queue) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  updatable_queue_set_.erase(queue);
+}
+
+void TaskQueueManager::UpdateWorkQueues(
     bool should_trigger_wakeup,
     const base::PendingTask* previous_task) {
-  // TODO(skyostil): This is not efficient when the number of queues grows very
-  // large due to the number of locks taken. Consider optimizing when we get
-  // there.
   DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::LazyNow lazy_now(this);
-  bool has_work = false;
-  for (auto& queue : queues_) {
-    has_work |=
+
+  // Insert any newly updatable queues into the updatable_queue_set_.
+  {
+    base::AutoLock lock(newly_updatable_lock_);
+    while (!newly_updatable_.empty()) {
+      updatable_queue_set_.insert(newly_updatable_.back());
+      newly_updatable_.pop_back();
+    }
+  }
+
+  auto iter = updatable_queue_set_.begin();
+  while (iter != updatable_queue_set_.end()) {
+    internal::TaskQueueImpl* queue = *iter++;
+    // NOTE Update work queue may erase itself from |updatable_queue_set_|.
+    // This is fine, erasing an element won't invalidate any interator, as long
+    // as the iterator isn't the element being delated.
+    if (queue->work_queue().empty())
         queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
     if (!queue->work_queue().empty()) {
       // Currently we should not be getting tasks with delayed run times in any
@@ -108,7 +131,6 @@ bool TaskQueueManager::UpdateWorkQueues(
       DCHECK(queue->work_queue().front().delayed_run_time.is_null());
     }
   }
-  return has_work;
 }
 
 void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
@@ -135,8 +157,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
 
   // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
   // pump-after-wakeup queue.
-  if (!UpdateWorkQueues(false, nullptr))
-    return;
+  UpdateWorkQueues(false, nullptr);
 
   base::PendingTask previous_task((tracked_objects::Location()),
                                   (base::Closure()));
@@ -153,8 +174,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
 
     bool should_trigger_wakeup = queue->wakeup_policy() ==
                                  TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
-    if (!UpdateWorkQueues(should_trigger_wakeup, &previous_task))
-      return;
+    UpdateWorkQueues(should_trigger_wakeup, &previous_task);
 
     // Only run a single task per batch in nested run loops so that we can
     // properly exit the nested loop when someone calls RunLoop::Quit().
@@ -282,6 +302,11 @@ TaskQueueManager::AsValueWithSelectorResult(
   state->EndDictionary();
   if (should_run)
     state->SetString("selected_queue", selected_queue->GetName());
+
+  state->BeginArray("updatable_queue_set");
+  for (auto& queue : updatable_queue_set_)
+    state->AppendString(queue->GetName());
+  state->EndArray();
   return state;
 }
 

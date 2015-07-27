@@ -116,10 +116,9 @@ class SCHEDULER_EXPORT TaskQueueManager
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue.
   // Reloads any empty work queues which have automatic pumping enabled and
   // which are eligible to be auto pumped based on the |previous_task| which was
-  // run and |should_trigger_wakeup| . Call with an empty |previous_task| if no
-  // task was just run. Returns true if any work queue has tasks after doing
-  // this.
-  bool UpdateWorkQueues(bool should_trigger_wakeup,
+  // run and |should_trigger_wakeup|. Call with an empty |previous_task| if no
+  // task was just run.
+  void UpdateWorkQueues(bool should_trigger_wakeup,
                         const base::PendingTask* previous_task);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
@@ -150,7 +149,25 @@ class SCHEDULER_EXPORT TaskQueueManager
   AsValueWithSelectorResult(bool should_run,
                             internal::TaskQueueImpl* selected_queue) const;
 
+  // Causes DoWork to start calling UpdateWorkQueue for |queue|. Can be called
+  // from any thread.
+  void RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
+
+  // Prevents DoWork from calling UpdateWorkQueue for |queue|. Must be called
+  // from the thread the TaskQueueManager was created on.
+  void UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
+
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_;
+
+  // This lock guards only |newly_updatable_|.  It's not expected to be heavily
+  // contended.
+  base::Lock newly_updatable_lock_;
+  std::vector<internal::TaskQueueImpl*> newly_updatable_;
+
+  // Set of task queues with avaliable work on the incoming queue.  This should
+  // only be accessed from the main thread.
+  std::set<internal::TaskQueueImpl*> updatable_queue_set_;
+
   base::AtomicSequenceNumber task_sequence_num_;
   base::debug::TaskAnnotator task_annotator_;
 

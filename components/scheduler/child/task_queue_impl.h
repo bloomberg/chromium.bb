@@ -48,7 +48,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool NextPendingDelayedTaskRunTime(
       base::TimeTicks* next_pending_delayed_task);
 
-  bool UpdateWorkQueue(LazyNow* lazy_now,
+  void UpdateWorkQueue(LazyNow* lazy_now,
                        bool should_trigger_wakeup,
                        const base::PendingTask* previous_task);
   base::PendingTask TakeTaskFromWorkQueue();
