@@ -119,7 +119,7 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
                 } else {
                     Position runEnd = VisiblePosition(textRunStartPosition).next().deepEquivalent();
                     if (runEnd.isNotNull())
-                        textRunEndPosition = createLegacyEditingPosition(runEnd.containerNode(), runEnd.computeOffsetInContainerNode());
+                        textRunEndPosition = runEnd;
                 }
             }
         }
@@ -131,9 +131,9 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
                 resultStart = Position(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode());
             } else {
                 if (start() == docTextPosition)
-                    resultStart = Position(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode());
+                    resultStart = textRunStartPosition;
                 else
-                    resultStart = Position(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode());
+                    resultStart = textRunEndPosition;
             }
         }
 
@@ -143,9 +143,9 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
                 resultEnd = Position(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode());
             } else {
                 if (end() == docTextPosition)
-                    resultEnd = Position(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode());
+                    resultEnd = textRunStartPosition;
                 else
-                    resultEnd = Position(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode());
+                    resultEnd = textRunEndPosition;
             }
             docTextPosition += len;
             break;
@@ -157,10 +157,10 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
         return EphemeralRange();
 
     if (length() && end() > docTextPosition) { // end() is out of bounds
-        resultEnd = Position(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode());
+        resultEnd = textRunEndPosition;
     }
 
-    return EphemeralRange(resultStart, resultEnd);
+    return EphemeralRange(resultStart.toOffsetInAnchor(), resultEnd.toOffsetInAnchor());
 }
 
 PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& range)
