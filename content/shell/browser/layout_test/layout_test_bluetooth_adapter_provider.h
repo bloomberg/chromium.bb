@@ -305,15 +305,6 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetConnectableDeviceAdapter();
 
-  // Returns "UnconnectableDeviceAdapter" fake BluetoothAdapter with the
-  // following characteristics:
-  //  - |StartDiscoverySessionWithFilter| runs the success callback with
-  //  |DiscoverySession|
-  //    as argument.
-  //  - |GetDevices| returns a list with an |UnconnectableDevice|.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetUnconnectableDeviceAdapter();
-
   // Returns an |EmptyDevice| with the following characeteristics:
   //  - |GetAddress| returns "Empty Mock Device instanceID".
   //  - |GetName| returns "Empty Mock Device name".
@@ -340,13 +331,6 @@ class LayoutTestBluetoothAdapterProvider {
   //    fake BluetoothGattConnection as argument.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetConnectableDevice(device::MockBluetoothAdapter* adapter);
-
-  // Returns a fake |UnconnectableDevice| with the same characteristics as
-  // |EmptyDevice| except:
-  //  - |CreateGattConnection| runs error callback with
-  //    |BluetoothDevice::ERROR_FAILED| as argument.
-  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetUnconnectableDevice(device::MockBluetoothAdapter* adapter);
 
   // Returns a fake BluetoothGattCharacteristic with the following
   // characteristics:

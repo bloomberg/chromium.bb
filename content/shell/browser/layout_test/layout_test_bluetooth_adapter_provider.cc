@@ -98,8 +98,6 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetSingleEmptyDeviceAdapter();
   else if (fake_adapter_name == "ConnectableDeviceAdapter")
     return GetConnectableDeviceAdapter();
-  else if (fake_adapter_name == "UnconnectableDeviceAdapter")
-    return GetUnconnectableDeviceAdapter();
   // New adapters
   else if (fake_adapter_name == "BaseAdapter")
     return GetBaseAdapter();
@@ -436,16 +434,6 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDeviceAdapter() {
 }
 
 // static
-scoped_refptr<NiceMock<MockBluetoothAdapter>>
-LayoutTestBluetoothAdapterProvider::GetUnconnectableDeviceAdapter() {
-  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetEmptyAdapter());
-
-  adapter->AddMockDevice(GetUnconnectableDevice(adapter.get()));
-
-  return adapter.Pass();
-}
-
-// static
 scoped_ptr<NiceMock<MockBluetoothDevice>>
 LayoutTestBluetoothAdapterProvider::GetEmptyDevice(
     MockBluetoothAdapter* adapter,
@@ -531,19 +519,6 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
             return make_scoped_ptr(new NiceMock<MockBluetoothGattConnection>(
                 device_ptr->GetAddress()));
           }));
-
-  return device.Pass();
-}
-
-// static
-scoped_ptr<NiceMock<MockBluetoothDevice>>
-LayoutTestBluetoothAdapterProvider::GetUnconnectableDevice(
-    MockBluetoothAdapter* adapter) {
-  scoped_ptr<NiceMock<MockBluetoothDevice>> device(GetEmptyDevice(adapter));
-
-  ON_CALL(*device, CreateGattConnection(_, _))
-      .WillByDefault(
-          RunCallback<1 /* error_callback */>(BluetoothDevice::ERROR_FAILED));
 
   return device.Pass();
 }
