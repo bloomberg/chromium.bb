@@ -29,8 +29,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
                                     base::TimeDelta::FromMilliseconds(6)));
 
   // Convert from and back.
-  interfaces::MediaDecoderBufferPtr ptr(
-      interfaces::MediaDecoderBuffer::From(buffer));
+  interfaces::DecoderBufferPtr ptr(interfaces::DecoderBuffer::From(buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -55,8 +54,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EOS) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CreateEOSBuffer());
 
   // Convert from and back.
-  interfaces::MediaDecoderBufferPtr ptr(
-      interfaces::MediaDecoderBuffer::From(buffer));
+  interfaces::DecoderBufferPtr ptr(interfaces::DecoderBuffer::From(buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -74,8 +72,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
   EXPECT_TRUE(buffer->is_key_frame());
 
   // Convert from and back.
-  interfaces::MediaDecoderBufferPtr ptr(
-      interfaces::MediaDecoderBuffer::From(buffer));
+  interfaces::DecoderBufferPtr ptr(interfaces::DecoderBuffer::From(buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -103,8 +100,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
       make_scoped_ptr(new DecryptConfig(kKeyId, kIv, subsamples)));
 
   // Convert from and back.
-  interfaces::MediaDecoderBufferPtr ptr(
-      interfaces::MediaDecoderBuffer::From(buffer));
+  interfaces::DecoderBufferPtr ptr(interfaces::DecoderBuffer::From(buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -116,7 +112,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   // Test empty IV. This is used for clear buffer in an encrypted stream.
   buffer->set_decrypt_config(make_scoped_ptr(
       new DecryptConfig(kKeyId, "", std::vector<SubsampleEntry>())));
-  result = interfaces::MediaDecoderBuffer::From(buffer)
+  result = interfaces::DecoderBuffer::From(buffer)
                .To<scoped_refptr<DecoderBuffer>>();
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
   EXPECT_TRUE(buffer->decrypt_config()->iv().empty());

@@ -21,7 +21,7 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/filters/default_media_permission.h"
-#include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/mojo_cdm_factory.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
@@ -33,7 +33,7 @@ namespace html_viewer {
 
 namespace {
 
-// Enable MediaRenderer in media pipeline instead of using the internal
+// Enable mojo media Renderer in media pipeline instead of using the internal
 // media::Renderer implementation.
 // TODO(xhwang): Move this to media_switches.h.
 const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";

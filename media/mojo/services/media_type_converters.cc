@@ -318,14 +318,14 @@ TypeConverter<scoped_ptr<media::DecryptConfig>,
 }
 
 // static
-media::interfaces::MediaDecoderBufferPtr
-TypeConverter<media::interfaces::MediaDecoderBufferPtr,
+media::interfaces::DecoderBufferPtr
+TypeConverter<media::interfaces::DecoderBufferPtr,
               scoped_refptr<media::DecoderBuffer>>::
     Convert(const scoped_refptr<media::DecoderBuffer>& input) {
   DCHECK(input);
 
-  media::interfaces::MediaDecoderBufferPtr mojo_buffer(
-      media::interfaces::MediaDecoderBuffer::New());
+  media::interfaces::DecoderBufferPtr mojo_buffer(
+      media::interfaces::DecoderBuffer::New());
   if (input->end_of_stream())
     return mojo_buffer.Pass();
 
@@ -361,8 +361,8 @@ TypeConverter<media::interfaces::MediaDecoderBufferPtr,
 // static
 scoped_refptr<media::DecoderBuffer>
 TypeConverter<scoped_refptr<media::DecoderBuffer>,
-              media::interfaces::MediaDecoderBufferPtr>::
-    Convert(const media::interfaces::MediaDecoderBufferPtr& input) {
+              media::interfaces::DecoderBufferPtr>::
+    Convert(const media::interfaces::DecoderBufferPtr& input) {
   if (!input->data_size)
     return media::DecoderBuffer::CreateEOSBuffer();
 

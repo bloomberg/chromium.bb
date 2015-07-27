@@ -26,11 +26,11 @@ scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     VideoRendererSink* /* video_renderer_sink */) {
   DCHECK(service_factory_);
 
-  interfaces::MediaRendererPtr mojo_media_renderer;
-  service_factory_->CreateRenderer(mojo::GetProxy(&mojo_media_renderer));
+  interfaces::RendererPtr mojo_renderer;
+  service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));
 
   return scoped_ptr<Renderer>(
-      new MojoRendererImpl(media_task_runner, mojo_media_renderer.Pass()));
+      new MojoRendererImpl(media_task_runner, mojo_renderer.Pass()));
 }
 
 }  // namespace media

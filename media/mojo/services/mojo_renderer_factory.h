@@ -7,7 +7,7 @@
 
 #include "media/base/media_export.h"
 #include "media/base/renderer_factory.h"
-#include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/interfaces/renderer.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace media {

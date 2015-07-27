@@ -5,14 +5,14 @@
 module media.interfaces;
 
 import "media/mojo/interfaces/content_decryption_module.mojom";
-import "media/mojo/interfaces/media_renderer.mojom";
+import "media/mojo/interfaces/renderer.mojom";
 
-// A factory interface to create media services. MediaRenderers can only access
+// A factory interface to create media services. Renderers can only access
 // ContentDecryptionModules created in the same factory.
 interface ServiceFactory {
   // Creates a ContentDecryptionModule service.
   CreateCdm(ContentDecryptionModule& cdm);
 
-  // Creates a MediaRenderer service.
-  CreateRenderer(MediaRenderer& renderer);
+  // Creates a Renderer service.
+  CreateRenderer(Renderer& renderer);
 };

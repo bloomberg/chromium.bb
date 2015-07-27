@@ -30,7 +30,7 @@ ServiceFactoryImpl::~ServiceFactoryImpl() {
 
 // interfaces::ServiceFactory implementation.
 void ServiceFactoryImpl::CreateRenderer(
-    mojo::InterfaceRequest<interfaces::MediaRenderer> request) {
+    mojo::InterfaceRequest<interfaces::Renderer> request) {
   // The created object is owned by the pipe.
   new MojoRendererService(cdm_service_context_.GetWeakPtr(),
                           GetRendererFactory(), media_log_, request.Pass());

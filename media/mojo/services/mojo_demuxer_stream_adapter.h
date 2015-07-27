@@ -50,7 +50,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   // The callback from |demuxer_stream_| that a read operation has completed.
   // |read_cb| is a callback from the client who invoked Read() on |this|.
   void OnBufferReady(interfaces::DemuxerStream::Status status,
-                     interfaces::MediaDecoderBufferPtr buffer,
+                     interfaces::DecoderBufferPtr buffer,
                      interfaces::AudioDecoderConfigPtr audio_config,
                      interfaces::VideoDecoderConfigPtr video_config);
 

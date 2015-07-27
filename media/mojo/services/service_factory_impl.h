@@ -29,7 +29,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
 
   // interfaces::ServiceFactory implementation.
   void CreateRenderer(
-      mojo::InterfaceRequest<interfaces::MediaRenderer> renderer) final;
+      mojo::InterfaceRequest<interfaces::Renderer> renderer) final;
   void CreateCdm(
       mojo::InterfaceRequest<interfaces::ContentDecryptionModule> cdm) final;
 

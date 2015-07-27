@@ -35,7 +35,7 @@ interface DemuxerStream {
                    AudioDecoderConfig? audio_config,
                    VideoDecoderConfig? video_config);
 
-  // Requests a MediaDecoderBuffer from this stream for decoding and rendering.
+  // Requests a DecoderBuffer from this stream for decoding and rendering.
   // See media::DemuxerStream::ReadCB for a general explanation of the fields.
   //
   // Notes on the callback:
@@ -50,7 +50,7 @@ interface DemuxerStream {
   // into the DataPipe given to Initialize() once DataPipe supports framed data
   // in a nicer fashion.
   Read() => (Status status,
-             MediaDecoderBuffer? buffer,
+             DecoderBuffer? buffer,
              AudioDecoderConfig? audio_config,
              VideoDecoderConfig? video_config);
 };

@@ -32,7 +32,7 @@ MojoRendererService::MojoRendererService(
     base::WeakPtr<CdmContextProvider> cdm_context_provider,
     RendererFactory* renderer_factory,
     const scoped_refptr<MediaLog>& media_log,
-    mojo::InterfaceRequest<interfaces::MediaRenderer> request)
+    mojo::InterfaceRequest<interfaces::Renderer> request)
     : binding_(this, request.Pass()),
       cdm_context_provider_(cdm_context_provider),
       state_(STATE_UNINITIALIZED),
@@ -70,7 +70,7 @@ MojoRendererService::~MojoRendererService() {
 }
 
 void MojoRendererService::Initialize(
-    interfaces::MediaRendererClientPtr client,
+    interfaces::RendererClientPtr client,
     interfaces::DemuxerStreamPtr audio,
     interfaces::DemuxerStreamPtr video,
     const mojo::Callback<void(bool)>& callback) {

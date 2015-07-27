@@ -15,7 +15,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
-#include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
@@ -33,22 +33,21 @@ class Renderer;
 class RendererFactory;
 class VideoRendererSink;
 
-// A interfaces::MediaRenderer implementation that uses media::AudioRenderer to
+// A interfaces::Renderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
 class MEDIA_EXPORT MojoRendererService
-    : NON_EXPORTED_BASE(interfaces::MediaRenderer) {
+    : NON_EXPORTED_BASE(interfaces::Renderer) {
  public:
   // |cdm_context_provider| can be used to find the CdmContext to support
   // encrypted media. If null, encrypted media is not supported.
-  MojoRendererService(
-      base::WeakPtr<CdmContextProvider> cdm_context_provider,
-      RendererFactory* renderer_factory,
-      const scoped_refptr<MediaLog>& media_log,
-      mojo::InterfaceRequest<interfaces::MediaRenderer> request);
+  MojoRendererService(base::WeakPtr<CdmContextProvider> cdm_context_provider,
+                      RendererFactory* renderer_factory,
+                      const scoped_refptr<MediaLog>& media_log,
+                      mojo::InterfaceRequest<interfaces::Renderer> request);
   ~MojoRendererService() final;
 
-  // interfaces::MediaRenderer implementation.
-  void Initialize(interfaces::MediaRendererClientPtr client,
+  // interfaces::Renderer implementation.
+  void Initialize(interfaces::RendererClientPtr client,
                   interfaces::DemuxerStreamPtr audio,
                   interfaces::DemuxerStreamPtr video,
                   const mojo::Callback<void(bool)>& callback) final;
@@ -101,7 +100,7 @@ class MEDIA_EXPORT MojoRendererService
   // Callback executed once SetCdm() completes.
   void OnCdmAttached(const mojo::Callback<void(bool)>& callback, bool success);
 
-  mojo::StrongBinding<interfaces::MediaRenderer> binding_;
+  mojo::StrongBinding<interfaces::Renderer> binding_;
 
   base::WeakPtr<CdmContextProvider> cdm_context_provider_;
 
@@ -113,12 +112,12 @@ class MEDIA_EXPORT MojoRendererService
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   scoped_ptr<VideoRendererSink> video_renderer_sink_;
 
-  scoped_ptr<Renderer> renderer_;
+  scoped_ptr<media::Renderer> renderer_;
 
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
   uint64_t last_media_time_usec_;
 
-  interfaces::MediaRendererClientPtr client_;
+  interfaces::RendererClientPtr client_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_;

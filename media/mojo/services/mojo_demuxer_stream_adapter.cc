@@ -85,7 +85,7 @@ void MojoDemuxerStreamAdapter::OnStreamReady(
 
 void MojoDemuxerStreamAdapter::OnBufferReady(
     interfaces::DemuxerStream::Status status,
-    interfaces::MediaDecoderBufferPtr buffer,
+    interfaces::DecoderBufferPtr buffer,
     interfaces::AudioDecoderConfigPtr audio_config,
     interfaces::VideoDecoderConfigPtr video_config) {
   DVLOG(3) << __FUNCTION__;

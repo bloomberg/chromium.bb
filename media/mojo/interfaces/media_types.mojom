@@ -197,7 +197,7 @@ struct DecryptConfig {
 };
 
 // This defines a mojo transport format for media::DecoderBuffer.
-struct MediaDecoderBuffer {
+struct DecoderBuffer {
   // See media/base/buffers.h for details.
   int64 timestamp_usec;
   int64 duration_usec;

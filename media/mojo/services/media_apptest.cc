@@ -12,7 +12,7 @@
 #include "media/base/test_helpers.h"
 #include "media/cdm/key_system_names.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
-#include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
@@ -32,25 +32,25 @@ namespace {
 const char kInvalidKeySystem[] = "invalid.key.system";
 const char kSecurityOrigin[] = "http://foo.com";
 
-class MockMediaRendererClient : public interfaces::MediaRendererClient {
+class MockRendererClient : public interfaces::RendererClient {
  public:
-  MockMediaRendererClient(){};
-  ~MockMediaRendererClient() override{};
+  MockRendererClient(){};
+  ~MockRendererClient() override{};
 
-  // interfaces::MediaRendererClient implementation.
+  // interfaces::RendererClient implementation.
   MOCK_METHOD2(OnTimeUpdate, void(int64_t time_usec, int64_t max_time_usec));
   MOCK_METHOD1(OnBufferingStateChange, void(interfaces::BufferingState state));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockMediaRendererClient);
+  DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
 };
 
 class MediaAppTest : public mojo::test::ApplicationTestBase {
  public:
   MediaAppTest()
-      : media_renderer_client_binding_(&media_renderer_client_),
+      : renderer_client_binding_(&renderer_client_),
         video_demuxer_stream_(DemuxerStream::VIDEO) {}
   ~MediaAppTest() override {}
 
@@ -64,7 +64,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 
     connection->ConnectToService(&service_factory_);
     service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
-    service_factory_->CreateRenderer(mojo::GetProxy(&media_renderer_));
+    service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
 
     run_loop_.reset(new base::RunLoop());
   }
@@ -94,15 +94,15 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
     interfaces::DemuxerStreamPtr video_stream;
     new MojoDemuxerStreamImpl(&video_demuxer_stream_, GetProxy(&video_stream));
 
-    interfaces::MediaRendererClientPtr client_ptr;
-    media_renderer_client_binding_.Bind(GetProxy(&client_ptr));
+    interfaces::RendererClientPtr client_ptr;
+    renderer_client_binding_.Bind(GetProxy(&client_ptr));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
-    media_renderer_->Initialize(client_ptr.Pass(), nullptr, video_stream.Pass(),
-                                base::Bind(&MediaAppTest::OnRendererInitialized,
-                                           base::Unretained(this)));
+    renderer_->Initialize(client_ptr.Pass(), nullptr, video_stream.Pass(),
+                          base::Bind(&MediaAppTest::OnRendererInitialized,
+                                     base::Unretained(this)));
   }
 
  protected:
@@ -110,10 +110,10 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 
   interfaces::ServiceFactoryPtr service_factory_;
   interfaces::ContentDecryptionModulePtr cdm_;
-  interfaces::MediaRendererPtr media_renderer_;
+  interfaces::RendererPtr renderer_;
 
-  StrictMock<MockMediaRendererClient> media_renderer_client_;
-  mojo::Binding<interfaces::MediaRendererClient> media_renderer_client_binding_;
+  StrictMock<MockRendererClient> renderer_client_;
+  mojo::Binding<interfaces::RendererClient> renderer_client_binding_;
 
   StrictMock<MockDemuxerStream> video_demuxer_stream_;
 

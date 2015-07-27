@@ -101,7 +101,7 @@ source_set("cdm_service") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-# MediaRenderer service; without a specific config.
+# Renderer service; without a specific config.
 source_set("renderer_service_generic") {
   sources = [
     "demuxer_stream_provider_shim.cc",
@@ -124,7 +124,7 @@ source_set("renderer_service_generic") {
   ]
 }
 
-# MediaRenderer service with a default config.
+# Renderer service with a default config.
 source_set("renderer_service") {
   sources = [
     "default_mojo_media_client.cc",

@@ -7,15 +7,15 @@ module media.interfaces;
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 
-interface MediaRenderer {
+interface Renderer {
   // Initializes the Renderer with one or both of an audio and video stream,
   // executing the callback with whether the initialization succeeded.
-  Initialize(MediaRendererClient client,
+  Initialize(RendererClient client,
              DemuxerStream? audio,
              DemuxerStream? video) => (bool success);
 
   // Discards any buffered data, executing callback when completed.
-  // NOTE: If an error occurs, MediaRendererClient::OnError() can be called
+  // NOTE: If an error occurs, RendererClient::OnError() can be called
   // before the callback is executed.
   Flush() => ();
 
@@ -33,7 +33,7 @@ interface MediaRenderer {
   SetCdm(int32 cdm_id) => (bool success);
 };
 
-interface MediaRendererClient {
+interface RendererClient {
   // Called to report media time advancement by |time_usec|.
   // |time_usec| and |max_time_usec| can be used to interpolate time between
   // calls to OnTimeUpdate().

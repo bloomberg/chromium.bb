@@ -9,8 +9,8 @@ mojom("interfaces") {
     "content_decryption_module.mojom",
     "decryptor.mojom",
     "demuxer_stream.mojom",
-    "media_renderer.mojom",
     "media_types.mojom",
+    "renderer.mojom",
     "service_factory.mojom",
   ]
 

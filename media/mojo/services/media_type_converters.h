@@ -52,16 +52,16 @@ struct TypeConverter<scoped_ptr<media::DecryptConfig>,
 };
 
 template <>
-struct TypeConverter<media::interfaces::MediaDecoderBufferPtr,
+struct TypeConverter<media::interfaces::DecoderBufferPtr,
                      scoped_refptr<media::DecoderBuffer>> {
-  static media::interfaces::MediaDecoderBufferPtr Convert(
+  static media::interfaces::DecoderBufferPtr Convert(
       const scoped_refptr<media::DecoderBuffer>& input);
 };
 template <>
 struct TypeConverter<scoped_refptr<media::DecoderBuffer>,
-                     media::interfaces::MediaDecoderBufferPtr> {
+                     media::interfaces::DecoderBufferPtr> {
   static scoped_refptr<media::DecoderBuffer> Convert(
-      const media::interfaces::MediaDecoderBufferPtr& input);
+      const media::interfaces::DecoderBufferPtr& input);
 };
 
 template <>

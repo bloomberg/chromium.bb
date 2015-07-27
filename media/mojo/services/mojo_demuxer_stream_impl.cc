@@ -92,14 +92,14 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     }
 
     callback.Run(interfaces::DemuxerStream::STATUS_CONFIG_CHANGED,
-                 interfaces::MediaDecoderBufferPtr(), audio_config.Pass(),
+                 interfaces::DecoderBufferPtr(), audio_config.Pass(),
                  video_config.Pass());
     return;
   }
 
   if (status == media::DemuxerStream::kAborted) {
     callback.Run(interfaces::DemuxerStream::STATUS_ABORTED,
-                 interfaces::MediaDecoderBufferPtr(), audio_config.Pass(),
+                 interfaces::DecoderBufferPtr(), audio_config.Pass(),
                  video_config.Pass());
     return;
   }
@@ -119,8 +119,8 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   // the producer handle and then read more to keep the pipe full.  Waiting for
   // space can be accomplished using an AsyncWaiter.
   callback.Run(static_cast<interfaces::DemuxerStream::Status>(status),
-               interfaces::MediaDecoderBuffer::From(buffer),
-               audio_config.Pass(), video_config.Pass());
+               interfaces::DecoderBuffer::From(buffer), audio_config.Pass(),
+               video_config.Pass());
 }
 
 }  // namespace media
