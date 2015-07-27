@@ -59,6 +59,10 @@ class DCSocketTransport : public port::ITransport {
   }
 
   virtual void Disconnect() {}
+
+  virtual bool AcceptConnection() {
+    return true;
+  }
 };
 
 

@@ -15,6 +15,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_sockets.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/debug_stub/transport.h"
 #include "native_client/src/trusted/debug_stub/util.h"
@@ -35,24 +36,19 @@ class Transport : public ITransport {
     : buf_(new char[kBufSize]),
       pos_(0),
       size_(0) {
-    handle_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-#if NACL_WINDOWS
-    CreateSocketEvent();
-#endif
+    handle_bind_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    handle_accept_ = NACL_INVALID_SOCKET;
   }
 
   explicit Transport(NaClSocketHandle s)
     : buf_(new char[kBufSize]),
       pos_(0),
       size_(0),
-      handle_(s) {
-#if NACL_WINDOWS
-    CreateSocketEvent();
-#endif
-  }
+      handle_bind_(s),
+      handle_accept_(NACL_INVALID_SOCKET) { }
 
   ~Transport() {
-    if (handle_ != NACL_INVALID_SOCKET) NaClCloseSocket(handle_);
+    if (handle_accept_ != NACL_INVALID_SOCKET) NaClCloseSocket(handle_accept_);
 #if NACL_WINDOWS
     if (!WSACloseEvent(socket_event_)) {
       NaClLog(LOG_FATAL,
@@ -73,7 +69,7 @@ class Transport : public ITransport {
     // to non-blocking mode.
     // http://msdn.microsoft.com/en-us/library/windows/desktop/ms738547(v=vs.85).aspx
     if (WSAEventSelect(
-          handle_, socket_event_, FD_CLOSE | FD_READ) == SOCKET_ERROR) {
+          handle_accept_, socket_event_, FD_CLOSE | FD_READ) == SOCKET_ERROR) {
       NaClLog(LOG_FATAL,
               "Transport::CreateSocketEvent: Failed to bind event to socket\n");
     }
@@ -94,7 +90,7 @@ class Transport : public ITransport {
     fd_set fds;
 
     FD_ZERO(&fds);
-    FD_SET(handle_, &fds);
+    FD_SET(handle_accept_, &fds);
 
     // We want a "non-blocking" check
     struct timeval timeout;
@@ -102,7 +98,8 @@ class Transport : public ITransport {
     timeout.tv_usec = 0;
 
     // Check if this file handle can select on read
-    int cnt = select(static_cast<int>(handle_) + 1, &fds, 0, 0, &timeout);
+    int cnt = select(static_cast<int>(handle_accept_) + 1,
+                                      &fds, 0, 0, &timeout);
 
     // If we are ready, or if there is an error.  We return true
     // on error, to let the next IO request fail.
@@ -123,7 +120,38 @@ class Transport : public ITransport {
   virtual void Disconnect() {
     // Shutdown the conneciton in both diections.  This should
     // always succeed, and nothing we can do if this fails.
-    (void) ::shutdown(handle_, SD_BOTH);
+    (void) ::shutdown(handle_accept_, SD_BOTH);
+
+    if (handle_accept_ != NACL_INVALID_SOCKET) NaClCloseSocket(handle_accept_);
+#if NACL_WINDOWS
+    if (!WSACloseEvent(socket_event_)) {
+      NaClLog(LOG_FATAL,
+              "Transport::~Transport: Failed to close socket event\n");
+    }
+    socket_event_ = WSA_INVALID_EVENT;
+#endif
+    handle_accept_ = NACL_INVALID_SOCKET;
+  }
+
+  virtual bool AcceptConnection() {
+    CHECK(handle_accept_ == NACL_INVALID_SOCKET);
+    handle_accept_ = ::accept(handle_bind_, NULL, 0);
+    if (handle_accept_ != NACL_INVALID_SOCKET) {
+      // Do not delay sending small packets.  This significantly speeds up
+      // remote debugging.  Debug stub uses buffering to send outgoing packets
+      // so they are not split into more TCP packets than necessary.
+      int nodelay = 1;
+      if (setsockopt(handle_accept_, IPPROTO_TCP, TCP_NODELAY,
+                     reinterpret_cast<char *>(&nodelay),
+                     sizeof(nodelay))) {
+        NaClLog(LOG_WARNING, "Failed to set TCP_NODELAY option.\n");
+      }
+      #if NACL_WINDOWS
+        CreateSocketEvent();
+      #endif
+      return true;
+    }
+    return false;
   }
 
  protected:
@@ -137,7 +165,8 @@ class Transport : public ITransport {
   nacl::scoped_array<char> buf_;
   int32_t pos_;
   int32_t size_;
-  NaClSocketHandle handle_;
+  NaClSocketHandle handle_bind_;
+  NaClSocketHandle handle_accept_;
 #if NACL_WINDOWS
   HANDLE socket_event_;
 #endif
@@ -153,7 +182,9 @@ void Transport::CopyFromBuffer(char **dst, int32_t *len) {
 
 bool Transport::ReadSomeData() {
   while (true) {
-    int result = ::recv(handle_, buf_.get() + size_, kBufSize - size_, 0);
+    int result = ::recv(handle_accept_,
+                        buf_.get() + size_,
+                        kBufSize - size_, 0);
     if (result > 0) {
       size_ += result;
       return true;
@@ -201,7 +232,7 @@ bool Transport::Read(void *ptr, int32_t len) {
 bool Transport::Write(const void *ptr, int32_t len) {
   const char *src = static_cast<const char *>(ptr);
   while (len > 0) {
-    int result = ::send(handle_, src, len, 0);
+    int result = ::send(handle_accept_, src, len, 0);
     if (result > 0) {
       src += result;
       len -= result;
@@ -253,8 +284,8 @@ void Transport::WaitForDebugStubEvent(struct NaClApp *nap,
   FD_SET(nap->faulted_thread_fd_read, &fds);
   int max_fd = nap->faulted_thread_fd_read;
   if (size_ < kBufSize) {
-    FD_SET(handle_, &fds);
-    max_fd = std::max(max_fd, handle_);
+    FD_SET(handle_accept_, &fds);
+    max_fd = std::max(max_fd, handle_accept_);
   }
 
   int ret;
@@ -283,7 +314,7 @@ void Transport::WaitForDebugStubEvent(struct NaClApp *nap,
                 "debug stub event pipe fd\n");
       }
     }
-    if (FD_ISSET(handle_, &fds))
+    if (FD_ISSET(handle_accept_, &fds))
       ReadSomeData();
   }
 #endif
@@ -425,21 +456,8 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
   return new SocketBinding(socket_handle);
 }
 
-ITransport *SocketBinding::AcceptConnection() {
-  NaClSocketHandle socket = ::accept(socket_handle_, NULL, 0);
-  if (socket != NACL_INVALID_SOCKET) {
-    // Do not delay sending small packets.  This significantly speeds up
-    // remote debugging.  Debug stub uses buffering to send outgoing packets so
-    // they are not split into more TCP packets than necessary.
-    int nodelay = 1;
-    if (setsockopt(socket, IPPROTO_TCP, TCP_NODELAY,
-                   reinterpret_cast<char *>(&nodelay),
-                   sizeof(nodelay))) {
-      NaClLog(LOG_WARNING, "Failed to set TCP_NODELAY option.\n");
-    }
-    return new Transport(socket);
-  }
-  return NULL;
+ITransport *SocketBinding::CreateTransport() {
+  return new Transport(socket_handle_);
 }
 
 uint16_t SocketBinding::GetBoundPort() {

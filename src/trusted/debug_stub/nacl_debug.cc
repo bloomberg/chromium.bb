@@ -73,11 +73,11 @@ void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket) {
 
 void WINAPI NaClStubThread(void *thread_arg) {
   UNREFERENCED_PARAMETER(thread_arg);
+  nacl::scoped_ptr<ITransport> trans(g_socket_binding->CreateTransport());
 
   while (1) {
     // Wait for a connection.
-    nacl::scoped_ptr<ITransport> trans(g_socket_binding->AcceptConnection());
-    if (NULL == trans.get()) continue;
+    if (!trans.get()->AcceptConnection()) continue;
 
     // Create a new session for this connection
     Session ses(trans.get());

@@ -18,6 +18,8 @@ struct NaClApp;
 
 namespace port {
 
+class SocketBinding;
+
 class ITransport {
  public:
   virtual ~ITransport() {}  // Allow to delete using base pointer
@@ -37,6 +39,9 @@ class ITransport {
 
   // Disconnect the transport, R/W and Select will now throw an exception
   virtual void Disconnect() = 0;
+
+  // Accept a connection on an already-bound TCP port.
+  virtual bool AcceptConnection() = 0;
 };
 
 class SocketBinding {
@@ -46,8 +51,8 @@ class SocketBinding {
   // Bind to the specified TCP port.
   static SocketBinding *Bind(const char *addr);
 
-  // Accept a connection on an already-bound TCP port.
-  ITransport *AcceptConnection();
+  // Create a transport object from this socket binding
+  ITransport *CreateTransport();
 
   // Get port the socket is bound to.
   uint16_t GetBoundPort();
