@@ -11702,6 +11702,10 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
   }
 
   if (!query_manager_->BeginQuery(query)) {
+#if defined(OS_MACOSX)
+    // TODO(dyen): Remove once we know what is failing.
+    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Out of bounds";
+#endif
     return error::kOutOfBounds;
   }
 
@@ -11717,12 +11721,20 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(uint32 immediate_data_size,
 
   QueryManager::Query* query = query_manager_->GetActiveQuery(target);
   if (!query) {
+#if defined(OS_MACOSX)
+    // TODO(dyen): Remove once we know what is failing.
+    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Target not active";
+#endif
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glEndQueryEXT", "No active query");
     return error::kNoError;
   }
 
   if (!query_manager_->EndQuery(query, submit_count)) {
+#if defined(OS_MACOSX)
+    // TODO(dyen): Remove once we know what is failing.
+    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Out of bounds";
+#endif
     return error::kOutOfBounds;
   }
 

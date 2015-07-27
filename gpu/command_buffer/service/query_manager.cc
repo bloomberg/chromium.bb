@@ -969,7 +969,12 @@ bool QueryManager::ProcessPendingQueries(bool did_finish) {
     pending_queries_.pop_front();
   }
   // If glFinish() has been called, all of our queries should be completed.
+#if defined(OS_MACOSX)
+  // TODO(dyen): Remove once we know what is failing.
+  CHECK(!did_finish || pending_queries_.empty());
+#else
   DCHECK(!did_finish || pending_queries_.empty());
+#endif
 
   return true;
 }
