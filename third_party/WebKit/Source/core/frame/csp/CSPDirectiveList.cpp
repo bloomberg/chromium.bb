@@ -7,6 +7,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/SpaceSplitString.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
@@ -553,7 +554,8 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
     }
     m_hasSandboxPolicy = true;
     String invalidTokens;
-    m_policy->enforceSandboxFlags(parseSandboxPolicy(sandboxPolicy, invalidTokens));
+    SpaceSplitString policyTokens(AtomicString(sandboxPolicy), SpaceSplitString::ShouldNotFoldCase);
+    m_policy->enforceSandboxFlags(parseSandboxPolicy(policyTokens, invalidTokens));
     if (!invalidTokens.isNull())
         m_policy->reportInvalidSandboxFlags(invalidTokens);
 }

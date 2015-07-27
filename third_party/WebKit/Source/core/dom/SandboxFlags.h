@@ -53,7 +53,6 @@ enum SandboxFlag {
 
 typedef int SandboxFlags;
 
-SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage);
 SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidTokensErrorMessage);
 
 }

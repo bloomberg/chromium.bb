@@ -33,12 +33,6 @@
 
 namespace blink {
 
-SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage)
-{
-    SpaceSplitString policyTokens(AtomicString(policy), SpaceSplitString::ShouldNotFoldCase);
-    return parseSandboxPolicy(policyTokens, invalidTokensErrorMessage);
-}
-
 SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidTokensErrorMessage)
 {
     // http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
