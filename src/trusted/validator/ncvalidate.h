@@ -133,10 +133,11 @@ typedef int (*NaClCPUFeaturesFixFunc)(NaClCPUFeatures *f);
  * Parameters are:
  *    guest_addr - The virtual pc to assume is the beginning address of the
  *           code segment. Typically, this is the corresponding address that
- *           will be used by objdump.
+ *           will be used by objdump. Must align to a bundle boundary.
  *    addr - The address of the code to check.
  *    data - The contents of the code segment assumed to be valid.
- *    size - The size of the code segment.
+ *    size - The size of the code segment. Must be a multiple of
+             the bundle size.
  *    cpu_features - The CPU features to support while validating.
  */
 typedef NaClValidationStatus (*NaClIsOnInstBoundaryFunc)(

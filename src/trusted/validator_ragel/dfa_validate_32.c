@@ -328,13 +328,14 @@ static NaClValidationStatus IsOnInstBoundary_x86_32(
   const uint8_t *local_bundle_addr = data + (guest_bundle_addr - guest_addr);
   int rc;
 
+  /* Check code range doesn't overflow. */
+  CHECK(guest_addr + size > guest_addr);
+  CHECK(size % kBundleSize == 0 && size != 0);
+  CHECK((uint32_t) (guest_addr & ~kBundleMask) == guest_addr);
+
   /* Check addr is within code boundary. */
   if (addr < guest_addr || addr >= guest_addr + size)
     return NaClValidationFailed;
-
-  CHECK(guest_bundle_addr >= guest_addr);
-  CHECK((uint32_t) (guest_addr & ~kBundleMask) == guest_addr);
-  CHECK(size >= kBundleSize);
 
   callback_data.found_addr = FALSE;
   callback_data.addr = data + (addr - guest_addr);

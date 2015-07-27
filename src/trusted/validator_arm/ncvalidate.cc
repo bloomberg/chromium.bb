@@ -222,20 +222,18 @@ static NaClValidationStatus IsOnInstBoundaryArm(
     const uint8_t *data,
     size_t size,
     const NaClCPUFeatures *f) {
-  /* Check code range doesn't overflow. */
-  CHECK(guest_addr + size > guest_addr);
-
   NaClCPUFeaturesArm *cpu_features = (NaClCPUFeaturesArm *) f;
   uint32_t guest_bundle_addr = (addr & ~(kBytesPerBundle - 1));
   const uint8_t *local_bundle_addr = data + (guest_bundle_addr - guest_addr);
 
+  /* Check code range doesn't overflow. */
+  CHECK(guest_addr + size > guest_addr);
+  CHECK(size % kBytesPerBundle == 0 && size != 0);
+  CHECK((uint32_t) (guest_addr & ~(kBytesPerBundle - 1)) == guest_addr);
+
   /* Check addr is within code boundary. */
   if (addr < guest_addr || addr >= guest_addr + size)
     return NaClValidationFailed;
-
-  CHECK(guest_bundle_addr >= guest_addr);
-  CHECK((uint32_t) (guest_addr & ~(kBytesPerBundle - 1)) == guest_addr);
-  CHECK(size >= kBytesPerBundle);
 
   SfiValidator validator(
       kBytesPerBundle,
