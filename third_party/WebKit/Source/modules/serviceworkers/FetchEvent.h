@@ -32,7 +32,7 @@ public:
     Request* request() const;
     bool isReload() const;
 
-    void respondWith(ScriptState*, const ScriptValue&, ExceptionState&);
+    void respondWith(ScriptState*, ScriptPromise&, ExceptionState&);
 
     const AtomicString& interfaceName() const override;
 
