@@ -44,6 +44,7 @@ _DEVICE_PROFILES = [
     'witness_file': '/sys/kernel/debug/bq24192/INPUT_SRC_CONT',
     'enable_command': (
         'echo 0x4A > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'chmod 644 /sys/class/power_supply/usb/online && '
         'echo 1 > /sys/class/power_supply/usb/online && '
         'dumpsys battery reset'),
     'disable_command': (
