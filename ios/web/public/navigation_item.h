@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "ios/web/public/web_state/page_display_state.h"
 #include "ui/base/page_transition_types.h"
@@ -27,10 +28,8 @@ struct SSLStatus;
 // A NavigationItem is a data structure that captures all the information
 // required to recreate a browsing state. It represents one point in the
 // chain of navigation managed by a NavigationManager.
-class NavigationItem {
+class NavigationItem : public base::SupportsUserData {
  public:
-  virtual ~NavigationItem() {}
-
   // Creates a new NavigationItem.
   static scoped_ptr<NavigationItem> Create();
 
