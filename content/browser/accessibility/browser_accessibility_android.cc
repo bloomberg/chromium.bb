@@ -375,12 +375,16 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   base::string16 text;
   if (!description.empty())
     text = description;
-  else if (title_elem_id && !name.empty())
+  else if (!name.empty()) {
     text = name;
-  else if (!help.empty())
+    if (!help.empty()) {
+      // TODO(vkuzkokov): This is not the best way to pass 2 texts but this is
+      // how Blink seems to be doing it.
+      text += base::ASCIIToUTF16(" ");
+      text += help;
+    }
+  } else if (!help.empty())
     text = help;
-  else if (!name.empty())
-    text = name;
   else if (!placeholder.empty())
     text = placeholder;
   else if (!value.empty())

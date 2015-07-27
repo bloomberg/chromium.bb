@@ -1,8 +1,8 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
 ++++android.widget.Button clickable focusable name='InnerText0'
-++++android.widget.Button clickable focusable name='Title1'
+++++android.widget.Button clickable focusable name='InnerText1 Title1'
 ++++android.widget.Button clickable focusable name='AriaLabel2'
 ++++android.widget.Button clickable focusable name='LabelledBy3'
 ++++android.widget.Button clickable focusable name='LabelledBy4'
-++++android.widget.Button clickable focusable name='DescribedBy5'
+++++android.widget.Button clickable focusable name='InnerText5 DescribedBy5'
