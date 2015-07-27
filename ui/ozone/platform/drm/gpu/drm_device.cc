@@ -468,7 +468,7 @@ ScopedDrmPropertyBlobPtr DrmDevice::GetPropertyBlob(drmModeConnector* connector,
       continue;
 
     if (strcmp(property->name, name) == 0 &&
-        property->flags & DRM_MODE_PROP_BLOB)
+        (property->flags & DRM_MODE_PROP_BLOB))
       return ScopedDrmPropertyBlobPtr(drmModeGetPropertyBlob(
           file_.GetPlatformFile(), connector->prop_values[i]));
   }

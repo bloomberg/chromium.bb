@@ -55,6 +55,7 @@ MockDrmDevice::MockDrmDevice()
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
       create_dumb_buffer_expectation_(true),
+      use_sync_flips_(false),
       current_framebuffer_(0) {
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
