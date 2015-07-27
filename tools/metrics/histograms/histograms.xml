@@ -49770,6 +49770,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.DecodeTimeInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average decode time per frame for a received video stream. Recorded when
+    a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.DelayedFramesToRenderer" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -49799,6 +49807,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Percentage of duplicated packets in the jitter buffer for a received video
     stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.EncodeTimeInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average encode time per frame for a sent video stream. Recorded when a
+    stream is removed.
   </summary>
 </histogram>
 
