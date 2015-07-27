@@ -6,6 +6,8 @@
  * important as there are some rules with equal specificity that rely on order
  * as a tiebreaker. These are marked with OVERRIDE. */
 
+@import url(action_link.css);
+
 /* Default state **************************************************************/
 
 :-webkit-any(button,
@@ -241,8 +243,6 @@ input:disabled:-webkit-any([type='password'],
   border-color: rgb(77, 144, 254);
   outline: none;
 }
-
-@import url(chrome://resources/css/action_link.css);
 
 /* Checkbox/radio helpers ******************************************************
  *
