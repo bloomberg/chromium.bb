@@ -68,8 +68,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void Connect(
       PrefService* local_state,
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context,
-      UserAffiliation user_affiliation);
+      scoped_refptr<net::URLRequestContextGetter> system_request_context);
 
   // This class is one of the policy providers, and must be ready for the
   // creation of the Profile's PrefService; all the other

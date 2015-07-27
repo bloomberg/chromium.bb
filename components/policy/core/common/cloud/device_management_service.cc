@@ -99,17 +99,6 @@ bool FailedWithProxy(const net::URLFetcher* fetcher) {
   return false;
 }
 
-const char* UserAffiliationToString(UserAffiliation affiliation) {
-  switch (affiliation) {
-    case USER_AFFILIATION_MANAGED:
-      return dm_protocol::kValueUserAffiliationManaged;
-    case USER_AFFILIATION_NONE:
-      return dm_protocol::kValueUserAffiliationNone;
-  }
-  NOTREACHED() << "Invalid user affiliation " << affiliation;
-  return dm_protocol::kValueUserAffiliationNone;
-}
-
 const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
   switch (type) {
     case DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT:
@@ -369,12 +358,6 @@ void DeviceManagementRequestJob::SetGaiaToken(const std::string& gaia_token) {
 
 void DeviceManagementRequestJob::SetOAuthToken(const std::string& oauth_token) {
   AddParameter(dm_protocol::kParamOAuthToken, oauth_token);
-}
-
-void DeviceManagementRequestJob::SetUserAffiliation(
-    UserAffiliation user_affiliation) {
-  AddParameter(dm_protocol::kParamUserAffiliation,
-               UserAffiliationToString(user_affiliation));
 }
 
 void DeviceManagementRequestJob::SetDMToken(const std::string& dm_token) {

@@ -34,7 +34,6 @@ class MockRequestJobBase : public DeviceManagementRequestJob {
                        gaia_token_,
                        ExtractParameter(dm_protocol::kParamOAuthToken),
                        dm_token_,
-                       ExtractParameter(dm_protocol::kParamUserAffiliation),
                        ExtractParameter(dm_protocol::kParamDeviceID),
                        request_);
   }

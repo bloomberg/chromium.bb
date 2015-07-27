@@ -50,13 +50,11 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_id,
     const std::string& machine_model,
     const std::string& verification_key_hash,
-    UserAffiliation user_affiliation,
     DeviceManagementService* service,
     scoped_refptr<net::URLRequestContextGetter> request_context)
     : machine_id_(machine_id),
       machine_model_(machine_model),
       verification_key_hash_(verification_key_hash),
-      user_affiliation_(user_affiliation),
       device_mode_(DEVICE_MODE_NOT_SET),
       submit_machine_id_(false),
       public_key_version_(-1),
@@ -151,7 +149,6 @@ void CloudPolicyClient::FetchPolicy() {
                           GetRequestContext()));
   policy_fetch_request_job_->SetDMToken(dm_token_);
   policy_fetch_request_job_->SetClientID(client_id_);
-  policy_fetch_request_job_->SetUserAffiliation(user_affiliation_);
 
   em::DeviceManagementRequest* request =
       policy_fetch_request_job_->GetRequest();

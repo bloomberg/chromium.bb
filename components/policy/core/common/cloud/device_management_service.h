@@ -63,7 +63,6 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   // Start()ing the job, but never afterwards.
   void SetGaiaToken(const std::string& gaia_token);
   void SetOAuthToken(const std::string& oauth_token);
-  void SetUserAffiliation(UserAffiliation user_affiliation);
   void SetDMToken(const std::string& dm_token);
   void SetClientID(const std::string& client_id);
   enterprise_management::DeviceManagementRequest* GetRequest();

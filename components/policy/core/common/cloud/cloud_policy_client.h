@@ -85,7 +85,6 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& machine_id,
       const std::string& machine_model,
       const std::string& verification_key_hash,
-      UserAffiliation user_affiliation,
       DeviceManagementService* service,
       scoped_refptr<net::URLRequestContextGetter> request_context);
   virtual ~CloudPolicyClient();
@@ -339,7 +338,6 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string machine_id_;
   const std::string machine_model_;
   const std::string verification_key_hash_;
-  const UserAffiliation user_affiliation_;
   PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
 

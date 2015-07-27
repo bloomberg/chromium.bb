@@ -80,7 +80,6 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
       : CloudPolicyClient(std::string(), /* machine_id */
                           std::string(), /* machine_model */
                           std::string(), /* verification_key_hash */
-                          USER_AFFILIATION_NONE,
                           nullptr,
                           nullptr),
         server_(server) {

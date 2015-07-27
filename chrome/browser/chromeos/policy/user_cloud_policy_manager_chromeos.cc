@@ -107,8 +107,7 @@ UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
 void UserCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context,
-    UserAffiliation user_affiliation) {
+    scoped_refptr<net::URLRequestContextGetter> system_request_context) {
   DCHECK(device_management_service);
   DCHECK(local_state);
   local_state_ = local_state;
@@ -123,10 +122,9 @@ void UserCloudPolicyManagerChromeOS::Connect(
     request_context = new SystemPolicyRequestContext(
         system_request_context, GetUserAgent());
   }
-  scoped_ptr<CloudPolicyClient> cloud_policy_client(
-      new CloudPolicyClient(std::string(), std::string(),
-                            kPolicyVerificationKeyHash, user_affiliation,
-                            device_management_service, request_context));
+  scoped_ptr<CloudPolicyClient> cloud_policy_client(new CloudPolicyClient(
+      std::string(), std::string(), kPolicyVerificationKeyHash,
+      device_management_service, request_context));
   CreateComponentCloudPolicyService(component_policy_cache_path_,
                                     request_context, cloud_policy_client.get());
   core()->Connect(cloud_policy_client.Pass());

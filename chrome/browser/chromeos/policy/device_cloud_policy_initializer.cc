@@ -232,7 +232,6 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
       new CloudPolicyClient(DeviceCloudPolicyManagerChromeOS::GetMachineID(),
                             DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
                             kPolicyVerificationKeyHash,
-                            USER_AFFILIATION_NONE,
                             device_management_service,
                             request_context));
 }

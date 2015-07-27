@@ -217,10 +217,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 
   manager->Init(
       SchemaRegistryServiceFactory::GetForContext(profile)->registry());
-  manager->Connect(g_browser_process->local_state(),
-                   device_management_service,
-                   g_browser_process->system_request_context(),
-                   affiliation);
+  manager->Connect(g_browser_process->local_state(), device_management_service,
+                   g_browser_process->system_request_context());
 
   DCHECK(managers_.find(profile) == managers_.end());
   managers_[profile] = manager.get();

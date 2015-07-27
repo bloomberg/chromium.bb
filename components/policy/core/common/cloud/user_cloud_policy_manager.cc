@@ -73,7 +73,6 @@ UserCloudPolicyManager::CreateCloudPolicyClient(
           std::string(),
           std::string(),
           kPolicyVerificationKeyHash,
-          USER_AFFILIATION_NONE,
           device_management_service,
           request_context)).Pass();
 }

@@ -26,7 +26,6 @@ POLICY_EXPORT extern const char kParamDeviceType[];
 POLICY_EXPORT extern const char kParamOAuthToken[];
 POLICY_EXPORT extern const char kParamPlatform[];
 POLICY_EXPORT extern const char kParamRequest[];
-POLICY_EXPORT extern const char kParamUserAffiliation[];
 
 // String extern constants for the device and app type we report to the server.
 POLICY_EXPORT extern const char kValueAppType[];
@@ -40,8 +39,6 @@ POLICY_EXPORT extern const char kValueRequestUploadCertificate[];
 POLICY_EXPORT extern const char kValueRequestDeviceStateRetrieval[];
 POLICY_EXPORT extern const char kValueRequestUploadStatus[];
 POLICY_EXPORT extern const char kValueRequestRemoteCommands[];
-POLICY_EXPORT extern const char kValueUserAffiliationManaged[];
-POLICY_EXPORT extern const char kValueUserAffiliationNone[];
 POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdatePermission[];
 POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdate[];
 
@@ -67,6 +64,8 @@ POLICY_EXPORT extern const char kChromePolicyHeader[];
 POLICY_EXPORT std::string GetPolicyVerificationKey();
 POLICY_EXPORT extern const char kPolicyVerificationKeyHash[];
 
+// TODO(peletskyi): Remove this enum after affiliation code is moved
+// to components/user_manager.
 // Describes the affiliation of a user w.r.t. the device owner.
 enum UserAffiliation {
   // User is on the same domain the device was registered with.

@@ -25,7 +25,6 @@ const char kParamDeviceType[] = "devicetype";
 const char kParamOAuthToken[] = "oauth_token";
 const char kParamPlatform[] = "platform";
 const char kParamRequest[] = "request";
-const char kParamUserAffiliation[] = "user_affiliation";
 
 // String constants for the device and app type we report to the server.
 const char kValueAppType[] = "Chrome";
@@ -39,8 +38,6 @@ const char kValueRequestUploadCertificate[] = "cert_upload";
 const char kValueRequestDeviceStateRetrieval[] = "device_state_retrieval";
 const char kValueRequestUploadStatus[] = "status_upload";
 const char kValueRequestRemoteCommands[] = "remote_commands";
-const char kValueUserAffiliationManaged[] = "managed";
-const char kValueUserAffiliationNone[] = "none";
 const char kValueRequestDeviceAttributeUpdatePermission[] =
     "device_attribute_update_permission";
 const char kValueRequestDeviceAttributeUpdate[] = "device_attribute_update";

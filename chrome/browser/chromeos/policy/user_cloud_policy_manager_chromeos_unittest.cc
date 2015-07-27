@@ -149,7 +149,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     ASSERT_TRUE(policy_data_.SerializeToString(
         policy_response->mutable_policy_data()));
 
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
         .Times(AnyNumber());
   }
 
@@ -181,8 +181,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         task_runner_));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
-    manager_->Connect(&prefs_, &device_management_service_, NULL,
-                      USER_AFFILIATION_NONE);
+    manager_->Connect(&prefs_, &device_management_service_, NULL);
     Mock::VerifyAndClearExpectations(store_);
     EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
     EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -280,7 +279,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_FALSE(manager_->core()->client()->is_registered());
 
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
         .Times(AnyNumber());
 
     return register_request;
@@ -300,7 +299,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_TRUE(manager_->core()->client()->is_registered());
 
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
         .Times(AnyNumber());
 
     // Send the initial policy back. This completes the initialization flow.

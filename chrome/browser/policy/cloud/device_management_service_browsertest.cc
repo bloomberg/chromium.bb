@@ -217,7 +217,6 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                           g_browser_process->system_request_context()));
   job->SetDMToken(token_);
-  job->SetUserAffiliation(USER_AFFILIATION_NONE);
   job->SetClientID("testid");
   em::DevicePolicyRequest* request =
       job->GetRequest()->mutable_policy_request();
