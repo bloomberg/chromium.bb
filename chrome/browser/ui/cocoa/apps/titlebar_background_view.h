@@ -18,9 +18,9 @@
 }
 
 // Adds a TitlebarBackgroundView to the [[window contentView] superView].
-+ (void)addToNSWindow:(NSWindow*)window
-          activeColor:(SkColor)activeColor
-        inactiveColor:(SkColor)inactiveColor;
++ (TitlebarBackgroundView*)addToNSWindow:(NSWindow*)window
+                             activeColor:(SkColor)activeColor
+                           inactiveColor:(SkColor)inactiveColor;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_APPS_TITLEBAR_BACKGROUND_VIEW_H_
