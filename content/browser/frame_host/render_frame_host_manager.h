@@ -18,7 +18,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
-#include "url/deprecated_serialized_origin.h"
+#include "url/origin.h"
 
 namespace content {
 class BrowserContext;
@@ -450,7 +450,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
   // Send updated origin to all frame proxies when the frame navigates to a new
   // origin.
-  void OnDidUpdateOrigin(const url::DeprecatedSerializedOrigin& origin);
+  void OnDidUpdateOrigin(const url::Origin& origin);
 
   void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);

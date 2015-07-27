@@ -194,9 +194,8 @@ void FrameTreeNode::SetCurrentURL(const GURL& url) {
   current_url_ = url;
 }
 
-void FrameTreeNode::SetCurrentOrigin(
-    const url::DeprecatedSerializedOrigin& origin) {
-  if (!origin.IsSameAs(replication_state_.origin))
+void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
+  if (!origin.IsSameOriginWith(replication_state_.origin))
     render_manager_.OnDidUpdateOrigin(origin);
   replication_state_.origin = origin;
 }

@@ -179,8 +179,7 @@ void RenderFrameProxy::DidCommitCompositorFrame() {
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
-  web_frame_->setReplicatedOrigin(blink::WebSecurityOrigin::createFromString(
-      blink::WebString::fromUTF8(state.origin.string())));
+  web_frame_->setReplicatedOrigin(state.origin);
   web_frame_->setReplicatedSandboxFlags(state.sandbox_flags);
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name));
 }
@@ -336,10 +335,8 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(name));
 }
 
-void RenderFrameProxy::OnDidUpdateOrigin(
-    const url::DeprecatedSerializedOrigin& origin) {
-  web_frame_->setReplicatedOrigin(blink::WebSecurityOrigin::createFromString(
-      blink::WebString::fromUTF8(origin.string())));
+void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {
+  web_frame_->setReplicatedOrigin(origin);
 }
 
 void RenderFrameProxy::frameDetached(DetachType type) {

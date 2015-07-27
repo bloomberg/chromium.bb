@@ -2320,7 +2320,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
   console_delegate->Wait();
 
   std::string frame_origin =
-      root->child_at(1)->current_replication_state().origin.string();
+      root->child_at(1)->current_replication_state().origin.Serialize();
   EXPECT_EQ(frame_origin + "/", frame_url.GetOrigin().spec());
   EXPECT_TRUE(
       base::MatchPattern(console_delegate->message(), "*" + frame_origin + "*"))

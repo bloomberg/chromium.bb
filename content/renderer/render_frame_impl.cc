@@ -147,6 +147,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/mojo/src/mojo/edk/js/core.h"
 #include "third_party/mojo/src/mojo/edk/js/support.h"
+#include "url/url_util.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/npapi/webplugin_impl.h"
@@ -3925,9 +3926,11 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // TODO(alexmos): Origins for URLs with non-standard schemes are excluded due
   // to https://crbug.com/439608 and will be replicated as unique origins.
   if (!is_swapped_out_) {
-    WebString serialized_origin(frame->document().securityOrigin().toString());
-    if (GURL(serialized_origin).IsStandard())
-      params.origin = url::DeprecatedSerializedOrigin(serialized_origin.utf8());
+    std::string scheme = frame->document().securityOrigin().protocol().utf8();
+    if (url::IsStandard(scheme.c_str(),
+                        url::Component(0, static_cast<int>(scheme.length())))) {
+      params.origin = frame->document().securityOrigin();
+    }
   }
 
   if (frame->document().baseURL() != params.url)

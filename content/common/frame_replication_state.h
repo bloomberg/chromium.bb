@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_FRAME_REPLICATION_STATE_H_
 
 #include "content/common/content_export.h"
-#include "url/deprecated_serialized_origin.h"
+#include "url/origin.h"
 
 namespace blink {
 enum class WebTreeScopeType;
@@ -24,9 +24,8 @@ struct CONTENT_EXPORT FrameReplicationState {
                         blink::WebSandboxFlags sandbox_flags);
   ~FrameReplicationState();
 
-  // Current serialized security origin of the frame.  Unique origins are
-  // represented as the string "null" per RFC 6454.  This field is updated
-  // whenever a frame navigation commits.
+  // Current origin of the frame. This field is updated whenever a frame
+  // navigation commits.
   //
   // TODO(alexmos): For now, |origin| updates are immediately sent to all frame
   // proxies when in --site-per-process mode. This isn't ideal, since Blink
@@ -35,7 +34,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // delay sending origin updates to proxies until they have a local descendant
   // (if ever). This would reduce leaking a user's browsing history into a
   // compromized renderer.
-  url::DeprecatedSerializedOrigin origin;
+  url::Origin origin;
 
   // Current sandbox flags of the frame.  |sandbox_flags| are initialized for
   // new child frames using the value of the <iframe> element's "sandbox"

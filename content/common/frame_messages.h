@@ -28,8 +28,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
-#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -215,7 +215,7 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
 
   // Origin of the frame.  This will be replicated to any associated
   // RenderFrameProxies.
-  IPC_STRUCT_MEMBER(url::DeprecatedSerializedOrigin, origin)
+  IPC_STRUCT_MEMBER(url::Origin, origin)
 
   // How navigation metrics starting on UI action for this load should be
   // reported.
@@ -600,8 +600,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
 
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.
-IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin,
-                    url::DeprecatedSerializedOrigin /* origin */)
+IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin, url::Origin /* origin */)
 
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.

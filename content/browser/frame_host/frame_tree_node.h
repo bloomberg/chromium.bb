@@ -15,8 +15,8 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
-#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -121,7 +121,7 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
   // Set the current origin and notify proxies about the update.
-  void SetCurrentOrigin(const url::DeprecatedSerializedOrigin& origin);
+  void SetCurrentOrigin(const url::Origin& origin);
 
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name);
@@ -139,7 +139,8 @@ class CONTENT_EXPORT FrameTreeNode {
   bool CommitPendingSandboxFlags();
 
   bool HasSameOrigin(const FrameTreeNode& node) const {
-    return replication_state_.origin.IsSameAs(node.replication_state_.origin);
+    return replication_state_.origin.IsSameOriginWith(
+        node.replication_state_.origin);
   }
 
   const FrameReplicationState& current_replication_state() const {
