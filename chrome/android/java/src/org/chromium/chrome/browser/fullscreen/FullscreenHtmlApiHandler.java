@@ -334,7 +334,7 @@ public class FullscreenHtmlApiHandler {
         contentView.setSystemUiVisibility(systemUiVisibility);
         mContentViewCoreInFullscreen = contentViewCore;
         mTabInFullscreen = tab;
-        FullscreenInfo fullscreenInfo = new FullscreenInfo(tab.getUrl(), null);
+        FullscreenInfo fullscreenInfo = new FullscreenInfo(tab.getUrl(), null, tab.isIncognito());
         ContentSetting fullscreenPermission = fullscreenInfo.getContentSetting();
         if (fullscreenPermission != ContentSetting.ALLOW) {
             mFullscreenInfoBarDelegate = FullscreenInfoBarDelegate.create(this, tab);

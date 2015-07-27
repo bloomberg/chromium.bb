@@ -8,18 +8,18 @@ package org.chromium.chrome.browser.preferences.website;
  * Camera information for a given origin.
  */
 public class CameraInfo extends PermissionInfo {
-    public CameraInfo(String origin, String embedder) {
-        super(origin, embedder);
+    public CameraInfo(String origin, String embedder, boolean isIncognito) {
+        super(origin, embedder, isIncognito);
     }
 
-    protected int getNativePreferenceValue(String origin, String embedder) {
+    protected int getNativePreferenceValue(String origin, String embedder, boolean isIncognito) {
         return WebsitePreferenceBridge.nativeGetCameraSettingForOrigin(
-                origin, embedder);
+                origin, embedder, isIncognito);
     }
 
     protected void setNativePreferenceValue(
-            String origin, String embedder, int value) {
+            String origin, String embedder, int value, boolean isIncognito) {
         WebsitePreferenceBridge.nativeSetCameraSettingForOrigin(
-                origin, embedder, value);
+                origin, embedder, value, isIncognito);
     }
 }

@@ -112,7 +112,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
                 // first and ensure that location permission is NOT granted.
                 String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(3);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.BLOCK.toInt());
+                        url, url, ContentSetting.BLOCK.toInt(), false);
                 pref.setValueForTesting("3");
                 assertEquals(3, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
                 assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(3));
@@ -122,7 +122,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
                 // from a search engine.
                 url = templateUrlService.getSearchEngineUrlFromTemplateUrl(4);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.ALLOW.toInt());
+                        url, url, ContentSetting.ALLOW.toInt(), false);
                 pref.setValueForTesting("4");
                 assertEquals(4, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
                 assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(4));
@@ -204,7 +204,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
 
     private ContentSetting locationPermissionForSearchEngine(int index) {
         String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(index);
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null);
+        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         return locationPermission;
     }

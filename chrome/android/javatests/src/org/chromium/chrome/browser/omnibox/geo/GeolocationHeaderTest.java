@@ -80,8 +80,8 @@ public class GeolocationHeaderTest extends InstrumentationTestCase {
 
     private String getHeaderWithPermissions(ContentSetting httpsPermission,
             ContentSetting httpPermission) {
-        GeolocationInfo infoHttps = new GeolocationInfo("https://www.google.de", null);
-        GeolocationInfo infoHttp = new GeolocationInfo("http://www.google.de", null);
+        GeolocationInfo infoHttps = new GeolocationInfo("https://www.google.de", null, false);
+        GeolocationInfo infoHttp = new GeolocationInfo("http://www.google.de", null, false);
         infoHttps.setContentSetting(httpsPermission);
         infoHttp.setContentSetting(httpPermission);
         return GeolocationHeader.getGeoHeader(getInstrumentation().getTargetContext(),

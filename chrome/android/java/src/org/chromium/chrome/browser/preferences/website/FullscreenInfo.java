@@ -8,20 +8,20 @@ package org.chromium.chrome.browser.preferences.website;
  * Fullscreen information for a given origin.
  */
 public class FullscreenInfo extends PermissionInfo {
-    public FullscreenInfo(String origin, String embedder) {
-        super(origin, embedder);
+    public FullscreenInfo(String origin, String embedder, boolean isIncognito) {
+        super(origin, embedder, isIncognito);
     }
 
     @Override
-    protected int getNativePreferenceValue(String origin, String embedder) {
+    protected int getNativePreferenceValue(String origin, String embedder, boolean isIncognito) {
         return WebsitePreferenceBridge.nativeGetFullscreenSettingForOrigin(
-                origin, embedder);
+                origin, embedder, isIncognito);
     }
 
     @Override
     protected void setNativePreferenceValue(
-            String origin, String embedder, int value) {
+            String origin, String embedder, int value, boolean isIncognito) {
         WebsitePreferenceBridge.nativeSetFullscreenSettingForOrigin(
-                origin, embedder, value);
+                origin, embedder, value, isIncognito);
     }
 }

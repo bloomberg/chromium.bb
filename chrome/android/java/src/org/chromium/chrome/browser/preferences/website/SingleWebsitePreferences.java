@@ -441,12 +441,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
         Object locationAllowed = getArguments().getSerializable(EXTRA_LOCATION);
         if (permission == null && hasXGeoLocationPermission(context)) {
             String origin = mSite.getAddress().getOrigin();
-            mSite.setGeolocationInfo(new GeolocationInfo(origin, origin));
+            mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
             setUpListPreference(preference, ContentSetting.ALLOW);
             updateLocationPreferenceForXGeo(preference);
         } else if (permission == null && locationAllowed != null) {
             String origin = mSite.getAddress().getOrigin();
-            mSite.setGeolocationInfo(new GeolocationInfo(origin, origin));
+            mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
             setUpListPreference(preference, (boolean) locationAllowed
                     ? ContentSetting.ALLOW : ContentSetting.BLOCK);
         } else {

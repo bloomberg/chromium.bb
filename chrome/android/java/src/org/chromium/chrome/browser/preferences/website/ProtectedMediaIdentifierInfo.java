@@ -9,20 +9,20 @@ package org.chromium.chrome.browser.preferences.website;
  * frame origin and embedding frame origin.
  */
 public class ProtectedMediaIdentifierInfo extends PermissionInfo {
-    public ProtectedMediaIdentifierInfo(String origin, String embedder) {
-        super(origin, embedder);
+    public ProtectedMediaIdentifierInfo(String origin, String embedder, boolean isIncognito) {
+        super(origin, embedder, isIncognito);
     }
 
     @Override
-    protected int getNativePreferenceValue(String origin, String embedder) {
+    protected int getNativePreferenceValue(String origin, String embedder, boolean isIncognito) {
         return WebsitePreferenceBridge.nativeGetProtectedMediaIdentifierSettingForOrigin(
-                origin, embedder);
+                origin, embedder, isIncognito);
     }
 
     @Override
     protected void setNativePreferenceValue(
-            String origin, String embedder, int value) {
+            String origin, String embedder, int value, boolean isIncognito) {
         WebsitePreferenceBridge.nativeSetProtectedMediaIdentifierSettingForOrigin(
-                origin, embedder, value);
+                origin, embedder, value, isIncognito);
     }
 }

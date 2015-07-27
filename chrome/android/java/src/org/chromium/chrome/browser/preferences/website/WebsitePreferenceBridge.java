@@ -41,6 +41,9 @@ public abstract class WebsitePreferenceBridge {
         public void onStorageInfoCleared();
     }
 
+    /**
+     * @return the list of all origins that have geolocation permissions in non-incognito mode.
+     */
     @SuppressWarnings("unchecked")
     public static List<GeolocationInfo> getGeolocationInfo() {
         // Location can be managed by the custodian of a supervised account or by enterprise policy.
@@ -53,9 +56,12 @@ public abstract class WebsitePreferenceBridge {
     @CalledByNative
     private static void insertGeolocationInfoIntoList(
             ArrayList<GeolocationInfo> list, String origin, String embedder) {
-        list.add(new GeolocationInfo(origin, embedder));
+        list.add(new GeolocationInfo(origin, embedder, false));
     }
 
+    /**
+     * @return the list of all origins that have midi permissions in non-incognito mode.
+     */
     @SuppressWarnings("unchecked")
     public static List<MidiInfo> getMidiInfo() {
         ArrayList<MidiInfo> list = new ArrayList<MidiInfo>();
@@ -66,7 +72,7 @@ public abstract class WebsitePreferenceBridge {
     @CalledByNative
     private static void insertMidiInfoIntoList(
             ArrayList<MidiInfo> list, String origin, String embedder) {
-        list.add(new MidiInfo(origin, embedder));
+        list.add(new MidiInfo(origin, embedder, false));
     }
 
     public static List<CookieInfo> getCookieInfo() {
@@ -79,7 +85,7 @@ public abstract class WebsitePreferenceBridge {
     @CalledByNative
     private static void insertCookieInfoIntoList(
             ArrayList<CookieInfo> list, String origin, String embedder) {
-        list.add(new CookieInfo(origin, embedder));
+        list.add(new CookieInfo(origin, embedder, false));
     }
 
     @CalledByNative
@@ -106,8 +112,8 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * @return List of all the origin/embedder combinations of protected media identifier
-     *         permissions.
+     * @return the list of all origins that have protected media identifier permissions
+     *         in non-incognito mode.
      */
     @SuppressWarnings("unchecked")
     public static List<ProtectedMediaIdentifierInfo> getProtectedMediaIdentifierInfo() {
@@ -120,9 +126,13 @@ public abstract class WebsitePreferenceBridge {
     @CalledByNative
     private static void insertProtectedMediaIdentifierInfoIntoList(
             ArrayList<ProtectedMediaIdentifierInfo> list, String origin, String embedder) {
-        list.add(new ProtectedMediaIdentifierInfo(origin, embedder));
+        list.add(new ProtectedMediaIdentifierInfo(origin, embedder, false));
     }
 
+    /**
+     * @return the list of all origins that have push notification permissions in
+     *         non-incognito mode.
+     */
     @SuppressWarnings("unchecked")
     public static List<PushNotificationInfo> getPushNotificationInfo() {
         ArrayList<PushNotificationInfo> list = new ArrayList<PushNotificationInfo>();
@@ -133,11 +143,11 @@ public abstract class WebsitePreferenceBridge {
     @CalledByNative
     private static void insertPushNotificationIntoList(
             ArrayList<PushNotificationInfo> list, String origin, String embedder) {
-        list.add(new PushNotificationInfo(origin, embedder));
+        list.add(new PushNotificationInfo(origin, embedder, false));
     }
 
     /**
-     * @return List of all the origin/embedder combinations of camera permissions.
+     * @return the list of all origins that have camera permissions in non-incognito mode.
      */
     @SuppressWarnings("unchecked")
     public static List<CameraInfo> getCameraInfo() {
@@ -157,11 +167,11 @@ public abstract class WebsitePreferenceBridge {
                 return;
             }
         }
-        list.add(new CameraInfo(origin, embedder));
+        list.add(new CameraInfo(origin, embedder, false));
     }
 
     /**
-     * @return List of all the origin/embedder combinations of microphone permissions.
+     * @return the list of all origins that have microphone permissions in non-incognito mode.
      */
     @SuppressWarnings("unchecked")
     public static List<MicrophoneInfo> getMicrophoneInfo() {
@@ -183,7 +193,7 @@ public abstract class WebsitePreferenceBridge {
                 return;
             }
         }
-        list.add(new MicrophoneInfo(origin, embedder));
+        list.add(new MicrophoneInfo(origin, embedder, false));
     }
 
     public static List<ContentSettingException> getContentSettingsExceptions(
@@ -214,7 +224,7 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * Get a list of stored fullscreen information.
+     * @return the list of all sites that have fullscreen permissions in non-incognito mode.
      */
     public static List<FullscreenInfo> getFullscreenInfo() {
         boolean managedOnly = PrefServiceBridge.getInstance().isFullscreenManaged();
@@ -229,37 +239,44 @@ public abstract class WebsitePreferenceBridge {
     @CalledByNative
     private static void insertFullscreenInfoIntoList(
             ArrayList<FullscreenInfo> list, String origin, String embedder) {
-        list.add(new FullscreenInfo(origin, embedder));
+        list.add(new FullscreenInfo(origin, embedder, false));
     }
 
     private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
-    static native int nativeGetGeolocationSettingForOrigin(String origin, String embedder);
-    public static native void nativeSetGeolocationSettingForOrigin(String origin, String embedder,
-            int value);
+    static native int nativeGetGeolocationSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    public static native void nativeSetGeolocationSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
     private static native void nativeGetMidiOrigins(Object list);
-    static native int nativeGetMidiSettingForOrigin(String origin, String embedder);
-    static native void nativeSetMidiSettingForOrigin(String origin, String embedder,
-            int value);
+    static native int nativeGetMidiSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetMidiSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
     private static native void nativeGetPushNotificationOrigins(Object list);
-    static native int nativeGetPushNotificationSettingForOrigin(String origin, String embedder);
-    static native void nativeSetPushNotificationSettingForOrigin(String origin, String embedder,
-            int value);
+    static native int nativeGetPushNotificationSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetPushNotificationSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
     private static native void nativeGetProtectedMediaIdentifierOrigins(Object list);
-    static native int nativeGetProtectedMediaIdentifierSettingForOrigin(String origin,
-            String embedder);
-    static native void nativeSetProtectedMediaIdentifierSettingForOrigin(String origin,
-            String embedder, int value);
+    static native int nativeGetProtectedMediaIdentifierSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetProtectedMediaIdentifierSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
     private static native void nativeGetCameraOrigins(Object list, boolean managedOnly);
     private static native void nativeGetMicrophoneOrigins(Object list, boolean managedOnly);
-    static native int nativeGetMicrophoneSettingForOrigin(String origin, String embedder);
-    static native int nativeGetCameraSettingForOrigin(String origin, String embedder);
-    static native void nativeSetMicrophoneSettingForOrigin(String origin, String embedder,
-            int value);
-    static native void nativeSetCameraSettingForOrigin(String origin, String embedder,
-            int value);
+    static native int nativeGetMicrophoneSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native int nativeGetCameraSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetMicrophoneSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
+    static native void nativeSetCameraSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
     private static native void nativeGetCookieOrigins(Object list, boolean managedOnly);
-    static native int nativeGetCookieSettingForOrigin(String origin, String embedder);
-    static native void nativeSetCookieSettingForOrigin(String origin, String embedder, int setting);
+    static native int nativeGetCookieSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetCookieSettingForOrigin(
+            String origin, String embedder, int setting, boolean isIncognito);
     static native void nativeClearCookieData(String path);
     static native void nativeClearLocalStorageData(String path);
     static native void nativeClearStorageData(String origin, int type, Object callback);
@@ -268,7 +285,8 @@ public abstract class WebsitePreferenceBridge {
     static native boolean nativeIsContentSettingsPatternValid(String pattern);
     static native boolean nativeUrlMatchesContentSettingsPattern(String url, String pattern);
     private static native void nativeGetFullscreenOrigins(Object list, boolean managedOnly);
-    static native int nativeGetFullscreenSettingForOrigin(String origin, String embedder);
-    static native void nativeSetFullscreenSettingForOrigin(String origin, String embedder,
-            int value);
+    static native int nativeGetFullscreenSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetFullscreenSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
 }

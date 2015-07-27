@@ -73,7 +73,8 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
             @Override
             public void run() {
                 // The notification content setting does not consider the embedder origin.
-                PushNotificationInfo pushNotificationInfo = new PushNotificationInfo(origin, "");
+                PushNotificationInfo pushNotificationInfo = new PushNotificationInfo(
+                        origin, "", false);
                 pushNotificationInfo.setContentSetting(setting);
             }
         });

@@ -51,7 +51,7 @@ public class FullscreenInfoBarDelegate {
      */
     @CalledByNative
     private void onFullscreenAllowed(String origin) {
-        FullscreenInfo fullscreenInfo = new FullscreenInfo(origin, null);
+        FullscreenInfo fullscreenInfo = new FullscreenInfo(origin, null, mTab.isIncognito());
         fullscreenInfo.setContentSetting(ContentSetting.ALLOW);
     }
 

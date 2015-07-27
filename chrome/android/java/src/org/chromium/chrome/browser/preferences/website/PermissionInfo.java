@@ -12,10 +12,12 @@ import java.io.Serializable;
 public abstract class PermissionInfo implements Serializable {
     private final String mOrigin;
     private final String mEmbedder;
+    private final boolean mIsIncognito;
 
-    public PermissionInfo(String origin, String embedder) {
+    public PermissionInfo(String origin, String embedder, boolean isIncognito) {
         mOrigin = origin;
         mEmbedder = embedder;
+        mIsIncognito = isIncognito;
     }
 
     public String getOrigin() {
@@ -26,6 +28,10 @@ public abstract class PermissionInfo implements Serializable {
         return mEmbedder;
     }
 
+    public boolean isIncognito() {
+        return mIsIncognito;
+    }
+
     public String getEmbedderSafe() {
         return mEmbedder != null ? mEmbedder : mOrigin;
     }
@@ -34,19 +40,21 @@ public abstract class PermissionInfo implements Serializable {
      * Returns the ContentSetting value for this origin.
      */
     public ContentSetting getContentSetting() {
-        return ContentSetting.fromInt(getNativePreferenceValue(mOrigin, getEmbedderSafe()));
+        return ContentSetting.fromInt(
+                getNativePreferenceValue(mOrigin, getEmbedderSafe(), mIsIncognito));
     }
 
     /**
      * Sets the native ContentSetting value for this origin.
      */
     public void setContentSetting(ContentSetting value) {
-        setNativePreferenceValue(mOrigin, getEmbedderSafe(), ContentSetting.toInt(value));
+        setNativePreferenceValue(
+                mOrigin, getEmbedderSafe(), ContentSetting.toInt(value), mIsIncognito);
     }
 
     protected abstract int getNativePreferenceValue(
-            String origin, String embedder);
+            String origin, String embedder, boolean isIncognito);
 
     protected abstract void setNativePreferenceValue(
-            String origin, String embedder, int value);
+            String origin, String embedder, int value, boolean isIncognito);
 }

@@ -148,12 +148,11 @@ public final class PrefServiceBridge {
         String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
                 templateUrlService.getDefaultSearchEngineIndex());
         if (allowed && !url.startsWith("https:")) return;
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null);
+        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         if (locationPermission == null || locationPermission == ContentSetting.ASK) {
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                    url, url, allowed
-                            ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt());
+            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(url, url,
+                    allowed ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt(), false);
             SharedPreferences sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(context);
             sharedPreferences.edit().putBoolean(LOCATION_AUTO_ALLOWED, true).apply();
@@ -191,7 +190,7 @@ public final class PrefServiceBridge {
      */
     public static boolean isLocationDisabledForUrl(Uri uri) {
         // TODO(finnur): Delete this method once GeolocationHeader has been upstreamed.
-        GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null);
+        GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
 
         // If no preference has been chosen and the scheme is https, fall back to the preference for
@@ -201,7 +200,7 @@ public final class PrefServiceBridge {
             if (scheme != null && scheme.toLowerCase(Locale.US).equals("https")
                     && uri.getAuthority() != null && uri.getUserInfo() == null) {
                 String urlWithHttp = "http://" + uri.getHost();
-                locationSettings = new GeolocationInfo(urlWithHttp, null);
+                locationSettings = new GeolocationInfo(urlWithHttp, null, false);
                 locationPermission = locationSettings.getContentSetting();
             }
         }

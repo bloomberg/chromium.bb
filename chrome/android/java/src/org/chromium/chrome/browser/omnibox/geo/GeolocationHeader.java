@@ -135,7 +135,7 @@ public class GeolocationHeader {
      * scheme, this considers the user's preference for url with the http scheme instead.
      */
     static boolean isLocationDisabledForUrl(Uri uri) {
-        GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null);
+        GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
 
         // If no preference has been chosen and the scheme is https, fall back to the preference for
@@ -145,7 +145,7 @@ public class GeolocationHeader {
             if (scheme != null && scheme.toLowerCase(Locale.US).equals("https")
                     && uri.getAuthority() != null && uri.getUserInfo() == null) {
                 String urlWithHttp = "http://" + uri.getHost();
-                locationSettings = new GeolocationInfo(urlWithHttp, null);
+                locationSettings = new GeolocationInfo(urlWithHttp, null, false);
                 locationPermission = locationSettings.getContentSetting();
             }
         }

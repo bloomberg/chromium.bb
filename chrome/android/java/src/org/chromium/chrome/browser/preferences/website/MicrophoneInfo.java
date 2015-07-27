@@ -8,18 +8,18 @@ package org.chromium.chrome.browser.preferences.website;
  * Microphone information for a given origin.
  */
 public class MicrophoneInfo extends PermissionInfo {
-    public MicrophoneInfo(String origin, String embedder) {
-        super(origin, embedder);
+    public MicrophoneInfo(String origin, String embedder, boolean isIncognito) {
+        super(origin, embedder, isIncognito);
     }
 
-    protected int getNativePreferenceValue(String origin, String embedder) {
+    protected int getNativePreferenceValue(String origin, String embedder, boolean isIncognito) {
         return WebsitePreferenceBridge.nativeGetMicrophoneSettingForOrigin(
-                origin, embedder);
+                origin, embedder, isIncognito);
     }
 
     protected void setNativePreferenceValue(
-            String origin, String embedder, int value) {
+            String origin, String embedder, int value, boolean isIncognito) {
         WebsitePreferenceBridge.nativeSetMicrophoneSettingForOrigin(
-                origin, embedder, value);
+                origin, embedder, value, isIncognito);
     }
 }

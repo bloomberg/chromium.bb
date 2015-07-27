@@ -264,7 +264,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
                 String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                         toIndex(mSelectedSearchEnginePosition));
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.DEFAULT.toInt());
+                        url, url, ContentSetting.DEFAULT.toInt(), false);
             }
             sharedPreferences.edit().remove(PrefServiceBridge.LOCATION_AUTO_ALLOWED).apply();
         }
@@ -304,7 +304,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
 
         String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                 toIndex(position));
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null);
+        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         // Handle the case where the geoHeader being sent when no permission has been specified.
         if (locationPermission == ContentSetting.ASK && checkGeoHeader) {

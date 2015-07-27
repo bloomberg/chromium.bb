@@ -8,18 +8,16 @@ package org.chromium.chrome.browser.preferences.website;
  * Midi information for a given origin.
  */
 public class MidiInfo extends PermissionInfo {
-    public MidiInfo(String origin, String embedder) {
-        super(origin, embedder);
+    public MidiInfo(String origin, String embedder, boolean isIncognito) {
+        super(origin, embedder, isIncognito);
     }
 
-    protected int getNativePreferenceValue(String origin, String embedder) {
-        return WebsitePreferenceBridge.nativeGetMidiSettingForOrigin(
-                origin, embedder);
+    protected int getNativePreferenceValue(String origin, String embedder, boolean isIncognito) {
+        return WebsitePreferenceBridge.nativeGetMidiSettingForOrigin(origin, embedder, isIncognito);
     }
 
     protected void setNativePreferenceValue(
-            String origin, String embedder, int value) {
-        WebsitePreferenceBridge.nativeSetMidiSettingForOrigin(
-                origin, embedder, value);
+            String origin, String embedder, int value, boolean isIncognito) {
+        WebsitePreferenceBridge.nativeSetMidiSettingForOrigin(origin, embedder, value, isIncognito);
     }
 }
