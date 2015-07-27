@@ -23,10 +23,12 @@ ApplicationInstance::QueuedClientRequest::~QueuedClientRequest() {
 ApplicationInstance::ApplicationInstance(
     ApplicationPtr application,
     ApplicationManager* manager,
+    const Identity& originator_identity,
     const Identity& identity,
     const CapabilityFilter& filter,
     const base::Closure& on_application_end)
     : manager_(manager),
+      originator_identity_(originator_identity),
       identity_(identity),
       filter_(filter),
       allow_any_application_(filter.size() == 1 && filter.count("*") == 1),
@@ -144,7 +146,9 @@ void ApplicationInstance::OnConnectionError() {
   for (auto request : queued_client_requests) {
     mojo::URLRequestPtr url(mojo::URLRequest::New());
     url->url = mojo::String::From(request->requested_url.spec());
-    manager->ConnectToApplication(this, url.Pass(), std::string(),
+    ApplicationInstance* originator =
+        manager->GetApplicationInstance(originator_identity_);
+    manager->ConnectToApplication(originator, url.Pass(), std::string(),
                                   request->requestor_url,
                                   request->services.Pass(),
                                   request->exposed_services.Pass(),

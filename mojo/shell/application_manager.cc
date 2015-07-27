@@ -185,7 +185,7 @@ bool ApplicationManager::ConnectToRunningApplication(
     CapabilityFilterPtr* filter) {
   GURL application_url = GetBaseURLAndQuery(resolved_url, nullptr);
   ApplicationInstance* instance =
-      GetApplicationInstance(application_url, qualifier);
+      GetApplicationInstance(Identity(application_url, qualifier));
   if (!instance)
     return false;
 
@@ -242,8 +242,9 @@ InterfaceRequest<Application> ApplicationManager::RegisterInstance(
         filter->filter.To<ApplicationInstance::CapabilityFilter>();
   }
   ApplicationInstance* instance = new ApplicationInstance(
-      application.Pass(), this, app_identity, capability_filter,
-      on_application_end);
+      application.Pass(), this,
+      originator ? originator->identity() : Identity(GURL()), app_identity,
+      capability_filter, on_application_end);
   identity_to_instance_[app_identity] = instance;
   instance->InitializeApplication();
   instance->ConnectToClient(originator, app_url, requestor_url, services.Pass(),
@@ -252,10 +253,8 @@ InterfaceRequest<Application> ApplicationManager::RegisterInstance(
 }
 
 ApplicationInstance* ApplicationManager::GetApplicationInstance(
-    const GURL& url,
-    const std::string& qualifier) {
-  const auto& instance_it =
-      identity_to_instance_.find(Identity(url, qualifier));
+    const Identity& identity) const {
+  const auto& instance_it = identity_to_instance_.find(identity);
   if (instance_it != identity_to_instance_.end())
     return instance_it->second;
   return nullptr;

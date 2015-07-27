@@ -56,6 +56,7 @@ class ApplicationInstance : public Shell {
 
   ApplicationInstance(ApplicationPtr application,
                       ApplicationManager* manager,
+                      const Identity& originator_identity,
                       const Identity& resolved_identity,
                       const CapabilityFilter& filter,
                       const base::Closure& on_application_end);
@@ -109,6 +110,7 @@ class ApplicationInstance : public Shell {
   };
 
   ApplicationManager* const manager_;
+  const Identity originator_identity_;
   const Identity identity_;
   const CapabilityFilter filter_;
   const bool allow_any_application_;

@@ -153,6 +153,8 @@ class ApplicationManager {
   void OnContentHandlerConnectionClosed(
       ContentHandlerConnection* content_handler);
 
+  ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
+
  private:
   using ApplicationPackagedAlias = std::map<GURL, std::pair<GURL, std::string>>;
   using IdentityToApplicationInstanceMap =
@@ -193,9 +195,6 @@ class ApplicationManager {
       ServiceProviderPtr exposed_services,
       CapabilityFilterPtr filter,
       const base::Closure& on_application_end);
-
-  ApplicationInstance* GetApplicationInstance(const GURL& url,
-                                              const std::string& qualifier);
 
   // Called once |fetcher| has found app. |requested_url| is the url of the
   // requested application before any mappings/resolution have been applied.
