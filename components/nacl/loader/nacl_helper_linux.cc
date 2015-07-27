@@ -123,17 +123,11 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   nacl::nonsfi::NonSfiListener listener;
   listener.Listen();
 #else
-  // TODO(hidehiko): Drop Non-SFI supporting from nacl_helper after the
-  // nacl_helper_nonsfi switching is done.
-  if (uses_nonsfi_mode) {
-    nacl::nonsfi::NonSfiListener listener;
-    listener.Listen();
-  } else {
-    NaClListener listener;
-    listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
-    listener.set_number_of_cores(system_info.number_of_cores);
-    listener.Listen();
-  }
+  CHECK(!uses_nonsfi_mode);
+  NaClListener listener;
+  listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
+  listener.set_number_of_cores(system_info.number_of_cores);
+  listener.Listen();
 #endif
   _exit(0);
 }

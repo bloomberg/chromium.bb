@@ -182,24 +182,7 @@ class PPAPINaClPNaClNonSfiTest : public PPAPINaClTest {
                          const std::string& test_case) override;
 };
 
-// TODO(hidehiko): Remove this when clean-up to drop Non-SFI support from
-// nacl_helper is done. See NaClBrowserTestPnaclTransitionalNonSfi
-// for more details.
-class PPAPINaClPNaClTransitionalNonSfiTest : public PPAPINaClPNaClNonSfiTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-};
-
 class PPAPIPrivateNaClPNaClNonSfiTest : public PPAPINaClPNaClNonSfiTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-};
-
-// TODO(hidehiko): Remove this when clean-up to drop Non-SFI support from
-// nacl_helper is done. See NaClBrowserTestPnaclTransitionalNonSfi
-// for more details.
-class PPAPIPrivateNaClPNaClTransitionalNonSfiTest
-    : public PPAPIPrivateNaClPNaClNonSfiTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
 };

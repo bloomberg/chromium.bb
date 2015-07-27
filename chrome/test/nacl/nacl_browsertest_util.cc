@@ -298,12 +298,6 @@ void NaClBrowserTestNonSfiMode::SetUpCommandLine(
   command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
 }
 
-void NaClBrowserTestTransitionalNonSfi::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  NaClBrowserTestNonSfiMode::SetUpCommandLine(command_line);
-  command_line->AppendSwitchASCII(switches::kUseNaClHelperNonSfi, "false");
-}
-
 base::FilePath::StringType NaClBrowserTestStatic::Variant() {
   return FILE_PATH_LITERAL("static");
 }
@@ -321,12 +315,6 @@ void NaClBrowserTestPnaclNonSfi::SetUpCommandLine(
     base::CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
-}
-
-void NaClBrowserTestPnaclTransitionalNonSfi::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  NaClBrowserTestPnaclNonSfi::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
 }
 
 void NaClBrowserTestNewlibExtension::SetUpCommandLine(
