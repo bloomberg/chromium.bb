@@ -8,8 +8,11 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.app.Instrumentation.ActivityMonitor;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -19,6 +22,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -61,6 +65,8 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     private static final String FALLBACK_LANDING_URL = BASE_URL + "hello.html";
     private static final String OPEN_WINDOW_FROM_USER_GESTURE_PAGE =
             BASE_URL + "open_window_from_user_gesture.html";
+    private static final String NAVIGATION_FROM_JAVA_REDIRECTION_PAGE =
+            BASE_URL + "navigation_from_java_redirection.html";
 
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
@@ -97,6 +103,8 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         }
     }
 
+    private ActivityMonitor mActivityMonitor;
+
     public UrlOverridingTest() {
         super(ChromeActivity.class);
     }
@@ -107,7 +115,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addCategory(Intent.CATEGORY_BROWSABLE);
         filter.addDataScheme("market");
-        getInstrumentation().addMonitor(
+        mActivityMonitor = getInstrumentation().addMonitor(
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
     }
 
@@ -277,6 +285,23 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     public void testOpenWindowFromUserGesture() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(OPEN_WINDOW_FROM_USER_GESTURE_PAGE),
                 true, 1, true, null, true);
+    }
+
+    @SmallTest
+    public void testRedirectionFromIntent() throws InterruptedException {
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse(TestHttpServerClient.getUrl(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));
+        Context targetContext = getInstrumentation().getTargetContext();
+        intent.setClassName(targetContext, ChromeLauncherActivity.class.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        targetContext.startActivity(intent);
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivityMonitor.getHits() == 1;
+            }
+        }));
     }
 
     @Override

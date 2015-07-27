@@ -410,8 +410,9 @@ public class DocumentActivity extends ChromeActivity {
         String url = (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null)
                 ? asyncParams.getLoadUrlParams().getUrl() : determineLastKnownUrl();
 
-        LoadUrlParams loadUrlParams = asyncParams == null
-                ? new LoadUrlParams(url, transitionType) : asyncParams.getLoadUrlParams();
+        LoadUrlParams loadUrlParams =
+                asyncParams == null ? new LoadUrlParams(url) : asyncParams.getLoadUrlParams();
+        loadUrlParams.setTransitionType(transitionType);
         if (getIntent() != null) {
             loadUrlParams.setIntentReceivedTimestamp(getOnCreateTimestampUptimeMs());
         }
@@ -420,7 +421,7 @@ public class DocumentActivity extends ChromeActivity {
             IntentHandler.addReferrerAndHeaders(loadUrlParams, intent, this);
         }
 
-        if (asyncParams != null) {
+        if (asyncParams != null && asyncParams.getOriginalIntent() != null) {
             mDocumentTab.getTabRedirectHandler().updateIntent(asyncParams.getOriginalIntent());
         } else {
             if (getIntent() != null) {
