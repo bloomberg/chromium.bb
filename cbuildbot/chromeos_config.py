@@ -641,7 +641,6 @@ _waterfall_config_map = {
 
         # Experimental PFQs.
         'tricky-chrome-pfq',
-        'veyron_minnie-chromium-pfq',
 
         # Incremental Builders.
         'mario-incremental',
@@ -1034,6 +1033,7 @@ def GetConfig():
       'arm-generic',
       'daisy',
       'mipsel-o32-generic',
+      'veyron_minnie',
       'x86-generic',
   ])
 

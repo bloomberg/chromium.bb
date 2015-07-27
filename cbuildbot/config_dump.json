@@ -23320,7 +23320,6 @@
             "veyron_minnie"
         ],
         "description": "Preflight Chromium Uprev & Build (internal)",
-        "important": false,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "veyron_minnie-chromium-pfq",
