@@ -216,7 +216,7 @@ void CreateAppListShortcuts(
     base::FilePath shortcut_to_pin =
         user_data_dir.Append(app_list_shortcut_name).
             AddExtension(installer::kLnkExt);
-    success = base::win::TaskbarPinShortcutLink(shortcut_to_pin) && success;
+    success = base::win::PinShortcutToTaskbar(shortcut_to_pin) && success;
   }
 }
 

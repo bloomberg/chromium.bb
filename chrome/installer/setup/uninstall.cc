@@ -337,11 +337,11 @@ void DeleteShortcuts(const InstallerState& installer_state,
   // ShellUtil::ShortcutLocations.
   VLOG(1) << "Deleting shortcuts.";
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
-      location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
+       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
     if (!ShellUtil::RemoveShortcuts(
             static_cast<ShellUtil::ShortcutLocation>(location), dist,
             install_level, target_exe)) {
-      LOG(WARNING) << "Failed to delete shortcuts in ShortcutLocation:"
+      LOG(WARNING) << "Failed to delete shortcuts in ShortcutLocation: "
                    << location;
     }
   }

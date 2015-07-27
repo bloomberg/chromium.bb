@@ -26,8 +26,10 @@ namespace win {
 namespace {
 
 // String resource IDs in shell32.dll.
-const uint32_t kPinToTaskbarID = 5386;
-const uint32_t kUnpinFromTaskbarID = 5387;
+const uint32_t kPinToTaskbarID = 5386;      // Win7+
+const uint32_t kUnpinFromTaskbarID = 5387;  // Win7+
+const uint32_t kPinToStartID = 51201;       // Win8+
+const uint32_t kUnpinFromStartID = 51394;   // Win10+
 
 // Traits for a GenericScopedHandle that will free a module on closure.
 struct ModuleTraits {
@@ -403,7 +405,7 @@ bool ResolveShortcut(const FilePath& shortcut_path,
   return true;
 }
 
-bool TaskbarPinShortcutLink(const FilePath& shortcut) {
+bool PinShortcutToTaskbar(const FilePath& shortcut) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // "Pin to taskbar" is only supported after Win7.
@@ -413,7 +415,7 @@ bool TaskbarPinShortcutLink(const FilePath& shortcut) {
   return DoVerbOnFile(kPinToTaskbarID, shortcut);
 }
 
-bool TaskbarUnpinShortcutLink(const FilePath& shortcut) {
+bool UnpinShortcutFromTaskbar(const FilePath& shortcut) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // "Unpin from taskbar" is only supported after Win7.
@@ -421,6 +423,31 @@ bool TaskbarUnpinShortcutLink(const FilePath& shortcut) {
     return false;
 
   return DoVerbOnFile(kUnpinFromTaskbarID, shortcut);
+}
+
+bool PinShortcutToStart(const FilePath& shortcut) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // While "Pin to Start" is supported as of Win8, it was never used by Chrome
+  // in Win8. The behaviour on Win8 is different (new shortcut every time
+  // instead of a single pin associated with its app id) and the Start Menu
+  // shortcut itself is visible on the Start Screen whereas it is not on Win10.
+  // For simplicity's sake and per greater necessity on Win10, it is only
+  // supported in Chrome on Win10+.
+  if (GetVersion() < VERSION_WIN10)
+    return false;
+
+  return DoVerbOnFile(kPinToStartID, shortcut);
+}
+
+bool UnpinShortcutFromStart(const FilePath& shortcut) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // "Unpin from Start Menu" is only supported after Win10.
+  if (GetVersion() < VERSION_WIN10)
+    return false;
+
+  return DoVerbOnFile(kUnpinFromStartID, shortcut);
 }
 
 }  // namespace win

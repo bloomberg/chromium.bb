@@ -100,10 +100,15 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
 
   if (properties.pin_to_taskbar &&
       base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    message.append(" and pinning to the taskbar.");
-  } else {
-    message.push_back('.');
+    message.append(" and pinning to the taskbar");
   }
+
+  if (properties.pin_to_start &&
+      base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    message.append(" and pinning to Start");
+  }
+
+  message.push_back('.');
 
   if (failed)
     LOG(WARNING) << message;
@@ -353,6 +358,7 @@ void CreateOrUpdateShortcuts(
   bool do_not_create_desktop_shortcut = false;
   bool do_not_create_quick_launch_shortcut = false;
   bool do_not_create_taskbar_shortcut = false;
+  bool do_not_create_start_pin = false;
   bool alternate_desktop_shortcut = false;
   prefs.GetBool(master_preferences::kDoNotCreateDesktopShortcut,
                 &do_not_create_desktop_shortcut);
@@ -360,6 +366,8 @@ void CreateOrUpdateShortcuts(
                 &do_not_create_quick_launch_shortcut);
   prefs.GetBool(master_preferences::kDoNotCreateTaskbarShortcut,
                 &do_not_create_taskbar_shortcut);
+  prefs.GetBool(master_preferences::kDoNotCreateStartPin,
+                &do_not_create_start_pin);
   prefs.GetBool(master_preferences::kAltShortcutText,
                 &alternate_desktop_shortcut);
 
@@ -429,15 +437,15 @@ void CreateOrUpdateShortcuts(
 
   ShellUtil::ShortcutProperties start_menu_properties(base_properties);
   // IMPORTANT: Only the default (no arguments and default browserappid) browser
-  // shortcut in the Start menu (Start screen on Win8+) should be considered for
-  // dual mode.
+  // shortcut in the Start menu (Start screen on Win8+) should be made dual
+  // mode and that prior to Windows 10 only.
   if (InstallUtil::ShouldInstallMetroProperties())
     start_menu_properties.set_dual_mode(true);
-  if (!do_not_create_taskbar_shortcut &&
-      (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
-       shortcut_operation ==
-           ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL)) {
-    start_menu_properties.set_pin_to_taskbar(true);
+  if (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
+      shortcut_operation ==
+          ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) {
+    start_menu_properties.set_pin_to_taskbar(!do_not_create_taskbar_shortcut);
+    start_menu_properties.set_pin_to_start(!do_not_create_start_pin);
   }
   ExecuteAndLogShortcutOperation(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist,

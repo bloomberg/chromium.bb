@@ -1401,10 +1401,11 @@ ShortcutFilterCallback FilterTargetEq::AsShortcutFilterCallback() {
 typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/)>
     ShortcutOperationCallback;
 
-bool ShortcutOpUnpin(const base::FilePath& shortcut_path) {
-  VLOG(1) << "Trying to unpin " << shortcut_path.value();
-  if (!base::win::TaskbarUnpinShortcutLink(shortcut_path)) {
-    VLOG(1) << shortcut_path.value() << " wasn't pinned (or the unpin failed).";
+bool ShortcutOpUnpinFromTaskbar(const base::FilePath& shortcut_path) {
+  VLOG(1) << "Trying to unpin from taskbar " << shortcut_path.value();
+  if (!base::win::UnpinShortcutFromTaskbar(shortcut_path)) {
+    VLOG(1) << shortcut_path.value()
+            << " wasn't pinned to taskbar (or the unpin failed).";
     // No error, since shortcut might not be pinned.
   }
   return true;
@@ -1598,8 +1599,8 @@ ShellUtil::ShortcutProperties::ShortcutProperties(ShellChange level_in)
       icon_index(0),
       dual_mode(false),
       pin_to_taskbar(false),
-      options(0U) {
-}
+      pin_to_start(false),
+      options(0U) {}
 
 ShellUtil::ShortcutProperties::~ShortcutProperties() {
 }
@@ -1755,7 +1756,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
 
   base::win::ShortcutOperation shortcut_operation =
       TranslateShortcutOperation(operation);
-  bool ret = true;
+  bool success = true;
   if (should_install_shortcut) {
     // Make sure the parent directories exist when creating the shortcut.
     if (shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
@@ -1766,18 +1767,26 @@ bool ShellUtil::CreateOrUpdateShortcut(
 
     base::win::ShortcutProperties shortcut_properties(
         TranslateShortcutProperties(properties));
-    ret = base::win::CreateOrUpdateShortcutLink(
+    success = base::win::CreateOrUpdateShortcutLink(
         *chosen_path, shortcut_properties, shortcut_operation);
   }
 
-  if (ret && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
-      properties.pin_to_taskbar &&
-      base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    ret = base::win::TaskbarPinShortcutLink(*chosen_path);
-    LOG_IF(ERROR, !ret) << "Failed to pin " << chosen_path->value();
+  if (success && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS) {
+    if (properties.pin_to_taskbar &&
+        base::win::GetVersion() >= base::win::VERSION_WIN7) {
+      bool pinned = base::win::PinShortcutToTaskbar(*chosen_path);
+      LOG_IF(ERROR, !pinned) << "Failed to pin to taskbar "
+                             << chosen_path->value();
+    }
+    if (properties.pin_to_start &&
+        base::win::GetVersion() >= base::win::VERSION_WIN10) {
+      bool pinned = base::win::PinShortcutToStart(*chosen_path);
+      LOG_IF(ERROR, !pinned) << "Failed to pin to start "
+                             << chosen_path->value();
+    }
   }
 
-  return ret;
+  return success;
 }
 
 base::string16 ShellUtil::FormatIconLocation(const base::FilePath& icon_path,
@@ -2348,8 +2357,9 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
   FilterTargetEq shortcut_filter(target_exe, false);
   // Main operation to apply to each shortcut in the directory specified.
   ShortcutOperationCallback shortcut_operation(
-      location == SHORTCUT_LOCATION_TASKBAR_PINS ?
-          base::Bind(&ShortcutOpUnpin) : base::Bind(&ShortcutOpDelete));
+      location == SHORTCUT_LOCATION_TASKBAR_PINS
+          ? base::Bind(&ShortcutOpUnpinFromTaskbar)
+          : base::Bind(&ShortcutOpDelete));
   bool success = BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
                                      shortcut_operation, location, dist, level,
                                      NULL);

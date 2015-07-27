@@ -144,8 +144,10 @@ class InstallShortcutTest : public testing::Test {
   void TearDown() override {
     // Try to unpin potentially pinned shortcuts (although pinning isn't tested,
     // the call itself might still have pinned the Start Menu shortcuts).
-    base::win::TaskbarUnpinShortcutLink(user_start_menu_shortcut_);
-    base::win::TaskbarUnpinShortcutLink(system_start_menu_shortcut_);
+    base::win::UnpinShortcutFromTaskbar(user_start_menu_shortcut_);
+    base::win::UnpinShortcutFromTaskbar(system_start_menu_shortcut_);
+    base::win::UnpinShortcutFromStart(user_start_menu_shortcut_);
+    base::win::UnpinShortcutFromStart(system_start_menu_shortcut_);
     CoUninitialize();
   }
 
