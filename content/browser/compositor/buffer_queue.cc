@@ -103,9 +103,9 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
 }
 
 void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
-  DCHECK(!current_surface_.texture);
   if (size == size_)
     return;
+  DCHECK(!current_surface_.texture);
   size_ = size;
 
   // TODO: add stencil buffer when needed.

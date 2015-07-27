@@ -8,6 +8,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
+#include "content/common/gpu/image_transport_surface_overlay_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
@@ -20,7 +21,10 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle) {
-  return new ImageTransportSurfaceFBO(manager, stub, handle);
+  if (ui::RemoteLayerAPISupported())
+    return new ImageTransportSurfaceOverlayMac(manager, stub, handle);
+  else
+    return new ImageTransportSurfaceFBO(manager, stub, handle);
 }
 
 ImageTransportSurfaceFBO::ImageTransportSurfaceFBO(
