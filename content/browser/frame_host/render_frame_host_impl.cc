@@ -1709,8 +1709,8 @@ void RenderFrameHostImpl::Navigate(
 void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::NORMAL,
-      true, base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
-      GURL(), GURL());
+      true, false, base::TimeTicks::Now(),
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
   Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
 }
 

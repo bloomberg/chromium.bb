@@ -27,6 +27,7 @@ CommonNavigationParams::CommonNavigationParams()
     : transition(ui::PAGE_TRANSITION_LINK),
       navigation_type(FrameMsg_Navigate_Type::NORMAL),
       allow_download(true),
+      should_replace_current_entry(false),
       report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT) {
 }
 
@@ -36,6 +37,7 @@ CommonNavigationParams::CommonNavigationParams(
     ui::PageTransition transition,
     FrameMsg_Navigate_Type::Value navigation_type,
     bool allow_download,
+    bool should_replace_current_entry,
     base::TimeTicks ui_timestamp,
     FrameMsg_UILoadMetricsReportType::Value report_type,
     const GURL& base_url_for_data_url,
@@ -45,6 +47,7 @@ CommonNavigationParams::CommonNavigationParams(
       transition(transition),
       navigation_type(navigation_type),
       allow_download(allow_download),
+      should_replace_current_entry(should_replace_current_entry),
       ui_timestamp(ui_timestamp),
       report_type(report_type),
       base_url_for_data_url(base_url_for_data_url),
@@ -70,7 +73,6 @@ BeginNavigationParams::BeginNavigationParams(std::string method,
 
 StartNavigationParams::StartNavigationParams()
     : is_post(false),
-      should_replace_current_entry(false),
       transferred_request_child_id(-1),
       transferred_request_request_id(-1) {
 }
@@ -79,13 +81,11 @@ StartNavigationParams::StartNavigationParams(
     bool is_post,
     const std::string& extra_headers,
     const std::vector<unsigned char>& browser_initiated_post_data,
-    bool should_replace_current_entry,
     int transferred_request_child_id,
     int transferred_request_request_id)
     : is_post(is_post),
       extra_headers(extra_headers),
       browser_initiated_post_data(browser_initiated_post_data),
-      should_replace_current_entry(should_replace_current_entry),
       transferred_request_child_id(transferred_request_child_id),
       transferred_request_request_id(transferred_request_request_id) {
 }

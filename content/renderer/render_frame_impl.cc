@@ -471,7 +471,8 @@ void UpdateFrameNavigationTiming(WebFrame* frame,
 
 // PlzNavigate
 CommonNavigationParams MakeCommonNavigationParams(
-    blink::WebURLRequest* request) {
+    blink::WebURLRequest* request,
+    bool should_replace_current_entry) {
   const RequestExtraData kEmptyData;
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(request->extraData());
@@ -492,10 +493,10 @@ CommonNavigationParams MakeCommonNavigationParams(
   FrameMsg_UILoadMetricsReportType::Value report_type =
       static_cast<FrameMsg_UILoadMetricsReportType::Value>(
           request->inputPerfMetricReportPolicy());
-  return CommonNavigationParams(request->url(), referrer,
-                                extra_data->transition_type(),
-                                FrameMsg_Navigate_Type::NORMAL, true,
-                                ui_timestamp, report_type, GURL(), GURL());
+  return CommonNavigationParams(
+      request->url(), referrer, extra_data->transition_type(),
+      FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
+      ui_timestamp, report_type, GURL(), GURL());
 }
 
 #if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
@@ -2691,10 +2692,10 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
     DCHECK_IMPLIES(
-        navigation_state->start_params().should_replace_current_entry,
+        navigation_state->common_params().should_replace_current_entry,
         render_view_->history_list_length_ > 0);
     if (GetLoadingUrl() != GURL(kSwappedOutURL) &&
-        !navigation_state->start_params().should_replace_current_entry) {
+        !navigation_state->common_params().should_replace_current_entry) {
       // Advance our offset in session history, applying the length limit.
       // There is now no forward history.
       render_view_->history_list_offset_++;
@@ -3247,7 +3248,7 @@ void RenderFrameImpl::willSendRequest(
     // TODO(davidben): Avoid this awkward duplication of state. See comment on
     // NavigationState::should_replace_current_entry().
     should_replace_current_entry =
-        navigation_state->start_params().should_replace_current_entry;
+        navigation_state->common_params().should_replace_current_entry;
   }
 
   int provider_id = kInvalidServiceWorkerProviderId;
@@ -4398,7 +4399,7 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
       // TODO(davidben): Avoid this awkward duplication of state. See comment on
       // NavigationState::should_replace_current_entry().
       params.should_replace_current_entry =
-          navigation_state->start_params().should_replace_current_entry;
+          navigation_state->common_params().should_replace_current_entry;
     }
   } else {
     params.should_replace_current_entry = false;
@@ -4787,13 +4788,25 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
 
   // TODO(clamy): Same-document navigations should not be sent back to the
   // browser.
+  // TODO(clamy): Data urls should not be sent back to the browser either.
+  bool should_replace_current_entry = false;
+  WebDataSource* provisional_data_source = frame_->provisionalDataSource();
+  WebDataSource* current_data_source = frame_->dataSource();
+  WebDataSource* data_source =
+      provisional_data_source ? provisional_data_source : current_data_source;
+
+  // The current entry can only be replaced if there already is an entry in the
+  // history list.
+  if (data_source && render_view_->history_list_length_ > 0) {
+    should_replace_current_entry = data_source->replacesCurrentHistoryItem();
+  }
   Send(new FrameHostMsg_BeginNavigation(
-        routing_id_, MakeCommonNavigationParams(request),
-        BeginNavigationParams(request->httpMethod().latin1(),
-                              GetWebURLRequestHeaders(*request),
-                              GetLoadFlagsForWebURLRequest(*request),
-                              request->hasUserGesture()),
-        GetRequestBodyForWebURLRequest(*request)));
+      routing_id_,
+      MakeCommonNavigationParams(request, should_replace_current_entry),
+      BeginNavigationParams(
+          request->httpMethod().latin1(), GetWebURLRequestHeaders(*request),
+          GetLoadFlagsForWebURLRequest(*request), request->hasUserGesture()),
+      GetRequestBodyForWebURLRequest(*request)));
 }
 
 void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,

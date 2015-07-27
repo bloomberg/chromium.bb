@@ -42,6 +42,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          ui::PageTransition transition,
                          FrameMsg_Navigate_Type::Value navigation_type,
                          bool allow_download,
+                         bool should_replace_current_entry,
                          base::TimeTicks ui_timestamp,
                          FrameMsg_UILoadMetricsReportType::Value report_type,
                          const GURL& base_url_for_data_url,
@@ -65,6 +66,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Allows the URL to be downloaded (true by default).
   // Avoid downloading when in view-source mode.
   bool allow_download;
+
+  // Informs the RenderView the pending navigation should replace the current
+  // history entry when it commits. This is used for cross-process redirects so
+  // the transferred navigation can recover the navigation state.
+  // PlzNavigate: this is used by client-side redirects to indicate that when
+  // the navigation commits, it should commit in the existing page.
+  bool should_replace_current_entry;
 
   // Timestamp of the user input event that triggered this navigation. Empty if
   // the navigation was not triggered by clicking on a link or by receiving an
@@ -134,7 +142,6 @@ struct CONTENT_EXPORT StartNavigationParams {
       bool is_post,
       const std::string& extra_headers,
       const std::vector<unsigned char>& browser_initiated_post_data,
-      bool should_replace_current_entry,
       int transferred_request_child_id,
       int transferred_request_request_id);
   ~StartNavigationParams();
@@ -148,11 +155,6 @@ struct CONTENT_EXPORT StartNavigationParams {
   // If is_post is true, holds the post_data information from browser. Empty
   // otherwise.
   std::vector<unsigned char> browser_initiated_post_data;
-
-  // Informs the RenderView the pending navigation should replace the current
-  // history entry when it commits. This is used for cross-process redirects so
-  // the transferred navigation can recover the navigation state.
-  bool should_replace_current_entry;
 
   // The following two members identify a previous request that has been
   // created before this navigation is being transferred to a new render view.

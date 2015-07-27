@@ -450,8 +450,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
 
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
-      !IsViewSourceMode(), ui_timestamp, report_type, GetBaseURLForDataURL(),
-      GetHistoryURLForDataURL());
+      !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
+      GetBaseURLForDataURL(), GetHistoryURLForDataURL());
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
@@ -464,10 +464,10 @@ StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
             GetBrowserInitiatedPostData()->size());
   }
 
-  return StartNavigationParams(
-      GetHasPostData(), extra_headers(), browser_initiated_post_data,
-      should_replace_entry(), transferred_global_request_id().child_id,
-      transferred_global_request_id().request_id);
+  return StartNavigationParams(GetHasPostData(), extra_headers(),
+                               browser_initiated_post_data,
+                               transferred_global_request_id().child_id,
+                               transferred_global_request_id().request_id);
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
