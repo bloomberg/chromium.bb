@@ -8,7 +8,7 @@ test(function(t) { assert_exists(window, 'testRunner'); t.done(); },
      'window.testRunner is required for the following tests.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -29,7 +29,7 @@ sequential_promise_test(function() {
 }, 'Device goes out of range. Reject with NetworkError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
@@ -46,7 +46,7 @@ sequential_promise_test(function() {
 }, 'Service gets removed. Reject with InvalidStateError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
@@ -83,7 +83,7 @@ sequential_promise_test(function() {
 }, 'Characteristic is not writable. Reject with NotSupportedError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -91,7 +91,7 @@ sequential_promise_test(function() {
   }).then(function(gattServer) {
     return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic('reconnection_address');
+    return service.getCharacteristic('device_name');
   }).then(function(characteristic) {
     return characteristic.writeValue(new Uint8Array(513 /* length */)).then(function() {
       assert_unreached('Value is too long. Should fail.');
@@ -103,7 +103,7 @@ sequential_promise_test(function() {
 }, 'Trying to write more than 512 bytes should return an error.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -111,7 +111,7 @@ sequential_promise_test(function() {
   }).then(function(gattServer) {
     return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic('reconnection_address');
+    return service.getCharacteristic('device_name');
   }).then(function(characteristic) {
     return Promise.all([characteristic.writeValue(new Uint8Array(1 /* length */)),
                        characteristic.writeValue(new ArrayBuffer(1 /* length */)),

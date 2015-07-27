@@ -8,7 +8,7 @@ test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); }
      "window.testRunner is required for the following tests.");
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -77,7 +77,7 @@ sequential_promise_test(function() {
 });
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {

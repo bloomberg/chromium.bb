@@ -43,7 +43,7 @@ sequential_promise_test(function() {
 }, 'Reject with NotFoundError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return Promise.all([
     requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
     requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
@@ -56,13 +56,13 @@ sequential_promise_test(function() {
 }, 'Mock will resolve.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return assert_promise_rejects(navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]}),
                                 'SecurityError');
 }, 'Requires a user gesture.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return callWithKeyDown(() => {
     var first = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
     var second = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
@@ -74,7 +74,7 @@ sequential_promise_test(function() {
 }, 'Consumes a user gesture.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return Promise.all([
     requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
     requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),

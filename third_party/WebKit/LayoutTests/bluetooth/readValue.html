@@ -8,7 +8,7 @@ test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); }
      'window.testRunner is required for the following tests.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -29,7 +29,7 @@ sequential_promise_test(function() {
 }, 'Device goes out of range. Reject with NetworkError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
@@ -46,7 +46,7 @@ sequential_promise_test(function() {
 }, 'Services gets removed. Reject with InvalidStateError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattService => gattService.getPrimaryService('generic_access'))
@@ -86,7 +86,7 @@ sequential_promise_test(function() {
 // http://crbug.com/499552
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
@@ -100,7 +100,7 @@ sequential_promise_test(function() {
   }).then(function(value) {
     var decoder = new TextDecoder('utf-8');
     var value_str = decoder.decode(value);
-    assert_equals(value_str, 'Empty Mock Device');
+    assert_equals(value_str, 'Generic Access Device');
   });
 }, 'Request for characteristic. Should return right characteristic');
 </script>
