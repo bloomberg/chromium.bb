@@ -6,7 +6,7 @@
 #define NET_LOG_TRACE_NET_LOG_OBSERVER_H_
 
 #include "base/macros.h"
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/trace_log.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
 

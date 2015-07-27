@@ -9,7 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/trace_buffer.h"
+#include "base/trace_event/trace_log.h"
 
 namespace base {
 namespace test {

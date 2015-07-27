@@ -6,6 +6,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
+#include "base/trace_event/trace_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

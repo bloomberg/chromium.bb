@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/trace_log.h"
 
 namespace base {
 

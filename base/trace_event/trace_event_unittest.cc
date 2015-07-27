@@ -21,6 +21,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "base/values.h"
@@ -2514,7 +2515,7 @@ TEST_F(TraceEventTestFixture, TraceBufferVectorReportFull) {
   trace_log->SetEnabled(
       TraceConfig(kRecordAllCategoryFilter, ""), TraceLog::RECORDING_MODE);
   trace_log->logged_events_.reset(
-      trace_log->CreateTraceBufferVectorOfSize(100));
+      TraceBuffer::CreateTraceBufferVectorOfSize(100));
   do {
     TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
         "all", "with_timestamp", 0, 0, TraceTicks::Now().ToInternalValue());

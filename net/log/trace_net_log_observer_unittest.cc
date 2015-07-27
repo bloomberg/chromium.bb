@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"

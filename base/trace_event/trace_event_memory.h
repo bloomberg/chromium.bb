@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/trace_log.h"
 
 // TODO(jamescook): Windows support for memory tracing.
 #if !defined(NO_TCMALLOC) && !defined(OS_NACL) && \

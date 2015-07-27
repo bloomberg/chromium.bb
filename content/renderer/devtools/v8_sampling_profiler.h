@@ -7,7 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/trace_log.h"
 #include "content/common/content_export.h"
 
 namespace content {

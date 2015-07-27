@@ -4,6 +4,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/devtools/v8_sampling_profiler.h"
