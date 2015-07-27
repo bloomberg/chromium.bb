@@ -16,6 +16,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
@@ -97,6 +98,12 @@ bool CheckNavigationPolicyOnUI(GURL url, int process_id, int render_frame_id) {
   // A transfer is not needed if the current SiteInstance doesn't yet have a
   // site.  This is the case for tests that use NavigateToURL.
   if (!rfh->GetSiteInstance()->HasSite())
+    return false;
+
+  // For now, GuestViews never transfer on cross-site navigations.
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
+  if (web_contents->GetBrowserPluginGuest())
     return false;
 
   // TODO(nasko): This check is very simplistic and is used temporarily only
