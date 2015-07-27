@@ -21,8 +21,6 @@ enum LatencyComponentType {
   // BEGIN COMPONENT is when we show the latency begin in chrome://tracing.
   // Timestamp when the input event is sent from RenderWidgetHost to renderer.
   INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-  // Timestamp when the input event is received in plugin.
-  INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
   // In threaded scrolling, main thread scroll listener update is async to
   // scroll processing in impl thread. This is the timestamp when we consider
   // the main thread scroll listener update is begun.
@@ -83,10 +81,8 @@ enum LatencyComponentType {
   // This component indicates that the input causes a swap to be scheduled
   // but the swap failed.
   INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
-  // Timestamp when the input event is considered not cause any rendering
-  // damage in plugin and thus terminated.
-  INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT,
-  LATENCY_COMPONENT_TYPE_LAST = INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT
+  LATENCY_COMPONENT_TYPE_LAST =
+    INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
 };
 
 struct EVENTS_BASE_EXPORT LatencyInfo {

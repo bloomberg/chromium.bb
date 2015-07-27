@@ -229,8 +229,8 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
                                       OnHostMsgScroll)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_ReplaceContents,
                                       OnHostMsgReplaceContents)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_Flush,
-                                      OnHostMsgFlush)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Graphics2D_Flush,
+                                        OnHostMsgFlush)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_SetScale,
                                       OnHostMsgSetScale)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_ReadImageData,
@@ -504,14 +504,10 @@ int32_t PepperGraphics2DHost::OnHostMsgReplaceContents(
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgFlush(
-    ppapi::host::HostMessageContext* context,
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    ppapi::host::HostMessageContext* context) {
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;
-
-  if (bound_instance_)
-    bound_instance_->AddLatencyInfo(latency_info);
 
   PP_Resource old_image_data = 0;
   flush_reply_context_ = context->MakeReplyMessageContext();

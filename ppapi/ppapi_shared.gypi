@@ -213,7 +213,6 @@
           'thunk/ppb_image_data_api.h',
           'thunk/ppb_image_data_thunk.cc',
           'thunk/ppb_input_event_api.h',
-          'thunk/ppb_input_event_private_thunk.cc',
           'thunk/ppb_input_event_thunk.cc',
           'thunk/ppb_instance_api.h',
           'thunk/ppb_instance_private_thunk.cc',

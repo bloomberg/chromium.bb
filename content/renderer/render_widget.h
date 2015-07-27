@@ -8,7 +8,6 @@
 #include <deque>
 #include <map>
 
-#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -222,10 +221,6 @@ class CONTENT_EXPORT RenderWidget
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
 
   RenderWidgetCompositor* compositor() const;
-
-  const ui::LatencyInfo* current_event_latency_info() const {
-    return current_event_latency_info_;
-  }
 
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback);
 
@@ -782,8 +777,6 @@ class CONTENT_EXPORT RenderWidget
   // completed gesture.
   std::queue<SyntheticGestureCompletionCallback>
       pending_synthetic_gesture_callbacks_;
-
-  const ui::LatencyInfo* current_event_latency_info_;
 
   uint32 next_output_surface_id_;
 

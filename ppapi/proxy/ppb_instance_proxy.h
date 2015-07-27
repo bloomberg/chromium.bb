@@ -73,7 +73,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                              uint32_t event_classes) override;
   int32_t RequestFilteringInputEvents(PP_Instance instance,
                                       uint32_t event_classes) override;
-  void StartTrackingLatency(PP_Instance instance) override;
   void ClearInputEventRequest(PP_Instance instance,
                               uint32_t event_classes) override;
   void PostMessage(PP_Instance instance, PP_Var message) override;
@@ -200,7 +199,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void OnHostMsgRequestInputEvents(PP_Instance instance,
                                    bool is_filtering,
                                    uint32_t event_classes);
-  void OnHostMsgStartTrackingLatency(PP_Instance instance);
   void OnHostMsgClearInputEvents(PP_Instance instance,
                                  uint32_t event_classes);
   void OnHostMsgPostMessage(PP_Instance instance,

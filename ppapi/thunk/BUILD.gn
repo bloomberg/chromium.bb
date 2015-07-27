@@ -68,7 +68,6 @@ source_set("thunk") {
     "ppb_image_data_api.h",
     "ppb_image_data_thunk.cc",
     "ppb_input_event_api.h",
-    "ppb_input_event_private_thunk.cc",
     "ppb_input_event_thunk.cc",
     "ppb_instance_api.h",
     "ppb_instance_private_thunk.cc",

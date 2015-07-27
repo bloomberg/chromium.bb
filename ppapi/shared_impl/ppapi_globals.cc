@@ -68,17 +68,6 @@ bool PpapiGlobals::IsPluginGlobals() const { return false; }
 
 void PpapiGlobals::MarkPluginIsActive() {}
 
-void PpapiGlobals::AddLatencyInfo(const ui::LatencyInfo& latency_info,
-                                   PP_Instance instance) {
-  latency_info_for_frame_[instance].push_back(latency_info);
-}
-
-void PpapiGlobals::TransferLatencyInfoTo(
-    std::vector<ui::LatencyInfo>* latency_info, PP_Instance instance) {
-  latency_info->swap(latency_info_for_frame_[instance]);
-  latency_info_for_frame_.erase(instance);
-}
-
 // static
 PpapiGlobals* PpapiGlobals::GetThreadLocalPointer() {
   return tls_ppapi_globals_for_test.Pointer()->Get();

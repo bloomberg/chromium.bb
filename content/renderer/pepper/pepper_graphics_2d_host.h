@@ -15,7 +15,6 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -108,8 +107,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
                           const PP_Point& amount);
   int32_t OnHostMsgReplaceContents(ppapi::host::HostMessageContext* context,
                                    const ppapi::HostResource& image_data);
-  int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context,
-                         const std::vector<ui::LatencyInfo>& latency_info);
+  int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgSetScale(ppapi::host::HostMessageContext* context,
                             float scale);
   int32_t OnHostMsgReadImageData(ppapi::host::HostMessageContext* context,

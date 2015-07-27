@@ -45,7 +45,6 @@
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',
             '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
             '../third_party/khronos/khronos.gyp:khronos_headers',
-            '../ui/events/latency_info_nacl.gyp:latency_info_nacl',
           ],
         },
       ],

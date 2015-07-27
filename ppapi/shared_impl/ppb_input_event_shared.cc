@@ -192,20 +192,6 @@ PP_TouchPoint PPB_InputEvent_Shared::GetTouchById(PP_TouchListType list,
   return PP_MakeTouchPoint();
 }
 
-PP_Bool PPB_InputEvent_Shared::TraceInputLatency(PP_Bool has_damage) {
-  ui::LatencyInfo latency = data_.latency_info;
-  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
-                           0, NULL))
-    return PP_FALSE;
-  if (has_damage) {
-    PpapiGlobals::Get()->AddLatencyInfo(latency, pp_instance());
-  } else {
-    latency.AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT, 0, 0);
-  }
-  return PP_TRUE;
-}
-
 // static
 PP_Resource PPB_InputEvent_Shared::CreateIMEInputEvent(
     ResourceObjectType type,

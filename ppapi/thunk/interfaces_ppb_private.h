@@ -59,7 +59,4 @@ PROXIED_IFACE(PPB_FONT_DEV_INTERFACE_0_6,
               PPB_BrowserFont_Trusted_1_0)
 #endif  // !defined(OS_NACL)
 
-PROXIED_IFACE(PPB_INPUTEVENT_PRIVATE_INTERFACE_0_1,
-              PPB_InputEvent_Private_0_1)
-
 #include "ppapi/thunk/interfaces_postamble.h"

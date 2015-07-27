@@ -79,7 +79,6 @@
 #include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
-#include "ui/events/ipc/latency_info_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT PPAPI_PROXY_EXPORT
@@ -377,7 +376,6 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::InputEventData)
   IPC_STRUCT_TRAITS_MEMBER(touches)
   IPC_STRUCT_TRAITS_MEMBER(changed_touches)
   IPC_STRUCT_TRAITS_MEMBER(target_touches)
-  IPC_STRUCT_TRAITS_MEMBER(latency_info)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::HostPortPair)
@@ -1006,8 +1004,6 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_RequestInputEvents,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_ClearInputEvents,
                     PP_Instance /* instance */,
                     uint32_t /* event_classes */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_StartTrackingLatency,
-                    PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PostMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* message */)
@@ -1555,8 +1551,7 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_SetScale,
                      float /* scale */)
 
 // Graphics2D, plugin -> host -> plugin
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_Graphics2D_Flush,
-                     std::vector<ui::LatencyInfo> /* latency_info */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Graphics2D_Flush)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_FlushAck)
 
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,

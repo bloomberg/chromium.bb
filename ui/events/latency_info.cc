@@ -21,7 +21,6 @@ const char* GetComponentName(ui::LatencyComponentType type) {
 #define CASE_TYPE(t) case ui::t:  return #t
   switch (type) {
     CASE_TYPE(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT);
     CASE_TYPE(LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT);
@@ -43,7 +42,6 @@ const char* GetComponentName(ui::LatencyComponentType type) {
     CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT);
     default:
       DLOG(WARNING) << "Unhandled LatencyComponentType.\n";
       break;
@@ -61,7 +59,6 @@ bool IsTerminalComponent(ui::LatencyComponentType type) {
     case ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT:
     case ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT:
     case ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT:
-    case ui::INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT:
       return true;
     default:
       return false;
@@ -70,13 +67,11 @@ bool IsTerminalComponent(ui::LatencyComponentType type) {
 
 bool IsBeginComponent(ui::LatencyComponentType type) {
   return (type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          type == ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT ||
           type == ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
 }
 
 bool IsInputLatencyBeginComponent(ui::LatencyComponentType type) {
-  return (type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          type == ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT);
+  return type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
 }
 
 // This class is for converting latency info to trace buffer friendly format.

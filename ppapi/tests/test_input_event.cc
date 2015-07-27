@@ -31,7 +31,6 @@ pp::Point GetCenter(const pp::Rect& rect) {
 
 void TestInputEvent::RunTests(const std::string& filter) {
   RUN_TEST(Events, filter);
-  RUN_TEST(EventsLatencyTracking, filter);
 
   // The AcceptTouchEvent_N tests should not be run when the filter is empty;
   // they can only be run one at a time.
@@ -56,9 +55,7 @@ TestInputEvent::TestInputEvent(TestingInstance* instance)
       view_rect_(),
       expected_input_event_(0),
       received_expected_event_(false),
-      received_finish_message_(false),
-      enable_latency_tracking_(false),
-      last_latency_tracking_successful_(false) {
+      received_finish_message_(false) {
 }
 
 TestInputEvent::~TestInputEvent() {
@@ -75,8 +72,6 @@ TestInputEvent::~TestInputEvent() {
 bool TestInputEvent::Init() {
   input_event_interface_ = static_cast<const PPB_InputEvent*>(
       pp::Module::Get()->GetBrowserInterface(PPB_INPUT_EVENT_INTERFACE));
-  input_event_private_interface_ = static_cast<const PPB_InputEvent_Private*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_INPUTEVENT_PRIVATE_INTERFACE));
   mouse_input_event_interface_ = static_cast<const PPB_MouseInputEvent*>(
       pp::Module::Get()->GetBrowserInterface(
           PPB_MOUSE_INPUT_EVENT_INTERFACE));
@@ -92,7 +87,6 @@ bool TestInputEvent::Init() {
 
   bool success =
       input_event_interface_ &&
-      input_event_private_interface_ &&
       mouse_input_event_interface_ &&
       wheel_input_event_interface_ &&
       keyboard_input_event_interface_ &&
@@ -311,10 +305,6 @@ bool TestInputEvent::HandleInputEvent(const pp::InputEvent& input_event) {
         expected_input_event_.pp_resource());
   }
   // Handle all input events.
-  if (enable_latency_tracking_) {
-    pp::InputEventPrivate private_event(input_event);
-    last_latency_tracking_successful_ = private_event.TraceInputLatency(true);
-  }
   return true;
 }
 
@@ -329,28 +319,6 @@ void TestInputEvent::HandleMessage(const pp::Var& message_data) {
 
 void TestInputEvent::DidChangeView(const pp::View& view) {
   view_rect_ = view.GetRect();
-}
-
-std::string TestInputEvent::TestEventsLatencyTracking() {
-  enable_latency_tracking_ = true;
-  input_event_interface_->RequestInputEvents(instance_->pp_instance(),
-                                             PP_INPUTEVENT_CLASS_TOUCH);
-  PostMessageBarrier();
-
-  ASSERT_TRUE(SimulateInputEvent(CreateTouchEvent(PP_INPUTEVENT_TYPE_TOUCHSTART,
-                                                  pp::FloatPoint(12, 23))));
-  // Without calling StartTrackingLatency() first, TraceInputLatency() won't
-  // take effect and will return false;
-  ASSERT_FALSE(last_latency_tracking_successful_);
-
-  input_event_private_interface_->StartTrackingLatency(
-      instance_->pp_instance());
-
-  ASSERT_TRUE(SimulateInputEvent(CreateTouchEvent(PP_INPUTEVENT_TYPE_TOUCHSTART,
-                                                  pp::FloatPoint(12, 23))));
-  ASSERT_TRUE(last_latency_tracking_successful_);
-
-  PASS();
 }
 
 std::string TestInputEvent::TestEvents() {

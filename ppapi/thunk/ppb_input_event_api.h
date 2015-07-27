@@ -47,9 +47,6 @@ class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
                                         uint32_t index) = 0;
   virtual PP_TouchPoint GetTouchById(PP_TouchListType list,
                                      uint32_t id) = 0;
-
-  //  Private API.
-  virtual PP_Bool TraceInputLatency(PP_Bool has_damage) = 0;
 };
 
 }  // namespace thunk

@@ -509,7 +509,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       suppress_next_char_events_(false),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
-      current_event_latency_info_(NULL),
       next_output_surface_id_(0),
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
@@ -1111,9 +1110,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       ime_event_guard_maybe.reset(new ImeEventGuard(this));
   }
 #endif
-
-  base::AutoReset<const ui::LatencyInfo*> resetter(&current_event_latency_info_,
-                                                   &latency_info);
 
   base::TimeTicks start_time;
   if (base::TimeTicks::IsHighResolution())

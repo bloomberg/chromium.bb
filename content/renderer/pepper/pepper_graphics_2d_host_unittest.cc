@@ -15,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -65,8 +64,7 @@ class PepperGraphics2DHostTest : public testing::Test {
   void Flush() {
     ppapi::host::HostMessageContext context(
         ppapi::proxy::ResourceMessageCallParams(host_->pp_resource(), 0));
-    std::vector<ui::LatencyInfo> latency;
-    host_->OnHostMsgFlush(&context, latency);
+    host_->OnHostMsgFlush(&context);
     host_->ViewInitiatedPaint();
     host_->SendOffscreenFlushAck();
   }

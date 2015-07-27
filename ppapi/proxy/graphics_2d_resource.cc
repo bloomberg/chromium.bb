@@ -122,12 +122,9 @@ int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
   current_flush_callback_ = callback;
 
-  std::vector<ui::LatencyInfo> latency_info;
-  PpapiGlobals::Get()->TransferLatencyInfoTo(&latency_info, pp_instance());
-
   Call<PpapiPluginMsg_Graphics2D_FlushAck>(
       RENDERER,
-      PpapiHostMsg_Graphics2D_Flush(latency_info),
+      PpapiHostMsg_Graphics2D_Flush(),
       base::Bind(&Graphics2DResource::OnPluginMsgFlushACK, this));
   return PP_OK_COMPLETIONPENDING;
 }

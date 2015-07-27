@@ -57,7 +57,6 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -422,7 +421,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                       uint32_t event_classes) override;
   void ClearInputEventRequest(PP_Instance instance,
                               uint32_t event_classes) override;
-  void StartTrackingLatency(PP_Instance instance) override;
   void PostMessage(PP_Instance instance, PP_Var message) override;
   int32_t RegisterMessageHandler(PP_Instance instance,
                                  void* user_data,
@@ -535,8 +533,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // PluginInstanceThrottler::Observer
   void OnThrottleStateChange() override;
   void OnHiddenForPlaceholder(bool hidden) override;
-
-  void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
@@ -913,10 +909,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The text that is currently selected in the plugin.
   base::string16 selected_text_;
-
-  int64 last_input_number_;
-
-  bool is_tracking_latency_;
 
   bool initialized_;
 
