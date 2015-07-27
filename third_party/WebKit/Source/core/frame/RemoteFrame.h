@@ -61,7 +61,7 @@ private:
     RemoteFrameClient* remoteFrameClient() const;
 
     RefPtrWillBeMember<RemoteFrameView> m_view;
-    RefPtr<RemoteSecurityContext> m_securityContext;
+    RefPtrWillBeMember<RemoteSecurityContext> m_securityContext;
     RefPtrWillBeMember<RemoteDOMWindow> m_domWindow;
     OwnPtrWillBeMember<WindowProxyManager> m_windowProxyManager;
     WebLayer* m_remotePlatformLayer;

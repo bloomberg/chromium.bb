@@ -37,7 +37,7 @@ public:
     void stop() override;
     bool hasPendingActivity() const override;
 
-    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy();
+    ContentSecurityPolicy* contentSecurityPolicy();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
@@ -57,7 +57,7 @@ private:
     void onFinished();
 
     OwnPtr<WorkerScriptLoader> m_scriptLoader;
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+    RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };
 

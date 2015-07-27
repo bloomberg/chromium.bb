@@ -215,6 +215,12 @@ ContentSecurityPolicy::~ContentSecurityPolicy()
 {
 }
 
+DEFINE_TRACE(ContentSecurityPolicy)
+{
+    visitor->trace(m_executionContext);
+    visitor->trace(m_consoleMessages);
+}
+
 Document* ContentSecurityPolicy::document() const
 {
     return m_executionContext->isDocument() ? toDocument(m_executionContext) : nullptr;

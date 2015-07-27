@@ -32,7 +32,7 @@ protected:
         csp->bindToExecutionContext(document.get());
     }
 
-    RefPtr<ContentSecurityPolicy> csp;
+    RefPtrWillBePersistent<ContentSecurityPolicy> csp;
     RefPtrWillBePersistent<Document> document;
 };
 

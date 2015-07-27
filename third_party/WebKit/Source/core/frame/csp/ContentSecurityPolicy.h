@@ -32,6 +32,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/Resource.h"
 #include "core/frame/ConsoleTypes.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -62,11 +63,11 @@ class SecurityOrigin;
 
 typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList>> CSPDirectiveListVector;
-typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 
-class CORE_EXPORT ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
-    WTF_MAKE_FAST_ALLOCATED(ContentSecurityPolicy);
+class CORE_EXPORT ContentSecurityPolicy : public RefCountedWillBeGarbageCollectedFinalized<ContentSecurityPolicy> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ContentSecurityPolicy);
 public:
     // CSP Level 1 Directives
     static const char ConnectSrc[];
@@ -122,11 +123,12 @@ public:
         WillNotThrowException
     };
 
-    static PassRefPtr<ContentSecurityPolicy> create()
+    static PassRefPtrWillBeRawPtr<ContentSecurityPolicy> create()
     {
-        return adoptRef(new ContentSecurityPolicy());
+        return adoptRefWillBeNoop(new ContentSecurityPolicy());
     }
     ~ContentSecurityPolicy();
+    DECLARE_TRACE();
 
     void bindToExecutionContext(ExecutionContext*);
     void copyStateFrom(const ContentSecurityPolicy*);
@@ -272,7 +274,7 @@ private:
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);
 
-    ExecutionContext* m_executionContext;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
     bool m_overrideInlineStyleAllowed;
     CSPDirectiveListVector m_policies;
     ConsoleMessageVector m_consoleMessages;

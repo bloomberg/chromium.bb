@@ -101,7 +101,7 @@ WorkerGlobalScope::~WorkerGlobalScope()
 void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers)
 {
     if (!contentSecurityPolicy()) {
-        RefPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+        RefPtrWillBeRawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
         setContentSecurityPolicy(csp);
     }
     for (const auto& policyAndType : headers)
@@ -400,6 +400,7 @@ DEFINE_TRACE(WorkerGlobalScope)
 #endif
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
+    SecurityContext::trace(visitor);
 }
 
 } // namespace blink

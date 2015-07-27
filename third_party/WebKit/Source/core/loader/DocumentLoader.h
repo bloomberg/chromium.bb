@@ -124,7 +124,7 @@ namespace blink {
         void clearRedirectChain();
         void appendRedirect(const KURL&);
 
-        PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+        PassRefPtrWillBeRawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
         ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 
@@ -220,7 +220,7 @@ namespace blink {
 
         PersistentWillBeMember<ApplicationCacheHost> m_applicationCacheHost;
 
-        RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+        RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
         ClientHintsPreferences m_clientHintsPreferences;
         InitialScrollState m_initialScrollState;
 

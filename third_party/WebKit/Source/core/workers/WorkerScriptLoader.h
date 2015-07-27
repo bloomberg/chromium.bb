@@ -74,8 +74,8 @@ public:
     PassOwnPtr<Vector<char>> releaseCachedMetadata() { return m_cachedMetadata.release(); }
     const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
-    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy() { return m_contentSecurityPolicy; }
-    PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+    ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
+    PassRefPtrWillBeRawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
     // ThreadableLoaderClient
     void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
@@ -110,7 +110,7 @@ private:
     long long m_appCacheID;
     OwnPtr<Vector<char>> m_cachedMetadata;
     WebURLRequest::RequestContext m_requestContext;
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+    RefPtrWillBePersistent<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 } // namespace blink

@@ -4854,7 +4854,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     setSecurityOrigin(initializer.owner()->securityOrigin());
 }
 
-void Document::initContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> csp)
+void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> csp)
 {
     setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
     if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame()) {
@@ -5776,6 +5776,7 @@ DEFINE_TRACE(Document)
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);
     DocumentLifecycleNotifier::trace(visitor);
+    SecurityContext::trace(visitor);
 }
 
 template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;

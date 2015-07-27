@@ -7,12 +7,16 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/SecurityContext.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CORE_EXPORT RemoteSecurityContext : public SecurityContext, public RefCounted<RemoteSecurityContext> {
+class CORE_EXPORT RemoteSecurityContext : public RefCountedWillBeGarbageCollectedFinalized<RemoteSecurityContext>, public SecurityContext {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
 public:
-    static PassRefPtr<RemoteSecurityContext> create();
+    DECLARE_VIRTUAL_TRACE();
+
+    static PassRefPtrWillBeRawPtr<RemoteSecurityContext> create();
     void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);
 
     // FIXME: implement

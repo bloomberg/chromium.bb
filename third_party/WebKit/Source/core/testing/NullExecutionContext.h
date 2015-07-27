@@ -47,6 +47,7 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_queue);
+        SecurityContext::trace(visitor);
         ExecutionContext::trace(visitor);
     }
 

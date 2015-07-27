@@ -44,13 +44,18 @@ SecurityContext::~SecurityContext()
 {
 }
 
+DEFINE_TRACE(SecurityContext)
+{
+    visitor->trace(m_contentSecurityPolicy);
+}
+
 void SecurityContext::setSecurityOrigin(PassRefPtr<SecurityOrigin> securityOrigin)
 {
     m_securityOrigin = securityOrigin;
     m_haveInitializedSecurityOrigin = true;
 }
 
-void SecurityContext::setContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy)
+void SecurityContext::setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> contentSecurityPolicy)
 {
     m_contentSecurityPolicy = contentSecurityPolicy;
 }

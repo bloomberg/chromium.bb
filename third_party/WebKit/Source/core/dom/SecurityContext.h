@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -42,9 +43,11 @@ class SecurityOrigin;
 class ContentSecurityPolicy;
 class KURL;
 
-class CORE_EXPORT SecurityContext {
+class CORE_EXPORT SecurityContext : public WillBeGarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(SecurityContext);
 public:
+    DECLARE_VIRTUAL_TRACE();
+
     using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
 
     // The ordering here is important: 'Upgrade' overrides 'DoNotUpgrade'.
@@ -81,7 +84,7 @@ protected:
     SecurityContext();
     virtual ~SecurityContext();
 
-    void setContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy>);
+    void setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy>);
 
     void didFailToInitializeSecurityOrigin() { m_haveInitializedSecurityOrigin = false; }
     bool haveInitializedSecurityOrigin() const { return m_haveInitializedSecurityOrigin; }
@@ -89,7 +92,7 @@ protected:
 private:
     bool m_haveInitializedSecurityOrigin;
     RefPtr<SecurityOrigin> m_securityOrigin;
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+    RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
 
     SandboxFlags m_sandboxFlags;
 

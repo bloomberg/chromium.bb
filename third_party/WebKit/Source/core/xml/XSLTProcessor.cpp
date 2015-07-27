@@ -89,7 +89,7 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
             result->updateSecurityOrigin(oldDocument->securityOrigin());
             result->setCookieURL(oldDocument->cookieURL());
 
-            RefPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+            RefPtrWillBeRawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
             csp->copyStateFrom(oldDocument->contentSecurityPolicy());
             result->initContentSecurityPolicy(csp);
         }

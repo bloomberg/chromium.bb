@@ -32,7 +32,7 @@ protected:
         document->setSecurityOrigin(secureOrigin);
     }
 
-    RefPtr<ContentSecurityPolicy> csp;
+    RefPtrWillBePersistent<ContentSecurityPolicy> csp;
     KURL secureURL;
     RefPtr<SecurityOrigin> secureOrigin;
     RefPtrWillBePersistent<Document> document;
@@ -66,7 +66,7 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom)
     KURL exampleUrl(KURL(), "http://example.com");
     KURL notExampleUrl(KURL(), "http://not-example.com");
 
-    RefPtr<ContentSecurityPolicy> csp2 = ContentSecurityPolicy::create();
+    RefPtrWillBeRawPtr<ContentSecurityPolicy> csp2 = ContentSecurityPolicy::create();
     csp2->copyStateFrom(csp.get());
     EXPECT_FALSE(csp2->allowScriptFromSource(exampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
     EXPECT_TRUE(csp2->allowPluginType("application/x-type-1", "application/x-type-1", exampleUrl, ContentSecurityPolicy::SuppressReport));
@@ -83,7 +83,7 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom)
     KURL exampleUrl(KURL(), "http://example.com");
     KURL notExampleUrl(KURL(), "http://not-example.com");
 
-    RefPtr<ContentSecurityPolicy> csp2 = ContentSecurityPolicy::create();
+    RefPtrWillBeRawPtr<ContentSecurityPolicy> csp2 = ContentSecurityPolicy::create();
     csp2->copyPluginTypesFrom(csp.get());
     EXPECT_TRUE(csp2->allowScriptFromSource(exampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
     EXPECT_TRUE(csp2->allowPluginType("application/x-type-1", "application/x-type-1", exampleUrl, ContentSecurityPolicy::SuppressReport));

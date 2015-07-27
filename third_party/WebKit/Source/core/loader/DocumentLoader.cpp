@@ -123,6 +123,7 @@ DEFINE_TRACE(DocumentLoader)
     visitor->trace(m_writer);
     visitor->trace(m_archive);
     visitor->trace(m_applicationCacheHost);
+    visitor->trace(m_contentSecurityPolicy);
 }
 
 unsigned long DocumentLoader::mainResourceIdentifier() const

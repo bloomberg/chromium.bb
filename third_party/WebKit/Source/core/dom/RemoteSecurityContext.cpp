@@ -27,9 +27,14 @@ RemoteSecurityContext::RemoteSecurityContext()
     // grantUniversalAccess().
 }
 
-PassRefPtr<RemoteSecurityContext> RemoteSecurityContext::create()
+PassRefPtrWillBeRawPtr<RemoteSecurityContext> RemoteSecurityContext::create()
 {
-    return adoptRef(new RemoteSecurityContext());
+    return adoptRefWillBeNoop(new RemoteSecurityContext());
+}
+
+DEFINE_TRACE(RemoteSecurityContext)
+{
+    SecurityContext::trace(visitor);
 }
 
 void RemoteSecurityContext::setReplicatedOrigin(PassRefPtr<SecurityOrigin> origin)

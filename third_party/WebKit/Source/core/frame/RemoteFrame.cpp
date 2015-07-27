@@ -44,6 +44,7 @@ RemoteFrame::~RemoteFrame()
 DEFINE_TRACE(RemoteFrame)
 {
     visitor->trace(m_view);
+    visitor->trace(m_securityContext);
     visitor->trace(m_domWindow);
     visitor->trace(m_windowProxyManager);
     Frame::trace(visitor);
