@@ -59,3 +59,19 @@ function requestDeviceWithKeyDown() {
     let args = arguments;
     return callWithKeyDown(() => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
 }
+
+// errorUUID(alias) returns a UUID with the top 32 bits of
+// "00000000-97e5-4cd7-b9f1-f5a427670c59" replaced with the bits of |alias|.
+// For example, errorUUID(0xDEADBEEF) returns
+// "deadbeef-97e5-4cd7-b9f1-f5a427670c59". The bottom 96 bits of error UUIDs
+// were generated as a type 4 (random) UUID.
+function errorUUID(uuidAlias) {
+  // Make the number positive.
+  uuidAlias >>>= 0;
+  // Append the alias as a hex number.
+  var strAlias = "0000000" + uuidAlias.toString(16);
+  // Get last 8 digits of strAlias.
+  strAlias = strAlias.substr(-8);
+  // Append Base Error UUID
+  return strAlias + "-97e5-4cd7-b9f1-f5a427670c59";
+}
