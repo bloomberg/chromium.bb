@@ -338,6 +338,8 @@ void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const
     String message;
     if (!m_document || m_document->url().isNull())
         message = "Unsafe attempt to load URL " + url.elidedString() + '.';
+    else if (url.isLocalFile() || m_document->url().isLocalFile())
+        message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + m_document->url().elidedString() + ". 'file:' URLs are treated as unique security origins.\n";
     else
         message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + m_document->url().elidedString() + ". Domains, protocols and ports must match.\n";
 
