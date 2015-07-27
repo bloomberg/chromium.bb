@@ -5,6 +5,7 @@
 #ifndef IPC_ATTACHMENT_BROKER_H_
 #define IPC_ATTACHMENT_BROKER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "ipc/brokerable_attachment.h"
@@ -61,21 +62,41 @@ class IPC_EXPORT AttachmentBroker : public Listener {
 
   // Returns whether the attachment was available. If the attachment was
   // available, populates the output parameter |attachment|.
-  virtual bool GetAttachmentWithId(
-      BrokerableAttachment::AttachmentId id,
-      scoped_refptr<BrokerableAttachment>* attachment) = 0;
+  bool GetAttachmentWithId(BrokerableAttachment::AttachmentId id,
+                           scoped_refptr<BrokerableAttachment>* attachment);
 
   // Any given observer should only ever add itself once to the observer list.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
+  using AttachmentVector = std::vector<scoped_refptr<BrokerableAttachment>>;
+
+  // Adds |attachment| to |attachments_|, and notifies the observers.
+  void HandleReceivedAttachment(
+      const scoped_refptr<BrokerableAttachment>& attachment);
+
+  // Informs the observers that a new BrokerableAttachment has been received.
   void NotifyObservers(const BrokerableAttachment::AttachmentId& id);
 
+  // This method is exposed for testing only.
+  AttachmentVector* get_attachments() { return &attachments_; }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(AttachmentBroker);
+#if defined(OS_WIN)
+  FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerWinTest, ReceiveValidMessage);
+  FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerWinTest, ReceiveInvalidMessage);
+#endif  // defined(OS_WIN)
+
+  // A vector of BrokerableAttachments that have been received, but not yet
+  // consumed.
+  // A std::vector is used instead of a std::map because this container is
+  // expected to have few elements, for which a std::vector is expected to have
+  // better performance.
+  AttachmentVector attachments_;
 
   std::vector<Observer*> observers_;
+  DISALLOW_COPY_AND_ASSIGN(AttachmentBroker);
 };
 
 }  // namespace IPC

@@ -54,29 +54,10 @@ class MockAttachmentBroker : public AttachmentBroker {
 
   bool OnMessageReceived(const Message& message) override { return false; }
 
-  bool GetAttachmentWithId(
-      BrokerableAttachment::AttachmentId id,
-      scoped_refptr<BrokerableAttachment>* attachment) override {
-    for (AttachmentSet::iterator it = attachments_.begin();
-         it != attachments_.end(); ++it) {
-      if ((*it)->GetIdentifier() == id) {
-        *attachment = *it;
-        attachments_.erase(it);
-        return true;
-      }
-    }
-    return false;
-  }
-
   void AddAttachment(scoped_refptr<BrokerableAttachment> attachment) {
-    attachments_.insert(attachment);
+    get_attachments()->push_back(attachment);
     NotifyObservers(attachment->GetIdentifier());
   }
-
- private:
-  // A set of attachmetns that have been brokered and are available to
-  // consumers.
-  AttachmentSet attachments_;
 };
 
 class MockChannelReader : public ChannelReader {

@@ -45,6 +45,7 @@
         '..'
       ],
       'sources': [
+        'attachment_broker_privileged_win_unittest.cc',
         'attachment_broker_win_unittest.cc',
         'ipc_channel_posix_unittest.cc',
         'ipc_channel_proxy_unittest.cc',

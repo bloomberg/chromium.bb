@@ -22,13 +22,11 @@ BrokerableAttachment::AttachmentId GetRandomId() {
 }  // namespace
 
 BrokerableAttachment::BrokerableAttachment()
-    : id_(GetRandomId()), needs_brokering_(false) {
-}
+    : id_(GetRandomId()), needs_brokering_(false) {}
 
 BrokerableAttachment::BrokerableAttachment(const AttachmentId& id,
                                            bool needs_brokering)
-    : id_(id), needs_brokering_(needs_brokering) {
-}
+    : id_(id), needs_brokering_(needs_brokering) {}
 
 BrokerableAttachment::~BrokerableAttachment() {
 }

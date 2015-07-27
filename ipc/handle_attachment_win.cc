@@ -15,13 +15,11 @@ HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle)
 
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id, false),
-      handle_(LongToHandle(wire_format.handle)) {
-}
+      handle_(LongToHandle(wire_format.handle)) {}
 
 HandleAttachmentWin::HandleAttachmentWin(
     const BrokerableAttachment::AttachmentId& id)
-    : BrokerableAttachment(id, true), handle_(INVALID_HANDLE_VALUE) {
-}
+    : BrokerableAttachment(id, true), handle_(INVALID_HANDLE_VALUE) {}
 
 HandleAttachmentWin::~HandleAttachmentWin() {
 }

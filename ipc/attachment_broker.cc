@@ -8,9 +8,21 @@
 
 namespace IPC {
 
-AttachmentBroker::AttachmentBroker() {
-}
-AttachmentBroker::~AttachmentBroker() {
+AttachmentBroker::AttachmentBroker() {}
+AttachmentBroker::~AttachmentBroker() {}
+
+bool AttachmentBroker::GetAttachmentWithId(
+    BrokerableAttachment::AttachmentId id,
+    scoped_refptr<BrokerableAttachment>* out_attachment) {
+  for (AttachmentVector::iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    if ((*it)->GetIdentifier() == id) {
+      *out_attachment = *it;
+      attachments_.erase(it);
+      return true;
+    }
+  }
+  return false;
 }
 
 void AttachmentBroker::AddObserver(AttachmentBroker::Observer* observer) {
@@ -23,6 +35,12 @@ void AttachmentBroker::RemoveObserver(AttachmentBroker::Observer* observer) {
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   if (it != observers_.end())
     observers_.erase(it);
+}
+
+void AttachmentBroker::HandleReceivedAttachment(
+    const scoped_refptr<BrokerableAttachment>& attachment) {
+  attachments_.push_back(attachment);
+  NotifyObservers(attachment->GetIdentifier());
 }
 
 void AttachmentBroker::NotifyObservers(

@@ -161,5 +161,5 @@ scoped_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
     const IPC::ChannelHandle& handle,
     base::SequencedTaskRunner* runner) {
   return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER,
-                                     nullptr);
+                                     attachment_broker_);
 }

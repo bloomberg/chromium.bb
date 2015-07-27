@@ -14,6 +14,8 @@
           'attachment_broker.cc',
           'attachment_broker.h',
           'attachment_broker_messages.h',
+          'attachment_broker_privileged_win.cc',
+          'attachment_broker_privileged_win.h',
           'attachment_broker_win.cc',
           'attachment_broker_win.h',
           'brokerable_attachment.cc',

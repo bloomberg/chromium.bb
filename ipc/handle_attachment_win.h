@@ -25,6 +25,7 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
     // void*, whose size varies between 32 and 64-bit processes. Using a
     // int32_t means that 64-bit processes will need to perform both up-casting
     // and down-casting. This is performed using the appropriate Windows apis.
+    // A value of 0 is equivalent to an invalid handle.
     int32_t handle;
     // The id of the destination process that the handle is duplicated into.
     base::ProcessId destination_process;
