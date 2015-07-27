@@ -5,13 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TEST_SCOPED_FAKE_NSWINDOW_MAIN_STATUS_H_
 #define CHROME_BROWSER_UI_TEST_SCOPED_FAKE_NSWINDOW_MAIN_STATUS_H_
 
-#include "base/memory/scoped_ptr.h"
-
-namespace base {
-namespace mac {
-class ScopedObjCClassSwizzler;
-}
-}
+#import "base/mac/scoped_objc_class_swizzler.h"
 
 @class NSWindow;
 
@@ -24,7 +18,7 @@ class ScopedFakeNSWindowMainStatus {
   ~ScopedFakeNSWindowMainStatus();
 
  private:
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
+  base::mac::ScopedObjCClassSwizzler swizzler_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeNSWindowMainStatus);
 };
