@@ -268,6 +268,7 @@ if (is_multi_dll_chrome) {
       ":child_dependencies",
       ":chrome_child_manifest",
       ":chrome_dll_version",
+      "//base/allocator",
       "//chrome/browser/policy:path_parser",
       "//content/public/app:child",
     ]
