@@ -57065,13 +57065,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="ExtensionUninstallSource" type="int">
-  <int value="0" label="Internal"/>
+  <int value="0" label="Testing"/>
   <int value="1" label="Context menu"/>
-  <int value="2" label="App list"/>
-  <int value="3" label="App info dialog"/>
-  <int value="4" label="App launcher page"/>
-  <int value="5" label="Extensions page"/>
-  <int value="6" label="Extension"/>
+  <int value="2" label="Permissions increase"/>
+  <int value="3" label="Storage threshold exceeded"/>
+  <int value="4" label="App list"/>
+  <int value="5" label="App info dialog"/>
+  <int value="6" label="Chrome apps page"/>
+  <int value="7" label="Chrome extensions page"/>
+  <int value="8" label="Extension"/>
 </enum>
 
 <enum name="ExtensionUnpackFailureReason" type="int">
