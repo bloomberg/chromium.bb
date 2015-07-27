@@ -529,6 +529,7 @@
       'browser/renderer_host/media/media_stream_ui_proxy_unittest.cc',
       'browser/renderer_host/media/video_capture_buffer_pool_unittest.cc',
       'browser/renderer_host/media/video_capture_controller_unittest.cc',
+      'browser/renderer_host/media/video_capture_device_client_unittest.cc',
       'browser/renderer_host/media/video_capture_host_unittest.cc',
       'browser/renderer_host/media/video_capture_manager_unittest.cc',
       'browser/renderer_host/render_process_host_unittest.cc',
