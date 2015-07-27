@@ -180,7 +180,7 @@ class ProcessState {
 
   // The exploitability rating as determined by the exploitability
   // engine. When the exploitability engine is not enabled this
-  // defaults to EXPLOITABILITY_NONE.
+  // defaults to EXPLOITABILITY_NOT_ANALYZED.
   ExploitabilityRating exploitability_;
 };
 
