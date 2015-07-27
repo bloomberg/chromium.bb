@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,10 +23,6 @@ using bookmarks::BookmarkModel;
 namespace app_list {
 
 namespace {
-
-// The Omnibox keyword for Google search. This is correct even if the user is
-// using an international domain (such as google.com.au).
-const char kGoogleSearchKeyword[] = "google.com";
 
 int ACMatchStyleToTagStyle(int styles) {
   int tag_styles = 0;
@@ -68,6 +65,29 @@ void ACMatchClassificationsToTags(
     tags->push_back(SearchResult::Tag(
         tag_styles, tag_start, text.length()));
   }
+}
+
+// Returns true if |url| is on a Google Search domain. May return false
+// positives.
+bool IsUrlGoogleSearch(const GURL& url) {
+  // Just return true if the second or third level domain is "google". This may
+  // result in false positives (e.g. "google.example.com"), but since we are
+  // only using this to decide when to add the spoken feedback query parameter,
+  // this doesn't have any bad consequences.
+  const char kGoogleDomainLabel[] = "google";
+
+  std::vector<std::string> pieces = base::SplitString(
+      url.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  size_t num_pieces = pieces.size();
+
+  if (num_pieces >= 2 && pieces[num_pieces - 2] == kGoogleDomainLabel)
+    return true;
+
+  if (num_pieces >= 3 && pieces[num_pieces - 3] == kGoogleDomainLabel)
+    return true;
+
+  return false;
 }
 
 // Converts a Google Search URL into a spoken feedback URL, by adding query
@@ -126,8 +146,7 @@ OmniboxResult::~OmniboxResult() {
 void OmniboxResult::Open(int event_flags) {
   RecordHistogram(OMNIBOX_SEARCH_RESULT);
   GURL url = match_.destination_url;
-  if (is_voice_query_ &&
-      base::UTF16ToUTF8(match_.keyword) == kGoogleSearchKeyword) {
+  if (is_voice_query_ && IsUrlGoogleSearch(url)) {
     url = MakeGoogleSearchSpokenFeedbackUrl(url);
   }
   list_controller_->OpenURL(profile_, url, match_.transition,

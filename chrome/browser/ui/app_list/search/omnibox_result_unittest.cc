@@ -28,9 +28,13 @@ const double kAppListRelevance = 0.5;
 const char kWeatherQuery[] = "weather";
 const char kExampleKeyword[] = "example.com";
 const char kExampleWeatherUrl[] = "http://example.com/weather";
-const char kGoogleKeyword[] = "google.com";
+// Typically, this would be "google", "google.com" or "google.com.<country>",
+// but users can change it to whatever they want, so we assume they have.
+const char kGoogleKeyword[] = "mygoog";
 const char kGoogleDescription[] = "Google Search";
-const char kGoogleWeatherUrl[] = "http://google.com.au/search?q=weather";
+const char kGoogleWeatherUrl[] = "http://google.com/search?q=weather";
+const char kGoogleInternationalWeatherUrl[] =
+    "http://google.com.au/search?q=weather";
 
 }  // namespace
 
@@ -158,6 +162,18 @@ TEST_F(OmniboxResultTest, VoiceQuery) {
         kWeatherQuery, kRelevance, kGoogleWeatherUrl, kWeatherQuery,
         kGoogleDescription, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         kGoogleKeyword, true);
+    result->Open(0);
+    EXPECT_EQ("http://google.com/search?q=weather&gs_ivs=1",
+              GetLastOpenedUrl().spec());
+  }
+
+  // A voice query to a Google international domain. URL should have magic
+  // "speak back" query parameter appended.
+  {
+    scoped_ptr<OmniboxResult> result = CreateOmniboxResult(
+        kWeatherQuery, kRelevance, kGoogleInternationalWeatherUrl,
+        kWeatherQuery, kGoogleDescription,
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, kGoogleKeyword, true);
     result->Open(0);
     EXPECT_EQ("http://google.com.au/search?q=weather&gs_ivs=1",
               GetLastOpenedUrl().spec());
