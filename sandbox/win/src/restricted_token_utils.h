@@ -38,32 +38,6 @@ DWORD CreateRestrictedToken(TokenLevel security_level,
                             TokenType token_type,
                             base::win::ScopedHandle* token);
 
-// Starts the process described by the input parameter command_line in a job
-// with a restricted token. Also set the main thread of this newly created
-// process to impersonate a user with more rights so it can initialize
-// correctly.
-//
-// Parameters: primary_level is the security level of the primary token.
-// impersonation_level is the security level of the impersonation token used
-// to initialize the process. job_level is the security level of the job
-// object used to encapsulate the process.
-//
-// The output parameter job_handle is the handle to the job object. It has
-// to be closed with CloseHandle() when not needed. Closing this handle will
-// kill the process started.
-//
-// Note: The process started with this function has to call RevertToSelf() as
-// soon as possible to stop using the impersonation token and start being
-// secure.
-//
-// Note: The Unicode version of this function will fail if the command_line
-// parameter is a const string.
-DWORD StartRestrictedProcessInJob(wchar_t *command_line,
-                                  TokenLevel primary_level,
-                                  TokenLevel impersonation_level,
-                                  JobLevel job_level,
-                                  HANDLE *job_handle);
-
 // Sets the integrity label on a object handle.
 DWORD SetObjectIntegrityLabel(HANDLE handle, SE_OBJECT_TYPE type,
                               const wchar_t* ace_access,

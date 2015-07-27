@@ -525,18 +525,18 @@ bool PolicyBase::SetupService(InterceptionManager* manager, int service) {
   return dispatch->SetupService(manager, service);
 }
 
-ResultCode PolicyBase::MakeJobObject(HANDLE* job) {
+ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
   if (job_level_ != JOB_NONE) {
     // Create the windows job object.
     Job job_obj;
     DWORD result = job_obj.Init(job_level_, NULL, ui_exceptions_,
                                 memory_limit_);
-    if (ERROR_SUCCESS != result) {
+    if (ERROR_SUCCESS != result)
       return SBOX_ERROR_GENERIC;
-    }
-    *job = job_obj.Detach();
+
+    *job = job_obj.Take();
   } else {
-    *job = NULL;
+    *job = base::win::ScopedHandle();
   }
   return SBOX_ALL_OK;
 }

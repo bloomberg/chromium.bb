@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/restricted_token.h"
@@ -134,92 +133,6 @@ DWORD CreateRestrictedToken(TokenLevel security_level,
   }
 
   return err_code;
-}
-
-DWORD StartRestrictedProcessInJob(wchar_t *command_line,
-                                  TokenLevel primary_level,
-                                  TokenLevel impersonation_level,
-                                  JobLevel job_level,
-                                  HANDLE *const job_handle_ret) {
-  Job job;
-  DWORD err_code = job.Init(job_level, NULL, 0, 0);
-  if (ERROR_SUCCESS != err_code)
-    return err_code;
-
-  if (JOB_UNPROTECTED != job_level) {
-    // Share the Desktop handle to be able to use MessageBox() in the sandboxed
-    // application.
-    err_code = job.UserHandleGrantAccess(GetDesktopWindow());
-    if (ERROR_SUCCESS != err_code)
-      return err_code;
-  }
-
-  // Create the primary (restricted) token for the process
-  base::win::ScopedHandle primary_token;
-  err_code = CreateRestrictedToken(primary_level, INTEGRITY_LEVEL_LAST,
-                                   PRIMARY, &primary_token);
-  if (ERROR_SUCCESS != err_code)
-    return err_code;
-
-
-  // Create the impersonation token (restricted) to be able to start the
-  // process.
-  base::win::ScopedHandle impersonation_token;
-  err_code = CreateRestrictedToken(impersonation_level, INTEGRITY_LEVEL_LAST,
-                                   IMPERSONATION, &impersonation_token);
-  if (ERROR_SUCCESS != err_code)
-    return err_code;
-
-  // Start the process
-  STARTUPINFO startup_info = {0};
-  PROCESS_INFORMATION temp_process_info = {};
-  DWORD flags = CREATE_SUSPENDED;
-
-  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
-    // Windows 8 implements nested jobs, but for older systems we need to
-    // break out of any job we're in to enforce our restrictions.
-    flags |= CREATE_BREAKAWAY_FROM_JOB;
-  }
-
-  if (!::CreateProcessAsUser(primary_token.Get(),
-                             NULL,   // No application name.
-                             command_line,
-                             NULL,   // No security attribute.
-                             NULL,   // No thread attribute.
-                             FALSE,  // Do not inherit handles.
-                             flags,
-                             NULL,   // Use the environment of the caller.
-                             NULL,   // Use current directory of the caller.
-                             &startup_info,
-                             &temp_process_info)) {
-    return ::GetLastError();
-  }
-  base::win::ScopedProcessInformation process_info(temp_process_info);
-
-  // Change the token of the main thread of the new process for the
-  // impersonation token with more rights.
-  {
-    HANDLE temp_thread = process_info.thread_handle();
-    if (!::SetThreadToken(&temp_thread, impersonation_token.Get())) {
-      ::TerminateProcess(process_info.process_handle(),
-                         0);  // exit code
-      return ::GetLastError();
-    }
-  }
-
-  err_code = job.AssignProcessToJob(process_info.process_handle());
-  if (ERROR_SUCCESS != err_code) {
-    ::TerminateProcess(process_info.process_handle(),
-                       0);  // exit code
-    return ::GetLastError();
-  }
-
-  // Start the application
-  ::ResumeThread(process_info.thread_handle());
-
-  (*job_handle_ret) = job.Detach();
-
-  return ERROR_SUCCESS;
 }
 
 DWORD SetObjectIntegrityLabel(HANDLE handle, SE_OBJECT_TYPE type,

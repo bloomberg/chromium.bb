@@ -405,12 +405,10 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       return result;
   }
 
-  HANDLE job_temp;
-  result = policy_base->MakeJobObject(&job_temp);
+  base::win::ScopedHandle job;
+  result = policy_base->MakeJobObject(&job);
   if (SBOX_ALL_OK != result)
     return result;
-
-  base::win::ScopedHandle job(job_temp);
 
   // Initialize the startup information from the policy.
   base::win::StartupInformation startup_info;

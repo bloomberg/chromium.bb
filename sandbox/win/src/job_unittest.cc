@@ -33,17 +33,17 @@ TEST(JobTest, TestCreation) {
   ASSERT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
 }
 
-// Tests the method "Detach".
-TEST(JobTest, TestDetach) {
-  HANDLE job_handle;
+// Tests the method "Take".
+TEST(JobTest, Take) {
+  base::win::ScopedHandle job_handle;
   // Scope the creation of Job.
   {
     // Create the job.
     Job job;
     ASSERT_EQ(ERROR_SUCCESS, job.Init(JOB_LOCKDOWN, L"my_test_job_name", 0, 0));
 
-    job_handle = job.Detach();
-    ASSERT_TRUE(job_handle != NULL);
+    job_handle = job.Take();
+    ASSERT_TRUE(job_handle.IsValid());
   }
 
   // Check to be sure that the job is still alive even after the object is gone
@@ -56,18 +56,17 @@ TEST(JobTest, TestDetach) {
   if (job_handle_dup)
     ::CloseHandle(job_handle_dup);
 
-  if (job_handle)
-    ::CloseHandle(job_handle);
+  job_handle.Close();
 
   // Check if the jbo is really dead.
-  job_handle = ::OpenJobObjectW(GENERIC_ALL, FALSE, L"my_test_job_name");
-  ASSERT_TRUE(job_handle == NULL);
+  job_handle_dup = ::OpenJobObjectW(GENERIC_ALL, FALSE, L"my_test_job_name");
+  ASSERT_TRUE(job_handle_dup == NULL);
   ASSERT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
 }
 
 // Tests the ui exceptions
 TEST(JobTest, TestExceptions) {
-  HANDLE job_handle;
+  base::win::ScopedHandle job_handle;
   // Scope the creation of Job.
   {
     // Create the job.
@@ -75,18 +74,18 @@ TEST(JobTest, TestExceptions) {
     ASSERT_EQ(ERROR_SUCCESS, job.Init(JOB_LOCKDOWN, L"my_test_job_name",
                                       JOB_OBJECT_UILIMIT_READCLIPBOARD, 0));
 
-    job_handle = job.Detach();
-    ASSERT_TRUE(job_handle != NULL);
+    job_handle = job.Take();
+    ASSERT_TRUE(job_handle.IsValid());
 
     JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
     DWORD size = sizeof(jbur);
-    BOOL result = ::QueryInformationJobObject(job_handle,
+    BOOL result = ::QueryInformationJobObject(job_handle.Get(),
                                               JobObjectBasicUIRestrictions,
                                               &jbur, size, &size);
     ASSERT_TRUE(result);
 
     ASSERT_EQ(jbur.UIRestrictionsClass & JOB_OBJECT_UILIMIT_READCLIPBOARD, 0);
-    ::CloseHandle(job_handle);
+    job_handle.Close();
   }
 
   // Scope the creation of Job.
@@ -95,19 +94,18 @@ TEST(JobTest, TestExceptions) {
     Job job;
     ASSERT_EQ(ERROR_SUCCESS, job.Init(JOB_LOCKDOWN, L"my_test_job_name", 0, 0));
 
-    job_handle = job.Detach();
-    ASSERT_TRUE(job_handle != NULL);
+    job_handle = job.Take();
+    ASSERT_TRUE(job_handle.IsValid());
 
     JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
     DWORD size = sizeof(jbur);
-    BOOL result = ::QueryInformationJobObject(job_handle,
+    BOOL result = ::QueryInformationJobObject(job_handle.Get(),
                                               JobObjectBasicUIRestrictions,
                                               &jbur, size, &size);
     ASSERT_TRUE(result);
 
     ASSERT_EQ(jbur.UIRestrictionsClass & JOB_OBJECT_UILIMIT_READCLIPBOARD,
               JOB_OBJECT_UILIMIT_READCLIPBOARD);
-    ::CloseHandle(job_handle);
   }
 }
 
@@ -125,7 +123,7 @@ TEST(JobTest, NoInit) {
   Job job;
   ASSERT_EQ(ERROR_NO_DATA, job.UserHandleGrantAccess(NULL));
   ASSERT_EQ(ERROR_NO_DATA, job.AssignProcessToJob(NULL));
-  ASSERT_TRUE(job.Detach() == NULL);
+  ASSERT_FALSE(job.Take().IsValid());
 }
 
 // Tests the initialization of the job with different security level.
@@ -173,12 +171,12 @@ TEST(JobTest, ProcessInJob) {
   ASSERT_EQ(ERROR_SUCCESS, job.AssignProcessToJob(pi.process_handle()));
 
   // Get the job handle.
-  HANDLE job_handle = job.Detach();
+  base::win::ScopedHandle job_handle = job.Take();
 
   // Check if the process is in the job.
   JOBOBJECT_BASIC_PROCESS_ID_LIST jbpidl = {0};
   DWORD size = sizeof(jbpidl);
-  result = ::QueryInformationJobObject(job_handle,
+  result = ::QueryInformationJobObject(job_handle.Get(),
                                        JobObjectBasicProcessIdList,
                                        &jbpidl, size, &size);
   EXPECT_TRUE(result);
@@ -188,8 +186,6 @@ TEST(JobTest, ProcessInJob) {
   EXPECT_EQ(pi.process_id(), jbpidl.ProcessIdList[0]);
 
   EXPECT_TRUE(::TerminateProcess(pi.process_handle(), 0));
-
-  EXPECT_TRUE(::CloseHandle(job_handle));
 }
 
 }  // namespace sandbox
