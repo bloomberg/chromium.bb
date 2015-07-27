@@ -65,8 +65,9 @@ GURL GetNormalizedURL(const GURL& url) {
 GURL BuildSearchURL(const std::string& api_key,
                     const GURL& url,
                     bool safe) {
-  // Strip the scheme, so that we'll match any scheme.
-  std::string query = net::EscapeQueryParamValue(url.GetContent(), true);
+  // Normalize the URL and strip the scheme.
+  std::string query =
+      net::EscapeQueryParamValue(GetNormalizedURL(url).GetContent(), true);
   std::string search_url = base::StringPrintf(
       kQueryFormat,
       api_key.c_str(),
