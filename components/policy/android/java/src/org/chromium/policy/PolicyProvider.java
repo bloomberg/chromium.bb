@@ -7,6 +7,8 @@ package org.chromium.policy;
 import android.content.Context;
 import android.os.Bundle;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * Base class for Policy providers.
  */
@@ -23,6 +25,9 @@ public abstract class PolicyProvider {
         mCombinedPolicyProvider.onSettingsAvailable(mSource, settings);
     }
 
+    // Within Chromium only used in tests, although used in downstream code. @VisibleForTesting
+    // required to prevent removal by Proguard when building upstream.
+    @VisibleForTesting
     protected void terminateIncognitoSession() {
         mCombinedPolicyProvider.terminateIncognitoSession();
     }

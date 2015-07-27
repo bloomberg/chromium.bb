@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.policy.PolicyManager;
 import org.chromium.chrome.browser.policy.providers.AppRestrictionsPolicyProvider;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -700,13 +699,7 @@ public class ChromeApplication extends ContentApplication {
         return new GSAHelper();
     }
 
-    // TODO(aberent): Change return type and remove cast once downstream CL has landed.
-    @VisibleForTesting
-    public PolicyManager getPolicyManagerForTesting() {
-        return (PolicyManager) CombinedPolicyProvider.get();
-    }
-
-    /**
+   /**
      * Registers various policy providers with the policy manager.
      * Providers are registered in increasing order of precedence so overrides should call this
      * method in the end for this method to maintain the highest precedence.
@@ -715,18 +708,6 @@ public class ChromeApplication extends ContentApplication {
     protected void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
         combinedProvider.registerProvider(
                 new AppRestrictionsPolicyProvider(getApplicationContext()));
-    }
-
-    /**
-     * Temp - for compatibility with existing downstream code, which overrides this.
-     * @param manager The {@link PolicyManager} to register the providers with
-     *
-     * TODO(aberent): Remove once the downstream CL lands.
-     */
-    protected void registerPolicyProviders(PolicyManager manager) {
-        // Cast the manager's type to force a call to the other overload, avoiding infinite
-        // recursion
-        registerPolicyProviders((CombinedPolicyProvider) manager);
     }
 
     /**

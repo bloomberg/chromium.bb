@@ -137,11 +137,8 @@ public class CombinedPolicyProvider {
         sInstance = p;
     }
 
-    // Constructor needs to be public (temporarily) to so that PolicyManager can be derived from
-    // this class. Also needed, with package scope, for testing.
-    // TODO(aberent): Once upstream CL lands change to package scope.
-    // @VisibleForTesting
-    // CombinedPolicyProvider() {}
+    @VisibleForTesting
+    CombinedPolicyProvider() {}
 
     @VisibleForTesting
     protected native void nativeFlushPolicies(long nativeAndroidCombinedPolicyProvider);
