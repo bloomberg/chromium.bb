@@ -1591,11 +1591,11 @@ Color LayoutObject::selectionBackgroundColor() const
         LayoutTheme::theme().inactiveSelectionBackgroundColor();
 }
 
-Color LayoutObject::selectionColor(int colorProperty) const
+Color LayoutObject::selectionColor(int colorProperty, const GlobalPaintFlags globalPaintFlags) const
 {
     // If the element is unselectable, or we are only painting the selection,
     // don't override the foreground color with the selection foreground color.
-    if (!isSelectable() || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
+    if (!isSelectable() || (globalPaintFlags & GlobalPaintSelectionOnly))
         return resolveColor(colorProperty);
 
     if (RefPtr<ComputedStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
@@ -1607,14 +1607,14 @@ Color LayoutObject::selectionColor(int colorProperty) const
         LayoutTheme::theme().inactiveSelectionForegroundColor();
 }
 
-Color LayoutObject::selectionForegroundColor() const
+Color LayoutObject::selectionForegroundColor(const GlobalPaintFlags globalPaintFlags) const
 {
-    return selectionColor(CSSPropertyWebkitTextFillColor);
+    return selectionColor(CSSPropertyWebkitTextFillColor, globalPaintFlags);
 }
 
-Color LayoutObject::selectionEmphasisMarkColor() const
+Color LayoutObject::selectionEmphasisMarkColor(const GlobalPaintFlags globalPaintFlags) const
 {
-    return selectionColor(CSSPropertyWebkitTextEmphasisColor);
+    return selectionColor(CSSPropertyWebkitTextEmphasisColor, globalPaintFlags);
 }
 
 void LayoutObject::selectionStartEnd(int& spos, int& epos) const

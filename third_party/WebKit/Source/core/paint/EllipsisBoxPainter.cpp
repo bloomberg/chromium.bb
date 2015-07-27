@@ -23,8 +23,7 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
-    bool isPrinting = paintInfo.isPrinting();
-    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != LayoutObject::SelectionNone;
+    bool haveSelection = !paintInfo.isPrinting() && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != LayoutObject::SelectionNone;
 
     LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
     if (haveSelection)
@@ -54,10 +53,9 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     else if (paintInfo.phase == PaintPhaseSelection)
         return;
 
-    bool usesTextAsClip = paintInfo.phase == PaintPhaseTextClip;
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.layoutObject(), style, usesTextAsClip, isPrinting);
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.layoutObject(), style, paintInfo);
     if (haveSelection)
-        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.layoutObject(), true, usesTextAsClip, isPrinting, textStyle);
+        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.layoutObject(), true, paintInfo, textStyle);
 
     TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());

@@ -17,12 +17,13 @@
 
 namespace blink {
 
+class ComputedStyle;
 class Font;
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class LayoutTextCombine;
 class LayoutObject;
-class ComputedStyle;
+struct PaintInfo;
 class ShadowList;
 class TextRun;
 struct TextRunPaintInfo;
@@ -60,8 +61,8 @@ public:
         }
         bool operator!=(const Style& other) { return !(*this == other); }
     };
-    static Style textPaintingStyle(LayoutObject&, const ComputedStyle&, bool usesTextAsClip, bool isPrinting);
-    static Style selectionPaintingStyle(LayoutObject&, bool haveSelection, bool usesTextAsClip, bool isPrinting, const Style& textStyle);
+    static Style textPaintingStyle(LayoutObject&, const ComputedStyle&, const PaintInfo&);
+    static Style selectionPaintingStyle(LayoutObject&, bool haveSelection, const PaintInfo&, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };
     static AffineTransform rotation(const LayoutRect& boxRect, RotationDirection);

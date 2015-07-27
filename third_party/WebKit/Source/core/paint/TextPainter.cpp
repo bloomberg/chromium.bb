@@ -11,6 +11,7 @@
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -115,11 +116,12 @@ static Color textColorForWhiteBackground(Color textColor)
 }
 
 // static
-TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, const ComputedStyle& style, bool usesTextAsClip, bool isPrinting)
+TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, const ComputedStyle& style, const PaintInfo& paintInfo)
 {
     TextPainter::Style textStyle;
+    bool isPrinting = paintInfo.isPrinting();
 
-    if (usesTextAsClip) {
+    if (paintInfo.phase == PaintPhaseTextClip) {
         // When we use the text as a clip, we only care about the alpha, thus we make all the colors black.
         textStyle.currentColor = Color::black;
         textStyle.fillColor = Color::black;
@@ -152,14 +154,16 @@ TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, co
     return textStyle;
 }
 
-TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& layoutObject, bool haveSelection, bool usesTextAsClip, bool isPrinting, const TextPainter::Style& textStyle)
+TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& layoutObject, bool haveSelection, const PaintInfo& paintInfo, const TextPainter::Style& textStyle)
 {
     TextPainter::Style selectionStyle = textStyle;
+    bool usesTextAsClip = paintInfo.phase == PaintPhaseTextClip;
+    bool isPrinting = paintInfo.isPrinting();
 
     if (haveSelection) {
         if (!usesTextAsClip) {
-            selectionStyle.fillColor = layoutObject.selectionForegroundColor();
-            selectionStyle.emphasisMarkColor = layoutObject.selectionEmphasisMarkColor();
+            selectionStyle.fillColor = layoutObject.selectionForegroundColor(paintInfo.globalPaintFlags());
+            selectionStyle.emphasisMarkColor = layoutObject.selectionEmphasisMarkColor(paintInfo.globalPaintFlags());
         }
 
         if (const ComputedStyle* pseudoStyle = layoutObject.getCachedPseudoStyle(SELECTION)) {

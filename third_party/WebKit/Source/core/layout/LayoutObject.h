@@ -919,8 +919,8 @@ public:
     bool isSelectable() const;
     // Obtains the selection colors that should be used when painting a selection.
     Color selectionBackgroundColor() const;
-    Color selectionForegroundColor() const;
-    Color selectionEmphasisMarkColor() const;
+    Color selectionForegroundColor(const GlobalPaintFlags) const;
+    Color selectionEmphasisMarkColor(const GlobalPaintFlags) const;
 
     // Whether or not a given block needs to paint selection gaps.
     virtual bool shouldPaintSelectionGaps() const { return false; }
@@ -1236,7 +1236,7 @@ private:
     ComputedStyle* cachedFirstLineStyle() const;
     StyleDifference adjustStyleDifference(StyleDifference) const;
 
-    Color selectionColor(int colorProperty) const;
+    Color selectionColor(int colorProperty, const GlobalPaintFlags) const;
 
     void removeShapeImageClient(ShapeValue*);
 

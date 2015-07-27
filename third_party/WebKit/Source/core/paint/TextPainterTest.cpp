@@ -11,6 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutText.h"
+#include "core/paint/PaintInfo.h"
 #include "core/style/ShadowData.h"
 #include "core/style/ShadowList.h"
 #include <gtest/gtest.h>
@@ -38,13 +39,18 @@ private:
     LayoutText* m_layoutText;
 };
 
+static PaintInfo createPaintInfo(bool usesTextAsClip, bool isPrinting)
+{
+    return PaintInfo(nullptr, IntRect(), usesTextAsClip ? PaintPhaseTextClip : PaintPhaseBlockBackground, isPrinting ? GlobalPaintPrinting : GlobalPaintNormalPhase, 0);
+}
+
 TEST_F(TextPainterTest, TextPaintingStyle_Simple)
 {
     document().body()->setInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
     document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, false /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), createPaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
     EXPECT_EQ(Color(0, 0, 255), textStyle.fillColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.strokeColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
@@ -62,7 +68,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, false /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), createPaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
     EXPECT_EQ(Color(255, 0, 0), textStyle.fillColor);
     EXPECT_EQ(Color(0, 255, 0), textStyle.strokeColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
@@ -85,7 +91,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip)
     document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), true /* usesTextAsClip */, false /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), createPaintInfo(true /* usesTextAsClip */, false /* isPrinting */));
     EXPECT_EQ(Color::black, textStyle.fillColor);
     EXPECT_EQ(Color::black, textStyle.strokeColor);
     EXPECT_EQ(Color::black, textStyle.emphasisMarkColor);
@@ -104,7 +110,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_NoAdjustmentNee
     document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, true /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), createPaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
     EXPECT_EQ(Color(255, 0, 0), textStyle.fillColor);
     EXPECT_EQ(Color(0, 255, 0), textStyle.strokeColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
@@ -121,7 +127,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened)
     document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, true /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), createPaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
     EXPECT_EQ(Color(255, 220, 220).dark(), textStyle.fillColor);
     EXPECT_EQ(Color(220, 255, 220).dark(), textStyle.strokeColor);
     EXPECT_EQ(Color(220, 220, 255).dark(), textStyle.emphasisMarkColor);
