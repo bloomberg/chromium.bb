@@ -75,6 +75,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }
 
+// Test that a single internals page is empty on load.
+IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
+                       LogSavePasswordProgress_EmptyOnLoad) {
+  password_manager::PasswordManagerInternalsService* service =
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(browser()->profile());
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(RunJavascriptTest("testLogEmpty"));
+}
+
 // Test that a single internals page is flushed on reload.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogSavePasswordProgress_FlushedOnReload) {
@@ -84,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   ASSERT_TRUE(service);
   service->ProcessLog("<script> text for testing");
   OpenInternalsPage(CURRENT_TAB);  // Reload.
-  ASSERT_TRUE(RunJavascriptTest("testLogTextNotPresent"));
+  ASSERT_TRUE(RunJavascriptTest("testLogEmpty"));
 }
 
 // Test that if two tabs with the internals page are open, the second displays

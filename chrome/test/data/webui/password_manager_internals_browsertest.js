@@ -13,10 +13,10 @@ function testLogText() {
                "The logged text was not escaped.");
 }
 
-function testLogTextNotPresent() {
+function testLogEmpty() {
   var divLogs = document.getElementById('log-entries');
   assertNotEquals(null, divLogs, "The <div> with logs not found.");
   assertEquals(null,
-               divLogs.innerHTML.match(/text for testing/),
-               "The logged text was found, but should not.");
+               divLogs.innerHTML.match(/[^\s]/),
+               "There were some logs:" + divLogs.innerHTML);
 }

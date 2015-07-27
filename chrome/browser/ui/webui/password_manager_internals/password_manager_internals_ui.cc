@@ -69,7 +69,7 @@ void PasswordManagerInternalsUI::DidStopLoading() {
 
 void PasswordManagerInternalsUI::LogSavePasswordProgress(
     const std::string& text) {
-  if (!registered_with_logging_service_)
+  if (!registered_with_logging_service_ || text.empty())
     return;
   std::string no_quotes(text);
   std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
