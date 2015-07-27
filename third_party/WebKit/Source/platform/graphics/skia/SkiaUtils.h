@@ -37,7 +37,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Image.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
@@ -127,14 +126,6 @@ inline SkScalar skBlurRadiusToSigma(SkScalar radius)
 
 template<typename PrimitiveType>
 void drawPlatformFocusRing(const PrimitiveType&, SkCanvas*, SkColor, int width);
-
-// TODO(fmalita): remove in favor of direct SrcRectConstraint use.
-inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(Image::ImageClampingMode clampMode)
-{
-    return clampMode == Image::ClampImageToSourceRect
-        ? SkCanvas::kStrict_SrcRectConstraint
-        : SkCanvas::kFast_SrcRectConstraint;
-}
 
 } // namespace blink
 

@@ -186,21 +186,23 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
 
 namespace {
 
-PassRefPtr<SkShader> createPatternShader(const SkImage* image, const SkMatrix& shaderMatrix,
+PassRefPtr<SkShader> createPatternShader(const SkBitmap& bitmap, const SkMatrix& shaderMatrix,
     const SkPaint& paint, const FloatSize& spacing)
 {
-    if (spacing.isZero())
-        return adoptRef(image->newShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix));
+    if (spacing.isZero()) {
+        return adoptRef(SkShader::CreateBitmapShader(
+            bitmap, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix));
+    }
 
     // Arbitrary tiling is currently only supported for SkPictureShader - so we use it instead
     // of a plain bitmap shader to implement spacing.
     const SkRect tileRect = SkRect::MakeWH(
-        image->width() + spacing.width(),
-        image->height() + spacing.height());
+        bitmap.width() + spacing.width(),
+        bitmap.height() + spacing.height());
 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(tileRect);
-    canvas->drawImage(image, 0, 0, &paint);
+    canvas->drawBitmap(bitmap, 0, 0, &paint);
     RefPtr<const SkPicture> picture = adoptRef(recorder.endRecordingAsPicture());
 
     return adoptRef(SkShader::CreatePictureShader(
@@ -214,13 +216,15 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
 
+    // TODO(fmalita): get rid of the bitmap, switch to SkImage drawing
+    SkBitmap bitmap;
     RefPtr<SkImage> image = imageForCurrentFrame();
-    if (!image)
+    if (!image || !image->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode))
         return;
 
     FloatRect normSrcRect = floatSrcRect;
 
-    normSrcRect.intersect(FloatRect(0, 0, image->width(), image->height()));
+    normSrcRect.intersect(FloatRect(0, 0, bitmap.width(), bitmap.height()));
     if (destRect.isEmpty() || normSrcRect.isEmpty())
         return; // nothing to draw
 
@@ -237,13 +241,8 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
     // set to the pattern's transform, which just includes scale.
     localMatrix.preScale(scale.width(), scale.height());
 
-    // Fetch this now as subsetting may swap the image.
-    auto imageID = image->uniqueID();
-
-    SkIRect srcRect = enclosingIntRect(normSrcRect);
-    image = adoptRef(image->newImage(srcRect.width(), srcRect.height(), &srcRect));
-    if (!image)
-        return;
+    SkBitmap bitmapToPaint;
+    bitmap.extractSubset(&bitmapToPaint, enclosingIntRect(normSrcRect));
 
     {
         SkPaint paint = context->fillPaint();
@@ -251,14 +250,14 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
         paint.setXfermodeMode(compositeOp);
         paint.setFilterQuality(context->computeFilterQuality(this, destRect, normSrcRect));
         paint.setAntiAlias(context->shouldAntialias());
-        RefPtr<SkShader> shader = createPatternShader(image.get(), localMatrix, paint,
+        RefPtr<SkShader> shader = createPatternShader(bitmapToPaint, localMatrix, paint,
             FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height()));
         paint.setShader(shader.get());
         context->drawRect(destRect, paint);
     }
 
     if (currentFrameIsLazyDecoded())
-        PlatformInstrumentation::didDrawLazyPixelRef(imageID);
+        PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
 }
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)

@@ -36,8 +36,7 @@ bool StaticBitmapImage::currentFrameKnownToBeOpaque()
     return m_image->isOpaque();
 }
 
-void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect,
-    const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode clampMode)
+void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
     ASSERT(dstRect.width() >= 0 && dstRect.height() >= 0);
     ASSERT(srcRect.width() >= 0 && srcRect.height() >= 0);
@@ -51,8 +50,8 @@ void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const Float
     ASSERT(adjustedSrcRect.width() <= m_image->width() && adjustedSrcRect.height() <= m_image->height());
 
     SkRect srcSkRect = adjustedSrcRect;
-    canvas->drawImageRect(m_image.get(), &srcSkRect, dstRect, &paint,
-        WebCoreClampingModeToSkiaRectConstraint(clampMode));
+    // TODO: Add support for ImageClampingMode
+    canvas->drawImageRect(m_image.get(), &srcSkRect, dstRect, &paint);
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);
