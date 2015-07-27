@@ -710,7 +710,9 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
 }
 
 void LayerTreeHost::RecordGpuRasterizationHistogram() {
-  if (gpu_rasterization_histogram_recorded_)
+  // Gpu rasterization is only supported for Renderer compositors.
+  // Checking for proxy_->HasImplThread() to exclude Browser compositors.
+  if (gpu_rasterization_histogram_recorded_ || !proxy_->HasImplThread())
     return;
 
   // Record how widely gpu rasterization is enabled.
