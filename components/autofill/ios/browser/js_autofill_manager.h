@@ -37,20 +37,23 @@
 - (void)fillActiveFormField:(NSString*)dataString
           completionHandler:(ProceduralBlock)completionHandler;
 
-// Fills a number of fields in the same named form.
-// If |onlyFillEmpty| is true then only empty fields will be filled. Otherwise
-// all fields will be filled.
-// Field named |forceFillFieldName| will always be filled, regardless of value
-// of |onlyFillEmpty|. May be null.
-// Applies Autofill CSS (i.e. yellow background) to filled elements if
-// |styleElements| is true.
+// Fills a number of fields in the same named form for full-form Autofill.
+// Applies Autofill CSS (i.e. yellow background) to filled elements.
+// Only empty fields will be filled, except that field named
+// |forceFillFieldName| will always be filled even if non-empty.
+// |forceFillFieldName| may be null.
 // |completionHandler| is called after the forms are filled. |completionHandler|
 // cannot be nil.
 - (void)fillForm:(NSString*)dataString
-         onlyFillEmpty:(BOOL)onlyFillEmpty
     forceFillFieldName:(NSString*)forceFillFieldName
-         styleElements:(BOOL)styleElements
      completionHandler:(ProceduralBlock)completionHandler;
+
+// Fills a number of fields in the same named form for InstantBuy. Always fills
+// all fields, doesn't style elements, and doesn't fire change events.
+// |completionHandler| is called after the forms are filled. |completionHandler|
+// cannot be nil.
+- (void)fillFormForInstantBuy:(NSString*)dataString
+            completionHandler:(ProceduralBlock)completionHandler;
 
 // Dispatches the autocomplete event to the form element with the given
 // |formName|.

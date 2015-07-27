@@ -57,19 +57,28 @@
 }
 
 - (void)fillForm:(NSString*)dataString
-         onlyFillEmpty:(BOOL)onlyFillEmpty
     forceFillFieldName:(NSString*)forceFillFieldName
-         styleElements:(BOOL)styleElements
      completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);
   std::string fieldName =
       forceFillFieldName
           ? base::GetQuotedJSONString([forceFillFieldName UTF8String])
           : "null";
+  NSString* fillFormJS =
+      [NSString stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s);",
+                                 dataString, fieldName.c_str()];
+  id stringResultHandler = ^(NSString*, NSError*) {
+    completionHandler();
+  };
+  return [self evaluate:fillFormJS stringResultHandler:stringResultHandler];
+}
+
+- (void)fillFormForInstantBuy:(NSString*)dataString
+            completionHandler:(ProceduralBlock)completionHandler {
+  DCHECK(completionHandler);
   NSString* fillFormJS = [NSString
-      stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s, %s, %s);",
-                       dataString, onlyFillEmpty ? "true" : "false",
-                       fieldName.c_str(), styleElements ? "true" : "false"];
+      stringWithFormat:@"__gCrWeb.autofill.fillFormForInstantBuy(%@);",
+                       dataString];
   id stringResultHandler = ^(NSString*, NSError*) {
     completionHandler();
   };
