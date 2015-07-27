@@ -17,13 +17,6 @@
     <application>
         <uses-library android:name="android.test.runner" />
 
-        <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
-            android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
-            android:exported="true" />
-        <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
-            android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
-            android:exported="true" />
-
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
 

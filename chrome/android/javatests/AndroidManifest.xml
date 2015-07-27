@@ -23,9 +23,11 @@
             android:authorities="org.chromium.chrome.test.TestContentProvider"
             android:exported="true" />
 
-        <!-- The authority must not conflict with the authority defined in ChromeShellTestApk. -->
         <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
-            android:authorities="org.chromium.chrome.test.partnercustomizations"
+            android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
+            android:exported="true" />
+        <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
+            android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
             android:exported="true" />
 
         <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
