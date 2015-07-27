@@ -10,3 +10,7 @@ BreakpadWinDeathTest.TestDebugbreak
 
 # DrM-i#1465
 RdpClientTest.Basic
+
+# Oftentimes the last running test before the test suite times out.
+# http://crbug.com/514404
+VideoEncoderVpxTest.Vp9LossyUnchangedFrame
