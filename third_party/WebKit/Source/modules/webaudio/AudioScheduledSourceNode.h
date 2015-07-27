@@ -109,7 +109,7 @@ public:
     void stop(double when, ExceptionState&);
 
     EventListener* onended();
-    void setOnended(PassRefPtr<EventListener>);
+    void setOnended(PassRefPtrWillBeRawPtr<EventListener>);
 
 protected:
     explicit AudioScheduledSourceNode(AbstractAudioContext&);

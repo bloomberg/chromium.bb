@@ -15,7 +15,7 @@
 
 namespace blink {
 
-void EventListenerInfo::getEventListeners(EventTarget* target, Vector<EventListenerInfo>& eventInformation, bool includeAncestors)
+void EventListenerInfo::getEventListeners(EventTarget* target, WillBeHeapVector<EventListenerInfo>& eventInformation, bool includeAncestors)
 {
     // The Node's Ancestors including self.
     Vector<EventTarget*> ancestors;
@@ -32,12 +32,14 @@ void EventListenerInfo::getEventListeners(EventTarget* target, Vector<EventListe
         Vector<AtomicString> eventTypes = ancestor->eventTypes();
         for (size_t j = 0; j < eventTypes.size(); ++j) {
             AtomicString& type = eventTypes[j];
-            const EventListenerVector& listeners = ancestor->getEventListeners(type);
+            EventListenerVector* listeners = ancestor->getEventListeners(type);
+            if (!listeners)
+                continue;
             EventListenerVector filteredListeners;
-            filteredListeners.reserveCapacity(listeners.size());
-            for (size_t k = 0; k < listeners.size(); ++k) {
-                if (listeners[k].listener->type() == EventListener::JSEventListenerType)
-                    filteredListeners.append(listeners[k]);
+            filteredListeners.reserveCapacity(listeners->size());
+            for (size_t k = 0; k < listeners->size(); ++k) {
+                if (listeners->at(k).listener->type() == EventListener::JSEventListenerType)
+                    filteredListeners.append(listeners->at(k));
             }
             if (!filteredListeners.isEmpty())
                 eventInformation.append(EventListenerInfo(ancestor, type, filteredListeners));

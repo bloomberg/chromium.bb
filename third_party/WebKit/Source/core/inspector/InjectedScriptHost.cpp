@@ -82,7 +82,7 @@ void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JS
     }
 }
 
-void InjectedScriptHost::getEventListenersImpl(EventTarget* target, Vector<EventListenerInfo>& listenersArray)
+void InjectedScriptHost::getEventListenersImpl(EventTarget* target, WillBeHeapVector<EventListenerInfo>& listenersArray)
 {
     EventListenerInfo::getEventListeners(target, listenersArray, false);
 }

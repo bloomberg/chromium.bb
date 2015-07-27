@@ -74,7 +74,7 @@ EventListener* MIDIAccess::onstatechange()
     return getAttributeEventListener(EventTypeNames::statechange);
 }
 
-void MIDIAccess::setOnstatechange(PassRefPtr<EventListener> listener)
+void MIDIAccess::setOnstatechange(PassRefPtrWillBeRawPtr<EventListener> listener)
 {
     m_hasPendingActivity = listener;
     setAttributeEventListener(EventTypeNames::statechange, listener);

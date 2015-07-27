@@ -1283,9 +1283,9 @@ void LocalDOMWindow::cancelAnimationFrame(int id)
         d->cancelAnimationFrame(id);
 }
 
-bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> prpListener, bool useCapture)
+bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, bool useCapture)
 {
-    RefPtr<EventListener> listener = prpListener;
+    RefPtrWillBeRawPtr<EventListener> listener = prpListener;
     if (!EventTarget::addEventListener(eventType, listener, useCapture))
         return false;
 
@@ -1317,7 +1317,7 @@ bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<
     return true;
 }
 
-bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (!EventTarget::removeEventListener(eventType, listener, useCapture))
         return false;

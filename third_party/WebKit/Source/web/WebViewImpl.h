@@ -754,7 +754,7 @@ private:
 
     FloatSize m_elasticOverscroll;
 
-    RefPtr<EventListener> m_popupMouseWheelEventListener;
+    RefPtrWillBePersistent<EventListener> m_popupMouseWheelEventListener;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

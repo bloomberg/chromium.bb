@@ -81,7 +81,7 @@ public:
         // as it may attempt to compile a function (lazy event listener), get an error
         // and invoke onerror callback which can execute arbitrary JS code.
         // Protect this event listener to keep it alive.
-        RefPtr<V8AbstractEventListener> guard(this);
+        RefPtrWillBeRawPtr<V8AbstractEventListener> protect(this);
         prepareListenerObject(executionContext);
         return m_listener.newLocal(m_isolate);
     }
@@ -111,6 +111,11 @@ public:
     bool belongsToTheCurrentWorld() const final;
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        EventListener::trace(visitor);
+    }
 
 protected:
     V8AbstractEventListener(bool isAttribute, DOMWrapperWorld&, v8::Isolate*);

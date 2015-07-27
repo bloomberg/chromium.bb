@@ -43,10 +43,11 @@ namespace blink {
 
 class EventTarget;
 
-typedef Vector<RegisteredEventListener, 1> EventListenerVector;
+typedef WillBeHeapVector<RegisteredEventListener, 1> EventListenerVector;
 
 class CORE_EXPORT EventListenerMap {
     WTF_MAKE_NONCOPYABLE(EventListenerMap);
+    DISALLOW_ALLOCATION();
 public:
     EventListenerMap();
 
@@ -55,19 +56,21 @@ public:
     bool containsCapturing(const AtomicString& eventType) const;
 
     void clear();
-    bool add(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
+    bool add(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture);
     bool remove(const AtomicString& eventType, EventListener*, bool useCapture, size_t& indexOfRemovedListener);
     EventListenerVector* find(const AtomicString& eventType);
     Vector<AtomicString> eventTypes() const;
 
     void copyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
 
+    DECLARE_TRACE();
+
 private:
     friend class EventListenerIterator;
 
     void assertNoActiveIterators();
 
-    Vector<std::pair<AtomicString, OwnPtr<EventListenerVector>>, 2> m_entries;
+    WillBeHeapVector<std::pair<AtomicString, OwnPtrWillBeMember<EventListenerVector>>, 2> m_entries;
 
 #if ENABLE(ASSERT)
     int m_activeIteratorCount;
@@ -76,8 +79,9 @@ private:
 
 class EventListenerIterator {
     WTF_MAKE_NONCOPYABLE(EventListenerIterator);
+    STACK_ALLOCATED();
 public:
-    EventListenerIterator(EventTarget*);
+    explicit EventListenerIterator(EventTarget*);
 #if ENABLE(ASSERT)
     ~EventListenerIterator();
 #endif
@@ -85,6 +89,8 @@ public:
     EventListener* nextListener();
 
 private:
+    // This cannot be a Member because it is pointing to a part of object.
+    // TODO(haraken): Use Member<EventTarget> instead of EventListenerMap*.
     EventListenerMap* m_map;
     unsigned m_entryIndex;
     unsigned m_index;

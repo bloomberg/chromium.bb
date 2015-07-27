@@ -93,7 +93,7 @@ public:
     bool hasPendingActivity() const override;
     void stop() override { close(); }
 
-    void setOnmessage(PassRefPtr<EventListener> listener)
+    void setOnmessage(PassRefPtrWillBeRawPtr<EventListener> listener)
     {
         setAttributeEventListener(EventTypeNames::message, listener);
         start();

@@ -87,7 +87,7 @@ ExecutionContext* NetworkInformation::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool NetworkInformation::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool NetworkInformation::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (!EventTargetWithInlineData::addEventListener(eventType, listener, useCapture))
         return false;
@@ -95,7 +95,7 @@ bool NetworkInformation::addEventListener(const AtomicString& eventType, PassRef
     return true;
 }
 
-bool NetworkInformation::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool NetworkInformation::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (!EventTargetWithInlineData::removeEventListener(eventType, listener, useCapture))
         return false;

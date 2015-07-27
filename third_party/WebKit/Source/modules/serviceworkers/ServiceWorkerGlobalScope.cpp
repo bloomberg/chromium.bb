@@ -162,7 +162,7 @@ void ServiceWorkerGlobalScope::setRegistration(WebServiceWorkerRegistration* reg
     m_registration = ServiceWorkerRegistration::from(executionContext(), registration);
 }
 
-bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (m_didEvaluateScript) {
         if (eventType == EventTypeNames::install) {

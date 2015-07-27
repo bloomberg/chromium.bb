@@ -46,7 +46,7 @@ ApplicationCache::ApplicationCache(LocalFrame* frame)
 
 DEFINE_TRACE(ApplicationCache)
 {
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<ApplicationCache>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

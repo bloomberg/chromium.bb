@@ -50,7 +50,7 @@ class JSONValue;
 class ScriptValue;
 class V8Debugger;
 
-struct EventListenerInfo;
+class EventListenerInfo;
 
 // SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
 // a reference to the InjectedScriptHost may be leaked to the page being inspected. Thus, the
@@ -89,7 +89,7 @@ public:
     InspectableObject* inspectedObject(unsigned num);
 
     void inspectImpl(PassRefPtr<JSONValue> objectToInspect, PassRefPtr<JSONValue> hints);
-    void getEventListenersImpl(EventTarget*, Vector<EventListenerInfo>& listenersArray);
+    void getEventListenersImpl(EventTarget*, WillBeHeapVector<EventListenerInfo>& listenersArray);
 
     void clearConsoleMessages();
     void debugFunction(const String& scriptId, int lineNumber, int columnNumber);

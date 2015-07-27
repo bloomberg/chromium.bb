@@ -50,7 +50,7 @@
 
 namespace blink {
 
-class TestListener : public V8AbstractEventListener {
+class TestListener final : public V8AbstractEventListener {
 public:
     bool operator==(const EventListener&) override
     {
@@ -68,13 +68,13 @@ public:
         EXPECT_EQ(jsEvent->ToObject(context).ToLocalChecked()->Get(context, v8AtomicString(isolate(), "detail")).ToLocalChecked(), v8::Boolean::New(isolate(), true));
     }
 
-    static PassRefPtr<TestListener> create(ScriptState* scriptState)
+    static PassRefPtrWillBeRawPtr<TestListener> create(ScriptState* scriptState)
     {
-        return adoptRef(new TestListener(scriptState));
+        return adoptRefWillBeNoop(new TestListener(scriptState));
     }
 
 private:
-    TestListener(ScriptState* scriptState)
+    explicit TestListener(ScriptState* scriptState)
         : V8AbstractEventListener(false, scriptState->world(), scriptState->isolate())
     {
     }
@@ -106,7 +106,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     v8::Isolate* isolate = toIsolate(frame->frame());
     V8TestingScope scope(isolate);
     customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(isolate, true)));
-    RefPtr<EventListener> listener = TestListener::create(scope.scriptState());
+    RefPtrWillBeRawPtr<EventListener> listener = TestListener::create(scope.scriptState());
     frame->frame()->document()->addEventListener("blah", listener, false);
     frame->frame()->document()->dispatchEvent(event);
 

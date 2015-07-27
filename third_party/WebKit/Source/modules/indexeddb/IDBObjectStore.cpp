@@ -419,14 +419,20 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator final : public EventListener {
 public:
-    static PassRefPtr<IndexPopulator> create(ScriptState* scriptState, IDBDatabase* database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    static PassRefPtrWillBeRawPtr<IndexPopulator> create(ScriptState* scriptState, IDBDatabase* database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
     {
-        return adoptRef(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
+        return adoptRefWillBeNoop(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
 
     bool operator==(const EventListener& other) override
     {
         return this == &other;
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_database);
+        EventListener::trace(visitor);
     }
 
 private:
@@ -480,7 +486,7 @@ private:
     }
 
     RefPtr<ScriptState> m_scriptState;
-    Persistent<IDBDatabase> m_database;
+    PersistentWillBeMember<IDBDatabase> m_database;
     const int64_t m_transactionId;
     const int64_t m_objectStoreId;
     const IDBIndexMetadata m_indexMetadata;
@@ -543,7 +549,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
-    RefPtr<IndexPopulator> indexPopulator = IndexPopulator::create(scriptState, transaction()->db(), m_transaction->id(), id(), metadata);
+    RefPtrWillBeRawPtr<IndexPopulator> indexPopulator = IndexPopulator::create(scriptState, transaction()->db(), m_transaction->id(), id(), metadata);
     indexRequest->setOnsuccess(indexPopulator);
     return index;
 }

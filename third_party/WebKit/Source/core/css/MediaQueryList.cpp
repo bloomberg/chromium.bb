@@ -58,7 +58,7 @@ String MediaQueryList::media() const
     return m_media->mediaText();
 }
 
-void MediaQueryList::addDeprecatedListener(PassRefPtr<EventListener> listener)
+void MediaQueryList::addDeprecatedListener(PassRefPtrWillBeRawPtr<EventListener> listener)
 {
     if (!listener)
         return;
@@ -66,7 +66,7 @@ void MediaQueryList::addDeprecatedListener(PassRefPtr<EventListener> listener)
     addEventListener(EventTypeNames::change, listener, false);
 }
 
-void MediaQueryList::removeDeprecatedListener(PassRefPtr<EventListener> listener)
+void MediaQueryList::removeDeprecatedListener(PassRefPtrWillBeRawPtr<EventListener> listener)
 {
     if (!listener)
         return;

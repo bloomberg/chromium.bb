@@ -107,7 +107,7 @@ Vector<AtomicString> EventListenerMap::eventTypes() const
     return types;
 }
 
-static bool addListenerToVector(EventListenerVector* vector, PassRefPtr<EventListener> listener, bool useCapture)
+static bool addListenerToVector(EventListenerVector* vector, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     RegisteredEventListener registeredListener(listener, useCapture);
 
@@ -118,7 +118,7 @@ static bool addListenerToVector(EventListenerVector* vector, PassRefPtr<EventLis
     return true;
 }
 
-bool EventListenerMap::add(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool EventListenerMap::add(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     assertNoActiveIterators();
 
@@ -127,7 +127,7 @@ bool EventListenerMap::add(const AtomicString& eventType, PassRefPtr<EventListen
             return addListenerToVector(entry.second.get(), listener, useCapture);
     }
 
-    m_entries.append(std::make_pair(eventType, adoptPtr(new EventListenerVector)));
+    m_entries.append(std::make_pair(eventType, adoptPtrWillBeNoop(new EventListenerVector)));
     return addListenerToVector(m_entries.last().second.get(), listener, useCapture);
 }
 
@@ -185,6 +185,11 @@ void EventListenerMap::copyEventListenersNotCreatedFromMarkupToTarget(EventTarge
 
     for (const auto& eventListener : m_entries)
         copyListenersNotCreatedFromMarkupToTarget(eventListener.first, eventListener.second.get(), target);
+}
+
+DEFINE_TRACE(EventListenerMap)
+{
+    visitor->trace(m_entries);
 }
 
 EventListenerIterator::EventListenerIterator(EventTarget* target)

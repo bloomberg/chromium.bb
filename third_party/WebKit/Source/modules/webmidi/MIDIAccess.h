@@ -65,7 +65,7 @@ public:
     MIDIOutputMap* outputs() const;
 
     EventListener* onstatechange();
-    void setOnstatechange(PassRefPtr<EventListener>);
+    void setOnstatechange(PassRefPtrWillBeRawPtr<EventListener>);
 
     bool sysexEnabled() const { return m_sysexEnabled; }
 

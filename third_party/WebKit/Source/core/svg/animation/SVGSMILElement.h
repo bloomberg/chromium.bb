@@ -200,7 +200,7 @@ private:
         SVGSMILElement* syncBase() const { return m_syncBase.get(); }
         void setSyncBase(SVGSMILElement* element) { m_syncBase = element; }
         ConditionEventListener* eventListener() const { return m_eventListener.get(); }
-        void setEventListener(PassRefPtr<ConditionEventListener>);
+        void setEventListener(PassRefPtrWillBeRawPtr<ConditionEventListener>);
 
     private:
         Type m_type;
@@ -210,7 +210,7 @@ private:
         SMILTime m_offset;
         int m_repeat;
         RefPtrWillBeMember<SVGSMILElement> m_syncBase;
-        RefPtr<ConditionEventListener> m_eventListener;
+        RefPtrWillBeMember<ConditionEventListener> m_eventListener;
     };
     bool parseCondition(const String&, BeginOrEnd beginOrEnd);
     void parseBeginOrEnd(const String&, BeginOrEnd beginOrEnd);

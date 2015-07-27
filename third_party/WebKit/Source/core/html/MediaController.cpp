@@ -612,7 +612,7 @@ DEFINE_TRACE(MediaController)
     visitor->trace(m_pendingEventsQueue);
     visitor->trace(m_executionContext);
 #endif
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<MediaController>::trace(visitor);
 }
 
 }

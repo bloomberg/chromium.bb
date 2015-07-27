@@ -371,7 +371,7 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
     }
 
     listenersArray = TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>::create();
-    Vector<EventListenerInfo> eventInformation;
+    WillBeHeapVector<EventListenerInfo> eventInformation;
     EventListenerInfo::getEventListeners(target, eventInformation, false);
     if (eventInformation.isEmpty())
         return;
@@ -388,14 +388,15 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
 
 PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, EventTarget* target, const String& objectGroupId)
 {
-    RefPtr<EventListener> eventListener = registeredEventListener.listener;
+    EventListener* eventListener = registeredEventListener.listener.get();
+    RefPtrWillBeRawPtr<EventListener> protect(eventListener);
     String scriptId;
     int lineNumber;
     int columnNumber;
     ExecutionContext* context = target->executionContext();
     if (!context)
         return nullptr;
-    if (!eventListenerHandlerLocation(context, eventListener.get(), scriptId, lineNumber, columnNumber))
+    if (!eventListenerHandlerLocation(context, eventListener, scriptId, lineNumber, columnNumber))
         return nullptr;
 
     RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
@@ -407,7 +408,7 @@ PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::b
         .setUseCapture(registeredEventListener.useCapture)
         .setLocation(location);
     if (!objectGroupId.isEmpty())
-        value->setHandler(eventHandlerObject(context, eventListener.get(), m_injectedScriptManager, &objectGroupId));
+        value->setHandler(eventHandlerObject(context, eventListener, m_injectedScriptManager, &objectGroupId));
     return value.release();
 }
 

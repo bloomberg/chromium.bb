@@ -22,6 +22,7 @@
 #define EventListener_h
 
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -29,7 +30,7 @@ namespace blink {
     class Event;
     class ExecutionContext;
 
-    class CORE_EXPORT EventListener : public RefCounted<EventListener> {
+    class CORE_EXPORT EventListener : public RefCountedWillBeGarbageCollectedFinalized<EventListener> {
     public:
         enum Type {
             JSEventListenerType,
@@ -47,6 +48,8 @@ namespace blink {
 
         bool isAttribute() const { return virtualisAttribute(); }
         Type type() const { return m_type; }
+
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     protected:
         explicit EventListener(Type type)

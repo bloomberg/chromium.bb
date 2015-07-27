@@ -57,6 +57,11 @@ EventTargetData::~EventTargetData()
 {
 }
 
+DEFINE_TRACE(EventTargetData)
+{
+    visitor->trace(eventListenerMap);
+}
+
 EventTarget::EventTarget()
 {
 }
@@ -87,7 +92,7 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return 0;
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (!listener)
         return false;
@@ -103,7 +108,7 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
     return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (!listener)
         return false;
@@ -141,7 +146,7 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<
     return true;
 }
 
-bool EventTarget::setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener)
+bool EventTarget::setAttributeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener)
 {
     clearAttributeEventListener(eventType);
     if (!listener)
@@ -151,13 +156,15 @@ bool EventTarget::setAttributeEventListener(const AtomicString& eventType, PassR
 
 EventListener* EventTarget::getAttributeEventListener(const AtomicString& eventType)
 {
-    const EventListenerVector& entry = getEventListeners(eventType);
-    for (const auto& eventListener : entry) {
+    EventListenerVector* listenerVector = getEventListeners(eventType);
+    if (!listenerVector)
+        return nullptr;
+    for (const auto& eventListener : *listenerVector) {
         EventListener* listener = eventListener.listener.get();
         if (listener->isAttribute() && listener->belongsToTheCurrentWorld())
             return listener;
     }
-    return 0;
+    return nullptr;
 }
 
 bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
@@ -366,19 +373,12 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     d->firingEventIterators->removeLast();
 }
 
-const EventListenerVector& EventTarget::getEventListeners(const AtomicString& eventType)
+EventListenerVector* EventTarget::getEventListeners(const AtomicString& eventType)
 {
-    AtomicallyInitializedStaticReference(EventListenerVector, emptyVector, new EventListenerVector);
-
-    EventTargetData* d = eventTargetData();
-    if (!d)
-        return emptyVector;
-
-    EventListenerVector* listenerVector = d->eventListenerMap.find(eventType);
-    if (!listenerVector)
-        return emptyVector;
-
-    return *listenerVector;
+    EventTargetData* data = eventTargetData();
+    if (!data)
+        return nullptr;
+    return data->eventListenerMap.find(eventType);
 }
 
 Vector<AtomicString> EventTarget::eventTypes()

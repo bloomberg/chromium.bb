@@ -82,11 +82,11 @@ static const char fileSystemAgentEnabled[] = "fileSystemAgentEnabled";
 namespace {
 
 template<typename BaseCallback, typename Handler, typename Argument>
-class CallbackDispatcher final : public BaseCallback {
+class GC_PLUGIN_IGNORE("crbug.com/513077") CallbackDispatcher final : public BaseCallback {
 public:
     typedef bool (Handler::*HandlingMethod)(Argument);
 
-    static CallbackDispatcher* create(PassRefPtr<Handler> handler, HandlingMethod handlingMethod)
+    static CallbackDispatcher* create(PassRefPtrWillBeRawPtr<Handler> handler, HandlingMethod handlingMethod)
     {
         return new CallbackDispatcher(handler, handlingMethod);
     }
@@ -96,12 +96,18 @@ public:
         (m_handler.get()->*m_handlingMethod)(argument);
     }
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_handler);
+        BaseCallback::trace(visitor);
+    }
+
 private:
-    CallbackDispatcher(PassRefPtr<Handler> handler, HandlingMethod handlingMethod)
+    CallbackDispatcher(PassRefPtrWillBeRawPtr<Handler> handler, HandlingMethod handlingMethod)
         : m_handler(handler)
         , m_handlingMethod(handlingMethod) { }
 
-    RefPtr<Handler> m_handler;
+    RefPtrWillBeMember<Handler> m_handler;
     HandlingMethod m_handlingMethod;
 };
 
@@ -111,19 +117,24 @@ public:
     template<typename Handler, typename Argument>
     static CallbackDispatcher<BaseCallback, Handler, Argument>* create(Handler* handler, bool (Handler::*handlingMethod)(Argument))
     {
-        return CallbackDispatcher<BaseCallback, Handler, Argument>::create(PassRefPtr<Handler>(handler), handlingMethod);
+        return CallbackDispatcher<BaseCallback, Handler, Argument>::create(PassRefPtrWillBeRawPtr<Handler>(handler), handlingMethod);
     }
 };
 
-class FileSystemRootRequest : public RefCounted<FileSystemRootRequest> {
+class FileSystemRootRequest final : public RefCountedWillBeGarbageCollectedFinalized<FileSystemRootRequest> {
     WTF_MAKE_NONCOPYABLE(FileSystemRootRequest);
 public:
-    static PassRefPtr<FileSystemRootRequest> create(PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback> requestCallback, const String& type)
+    static PassRefPtrWillBeRawPtr<FileSystemRootRequest> create(PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback> requestCallback, const String& type)
     {
-        return adoptRef(new FileSystemRootRequest(requestCallback, type));
+        return adoptRefWillBeNoop(new FileSystemRootRequest(requestCallback, type));
     }
 
     void start(ExecutionContext*);
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+    }
 
 private:
     bool didHitError(FileError* error)
@@ -143,7 +154,7 @@ private:
         : m_requestCallback(requestCallback)
         , m_type(type) { }
 
-    RefPtrWillBePersistent<RequestFileSystemRootCallback> m_requestCallback;
+    RefPtrWillBeMember<RequestFileSystemRootCallback> m_requestCallback;
     String m_type;
 };
 
@@ -180,12 +191,12 @@ bool FileSystemRootRequest::didGetEntry(Entry* entry)
     return true;
 }
 
-class DirectoryContentRequest final : public RefCounted<DirectoryContentRequest> {
+class DirectoryContentRequest final : public RefCountedWillBeGarbageCollectedFinalized<DirectoryContentRequest> {
     WTF_MAKE_NONCOPYABLE(DirectoryContentRequest);
 public:
-    static PassRefPtr<DirectoryContentRequest> create(PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
+    static PassRefPtrWillBeRawPtr<DirectoryContentRequest> create(PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
     {
-        return adoptRef(new DirectoryContentRequest(requestCallback, url));
+        return adoptRefWillBeNoop(new DirectoryContentRequest(requestCallback, url));
     }
 
     ~DirectoryContentRequest()
@@ -193,6 +204,12 @@ public:
     }
 
     void start(ExecutionContext*);
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+        visitor->trace(m_directoryReader);
+    }
 
 private:
     bool didHitError(FileError* error)
@@ -215,10 +232,10 @@ private:
 
     void readDirectoryEntries();
 
-    RefPtrWillBePersistent<RequestDirectoryContentCallback> m_requestCallback;
+    RefPtrWillBeMember<RequestDirectoryContentCallback> m_requestCallback;
     KURL m_url;
     RefPtr<Array<TypeBuilder::FileSystem::Entry>> m_entries;
-    Persistent<DirectoryReader> m_directoryReader;
+    PersistentWillBeMember<DirectoryReader> m_directoryReader;
 };
 
 void DirectoryContentRequest::start(ExecutionContext* executionContext)
@@ -300,12 +317,12 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryHeapVector& ent
     return true;
 }
 
-class MetadataRequest final : public RefCounted<MetadataRequest> {
+class MetadataRequest final : public RefCountedWillBeGarbageCollectedFinalized<MetadataRequest> {
     WTF_MAKE_NONCOPYABLE(MetadataRequest);
 public:
-    static PassRefPtr<MetadataRequest> create(PassRefPtrWillBeRawPtr<RequestMetadataCallback> requestCallback, const String& url)
+    static PassRefPtrWillBeRawPtr<MetadataRequest> create(PassRefPtrWillBeRawPtr<RequestMetadataCallback> requestCallback, const String& url)
     {
-        return adoptRef(new MetadataRequest(requestCallback, url));
+        return adoptRefWillBeNoop(new MetadataRequest(requestCallback, url));
     }
 
     ~MetadataRequest()
@@ -313,6 +330,11 @@ public:
     }
 
     void start(ExecutionContext*);
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+    }
 
 private:
     bool didHitError(FileError* error)
@@ -333,7 +355,7 @@ private:
         : m_requestCallback(requestCallback)
         , m_url(ParsedURLString, url) { }
 
-    RefPtrWillBePersistent<RequestMetadataCallback> m_requestCallback;
+    RefPtrWillBeMember<RequestMetadataCallback> m_requestCallback;
     KURL m_url;
     bool m_isDirectory;
 };
@@ -375,9 +397,9 @@ bool MetadataRequest::didGetMetadata(Metadata* metadata)
 class FileContentRequest final : public EventListener {
     WTF_MAKE_NONCOPYABLE(FileContentRequest);
 public:
-    static PassRefPtr<FileContentRequest> create(PassRefPtrWillBeRawPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
+    static PassRefPtrWillBeRawPtr<FileContentRequest> create(PassRefPtrWillBeRawPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
     {
-        return adoptRef(new FileContentRequest(requestCallback, url, readAsText, start, end, charset));
+        return adoptRefWillBeNoop(new FileContentRequest(requestCallback, url, readAsText, start, end, charset));
     }
 
     ~FileContentRequest() override
@@ -397,6 +419,13 @@ public:
             didRead();
         else if (event->type() == EventTypeNames::error)
             didHitError(m_reader->error());
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+        visitor->trace(m_reader);
+        EventListener::trace(visitor);
     }
 
 private:
@@ -424,7 +453,7 @@ private:
         , m_end(end)
         , m_charset(charset) { }
 
-    RefPtrWillBePersistent<RequestFileContentCallback> m_requestCallback;
+    RefPtrWillBeMember<RequestFileContentCallback> m_requestCallback;
     KURL m_url;
     bool m_readAsText;
     int m_start;
@@ -432,7 +461,7 @@ private:
     String m_mimeType;
     String m_charset;
 
-    Persistent<FileReader> m_reader;
+    PersistentWillBeMember<FileReader> m_reader;
 };
 
 void FileContentRequest::start(ExecutionContext* executionContext)
@@ -497,11 +526,11 @@ void FileContentRequest::didRead()
     reportResult(static_cast<FileError::ErrorCode>(0), &result, &m_charset);
 }
 
-class DeleteEntryRequest final : public RefCounted<DeleteEntryRequest> {
+class DeleteEntryRequest final : public RefCountedWillBeGarbageCollectedFinalized<DeleteEntryRequest> {
 public:
-    static PassRefPtr<DeleteEntryRequest> create(PassRefPtrWillBeRawPtr<DeleteEntryCallback> requestCallback, const KURL& url)
+    static PassRefPtrWillBeRawPtr<DeleteEntryRequest> create(PassRefPtrWillBeRawPtr<DeleteEntryCallback> requestCallback, const KURL& url)
     {
-        return adoptRef(new DeleteEntryRequest(requestCallback, url));
+        return adoptRefWillBeNoop(new DeleteEntryRequest(requestCallback, url));
     }
 
     ~DeleteEntryRequest()
@@ -510,11 +539,16 @@ public:
 
     void start(ExecutionContext*);
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+    }
+
 private:
     // CallbackDispatcherFactory doesn't handle 0-arg handleEvent methods
     class VoidCallbackImpl final : public VoidCallback {
     public:
-        explicit VoidCallbackImpl(PassRefPtr<DeleteEntryRequest> handler)
+        explicit VoidCallbackImpl(PassRefPtrWillBeRawPtr<DeleteEntryRequest> handler)
             : m_handler(handler)
         {
         }
@@ -524,8 +558,14 @@ private:
             m_handler->didDeleteEntry();
         }
 
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            visitor->trace(m_handler);
+            VoidCallback::trace(visitor);
+        }
+
     private:
-        RefPtr<DeleteEntryRequest> m_handler;
+        RefPtrWillBeMember<DeleteEntryRequest> m_handler;
     };
 
     bool didHitError(FileError* error)
@@ -546,7 +586,7 @@ private:
         : m_requestCallback(requestCallback)
         , m_url(url) { }
 
-    RefPtrWillBePersistent<DeleteEntryCallback> m_requestCallback;
+    RefPtrWillBeMember<DeleteEntryCallback> m_requestCallback;
     KURL m_url;
 };
 

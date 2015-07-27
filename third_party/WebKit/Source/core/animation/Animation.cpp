@@ -1066,7 +1066,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
         InspectorInstrumentation::didCreateAnimation(m_animation->timeline()->document(), m_animation);
 }
 
-bool Animation::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool Animation::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     if (eventType == EventTypeNames::finish)
         UseCounter::count(executionContext(), UseCounter::AnimationFinishEvent);

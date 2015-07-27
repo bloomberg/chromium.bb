@@ -161,7 +161,10 @@ void EventHandlerRegistry::didMoveIntoFrameHost(EventTarget& target)
         EventHandlerClass handlerClass;
         if (!eventTypeToClass(eventTypes[i], &handlerClass))
             continue;
-        for (unsigned count = target.getEventListeners(eventTypes[i]).size(); count > 0; --count)
+        EventListenerVector* listeners = target.getEventListeners(eventTypes[i]);
+        if (!listeners)
+            continue;
+        for (unsigned count = listeners->size(); count > 0; --count)
             didAddEventHandler(target, handlerClass);
     }
 }

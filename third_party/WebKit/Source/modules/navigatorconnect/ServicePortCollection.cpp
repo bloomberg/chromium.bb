@@ -163,7 +163,7 @@ void ServicePortCollection::dispatchConnectEvent(PassOwnPtr<WebServicePortConnec
 DEFINE_TRACE(ServicePortCollection)
 {
     visitor->trace(m_ports);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<ServicePortCollection>::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
 

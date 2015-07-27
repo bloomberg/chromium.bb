@@ -252,7 +252,7 @@ EventListener* AudioScheduledSourceNode::onended()
     return getAttributeEventListener(EventTypeNames::ended);
 }
 
-void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener)
+void AudioScheduledSourceNode::setOnended(PassRefPtrWillBeRawPtr<EventListener> listener)
 {
     audioScheduledSourceHandler().setHasEndedListener();
     setAttributeEventListener(EventTypeNames::ended, listener);

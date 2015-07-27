@@ -77,7 +77,7 @@ public:
     void setRegistration(WebServiceWorkerRegistration*);
 
     // EventTarget
-    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
     const AtomicString& interfaceName() const override;
 
     void dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Event>, WaitUntilObserver*);

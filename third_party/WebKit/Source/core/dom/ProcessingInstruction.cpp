@@ -66,8 +66,8 @@ ProcessingInstruction::~ProcessingInstruction()
     // crashes. We need to investigate ProcessingInstruction lifetime.
     if (inDocument() && m_isCSS)
         document().styleEngine().removeStyleSheetCandidateNode(this);
-#endif
     clearEventListenerForXSLT();
+#endif
 }
 
 EventListener* ProcessingInstruction::eventListenerForXSLT()
@@ -309,6 +309,7 @@ void ProcessingInstruction::clearSheet()
 DEFINE_TRACE(ProcessingInstruction)
 {
     visitor->trace(m_sheet);
+    visitor->trace(m_listenerForXSLT);
     CharacterData::trace(visitor);
 }
 

@@ -69,7 +69,7 @@ private:
     void cancelKeyRequest(WebMediaPlayer*, const String& keySystem, const String& sessionId, ExceptionState&);
 
     // EventTarget
-    bool setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
+    bool setAttributeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>);
     EventListener* getAttributeEventListener(const AtomicString& eventType);
 
     // Currently we have both EME v0.1b and EME WD implemented in media element.

@@ -107,9 +107,9 @@ static const double invalidCachedTime = -1.;
 
 class ConditionEventListener final : public EventListener {
 public:
-    static PassRefPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
+    static PassRefPtrWillBeRawPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
     {
-        return adoptRef(new ConditionEventListener(animation, condition));
+        return adoptRefWillBeNoop(new ConditionEventListener(animation, condition));
     }
 
     static const ConditionEventListener* cast(const EventListener* listener)
@@ -126,6 +126,12 @@ public:
         m_animation = nullptr;
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_animation);
+        EventListener::trace(visitor);
+    }
+
 private:
     ConditionEventListener(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
         : EventListener(ConditionEventListenerType)
@@ -136,7 +142,7 @@ private:
 
     void handleEvent(ExecutionContext*, Event*) override;
 
-    SVGSMILElement* m_animation;
+    RawPtrWillBeMember<SVGSMILElement> m_animation;
     SVGSMILElement::Condition* m_condition;
 };
 
@@ -154,7 +160,7 @@ void ConditionEventListener::handleEvent(ExecutionContext*, Event* event)
     m_animation->handleConditionEvent(event, m_condition);
 }
 
-void SVGSMILElement::Condition::setEventListener(PassRefPtr<ConditionEventListener> eventListener)
+void SVGSMILElement::Condition::setEventListener(PassRefPtrWillBeRawPtr<ConditionEventListener> eventListener)
 {
     m_eventListener = eventListener;
 }
@@ -1346,6 +1352,7 @@ SVGSMILElement::Condition::~Condition()
 DEFINE_TRACE(SVGSMILElement::Condition)
 {
     visitor->trace(m_syncBase);
+    visitor->trace(m_eventListener);
 }
 
 DEFINE_TRACE(SVGSMILElement)

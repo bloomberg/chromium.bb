@@ -56,7 +56,10 @@ using namespace HTMLNames;
 
 class ImageEventListener : public EventListener {
 public:
-    static PassRefPtr<ImageEventListener> create(ImageDocument* document) { return adoptRef(new ImageEventListener(document)); }
+    static PassRefPtrWillBeRawPtr<ImageEventListener> create(ImageDocument* document)
+    {
+        return adoptRefWillBeNoop(new ImageEventListener(document));
+    }
     static const ImageEventListener* cast(const EventListener* listener)
     {
         return listener->type() == ImageEventListenerType
@@ -65,6 +68,12 @@ public:
     }
 
     virtual bool operator==(const EventListener& other);
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_doc);
+        EventListener::trace(visitor);
+    }
 
 private:
     ImageEventListener(ImageDocument* document)
@@ -75,7 +84,7 @@ private:
 
     virtual void handleEvent(ExecutionContext*, Event*);
 
-    ImageDocument* m_doc;
+    RawPtrWillBeMember<ImageDocument> m_doc;
 };
 
 class ImageDocumentParser : public RawDataDocumentParser {
@@ -227,7 +236,7 @@ void ImageDocument::createDocumentStructure(bool loadingMultipartContent)
 
     if (shouldShrinkToFit()) {
         // Add event listeners
-        RefPtr<EventListener> listener = ImageEventListener::create(this);
+        RefPtrWillBeRawPtr<EventListener> listener = ImageEventListener::create(this);
         if (LocalDOMWindow* domWindow = this->domWindow())
             domWindow->addEventListener("resize", listener, false);
         if (m_shrinkToFitMode == Desktop)

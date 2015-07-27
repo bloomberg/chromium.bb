@@ -89,9 +89,9 @@ namespace {
 class GetDatabaseNamesCallback final : public EventListener {
     WTF_MAKE_NONCOPYABLE(GetDatabaseNamesCallback);
 public:
-    static PassRefPtr<GetDatabaseNamesCallback> create(PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
+    static PassRefPtrWillBeRawPtr<GetDatabaseNamesCallback> create(PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
     {
-        return adoptRef(new GetDatabaseNamesCallback(requestCallback, securityOrigin));
+        return adoptRefWillBeNoop(new GetDatabaseNamesCallback(requestCallback, securityOrigin));
     }
 
     ~GetDatabaseNamesCallback() override { }
@@ -124,12 +124,18 @@ public:
         m_requestCallback->sendSuccess(databaseNames.release());
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+        EventListener::trace(visitor);
+    }
+
 private:
     GetDatabaseNamesCallback(PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
         : EventListener(EventListener::CPPEventListenerType)
         , m_requestCallback(requestCallback)
         , m_securityOrigin(securityOrigin) { }
-    RefPtrWillBePersistent<RequestDatabaseNamesCallback> m_requestCallback;
+    RefPtrWillBeMember<RequestDatabaseNamesCallback> m_requestCallback;
     String m_securityOrigin;
 };
 
@@ -149,9 +155,9 @@ private:
 
 class OpenDatabaseCallback final : public EventListener {
 public:
-    static PassRefPtr<OpenDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
+    static PassRefPtrWillBeRawPtr<OpenDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
     {
-        return adoptRef(new OpenDatabaseCallback(executableWithDatabase));
+        return adoptRefWillBeNoop(new OpenDatabaseCallback(executableWithDatabase));
     }
 
     ~OpenDatabaseCallback() override { }
@@ -190,7 +196,7 @@ private:
 
 void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, const String& databaseName)
 {
-    RefPtr<OpenDatabaseCallback> callback = OpenDatabaseCallback::create(this);
+    RefPtrWillBeRawPtr<OpenDatabaseCallback> callback = OpenDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
     IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(scriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
@@ -389,9 +395,9 @@ class DataLoader;
 
 class OpenCursorCallback final : public EventListener {
 public:
-    static PassRefPtr<OpenCursorCallback> create(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static PassRefPtrWillBeRawPtr<OpenCursorCallback> create(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
-        return adoptRef(new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize));
+        return adoptRefWillBeNoop(new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize));
     }
 
     ~OpenCursorCallback() override { }
@@ -473,6 +479,12 @@ public:
         m_requestCallback->sendSuccess(m_result.release(), hasMore);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+        EventListener::trace(visitor);
+    }
+
 private:
     OpenCursorCallback(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
         : EventListener(EventListener::CPPEventListenerType)
@@ -485,7 +497,7 @@ private:
     }
 
     RefPtr<ScriptState> m_scriptState;
-    RefPtrWillBePersistent<RequestDataCallback> m_requestCallback;
+    RefPtrWillBeMember<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
     RefPtr<Array<DataEntry>> m_result;
@@ -515,7 +527,7 @@ public:
             return;
         }
 
-        RefPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(scriptState(), m_requestCallback, m_skipCount, m_pageSize);
+        RefPtrWillBeRawPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(scriptState(), m_requestCallback, m_skipCount, m_pageSize);
 
         IDBRequest* idbRequest;
         if (!m_indexName.isEmpty()) {
@@ -687,9 +699,9 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
 class ClearObjectStoreListener final : public EventListener {
     WTF_MAKE_NONCOPYABLE(ClearObjectStoreListener);
 public:
-    static PassRefPtr<ClearObjectStoreListener> create(PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
+    static PassRefPtrWillBeRawPtr<ClearObjectStoreListener> create(PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
     {
-        return adoptRef(new ClearObjectStoreListener(requestCallback));
+        return adoptRefWillBeNoop(new ClearObjectStoreListener(requestCallback));
     }
 
     ~ClearObjectStoreListener() override { }
@@ -710,6 +722,13 @@ public:
 
         m_requestCallback->sendSuccess();
     }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_requestCallback);
+        EventListener::trace(visitor);
+    }
+
 private:
     ClearObjectStoreListener(PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
         : EventListener(EventListener::CPPEventListenerType)
@@ -717,7 +736,7 @@ private:
     {
     }
 
-    RefPtrWillBePersistent<ClearObjectStoreCallback> m_requestCallback;
+    RefPtrWillBeMember<ClearObjectStoreCallback> m_requestCallback;
 };
 
 

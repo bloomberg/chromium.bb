@@ -272,9 +272,9 @@ UserGestureNotifier::~UserGestureNotifier()
 
 class EmptyEventListener final : public EventListener {
 public:
-    static PassRefPtr<EmptyEventListener> create()
+    static PassRefPtrWillBeRawPtr<EmptyEventListener> create()
     {
-        return adoptRef(new EmptyEventListener());
+        return adoptRefWillBeNoop(new EmptyEventListener());
     }
 
     bool operator==(const EventListener& other) override

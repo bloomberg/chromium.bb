@@ -21,15 +21,18 @@
 
 namespace blink {
 
-class DOMContentLoadedListener final : public ProcessingInstruction::DetachableEventListener, public V8AbstractEventListener {
+class DOMContentLoadedListener final : public V8AbstractEventListener, public ProcessingInstruction::DetachableEventListener {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMContentLoadedListener);
 public:
-    static PassRefPtr<DOMContentLoadedListener> create(ScriptState* scriptState, ProcessingInstruction* pi)
+    static PassRefPtrWillBeRawPtr<DOMContentLoadedListener> create(ScriptState* scriptState, ProcessingInstruction* pi)
     {
-        return adoptRef(new DOMContentLoadedListener(scriptState, pi));
+        return adoptRefWillBeNoop(new DOMContentLoadedListener(scriptState, pi));
     }
 
+#if !ENABLE(OILPAN)
     using V8AbstractEventListener::ref;
     using V8AbstractEventListener::deref;
+#endif
 
     virtual bool operator==(const EventListener&)
     {
@@ -68,6 +71,13 @@ public:
         return this;
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_processingInstruction);
+        V8AbstractEventListener::trace(visitor);
+        ProcessingInstruction::DetachableEventListener::trace(visitor);
+    }
+
 private:
     DOMContentLoadedListener(ScriptState* scriptState, ProcessingInstruction* pi)
         : V8AbstractEventListener(false, scriptState->world(), scriptState->isolate())
@@ -75,8 +85,10 @@ private:
     {
     }
 
+#if !ENABLE(OILPAN)
     void refDetachableEventListener() override { ref(); }
     void derefDetachableEventListener() override { deref(); }
+#endif
 
     virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*)
     {
@@ -87,10 +99,7 @@ private:
     // If this event listener is attached to a ProcessingInstruction, keep a
     // weak reference back to it. That ProcessingInstruction is responsible for
     // detaching itself and clear out the reference.
-    //
-    // FIXME: Oilpan: when EventListener is on the heap, make this a WeakMember<>,
-    // which will remove the need for explicit detachment.
-    ProcessingInstruction* m_processingInstruction;
+    RawPtrWillBeMember<ProcessingInstruction> m_processingInstruction;
 };
 
 DocumentXSLT::DocumentXSLT()
@@ -141,7 +150,7 @@ bool DocumentXSLT::processingInstructionInsertedIntoDocument(Document& document,
         return true;
 
     ScriptState* scriptState = ScriptState::forMainWorld(document.frame());
-    RefPtr<DOMContentLoadedListener> listener = DOMContentLoadedListener::create(scriptState, pi);
+    RefPtrWillBeRawPtr<DOMContentLoadedListener> listener = DOMContentLoadedListener::create(scriptState, pi);
     document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
     ASSERT(!pi->eventListenerForXSLT());
     pi->setEventListenerForXSLT(listener.release());

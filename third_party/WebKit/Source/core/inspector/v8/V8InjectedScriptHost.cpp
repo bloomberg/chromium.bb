@@ -258,12 +258,13 @@ static v8::Local<v8::Array> getJSListenerFunctions(v8::Isolate* isolate, Executi
     v8::Local<v8::Array> result = v8::Array::New(isolate);
     size_t handlersCount = listenerInfo.eventListenerVector.size();
     for (size_t i = 0, outputIndex = 0; i < handlersCount; ++i) {
-        RefPtr<EventListener> listener = listenerInfo.eventListenerVector[i].listener;
+        EventListener* listener = listenerInfo.eventListenerVector[i].listener.get();
+        RefPtrWillBeRawPtr<EventListener> protect(listener);
         if (listener->type() != EventListener::JSEventListenerType) {
             ASSERT_NOT_REACHED();
             continue;
         }
-        V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener.get());
+        V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
         v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
         // Hide listeners from other contexts.
         if (context != isolate->GetCurrentContext())
@@ -294,7 +295,7 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     if (!target)
         return;
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.Holder());
-    Vector<EventListenerInfo> listenersArray;
+    WillBeHeapVector<EventListenerInfo> listenersArray;
     host->getEventListenersImpl(target, listenersArray);
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());

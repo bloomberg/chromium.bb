@@ -7,17 +7,19 @@
 
 #include "core/InspectorTypeBuilder.h"
 #include "core/events/EventListenerMap.h"
+#include "core/events/EventTarget.h"
 #include "core/events/RegisteredEventListener.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 
-class EventTarget;
 class ExecutionContext;
 class InjectedScriptManager;
 
-struct EventListenerInfo {
+class EventListenerInfo {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     EventListenerInfo(EventTarget* eventTarget, const AtomicString& eventType, const EventListenerVector& eventListenerVector)
         : eventTarget(eventTarget)
         , eventType(eventType)
@@ -25,17 +27,24 @@ struct EventListenerInfo {
     {
     }
 
-    EventTarget* eventTarget;
+    RawPtrWillBeMember<EventTarget> eventTarget;
     const AtomicString eventType;
     const EventListenerVector eventListenerVector;
 
-    static void getEventListeners(EventTarget*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(eventTarget);
+        visitor->trace(eventListenerVector);
+    }
+
+    static void getEventListeners(EventTarget*, WillBeHeapVector<EventListenerInfo>& listenersArray, bool includeAncestors);
 };
 
 class RegisteredEventListenerIterator {
     WTF_MAKE_NONCOPYABLE(RegisteredEventListenerIterator);
+    STACK_ALLOCATED();
 public:
-    RegisteredEventListenerIterator(Vector<EventListenerInfo>& listenersArray)
+    RegisteredEventListenerIterator(WillBeHeapVector<EventListenerInfo>& listenersArray)
         : m_listenersArray(listenersArray)
         , m_infoIndex(0)
         , m_listenerIndex(0)
@@ -47,7 +56,7 @@ public:
     const EventListenerInfo& currentEventListenerInfo();
 
 private:
-    Vector<EventListenerInfo>& m_listenersArray;
+    WillBeHeapVector<EventListenerInfo>& m_listenersArray;
     unsigned m_infoIndex;
     unsigned m_listenerIndex;
     bool m_isUseCapturePass;
@@ -56,5 +65,7 @@ private:
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> eventHandlerObject(ExecutionContext*, EventListener*, InjectedScriptManager*, const String* objectGroupId);
 
 } // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::EventListenerInfo);
 
 #endif // EventListenerInfo_h

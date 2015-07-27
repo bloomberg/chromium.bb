@@ -43,9 +43,9 @@ class Event;
 // that can handle the event.
 class V8EventListener : public V8AbstractEventListener {
 public:
-    static PassRefPtr<V8EventListener> create(v8::Local<v8::Object> listener, bool isAttribute, ScriptState* scriptState)
+    static PassRefPtrWillBeRawPtr<V8EventListener> create(v8::Local<v8::Object> listener, bool isAttribute, ScriptState* scriptState)
     {
-        return adoptRef(new V8EventListener(listener, isAttribute, scriptState));
+        return adoptRefWillBeNoop(new V8EventListener(listener, isAttribute, scriptState));
     }
 
 protected:

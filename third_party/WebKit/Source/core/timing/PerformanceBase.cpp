@@ -331,7 +331,7 @@ DEFINE_TRACE(PerformanceBase)
     visitor->trace(m_frameTimingBuffer);
     visitor->trace(m_resourceTimingBuffer);
     visitor->trace(m_userTiming);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<PerformanceBase>::trace(visitor);
 }
 
 } // namespace blink

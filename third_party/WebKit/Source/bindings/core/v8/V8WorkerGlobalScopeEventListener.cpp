@@ -54,7 +54,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptState* scriptState, Eve
 {
     // The callback function on XMLHttpRequest can clear the event listener and destroys 'this' object. Keep a local reference to it.
     // See issue 889829.
-    RefPtr<V8AbstractEventListener> protect(this);
+    RefPtrWillBeRawPtr<V8AbstractEventListener> protect(this);
 
     WorkerScriptController* script = toWorkerGlobalScope(scriptState->executionContext())->script();
     if (!script)

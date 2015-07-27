@@ -54,24 +54,26 @@ public:
     bool isLoading() const;
 
     // For XSLT
-    class DetachableEventListener {
+    class DetachableEventListener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~DetachableEventListener() { }
-
-        void ref() { refDetachableEventListener(); }
-        void deref() { derefDetachableEventListener(); }
-
         virtual EventListener* toEventListener() = 0;
-
         // Detach event listener from its processing instruction.
         virtual void detach() = 0;
+
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
+
+#if !ENABLE(OILPAN)
+        void ref() { refDetachableEventListener(); }
+        void deref() { derefDetachableEventListener(); }
 
     private:
         virtual void refDetachableEventListener() = 0;
         virtual void derefDetachableEventListener() = 0;
+#endif
     };
 
-    void setEventListenerForXSLT(PassRefPtr<DetachableEventListener> listener) { m_listenerForXSLT = listener; }
+    void setEventListenerForXSLT(PassRefPtrWillBeRawPtr<DetachableEventListener> listener) { m_listenerForXSLT = listener; }
     EventListener* eventListenerForXSLT();
     void clearEventListenerForXSLT();
 
@@ -107,7 +109,7 @@ private:
     bool m_isCSS;
     bool m_isXSL;
 
-    RefPtr<DetachableEventListener> m_listenerForXSLT;
+    RefPtrWillBeMember<DetachableEventListener> m_listenerForXSLT;
 };
 
 DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
