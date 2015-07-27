@@ -1553,8 +1553,6 @@ crbug.com/321237 [ Mac ] virtual/stable/fast/css3-text/css3-text-decoration/stab
 crbug.com/321237 [ Win ] fast/multicol/span/pseudo-before-after-in-content.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] fast/selectors/004.html [ ImageOnlyFailure ]
 
-crbug.com/449197 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
-
 # Rebaselines that got missed in the first pass
 crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
