@@ -74,11 +74,6 @@ typedef BOOL (WINAPI* IsWow64ProcessFunction)(HANDLE process, BOOL* wow64);
 namespace sandbox {
 
 Wow64::~Wow64() {
-  if (dll_load_)
-    ::CloseHandle(dll_load_);
-
-  if (continue_load_)
-    ::CloseHandle(continue_load_);
 }
 
 // The basic idea is to allocate one page of memory on the child, and initialize
@@ -96,17 +91,20 @@ bool Wow64::WaitForNtdll() {
   const size_t page_size = 4096;
 
   // Create some default manual reset un-named events, not signaled.
-  dll_load_ = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-  continue_load_ = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+  dll_load_.Set(::CreateEvent(NULL, TRUE, FALSE, NULL));
+  continue_load_.Set(::CreateEvent(NULL, TRUE, FALSE, NULL));
   HANDLE current_process = ::GetCurrentProcess();
   HANDLE remote_load, remote_continue;
   DWORD access = EVENT_MODIFY_STATE | SYNCHRONIZE;
-  if (!::DuplicateHandle(current_process, dll_load_, child_->Process(),
-                         &remote_load, access, FALSE, 0))
+  if (!::DuplicateHandle(current_process, dll_load_.Get(), child_->Process(),
+                         &remote_load, access, FALSE, 0)) {
     return false;
-  if (!::DuplicateHandle(current_process, continue_load_, child_->Process(),
-                         &remote_continue, access, FALSE, 0))
+  }
+  if (!::DuplicateHandle(current_process, continue_load_.Get(),
+                         child_->Process(), &remote_continue, access, FALSE,
+                         0)) {
     return false;
+  }
 
   void* buffer = ::VirtualAllocEx(child_->Process(), NULL, page_size,
                                   MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -185,11 +183,11 @@ bool Wow64::DllMapped() {
   }
 
   for (;;) {
-    DWORD reason = ::WaitForSingleObject(dll_load_, INFINITE);
+    DWORD reason = ::WaitForSingleObject(dll_load_.Get(), INFINITE);
     if (WAIT_TIMEOUT == reason || WAIT_ABANDONED == reason)
       return false;
 
-    if (!::ResetEvent(dll_load_))
+    if (!::ResetEvent(dll_load_.Get()))
       return false;
 
     bool found = NtdllPresent();
@@ -198,7 +196,7 @@ bool Wow64::DllMapped() {
         return false;
     }
 
-    if (!::SetEvent(continue_load_))
+    if (!::SetEvent(continue_load_.Get()))
       return false;
 
     if (found)

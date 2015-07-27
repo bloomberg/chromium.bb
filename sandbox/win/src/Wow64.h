@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
@@ -40,8 +41,10 @@ class Wow64 {
 
   TargetProcess* child_;  // Child process.
   HMODULE ntdll_;         // ntdll on the parent.
-  HANDLE dll_load_;       // Event that is signaled on dll load.
-  HANDLE continue_load_;  // Event to signal to continue execution on the child.
+  // Event that is signaled on dll load.
+  base::win::ScopedHandle dll_load_;
+  // Event to signal to continue execution on the child.
+  base::win::ScopedHandle continue_load_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(Wow64);
 };
 
