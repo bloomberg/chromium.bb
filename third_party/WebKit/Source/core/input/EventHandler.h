@@ -346,7 +346,7 @@ private:
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
 
-    LocalFrame* const m_frame;
+    const RawPtrWillBeMember<LocalFrame> m_frame;
 
     bool m_mousePressed;
     bool m_capturesDragging;
