@@ -19,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -442,6 +443,8 @@ void DataReductionProxyCompressionStats::UpdateContentLengths(
     DataReductionProxyRequestType request_type,
     const std::string& mime_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("loader",
+               "DataReductionProxyCompressionStats::UpdateContentLengths")
   int64 total_received = GetInt64(
       data_reduction_proxy::prefs::kHttpReceivedContentLength);
   int64 total_original = GetInt64(
