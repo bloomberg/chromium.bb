@@ -558,11 +558,19 @@ void TestControls(AppWindow* app_window) {
   BOOL can_fullscreen =
       ![NSStringFromClass([ns_window class]) isEqualTo:@"AppFramelessNSWindow"];
   // The window can fullscreen and maximize.
-  if (base::mac::IsOSLionOrLater())
+  if (base::mac::IsOSLionOrLater()) {
     EXPECT_EQ(can_fullscreen, !!([ns_window collectionBehavior] &
                                  NSWindowCollectionBehaviorFullScreenPrimary));
-  EXPECT_EQ(can_fullscreen,
-            [[ns_window standardWindowButton:NSWindowZoomButton] isEnabled]);
+  }
+
+  // In OSX 10.10+, the zoom button performs the zoom action rather than the
+  // fullscreen action. The above check that collectionBehavior does not include
+  // NSWindowCollectionBehaviorFullScreenPrimary is sufficient to determine that
+  // the window can't be fullscreened.
+  if (base::mac::IsOSMavericksOrEarlier()) {
+    EXPECT_EQ(can_fullscreen,
+              [[ns_window standardWindowButton:NSWindowZoomButton] isEnabled]);
+  }
 
   // Set a maximum size.
   app_window->SetContentSizeConstraints(gfx::Size(), gfx::Size(200, 201));
