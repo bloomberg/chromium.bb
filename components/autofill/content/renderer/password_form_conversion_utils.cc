@@ -289,7 +289,7 @@ void GetPasswordForm(
          (nonscript_modified_values &&
           nonscript_modified_values->find(*input_element) !=
               nonscript_modified_values->end()) ||
-         HasAutocompleteAttributeValue(*input_element, "current_password") ||
+         HasAutocompleteAttributeValue(*input_element, "current-password") ||
          HasAutocompleteAttributeValue(*input_element, "new-password"))) {
       passwords.push_back(*input_element);
       // If we have not yet considered any element to be the username so far,
