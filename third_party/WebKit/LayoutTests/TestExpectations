@@ -1235,8 +1235,6 @@ crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-http-equiv-refr
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-location-reload.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
 
-crbug.com/507590 fast/block/float/containing-block-change-compositing.html [ ImageOnlyFailure ]
-
 #crbug.com/418091 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] fast/text/text-shadow-no-default-color.html [ Pass Failure ]
