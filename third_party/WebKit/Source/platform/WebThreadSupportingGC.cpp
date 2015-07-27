@@ -36,10 +36,10 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 void WebThreadSupportingGC::initialize()
 {
     m_pendingGCRunner = adoptPtr(new PendingGCRunner);
-    m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(&platformThread()));
     platformThread().addTaskObserver(m_pendingGCRunner.get());
     ThreadState::attach();
-    ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
+    OwnPtr<MessageLoopInterruptor> interruptor = adoptPtr(new MessageLoopInterruptor(&platformThread()));
+    ThreadState::current()->addInterruptor(interruptor.release());
 }
 
 void WebThreadSupportingGC::shutdown()
@@ -48,10 +48,8 @@ void WebThreadSupportingGC::shutdown()
     platformThread().removeTaskObserver(m_pendingGCRunner.get());
     platformThread().scheduler()->shutdown();
 
-    ThreadState::current()->removeInterruptor(m_messageLoopInterruptor.get());
     ThreadState::detach();
     m_pendingGCRunner = nullptr;
-    m_messageLoopInterruptor = nullptr;
 }
 
 } // namespace blink

@@ -445,11 +445,8 @@ public:
         void onInterrupted();
     };
 
-    void addInterruptor(Interruptor*);
+    void addInterruptor(PassOwnPtr<Interruptor>);
     void removeInterruptor(Interruptor*);
-
-    // Should only be called under protection of threadAttachMutex().
-    const Vector<Interruptor*>& interruptors() const { return m_interruptors; }
 
     void recordStackEnd(intptr_t* endOfStack)
     {
@@ -717,6 +714,11 @@ private:
     void clearHeapAges();
     int heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex);
 
+    using InterruptorVector = Vector<OwnPtr<Interruptor>>;
+
+    // Should only be called under protection of threadAttachMutex().
+    const InterruptorVector& interruptors() const { return m_interruptors; }
+
     friend class SafePointAwareMutexLocker;
     friend class SafePointBarrier;
     friend class SafePointScope;
@@ -743,7 +745,7 @@ private:
     void* m_safePointScopeMarker;
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
-    Vector<Interruptor*> m_interruptors;
+    InterruptorVector m_interruptors;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;

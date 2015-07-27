@@ -45,7 +45,7 @@ bool SafePointBarrier::parkOthers()
         if (state == current)
             continue;
 
-        for (ThreadState::Interruptor* interruptor : state->interruptors())
+        for (auto& interruptor : state->interruptors())
             interruptor->requestInterrupt();
     }
 

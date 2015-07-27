@@ -89,8 +89,8 @@ void CompositorWorkerManager::initializeBackingThread()
     m_isolate = V8PerIsolateData::initialize();
     V8Initializer::initializeWorker(m_isolate);
 
-    m_interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
-    ThreadState::current()->addInterruptor(m_interruptor.get());
+    OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
+    ThreadState::current()->addInterruptor(interruptor.release());
     ThreadState::current()->registerTraceDOMWrappers(m_isolate, V8GCController::traceDOMWrappers);
 }
 
@@ -121,10 +121,8 @@ void CompositorWorkerManager::willDestroyIsolate()
 {
     MutexLocker lock(m_mutex);
     ASSERT(m_thread->isCurrentThread());
-    if (m_workerCount == 1) {
+    if (m_workerCount == 1)
         V8PerIsolateData::willBeDestroyed(m_isolate);
-        ThreadState::current()->removeInterruptor(m_interruptor.get());
-    }
 }
 
 void CompositorWorkerManager::destroyIsolate()

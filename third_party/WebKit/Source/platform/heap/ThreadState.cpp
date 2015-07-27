@@ -139,9 +139,6 @@ ThreadState::~ThreadState()
     for (int i = 0; i < NumberOfHeaps; ++i)
         delete m_heaps[i];
 
-    for (Interruptor* interruptor : m_interruptors)
-        delete interruptor;
-
     **s_threadSpecific = nullptr;
     if (isMainThread()) {
         s_mainThreadStackStart = 0;
@@ -1283,7 +1280,7 @@ void ThreadState::copyStackUntilSafePointScope()
     }
 }
 
-void ThreadState::addInterruptor(Interruptor* interruptor)
+void ThreadState::addInterruptor(PassOwnPtr<Interruptor> interruptor)
 {
     ASSERT(checkThread());
     SafePointScope scope(HeapPointersOnStack);

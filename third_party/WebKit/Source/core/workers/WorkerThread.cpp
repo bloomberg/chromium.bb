@@ -439,8 +439,8 @@ v8::Isolate* WorkerThread::initializeIsolate()
     v8::Isolate* isolate = V8PerIsolateData::initialize();
     V8Initializer::initializeWorker(isolate);
 
-    m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
-    ThreadState::current()->addInterruptor(m_interruptor.get());
+    OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
+    ThreadState::current()->addInterruptor(interruptor.release());
     ThreadState::current()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
 
     return isolate;
@@ -451,7 +451,6 @@ void WorkerThread::willDestroyIsolate()
     ASSERT(isCurrentThread());
     ASSERT(m_isolate);
     V8PerIsolateData::willBeDestroyed(m_isolate);
-    ThreadState::current()->removeInterruptor(m_interruptor.get());
 }
 
 void WorkerThread::destroyIsolate()

@@ -48,7 +48,6 @@ private:
     OwnPtr<WebThreadSupportingGC> m_thread;
     int m_workerCount = 0;
     v8::Isolate* m_isolate = nullptr;
-    OwnPtr<V8IsolateInterruptor> m_interruptor;
 };
 
 } // namespace blink

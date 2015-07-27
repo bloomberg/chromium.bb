@@ -65,7 +65,6 @@ private:
     explicit WebThreadSupportingGC(const char*);
 
     OwnPtr<PendingGCRunner> m_pendingGCRunner;
-    OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
 
     // FIXME: This has to be last because of crbug.com/401397.
     // A WorkerThread might get deleted before it had a chance to properly

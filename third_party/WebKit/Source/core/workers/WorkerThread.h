@@ -171,7 +171,6 @@ private:
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
 
     v8::Isolate* m_isolate;
-    OwnPtr<V8IsolateInterruptor> m_interruptor;
 
     // Used to signal thread shutdown.
     OwnPtr<WebWaitableEvent> m_shutdownEvent;
