@@ -82,7 +82,7 @@ public:
 private:
     explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
     void prepareLazyDecodedFrames();
-    PassRefPtr<SkImage> createImage(size_t index, bool knownToBeOpaque) const;
+    SkBitmap createBitmap(size_t index);
     void activateLazyDecoding();
 
     RefPtr<SharedBuffer> m_data;
