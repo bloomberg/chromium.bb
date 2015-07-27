@@ -328,29 +328,16 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
   bool migrate_to_pepper_flash = false;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // If bundled NPAPI Flash is enabled while Pepper Flash is disabled, we
-  // would like to turn Pepper Flash on. And we only want to do it once.
-  // TODO(yzshen): Remove all |migrate_to_pepper_flash|-related code after it
-  // has been run once by most users. (Maybe Chrome 24 or Chrome 25.)
-  // NOTE(shess): Keep in mind that Mac is on a different schedule.
-  if (!prefs_->GetBoolean(prefs::kPluginsMigratedToPepperFlash)) {
-    prefs_->SetBoolean(prefs::kPluginsMigratedToPepperFlash, true);
+  // If NPAPI Flash is enabled while Pepper Flash is disabled, we would like to
+  // turn Pepper Flash on. And we want to do it once, when NPAPI is disabled in
+  // Chrome 45.
+  // TODO(wfh): Remove this code once it has been run by most users, around
+  // Chrome 49 or Chrome 50. See crbug.com/514250.
+  if (!prefs_->GetBoolean(prefs::kNpapiFlashMigratedToPepperFlash)) {
+    prefs_->SetBoolean(prefs::kNpapiFlashMigratedToPepperFlash, true);
     migrate_to_pepper_flash = true;
   }
 #endif
-
-  bool remove_component_pepper_flash_settings = false;
-  // If component-updated Pepper Flash is disabled, we would like to remove that
-  // settings item. And we only want to do it once. (Please see the comments of
-  // kPluginsRemovedOldComponentPepperFlashSettings for why.)
-  // TODO(yzshen): Remove all |remove_component_pepper_flash_settings|-related
-  // code after it has been run once by most users.
-  if (!prefs_->GetBoolean(
-          prefs::kPluginsRemovedOldComponentPepperFlashSettings)) {
-    prefs_->SetBoolean(prefs::kPluginsRemovedOldComponentPepperFlashSettings,
-                       true);
-    remove_component_pepper_flash_settings = true;
-  }
 
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
@@ -363,13 +350,9 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
       base::DictionaryValue* pepper_flash_node = NULL;
       bool npapi_flash_enabled = false;
       if (migrate_to_pepper_flash) {
-        PathService::Get(chrome::FILE_FLASH_PLUGIN, &npapi_flash);
+        PathService::Get(chrome::FILE_FLASH_SYSTEM_PLUGIN, &npapi_flash);
         PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &pepper_flash);
       }
-
-      // Used when |remove_component_pepper_flash_settings| is set to true.
-      base::ListValue::iterator component_pepper_flash_node =
-          saved_plugins_list->end();
 
       for (base::ListValue::iterator it = saved_plugins_list->begin();
            it != saved_plugins_list->end();
@@ -393,7 +376,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
           // Files have a path attribute, groups don't.
           base::FilePath plugin_path(path);
 
-          // The path to the intenral plugin directory changes everytime Chrome
+          // The path to the internal plugin directory changes everytime Chrome
           // is auto-updated, since it contains the current version number. For
           // example, it changes from foobar\Chrome\Application\21.0.1180.83 to
           // foobar\Chrome\Application\21.0.1180.89.
@@ -432,22 +415,14 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          if (migrate_to_pepper_flash &&
-                     base::FilePath::CompareEqualIgnoreCase(
-                         path, npapi_flash.value())) {
+          if (migrate_to_pepper_flash && base::FilePath::CompareEqualIgnoreCase(
+                                             path, npapi_flash.value())) {
             npapi_flash_enabled = enabled;
           } else if (migrate_to_pepper_flash &&
                      base::FilePath::CompareEqualIgnoreCase(
                          path, pepper_flash.value())) {
             if (!enabled)
               pepper_flash_node = plugin;
-          } else if (remove_component_pepper_flash_settings &&
-                     IsComponentUpdatedPepperFlash(plugin_path)) {
-            if (!enabled) {
-              component_pepper_flash_node = it;
-              // Skip setting |enabled| into |plugin_state_|.
-              continue;
-            }
           }
 
           plugin_state_.Set(plugin_path, enabled);
@@ -461,11 +436,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         DCHECK(migrate_to_pepper_flash);
         pepper_flash_node->SetBoolean("enabled", true);
         plugin_state_.Set(pepper_flash, true);
-      }
-
-      if (component_pepper_flash_node != saved_plugins_list->end()) {
-        DCHECK(remove_component_pepper_flash_settings);
-        saved_plugins_list->Erase(component_pepper_flash_node, NULL);
       }
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()

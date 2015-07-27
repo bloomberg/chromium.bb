@@ -376,9 +376,11 @@ void PluginsDOMHandler::PluginsLoaded(
       base::string16 desc = group_plugin.desc;
       if (group_plugin.is_pepper_plugin() &&
           group_plugin.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
-        base::FilePath system_path;
-        PathService::Get(chrome::DIR_PEPPER_FLASH_SYSTEM_PLUGIN, &system_path);
-        if (group_plugin.path.DirName() == system_path) {
+        base::FilePath system_flash_path;
+        PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
+                         &system_flash_path);
+        if (base::FilePath::CompareEqualIgnoreCase(group_plugin.path.value(),
+                                                   system_flash_path.value())) {
 #if defined(GOOGLE_CHROME_BUILD)
           // Existing documentation for debugging Flash describe this plugin as
           // "Debug" so preserve this nomenclature here.

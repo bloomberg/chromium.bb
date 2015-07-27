@@ -308,17 +308,6 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #endif  // FLAPPER_AVAILABLE
 }
 
-#if defined(OS_WIN)
-const char kPepperFlashDLLBaseName[] =
-#if defined(ARCH_CPU_X86)
-    "pepflashplayer32_";
-#elif defined(ARCH_CPU_X86_64)
-    "pepflashplayer64_";
-#else
-#error Unsupported Windows CPU architecture.
-#endif  // defined(ARCH_CPU_X86)
-#endif  // defined(OS_WIN)
-
 #if defined(FLAPPER_AVAILABLE)
 bool IsSystemFlashScriptDebuggerPresent() {
 #if defined(OS_WIN)
@@ -356,14 +345,16 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   if (command_line->HasSwitch(switches::kPpapiFlashPath))
     return false;
 
-  base::FilePath flash_path;
-  if (!PathService::Get(chrome::DIR_PEPPER_FLASH_SYSTEM_PLUGIN, &flash_path))
+  base::FilePath flash_filename;
+  if (!PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
+                        &flash_filename))
     return false;
 
-  if (!base::PathExists(flash_path))
+  if (!base::PathExists(flash_filename))
     return false;
 
-  base::FilePath manifest_path(flash_path.AppendASCII("manifest.json"));
+  base::FilePath manifest_path(
+      flash_filename.DirName().AppendASCII("manifest.json"));
 
   std::string manifest_data;
   if (!base::ReadFileToString(manifest_path, &manifest_data))
@@ -380,23 +371,7 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   if (!chrome::CheckPepperFlashManifest(*manifest, &version))
     return false;
 
-#if defined(OS_WIN)
-  // PepperFlash DLLs on Windows look like basename_v_x_y_z.dll.
-  std::string filename(kPepperFlashDLLBaseName);
-  filename.append(version.GetString());
-  base::ReplaceChars(filename, ".", "_", &filename);
-  filename.append(".dll");
-
-  base::FilePath path(flash_path.Append(base::ASCIIToUTF16(filename)));
-#else
-  // PepperFlash on OS X is called PepperFlashPlayer.plugin
-  base::FilePath path(flash_path.Append(chrome::kPepperFlashPluginFilename));
-#endif
-
-  if (!base::PathExists(path))
-    return false;
-
-  *plugin = CreatePepperFlashInfo(path, version.GetString());
+  *plugin = CreatePepperFlashInfo(flash_filename, version.GetString());
   return true;
 }
 #endif  //  defined(ENABLE_PLUGINS)
