@@ -156,12 +156,10 @@ bool ResolveRegistryName(base::string16 name, base::string16* resolved_name) {
 //    \??\c:\some\foo\bar
 //    \Device\HarddiskVolume0\some\foo\bar
 //    \??\HarddiskVolume0\some\foo\bar
-DWORD IsReparsePoint(const base::string16& full_path, bool* result) {
+DWORD IsReparsePoint(const base::string16& full_path) {
   // Check if it's a pipe. We can't query the attributes of a pipe.
-  if (IsPipe(full_path)) {
-    *result = FALSE;
-    return ERROR_SUCCESS;
-  }
+  if (IsPipe(full_path))
+    return ERROR_NOT_A_REPARSE_POINT;
 
   base::string16 path;
   bool nt_path = IsNTPath(full_path, &path);
@@ -199,7 +197,6 @@ DWORD IsReparsePoint(const base::string16& full_path, bool* result) {
       }
     } else if (FILE_ATTRIBUTE_REPARSE_POINT & attributes) {
       // This is a reparse point.
-      *result = true;
       return ERROR_SUCCESS;
     }
 
@@ -207,8 +204,7 @@ DWORD IsReparsePoint(const base::string16& full_path, bool* result) {
     last_pos = path.rfind(L'\\');
   } while (last_pos > 2);  // Skip root dir.
 
-  *result = false;
-  return ERROR_SUCCESS;
+  return ERROR_NOT_A_REPARSE_POINT;
 }
 
 // We get a |full_path| of the forms accepted by IsReparsePoint(), and the name
@@ -279,34 +275,31 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
 
 // Paths like \Device\HarddiskVolume0\some\foo\bar are assumed to be already
 // expanded.
-bool ConvertToLongPath(const base::string16& short_path,
-                       base::string16* long_path) {
-  if (IsPipe(short_path)) {
-    // TODO(rvargas): Change the signature to use a single argument.
-    long_path->assign(short_path);
+bool ConvertToLongPath(base::string16* path) {
+  if (IsPipe(*path))
     return true;
-  }
 
-  base::string16 path;
-  if (IsDevicePath(short_path, &path))
+  base::string16 temp_path;
+  if (IsDevicePath(*path, &temp_path))
     return false;
 
-  bool is_nt_path = IsNTPath(path, &path);
+  bool is_nt_path = IsNTPath(temp_path, &temp_path);
   bool added_implied_device = false;
-  if (!StartsWithDriveLetter(path) && is_nt_path) {
-    path = base::string16(kNTDotPrefix) + path;
+  if (!StartsWithDriveLetter(temp_path) && is_nt_path) {
+    temp_path = base::string16(kNTDotPrefix) + temp_path;
     added_implied_device = true;
   }
 
   DWORD size = MAX_PATH;
   scoped_ptr<wchar_t[]> long_path_buf(new wchar_t[size]);
 
-  DWORD return_value = ::GetLongPathName(path.c_str(), long_path_buf.get(),
+  DWORD return_value = ::GetLongPathName(temp_path.c_str(), long_path_buf.get(),
                                          size);
   while (return_value >= size) {
     size *= 2;
     long_path_buf.reset(new wchar_t[size]);
-    return_value = ::GetLongPathName(path.c_str(), long_path_buf.get(), size);
+    return_value = ::GetLongPathName(temp_path.c_str(), long_path_buf.get(),
+                                     size);
   }
 
   DWORD last_error = ::GetLastError();
@@ -314,31 +307,31 @@ bool ConvertToLongPath(const base::string16& short_path,
                             ERROR_PATH_NOT_FOUND == last_error ||
                             ERROR_INVALID_NAME == last_error)) {
     // The file does not exist, but maybe a sub path needs to be expanded.
-    base::string16::size_type last_slash = path.rfind(L'\\');
+    base::string16::size_type last_slash = temp_path.rfind(L'\\');
     if (base::string16::npos == last_slash)
       return false;
 
-    base::string16 begin = path.substr(0, last_slash);
-    base::string16 end = path.substr(last_slash);
-    if (!ConvertToLongPath(begin, &begin))
+    base::string16 begin = temp_path.substr(0, last_slash);
+    base::string16 end = temp_path.substr(last_slash);
+    if (!ConvertToLongPath(&begin))
       return false;
 
     // Ok, it worked. Let's reset the return value.
-    path = begin + end;
+    temp_path = begin + end;
     return_value = 1;
   } else if (0 != return_value) {
-    path = long_path_buf.get();
+    temp_path = long_path_buf.get();
   }
 
   if (return_value != 0) {
     if (added_implied_device)
-      RemoveImpliedDevice(&path);
+      RemoveImpliedDevice(&temp_path);
 
     if (is_nt_path) {
-      *long_path = kNTPrefix;
-      *long_path += path;
+      *path = kNTPrefix;
+      *path += temp_path;
     } else {
-      *long_path = path;
+      *path = temp_path;
     }
 
     return true;

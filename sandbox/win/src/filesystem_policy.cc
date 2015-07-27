@@ -79,7 +79,7 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
     return false;
   }
 
-  if (!PreProcessName(mod_name, &mod_name)) {
+  if (!PreProcessName(&mod_name)) {
     // The path to be added might contain a reparse point.
     NOTREACHED();
     return false;
@@ -394,15 +394,14 @@ bool FileSystemPolicy::SetInformationFileAction(
   return true;
 }
 
-bool PreProcessName(const base::string16& path, base::string16* new_path) {
-  ConvertToLongPath(path, new_path);
+bool PreProcessName(base::string16* path) {
+  ConvertToLongPath(path);
 
-  bool reparsed = false;
-  if (ERROR_SUCCESS != IsReparsePoint(*new_path, &reparsed))
-    return false;
+  if (ERROR_NOT_A_REPARSE_POINT == IsReparsePoint(*path))
+    return true;
 
-  // We can't process reparsed file.
-  return !reparsed;
+  // We can't process a reparsed file.
+  return false;
 }
 
 base::string16 FixNTPrefixForMatch(const base::string16& name) {

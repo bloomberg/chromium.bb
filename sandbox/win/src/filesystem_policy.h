@@ -98,10 +98,9 @@ class FileSystemPolicy {
                                        NTSTATUS* nt_status);
 };
 
-// Expands the path and check if it's a reparse point. Returns false if
-// we cannot determine or if there is an unexpected error. In that case
-// the path cannot be trusted.
-bool PreProcessName(const base::string16& path, base::string16* new_path);
+// Expands the path and check if it's a reparse point. Returns false if the path
+// cannot be trusted.
+bool PreProcessName(base::string16* path);
 
 // Corrects global paths to have a correctly escaped NT prefix at the
 // beginning. If the name has no NT prefix (either normal or escaped)

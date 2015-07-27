@@ -92,7 +92,7 @@ bool FilesystemDispatcher::NtCreateFile(IPCInfo* ipc,
                                         uint32 share_access,
                                         uint32 create_disposition,
                                         uint32 create_options) {
-  if (!PreProcessName(*name, name)) {
+  if (!PreProcessName(name)) {
     // The path requested might contain a reparse point.
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
@@ -138,7 +138,7 @@ bool FilesystemDispatcher::NtOpenFile(IPCInfo* ipc,
                                       uint32 desired_access,
                                       uint32 share_access,
                                       uint32 open_options) {
-  if (!PreProcessName(*name, name)) {
+  if (!PreProcessName(name)) {
     // The path requested might contain a reparse point.
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
@@ -184,7 +184,7 @@ bool FilesystemDispatcher::NtQueryAttributesFile(IPCInfo* ipc,
   if (sizeof(FILE_BASIC_INFORMATION) != info->Size())
     return false;
 
-  if (!PreProcessName(*name, name)) {
+  if (!PreProcessName(name)) {
     // The path requested might contain a reparse point.
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
@@ -224,7 +224,7 @@ bool FilesystemDispatcher::NtQueryFullAttributesFile(IPCInfo* ipc,
   if (sizeof(FILE_NETWORK_OPEN_INFORMATION) != info->Size())
     return false;
 
-  if (!PreProcessName(*name, name)) {
+  if (!PreProcessName(name)) {
     // The path requested might contain a reparse point.
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
@@ -279,7 +279,7 @@ bool FilesystemDispatcher::NtSetInformationFile(IPCInfo* ipc,
   base::string16 name;
   name.assign(rename_info->FileName, rename_info->FileNameLength /
                                      sizeof(rename_info->FileName[0]));
-  if (!PreProcessName(name, &name)) {
+  if (!PreProcessName(&name)) {
     // The path requested might contain a reparse point.
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
