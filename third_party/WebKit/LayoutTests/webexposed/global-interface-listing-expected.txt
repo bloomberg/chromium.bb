@@ -3612,12 +3612,12 @@ interface PresentationAvailability
     method constructor
     setter onchange
 interface PresentationRequest
-    getter onconnect
+    getter onsessionconnect
     method constructor
     method getAvailability
     method join
     method start
-    setter onconnect
+    setter onsessionconnect
 interface PresentationSession
     getter binaryType
     getter id

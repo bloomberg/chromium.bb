@@ -40,7 +40,7 @@ public:
 
     const KURL& url() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(sessionconnect);
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -28,7 +28,7 @@ test(function() {
   assert_equals(typeof(request.start), "function");
   assert_equals(typeof(request.join), "function");
   assert_equals(typeof(request.getAvailability), "function");
-  assert_equals(typeof(request.onconnect), "object");
+  assert_equals(typeof(request.onsessionconnect), "object");
 
   assert_true(request instanceof EventTarget);
 }, "Test PresentationRequest API types.");

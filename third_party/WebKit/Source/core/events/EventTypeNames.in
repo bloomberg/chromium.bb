@@ -192,6 +192,7 @@ selectionchange
 selectstart
 show
 signalingstatechange
+sessionconnect
 soundend
 soundstart
 sourceclose
