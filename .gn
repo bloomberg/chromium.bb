@@ -75,9 +75,7 @@ check_targets = [
   "mojo/application/*",
   "mojo/build/*",
   "mojo/cc/*",
-
-  # TODO(sky): resolve this.
-  # "mojo/common/*",
+  "mojo/common/*",
   "mojo/converters/*",
   "mojo/environment/*",
 

@@ -7,6 +7,14 @@ source_set("chromium") {
   output_name = "mojo_environment_chromium"
 
   sources = [
+    "default_async_waiter_impl.cc",
+    "default_async_waiter_impl.h",
+    "default_logger_impl.cc",
+    "default_logger_impl.h",
+    "default_run_loop_impl.cc",
+    "default_run_loop_impl.h",
+    "default_task_tracker_impl.cc",
+    "default_task_tracker_impl.h",
     "environment.cc",
 
     # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
@@ -19,43 +27,19 @@ source_set("chromium") {
     "//third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h",
   ]
 
-  public_deps = [
-    ":chromium_impl",
-  ]
-
   deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//mojo/common:common_base",
+    "//third_party/mojo/src/mojo/public/cpp/environment:environment",
     "//third_party/mojo/src/mojo/public/c/environment",
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",
-  ]
-}
-
-# GYP version: mojo_base.gyp:mojo_environment_chromium_impl
-component("chromium_impl") {
-  output_name = "mojo_environment_impl"
-  visibility = [ "//mojo/*" ]
-
-  sources = [
-    "default_async_waiter_impl.cc",
-    "default_async_waiter_impl.h",
-    "default_logger_impl.cc",
-    "default_logger_impl.h",
-    "default_run_loop_impl.cc",
-    "default_run_loop_impl.h",
-    "default_task_tracker_impl.cc",
-    "default_task_tracker_impl.h",
   ]
 
   defines = [ "MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION" ]
 
   public_configs =
       [ "//third_party/mojo/src/mojo/public/build/config:mojo_sdk" ]
-
-  deps = [
-    "//base",
-    "//base/third_party/dynamic_annotations",
-    "//mojo/common:common_base",
-    "//third_party/mojo/src/mojo/public/cpp/environment:environment",
-  ]
 }

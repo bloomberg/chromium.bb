@@ -12,7 +12,7 @@ group("common") {
 }
 
 # GYP version: mojo/mojo_base.gyp:mojo_common_lib
-component("common_base") {
+source_set("common_base") {
   output_name = "mojo_common_lib"
 
   sources = [
@@ -40,6 +40,8 @@ component("common_base") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system:system",
   ]
 }
 
