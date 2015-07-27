@@ -14,6 +14,7 @@
 #include "net/base/auth.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
+#include "net/cookies/cookie_store_test_helpers.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/socket/socket_test_util.h"
@@ -95,9 +96,10 @@ class URLRequestHttpJobTest : public ::testing::Test {
   scoped_ptr<URLRequest> req_;
 };
 
-class URLRequestHttpJobBackoffTest : public ::testing::Test {
+class URLRequestHttpJobWithMockSocketsTest : public ::testing::Test {
  protected:
-  URLRequestHttpJobBackoffTest() : context_(new TestURLRequestContext(true)) {
+  URLRequestHttpJobWithMockSocketsTest()
+      : context_(new TestURLRequestContext(true)) {
     context_->set_client_socket_factory(&socket_factory_);
     context_->set_network_delegate(&network_delegate_);
     context_->set_backoff_manager(&manager_);
@@ -110,7 +112,78 @@ class URLRequestHttpJobBackoffTest : public ::testing::Test {
   scoped_ptr<TestURLRequestContext> context_;
 };
 
-TEST_F(URLRequestHttpJobBackoffTest, BackoffHeader) {
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestContentLengthSuccessfulRequest) {
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(request->status().is_success());
+  EXPECT_EQ(12, request->received_response_content_length());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthAbortedRequest) {
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 20\r\n\r\n"),
+                      MockRead("Test Content"),
+                      MockRead(net::SYNCHRONOUS, net::ERR_FAILED)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(12, request->received_response_content_length());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestContentLengthCancelledRequest) {
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 20\r\n\r\n"),
+                      MockRead("Test Content"),
+                      MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+  request->Cancel();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(12, request->received_response_content_length());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
   MockWrite writes[] = {MockWrite(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.com\r\n"
@@ -164,7 +237,7 @@ TEST_F(URLRequestHttpJobBackoffTest, BackoffHeader) {
   EXPECT_EQ(0, delegate2.received_before_network_start_count());
 }
 
-TEST_F(URLRequestHttpJobBackoffTest, BackoffHeaderNotSecure) {
+TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
   MockWrite writes[] = {MockWrite(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.com\r\n"
@@ -198,7 +271,7 @@ TEST_F(URLRequestHttpJobBackoffTest, BackoffHeaderNotSecure) {
   EXPECT_EQ(0, manager_.GetNumberOfEntriesForTests());
 }
 
-TEST_F(URLRequestHttpJobBackoffTest, BackoffHeaderCachedResponse) {
+TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
   MockWrite writes[] = {MockWrite(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.com\r\n"
@@ -250,6 +323,23 @@ TEST_F(URLRequestHttpJobBackoffTest, BackoffHeaderCachedResponse) {
   EXPECT_TRUE(request2->was_cached());
   EXPECT_TRUE(request2->status().is_success());
   EXPECT_EQ(0, delegate2.received_before_network_start_count());
+}
+
+TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
+  context_.set_cookie_store(new DelayedCookieMonster());
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_.CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                             &delegate)
+          .Pass();
+
+  request->Start();
+  request->Cancel();
+  base::RunLoop().Run();
+
+  DCHECK_EQ(0, delegate.received_before_network_start_count());
+  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
 }
 
 // Make sure that SetPriority actually sets the URLRequestHttpJob's

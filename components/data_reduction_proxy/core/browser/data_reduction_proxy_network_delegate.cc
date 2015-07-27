@@ -204,20 +204,14 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   if (data_reduction_proxy_bypass_stats_)
     data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started);
 
-  // Only record for http or https urls.
-  bool is_http = request->url().SchemeIs("http");
-  bool is_https = request->url().SchemeIs("https");
-
-  if (request->status().status() != net::URLRequestStatus::SUCCESS)
-    return;
-
   // For better accuracy, we use the actual bytes read instead of the length
   // specified with the Content-Length header, which may be inaccurate,
   // or missing, as is the case with chunked encoding.
   int64 received_content_length = request->received_response_content_length();
   if (!request->was_cached() &&   // Don't record cached content
       received_content_length &&  // Zero-byte responses aren't useful.
-      (is_http || is_https)) {    // Only record for HTTP or HTTPS urls.
+      request->response_info().network_accessed &&  // Network was accessed.
+      request->url().SchemeIsHTTPOrHTTPS()) {
     int64 original_content_length =
         request->response_info().headers->GetInt64HeaderValue(
             "x-original-content-length");
@@ -234,7 +228,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                                          original_content_length,
                                          received_content_length);
     std::string mime_type;
-    request->GetMimeType(&mime_type);
+    if (request->status().status() == net::URLRequestStatus::SUCCESS)
+      request->GetMimeType(&mime_type);
     AccumulateContentLength(received_content_length,
                             adjusted_original_content_length, request_type,
                             mime_type);

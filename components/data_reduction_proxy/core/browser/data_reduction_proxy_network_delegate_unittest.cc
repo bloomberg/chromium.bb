@@ -140,6 +140,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     test_job_interceptor_->set_main_intercept_job(test_job.get());
 
     request->set_received_response_content_length(response_content_length);
+    net::HttpResponseInfo& response_info =
+        const_cast<net::HttpResponseInfo&>(request->response_info());
+    response_info.network_accessed = true;
 
     request->Start();
     test_context_->RunUntilIdle();

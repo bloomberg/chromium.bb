@@ -1541,9 +1541,8 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
     return;
   done_ = true;
   RecordPerfHistograms(reason);
-  if (reason == FINISHED) {
+  if (request_)
     request_->set_received_response_content_length(prefilter_bytes_read());
-  }
 }
 
 HttpResponseHeaders* URLRequestHttpJob::GetResponseHeaders() const {
