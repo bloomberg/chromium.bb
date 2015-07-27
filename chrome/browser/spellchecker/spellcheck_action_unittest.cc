@@ -21,7 +21,7 @@ TEST(SpellcheckActionTest, FinalActionsTest) {
   };
   SpellcheckAction action;
   for (size_t i = 0; i < arraysize(kFinalActions); ++i) {
-    action.type = kFinalActions[i];
+    action.set_type(kFinalActions[i]);
     ASSERT_TRUE(action.IsFinal());
   }
 }
@@ -33,20 +33,20 @@ TEST(SpellcheckActionTest, PendingActionsTest) {
   };
   SpellcheckAction action;
   for (size_t i = 0; i < arraysize(kPendingActions); ++i) {
-    action.type = kPendingActions[i];
+    action.set_type(kPendingActions[i]);
     ASSERT_FALSE(action.IsFinal());
   }
 }
 
 TEST(SpellcheckActionTest, FinalizeTest) {
   SpellcheckAction action;
-  action.type = SpellcheckAction::TYPE_PENDING;
+  action.set_type(SpellcheckAction::TYPE_PENDING);
   action.Finalize();
-  ASSERT_EQ(SpellcheckAction::TYPE_NO_ACTION, action.type);
+  ASSERT_EQ(SpellcheckAction::TYPE_NO_ACTION, action.type());
 
-  action.type = SpellcheckAction::TYPE_PENDING_IGNORE;
+  action.set_type(SpellcheckAction::TYPE_PENDING_IGNORE);
   action.Finalize();
-  ASSERT_EQ(SpellcheckAction::TYPE_IGNORE, action.type);
+  ASSERT_EQ(SpellcheckAction::TYPE_IGNORE, action.type());
 }
 
 TEST(SpellcheckActionTest, SerializeTest) {

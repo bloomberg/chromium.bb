@@ -7,31 +7,31 @@
 #include "base/logging.h"
 #include "base/values.h"
 
-SpellcheckAction::SpellcheckAction() : type(TYPE_PENDING), index(-1) {}
+SpellcheckAction::SpellcheckAction() : type_(TYPE_PENDING), index_(-1) {}
 
 SpellcheckAction::SpellcheckAction(SpellcheckActionType type,
                                    int index,
                                    base::string16 value)
-    : type(type), index(index), value(value) {}
+    : type_(type), index_(index), value_(value) {}
 
 SpellcheckAction::~SpellcheckAction() {}
 
 bool SpellcheckAction::IsFinal() const {
-  return type == TYPE_ADD_TO_DICT ||
-         type == TYPE_IGNORE ||
-         type == TYPE_IN_DICTIONARY ||
-         type == TYPE_MANUALLY_CORRECTED ||
-         type == TYPE_NO_ACTION ||
-         type == TYPE_SELECT;
+  return type_ == TYPE_ADD_TO_DICT ||
+         type_ == TYPE_IGNORE ||
+         type_ == TYPE_IN_DICTIONARY ||
+         type_ == TYPE_MANUALLY_CORRECTED ||
+         type_ == TYPE_NO_ACTION ||
+         type_ == TYPE_SELECT;
 }
 
 void SpellcheckAction::Finalize() {
-  switch (type) {
+  switch (type_) {
     case TYPE_PENDING:
-      type = TYPE_NO_ACTION;
+      type_ = TYPE_NO_ACTION;
       break;
     case TYPE_PENDING_IGNORE:
-      type = TYPE_IGNORE;
+      type_ = TYPE_IGNORE;
       break;
     default:
       DCHECK(IsFinal());
@@ -41,10 +41,10 @@ void SpellcheckAction::Finalize() {
 
 base::DictionaryValue* SpellcheckAction::Serialize() const {
   base::DictionaryValue* result = new base::DictionaryValue;
-  switch (type) {
+  switch (type_) {
     case TYPE_SELECT:
       result->SetString("actionType", "SELECT");
-      result->SetInteger("actionTargetIndex", index);
+      result->SetInteger("actionTargetIndex", index_);
       break;
     case TYPE_ADD_TO_DICT:
       result->SetString("actionType", "ADD_TO_DICT");
@@ -60,7 +60,7 @@ base::DictionaryValue* SpellcheckAction::Serialize() const {
       break;
     case TYPE_MANUALLY_CORRECTED:
       result->SetString("actionType", "MANUALLY_CORRECTED");
-      result->SetString("actionTargetValue", value);
+      result->SetString("actionTargetValue", value_);
       break;
     case TYPE_PENDING:
     case TYPE_PENDING_IGNORE:

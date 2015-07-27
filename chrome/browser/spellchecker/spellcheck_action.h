@@ -62,14 +62,21 @@ class SpellcheckAction {
   // the result.
   base::DictionaryValue* Serialize() const;
 
+  void set_type(SpellcheckActionType type) { type_ = type; }
+  void set_index(int index) { index_ = index; }
+  void set_value(const base::string16& value) { value_ = value; }
+
+  SpellcheckActionType type() const { return type_; }
+
+ private:
   // User action.
-  SpellcheckActionType type;
+  SpellcheckActionType type_;
 
   // The index for the user action, if applicable.
-  int index;
+  int index_;
 
   // The value for the user action, if applicable.
-  base::string16 value;
+  base::string16 value_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_ACTION_H_
