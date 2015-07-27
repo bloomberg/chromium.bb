@@ -35,6 +35,12 @@
 #include "crypto/nss_util.h"
 #endif
 
+namespace {
+
+const char kReportUri[] = "http://example.test/test";
+
+}  // namespace
+
 namespace net {
 
 class TransportSecurityStateTest : public testing::Test {
@@ -214,6 +220,7 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
 // with it, regardless of the includeSubDomains bit. This is a regression test
 // for https://crbug.com/469957.
 TEST_F(TransportSecurityStateTest, SubdomainCarveout) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
@@ -222,8 +229,10 @@ TEST_F(TransportSecurityStateTest, SubdomainCarveout) {
   state.AddHSTS("example1.test", expiry, true);
   state.AddHSTS("foo.example1.test", expiry, false);
 
-  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes());
-  state.AddHPKP("foo.example2.test", expiry, false, GetSampleSPKIHashes());
+  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes(),
+                report_uri);
+  state.AddHPKP("foo.example2.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example1.test"));
   EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example1.test"));
@@ -243,7 +252,8 @@ TEST_F(TransportSecurityStateTest, SubdomainCarveout) {
 
   // Expire the foo.example*.test rules.
   state.AddHSTS("foo.example1.test", older, false);
-  state.AddHPKP("foo.example2.test", older, false, GetSampleSPKIHashes());
+  state.AddHPKP("foo.example2.test", older, false, GetSampleSPKIHashes(),
+                report_uri);
 
   // Now the base example*.test rules apply to bar.foo.example*.test.
   EXPECT_TRUE(state.ShouldUpgradeToSSL("bar.foo.example1.test"));
@@ -253,12 +263,14 @@ TEST_F(TransportSecurityStateTest, SubdomainCarveout) {
 }
 
 TEST_F(TransportSecurityStateTest, FatalSSLErrors) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   state.AddHSTS("example1.test", expiry, false);
-  state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes());
+  state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
 
   // The presense of either HSTS or HPKP is enough to make SSL errors fatal.
   EXPECT_TRUE(state.ShouldSSLErrorsBeFatal("example1.test"));
@@ -268,6 +280,7 @@ TEST_F(TransportSecurityStateTest, FatalSSLErrors) {
 // Tests that HPKP and HSTS state both expire. Also tests that expired entries
 // are pruned.
 TEST_F(TransportSecurityStateTest, Expiration) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
@@ -281,14 +294,16 @@ TEST_F(TransportSecurityStateTest, Expiration) {
   // Querying |state| for a domain should flush out expired entries.
   EXPECT_FALSE(TransportSecurityState::STSStateIterator(state).HasNext());
 
-  state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes());
+  state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes(),
+                report_uri);
   EXPECT_TRUE(TransportSecurityState::PKPStateIterator(state).HasNext());
   EXPECT_FALSE(state.HasPublicKeyPins("example1.test"));
   // Querying |state| for a domain should flush out expired entries.
   EXPECT_FALSE(TransportSecurityState::PKPStateIterator(state).HasNext());
 
   state.AddHSTS("example1.test", older, false);
-  state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes());
+  state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes(),
+                report_uri);
   EXPECT_TRUE(TransportSecurityState::STSStateIterator(state).HasNext());
   EXPECT_TRUE(TransportSecurityState::PKPStateIterator(state).HasNext());
   EXPECT_FALSE(state.ShouldSSLErrorsBeFatal("example1.test"));
@@ -298,13 +313,15 @@ TEST_F(TransportSecurityStateTest, Expiration) {
 
   // Test that HSTS can outlive HPKP.
   state.AddHSTS("example1.test", expiry, false);
-  state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes());
+  state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes(),
+                report_uri);
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example1.test"));
   EXPECT_FALSE(state.HasPublicKeyPins("example1.test"));
 
   // Test that HPKP can outlive HSTS.
   state.AddHSTS("example2.test", older, false);
-  state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes());
+  state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example2.test"));
   EXPECT_TRUE(state.HasPublicKeyPins("example2.test"));
 }
@@ -324,15 +341,18 @@ TEST_F(TransportSecurityStateTest, InvalidDomains) {
 // Tests that HPKP and HSTS state are queried independently for subdomain
 // matches.
 TEST_F(TransportSecurityStateTest, IndependentSubdomain) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   state.AddHSTS("example1.test", expiry, true);
-  state.AddHPKP("example1.test", expiry, false, GetSampleSPKIHashes());
+  state.AddHPKP("example1.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
 
   state.AddHSTS("example2.test", expiry, false);
-  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes());
+  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes(),
+                report_uri);
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example1.test"));
   EXPECT_FALSE(state.HasPublicKeyPins("foo.example1.test"));
@@ -342,13 +362,15 @@ TEST_F(TransportSecurityStateTest, IndependentSubdomain) {
 
 // Tests that HPKP and HSTS state are inserted and overridden independently.
 TEST_F(TransportSecurityStateTest, IndependentInsertion) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   // Place an includeSubdomains HSTS entry below a normal HPKP entry.
   state.AddHSTS("example1.test", expiry, true);
-  state.AddHPKP("foo.example1.test", expiry, false, GetSampleSPKIHashes());
+  state.AddHPKP("foo.example1.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example1.test"));
   EXPECT_TRUE(state.HasPublicKeyPins("foo.example1.test"));
@@ -363,13 +385,15 @@ TEST_F(TransportSecurityStateTest, IndependentInsertion) {
 
   // Place an includeSubdomains HPKP entry below a normal HSTS entry.
   state.AddHSTS("foo.example2.test", expiry, false);
-  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes());
+  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes(),
+                report_uri);
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example2.test"));
   EXPECT_TRUE(state.HasPublicKeyPins("foo.example2.test"));
 
   // Drop the includeSubdomains from the HSTS entry.
-  state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes());
+  state.AddHPKP("example2.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example2.test"));
   EXPECT_FALSE(state.HasPublicKeyPins("foo.example2.test"));
@@ -378,13 +402,15 @@ TEST_F(TransportSecurityStateTest, IndependentInsertion) {
 // Tests that GetDynamic[PKP|STS]State returns the correct data and that the
 // states are not mixed together.
 TEST_F(TransportSecurityStateTest, DynamicDomainState) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry1 = current_time + base::TimeDelta::FromSeconds(1000);
   const base::Time expiry2 = current_time + base::TimeDelta::FromSeconds(2000);
 
   state.AddHSTS("example.com", expiry1, true);
-  state.AddHPKP("foo.example.com", expiry2, false, GetSampleSPKIHashes());
+  state.AddHPKP("foo.example.com", expiry2, false, GetSampleSPKIHashes(),
+                report_uri);
 
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
@@ -403,6 +429,7 @@ TEST_F(TransportSecurityStateTest, DynamicDomainState) {
 // Tests that new pins always override previous pins. This should be true for
 // both pins at the same domain or includeSubdomains pins at a parent domain.
 TEST_F(TransportSecurityStateTest, NewPinsOverride) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState state;
   TransportSecurityState::PKPState pkp_state;
   const base::Time current_time(base::Time::Now());
@@ -414,19 +441,22 @@ TEST_F(TransportSecurityStateTest, NewPinsOverride) {
   HashValue hash3(HASH_VALUE_SHA1);
   memset(hash3.data(), 0x03, hash1.size());
 
-  state.AddHPKP("example.com", expiry, true, HashValueVector(1, hash1));
+  state.AddHPKP("example.com", expiry, true, HashValueVector(1, hash1),
+                report_uri);
 
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   ASSERT_EQ(1u, pkp_state.spki_hashes.size());
   EXPECT_TRUE(pkp_state.spki_hashes[0].Equals(hash1));
 
-  state.AddHPKP("foo.example.com", expiry, false, HashValueVector(1, hash2));
+  state.AddHPKP("foo.example.com", expiry, false, HashValueVector(1, hash2),
+                report_uri);
 
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   ASSERT_EQ(1u, pkp_state.spki_hashes.size());
   EXPECT_TRUE(pkp_state.spki_hashes[0].Equals(hash2));
 
-  state.AddHPKP("foo.example.com", expiry, false, HashValueVector(1, hash3));
+  state.AddHPKP("foo.example.com", expiry, false, HashValueVector(1, hash3),
+                report_uri);
 
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   ASSERT_EQ(1u, pkp_state.spki_hashes.size());
@@ -444,7 +474,7 @@ TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
   bool include_subdomains = false;
   state.AddHSTS("example.com", expiry, include_subdomains);
   state.AddHPKP("example.com", expiry, include_subdomains,
-                GetSampleSPKIHashes());
+                GetSampleSPKIHashes(), GURL());
 
   state.DeleteAllDynamicDataSince(expiry);
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example.com"));
@@ -466,7 +496,7 @@ TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
 
   state.AddHSTS("example1.test", expiry, include_subdomains);
   state.AddHPKP("example1.test", expiry, include_subdomains,
-                GetSampleSPKIHashes());
+                GetSampleSPKIHashes(), GURL());
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example1.test"));
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example2.test"));
