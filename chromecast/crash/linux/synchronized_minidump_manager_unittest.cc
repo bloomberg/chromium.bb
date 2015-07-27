@@ -22,6 +22,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "chromecast/base/serializers.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/synchronized_minidump_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,19 +32,7 @@ namespace {
 
 const char kLockfileName[] = "lockfile";
 const char kMinidumpSubdir[] = "minidumps";
-
-ScopedVector<DumpInfo> GetCurrentDumps(const std::string& logfile_path) {
-  ScopedVector<DumpInfo> dumps;
-  std::string entry;
-
-  std::ifstream in(logfile_path);
-  DCHECK(in.is_open());
-  while (std::getline(in, entry)) {
-    scoped_ptr<DumpInfo> info(new DumpInfo(entry));
-    dumps.push_back(info.Pass());
-  }
-  return dumps.Pass();
-}
+const char kDumpsKey[] = "dumps";
 
 // A trivial implementation of SynchronizedMinidumpManager, which does no work
 // to the
@@ -83,6 +72,45 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   std::string lockfile_path_;
   scoped_ptr<DumpInfo> dump_info_;
 };
+
+bool FetchDumps(const std::string& lockfile_path,
+                ScopedVector<DumpInfo>* dumps) {
+  if (!dumps) {
+    return false;
+  }
+  dumps->clear();
+
+  base::FilePath path(lockfile_path);
+  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
+
+  base::DictionaryValue* dict;
+  base::ListValue* dump_list;
+  if (!contents || !contents->GetAsDictionary(&dict) ||
+      !dict->GetList(kDumpsKey, &dump_list) || !dump_list) {
+    return false;
+  }
+
+  for (base::Value* elem : *dump_list) {
+    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(*elem));
+    if (!dump->valid()) {
+      return false;
+    }
+    dumps->push_back(dump.Pass());
+  }
+
+  return true;
+}
+
+bool CreateLockFile(const std::string& lockfile_path) {
+  scoped_ptr<base::DictionaryValue> output =
+      make_scoped_ptr(new base::DictionaryValue());
+  output->Set("dumps", make_scoped_ptr(new base::ListValue()));
+
+  base::FilePath path(lockfile_path);
+
+  const base::Value* val = output.get();
+  return SerializeJsonToFile(path, *val);
+}
 
 void DoWorkLockedTask(SynchronizedMinidumpManagerSimple* manager) {
   manager->DoWorkLocked();
@@ -147,6 +175,11 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
   scoped_ptr<base::ScopedPathOverride> path_override_;
 };
 
+scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
+  scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
+  return make_scoped_ptr(new DumpInfo(*value));
+}
+
 }  // namespace
 
 TEST_F(SynchronizedMinidumpManagerTest, FilePathsAreCorrect) {
@@ -200,12 +233,13 @@ TEST_F(SynchronizedMinidumpManagerTest,
        AddEntryToLockFile_FailsWithInvalidEntry) {
   // Test that the manager tried to log the entry and failed.
   SynchronizedMinidumpManagerSimple manager;
-  manager.SetDumpInfoToWrite(make_scoped_ptr(new DumpInfo("")));
+  manager.SetDumpInfoToWrite(CreateDumpInfo(""));
   ASSERT_EQ(0, manager.DoWorkLocked());
   ASSERT_EQ(-1, manager.add_entry_return_code());
 
   // Verify the lockfile is untouched.
-  ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile_.value());
+  ScopedVector<DumpInfo> dumps;
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(0u, dumps.size());
 }
 
@@ -224,7 +258,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   ASSERT_EQ(0, manager.add_entry_return_code());
 
   // Test that the manager was successful in logging the entry.
-  ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile_.value());
+  ScopedVector<DumpInfo> dumps;
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(1u, dumps.size());
 
   // Write the second entry.
@@ -234,15 +269,13 @@ TEST_F(SynchronizedMinidumpManagerTest,
   ASSERT_EQ(0, manager.add_entry_return_code());
 
   // Test that the second entry is also valid.
-  dumps = GetCurrentDumps(lockfile_.value());
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(2u, dumps.size());
-
-  // TODO(slan): Weird time incosistencies making this fail.
-  // ASSERT_EQ(dumps[0]->entry(), DumpInfo("dump", "log", now, params).entry());
 }
 
 TEST_F(SynchronizedMinidumpManagerTest,
        AcquireLockFile_FailsWhenNonBlockingAndFileLocked) {
+  ASSERT_TRUE(CreateLockFile(lockfile_.value()));
   // Lock the lockfile here. Note that the Chromium base::File tools permit
   // multiple locks on the same process to succeed, so we must use POSIX system
   // calls to accomplish this.
@@ -256,7 +289,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   ASSERT_FALSE(manager.work_done());
 
   // Test that the manager was not able to log the crash dump.
-  ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile_.value());
+  ScopedVector<DumpInfo> dumps;
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(0u, dumps.size());
 }
 
@@ -303,7 +337,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   EXPECT_TRUE(sleepy_manager.work_done());
 
   // Test that both entries were logged.
-  ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile_.value());
+  ScopedVector<DumpInfo> dumps;
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   EXPECT_EQ(2u, dumps.size());
 }
 
@@ -334,7 +369,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   ASSERT_FALSE(manager.work_done());
 
   // Test that the manager was not able to log the crash dump.
-  ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile_.value());
+  ScopedVector<DumpInfo> dumps;
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(0u, dumps.size());
 }
 
@@ -381,7 +417,8 @@ TEST_F(SynchronizedMinidumpManagerTest,
   EXPECT_TRUE(manager.work_done());
 
   // Test that both entries were logged.
-  ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile_.value());
+  ScopedVector<DumpInfo> dumps;
+  ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   EXPECT_EQ(2u, dumps.size());
 }
 

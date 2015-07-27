@@ -11,6 +11,7 @@
 
 namespace base {
 class Value;
+class FilePath;
 }
 
 namespace chromecast {
@@ -23,6 +24,15 @@ scoped_ptr<base::Value> DeserializeFromJson(const std::string& text);
 // Helper function which serializes |value| into a JSON string. If a
 // serialization error occurs,the return value will hold the NULL pointer.
 scoped_ptr<std::string> SerializeToJson(const base::Value& value);
+
+// Helper function which deserializes JSON file at |path| into a base::Value.
+// If file in |path| is empty, is not valid JSON, or if some other
+// deserialization error occurs, the return value will hold the NULL pointer.
+scoped_ptr<base::Value> DeserializeJsonFromFile(const base::FilePath& path);
+
+// Helper function which serializes |value| into the file at |path|. The
+// function returns true on success, false otherwise.
+bool SerializeJsonToFile(const base::FilePath& path, const base::Value& value);
 
 }  // namespace chromecast
 

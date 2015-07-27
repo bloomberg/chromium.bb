@@ -113,7 +113,7 @@ int MinidumpWriter::DoWork() {
 }
 
 bool MinidumpWriter::CanWriteDump() {
-  const auto& dumps = GetDumpMetadata();
+  const auto dumps(GetDumps());
 
   // If no more dumps can be written, return false.
   if (static_cast<int>(dumps.size()) >= max_dumps_)

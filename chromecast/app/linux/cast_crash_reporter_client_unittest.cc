@@ -11,7 +11,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
+#include "chromecast/base/serializers.h"
 #include "chromecast/crash/app_state_tracker.h"
 #include "chromecast/crash/linux/crash_util.h"
 #include "chromecast/crash/linux/dump_info.h"
@@ -22,6 +24,7 @@ namespace {
 
 const char kFakeDumpstateContents[] = "Dumpstate Contents\nDumpdumpdumpdump\n";
 const char kFakeMinidumpContents[] = "Minidump Contents\nLine1\nLine2\n";
+const char kDumpsKey[] = "dumps";
 
 int WriteFakeDumpStateFile(const std::string& path) {
   // Append the correct extension and write the data to file.
@@ -32,17 +35,32 @@ int WriteFakeDumpStateFile(const std::string& path) {
   return 0;
 }
 
-ScopedVector<DumpInfo> GetCurrentDumps(const std::string& logfile_path) {
-  ScopedVector<DumpInfo> dumps;
-  std::string entry;
-
-  std::ifstream in(logfile_path);
-  DCHECK(in.is_open());
-  while (std::getline(in, entry)) {
-    scoped_ptr<DumpInfo> info(new DumpInfo(entry));
-    dumps.push_back(info.Pass());
+bool FetchDumps(const std::string& lockfile_path,
+                ScopedVector<DumpInfo>* dumps) {
+  if (!dumps) {
+    return false;
   }
-  return dumps.Pass();
+  dumps->clear();
+
+  base::FilePath path(lockfile_path);
+  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
+
+  base::DictionaryValue* dict;
+  base::ListValue* dump_list;
+  if (!contents || !contents->GetAsDictionary(&dict) ||
+      !dict->GetList(kDumpsKey, &dump_list) || !dump_list) {
+    return false;
+  }
+
+  for (base::Value* elem : *dump_list) {
+    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(*elem));
+    if (!dump->valid()) {
+      return false;
+    }
+    dumps->push_back(dump.Pass());
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -111,7 +129,8 @@ class CastCrashReporterClientTest : public testing::Test {
     base::FilePath lockfile =
         fake_home_dir_.Append("minidumps").Append("lockfile");
     ASSERT_TRUE(base::PathExists(lockfile));
-    ScopedVector<DumpInfo> dumps = GetCurrentDumps(lockfile.value());
+    ScopedVector<DumpInfo> dumps;
+    ASSERT_TRUE(FetchDumps(lockfile.value(), &dumps));
     ASSERT_EQ(1u, dumps.size());
 
     const DumpInfo& dump_info = *(dumps[0]);

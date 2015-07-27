@@ -10,10 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/values.h"
+#include "chromecast/crash/linux/dump_info.h"
 
 namespace chromecast {
-
-class DumpInfo;
 
 // Abstract base class for mutually-exclusive minidump handling. Ensures
 // synchronized access among instances of this class to the minidumps directory
@@ -21,6 +21,10 @@ class DumpInfo;
 // of the minidumps in the directory. Derived classes should not access the
 // lockfile directly. Instead, use protected methods to query and modify the
 // metadata, but only within the implementation of DoWork().
+//
+// This class holds an in memory representation of the lockfile while it is
+// held. Modifier methods work on this in memory representation. When the
+// lockfile is released, the in memory representation is written to file.
 class SynchronizedMinidumpManager {
  public:
   virtual ~SynchronizedMinidumpManager();
@@ -45,10 +49,11 @@ class SynchronizedMinidumpManager {
   // files shall be managed as needed by the derived class.
   virtual int DoWork() = 0;
 
-  // Access the container holding all the metadata for the dumps. Note that
-  // the child class must only call this inside DoWork(). This is lazy. If the
-  // lockfile has not been parsed yet, it will be parsed when this is called.
-  const ScopedVector<DumpInfo>& GetDumpMetadata();
+  // Get the current dumps in the lockfile.
+  ScopedVector<DumpInfo> GetDumps();
+
+  // Set |dumps| as the dumps in |lockfile_|, replacing current list of dumps.
+  int SetCurrentDumps(const ScopedVector<DumpInfo>& dumps);
 
   // Serialize |dump_info| and append it to the lockfile. Note that the child
   // class must only call this inside DoWork(). This should be the only method
@@ -57,11 +62,9 @@ class SynchronizedMinidumpManager {
   // -1 otherwise.
   int AddEntryToLockFile(const DumpInfo& dump_info);
 
-  // Remove the lockfile entry at |index| in the container returned by
-  // GetDumpMetadata(). If the index is invalid or an IO error occurred, returns
-  // -1. Otherwise returns 0. When this function returns, both the in-memory
-  // containter returned by GetDumpMetadata and the persistent lockfile will be
-  // current.
+  // Remove the lockfile entry at |index| in the current in memory
+  // representation of the lockfile. If the index is invalid returns -1.
+  // Otherwise returns 0.
   int RemoveEntryFromLockFile(int index);
 
   // Get the number of un-uploaded dumps in the dump_path directory.
@@ -69,12 +72,7 @@ class SynchronizedMinidumpManager {
   // clean lingering dump files.
   int GetNumDumps(bool delete_all_dumps);
 
-  // TODO(slan): Remove this accessor. All I/O on the lockfile in inherited
-  // classes should be done via GetDumpMetadata(), AddEntryToLockFile(), and
-  // RemoveEntryFromLockFile().
-  const std::string& lockfile_path() { return lockfile_path_; }
-
-  // If true, the flock on the lockfile will be nonblocking
+  // If true, the flock on the lockfile will be nonblocking.
   bool non_blocking_;
 
   // Cached path for the minidumps directory.
@@ -86,17 +84,23 @@ class SynchronizedMinidumpManager {
   // successful, or -1 if failed.
   int AcquireLockFile();
 
-  // Parse the lockfile, populating |dumps_| for descendants to use. Return -1
-  // if an error occurred. Otherwise, return 0. This must not be called unless
-  // |this| has acquired the lock.
+  // Parse the lockfile, populating |lockfile_contents_| for modifier functions
+  // to use. Return -1 if an error occurred. Otherwise, return 0. This must not
+  // be called unless |this| has acquired the lock.
   int ParseLockFile();
+
+  // Write deserialized lockfile to |lockfile_path_|.
+  int WriteLockFile(const base::Value& contents);
+
+  // Creates an empty lock file.
+  int CreateEmptyLockFile();
 
   // Release the lock file with the associated *fd*.
   void ReleaseLockFile();
 
   std::string lockfile_path_;
   int lockfile_fd_;
-  scoped_ptr<ScopedVector<DumpInfo> > dump_metadata_;
+  scoped_ptr<base::Value> lockfile_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronizedMinidumpManager);
 };

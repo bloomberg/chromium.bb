@@ -5,10 +5,8 @@
 
 #include <stdlib.h>
 
-#include <sstream>
-
 #include "base/logging.h"
-#include "base/strings/string_split.h"
+#include "base/values.h"
 
 namespace chromecast {
 
@@ -18,13 +16,22 @@ const char kDumpTimeFormat[] = "%Y-%m-%d %H:%M:%S";
 const unsigned kDumpTimeMaxLen = 255;
 
 const int kNumRequiredParams = 5;
+
+const char kNameKey[] = "name";
+const char kDumpTimeKey[] = "dump_time";
+const char kDumpKey[] = "dump";
+const char kUptimeKey[] = "uptime";
+const char kLogfileKey[] = "logfile";
+const char kSuffixKey[] = "suffix";
+const char kPrevAppNameKey[] = "prev_app_name";
+const char kCurAppNameKey[] = "cur_app_name";
+const char kLastAppNameKey[] = "last_app_name";
+const char kReleaseVersionKey[] = "release_version";
+const char kBuildNumberKey[] = "build_number";
+
 }  // namespace
 
-DumpInfo::DumpInfo(const std::string& entry) : valid_(false) {
-  // TODO(slan): This ctor is doing non-trivial work. Change this.
-  if ((valid_ = ParseEntry(entry)) == true) {
-    entry_ = GetEntryAsString();
-  }
+DumpInfo::DumpInfo(const base::Value& entry) : valid_(ParseEntry(&entry)) {
 }
 
 DumpInfo::DumpInfo(const std::string& crashed_process_dump,
@@ -36,10 +43,6 @@ DumpInfo::DumpInfo(const std::string& crashed_process_dump,
       dump_time_(dump_time),
       params_(params),
       valid_(false) {
-  // The format is
-  // <name>|<dump time>|<dump>|<uptime>|<logfile>|<suffix>|<prev_app_name>|
-  // <curent_app name>|<last_app_name>
-  // <dump time> is in the format of kDumpTimeFormat
 
   // Validate the time passed in.
   struct tm* tm = gmtime(&dump_time);
@@ -49,77 +52,109 @@ DumpInfo::DumpInfo(const std::string& crashed_process_dump,
     LOG(INFO) << "strftime failed";
     return;
   }
-  entry_ = GetEntryAsString();
+
   valid_ = true;
 }
 
 DumpInfo::~DumpInfo() {
 }
 
-std::string DumpInfo::GetEntryAsString() {
+scoped_ptr<base::Value> DumpInfo::GetAsValue() const {
+  scoped_ptr<base::Value> result = make_scoped_ptr(new base::DictionaryValue());
+  base::DictionaryValue* entry;
+  result->GetAsDictionary(&entry);
+  entry->SetString(kNameKey, params_.process_name);
+
   struct tm* tm = gmtime(&dump_time_);
   char buf[kDumpTimeMaxLen];
   int n = strftime(buf, kDumpTimeMaxLen, kDumpTimeFormat, tm);
   DCHECK_GT(n, 0);
+  std::string dump_time(buf);
+  entry->SetString(kDumpTimeKey, dump_time);
 
-  std::stringstream entrystream;
-  entrystream << params_.process_name << "|" << buf << "|"
-              << crashed_process_dump_ << "|" << params_.process_uptime << "|"
-              << logfile_ << "|" << params_.suffix << "|"
-              << params_.previous_app_name << "|" << params_.current_app_name
-              << "|" << params_.last_app_name << "|"
-              << params_.cast_release_version << "|"
-              << params_.cast_build_number << std::endl;
-  return entrystream.str();
+  entry->SetString(kDumpKey, crashed_process_dump_);
+  std::string uptime = std::to_string(params_.process_uptime);
+  entry->SetString(kUptimeKey, uptime);
+  entry->SetString(kLogfileKey, logfile_);
+  entry->SetString(kSuffixKey, params_.suffix);
+  entry->SetString(kPrevAppNameKey, params_.previous_app_name);
+  entry->SetString(kCurAppNameKey, params_.current_app_name);
+  entry->SetString(kLastAppNameKey, params_.last_app_name);
+  entry->SetString(kReleaseVersionKey, params_.cast_release_version);
+  entry->SetString(kBuildNumberKey, params_.cast_build_number);
+
+  return result;
 }
 
-bool DumpInfo::ParseEntry(const std::string& entry) {
-  // The format is
-  // <name>|<dump time>|<dump>|<uptime>|<logfile>{|<suffix>{|<prev_app_name>{
-  //    |<current_app name>{|last_launched_app_name}}}}
-  // <dump time> is in the format |kDumpTimeFormat|
-  std::vector<std::string> fields;
-  base::SplitString(entry, '|', &fields);
-  if (fields.size() < kNumRequiredParams) {
-    LOG(INFO) << "Invalid entry: Too few fields.";
+bool DumpInfo::ParseEntry(const base::Value* entry) {
+  valid_ = false;
+
+  if (!entry) {
+    return false;
+  }
+
+  const base::DictionaryValue* dict;
+  if (!entry->GetAsDictionary(&dict)) {
     return false;
   }
 
   // Extract required fields.
-  params_.process_name = fields[0];
-  if (!SetDumpTimeFromString(fields[1]))
+  if (!dict->GetString(kNameKey, &params_.process_name)) {
     return false;
-  crashed_process_dump_ = fields[2];
-  params_.process_uptime = atoll(fields[3].c_str());
-  logfile_ = fields[4];
+  }
+
+  std::string dump_time;
+  if (!dict->GetString(kDumpTimeKey, &dump_time)) {
+    return false;
+  }
+  if (!SetDumpTimeFromString(dump_time)) {
+    return false;
+  }
+
+  if (!dict->GetString(kDumpKey, &crashed_process_dump_)) {
+    return false;
+  }
+
+  std::string uptime;
+  if (!dict->GetString(kUptimeKey, &uptime)) {
+    return false;
+  }
+  errno = 0;
+  params_.process_uptime = strtoull(uptime.c_str(), nullptr, 0);
+  if (errno != 0) {
+    return false;
+  }
+
+  if (!dict->GetString(kLogfileKey, &logfile_)) {
+    return false;
+  }
+  size_t num_params = kNumRequiredParams;
 
   // Extract all other optional fields.
-  for (size_t i = 5; i < fields.size(); ++i) {
-    const std::string& temp = fields[i];
-    switch (i) {
-      case 5:  // Optional field: suffix
-        params_.suffix = temp;
-        break;
-      case 6:  // Optional field: prev_app_name
-        params_.previous_app_name = temp;
-        break;
-      case 7:  // Optional field: current_app_name
-        params_.current_app_name = temp;
-        break;
-      case 8:  // Optional field: last_launched_app_name
-        params_.last_app_name = temp;
-        break;
-      case 9:  // extract an optional cast release version
-        params_.cast_release_version = temp;
-        break;
-      case 10:  // extract an optional cast build number
-        params_.cast_build_number = temp;
-        break;
-      default:
-        LOG(INFO) << "Entry has too many fields invalid";
-        return false;
-    }
+  if (dict->GetString(kSuffixKey, &params_.suffix)) {
+    ++num_params;
   }
+  if (dict->GetString(kPrevAppNameKey, &params_.previous_app_name)) {
+    ++num_params;
+  }
+  if (dict->GetString(kCurAppNameKey, &params_.current_app_name)) {
+    ++num_params;
+  }
+  if (dict->GetString(kLastAppNameKey, &params_.last_app_name)) {
+    ++num_params;
+  }
+  if (dict->GetString(kReleaseVersionKey, &params_.cast_release_version)) {
+    ++num_params;
+  }
+  if (dict->GetString(kBuildNumberKey, &params_.cast_build_number)) {
+    ++num_params;
+  }
+
+  // Disallow extraneous params
+  if (dict->size() != num_params) {
+    return false;
+  }
+
   valid_ = true;
   return true;
 }

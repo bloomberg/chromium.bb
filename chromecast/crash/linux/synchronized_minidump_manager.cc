@@ -18,6 +18,7 @@
 
 #include "base/logging.h"
 #include "chromecast/base/path_utils.h"
+#include "chromecast/base/serializers.h"
 #include "chromecast/crash/linux/dump_info.h"
 
 namespace chromecast {
@@ -28,6 +29,20 @@ const mode_t kDirMode = 0770;
 const mode_t kFileMode = 0660;
 const char kLockfileName[] = "lockfile";
 const char kMinidumpsDir[] = "minidumps";
+
+const char kLockfileDumpField[] = "dumps";
+
+// Gets the list of deserialized DumpInfo given a deserialized |lockfile|.
+base::ListValue* GetDumpList(base::Value* lockfile) {
+  base::DictionaryValue* dict;
+  base::ListValue* dump_list;
+  if (!lockfile || !lockfile->GetAsDictionary(&dict) ||
+      !dict->GetList(kLockfileDumpField, &dump_list)) {
+    return nullptr;
+  }
+
+  return dump_list;
+}
 
 }  // namespace
 
@@ -89,13 +104,6 @@ int SynchronizedMinidumpManager::AcquireLockAndDoWork() {
   return success;
 }
 
-const ScopedVector<DumpInfo>& SynchronizedMinidumpManager::GetDumpMetadata() {
-  DCHECK_GE(lockfile_fd_, 0);
-  if (!dump_metadata_)
-    ParseLockFile();
-  return *dump_metadata_;
-}
-
 int SynchronizedMinidumpManager::AcquireLockFile() {
   DCHECK_LT(lockfile_fd_, 0);
   // Make the directory for the minidumps if it does not exist.
@@ -128,39 +136,38 @@ int SynchronizedMinidumpManager::AcquireLockFile() {
   // record of all the current dumps.
   if (ParseLockFile() < 0) {
     LOG(ERROR) << "Lockfile did not parse correctly. ";
-    return -1;
+    if (CreateEmptyLockFile() < 0 || ParseLockFile() < 0) {
+      LOG(ERROR) << "Failed to create a new lock file!";
+      return -1;
+    }
   }
 
+  DCHECK(lockfile_contents_);
   // We successfully have acquired the lock.
   return 0;
 }
 
 int SynchronizedMinidumpManager::ParseLockFile() {
   DCHECK_GE(lockfile_fd_, 0);
-  DCHECK(!dump_metadata_);
+  DCHECK(!lockfile_contents_);
 
-  scoped_ptr<ScopedVector<DumpInfo> > dumps(new ScopedVector<DumpInfo>());
-  std::string entry;
+  base::FilePath lockfile_path(lockfile_path_);
+  lockfile_contents_ = DeserializeJsonFromFile(lockfile_path);
 
-  // Instead of using |lockfile_fd_|, use <fstream> for readability.
-  std::ifstream in(lockfile_path_);
-  if (!in.is_open()) {
-    NOTREACHED();
-    LOG(ERROR) << lockfile_path_ << " could not be opened.";
-    return -1;
-  }
+  return lockfile_contents_ ? 0 : -1;
+}
 
-  // Grab each entry.
-  while (std::getline(in, entry)) {
-    scoped_ptr<DumpInfo> info(new DumpInfo(entry));
-    if (info->valid() && info->crashed_process_dump().size() > 0)
-      dumps->push_back(info.Pass());
-    else
-      LOG(WARNING) << "Ignoring invalid entry: " << entry;
-  }
+int SynchronizedMinidumpManager::WriteLockFile(const base::Value& contents) {
+  base::FilePath lockfile_path(lockfile_path_);
+  return SerializeJsonToFile(lockfile_path, contents) ? 0 : -1;
+}
 
-  dump_metadata_ = dumps.Pass();
-  return 0;
+int SynchronizedMinidumpManager::CreateEmptyLockFile() {
+  scoped_ptr<base::DictionaryValue> output =
+      make_scoped_ptr(new base::DictionaryValue());
+  output->Set(kLockfileDumpField, make_scoped_ptr(new base::ListValue()));
+
+  return WriteLockFile(*output);
 }
 
 int SynchronizedMinidumpManager::AddEntryToLockFile(const DumpInfo& dump_info) {
@@ -172,31 +179,28 @@ int SynchronizedMinidumpManager::AddEntryToLockFile(const DumpInfo& dump_info) {
     return -1;
   }
 
-  // Open the file.
-  std::ofstream out(lockfile_path_, std::ios::app);
-  if (!out.is_open()) {
-    NOTREACHED() << "Lockfile would not open.";
+  base::ListValue* entry_list = GetDumpList(lockfile_contents_.get());
+  if (!entry_list) {
+    LOG(ERROR) << "Failed to parse lock file";
     return -1;
   }
 
-  // Write the string and close the file.
-  out << dump_info.entry();
-  out.close();
+  entry_list->Append(dump_info.GetAsValue());
+
   return 0;
 }
 
 int SynchronizedMinidumpManager::RemoveEntryFromLockFile(int index) {
-  const auto& entries = GetDumpMetadata();
-  if (index < 0 || static_cast<size_t>(index) >= entries.size())
+  base::ListValue* entry_list = GetDumpList(lockfile_contents_.get());
+  if (!entry_list) {
+    LOG(ERROR) << "Failed to parse lock file";
     return -1;
-
-  // Remove the entry and write all remaining entries to file.
-  dump_metadata_->erase(dump_metadata_->begin() + index);
-  std::ofstream out(lockfile_path_);
-  for (auto info : *dump_metadata_) {
-    out << info->entry();
   }
-  out.close();
+
+  if (!entry_list->Remove(static_cast<size_t>(index), nullptr)) {
+    return -1;
+  }
+
   return 0;
 }
 
@@ -204,6 +208,9 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
   // flock is associated with the fd entry in the open fd table, so closing
   // all fd's will release the lock. To be safe, we explicitly unlock.
   if (lockfile_fd_ >= 0) {
+    if (lockfile_contents_) {
+      WriteLockFile(*lockfile_contents_);
+    }
     flock(lockfile_fd_, LOCK_UN);
     close(lockfile_fd_);
 
@@ -211,7 +218,39 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
     lockfile_fd_ = -1;
   }
 
-  dump_metadata_.reset();
+  lockfile_contents_.reset();
+}
+
+ScopedVector<DumpInfo> SynchronizedMinidumpManager::GetDumps() {
+  ScopedVector<DumpInfo> dumps;
+  const base::ListValue* dump_list = GetDumpList(lockfile_contents_.get());
+
+  if (dump_list == nullptr) {
+    return dumps.Pass();
+  }
+
+  for (const base::Value* elem : *dump_list) {
+    dumps.push_back(new DumpInfo(*elem));
+  }
+
+  return dumps.Pass();
+}
+
+int SynchronizedMinidumpManager::SetCurrentDumps(
+    const ScopedVector<DumpInfo>& dumps) {
+  base::ListValue* dump_list = GetDumpList(lockfile_contents_.get());
+  if (dump_list == nullptr) {
+    LOG(ERROR) << "Invalid lock file";
+    return -1;
+  }
+
+  dump_list->Clear();
+
+  for (DumpInfo* dump : dumps) {
+    dump_list->Append(dump->GetAsValue());
+  }
+
+  return 0;
 }
 
 }  // namespace chromecast

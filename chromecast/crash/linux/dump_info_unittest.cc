@@ -4,28 +4,58 @@
 
 #include <time.h>
 
+#include "base/values.h"
+#include "chromecast/base/serializers.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
 
+namespace {
+
+scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
+  scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
+  return make_scoped_ptr(new DumpInfo(*value));
+}
+
+}  // namespace
+
 TEST(DumpInfoTest, EmptyStringIsNotValid) {
-  DumpInfo dump_info("");
-  ASSERT_FALSE(dump_info.valid());
+  scoped_ptr<DumpInfo> dump_info(CreateDumpInfo(""));
+  ASSERT_FALSE(dump_info->valid());
 }
 
 TEST(DumpInfoTest, TooFewFieldsIsNotValid) {
-  DumpInfo dump_info("name|2001-11-12 18:31:01|dump_string");
-  ASSERT_FALSE(dump_info.valid());
+  scoped_ptr<DumpInfo> dump_info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"dump_string\""
+      "}"));
+  ASSERT_FALSE(dump_info->valid());
 }
 
 TEST(DumpInfoTest, BadTimeStringIsNotValid) {
-  DumpInfo info("name|Mar 23 2014 01:23:45|dump_string|123456789|logfile.log");
-  ASSERT_FALSE(info.valid());
+  scoped_ptr<DumpInfo> info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"Mar 23 2014 01:23:45\","
+      "\"dump\": \"dump_string\","
+      "\"uptime\": \"123456789\","
+      "\"logfile\": \"logfile.log\""
+      "}"));
+  ASSERT_FALSE(info->valid());
 }
 
 TEST(DumpInfoTest, AllRequiredFieldsIsValid) {
-  DumpInfo info("name|2001-11-12 18:31:01|dump_string|123456789|logfile.log");
+  scoped_ptr<DumpInfo> info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"dump_string\","
+      "\"uptime\": \"123456789\","
+      "\"logfile\": \"logfile.log\""
+      "}"));
   struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
@@ -36,21 +66,35 @@ TEST(DumpInfoTest, AllRequiredFieldsIsValid) {
   tm.tm_year = 101;
   time_t dump_time = mktime(&tm);
 
-  ASSERT_TRUE(info.valid());
-  ASSERT_EQ("name", info.params().process_name);
-  ASSERT_EQ(dump_time, info.dump_time());
-  ASSERT_EQ("dump_string", info.crashed_process_dump());
-  ASSERT_EQ(123456789u, info.params().process_uptime);
-  ASSERT_EQ("logfile.log", info.logfile());
+  ASSERT_TRUE(info->valid());
+  ASSERT_EQ("name", info->params().process_name);
+  ASSERT_EQ(dump_time, info->dump_time());
+  ASSERT_EQ("dump_string", info->crashed_process_dump());
+  ASSERT_EQ(123456789u, info->params().process_uptime);
+  ASSERT_EQ("logfile.log", info->logfile());
 }
 
 TEST(DumpInfoTest, EmptyProcessNameIsValid) {
-  DumpInfo dump_info("|2001-11-12 18:31:01|dump_string|123456789|logfile.log");
-  ASSERT_TRUE(dump_info.valid());
+  scoped_ptr<DumpInfo> dump_info(CreateDumpInfo(
+      "{"
+      "\"name\": \"\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"dump_string\","
+      "\"uptime\": \"123456789\","
+      "\"logfile\": \"logfile.log\""
+      "}"));
+  ASSERT_TRUE(dump_info->valid());
 }
 
 TEST(DumpInfoTest, SomeRequiredFieldsEmptyIsValid) {
-  DumpInfo info("name|2001-11-12 18:31:01|||");
+  scoped_ptr<DumpInfo> info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"\","
+      "\"uptime\": \"\","
+      "\"logfile\": \"\""
+      "}"));
   struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
@@ -61,18 +105,29 @@ TEST(DumpInfoTest, SomeRequiredFieldsEmptyIsValid) {
   tm.tm_year = 101;
   time_t dump_time = mktime(&tm);
 
-  ASSERT_TRUE(info.valid());
-  ASSERT_EQ("name", info.params().process_name);
-  ASSERT_EQ(dump_time, info.dump_time());
-  ASSERT_EQ("", info.crashed_process_dump());
-  ASSERT_EQ(0u, info.params().process_uptime);
-  ASSERT_EQ("", info.logfile());
+  ASSERT_TRUE(info->valid());
+  ASSERT_EQ("name", info->params().process_name);
+  ASSERT_EQ(dump_time, info->dump_time());
+  ASSERT_EQ("", info->crashed_process_dump());
+  ASSERT_EQ(0u, info->params().process_uptime);
+  ASSERT_EQ("", info->logfile());
 }
 
 TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
-  DumpInfo info(
-      "name|2001-11-12 18:31:01|dump_string|123456789|logfile.log|"
-      "suffix|previous_app|current_app|last_app|RELEASE|BUILD_NUMBER");
+  scoped_ptr<DumpInfo> info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"dump_string\","
+      "\"uptime\": \"123456789\","
+      "\"logfile\": \"logfile.log\","
+      "\"suffix\": \"suffix\","
+      "\"prev_app_name\": \"previous_app\","
+      "\"cur_app_name\": \"current_app\","
+      "\"last_app_name\": \"last_app\","
+      "\"release_version\": \"RELEASE\","
+      "\"build_number\": \"BUILD_NUMBER\""
+      "}"));
   struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
@@ -83,23 +138,30 @@ TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
   tm.tm_year = 101;
   time_t dump_time = mktime(&tm);
 
-  ASSERT_TRUE(info.valid());
-  ASSERT_EQ("name", info.params().process_name);
-  ASSERT_EQ(dump_time, info.dump_time());
-  ASSERT_EQ("dump_string", info.crashed_process_dump());
-  ASSERT_EQ(123456789u, info.params().process_uptime);
-  ASSERT_EQ("logfile.log", info.logfile());
+  ASSERT_TRUE(info->valid());
+  ASSERT_EQ("name", info->params().process_name);
+  ASSERT_EQ(dump_time, info->dump_time());
+  ASSERT_EQ("dump_string", info->crashed_process_dump());
+  ASSERT_EQ(123456789u, info->params().process_uptime);
+  ASSERT_EQ("logfile.log", info->logfile());
 
-  ASSERT_EQ("suffix", info.params().suffix);
-  ASSERT_EQ("previous_app", info.params().previous_app_name);
-  ASSERT_EQ("current_app", info.params().current_app_name);
-  ASSERT_EQ("last_app", info.params().last_app_name);
+  ASSERT_EQ("suffix", info->params().suffix);
+  ASSERT_EQ("previous_app", info->params().previous_app_name);
+  ASSERT_EQ("current_app", info->params().current_app_name);
+  ASSERT_EQ("last_app", info->params().last_app_name);
 }
 
 TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
-  DumpInfo info(
-      "name|2001-11-12 18:31:01|dump_string|123456789|logfile.log|"
-      "suffix|previous_app");
+  scoped_ptr<DumpInfo> info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"dump_string\","
+      "\"uptime\": \"123456789\","
+      "\"logfile\": \"logfile.log\","
+      "\"suffix\": \"suffix\","
+      "\"prev_app_name\": \"previous_app\""
+      "}"));
   struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
@@ -110,22 +172,34 @@ TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
   tm.tm_year = 101;
   time_t dump_time = mktime(&tm);
 
-  ASSERT_TRUE(info.valid());
-  ASSERT_EQ("name", info.params().process_name);
-  ASSERT_EQ(dump_time, info.dump_time());
-  ASSERT_EQ("dump_string", info.crashed_process_dump());
-  ASSERT_EQ(123456789u, info.params().process_uptime);
-  ASSERT_EQ("logfile.log", info.logfile());
+  ASSERT_TRUE(info->valid());
+  ASSERT_EQ("name", info->params().process_name);
+  ASSERT_EQ(dump_time, info->dump_time());
+  ASSERT_EQ("dump_string", info->crashed_process_dump());
+  ASSERT_EQ(123456789u, info->params().process_uptime);
+  ASSERT_EQ("logfile.log", info->logfile());
 
-  ASSERT_EQ("suffix", info.params().suffix);
-  ASSERT_EQ("previous_app", info.params().previous_app_name);
+  ASSERT_EQ("suffix", info->params().suffix);
+  ASSERT_EQ("previous_app", info->params().previous_app_name);
 }
 
 TEST(DumpInfoTest, TooManyFieldsIsNotValid) {
-  DumpInfo info(
-      "name|2001-11-12 18:31:01|dump_string|123456789|logfile.log|"
-      "suffix|previous_app|current_app|last_app|VERSION|BUILD_NUM|extra_field");
-  ASSERT_FALSE(info.valid());
+  scoped_ptr<DumpInfo> info(CreateDumpInfo(
+      "{"
+      "\"name\": \"name\","
+      "\"dump_time\" : \"2001-11-12 18:31:01\","
+      "\"dump\": \"dump_string\","
+      "\"uptime\": \"123456789\","
+      "\"logfile\": \"logfile.log\","
+      "\"suffix\": \"suffix\","
+      "\"prev_app_name\": \"previous_app\","
+      "\"cur_app_name\": \"current_app\","
+      "\"last_app_name\": \"last_app\","
+      "\"release_version\": \"RELEASE\","
+      "\"build_number\": \"BUILD_NUMBER\","
+      "\"hello\": \"extra_field\""
+      "}"));
+  ASSERT_FALSE(info->valid());
 }
 
 }  // chromecast
