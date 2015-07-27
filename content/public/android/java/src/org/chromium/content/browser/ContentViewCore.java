@@ -64,6 +64,7 @@ import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
+import org.chromium.content.browser.input.JoystickScrollProvider;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
 import org.chromium.content.browser.input.PopupTouchHandleDrawable;
@@ -513,6 +514,9 @@ public class ContentViewCore implements
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
 
+    // Provides smooth gamepad joystick-driven scrolling.
+    private final JoystickScrollProvider mJoystickScrollProvider;
+
     private boolean mIsMobileOptimizedHint;
 
     // Tracks whether a selection is currently active.  When applied to selected text, indicates
@@ -563,9 +567,9 @@ public class ContentViewCore implements
     // because the OSK was just brought up.
     private final Rect mFocusPreOSKViewportRect = new Rect();
 
-    // On tap this will store the x, y coordinates of the touch.
-    private int mLastTapX;
-    private int mLastTapY;
+    // Store the x, y coordinates of the last touch or mouse event.
+    private float mLastFocalEventX;
+    private float mLastFocalEventY;
 
     // Whether a touch scroll sequence is active, used to hide text selection
     // handles. Note that a scroll sequence will *always* bound a pinch
@@ -639,6 +643,7 @@ public class ContentViewCore implements
         mInputMethodManagerWrapper = new InputMethodManagerWrapper(mContext);
 
         mRenderCoordinates = new RenderCoordinates();
+        mJoystickScrollProvider = new JoystickScrollProvider(this);
         float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
         String forceScaleFactor = CommandLine.getInstance().getSwitchValue(
                 ContentSwitches.FORCE_DEVICE_SCALE_FACTOR);
@@ -1766,6 +1771,8 @@ public class ContentViewCore implements
     public boolean onGenericMotionEvent(MotionEvent event) {
         if (GamepadList.onGenericMotionEvent(event)) return true;
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
+            mLastFocalEventX = event.getX();
+            mLastFocalEventY = event.getY();
             switch (event.getAction()) {
                 case MotionEvent.ACTION_SCROLL:
                     if (mNativeContentViewCore == 0) return false;
@@ -1790,6 +1797,8 @@ public class ContentViewCore implements
                     mContainerView.postDelayed(mFakeMouseMoveRunnable, 250);
                     return true;
             }
+        } else if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+            if (mJoystickScrollProvider.onMotion(event)) return true;
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
     }
@@ -1818,7 +1827,7 @@ public class ContentViewCore implements
      * are overridden, so that View's mScrollX and mScrollY will be unchanged at
      * (0, 0). This is critical for drawing ContentView correctly.
      */
-    public void scrollBy(float dxPix, float dyPix) {
+    public void scrollBy(float dxPix, float dyPix, boolean useLastFocalEventLocation) {
         if (mNativeContentViewCore == 0) return;
         if (dxPix == 0 && dyPix == 0) return;
         long time = SystemClock.uptimeMillis();
@@ -1826,8 +1835,12 @@ public class ContentViewCore implements
         // be active when programatically scrolling. Cancelling the fling in
         // such cases ensures a consistent gesture event stream.
         if (mPotentiallyActiveFlingCount > 0) nativeFlingCancel(mNativeContentViewCore, time);
-        nativeScrollBegin(mNativeContentViewCore, time, 0, 0, -dxPix, -dyPix, false);
-        nativeScrollBy(mNativeContentViewCore, time, 0, 0, dxPix, dyPix);
+        // x/y represents starting location of scroll.
+        final float x = useLastFocalEventLocation ? mLastFocalEventX : 0f;
+        final float y = useLastFocalEventLocation ? mLastFocalEventY : 0f;
+        nativeScrollBegin(
+                mNativeContentViewCore, time, x, y, -dxPix, -dyPix, !useLastFocalEventLocation);
+        nativeScrollBy(mNativeContentViewCore, time, x, y, dxPix, dyPix);
         nativeScrollEnd(mNativeContentViewCore, time);
     }
 
@@ -1840,7 +1853,7 @@ public class ContentViewCore implements
         final float yCurrentPix = mRenderCoordinates.getScrollYPix();
         final float dxPix = xPix - xCurrentPix;
         final float dyPix = yPix - yCurrentPix;
-        scrollBy(dxPix, dyPix);
+        scrollBy(dxPix, dyPix, false);
     }
 
     // NOTE: this can go away once ContentView.getScrollX() reports correct values.
@@ -1934,23 +1947,8 @@ public class ContentViewCore implements
         }
 
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(xPix, yPix);
-
-        mLastTapX = (int) xPix;
-        mLastTapY = (int) yPix;
-    }
-
-    /**
-     * @return The x coordinate for the last point that a tap or press gesture was initiated from.
-     */
-    public int getLastTapX()  {
-        return mLastTapX;
-    }
-
-    /**
-     * @return The y coordinate for the last point that a tap or press gesture was initiated from.
-     */
-    public int getLastTapY()  {
-        return mLastTapY;
+        mLastFocalEventX = xPix;
+        mLastFocalEventY = yPix;
     }
 
     public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
@@ -2403,6 +2401,7 @@ public class ContentViewCore implements
 
             if (focusedNodeEditable != mFocusedNodeEditable) {
                 mFocusedNodeEditable = focusedNodeEditable;
+                mJoystickScrollProvider.setEnabled(!mFocusedNodeEditable);
                 getContentViewClient().onFocusedNodeEditabilityChanged(mFocusedNodeEditable);
             }
         } finally {

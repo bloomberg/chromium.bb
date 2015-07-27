@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -145,6 +146,23 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         });
     }
 
+    private void scrollWithJoystick(final float deltaAxisX, final float deltaAxisY)
+            throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Synthesize joystick motion event and send to ContentViewCore.
+                MotionEvent leftJoystickMotionEvent =
+                        MotionEvent.obtain(0, SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,
+                                deltaAxisX, deltaAxisY, 0);
+                leftJoystickMotionEvent.setSource(
+                        leftJoystickMotionEvent.getSource() | InputDevice.SOURCE_CLASS_JOYSTICK);
+                getContentViewCore().getContainerView().onGenericMotionEvent(
+                        leftJoystickMotionEvent);
+            }
+        });
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -242,6 +260,53 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         // Diagonal scroll to bottom-right.
         scrollBy(2500, 2500);
         assertWaitForScroll(false, false);
+    }
+
+    @SmallTest
+    @RerunWithUpdatedContainerView
+    @Feature({"Main"})
+    public void testJoystickScroll() throws Throwable {
+        scrollTo(0, 0);
+        assertWaitForScroll(true, true);
+
+        // No scroll
+        scrollWithJoystick(0f, 0f);
+        assertWaitForScroll(true, true);
+
+        // Verify no scrolling when X axis motion falls in deadzone.
+        // TODO(jdduke): Make the deadzone scroll checks non-racy.
+        scrollWithJoystick(0.2f, 0f);
+        assertWaitForScroll(true, true);
+
+        // Verify no scrolling when Y axis motion falls in deadzone.
+        scrollWithJoystick(0f, 0.2f);
+        assertWaitForScroll(true, true);
+
+        // Vertical scroll to lower-left.
+        scrollWithJoystick(0, 0.5f);
+        assertWaitForScroll(true, false);
+        // Send joystick event at origin to stop scrolling.
+        scrollWithJoystick(0f, 0f);
+
+        // Horizontal scroll to lower-right.
+        scrollWithJoystick(0.5f, 0);
+        assertWaitForScroll(false, false);
+        scrollWithJoystick(0f, 0f);
+
+        // Vertical scroll to upper-right.
+        scrollWithJoystick(0, -0.75f);
+        assertWaitForScroll(false, true);
+        scrollWithJoystick(0f, 0f);
+
+        // Horizontal scroll to top-left.
+        scrollWithJoystick(-0.75f, 0);
+        assertWaitForScroll(true, true);
+        scrollWithJoystick(0f, 0f);
+
+        // Diagonal scroll to bottom-right.
+        scrollWithJoystick(1f, 1f);
+        assertWaitForScroll(false, false);
+        scrollWithJoystick(0f, 0f);
     }
 
     /**

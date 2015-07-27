@@ -189,7 +189,7 @@ public class ContentView extends FrameLayout
      */
     @Override
     public void scrollBy(int x, int y) {
-        mContentViewCore.scrollBy(x, y);
+        mContentViewCore.scrollBy(x, y, false);
     }
 
     @Override
