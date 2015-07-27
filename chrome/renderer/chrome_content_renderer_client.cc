@@ -1395,6 +1395,8 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     // the type of process.  In default Chrome, that's the URL of the opener's
     // top frame and not the opener frame itself.  In --site-per-process, we
     // can use the opener frame itself.
+    // TODO(nick): Either wire this up to SiteIsolationPolicy, or to state on
+    // |opener_frame|/its ancestors.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSitePerProcess))
       old_url = opener_frame->document().url();

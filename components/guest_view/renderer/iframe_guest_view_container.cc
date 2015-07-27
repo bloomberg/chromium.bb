@@ -4,9 +4,8 @@
 
 #include "components/guest_view/renderer/iframe_guest_view_container.h"
 
-#include "base/command_line.h"
 #include "components/guest_view/common/guest_view_messages.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/renderer/render_frame.h"
 
 namespace guest_view {
@@ -14,8 +13,7 @@ namespace guest_view {
 IframeGuestViewContainer::IframeGuestViewContainer(
     content::RenderFrame* render_frame)
     : GuestViewContainer(render_frame) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess));
+  CHECK(content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
   // There is no BrowserPluginDelegate to wait for.
   ready_ = true;
 }

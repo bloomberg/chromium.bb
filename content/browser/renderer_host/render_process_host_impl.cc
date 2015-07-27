@@ -122,6 +122,7 @@
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/common/resource_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1891,12 +1892,13 @@ bool RenderProcessHostImpl::IsSuitableHost(
 
   // Check whether the given host and the intended site_url will be using the
   // same StoragePartition, since a RenderProcessHost can only support a single
-  // StoragePartition.  This is relevant for packaged apps and isolated sites.
+  // StoragePartition.  This is relevant for packaged apps.
   StoragePartition* dest_partition =
       BrowserContext::GetStoragePartitionForSite(browser_context, site_url);
   if (!host->InSameStoragePartition(dest_partition))
     return false;
 
+  // TODO(nick): Consult the SiteIsolationPolicy here. https://crbug.com/513036
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           host->GetID()) !=
       WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
@@ -1948,13 +1950,12 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context, const GURL& url) {
   // If --site-per-process is enabled, do not try to reuse renderer processes
-  // when over the limit.  (We could allow pages from the same site to share, if
-  // we knew what the given process was dedicated to.  Allowing no sharing is
-  // simpler for now.)  This may cause resource exhaustion issues if too many
-  // sites are open at once.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess))
+  // when over the limit.
+  // TODO(nick): This is overly conservative and isn't launchable. Move this
+  // logic into IsSuitableHost, and check |url| against the URL the process is
+  // dedicated to. This will allow pages from the same site to share, and will
+  // also allow non-isolated sites to share processes. https://crbug.com/513036
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return false;
 
   if (run_renderer_in_process())

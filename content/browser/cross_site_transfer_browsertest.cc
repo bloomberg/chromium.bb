@@ -9,7 +9,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -209,8 +208,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Use --site-per-process to force process swaps for cross-site transfers.
-    command_line->AppendSwitch(switches::kSitePerProcess);
+    IsolateAllSitesForTesting(command_line);
   }
 
   void InjectResourceDisptcherHostDelegate() {

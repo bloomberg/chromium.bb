@@ -22,6 +22,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_details.h"
@@ -2083,9 +2084,8 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   EXPECT_EQ(url1, entry->GetURL());
   EXPECT_EQ(params.page_id, entry->GetPageID());
 
-  // Verify subframe entries if we're in --site-per-process mode.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should have a subframe FrameNavigationEntry.
     ASSERT_EQ(1U, entry->root_node()->children.size());
     EXPECT_EQ(url2, entry->root_node()->children[0]->frame_entry->url());
@@ -2141,9 +2141,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(url1, root_entry->url());
 
-  // Verify subframe entries if we're in --site-per-process mode.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should now have a subframe FrameNavigationEntry.
     ASSERT_EQ(1U, entry->root_node()->children.size());
     FrameNavigationEntry* frame_entry =
@@ -2187,9 +2186,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   EXPECT_EQ(root_entry, entry->root_node()->frame_entry.get());
   EXPECT_EQ(url1, root_entry->url());
 
-  // Verify subframe entries if we're in --site-per-process mode.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should now have 2 subframe FrameNavigationEntries.
     ASSERT_EQ(2U, entry->root_node()->children.size());
     FrameNavigationEntry* new_frame_entry =
@@ -2237,9 +2235,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   EXPECT_EQ(root_entry, entry->root_node()->frame_entry.get());
   EXPECT_EQ(url1, root_entry->url());
 
-  // Verify subframe entries if we're in --site-per-process mode.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should now have a nested FrameNavigationEntry.
     EXPECT_EQ(2U, entry->root_node()->children.size());
     ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
@@ -2311,9 +2308,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(2, controller.GetEntryCount());
 
-  // Verify subframe entries if we're in --site-per-process mode.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should have a subframe FrameNavigationEntry.
     ASSERT_EQ(1U, entry2->root_node()->children.size());
     EXPECT_EQ(url2, entry2->root_node()->children[0]->frame_entry->url());
@@ -2336,9 +2332,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
-  // Verify subframe entries if we're in --site-per-process mode.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should have a subframe FrameNavigationEntry.
     ASSERT_EQ(1U, entry3->root_node()->children.size());
     EXPECT_EQ(url3, entry3->root_node()->children[0]->frame_entry->url());

@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -569,9 +570,7 @@ static SiteInstanceImpl* CreateSiteInstance(BrowserContext* browser_context,
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // This test shouldn't run with --site-per-process mode, which prohibits
   // the renderer process reuse this test explicitly exercises.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess))
+  if (AreAllSitesIsolatedForTesting())
     return;
 
   // On Android by default the number of renderer hosts is unlimited and process
@@ -692,8 +691,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
 // Test to ensure that HasWrongProcessForURL behaves properly even when
 // --site-per-process is used (http://crbug.com/160671).
 TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSitePerProcess);
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
 
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host;

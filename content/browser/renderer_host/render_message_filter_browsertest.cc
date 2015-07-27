@@ -106,8 +106,7 @@ IN_PROC_BROWSER_TEST_F(RenderMessageFilterBrowserTest, Cookies) {
 IN_PROC_BROWSER_TEST_F(RenderMessageFilterBrowserTest,
                        CrossSiteCookieSecurityEnforcement) {
   // The code under test is only active under site isolation.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (!AreAllSitesIsolatedForTesting()) {
     return;
   }
 

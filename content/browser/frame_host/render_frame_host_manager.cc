@@ -31,6 +31,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -168,8 +170,7 @@ bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
 
 // static
 bool RenderFrameHostManager::IsSwappedOutStateForbidden() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
+  return SiteIsolationPolicy::AreCrossProcessFramesPossible();
 }
 
 RenderFrameHostManager::RenderFrameHostManager(
@@ -908,12 +909,11 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // TODO(carlosk): Have renderer-initated main frame navigations swap processes
   // if needed when it no longer breaks OAuth popups (see
   // https://crbug.com/440266).
-  bool site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
   bool is_main_frame = frame_tree_node_->IsMainFrame();
   if (current_site_instance == dest_site_instance.get() ||
       (!request.browser_initiated() && is_main_frame) ||
-      (!is_main_frame && !site_per_process)) {
+      (!is_main_frame && !dest_site_instance->RequiresDedicatedProcess() &&
+       !current_site_instance->RequiresDedicatedProcess())) {
     // Reuse the current RFH if its SiteInstance matches the the navigation's
     // or if this is a subframe navigation. We only swap RFHs for subframes when
     // --site-per-process is enabled.
@@ -1026,8 +1026,9 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
   // The window.name message may be sent outside of --site-per-process when
   // report_frame_name_changes renderer preference is set (used by
   // WebView).  Don't send the update to proxies in those cases.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+  // TODO(nick,nasko): Should this be IsSwappedOutStateForbidden, to match
+  // OnDidUpdateOrigin?
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return;
 
   for (const auto& pair : *proxy_hosts_) {
@@ -1092,16 +1093,23 @@ bool RenderFrameHostManager::ResetProxiesInSiteInstance(int32 site_instance_id,
 }
 
 bool RenderFrameHostManager::ShouldTransitionCrossSite() {
-  // True for --site-per-process, which overrides both kSingleProcess and
-  // kProcessPerTab.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+  // The logic below is weaker than "are all sites isolated" -- it asks instead,
+  // "is any site isolated". That's appropriate here since we're just trying to
+  // figure out if we're in any kind of site isolated mode, and in which case,
+  // we ignore the kSingleProcess and kProcessPerTab settings.
+  //
+  // TODO(nick): Move all handling of kSingleProcess/kProcessPerTab into
+  // SiteIsolationPolicy so we have a consistent behavior around the interaction
+  // of the process model flags.
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return true;
 
   // False in the single-process mode, as it makes RVHs to accumulate
   // in swapped_out_hosts_.
   // True if we are using process-per-site-instance (default) or
   // process-per-site (kProcessPerSite).
+  // TODO(nick): Move handling of kSingleProcess and kProcessPerTab into
+  // SiteIsolationPolicy.
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kSingleProcess) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1446,8 +1454,7 @@ const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
   // TODO(creis): Remove this when we can check the FrameNavigationEntry's url.
   // See http://crbug.com/369654
   if (!frame_tree_node_->IsMainFrame() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+      SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return frame_tree_node_->current_url();
 
   // If there is no last non-interstitial entry (and current_instance already
@@ -1501,8 +1508,7 @@ void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
   // Only create opener proxies if they are in the same BrowsingInstance.
   if (new_instance->IsRelatedSiteInstance(old_instance))
     CreateOpenerProxiesIfNeeded(new_instance);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     // Ensure that the frame tree has RenderFrameProxyHosts for the new
     // SiteInstance in all nodes except the current one.  We do this for all
     // frames in the tree, whether they are in the same BrowsingInstance or not.
@@ -1521,10 +1527,7 @@ void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
 }
 
 void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
-  // TODO(alexmos): use SiteIsolationPolicy::AreCrossProcessFramesPossible once
-  // https://codereview.chromium.org/1208143002/ lands.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return;
 
   DCHECK(!frame_tree_node_->frame_name().empty());
@@ -1631,12 +1634,11 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     int* view_routing_id_ptr) {
   bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   bool swapped_out_forbidden = IsSwappedOutStateForbidden();
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
 
   CHECK(instance);
   CHECK_IMPLIES(swapped_out_forbidden, !swapped_out);
-  CHECK_IMPLIES(!is_site_per_process, frame_tree_node_->IsMainFrame());
+  CHECK_IMPLIES(!SiteIsolationPolicy::AreCrossProcessFramesPossible(),
+                frame_tree_node_->IsMainFrame());
 
   // Swapped out views should always be hidden.
   DCHECK_IMPLIES(swapped_out, (flags & CREATE_RF_HIDDEN));
@@ -1814,8 +1816,7 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
 void RenderFrameHostManager::CreateOuterDelegateProxy(
     SiteInstance* outer_contents_site_instance,
     RenderFrameHostImpl* render_frame_host) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess));
+  CHECK(BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
   RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
       outer_contents_site_instance, nullptr, frame_tree_node_);
   proxy_hosts_->Add(outer_contents_site_instance->GetId(),
@@ -2085,18 +2086,17 @@ void RenderFrameHostManager::CommitPending() {
     proxy_hosts_->Remove(render_frame_host_->GetSiteInstance()->GetId());
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
-    // If this is a subframe, it should have a CrossProcessFrameConnector
-    // created already.  Use it to link the new RFH's view to the proxy that
-    // belongs to the parent frame's SiteInstance. If this navigation causes
-    // an out-of-process frame to return to the same process as its parent, the
-    // proxy would have been removed from proxy_hosts_ above.
-    // Note: We do this after swapping out the old RFH because that may create
-    // the proxy we're looking for.
-    RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
-    if (proxy_to_parent)
-      proxy_to_parent->SetChildRWHView(render_frame_host_->GetView());
+  // If this is a subframe, it should have a CrossProcessFrameConnector
+  // created already.  Use it to link the new RFH's view to the proxy that
+  // belongs to the parent frame's SiteInstance. If this navigation causes
+  // an out-of-process frame to return to the same process as its parent, the
+  // proxy would have been removed from proxy_hosts_ above.
+  // Note: We do this after swapping out the old RFH because that may create
+  // the proxy we're looking for.
+  RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
+  if (proxy_to_parent) {
+    CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
+    proxy_to_parent->SetChildRWHView(render_frame_host_->GetView());
   }
 
   // After all is done, there must never be a proxy in the list which has the
@@ -2156,9 +2156,9 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // Don't swap for subframes unless we are in --site-per-process.  We can get
   // here in tests for subframes (e.g., NavigateFrameToURL).
   if (!frame_tree_node_->IsMainFrame() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+      !SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     return render_frame_host_.get();
+  }
 
   // If we are currently navigating cross-process, we want to get back to normal
   // and then navigate as usual.

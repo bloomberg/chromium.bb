@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 
-#include "base/command_line.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
@@ -19,7 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_plugin_guest_mode.h"
 
 namespace content {
 
@@ -160,8 +159,7 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   // is a RenderWidgetHostViewChildFrame. In contrast, when there is no
   // inner/outer WebContents, only subframe's RenderWidgetHostView can be a
   // RenderWidgetHostViewChildFrame which do not get a SetIsLoading() call.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess) &&
+  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests() &&
       BrowserPluginGuest::IsGuest(
           static_cast<RenderViewHostImpl*>(RenderViewHost::From(host_)))) {
     return;

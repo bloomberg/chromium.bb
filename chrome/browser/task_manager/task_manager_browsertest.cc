@@ -38,7 +38,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
@@ -159,12 +158,11 @@ class TaskManagerOOPIFBrowserTest : public TaskManagerBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     TaskManagerBrowserTest::SetUpCommandLine(command_line);
     if (GetParam())
-      command_line->AppendSwitch(switches::kSitePerProcess);
+      content::IsolateAllSitesForTesting(command_line);
   }
 
   bool ShouldExpectSubframes() {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kSitePerProcess);
+    return content::AreAllSitesIsolatedForTesting();
   }
 
  private:

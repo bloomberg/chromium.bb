@@ -775,9 +775,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(popup_contents);
 
-  bool should_be_in_same_process =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess);
+  bool should_be_in_same_process = !content::AreAllSitesIsolatedForTesting();
   content::RenderProcessHost* popup_process =
       popup_contents->GetRenderProcessHost();
   EXPECT_EQ(should_be_in_same_process, process == popup_process);

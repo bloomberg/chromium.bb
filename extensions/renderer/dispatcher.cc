@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "content/grit/content_resources.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -472,8 +473,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestViewEvents",
                                      IDR_GUEST_VIEW_EVENTS_JS));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kSitePerProcess)) {
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
     resources.push_back(std::make_pair("guestViewIframe",
                                        IDR_GUEST_VIEW_IFRAME_JS));
     resources.push_back(std::make_pair("guestViewIframeContainer",
@@ -517,8 +517,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair("webViewInternal",
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kSitePerProcess)) {
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
     resources.push_back(std::make_pair("webViewIframe",
                                        IDR_WEB_VIEW_IFRAME_JS));
   }
@@ -1436,8 +1435,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     module_system->Require("webViewApiMethods");
     module_system->Require("webViewAttributes");
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kSitePerProcess)) {
+    if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
       module_system->Require("webViewIframe");
     }
   }

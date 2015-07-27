@@ -4,16 +4,15 @@
 
 #include "content/browser/site_instance_impl.h"
 
-#include "base/command_line.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/web_ui_controller_factory.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -211,6 +210,12 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
       GetProcess(), browsing_instance_->browser_context(), site_url);
 }
 
+bool SiteInstanceImpl::RequiresDedicatedProcess() {
+  if (!has_site_)
+    return false;
+  return SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(site_);
+}
+
 void SiteInstanceImpl::IncrementRelatedActiveContentsCount() {
   browsing_instance_->increment_active_contents_count();
 }
@@ -341,11 +346,11 @@ void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
 }
 
 void SiteInstanceImpl::LockToOrigin() {
-  // We currently only restrict this process to a particular site if --site-per-
-  // process flag is present.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess)) {
+  // TODO(nick): When all sites are isolated, this operation provides strong
+  // protection. If only some sites are isolated, we need additional logic to
+  // prevent the non-isolated sites from requesting resources for isolated
+  // sites. https://crbug.com/509125
+  if (SiteIsolationPolicy::DoesSiteRequireDedicatedProcess(site_)) {
     // Guest processes cannot be locked to its site because guests always have
     // a fixed SiteInstance. The site of GURLs a guest loads doesn't match that
     // SiteInstance. So we skip locking the guest process to the site.

@@ -32,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
@@ -740,6 +741,15 @@ void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
     task.Run();
   // At this point, web_contents may have been deleted.
   loop_runner->Run();
+}
+
+bool AreAllSitesIsolatedForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+}
+
+void IsolateAllSitesForTesting(base::CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kSitePerProcess);
 }
 
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {

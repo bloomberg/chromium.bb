@@ -18,6 +18,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -2035,8 +2036,7 @@ TEST_F(RenderFrameHostManagerTest,
 // deleted when the node is detached. Motivated by http://crbug.com/441357 and
 // http://crbug.com/444955.
 TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSitePerProcess);
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
 
   const GURL kUrlA("http://www.google.com/");
   const GURL kUrlB("http://webkit.org/");
@@ -2159,8 +2159,7 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
 // tab navigates away without reloading. The second tab's navigation shouldn't
 // mess with the first tab's content. Motivated by http://crbug.com/473714.
 TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSitePerProcess);
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
 
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://webkit.org/");

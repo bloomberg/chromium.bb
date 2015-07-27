@@ -17,43 +17,52 @@ class RenderProcessHost;
 ///////////////////////////////////////////////////////////////////////////////
 // SiteInstance interface.
 //
-// A SiteInstance represents a group of web pages that may be able to
-// synchronously script each other, and thus must live in the same renderer
-// process.
+// A SiteInstance represents a group of web pages that must live in the same
+// renderer process.  Pages able to synchronously script each other will always
+// be placed in the same SiteInstance.  Pages unable to synchronously script
+// each other may also be placed in the same SiteInstance, as determined by the
+// process model.
 //
-// We identify this group using a combination of where the page comes from
-// (the site) and which tabs have references to each other (the instance).
-// Here, a "site" is similar to the page's origin, but it only includes the
-// registered domain name and scheme, not the port or subdomains.  This accounts
-// for the fact that changes to document.domain allow similar origin pages with
-// different ports or subdomains to script each other.  An "instance" includes
-// all tabs that might be able to script each other because of how they were
-// created (e.g., window.open or targeted links).  We represent instances using
-// the BrowsingInstance class.
+// A page's SiteInstance is determined by a combination of where the page comes
+// from (the site) and which frames have references to each other (the
+// instance).  Here, a "site" is similar to the page's origin but includes only
+// the registered domain name and scheme, not the port or subdomains.  This
+// accounts for the fact that changes to document.domain allow similar origin
+// pages with different ports or subdomains to script each other.  An "instance"
+// includes all frames that might be able to script each other because of how
+// they were created (e.g., window.open or targeted links).  We represent
+// instances using the BrowsingInstance class.
 //
-// Process models:
+// Four process models are currently supported:
 //
-// In process-per-site-instance (the current default process model),
-// SiteInstances are created (1) when the user manually creates a new tab
-// (which also creates a new BrowsingInstance), and (2) when the user navigates
-// across site boundaries (which uses the same BrowsingInstance).  If the user
-// navigates within a site, the same SiteInstance is used.
-// (Caveat: we currently allow renderer-initiated cross-site navigations to
-// stay in the same SiteInstance, to preserve compatibility in cases like
-// cross-site iframes that open popups.)
+// PROCESS PER SITE INSTANCE (the current default): SiteInstances are created
+// (1) when the user manually creates a new tab (which also creates a new
+// BrowsingInstance), and (2) when the user navigates across site boundaries
+// (which uses the same BrowsingInstance).  If the user navigates within a site,
+// the same SiteInstance is used.  Caveat: we currently allow renderer-initiated
+// cross-site navigations to stay in the same SiteInstance, to preserve
+// compatibility in cases like cross-site iframes that open popups.
 //
-// In --process-per-tab, SiteInstances are created when the user manually
-// creates a new tab, but not when navigating across site boundaries (unless
-// a process swap is required for security reasons, such as navigating from
-// a privileged WebUI page to a normal web page).  This corresponds to one
-// process per BrowsingInstance.
+// SITE PER PROCESS (currently experimental): is the most granular process
+// model and is made possible by our support for out-of-process iframes.  A
+// subframe will be given a different SiteInstance if its site differs from the
+// containing document.  Cross-site navigation of top-level frames or subframes
+// will trigger a change of SiteInstances, even if the navigation is renderer
+// initiated.  In this model, each process can be dedicated to documents from
+// just one site, allowing the same origin policy to be enforced by the sandbox.
 //
-// In --process-per-site, we consolidate all SiteInstances for a given site into
-// the same process, throughout the entire browser context.  This ensures that
-// only one process will be used for each site.
+// PROCESS PER TAB: SiteInstances are created when the user manually creates a
+// new tab, but not when navigating across site boundaries (unless a process
+// swap is required for security reasons, such as navigating from a privileged
+// WebUI page to a normal web page).  This corresponds to one process per
+// BrowsingInstance.
+//
+// PROCESS PER SITE: We consolidate all SiteInstances for a given site into the
+// same process, throughout the entire browser context.  This ensures that only
+// one process will be used for each site.
 //
 // Each NavigationEntry for a WebContents points to the SiteInstance that
-// rendered it.  Each RenderViewHost also points to the SiteInstance that it is
+// rendered it.  Each RenderFrameHost also points to the SiteInstance that it is
 // associated with.  A SiteInstance keeps track of the number of these
 // references and deletes itself when the count goes to zero.  This means that
 // a SiteInstance is only live as long as it is accessible, either from new
@@ -110,12 +119,16 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // related SiteInstances in the same BrowsingInstance.
   virtual size_t GetRelatedActiveContentsCount() = 0;
 
+  // Returns true if this SiteInstance is for a site that requires a dedicated
+  // process. This only returns true under the "site per process" process model.
+  virtual bool RequiresDedicatedProcess() = 0;
+
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
   // from scratch (or similar circumstances).  Callers should ensure that
   // this SiteInstance becomes ref counted, by storing it in a scoped_refptr.
   //
-  // The render process host factory may be nullptr. See SiteInstance
+  // The render process host factory may be nullptr.  See SiteInstance
   // constructor.
   //
   // TODO(creis): This may be an argument to build a pass_refptr<T> class, as

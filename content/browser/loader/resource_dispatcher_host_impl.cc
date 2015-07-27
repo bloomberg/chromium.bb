@@ -61,6 +61,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -1386,10 +1387,11 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
     // to drive the transfer.
     bool is_swappable_navigation =
         request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME;
-    // If we are using --site-per-process, install it for subframes as well.
+    // If out-of-process iframes are possible, then all subframe requests need
+    // to go through the CrossSiteResourceHandler to enforce the site isolation
+    // policy.
     if (!is_swappable_navigation &&
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess)) {
+        SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
       is_swappable_navigation =
           request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
     }

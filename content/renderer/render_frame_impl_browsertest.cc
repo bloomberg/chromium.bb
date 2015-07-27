@@ -6,7 +6,7 @@
 #include "base/debug/leak_annotations.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_frame_impl.h"
@@ -42,8 +42,7 @@ class RenderFrameImplTest : public RenderViewTest {
     widget_params.surface_id = kSubframeSurfaceId;
     widget_params.hidden = false;
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSitePerProcess);
+    IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
 
     LoadHTML("Parent frame <iframe name='frame'></iframe>");
 

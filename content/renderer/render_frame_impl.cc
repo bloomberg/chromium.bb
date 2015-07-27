@@ -41,6 +41,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
@@ -515,11 +516,6 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
          navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
-bool IsSwappedOutStateForbidden() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
-}
-
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
@@ -599,8 +595,7 @@ void RenderFrameImpl::CreateFrame(
   CHECK_IMPLIES(parent_routing_id == MSG_ROUTING_NONE, !web_frame->parent());
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
-    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kSitePerProcess));
+    CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
     render_frame->render_widget_ = RenderWidget::CreateForFrame(
         widget_params.routing_id, widget_params.surface_id,
         widget_params.hidden, render_frame->render_view_->screen_info(),
@@ -707,18 +702,15 @@ RenderFrameImpl::~RenderFrameImpl() {
 #endif
 
   if (!is_subframe_) {
-    if (!IsSwappedOutStateForbidden()) {
-      // When using swapped out frames, RenderFrameProxy is "owned" by
-      // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
-      // along with this object.
-      if (render_frame_proxy_ &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kSitePerProcess)) {
-        // The following method calls back into this object and clears
-        // |render_frame_proxy_|.
-        render_frame_proxy_->frameDetached(
-            blink::WebRemoteFrameClient::DetachType::Remove);
-      }
+    // When using swapped out frames, RenderFrameProxy is owned by
+    // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
+    // along with this object.
+    if (render_frame_proxy_ &&
+        !RenderFrameProxy::IsSwappedOutStateForbidden()) {
+      // The following method calls back into this object and clears
+      // |render_frame_proxy_|.
+      render_frame_proxy_->frameDetached(
+          blink::WebRemoteFrameClient::DetachType::Remove);
     }
 
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
@@ -1133,12 +1125,12 @@ void RenderFrameImpl::OnSwapOut(
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
+  bool swapped_out_forbidden = RenderFrameProxy::IsSwappedOutStateForbidden();
   bool is_main_frame = !frame_->parent();
 
   // This codepath should only be hit for subframes when in --site-per-process.
-  CHECK_IMPLIES(!is_main_frame, is_site_per_process);
+  CHECK_IMPLIES(!is_main_frame,
+                SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
@@ -1180,7 +1172,7 @@ void RenderFrameImpl::OnSwapOut(
     // TODO(creis): Should we be stopping all frames here and using
     // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
     // frame?
-    if (!IsSwappedOutStateForbidden())
+    if (!swapped_out_forbidden)
       OnStop();
 
     // Transfer settings such as initial drawing parameters to the remote frame,
@@ -1192,7 +1184,7 @@ void RenderFrameImpl::OnSwapOut(
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
-    if (!IsSwappedOutStateForbidden())
+    if (!swapped_out_forbidden)
       NavigateToSwappedOutURL();
 
     // Let WebKit know that this view is hidden so it can drop resources and
@@ -1215,7 +1207,7 @@ void RenderFrameImpl::OnSwapOut(
 
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
-  if (proxy && IsSwappedOutStateForbidden()) {
+  if (proxy && swapped_out_forbidden) {
     frame_->swap(proxy->web_frame());
 
     if (is_loading)
@@ -1230,7 +1222,7 @@ void RenderFrameImpl::OnSwapOut(
   // in proxy->web_frame(), the RemoteFrame will not exist for main frames.
   // When we do an unconditional swap for all frames, we can remove
   // !is_main_frame below.
-  if (proxy && IsSwappedOutStateForbidden())
+  if (proxy && swapped_out_forbidden)
     proxy->SetReplicatedState(replicated_frame_state);
 
   // Safe to exit if no one else is using the process.
@@ -2267,9 +2259,7 @@ void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
   // can be optimized further by only sending the update if there are any
   // remote frames in the frame tree, or delaying and batching up IPCs if
   // updates are happening too frequently.
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
-  if (is_site_per_process ||
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible() ||
       render_view_->renderer_preferences_.report_frame_name_changes) {
     Send(new FrameHostMsg_DidChangeName(
         routing_id_, base::UTF16ToUTF8(base::StringPiece16(name))));
@@ -2539,9 +2529,8 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.
-  CHECK((ds->request().url() != GURL(kSwappedOutURL)) ||
-        is_swapped_out_) <<
-        "Heard swappedout:// when not swapped out.";
+  CHECK_IMPLIES(ds->request().url() == GURL(kSwappedOutURL), is_swapped_out_)
+      << "Heard swappedout:// when not swapped out.";
 
   // Update the request time if WebKit has better knowledge of it.
   if (document_state->request_time().is_null() &&
@@ -3954,8 +3943,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that committed entry has it at all times.
   HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     if (entry)
       params.page_state = HistoryEntryToPageState(entry);
     else
@@ -4194,10 +4182,9 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(info.frame,
                                                            info.urlRequest));
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(switches::kSitePerProcess) && is_subframe_) {
+  // TODO(nick): Is consulting |is_subframe_| here correct?
+  if (RenderFrameProxy::IsSwappedOutStateForbidden() && is_subframe_) {
     // There's no reason to ignore navigations on subframes, since the swap out
     // logic no longer applies.
   } else {
@@ -4504,8 +4491,7 @@ void RenderFrameImpl::NavigateInternal(
       if (!browser_side_navigation) {
         scoped_ptr<NavigationParams> navigation_params(
             new NavigationParams(*pending_navigation_params_.get()));
-        if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kSitePerProcess)) {
+        if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
           // By default, tell the HistoryController to go the deserialized
           // HistoryEntry.  This only works if all frames are in the same
           // process.

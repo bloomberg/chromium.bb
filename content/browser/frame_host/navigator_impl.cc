@@ -21,6 +21,7 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -71,8 +72,7 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
 }
 
 RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return rfh->frame_tree_node()->render_manager();
 
   return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
@@ -364,8 +364,7 @@ void NavigatorImpl::DidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
   FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
-  bool use_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
+  bool oopifs_possible = SiteIsolationPolicy::AreCrossProcessFramesPossible();
 
   if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
@@ -390,7 +389,7 @@ void NavigatorImpl::DidNavigate(
       delegate_->DidNavigateMainFramePreCommit(is_navigation_within_page);
     }
 
-    if (!use_site_per_process)
+    if (!oopifs_possible)
       frame_tree->root()->render_manager()->DidNavigateFrame(
           render_frame_host, params.gesture == NavigationGestureUser);
   }
@@ -405,7 +404,7 @@ void NavigatorImpl::DidNavigate(
 
   // When using --site-per-process, we notify the RFHM for all navigations,
   // not just main frame navigations.
-  if (use_site_per_process) {
+  if (oopifs_possible) {
     FrameTreeNode* frame = render_frame_host->frame_tree_node();
     frame->render_manager()->DidNavigateFrame(
         render_frame_host, params.gesture == NavigationGestureUser);
@@ -554,10 +553,8 @@ void NavigatorImpl::RequestTransferURL(
   // Send the navigation to the current FrameTreeNode if it's destined for a
   // subframe in the current tab.  We'll assume it's for the main frame
   // (possibly of a new or different WebContents) otherwise.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess) &&
-      disposition == CURRENT_TAB &&
-      render_frame_host->GetParent()) {
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible() &&
+      disposition == CURRENT_TAB && render_frame_host->GetParent()) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }

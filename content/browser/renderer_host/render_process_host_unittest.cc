@@ -4,9 +4,8 @@
 
 #include <limits>
 
-#include "base/command_line.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_render_view_host.h"
 
@@ -35,9 +34,7 @@ TEST_F(RenderProcessHostUnitTest, GuestsAreNotSuitableHosts) {
 TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
   // This test shouldn't run with --site-per-process mode, which prohibits
   // the renderer process reuse this test explicitly exercises.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess))
+  if (AreAllSitesIsolatedForTesting())
     return;
 
   // Disable any overrides.

@@ -291,7 +291,7 @@ void SitePerProcessBrowserTest::StartFrameAtDataURL() {
 
 void SitePerProcessBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kSitePerProcess);
+  IsolateAllSitesForTesting(command_line);
 };
 
 void SitePerProcessBrowserTest::SetUpOnMainThread() {

@@ -1970,8 +1970,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        CrossSitePasswordEnforcement) {
   // The code under test is only active under site isolation.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kSitePerProcess)) {
+  if (!content::AreAllSitesIsolatedForTesting()) {
     return;
   }
 
