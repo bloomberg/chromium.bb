@@ -4,6 +4,7 @@
 
 #include "components/tracing/child_trace_message_filter.h"
 
+#include "base/metrics/statistics_recorder.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/child_memory_dump_manager_delegate_impl.h"
 #include "components/tracing/tracing_messages.h"
@@ -50,6 +51,8 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnProcessMemoryDumpRequest)
     IPC_MESSAGE_HANDLER(TracingMsg_GlobalMemoryDumpResponse,
                         OnGlobalMemoryDumpResponse)
+    IPC_MESSAGE_HANDLER(TracingMsg_SetUMACallback, OnSetUMACallback)
+    IPC_MESSAGE_HANDLER(TracingMsg_ClearUMACallback, OnClearUMACallback)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -224,6 +227,37 @@ void ChildTraceMessageFilter::OnGlobalMemoryDumpResponse(uint64 dump_guid,
   if (pending_memory_dump_callback_.is_null())
     return;
   pending_memory_dump_callback_.Run(dump_guid, success);
+}
+
+void ChildTraceMessageFilter::OnHistogramChanged(
+    const std::string& histogram_name,
+    base::Histogram::Sample reference_value,
+    base::Histogram::Sample actual_value) {
+  if (actual_value < reference_value)
+    return;
+
+  ipc_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ChildTraceMessageFilter::SendTriggerMessage, this,
+                            histogram_name));
+}
+
+void ChildTraceMessageFilter::SendTriggerMessage(
+    const std::string& histogram_name) {
+  if (sender_)
+    sender_->Send(new TracingHostMsg_TriggerBackgroundTrace(histogram_name));
+}
+
+void ChildTraceMessageFilter::OnSetUMACallback(
+    const std::string& histogram_name,
+    int histogram_value) {
+  base::StatisticsRecorder::SetCallback(
+      histogram_name, base::Bind(&ChildTraceMessageFilter::OnHistogramChanged,
+                                 this, histogram_name, histogram_value));
+}
+
+void ChildTraceMessageFilter::OnClearUMACallback(
+    const std::string& histogram_name) {
+  base::StatisticsRecorder::ClearCallback(histogram_name);
 }
 
 }  // namespace tracing

@@ -16,6 +16,7 @@
 
 namespace content {
 
+class TraceMessageFilter;
 class TracingDelegate;
 
 class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
@@ -37,6 +38,8 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   void FireTimerForTesting() override;
   bool HasActiveScenarioForTesting() override;
 
+  void OnHistogramTrigger(const std::string& histogram_name);
+
  private:
   BackgroundTracingManagerImpl();
   ~BackgroundTracingManagerImpl() override;
@@ -53,9 +56,13 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
 
   void SetupUMACallbacks(SetupUMACallMode mode);
 
-  void OnHistogramChanged(const std::string& histogram_name,
-                          base::Histogram::Sample reference_value,
-                          base::Histogram::Sample actual_value);
+  void OnHistogramChangedCallback(const std::string& histogram_name,
+                                  base::Histogram::Sample reference_value,
+                                  base::Histogram::Sample actual_value);
+  void OnTraceMessageFilterAdded(TraceMessageFilter* filter);
+  void SetupFiltersFromConfig(SetupUMACallMode mode);
+  void SetupFilterFromConfig(scoped_refptr<TraceMessageFilter> filter,
+                             SetupUMACallMode mode);
 
   scoped_ptr<base::DictionaryValue> GenerateMetadataDict() const;
 

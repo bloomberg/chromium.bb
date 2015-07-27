@@ -5,6 +5,7 @@
 #include "content/browser/tracing/trace_message_filter.h"
 
 #include "components/tracing/tracing_messages.h"
+#include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 
 namespace content {
@@ -58,6 +59,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnGlobalMemoryDumpRequest)
     IPC_MESSAGE_HANDLER(TracingHostMsg_ProcessMemoryDumpResponse,
                         OnProcessMemoryDumpResponse)
+    IPC_MESSAGE_HANDLER(TracingHostMsg_TriggerBackgroundTrace,
+                        OnTriggerBackgroundTrace)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -200,6 +203,10 @@ void TraceMessageFilter::OnProcessMemoryDumpResponse(uint64 dump_guid,
                                                      bool success) {
   TracingControllerImpl::GetInstance()->OnProcessMemoryDumpResponse(
       this, dump_guid, success);
+}
+
+void TraceMessageFilter::OnTriggerBackgroundTrace(const std::string& name) {
+  BackgroundTracingManagerImpl::GetInstance()->OnHistogramTrigger(name);
 }
 
 }  // namespace content

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/metrics/histogram.h"
 #include "base/sync_socket.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -75,6 +76,13 @@ IPC_MESSAGE_CONTROL2(TracingMsg_GlobalMemoryDumpResponse,
                      uint64 /* dump_guid */,
                      bool /* success */)
 
+IPC_MESSAGE_CONTROL2(TracingMsg_SetUMACallback,
+                     std::string /* histogram_name */,
+                     base::HistogramBase::Sample /* histogram_value */)
+
+IPC_MESSAGE_CONTROL1(TracingMsg_ClearUMACallback,
+                     std::string /* histogram_name */)
+
 // Sent everytime when a watch event is matched.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_WatchEventMatched)
 
@@ -110,3 +118,6 @@ IPC_MESSAGE_CONTROL1(TracingHostMsg_GlobalMemoryDumpRequest,
 IPC_MESSAGE_CONTROL2(TracingHostMsg_ProcessMemoryDumpResponse,
                      uint64 /* dump_guid */,
                      bool /* success */)
+
+IPC_MESSAGE_CONTROL1(TracingHostMsg_TriggerBackgroundTrace,
+                     std::string /* name */)

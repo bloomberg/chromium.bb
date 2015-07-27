@@ -57,6 +57,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void OnProcessMemoryDumpResponse(uint64 dump_guid, bool success);
 
   void SendGlobalMemoryDumpResponse(uint64 dump_guid, bool success);
+  void OnTriggerBackgroundTrace(const std::string& histogram_name);
 
   // ChildTraceMessageFilter exists:
   bool has_child_;

@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "ipc/message_filter.h"
 
@@ -57,6 +58,12 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnProcessMemoryDumpRequest(
       const base::trace_event::MemoryDumpRequestArgs& args);
   void OnGlobalMemoryDumpResponse(uint64 dump_guid, bool success);
+  void OnSetUMACallback(const std::string& histogram_name, int histogram_value);
+  void OnClearUMACallback(const std::string& histogram_name);
+  void OnHistogramChanged(const std::string& histogram_name,
+                          base::Histogram::Sample reference_value,
+                          base::Histogram::Sample actual_value);
+  void SendTriggerMessage(const std::string& histogram_name);
 
   // Callback from trace subsystem.
   void OnTraceDataCollected(

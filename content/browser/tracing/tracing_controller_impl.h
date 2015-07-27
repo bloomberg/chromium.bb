@@ -61,9 +61,16 @@ class TracingControllerImpl
       const base::trace_event::MemoryDumpCallback& callback) override;
   bool IsCoordinatorProcess() const override;
 
- private:
+  typedef base::Callback<void(TraceMessageFilter*)>
+      TraceMessageFilterAddedCallback;
   typedef std::set<scoped_refptr<TraceMessageFilter> > TraceMessageFilterSet;
 
+  TraceMessageFilterAddedCallback trace_filter_added_callback_;
+  void SetTraceMessageFilterAddedCallback(
+      const TraceMessageFilterAddedCallback& callback);
+  void GetTraceMessageFilters(TraceMessageFilterSet*);
+
+ private:
   friend struct base::DefaultLazyInstanceTraits<TracingControllerImpl>;
   friend class TraceMessageFilter;
 
@@ -188,6 +195,8 @@ class TracingControllerImpl
   std::string watch_category_name_;
   std::string watch_event_name_;
   WatchEventCallback watch_event_callback_;
+
+  TraceMessageFilterAddedCallback trace_message_filter_added_callback_;
 
   std::set<std::string> known_category_groups_;
   std::set<TracingUI*> tracing_uis_;
