@@ -73,7 +73,8 @@ void HistogramTester::ExpectTotalCount(const std::string& name,
   }
 }
 
-std::vector<Bucket> HistogramTester::GetAllSamples(const std::string& name) {
+std::vector<Bucket> HistogramTester::GetAllSamples(
+    const std::string& name) const {
   std::vector<Bucket> samples;
   scoped_ptr<HistogramSamples> snapshot =
       GetHistogramSamplesSinceCreation(name);
@@ -86,16 +87,37 @@ std::vector<Bucket> HistogramTester::GetAllSamples(const std::string& name) {
   return samples;
 }
 
+HistogramTester::CountsMap HistogramTester::GetTotalCountsForPrefix(
+    const std::string& query) const {
+  EXPECT_TRUE(query.find('.') != std::string::npos)
+      << "|query| ought to contain at least one period, to avoid matching too"
+      << " many histograms.";
+
+  // Find matches by using the prefix-matching logic built into GetSnapshot().
+  StatisticsRecorder::Histograms query_matches;
+  StatisticsRecorder::GetSnapshot(query, &query_matches);
+
+  CountsMap result;
+  for (base::HistogramBase* histogram : query_matches) {
+    scoped_ptr<HistogramSamples> new_samples =
+        GetHistogramSamplesSinceCreation(histogram->histogram_name());
+    // Omit unchanged histograms from the result.
+    if (new_samples->TotalCount()) {
+      result[histogram->histogram_name()] = new_samples->TotalCount();
+    }
+  }
+  return result;
+}
+
 scoped_ptr<HistogramSamples> HistogramTester::GetHistogramSamplesSinceCreation(
-    const std::string& histogram_name) {
+    const std::string& histogram_name) const {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(histogram_name);
   if (!histogram)
     return scoped_ptr<HistogramSamples>();
   scoped_ptr<HistogramSamples> named_samples(histogram->SnapshotSamples());
-  HistogramSamples* named_original_samples =
-      histograms_snapshot_[histogram_name];
-  if (named_original_samples)
-    named_samples->Subtract(*named_original_samples);
+  auto original_samples_it = histograms_snapshot_.find(histogram_name);
+  if (original_samples_it != histograms_snapshot_.end())
+    named_samples->Subtract(*original_samples_it->second);
   return named_samples.Pass();
 }
 

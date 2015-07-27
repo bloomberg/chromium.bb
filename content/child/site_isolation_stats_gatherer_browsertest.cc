@@ -14,6 +14,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
@@ -72,73 +73,38 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
 
     // A few histograms are incremented unconditionally.
     histograms.ExpectUniqueSample("SiteIsolation.AllResponses", 1, 1);
-    histograms.ExpectTotalCount("SiteIsolation.XSD.DataLength", 1);
-    histograms.ExpectUniqueSample("SiteIsolation.XSD.MimeType", mime_type, 1);
+    base::HistogramTester::CountsMap expected_metrics;
+    expected_metrics["SiteIsolation.XSD.DataLength"] = 1;
+    expected_metrics["SiteIsolation.XSD.MimeType"] = 1;
 
-    // Inspect the appropriate conditionally-incremented histogram[s].
-    std::set<std::string> expected_metrics;
-    std::string base_metric = "SiteIsolation.XSD." + bucket;
-    base_metric += should_be_blocked ? ".Blocked" : ".NotBlocked";
-    expected_metrics.insert(base_metric);
+    // Determine the appropriate conditionally-incremented histograms.
+    std::string base = "SiteIsolation.XSD." + bucket;
     if (should_be_blocked) {
-      expected_metrics.insert(base_metric + ".RenderableStatusCode");
-    } else if (base::MatchPattern(resource_name, "*js.*")) {
-      expected_metrics.insert(base_metric + ".MaybeJS");
-    }
-
-    for (std::string metric : expected_metrics) {
-      if (base::MatchPattern(metric, "*.RenderableStatusCode")) {
-        histograms.ExpectUniqueSample(metric, RESOURCE_TYPE_XHR, 1);
-      } else {
-        histograms.ExpectUniqueSample(metric, 1, 1);
+      expected_metrics[base + ".Blocked"] = 1;
+      expected_metrics[base + ".Blocked.RenderableStatusCode"] = 1;
+    } else {
+      expected_metrics[base + ".NotBlocked"] = 1;
+      if (base::MatchPattern(resource_name, "*js.*")) {
+        expected_metrics[base + ".NotBlocked.MaybeJS"] = 1;
       }
     }
 
-    // Make sure no other conditionally-incremented histograms were touched.
-    const char* all_metrics[] = {
-        "SiteIsolation.XSD.HTML.Blocked",
-        "SiteIsolation.XSD.HTML.Blocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode",
-        "SiteIsolation.XSD.HTML.NoSniffBlocked",
-        "SiteIsolation.XSD.HTML.NoSniffBlocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode",
-        "SiteIsolation.XSD.HTML.NotBlocked",
-        "SiteIsolation.XSD.HTML.NotBlocked.MaybeJS",
-        "SiteIsolation.XSD.JSON.Blocked",
-        "SiteIsolation.XSD.JSON.Blocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode",
-        "SiteIsolation.XSD.JSON.NoSniffBlocked",
-        "SiteIsolation.XSD.JSON.NoSniffBlocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode",
-        "SiteIsolation.XSD.JSON.NotBlocked",
-        "SiteIsolation.XSD.JSON.NotBlocked.MaybeJS",
-        "SiteIsolation.XSD.Plain.HTML.Blocked",
-        "SiteIsolation.XSD.Plain.HTML.Blocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode",
-        "SiteIsolation.XSD.Plain.JSON.Blocked",
-        "SiteIsolation.XSD.Plain.JSON.Blocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode",
-        "SiteIsolation.XSD.Plain.NoSniffBlocked",
-        "SiteIsolation.XSD.Plain.NoSniffBlocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode",
-        "SiteIsolation.XSD.Plain.NotBlocked",
-        "SiteIsolation.XSD.Plain.NotBlocked.MaybeJS",
-        "SiteIsolation.XSD.Plain.XML.Blocked",
-        "SiteIsolation.XSD.Plain.XML.Blocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode",
-        "SiteIsolation.XSD.XML.Blocked",
-        "SiteIsolation.XSD.XML.Blocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.XML.Blocked.RenderableStatusCode",
-        "SiteIsolation.XSD.XML.NoSniffBlocked",
-        "SiteIsolation.XSD.XML.NoSniffBlocked.NonRenderableStatusCode",
-        "SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode",
-        "SiteIsolation.XSD.XML.NotBlocked",
-        "SiteIsolation.XSD.XML.NotBlocked.MaybeJS"};
+    // Make sure that the expected metrics, and only those metrics, were
+    // incremented.
+    EXPECT_THAT(histograms.GetTotalCountsForPrefix("SiteIsolation.XSD."),
+                testing::ContainerEq(expected_metrics))
+        << "For resource_name=" << resource_name
+        << ", should_be_blocked=" << should_be_blocked;
 
-    for (const char* metric : all_metrics) {
-      if (!expected_metrics.count(metric)) {
-        histograms.ExpectTotalCount(metric, 0);
-      }
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.MimeType"),
+                testing::ElementsAre(base::Bucket(mime_type, 1)))
+        << "The wrong mime type bucket was incremented.";
+    if (should_be_blocked) {
+      static_assert(13 == RESOURCE_TYPE_XHR, "Histogram enums mustn't change.");
+      EXPECT_THAT(
+          histograms.GetAllSamples(base + ".Blocked.RenderableStatusCode"),
+          testing::ElementsAre(base::Bucket(RESOURCE_TYPE_XHR, 1)))
+          << "The wrong RenderableStatusCode bucket was incremented.";
     }
   }
 
