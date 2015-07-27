@@ -109,7 +109,7 @@ void PresentationController::setDefaultRequest(PresentationRequest* request)
 {
     m_defaultRequest = request;
 
-    if (m_client)
+    if (!m_client)
         return;
 
     if (m_defaultRequest)
