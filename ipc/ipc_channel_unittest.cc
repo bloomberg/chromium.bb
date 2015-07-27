@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
 
@@ -22,38 +21,6 @@ namespace {
 
 class IPCChannelTest : public IPCTestBase {
 };
-
-// TODO(viettrungluu): Move to a separate IPCMessageTest.
-TEST_F(IPCChannelTest, BasicMessageTest) {
-  int v1 = 10;
-  std::string v2("foobar");
-  base::string16 v3(base::ASCIIToUTF16("hello world"));
-
-  IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(v1));
-  EXPECT_TRUE(m.WriteString(v2));
-  EXPECT_TRUE(m.WriteString16(v3));
-
-  base::PickleIterator iter(m);
-
-  int vi;
-  std::string vs;
-  base::string16 vs16;
-
-  EXPECT_TRUE(iter.ReadInt(&vi));
-  EXPECT_EQ(v1, vi);
-
-  EXPECT_TRUE(iter.ReadString(&vs));
-  EXPECT_EQ(v2, vs);
-
-  EXPECT_TRUE(iter.ReadString16(&vs16));
-  EXPECT_EQ(v3, vs16);
-
-  // should fail
-  EXPECT_FALSE(iter.ReadInt(&vi));
-  EXPECT_FALSE(iter.ReadString(&vs));
-  EXPECT_FALSE(iter.ReadString16(&vs16));
-}
 
 TEST_F(IPCChannelTest, ChannelTest) {
   Init("GenericClient");
