@@ -61,7 +61,7 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -228,15 +228,13 @@ bool IsShowingWebContentsModalDialog(Browser* browser) {
   if (!web_contents)
     return false;
 
-  // In test code we may not have a popup manager.
-  if (!browser->popup_manager())
-    return false;
-
   // TODO(gbillock): This is currently called in production by the CanPrint
   // method, and may be too restrictive if we allow print preview to overlap.
   // Re-assess how to queue print preview after we know more about popup
   // management policy.
-  return browser->popup_manager()->IsWebModalDialogActive(web_contents);
+  const web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  return manager && manager->IsDialogActive();
 }
 
 #if defined(ENABLE_BASIC_PRINTING)

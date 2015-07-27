@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sessions/session_id.h"
-#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -513,10 +512,6 @@ class AppWindow : public content::WebContentsDelegate,
 
   // The initial url this AppWindow was navigated to.
   GURL initial_url_;
-
-  // Manages popup windows (bubbles, tab-modals) visible overlapping the
-  // app window.
-  scoped_ptr<web_modal::PopupManager> popup_manager_;
 
   // Bit field of FullscreenType.
   int fullscreen_types_;

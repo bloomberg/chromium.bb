@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -311,13 +311,13 @@ void TabStripModel::InsertWebContentsAt(int index,
     data->set_opener(active_contents);
   }
 
-  // TODO(gbillock): Ask the bubble manager whether the WebContents should be
-  // blocked, or just let the bubble manager make the blocking call directly
-  // and not use this at all.
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(contents);
-  if (popup_manager)
-    data->set_blocked(popup_manager->IsWebModalDialogActive(contents));
+  // TODO(gbillock): Ask the modal dialog manager whether the WebContents should
+  // be blocked, or just let the modal dialog manager make the blocking call
+  // directly and not use this at all.
+  const web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(contents);
+  if (manager)
+    data->set_blocked(manager->IsDialogActive());
 
   contents_data_.insert(contents_data_.begin() + index, data);
 

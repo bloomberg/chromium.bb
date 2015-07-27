@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/usb/usb_device.h"
 #include "extensions/common/extension.h"
@@ -162,9 +162,9 @@ gfx::Size DevicePermissionsDialogView::GetPreferredSize() const {
 void ChromeDevicePermissionsPrompt::ShowDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(web_contents());
-  if (popup_manager) {
+  web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents());
+  if (manager) {
     constrained_window::ShowWebModalDialogViews(
         new DevicePermissionsDialogView(prompt()), web_contents());
   } else {

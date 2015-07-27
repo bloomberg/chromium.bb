@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -85,7 +85,7 @@ void ShowSSLClientCertificateSelector(
   // GetTopLevelWebContents() will return |contents| otherwise.
   // TODO(davidben): Move this hook to the WebContentsDelegate and only try to
   // show a dialog in Browser's implementation. https://crbug.com/456255
-  if (web_modal::PopupManager::FromWebContents(
+  if (web_modal::WebContentsModalDialogManager::FromWebContents(
           guest_view::GuestViewBase::GetTopLevelWebContents(contents)) ==
       nullptr)
     return;

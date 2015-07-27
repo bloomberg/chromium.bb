@@ -130,9 +130,6 @@ void ExtensionViewHost::LoadInitialURL() {
     WebContentsModalDialogManager::CreateForWebContents(host_contents());
     WebContentsModalDialogManager::FromWebContents(
         host_contents())->SetDelegate(this);
-    if (!popup_manager_.get())
-      popup_manager_.reset(new web_modal::PopupManager(this));
-    popup_manager_->RegisterWith(host_contents());
   }
 
   ExtensionHost::LoadInitialURL();

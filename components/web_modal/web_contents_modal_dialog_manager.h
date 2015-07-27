@@ -73,7 +73,6 @@ class WebContentsModalDialogManager
  private:
   explicit WebContentsModalDialogManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
-  friend class PopupManager;
 
   struct DialogState {
     DialogState(gfx::NativeWindow dialog,

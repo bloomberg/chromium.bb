@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
@@ -204,7 +204,8 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
     // Ensure that this function is called in a context that allows opening
     // dialogs.
     if (!web_contents ||
-        !web_modal::PopupManager::FromWebContents(web_contents)) {
+        !web_modal::WebContentsModalDialogManager::FromWebContents(
+            web_contents)) {
       return RespondNow(Error(kErrorInteractiveCallFromBackground));
     }
   }

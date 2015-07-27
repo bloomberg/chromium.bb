@@ -99,8 +99,8 @@ ConstrainedWebDialogDelegate* ShowConstrainedWebDialog(
     content::WebContents* overshadowed);
 
 // Create and show a constrained HTML dialog with auto-resize enabled. The
-// dialog is shown automatically with a call to PopupManager->ShowModalDialog()
-// after document load has completed to avoid UI jankiness.
+// dialog is shown automatically after document load has completed to avoid UI
+// jankiness.
 // |browser_context| is used to construct the dialog's WebContents.
 // |delegate| controls the behavior of the dialog.
 // |overshadowed| is the tab being overshadowed by the dialog.

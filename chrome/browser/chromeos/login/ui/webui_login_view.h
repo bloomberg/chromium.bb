@@ -8,10 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
-#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -187,11 +185,6 @@ class WebUILoginView : public views::View,
 
   base::ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
   base::ObserverList<FrameObserver> frame_observer_list_;
-
-  // Manage popups appearing over the login window.
-  // TODO(gbillock): See if we can get rid of this. Perhaps in favor of
-  // in-content styled popups or something? There oughtta be a way...
-  scoped_ptr<web_modal::PopupManager> popup_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };
