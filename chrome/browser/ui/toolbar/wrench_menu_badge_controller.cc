@@ -77,7 +77,9 @@ bool ShouldShowIncompatibilityWarning() {
 
 WrenchMenuBadgeController::WrenchMenuBadgeController(Profile* profile,
                                                      Delegate* delegate)
-    : profile_(profile), delegate_(delegate) {
+    : profile_(profile),
+      delegate_(delegate),
+      overflowed_toolbar_action_wants_to_run_(false) {
   DCHECK(profile_);
   DCHECK(delegate_);
 
@@ -124,8 +126,20 @@ void WrenchMenuBadgeController::UpdateDelegate() {
     return;
   }
 
+  if (overflowed_toolbar_action_wants_to_run_) {
+    delegate_->UpdateBadgeSeverity(BADGE_TYPE_NONE,
+                                   WrenchIconPainter::SEVERITY_INFO, true);
+    return;
+  }
+
   delegate_->UpdateBadgeSeverity(BADGE_TYPE_NONE,
                                  WrenchIconPainter::SEVERITY_NONE, true);
+}
+
+void WrenchMenuBadgeController::SetOverflowedToolbarActionWantsToRun(
+    bool wants_to_run) {
+  overflowed_toolbar_action_wants_to_run_ = wants_to_run;
+  UpdateDelegate();
 }
 
 void WrenchMenuBadgeController::Observe(

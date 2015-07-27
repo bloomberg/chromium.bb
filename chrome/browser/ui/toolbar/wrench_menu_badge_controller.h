@@ -50,6 +50,13 @@ class WrenchMenuBadgeController : public content::NotificationObserver {
   // delegate.
   void UpdateDelegate();
 
+  // Sets |overflowed_toolbar_action_wants_to_run_| and updates the delegate.
+  void SetOverflowedToolbarActionWantsToRun(bool wants_to_run);
+
+  bool overflowed_toolbar_action_wants_to_run() const {
+    return overflowed_toolbar_action_wants_to_run_;
+  }
+
  private:
   // content::NotificationObserver:
   void Observe(int type,
@@ -59,6 +66,7 @@ class WrenchMenuBadgeController : public content::NotificationObserver {
   Profile* profile_;
   Delegate* delegate_;
   content::NotificationRegistrar registrar_;
+  bool overflowed_toolbar_action_wants_to_run_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuBadgeController);
 };

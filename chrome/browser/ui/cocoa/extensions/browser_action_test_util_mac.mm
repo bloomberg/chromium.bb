@@ -19,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/chrome_constants.h"
@@ -184,12 +183,9 @@ bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
 }
 
 bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
-  NSView* wrench = [[[BrowserWindowController browserWindowControllerForWindow:
-      browser_->window()->GetNativeWindow()] toolbarController] wrenchButton];
-  NSButton* wrenchButton = base::mac::ObjCCastStrict<NSButton>(wrench);
-  WrenchToolbarButtonCell* cell =
-      base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton cell]);
-  return [cell overflowedToolbarActionWantsToRun];
+  return [[[BrowserWindowController browserWindowControllerForWindow:
+      browser_->window()->GetNativeWindow()] toolbarController]
+          overflowedToolbarActionWantsToRun];
 }
 
 ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {

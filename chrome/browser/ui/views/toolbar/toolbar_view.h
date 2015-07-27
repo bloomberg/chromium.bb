@@ -107,6 +107,9 @@ class ToolbarView : public views::AccessiblePaneView,
   LocationBarView* location_bar() const { return location_bar_; }
   WrenchToolbarButton* app_menu() const { return app_menu_; }
   HomeButton* home_button() const { return home_; }
+  WrenchMenuBadgeController* wrench_menu_badge_controller() {
+    return &badge_controller_;
+  }
 
   // AccessiblePaneView:
   bool SetPaneFocus(View* initial_focus) override;

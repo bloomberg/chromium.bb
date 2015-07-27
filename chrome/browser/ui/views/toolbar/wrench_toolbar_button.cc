@@ -28,7 +28,6 @@ WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
-      overflowed_toolbar_action_wants_to_run_for_testing_(false),
       weak_factory_(this) {
 }
 
@@ -38,12 +37,6 @@ WrenchToolbarButton::~WrenchToolbarButton() {
 void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
                                       bool animate) {
   wrench_icon_painter_->SetSeverity(severity, animate);
-  SchedulePaint();
-}
-
-void WrenchToolbarButton::SetOverflowedToolbarActionWantsToRun(
-    bool wants_to_run) {
-  overflowed_toolbar_action_wants_to_run_for_testing_ = wants_to_run;
   SchedulePaint();
 }
 
