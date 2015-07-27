@@ -243,8 +243,6 @@ void InputMethodAuraLinux::OnPreeditChanged(
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
 
-  composition_ = composition_text;
-
   if (is_sync_mode_) {
     if (!composition_.text.empty() || !composition_text.text.empty())
       composition_changed_ = true;
@@ -252,6 +250,8 @@ void InputMethodAuraLinux::OnPreeditChanged(
     SendFakeProcessKeyEvent(0);
     GetTextInputClient()->SetCompositionText(composition_text);
   }
+
+  composition_ = composition_text;
 }
 
 void InputMethodAuraLinux::OnPreeditEnd() {

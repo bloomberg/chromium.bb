@@ -606,6 +606,18 @@ TEST_F(InputMethodAuraLinuxTest, CompositionUpdateWithCommitTest) {
   test_result_->ExpectAction("compositionstart");
   test_result_->ExpectAction("compositionupdate:a");
   test_result_->Verify();
+
+  // crbug.com/513124.
+  context_->SetSyncMode(true);
+  context_->SetEatKey(true);
+  context_->AddCommitAction("c");
+  context_->AddCompositionUpdateAction("");
+  input_method_auralinux_->DispatchKeyEvent(key);
+
+  test_result_->ExpectAction("keydown:229");
+  test_result_->ExpectAction("compositionend");
+  test_result_->ExpectAction("textinput:c");
+  test_result_->Verify();
 }
 
 TEST_F(InputMethodAuraLinuxTest, MixedAsyncAndSyncTest) {
