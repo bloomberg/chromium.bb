@@ -168,10 +168,10 @@ const std::string Version::GetString() const {
   std::string version_str;
   size_t count = components_.size();
   for (size_t i = 0; i < count - 1; ++i) {
-    version_str.append(IntToString(components_[i]));
+    version_str.append(UintToString(components_[i]));
     version_str.append(".");
   }
-  version_str.append(IntToString(components_[count - 1]));
+  version_str.append(UintToString(components_[count - 1]));
   return version_str;
 }
 
