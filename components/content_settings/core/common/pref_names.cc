@@ -93,11 +93,6 @@ const char kDefaultDurableStorageSetting[] =
 const char kMigratedDefaultMediaStreamSetting[] =
     "profile.migrated_default_media_stream_content_settings";
 
-// Dictionary of content settings that can globally disallow all hosts by
-// default. If a value is set, it means the setting is globally disallowed.
-// If a value is not set, it means the setting is allowed.
-const char kOverrideContentSettings[] = "profile.override_content_settings";
-
 // Preferences storing the content settings exceptions.
 const char kContentSettingsCookiesPatternPairs[] =
     "profile.content_settings.exceptions.cookies";

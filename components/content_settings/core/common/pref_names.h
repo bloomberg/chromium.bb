@@ -14,7 +14,6 @@ extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsWindowLastTabIndex[];
 extern const char kDefaultContentSettings[];
-extern const char kOverrideContentSettings[];
 extern const char kMigratedDefaultContentSettings[];
 
 extern const char kDefaultCookiesSetting[];

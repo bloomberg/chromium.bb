@@ -35,8 +35,6 @@
         'content_settings/core/browser/content_settings_observer.h',
         'content_settings/core/browser/content_settings_origin_identifier_value_map.cc',
         'content_settings/core/browser/content_settings_origin_identifier_value_map.h',
-        'content_settings/core/browser/content_settings_override_provider.cc',
-        'content_settings/core/browser/content_settings_override_provider.h',
         'content_settings/core/browser/content_settings_policy_provider.cc',
         'content_settings/core/browser/content_settings_policy_provider.h',
         'content_settings/core/browser/content_settings_pref.cc',

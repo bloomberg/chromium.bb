@@ -301,7 +301,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   // of creating a new rule that would be hidden behind the existing rule.
   content_settings::SettingInfo info;
   scoped_ptr<base::Value> v =
-      content_settings_->GetWebsiteSettingWithoutOverride(
+      content_settings_->GetWebsiteSetting(
           site_url_, site_url_, type, std::string(), &info);
   content_settings_->SetNarrowestWebsiteSetting(
       primary_pattern, secondary_pattern, type, std::string(), setting, info);
@@ -645,7 +645,7 @@ void WebsiteSettings::PresentSitePermissions() {
 
     content_settings::SettingInfo info;
     scoped_ptr<base::Value> value =
-        content_settings_->GetWebsiteSettingWithoutOverride(
+        content_settings_->GetWebsiteSetting(
             site_url_, site_url_, permission_info.type, std::string(), &info);
     DCHECK(value.get());
     if (value->GetType() == base::Value::TYPE_INTEGER) {

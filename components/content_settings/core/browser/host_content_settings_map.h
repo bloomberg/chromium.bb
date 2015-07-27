@@ -19,7 +19,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
-#include "components/content_settings/core/browser/content_settings_override_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -34,7 +33,6 @@ class Value;
 }
 
 namespace content_settings {
-class OverrideProvider;
 class ObservableProvider;
 class ProviderInterface;
 class PrefProvider;
@@ -56,7 +54,6 @@ class HostContentSettingsMap
     POLICY_PROVIDER,
     SUPERVISED_PROVIDER,
     CUSTOM_EXTENSION_PROVIDER,
-    OVERRIDE_PROVIDER,
     PREF_PROVIDER,
     DEFAULT_PROVIDER,
     NUM_PROVIDER_TYPES,
@@ -257,31 +254,6 @@ class HostContentSettingsMap
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type);
 
-  // Returns the content setting without considering the global on/off toggle
-  // for the content setting that matches the URLs.
-  ContentSetting GetContentSettingWithoutOverride(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier);
-
-  // Returns the single content setting |value| without considering the
-  // global on/off toggle for the content setting that matches the given
-  // patterns.
-  scoped_ptr<base::Value> GetWebsiteSettingWithoutOverride(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier,
-      content_settings::SettingInfo* info) const;
-
-  // Sets globally if a given |content_type| |is_enabled|.
-  void SetContentSettingOverride(ContentSettingsType content_type,
-                                 bool is_enabled);
-
-  // Returns if a given |content_type| is enabled.
-  bool GetContentSettingOverride(ContentSettingsType content_type);
-
   // Adds/removes an observer for content settings changes.
   void AddObserver(content_settings::Observer* observer);
   void RemoveObserver(content_settings::Observer* observer);
@@ -333,8 +305,7 @@ class HostContentSettingsMap
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
-      content_settings::SettingInfo* info,
-      bool get_override) const;
+      content_settings::SettingInfo* info) const;
 
   content_settings::PrefProvider* GetPrefProvider();
 
