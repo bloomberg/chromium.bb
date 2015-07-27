@@ -113,11 +113,6 @@ void Scheduler::AddWrittenFile(const SourceFile& file) {
   written_files_.push_back(file);
 }
 
-std::vector<SourceFile> Scheduler::GetWrittenFiles() const {
-  base::AutoLock lock(lock_);
-  return written_files_;
-}
-
 void Scheduler::AddUnknownGeneratedInput(const Target* target,
                                          const SourceFile& file) {
   base::AutoLock lock(lock_);
