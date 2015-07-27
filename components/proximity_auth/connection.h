@@ -73,7 +73,8 @@ class Connection {
   virtual void OnBytesReceived(const std::string& bytes);
 
   // Sends bytes over the connection. The implementing class should call
-  // OnSendCompleted() once the send succeeds or fails. At most one send will be
+  // OnDidSendMessage() once the send succeeds or fails. At most one send will
+  // be
   // in progress.
   virtual void SendMessageImpl(scoped_ptr<WireMessage> message) = 0;
 

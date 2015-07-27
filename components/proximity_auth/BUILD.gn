@@ -6,6 +6,7 @@ import("//testing/test.gni")
 
 source_set("proximity_auth") {
   sources = [
+    "authenticator.h",
     "bluetooth_connection.cc",
     "bluetooth_connection.h",
     "bluetooth_connection_finder.cc",
@@ -24,6 +25,8 @@ source_set("proximity_auth") {
     "connection.h",
     "connection_finder.h",
     "connection_observer.h",
+    "device_to_device_authenticator.cc",
+    "device_to_device_authenticator.h",
     "device_to_device_initiator_operations.cc",
     "device_to_device_initiator_operations.h",
     "device_to_device_secure_context.cc",
@@ -84,6 +87,7 @@ source_set("unit_tests") {
     "bluetooth_throttler_impl_unittest.cc",
     "client_impl_unittest.cc",
     "connection_unittest.cc",
+    "device_to_device_authenticator_unittest.cc",
     "device_to_device_operations_unittest.cc",
     "device_to_device_secure_context_unittest.cc",
     "proximity_auth_system_unittest.cc",

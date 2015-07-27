@@ -21,6 +21,7 @@
         '../net/net.gyp:net',
       ],
       'sources': [
+        "proximity_auth/authenticator.h",
         "proximity_auth/ble/bluetooth_low_energy_characteristics_finder.cc",
         "proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h",
         "proximity_auth/ble/bluetooth_low_energy_connection.cc",
@@ -54,6 +55,8 @@
         "proximity_auth/connection.h",
         "proximity_auth/connection_finder.h",
         "proximity_auth/connection_observer.h",
+        "proximity_auth/device_to_device_authenticator.cc",
+        "proximity_auth/device_to_device_authenticator.h",
         "proximity_auth/device_to_device_initiator_operations.cc",
         "proximity_auth/device_to_device_initiator_operations.h",
         "proximity_auth/device_to_device_secure_context.cc",
