@@ -18,8 +18,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
-import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -109,7 +107,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         mContentView = (EnhancedBookmarkContentView) mMainView.findViewById(R.id.eb_content_view);
         mUndoController = new EnhancedBookmarkUndoController(activity, mEnhancedBookmarksModel,
                 ((SnackbarManageable) activity).getSnackbarManager());
-        mEnhancedBookmarksModel.addModelObserver(mBookmarkModelObserver);
+        mEnhancedBookmarksModel.addObserver(mBookmarkModelObserver);
         initializeIfBookmarkModelLoaded();
 
         // Load partner bookmarks explicitly. We load partner bookmarks in the deferred startup
@@ -131,7 +129,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
             mUndoController.destroy();
             mUndoController = null;
         }
-        mEnhancedBookmarksModel.removeModelObserver(mBookmarkModelObserver);
+        mEnhancedBookmarksModel.removeObserver(mBookmarkModelObserver);
         mEnhancedBookmarksModel.destroy();
         mEnhancedBookmarksModel = null;
     }

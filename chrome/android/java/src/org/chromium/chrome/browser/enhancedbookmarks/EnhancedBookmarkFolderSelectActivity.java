@@ -22,7 +22,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -116,7 +115,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this,
                 getString(R.string.enhanced_bookmark_choose_folder));
         mEnhancedBookmarksModel = new EnhancedBookmarksModel();
-        mEnhancedBookmarksModel.addModelObserver(mBookmarkModelObserver);
+        mEnhancedBookmarksModel.addObserver(mBookmarkModelObserver);
         List<String> stringList = getIntent().getStringArrayListExtra(INTENT_BOOKMARKS_TO_MOVE);
         mBookmarksToMove = new ArrayList<>(stringList.size());
         for (String string : stringList) {
@@ -124,7 +123,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         }
         mIsCreatingFolder = getIntent().getBooleanExtra(INTENT_IS_CREATING_FOLDER, false);
         if (mIsCreatingFolder) {
-            mParentId = mEnhancedBookmarksModel.getDefaultFolder();
+            mParentId = mEnhancedBookmarksModel.getMobileFolderId();
         } else {
             mParentId = mEnhancedBookmarksModel.getBookmarkById(mBookmarksToMove.get(0))
                     .getParentId();
@@ -180,7 +179,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mEnhancedBookmarksModel.removeModelObserver(mBookmarkModelObserver);
+        mEnhancedBookmarksModel.removeObserver(mBookmarkModelObserver);
         mEnhancedBookmarksModel.destroy();
         mEnhancedBookmarksModel = null;
     }

@@ -63,7 +63,7 @@ if (is_android) {
       "enhanced_bookmark_utils.h",
     ]
     outputs = [
-      "org/chromium/chrome/browser/enhanced_bookmarks/LaunchLocation.java",
+      "org/chromium/chrome/browser/enhancedbookmarks/LaunchLocation.java",
     ]
   }
 }

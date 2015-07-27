@@ -1367,8 +1367,6 @@
       'browser/android/offline_pages/offline_page_mhtml_archiver.h',
       'browser/android/offline_pages/offline_page_model_factory.cc',
       'browser/android/offline_pages/offline_page_model_factory.h',
-      'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',
-      'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.h',
     ],
     'chrome_browser_browser_process_sources': [
       'browser/browser_process.cc',
@@ -1722,7 +1720,6 @@
       'android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerTabUtils.java',
       'android/java/src/org/chromium/chrome/browser/download/ChromeDownloadDelegate.java',
-      'android/java/src/org/chromium/chrome/browser/enhanced_bookmarks/EnhancedBookmarksBridge.java',
       'android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java',
       'android/java/src/org/chromium/chrome/browser/favicon/LargeIconBridge.java',
       'android/java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java',

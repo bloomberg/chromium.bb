@@ -17,7 +17,6 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -116,7 +115,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this,
                 getString(R.string.enhanced_bookmark_action_bar_edit_folder));
         mModel = new EnhancedBookmarksModel();
-        mModel.addModelObserver(mBookmarkModelObserver);
+        mModel.addObserver(mBookmarkModelObserver);
         mIsAddMode = getIntent().getBooleanExtra(INTENT_IS_ADD_MODE, false);
         if (mIsAddMode) {
             List<String> stringList = getIntent().getStringArrayListExtra(
@@ -226,7 +225,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mModel.removeModelObserver(mBookmarkModelObserver);
+        mModel.removeObserver(mBookmarkModelObserver);
         mModel.destroy();
         mModel = null;
     }

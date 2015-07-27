@@ -72,14 +72,14 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
     @Override
     public void onEnhancedBookmarkDelegateInitialized(EnhancedBookmarkDelegate delegate) {
         mDelegate = delegate;
-        delegate.getModel().addModelObserver(mBookmarkModelObserver);
+        delegate.getModel().addObserver(mBookmarkModelObserver);
         mAdapter.setEnhancedBookmarkUIDelegate(delegate);
         delegate.addUIObserver(this);
     }
 
     @Override
     public void onDestroy() {
-        mDelegate.getModel().removeModelObserver(mBookmarkModelObserver);
+        mDelegate.getModel().removeObserver(mBookmarkModelObserver);
         mDelegate.removeUIObserver(this);
     }
 

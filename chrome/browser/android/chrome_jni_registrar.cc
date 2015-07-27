@@ -76,7 +76,6 @@
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
-#include "chrome/browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
@@ -215,8 +214,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DownloadOverwriteInfoBarDelegate",
      RegisterDownloadOverwriteInfoBarDelegate},
     {"EditBookmarkHelper", RegisterEditBookmarkHelper},
-    {"EnhancedBookmarksBridge",
-     enhanced_bookmarks::android::RegisterEnhancedBookmarksBridge},
     {"ExternalPrerenderRequestHandler",
      prerender::ExternalPrerenderHandlerAndroid::
          RegisterExternalPrerenderHandlerAndroid},

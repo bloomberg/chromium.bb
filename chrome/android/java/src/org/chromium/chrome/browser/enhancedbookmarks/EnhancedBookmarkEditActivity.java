@@ -15,7 +15,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlUtilities;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -75,7 +74,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
         mEnhancedBookmarksModel = new EnhancedBookmarksModel();
         mBookmarkId = BookmarkId.getBookmarkIdFromString(
                 getIntent().getStringExtra(INTENT_BOOKMARK_ID));
-        mEnhancedBookmarksModel.addModelObserver(mBookmarkModelObserver);
+        mEnhancedBookmarksModel.addObserver(mBookmarkModelObserver);
 
         setContentView(R.layout.eb_edit);
         mTitleEditText = (EmptyAlertEditText) findViewById(R.id.title_text);
@@ -143,7 +142,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     @Override
     protected void onDestroy() {
-        mEnhancedBookmarksModel.removeModelObserver(mBookmarkModelObserver);
+        mEnhancedBookmarksModel.removeObserver(mBookmarkModelObserver);
         mEnhancedBookmarksModel.destroy();
         mEnhancedBookmarksModel = null;
         super.onDestroy();

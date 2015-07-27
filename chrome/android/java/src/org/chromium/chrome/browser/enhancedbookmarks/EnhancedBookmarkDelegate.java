@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.support.v4.widget.DrawerLayout;
 
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
-import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;

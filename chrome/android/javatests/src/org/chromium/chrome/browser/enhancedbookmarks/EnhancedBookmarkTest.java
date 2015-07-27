@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtils;
@@ -71,14 +70,14 @@ public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActiv
             public void run() {
                 if (mBookmarkModel.isBookmarkModelLoaded()) loadedCallback.notifyCalled();
                 else {
-                    mBookmarkModel.addModelObserver(new BookmarkModelObserver() {
+                    mBookmarkModel.addObserver(new BookmarkModelObserver() {
                         @Override
                         public void bookmarkModelChanged() {}
 
                         @Override
                         public void bookmarkModelLoaded() {
                             loadedCallback.notifyCalled();
-                            mBookmarkModel.removeModelObserver(this);
+                            mBookmarkModel.removeObserver(this);
                         }
                     });
                 }

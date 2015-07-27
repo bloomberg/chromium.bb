@@ -9,8 +9,7 @@ import android.content.Context;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel.EnhancedBookmarkDeleteObserver;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.EnhancedBookmarkDeleteObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 

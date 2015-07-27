@@ -72,8 +72,8 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAServiceClient;
@@ -943,14 +943,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         EnhancedBookmarkUtils.startEditActivity(ChromeActivity.this,
                                 new BookmarkId(bookmarkId, BookmarkType.NORMAL));
                     }
-                    bookmarkModel.removeModelObserver(this);
+                    bookmarkModel.removeObserver(this);
                 }
             };
 
             if (bookmarkModel.isBookmarkModelLoaded()) {
                 modelObserver.bookmarkModelLoaded();
             } else {
-                bookmarkModel.addModelObserver(modelObserver);
+                bookmarkModel.addObserver(modelObserver);
             }
         } else {
             Intent intent = new Intent(this, ManageBookmarkActivity.class);

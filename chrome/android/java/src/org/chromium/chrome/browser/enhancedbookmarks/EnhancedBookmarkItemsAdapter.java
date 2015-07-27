@@ -86,7 +86,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     private int toSectionPosition(int globalPosition) {
         int sectionPosition = globalPosition;
-        for (List section : mSections) {
+        for (List<?> section : mSections) {
             if (sectionPosition < section.size()) break;
             sectionPosition -= section.size();
         }
@@ -151,7 +151,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     private void removeItem(int position) {
-        List section = getSection(position);
+        List<?> section = getSection(position);
         assert section == mFolderSection || section == mBookmarkSection;
         section.remove(toSectionPosition(position));
         notifyItemRemoved(position);
@@ -162,7 +162,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public int getItemCount() {
         int count = 0;
-        for (List section : mSections) {
+        for (List<?> section : mSections) {
             count += section.size();
         }
         return count;
@@ -170,7 +170,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public int getItemViewType(int position) {
-        List section = getSection(position);
+        List<?> section = getSection(position);
 
         if (section == mPromoHeaderSection) {
             return PROMO_HEADER_VIEW;
@@ -247,7 +247,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onEnhancedBookmarkDelegateInitialized(EnhancedBookmarkDelegate delegate) {
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
-        mDelegate.getModel().addModelObserver(mBookmarkModelObserver);
+        mDelegate.getModel().addObserver(mBookmarkModelObserver);
         mPromoHeaderManager = new EnhancedBookmarkPromoHeader(mContext, this);
         if (mPromoHeaderManager.shouldShow()) mPromoHeaderSection.add(null);
 
@@ -257,7 +257,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onDestroy() {
         mDelegate.removeUIObserver(this);
-        mDelegate.getModel().removeModelObserver(mBookmarkModelObserver);
+        mDelegate.getModel().removeObserver(mBookmarkModelObserver);
         mPromoHeaderManager.destroy();
     }
 

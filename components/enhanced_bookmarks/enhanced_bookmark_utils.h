@@ -20,7 +20,7 @@ namespace enhanced_bookmarks {
 // Please sync with the corresponding histograms.xml.
 //
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.enhanced_bookmarks
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.enhancedbookmarks
 enum LaunchLocation {
   ALL_ITEMS = 0,
   UNCATEGORIZED = 1,  // Deprecated.
