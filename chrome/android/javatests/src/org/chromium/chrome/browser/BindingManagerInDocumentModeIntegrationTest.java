@@ -12,15 +12,11 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
 import org.chromium.chrome.browser.document.DocumentTab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.BindingManager;
@@ -118,7 +114,6 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         tabIds[0] = launchViaViewIntent(false, URL_1, "Page 1");
         tabIds[1] = launchViaLaunchDocumentInstanceInBackground(false, URL_2, "Page 2");
 
-        final TabModel tabModel = selector.getCurrentModel();
         tabs[0] = selector.getTabById(tabIds[0]);
         tabs[1] = selector.getTabById(tabIds[1]);
 
@@ -139,25 +134,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
             }
         });
 
-        // Wait until the activity of tabs[1] is resumed.
-        assertTrue("Activity was not resumed.", CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // Switch to the tab that crashed in background.
-                // http://crbug.com/509866: TabModelUtils#setIndex() sometimes fails. So we need to
-                // call it repeatedly.
-                getInstrumentation().runOnMainSync(new Runnable() {
-                    @Override
-                    public void run() {
-                        TabModelUtils.setIndex(
-                                tabModel, TabModelUtils.getTabIndexById(tabModel, tabs[1].getId()));
-                    }
-                });
-
-                return ApplicationStatus.getStateForActivity(((DocumentTab) tabs[1]).getActivity())
-                        == ActivityState.RESUMED;
-            }
-        }));
+        switchToTab((DocumentTab) tabs[1]);
 
         // Verify that the renderer visibility was flipped.
         assertTrue("Renderer wasn't in background", CriteriaHelper.pollForCriteria(new Criteria() {

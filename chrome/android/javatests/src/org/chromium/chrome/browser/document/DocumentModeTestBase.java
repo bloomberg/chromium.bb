@@ -10,6 +10,7 @@ import android.os.Build;
 import android.view.ContextMenu;
 import android.view.View;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.MultiActivityTestBase;
@@ -275,5 +277,30 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         } else {
             ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
         }
+    }
+
+    /**
+     * Switches to the specified tab and waits until its activity is brought to the foreground.
+     */
+    protected void switchToTab(final DocumentTab tab) throws Exception {
+        final TabModel tabModel =
+                ChromeApplication.getDocumentTabModelSelector().getCurrentModel();
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                // http://crbug.com/509866: TabModelUtils#setIndex() sometimes fails.
+                // So we need to call it repeatedly.
+                getInstrumentation().runOnMainSync(new Runnable() {
+                    @Override
+                    public void run() {
+                        TabModelUtils.setIndex(tabModel,
+                                TabModelUtils.getTabIndexById(tabModel, tab.getId()));
+                    }
+                });
+
+                return ApplicationStatus.getStateForActivity(tab.getActivity())
+                        == ActivityState.RESUMED;
+            }
+        }));
     }
 }
