@@ -48262,6 +48262,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>HTTP response codes seen by Wallet client.</summary>
 </histogram>
 
+<histogram name="WebController.ExternalURLRequestBlocking"
+    enum="IOSExternalURLRequestStatus">
+  <owner>jyquinn@chromium.org</owner>
+  <summary>
+    [iOS] Measures the proportion of external URL requests that originate from a
+    subframe without any user interaction (e.g. an advertisement contains an
+    iframe directed at the App Store).
+  </summary>
+</histogram>
+
 <histogram name="WebCore.Animation.CSSProperties" enum="MappedCSSProperties">
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -60165,6 +60175,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="InvalidationNetworkChannel" type="int">
   <int value="0" label="PushClientChannel"/>
   <int value="1" label="GCMNetworkChannel"/>
+</enum>
+
+<enum name="IOSExternalURLRequestStatus" type="int">
+  <int value="0" label="MainFrameAllowed"/>
+  <int value="1" label="SubframeAllowed"/>
+  <int value="2" label="SubframeBlocked"/>
 </enum>
 
 <enum name="IPv6ConnectivityStatus" type="int">

@@ -131,6 +131,15 @@ namespace {
 // *very* clear that this is a hack which should only be used as a last resort.
 const NSUInteger kWebViewTag = 0x3eb71e3;
 
+// States for external URL requests. This enum is used in UMA and
+// entries should not be re-ordered or deleted.
+enum ExternalURLRequestStatus {
+  MAIN_FRAME_ALLOWED = 0,
+  SUBFRAME_ALLOWED,
+  SUBFRAME_BLOCKED,
+  NUM_EXTERNAL_URL_REQUEST_STATUS
+};
+
 // Cancels touch events for the given gesture recognizer.
 void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   if (gesture_recognizer.enabled) {
@@ -224,6 +233,8 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
   BOOL _clickInProgress;
   // Data on the recorded last user interaction.
   scoped_ptr<web::UserInteractionEvent> _lastUserInteraction;
+  // YES if there has been user interaction with views owned by this controller.
+  BOOL _userInteractedWithWebController;
   // The time of the last page transfer start, measured in seconds since Jan 1
   // 2001.
   CFAbsoluteTime _lastTransferTimeInSeconds;
@@ -301,10 +312,9 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // Internal implementation of reload. Reloads without notifying the delegate.
 // Most callers should use -reload instead.
 - (void)reloadInternal;
-// If YES, the page can be closed if the loading of the initial URL requires
-// it (for example when an external URL is detected). After the initial URL is
-// loaded, the page is not cancellable anymore.
-- (BOOL)cancellable;
+// If YES, the page should be closed if it successfully redirects to a native
+// application, for example if a new tab redirects to the App Store.
+- (BOOL)shouldClosePageOnNativeApplicationLoad;
 // Called after URL is finished loading and _loadPhase is set to PAGE_LOADED.
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess;
 // Informs the native controller if web usage is allowed or not.
@@ -411,6 +421,11 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // Returns YES if the url was succesfully opened in the native app.
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
                          sourceURL:(const GURL&)sourceURL;
+// Best guess as to whether the request is a main frame request. This method
+// should not be assumed correct for security evaluations, as it is possible to
+// spoof.
+- (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request
+                       targetFrame:(const web::FrameInfo*)targetFrame;
 // Returns whether external URL request should be opened.
 - (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
                          targetFrame:(const web::FrameInfo*)targetFrame;
@@ -1626,6 +1641,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 // Reload either the web view or the native content depending on which is
 // displayed.
 - (void)reloadInternal {
+  // Clear last user interaction.
+  // TODO(jyquinn): Move to after the load commits, in the subclass
+  // implementation. This will be inaccurate if the reload fails or is
+  // cancelled.
+  _lastUserInteraction.reset();
   web::RecordAction(UserMetricsAction("Reload"));
   if (self.webView) {
     // Just as we don't use the WebView native back and forward navigation
@@ -1911,9 +1931,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _jsInjectionReceiver;
 }
 
-- (BOOL)cancellable {
+- (BOOL)shouldClosePageOnNativeApplicationLoad {
+  // The page should be closed if it was initiated by the DOM and there has been
+  // no user interaction with the page since the web view was created.
   return self.sessionController.openedByDOM &&
-         !self.sessionController.lastCommittedEntry;
+         !_userInteractedWithWebController;
 }
 
 - (BOOL)isBeingDestroyed {
@@ -2755,7 +2777,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
 
-  BOOL shouldCheckNativeApp = [self cancellable];
+  BOOL shouldCheckNativeApp = [self shouldClosePageOnNativeApplicationLoad];
 
   // Check if the link navigation leads to a launch of an external app.
   // TODO(shreyasv): Change this such that handling/stealing of link navigations
@@ -2768,7 +2790,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // External app has been launched successfully. Stop the current page
       // load operation (e.g. notifying all observers) and record the URL so
       // that errors reported following the 'NO' reply can be safely ignored.
-      if ([self cancellable])
+      if ([self shouldClosePageOnNativeApplicationLoad])
         [_delegate webPageOrderedClose];
       [self abortLoad];
       [_openedApplicationURL addObject:request.URL];
@@ -2795,19 +2817,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return NO;
     }
 
-    // Abort load if navigation is hapenning on the main frame. If |targetFrame|
-    // is unknown use heuristic to guess the target frame by comparing
-    // documentURL and navigation URL. This heuristic may have false positives.
-    bool shouldAbortLoad = targetFrame ? targetFrame->is_main_frame
-                                       : requestURL == mainDocumentURL;
-    if (shouldAbortLoad)
+    // Abort load if navigation is believed to be happening on the main frame.
+    if ([self isPutativeMainFrameRequest:request targetFrame:targetFrame])
       [self abortLoad];
 
     if ([_delegate openExternalURL:requestURL]) {
       // Record the URL so that errors reported following the 'NO' reply can be
       // safely ignored.
       [_openedApplicationURL addObject:request.URL];
-      if ([self cancellable])
+      if ([self shouldClosePageOnNativeApplicationLoad])
         [_delegate webPageOrderedClose];
     }
     return NO;
@@ -3122,6 +3140,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _clickInProgress = touched;
   if (touched) {
     _userInteractionRegistered = YES;
+    _userInteractedWithWebController = YES;
     if (_isBeingDestroyed)
       return;
     const web::NavigationManagerImpl& navigationManager =
@@ -3638,35 +3657,47 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                       linkClicked:linkClicked];
 }
 
+- (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request
+                       targetFrame:(const web::FrameInfo*)targetFrame {
+  // Determine whether the request is for the main frame using frame info if
+  // available. In the case of missing frame info, the request is considered to
+  // have originated from the main frame if either of the following is true:
+  //   (a) The request's URL matches the request's main document URL
+  //   (b) The request's URL resourceSpecifier matches the request's
+  //       mainDocumentURL specifier, as is the case upon redirect from http
+  //       App Store links to a URL with itms-apps scheme. This appears to be is
+  //       App Store specific behavior, specially handled by web view.
+  // Note: These heuristics are not guaranteed to be correct, and should not be
+  // used for any decisions with security implications.
+  return targetFrame
+             ? targetFrame->is_main_frame
+             : [request.URL isEqual:request.mainDocumentURL] ||
+                   [request.URL.resourceSpecifier
+                       isEqual:request.mainDocumentURL.resourceSpecifier];
+}
+
 - (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
                          targetFrame:(const web::FrameInfo*)targetFrame {
-  // If targetFrame information is not provided, the request originated from the
-  // main frame if (a) the request's URL matches the request's main document URL
-  // or (b) if the current pending entry matches the request's main document
-  // URL, as this is a redirect from an in-progress main frame load.
-  BOOL isMainFrame = targetFrame
-                         ? targetFrame->is_main_frame
-                         : [request.URL isEqual:request.mainDocumentURL];
-  if (!targetFrame && !isMainFrame) {
-    web::NavigationItem* pendingItem =
-        [self webStateImpl]->GetNavigationManager()->GetPendingItem();
-    if (pendingItem) {
-      isMainFrame =
-          pendingItem->GetURL() == net::GURLWithNSURL(request.mainDocumentURL);
-    }
+  ExternalURLRequestStatus requestStatus = NUM_EXTERNAL_URL_REQUEST_STATUS;
+  if ([self isPutativeMainFrameRequest:request targetFrame:targetFrame]) {
+    requestStatus = MAIN_FRAME_ALLOWED;
+  } else {
+    // If the request's main document URL differs from that at the time of the
+    // last user interaction, then the page has changed since the user last
+    // interacted.
+    BOOL userInteractedWithRequestMainFrame =
+        _lastUserInteraction &&
+        net::GURLWithNSURL(request.mainDocumentURL) ==
+            _lastUserInteraction->main_document_url;
+    // Prevent subframe requests from opening an external URL if the user has
+    // not interacted with the request's main frame.
+    requestStatus = userInteractedWithRequestMainFrame ? SUBFRAME_ALLOWED
+                                                       : SUBFRAME_BLOCKED;
   }
-
-  // If the request's main document URL differs from that at the time of the
-  // last user interaction, then the page has changed since the user last
-  // interacted.
-  BOOL userHasInteractedWithCurrentPage =
-      _lastUserInteraction &&
-      net::GURLWithNSURL(request.mainDocumentURL) ==
-          _lastUserInteraction->main_document_url;
-
-  // Prevent subframe requests from opening an external URL if the user has not
-  // interacted with the page.
-  if (!isMainFrame && !userHasInteractedWithCurrentPage)
+  DCHECK_NE(requestStatus, NUM_EXTERNAL_URL_REQUEST_STATUS);
+  UMA_HISTOGRAM_ENUMERATION("WebController.ExternalURLRequestBlocking",
+                            requestStatus, NUM_EXTERNAL_URL_REQUEST_STATUS);
+  if (requestStatus == SUBFRAME_BLOCKED)
     return NO;
 
   GURL requestURL = net::GURLWithNSURL(request.URL);

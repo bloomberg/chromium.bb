@@ -12,7 +12,6 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
@@ -1297,9 +1296,9 @@ const size_t kMaxMessageQueueSize = 262144;
   // navigation has happened before the UIWebView is set here (ideally by
   // unifying the creation and setting flow).
   _spoofableRequest = YES;
-  _inJavaScriptContext = NO;
 
   if (webView) {
+    _inJavaScriptContext = NO;
     // Do initial injection even before loading another page, since the window
     // object is re-used.
     [self injectEarlyInjectionScripts];
