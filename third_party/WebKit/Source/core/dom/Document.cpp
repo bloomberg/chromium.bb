@@ -3030,8 +3030,10 @@ void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, 
 
 void Document::processHttpEquivAcceptCH(const AtomicString& content)
 {
-    if (frame())
+    if (frame()) {
+        UseCounter::count(frame()->document(), UseCounter::ClientHintsMetaAcceptCH);
         handleAcceptClientHintsHeader(content, m_clientHintsPreferences, fetcher());
+    }
 }
 
 void Document::processHttpEquivDefaultStyle(const AtomicString& content)
