@@ -1280,6 +1280,13 @@ qcms_transform* qcms_transform_create(
 		return result;
 	}
 
+	/* A matrix-based transform will be selected: check that the PCS
+	   of the input/output profiles are the same, crbug.com/5120682 */
+	if (in->pcs != out->pcs) {
+		qcms_transform_release(transform);
+		return NULL;
+	}
+
 	if (precache) {
 		transform->output_table_r = precache_reference(out->output_table_r);
 		transform->output_table_g = precache_reference(out->output_table_g);
