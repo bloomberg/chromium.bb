@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/renderer/logging_native_handler.h"
-
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "extensions/renderer/logging_native_handler.h"
+#include "extensions/renderer/script_context.h"
 
 namespace extensions {
 
@@ -72,31 +72,7 @@ void LoggingNativeHandler::ParseArgs(
     *error_message = "Error: " + std::string(*v8::String::Utf8Value(args[1]));
   }
 
-  v8::Local<v8::StackTrace> stack_trace =
-      v8::StackTrace::CurrentStackTrace(args.GetIsolate(), 10);
-  if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
-    *error_message += "\n    <no stack trace>";
-  } else {
-    for (size_t i = 0; i < (size_t)stack_trace->GetFrameCount(); ++i) {
-      v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(i);
-      CHECK(!frame.IsEmpty());
-      *error_message += base::StringPrintf(
-          "\n    at %s (%s:%d:%d)",
-          ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
-          ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
-          frame->GetLineNumber(),
-          frame->GetColumn());
-    }
-  }
-}
-
-std::string LoggingNativeHandler::ToStringOrDefault(
-    const v8::Local<v8::String>& v8_string,
-    const std::string& dflt) {
-  if (v8_string.IsEmpty())
-    return dflt;
-  std::string ascii_value = *v8::String::Utf8Value(v8_string);
-  return ascii_value.empty() ? dflt : ascii_value;
+  *error_message += "\n" + context()->GetStackTraceAsString();
 }
 
 }  // namespace extensions

@@ -5,7 +5,7 @@
 var allTests = [
   function testTreeChangedObserverForCreatingNode() {
     chrome.automation.addTreeChangeObserver(function(change) {
-      if (change.type == "nodeCreated" && change.target.name == "New") {
+      if (change.type == "subtreeCreated" && change.target.name == "New") {
         chrome.test.succeed();
       }
     });
