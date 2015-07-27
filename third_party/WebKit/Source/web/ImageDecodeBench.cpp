@@ -273,8 +273,8 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 bool decodeImageData(SharedBuffer* data, bool colorCorrection)
 {
     OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data,
-        ImageSource::AlphaPremultiplied, colorCorrection ?
-            ImageSource::GammaAndColorProfileApplied : ImageSource::GammaAndColorProfileIgnored);
+        ImageDecoder::AlphaPremultiplied, colorCorrection ?
+            ImageDecoder::GammaAndColorProfileApplied : ImageDecoder::GammaAndColorProfileIgnored);
 
     bool allDataReceived = true;
     decoder->setData(data, allDataReceived);

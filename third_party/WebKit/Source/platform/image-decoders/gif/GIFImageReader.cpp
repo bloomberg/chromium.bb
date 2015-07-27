@@ -76,7 +76,6 @@ mailing address.
 #include "platform/image-decoders/gif/GIFImageReader.h"
 
 #include <string.h>
-#include "platform/graphics/ImageSource.h"
 
 using blink::GIFImageDecoder;
 
