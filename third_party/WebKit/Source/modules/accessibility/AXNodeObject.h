@@ -66,7 +66,7 @@ protected:
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;
     String ariaAutoComplete() const;
-    void ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
+    void ariaLabelledbyElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
     AccessibilityRole determineAriaRoleAttribute() const;
     void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
     void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
@@ -157,7 +157,7 @@ protected:
 
     // ARIA attributes.
     String ariaDescribedByAttribute() const final;
-    String ariaLabeledByAttribute() const final;
+    String ariaLabelledbyAttribute() const final;
     AccessibilityRole ariaRoleAttribute() const final;
 
     // Accessibility Text.
@@ -214,7 +214,7 @@ private:
 
     String alternativeTextForWebArea() const;
     void alternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
-    void ariaLabeledByText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
+    void ariaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;

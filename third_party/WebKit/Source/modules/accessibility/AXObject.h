@@ -668,7 +668,7 @@ public:
     virtual bool ariaHasPopup() const { return false; }
     bool isMultiline() const;
     virtual bool isRichlyEditable() const { return false; }
-    virtual String ariaLabeledByAttribute() const { return String(); }
+    virtual String ariaLabelledbyAttribute() const { return String(); }
     bool ariaPressedIsPresent() const;
     virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
     virtual bool ariaRoleHasPresentationalChildren() const { return false; }

@@ -139,9 +139,9 @@ void AXNodeObject::alterSliderValue(bool increase)
 
 String AXNodeObject::ariaAccessibilityDescription() const
 {
-    String ariaLabeledBy = ariaLabeledByAttribute();
-    if (!ariaLabeledBy.isEmpty())
-        return ariaLabeledBy;
+    String ariaLabelledby = ariaLabelledbyAttribute();
+    if (!ariaLabelledby.isEmpty())
+        return ariaLabelledby;
 
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
     if (!ariaLabel.isEmpty())
@@ -151,11 +151,11 @@ String AXNodeObject::ariaAccessibilityDescription() const
 }
 
 
-void AXNodeObject::ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
+void AXNodeObject::ariaLabelledbyElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
 {
-    elementsFromAttribute(elements, aria_labeledbyAttr);
+    elementsFromAttribute(elements, aria_labelledbyAttr);
     if (!elements.size())
-        elementsFromAttribute(elements, aria_labelledbyAttr);
+        elementsFromAttribute(elements, aria_labeledbyAttr);
 }
 
 bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
@@ -1138,9 +1138,9 @@ bool AXNodeObject::deprecatedExposesTitleUIElement() const
     if (accessibilityIsIgnored())
         return true;
 
-    // ARIA: section 2A, bullet #3 says if aria-labeledby or aria-label appears, it should
+    // ARIA: section 2A, bullet #3 says if aria-labelledby or aria-label appears, it should
     // override the "label" element association.
-    bool hasTextAlternative = (!ariaLabeledByAttribute().isEmpty() || !getAttribute(aria_labelAttr).isEmpty());
+    bool hasTextAlternative = (!ariaLabelledbyAttribute().isEmpty() || !getAttribute(aria_labelAttr).isEmpty());
 
     // Checkboxes and radio buttons use the text of their title ui element as their own AXTitle.
     // This code controls whether the title ui element should appear in the AX tree (usually, no).
@@ -1483,10 +1483,10 @@ String AXNodeObject::ariaDescribedByAttribute() const
     return accessibilityDescriptionForElements(elements);
 }
 
-String AXNodeObject::ariaLabeledByAttribute() const
+String AXNodeObject::ariaLabelledbyAttribute() const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-    ariaLabeledByElements(elements);
+    ariaLabelledbyElements(elements);
 
     return accessibilityDescriptionForElements(elements);
 }
@@ -1796,7 +1796,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         if (nameFrom)
             *nameFrom = AXNameFromRelatedElement;
         WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-        ariaLabeledByElements(elements);
+        ariaLabelledbyElements(elements);
         StringBuilder accumulatedText;
         for (const auto& element : elements) {
             RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
@@ -2332,7 +2332,7 @@ void AXNodeObject::alternativeText(WillBeHeapVector<OwnPtrWillBeMember<Accessibi
         return;
     }
 
-    ariaLabeledByText(textOrder);
+    ariaLabelledbyText(textOrder);
 
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
     if (!ariaLabel.isEmpty())
@@ -2347,16 +2347,16 @@ void AXNodeObject::alternativeText(WillBeHeapVector<OwnPtrWillBeMember<Accessibi
     }
 }
 
-void AXNodeObject::ariaLabeledByText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>& textOrder) const
+void AXNodeObject::ariaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>& textOrder) const
 {
-    String ariaLabeledBy = ariaLabeledByAttribute();
-    if (!ariaLabeledBy.isEmpty()) {
+    String ariaLabelledby = ariaLabelledbyAttribute();
+    if (!ariaLabelledby.isEmpty()) {
         WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-        ariaLabeledByElements(elements);
+        ariaLabelledbyElements(elements);
 
         for (const auto& element : elements) {
             RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
-            textOrder.append(AccessibilityText::create(ariaLabeledBy, AlternativeText, axElement));
+            textOrder.append(AccessibilityText::create(ariaLabelledby, AlternativeText, axElement));
         }
     }
 }
