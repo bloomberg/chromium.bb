@@ -75,8 +75,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
     // Set the first display to be the internal display for the accelerometer
     // screen rotation tests.
-    test::DisplayManagerTestApi(Shell::GetInstance()->display_manager()).
-        SetFirstDisplayAsInternalDisplay();
+    test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   }
 
   void TearDown() override {

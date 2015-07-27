@@ -300,7 +300,7 @@ void HandleScaleReset() {
   base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Reset"));
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   int64 display_id = display_manager->GetDisplayIdForUIScaling();
-  display_manager->SetDisplayUIScale(display_id, 1.0f);
+  SetDisplayUIScale(display_id, 1.0f);
 }
 
 bool CanHandleScaleUI() {
@@ -311,15 +311,15 @@ void HandleScaleUI(bool up) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   int64 display_id = display_manager->GetDisplayIdForUIScaling();
 
-  if (up) {
+  if (up)
     base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Up"));
-  } else {
+  else
     base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Down"));
-  }
 
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
-  float next_scale = GetNextUIScale(display_info, up);
-  display_manager->SetDisplayUIScale(display_id, next_scale);
+  DisplayMode mode;
+  if (GetDisplayModeForNextUIScale(display_info, up, &mode))
+    display_manager->SetDisplayMode(display_id, mode);
 }
 
 void HandleShowKeyboardOverlay() {

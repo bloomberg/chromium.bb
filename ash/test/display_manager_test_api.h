@@ -13,6 +13,7 @@
 
 namespace gfx {
 class Point;
+class Size;
 }
 
 namespace ui {
@@ -35,7 +36,7 @@ class DisplayManagerTestApi {
 
   static void EnableUnifiedDesktopForTest();
 
-  explicit DisplayManagerTestApi(DisplayManager* display_manager);
+  DisplayManagerTestApi();
   virtual ~DisplayManagerTestApi();
 
   // Update the display configuration as given in |display_specs|. The format of
@@ -48,10 +49,6 @@ class DisplayManagerTestApi {
   // the internal display.
   int64 SetFirstDisplayAsInternalDisplay();
 
-  // Sets the display id for internal display and
-  // update the display mode list if necessary.
-  void SetInternalDisplayId(int64 id);
-
   // Don't update the display when the root window's size was changed.
   void DisableChangeDisplayUponHostResize();
 
@@ -61,6 +58,11 @@ class DisplayManagerTestApi {
       const std::vector<ui::ColorCalibrationProfile>& profiles);
 
  private:
+  friend class ScopedSetInternalDisplayId;
+  // Sets the display id for internal display and
+  // update the display mode list if necessary.
+  void SetInternalDisplayId(int64 id);
+
   DisplayManager* display_manager_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTestApi);
@@ -74,6 +76,18 @@ class ScopedDisable125DSFForUIScaling {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedDisable125DSFForUIScaling);
 };
+
+class ScopedSetInternalDisplayId {
+ public:
+  ScopedSetInternalDisplayId(int64 id);
+  ~ScopedSetInternalDisplayId();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetInternalDisplayId);
+};
+
+// Sets the display mode that matches the |resolution| for |display_id|.
+bool SetDisplayResolution(int64 display_id, const gfx::Size& resolution);
 
 }  // namespace test
 }  // namespace ash

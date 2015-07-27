@@ -224,10 +224,7 @@ bool AshTestBase::SupportsHostWindowResize() {
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayManagerTestApi display_manager_test_api(display_manager);
-  display_manager_test_api.UpdateDisplay(display_specs);
-  display_manager->RunPendingTasksForTest();
+  DisplayManagerTestApi().UpdateDisplay(display_specs);
 }
 
 aura::Window* AshTestBase::CurrentContext() {

@@ -64,11 +64,7 @@ class DisplayNotificationsTest : public InProcessBrowserTest {
   void SetUp() override { InProcessBrowserTest::SetUp(); }
 
   void UpdateDisplay(const std::string& display_specs) {
-    ash::DisplayManager* display_manager =
-        ash::Shell::GetInstance()->display_manager();
-    ash::test::DisplayManagerTestApi display_manager_test_api(display_manager);
-    display_manager_test_api.UpdateDisplay(display_specs);
-    display_manager->RunPendingTasksForTest();
+    ash::test::DisplayManagerTestApi().UpdateDisplay(display_specs);
   }
 
   message_center::NotificationList::Notifications GetVisibleNotifications()

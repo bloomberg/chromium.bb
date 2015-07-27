@@ -31,8 +31,8 @@ class TouchHudTestBase : public test::AshTestBase {
 
     // Initialize display infos. They should be initialized after Ash
     // environment is set up, i.e., after test::AshTestBase::SetUp().
-    internal_display_id_ = test::DisplayManagerTestApi(GetDisplayManager()).
-        SetFirstDisplayAsInternalDisplay();
+    internal_display_id_ =
+        test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
     external_display_id_ = 10;
     mirrored_display_id_ = 11;
 

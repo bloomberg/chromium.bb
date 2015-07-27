@@ -11,6 +11,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -244,8 +245,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  ash::test::DisplayManagerTestApi test_api(display_manager);
-  test_api.SetInternalDisplayId(id1);
+  ash::test::ScopedSetInternalDisplayId set_internal(id1);
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
@@ -255,7 +255,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   profiles.push_back(ui::COLOR_PROFILE_MOVIE);
   profiles.push_back(ui::COLOR_PROFILE_READING);
   // Allows only |id1|.
-  test_api.SetAvailableColorProfiles(id1, profiles);
+  ash::test::DisplayManagerTestApi().SetAvailableColorProfiles(id1, profiles);
   display_manager->SetColorCalibrationProfile(id1, ui::COLOR_PROFILE_DYNAMIC);
   display_manager->SetColorCalibrationProfile(id2, ui::COLOR_PROFILE_DYNAMIC);
 
@@ -271,8 +271,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   display_controller->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90,
                                       gfx::Display::ROTATION_SOURCE_USER);
-  EXPECT_TRUE(display_manager->SetDisplayUIScale(id1, 1.25f));
-  EXPECT_FALSE(display_manager->SetDisplayUIScale(id2, 1.25f));
+  EXPECT_TRUE(ash::SetDisplayUIScale(id1, 1.25f));
+  EXPECT_FALSE(ash::SetDisplayUIScale(id2, 1.25f));
 
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
@@ -572,8 +572,7 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
   profiles.push_back(ui::COLOR_PROFILE_DYNAMIC);
   profiles.push_back(ui::COLOR_PROFILE_MOVIE);
   profiles.push_back(ui::COLOR_PROFILE_READING);
-  ash::test::DisplayManagerTestApi test_api(display_manager);
-  test_api.SetAvailableColorProfiles(id1, profiles);
+  ash::test::DisplayManagerTestApi().SetAvailableColorProfiles(id1, profiles);
 
   LoadDisplayPreferences(false);
   EXPECT_EQ(ui::COLOR_PROFILE_DYNAMIC,
@@ -583,19 +582,18 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
 TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
-  ash::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200*2,200x200");
 
   LoggedInAsGuest();
   int64 id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
-  ash::test::DisplayManagerTestApi(display_manager)
-      .SetInternalDisplayId(id1);
+  ash::test::ScopedSetInternalDisplayId set_internal(id1);
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
   SetCurrentDisplayLayout(layout);
-  display_manager->SetDisplayUIScale(id1, 1.25f);
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  ash::SetDisplayUIScale(id1, 1.25f);
   display_controller->SetPrimaryDisplayId(id2);
   int64 new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   display_controller->SetOverscanInsets(
@@ -910,7 +908,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   int ui_scale = 0;
   EXPECT_FALSE(new_value->GetInteger("ui-scale", &ui_scale));
 
-  display_manager->SetDisplayUIScale(unified_id, 0.5f);
+  ash::SetDisplayUIScale(unified_id, 0.5f);
   EXPECT_EQ(
       "200x100",
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().size().ToString());

@@ -13,7 +13,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -284,9 +283,7 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
   if (!SupportsMultipleDisplays())
     return;
 
-  test::DisplayManagerTestApi display_manager_test_api(
-      Shell::GetInstance()->display_manager());
-  display_manager_test_api.UpdateDisplay("320x200");
+  UpdateDisplay("320x200");
 
   gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
 

@@ -163,15 +163,6 @@ class ASH_EXPORT DisplayManager
                           gfx::Display::Rotation rotation,
                           gfx::Display::RotationSource source);
 
-  // Sets the display's ui scale. Returns true if it's successful, or
-  // false otherwise.  TODO(mukai): remove this and merge into
-  // SetDisplayMode.
-  bool SetDisplayUIScale(int64 display_id, float ui_scale);
-
-  // Sets the display's resolution.
-  // TODO(mukai): remove this and merge into SetDisplayMode.
-  void SetDisplayResolution(int64 display_id, const gfx::Size& resolution);
-
   // Sets the external display's configuration, including resolution change,
   // ui-scale change, and device scale factor change. Returns true if it changes
   // the display resolution so that the caller needs to show a notification in
@@ -351,6 +342,10 @@ private:
   void set_change_display_upon_host_resize(bool value) {
     change_display_upon_host_resize_ = value;
   }
+  // Sets the display's ui scale. Returns true if it's successful, or
+  // false otherwise.  TODO(mukai): remove this and merge into
+  // SetDisplayMode.
+  bool SetDisplayUIScale(int64 display_id, float ui_scale);
 
   // Creates software mirroring display related information. The display
   // used to mirror the content is removed from the |display_info_list|.

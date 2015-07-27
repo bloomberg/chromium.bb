@@ -107,8 +107,8 @@ void DisplayManagerTestApi::EnableUnifiedDesktopForTest() {
 #endif
 }
 
-DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
-    : display_manager_(display_manager) {}
+DisplayManagerTestApi::DisplayManagerTestApi()
+    : display_manager_(Shell::GetInstance()->display_manager()) {}
 
 DisplayManagerTestApi::~DisplayManagerTestApi() {}
 
@@ -145,6 +145,7 @@ void DisplayManagerTestApi::UpdateDisplay(
 
   display_manager_->OnNativeDisplaysChanged(display_info_list);
   display_manager_->UpdateInternalDisplayModeListForTest();
+  display_manager_->RunPendingTasksForTest();
 }
 
 int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
@@ -175,6 +176,23 @@ ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {
 
 ScopedDisable125DSFForUIScaling::~ScopedDisable125DSFForUIScaling() {
   DisplayInfo::SetUse125DSFForUIScalingForTest(true);
+}
+
+ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(int64 id) {
+  DisplayManagerTestApi().SetInternalDisplayId(id);
+}
+
+ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
+  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+}
+
+bool SetDisplayResolution(int64 display_id, const gfx::Size& resolution) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  const DisplayInfo& info = display_manager->GetDisplayInfo(display_id);
+  DisplayMode mode;
+  if (!GetDisplayModeForResolution(info, resolution, &mode))
+    return false;
+  return display_manager->SetDisplayMode(display_id, mode);
 }
 
 }  // namespace test

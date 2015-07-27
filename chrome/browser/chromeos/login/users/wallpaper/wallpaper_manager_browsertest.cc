@@ -87,9 +87,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   // Update the display configuration as given in |display_specs|.  See
   // ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs) {
-    ash::test::DisplayManagerTestApi display_manager_test_api(
-        ash::Shell::GetInstance()->display_manager());
-    display_manager_test_api.UpdateDisplay(display_specs);
+    ash::test::DisplayManagerTestApi().UpdateDisplay(display_specs);
   }
 
   void WaitAsyncWallpaperLoadStarted() {

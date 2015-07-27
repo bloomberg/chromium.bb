@@ -218,13 +218,11 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::GetInstance();
   DisplayController* display_controller = shell->display_controller();
-  DisplayManager* display_manager = shell->display_manager();
 
   UpdateDisplay("400x400*2/r,400x400");
   int64 primary_display_id = display_controller->GetPrimaryDisplayId();
   int64 secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
-  test::DisplayManagerTestApi(display_manager)
-      .SetInternalDisplayId(primary_display_id);
+  test::ScopedSetInternalDisplayId set_internal(primary_display_id);
 
   // Chrome uses the internal display as the source display for software mirror
   // mode. Move the cursor to the external display.
@@ -236,7 +234,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(gfx::Display::ROTATE_0, cursor_test_api.GetCurrentCursorRotation());
 
-  display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  shell->display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400*2/r,400x400");
 
   // Entering mirror mode should have centered the cursor on the primary display
@@ -278,8 +276,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager).
-      SetFirstDisplayAsInternalDisplay();
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
 
   EXPECT_EQ(1U, display_manager->GetNumDisplays());

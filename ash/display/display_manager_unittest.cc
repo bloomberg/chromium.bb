@@ -480,8 +480,7 @@ DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
 
 TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager()).
-      SetFirstDisplayAsInternalDisplay();
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   const int external_id = 10;
   const int mirror_id = 11;
   const int64 invalid_id = gfx::Display::kInvalidDisplayID;
@@ -708,8 +707,7 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
     return;
 
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager()).
-      SetFirstDisplayAsInternalDisplay();
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   const DisplayInfo native_display_info =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
   const DisplayInfo secondary_display_info =
@@ -765,14 +763,14 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 
   // Unsupported resolution.
-  display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 4000));
+  test::SetDisplayResolution(display_id, gfx::Size(800, 4000));
   EXPECT_FALSE(
       display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
 
   // Supported resolution.
-  display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
+  test::SetDisplayResolution(display_id, gfx::Size(800, 300));
   EXPECT_TRUE(
       display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
   EXPECT_EQ("800x300", mode.size.ToString());
@@ -783,7 +781,7 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 
   // Best resolution.
-  display_manager()->SetDisplayResolution(display_id, gfx::Size(1000, 500));
+  test::SetDisplayResolution(display_id, gfx::Size(1000, 500));
   EXPECT_TRUE(
       display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
   EXPECT_EQ("1000x500", mode.size.ToString());
@@ -813,7 +811,7 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
   display_info_list.push_back(native_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   {
-    display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
+    test::SetDisplayResolution(display_id, gfx::Size(800, 300));
     DisplayInfo new_native_display_info =
         CreateDisplayInfo(display_id, gfx::Rect(0, 0, 400, 500));
     copy = display_modes;
@@ -831,7 +829,7 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
   }
   {
     // Best resolution should find itself on the resolutions list.
-    display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
+    test::SetDisplayResolution(display_id, gfx::Size(800, 300));
     DisplayInfo new_native_display_info =
         CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
     std::vector<DisplayMode> copy = display_modes;
@@ -909,8 +907,7 @@ TEST_F(DisplayManagerTest, Rotate) {
   // set rotations should be applied.
   UpdateDisplay("200x200, 200x200");
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager())
-          .SetFirstDisplayAsInternalDisplay();
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
   display_manager()->SetDisplayRotation(internal_display_id,
                                         gfx::Display::ROTATE_90,
@@ -946,79 +943,78 @@ TEST_F(DisplayManagerTest, UIScale) {
 
   UpdateDisplay("1280x800");
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
-  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  SetDisplayUIScale(display_id, 1.125f);
   EXPECT_EQ(1.0, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  SetDisplayUIScale(display_id, 0.8f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.75f);
+  SetDisplayUIScale(display_id, 0.75f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  SetDisplayUIScale(display_id, 0.625f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
 
-  test::DisplayManagerTestApi(display_manager())
-      .SetInternalDisplayId(display_id);
+  test::ScopedSetInternalDisplayId set_internal(display_id);
 
-  display_manager()->SetDisplayUIScale(display_id, 1.5f);
+  SetDisplayUIScale(display_id, 1.5f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  SetDisplayUIScale(display_id, 1.25f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  SetDisplayUIScale(display_id, 1.125f);
   EXPECT_EQ(1.125f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  SetDisplayUIScale(display_id, 0.8f);
   EXPECT_EQ(0.8f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.75f);
+  SetDisplayUIScale(display_id, 0.75f);
   EXPECT_EQ(0.8f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  SetDisplayUIScale(display_id, 0.625f);
   EXPECT_EQ(0.625f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.6f);
+  SetDisplayUIScale(display_id, 0.6f);
   EXPECT_EQ(0.625f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(0.5f, GetDisplayInfoAt(0).configured_ui_scale());
 
   UpdateDisplay("1366x768");
-  display_manager()->SetDisplayUIScale(display_id, 1.5f);
+  SetDisplayUIScale(display_id, 1.5f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  SetDisplayUIScale(display_id, 1.25f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  SetDisplayUIScale(display_id, 1.125f);
   EXPECT_EQ(1.125f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  SetDisplayUIScale(display_id, 0.8f);
   EXPECT_EQ(1.125f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.75f);
+  SetDisplayUIScale(display_id, 0.75f);
   EXPECT_EQ(0.75f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.6f);
+  SetDisplayUIScale(display_id, 0.6f);
   EXPECT_EQ(0.6f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  SetDisplayUIScale(display_id, 0.625f);
   EXPECT_EQ(0.6f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(0.5f, GetDisplayInfoAt(0).configured_ui_scale());
 
   UpdateDisplay("1280x850*2");
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.5f);
+  SetDisplayUIScale(display_id, 1.5f);
   EXPECT_EQ(1.5f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  SetDisplayUIScale(display_id, 1.25f);
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  SetDisplayUIScale(display_id, 1.125f);
   EXPECT_EQ(1.125f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 1.0f);
+  SetDisplayUIScale(display_id, 1.0f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
   gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(2.0f, display.device_scale_factor());
   EXPECT_EQ("640x425", display.bounds().size().ToString());
 
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  SetDisplayUIScale(display_id, 0.8f);
   EXPECT_EQ(0.8f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.75f);
+  SetDisplayUIScale(display_id, 0.75f);
   EXPECT_EQ(0.8f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  SetDisplayUIScale(display_id, 0.625f);
   EXPECT_EQ(0.625f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.6f);
+  SetDisplayUIScale(display_id, 0.6f);
   EXPECT_EQ(0.625f, GetDisplayInfoAt(0).configured_ui_scale());
-  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(0.5f, GetDisplayInfoAt(0).configured_ui_scale());
 
-  display_manager()->SetDisplayUIScale(display_id, 2.0f);
+  SetDisplayUIScale(display_id, 2.0f);
   EXPECT_EQ(2.0f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -1028,7 +1024,7 @@ TEST_F(DisplayManagerTest, UIScale) {
   // 1.25 ui scaling on 1.25 DSF device should use 1.0 DSF
   // on screen.
   UpdateDisplay("1280x850*1.25");
-  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  SetDisplayUIScale(display_id, 1.25f);
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -1055,58 +1051,40 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
 
-  display_manager()->SetDisplayUIScale(display_id, 1.125f);
-  EXPECT_EQ(1.0, GetDisplayInfoAt(0).configured_ui_scale());
-  EXPECT_TRUE(expected_mode.IsEquivalent(
-      display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
-  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  EXPECT_TRUE(expected_mode.IsEquivalent(
-      display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.75f);
-  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  EXPECT_TRUE(expected_mode.IsEquivalent(
-      display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.625f);
-  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
-  EXPECT_TRUE(expected_mode.IsEquivalent(
-      display_manager()->GetActiveModeForDisplayId(display_id)));
+  test::ScopedSetInternalDisplayId set_internal(display_id);
 
-  test::DisplayManagerTestApi(display_manager())
-      .SetInternalDisplayId(display_id);
-
-  display_manager()->SetDisplayUIScale(display_id, 1.5f);
+  SetDisplayUIScale(display_id, 1.5f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  SetDisplayUIScale(display_id, 1.25f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  SetDisplayUIScale(display_id, 1.125f);
   EXPECT_EQ(1.125f, GetDisplayInfoAt(0).configured_ui_scale());
   expected_mode.ui_scale = 1.125f;
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  SetDisplayUIScale(display_id, 0.8f);
   EXPECT_EQ(0.8f, GetDisplayInfoAt(0).configured_ui_scale());
   expected_mode.ui_scale = 0.8f;
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.75f);
+  SetDisplayUIScale(display_id, 0.75f);
   EXPECT_EQ(0.8f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.625f);
+  SetDisplayUIScale(display_id, 0.625f);
   EXPECT_EQ(0.625f, GetDisplayInfoAt(0).configured_ui_scale());
   expected_mode.ui_scale = 0.625f;
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.6f);
+  SetDisplayUIScale(display_id, 0.6f);
   EXPECT_EQ(0.625f, GetDisplayInfoAt(0).configured_ui_scale());
   EXPECT_TRUE(expected_mode.IsEquivalent(
       display_manager()->GetActiveModeForDisplayId(display_id)));
-  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(0.5f, GetDisplayInfoAt(0).configured_ui_scale());
   expected_mode.ui_scale = 0.5f;
   EXPECT_TRUE(expected_mode.IsEquivalent(
@@ -1115,24 +1093,23 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
 
 TEST_F(DisplayManagerTest, Use125DSFForUIScaling) {
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
-  test::DisplayManagerTestApi(display_manager())
-      .SetInternalDisplayId(display_id);
+  test::ScopedSetInternalDisplayId set_internal(display_id);
 
   UpdateDisplay("1920x1080*1.25");
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
 
-  display_manager()->SetDisplayUIScale(display_id, 0.8f);
+  SetDisplayUIScale(display_id, 0.8f);
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   EXPECT_EQ("1536x864", GetDisplayForId(display_id).size().ToString());
 
-  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(0.5f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   EXPECT_EQ("960x540", GetDisplayForId(display_id).size().ToString());
 
-  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  SetDisplayUIScale(display_id, 1.25f);
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveUIScale());
   EXPECT_EQ("2400x1350", GetDisplayForId(display_id).size().ToString());
@@ -1159,7 +1136,7 @@ TEST_F(DisplayManagerTest, UIScaleInUnifiedMode) {
   EXPECT_EQ(1.0f, active_mode.ui_scale);
   EXPECT_EQ("800x400", active_mode.size.ToString());
 
-  EXPECT_TRUE(display_manager->SetDisplayUIScale(unified_id, 0.5f));
+  EXPECT_TRUE(SetDisplayUIScale(unified_id, 0.5f));
   EXPECT_EQ("400x200",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
   active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
@@ -1738,8 +1715,7 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200Internal) {
   EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
   EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(
-      Shell::GetScreen()->GetPrimaryDisplay().id(), 2.0f);
+  SetDisplayUIScale(Shell::GetScreen()->GetPrimaryDisplay().id(), 2.0f);
 
   ASSERT_DOUBLE_EQ(
       1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
@@ -1779,8 +1755,7 @@ TEST_F(DisplayManagerFontTest,
   EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
   EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(
-      Shell::GetScreen()->GetPrimaryDisplay().id(), 0.8f);
+  SetDisplayUIScale(Shell::GetScreen()->GetPrimaryDisplay().id(), 0.8f);
 
   ASSERT_DOUBLE_EQ(
       1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());

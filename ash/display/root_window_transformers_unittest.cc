@@ -6,6 +6,7 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/screen_util.h"
@@ -243,8 +244,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   UpdateDisplay("600x400*2@1.5,500x300");
 
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
-  test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
-      .SetInternalDisplayId(display1.id());
+  test::ScopedSetInternalDisplayId set_internal(display1.id());
   gfx::Display display2 = ScreenUtil::GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   MagnificationController* magnifier =
@@ -263,8 +263,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
   magnifier->SetEnabled(false);
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetDisplayUIScale(display1.id(), 1.25);
+  SetDisplayUIScale(display1.id(), 1.25f);
   display1 = Shell::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenUtil::GetSecondaryDisplay();
   magnifier->SetEnabled(true);

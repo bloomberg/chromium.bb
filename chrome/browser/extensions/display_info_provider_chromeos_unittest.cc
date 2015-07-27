@@ -944,8 +944,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
   UpdateDisplay("1200x600,600x1000*2");
   const int64 internal_display_id =
-      ash::test::DisplayManagerTestApi(GetDisplayManager())
-          .SetFirstDisplayAsInternalDisplay();
+      ash::test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
   api::system_display::DisplayProperties info;
   info.overscan.reset(new api::system_display::Insets);

@@ -8,6 +8,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -567,8 +568,7 @@ TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager).
-      SetFirstDisplayAsInternalDisplay();
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(1, internal_display_id);
   EXPECT_EQ(2U, display_manager->num_connected_displays());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
@@ -676,22 +676,21 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
 
   // UI scale is eanbled only on internal display.
   int64 secondary_id = GetSecondaryDisplay().id();
-  test::DisplayManagerTestApi(display_manager)
-      .SetInternalDisplayId(secondary_id);
+  test::ScopedSetInternalDisplayId set_internal(secondary_id);
 
-  display_manager->SetDisplayUIScale(secondary_id, 1.125f);
+  SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager->SetDisplayUIScale(secondary_id, 1.125f);
+  SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager->SetDisplayUIScale(primary_id, 1.125f);
+  SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager->SetDisplayUIScale(primary_id, 1.125f);
+  SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -1086,10 +1085,8 @@ TEST_F(DisplayControllerTest, ScaleRootWindow) {
 
   UpdateDisplay("600x400*2@1.5,500x300");
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
-  test::DisplayManagerTestApi(display_manager)
-      .SetInternalDisplayId(display1.id());
+  test::ScopedSetInternalDisplayId set_internal(display1.id());
 
   gfx::Display display2 = ScreenUtil::GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -1103,7 +1100,7 @@ TEST_F(DisplayControllerTest, ScaleRootWindow) {
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
-  display_manager->SetDisplayUIScale(display1.id(), 1.25f);
+  SetDisplayUIScale(display1.id(), 1.25f);
   display1 = Shell::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenUtil::GetSecondaryDisplay();
   EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
@@ -1228,8 +1225,7 @@ TEST_F(DisplayControllerTest, DockToSingle) {
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager).
-      SetFirstDisplayAsInternalDisplay();
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
 

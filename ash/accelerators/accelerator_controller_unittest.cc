@@ -223,8 +223,7 @@ class AcceleratorControllerTest : public test::AshTestBase {
 
  protected:
   void EnableInternalDisplay() {
-    test::DisplayManagerTestApi(Shell::GetInstance()->display_manager()).
-        SetFirstDisplayAsInternalDisplay();
+    test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
   }
 
   static AcceleratorController* GetController();
