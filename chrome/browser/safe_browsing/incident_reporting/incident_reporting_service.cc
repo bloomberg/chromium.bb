@@ -11,14 +11,11 @@
 
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/process/process_info.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
@@ -29,6 +26,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
+#include "chrome/browser/safe_browsing/incident_reporting/state_store.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -55,7 +53,7 @@ enum IncidentDisposition {
 // of previously-reported incidents.
 struct PersistentIncidentState {
   // The type of the incident.
-  std::string type;
+  IncidentType type;
 
   // The key for a specific instance of an incident.
   std::string key;
@@ -96,86 +94,26 @@ void LogIncidentDataType(IncidentDisposition disposition,
 // Computes the persistent state for an incident.
 PersistentIncidentState ComputeIncidentState(const Incident& incident) {
   PersistentIncidentState state = {
-    base::IntToString(static_cast<int32_t>(incident.GetType())),
+    incident.GetType(),
     incident.GetKey(),
     incident.ComputeDigest(),
   };
   return state;
 }
 
-// Returns true if the incident described by |state| has already been reported
-// based on the bookkeeping in the |incidents_sent| preference dictionary.
-bool IncidentHasBeenReported(const base::DictionaryValue* incidents_sent,
-                             const PersistentIncidentState& state) {
-  const base::DictionaryValue* type_dict = NULL;
-  std::string digest_string;
-  return (incidents_sent &&
-          incidents_sent->GetDictionaryWithoutPathExpansion(state.type,
-                                                            &type_dict) &&
-          type_dict->GetStringWithoutPathExpansion(state.key, &digest_string) &&
-          digest_string == base::UintToString(state.digest));
-}
-
-// Marks the incidents described by |states| as having been reported
-// in |incidents_set|.
-void MarkIncidentsAsReported(const std::vector<PersistentIncidentState>& states,
-                             base::DictionaryValue* incidents_sent) {
-  for (size_t i = 0; i < states.size(); ++i) {
-    const PersistentIncidentState& data = states[i];
-    base::DictionaryValue* type_dict = NULL;
-    if (!incidents_sent->GetDictionaryWithoutPathExpansion(data.type,
-                                                           &type_dict)) {
-      type_dict = new base::DictionaryValue();
-      incidents_sent->SetWithoutPathExpansion(data.type, type_dict);
-    }
-    type_dict->SetStringWithoutPathExpansion(data.key,
-                                             base::UintToString(data.digest));
-  }
-}
-
-// Removes a profile's prune state for legacy incident types.
-void CleanLegacyPruneState(Profile* profile) {
-  static const IncidentType kLegacyTypes[] = {
-    // TODO(grt): remove in M44 (crbug.com/451173).
-    IncidentType::OMNIBOX_INTERACTION,
-  };
-
-  // Figure out if there are any values to remove before committing to making
-  // any changes since any use of DictionaryPrefUpdate will result in a full
-  // serialize-and-write operation on the preferences store.
-  const base::Value* value =
-      profile->GetPrefs()->GetUserPrefValue(prefs::kSafeBrowsingIncidentsSent);
-  const base::DictionaryValue* incidents_sent = NULL;
-  if (!value || !value->GetAsDictionary(&incidents_sent))
-    return;
-  std::vector<std::string> types_to_remove;
-  for (size_t i = 0; i < arraysize(kLegacyTypes); ++i) {
-    const std::string incident_type(
-        base::IntToString(static_cast<int32_t>(kLegacyTypes[i])));
-    const base::DictionaryValue* type_dict = NULL;
-    if (incidents_sent->GetDictionaryWithoutPathExpansion(incident_type,
-                                                          &type_dict)) {
-      types_to_remove.push_back(incident_type);
-    }
-  }
-  if (types_to_remove.empty())
-    return;
-
-  DictionaryPrefUpdate pref_update(profile->GetPrefs(),
-                                   prefs::kSafeBrowsingIncidentsSent);
-  for (const auto& incident_type : types_to_remove)
-    pref_update.Get()->RemoveWithoutPathExpansion(incident_type, NULL);
-}
-
 }  // namespace
 
-struct IncidentReportingService::ProfileContext {
-  ProfileContext();
+class IncidentReportingService::ProfileContext {
+ public:
+  explicit ProfileContext(Profile* profile);
   ~ProfileContext();
 
   // The incidents collected for this profile pending creation and/or upload.
   // Will contain null values for pruned incidents.
   ScopedVector<Incident> incidents;
+
+  // State storage for this profile.
+  scoped_ptr<StateStore> state_store;
 
   // False until PROFILE_ADDED notification is received.
   bool added;
@@ -186,7 +124,7 @@ struct IncidentReportingService::ProfileContext {
 
 class IncidentReportingService::UploadContext {
  public:
-  typedef std::map<Profile*, std::vector<PersistentIncidentState> >
+  typedef std::map<ProfileContext*, std::vector<PersistentIncidentState>>
       PersistentIncidentStateCollection;
 
   explicit UploadContext(scoped_ptr<ClientIncidentReport> report);
@@ -198,7 +136,8 @@ class IncidentReportingService::UploadContext {
   // The uploader in use. This is NULL until the CSD killswitch is checked.
   scoped_ptr<IncidentReportUploader> uploader;
 
-  // A mapping of profiles to the data to be persisted upon successful upload.
+  // A mapping of profile contexts to the data to be persisted upon successful
+  // upload.
   PersistentIncidentStateCollection profiles_to_state;
 
  private:
@@ -269,7 +208,10 @@ void IncidentReportingService::Receiver::AddIncidentOnMainThread(
     LogIncidentDataType(DISCARDED, *incident);
 }
 
-IncidentReportingService::ProfileContext::ProfileContext() : added() {
+IncidentReportingService::ProfileContext::ProfileContext(Profile* profile)
+    : added(false) {
+  if (profile)
+    state_store.reset(new StateStore(profile));
 }
 
 IncidentReportingService::ProfileContext::~ProfileContext() {
@@ -452,8 +394,6 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
     BeginReportProcessing();
   }
 
-  CleanLegacyPruneState(profile);
-
   // TODO(grt): register for pref change notifications to start delayed analysis
   // and/or report processing if sb is currently disabled but subsequently
   // enabled.
@@ -502,7 +442,7 @@ IncidentReportingService::GetOrCreateProfileContext(Profile* profile) {
       profiles_.insert(ProfileContextCollection::value_type(profile, NULL))
           .first;
   if (!it->second)
-    it->second = new ProfileContext();
+    it->second = new ProfileContext(profile);
   return it->second;
 }
 
@@ -519,16 +459,19 @@ void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
   if (it == profiles_.end())
     return;
 
+  // Take ownership of the context.
+  scoped_ptr<ProfileContext> context(it->second);
+  it->second = nullptr;
+
   // TODO(grt): Persist incidents for upload on future profile load.
+
+  // Remove the association with this profile context from all pending uploads.
+  for (UploadContext* upload : uploads_)
+    upload->profiles_to_state.erase(context.get());
 
   // Forget about this profile. Incidents not yet sent for upload are lost.
   // No new incidents will be accepted for it.
-  delete it->second;
   profiles_.erase(it);
-
-  // Remove the association with this profile from all pending uploads.
-  for (size_t i = 0; i < uploads_.size(); ++i)
-    uploads_[i]->profiles_to_state.erase(profile);
 }
 
 Profile* IncidentReportingService::FindEligibleProfile() const {
@@ -827,7 +770,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   // Collect incidents across all profiles participating in safe browsing. Drop
   // incidents if the profile stopped participating before collection completed.
   // Prune previously submitted incidents.
-  // Associate the profiles and their incident data with the upload.
+  // Associate the profile contexts and their incident data with the upload.
   size_t prune_count = 0;
   UploadContext::PersistentIncidentStateCollection profiles_to_state;
   for (ProfileContextCollection::iterator scan = profiles_.begin();
@@ -848,12 +791,11 @@ void IncidentReportingService::UploadIfCollectionComplete() {
       continue;
     }
     std::vector<PersistentIncidentState> states;
-    const base::DictionaryValue* incidents_sent =
-        prefs->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
     // Prep persistent data and prune any incidents already sent.
     for (Incident* incident : context->incidents) {
       const PersistentIncidentState state = ComputeIncidentState(*incident);
-      if (IncidentHasBeenReported(incidents_sent, state)) {
+      if (context->state_store->HasBeenReported(state.type, state.key,
+                                                state.digest)) {
         LogIncidentDataType(PRUNED, *incident);
         ++prune_count;
       } else {
@@ -868,7 +810,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
       }
     }
     context->incidents.clear();
-    profiles_to_state[scan->first].swap(states);
+    profiles_to_state[context].swap(states);
   }
 
   const int count = report->incident_size();
@@ -944,13 +886,12 @@ void IncidentReportingService::OnKillSwitchResult(UploadContext* context,
 }
 
 void IncidentReportingService::HandleResponse(const UploadContext& context) {
-  for (UploadContext::PersistentIncidentStateCollection::const_iterator scan =
-           context.profiles_to_state.begin();
-       scan != context.profiles_to_state.end();
-       ++scan) {
-    DictionaryPrefUpdate pref_update(scan->first->GetPrefs(),
-                                     prefs::kSafeBrowsingIncidentsSent);
-    MarkIncidentsAsReported(scan->second, pref_update.Get());
+  // Mark each incident as reported in its corresponding profile's state store.
+  for (const auto& context_and_states : context.profiles_to_state) {
+    StateStore::Transaction transaction(
+        context_and_states.first->state_store.get());
+    for (const auto& state : context_and_states.second)
+      transaction.MarkAsReported(state.type, state.key, state.digest);
   }
 }
 
