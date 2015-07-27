@@ -349,6 +349,8 @@ const AcceleratorAction kNonrepeatableActions[] = {
     SCALE_UI_UP,
     SCALE_UI_DOWN,
     SCALE_UI_RESET,
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
     TOGGLE_FULLSCREEN,
     TOGGLE_MAXIMIZED,
     WINDOW_MINIMIZE,
