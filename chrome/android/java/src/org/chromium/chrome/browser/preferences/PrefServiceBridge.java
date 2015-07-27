@@ -401,6 +401,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * Sets the preference that controls automatic detection of character encoding.
+     */
+    public void setAutoDetectEncodingEnabled(boolean enabled) {
+        nativeSetAutoDetectEncodingEnabled(enabled);
+    }
+
+    /**
      * Sets the preference that signals when the user has accepted the EULA.
      */
     public void setEulaAccepted() {
@@ -619,6 +626,13 @@ public final class PrefServiceBridge {
      */
     public boolean isTranslateManaged() {
         return nativeGetTranslateManaged();
+    }
+
+    /**
+     * @return true if automatic detection of character encoding is enabled, false otherwise.
+     */
+    public boolean isAutoDetectEncodingEnabled() {
+        return nativeGetAutoDetectEncodingEnabled();
     }
 
     /**
@@ -939,6 +953,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetFullscreenManaged();
     private native boolean nativeGetTranslateEnabled();
     private native boolean nativeGetTranslateManaged();
+    private native boolean nativeGetAutoDetectEncodingEnabled();
     private native boolean nativeGetResolveNavigationErrorEnabled();
     private native boolean nativeGetResolveNavigationErrorManaged();
     private native boolean nativeGetProtectedMediaIdentifierEnabled();
@@ -949,6 +964,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetPrintingManaged();
     private native boolean nativeGetForceGoogleSafeSearch();
     private native void nativeSetTranslateEnabled(boolean enabled);
+    private native void nativeSetAutoDetectEncodingEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();
     private native void nativeMigrateLocationPreference();

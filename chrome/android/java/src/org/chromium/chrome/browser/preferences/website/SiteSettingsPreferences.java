@@ -38,7 +38,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String NOTIFICATIONS_KEY = "notifications";
     static final String POPUPS_KEY = "popups";
     static final String PROTECTED_CONTENT_KEY = "protected_content";
-    static final String TRANSLATE_KEY = "translate";
     static final String STORAGE_KEY = "use_storage";
 
     @Override
@@ -79,12 +78,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
     private void updatePreferenceStates() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-
-        // Translate preference.
-        Preference translatePref = findPreference(TRANSLATE_KEY);
-        if (translatePref != null) {
-            setTranslateStateSummary(translatePref);
-        }
 
         // Preferences that navigate to Website Settings.
         List<String> websitePrefs = new ArrayList<String>();
@@ -160,12 +153,5 @@ public class SiteSettingsPreferences extends PreferenceFragment
         preference.getExtras().putString(SingleCategoryPreferences.EXTRA_TITLE,
                 preference.getTitle().toString());
         return false;
-    }
-
-    private void setTranslateStateSummary(Preference translatePref) {
-        boolean translateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
-        translatePref.setSummary(translateEnabled
-                ? R.string.website_settings_category_ask
-                : R.string.website_settings_category_blocked);
     }
 }

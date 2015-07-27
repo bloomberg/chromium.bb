@@ -298,4 +298,10 @@ public interface WebContents extends Parcelable {
      * @param observer The observer to remove.
      */
     void removeObserver(WebContentsObserver observer);
+
+    /**
+     * @return The character encoding for the current visible page.
+     */
+    @VisibleForTesting
+    String getEncoding();
 }

@@ -523,4 +523,10 @@ void WebContentsAndroid::SuspendMediaSession(JNIEnv* env, jobject obj) {
   web_contents_->SuspendMediaSession();
 }
 
+ScopedJavaLocalRef<jstring>  WebContentsAndroid::GetEncoding(
+    JNIEnv* env, jobject obj) const {
+  return base::android::ConvertUTF8ToJavaString(env,
+                                                web_contents_->GetEncoding());
+}
+
 }  // namespace content

@@ -344,6 +344,11 @@ import java.util.UUID;
         nativeSuspendMediaSession(mNativeWebContentsAndroid);
     }
 
+    @Override
+    public String getEncoding() {
+        return nativeGetEncoding(mNativeWebContentsAndroid);
+    }
+
     // root node can be null if parsing fails.
     @CalledByNative
     private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,
@@ -437,4 +442,5 @@ import java.util.UUID;
             AccessibilitySnapshotCallback callback, float offsetY, float scrollX);
     private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
     private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
+    private native String nativeGetEncoding(long nativeWebContentsAndroid);
 }

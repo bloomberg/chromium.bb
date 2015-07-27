@@ -652,18 +652,27 @@ particular permission.">
 To obtain new licenses, connect to the internet and play your downloaded content.
       </message>
 
-      <!-- Google translate preferences -->
-      <message name="IDS_GOOGLE_TRANSLATE" desc='Title for the Google Translate settings screen. [CHAR-LIMIT=32]'>
+      <!-- Language preferences -->
+      <message name="IDS_LANGUAGE" desc="Title for Language settings screen. [CHAR-LIMIT=32]">
+        Language
+      </message>
+      <message name="IDS_GOOGLE_TRANSLATE" desc='Title for the Google Translate preference. [CHAR-LIMIT=32]'>
         Google Translate
       </message>
       <message name="IDS_TRANSLATE_PREFS_DESCRIPTION" desc="Translate preference description">
-        When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate.
+        Offer to translate pages using Google Translate
       </message>
       <message name="IDS_TRANSLATE_PREFS_TOAST_DESCRIPTION" desc="Translate settings reset toast when resetting defaults">
         Your translate settings have been reset.
       </message>
       <message name="IDS_RESET_TRANSLATE_DEFAULTS" desc="Title for translate reset menu preference">
         Reset translate settings
+      </message>
+      <message name="IDS_AUTO_DETECT_ENCODING" desc="Title for checkbox to enable or disable automatic detection of the character encoding in web pages. ">
+        Auto detect encoding
+      </message>
+      <message name="IDS_AUTO_DETECT_ENCODING_DESCRIPTION" desc="Description for checkbox to enable or disable automatic detection of the character encoding in web pages. ">
+        Automatically determine character encoding
       </message>
 
       <!-- Storage preferences -->

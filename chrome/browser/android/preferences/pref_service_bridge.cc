@@ -36,6 +36,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "jni/PrefServiceBridge_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -272,6 +273,10 @@ static jboolean GetTranslateEnabled(JNIEnv* env, jobject obj) {
 
 static jboolean GetTranslateManaged(JNIEnv* env, jobject obj) {
   return GetPrefService()->IsManagedPreference(prefs::kEnableTranslate);
+}
+
+static jboolean GetAutoDetectEncodingEnabled(JNIEnv* env, jobject obj) {
+  return GetPrefService()->GetBoolean(prefs::kWebKitUsesUniversalDetector);
 }
 
 static jboolean GetSearchSuggestEnabled(JNIEnv* env, jobject obj) {
@@ -543,6 +548,12 @@ static jstring GetSyncLastAccountName(JNIEnv* env, jobject obj) {
 
 static void SetTranslateEnabled(JNIEnv* env, jobject obj, jboolean enabled) {
   GetPrefService()->SetBoolean(prefs::kEnableTranslate, enabled);
+}
+
+static void SetAutoDetectEncodingEnabled(JNIEnv* env, jobject obj,
+                                         jboolean enabled) {
+  content::RecordAction(base::UserMetricsAction("AutoDetectChange"));
+  GetPrefService()->SetBoolean(prefs::kWebKitUsesUniversalDetector, enabled);
 }
 
 static void ResetTranslateDefaults(JNIEnv* env, jobject obj) {
