@@ -21,10 +21,10 @@ public interface ControlContainer {
     ViewResourceAdapter getToolbarResourceAdapter();
 
     /**
-     * @return The {@link ViewResourceAdapter} that exposes the progress widget as a CC resource
-     *         (if applicable).
+     * Get progress bar drawing information.
+     * @param drawingInfoOut An instance that the result will be written.
      */
-    ViewResourceAdapter getProgressResourceAdapter();
+    void getProgressBarDrawingInfo(ClipDrawableProgressBar.DrawingInfo drawingInfoOut);
 
     /**
      * @param handler The swipe handler to be notified of swipe events on this container.

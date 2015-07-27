@@ -82,9 +82,20 @@ class CompositorView : public content::CompositorClient,
   void UpdateToolbarLayer(JNIEnv* env,
                           jobject object,
                           jint toolbar_resource_id,
-                          jint progress_resource_id,
                           jfloat top_offset,
                           bool visible);
+  void UpdateProgressBar(JNIEnv* env,
+                         jobject object,
+                         jint progress_bar_x,
+                         jint progress_bar_y,
+                         jint progress_bar_width,
+                         jint progress_bar_height,
+                         jint progress_bar_color,
+                         jint progress_bar_background_x,
+                         jint progress_bar_background_y,
+                         jint progress_bar_background_width,
+                         jint progress_bar_background_height,
+                         jint progress_bar_background_color);
 
   void SurfaceCreated(JNIEnv* env, jobject object);
   void SurfaceDestroyed(JNIEnv* env, jobject object);

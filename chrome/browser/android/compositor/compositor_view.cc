@@ -246,7 +246,6 @@ int CompositorView::GetUsableContentHeight() {
 void CompositorView::UpdateToolbarLayer(JNIEnv* env,
                                         jobject object,
                                         jint toolbar_resource_id,
-                                        jint progress_resource_id,
                                         jfloat top_offset,
                                         bool visible) {
   // Ensure the toolbar resource is available before making the layer visible.
@@ -259,16 +258,35 @@ void CompositorView::UpdateToolbarLayer(JNIEnv* env,
   toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
   if (visible) {
     toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
-
-    ui::ResourceManager::Resource* progress_resource =
-        compositor_->GetResourceManager().GetResource(
-            ui::ANDROID_RESOURCE_TYPE_DYNAMIC, progress_resource_id);
-    toolbar_layer_->PushResource(resource, progress_resource, false, false,
-                                 false);
+    toolbar_layer_->PushResource(resource, false, false, false);
 
     // If we're at rest, hide the shadow.  The Android view should be drawing.
     toolbar_layer_->layer()->SetMasksToBounds(top_offset >= 0.f);
   }
+}
+
+void CompositorView::UpdateProgressBar(JNIEnv* env,
+                                       jobject object,
+                                       jint progress_bar_x,
+                                       jint progress_bar_y,
+                                       jint progress_bar_width,
+                                       jint progress_bar_height,
+                                       jint progress_bar_color,
+                                       jint progress_bar_background_x,
+                                       jint progress_bar_background_y,
+                                       jint progress_bar_background_width,
+                                       jint progress_bar_background_height,
+                                       jint progress_bar_background_color) {
+  toolbar_layer_->UpdateProgressBar(progress_bar_x,
+                                    progress_bar_y,
+                                    progress_bar_width,
+                                    progress_bar_height,
+                                    progress_bar_color,
+                                    progress_bar_background_x,
+                                    progress_bar_background_y,
+                                    progress_bar_background_width,
+                                    progress_bar_background_height,
+                                    progress_bar_background_color);
 }
 
 void CompositorView::FinalizeLayers(JNIEnv* env, jobject jobj) {

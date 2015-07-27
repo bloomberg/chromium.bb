@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -17,9 +16,8 @@ import android.widget.FrameLayout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
-import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.InvalidationListener;
+import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -37,8 +35,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     private final SwipeRecognizer mSwipeRecognizer;
     private EdgeSwipeHandler mSwipeHandler;
 
-    private ViewResourceAdapter mProgressResourceAdapter;
-
     /**
      * Constructs a new control container.
      * <p>
@@ -54,13 +50,14 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     }
 
     @Override
-    public ViewResourceAdapter getProgressResourceAdapter() {
-        return mProgressResourceAdapter;
+    public ViewResourceAdapter getToolbarResourceAdapter() {
+        return mToolbarContainer.getResourceAdapter();
     }
 
     @Override
-    public ViewResourceAdapter getToolbarResourceAdapter() {
-        return mToolbarContainer.getResourceAdapter();
+    public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {
+        // TODO(yusufo): Avoid casting to the layout without making the interface bigger.
+        ((ToolbarLayout) mToolbar).getProgressBar().getDrawingInfo(drawingInfoOut);
     }
 
     @Override
@@ -74,13 +71,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbarContainer = (ToolbarViewResourceFrameLayout) findViewById(R.id.toolbar_container);
         mMenuBtn = findViewById(R.id.menu_button);
-
-        // TODO(yusufo): Get rid of the calls below and avoid casting to the layout without making
-        // the interface bigger.
-        ToolbarProgressBar progressView = ((ToolbarLayout) mToolbar).getProgressBar();
-        if (progressView != null) {
-            mProgressResourceAdapter = new ProgressViewResourceAdapter(progressView);
-        }
 
         if (mToolbar instanceof ToolbarTablet) {
             // On tablet, draw a fake tab strip and toolbar until the compositor is ready to draw
@@ -130,58 +120,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         @Override
         protected boolean isReadyForCapture() {
             return mReadyForBitmapCapture;
-        }
-    }
-
-    private static class ProgressViewResourceAdapter extends ViewResourceAdapter
-            implements InvalidationListener {
-
-        private final ToolbarProgressBar mProgressView;
-        private final Rect mAlphaDrawRegion = new Rect();
-
-        ProgressViewResourceAdapter(ToolbarProgressBar progressView) {
-            super(progressView);
-
-            mProgressView = progressView;
-            progressView.setInvalidationListener(this);
-        }
-
-        @Override
-        protected void capture(Canvas canvas) {
-            if (mProgressView.getVisibility() != View.VISIBLE) {
-                canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-            } else {
-                // If we're drawing alpha somewhere, we need to clear that part of the canvas to
-                // avoid undesired accumulation (getting darker).
-                canvas.save();
-                mProgressView.getAlphaDrawRegion(mAlphaDrawRegion);
-                mAlphaDrawRegion.intersect(getDirtyRect());
-                canvas.clipRect(mAlphaDrawRegion);
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                canvas.restore();
-
-                super.capture(canvas);
-            }
-        }
-
-        @Override
-        protected void computeContentPadding(Rect outContentPadding) {
-            super.computeContentPadding(outContentPadding);
-            MarginLayoutParams layoutParams = (MarginLayoutParams) mProgressView.getLayoutParams();
-            outContentPadding.offset(0, layoutParams.topMargin);
-        }
-
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-                int oldTop, int oldRight, int oldBottom) {
-            // Purposefully ignore as invalidation listener handles it.
-        }
-
-        // InvalidationListener implementation.
-
-        @Override
-        public void onInvalidation(Rect dirtyRect) {
-            invalidate(dirtyRect);
         }
     }
 

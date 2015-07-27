@@ -28,10 +28,20 @@ class ToolbarLayer : public Layer {
   scoped_refptr<cc::Layer> layer() override;
 
   void PushResource(ui::ResourceManager::Resource* resource,
-                    ui::ResourceManager::Resource* progress_resource,
                     bool anonymize,
                     bool anonymize_component_is_incognito,
                     bool show_debug);
+
+  void UpdateProgressBar(int progress_bar_x,
+                         int progress_bar_y,
+                         int progress_bar_width,
+                         int progress_bar_height,
+                         int progress_bar_color,
+                         int progress_bar_background_x,
+                         int progress_bar_background_y,
+                         int progress_bar_background_width,
+                         int progress_bar_background_height,
+                         int progress_bar_background_color);
 
  protected:
   ToolbarLayer();
@@ -40,7 +50,8 @@ class ToolbarLayer : public Layer {
  private:
   scoped_refptr<cc::Layer> layer_;
   scoped_refptr<cc::UIResourceLayer> bitmap_layer_;
-  scoped_refptr<cc::UIResourceLayer> progress_layer_;
+  scoped_refptr<cc::SolidColorLayer> progress_bar_layer_;
+  scoped_refptr<cc::SolidColorLayer> progress_bar_background_layer_;
   scoped_refptr<cc::SolidColorLayer> anonymize_layer_;
   scoped_refptr<cc::SolidColorLayer> debug_layer_;
 

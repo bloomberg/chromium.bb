@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
+import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -344,7 +345,8 @@ public class CompositorView
         mRenderHost.onSwapBuffersCompleted(pendingSwapBuffersCount);
     }
 
-    private void updateToolbarLayer(LayoutProvider provider, boolean forRotation) {
+    private void updateToolbarLayer(LayoutProvider provider, boolean forRotation,
+            final DrawingInfo progressBarDrawingInfo) {
         if (forRotation || !DeviceClassManager.enableFullscreen()) return;
 
         ChromeFullscreenManager fullscreenManager = provider.getFullscreenManager();
@@ -371,8 +373,18 @@ public class CompositorView
             useTexture = false;
         }
 
-        nativeUpdateToolbarLayer(
-                mNativeCompositorView, R.id.control_container, R.id.progress, offset, useTexture);
+        nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container, offset, useTexture);
+        nativeUpdateProgressBar(mNativeCompositorView,
+                progressBarDrawingInfo.progressBarRect.left,
+                progressBarDrawingInfo.progressBarRect.top,
+                progressBarDrawingInfo.progressBarRect.width(),
+                progressBarDrawingInfo.progressBarRect.height(),
+                progressBarDrawingInfo.progressBarColor,
+                progressBarDrawingInfo.progressBarBackgroundRect.left,
+                progressBarDrawingInfo.progressBarBackgroundRect.top,
+                progressBarDrawingInfo.progressBarBackgroundRect.width(),
+                progressBarDrawingInfo.progressBarBackgroundRect.height(),
+                progressBarDrawingInfo.progressBarBackgroundColor);
     }
 
     /**
@@ -381,7 +393,8 @@ public class CompositorView
      * @param provider               Provides the layout to be rendered.
      * @param forRotation            Whether or not this is a special draw during a rotation.
      */
-    public void finalizeLayers(final LayoutProvider provider, boolean forRotation) {
+    public void finalizeLayers(final LayoutProvider provider, boolean forRotation,
+            final DrawingInfo progressBarDrawingInfo) {
         TraceEvent.begin("CompositorView:finalizeLayers");
         Layout layout = provider.getActiveLayout();
         if (layout == null || mNativeCompositorView == 0) {
@@ -413,7 +426,7 @@ public class CompositorView
                 + Math.max(mSurfaceHeight - mRenderHost.getCurrentOverdrawBottomHeight(), 0);
 
         // TODO(changwan): move to treeprovider.
-        updateToolbarLayer(provider, forRotation);
+        updateToolbarLayer(provider, forRotation, progressBarDrawingInfo);
 
         SceneLayer sceneLayer =
                 layout.getUpdatedSceneLayer(mCacheViewport, mCacheVisibleViewport, mLayerTitleCache,
@@ -459,7 +472,19 @@ public class CompositorView
             float width, float height, float visibleXOffset, float visibleYOffset,
             float overdrawBottomHeight, float dpToPixel);
     private native void nativeUpdateToolbarLayer(long nativeCompositorView, int resourceId,
-            int progressResourceId, float topOffset, boolean visible);
+            float topOffset, boolean visible);
+    private native void nativeUpdateProgressBar(
+            long nativeCompositorView,
+            int progressBarX,
+            int progressBarY,
+            int progressBarWidth,
+            int progressBarHeight,
+            int progressBarColor,
+            int progressBarBackgroundX,
+            int progressBarBackgroundY,
+            int progressBarBackgroundWidth,
+            int progressBarBackgroundHeight,
+            int progressBarBackgroundColor);
     private native void nativeSetOverlayVideoMode(long nativeCompositorView, boolean enabled);
     private native void nativeSetSceneLayer(long nativeCompositorView, SceneLayer sceneLayer);
 }

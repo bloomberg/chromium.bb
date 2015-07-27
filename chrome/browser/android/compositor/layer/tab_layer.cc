@@ -179,8 +179,12 @@ void TabLayer::SetProperties(int id,
     //--------------------------------------------------------------------------
     // Update Resource Ids For Layers That Impact Layout
     //--------------------------------------------------------------------------
-    toolbar_layer_->PushResource(toolbar_resource, nullptr, anonymize_toolbar,
+
+    // TODO(kkimlabs): Tab switcher doesn't show the progress bar.
+    toolbar_layer_->PushResource(toolbar_resource, anonymize_toolbar,
                                  incognito_, false);
+    toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
     if (show_toolbar && !back_visible)
       toolbar_impact_height = toolbar_resource->padding.height();
   }

@@ -28,7 +28,6 @@ scoped_refptr<cc::Layer> ToolbarLayer::layer() {
 
 void ToolbarLayer::PushResource(
     ui::ResourceManager::Resource* resource,
-    ui::ResourceManager::Resource* progress_resource,
     bool anonymize,
     bool anonymize_component_is_incognito,
     bool show_debug) {
@@ -50,13 +49,6 @@ void ToolbarLayer::PushResource(
                                              : kNormalAnonymizeContentColor);
   }
 
-  progress_layer_->SetHideLayerAndSubtree(!progress_resource);
-  if (progress_resource) {
-    progress_layer_->SetUIResourceId(progress_resource->ui_resource->id());
-    progress_layer_->SetBounds(progress_resource->size);
-    progress_layer_->SetPosition(progress_resource->padding.origin());
-  }
-
   debug_layer_->SetBounds(resource->size);
   if (show_debug && !debug_layer_->parent())
     layer_->AddChild(debug_layer_);
@@ -64,12 +56,49 @@ void ToolbarLayer::PushResource(
     debug_layer_->RemoveFromParent();
 }
 
+void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
+                                     int progress_bar_y,
+                                     int progress_bar_width,
+                                     int progress_bar_height,
+                                     int progress_bar_color,
+                                     int progress_bar_background_x,
+                                     int progress_bar_background_y,
+                                     int progress_bar_background_width,
+                                     int progress_bar_background_height,
+                                     int progress_bar_background_color) {
+  bool is_progress_bar_background_visible = SkColorGetA(
+      progress_bar_background_color);
+  progress_bar_background_layer_->SetHideLayerAndSubtree(
+      !is_progress_bar_background_visible);
+  if (is_progress_bar_background_visible) {
+    progress_bar_background_layer_->SetPosition(
+        gfx::PointF(progress_bar_background_x, progress_bar_background_y));
+    progress_bar_background_layer_->SetBounds(
+        gfx::Size(progress_bar_background_width,
+                  progress_bar_background_height));
+    progress_bar_background_layer_->SetBackgroundColor(
+        progress_bar_background_color);
+  }
+
+  bool is_progress_bar_visible = SkColorGetA(progress_bar_background_color);
+  progress_bar_layer_->SetHideLayerAndSubtree(!is_progress_bar_visible);
+  if (is_progress_bar_visible) {
+    progress_bar_layer_->SetPosition(
+        gfx::PointF(progress_bar_x, progress_bar_y));
+    progress_bar_layer_->SetBounds(
+        gfx::Size(progress_bar_width, progress_bar_height));
+    progress_bar_layer_->SetBackgroundColor(progress_bar_color);
+  }
+}
+
 ToolbarLayer::ToolbarLayer()
     : layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
       bitmap_layer_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      progress_layer_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      progress_bar_layer_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+      progress_bar_background_layer_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       anonymize_layer_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       debug_layer_(
@@ -77,11 +106,14 @@ ToolbarLayer::ToolbarLayer()
   bitmap_layer_->SetIsDrawable(true);
   layer_->AddChild(bitmap_layer_);
 
-  progress_layer_->SetIsDrawable(true);
-  progress_layer_->SetHideLayerAndSubtree(true);
-  layer_->AddChild(progress_layer_);
+  progress_bar_background_layer_->SetIsDrawable(true);
+  progress_bar_background_layer_->SetHideLayerAndSubtree(true);
+  layer_->AddChild(progress_bar_background_layer_);
 
-  anonymize_layer_->SetHideLayerAndSubtree(true);
+  progress_bar_layer_->SetIsDrawable(true);
+  progress_bar_layer_->SetHideLayerAndSubtree(true);
+  layer_->AddChild(progress_bar_layer_);
+
   anonymize_layer_->SetIsDrawable(true);
   anonymize_layer_->SetBackgroundColor(kNormalAnonymizeContentColor);
   layer_->AddChild(anonymize_layer_);
