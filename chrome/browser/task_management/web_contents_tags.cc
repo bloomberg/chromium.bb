@@ -8,6 +8,7 @@
 #include "chrome/browser/task_management/providers/web_contents/devtools_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/panel_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/prerender_tag.h"
+#include "chrome/browser/task_management/providers/web_contents/printing_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/tab_contents_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -99,6 +100,18 @@ void WebContentsTags::CreateForPanel(content::WebContents* web_contents,
                    WebContentsTag::kTagKey);
   }
 #endif  // defined(ENABLE_TASK_MANAGER) && defined(ENABLE_EXTENSIONS)
+}
+
+// static
+void WebContentsTags::CreateForPrintingContents(
+    content::WebContents* web_contents) {
+#if defined(ENABLE_TASK_MANAGER) && defined(ENABLE_PRINT_PREVIEW)
+  if (!WebContentsTag::FromWebContents(web_contents)) {
+    TagWebContents(web_contents,
+                   new PrintingTag(web_contents),
+                   WebContentsTag::kTagKey);
+  }
+#endif  // defined(ENABLE_TASK_MANAGER) && defined(ENABLE_PRINT_PREVIEW)
 }
 
 // static

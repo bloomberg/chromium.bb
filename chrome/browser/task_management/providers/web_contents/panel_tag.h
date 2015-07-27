@@ -19,7 +19,7 @@ class PanelTag : public WebContentsTag {
  private:
   friend class WebContentsTags;
 
-  explicit PanelTag(content::WebContents* web_contents, Panel* panel);
+  PanelTag(content::WebContents* web_contents, Panel* panel);
   ~PanelTag() override;
 
   Panel* panel_;
