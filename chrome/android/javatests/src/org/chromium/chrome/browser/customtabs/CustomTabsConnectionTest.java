@@ -36,9 +36,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     private ICustomTabsCallback newDummyCallback() {
         return new ICustomTabsCallback.Stub() {
             @Override
-            public void onUserNavigationStarted(Uri url, Bundle extras) {}
-            @Override
-            public void onUserNavigationFinished(Uri url, Bundle extras) {}
+            public void onNavigationEvent(int navigationEvent, Bundle extras) {}
             @Override
             public IBinder asBinder() {
                 return this;

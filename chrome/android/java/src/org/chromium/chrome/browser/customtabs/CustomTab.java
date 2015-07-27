@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.TransactionTooLargeException;
+import android.support.customtabs.CustomTabsCallback;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -78,13 +79,15 @@ public class CustomTab extends ChromeTab {
                 mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
                 mCurrentState = STATE_WAITING_LOAD_FINISH;
             }
-            mCustomTabsConnection.notifyPageLoadStarted(mSession, url);
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_STARTED);
         }
 
         @Override
         public void onPageLoadFinished(Tab tab) {
             long pageLoadFinishedTimestamp = SystemClock.elapsedRealtime();
-            mCustomTabsConnection.notifyPageLoadFinished(mSession, tab.getUrl());
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_FINISHED);
             // Both histograms (commit and PLT) are reported here, to make sure
             // that they are always recorded together, and that we only record
             // commits for successful navigations.

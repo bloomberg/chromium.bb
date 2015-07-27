@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Interface to a CustomTabsService.
+ * @hide
  */
 interface ICustomTabsService {
     boolean warmup(long flags) = 1;

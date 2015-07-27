@@ -10,7 +10,13 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Constants and utilities that will be used for low level control on customizing the UI and
@@ -72,4 +78,43 @@ public class CustomTabsIntent {
      */
     public static final String EXTRA_EXIT_ANIMATION_BUNDLE =
             "android.support.customtabs.extra.EXIT_ANIMATION_BUNDLE";
+
+    /**
+     * Convenience method to create a VIEW intent without a session for the given package.
+     * @param packageName The package name to set in the intent.
+     * @param data        The data {@link Uri} to be used in the intent.
+     * @return            The intent with the given package, data and the right session extra.
+     */
+    public static Intent getViewIntentWithNoSession(String packageName, Uri data) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, data);
+        intent.setPackage(packageName);
+        Bundle extras = new Bundle();
+        if (!safePutBinder(extras, EXTRA_SESSION, null)) return null;
+        intent.putExtras(extras);
+        return intent;
+    }
+
+    /**
+     * A convenience method to handle putting an {@link IBinder} inside a {@link Bundle} for all
+     * Android version.
+     * @param bundle The bundle to insert the {@link IBinder}.
+     * @param key    The key to use while putting the {@link IBinder}.
+     * @param binder The {@link IBinder} to put.
+     * @return       Whether the operation was successful.
+     */
+    static boolean safePutBinder(Bundle bundle, String key, IBinder binder) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                bundle.putBinder(key, binder);
+            } else {
+                Method putBinderMethod =
+                        Bundle.class.getMethod("putIBinder", String.class, IBinder.class);
+                putBinderMethod.invoke(bundle, key, binder);
+            }
+        } catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException
+                | NoSuchMethodException e) {
+            return false;
+        }
+        return true;
+    }
 }

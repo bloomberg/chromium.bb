@@ -324,42 +324,20 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /**
-     * Notifies the application that a page load has started.
+     * Notifies the application of a navigation event.
      *
-     * Delivers the {@link ICustomTabsConnectionCallback#onUserNavigationStarted}
+     * Delivers the {@link ICustomTabsConnectionCallback#onNavigationEvent}
      * callback to the aplication.
      *
      * @param session The Binder object identifying the session.
-     * @param url The URL the tab is navigating to.
+     * @param navigationEvent The navigation event code, defined in {@link CustomTabsCallback}
      * @return true for success.
      */
-    boolean notifyPageLoadStarted(IBinder session, String url) {
+    boolean notifyNavigationEvent(IBinder session, int navigationEvent) {
         ICustomTabsCallback callback = getCallbackForSession(session);
         if (callback == null) return false;
         try {
-            callback.onUserNavigationStarted(Uri.parse(url), null);
-        } catch (RemoteException e) {
-            // This should not happen, as we have registered a death recipient.
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Notifies the application that a page load has finished.
-     *
-     * Delivers the {@link ICustomTabsConnectionCallback#onUserNavigationFinished}
-     * callback to the aplication.
-     *
-     * @param session The Binder object identifying the session.
-     * @param url The URL the tab has navigated to.
-     * @return true for success.
-     */
-    boolean notifyPageLoadFinished(IBinder session, String url) {
-        ICustomTabsCallback callback = getCallbackForSession(session);
-        if (callback == null) return false;
-        try {
-            callback.onUserNavigationFinished(Uri.parse(url), null);
+            callback.onNavigationEvent(navigationEvent, null);
         } catch (RemoteException e) {
             // This should not happen, as we have registered a death recipient.
             return false;
