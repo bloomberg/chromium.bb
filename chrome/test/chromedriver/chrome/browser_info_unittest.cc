@@ -36,6 +36,7 @@ TEST(ParseBrowserInfo, BlinkVersionContainsSvnRevision) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("chrome", browser_info.browser_name);
   ASSERT_EQ("37.0.2062.124", browser_info.browser_version);
+  ASSERT_EQ(37, browser_info.major_version);
   ASSERT_EQ(2062, browser_info.build_no);
   ASSERT_EQ(181352, browser_info.blink_revision);
 }
@@ -50,6 +51,7 @@ TEST(ParseBrowserInfo, BlinkVersionContainsGitHash) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("chrome", browser_info.browser_name);
   ASSERT_EQ("37.0.2062.124", browser_info.browser_version);
+  ASSERT_EQ(37, browser_info.major_version);
   ASSERT_EQ(2062, browser_info.build_no);
   ASSERT_EQ(default_blink_revision, browser_info.blink_revision);
 }
@@ -61,6 +63,7 @@ TEST(ParseBrowserString, KitKatWebView) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("webview", browser_info.browser_name);
   ASSERT_EQ("30.0.0.0", browser_info.browser_version);
+  ASSERT_EQ(30, browser_info.major_version);
   ASSERT_EQ(kToTBuildNo, browser_info.build_no);
   ASSERT_TRUE(browser_info.is_android);
 }
@@ -71,6 +74,7 @@ TEST(ParseBrowserString, LollipopWebView) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("webview", browser_info.browser_name);
   ASSERT_EQ("37.0.0.0", browser_info.browser_version);
+  ASSERT_EQ(37, browser_info.major_version);
   ASSERT_EQ(kToTBuildNo, browser_info.build_no);
   ASSERT_TRUE(browser_info.is_android);
 }
@@ -82,6 +86,7 @@ TEST(ParseBrowserString, AndroidChrome) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("chrome", browser_info.browser_name);
   ASSERT_EQ("39.0.2171.59", browser_info.browser_version);
+  ASSERT_EQ(39, browser_info.major_version);
   ASSERT_EQ(2171, browser_info.build_no);
   ASSERT_TRUE(browser_info.is_android);
 }
@@ -93,6 +98,7 @@ TEST(ParseBrowserString, DesktopChrome) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("chrome", browser_info.browser_name);
   ASSERT_EQ("39.0.2171.59", browser_info.browser_version);
+  ASSERT_EQ(39, browser_info.major_version);
   ASSERT_EQ(2171, browser_info.build_no);
   ASSERT_FALSE(browser_info.is_android);
 }

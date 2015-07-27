@@ -1092,6 +1092,17 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals('chrome://print/', self._driver.GetCurrentUrl())
 
+  def testCanClickInIframes(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/nested.html'))
+    a = self._driver.FindElement('tag name', 'a')
+    a.Click()
+    self.assertTrue(self._driver.GetCurrentUrl().endswith('#one'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    a = self._driver.FindElement('tag name', 'a')
+    a.Click()
+    self.assertTrue(self._driver.GetCurrentUrl().endswith('#two'))
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""

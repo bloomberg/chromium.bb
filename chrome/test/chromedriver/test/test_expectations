@@ -96,6 +96,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'DragAndDropTest.testDragAndDrop',
     'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
     'DragAndDropTest.testElementInDiv',
+    # https://code.google.com/p/chromedriver/issues/detail?id=1167
+    'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
 ]
 
 

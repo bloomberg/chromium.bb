@@ -20,6 +20,7 @@ const std::string kVersionPrefix = "Chrome/";
 BrowserInfo::BrowserInfo()
     : browser_name(std::string()),
       browser_version(std::string()),
+      major_version(0),
       build_no(kToTBuildNo),
       blink_revision(kToTBlinkRevision),
       is_android(false) {
@@ -27,11 +28,13 @@ BrowserInfo::BrowserInfo()
 
 BrowserInfo::BrowserInfo(std::string browser_name,
                          std::string browser_version,
+                         int major_version,
                          int build_no,
                          int blink_revision,
                          bool is_android)
     : browser_name(browser_name),
       browser_version(browser_version),
+      major_version(major_version),
       build_no(build_no),
       blink_revision(blink_revision),
       is_android(is_android) {
@@ -77,18 +80,15 @@ Status ParseBrowserString(bool has_android_package,
   int build_no = 0;
   if (browser_string.find(kVersionPrefix) == 0u) {
     std::string version = browser_string.substr(kVersionPrefix.length());
-    std::vector<base::StringPiece> version_parts = base::SplitStringPiece(
-        version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
-    if (version_parts.size() != 4 ||
-        !base::StringToInt(version_parts[2], &build_no)) {
-      return Status(kUnknownError, "unrecognized Chrome version: " + version);
-    }
+    Status status = ParseBrowserVersionString(
+        version, &browser_info->major_version, &build_no);
+    if (status.IsError())
+      return status;
 
     if (build_no != 0) {
       browser_info->browser_name = "chrome";
-      browser_info->browser_version =
-          browser_string.substr(kVersionPrefix.length());
+      browser_info->browser_version = version;
       browser_info->build_no = build_no;
       return Status(kOk);
     }
@@ -102,12 +102,27 @@ Status ParseBrowserString(bool has_android_package,
       browser_info->browser_version =
           browser_string.substr(pos + kVersionPrefix.length());
       browser_info->is_android = true;
+      return ParseBrowserVersionString(browser_info->browser_version,
+                                       &browser_info->major_version, &build_no);
     }
     return Status(kOk);
   }
 
   return Status(kUnknownError,
                 "unrecognized Chrome version: " + browser_string);
+}
+
+Status ParseBrowserVersionString(const std::string& browser_version,
+                                 int* major_version, int* build_no) {
+  std::vector<base::StringPiece> version_parts = base::SplitStringPiece(
+      browser_version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (version_parts.size() != 4 ||
+      !base::StringToInt(version_parts[0], major_version) ||
+      !base::StringToInt(version_parts[2], build_no)) {
+    return Status(kUnknownError,
+                  "unrecognized browser version: " + browser_version);
+  }
+  return Status(kOk);
 }
 
 Status ParseBlinkVersionString(const std::string& blink_version,
