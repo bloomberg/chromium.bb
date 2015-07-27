@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -55,6 +54,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/dom_distiller_constants.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/webui/dom_distiller_ui.h"
@@ -566,7 +566,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;
 
-  if (IsEnableDomDistillerSet() &&
+  if (dom_distiller::IsEnableDomDistillerSet() &&
       url.host() == dom_distiller::kChromeUIDomDistillerHost) {
     return &NewWebUI<dom_distiller::DomDistillerUi>;
   }

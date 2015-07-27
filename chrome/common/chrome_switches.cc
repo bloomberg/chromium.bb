@@ -412,17 +412,11 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 const char kEnableDeviceDiscoveryNotifications[] =
     "enable-device-discovery-notifications";
 
-// Enables the DOM distiller.
-const char kEnableDomDistiller[] = "enable-dom-distiller";
-
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
 // Download Notification. (value is "", "enabled" or "disabled")
 const char kEnableDownloadNotification[] = "enable-download-notification";
-
-// Enable Enhanced Bookmarks.
-const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";
 
 // Enables experimentation with ephemeral apps to be launched from the webstore.
 const char kEnableEphemeralAppsInWebstore[] =
@@ -542,9 +536,6 @@ const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 // Enables the supervised user managed bookmarks folder.
 const char kEnableSupervisedUserManagedBookmarksFolder[] =
     "enable-supervised-user-managed-bookmarks-folder";
-
-// Enables synced articles.
-const char kEnableSyncArticles[]            = "enable-sync-articles";
 
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";

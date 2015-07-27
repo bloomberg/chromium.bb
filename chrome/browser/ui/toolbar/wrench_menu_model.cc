@@ -45,6 +45,7 @@
 #include "chrome/common/profiling.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/ui/zoom/zoom_controller.h"

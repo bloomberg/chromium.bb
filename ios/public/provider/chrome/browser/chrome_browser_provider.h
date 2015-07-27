@@ -86,8 +86,6 @@ class ChromeBrowserProvider {
   virtual void ShowTranslateSettings();
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
-  // Returns whether the new bookmark collection experience is enabled.
-  virtual bool IsBookmarkCollectionEnabled();
   // Returns the chrome UI scheme.
   // TODO(droger): Remove this method once chrome no longer needs to match
   // content.

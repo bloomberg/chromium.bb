@@ -10,9 +10,16 @@
 
 namespace switches {
 
+// Switch to enable the DOM distiller.
+extern const char kEnableDomDistiller[];
+
+// Switch to enable synced articles.
+extern const char kEnableSyncArticles[];
+
 // Switch to enable specific heuristics for detecting if a page is distillable
 // or not.
 extern const char kReaderModeHeuristics[];
+
 // Switch to control the display of the distiller feedback form.
 extern const char kReaderModeFeedback[];
 

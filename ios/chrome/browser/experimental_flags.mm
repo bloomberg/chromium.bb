@@ -15,9 +15,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_features.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/web_view_creation_util.h"
 
 namespace {
@@ -35,7 +35,7 @@ bool IsAlertOnBackgroundUploadEnabled() {
 }
 
 bool IsBookmarkCollectionEnabled() {
-  return ios::GetChromeBrowserProvider()->IsBookmarkCollectionEnabled();
+  return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
 }
 
 bool IsBookmarkImageFetchingOnVisitEnabled() {

@@ -1349,8 +1349,6 @@
       'browser/bookmarks/chrome_bookmark_client.h',
       'browser/bookmarks/chrome_bookmark_client_factory.cc',
       'browser/bookmarks/chrome_bookmark_client_factory.h',
-      'browser/bookmarks/enhanced_bookmarks_features.cc',
-      'browser/bookmarks/enhanced_bookmarks_features.h',
       'browser/bookmarks/managed_bookmark_service_factory.cc',
       'browser/bookmarks/managed_bookmark_service_factory.h',
       'browser/bookmarks/startup_task_runner_service_factory.cc',

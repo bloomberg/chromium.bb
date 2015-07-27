@@ -10,7 +10,6 @@
 #include "base/i18n/string_compare.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +23,7 @@
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_features.h"
 #include "components/query_parser/query_parser.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/undo/bookmark_undo_service.h"
@@ -142,7 +142,7 @@ static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
 static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
                                                   jclass clazz,
                                                   jobject j_profile) {
-  return IsEnhancedBookmarksEnabled();
+  return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
 }
 
 jboolean BookmarksBridge::IsEditBookmarksEnabled(JNIEnv* env, jobject obj) {
@@ -713,7 +713,7 @@ base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
     return partner_bookmarks_shim_->GetTitle(node);
 
   if (node == bookmark_model_->bookmark_bar_node()
-      && IsEnhancedBookmarksEnabled()) {
+      && enhanced_bookmarks::IsEnhancedBookmarksEnabled()) {
     return l10n_util::GetStringUTF16(IDS_ENHANCED_BOOKMARK_BAR_FOLDER_NAME);
   }
 

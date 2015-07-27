@@ -28,6 +28,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"

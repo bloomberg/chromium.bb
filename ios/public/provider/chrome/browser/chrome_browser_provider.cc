@@ -74,10 +74,6 @@ std::string ChromeBrowserProvider::GetDistributionBrandCode() {
   return std::string();
 }
 
-bool ChromeBrowserProvider::IsBookmarkCollectionEnabled() {
-  return false;
-}
-
 const char* ChromeBrowserProvider::GetChromeUIScheme() {
   return nullptr;
 }

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
+
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
-#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/session_data_type_controller.h"
@@ -50,6 +50,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -325,7 +326,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 
   // Article sync is disabled by default.  Register only if explicitly enabled.
-  if (IsEnableSyncArticlesSet()) {
+  if (dom_distiller::IsEnableSyncArticlesSet()) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
