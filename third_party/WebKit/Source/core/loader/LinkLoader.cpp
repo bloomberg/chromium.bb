@@ -38,6 +38,7 @@
 #include "core/fetch/LinkFetchResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -116,9 +117,18 @@ void LinkLoader::didSendDOMContentLoadedForPrerender()
     m_client->didSendDOMContentLoadedForLinkPrerender();
 }
 
-static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document)
+enum LinkCaller {
+    LinkCalledFromHeader,
+    LinkCalledFromMarkup,
+};
+
+
+static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, LinkCaller caller)
 {
     if (relAttribute.isDNSPrefetch()) {
+        UseCounter::count(document, UseCounter::LinkRelDnsPrefetch);
+        if (caller == LinkCalledFromHeader)
+            UseCounter::count(document, UseCounter::LinkHeaderDnsPrefetch);
         Settings* settings = document.settings();
         // FIXME: The href attribute of the link element can be in "//hostname" form, and we shouldn't attempt
         // to complete that as URL <https://bugs.webkit.org/show_bug.cgi?id=48857>.
@@ -130,9 +140,12 @@ static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL
     }
 }
 
-static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const CrossOriginAttributeValue crossOrigin)
+static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const CrossOriginAttributeValue crossOrigin, LinkCaller caller)
 {
     if (relAttribute.isPreconnect() && href.isValid() && href.protocolIsInHTTPFamily()) {
+        UseCounter::count(document, UseCounter::LinkRelPreconnect);
+        if (caller == LinkCalledFromHeader)
+            UseCounter::count(document, UseCounter::LinkHeaderPreconnect);
         ASSERT(RuntimeEnabledFeatures::linkPreconnectEnabled());
         Settings* settings = document.settings();
         if (settings && settings->logDnsPrefetchAndPreconnect()) {
@@ -166,6 +179,7 @@ static bool getPriorityTypeFromAsAttribute(const String& as, Resource::Type& typ
 void LinkLoader::preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as)
 {
     if (relAttribute.isLinkPreload()) {
+        UseCounter::count(document, UseCounter::LinkRelPreload);
         ASSERT(RuntimeEnabledFeatures::linkPreloadEnabled());
         if (!href.isValid() || href.isEmpty()) {
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> has an invalid `href` value")));
@@ -197,10 +211,10 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
         LinkRelAttribute relAttribute(header.rel());
         KURL url = document->completeURL(header.url());
         if (RuntimeEnabledFeatures::linkHeaderEnabled())
-            dnsPrefetchIfNeeded(relAttribute, url, *document);
+            dnsPrefetchIfNeeded(relAttribute, url, *document, LinkCalledFromHeader);
 
         if (RuntimeEnabledFeatures::linkPreconnectEnabled())
-            preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin());
+            preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), LinkCalledFromHeader);
 
         // FIXME: Add more supported headers as needed.
     }
@@ -213,9 +227,9 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
 
     // TODO(yoav): Convert all uses of the CrossOriginAttribute to CrossOriginAttributeValue. crbug.com/486689
     // FIXME(crbug.com/463266): We're ignoring type here. Maybe we shouldn't.
-    dnsPrefetchIfNeeded(relAttribute, href, document);
+    dnsPrefetchIfNeeded(relAttribute, href, document, LinkCalledFromMarkup);
 
-    preconnectIfNeeded(relAttribute, href, document, crossOriginAttributeValue(crossOriginMode));
+    preconnectIfNeeded(relAttribute, href, document, crossOriginAttributeValue(crossOriginMode), LinkCalledFromMarkup);
 
     if (m_client->shouldLoadLink())
         preloadIfNeeded(relAttribute, href, document, as);
