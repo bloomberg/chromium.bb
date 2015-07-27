@@ -63,4 +63,8 @@ void StubWindow::MoveCursorTo(const gfx::Point& location) {
 void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
+PlatformImeController* StubWindow::GetPlatformImeController() {
+  return nullptr;
+}
+
 }  // namespace ui

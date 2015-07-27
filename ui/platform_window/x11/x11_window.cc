@@ -260,6 +260,10 @@ void X11Window::MoveCursorTo(const gfx::Point& location) {}
 void X11Window::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
+PlatformImeController* X11Window::GetPlatformImeController() {
+  return nullptr;
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& event) {
   return FindXEventTarget(event) == xwindow_;
 }

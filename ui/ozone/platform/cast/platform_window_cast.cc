@@ -24,4 +24,8 @@ void PlatformWindowCast::SetBounds(const gfx::Rect& bounds) {
   delegate_->OnBoundsChanged(bounds);
 }
 
+PlatformImeController* PlatformWindowCast::GetPlatformImeController() {
+  return nullptr;
+}
+
 }  // namespace ui

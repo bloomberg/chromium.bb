@@ -14,6 +14,7 @@ class Rect;
 
 namespace ui {
 
+class PlatformImeController;
 class PlatformWindowDelegate;
 
 // Platform window.
@@ -49,6 +50,10 @@ class PlatformWindow {
   // Confines the cursor to |bounds| when it is in the platform window. |bounds|
   // is in platform window coordinates.
   virtual void ConfineCursorToBounds(const gfx::Rect& bounds) = 0;
+
+  // The PlatformImeController is owned by the PlatformWindow, the ownership is
+  // not transferred.
+  virtual PlatformImeController* GetPlatformImeController() = 0;
 };
 
 }  // namespace ui

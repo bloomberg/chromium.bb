@@ -80,4 +80,8 @@ void TestWindow::MoveCursorTo(const gfx::Point& location) {
 void TestWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
+PlatformImeController* TestWindow::GetPlatformImeController() {
+  return nullptr;
+}
+
 }  // namespace ui

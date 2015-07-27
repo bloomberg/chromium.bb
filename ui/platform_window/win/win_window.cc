@@ -109,6 +109,10 @@ void WinWindow::MoveCursorTo(const gfx::Point& location) {}
 void WinWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
+PlatformImeController* WinWindow::GetPlatformImeController() {
+  return nullptr;
+}
+
 LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
   tracked_objects::ScopedTracker tracking_profile(

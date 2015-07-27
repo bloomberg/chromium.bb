@@ -10,6 +10,8 @@ assert(is_android)
 component("android") {
   output_name = "android_window"
   sources = [
+    "platform_ime_controller_android.cc",
+    "platform_ime_controller_android.h",
     "platform_window_android.cc",
     "platform_window_android.h",
   ]
@@ -29,13 +31,17 @@ component("android") {
 
 generate_jni("jni_headers") {
   sources = [
+    "java/src/org/chromium/ui/PlatformImeControllerAndroid.java",
     "java/src/org/chromium/ui/PlatformWindowAndroid.java",
   ]
   jni_package = "android_window"
 }
 
 android_library("platform_window_java") {
-  java_files = [ "java/src/org/chromium/ui/PlatformWindowAndroid.java" ]
+  java_files = [
+    "java/src/org/chromium/ui/PlatformImeControllerAndroid.java",
+    "java/src/org/chromium/ui/PlatformWindowAndroid.java",
+  ]
   deps = [
     "//base:base_java",
   ]

@@ -9,12 +9,15 @@
 #include "base/bind.h"
 #include "mojo/runner/android/android_handler.h"
 #include "mojo/runner/android/main.h"
+#include "ui/platform_window/android/platform_ime_controller_android.h"
 #include "ui/platform_window/android/platform_window_android.h"
 
 namespace {
 
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
     {"AndroidHandler", mojo::runner::RegisterAndroidHandlerJni},
+    {"PlatformImeControllerAndroid",
+     ui::PlatformImeControllerAndroid::Register},
     {"PlatformWindowAndroid", ui::PlatformWindowAndroid::Register},
     {"ShellMain", mojo::runner::RegisterShellMain},
 };

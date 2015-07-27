@@ -119,6 +119,10 @@ void DrmWindowHost::ConfineCursorToBounds(const gfx::Rect& bounds) {
   cursor_->CommitBoundsChange(widget_, bounds_, bounds);
 }
 
+PlatformImeController* DrmWindowHost::GetPlatformImeController() {
+  return nullptr;
+}
+
 bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);

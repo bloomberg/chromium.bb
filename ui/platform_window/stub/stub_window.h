@@ -32,6 +32,7 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
+  PlatformImeController* GetPlatformImeController() override;
 
   PlatformWindowDelegate* delegate_;
   gfx::Rect bounds_;

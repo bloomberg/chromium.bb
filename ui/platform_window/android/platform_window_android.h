@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/sequential_id_generator.h"
+#include "ui/platform_window/android/platform_ime_controller_android.h"
 #include "ui/platform_window/platform_window.h"
 
 struct ANativeWindow;
@@ -54,6 +55,7 @@ class PlatformWindowAndroid : public PlatformWindow {
                 bool pressed,
                 jint key_code,
                 jint unicode_character);
+
  private:
   void ReleaseWindow();
 
@@ -72,6 +74,7 @@ class PlatformWindowAndroid : public PlatformWindow {
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
+  PlatformImeController* GetPlatformImeController() override;
 
   PlatformWindowDelegate* delegate_;
 
@@ -80,6 +83,8 @@ class PlatformWindowAndroid : public PlatformWindow {
   ui::SequentialIDGenerator id_generator_;
 
   gfx::Size size_;  // Origin is always (0,0)
+
+  PlatformImeControllerAndroid platform_ime_controller_;
 
   base::WeakPtrFactory<PlatformWindowAndroid> weak_factory_;
 

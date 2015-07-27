@@ -12,6 +12,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -24,16 +26,18 @@ public class PlatformWindowAndroid extends SurfaceView {
 
     private long mNativeMojoViewport;
     private final SurfaceHolder.Callback mSurfaceCallback;
+    private final PlatformImeControllerAndroid mImeController;
 
     @CalledByNative
     public static PlatformWindowAndroid createForActivity(
-            Activity activity, long nativeViewport) {
-        PlatformWindowAndroid rv = new PlatformWindowAndroid(activity, nativeViewport);
+            Activity activity, long nativeViewport, long nativeImeController) {
+        PlatformWindowAndroid rv =
+                new PlatformWindowAndroid(activity, nativeViewport, nativeImeController);
         activity.setContentView(rv);
         return rv;
     }
 
-    public PlatformWindowAndroid(Context context, long nativeViewport) {
+    public PlatformWindowAndroid(Context context, long nativeViewport, long nativeImeController) {
         super(context);
 
         setFocusable(true);
@@ -65,6 +69,7 @@ public class PlatformWindowAndroid extends SurfaceView {
         };
         getHolder().addCallback(mSurfaceCallback);
 
+        mImeController = new PlatformImeControllerAndroid(this, nativeImeController);
     }
 
     @CalledByNative
@@ -98,6 +103,16 @@ public class PlatformWindowAndroid extends SurfaceView {
             result |= sub_result;
         }
         return result;
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return mImeController.isTextEditorType();
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        return mImeController.onCreateInputConnection(outAttrs);
     }
 
     @Override

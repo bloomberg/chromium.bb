@@ -158,7 +158,8 @@ void PlatformWindowAndroid::Show() {
   java_platform_window_android_ = JavaObjectWeakGlobalRef(
       env, Java_PlatformWindowAndroid_createForActivity(
                env, base::android::GetApplicationContext(),
-               reinterpret_cast<jlong>(this)).obj());
+               reinterpret_cast<jlong>(this),
+               reinterpret_cast<jlong>(&platform_ime_controller_)).obj());
 }
 
 void PlatformWindowAndroid::Hide() {
@@ -211,6 +212,10 @@ void PlatformWindowAndroid::MoveCursorTo(const gfx::Point& location) {
 
 void PlatformWindowAndroid::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
+}
+
+PlatformImeController* PlatformWindowAndroid::GetPlatformImeController() {
+  return &platform_ime_controller_;
 }
 
 }  // namespace ui
