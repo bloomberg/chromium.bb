@@ -60,16 +60,12 @@ PersistentPrefStore::PrefReadError HandleReadErrors(
     switch (error_code) {
       case JSONFileValueDeserializer::JSON_ACCESS_DENIED:
         return PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED;
-        break;
       case JSONFileValueDeserializer::JSON_CANNOT_READ_FILE:
         return PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER;
-        break;
       case JSONFileValueDeserializer::JSON_FILE_LOCKED:
         return PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED;
-        break;
       case JSONFileValueDeserializer::JSON_NO_SUCH_FILE:
         return PersistentPrefStore::PREF_READ_ERROR_NO_FILE;
-        break;
       default:
         // JSON errors indicate file corruption of some sort.
         // Since the file is corrupt, move it to the side and continue with
