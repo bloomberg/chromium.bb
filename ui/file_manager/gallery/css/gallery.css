@@ -227,46 +227,43 @@ files-toggle-ripple::shadow .ripple.activated {
 }
 
 .gallery .arrow-box {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  height: 100%;
   pointer-events: none;
-  position: absolute;
-  width: 100%;
-  z-index: 100;
 }
 
 .gallery .arrow-box .arrow {
+  align-items: center;
+  display: flex;
+  height: 100%;
   opacity: 0;
-  pointer-events: none;
+  position: absolute;
+  z-index: 100;
 }
 
-.gallery .arrow-box .arrow-spacer {
-  -webkit-box-flex: 1;
-  pointer-events: none;
+.gallery .arrow-box .arrow.left {
+  left: 16px;
+}
+
+.gallery .arrow-box .arrow.right {
+  right: 16px;
 }
 
 .gallery[tools] .arrow-box[active] .arrow {
-  cursor: pointer;
   opacity: 1;
-  pointer-events: auto;
 }
 
 /* The arrow icons are in nested divs so that their opacity can be manipulated
  * independently from their parent (which can be dimmed when the crop frame
  * overlaps it) */
 .gallery .arrow div {
-  background-position: center center;
-  background-repeat: no-repeat;
-  height: 193px;
+  cursor: pointer;
+  height: 48px;
   opacity: 0;
-  width: 105px;
+  width: 48px;
+  pointer-events: auto;
 }
 
 .gallery[tools] .arrow-box[active] .arrow div {
-  opacity: 0.25;
+  opacity: 0.4;
 }
 
 .gallery[tools] .arrow-box[active] .arrow div:hover {
@@ -275,14 +272,14 @@ files-toggle-ripple::shadow .ripple.activated {
 
 .gallery .arrow.left div {
   background-image: -webkit-image-set(
-      url(../images/100/arrow_left.png) 1x,
-      url(../images/200/arrow_left.png) 2x);
+      url(../images/100/slideshow_previous.png) 1x,
+      url(../images/200/slideshow_previous.png) 2x);
 }
 
 .gallery .arrow.right div {
   background-image: -webkit-image-set(
-      url(../images/100/arrow_right.png) 1x,
-      url(../images/200/arrow_right.png) 2x);
+      url(../images/100/slideshow_next.png) 1x,
+      url(../images/200/slideshow_next.png) 2x);
 }
 
 /* Special behavior on mouse drag.
@@ -1271,11 +1268,9 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
 /* Slideshow controls */
 
 .slideshow-toolbar {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  bottom: 0;
+  bottom: 16px;
   display: none;
+  justify-content: center;
   left: 0;
   padding-bottom: 6px;
   pointer-events: none;
@@ -1284,16 +1279,16 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
 }
 
 .gallery[tools][slideshow] .slideshow-toolbar {
-  display: -webkit-box;
+  display: flex;
 }
 
 .slideshow-toolbar > div {
   background-position: center;
   background-repeat: no-repeat;
-  height: 68px;
-  opacity: 0.5;
+  height: 48px;
+  opacity: 0.8;
   pointer-events: auto;
-  width: 68px;
+  width: 48px;
 }
 
 .slideshow-toolbar > div:hover {
@@ -1302,22 +1297,21 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
 
 .slideshow-toolbar > .slideshow-play {
   background-image: -webkit-image-set(
-      url(../images/100/slideshow-play.png) 1x,
-      url(../images/200/slideshow-play.png) 2x);
-  margin-right: -2px;
+      url(../images/100/slideshow_play.png) 1x,
+      url(../images/200/slideshow_play.png) 2x);
 }
 
 .gallery[slideshow='playing'] .slideshow-toolbar > .slideshow-play {
   background-image: -webkit-image-set(
-      url(../images/100/slideshow-pause.png) 1x,
-      url(../images/200/slideshow-pause.png) 2x);
+      url(../images/100/slideshow_pause.png) 1x,
+      url(../images/200/slideshow_pause.png) 2x);
 }
 
 .slideshow-toolbar > .slideshow-end {
+  -webkit-margin-start: 4px;
   background-image: -webkit-image-set(
-      url(../images/100/slideshow-end.png) 1x,
-      url(../images/200/slideshow-end.png) 2x);
-  margin-left: -2px;
+      url(../images/100/slideshow_close.png) 1x,
+      url(../images/200/slideshow_close.png) 2x);
 }
 
 .debug-me .load-target-content-metadata::before,

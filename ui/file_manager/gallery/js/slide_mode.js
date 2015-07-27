@@ -303,8 +303,6 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
       this.advanceManually.bind(this, -1));
   util.createChild(this.arrowLeft_);
 
-  util.createChild(this.arrowBox_, 'arrow-spacer');
-
   /**
    * @type {!HTMLElement}
    * @private
