@@ -2445,7 +2445,6 @@
     { "name": "ethercalc.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ethercalc.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "fluxfingers.net", "include_subdomains": true, "mode": "force-https" },
-    { "name": "getbambu.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "haber1903.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "initrd.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "integromat.com", "include_subdomains": true, "mode": "force-https" },
