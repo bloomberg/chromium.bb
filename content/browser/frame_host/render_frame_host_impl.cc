@@ -2165,6 +2165,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
   return g_allow_injecting_javascript ||
+         !frame_tree_node_->current_url().is_valid() ||
          frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
          ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
              GetProcess()->GetID()) ||
