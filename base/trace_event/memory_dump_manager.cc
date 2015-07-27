@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/atomic_sequence_num.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/hash.h"
 #include "base/thread_task_runner_handle.h"
@@ -420,7 +421,12 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
-  if (delegate_->IsCoordinatorProcess()) {
+  // TODO(primiano): This is a temporary hack to disable periodic memory dumps
+  // when running memory benchmarks until they can be enabled/disabled in
+  // base::trace_event::TraceConfig. See https://goo.gl/5Hj3o0.
+  if (delegate_->IsCoordinatorProcess() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          "enable-memory-benchmarking")) {
     g_periodic_dumps_count = 0;
     periodic_dump_timer_.Start(FROM_HERE,
                                TimeDelta::FromMilliseconds(kDumpIntervalMs),
