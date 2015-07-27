@@ -10,6 +10,8 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import junit.framework.Assert;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.content.browser.test.util.TestTouchUtils;
@@ -24,21 +26,17 @@ public class TranslateUtil {
      *
      * @return True if the panel is opened.
      */
-    public static boolean openLanguagePanel(ActivityInstrumentationTestCase2<?> test,
+    public static void openLanguagePanel(ActivityInstrumentationTestCase2<?> test,
             InfoBar infoBar) {
         View view = infoBar.getContentWrapper().findViewById(R.id.infobar_message);
-        if (view == null) {
-            return false;
-        }
+        Assert.assertNotNull(view);
 
         TextView text = (TextView) view.findViewById(R.id.infobar_message);
 
         SpannableString spannable = (SpannableString) text.getText();
         ClickableSpan[] clickable =
             spannable.getSpans(0, spannable.length() - 1, ClickableSpan.class);
-        if (clickable.length <= 0) {
-            return false;
-        }
+        Assert.assertTrue(clickable.length > 0);
 
         // Find the approximate coordinates of the first link of the first line of text so we can
         // click there. Clicking on any character of the link will work so instead of focusing on
@@ -54,17 +52,15 @@ public class TranslateUtil {
 
         TestTouchUtils.singleClickView(test.getInstrumentation(), text, (int) xPos, (int) yPos);
 
-        return verifyInfoBarText(infoBar,
-            test.getActivity().getString(R.string.translate_infobar_change_languages));
+        assertInfoBarText(infoBar, test.getActivity().getString(
+                R.string.translate_infobar_change_languages));
     }
 
-    public static boolean verifyInfoBarText(InfoBar infoBar, String text) {
+    public static void assertInfoBarText(InfoBar infoBar, String expectedText) {
         View view = infoBar.getContentWrapper().findViewById(R.id.infobar_message);
-        if (view == null) {
-            return false;
-        }
-        String infoBarText = findInfoBarText(view);
-        return text.equals(infoBarText);
+        Assert.assertNotNull(view);
+        String actualText = findInfoBarText(view);
+        Assert.assertEquals(expectedText, actualText);
     }
 
     private static String findInfoBarText(View view) {
