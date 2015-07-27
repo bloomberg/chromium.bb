@@ -1084,6 +1084,10 @@
       # Native Client is enabled by default.
       'disable_nacl%': '0',
 
+      # Native Client toolchains, enabled by default.
+      'disable_pnacl%': 0,
+      'disable_newlib%': 0,
+
       # Sets the default version name and code for Android app, by default we
       # do a developer build.
       'android_app_version_name%': 'Developer Build',
@@ -1474,8 +1478,9 @@
     # Copy out the setting of disable_nacl.
     'disable_nacl%': '<(disable_nacl)',
 
-    # Portable Native Client is enabled by default.
-    'disable_pnacl%': 0,
+    # Native Client toolchains, enabled by default.
+    'disable_pnacl%': '<(disable_pnacl)',
+    'disable_newlib%': '<(disable_newlib)',
 
     # Whether to build full debug version for Debug configuration on Android.
     # Compared to full debug version, the default Debug configuration on Android
