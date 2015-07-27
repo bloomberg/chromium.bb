@@ -88,6 +88,10 @@ void UpdateAuthParams(base::DictionaryValue* params,
   params->SetBoolean("createAccount", allow_new_user && allow_guest);
   params->SetBoolean("guestSignin", allow_guest);
 
+  // nosignup flow if new users are not allowed.
+  if (!allow_new_user && StartupUtils::IsWebviewSigninEnabled())
+    params->SetString("flow", "nosignup");
+
   // Allow supervised user creation only if:
   // 1. Enterprise managed device > is allowed by policy.
   // 2. Consumer device > owner exists.
