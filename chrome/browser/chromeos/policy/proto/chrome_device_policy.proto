@@ -56,12 +56,12 @@ message DataRoamingEnabledProto {
   optional bool data_roaming_enabled = 1 [default = false];
 }
 
-message DeviceProxySettingsProto {
+message OBSOLETE_DeviceProxySettingsProto {
   // One of "direct", "auto_detect", "pac_script", "fixed_servers", "system"
-  optional string proxy_mode = 1;
-  optional string proxy_server = 2;
-  optional string proxy_pac_url = 3;
-  optional string proxy_bypass_list = 4;
+  optional string OBSOLETE_proxy_mode = 1 [deprecated = true];
+  optional string OBSOLETE_proxy_server = 2 [deprecated = true];
+  optional string OBSOLETE_proxy_pac_url = 3 [deprecated = true];
+  optional string OBSOLETE_proxy_bypass_list = 4 [deprecated = true];
 }
 
 // This is used by chromeos, make sure to do cleanup there before marking it as
@@ -629,7 +629,8 @@ message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
-  optional DeviceProxySettingsProto device_proxy_settings = 4;
+  optional OBSOLETE_DeviceProxySettingsProto device_proxy_settings = 4 
+      [deprecated = true];
   optional CameraEnabledProto camera_enabled = 5;
   optional ShowUserNamesOnSigninProto show_user_names = 6;
   optional DataRoamingEnabledProto data_roaming_enabled = 7;
