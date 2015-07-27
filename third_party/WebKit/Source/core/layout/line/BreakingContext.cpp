@@ -31,7 +31,7 @@ InlineIterator BreakingContext::handleEndOfLine()
     if (m_lineBreak == m_resolver.position() && (!m_lineBreak.object() || !m_lineBreak.object().isBR())) {
         // we just add as much as possible
         if (m_blockStyle->whiteSpace() == PRE && !m_current.offset()) {
-            m_lineBreak.moveTo(LineLayoutItem(m_lastObject), m_lastObject->isText() ? m_lastObject->length() : 0);
+            m_lineBreak.moveTo(m_lastObject, m_lastObject.isText() ? m_lastObject.length() : 0);
         } else if (m_lineBreak.object()) {
             // Don't ever break in the middle of a word if we can help it.
             // There's no room at all. We just have to be on this line,

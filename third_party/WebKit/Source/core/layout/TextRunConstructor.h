@@ -47,6 +47,8 @@ class Font;
 class LayoutObject;
 class ComputedStyle;
 class LayoutText;
+class LineLayoutText;
+class LineLayoutItem;
 
 enum TextRunFlag {
     DefaultTextRunFlags = 0,
@@ -58,7 +60,7 @@ typedef unsigned TextRunFlags;
 
 // Direction resolved from string value.
 TextRun constructTextRun(const Font&, const String&, const ComputedStyle&, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(const Font&, const LayoutText*, unsigned offset, unsigned length, const ComputedStyle&);
+TextRun constructTextRun(const Font&, const LineLayoutText, unsigned offset, unsigned length, const ComputedStyle&);
 
 // Explicit direction.
 TextRun constructTextRun(const Font&, const String&, const ComputedStyle&, TextDirection, TextRunFlags = DefaultTextRunFlags);

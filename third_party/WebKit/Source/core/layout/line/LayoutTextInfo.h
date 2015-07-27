@@ -37,7 +37,7 @@ struct LayoutTextInfo {
     {
     }
 
-    LayoutText* m_text;
+    LineLayoutText m_text;
     LazyLineBreakIterator m_lineBreakIterator;
     const Font* m_font;
 };

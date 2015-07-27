@@ -28,6 +28,11 @@ public:
 
     LineLayoutBoxModel() { }
 
+    DeprecatedPaintLayer* layer() const
+    {
+        return toBoxModel()->layer();
+    }
+
 private:
     LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
     const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }

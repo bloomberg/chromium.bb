@@ -6,6 +6,7 @@
 #define LineLayoutItem_h
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutObjectInlines.h"
 
 #include "platform/LayoutUnit.h"
 
@@ -45,6 +46,16 @@ public:
     // to the line layout code.
     LineLayoutBox containingBlock() const;
 
+    LineLayoutItem container() const
+    {
+        return LineLayoutItem(m_layoutObject->container());
+    }
+
+    bool isDescendantOf(const LineLayoutItem item) const
+    {
+        return m_layoutObject->isDescendantOf(item);
+    }
+
     void updateHitTestResult(HitTestResult& result, const LayoutPoint& point)
     {
         return m_layoutObject->updateHitTestResult(result, point);
@@ -78,6 +89,16 @@ public:
     const ComputedStyle& styleRef() const
     {
         return m_layoutObject->styleRef();
+    }
+
+    const ComputedStyle* style(bool firstLine) const
+    {
+        return m_layoutObject->style(firstLine);
+    }
+
+    const ComputedStyle& styleRef(bool firstLine) const
+    {
+        return m_layoutObject->styleRef(firstLine);
     }
 
     Document& document() const
@@ -133,6 +154,11 @@ public:
     bool isBR() const
     {
         return m_layoutObject->isBR();
+    }
+
+    bool isCombineText() const
+    {
+        return m_layoutObject->isCombineText();
     }
 
     bool isHorizontalWritingMode() const

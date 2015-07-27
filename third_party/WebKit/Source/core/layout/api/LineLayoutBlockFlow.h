@@ -56,14 +56,29 @@ public:
         return toBlockFlow()->logicalWidthForChild(child);
     }
 
+    LayoutUnit logicalWidthForChild(LineLayoutBox child) const
+    {
+        return toBlockFlow()->logicalWidthForChild(*toLayoutBox(child));
+    }
+
     LayoutUnit marginStartForChild(const LayoutBoxModelObject& child) const
     {
         return toBlockFlow()->marginStartForChild(child);
     }
 
+    LayoutUnit marginStartForChild(LineLayoutBox child) const
+    {
+        return toBlockFlow()->marginStartForChild(*toLayoutBoxModelObject(child));
+    }
+
     LayoutUnit marginEndForChild(const LayoutBoxModelObject& child) const
     {
         return toBlockFlow()->marginEndForChild(child);
+    }
+
+    LayoutUnit marginEndForChild(LineLayoutBox child) const
+    {
+        return toBlockFlow()->marginEndForChild(*toLayoutBoxModelObject(child));
     }
 
     LayoutUnit marginBeforeForChild(const LayoutBoxModelObject& child) const
@@ -86,19 +101,24 @@ public:
         return toBlockFlow()->minLineHeightForReplacedObject(isFirstLine, replacedHeight);
     }
 
-    void setStaticInlinePositionForChild(LayoutBox& box, LayoutUnit inlinePosition)
+    void setStaticInlinePositionForChild(LineLayoutBox box, LayoutUnit inlinePosition)
     {
-        toBlockFlow()->setStaticInlinePositionForChild(box, inlinePosition);
+        toBlockFlow()->setStaticInlinePositionForChild(*toLayoutBox(box), inlinePosition);
     }
 
-    void updateStaticInlinePositionForChild(LayoutBox& box, LayoutUnit logicalTop)
+    void updateStaticInlinePositionForChild(LineLayoutBox box, LayoutUnit logicalTop)
     {
-        toBlockFlow()->updateStaticInlinePositionForChild(box, logicalTop);
+        toBlockFlow()->updateStaticInlinePositionForChild(*toLayoutBox(box), logicalTop);
     }
 
     FloatingObject* insertFloatingObject(LayoutBox& box)
     {
         return toBlockFlow()->insertFloatingObject(box);
+    }
+
+    FloatingObject* insertFloatingObject(LineLayoutBox box)
+    {
+        return toBlockFlow()->insertFloatingObject(*toLayoutBox(box));
     }
 
     bool positionNewFloats(LineWidth* width)

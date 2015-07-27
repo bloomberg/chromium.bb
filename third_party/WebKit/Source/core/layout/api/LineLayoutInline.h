@@ -6,7 +6,7 @@
 #define LineLayoutInline_h
 
 #include "core/layout/LayoutInline.h"
-#include "core/layout/api/LineLayoutItem.h"
+#include "core/layout/api/LineLayoutBoxModel.h"
 #include "platform/LayoutUnit.h"
 
 namespace blink {
@@ -15,15 +15,15 @@ class ComputedStyle;
 class LayoutInline;
 class LayoutObject;
 
-class LineLayoutInline : public LineLayoutItem {
+class LineLayoutInline : public LineLayoutBoxModel {
 public:
     explicit LineLayoutInline(LayoutInline* layoutInline)
-        : LineLayoutItem(layoutInline)
+        : LineLayoutBoxModel(layoutInline)
     {
     }
 
     explicit LineLayoutInline(const LineLayoutItem& item)
-        : LineLayoutItem(item)
+        : LineLayoutBoxModel(item)
     {
         ASSERT(!item || item.isLayoutInline());
     }
@@ -38,6 +38,41 @@ public:
     LineLayoutItem lastChild() const
     {
         return LineLayoutItem(toInline()->lastChild());
+    }
+
+    LayoutUnit marginStart() const
+    {
+        return toInline()->marginStart();
+    }
+
+    LayoutUnit marginEnd() const
+    {
+        return toInline()->marginEnd();
+    }
+
+    int borderStart() const
+    {
+        return toInline()->borderStart();
+    }
+
+    int borderEnd() const
+    {
+        return toInline()->borderEnd();
+    }
+
+    LayoutUnit paddingStart() const
+    {
+        return toInline()->paddingStart();
+    }
+
+    LayoutUnit paddingEnd() const
+    {
+        return toInline()->paddingEnd();
+    }
+
+    bool hasInlineDirectionBordersPaddingOrMargin() const
+    {
+        return toInline()->hasInlineDirectionBordersPaddingOrMargin();
     }
 
 protected:

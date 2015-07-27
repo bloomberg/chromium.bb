@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class LayoutText;
-
 class WordMeasurement {
 public:
     WordMeasurement()
@@ -41,7 +39,7 @@ public:
     {
     }
 
-    LayoutText* layoutText;
+    LineLayoutText layoutText;
     float width;
     int startOffset;
     int endOffset;

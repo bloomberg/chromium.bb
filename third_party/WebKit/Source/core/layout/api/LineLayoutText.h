@@ -42,9 +42,54 @@ public:
         return toText()->characterAt(offset);
     }
 
+    UChar uncheckedCharacterAt(unsigned offset) const
+    {
+        return toText()->uncheckedCharacterAt(offset);
+    }
+
+    bool is8Bit() const
+    {
+        return toText()->is8Bit();
+    }
+
+    const LChar* characters8() const
+    {
+        return toText()->characters8();
+    }
+
+    const UChar* characters16() const
+    {
+        return toText()->characters16();
+    }
+
+    bool hasEmptyText() const
+    {
+        return toText()->hasEmptyText();
+    }
+
     unsigned textLength() const
     {
         return toText()->textLength();
+    }
+
+    const String& text() const
+    {
+        return toText()->text();
+    }
+
+    bool canUseSimpleFontCodePath() const
+    {
+        return toText()->canUseSimpleFontCodePath();
+    }
+
+    float width(unsigned from, unsigned len, const Font& font, LayoutUnit xPos, TextDirection textDirection, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
+    {
+        return toText()->width(from, len, font, xPos, textDirection, fallbackFonts, glyphBounds);
+    }
+
+    float hyphenWidth(const Font& font, TextDirection textDirection)
+    {
+        return toText()->hyphenWidth(font, textDirection);
     }
 
 private:

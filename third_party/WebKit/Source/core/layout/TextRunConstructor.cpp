@@ -32,6 +32,8 @@
 #include "core/layout/TextRunConstructor.h"
 
 #include "core/layout/LayoutText.h"
+#include "core/layout/api/LineLayoutItem.h"
+#include "core/layout/api/LineLayoutText.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
@@ -106,15 +108,15 @@ TextRun constructTextRun(const Font& font, const String& string, const ComputedS
     return constructTextRun(font, string, style, string.isEmpty() || string.is8Bit() ? LTR : determineDirectionality(string), flags);
 }
 
-TextRun constructTextRun(const Font& font, const LayoutText* text, unsigned offset, unsigned length, const ComputedStyle& style)
+TextRun constructTextRun(const Font& font, const LineLayoutText text, unsigned offset, unsigned length, const ComputedStyle& style)
 {
-    ASSERT(offset + length <= text->textLength());
-    if (text->hasEmptyText())
+    ASSERT(offset + length <= text.textLength());
+    if (text.hasEmptyText())
         return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0, style, LTR);
-    if (text->is8Bit())
-        return constructTextRunInternal(font, text->characters8() + offset, length, style, LTR);
+    if (text.is8Bit())
+        return constructTextRunInternal(font, text.characters8() + offset, length, style, LTR);
 
-    TextRun run = constructTextRunInternal(font, text->characters16() + offset, length, style, LTR);
+    TextRun run = constructTextRunInternal(font, text.characters16() + offset, length, style, LTR);
     run.setDirection(directionForRun(run));
     return run;
 }
