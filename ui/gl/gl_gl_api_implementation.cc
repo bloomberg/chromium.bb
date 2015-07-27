@@ -524,19 +524,7 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
   real_context_ = real_context;
 
   DCHECK(real_context->IsCurrent(NULL));
-  std::string ext_string = real_context->GetExtensions();
-  std::vector<std::string> ext = base::SplitString(
-      ext_string, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  std::vector<std::string>::iterator it;
-  // We can't support GL_EXT_occlusion_query_boolean which is
-  // based on GL_ARB_occlusion_query without a lot of work virtualizing
-  // queries.
-  it = std::find(ext.begin(), ext.end(), "GL_EXT_occlusion_query_boolean");
-  if (it != ext.end())
-    ext.erase(it);
-
-  extensions_ = base::JoinString(ext, " ");
+  extensions_ = real_context->GetExtensions();
 }
 
 bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
