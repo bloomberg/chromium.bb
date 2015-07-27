@@ -240,6 +240,7 @@ class ProtocolPerfTest
 
     scoped_ptr<protocol::SessionManager> session_manager(
         new protocol::JingleSessionManager(host_transport_factory.Pass()));
+    session_manager->set_protocol_config(protocol_config_->Clone());
 
     // Encoder runs on a separate thread, main thread is used for everything
     // else.
@@ -277,7 +278,6 @@ class ProtocolPerfTest
     host_->SetAuthenticatorFactory(auth_factory.Pass());
 
     host_->AddStatusObserver(this);
-    host_->set_protocol_config(protocol_config_->Clone());
     host_->Start(kHostOwner);
 
     message_loop_.PostTask(FROM_HERE,

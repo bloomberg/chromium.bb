@@ -123,13 +123,6 @@ scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   return result.Pass();
 }
 
-// static
-scoped_ptr<SessionConfig> SessionConfig::WithLegacyIceForTest() {
-  scoped_ptr<SessionConfig> result = ForTest();
-  result->standard_ice_ = false;
-  return result.Pass();
-}
-
 SessionConfig::SessionConfig() {
 }
 

@@ -105,9 +105,6 @@ class JingleSessionTest : public testing::Test {
     DCHECK(session);
     host_session_.reset(session);
     host_session_->SetEventHandler(&host_session_event_handler_);
-
-    session->set_config(standard_ice_ ? SessionConfig::ForTest()
-                                      : SessionConfig::WithLegacyIceForTest());
   }
 
   void DeleteSession() {
@@ -253,9 +250,7 @@ class JingleSessionTest : public testing::Test {
     scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
         FakeAuthenticator::CLIENT, auth_round_trips, auth_action, true));
 
-    client_session_ = client_server_->Connect(
-        kHostJid, authenticator.Pass(),
-        CandidateSessionConfig::CreateDefault());
+    client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
     client_session_->SetEventHandler(&client_session_event_handler_);
 
     base::RunLoop().RunUntilIdle();
@@ -291,8 +286,6 @@ class JingleSessionTest : public testing::Test {
   }
 
   scoped_ptr<base::MessageLoopForIO> message_loop_;
-
-  bool standard_ice_ = true;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
@@ -339,8 +332,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
   scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
-  client_session_ = client_server_->Connect(
-      kHostJid, authenticator.Pass(), CandidateSessionConfig::CreateDefault());
+  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
   client_session_->SetEventHandler(&client_session_event_handler_);
 
   base::RunLoop().RunUntilIdle();
@@ -395,11 +387,42 @@ TEST_F(JingleSessionTest, TestStreamChannel) {
   tester.CheckResults();
 }
 
+// Verify that incompatible protocol configuration is handled properly.
+TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+
+  EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _)).Times(0);
+
+  EXPECT_CALL(client_session_event_handler_,
+              OnSessionStateChange(Session::FAILED))
+      .Times(1);
+
+  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
+
+  scoped_ptr<CandidateSessionConfig> config =
+      CandidateSessionConfig::CreateDefault();
+  // Disable all video codecs so the host will reject connection
+  config->mutable_video_configs()->clear();
+  client_server_->set_protocol_config(config.Pass());
+  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
+  client_session_->SetEventHandler(&client_session_event_handler_);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(INCOMPATIBLE_PROTOCOL, client_session_->error());
+  EXPECT_FALSE(host_session_);
+}
+
 // Verify that we can still connect using legacy GICE transport.
 TEST_F(JingleSessionTest, TestLegacyIceConnection) {
-  standard_ice_ = false;
-
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+
+  scoped_ptr<CandidateSessionConfig> config =
+      CandidateSessionConfig::CreateDefault();
+  config->set_standard_ice(false);
+  host_server_->set_protocol_config(config.Pass());
+
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
@@ -431,9 +454,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {
   scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
 
-  client_session_ = client_server_->Connect(
-      kHostJid, authenticator.Pass(),
-      CandidateSessionConfig::CreateDefault());
+  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
 
   base::RunLoop().RunUntilIdle();
 }
@@ -460,9 +481,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
   scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
 
-  client_session_ = client_server_->Connect(
-      kHostJid, authenticator.Pass(),
-      CandidateSessionConfig::CreateDefault());
+  client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
   base::RunLoop().RunUntilIdle();
 }
 

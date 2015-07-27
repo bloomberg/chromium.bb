@@ -44,9 +44,7 @@ class JingleSession : public base::NonThreadSafe,
   void SetEventHandler(Session::EventHandler* event_handler) override;
   ErrorCode error() override;
   const std::string& jid() override;
-  const CandidateSessionConfig* candidate_config() override;
   const SessionConfig& config() override;
-  void set_config(scoped_ptr<SessionConfig> config) override;
   StreamChannelFactory* GetTransportChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
   void Close() override;
@@ -77,8 +75,7 @@ class JingleSession : public base::NonThreadSafe,
 
   // Start connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
-                       scoped_ptr<Authenticator> authenticator,
-                       scoped_ptr<CandidateSessionConfig> config);
+                       scoped_ptr<Authenticator> authenticator);
 
   // Passes transport info to a new |channel| in case it was received before the
   // channel was created.
@@ -154,7 +151,6 @@ class JingleSession : public base::NonThreadSafe,
 
   JingleSessionManager* session_manager_;
   std::string peer_jid_;
-  scoped_ptr<CandidateSessionConfig> candidate_config_;
   Session::EventHandler* event_handler_;
 
   std::string session_id_;

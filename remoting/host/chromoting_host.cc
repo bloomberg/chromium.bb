@@ -22,7 +22,6 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/session_config.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -79,7 +78,6 @@ ChromotingHost::ChromotingHost(
       ui_task_runner_(ui_task_runner),
       signal_strategy_(signal_strategy),
       started_(false),
-      protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       login_backoff_(&kDefaultBackoffPolicy),
       authenticating_client_(false),
       reject_authenticating_client_(false),
@@ -89,10 +87,6 @@ ChromotingHost::ChromotingHost(
   DCHECK(signal_strategy);
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-
-  if (!desktop_environment_factory_->SupportsAudioCapture()) {
-    protocol_config_->DisableAudioChannel();
-  }
 }
 
 ChromotingHost::~ChromotingHost() {
@@ -284,18 +278,6 @@ void ChromotingHost::OnIncomingSession(
     return;
   }
 
-  scoped_ptr<protocol::SessionConfig> config =
-      protocol::SessionConfig::SelectCommon(session->candidate_config(),
-                                            protocol_config_.get());
-  if (!config) {
-    LOG(WARNING) << "Rejecting connection from " << session->jid()
-                 << " because no compatible configuration has been found.";
-    *response = protocol::SessionManager::INCOMPATIBLE;
-    return;
-  }
-
-  session->set_config(config.Pass());
-
   *response = protocol::SessionManager::ACCEPT;
 
   HOST_LOG << "Client connected: " << session->jid();
@@ -318,14 +300,6 @@ void ChromotingHost::OnIncomingSession(
       extensions_.get());
 
   clients_.push_back(client);
-}
-
-void ChromotingHost::set_protocol_config(
-    scoped_ptr<protocol::CandidateSessionConfig> config) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(config.get());
-  DCHECK(!started_);
-  protocol_config_ = config.Pass();
 }
 
 void ChromotingHost::DisconnectAllClients() {

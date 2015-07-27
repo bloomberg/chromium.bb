@@ -33,8 +33,6 @@ namespace remoting {
 
 namespace protocol {
 class InputStub;
-class SessionConfig;
-class CandidateSessionConfig;
 }  // namespace protocol
 
 class DesktopEnvironmentFactory;
@@ -135,14 +133,6 @@ class ChromotingHost : public base::NonThreadSafe,
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) override;
 
-  // Gets the candidate configuration for the protocol.
-  const protocol::CandidateSessionConfig* protocol_config() const {
-    return protocol_config_.get();
-  }
-
-  // Sets desired configuration for the protocol. Must be called before Start().
-  void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
-
   // The host uses a pairing registry to generate and store pairing information
   // for clients for PIN-less authentication.
   scoped_refptr<protocol::PairingRegistry> pairing_registry() const {
@@ -192,9 +182,6 @@ class ChromotingHost : public base::NonThreadSafe,
 
   // True if the host has been started.
   bool started_;
-
-  // Configuration of the protocol.
-  scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
   // Login backoff state.
   net::BackoffEntry login_backoff_;

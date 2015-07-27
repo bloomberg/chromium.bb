@@ -237,30 +237,28 @@ void It2MeHost::FinishConnect() {
         protocol::NetworkSettings::kDefaultMaxPort;
   }
 
+  scoped_ptr<protocol::SessionManager> session_manager =
+      CreateHostSessionManager(signal_strategy_.get(), network_settings,
+                               host_context_->url_request_context_getter());
+  scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
+      protocol::CandidateSessionConfig::CreateDefault();
+  // Disable audio by default.
+  // TODO(sergeyu): Add UI to enable it.
+  protocol_config->DisableAudioChannel();
+  session_manager->set_protocol_config(protocol_config.Pass());
+
   // Create the host.
   host_.reset(new ChromotingHost(
-      signal_strategy_.get(),
-      desktop_environment_factory_.get(),
-      CreateHostSessionManager(signal_strategy_.get(), network_settings,
-                               host_context_->url_request_context_getter()),
-      host_context_->audio_task_runner(),
+      signal_strategy_.get(), desktop_environment_factory_.get(),
+      session_manager.Pass(), host_context_->audio_task_runner(),
       host_context_->input_task_runner(),
       host_context_->video_capture_task_runner(),
       host_context_->video_encode_task_runner(),
-      host_context_->network_task_runner(),
-      host_context_->ui_task_runner()));
+      host_context_->network_task_runner(), host_context_->ui_task_runner()));
   host_->AddStatusObserver(this);
   host_status_logger_.reset(
       new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::IT2ME,
                            signal_strategy_.get(), directory_bot_jid_));
-
-  // Disable audio by default.
-  // TODO(sergeyu): Add UI to enable it.
-  scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
-      protocol::CandidateSessionConfig::CreateDefault();
-  protocol_config->DisableAudioChannel();
-
-  host_->set_protocol_config(protocol_config.Pass());
 
   // Create event logger.
   host_event_logger_ =

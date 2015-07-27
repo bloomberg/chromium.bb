@@ -37,16 +37,13 @@ class FakeSession : public Session {
   void SetEventHandler(EventHandler* event_handler) override;
   ErrorCode error() override;
   const std::string& jid() override;
-  const CandidateSessionConfig* candidate_config() override;
   const SessionConfig& config() override;
-  void set_config(scoped_ptr<SessionConfig> config) override;
   StreamChannelFactory* GetTransportChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
   void Close() override;
 
  public:
   EventHandler* event_handler_;
-  scoped_ptr<const CandidateSessionConfig> candidate_config_;
   scoped_ptr<SessionConfig> config_;
 
   FakeStreamChannelFactory channel_factory_;

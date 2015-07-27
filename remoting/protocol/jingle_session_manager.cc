@@ -22,11 +22,11 @@ namespace protocol {
 
 JingleSessionManager::JingleSessionManager(
     scoped_ptr<TransportFactory> transport_factory)
-    : transport_factory_(transport_factory.Pass()),
+    : protocol_config_(CandidateSessionConfig::CreateDefault()),
+      transport_factory_(transport_factory.Pass()),
       signal_strategy_(nullptr),
       listener_(nullptr),
-      ready_(false) {
-}
+      ready_(false) {}
 
 JingleSessionManager::~JingleSessionManager() {
   Close();
@@ -44,15 +44,19 @@ void JingleSessionManager::Init(
   OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
+void JingleSessionManager::set_protocol_config(
+    scoped_ptr<CandidateSessionConfig> config) {
+  protocol_config_ = config.Pass();
+}
+
 scoped_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
-    scoped_ptr<Authenticator> authenticator,
-    scoped_ptr<CandidateSessionConfig> config) {
+    scoped_ptr<Authenticator> authenticator) {
   // Notify |transport_factory_| that it may be used soon.
   transport_factory_->PrepareTokens();
 
   scoped_ptr<JingleSession> session(new JingleSession(this));
-  session->StartConnection(host_jid, authenticator.Pass(), config.Pass());
+  session->StartConnection(host_jid, authenticator.Pass());
   sessions_[session->session_id_] = session.get();
   return session.Pass();
 }
@@ -115,6 +119,13 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     session->InitializeIncomingConnection(message, authenticator.Pass());
     sessions_[session->session_id_] = session;
 
+    // Destroy the session if it was rejected due to incompatible protocol.
+    if (session->state_ != Session::ACCEPTING) {
+      delete session;
+      DCHECK(sessions_.find(message.sid) == sessions_.end());
+      return true;
+    }
+
     IncomingSessionResponse response = SessionManager::DECLINE;
     listener_->OnIncomingSession(session, &response);
 
@@ -123,10 +134,6 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     } else {
       ErrorCode error;
       switch (response) {
-        case INCOMPATIBLE:
-          error = INCOMPATIBLE_PROTOCOL;
-          break;
-
         case OVERLOAD:
           error = HOST_OVERLOAD;
           break;

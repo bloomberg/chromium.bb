@@ -80,7 +80,6 @@ class SessionConfig {
 
   // Returns a suitable session configuration for use in tests.
   static scoped_ptr<SessionConfig> ForTest();
-  static scoped_ptr<SessionConfig> WithLegacyIceForTest();
 
   bool standard_ice() const { return standard_ice_; }
 

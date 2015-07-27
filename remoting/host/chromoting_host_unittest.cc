@@ -168,11 +168,6 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
     EXPECT_CALL(*connection2_, session())
         .Times(AnyNumber());
-
-    empty_candidate_config_ =
-        protocol::CandidateSessionConfig::CreateEmpty();
-    default_candidate_config_ =
-        protocol::CandidateSessionConfig::CreateDefault();
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
@@ -437,8 +432,6 @@ class ChromotingHostTest : public testing::Test {
   std::string session_unowned_jid2_;
   protocol::Session::EventHandler* session_unowned1_event_handler_;
   protocol::Session::EventHandler* session_unowned2_event_handler_;
-  scoped_ptr<protocol::CandidateSessionConfig> empty_candidate_config_;
-  scoped_ptr<protocol::CandidateSessionConfig> default_candidate_config_;
 
   MockConnectionToClient*& get_connection(int connection_index) {
     return (connection_index == 0) ? connection1_ : connection2_;
@@ -573,28 +566,8 @@ TEST_F(ChromotingHostTest, IncomingSessionDeclined) {
   message_loop_.Run();
 }
 
-TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
-  ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(Return(
-      empty_candidate_config_.get()));
-  EXPECT_CALL(host_status_observer_, OnShutdown());
-
-  host_->Start(xmpp_login_);
-
-  protocol::SessionManager::IncomingSessionResponse response =
-      protocol::SessionManager::ACCEPT;
-  host_->OnIncomingSession(session_unowned1_.get(), &response);
-  EXPECT_EQ(protocol::SessionManager::INCOMPATIBLE, response);
-
-  ShutdownHost();
-  message_loop_.Run();
-}
-
 TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(Return(
-      default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned1_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned1_, Close()).WillOnce(InvokeWithoutArgs(
     this, &ChromotingHostTest::NotifyConnectionClosed1));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
@@ -613,9 +586,6 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
 
 TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
   ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(
-    Return(default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned1_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned1_, Close()).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
@@ -639,15 +609,9 @@ TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
 
 TEST_F(ChromotingHostTest, LoginBackOffUponAuthenticating) {
   Expectation start = ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(
-    Return(default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned1_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned1_, Close()).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
 
-  EXPECT_CALL(*session_unowned2_, candidate_config()).WillOnce(
-    Return(default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned2_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned2_, Close()).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed2));
 

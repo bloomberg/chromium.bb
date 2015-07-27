@@ -49,10 +49,10 @@ class JingleSessionManager : public SessionManager,
   // SessionManager interface.
   void Init(SignalStrategy* signal_strategy,
             SessionManager::Listener* listener) override;
+  void set_protocol_config(scoped_ptr<CandidateSessionConfig> config) override;
   scoped_ptr<Session> Connect(
       const std::string& host_jid,
-      scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config) override;
+      scoped_ptr<Authenticator> authenticator) override;
   void Close() override;
   void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) override;
@@ -77,6 +77,8 @@ class JingleSessionManager : public SessionManager,
 
   // Called by JingleSession when it is being destroyed.
   void SessionDestroyed(JingleSession* session);
+
+  scoped_ptr<CandidateSessionConfig> protocol_config_;
 
   scoped_ptr<TransportFactory> transport_factory_;
   bool fetch_stun_relay_config_;

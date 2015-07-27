@@ -207,10 +207,6 @@ class MockSession : public Session {
   MOCK_METHOD0(jid, const std::string&());
   MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig&());
-  MOCK_METHOD1(set_config_ptr, void(const SessionConfig* config));
-  void set_config(scoped_ptr<SessionConfig> config) override {
-    set_config_ptr(config.get());
-  }
   MOCK_METHOD0(initiator_token, const std::string&());
   MOCK_METHOD1(set_initiator_token, void(const std::string& initiator_token));
   MOCK_METHOD0(receiver_token, const std::string&());
@@ -229,19 +225,18 @@ class MockSessionManager : public SessionManager {
   ~MockSessionManager() override;
 
   MOCK_METHOD2(Init, void(SignalStrategy*, Listener*));
-  MOCK_METHOD3(ConnectPtr,
+  void set_protocol_config(scoped_ptr<CandidateSessionConfig> config) override {
+  }
+  MOCK_METHOD2(ConnectPtr,
                Session*(const std::string& host_jid,
-                        Authenticator* authenticator,
-                        CandidateSessionConfig* config));
+                        Authenticator* authenticator));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(set_authenticator_factory_ptr,
                void(AuthenticatorFactory* factory));
   scoped_ptr<Session> Connect(
       const std::string& host_jid,
-      scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config) override {
-    return make_scoped_ptr(
-        ConnectPtr(host_jid, authenticator.get(), config.get()));
+      scoped_ptr<Authenticator> authenticator) override {
+    return make_scoped_ptr(ConnectPtr(host_jid, authenticator.get()));
   }
   void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) override {

@@ -1427,21 +1427,24 @@ void HostProcess::StartHost() {
     network_settings.port_range.max_port = NetworkSettings::kDefaultMaxPort;
   }
 
+  scoped_ptr<protocol::SessionManager> session_manager =
+      CreateHostSessionManager(signal_strategy_.get(), network_settings,
+                               context_->url_request_context_getter());
+
+  scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
+      protocol::CandidateSessionConfig::CreateDefault();
+  if (!desktop_environment_factory_->SupportsAudioCapture())
+    protocol_config->DisableAudioChannel();
+  if (enable_vp9_)
+    protocol_config->EnableVideoCodec(protocol::ChannelConfig::CODEC_VP9);
+  session_manager->set_protocol_config(protocol_config.Pass());
+
   host_.reset(new ChromotingHost(
       signal_strategy_.get(), desktop_environment_factory_.get(),
-      CreateHostSessionManager(signal_strategy_.get(), network_settings,
-                               context_->url_request_context_getter()),
-      context_->audio_task_runner(), context_->input_task_runner(),
-      context_->video_capture_task_runner(),
+      session_manager.Pass(), context_->audio_task_runner(),
+      context_->input_task_runner(), context_->video_capture_task_runner(),
       context_->video_encode_task_runner(), context_->network_task_runner(),
       context_->ui_task_runner()));
-
-  if (enable_vp9_) {
-    scoped_ptr<protocol::CandidateSessionConfig> config =
-        host_->protocol_config()->Clone();
-    config->EnableVideoCodec(protocol::ChannelConfig::CODEC_VP9);
-    host_->set_protocol_config(config.Pass());
-  }
 
   if (frame_recorder_buffer_size_ > 0) {
     scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(

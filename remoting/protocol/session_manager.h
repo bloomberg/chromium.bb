@@ -82,9 +82,6 @@ class SessionManager : public base::NonThreadSafe {
     // Accept the session.
     ACCEPT,
 
-    // Reject the session due to incompatible session configuration.
-    INCOMPATIBLE,
-
     // Reject the session because the host is currently disabled due
     // to previous login attempts.
     OVERLOAD,
@@ -123,17 +120,20 @@ class SessionManager : public base::NonThreadSafe {
   virtual void Init(SignalStrategy* signal_strategy,
                     Listener* listener) = 0;
 
+  // Sets local protocol configuration to be used when negotiating outgoing and
+  // incoming connections.
+  virtual void set_protocol_config(
+      scoped_ptr<CandidateSessionConfig> config) = 0;
+
   // Tries to create a session to the host |jid|. Must be called only
   // after initialization has finished successfully, i.e. after
   // Listener::OnInitialized() has been called.
   //
   // |host_jid| is the full jid of the host to connect to.
   // |authenticator| is a client authenticator for the session.
-  // |config| contains the session configurations that the client supports.
   virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
-      scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config) = 0;
+      scoped_ptr<Authenticator> authenticator) = 0;
 
   // Close session manager. Can be called only after all corresponding
   // sessions are destroyed. No callbacks are called after this method

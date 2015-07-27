@@ -81,6 +81,7 @@ void ConnectionToHostImpl::Connect(
 
   session_manager_.reset(new JingleSessionManager(transport_factory.Pass()));
   session_manager_->Init(signal_strategy_, this);
+  session_manager_->set_protocol_config(candidate_config_->Clone());
 
   SetState(CONNECTING, OK);
 }
@@ -152,8 +153,7 @@ void ConnectionToHostImpl::OnSessionManagerReady() {
   DCHECK(CalledOnValidThread());
 
   // After SessionManager is initialized we can try to connect to the host.
-  session_ = session_manager_->Connect(host_jid_, authenticator_.Pass(),
-                                       candidate_config_.Pass());
+  session_ = session_manager_->Connect(host_jid_, authenticator_.Pass());
   session_->SetEventHandler(this);
 }
 
