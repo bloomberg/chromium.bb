@@ -696,7 +696,6 @@ test("ui_base_unittests") {
       "test/data/resource.h",
       "text/bytes_formatting_unittest.cc",
       "touch/selection_bound_unittest.cc",
-      "view_prop_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
   }
@@ -774,8 +773,8 @@ test("ui_base_unittests") {
     ]
   }
 
-  if (!is_win || !use_aura) {
-    sources -= [ "view_prop_unittest.cc" ]
+  if (is_win) {
+    sources += [ "view_prop_unittest.cc" ]
   }
 
   if (is_android) {

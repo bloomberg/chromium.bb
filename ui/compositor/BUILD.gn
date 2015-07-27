@@ -134,7 +134,6 @@ source_set("test_support") {
     "//gpu/skia_bindings",
     "//skia",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink_minimal",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

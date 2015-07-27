@@ -300,7 +300,6 @@ test("events_unittests") {
   sources = [
     "android/scroller_unittest.cc",
     "cocoa/events_mac_unittest.mm",
-    "devices/x11/device_data_manager_x11_unittest.cc",
     "event_dispatcher_unittest.cc",
     "event_processor_unittest.cc",
     "event_rewriter_unittest.cc",
@@ -314,13 +313,11 @@ test("events_unittests") {
     "gesture_detection/snap_scroll_controller_unittest.cc",
     "gesture_detection/touch_disposition_gesture_filter_unittest.cc",
     "gesture_detection/velocity_tracker_unittest.cc",
-    "gestures/blink/web_gesture_curve_impl_unittest.cc",
     "gestures/fling_curve_unittest.cc",
     "keycodes/dom/keycode_converter_unittest.cc",
     "keycodes/keyboard_code_conversion_unittest.cc",
     "latency_info_unittest.cc",
     "platform/platform_event_source_unittest.cc",
-    "x/events_x_unittest.cc",
   ]
 
   deps = [
@@ -333,23 +330,28 @@ test("events_unittests") {
     "//base/test:run_all_unittests",
     "//skia",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink_headers",
     "//ui/events/devices",
-    "//ui/events/gestures/blink",
     "//ui/events/platform",
     "//ui/gfx:test_support",
   ]
 
+  if (!is_ios) {
+    sources += [ "gestures/blink/web_gesture_curve_impl_unittest.cc" ]
+    deps += [
+      "//third_party/WebKit/public:blink_headers",
+      "//ui/events/gestures/blink",
+    ]
+  }
+
   include_dirs = [ "//testing/gmock/include" ]
 
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
-    deps += [ "//ui/gfx/x" ]
-  } else {
-    sources -= [
+    sources += [
       "devices/x11/device_data_manager_x11_unittest.cc",
       "x/events_x_unittest.cc",
     ]
+    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (use_ozone) {
