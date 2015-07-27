@@ -4,8 +4,10 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "chrome.wallpaperPrivate API test",
-  "background": {
-    "scripts": ["test.js"]
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
   },
   "permissions": [
     "wallpaperPrivate",

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // wallpaperPrivate api test
-// browser_tests --gtest_filter=ExtensionApiTest.wallpaperPrivate
+// browser_tests --gtest_filter=ExtensionApiTest.WallpaperPrivateApiTest
 
 var pass = chrome.test.callbackPass;
 var fail = chrome.test.callbackFail;
@@ -146,6 +146,7 @@ chrome.test.getConfig(function(config) {
                                              'http://dummyurl/test1.jpg',
                                              pass(function() {
           chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
+            list = list.sort();
             chrome.test.assertEq('test.jpg', list[0]);
             chrome.test.assertEq('test1.jpg', list[1]);
           }));

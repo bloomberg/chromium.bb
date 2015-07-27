@@ -5,8 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/dns/mock_host_resolver.h"
 
-// Flaky. See http://crbug.com/262854 .
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WallpaperPicker) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WallpaperPrivateApiTest) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunComponentExtensionTest("wallpaper_manager")) << message_;
