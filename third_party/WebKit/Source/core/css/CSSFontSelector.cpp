@@ -80,6 +80,8 @@ void CSSFontSelector::unregisterForInvalidationCallbacks(CSSFontSelectorClient* 
 
 void CSSFontSelector::dispatchInvalidationCallbacks()
 {
+    m_fontFaceCache.incrementVersion();
+
     WillBeHeapVector<RawPtrWillBeMember<CSSFontSelectorClient>> clients;
     copyToVector(m_clients, clients);
     for (size_t i = 0; i < clients.size(); ++i)
