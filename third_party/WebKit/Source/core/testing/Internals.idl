@@ -332,4 +332,6 @@
     // Returns whether the scrollbar was able to be shown or hidden; not all platforms
     // support overlay scrollbars.
     bool setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
+
+    void forceRestrictIFramePermissions();
 };

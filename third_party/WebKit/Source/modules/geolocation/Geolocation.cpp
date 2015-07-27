@@ -29,13 +29,16 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
@@ -197,6 +200,16 @@ void Geolocation::startRequest(GeoNotifier *notifier)
     if (frame()->settings()->strictPowerfulFeatureRestrictions()) {
         String errorMessage;
         if (!executionContext()->isPrivilegedContext(errorMessage)) {
+            notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
+            return;
+        }
+    }
+
+    if (RuntimeEnabledFeatures::restrictIFramePermissionsEnabled()) {
+        // TODO(keenanb): kill the request if the parent is blocking the requester
+        Element* owner = document()->ownerElement();
+        if (owner && owner->hasAttribute(HTMLNames::permissionsAttr)) {
+            String errorMessage = "A cross-origin iframe needs its permissions attribute properly set in order to use the geolocation API.";
             notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
             return;
         }

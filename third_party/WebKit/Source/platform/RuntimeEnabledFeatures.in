@@ -126,6 +126,7 @@ PushMessagingData status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RequestAutocomplete status=test
+RestrictIFramePermissions
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable

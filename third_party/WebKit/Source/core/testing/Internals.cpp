@@ -2480,4 +2480,9 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
     return animator->setScrollbarsVisibleForTesting(visible);
 }
 
+void Internals::forceRestrictIFramePermissions()
+{
+    RuntimeEnabledFeatures::setRestrictIFramePermissionsEnabled(true);
+}
+
 } // namespace blink

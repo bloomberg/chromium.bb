@@ -372,6 +372,8 @@ public:
 
     bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 
+    void forceRestrictIFramePermissions();
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;
