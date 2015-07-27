@@ -49,6 +49,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -228,7 +229,7 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceReq
 void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
-    LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document());
+    LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document(), NetworkHintsInterfaceImpl());
     if (m_documentLoader == frame()->loader().provisionalDocumentLoader()) {
         ResourceFetcher* fetcher = nullptr;
         if (frame()->document())

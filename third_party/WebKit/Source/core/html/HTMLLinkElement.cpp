@@ -50,6 +50,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/NetworkHintsInterface.h"
 #include "core/style/StyleInheritedData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
@@ -203,7 +204,7 @@ bool HTMLLinkElement::shouldLoadLink()
 
 bool HTMLLinkElement::loadLink(const String& type, const String& as, const KURL& url)
 {
-    return m_linkLoader.loadLink(m_relAttribute, fastGetAttribute(HTMLNames::crossoriginAttr), type, as, url, document());
+    return m_linkLoader.loadLink(m_relAttribute, fastGetAttribute(HTMLNames::crossoriginAttr), type, as, url, document(), NetworkHintsInterfaceImpl());
 }
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()

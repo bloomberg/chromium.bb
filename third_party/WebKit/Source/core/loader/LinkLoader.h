@@ -45,6 +45,7 @@ namespace blink {
 
 class Document;
 class LinkRelAttribute;
+class NetworkHintsInterface;
 class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
@@ -64,8 +65,8 @@ public:
     void didSendDOMContentLoadedForPrerender() override;
 
     void released();
-    bool loadLink(const LinkRelAttribute&, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL&, Document&);
-    static bool loadLinkFromHeader(const String& headerValue, Document*);
+    bool loadLink(const LinkRelAttribute&, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
+    static bool loadLinkFromHeader(const String& headerValue, Document*, const NetworkHintsInterface&);
 
     DECLARE_TRACE();
 
