@@ -49,6 +49,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document&
     , m_calcMode(CalcModeLinear)
     , m_animationMode(NoAnimation)
 {
+    ASSERT(RuntimeEnabledFeatures::smilEnabled());
     UseCounter::count(document, UseCounter::SVGAnimationElement);
 }
 

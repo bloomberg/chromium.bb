@@ -44,11 +44,13 @@
     [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementUnsuspendRedraw] void unsuspendRedraw(unsigned long suspendHandleId);
     [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
     [RuntimeEnabled=SVG1DOM, DeprecateAs=SVGSVGElementForceRedraw] void forceRedraw();
-    void pauseAnimations();
-    void unpauseAnimations();
-    boolean animationsPaused();
-    float getCurrentTime();
-    void setCurrentTime(float seconds);
+
+    [RuntimeEnabled=smil] void pauseAnimations();
+    [RuntimeEnabled=smil] void unpauseAnimations();
+    [RuntimeEnabled=smil] boolean animationsPaused();
+    [RuntimeEnabled=smil] float getCurrentTime();
+    [RuntimeEnabled=smil] void setCurrentTime(float seconds);
+
     // TODO(philipj): The rect arguments should be DOMRectReadOnly.
     NodeList getIntersectionList(SVGRect rect, SVGElement? referenceElement);
     NodeList getEnclosureList(SVGRect rect, SVGElement? referenceElement);

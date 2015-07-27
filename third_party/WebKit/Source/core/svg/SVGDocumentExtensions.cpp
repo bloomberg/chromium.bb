@@ -84,7 +84,7 @@ LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicStri
 
 void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
-    if (!document.svgExtensions())
+    if (!document.svgExtensions() || !RuntimeEnabledFeatures::smilEnabled())
         return;
     document.accessSVGExtensions().serviceAnimations(monotonicAnimationStartTime);
 }

@@ -31,5 +31,6 @@
 // TODO(philipj): The SVGDiscardElement interface does not exist in the spec
 // yet: http://www.w3.org/Graphics/SVG/WG/track/actions/3727
 
+[RuntimeEnabled=smil]
 interface SVGDiscardElement : SVGElement {
 };

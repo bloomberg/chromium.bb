@@ -5,17 +5,17 @@ fallbackJSInterfaceName="SVGElement"
 export="CORE_EXPORT"
 
 a
-animate noTypeHelpers
-animateColor interfaceName=SVGUnknownElement, JSInterfaceName=SVGElement, noConstructor
-animateMotion
-animateTransform
-set
+animate runtimeEnabled=smil, noTypeHelpers
+animateColor runtimeEnabled=smil, interfaceName=SVGUnknownElement, JSInterfaceName=SVGElement, noConstructor
+animateMotion runtimeEnabled=smil
+animateTransform runtimeEnabled=smil
+set runtimeEnabled=smil
 circle
 clipPath
 cursor
 defs
 desc
-discard
+discard runtimeEnabled=smil
 ellipse
 feBlend
 feColorMatrix
@@ -51,7 +51,7 @@ linearGradient
 marker
 mask
 metadata
-mpath interfaceName=SVGMPathElement
+mpath runtimeEnabled=smil, interfaceName=SVGMPathElement
 path
 pattern
 polygon
