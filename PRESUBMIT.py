@@ -302,7 +302,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   # calls to such functions without a proper C++ parser.
   file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
 
-  base_function_pattern = r'[ :]test::[^\s]+|ForTest(ing)?|for_test(ing)?'
+  base_function_pattern = r'[ :]test::[^\s]+|ForTest(s|ing)?|for_test(s|ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
   comment_pattern = input_api.re.compile(r'//.*(%s)' % base_function_pattern)
   exclusion_pattern = input_api.re.compile(
