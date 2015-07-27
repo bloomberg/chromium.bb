@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -28,8 +29,13 @@ namespace remoting {
 namespace test {
 
 struct RemoteApplicationDetails;
+struct RGBValue;
 class AppRemotingConnectionHelper;
 class TestVideoRenderer;
+
+// Allows for custom handling of ExtensionMessage messages.
+typedef base::Callback<void(const protocol::ExtensionMessage& message)>
+    HostMessageReceivedCallback;
 
 // Called to wait for expected image pattern to be matched within up to a max
 // wait time.
@@ -41,7 +47,8 @@ typedef base::Callback<bool(const base::TimeDelta& max_wait_time)>
 // rendering latency between client and the remote host.
 // NOTE: This is an abstract class. To use it, please derive from this class
 // and implement GetApplicationDetails to specify the application details.
-class AppRemotingLatencyTestFixture : public testing::Test {
+class AppRemotingLatencyTestFixture : public testing::Test,
+                                      public RemoteConnectionObserver {
  public:
   AppRemotingLatencyTestFixture();
   ~AppRemotingLatencyTestFixture() override;
@@ -52,7 +59,7 @@ class AppRemotingLatencyTestFixture : public testing::Test {
   // expected image pattern to be matched.
   WaitForImagePatternMatchCallback SetExpectedImagePattern(
       const webrtc::DesktopRect& expected_rect,
-      uint32_t expected_avg_color);
+      const RGBValue& expected_avg_color);
 
   // Inject press & release key event.
   void PressAndReleaseKey(uint32_t usb_keycode);
@@ -60,11 +67,21 @@ class AppRemotingLatencyTestFixture : public testing::Test {
   // Inject press & release a combination of key events.
   void PressAndReleaseKeyCombination(const std::vector<uint32_t>& usb_keycodes);
 
-  // Clean up the running application to initial state.
-  virtual void ResetApplicationState();
+  // Setter for |host_message_received_callback_|.
+  void SetHostMessageReceivedCallback(
+      const HostMessageReceivedCallback& host_message_received_callback);
+
+  // Reset |host_message_received_callback_| to null.
+  void ResetHostMessageReceivedCallback();
 
   // Get the details of the application to be run.
   virtual const RemoteApplicationDetails& GetApplicationDetails() = 0;
+
+  // Used to ensure the application under test is ready for testing.
+  virtual bool PrepareApplicationForTesting() = 0;
+
+  // Clean up the running application to initial state.
+  virtual void ResetApplicationState();
 
   // Creates and manages the connection to the remote host.
   scoped_ptr<AppRemotingConnectionHelper> connection_helper_;
@@ -73,6 +90,10 @@ class AppRemotingLatencyTestFixture : public testing::Test {
   // testing::Test interface.
   void SetUp() override;
   void TearDown() override;
+
+ private:
+  // RemoteConnectionObserver interface.
+  void HostMessageReceived(const protocol::ExtensionMessage& message) override;
 
   // Inject press key event.
   void PressKey(uint32_t usb_keycode, bool pressed);
@@ -94,9 +115,13 @@ class AppRemotingLatencyTestFixture : public testing::Test {
   // thread.
   base::ThreadChecker thread_checker_;
 
-  // Using WeakPtr to keep a reference to TestVideoRenderer while let the
-  // TestChromotingClient own its lifetime.
+  // Used to maintain a reference to the TestVideoRenderer instance while it
+  // exists.
   base::WeakPtr<TestVideoRenderer> test_video_renderer_;
+
+  // Called when an ExtensionMessage is received from the host.  Used to
+  // override default message handling.
+  HostMessageReceivedCallback host_message_received_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRemotingLatencyTestFixture);
 };

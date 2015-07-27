@@ -26,6 +26,8 @@ class DesktopRect;
 namespace remoting {
 namespace test {
 
+struct RGBValue;
+
 // Processes video packets as they are received from the remote host. Must be
 // used from a thread running a message loop and this class will use that
 // message loop to execute the done callbacks passed by the caller of
@@ -59,7 +61,7 @@ class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
   // called when the pattern is matched.
   void ExpectAverageColorInRect(
       const webrtc::DesktopRect& expected_rect,
-      uint32_t expected_average_color,
+      const RGBValue& expected_average_color,
       const base::Closure& image_pattern_matched_callback);
 
  private:

@@ -4,7 +4,6 @@
 
 #include "remoting/test/app_remoting_connection_helper.h"
 
-#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -37,7 +36,9 @@ AppRemotingConnectionHelper::AppRemotingConnectionHelper(
 AppRemotingConnectionHelper::~AppRemotingConnectionHelper() {
   // |client_| destroys some of its members via DeleteSoon on the message loop's
   // TaskRunner so we need to run the loop until it has no more work to do.
-  client_->RemoveRemoteConnectionObserver(this);
+  if (!connection_is_ready_for_tests_) {
+    client_->RemoveRemoteConnectionObserver(this);
+  }
   client_.reset();
 
   base::RunLoop().RunUntilIdle();
@@ -47,11 +48,6 @@ void AppRemotingConnectionHelper::Initialize(
     scoped_ptr<TestChromotingClient> test_chromoting_client) {
   client_ = test_chromoting_client.Pass();
   client_->AddRemoteConnectionObserver(this);
-}
-
-void AppRemotingConnectionHelper::SetHostMessageReceivedCallback(
-      HostMessageReceivedCallback host_message_received_callback) {
-  host_message_received_callback_ = host_message_received_callback;
 }
 
 bool AppRemotingConnectionHelper::StartConnection() {
@@ -145,11 +141,7 @@ void AppRemotingConnectionHelper::HostMessageReceived(
   VLOG(2) << "HostMessage received by HostMessageReceived()."
           << " type: " << message.type() << " data: " << message.data();
 
-  // If a callback is not registered, then the message is passed to a default
-  // handler for the class based on the message type.
-  if (!host_message_received_callback_.is_null()) {
-    base::ResetAndReturn(&host_message_received_callback_).Run(message);
-  } else if (message.type() == "onWindowAdded") {
+  if (message.type() == "onWindowAdded") {
     HandleOnWindowAddedMessage(message);
   } else {
     VLOG(2) << "HostMessage not handled by HostMessageReceived().";
@@ -209,6 +201,7 @@ void AppRemotingConnectionHelper::HandleOnWindowAddedMessage(
   std::string main_window_title = application_details_.main_window_title;
   if (current_window_title.find_first_of(main_window_title) == 0) {
     connection_is_ready_for_tests_ = true;
+    client_->RemoveRemoteConnectionObserver(this);
 
     if (timer_->IsRunning()) {
       timer_->Stop();

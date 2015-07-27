@@ -16,6 +16,7 @@
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/test/rgb_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
@@ -86,11 +87,11 @@ class TestVideoRendererTest : public testing::Test {
   // matched.
   bool SendPacketAndWaitForMatch(scoped_ptr<VideoPacket> packet,
                                  const webrtc::DesktopRect& expected_rect,
-                                 uint32_t expected_average_color);
+                                 const RGBValue& expected_average_color);
 
   // Returns the average color value of pixels fall within |rect|.
   // NOTE: Callers should not release the objects.
-  uint32_t CalculateAverageColorValueForFrame(
+  RGBValue CalculateAverageColorValueForFrame(
       const webrtc::DesktopFrame* frame,
       const webrtc::DesktopRect& rect) const;
 
@@ -168,7 +169,7 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
 bool TestVideoRendererTest::SendPacketAndWaitForMatch(
     scoped_ptr<VideoPacket> packet,
     const webrtc::DesktopRect& expected_rect,
-    uint32_t expected_average_color) {
+    const RGBValue& expected_average_color) {
   DCHECK(!run_loop_ || !run_loop_->running());
   DCHECK(!timer_->IsRunning());
   run_loop_.reset(new base::RunLoop());
@@ -224,7 +225,7 @@ void TestVideoRendererTest::TestImagePatternMatch(
 
   scoped_ptr<webrtc::DesktopFrame> frame =
       CreateDesktopFrameWithGradient(screen_width, screen_height);
-  uint32_t expected_average_color =
+  RGBValue expected_average_color =
       CalculateAverageColorValueForFrame(frame.get(), expected_rect);
   scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame.get());
 
@@ -236,19 +237,19 @@ void TestVideoRendererTest::TestImagePatternMatch(
     // e.g. (10, 127, 200) -> (138, 255, 73).
     // In this way, the error between expected color and true value is always
     // around 0.5.
-    int red_shift = (((expected_average_color >> 16) & 0xFF) + 128) % 255;
-    int green_shift = (((expected_average_color >> 8) & 0xFF) + 128) % 255;
-    int blue_shift = ((expected_average_color & 0xFF) + 128) % 255;
+    int red_shift = (expected_average_color.red + 128) % 255;
+    int green_shift = (expected_average_color.green + 128) % 255;
+    int blue_shift = (expected_average_color.blue + 128) % 255;
 
-    int expected_average_color_shift =
-        0xFF000000 | (red_shift << 16) | (green_shift << 8) | blue_shift;
+    RGBValue expected_average_color_shift =
+        RGBValue(red_shift, green_shift, blue_shift);
 
     EXPECT_FALSE(SendPacketAndWaitForMatch(packet.Pass(), expected_rect,
                                            expected_average_color_shift));
   }
 }
 
-uint32_t TestVideoRendererTest::CalculateAverageColorValueForFrame(
+RGBValue TestVideoRendererTest::CalculateAverageColorValueForFrame(
     const webrtc::DesktopFrame* frame,
     const webrtc::DesktopRect& rect) const {
   int red_sum = 0;
@@ -272,8 +273,8 @@ uint32_t TestVideoRendererTest::CalculateAverageColorValueForFrame(
   }
 
   int area = rect.width() * rect.height();
-  return 0xFF000000 | ((red_sum / area) << 16) | ((green_sum / area) << 8) |
-         (blue_sum / area);
+
+  return RGBValue(red_sum / area, green_sum / area, blue_sum / area);
 }
 
 double TestVideoRendererTest::CalculateError(
@@ -440,7 +441,7 @@ TEST_F(TestVideoRendererTest, VerifySetExpectedImagePattern) {
 
   // Since we don't care whether expected image pattern is matched or not in
   // this case, an expected color is chosen arbitrarily.
-  uint32_t black_color = 0xFF000000;
+  RGBValue black_color = RGBValue();
 
   // Set expected image pattern.
   test_video_renderer_->ExpectAverageColorInRect(

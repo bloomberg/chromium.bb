@@ -13,6 +13,7 @@
 #include "remoting/protocol/usb_key_codes.h"
 #include "remoting/test/app_remoting_connection_helper.h"
 #include "remoting/test/app_remoting_test_driver_environment.h"
+#include "remoting/test/rgb_value.h"
 #include "remoting/test/test_chromoting_client.h"
 #include "remoting/test/test_video_renderer.h"
 
@@ -36,12 +37,19 @@ void AppRemotingLatencyTestFixture::SetUp() {
   scoped_ptr<TestChromotingClient> test_chromoting_client(
       new TestChromotingClient(test_video_renderer.Pass()));
 
+  test_chromoting_client->AddRemoteConnectionObserver(this);
+
   connection_helper_.reset(
       new AppRemotingConnectionHelper(GetApplicationDetails()));
   connection_helper_->Initialize(test_chromoting_client.Pass());
 
   if (!connection_helper_->StartConnection()) {
     LOG(ERROR) << "Remote host connection could not be established.";
+    FAIL();
+  }
+
+  if (!PrepareApplicationForTesting()) {
+    LOG(ERROR) << "Unable to prepare application for testing.";
     FAIL();
   }
 }
@@ -52,13 +60,15 @@ void AppRemotingLatencyTestFixture::TearDown() {
     ResetApplicationState();
   }
 
+  connection_helper_->test_chromoting_client()->RemoveRemoteConnectionObserver(
+      this);
   connection_helper_.reset();
 }
 
 WaitForImagePatternMatchCallback
 AppRemotingLatencyTestFixture::SetExpectedImagePattern(
     const webrtc::DesktopRect& expected_rect,
-    uint32_t expected_color) {
+    const RGBValue& expected_color) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
@@ -91,6 +101,15 @@ bool AppRemotingLatencyTestFixture::WaitForImagePatternMatch(
   return image_pattern_is_matched;
 }
 
+void AppRemotingLatencyTestFixture::HostMessageReceived(
+    const protocol::ExtensionMessage& message) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!host_message_received_callback_.is_null()) {
+    host_message_received_callback_.Run(message);
+  }
+}
+
 void AppRemotingLatencyTestFixture::PressKey(uint32_t usb_keycode,
                                              bool pressed) {
   remoting::protocol::KeyEvent event;
@@ -115,6 +134,15 @@ void AppRemotingLatencyTestFixture::PressAndReleaseKeyCombination(
        iter != usb_keycodes.rend(); ++iter) {
     PressKey(*iter, false);
   }
+}
+
+void AppRemotingLatencyTestFixture::SetHostMessageReceivedCallback(
+    const HostMessageReceivedCallback& host_message_received_callback) {
+  host_message_received_callback_ = host_message_received_callback;
+}
+
+void AppRemotingLatencyTestFixture::ResetHostMessageReceivedCallback() {
+  host_message_received_callback_.Reset();
 }
 
 void AppRemotingLatencyTestFixture::ResetApplicationState() {

@@ -50,6 +50,8 @@ source_set("test_support") {
     "remote_host_info.h",
     "remote_host_info_fetcher.cc",
     "remote_host_info_fetcher.h",
+    "rgb_value.cc",
+    "rgb_value.h",
     "test_chromoting_client.cc",
     "test_chromoting_client.h",
     "test_video_renderer.cc",

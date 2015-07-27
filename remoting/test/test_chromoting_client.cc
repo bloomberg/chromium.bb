@@ -133,8 +133,7 @@ namespace test {
 
 TestChromotingClient::TestChromotingClient()
     : connection_to_host_state_(protocol::ConnectionToHost::INITIALIZING),
-      connection_error_code_(protocol::OK) {
-}
+      connection_error_code_(protocol::OK) {}
 
 TestChromotingClient::TestChromotingClient(
     scoped_ptr<VideoRenderer> video_renderer)

@@ -94,6 +94,8 @@
         'test/remote_host_info.h',
         'test/remote_host_info_fetcher.cc',
         'test/remote_host_info_fetcher.h',
+        'test/rgb_value.cc',
+        'test/rgb_value.h',
         'test/test_chromoting_client.cc',
         'test/test_chromoting_client.h',
         'test/test_video_renderer.cc',

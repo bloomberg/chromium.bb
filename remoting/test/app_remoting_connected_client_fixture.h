@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/test/remote_connection_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,10 +25,15 @@ namespace test {
 struct RemoteApplicationDetails;
 class AppRemotingConnectionHelper;
 
+// Allows for custom handling of ExtensionMessage messages.
+typedef base::Callback<void(const protocol::ExtensionMessage& message)>
+    HostMessageReceivedCallback;
+
 // Creates a connection to a remote host which is available for tests to use.
 // All callbacks must occur on the same thread the object was created on.
 class AppRemotingConnectedClientFixture
-    : public testing::TestWithParam<const char*> {
+    : public testing::TestWithParam<const char*>,
+      public RemoteConnectionObserver {
  public:
   AppRemotingConnectedClientFixture();
   ~AppRemotingConnectedClientFixture() override;
@@ -46,6 +52,12 @@ class AppRemotingConnectedClientFixture
   void SetUp() override;
   void TearDown() override;
 
+  // RemoteConnectionObserver interface.
+  void HostMessageReceived(const protocol::ExtensionMessage& message) override;
+
+  // Handles messages from the host.
+  void HandleOnHostMessage(const remoting::protocol::ExtensionMessage& message);
+
   // Contains the details for the application being tested.
   const RemoteApplicationDetails& application_details_;
 
@@ -61,6 +73,9 @@ class AppRemotingConnectedClientFixture
 
   // Creates and manages the connection to the remote host.
   scoped_ptr<AppRemotingConnectionHelper> connection_helper_;
+
+  // Called when an ExtensionMessage is received from the host.
+  HostMessageReceivedCallback host_message_received_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRemotingConnectedClientFixture);
 };
