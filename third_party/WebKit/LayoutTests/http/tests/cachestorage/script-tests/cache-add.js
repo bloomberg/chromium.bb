@@ -98,6 +98,20 @@ cache_test(function(cache) {
   }, 'Cache.addAll with a mix of valid and undefined arguments');
 
 cache_test(function(cache) {
+    return cache.addAll([])
+      .then(function(result) {
+          assert_equals(result, undefined,
+                        'Cache.addAll should resolve with undefined on ' +
+                        'success.');
+          return cache.keys();
+        })
+      .then(function(result) {
+          assert_equals(result.length, 0,
+                        'There should be no entry in the cache.');
+        });
+  }, 'Cache.addAll with an empty array');
+
+cache_test(function(cache) {
     // Assumes the existence of ../resources/simple.txt and
     // ../resources/blank.html
     var urls = ['../resources/simple.txt',
