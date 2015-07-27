@@ -224,6 +224,9 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   base::Closure unrecoverable_error_method_;
 
+  // True iff we are in the process of catching up datatypes.
+  bool catch_up_in_progress_;
+
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);

@@ -39,6 +39,13 @@ enum ConfigureReason {
   // The client is configuring because of a programmatic type enable/disable,
   // such as when an error is encountered/resolved.
   CONFIGURE_REASON_PROGRAMMATIC,
+
+  // The client is configuring because it needs to "catch up" datatypes by
+  // downloading and applying any outstanding changes. There can be multiple
+  // reasons why a client performs a catch up. One reason is that the client is
+  // enabling passphrase encryption and must ensure it has all data locally
+  // before it clears server data.
+  CONFIGURE_REASON_CATCH_UP,
 };
 
 }  // namespace syncer
