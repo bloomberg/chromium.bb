@@ -437,6 +437,10 @@ const char kEnableExtensionActivityLogTesting[] =
 // crbug.com/142458 .
 const char kEnableFastUnload[]         = "enable-fast-unload";
 
+// Enables support for the QUIC protocol for insecure schemes (http://).
+// This is a temporary testing flag.
+const char kEnableInsecureQuic[] = "enable-insecure-quic";
+
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 

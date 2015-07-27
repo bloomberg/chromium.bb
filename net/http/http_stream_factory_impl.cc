@@ -208,7 +208,7 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
       continue;
 
-    if (session_->params().disable_insecure_quic &&
+    if (!session_->params().enable_insecure_quic &&
         !original_url.SchemeIs("https")) {
       continue;
     }

@@ -178,7 +178,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<double> alternative_service_probability_threshold;
 
     Optional<bool> enable_quic;
-    Optional<bool> disable_insecure_quic;
+    Optional<bool> enable_insecure_quic;
     Optional<bool> enable_quic_for_proxies;
     Optional<bool> enable_quic_port_selection;
     Optional<bool> quic_always_require_handshake_confirmation;
@@ -331,9 +331,10 @@ class IOThread : public content::BrowserThreadDelegate {
       base::StringPiece quic_trial_group,
       bool quic_allowed_by_policy);
 
-  // Returns true if QUIC should be disabled for http:// URLs, as a result
-  // of a field trial.
-  static bool ShouldDisableInsecureQuic(
+  // Returns true if QUIC should be enabled for http:// URLs, as a result
+  // of a field trial or command line flag.
+  static bool ShouldEnableInsecureQuic(
+      const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
   // Returns true if the selection of the ephemeral port in bind() should be

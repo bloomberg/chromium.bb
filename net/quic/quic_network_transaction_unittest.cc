@@ -395,6 +395,8 @@ INSTANTIATE_TEST_CASE_P(Version, QuicNetworkTransactionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicNetworkTransactionTest, ForceQuic) {
+  // TODO(rch): switch these tests to use secure QUIC.
+  params_.enable_insecure_quic = true;
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:80");
 
@@ -454,6 +456,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
+  params_.enable_insecure_quic = true;
   params_.enable_quic_for_proxies = true;
   proxy_service_.reset(
       ProxyService::CreateFixedFromPacResult("QUIC myproxy:70"));
@@ -487,6 +490,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   const std::string origin_host = "news.example.com";
   const std::string proxy_host = "www.example.org";
 
+  params_.enable_insecure_quic = true;
   params_.enable_quic_for_proxies = true;
   proxy_service_.reset(
       ProxyService::CreateFixedFromPacResult("QUIC " + proxy_host + ":70"));
@@ -523,6 +527,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
+  params_.enable_insecure_quic = true;
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:80");
 
@@ -564,6 +569,8 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
     MockRead(kQuicAlternateProtocolHttpHeader),
@@ -601,6 +608,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, AlternateProtocolDifferentPort) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead(kQuicAlternateProtocolDifferentPortHttpHeader),
@@ -636,6 +645,8 @@ TEST_P(QuicNetworkTransactionTest, AlternateProtocolDifferentPort) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead(kQuicAlternateProtocolHttpHeader),
@@ -681,6 +692,8 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
     MockRead(kQuicAlternateProtocol50pctHttpHeader),
@@ -719,6 +732,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
     MockRead(kQuicAlternateProtocol50pctHttpHeader),
@@ -740,6 +755,8 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolForInsecureQuic) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {MockRead("HTTP/1.1 200 OK\r\n"),
                            MockRead("Content-length: 11\r\n"),
                            MockRead("Alternate-Protocol: 443:quic\r\n\r\n"),
@@ -755,7 +772,7 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolForInsecureQuic) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSocketDataProvider(&http_data);
 
-  params_.disable_insecure_quic = true;
+  params_.enable_insecure_quic = false;
   CreateSessionWithNextProtos();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -764,6 +781,8 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolForInsecureQuic) {
 
 TEST_P(QuicNetworkTransactionTest,
        DontUseAlternateProtocolWithBadProbabilityForQuic) {
+  params_.enable_insecure_quic = true;
+
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
     MockRead("Alternate-Protocol: 443:quic,p=2\r\n\r\n"),
@@ -785,6 +804,7 @@ TEST_P(QuicNetworkTransactionTest,
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
+  params_.enable_insecure_quic = true;
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:443");
 
@@ -907,6 +927,7 @@ TEST_P(QuicAltSvcCertificateVerificationTest,
 }
 
 TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
+  params_.enable_insecure_quic = true;
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
 
@@ -965,6 +986,7 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
+  params_.enable_insecure_quic = true;
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -989,6 +1011,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
+  params_.enable_insecure_quic = true;
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -1022,6 +1045,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
+  params_.enable_insecure_quic = true;
   proxy_service_.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
 
@@ -1063,6 +1087,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
+  params_.enable_insecure_quic = true;
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -1108,6 +1133,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 }
 
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
+  params_.enable_insecure_quic = true;
   // Alternate-protocol job
   scoped_ptr<QuicEncryptedPacket> close(ConstructConnectionClosePacket(1));
   MockRead quic_reads[] = {
@@ -1137,6 +1163,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
 }
 
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
+  params_.enable_insecure_quic = true;
   // Alternate-protocol job
   MockRead quic_reads[] = {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
@@ -1165,6 +1192,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
 }
 
 TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
+  params_.enable_insecure_quic = true;
   // Alternate-protocol job will fail when the session attempts to read.
   MockRead quic_reads[] = {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
@@ -1196,6 +1224,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
 }
 
 TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
+  params_.enable_insecure_quic = true;
   // Alternate-protocol job
   MockRead quic_reads[] = {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
@@ -1236,6 +1265,7 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
+  params_.enable_insecure_quic = true;
   // Alternate-protocol job
   MockRead quic_reads[] = {
     MockRead(ASYNC, ERR_IO_PENDING),
@@ -1264,6 +1294,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
 }
 
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
+  params_.enable_insecure_quic = true;
   // Alternate-protocol job will fail before creating a QUIC session.
   StaticSocketDataProvider quic_data(nullptr, 0, nullptr, 0);
   quic_data.set_connect_data(MockConnect(SYNCHRONOUS,
@@ -1290,6 +1321,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
+  params_.enable_insecure_quic = true;
   MockQuicData mock_quic_data;
   mock_quic_data.AddSynchronousRead(ConstructConnectionClosePacket(1));
   mock_quic_data.AddWrite(
@@ -1334,6 +1366,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
 // the appropriate error code.  Note that this never happens in production,
 // because the handshake (which this test mocks) would fail in this scenario.
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
+  params_.enable_insecure_quic = true;
   maker_.set_hostname("www.example.org");
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
@@ -1360,6 +1393,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
+  params_.enable_insecure_quic = true;
   maker_.set_hostname("www.example.org");
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
