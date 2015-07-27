@@ -833,23 +833,23 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
 
   def testKillAll_nonblocking(self):
     with self.assertCalls(
-        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
+        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
         (self.call.adb.Shell('kill -9 1234'), '')):
       self.assertEquals(
           1, self.device.KillAll('some.process', blocking=False))
 
   def testKillAll_blocking(self):
     with self.assertCalls(
-        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
+        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
         (self.call.adb.Shell('kill -9 1234'), ''),
-        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
+        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
         (self.call.device.GetPids('some.process'), [])):
       self.assertEquals(
           1, self.device.KillAll('some.process', blocking=True))
 
   def testKillAll_root(self):
     with self.assertCalls(
-        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
+        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
         (self.call.device.NeedsSU(), True),
         (self.call.adb.Shell("su -c sh -c 'kill -9 1234'"), '')):
       self.assertEquals(
@@ -857,10 +857,19 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
 
   def testKillAll_sigterm(self):
     with self.assertCalls(
-        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
+        (self.call.device.GetPids('some.process'),
+            {'some.process': ['1234']}),
         (self.call.adb.Shell('kill -15 1234'), '')):
       self.assertEquals(
           1, self.device.KillAll('some.process', signum=device_signal.SIGTERM))
+
+  def testKillAll_multipleInstances(self):
+    with self.assertCalls(
+        (self.call.device.GetPids('some.process'),
+            {'some.process': ['1234', '4567']}),
+        (self.call.adb.Shell('kill -15 1234 4567'), '')):
+      self.assertEquals(
+          2, self.device.KillAll('some.process', signum=device_signal.SIGTERM))
 
 
 class DeviceUtilsStartActivityTest(DeviceUtilsTest):
@@ -1672,16 +1681,20 @@ class DeviceUtilsGetPidsTest(DeviceUtilsTest):
     with self.assertCall(
         self.call.device._RunPipedShellCommand('ps | grep -F one.match'),
         ['user  1001    100   1024 1024   ffffffff 00000000 one.match']):
-      self.assertEqual({'one.match': '1001'}, self.device.GetPids('one.match'))
+      self.assertEqual(
+          {'one.match': ['1001']},
+          self.device.GetPids('one.match'))
 
-  def testGetPids_mutlipleMatches(self):
+  def testGetPids_multipleMatches(self):
     with self.assertCall(
         self.call.device._RunPipedShellCommand('ps | grep -F match'),
         ['user  1001    100   1024 1024   ffffffff 00000000 one.match',
          'user  1002    100   1024 1024   ffffffff 00000000 two.match',
          'user  1003    100   1024 1024   ffffffff 00000000 three.match']):
       self.assertEqual(
-          {'one.match': '1001', 'two.match': '1002', 'three.match': '1003'},
+          {'one.match': ['1001'],
+           'two.match': ['1002'],
+           'three.match': ['1003']},
           self.device.GetPids('match'))
 
   def testGetPids_exactMatch(self):
@@ -1690,7 +1703,7 @@ class DeviceUtilsGetPidsTest(DeviceUtilsTest):
         ['user  1000    100   1024 1024   ffffffff 00000000 not.exact.match',
          'user  1234    100   1024 1024   ffffffff 00000000 exact.match']):
       self.assertEqual(
-          {'not.exact.match': '1000', 'exact.match': '1234'},
+          {'not.exact.match': ['1000'], 'exact.match': ['1234']},
           self.device.GetPids('exact.match'))
 
   def testGetPids_quotable(self):
@@ -1698,7 +1711,16 @@ class DeviceUtilsGetPidsTest(DeviceUtilsTest):
         self.call.device._RunPipedShellCommand("ps | grep -F 'my$process'"),
         ['user  1234    100   1024 1024   ffffffff 00000000 my$process']):
       self.assertEqual(
-          {'my$process': '1234'}, self.device.GetPids('my$process'))
+          {'my$process': ['1234']}, self.device.GetPids('my$process'))
+
+  def testGetPids_multipleInstances(self):
+    with self.assertCall(
+        self.call.device._RunPipedShellCommand('ps | grep -F foo'),
+        ['user  1000    100   1024 1024   ffffffff 00000000 foo',
+         'user  1234    100   1024 1024   ffffffff 00000000 foo']):
+      self.assertEqual(
+          {'foo': ['1000', '1234']},
+          self.device.GetPids('foo'))
 
 
 class DeviceUtilsTakeScreenshotTest(DeviceUtilsTest):

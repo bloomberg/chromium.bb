@@ -736,7 +736,7 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    pids = self.GetPids(process_name)
+    pids = list(itertools.chain(*self.GetPids(process_name).values()))
     if not pids:
       if quiet:
         return 0
@@ -744,7 +744,7 @@ class DeviceUtils(object):
         raise device_errors.CommandFailedError(
             'No process "%s"' % process_name, str(self))
 
-    cmd = ['kill', '-%d' % signum] + pids.values()
+    cmd = ['kill', '-%d' % signum] + pids
     self.RunShellCommand(cmd, as_root=as_root, check_return=True)
 
     if blocking:
@@ -1584,14 +1584,14 @@ class DeviceUtils(object):
       retries: number of retries
 
     Returns:
-      A dict mapping process name to PID for each process that contained the
-      provided |process_name|.
+      A dict mapping process name to a list of PIDs for each process that
+      contained the provided |process_name|.
 
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    procs_pids = {}
+    procs_pids = collections.defaultdict(list)
     try:
       ps_output = self._RunPipedShellCommand(
           'ps | grep -F %s' % cmd_helper.SingleQuote(process_name))
@@ -1607,7 +1607,8 @@ class DeviceUtils(object):
       try:
         ps_data = line.split()
         if process_name in ps_data[-1]:
-          procs_pids[ps_data[-1]] = ps_data[1]
+          pid, process = ps_data[1], ps_data[-1]
+          procs_pids[process].append(pid)
       except IndexError:
         pass
     return procs_pids
