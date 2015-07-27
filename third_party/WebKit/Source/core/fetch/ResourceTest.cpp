@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/fetch/Resource.h"
 
-#include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -65,21 +64,6 @@ private:
     Platform* m_oldPlatform;
 };
 
-class FakeResourceClient : public ResourceClient {
-public:
-    FakeResourceClient()
-        : ResourceClient()
-        , m_finishCalls(0)
-    {
-    }
-
-    void notifyFinished(Resource*) override { m_finishCalls++; }
-    int finishCalls() const { return m_finishCalls; }
-
-private:
-    int m_finishCalls;
-};
-
 PassOwnPtr<ResourceResponse> createTestResourceResponse()
 {
     OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
@@ -114,27 +98,6 @@ TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedVia
     response->setWasFetchedViaServiceWorker(true);
     createTestResourceAndSetCachedMetadata(response.get());
     EXPECT_EQ(0u, mock.platform()->cachedURLs().size());
-}
-
-TEST(ResourceTest, RevalidateWithOriginalClient)
-{
-    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-    ResourcePtr<Resource> resource = new Resource(url, Resource::Image);
-    FakeResourceClient client;
-    resource->setLoading(true);
-    resource->addClient(&client);
-
-    ResourceResponse response;
-    response.setURL(url);
-    response.setHTTPStatusCode(200);
-    resource->responseReceived(response, nullptr);
-    resource->finish();
-
-    resource->prepareForRevalidation(url);
-    resource->setLoading(true);
-    resource->responseReceived(response, nullptr);
-    resource->finish();
-    EXPECT_EQ(1, client.finishCalls());
 }
 
 } // namespace blink
