@@ -37,7 +37,6 @@
     [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
     [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [DoNotCheckSecurity, Replaceable] readonly attribute long doNotCheckSecurityReplaceableReadonlyLongAttribute;
-    [DoNotCheckSecurity, Replaceable, ExposeJSAccessors] readonly attribute long doNotCheckSecurityReplaceableReadonlyLongAccessor;
 
     [DoNotCheckSecurity] void doNotCheckSecurityVoidMethod();
     [DoNotCheckSecurity, DoNotCheckSignature] void doNotCheckSecurityDoNotCheckSignatureVoidMethod();

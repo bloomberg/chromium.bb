@@ -411,7 +411,7 @@ def is_legacy_interface_type_checking(interface, member):
     return False
 
 
-# [Unforgeable], [Global], [PrimaryGlobal] and [DoNotExposeJSAccessors]
+# [Unforgeable], [Global], [PrimaryGlobal]
 def on_instance(interface, member):
     """Returns True if the interface's member needs to be defined on every
     instance object.
@@ -419,7 +419,6 @@ def on_instance(interface, member):
     The following members must be defiend on an instance object.
     - [Unforgeable] members
     - regular members of [Global] or [PrimaryGlobal] interfaces
-    - members on which [DoNotExposeJSAccessors] is specified
     """
     # TODO(yukishiino): Implement this function following the spec.
     if member.is_static:
@@ -427,7 +426,6 @@ def on_instance(interface, member):
     return not on_prototype(interface, member)
 
 
-# [ExposeJSAccessors]
 def on_prototype(interface, member):
     """Returns True if the interface's member needs to be defined on the
     prototype object.
@@ -439,24 +437,8 @@ def on_prototype(interface, member):
     - [Unforgeable] members
     - members of [Global] or [PrimaryGlobal] interfaces
     - named properties of [Global] or [PrimaryGlobal] interfaces
-    However, if [ExposeJSAccessors] is specified, the member is defined on the
-    prototype object.
     """
     # TODO(yukishiino): Implement this function following the spec.
-
-    if ('ExposeJSAccessors' in interface.extended_attributes and
-            'DoNotExposeJSAccessors' in interface.extended_attributes):
-        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time in an interface: ' + interface.name)
-    if ('ExposeJSAccessors' in member.extended_attributes and
-            'DoNotExposeJSAccessors' in member.extended_attributes):
-        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time on a member: ' + member.name + ' in an interface: ' + interface.name)
-
-    # Note that ExposeJSAccessors and DoNotExposeJSAccessors are more powerful
-    # than 'static', [Unforgeable] and [OverrideBuiltins].
-    if 'ExposeJSAccessors' in member.extended_attributes:
-        return True
-    if 'DoNotExposeJSAccessors' in member.extended_attributes:
-        return False
 
     # These members must not be placed on prototype chains.
     if (is_constructor_attribute(member) or
@@ -469,11 +451,6 @@ def on_prototype(interface, member):
     # Window.
     if (interface.name == 'Window'):
         return member.idl_type.name == 'EventHandler'
-
-    if 'ExposeJSAccessors' in interface.extended_attributes:
-        return True
-    if 'DoNotExposeJSAccessors' in interface.extended_attributes:
-        return False
 
     return True
 

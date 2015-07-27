@@ -91,8 +91,6 @@ from utilities import idl_filename_to_component, read_pickle_files, write_pickle
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
     'DependentLifetime',
-    'DoNotExposeJSAccessors',
-    'ExposeJSAccessors',
     'GarbageCollected',
     'WillBeGarbageCollected',
 ])
