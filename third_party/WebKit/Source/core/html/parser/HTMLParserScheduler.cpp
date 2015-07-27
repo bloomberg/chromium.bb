@@ -120,6 +120,12 @@ void HTMLParserScheduler::resume()
         FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
 }
 
+void HTMLParserScheduler::detach()
+{
+    m_cancellableContinueParse.cancel();
+    m_isSuspendedWithActiveTimer = false;
+}
+
 inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session, bool startingScript) const
 {
     if (Platform::current()->currentThread()->scheduler()->shouldYieldForHighPriorityWork())

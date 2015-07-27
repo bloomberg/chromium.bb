@@ -93,6 +93,8 @@ public:
     void suspend();
     void resume();
 
+    void detach(); // Clear active tasks if any.
+
 private:
     explicit HTMLParserScheduler(HTMLDocumentParser*);
 

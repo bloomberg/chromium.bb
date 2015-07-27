@@ -220,7 +220,10 @@ void HTMLDocumentParser::detach()
     // Yet during fast/dom/HTMLScriptElement/script-load-events.html we do.
     m_preloadScanner.clear();
     m_insertionPreloadScanner.clear();
-    m_parserScheduler.clear(); // Deleting the scheduler will clear any timers.
+    if (m_parserScheduler) {
+        m_parserScheduler->detach();
+        m_parserScheduler.clear();
+    }
     // Oilpan: It is important to clear m_token to deallocate backing memory of
     // HTMLToken::m_data and let the allocator reuse the memory for
     // HTMLToken::m_data of a next HTMLDocumentParser. We need to clear
@@ -232,7 +235,10 @@ void HTMLDocumentParser::detach()
 void HTMLDocumentParser::stopParsing()
 {
     DocumentParser::stopParsing();
-    m_parserScheduler.clear(); // Deleting the scheduler will clear any timers.
+    if (m_parserScheduler) {
+        m_parserScheduler->detach();
+        m_parserScheduler.clear();
+    }
     if (m_haveBackgroundParser)
         stopBackgroundParser();
 }
