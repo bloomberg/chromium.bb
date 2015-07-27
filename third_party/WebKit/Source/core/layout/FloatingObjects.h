@@ -35,9 +35,6 @@ namespace blink {
 class LayoutBlockFlow;
 class LayoutBox;
 
-// FIXME this should be removed once LayoutBlockFlow::nextFloatLogicalBottomBelow doesn't need it anymore. (Bug 123931)
-enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
-
 class FloatingObject {
     WTF_MAKE_NONCOPYABLE(FloatingObject); WTF_MAKE_FAST_ALLOCATED(FloatingObject);
 public:
@@ -159,6 +156,8 @@ public:
 
     LayoutUnit logicalLeftOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit* heightRemaining);
     LayoutUnit logicalRightOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit* heightRemaining);
+    LayoutUnit findNextFloatLogicalBottomBelow(LayoutUnit logicalHeight);
+    LayoutUnit findNextFloatLogicalBottomBelowForBlock(LayoutUnit logicalHeight);
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type);
     FloatingObject* lowestFloatingObject() const;

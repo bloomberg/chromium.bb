@@ -178,7 +178,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
             return wrapNextToShapeOutside(isFirstLine);
 
     while (true) {
-        floatLogicalBottom = m_block.nextFloatLogicalBottomBelow(lastFloatLogicalBottom, ShapeOutsideFloatShapeOffset);
+        floatLogicalBottom = m_block.nextFloatLogicalBottomBelow(lastFloatLogicalBottom);
         if (floatLogicalBottom <= lastFloatLogicalBottom)
             break;
 
