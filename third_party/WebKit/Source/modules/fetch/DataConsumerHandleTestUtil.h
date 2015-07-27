@@ -77,6 +77,10 @@ public:
 
     class ThreadingTestBase : public ThreadSafeRefCounted<ThreadingTestBase> {
     public:
+        virtual ~ThreadingTestBase() { }
+
+        class ThreadHolder;
+
         class Context : public ThreadSafeRefCounted<Context> {
         public:
             static PassRefPtr<Context> create() { return adoptRef(new Context); }
@@ -96,28 +100,80 @@ public:
                 MutexLocker locker(m_loggingMutex);
                 return m_result;
             }
+
+            void registerThreadHolder(ThreadHolder* holder)
+            {
+                MutexLocker locker(m_holderMutex);
+                ASSERT(!m_holder);
+                m_holder = holder;
+            }
+            void unregisterThreadHolder()
+            {
+                MutexLocker locker(m_holderMutex);
+                ASSERT(m_holder);
+                m_holder = nullptr;
+            }
+            void postTaskToReadingThread(const WebTraceLocation& location, Task* task)
+            {
+                MutexLocker locker(m_holderMutex);
+                ASSERT(m_holder);
+                m_holder->readingThread()->postTask(location, task);
+            }
+            void postTaskToUpdatingThread(const WebTraceLocation& location, Task* task)
+            {
+                MutexLocker locker(m_holderMutex);
+                ASSERT(m_holder);
+                m_holder->updatingThread()->postTask(location, task);
+            }
+
+        private:
+            Context()
+                : m_holder(nullptr) { }
+            String currentThreadName()
+            {
+                MutexLocker locker(m_holderMutex);
+                if (m_holder) {
+                    if (m_holder->readingThread()->isCurrentThread())
+                        return "the reading thread";
+                    if (m_holder->updatingThread()->isCurrentThread())
+                        return "the updating thread";
+                }
+                return "an unknown thread";
+            }
+
+            // Protects |m_result|.
+            Mutex m_loggingMutex;
+            String m_result;
+
+            // Protects |m_holder|.
+            Mutex m_holderMutex;
+            // Because Context outlives ThreadHolder, holding a raw pointer
+            // here is safe.
+            ThreadHolder* m_holder;
+        };
+
+        // The reading/updating threads are alive while ThreadHolder is alive.
+        class ThreadHolder {
+        public:
+            ThreadHolder(ThreadingTestBase* test)
+                : m_context(test->m_context)
+                , m_readingThread(adoptPtr(new Thread("reading thread")))
+                , m_updatingThread(adoptPtr(new Thread("updating thread")))
+            {
+                m_context->registerThreadHolder(this);
+            }
+            ~ThreadHolder()
+            {
+                m_context->unregisterThreadHolder();
+            }
+
             WebThreadSupportingGC* readingThread() { return m_readingThread->thread(); }
             WebThreadSupportingGC* updatingThread() { return m_updatingThread->thread(); }
 
         private:
-            Context()
-                : m_readingThread(adoptPtr(new Thread("reading thread")))
-                , m_updatingThread(adoptPtr(new Thread("updating thread")))
-            {
-            }
-            String currentThreadName()
-            {
-                if (m_readingThread->thread()->isCurrentThread())
-                    return "the reading thread";
-                if (m_updatingThread->thread()->isCurrentThread())
-                    return "the updating thread";
-                return "an unknown thread";
-            }
-
+            RefPtr<Context> m_context;
             OwnPtr<Thread> m_readingThread;
             OwnPtr<Thread> m_updatingThread;
-            Mutex m_loggingMutex;
-            String m_result;
         };
 
         class ReaderImpl final : public WebDataConsumerHandle::Reader {
@@ -156,15 +212,28 @@ public:
         void resetReader() { m_reader = nullptr; }
         void signalDone() { m_waitableEvent->signal(); }
         const String& result() { return m_context->result(); }
-        WebThreadSupportingGC* readingThread() { return m_context->readingThread(); }
-        WebThreadSupportingGC* updatingThread() { return m_context->updatingThread(); }
-        void postTaskAndWait(WebThreadSupportingGC* thread, const WebTraceLocation& location, Task* task)
+        void postTaskToReadingThread(const WebTraceLocation& location, Task* task)
         {
-            thread->postTask(location, task);
+            m_context->postTaskToReadingThread(location,  task);
+        }
+        void postTaskToUpdatingThread(const WebTraceLocation& location, Task* task)
+        {
+            m_context->postTaskToUpdatingThread(location,  task);
+        }
+        void postTaskToReadingThreadAndWait(const WebTraceLocation& location, Task* task)
+        {
+            postTaskToReadingThread(location,  task);
             m_waitableEvent->wait();
         }
-
+        void postTaskToUpdatingThreadAndWait(const WebTraceLocation& location, Task* task)
+        {
+            postTaskToUpdatingThread(location,  task);
+            m_waitableEvent->wait();
+        }
     protected:
+        ThreadingTestBase()
+            : m_context(Context::create()) { }
+
         RefPtr<Context> m_context;
         OwnPtr<WebDataConsumerHandle::Reader> m_reader;
         OwnPtr<WebWaitableEvent> m_waitableEvent;
@@ -174,24 +243,27 @@ public:
     class ThreadingHandleNotificationTest : public ThreadingTestBase, public WebDataConsumerHandle::Client {
     public:
         using Self = ThreadingHandleNotificationTest;
+        static PassRefPtr<Self> create() { return adoptRef(new Self); }
+
         void run(PassOwnPtr<WebDataConsumerHandle> handle)
         {
-            m_context = Context::create();
+            ThreadHolder holder(this);
             m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
             m_handle = handle;
 
-            postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
+            postTaskToReadingThreadAndWait(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
         }
 
     private:
+        ThreadingHandleNotificationTest() = default;
         void obtainReader()
         {
             m_reader = m_handle->obtainReader(this);
         }
         void didGetReadable() override
         {
-            readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
-            readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
+            postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
+            postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
         }
 
         OwnPtr<WebDataConsumerHandle> m_handle;
@@ -200,21 +272,24 @@ public:
     class ThreadingHandleNoNotificationTest : public ThreadingTestBase, public WebDataConsumerHandle::Client {
     public:
         using Self = ThreadingHandleNoNotificationTest;
+        static PassRefPtr<Self> create() { return adoptRef(new Self); }
+
         void run(PassOwnPtr<WebDataConsumerHandle> handle)
         {
-            m_context = Context::create();
+            ThreadHolder holder(this);
             m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
             m_handle = handle;
 
-            postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
+            postTaskToReadingThreadAndWait(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
         }
 
     private:
+        ThreadingHandleNoNotificationTest() = default;
         void obtainReader()
         {
             m_reader = m_handle->obtainReader(this);
             m_reader = nullptr;
-            readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
+            postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
         }
         void didGetReadable() override
         {

@@ -31,9 +31,9 @@ TEST(DataConsumerHandleUtilTest, CreateWaitingHandle)
 
 TEST(DataConsumerHandleUtilTest, WaitingHandleNoNotification)
 {
-    DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
+    RefPtr<DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest> test = DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest::create();
     // Test this function doesn't crash.
-    test.run(createWaitingDataConsumerHandle());
+    test->run(createWaitingDataConsumerHandle());
 }
 
 TEST(DataConsumerHandleUtilTest, CreateDoneHandle)
@@ -51,16 +51,16 @@ TEST(DataConsumerHandleUtilTest, CreateDoneHandle)
 
 TEST(DataConsumerHandleUtilTest, DoneHandleNotification)
 {
-    DataConsumerHandleTestUtil::ThreadingHandleNotificationTest test;
+    RefPtr<DataConsumerHandleTestUtil::ThreadingHandleNotificationTest> test = DataConsumerHandleTestUtil::ThreadingHandleNotificationTest::create();
     // Test this function returns.
-    test.run(createDoneDataConsumerHandle());
+    test->run(createDoneDataConsumerHandle());
 }
 
 TEST(DataConsumerHandleUtilTest, DoneHandleNoNotification)
 {
-    DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
+    RefPtr<DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest> test = DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest::create();
     // Test this function doesn't crash.
-    test.run(createDoneDataConsumerHandle());
+    test->run(createDoneDataConsumerHandle());
 }
 
 TEST(DataConsumerHandleUtilTest, CreateUnexpectedErrorHandle)
@@ -78,16 +78,16 @@ TEST(DataConsumerHandleUtilTest, CreateUnexpectedErrorHandle)
 
 TEST(DataConsumerHandleUtilTest, UnexpectedErrorHandleNotification)
 {
-    DataConsumerHandleTestUtil::ThreadingHandleNotificationTest test;
+    RefPtr<DataConsumerHandleTestUtil::ThreadingHandleNotificationTest> test = DataConsumerHandleTestUtil::ThreadingHandleNotificationTest::create();
     // Test this function returns.
-    test.run(createUnexpectedErrorDataConsumerHandle());
+    test->run(createUnexpectedErrorDataConsumerHandle());
 }
 
 TEST(DataConsumerHandleUtilTest, UnexpectedErrorHandleNoNotification)
 {
-    DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest test;
+    RefPtr<DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest> test = DataConsumerHandleTestUtil::ThreadingHandleNoNotificationTest::create();
     // Test this function doesn't crash.
-    test.run(createUnexpectedErrorDataConsumerHandle());
+    test->run(createUnexpectedErrorDataConsumerHandle());
 }
 
 } // namespace
