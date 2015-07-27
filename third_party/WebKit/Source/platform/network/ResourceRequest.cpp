@@ -451,6 +451,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_originatesFromReservedIPRange = false;
     m_inputPerfMetricReportPolicy = InputToLoadPerfMetricReportPolicy::NoReport;
     m_followedRedirect = false;
+    m_requestorOrigin = SecurityOrigin::createUnique();
 }
 
 } // namespace blink

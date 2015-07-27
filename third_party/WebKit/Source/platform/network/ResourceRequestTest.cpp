@@ -14,6 +14,13 @@
 
 namespace blink {
 
+TEST(ResourceRequestTest, RequestorOriginNonNull)
+{
+    ResourceRequest req;
+    EXPECT_NE(nullptr, req.requestorOrigin().get());
+    EXPECT_TRUE(req.requestorOrigin()->isUnique());
+}
+
 TEST(ResourceRequestTest, CrossThreadResourceRequestData)
 {
     ResourceRequest original;
