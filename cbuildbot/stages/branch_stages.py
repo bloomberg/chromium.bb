@@ -10,6 +10,7 @@ import os
 import re
 from xml.etree import ElementTree
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import generic_stages
@@ -17,6 +18,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import parallel
+
+
+site_config = config_lib.GetConfig()
 
 
 class BranchError(Exception):
@@ -301,7 +305,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
     branch_ref = git.NormalizeRef(self.branch_name)
 
     logging.debug('Fixing manifest projects for new branch.')
-    for project in constants.MANIFEST_PROJECTS:
+    for project in site_config.params.MANIFEST_PROJECTS:
       manifest_checkout = repo_manifest.FindCheckout(project)
       manifest_dir = manifest_checkout['local_path']
       push_remote = manifest_checkout['push_remote']

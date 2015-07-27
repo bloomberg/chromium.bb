@@ -117,19 +117,78 @@
         "AOSP_GOB_HOST": "android.googlesource.com",
         "AOSP_GOB_INSTANCE": "android",
         "AOSP_GOB_URL": "https://android.googlesource.com",
+        "AOSP_REMOTE": "aosp",
+        "BRANCHABLE_PROJECTS": {
+            "cros": "chromiumos/(.+)",
+            "cros-internal": "chromeos/(.+)",
+            "kayle-cros-internal": "chromeos/(.+)"
+        },
+        "CHANGE_PREFIX": {
+            "cros": "",
+            "cros-internal": "*"
+        },
+        "CHROME_REMOTE": "chrome",
+        "CHROMIUM_REMOTE": "chromium",
+        "CROS_REMOTES": {
+            "aosp": "https://android.googlesource.com",
+            "cros": "https://chromium.googlesource.com",
+            "cros-internal": "https://chrome-internal.googlesource.com",
+            "kayle-cros-internal": "https://chrome-internal.googlesource.com"
+        },
+        "EXTERNAL_CHANGE_PREFIX": "",
         "EXTERNAL_GERRIT_HOST": "chromium-review.googlesource.com",
         "EXTERNAL_GERRIT_INSTANCE": "chromium-review",
         "EXTERNAL_GERRIT_URL": "https://chromium-review.googlesource.com",
         "EXTERNAL_GOB_HOST": "chromium.googlesource.com",
         "EXTERNAL_GOB_INSTANCE": "chromium",
         "EXTERNAL_GOB_URL": "https://chromium.googlesource.com",
+        "EXTERNAL_MANIFEST_VERSIONS_PATH": "manifest-versions",
+        "EXTERNAL_REMOTE": "cros",
+        "EXTERNAL_REMOTES": [
+            "cros",
+            "chromium"
+        ],
+        "GERRIT_HOSTS": {
+            "aosp": "android-review.googlesource.com",
+            "cros": "chromium-review.googlesource.com",
+            "cros-internal": "chrome-internal-review.googlesource.com"
+        },
+        "GIT_REMOTES": {
+            "aosp": "https://android.googlesource.com",
+            "chrome": "https://chrome-internal.googlesource.com",
+            "chromium": "https://chromium.googlesource.com",
+            "cros": "https://chromium.googlesource.com",
+            "cros-internal": "https://chrome-internal.googlesource.com",
+            "kayle-cros-internal": "https://chrome-internal.googlesource.com"
+        },
         "GOB_HOST": "%s.googlesource.com",
+        "GOB_REMOTES": {
+            "chrome-internal": "cros-internal",
+            "chromium": "cros"
+        },
+        "INTERNAL_CHANGE_PREFIX": "*",
         "INTERNAL_GERRIT_HOST": "chrome-internal-review.googlesource.com",
         "INTERNAL_GERRIT_INSTANCE": "chrome-internal-review",
         "INTERNAL_GERRIT_URL": "https://chrome-internal-review.googlesource.com",
         "INTERNAL_GOB_HOST": "chrome-internal.googlesource.com",
         "INTERNAL_GOB_INSTANCE": "chrome-internal",
-        "INTERNAL_GOB_URL": "https://chrome-internal.googlesource.com"
+        "INTERNAL_GOB_URL": "https://chrome-internal.googlesource.com",
+        "INTERNAL_MANIFEST_VERSIONS_PATH": "manifest-versions-internal",
+        "INTERNAL_REMOTE": "cros-internal",
+        "KAYLE_INTERNAL_REMOTE": "kayle-cros-internal",
+        "MANIFEST_INT_PROJECT": "chromeos/manifest-internal",
+        "MANIFEST_INT_URL": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "MANIFEST_PROJECT": "chromiumos/manifest",
+        "MANIFEST_PROJECTS": [
+            "chromiumos/manifest",
+            "chromeos/manifest-internal"
+        ],
+        "MANIFEST_URL": "https://chromium.googlesource.com/chromiumos/manifest",
+        "MANIFEST_VERSIONS_GOB_URL": "https://chromium.googlesource.com/chromiumos/manifest-versions",
+        "MANIFEST_VERSIONS_GOB_URL_TEST": "https://chromium.googlesource.com/chromiumos/manifest-versions-test",
+        "MANIFEST_VERSIONS_GS_URL": "gs://chromeos-manifest-versions",
+        "MANIFEST_VERSIONS_INT_GOB_URL": "https://chrome-internal.googlesource.com/chromeos/manifest-versions",
+        "MANIFEST_VERSIONS_INT_GOB_URL_TEST": "https://chrome-internal.googlesource.com/chromeos/manifest-versions-test"
     },
     "_templates": {
         "asan": {

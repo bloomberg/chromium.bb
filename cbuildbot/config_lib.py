@@ -621,10 +621,10 @@ def DefaultSettings():
       # consumption.
       archive=True,
 
-      # git repository URL for our manifests.
+      # Git repository URL for our manifests.
       #  https://chromium.googlesource.com/chromiumos/manifest
       #  https://chrome-internal.googlesource.com/chromeos/manifest-internal
-      manifest_repo_url=constants.MANIFEST_URL,
+      manifest_repo_url=None,
 
       # Whether we are using the manifest_version repo that stores per-build
       # manifests.
@@ -784,6 +784,62 @@ def DefaultSiteParameters():
       GerritInstanceParameters('INTERNAL', 'chrome-internal', defaults=True))
   default_site_params.update(
       GerritInstanceParameters('AOSP', 'android', defaults=True))
+
+  default_site_params.update(
+      # Parameters to define which manifests to use.
+      MANIFEST_PROJECT=None,
+      MANIFEST_INT_PROJECT=None,
+      MANIFEST_PROJECTS=None,
+      MANIFEST_URL=None,
+      MANIFEST_INT_URL=None,
+
+      # CrOS remotes specified in the manifests.
+      EXTERNAL_REMOTE=None,
+      INTERNAL_REMOTE=None,
+      GOB_REMOTES=None,
+      KAYLE_INTERNAL_REMOTE=None,
+      CHROMIUM_REMOTE=None,
+      CHROME_REMOTE=None,
+      AOSP_REMOTE=None,
+
+      # Only remotes listed in CROS_REMOTES are considered branchable.
+      # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
+      GERRIT_HOSTS=None,
+      CROS_REMOTES=None,
+      GIT_REMOTES=None,
+
+      # Prefix to distinguish internal and external changes. This is used
+      # when a user specifies a patch with "-g", when generating a key for
+      # a patch to use in our PatchCache, and when displaying a custom
+      # string for the patch.
+      INTERNAL_CHANGE_PREFIX='*',
+      EXTERNAL_CHANGE_PREFIX='',
+      CHANGE_PREFIX=None,
+
+      # List of remotes that are okay to include in the external manifest.
+      EXTERNAL_REMOTES=None,
+
+      # Mapping 'remote name' -> regexp that matches names of repositories on
+      # that remote that can be branched when creating CrOS branch.
+      # Branching script will actually create a new git ref when branching
+      # these projects. It won't attempt to create a git ref for other projects
+      # that may be mentioned in a manifest. If a remote is missing from this
+      # dictionary, all projects on that remote are considered to not be
+      # branchable.
+      BRANCHABLE_PROJECTS=None,
+
+      # Additional parameters used to filter manifests, create modified
+      # manifests, and to branch manifests.
+      MANIFEST_VERSIONS_GOB_URL=None,
+      MANIFEST_VERSIONS_GOB_URL_TEST=None,
+      MANIFEST_VERSIONS_INT_GOB_URL=None,
+      MANIFEST_VERSIONS_INT_GOB_URL_TEST=None,
+      MANIFEST_VERSIONS_GS_URL=None,
+
+      # Standard directories under buildroot for cloning these repos.
+      EXTERNAL_MANIFEST_VERSIONS_PATH=None,
+      INTERNAL_MANIFEST_VERSIONS_PATH=None
+  )
 
   return default_site_params
 

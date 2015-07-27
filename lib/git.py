@@ -15,11 +15,15 @@ import string
 import time
 from xml import sax
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_util
+
+
+site_config = config_lib.GetConfig()
 
 
 # Retry a git operation if git returns a error response with any of these
@@ -287,10 +291,11 @@ class ProjectCheckout(dict):
       return False
 
     # Old heuristic.
-    if (self['remote'] not in constants.CROS_REMOTES or
-        self['remote'] not in constants.BRANCHABLE_PROJECTS):
+    if (self['remote'] not in site_config.params.CROS_REMOTES or
+        self['remote'] not in site_config.params.BRANCHABLE_PROJECTS):
       return False
-    return re.match(constants.BRANCHABLE_PROJECTS[self['remote']], self['name'])
+    return re.match(site_config.params.BRANCHABLE_PROJECTS[self['remote']],
+                    self['name'])
 
   def IsPinnableProject(self):
     """Return whether we should pin to a revision on the CrOS branch."""
@@ -484,10 +489,10 @@ class Manifest(object):
         remote_name, StripRefs(upstream),
     )
 
-    attrs['pushable'] = remote in constants.GIT_REMOTES
+    attrs['pushable'] = remote in site_config.params.GIT_REMOTES
     if attrs['pushable']:
       attrs['push_remote'] = remote
-      attrs['push_remote_url'] = constants.GIT_REMOTES[remote]
+      attrs['push_remote_url'] = site_config.params.GIT_REMOTES[remote]
       attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
     groups = set(attrs.get('groups', 'default').replace(',', ' ').split())
     groups.add('default')

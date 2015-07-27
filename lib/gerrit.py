@@ -9,7 +9,6 @@ from __future__ import print_function
 import operator
 
 from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -64,9 +63,9 @@ class GerritHelper(object):
 
   @classmethod
   def FromRemote(cls, remote, **kwargs):
-    if remote == constants.INTERNAL_REMOTE:
+    if remote == site_config.params.INTERNAL_REMOTE:
       host = site_config.params.INTERNAL_GERRIT_HOST
-    elif remote == constants.EXTERNAL_REMOTE:
+    elif remote == site_config.params.EXTERNAL_REMOTE:
       host = site_config.params.EXTERNAL_GERRIT_HOST
     else:
       raise ValueError('Remote %s not supported.' % remote)
@@ -78,7 +77,7 @@ class GerritHelper(object):
     host = site_config.params.GOB_HOST % ('%s-review' % gob)
     # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
     # We should get rid of remotes altogether and just use the host.
-    return cls(host, constants.GOB_REMOTES.get(gob, gob), **kwargs)
+    return cls(host, site_config.params.GOB_REMOTES.get(gob, gob), **kwargs)
 
   def SetReviewers(self, change, add=(), remove=(), dryrun=False):
     """Modify the list of reviewers on a gerrit change.
@@ -493,7 +492,7 @@ def GetGerritPatchInfoWithPatchQueries(patches):
   seen = set()
   results = []
   order = {k.ToGerritQueryText(): idx for (idx, k) in enumerate(patches)}
-  for remote in constants.CHANGE_PREFIX.keys():
+  for remote in site_config.params.CHANGE_PREFIX.keys():
     helper = GetGerritHelper(remote)
     raw_ids = [x.ToGerritQueryText() for x in patches if x.remote == remote]
     for k, change in helper.QueryMultipleCurrentPatchset(raw_ids):
@@ -527,12 +526,12 @@ def GetGerritHelperForChange(change):
 
 def GetCrosInternal(**kwargs):
   """Convenience method for accessing private ChromeOS gerrit."""
-  return GetGerritHelper(constants.INTERNAL_REMOTE, **kwargs)
+  return GetGerritHelper(site_config.params.INTERNAL_REMOTE, **kwargs)
 
 
 def GetCrosExternal(**kwargs):
   """Convenience method for accessing public ChromiumOS gerrit."""
-  return GetGerritHelper(constants.EXTERNAL_REMOTE, **kwargs)
+  return GetGerritHelper(site_config.params.EXTERNAL_REMOTE, **kwargs)
 
 
 def GetChangeRef(change_number, patchset=None):

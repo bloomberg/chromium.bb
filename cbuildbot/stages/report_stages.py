@@ -12,6 +12,7 @@ import sys
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import metadata_lib
@@ -28,6 +29,9 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
+
+
+site_config = config_lib.GetConfig()
 
 
 def WriteBasicMetadata(builder_run):
@@ -373,7 +377,7 @@ class ReportStage(generic_stages.BuilderStage,
       The new value of the streak counter.
     """
     gs_ctx = gs.GSContext(dry_run=dry_run)
-    counter_url = os.path.join(constants.MANIFEST_VERSIONS_GS_URL,
+    counter_url = os.path.join(site_config.params.MANIFEST_VERSIONS_GS_URL,
                                constants.STREAK_COUNTERS,
                                counter_name)
     gs_counter = gs.GSCounter(gs_ctx, counter_url)

@@ -19,8 +19,9 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 
 from chromite.cbuildbot import chroot_lib
-from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
@@ -40,6 +41,9 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_chrome_as_stable
+
+
+site_config = config_lib.GetConfig()
 
 
 PRE_CQ = validation_pool.PRE_CQ
@@ -340,14 +344,14 @@ class SyncStage(generic_stages.BuilderStage):
 
     if internal:
       if test:
-        return constants.MANIFEST_VERSIONS_INT_GOB_URL_TEST
+        return site_config.params.MANIFEST_VERSIONS_INT_GOB_URL_TEST
       else:
-        return constants.MANIFEST_VERSIONS_INT_GOB_URL
+        return site_config.params.MANIFEST_VERSIONS_INT_GOB_URL
     else:
       if test:
-        return constants.MANIFEST_VERSIONS_GOB_URL_TEST
+        return site_config.params.MANIFEST_VERSIONS_GOB_URL_TEST
       else:
-        return constants.MANIFEST_VERSIONS_GOB_URL
+        return site_config.params.MANIFEST_VERSIONS_GOB_URL
 
   def Initialize(self):
     self._InitializeRepo()
@@ -453,9 +457,9 @@ class LKGMSyncStage(SyncStage):
     """Override: Gets the LKGM."""
     # TODO(sosa):  Should really use an initialized manager here.
     if self.internal:
-      mv_dir = constants.INTERNAL_MANIFEST_VERSIONS_PATH
+      mv_dir = site_config.params.INTERNAL_MANIFEST_VERSIONS_PATH
     else:
-      mv_dir = constants.EXTERNAL_MANIFEST_VERSIONS_PATH
+      mv_dir = site_config.params.EXTERNAL_MANIFEST_VERSIONS_PATH
 
     manifest_path = os.path.join(self._build_root, mv_dir)
     manifest_repo = self._GetManifestVersionsRepoUrl()
@@ -597,7 +601,7 @@ class ManifestVersionedSyncStage(SyncStage):
         root = doc.getroot()
         for node in root.findall('project'):
           remote = node.attrib.get('remote')
-          if remote and remote not in constants.GIT_REMOTES:
+          if remote and remote not in site_config.params.GIT_REMOTES:
             root.remove(node)
         doc.write(filtered_manifest)
         yield filtered_manifest

@@ -18,6 +18,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
 
+site_config = config_lib.GetConfig()
+
+
 # Paladin constants for manifest names.
 PALADIN_COMMIT_ELEMENT = 'pending_commit'
 
@@ -321,7 +324,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     last_error = None
     new_manifest = manifest_version.FilterManifest(
-        manifest, whitelisted_remotes=constants.EXTERNAL_REMOTES)
+        manifest, whitelisted_remotes=site_config.params.EXTERNAL_REMOTES)
     version_info = self.GetCurrentVersionInfo()
     for _attempt in range(0, retries + 1):
       try:

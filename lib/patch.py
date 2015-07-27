@@ -13,11 +13,15 @@ import random
 import re
 import time
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gob_util
+
+
+site_config = config_lib.GetConfig()
 
 
 # We import mock so that we can identify mock.MagicMock instances in tests
@@ -424,11 +428,11 @@ def StripPrefix(text):
   Returns:
     A tuple of the corresponding remote and the stripped text.
   """
-  remote = constants.EXTERNAL_REMOTE
-  prefix = constants.INTERNAL_CHANGE_PREFIX
+  remote = site_config.params.EXTERNAL_REMOTE
+  prefix = site_config.params.INTERNAL_CHANGE_PREFIX
   if text.startswith(prefix):
     text = text[len(prefix):]
-    remote = constants.INTERNAL_REMOTE
+    remote = site_config.params.INTERNAL_REMOTE
 
   return remote, text
 
@@ -445,7 +449,7 @@ def AddPrefix(patch, text):
   Returns:
     |text| with an added prefix for internal patches; otherwise, returns text.
   """
-  return '%s%s' % (constants.CHANGE_PREFIX[patch.remote], text)
+  return '%s%s' % (site_config.params.CHANGE_PREFIX[patch.remote], text)
 
 
 def ParsePatchDep(text, no_change_id=False, no_sha1=False,
@@ -632,7 +636,8 @@ class PatchQuery(object):
     elif self.sha1:
       # We assume sha1 is unique, but in rare cases (e.g. two branches with
       # the same history) it is not. We don't handle that.
-      self.id = '%s%s' % (constants.CHANGE_PREFIX[self.remote], self.sha1)
+      self.id = '%s%s' % (site_config.params.CHANGE_PREFIX[self.remote],
+                          self.sha1)
 
   def LookupAliases(self):
     """Returns the list of lookup keys to query a PatchCache.
@@ -655,7 +660,7 @@ class PatchQuery(object):
     if self.sha1:
       l.append(self.sha1)
 
-    return ['%s%s' % (constants.CHANGE_PREFIX[self.remote], x)
+    return ['%s%s' % (site_config.params.CHANGE_PREFIX[self.remote], x)
             for x in l if x is not None]
 
   def ToGerritQueryText(self):
@@ -761,7 +766,7 @@ class GitRepoPatch(PatchQuery):
   @property
   def internal(self):
     """Whether patch is to an internal cros project."""
-    return self.remote == constants.INTERNAL_REMOTE
+    return self.remote == site_config.params.INTERNAL_REMOTE
 
   def _GetFooters(self, msg):
     """Get the Git footers of the specified commit message.
@@ -1279,7 +1284,8 @@ class GitRepoPatch(PatchQuery):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.project, self.ref)
     if self.sha1 is not None:
-      s = '%s:%s%s' % (s, constants.CHANGE_PREFIX[self.remote], self.sha1[:8])
+      s = '%s:%s%s' % (s, site_config.params.CHANGE_PREFIX[self.remote],
+                       self.sha1[:8])
     # TODO(ferringb,build): This gets a bit long in output; should likely
     # do some form of truncation to it.
     if self._subject_line:
@@ -1501,7 +1507,7 @@ class GerritFetchOnlyPatch(GitRepoPatch):
       self.owner = self.owner_email.split('@', 1)[0]
 
     self.url = gob_util.GetChangePageUrl(
-        constants.GERRIT_HOSTS[self.remote], int(self.gerrit_number))
+        site_config.params.GERRIT_HOSTS[self.remote], int(self.gerrit_number))
     self.fail_count = fail_count
     self.pass_count = pass_count
     self.total_fail_count = total_fail_count
@@ -1618,7 +1624,7 @@ class GerritPatch(GerritFetchOnlyPatch):
         current_patch_set.get('number'),
         owner_email=patch_dict['owner']['email'])
 
-    prefix_str = constants.CHANGE_PREFIX[self.remote]
+    prefix_str = site_config.params.CHANGE_PREFIX[self.remote]
     self.gerrit_number_str = '%s%s' % (prefix_str, self.gerrit_number)
     self.url = patch_dict['url']
     # status - Current state of this change.  Can be one of
@@ -1858,7 +1864,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     # goto/createCherryPickCommitMessage
     old_footers = self._GetFooters(msg)
 
-    gerrit_host = constants.GERRIT_HOSTS[self.remote]
+    gerrit_host = site_config.params.GERRIT_HOSTS[self.remote]
     reviewed_on = 'https://%s/%s' % (gerrit_host, self.gerrit_number)
     if ('Reviewed-on', reviewed_on) not in old_footers:
       msg += 'Reviewed-on: %s\n' % reviewed_on
@@ -1874,7 +1880,8 @@ class GerritPatch(GerritFetchOnlyPatch):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.owner, self.gerrit_number_str)
     if self.sha1 is not None:
-      s = '%s:%s%s' % (s, constants.CHANGE_PREFIX[self.remote], self.sha1[:8])
+      s = '%s:%s%s' % (s, site_config.params.CHANGE_PREFIX[self.remote],
+                       self.sha1[:8])
     if self._subject_line:
       s += ':"%s"' % (self._subject_line,)
     return s
@@ -2016,11 +2023,11 @@ def PrepareRemotePatches(patches):
     if tag not in constants.PATCH_TAGS:
       raise ValueError('Bad remote patch format.  Unknown tag %s' % tag)
 
-    remote = constants.EXTERNAL_REMOTE
+    remote = site_config.params.EXTERNAL_REMOTE
     if tag == constants.INTERNAL_PATCH_TAG:
-      remote = constants.INTERNAL_REMOTE
+      remote = site_config.params.INTERNAL_REMOTE
 
-    push_url = constants.GIT_REMOTES[remote]
+    push_url = site_config.params.GIT_REMOTES[remote]
     patch_info.append(UploadedLocalPatch(os.path.join(push_url, project),
                                          project, ref, tracking_branch,
                                          original_branch,

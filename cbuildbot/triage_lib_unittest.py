@@ -10,6 +10,7 @@ import ConfigParser
 import os
 import unittest
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
@@ -22,6 +23,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+
+
+site_config = config_lib.GetConfig()
 
 
 # Some tests require the kernel, and fail with buildtools only repo.
@@ -56,8 +60,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.kernel_pkg = 'sys-kernel/chromeos-kernel'
     self.kernel_patch = self.GetPatches(project=self.kernel)
     self.secret = 'chromeos/secret'
-    self.secret_patch = self.GetPatches(project=self.secret,
-                                        remote=constants.INTERNAL_REMOTE)
+    self.secret_patch = self.GetPatches(
+        project=self.secret, remote=site_config.params.INTERNAL_REMOTE)
     self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout')
     self.PatchObject(cros_patch.GitRepoPatch, 'GetDiffStatus')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',

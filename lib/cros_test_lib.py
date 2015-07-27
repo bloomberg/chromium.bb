@@ -1250,24 +1250,26 @@ class GerritTestCase(MockTempDirTestCase):
         'AOSP_GOB_HOST': gi.git_host,
         'AOSP_GERRIT_HOST': gi.gerrit_host,
         'AOSP_GOB_URL': gi.git_url,
-        'AOSP_GERRIT_URL': gi.gerrit_url
+        'AOSP_GERRIT_URL': gi.gerrit_url,
+
+        'MANIFEST_URL': '%s/%s' % (
+            gi.git_url, site_config.params.MANIFEST_PROJECT
+        ),
+        'MANIFEST_INT_URL': '%s/%s' % (
+            gi.git_url, site_config.params.MANIFEST_INT_PROJECT
+        ),
+        'GIT_REMOTES': {
+            site_config.params.EXTERNAL_REMOTE: gi.gerrit_url,
+            site_config.params.INTERNAL_REMOTE: gi.gerrit_url,
+            site_config.params.CHROMIUM_REMOTE: gi.gerrit_url,
+            site_config.params.CHROME_REMOTE: gi.gerrit_url
+        }
     }
 
     for k in self.patched_params.iterkeys():
       self.saved_params[k] = site_config.params.get(k)
 
     site_config._site_params.update(self.patched_params)
-
-    self.PatchObject(constants, 'MANIFEST_URL', '%s/%s' % (
-        gi.git_url, constants.MANIFEST_PROJECT))
-    self.PatchObject(constants, 'MANIFEST_INT_URL', '%s/%s' % (
-        gi.git_url, constants.MANIFEST_INT_PROJECT))
-    self.PatchObject(constants, 'GIT_REMOTES', {
-        constants.EXTERNAL_REMOTE: gi.gerrit_url,
-        constants.INTERNAL_REMOTE: gi.gerrit_url,
-        constants.CHROMIUM_REMOTE: gi.gerrit_url,
-        constants.CHROME_REMOTE: gi.gerrit_url,
-    })
 
   def tearDown(self):
     # Restore the 'patched' site parameters.

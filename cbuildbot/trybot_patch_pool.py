@@ -8,11 +8,15 @@ from __future__ import print_function
 
 import functools
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import patch as cros_patch
+
+
+site_config = config_lib.GetConfig()
 
 
 def ChromiteFilter(patch):
@@ -22,12 +26,12 @@ def ChromiteFilter(patch):
 
 def ExtManifestFilter(patch):
   """Used with FilterFn to isolate patches to the external manifest."""
-  return patch.project == constants.MANIFEST_PROJECT
+  return patch.project == site_config.params.MANIFEST_PROJECT
 
 
 def IntManifestFilter(patch):
   """Used with FilterFn to isolate patches to the internal manifest."""
-  return patch.project == constants.MANIFEST_INT_PROJECT
+  return patch.project == site_config.params.MANIFEST_INT_PROJECT
 
 
 def ManifestFilter(patch):

@@ -173,7 +173,7 @@ class RemoteTryJob(object):
 
       # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.
       tag = constants.EXTERNAL_PATCH_TAG
-      if checkout['remote'] == constants.INTERNAL_REMOTE:
+      if checkout['remote'] == site_config.params.INTERNAL_REMOTE:
         tag = constants.INTERNAL_PATCH_TAG
 
       self.extra_args.append('--remote-patches=%s:%s:%s:%s:%s'

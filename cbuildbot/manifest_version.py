@@ -30,7 +30,8 @@ from chromite.lib import timeout_util
 site_config = config_lib.GetConfig()
 
 
-BUILD_STATUS_URL = '%s/builder-status' % constants.MANIFEST_VERSIONS_GS_URL
+BUILD_STATUS_URL = (
+    '%s/builder-status' % site_config.params.MANIFEST_VERSIONS_GS_URL)
 PUSH_BRANCH = 'temp_auto_checkin_branch'
 NUM_RETRIES = 20
 

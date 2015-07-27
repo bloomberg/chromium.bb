@@ -18,11 +18,14 @@ import os
 
 from xml.etree import ElementTree
 
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import manifest_version
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+site_config = config_lib.GetConfig()
 
 
 GOB_EXTERNAL = 'https://chromium.googlesource.com'
@@ -137,7 +140,7 @@ def main(argv):
   options = parser.parse_args(argv)
 
   # Clone manifest-versions repository.
-  manifest_repo_url = constants.MANIFEST_VERSIONS_INT_GOB_URL
+  manifest_repo_url = site_config.params.MANIFEST_VERSIONS_INT_GOB_URL
   if not options.skip_update:
     manifest_version.RefreshManifestCheckout(
         options.manifest_versions_dir, manifest_repo_url)

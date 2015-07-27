@@ -245,13 +245,6 @@ INTERNAL_GERRIT_HOST = GOB_HOST % INTERNAL_GERRIT_INSTANCE
 INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
-AOSP_GOB_INSTANCE = 'android'
-AOSP_GERRIT_INSTANCE = 'android-review'
-AOSP_GOB_HOST = GOB_HOST % AOSP_GOB_INSTANCE
-AOSP_GERRIT_HOST = GOB_HOST % AOSP_GERRIT_INSTANCE
-AOSP_GOB_URL = 'https://%s' % AOSP_GOB_HOST
-AOSP_GERRIT_URL = 'https://%s' % AOSP_GERRIT_HOST
-
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')
 
@@ -270,13 +263,6 @@ CHROME_INTERNAL_PROJECT = 'chrome/src-internal'
 CHROME_INTERNAL_GOB_URL = '%s/%s.git' % (
     INTERNAL_GOB_URL, CHROME_INTERNAL_PROJECT)
 
-MANIFEST_PROJECT = 'chromiumos/manifest'
-MANIFEST_INT_PROJECT = 'chromeos/manifest-internal'
-MANIFEST_PROJECTS = (MANIFEST_PROJECT, MANIFEST_INT_PROJECT)
-
-MANIFEST_URL = '%s/%s' % (EXTERNAL_GOB_URL, MANIFEST_PROJECT)
-MANIFEST_INT_URL = '%s/%s' % (INTERNAL_GERRIT_URL, MANIFEST_INT_PROJECT)
-
 DEFAULT_MANIFEST = 'default.xml'
 OFFICIAL_MANIFEST = 'official.xml'
 LKGM_MANIFEST = 'LKGM/lkgm.xml'
@@ -286,69 +272,6 @@ PARALLEL_EMERGE_STATUS_FILE_ENVVAR = 'PARALLEL_EMERGE_STATUS_FILE'
 
 # These projects can be responsible for infra failures.
 INFRA_PROJECTS = (CHROMITE_PROJECT,)
-
-# CrOS remotes specified in the manifests.
-EXTERNAL_REMOTE = 'cros'
-INTERNAL_REMOTE = 'cros-internal'
-
-GOB_REMOTES = {
-    EXTERNAL_GOB_INSTANCE: EXTERNAL_REMOTE,
-    INTERNAL_GOB_INSTANCE: INTERNAL_REMOTE,
-}
-
-# TODO(dgarrett): Reconsider when crbug.com/428215 is fixed.
-KAYLE_INTERNAL_REMOTE = 'kayle-cros-internal'
-CHROMIUM_REMOTE = 'chromium'
-CHROME_REMOTE = 'chrome'
-AOSP_REMOTE = 'aosp'
-
-GERRIT_HOSTS = {
-    EXTERNAL_REMOTE: EXTERNAL_GERRIT_HOST,
-    INTERNAL_REMOTE: INTERNAL_GERRIT_HOST,
-    AOSP_REMOTE: AOSP_GERRIT_HOST,
-}
-
-# Only remotes listed in CROS_REMOTES are considered branchable.
-# CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
-CROS_REMOTES = {
-    EXTERNAL_REMOTE: EXTERNAL_GOB_URL,
-    INTERNAL_REMOTE: INTERNAL_GOB_URL,
-    KAYLE_INTERNAL_REMOTE: INTERNAL_GOB_URL,
-    AOSP_REMOTE: AOSP_GOB_URL,
-}
-
-GIT_REMOTES = {
-    CHROMIUM_REMOTE: EXTERNAL_GOB_URL,
-    CHROME_REMOTE: INTERNAL_GOB_URL,
-}
-GIT_REMOTES.update(CROS_REMOTES)
-
-# Prefix to distinguish internal and external changes. This is used
-# when user specifies a patch with "-g", when generating a key for
-# a patch to used in our PatchCache, and when display a custom string
-# for the patch.
-INTERNAL_CHANGE_PREFIX = '*'
-EXTERNAL_CHANGE_PREFIX = ''
-
-CHANGE_PREFIX = {
-    INTERNAL_REMOTE: INTERNAL_CHANGE_PREFIX,
-    EXTERNAL_REMOTE: EXTERNAL_CHANGE_PREFIX,
-}
-
-# List of remotes that are ok to include in the external manifest.
-EXTERNAL_REMOTES = (EXTERNAL_REMOTE, CHROMIUM_REMOTE)
-
-# Mapping 'remote name' -> regexp that matches names of repositories on that
-# remote that can be branched when creating CrOS branch. Branching script will
-# actually create a new git ref when branching these projects. It won't attempt
-# to create a git ref for other projects that may be mentioned in a manifest.
-# If a remote is missing from this dictionary, all projects on that remote are
-# considered to not be branchable.
-BRANCHABLE_PROJECTS = {
-    EXTERNAL_REMOTE: r'chromiumos/(.+)',
-    INTERNAL_REMOTE: r'chromeos/(.+)',
-    KAYLE_INTERNAL_REMOTE: r'chromeos/(.+)',
-}
 
 # The manifest contains extra attributes in the 'project' nodes to determine our
 # branching strategy for the project.
@@ -365,19 +288,6 @@ MANIFEST_ATTR_BRANCHING_ALL = (
     MANIFEST_ATTR_BRANCHING_PIN,
     MANIFEST_ATTR_BRANCHING_TOT,
 )
-
-# TODO(sosa): Move to manifest-versions-external once its created
-MANIFEST_VERSIONS_GOB_URL = EXTERNAL_GOB_URL + '/chromiumos/manifest-versions'
-MANIFEST_VERSIONS_GOB_URL_TEST = MANIFEST_VERSIONS_GOB_URL + '-test'
-
-MANIFEST_VERSIONS_INT_GOB_URL = INTERNAL_GOB_URL + '/chromeos/manifest-versions'
-MANIFEST_VERSIONS_INT_GOB_URL_TEST = MANIFEST_VERSIONS_INT_GOB_URL + '-test'
-
-MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
-
-# Standard directories under buildroot for cloning these repos.
-EXTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions'
-INTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions-internal'
 
 STREAK_COUNTERS = 'streak_counters'
 

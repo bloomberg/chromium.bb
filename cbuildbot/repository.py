@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 
+from chromite.cbuildbot import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -18,6 +19,9 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_util
 from chromite.lib import rewrite_git_alternates
+
+
+site_config = config_lib.GetConfig()
 
 
 # File that marks a buildroot as being used by a trybot
@@ -38,8 +42,9 @@ def IsInternalRepoCheckout(root):
   manifest_dir = os.path.join(root, '.repo', 'manifests')
   manifest_url = git.RunGit(
       manifest_dir, ['config', 'remote.origin.url']).output.strip()
-  return (os.path.splitext(os.path.basename(manifest_url))[0]
-          == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
+  return (os.path.splitext(os.path.basename(manifest_url))[0] ==
+          os.path.splitext(os.path.basename(
+              site_config.params.MANIFEST_INT_URL))[0])
 
 
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,

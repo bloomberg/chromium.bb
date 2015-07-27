@@ -126,7 +126,7 @@ def PrintCl(opts, cls, lims, show_approvals=True):
     # Special case internal Chrome GoB as that is what most devs use.
     # They can always redirect the list elsewhere via the -g option.
     if opts.gob == site_config.params.INTERNAL_GOB_INSTANCE:
-      print(constants.INTERNAL_CHANGE_PREFIX, end='')
+      print(site_config.params.INTERNAL_CHANGE_PREFIX, end='')
     print(cls['number'])
     return
 

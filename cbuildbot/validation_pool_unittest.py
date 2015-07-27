@@ -134,10 +134,10 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     if cros_internal:
       cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
       cros_internal.version = '2.2'
-      cros_internal.remote = constants.INTERNAL_REMOTE
+      cros_internal.remote = site_config.params.INTERNAL_REMOTE
     if cros:
       cros = self.mox.CreateMock(gerrit.GerritHelper)
-      cros.remote = constants.EXTERNAL_REMOTE
+      cros.remote = site_config.params.EXTERNAL_REMOTE
       cros.version = '2.2'
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
@@ -333,7 +333,7 @@ class TestPatchSeries(PatchSeriesTestCase):
     series = self.GetPatchSeries()
 
     patch1, patch2, patch3 = patches = self.GetPatches(3)
-    patch3.remote = constants.INTERNAL_REMOTE
+    patch3.remote = site_config.params.INTERNAL_REMOTE
 
     self.SetPatchDeps(patch1, [patch2.sha1])
     self.SetPatchDeps(patch2, ['*%s' % patch3.sha1])
@@ -404,9 +404,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     helper_pool = self.MakeHelper(cros_internal=cros_internal, cros=True)
     series = self.GetPatchSeries(helper_pool=helper_pool)
 
-    patch1 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
-    patch2 = self.MockPatch(remote=constants.INTERNAL_REMOTE)
-    patch3 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
+    patch1 = self.MockPatch(remote=site_config.params.EXTERNAL_REMOTE)
+    patch2 = self.MockPatch(remote=site_config.params.INTERNAL_REMOTE)
+    patch3 = self.MockPatch(remote=site_config.params.EXTERNAL_REMOTE)
     patches = [patch1, patch2, patch3]
     if cros_internal:
       applied_patches = [patch3, patch2, patch1]
@@ -1329,14 +1329,14 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
   def _GetCrosInternalPatch(patch_info):
     return cros_patch.GerritPatch(
         patch_info,
-        constants.INTERNAL_REMOTE,
+        site_config.params.INTERNAL_REMOTE,
         site_config.params.INTERNAL_GERRIT_URL)
 
   @staticmethod
   def _GetCrosPatch(patch_info):
     return cros_patch.GerritPatch(
         patch_info,
-        constants.EXTERNAL_REMOTE,
+        site_config.params.EXTERNAL_REMOTE,
         site_config.params.EXTERNAL_GERRIT_URL)
 
   @classmethod

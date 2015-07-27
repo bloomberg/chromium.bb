@@ -15,6 +15,9 @@ from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 
 
+site_config = config_lib.GetConfig()
+
+
 # Bidirectional mapping between pre-cq status strings and CL action strings.
 _PRECQ_STATUS_TO_ACTION = {
     constants.CL_STATUS_INFLIGHT: constants.CL_ACTION_PRE_CQ_INFLIGHT,
@@ -50,8 +53,8 @@ class GerritChangeTuple(_GerritChangeTuple):
   """A tuple for a given Gerrit change."""
 
   def __str__(self):
-    prefix = (constants.INTERNAL_CHANGE_PREFIX
-              if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
+    prefix = (site_config.params.INTERNAL_CHANGE_PREFIX
+              if self.internal else site_config.params.EXTERNAL_CHANGE_PREFIX)
     return 'CL:%s%s' % (prefix, self.gerrit_number)
 
 
@@ -63,8 +66,8 @@ class GerritPatchTuple(_GerritPatchTuple):
   """A tuple for a given Gerrit patch."""
 
   def __str__(self):
-    prefix = (constants.INTERNAL_CHANGE_PREFIX
-              if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
+    prefix = (site_config.params.INTERNAL_CHANGE_PREFIX
+              if self.internal else site_config.params.EXTERNAL_CHANGE_PREFIX)
     return 'CL:%s%s#%s' % (prefix, self.gerrit_number, self.patch_number)
 
   def GetChangeTuple(self):

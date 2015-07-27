@@ -8,12 +8,15 @@ from __future__ import print_function
 
 import os
 
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
+
+
+site_config = config_lib.GetConfig()
 
 
 class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
@@ -48,8 +51,8 @@ class RepoInitTests(cros_test_lib.TempDirTestCase):
   """Test cases related to repository initialization."""
 
   def _Initialize(self, branch='master'):
-    repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir,
-                                     branch=branch)
+    repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
+                                     self.tempdir, branch=branch)
     repo.Initialize()
 
   @cros_test_lib.NetworkTest()

@@ -807,10 +807,7 @@ class SiteInterfaceTest(GenerateChromeosConfigTestBase):
         config_lib_unittest.AssertSiteIndependentParameters(self.all_configs))
 
     # Enumerate the necessary chromeos site parameter keys.
-    # All keys must be documented.
-    # TODO (msartori): Fill this list in.
-    chromeos_params = [
-    ]
+    chromeos_params = config_lib.DefaultSiteParameters().keys()
 
     # Check that our config contains all chromeos specific site parameters.
     site_params = self.all_configs.params

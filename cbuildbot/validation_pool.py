@@ -20,8 +20,9 @@ import sys
 import time
 from xml.dom import minidom
 
-from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
@@ -33,6 +34,10 @@ from chromite.lib import gob_util
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
+
+
+site_config = config_lib.GetConfig()
+
 
 # Third-party libraries bundled with chromite need to be listed after the
 # first chromite import.
@@ -187,7 +192,7 @@ class PatchSeriesTooLong(cros_patch.PatchException):
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
-  def __init__(self, remote=constants.EXTERNAL_REMOTE):
+  def __init__(self, remote=site_config.params.EXTERNAL_REMOTE):
     gerrit.GerritException.__init__(self)
     # Stringify the pool so that serialization doesn't try serializing
     # the actual HelperPool.
@@ -213,8 +218,8 @@ class HelperPool(object):
     object is used.
     """
     self.pool = {
-        constants.EXTERNAL_REMOTE : cros,
-        constants.INTERNAL_REMOTE : cros_internal
+        site_config.params.EXTERNAL_REMOTE : cros,
+        site_config.params.INTERNAL_REMOTE : cros_internal
     }
 
   @classmethod
@@ -229,12 +234,12 @@ class HelperPool(object):
       An appropriately configured HelperPool instance.
     """
     if cros:
-      cros = gerrit.GetGerritHelper(constants.EXTERNAL_REMOTE)
+      cros = gerrit.GetGerritHelper(site_config.params.EXTERNAL_REMOTE)
     else:
       cros = None
 
     if cros_internal:
-      cros_internal = gerrit.GetGerritHelper(constants.INTERNAL_REMOTE)
+      cros_internal = gerrit.GetGerritHelper(site_config.params.INTERNAL_REMOTE)
     else:
       cros_internal = None
 

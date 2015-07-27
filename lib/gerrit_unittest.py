@@ -10,7 +10,7 @@ import getpass
 import httplib
 import mock
 
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
@@ -18,6 +18,9 @@ from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+
+
+site_config = config_lib.GetConfig()
 
 
 # NOTE: The following test cases are designed to run as part of the release
@@ -31,7 +34,7 @@ from chromite.lib import timeout_util
 class GerritHelperTest(cros_test_lib.GerritTestCase):
   """Unittests for GerritHelper."""
 
-  def _GetHelper(self, remote=constants.EXTERNAL_REMOTE):
+  def _GetHelper(self, remote=site_config.params.EXTERNAL_REMOTE):
     return gerrit.GetGerritHelper(remote)
 
   def createPatch(self, clone_path, project, **kwargs):
@@ -218,17 +221,17 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     patch_info = helper.GrabPatchFromGerrit(gpatch.project, gpatch.change_id,
                                             gpatch.sha1)
     self.assertEqual(patch_info.gerrit_number, gpatch.gerrit_number)
-    self.assertEqual(patch_info.remote, constants.EXTERNAL_REMOTE)
+    self.assertEqual(patch_info.remote, site_config.params.EXTERNAL_REMOTE)
 
     # Simple query by gerrit number to external remote.
     patch_info = gerrit.GetGerritPatchInfo([gpatch.gerrit_number])
     self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
-    self.assertEqual(patch_info[0].remote, constants.EXTERNAL_REMOTE)
+    self.assertEqual(patch_info[0].remote, site_config.params.EXTERNAL_REMOTE)
 
     # Simple query by gerrit number to internal remote.
     patch_info = gerrit.GetGerritPatchInfo(['*' + gpatch.gerrit_number])
     self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
-    self.assertEqual(patch_info[0].remote, constants.INTERNAL_REMOTE)
+    self.assertEqual(patch_info[0].remote, site_config.params.INTERNAL_REMOTE)
 
     # Query to external server by gerrit number and change-id which refer to
     # the same change should return one result.
@@ -236,7 +239,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     patch_info = gerrit.GetGerritPatchInfo([gpatch.gerrit_number, fq_changeid])
     self.assertEqual(len(patch_info), 1)
     self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
-    self.assertEqual(patch_info[0].remote, constants.EXTERNAL_REMOTE)
+    self.assertEqual(patch_info[0].remote, site_config.params.EXTERNAL_REMOTE)
 
     # Query to internal server by gerrit number and change-id which refer to
     # the same change should return one result.
@@ -244,7 +247,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
         ['*' + gpatch.gerrit_number, '*' + fq_changeid])
     self.assertEqual(len(patch_info), 1)
     self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
-    self.assertEqual(patch_info[0].remote, constants.INTERNAL_REMOTE)
+    self.assertEqual(patch_info[0].remote, site_config.params.INTERNAL_REMOTE)
 
   def test009SubmitOutdatedCommit(self):
     """Tests that we can parse a json to check if a change is committed."""
