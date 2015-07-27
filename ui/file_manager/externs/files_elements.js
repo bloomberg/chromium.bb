@@ -5,7 +5,7 @@
 /**
  * @constructor
  * @struct
- * @extends {HTMLElement}
+ * @extends {PolymerElement}
  */
 function FilesToggleRipple() {}
 
@@ -13,3 +13,31 @@ function FilesToggleRipple() {}
  * @type {boolean}
  */
 FilesToggleRipple.prototype.activated;
+
+/**
+ * @constructor
+ * @struct
+ * @extends {PolymerElement}
+ */
+function FilesToast() {}
+
+/**
+ * @type {boolean}
+ */
+FilesToast.prototype.visible;
+
+/**
+ * @type {number}
+ */
+FilesToast.prototype.timeout;
+
+/**
+ * @param {string} text
+ * @param {{text: string, callback: function()}=} opt_action
+ */
+FilesToast.prototype.show = function(text, opt_action) {};
+
+/**
+ * @return {!Promise}
+ */
+FilesToast.prototype.hide = function() {};
