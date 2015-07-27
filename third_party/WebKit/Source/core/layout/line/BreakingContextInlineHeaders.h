@@ -24,11 +24,12 @@
 #ifndef BreakingContextInlineHeaders_h
 #define BreakingContextInlineHeaders_h
 
-#include "core/layout/LayoutListMarker.h"
-#include "core/layout/LayoutTextCombine.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/api/LineLayoutBox.h"
+#include "core/layout/api/LineLayoutListMarker.h"
 #include "core/layout/api/LineLayoutRubyRun.h"
+#include "core/layout/api/LineLayoutSVGInlineText.h"
+#include "core/layout/api/LineLayoutTextCombine.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/LayoutTextInfo.h"
@@ -479,7 +480,7 @@ inline void BreakingContext::handleReplaced()
             m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = true;
             m_ignoringSpaces = true;
         }
-        if (toLayoutListMarker(m_current.object())->isInside())
+        if (LineLayoutListMarker(m_current.object()).isInside())
             m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     } else {
         m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
@@ -555,7 +556,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     bool midWordBreak = false;
     bool breakAll = m_currentStyle->wordBreak() == BreakAllWordBreak && m_autoWrap;
     bool keepAll = m_currentStyle->wordBreak() == KeepAllWordBreak && m_autoWrap;
-    bool prohibitBreakInside = m_currentStyle->hasTextCombine() && layoutText.isCombineText() && toLayoutTextCombine(layoutText)->isCombined();
+    bool prohibitBreakInside = m_currentStyle->hasTextCombine() && layoutText.isCombineText() && LineLayoutTextCombine(layoutText).isCombined();
     float hyphenWidth = 0;
 
     if (isSVGText) {
@@ -769,7 +770,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
         if (isSVGText && m_current.offset()) {
             // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
-            if (toLayoutSVGInlineText(layoutText)->characterStartsNewTextChunk(m_current.offset()))
+            if (LineLayoutSVGInlineText(layoutText).characterStartsNewTextChunk(m_current.offset()))
                 m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
         }
 
@@ -890,7 +891,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 
     if (!m_current.object().isFloatingOrOutOfFlowPositioned()) {
         m_lastObject = m_current.object();
-        if (m_lastObject.isReplaced() && m_autoWrap && (!m_lastObject.isImage() || m_allowImagesToBreak) && (!m_lastObject.isListMarker() || toLayoutListMarker(m_lastObject)->isInside())) {
+        if (m_lastObject.isReplaced() && m_autoWrap && (!m_lastObject.isImage() || m_allowImagesToBreak) && (!m_lastObject.isListMarker() || LineLayoutListMarker(m_lastObject).isInside())) {
             m_width.commit();
             m_lineBreak.moveToStartOf(m_nextObject);
         }
