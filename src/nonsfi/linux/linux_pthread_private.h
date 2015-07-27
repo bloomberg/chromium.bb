@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_NONSFI_LINUX_LINUX_PTHREAD_PRIVATE_H_
 #define NATIVE_CLIENT_SRC_NONSFI_LINUX_LINUX_PTHREAD_PRIVATE_H_ 1
 
+#include <stdint.h>
+
 #include "native_client/src/include/nacl_base.h"
 
 EXTERN_C_BEGIN
