@@ -162,13 +162,15 @@ scoped_ptr<base::Timer> CastChannelAPI::GetInjectedTimeoutTimerForTest() {
 
 CastChannelAPI::~CastChannelAPI() {}
 
-CastChannelAsyncApiFunction::CastChannelAsyncApiFunction() : manager_(nullptr) {
+CastChannelAsyncApiFunction::CastChannelAsyncApiFunction() {
 }
 
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
 bool CastChannelAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<CastSocket>::Get(browser_context());
+  DCHECK(ApiResourceManager<CastSocket>::Get(browser_context()));
+  sockets_ = ApiResourceManager<CastSocket>::Get(browser_context())->data_;
+  DCHECK(sockets_);
   return true;
 }
 
@@ -190,16 +192,14 @@ CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(
 int CastChannelAsyncApiFunction::AddSocket(CastSocket* socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(socket);
-  DCHECK(manager_);
-  const int id = manager_->Add(socket);
+  const int id = sockets_->Add(socket);
   socket->set_id(id);
   return id;
 }
 
 void CastChannelAsyncApiFunction::RemoveSocket(int channel_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(manager_);
-  manager_->Remove(extension_->id(), channel_id);
+  sockets_->Remove(extension_->id(), channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromSocket(
@@ -228,8 +228,7 @@ void CastChannelAsyncApiFunction::SetResultFromError(int channel_id,
 
 CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(manager_);
-  return manager_->Get(extension_->id(), channel_id);
+  return sockets_->Get(extension_->id(), channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromChannelInfo(

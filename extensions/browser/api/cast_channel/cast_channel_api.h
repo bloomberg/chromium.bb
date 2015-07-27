@@ -100,6 +100,9 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   CastChannelAsyncApiFunction();
 
  protected:
+  typedef ApiResourceManager<cast_channel::CastSocket>::ApiResourceData
+      SocketData;
+
   ~CastChannelAsyncApiFunction() override;
 
   // AsyncApiFunction:
@@ -135,8 +138,8 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   // Sets the function result from |channel_info|.
   void SetResultFromChannelInfo(const cast_channel::ChannelInfo& channel_info);
 
-  // The API resource manager for CastSockets.
-  ApiResourceManager<cast_channel::CastSocket>* manager_;
+  // The collection of CastSocket API resources.
+  scoped_refptr<SocketData> sockets_;
 };
 
 class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
