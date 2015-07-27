@@ -11,6 +11,16 @@
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_listener.h"
 
+// If the platform has no attachments that need brokering, then it shouldn't
+// compile any code that calls member functions of AttachmentBroker. This
+// prevents symbols only used by AttachmentBroker and its subclasses from
+// making it into the binary.
+#if defined(OS_WIN)
+#define USE_ATTACHMENT_BROKER 1
+#else
+#define USE_ATTACHMENT_BROKER 0
+#endif  // defined(OS_WIN)
+
 namespace IPC {
 
 class AttachmentBroker;
@@ -27,10 +37,20 @@ class IPC_EXPORT SupportsAttachmentBrokering {
 // Responsible for brokering attachments to Chrome IPC messages. On platforms
 // that support attachment brokering, every IPC channel should have a reference
 // to a AttachmentBroker.
+// This class is not thread safe. The implementation of this class assumes that
+// it is only ever used on the same thread as its consumers.
 class IPC_EXPORT AttachmentBroker : public Listener {
  public:
-  AttachmentBroker() {}
-  ~AttachmentBroker() override {}
+  // A standard observer interface that allows consumers of the AttachmentBroker
+  // to be notified when a new attachment has been received.
+  class Observer {
+   public:
+    virtual void ReceivedBrokerableAttachmentWithId(
+        const BrokerableAttachment::AttachmentId& id) = 0;
+  };
+
+  AttachmentBroker();
+  ~AttachmentBroker() override;
 
   // Sends |attachment| to |destination_process|. The implementation uses an
   // IPC::Channel to communicate with the broker process. This may be the same
@@ -40,13 +60,22 @@ class IPC_EXPORT AttachmentBroker : public Listener {
                                        base::ProcessId destination_process) = 0;
 
   // Returns whether the attachment was available. If the attachment was
-  // available, populates the output parameter |attachment|. The caller then
-  // becomes the owner of |attachment|.
-  virtual bool GetAttachmentWithId(BrokerableAttachment::AttachmentId id,
-                                   BrokerableAttachment* attachment) = 0;
+  // available, populates the output parameter |attachment|.
+  virtual bool GetAttachmentWithId(
+      BrokerableAttachment::AttachmentId id,
+      scoped_refptr<BrokerableAttachment>* attachment) = 0;
+
+  // Any given observer should only ever add itself once to the observer list.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  void NotifyObservers(const BrokerableAttachment::AttachmentId& id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AttachmentBroker);
+
+  std::vector<Observer*> observers_;
 };
 
 }  // namespace IPC

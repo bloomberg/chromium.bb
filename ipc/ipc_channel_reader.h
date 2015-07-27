@@ -5,8 +5,13 @@
 #ifndef IPC_IPC_CHANNEL_READER_H_
 #define IPC_IPC_CHANNEL_READER_H_
 
+#include <set>
+
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "ipc/attachment_broker.h"
+#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_export.h"
 
@@ -25,24 +30,37 @@ namespace internal {
 // functionality that would benefit from being factored out. If we add
 // something like that in the future, it would be more appropriate to add it
 // here (and rename appropriately) rather than writing a different class.
-class ChannelReader : public SupportsAttachmentBrokering {
+class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
+                                 public AttachmentBroker::Observer {
  public:
   explicit ChannelReader(Listener* listener);
   virtual ~ChannelReader();
 
   void set_listener(Listener* listener) { listener_ = listener; }
 
+  // This type is returned by ProcessIncomingMessages to indicate the effect of
+  // the method.
+  enum DispatchState {
+    // All messages were successfully dispatched, or there were no messages to
+    // dispatch.
+    DISPATCH_FINISHED,
+    // There was a channel error.
+    DISPATCH_ERROR,
+    // Dispatching messages is blocked on receiving more information from the
+    // broker.
+    DISPATCH_WAITING_ON_BROKER,
+  };
+
   // Call to process messages received from the IPC connection and dispatch
-  // them. Returns false on channel error. True indicates that everything
-  // succeeded, although there may not have been any messages processed.
-  bool ProcessIncomingMessages();
+  // them.
+  DispatchState ProcessIncomingMessages();
 
   // Handles asynchronously read data.
   //
   // Optionally call this after returning READ_PENDING from ReadData to
   // indicate that buffer was filled with the given number of bytes of
   // data. See ReadData for more.
-  bool AsyncReadComplete(int bytes_read);
+  DispatchState AsyncReadComplete(int bytes_read);
 
   // Returns true if the given message is internal to the IPC implementation,
   // like the "hello" message sent on channel set-up.
@@ -76,7 +94,12 @@ class ChannelReader : public SupportsAttachmentBrokering {
   //
   // This will read from the input_fds_ and read more handles from the FD
   // pipe if necessary.
-  virtual bool WillDispatchInputMessage(Message* msg) = 0;
+  virtual bool ShouldDispatchInputMessage(Message* msg) = 0;
+
+  // Overridden by subclasses to get attachments that are sent alongside the IPC
+  // channel (as opposed to through a broker).
+  // Returns true on success. False means a fatal channel error.
+  virtual bool GetNonBrokeredAttachments(Message* msg) = 0;
 
   // Performs post-dispatch checks. Called when all input buffers are empty,
   // though there could be more data ready to be read from the OS.
@@ -85,12 +108,43 @@ class ChannelReader : public SupportsAttachmentBrokering {
   // Handles internal messages, like the hello message sent on channel startup.
   virtual void HandleInternalMessage(const Message& msg) = 0;
 
+  // Exposed for testing purposes only.
+  ScopedVector<Message>* get_queued_messages() { return &queued_messages_; }
+
+  // Exposed for testing purposes only.
+  virtual void DispatchMessage(Message* m);
+
  private:
-  // Takes the given data received from the IPC channel and dispatches any
-  // fully completed messages.
-  //
-  // Returns true on success. False means channel error.
-  bool DispatchInputData(const char* input_data, int input_data_len);
+  FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentAlreadyBrokered);
+  FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentNotYetBrokered);
+
+  typedef std::set<BrokerableAttachment::AttachmentId> AttachmentIdSet;
+
+  // Takes the given data received from the IPC channel, translates it into
+  // Messages, and puts them in queued_messages_.
+  // As an optimization, after a message is translated, the message is
+  // immediately dispatched if able. This prevents an otherwise unnecessary deep
+  // copy of the message which is needed to store the message in the message
+  // queue.
+  bool TranslateInputData(const char* input_data, int input_data_len);
+
+  // Dispatches messages from queued_messages_ to listeners. Successfully
+  // dispatched messages are removed from queued_messages_.
+  DispatchState DispatchMessages();
+
+  // Attempts to fill in the brokerable attachments of |msg| with information
+  // from the Attachment Broker.
+  // Returns the set of ids that are still waiting to be brokered.
+  AttachmentIdSet GetBrokeredAttachments(Message* msg);
+
+  // AttachmentBroker::Observer overrides.
+  void ReceivedBrokerableAttachmentWithId(
+      const BrokerableAttachment::AttachmentId& id) override;
+
+  // This class should observe the attachment broker if and only if blocked_ids_
+  // is not empty.
+  void StartObservingAttachmentBroker();
+  void StopObservingAttachmentBroker();
 
   Listener* listener_;
 
@@ -101,6 +155,15 @@ class ChannelReader : public SupportsAttachmentBrokering {
   // Large messages that span multiple pipe buffers, get built-up using
   // this buffer.
   std::string input_overflow_buf_;
+
+  // These messages are waiting to be dispatched. If this vector is non-empty,
+  // then the front Message must be blocked on receiving an attachment from the
+  // AttachmentBroker.
+  ScopedVector<Message> queued_messages_;
+
+  // If the next message to be processed is blocked by the broker, then this
+  // set contains the AttachmentIds that are needed to unblock the message.
+  AttachmentIdSet blocked_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelReader);
 };

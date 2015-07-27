@@ -350,7 +350,11 @@ ChannelNacl::ReadState ChannelNacl::ReadData(
   return READ_SUCCEEDED;
 }
 
-bool ChannelNacl::WillDispatchInputMessage(Message* msg) {
+bool ChannelNacl::ShouldDispatchInputMessage(Message* msg) {
+  return true;
+}
+
+bool ChannelNacl::GetNonBrokeredAttachments(Message* msg) {
   uint16 header_fds = msg->header()->num_fds;
   CHECK(header_fds == input_fds_.size());
   if (header_fds == 0)

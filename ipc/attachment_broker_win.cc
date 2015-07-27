@@ -41,8 +41,15 @@ bool AttachmentBrokerWin::SendAttachmentToProcess(
 
 bool AttachmentBrokerWin::GetAttachmentWithId(
     BrokerableAttachment::AttachmentId id,
-    BrokerableAttachment* attachment) {
-  // TODO(erikchen): Implement me. http://crbug.com/493414
+    scoped_refptr<BrokerableAttachment>* out_attachment) {
+  for (AttachmentVector::iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    if ((*it)->GetIdentifier() == id) {
+      *out_attachment = *it;
+      attachments_.erase(it);
+      return true;
+    }
+  }
   return false;
 }
 
@@ -65,6 +72,7 @@ void AttachmentBrokerWin::OnWinHandleHasBeenDuplicated(
   scoped_refptr<BrokerableAttachment> attachment(
       new IPC::internal::HandleAttachmentWin(wire_format));
   attachments_.push_back(attachment);
+  NotifyObservers(attachment->GetIdentifier());
 }
 
 }  // namespace IPC

@@ -11,6 +11,7 @@
       # This part is shared between the targets defined below.
       ['ipc_target==1', {
         'sources': [
+          'attachment_broker.cc',
           'attachment_broker.h',
           'attachment_broker_messages.h',
           'attachment_broker_win.cc',

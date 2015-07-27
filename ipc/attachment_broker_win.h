@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/attachment_broker.h"
+#include "ipc/brokerable_attachment.h"
 #include "ipc/handle_attachment_win.h"
 #include "ipc/ipc_export.h"
 
@@ -31,8 +32,9 @@ class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
   // IPC::AttachmentBroker overrides.
   bool SendAttachmentToProcess(const BrokerableAttachment* attachment,
                                base::ProcessId destination_process) override;
-  bool GetAttachmentWithId(BrokerableAttachment::AttachmentId id,
-                           BrokerableAttachment* attachment) override;
+  bool GetAttachmentWithId(
+      BrokerableAttachment::AttachmentId id,
+      scoped_refptr<BrokerableAttachment>* attachment) override;
 
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;
@@ -44,6 +46,7 @@ class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
  private:
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerWinTest, ReceiveValidMessage);
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerWinTest, ReceiveInvalidMessage);
+  using AttachmentVector = std::vector<scoped_refptr<BrokerableAttachment>>;
 
   // IPC message handlers.
   void OnWinHandleHasBeenDuplicated(
@@ -54,7 +57,7 @@ class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
   // A std::vector is used instead of a std::map because this container is
   // expected to have few elements, for which a std::vector is expected to have
   // better performance.
-  std::vector<scoped_refptr<BrokerableAttachment>> attachments_;
+  AttachmentVector attachments_;
 
   // |sender_| is used to send Messages to the broker. |sender_| must live at
   // least as long as this instance.

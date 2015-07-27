@@ -21,6 +21,24 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   // An id uniquely identifies an attachment sent via a broker.
   struct IPC_EXPORT AttachmentId {
     uint8_t nonce[kNonceSize];
+
+    bool operator==(const AttachmentId& rhs) const {
+      for (size_t i = 0; i < kNonceSize; ++i) {
+        if (nonce[i] != rhs.nonce[i])
+          return false;
+      }
+      return true;
+    }
+
+    bool operator<(const AttachmentId& rhs) const {
+      for (size_t i = 0; i < kNonceSize; ++i) {
+        if (nonce[i] < rhs.nonce[i])
+          return true;
+        if (nonce[i] > rhs.nonce[i])
+          return false;
+      }
+      return false;
+    }
   };
 
   enum BrokerableType {
@@ -30,6 +48,16 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   // The identifier is unique across all Chrome processes.
   AttachmentId GetIdentifier() const;
 
+  // Whether the attachment still needs information from the broker before it
+  // can be used.
+  bool NeedsBrokering() const;
+
+  // Fills in the data of this instance with the data from |attachment|.
+  // This instance must require brokering, |attachment| must be brokered, and
+  // both instances must have the same identifier.
+  virtual void PopulateWithAttachment(
+      const BrokerableAttachment* attachment) = 0;
+
   // Returns TYPE_BROKERABLE_ATTACHMENT
   Type GetType() const override;
 
@@ -37,13 +65,18 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
 
  protected:
   BrokerableAttachment();
-  explicit BrokerableAttachment(const AttachmentId& id);
+  BrokerableAttachment(const AttachmentId& id, bool needs_brokering);
   ~BrokerableAttachment() override;
+
+  void SetNeedsBrokering(bool needs_brokering);
 
  private:
   // This member uniquely identifies a BrokerableAttachment across all Chrome
   // processes.
   const AttachmentId id_;
+
+  // Whether the attachment still needs to be filled in by an AttachmentBroker.
+  bool needs_brokering_;
   DISALLOW_COPY_AND_ASSIGN(BrokerableAttachment);
 };
 

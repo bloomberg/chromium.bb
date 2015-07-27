@@ -19,6 +19,10 @@
 
 namespace IPC {
 
+namespace internal {
+class ChannelReader;
+}  // namespace internal
+
 //------------------------------------------------------------------------------
 
 struct LogData;
@@ -217,6 +221,7 @@ class IPC_EXPORT Message : public base::Pickle {
   friend class ChannelNacl;
   friend class ChannelPosix;
   friend class ChannelWin;
+  friend class internal::ChannelReader;
   friend class MessageReplyDeserializer;
   friend class SyncMessage;
 

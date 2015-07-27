@@ -48,6 +48,7 @@
         'attachment_broker_win_unittest.cc',
         'ipc_channel_posix_unittest.cc',
         'ipc_channel_proxy_unittest.cc',
+        'ipc_channel_reader_unittest.cc',
         'ipc_channel_unittest.cc',
         'ipc_fuzzing_tests.cc',
         'ipc_message_attachment_set_posix_unittest.cc',

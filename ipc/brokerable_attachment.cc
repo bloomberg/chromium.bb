@@ -21,10 +21,13 @@ BrokerableAttachment::AttachmentId GetRandomId() {
 
 }  // namespace
 
-BrokerableAttachment::BrokerableAttachment() : id_(GetRandomId()) {
+BrokerableAttachment::BrokerableAttachment()
+    : id_(GetRandomId()), needs_brokering_(false) {
 }
 
-BrokerableAttachment::BrokerableAttachment(const AttachmentId& id) : id_(id) {
+BrokerableAttachment::BrokerableAttachment(const AttachmentId& id,
+                                           bool needs_brokering)
+    : id_(id), needs_brokering_(needs_brokering) {
 }
 
 BrokerableAttachment::~BrokerableAttachment() {
@@ -32,6 +35,14 @@ BrokerableAttachment::~BrokerableAttachment() {
 
 BrokerableAttachment::AttachmentId BrokerableAttachment::GetIdentifier() const {
   return id_;
+}
+
+bool BrokerableAttachment::NeedsBrokering() const {
+  return needs_brokering_;
+}
+
+void BrokerableAttachment::SetNeedsBrokering(bool needs_brokering) {
+  needs_brokering_ = needs_brokering;
 }
 
 BrokerableAttachment::Type BrokerableAttachment::GetType() const {

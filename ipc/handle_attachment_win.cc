@@ -14,8 +14,13 @@ HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle)
 }
 
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
-    : BrokerableAttachment(wire_format.attachment_id),
+    : BrokerableAttachment(wire_format.attachment_id, false),
       handle_(LongToHandle(wire_format.handle)) {
+}
+
+HandleAttachmentWin::HandleAttachmentWin(
+    const BrokerableAttachment::AttachmentId& id)
+    : BrokerableAttachment(id, true), handle_(INVALID_HANDLE_VALUE) {
 }
 
 HandleAttachmentWin::~HandleAttachmentWin() {
@@ -24,6 +29,19 @@ HandleAttachmentWin::~HandleAttachmentWin() {
 HandleAttachmentWin::BrokerableType HandleAttachmentWin::GetBrokerableType()
     const {
   return WIN_HANDLE;
+}
+
+void HandleAttachmentWin::PopulateWithAttachment(
+    const BrokerableAttachment* attachment) {
+  DCHECK(NeedsBrokering());
+  DCHECK(!attachment->NeedsBrokering());
+  DCHECK(GetIdentifier() == attachment->GetIdentifier());
+  DCHECK_EQ(GetBrokerableType(), attachment->GetBrokerableType());
+
+  const HandleAttachmentWin* handle_attachment =
+      static_cast<const HandleAttachmentWin*>(attachment);
+  handle_ = handle_attachment->handle_;
+  SetNeedsBrokering(false);
 }
 
 HandleAttachmentWin::WireFormat HandleAttachmentWin::GetWireFormat(

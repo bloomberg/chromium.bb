@@ -79,7 +79,8 @@ class IPC_EXPORT ChannelPosix : public Channel,
 
   // ChannelReader implementation.
   ReadState ReadData(char* buffer, int buffer_len, int* bytes_read) override;
-  bool WillDispatchInputMessage(Message* msg) override;
+  bool ShouldDispatchInputMessage(Message* msg) override;
+  bool GetNonBrokeredAttachments(Message* msg) override;
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
 

@@ -652,7 +652,7 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
     if (waiting_connect_ && (mode_ & MODE_SERVER_FLAG)) {
       waiting_connect_ = false;
     }
-    if (!ProcessIncomingMessages()) {
+    if (ProcessIncomingMessages() == DISPATCH_ERROR) {
       // ClosePipeOnError may delete this object, so we mustn't call
       // ProcessOutgoingMessages.
       ClosePipeOnError();
@@ -799,12 +799,16 @@ ChannelPosix::ReadState ChannelPosix::ReadData(
   return READ_SUCCEEDED;
 }
 
+bool ChannelPosix::ShouldDispatchInputMessage(Message* msg) {
+  return true;
+}
+
 // On Posix, we need to fix up the file descriptors before the input message
 // is dispatched.
 //
 // This will read from the input_fds_ (READWRITE mode only) and read more
 // handles from the FD pipe if necessary.
-bool ChannelPosix::WillDispatchInputMessage(Message* msg) {
+bool ChannelPosix::GetNonBrokeredAttachments(Message* msg) {
   uint16 header_fds = msg->header()->num_fds;
   if (!header_fds)
     return true;  // Nothing to do.

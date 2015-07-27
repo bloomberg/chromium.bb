@@ -172,10 +172,14 @@ ChannelWin::ReadState ChannelWin::ReadData(
   return READ_PENDING;
 }
 
-bool ChannelWin::WillDispatchInputMessage(Message* msg) {
+bool ChannelWin::ShouldDispatchInputMessage(Message* msg) {
   // Make sure we get a hello when client validation is required.
   if (validate_client_)
     return IsHelloMessage(*msg);
+  return true;
+}
+
+bool ChannelWin::GetNonBrokeredAttachments(Message* msg) {
   return true;
 }
 
@@ -470,17 +474,18 @@ void ChannelWin::OnIOCompleted(
     if (input_state_.is_pending) {
       // This is the normal case for everything except the initialization step.
       input_state_.is_pending = false;
-      if (!bytes_transfered)
+      if (!bytes_transfered) {
         ok = false;
-      else if (pipe_.IsValid())
-        ok = AsyncReadComplete(bytes_transfered);
+      } else if (pipe_.IsValid()) {
+        ok = (AsyncReadComplete(bytes_transfered) != DISPATCH_ERROR);
+      }
     } else {
       DCHECK(!bytes_transfered);
     }
 
     // Request more data.
     if (ok)
-      ok = ProcessIncomingMessages();
+      ok = (ProcessIncomingMessages() != DISPATCH_ERROR);
   } else {
     DCHECK(context == &output_state_.context);
     CHECK(output_state_.is_pending);

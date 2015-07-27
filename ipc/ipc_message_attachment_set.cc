@@ -143,6 +143,19 @@ MessageAttachmentSet::PeekBrokerableAttachments() const {
   return output;
 }
 
+std::vector<scoped_refptr<BrokerableAttachment>>
+MessageAttachmentSet::GetBrokerableAttachmentsForUpdating() {
+  std::vector<scoped_refptr<BrokerableAttachment>> output;
+  for (const scoped_refptr<MessageAttachment>& attachment : attachments_) {
+    if (attachment->GetType() ==
+        MessageAttachment::TYPE_BROKERABLE_ATTACHMENT) {
+      output.push_back(scoped_refptr<BrokerableAttachment>(
+          static_cast<BrokerableAttachment*>(attachment.get())));
+    }
+  }
+  return output;
+}
+
 #if defined(OS_POSIX)
 
 void MessageAttachmentSet::PeekDescriptors(base::PlatformFile* buffer) const {
