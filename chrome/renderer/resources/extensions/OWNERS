@@ -17,6 +17,7 @@ per-file searchbox_api.js=samarth@chromium.org
 per-file media_galleries*.js=thestig@chromium.org
 per-file media_galleries*.js=tommycli@chromium.org
 per-file enterprise_platform_keys*=pneubeck@chromium.org
+per-file file_manager_private_custom_bindings.js=mtomasz@chromium.org
 per-file notifications_*.js=dewittj@chromium.org
 per-file image_util.js=dewittj@chromium.org
 per-file *.gtestjs=*
