@@ -1886,7 +1886,7 @@ aura.dll!aura::WindowTreeHost::Create
 UNINITIALIZED READ
 name=bug_492821
 *!blink::CSSPropertyParser::validUnit
-*!blink::CSSPropertyParser::validWidthOrHeight
+...
 *!blink::CSSPropertyParser::parseValue
 *!blink::CSSPropertyParser::parseValue
 *!blink::CSSParserImpl::consumeDeclarationValue
