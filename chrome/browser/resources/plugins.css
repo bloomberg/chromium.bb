@@ -12,37 +12,23 @@ a {
   font-size: 103%;
 }
 
-div#header {
+#header {
   -webkit-padding-start: 0;
+  background: url(../../../ui/webui/resources/images/extension.svg)
+      left center / 48px no-repeat;
   box-sizing: border-box;
   margin-bottom: 1.05em;
-  /* 67px is the height of the header's background image. */
-  min-height: 67px;
   overflow: hidden;
-  padding-bottom: 20px;
-  padding-top: 20px;
   position: relative;
 }
 
-#header h1 {
-  background: -webkit-image-set(
-      url(../../app/theme/default_100_percent/common/extensions_section.png) 1x,
-      url(../../app/theme/default_200_percent/common/extensions_section.png) 2x)
-      0 20px no-repeat;
-  display: inline;
-  margin: 0;
-  padding-bottom: 40px;
-  padding-left: 75px;
-  padding-top: 40px;
+html[dir=rtl] #header {
+  background-position-x: right;
 }
 
-html[dir=rtl] #header h1 {
-  background: -webkit-image-set(
-      url(../../app/theme/default_100_percent/common/extensions_section.png) 1x,
-      url(../../app/theme/default_200_percent/common/extensions_section.png) 2x)
-      right no-repeat;
-  padding-left: 0;
-  padding-right: 95px;
+#header h1 {
+  -webkit-padding-start: 51px;
+  line-height: 48px;
 }
 
 h1 {
