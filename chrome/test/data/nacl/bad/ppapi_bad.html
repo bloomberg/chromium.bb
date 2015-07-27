@@ -84,8 +84,7 @@ function declareTests(tester) {
       'bad_manifest',
       'ppapi_bad.html',
       mime_type,
-      new RegExp('NaCl module load failed: manifest JSON parsing failed: ' +
-                 'Line: 1, column: 1.*'));
+      'NaCl module load failed: manifest JSON parsing failed: * Line 1, Column 1\n  Syntax error: value, object or array expected.\n');
 
   // 'bad_manifest_uses_nexes' loads a manifest with an obsolete 'nexes' section.
   badLoadTest(

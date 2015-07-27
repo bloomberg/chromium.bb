@@ -13,6 +13,7 @@ include_rules = [
   "+ppapi/thunk",
 
   "+v8/include",
+  "+third_party/jsoncpp/source/include/json",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 ]
