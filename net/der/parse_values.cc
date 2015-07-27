@@ -164,6 +164,50 @@ bool ParseUint64(const Input& in, uint64_t* out) {
   return true;
 }
 
+bool ParseBitString(const Input& in,
+                    Input* out_bytes,
+                    uint8_t* out_unused_bits) {
+  ByteReader reader(in);
+
+  // From ITU-T X.690, section 8.6.2.2 (applies to BER, CER, DER):
+  //
+  // The initial octet shall encode, as an unsigned binary integer with
+  // bit 1 as the least significant bit, the number of unused bits in the final
+  // subsequent octet. The number shall be in the range zero to seven.
+  uint8_t unused_bits;
+  if (!reader.ReadByte(&unused_bits))
+    return false;
+  if (unused_bits > 7)
+    return false;
+
+  Input bytes;
+  if (!reader.ReadBytes(reader.BytesLeft(), &bytes))
+    return false;  // Not reachable.
+
+  // Ensure that unused bits in the last byte are set to 0.
+  if (unused_bits > 0) {
+    // From ITU-T X.690, section 8.6.2.3 (applies to BER, CER, DER):
+    //
+    // If the bitstring is empty, there shall be no subsequent octets,
+    // and the initial octet shall be zero.
+    if (bytes.Length() == 0)
+      return false;
+    uint8_t last_byte = bytes.UnsafeData()[bytes.Length() - 1];
+
+    // From ITU-T X.690, section 11.2.1 (applies to CER and DER, but not BER):
+    //
+    // Each unused bit in the final octet of the encoding of a bit string value
+    // shall be set to zero.
+    uint8_t mask = 0xFF >> (8 - unused_bits);
+    if ((mask & last_byte) != 0)
+      return false;
+  }
+
+  *out_bytes = bytes;
+  *out_unused_bits = unused_bits;
+  return true;
+}
+
 bool operator<(const GeneralizedTime& lhs, const GeneralizedTime& rhs) {
   if (lhs.year != rhs.year)
     return lhs.year < rhs.year;

@@ -195,6 +195,60 @@ TEST(ParseValuesTest, ParseUint64) {
   }
 }
 
+// Tests parsing an empty BIT STRING.
+TEST(ParseValuesTest, ParseBitStringEmptyNoUnusedBits) {
+  const uint8_t kData[] = {0x00};
+
+  Input bytes;
+  uint8_t unused_bits;
+  ASSERT_TRUE(ParseBitString(Input(kData), &bytes, &unused_bits));
+
+  EXPECT_EQ(0u, unused_bits);
+  EXPECT_EQ(0u, bytes.Length());
+}
+
+// Tests parsing an empty BIT STRING that incorrectly claims one unused bit.
+TEST(ParseValuesTest, ParseBitStringEmptyOneUnusedBit) {
+  const uint8_t kData[] = {0x01};
+
+  Input bytes;
+  uint8_t unused_bits;
+  EXPECT_FALSE(ParseBitString(Input(kData), &bytes, &unused_bits));
+}
+
+// Tests parsing an empty BIT STRING that is not minmally encoded (the entire
+// last byte is comprised of unused bits).
+TEST(ParseValuesTest, ParseBitStringNonEmptyTooManyUnusedBits) {
+  const uint8_t kData[] = {0x08, 0x00};
+
+  Input bytes;
+  uint8_t unused_bits;
+  EXPECT_FALSE(ParseBitString(Input(kData), &bytes, &unused_bits));
+}
+
+// Tests parsing a BIT STRING of 7 bits each of which are 1.
+TEST(ParseValuesTest, ParseBitStringSevenOneBits) {
+  const uint8_t kData[] = {0x01, 0xFE};
+
+  Input bytes;
+  uint8_t unused_bits;
+  ASSERT_TRUE(ParseBitString(Input(kData), &bytes, &unused_bits));
+
+  EXPECT_EQ(1u, unused_bits);
+  EXPECT_EQ(1u, bytes.Length());
+  EXPECT_EQ(0xFE, bytes.UnsafeData()[0]);
+}
+
+// Tests parsing a BIT STRING of 7 bits each of which are 1. The unused bit
+// however is set to 1, which is an invalid encoding.
+TEST(ParseValuesTest, ParseBitStringSevenOneBitsUnusedBitIsOne) {
+  const uint8_t kData[] = {0x01, 0xFF};
+
+  Input bytes;
+  uint8_t unused_bits;
+  EXPECT_FALSE(ParseBitString(Input(kData), &bytes, &unused_bits));
+}
+
 }  // namespace test
 }  // namespace der
 }  // namespace net

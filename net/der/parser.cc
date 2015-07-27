@@ -186,6 +186,26 @@ bool Parser::ReadUint64(uint64_t* out) {
   return ParseUint64(encoded_int, out);
 }
 
+bool Parser::ReadBitString(Input* bytes, uint8_t* unused_bits) {
+  Input value;
+  if (!ReadTag(kBitString, &value))
+    return false;
+  return ParseBitString(value, bytes, unused_bits);
+}
+
+bool Parser::ReadBitStringNoUnusedBits(Input* out_bytes) {
+  Input bytes;
+  uint8_t unused_bits;
+  if (!ReadBitString(&bytes, &unused_bits))
+    return false;
+
+  if (unused_bits != 0)
+    return false;
+
+  *out_bytes = bytes;
+  return true;
+}
+
 }  // namespace der
 
 }  // namespace net

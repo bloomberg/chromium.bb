@@ -196,6 +196,58 @@ TEST(ParserTest, CannotAdvanceAfterReadOptionalTag) {
   ASSERT_FALSE(parser.Advance());
 }
 
+// Reads a valid BIT STRING with 1 unused bit.
+TEST(ParserTest, ReadBitString) {
+  const uint8_t der[] = {0x03, 0x03, 0x01, 0xAA, 0xBE};
+  Parser parser((Input(der)));
+
+  Input bytes;
+  uint8_t unused_bits;
+  ASSERT_TRUE(parser.ReadBitString(&bytes, &unused_bits));
+  EXPECT_FALSE(parser.HasMore());
+
+  EXPECT_EQ(1u, unused_bits);
+  ASSERT_EQ(2u, bytes.Length());
+  EXPECT_EQ(0xAA, bytes.UnsafeData()[0]);
+  EXPECT_EQ(0xBE, bytes.UnsafeData()[1]);
+}
+
+// Tries reading a BIT STRING. This should fail because the tag is not for a
+// BIT STRING.
+TEST(ParserTest, ReadBitStringBadTag) {
+  const uint8_t der[] = {0x05, 0x03, 0x01, 0xAA, 0xBE};
+  Parser parser((Input(der)));
+
+  Input bytes;
+  uint8_t unused_bits;
+  EXPECT_FALSE(parser.ReadBitString(&bytes, &unused_bits));
+}
+
+// Reads a BIT STRING with one unused bit using ReadBitStringNoUnusedBits. This
+// should fail because there are unused bits.
+TEST(ParserTest, ReadBitStringNoUnusedBitsFailure) {
+  const uint8_t der[] = {0x03, 0x03, 0x01, 0xAA, 0xBE};
+  Parser parser((Input(der)));
+
+  Input bytes;
+  EXPECT_FALSE(parser.ReadBitStringNoUnusedBits(&bytes));
+}
+
+// Reads a BIT STRING with no unused bits using ReadBitStringNoUnusedBits. This
+// should succeed.
+TEST(ParserTest, ReadBitStringNoUnusedBits) {
+  const uint8_t der[] = {0x03, 0x03, 0x00, 0xAA, 0xBE};
+  Parser parser((Input(der)));
+
+  Input bytes;
+  ASSERT_TRUE(parser.ReadBitStringNoUnusedBits(&bytes));
+  EXPECT_FALSE(parser.HasMore());
+
+  ASSERT_EQ(2u, bytes.Length());
+  EXPECT_EQ(0xAA, bytes.UnsafeData()[0]);
+  EXPECT_EQ(0xBE, bytes.UnsafeData()[1]);
+}
+
 }  // namespace test
 }  // namespace der
 }  // namespace net
