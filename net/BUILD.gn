@@ -1015,9 +1015,6 @@ if (!is_ios && !is_android) {
       "tools/testserver/run_testserver.cc",
     ]
     deps = [
-      ":net",  # TODO(brettw) bug 363749: this shouldn't be necessary. It's not
-               # in the GYP build, and can be removed when the bug is fixed.
-
       ":test_support",
       "//base",
       "//base/test:test_support",
@@ -1227,7 +1224,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
     ]
-    jni_package = "net"
+    jni_package = "net/test"
   }
 }
 
@@ -1306,9 +1303,8 @@ executable("quic_server") {
   ]
 }
 
-# TODO(GYP) make this compile on Android, we need some native test deps done.
-# TODO(GYP) Also doesn't work on Mac, need to figure out why not.
-if (!is_android && !is_mac) {
+# TODO(GYP) bug 513775: Make this work on Mac.
+if (!is_mac) {
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
@@ -1371,19 +1367,6 @@ if (!is_android && !is_mac) {
 
     if (is_chromeos) {
       sources -= [ "proxy/proxy_config_service_linux_unittest.cc" ]
-    }
-
-    if (is_android) {
-      sources -= [
-        # See bug http://crbug.com/344533.
-        "disk_cache/blockfile/index_table_v3_unittest.cc",
-
-        # No res_ninit() et al on Android, so this doesn't make a lot of
-        # sense.
-        "dns/dns_config_service_posix_unittest.cc",
-      ]
-      deps += [ ":net_test_jni_headers" ]
-      isolate_file = "net_unittests.isolate"
     }
 
     if (v8_use_external_startup_data) {
@@ -1595,18 +1578,22 @@ if (!is_android && !is_mac) {
     }
 
     if (is_android) {
-      sources -= [ "dns/dns_config_service_posix_unittest.cc" ]
+      sources -= [
+        # See bug http://crbug.com/344533.
+        "disk_cache/blockfile/index_table_v3_unittest.cc",
+        "dns/dns_config_service_posix_unittest.cc",
+      ]
+      deps += [
+        ":net_test_jni_headers",
 
-      # TODO(GYP)
-      # # TODO(mmenke):  This depends on test_support_base, which depends on
-      # #                icu.  Figure out a way to remove that dependency.
-      # 'dependencies': [
-      #   '../testing/android/native_test.gyp:native_test_native_code',
-      # ]
-
+        # TODO(mmenke):  This depends on test_support_base, which depends on
+        #                icu.  Figure out a way to remove that dependency.
+        "//testing/android/native_test:native_test_native_code",
+      ]
       set_sources_assignment_filter([])
       sources += [ "base/address_tracker_linux_unittest.cc" ]
       set_sources_assignment_filter(sources_assignment_filter)
+      isolate_file = "net_unittests.isolate"
     }
 
     if (use_icu_alternatives_on_android) {
@@ -1642,14 +1629,14 @@ executable("net_perftests") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   deps = [
+    ":extras",
+    ":net",
+    ":test_support",
     "//base",
     "//base:i18n",
     "//base/test:test_support_perf",
     "//testing/gtest",
     "//url",
-    ":extras",
-    ":net",
-    ":test_support",
   ]
 
   if (enable_websockets) {
@@ -1660,11 +1647,5 @@ executable("net_perftests") {
     deps += [ ":net_with_v8" ]
   } else {
     sources -= [ "proxy/proxy_resolver_perftest.cc" ]
-  }
-
-  if (is_win && icu_use_data_file) {
-    # This is needed to trigger the dll copy step on windows.
-    # TODO(mark): Specifying this here shouldn't be necessary.
-    deps += [ "//third_party/icu:icudata" ]
   }
 }

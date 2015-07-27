@@ -262,7 +262,6 @@ group("both_gn_and_gyp") {
       "//net:hpack_fuzz_mutator",
       "//net:hpack_fuzz_wrapper",
       "//net:net_perftests",
-      "//net:net_unittests",
       "//ppapi/examples/2d",
       "//ppapi/examples/audio",
       "//ppapi/examples/audio_input",
