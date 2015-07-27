@@ -24,15 +24,6 @@ const char kContentSettingsPatternPairs[] =
 const char kContentSettingsWindowLastTabIndex[] =
     "content_settings_window.last_tab_index";
 
-// Dictionary of content settings applied to all hosts by default.
-// TODO(msramek): Deprecated. Use the individual preferences below.
-const char kDefaultContentSettings[] = "profile.default_content_settings";
-
-// Whether |kDefaultContentSettings| has already been migrated to
-// |kDefault<type>Setting| prefs.
-const char kMigratedDefaultContentSettings[] =
-    "profile.migrated_default_content_settings";
-
 // Preferences storing the default values for individual content settings.
 const char kDefaultCookiesSetting[] =
     "profile.default_content_setting_values.cookies";

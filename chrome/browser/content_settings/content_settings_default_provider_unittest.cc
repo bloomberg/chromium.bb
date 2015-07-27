@@ -140,12 +140,8 @@ TEST_F(DefaultProviderTest, Observer) {
 }
 
 
-TEST_F(DefaultProviderTest, ObserveDefaultPref) {
+TEST_F(DefaultProviderTest, ObservePref) {
   PrefService* prefs = profile_.GetPrefs();
-
-  // Make a copy of the default pref value so we can reset it later.
-  scoped_ptr<base::Value> default_value(prefs->FindPreference(
-      prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
 
   provider_.SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
@@ -161,12 +157,8 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
                               std::string(),
                               false));
 
-  // Make a copy of the pref's new value so we can reset it later.
-  scoped_ptr<base::Value> new_value(prefs->FindPreference(
-      prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
-
   // Clearing the backing pref should also clear the internal cache.
-  prefs->Set(prefs::kDefaultContentSettings, *default_value);
+  prefs->ClearPref(prefs::kDefaultCookiesSetting);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(&provider_,
                               GURL(),
@@ -175,7 +167,7 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
                               std::string(),
                               false));
   // Reseting the pref to its previous value should update the cache.
-  prefs->Set(prefs::kDefaultContentSettings, *new_value);
+  prefs->SetInteger(prefs::kDefaultCookiesSetting, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider_,
                               GURL(),
@@ -253,54 +245,4 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
                               std::string(),
                               true));
   otr_provider.ShutdownOnUIThread();
-}
-
-
-// TODO(msramek): The two tests below test syncing between old versions
-// of Chrome using a dictionary pref and new versions using individual integer
-// prefs for default content settings. Remove the tests together with
-// the dictionary setting after two stable releases.
-TEST_F(DefaultProviderTest, SyncFromDictionaryToIndividualPreferences) {
-  PrefService* prefs = profile_.GetPrefs();
-
-  {
-    DictionaryPrefUpdate update(prefs, prefs::kDefaultContentSettings);
-    base::DictionaryValue* default_settings_dictionary = update.Get();
-
-    default_settings_dictionary->SetWithoutPathExpansion(
-        content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_COOKIES),
-        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
-    default_settings_dictionary->SetWithoutPathExpansion(
-        content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_GEOLOCATION),
-        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
-  }
-
-  // Cookies should sync, but geolocation should not.
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(
-      prefs->GetInteger(prefs::kDefaultCookiesSetting)));
-  EXPECT_EQ(CONTENT_SETTING_ASK, IntToContentSetting(
-      prefs->GetInteger(prefs::kDefaultGeolocationSetting)));
-}
-
-TEST_F(DefaultProviderTest, SyncFromIndividualPreferencesToDictionary) {
-  PrefService* prefs = profile_.GetPrefs();
-
-  prefs->SetInteger(prefs::kDefaultJavaScriptSetting, CONTENT_SETTING_BLOCK);
-  prefs->SetInteger(prefs::kDefaultSSLCertDecisionsSetting,
-                    CONTENT_SETTING_BLOCK);
-
-  // Javascript should sync, but cert decisions should not.
-  const base::DictionaryValue* default_settings_dictionary =
-      prefs->GetDictionary(prefs::kDefaultContentSettings);
-  int js_setting;
-  bool has_cd_setting;
-
-  default_settings_dictionary->GetIntegerWithoutPathExpansion(
-      content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_JAVASCRIPT),
-      &js_setting);
-  has_cd_setting = default_settings_dictionary->HasKey(
-      content_settings::GetTypeName(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS));
-
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(js_setting));
-  EXPECT_FALSE(has_cd_setting);
 }

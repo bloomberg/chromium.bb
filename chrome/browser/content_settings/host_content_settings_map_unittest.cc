@@ -325,11 +325,6 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
       profile.GetHostContentSettingsMap();
 
   PrefService* prefs = profile.GetPrefs();
-
-  // Make a copy of the default pref value so we can reset it later.
-  scoped_ptr<base::Value> default_value(prefs->FindPreference(
-      prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
-
   GURL host("http://example.com");
 
   host_content_settings_map->SetDefaultContentSetting(
@@ -338,18 +333,14 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
-  // Make a copy of the pref's new value so we can reset it later.
-  scoped_ptr<base::Value> new_value(prefs->FindPreference(
-      prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
-
   // Clearing the backing pref should also clear the internal cache.
-  prefs->Set(prefs::kDefaultContentSettings, *default_value);
+  prefs->ClearPref(prefs::kDefaultImagesSetting);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Reseting the pref to its previous value should update the cache.
-  prefs->Set(prefs::kDefaultContentSettings, *new_value);
+  prefs->SetInteger(prefs::kDefaultImagesSetting, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));

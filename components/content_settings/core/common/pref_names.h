@@ -13,8 +13,6 @@ extern const char kBlockThirdPartyCookies[];
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsWindowLastTabIndex[];
-extern const char kDefaultContentSettings[];
-extern const char kMigratedDefaultContentSettings[];
 
 extern const char kDefaultCookiesSetting[];
 extern const char kDefaultImagesSetting[];

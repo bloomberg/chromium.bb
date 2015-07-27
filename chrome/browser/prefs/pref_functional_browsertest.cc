@@ -87,10 +87,8 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImageContentSettings) {
       &result));
   EXPECT_TRUE(result);
 
-  base::DictionaryValue value;
-  value.SetInteger("images", 2);
-  browser()->profile()->GetPrefs()->Set(prefs::kDefaultContentSettings,
-                                        value);
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDefaultImagesSetting, CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(
       browser(),
