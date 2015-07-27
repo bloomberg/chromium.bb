@@ -1812,17 +1812,6 @@ struct FuzzTraits<url::Origin> {
 };
 
 template <>
-struct FuzzTraits<url::DeprecatedSerializedOrigin> {
-  static bool Fuzz(url::DeprecatedSerializedOrigin* p, Fuzzer* fuzzer) {
-    std::string origin = p->string();
-    if (!FuzzParam(&origin, fuzzer))
-        return false;
-    *p = url::DeprecatedSerializedOrigin(origin);
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<URLPattern> {
   static bool Fuzz(URLPattern* p, Fuzzer* fuzzer) {
     int valid_schemes = p->valid_schemes();

@@ -20,8 +20,6 @@ component("url") {
   sources = [
     "android/url_jni_registrar.cc",
     "android/url_jni_registrar.h",
-    "deprecated_serialized_origin.cc",
-    "deprecated_serialized_origin.h",
     "gurl.cc",
     "gurl.h",
     "origin.cc",
@@ -106,7 +104,6 @@ if (!is_android) {
 
   test("url_unittests") {
     sources = [
-      "deprecated_serialized_origin_unittest.cc",
       "gurl_unittest.cc",
       "origin_unittest.cc",
       "scheme_host_port_unittest.cc",

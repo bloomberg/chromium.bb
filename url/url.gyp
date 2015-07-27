@@ -46,7 +46,6 @@
         'url_lib',
       ],
       'sources': [
-        'deprecated_serialized_origin_unittest.cc',
         'gurl_unittest.cc',
         'origin_unittest.cc',
         'scheme_host_port_unittest.cc',

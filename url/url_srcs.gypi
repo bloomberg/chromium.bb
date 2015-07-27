@@ -7,8 +7,6 @@
     'gurl_sources': [
       'android/url_jni_registrar.cc',
       'android/url_jni_registrar.h',
-      'deprecated_serialized_origin.cc',
-      'deprecated_serialized_origin.h',
       'gurl.cc',
       'gurl.h',
       'origin.cc',
