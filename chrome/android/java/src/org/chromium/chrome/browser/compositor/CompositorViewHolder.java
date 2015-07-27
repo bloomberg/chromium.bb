@@ -118,7 +118,7 @@ public class CompositorViewHolder extends FrameLayout
     // Cache objects that should not be created frequently.
     private final Rect mCacheViewport = new Rect();
     private final Rect mCacheVisibleViewport = new Rect();
-    private final DrawingInfo mProgressBarDrawingInfo = new DrawingInfo();
+    private DrawingInfo mProgressBarDrawingInfo;
 
     // If we've drawn at least one frame.
     private boolean mHasDrawnOnce = false;
@@ -223,6 +223,7 @@ public class CompositorViewHolder extends FrameLayout
             }
         });
 
+        if (!DeviceFormFactor.isTablet(getContext())) mProgressBarDrawingInfo = new DrawingInfo();
         mCompositorView = new CompositorView(getContext(), this);
         addView(mCompositorView,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -540,7 +541,9 @@ public class CompositorViewHolder extends FrameLayout
         TraceEvent.begin("CompositorViewHolder:layout");
         if (mLayoutManager != null) {
             mLayoutManager.onUpdate();
-            mControlContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
+            if (mProgressBarDrawingInfo != null) {
+                mControlContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
+            }
             mCompositorView.finalizeLayers(mLayoutManager, mSkipNextToolbarTextureUpdate,
                     mProgressBarDrawingInfo);
 

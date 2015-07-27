@@ -374,6 +374,8 @@ public class CompositorView
         }
 
         nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container, offset, useTexture);
+
+        if (progressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativeCompositorView,
                 progressBarDrawingInfo.progressBarRect.left,
                 progressBarDrawingInfo.progressBarRect.top,
