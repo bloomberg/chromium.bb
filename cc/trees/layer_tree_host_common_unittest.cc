@@ -5811,47 +5811,27 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
 }
 
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
-  scoped_refptr<LayerWithForcedDrawsContent> root =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  root->AddChild(parent);
-  parent->AddChild(child);
+  LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  parent->SetDrawsContent(true);
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  child->SetDrawsContent(true);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, true,
                                true);
-  root->SetForceRenderSurface(true);
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
+  SetLayerPropertiesForTesting(parent, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, true,
                                true);
-  parent->SetForceRenderSurface(true);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
+  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, true,
                                true);
-  child->SetForceRenderSurface(true);
 
-  host()->SetRootLayer(root);
+  ExecuteCalculateDrawProperties(root);
 
-  ExecuteCalculateDrawProperties(root.get());
-
-  EXPECT_EQ(3u, render_surface_layer_list()->size());
+  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
 
   gfx::Transform singular_transform;
   singular_transform.Scale3d(
@@ -5859,18 +5839,18 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
 
   child->SetTransform(singular_transform);
 
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(2u, render_surface_layer_list()->size());
+  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
 
   // Ensure that the entire subtree under a layer with singular transform does
   // not get rendered.
   parent->SetTransform(singular_transform);
   child->SetTransform(identity_transform);
 
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(1u, render_surface_layer_list()->size());
+  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
