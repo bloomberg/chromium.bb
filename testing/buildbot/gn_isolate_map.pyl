@@ -105,7 +105,7 @@
   },
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "chromeos_unittests": {
     "label": "//chromeos:chromeos_unittests",
@@ -113,11 +113,11 @@
   },
   "components_browsertests": {
     "label": "//components:components_browsertests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "components_unittests": {
     "label": "//components:components_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "compositor_unittests": {
     "label": "//ui/compositor:compositor_unittests",
@@ -125,11 +125,11 @@
   },
   "content_browsertests": {
     "label": "//content/test:content_browsertests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "content_unittests": {
     "label": "//content/test:content_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "courgette_unittests": {
     "label": "//courgette:courgette_unittests",
@@ -137,7 +137,7 @@
   },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "dbus_unittests": {
     "label": "//dbus:dbus_unittests",
@@ -145,11 +145,11 @@
   },
   "device_unittests": {
     "label": "//device:device_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "display_unittests": {
     "label": "//ui/display:display_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "events_unittests": {
     "label": "//ui/events:events_unittests",

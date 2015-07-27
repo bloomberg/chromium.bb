@@ -186,6 +186,15 @@ executable("chromedriver") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("chromedriver_unittests_run") {
+  testonly = true
+  deps = [
+    ":chromedriver_unittests",
+  ]
+}
+
 test("chromedriver_unittests") {
   sources =
       rebase_path(chrome_tests_gypi_values.chrome_driver_unittests_sources,
@@ -194,6 +203,10 @@ test("chromedriver_unittests") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  data = [
+    "//chrome/test/data/chromedriver/",
+  ]
 
   deps = [
     ":lib",

@@ -254,6 +254,15 @@ group("all_components") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("components_unittests_run") {
+  testonly = true
+  deps = [
+    ":components_unittests",
+  ]
+}
+
 # To add a unit test to this target, make a "unit_test" source_set in your
 # component (it's important to use a source_set instead of a static library or
 # no tests will run) and add a reference here. You can add more than one unit
@@ -262,6 +271,16 @@ test("components_unittests") {
   sources = [
     "test/run_all_unittests.cc",
   ]
+
+  if (is_android || is_linux || is_mac || is_win) {
+    data = [
+      "test/data/",
+
+      # TODO(dpranke): Remove the next two lines after GN has rolled to 339778.
+      "$root_out_dir/components_tests_resources.pak",
+      "$root_out_dir/ui_test.pak",
+    ]
+  }
 
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
   # (this would at least include the component itself), they should be on the
@@ -315,7 +334,11 @@ test("components_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
-  data_deps = [ ":components_tests_pak" ]
+  data_deps = [
+    ":components_tests_pak",
+    "//third_party/mesa:osmesa",
+    "//ui/resources:ui_test_pak",
+  ]
 
   if (enable_rlz_support) {
     deps += [ "//components/rlz:unit_tests" ]
@@ -378,6 +401,15 @@ repack("components_tests_pak") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("components_browsertests_run") {
+  testonly = true
+  deps = [
+    ":components_browsertests",
+  ]
+}
+
 test("components_browsertests") {
   sources = [
     "autofill/content/browser/risk/fingerprint_browsertest.cc",
@@ -386,6 +418,23 @@ test("components_browsertests") {
     "dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc",
     "password_manager/content/renderer/credential_manager_client_browsertest.cc",
   ]
+
+  data = [
+    "$root_out_dir/components_tests_resources.pak",
+    "$root_out_dir/content_shell.pak",
+  ]
+
+  if (is_android || is_linux || is_mac || is_win) {
+    data += [
+      "test/data/",
+      "dom_distiller/core/javascript/",
+      "//third_party/dom_distiller_js/dist/test/data/",
+    ]
+  }
+
+  if (is_mac) {
+    data += [ "$root_out_dir/Content Shell.app/" ]
+  }
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -410,7 +459,10 @@ test("components_browsertests") {
     "//ui/base",
   ]
 
-  data_deps = [ ":components_tests_pak" ]
+  data_deps = [
+    ":components_tests_pak",
+    "//third_party/mesa:osmesa",
+  ]
 
   if (is_android) {
     sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]

@@ -261,11 +261,52 @@ if (!is_ios) {
 
 # TODO(GYP) enable content_browsertests on Mac when it links.
 if (!is_mac) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("content_browsertests_run") {
+    testonly = true
+    deps = [
+      ":content_browsertests",
+    ]
+  }
+
   test("content_browsertests") {
     sources =
         rebase_path(content_tests_gypi_values.content_browsertests_sources,
                     ".",
                     "//content")
+
+    if (is_android || is_linux || is_mac || is_win) {
+      data = [
+        "data/",
+        "//net/data/",
+        "//media/test/data/",
+      ]
+
+      if (is_android) {
+        data += [ "$root_out_dir/content_shell_assets/content_shell.pak" ]
+      } else {
+        data += [
+          "$root_out_dir/content_shell.pak",
+          "//net/tools/testserver/",
+          "//ppapi/tests/test_case.html",
+          "//ppapi/tests/test_page.css",
+          "//third_party/pyftpdlib/",
+          "//third_party/pywebsocket/",
+          "//third_party/tlslite/",
+        ]
+
+        if (is_mac) {
+          data += [
+            "$root_out_dir/Content Shell.app/",
+            "$root_out_dir/plugins/test_netscape_plugin.plugin/",
+          ]
+        }
+        if (is_win) {
+          data += [ "$root_out_dir/plugins/np_test_netscape_plugin.dll" ]
+        }
+      }
+    }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -328,7 +369,10 @@ if (!is_mac) {
       "//ui/snapshot",
     ]
 
-    data_deps = [ "//ppapi:ppapi_tests" ]  # Loaded at runtime.
+    data_deps = [
+      "//ppapi:ppapi_tests",
+      "//third_party/mesa:osmesa",
+    ]
 
     if (!is_chromeos) {
       sources -=
@@ -427,10 +471,33 @@ if (!is_mac) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("content_unittests_run") {
+  testonly = true
+  deps = [
+    ":content_unittests",
+  ]
+}
+
 test("content_unittests") {
   sources = rebase_path(content_tests_gypi_values.content_unittests_sources,
                         ".",
                         "//content")
+
+  if (is_android || is_linux || is_mac || is_win) {
+    data = [
+      "data/",
+      "//net/data/ssl/certificates/",
+      "//media/test/data/",
+    ]
+
+    if (is_android) {
+      data += [ "$root_out_dir/content_shell_assets/content_shell.pak" ]
+    } else {
+      data += [ "$root_out_dir/content_shell.pak" ]
+    }
+  }
 
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -499,6 +566,8 @@ test("content_unittests") {
       "//ui/gl:test_support",
     ]
   }
+
+  data_deps = [ "//third_party/mesa:osmesa" ]
 
   if (!is_win) {
     sources += [ "../browser/file_descriptor_info_impl_unittest.cc" ]
