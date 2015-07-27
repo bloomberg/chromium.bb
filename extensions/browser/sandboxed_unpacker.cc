@@ -6,12 +6,9 @@
 
 #include <set>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/files/file_util_proxy.h"
-#include "base/files/scoped_file.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -21,15 +18,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "components/crx_file/constants.h"
 #include "components/crx_file/crx_file.h"
-#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/common_param_traits.h"
-#include "crypto/secure_hash.h"
-#include "crypto/sha2.h"
-#include "crypto/signature_verifier.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -424,195 +416,154 @@ void SandboxedUnpacker::OnUnpackExtensionFailed(const base::string16& error) {
       l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE, error));
 }
 
-static size_t ReadAndHash(void* ptr,
-                          size_t size,
-                          size_t nmemb,
-                          FILE* stream,
-                          scoped_ptr<crypto::SecureHash>& hash) {
-  size_t len = fread(ptr, size, nmemb, stream);
-  if (len > 0 && hash) {
-    hash->Update(ptr, len * size);
+base::string16 SandboxedUnpacker::FailureReasonToString16(
+    FailureReason reason) {
+  switch (reason) {
+    case COULD_NOT_GET_TEMP_DIRECTORY:
+      return ASCIIToUTF16("COULD_NOT_GET_TEMP_DIRECTORY");
+    case COULD_NOT_CREATE_TEMP_DIRECTORY:
+      return ASCIIToUTF16("COULD_NOT_CREATE_TEMP_DIRECTORY");
+    case FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY:
+      return ASCIIToUTF16("FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY");
+    case COULD_NOT_GET_SANDBOX_FRIENDLY_PATH:
+      return ASCIIToUTF16("COULD_NOT_GET_SANDBOX_FRIENDLY_PATH");
+    case COULD_NOT_LOCALIZE_EXTENSION:
+      return ASCIIToUTF16("COULD_NOT_LOCALIZE_EXTENSION");
+    case INVALID_MANIFEST:
+      return ASCIIToUTF16("INVALID_MANIFEST");
+    case UNPACKER_CLIENT_FAILED:
+      return ASCIIToUTF16("UNPACKER_CLIENT_FAILED");
+    case UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL:
+      return ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL");
+
+    case CRX_FILE_NOT_READABLE:
+      return ASCIIToUTF16("CRX_FILE_NOT_READABLE");
+    case CRX_HEADER_INVALID:
+      return ASCIIToUTF16("CRX_HEADER_INVALID");
+    case CRX_MAGIC_NUMBER_INVALID:
+      return ASCIIToUTF16("CRX_MAGIC_NUMBER_INVALID");
+    case CRX_VERSION_NUMBER_INVALID:
+      return ASCIIToUTF16("CRX_VERSION_NUMBER_INVALID");
+    case CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE:
+      return ASCIIToUTF16("CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE");
+    case CRX_ZERO_KEY_LENGTH:
+      return ASCIIToUTF16("CRX_ZERO_KEY_LENGTH");
+    case CRX_ZERO_SIGNATURE_LENGTH:
+      return ASCIIToUTF16("CRX_ZERO_SIGNATURE_LENGTH");
+    case CRX_PUBLIC_KEY_INVALID:
+      return ASCIIToUTF16("CRX_PUBLIC_KEY_INVALID");
+    case CRX_SIGNATURE_INVALID:
+      return ASCIIToUTF16("CRX_SIGNATURE_INVALID");
+    case CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED:
+      return ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED");
+    case CRX_SIGNATURE_VERIFICATION_FAILED:
+      return ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_FAILED");
+
+    case ERROR_SERIALIZING_MANIFEST_JSON:
+      return ASCIIToUTF16("ERROR_SERIALIZING_MANIFEST_JSON");
+    case ERROR_SAVING_MANIFEST_JSON:
+      return ASCIIToUTF16("ERROR_SAVING_MANIFEST_JSON");
+
+    case COULD_NOT_READ_IMAGE_DATA_FROM_DISK:
+      return ASCIIToUTF16("COULD_NOT_READ_IMAGE_DATA_FROM_DISK");
+    case DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST:
+      return ASCIIToUTF16("DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST");
+    case INVALID_PATH_FOR_BROWSER_IMAGE:
+      return ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE");
+    case ERROR_REMOVING_OLD_IMAGE_FILE:
+      return ASCIIToUTF16("ERROR_REMOVING_OLD_IMAGE_FILE");
+    case INVALID_PATH_FOR_BITMAP_IMAGE:
+      return ASCIIToUTF16("INVALID_PATH_FOR_BITMAP_IMAGE");
+    case ERROR_RE_ENCODING_THEME_IMAGE:
+      return ASCIIToUTF16("ERROR_RE_ENCODING_THEME_IMAGE");
+    case ERROR_SAVING_THEME_IMAGE:
+      return ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE");
+    case ABORTED_DUE_TO_SHUTDOWN:
+      return ASCIIToUTF16("ABORTED_DUE_TO_SHUTDOWN");
+
+    case COULD_NOT_READ_CATALOG_DATA_FROM_DISK:
+      return ASCIIToUTF16("COULD_NOT_READ_CATALOG_DATA_FROM_DISK");
+    case INVALID_CATALOG_DATA:
+      return ASCIIToUTF16("INVALID_CATALOG_DATA");
+    case INVALID_PATH_FOR_CATALOG:
+      return ASCIIToUTF16("INVALID_PATH_FOR_CATALOG");
+    case ERROR_SERIALIZING_CATALOG:
+      return ASCIIToUTF16("ERROR_SERIALIZING_CATALOG");
+    case ERROR_SAVING_CATALOG:
+      return ASCIIToUTF16("ERROR_SAVING_CATALOG");
+
+    case CRX_HASH_VERIFICATION_FAILED:
+      return ASCIIToUTF16("CRX_HASH_VERIFICATION_FAILED");
+
+    case NUM_FAILURE_REASONS:
+      NOTREACHED();
+      return base::string16();
   }
-  return len;
+  NOTREACHED();
+  return base::string16();
 }
 
-bool SandboxedUnpacker::FinalizeHash(scoped_ptr<crypto::SecureHash>& hash) {
-  if (hash) {
-    uint8 output[crypto::kSHA256Length];
-    hash->Finish(output, sizeof(output));
-    std::string real_hash =
-        base::StringToLowerASCII(base::HexEncode(output, sizeof(output)));
-    bool result = (real_hash == package_hash_);
-    UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", result);
-    if (!result && check_crx_hash_) {
-      // Package hash verification failed
-      LOG(ERROR) << "Hash check failed for extension: " << extension_id_
-                 << ", expected " << package_hash_ << ", got " << real_hash;
-      ReportFailure(CRX_HASH_VERIFICATION_FAILED,
-                    l10n_util::GetStringFUTF16(
-                        IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                        ASCIIToUTF16("CRX_HASH_VERIFICATION_FAILED")));
-      return false;
-    }
-  }
-
-  return true;
+void SandboxedUnpacker::FailWithPackageError(FailureReason reason) {
+  ReportFailure(reason,
+                l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                                           FailureReasonToString16(reason)));
 }
 
 bool SandboxedUnpacker::ValidateSignature() {
-  base::ScopedFILE file(base::OpenFile(crx_path_, "rb"));
+  CrxFile::ValidateError error = CrxFile::ValidateSignature(
+      crx_path_, check_crx_hash_ ? package_hash_ : std::string(), &public_key_,
+      &extension_id_, nullptr);
 
-  scoped_ptr<crypto::SecureHash> hash;
-
-  if (!package_hash_.empty()) {
-    hash.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-  }
-
-  if (!file.get()) {
-// Could not open crx file for reading.
-#if defined(OS_WIN)
-    // On windows, get the error code.
-    uint32 error_code = ::GetLastError();
-    // TODO(skerner): Use this histogram to understand why so many
-    // windows users hit this error.  crbug.com/69693
-
-    // Windows errors are unit32s, but all of likely errors are in
-    // [1, 1000].  See winerror.h for the meaning of specific values.
-    // Clip errors outside the expected range to a single extra value.
-    // If there are errors in that extra bucket, we will know to expand
-    // the range.
-    const uint32 kMaxErrorToSend = 1001;
-    error_code = std::min(error_code, kMaxErrorToSend);
-    UMA_HISTOGRAM_ENUMERATION("Extensions.ErrorCodeFromCrxOpen", error_code,
-                              kMaxErrorToSend);
-#endif
-
-    ReportFailure(
-        CRX_FILE_NOT_READABLE,
-        l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                                   ASCIIToUTF16("CRX_FILE_NOT_READABLE")));
-    return false;
-  }
-
-  // Read and verify the header.
-  // TODO(erikkay): Yuck.  I'm not a big fan of this kind of code, but it
-  // appears that we don't have any endian/alignment aware serialization
-  // code in the code base.  So for now, this assumes that we're running
-  // on a little endian machine with 4 byte alignment.
-  CrxFile::Header header;
-  size_t len = ReadAndHash(&header, 1, sizeof(header), file.get(), hash);
-  if (len < sizeof(header)) {
-    // Invalid crx header
-    ReportFailure(CRX_HEADER_INVALID, l10n_util::GetStringFUTF16(
-                                          IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                                          ASCIIToUTF16("CRX_HEADER_INVALID")));
-    return false;
-  }
-
-  CrxFile::Error error;
-  scoped_ptr<CrxFile> crx(CrxFile::Parse(header, &error));
-  if (!crx) {
-    switch (error) {
-      case CrxFile::kWrongMagic:
-        ReportFailure(CRX_MAGIC_NUMBER_INVALID,
-                      l10n_util::GetStringFUTF16(
-                          IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                          ASCIIToUTF16("CRX_MAGIC_NUMBER_INVALID")));
-        break;
-      case CrxFile::kInvalidVersion:
-        // Bad version numer
-        ReportFailure(CRX_VERSION_NUMBER_INVALID,
-                      l10n_util::GetStringFUTF16(
-                          IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                          ASCIIToUTF16("CRX_VERSION_NUMBER_INVALID")));
-        break;
-      case CrxFile::kInvalidKeyTooLarge:
-      case CrxFile::kInvalidSignatureTooLarge:
-        // Excessively large key or signature
-        ReportFailure(
-            CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
-            l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                ASCIIToUTF16("CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE")));
-        break;
-      case CrxFile::kInvalidKeyTooSmall:
-        // Key length is zero
-        ReportFailure(
-            CRX_ZERO_KEY_LENGTH,
-            l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                                       ASCIIToUTF16("CRX_ZERO_KEY_LENGTH")));
-        break;
-      case CrxFile::kInvalidSignatureTooSmall:
-        // Signature length is zero
-        ReportFailure(CRX_ZERO_SIGNATURE_LENGTH,
-                      l10n_util::GetStringFUTF16(
-                          IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                          ASCIIToUTF16("CRX_ZERO_SIGNATURE_LENGTH")));
-        break;
+  switch (error) {
+    case CrxFile::ValidateError::NONE: {
+      if (check_crx_hash_)
+        UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", true);
+      return true;
     }
-    return false;
+
+    case CrxFile::ValidateError::CRX_FILE_NOT_READABLE:
+      FailWithPackageError(CRX_FILE_NOT_READABLE);
+      break;
+    case CrxFile::ValidateError::CRX_HEADER_INVALID:
+      FailWithPackageError(CRX_HEADER_INVALID);
+      break;
+    case CrxFile::ValidateError::CRX_MAGIC_NUMBER_INVALID:
+      FailWithPackageError(CRX_MAGIC_NUMBER_INVALID);
+      break;
+    case CrxFile::ValidateError::CRX_VERSION_NUMBER_INVALID:
+      FailWithPackageError(CRX_VERSION_NUMBER_INVALID);
+      break;
+    case CrxFile::ValidateError::CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE:
+      FailWithPackageError(CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE);
+      break;
+    case CrxFile::ValidateError::CRX_ZERO_KEY_LENGTH:
+      FailWithPackageError(CRX_ZERO_KEY_LENGTH);
+      break;
+    case CrxFile::ValidateError::CRX_ZERO_SIGNATURE_LENGTH:
+      FailWithPackageError(CRX_ZERO_SIGNATURE_LENGTH);
+      break;
+    case CrxFile::ValidateError::CRX_PUBLIC_KEY_INVALID:
+      FailWithPackageError(CRX_PUBLIC_KEY_INVALID);
+      break;
+    case CrxFile::ValidateError::CRX_SIGNATURE_INVALID:
+      FailWithPackageError(CRX_SIGNATURE_INVALID);
+      break;
+    case CrxFile::ValidateError::
+        CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED:
+      FailWithPackageError(CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED);
+      break;
+    case CrxFile::ValidateError::CRX_SIGNATURE_VERIFICATION_FAILED:
+      FailWithPackageError(CRX_SIGNATURE_VERIFICATION_FAILED);
+      break;
+    case CrxFile::ValidateError::CRX_HASH_VERIFICATION_FAILED:
+      // We should never get this result unless we had specifically asked for
+      // verification of the crx file's hash.
+      CHECK(check_crx_hash_ && !package_hash_.empty());
+      UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", false);
+      FailWithPackageError(CRX_HASH_VERIFICATION_FAILED);
+      break;
   }
-
-  std::vector<uint8> key;
-  key.resize(header.key_size);
-  len = ReadAndHash(&key.front(), sizeof(uint8), header.key_size, file.get(),
-                    hash);
-  if (len < header.key_size) {
-    // Invalid public key
-    ReportFailure(
-        CRX_PUBLIC_KEY_INVALID,
-        l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                                   ASCIIToUTF16("CRX_PUBLIC_KEY_INVALID")));
-    return false;
-  }
-
-  std::vector<uint8> signature;
-  signature.resize(header.signature_size);
-  len = ReadAndHash(&signature.front(), sizeof(uint8), header.signature_size,
-                    file.get(), hash);
-  if (len < header.signature_size) {
-    // Invalid signature
-    ReportFailure(
-        CRX_SIGNATURE_INVALID,
-        l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                                   ASCIIToUTF16("CRX_SIGNATURE_INVALID")));
-    return false;
-  }
-
-  crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(
-          crx_file::kSignatureAlgorithm, sizeof(crx_file::kSignatureAlgorithm),
-          &signature.front(), signature.size(), &key.front(), key.size())) {
-    // Signature verification initialization failed. This is most likely
-    // caused by a public key in the wrong format (should encode algorithm).
-    ReportFailure(
-        CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_ERROR_CODE,
-            ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED")));
-    return false;
-  }
-
-  unsigned char buf[1 << 12];
-  while ((len = ReadAndHash(buf, 1, sizeof(buf), file.get(), hash)) > 0)
-    verifier.VerifyUpdate(buf, len);
-
-  if (!verifier.VerifyFinal()) {
-    // Signature verification failed
-    ReportFailure(CRX_SIGNATURE_VERIFICATION_FAILED,
-                  l10n_util::GetStringFUTF16(
-                      IDS_EXTENSION_PACKAGE_ERROR_CODE,
-                      ASCIIToUTF16("CRX_SIGNATURE_VERIFICATION_FAILED")));
-    return false;
-  }
-
-  std::string public_key =
-      std::string(reinterpret_cast<char*>(&key.front()), key.size());
-  base::Base64Encode(public_key, &public_key_);
-
-  extension_id_ = crx_file::id_util::GenerateId(public_key);
-
-  return FinalizeHash(hash);
+  return false;
 }
 
 void SandboxedUnpacker::ReportFailure(FailureReason reason,

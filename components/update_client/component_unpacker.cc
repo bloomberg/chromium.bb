@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -25,78 +26,13 @@
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/update_client.h"
 #include "crypto/secure_hash.h"
-#include "crypto/signature_verifier.h"
+#include "crypto/sha2.h"
 #include "third_party/zlib/google/zip.h"
 
 using crypto::SecureHash;
+using crx_file::CrxFile;
 
 namespace update_client {
-
-namespace {
-
-// This class makes sure that the CRX digital signature is valid
-// and well formed.
-class CRXValidator {
- public:
-  explicit CRXValidator(FILE* crx_file) : valid_(false), is_delta_(false) {
-    crx_file::CrxFile::Header header;
-    size_t len = fread(&header, 1, sizeof(header), crx_file);
-    if (len < sizeof(header))
-      return;
-
-    crx_file::CrxFile::Error error;
-    scoped_ptr<crx_file::CrxFile> crx(crx_file::CrxFile::Parse(header, &error));
-    if (!crx.get())
-      return;
-    is_delta_ = crx_file::CrxFile::HeaderIsDelta(header);
-
-    std::vector<uint8_t> key(header.key_size);
-    len = fread(&key[0], sizeof(uint8_t), header.key_size, crx_file);
-    if (len < header.key_size)
-      return;
-
-    std::vector<uint8_t> signature(header.signature_size);
-    len =
-        fread(&signature[0], sizeof(uint8_t), header.signature_size, crx_file);
-    if (len < header.signature_size)
-      return;
-
-    crypto::SignatureVerifier verifier;
-    if (!verifier.VerifyInit(
-            crx_file::kSignatureAlgorithm,
-            base::checked_cast<int>(sizeof(crx_file::kSignatureAlgorithm)),
-            &signature[0], base::checked_cast<int>(signature.size()), &key[0],
-            base::checked_cast<int>(key.size()))) {
-      // Signature verification initialization failed. This is most likely
-      // caused by a public key in the wrong format (should encode algorithm).
-      return;
-    }
-
-    const size_t kBufSize = 8 * 1024;
-    scoped_ptr<uint8_t[]> buf(new uint8_t[kBufSize]);
-    while ((len = fread(buf.get(), 1, kBufSize, crx_file)) > 0)
-      verifier.VerifyUpdate(buf.get(), base::checked_cast<int>(len));
-
-    if (!verifier.VerifyFinal())
-      return;
-
-    public_key_.swap(key);
-    valid_ = true;
-  }
-
-  bool valid() const { return valid_; }
-
-  bool is_delta() const { return is_delta_; }
-
-  const std::vector<uint8_t>& public_key() const { return public_key_; }
-
- private:
-  bool valid_;
-  bool is_delta_;
-  std::vector<uint8_t> public_key_;
-};
-
-}  // namespace
 
 ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
@@ -154,25 +90,24 @@ bool ComponentUnpacker::Verify() {
   }
   // First, validate the CRX header and signature. As of today
   // this is SHA1 with RSA 1024.
-  base::ScopedFILE file(base::OpenFile(path_, "rb"));
-  if (!file.get()) {
+  std::string public_key_bytes;
+  std::string public_key_base64;
+  CrxFile::Header header;
+  CrxFile::ValidateError error = CrxFile::ValidateSignature(
+      path_, std::string(), &public_key_base64, nullptr, &header);
+  if (error != CrxFile::ValidateError::NONE ||
+      !base::Base64Decode(public_key_base64, &public_key_bytes)) {
     error_ = kInvalidFile;
     return false;
   }
-  CRXValidator validator(file.get());
-  file.reset();
-  if (!validator.valid()) {
-    error_ = kInvalidFile;
-    return false;
-  }
-  is_delta_ = validator.is_delta();
+  is_delta_ = CrxFile::HeaderIsDelta(header);
 
   // File is valid and the digital signature matches. Now make sure
   // the public key hash matches the expected hash. If they do we fully
   // trust this CRX.
-  uint8_t hash[32] = {};
+  uint8_t hash[crypto::kSHA256Length] = {};
   scoped_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
-  sha256->Update(&(validator.public_key()[0]), validator.public_key().size());
+  sha256->Update(public_key_bytes.data(), public_key_bytes.size());
   sha256->Finish(hash, arraysize(hash));
 
   if (!std::equal(pk_hash_.begin(), pk_hash_.end(), hash)) {

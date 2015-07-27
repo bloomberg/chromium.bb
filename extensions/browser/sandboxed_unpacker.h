@@ -175,20 +175,12 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // Return true on success.
   virtual bool CreateTempDirectory();
 
-  // Finalizes hash calculation and checks the result against the expected
-  // package hash. In case of mismatch, depending on the command-line option,
-  // we will either fail installation, or just update histograms.
-  bool FinalizeHash(scoped_ptr<crypto::SecureHash>& hash);
+  // Helper functions to simplify calls to ReportFailure.
+  base::string16 FailureReasonToString16(FailureReason reason);
+  void FailWithPackageError(FailureReason reason);
 
   // Validates the signature of the extension and extract the key to
   // |public_key_|. Returns true if the signature validates, false otherwise.
-  //
-  // NOTE: Having this method here is a bit ugly. This code should really live
-  // in extensions::Unpacker as it is not specific to sandboxed unpacking. It
-  // was put here because we cannot run windows crypto code in the sandbox. But
-  // we could still have this method statically on extensions::Unpacker so that
-  // code just for unpacking is there and code just for sandboxing of unpacking
-  // is here.
   bool ValidateSignature();
 
   // Starts the utility process that unpacks our extension.

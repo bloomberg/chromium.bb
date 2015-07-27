@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
       ],
       'include_dirs': [
         '..',
