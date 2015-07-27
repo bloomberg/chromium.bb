@@ -517,6 +517,8 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(dist, is_per_user_install));
     if (check_dual_mode && expected_app_id == default_chromium_model_id) {
+      const bool dual_mode_desired =
+          InstallUtil::ShouldInstallMetroProperties();
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {
@@ -526,13 +528,15 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
       } else {
         switch (propvariant.get().vt) {
           case VT_EMPTY:
-            // If dual_mode is not set at all, make sure it gets set to true.
-            updated_properties.set_dual_mode(true);
+            // If dual_mode is not set at all, make sure it gets set to true if
+            // desired.
+            if (dual_mode_desired)
+              updated_properties.set_dual_mode(true);
             break;
           case VT_BOOL:
-            // If it is set to false, make sure it gets set to true as well.
-            if (!propvariant.get().boolVal)
-              updated_properties.set_dual_mode(true);
+            // Make sure dual_mode is set as desired.
+            if ((!!propvariant.get().boolVal) != dual_mode_desired)
+              updated_properties.set_dual_mode(dual_mode_desired);
             break;
           default:
             NOTREACHED();

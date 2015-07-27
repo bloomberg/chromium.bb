@@ -429,9 +429,10 @@ void CreateOrUpdateShortcuts(
 
   ShellUtil::ShortcutProperties start_menu_properties(base_properties);
   // IMPORTANT: Only the default (no arguments and default browserappid) browser
-  // shortcut in the Start menu (Start screen on Win8+) should be made dual
-  // mode.
-  start_menu_properties.set_dual_mode(true);
+  // shortcut in the Start menu (Start screen on Win8+) should be considered for
+  // dual mode.
+  if (InstallUtil::ShouldInstallMetroProperties())
+    start_menu_properties.set_dual_mode(true);
   if (!do_not_create_taskbar_shortcut &&
       (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
        shortcut_operation ==
