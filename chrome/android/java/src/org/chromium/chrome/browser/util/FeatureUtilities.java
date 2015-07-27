@@ -33,6 +33,7 @@ public class FeatureUtilities {
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
     private static Boolean sDocumentModeDisabled;
+    private static Boolean sCustomTabVisible;
     /** Used to track if cached command line flags should be refreshed. */
     private static CommandLine.ResetListener sResetListener = null;
 
@@ -132,6 +133,7 @@ public class FeatureUtilities {
      * @param visible Whether a custom tab is visible.
      */
     public static void setCustomTabVisible(boolean visible) {
+        sCustomTabVisible = visible;
         nativeSetCustomTabVisible(visible);
     }
 
@@ -139,7 +141,10 @@ public class FeatureUtilities {
      * @return Whether a custom tab is visible.
      */
     public static boolean getCustomTabVisible() {
-        return nativeGetCustomTabVisible();
+        if (sCustomTabVisible == null) {
+            sCustomTabVisible = nativeGetCustomTabVisible();
+        }
+        return sCustomTabVisible;
     }
 
     private static void initResetListener() {
