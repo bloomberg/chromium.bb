@@ -17,3 +17,5 @@ DesktopCaptureDeviceTest.UnpackedFrame
 
 # Flaky: https://crbug.com/502983
 ServiceWorkerDiskCacheMigratorTest.MigrateDiskCache
+ServiceWorkerDiskCacheMigratorTest.RemoveExistingResourcesFromDest
+ServiceWorkerDiskCacheMigratorTest.ThrottleInflightTasks
