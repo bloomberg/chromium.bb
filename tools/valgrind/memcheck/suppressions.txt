@@ -3502,17 +3502,6 @@
    fun:_ZN7content26ResourceDispatcherHostImpl23OnRenderViewHostCreatedEiibb
 }
 {
-   bug_484882
-   Memcheck:Uninitialized
-   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
-   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
-   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_PK6SkRectf
-   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_
-   fun:_ZNK5blink4Path18strokeBoundingRectERKNS_10StrokeDataE
-   fun:_ZNK5blink14LayoutSVGShape26calculateStrokeBoundingBoxEv
-   fun:_ZN5blink14LayoutSVGShape22updateShapeFromElementEv
-}
-{
    bug_487706
    Memcheck:Leak
    fun:calloc
@@ -3537,8 +3526,30 @@
    fun:_ZN5blink13CSSParserImpl18consumeDeclarationENS_19CSSParserTokenRangeENS_13StyleRuleBase4TypeE
 }
 {
-   bug_509513
-   Memcheck:Uninitialized
-   fun:_ZNK5blink9FillLayer31computeCachedPropertiesIfNeededEv
-   fun:_ZNK5blink9FillLayer29thisOrNextLayersUseContentBoxEv
+   bug_514434
+   Memcheck:Leak
+   fun:malloc
+   fun:__netlink_request
+   fun:getifaddrs_internal
+   fun:getifaddrs
+   fun:_ZN3net25HaveOnlyLoopbackAddressesEv
+   fun:_ZN3net16HostResolverImpl16LoopbackProbeJob7DoProbeEv
+}
+{
+   bug_514439
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8IOThread34InitSystemRequestContextOnIOThreadEv
+}
+{
+   bug_514443
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs9_M_mutateEmmm
+   fun:_ZNSs15_M_replace_safeEmmPKcm
+   fun:_ZN4base8internal13CopyToStringTISsEEvRKNS_16BasicStringPieceIT_EEPS3_
+   fun:_ZN4base8internal12CopyToStringERKNS_16BasicStringPieceISsEEPSs
+   fun:_ZNK4base16BasicStringPieceISsE12CopyToStringEPSs
+   fun:_ZN4base8FilePathC1ENS_16BasicStringPieceISsEE
 }
