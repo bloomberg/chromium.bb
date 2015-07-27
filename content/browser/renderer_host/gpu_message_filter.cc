@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -133,11 +134,11 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   bool share_contexts = true;
   host->EstablishGpuChannel(
       render_process_id_,
-      share_contexts,
-      false,
+      base::trace_event::MemoryDumpManager::ChildProcessIdToTracingProcessId(
+          render_process_id_),
+      share_contexts, false,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&reply)));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(

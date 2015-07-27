@@ -112,6 +112,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   // Message handlers.
   void OnEstablishChannel(int client_id,
+                          uint64_t client_tracing_id,
                           bool share_context,
                           bool allow_future_sync_points);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);

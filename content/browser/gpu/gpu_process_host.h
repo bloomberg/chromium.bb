@@ -110,6 +110,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // client. Once the GPU process responds asynchronously with the IPC handle
   // and GPUInfo, we call the callback.
   void EstablishGpuChannel(int client_id,
+                           uint64_t client_tracing_id,
                            bool share_context,
                            bool allow_future_sync_points,
                            const EstablishChannelCallback& callback);

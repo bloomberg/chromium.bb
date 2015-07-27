@@ -130,6 +130,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
 bool GpuChannelManager::Send(IPC::Message* msg) { return router_->Send(msg); }
 
 void GpuChannelManager::OnEstablishChannel(int client_id,
+                                           uint64_t client_tracing_id,
                                            bool share_context,
                                            bool allow_future_sync_points) {
   IPC::ChannelHandle channel_handle;
@@ -151,6 +152,7 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
                                                 share_group,
                                                 mailbox_manager,
                                                 client_id,
+                                                client_tracing_id,
                                                 false,
                                                 allow_future_sync_points));
   channel->Init(io_task_runner_.get(), shutdown_event_, attachment_broker_);

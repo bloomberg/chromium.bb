@@ -418,11 +418,13 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        gfx::GLShareGroup* share_group,
                        gpu::gles2::MailboxManager* mailbox,
                        int client_id,
+                       uint64_t client_tracing_id,
                        bool software,
                        bool allow_future_sync_points)
     : gpu_channel_manager_(gpu_channel_manager),
       messages_processed_(0),
       client_id_(client_id),
+      client_tracing_id_(client_tracing_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
       mailbox_manager_(mailbox
                            ? scoped_refptr<gpu::gles2::MailboxManager>(mailbox)

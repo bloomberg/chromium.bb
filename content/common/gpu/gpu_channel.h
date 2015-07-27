@@ -66,6 +66,7 @@ class GpuChannel : public IPC::Listener,
              gfx::GLShareGroup* share_group,
              gpu::gles2::MailboxManager* mailbox_manager,
              int client_id,
+             uint64_t client_tracing_id,
              bool software,
              bool allow_future_sync_points);
   ~GpuChannel() override;
@@ -89,6 +90,8 @@ class GpuChannel : public IPC::Listener,
   base::ProcessId renderer_pid() const { return channel_->GetPeerPID(); }
 
   int client_id() const { return client_id_; }
+
+  uint64_t client_tracing_id() const { return client_tracing_id_; }
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;
@@ -219,6 +222,9 @@ class GpuChannel : public IPC::Listener,
 
   // The id of the client who is on the other side of the channel.
   int client_id_;
+
+  // The tracing ID used for memory allocations associated with this client.
+  uint64_t client_tracing_id_;
 
   // Uniquely identifies the channel within this GPU process.
   std::string channel_id_;

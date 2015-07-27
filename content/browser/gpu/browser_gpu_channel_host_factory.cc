@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -46,6 +47,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
  public:
   static scoped_refptr<EstablishRequest> Create(CauseForGpuLaunch cause,
                                                 int gpu_client_id,
+                                                uint64_t gpu_client_tracing_id,
                                                 int gpu_host_id);
   void Wait();
   void Cancel();
@@ -58,6 +60,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   friend class base::RefCountedThreadSafe<EstablishRequest>;
   explicit EstablishRequest(CauseForGpuLaunch cause,
                             int gpu_client_id,
+                            uint64_t gpu_client_tracing_id,
                             int gpu_host_id);
   ~EstablishRequest() {}
   void EstablishOnIO();
@@ -69,6 +72,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   base::WaitableEvent event_;
   CauseForGpuLaunch cause_for_gpu_launch_;
   const int gpu_client_id_;
+  const uint64_t gpu_client_tracing_id_;
   int gpu_host_id_;
   bool reused_gpu_process_;
   IPC::ChannelHandle channel_handle_;
@@ -78,11 +82,13 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 };
 
 scoped_refptr<BrowserGpuChannelHostFactory::EstablishRequest>
-BrowserGpuChannelHostFactory::EstablishRequest::Create(CauseForGpuLaunch cause,
-                                                       int gpu_client_id,
-                                                       int gpu_host_id) {
-  scoped_refptr<EstablishRequest> establish_request =
-      new EstablishRequest(cause, gpu_client_id, gpu_host_id);
+BrowserGpuChannelHostFactory::EstablishRequest::Create(
+    CauseForGpuLaunch cause,
+    int gpu_client_id,
+    uint64_t gpu_client_tracing_id,
+    int gpu_host_id) {
+  scoped_refptr<EstablishRequest> establish_request = new EstablishRequest(
+      cause, gpu_client_id, gpu_client_tracing_id, gpu_host_id);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   // PostTask outside the constructor to ensure at least one reference exists.
@@ -96,10 +102,12 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(CauseForGpuLaunch cause,
 BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
     CauseForGpuLaunch cause,
     int gpu_client_id,
+    uint64_t gpu_client_tracing_id,
     int gpu_host_id)
     : event_(false, false),
       cause_for_gpu_launch_(cause),
       gpu_client_id_(gpu_client_id),
+      gpu_client_tracing_id_(gpu_client_tracing_id),
       gpu_host_id_(gpu_host_id),
       reused_gpu_process_(false),
       finished_(false),
@@ -138,6 +146,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
 
   host->EstablishGpuChannel(
       gpu_client_id_,
+      gpu_client_tracing_id_,
       true,
       true,
       base::Bind(
@@ -224,11 +233,12 @@ void BrowserGpuChannelHostFactory::Terminate() {
 
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
+      gpu_client_tracing_id_(base::trace_event::MemoryDumpManager::GetInstance()
+                                 ->tracing_process_id()),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_memory_buffer_manager_(
           new BrowserGpuMemoryBufferManager(gpu_client_id_)),
-      gpu_host_id_(0) {
-}
+      gpu_host_id_(0) {}
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
   DCHECK(IsMainThread());
@@ -347,7 +357,9 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
   if (!gpu_channel_.get() && !pending_request_.get()) {
     // We should only get here if the context was lost.
     pending_request_ = EstablishRequest::Create(
-        cause_for_gpu_launch, gpu_client_id_, gpu_host_id_);
+        cause_for_gpu_launch, gpu_client_id_,
+        gpu_client_tracing_id_,
+        gpu_host_id_);
   }
 
   if (!callback.is_null()) {

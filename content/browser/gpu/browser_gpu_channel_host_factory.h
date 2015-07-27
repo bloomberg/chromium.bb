@@ -64,6 +64,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
                             scoped_refptr<IPC::MessageFilter> filter);
 
   const int gpu_client_id_;
+  const uint64_t gpu_client_tracing_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<GpuChannelHost> gpu_channel_;
   scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;

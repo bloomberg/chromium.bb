@@ -171,7 +171,9 @@ class GpuChannelManagerTest : public testing::Test {
 
 TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   const int kClientId1 = 111;
+  const uint64 kClientTracingId1 = 11111;
   const int kClientId2 = 222;
+  const uint64 kClientTracingId2 = 22222;
   ValueState value_state1;
   value_state1.int_value[0] = 1111;
   value_state1.int_value[1] = 0;
@@ -187,11 +189,11 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
 
   // Initialize gpu channels
   simple_client_->gpu_channel_manager()->OnMessageReceived(
-      GpuMsg_EstablishChannel(kClientId1, false, false));
+      GpuMsg_EstablishChannel(kClientId1, kClientTracingId1, false, false));
   GpuChannel *channel1 =
       simple_client_->gpu_channel_manager()->LookupChannel(kClientId1);
   simple_client_->gpu_channel_manager()->OnMessageReceived(
-      GpuMsg_EstablishChannel(kClientId2, false, false));
+      GpuMsg_EstablishChannel(kClientId2, kClientTracingId2, false, false));
   GpuChannel *channel2 =
       simple_client_->gpu_channel_manager()->LookupChannel(kClientId2);
   ASSERT_TRUE(channel1 != NULL);
