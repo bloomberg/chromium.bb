@@ -301,4 +301,48 @@ public class UploadTest extends CronetTestBase {
             assertEquals("Native peer destroyed.", e.getMessage());
         }
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testAppendChunkEmptyChunk() throws Exception {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        byteBuffer.put(UPLOAD_DATA.getBytes());
+        byteBuffer.flip();
+
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        ChromiumUrlRequest request = (ChromiumUrlRequest) createRequest(
+                NativeTestServer.getEchoBodyURL(), listener);
+        request.setChunkedUpload("dangerous/crocodile");
+        request.start();
+
+        // Upload one non-empty followed by one empty chunk.
+        request.appendChunk(byteBuffer, false);
+        byteBuffer.position(0);
+        byteBuffer.limit(0);
+        request.appendChunk(byteBuffer, true);
+
+        listener.blockForComplete();
+
+        assertEquals(200, listener.mHttpStatusCode);
+        assertEquals(UPLOAD_DATA, listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testAppendChunkEmptyBody() throws Exception {
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        ChromiumUrlRequest request = (ChromiumUrlRequest) createRequest(
+                NativeTestServer.getEchoBodyURL(), listener);
+        request.setChunkedUpload("dangerous/crocodile");
+        request.start();
+
+        // Upload a single empty chunk.
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(0);
+        request.appendChunk(byteBuffer, true);
+
+        listener.blockForComplete();
+
+        assertEquals(200, listener.mHttpStatusCode);
+        assertEquals("", listener.mResponseAsString);
+    }
 }
