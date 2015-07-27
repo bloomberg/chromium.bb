@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -25,14 +24,15 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
+import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * This class implements the dialog UI for the signin promo.
  */
-public class SigninPromoScreen extends Dialog implements AccountFirstRunView.Listener {
-
+public class SigninPromoScreen
+        extends AlwaysDismissedDialog implements AccountFirstRunView.Listener {
     private AccountFirstRunView mAccountFirstRunView;
     private ProfileDataCache mProfileDataCache;
 

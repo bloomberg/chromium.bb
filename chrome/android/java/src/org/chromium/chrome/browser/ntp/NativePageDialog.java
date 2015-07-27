@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.app.Dialog;
-import android.content.Context;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +16,16 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
+import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 
 /**
  * Displays a NativePage in a full screen dialog instead of like a regular Chrome page.
  */
-public class NativePageDialog extends Dialog {
+public class NativePageDialog extends AlwaysDismissedDialog {
     private final NativePage mPage;
 
-    public NativePageDialog(Context context, NativePage page) {
-        super(context, R.style.DialogWhenLarge);
+    public NativePageDialog(Activity ownerActivity, NativePage page) {
+        super(ownerActivity, R.style.DialogWhenLarge);
         mPage = page;
     }
 
