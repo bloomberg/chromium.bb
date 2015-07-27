@@ -382,13 +382,6 @@ void Shell::DeactivateContents(WebContents* contents) {
   contents->GetRenderViewHost()->Blur();
 }
 
-void Shell::WorkerCrashed(WebContents* source) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
-    return;
-  BlinkTestController::Get()->WorkerCrashed();
-}
-
 bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
   return PlatformHandleContextMenu(params);
 }

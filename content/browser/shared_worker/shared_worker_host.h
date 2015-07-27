@@ -85,7 +85,6 @@ class SharedWorkerHost {
   }
   int process_id() const { return worker_process_id_; }
   int worker_route_id() const { return worker_route_id_; }
-  bool load_failed() const { return load_failed_; }
   bool closed() const { return closed_; }
 
  private:
@@ -128,7 +127,6 @@ class SharedWorkerHost {
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_process_id_;
   int worker_route_id_;
-  bool load_failed_;
   bool closed_;
   const base::TimeTicks creation_time_;
 

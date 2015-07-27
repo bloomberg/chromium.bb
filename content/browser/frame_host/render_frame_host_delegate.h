@@ -61,9 +61,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The RenderFrameHost has been swapped out.
   virtual void SwappedOut(RenderFrameHost* render_frame_host) {}
 
-  // Notification that a worker process has crashed.
-  virtual void WorkerCrashed(RenderFrameHost* render_frame_host) {}
-
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,

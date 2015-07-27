@@ -12282,9 +12282,6 @@ I don't think this site should be blocked!
       <message name="IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT" desc="Info Bar message to notify that we couldn't load a plugin">
         Could not load <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex>.</ph>
       </message>
-      <message name="IDS_WEBWORKER_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed WebWorker">
-        A part of this page (HTML WebWorker) has crashed, so it might not function correctly.
-      </message>
 
       <!-- External Protocol Dialog -->
       <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">

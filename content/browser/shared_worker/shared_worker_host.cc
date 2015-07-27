@@ -6,8 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
-#include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
@@ -23,14 +21,6 @@
 
 namespace content {
 namespace {
-
-// Notifies RenderViewHost that one or more worker objects crashed.
-void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
-  RenderFrameHostImpl* host =
-      RenderFrameHostImpl::FromID(render_process_unique_id, render_frame_id);
-  if (host)
-    host->delegate()->WorkerCrashed(host);
-}
 
 void NotifyWorkerReadyForInspection(int worker_process_id,
                                     int worker_route_id) {
@@ -68,7 +58,6 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
       container_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
       worker_route_id_(worker_route_id),
-      load_failed_(false),
       closed_(false),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
@@ -79,21 +68,6 @@ SharedWorkerHost::~SharedWorkerHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
                            base::TimeTicks::Now() - creation_time_);
-  // If we crashed, tell the RenderViewHosts.
-  if (instance_ && !load_failed_) {
-    const WorkerDocumentSet::DocumentInfoSet& parents =
-        worker_document_set_->documents();
-    for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
-             parents.begin();
-         parent_iter != parents.end();
-         ++parent_iter) {
-      BrowserThread::PostTask(BrowserThread::UI,
-                              FROM_HERE,
-                              base::Bind(&WorkerCrashCallback,
-                                         parent_iter->render_process_id(),
-                                         parent_iter->render_frame_id()));
-    }
-  }
   if (!closed_)
     NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
   SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
@@ -191,7 +165,6 @@ void SharedWorkerHost::WorkerScriptLoadFailed() {
                       base::TimeTicks::Now() - creation_time_);
   if (!instance_)
     return;
-  load_failed_ = true;
   for (FilterList::const_iterator i = filters_.begin(); i != filters_.end();
        ++i) {
     i->filter()->Send(new ViewMsg_WorkerScriptLoadFailed(i->route_id()));

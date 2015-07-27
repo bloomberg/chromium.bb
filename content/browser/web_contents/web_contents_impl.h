@@ -387,7 +387,6 @@ class CONTENT_EXPORT WebContentsImpl
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void SwappedOut(RenderFrameHost* render_frame_host) override;
-  void WorkerCrashed(RenderFrameHost* render_frame_host) override;
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override;
   void RunJavaScriptMessage(RenderFrameHost* render_frame_host,

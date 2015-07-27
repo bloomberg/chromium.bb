@@ -158,7 +158,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/search/search.h"
 #include "components/sessions/session_types.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
@@ -1690,13 +1689,6 @@ void Browser::RendererUnresponsive(WebContents* source) {
 
 void Browser::RendererResponsive(WebContents* source) {
   TabDialogs::FromWebContents(source)->HideHungRendererDialog();
-}
-
-void Browser::WorkerCrashed(WebContents* source) {
-  SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(source),
-      infobars::InfoBarDelegate::kNoIconID,
-      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true);
 }
 
 void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {

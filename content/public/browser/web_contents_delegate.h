@@ -314,9 +314,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Notification that the tab is no longer hung.
   virtual void RendererResponsive(WebContents* source) {}
 
-  // Notification that a worker associated with this tab has crashed.
-  virtual void WorkerCrashed(WebContents* source) {}
-
   // Invoked when a main fram navigation occurs.
   virtual void DidNavigateMainFramePostCommit(WebContents* source) {}
 

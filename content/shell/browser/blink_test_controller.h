@@ -119,7 +119,6 @@ class BlinkTestController : public base::NonThreadSafe,
 
   void SetTempPath(const base::FilePath& temp_path);
   void RendererUnresponsive();
-  void WorkerCrashed();
   void OverrideWebkitPrefs(WebPreferences* prefs);
   void OpenURL(const GURL& url);
   void TestFinishedInSecondaryWindow();

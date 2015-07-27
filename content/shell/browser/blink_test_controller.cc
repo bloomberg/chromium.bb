@@ -326,12 +326,6 @@ void BlinkTestController::RendererUnresponsive() {
   LOG(WARNING) << "renderer unresponsive";
 }
 
-void BlinkTestController::WorkerCrashed() {
-  DCHECK(CalledOnValidThread());
-  printer_->AddErrorMessage("#CRASHED - worker");
-  DiscardMainWindow();
-}
-
 void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   if (should_override_prefs_) {
     *prefs = prefs_;
