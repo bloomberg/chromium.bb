@@ -42,6 +42,7 @@ class TracingHandler {
                  const double* buffer_usage_reporting_interval);
   Response End(DevToolsCommandId command_id);
   Response GetCategories(DevToolsCommandId command);
+  Response RequestMemoryDump(DevToolsCommandId command_id);
   bool did_initiate_recording() { return did_initiate_recording_; }
 
  private:

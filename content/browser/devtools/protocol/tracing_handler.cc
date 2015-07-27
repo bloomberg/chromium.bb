@@ -153,6 +153,10 @@ void TracingHandler::OnCategoriesReceived(
       GetCategoriesResponse::Create()->set_categories(categories));
 }
 
+Response TracingHandler::RequestMemoryDump(DevToolsCommandId command_id) {
+  return Response::InternalError("Not implemented");
+}
+
 void TracingHandler::SetupTimer(double usage_reporting_interval) {
   if (usage_reporting_interval == 0) return;
 
