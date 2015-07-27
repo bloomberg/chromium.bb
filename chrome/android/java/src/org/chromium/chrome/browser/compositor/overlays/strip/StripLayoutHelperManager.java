@@ -340,6 +340,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
      */
     public void click(long time, float x, float y) {
         if (mModelSelectorButton.click(x, y) && mTabModelSelector != null) {
+            getActiveStripLayoutHelper().finishAnimation();
+            if (!mModelSelectorButton.isVisible()) return;
             mTabModelSelector.selectModel(!mTabModelSelector.isIncognitoSelected());
             return;
         }
