@@ -5743,15 +5743,6 @@
                 ],
               },
             }],
-            ['clang==1 and target_arch=="ia32" and asan==1', {
-              # TODO(thakis): Remove this block once llvm.org/PR24167 is fixed.
-              'VCCLCompilerTool': {
-                'WarnAsError': 'false',
-                'AdditionalOptions': [
-                  '/fallback',
-                ],
-              },
-            }],
             ['clang==1 and clang_use_chrome_plugins==1', {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [

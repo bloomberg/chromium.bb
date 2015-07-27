@@ -130,10 +130,6 @@ config("compiler") {
         cflags += [ "-m64" ]
       }
 
-      # TODO(thakis): Remove this once llvm.org/PR24167 is fixed.
-      if (is_asan) {
-        cflags += [ "/fallback" ]
-      }
       if (exec_script("//build/win/use_ansi_codes.py", [], "trim string") ==
           "True") {
         cflags += [
@@ -715,12 +711,10 @@ config("runtime_library") {
 default_warning_flags = []
 default_warning_flags_cc = []
 if (is_win) {
-  # TODO(thakis): Make this unconditional once llvm.org/PR24167 is fixed.
-  if (!is_clang || !is_asan) {
-    default_warning_flags += [ "/WX" ]  # Treat warnings as errors.
-  }
-
   default_warning_flags += [
+    # Treat warnings as errors.
+    "/WX",
+
     # Warnings permanently disabled:
 
     # TODO(GYP) The GYP build doesn't have this globally enabled but disabled
