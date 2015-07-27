@@ -11,3 +11,7 @@ function addSavePasswordProgressLog(logText) {
   textDiv.innerText = logText;
   logDiv.appendChild(textDiv);
 }
+
+function notifyAboutIncognito(isIncognito) {
+  document.body.dataset.incognito = isIncognito;
+}

@@ -25,9 +25,12 @@ class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
  protected:
   content::WebContents* GetWebContents();
 
-  // Navigates to the internals page in a tab specified by |disposition|. Also
-  // assigns the corresponding UI controller to |controller_|.
+  // Navigates to the internals page in a tab specified by |disposition| (and
+  // optionally, by |browser|). Also assigns the corresponding UI controller to
+  // |controller_|.
   void OpenInternalsPage(WindowOpenDisposition disposition);
+  void OpenInternalsPageWithBrowser(Browser* browser,
+                                    WindowOpenDisposition disposition);
 
  private:
   PasswordManagerInternalsUI* controller_;
@@ -54,10 +57,16 @@ PasswordManagerInternalsWebUIBrowserTest::GetWebContents() {
 
 void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPage(
     WindowOpenDisposition disposition) {
+  OpenInternalsPageWithBrowser(browser(), disposition);
+}
+
+void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPageWithBrowser(
+    Browser* browser,
+    WindowOpenDisposition disposition) {
   std::string url_string("chrome://");
   url_string += chrome::kChromeUIPasswordManagerInternalsHost;
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
+      browser,
       GURL(url_string),
       disposition,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -144,4 +153,28 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   ASSERT_TRUE(service);
   service->ProcessLog("<script> text for testing");
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+}
+
+// Test that the description is correct in a non-Incognito tab.
+IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
+                       NonIncognitoMessage) {
+  password_manager::PasswordManagerInternalsService* service =
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(browser()->profile());
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(RunJavascriptTest("testNonIncognitoDescription"));
+}
+
+// Test that the description is correct in an Incognito tab.
+IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
+                       IncognitoMessage) {
+  Browser* incognito = CreateIncognitoBrowser();
+  password_manager::PasswordManagerInternalsService* service =
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(incognito->profile()->GetOffTheRecordProfile());
+  EXPECT_FALSE(service);  // There should be no service for Incognito.
+  OpenInternalsPageWithBrowser(incognito, CURRENT_TAB);
+  SetWebUIInstance(
+      incognito->tab_strip_model()->GetActiveWebContents()->GetWebUI());
+  ASSERT_TRUE(RunJavascriptTest("testIncognitoDescription"));
 }
