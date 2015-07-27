@@ -1089,7 +1089,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       DISABLED_FetchEvent_respondWithRejection) {
+                       FetchEvent_respondWithRejection) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
@@ -1101,11 +1101,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   version_->embedded_worker()->AddListener(&console_listener);
 
   FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
-  const base::string16 expected =
-      base::ASCIIToUTF16("Rejecting respondWith promise");
-  console_listener.WaitForConsoleMessages(1);
+  const base::string16 expected1 = base::ASCIIToUTF16(
+      "resulted in a network error response: the promise was rejected.");
+  const base::string16 expected2 =
+      base::ASCIIToUTF16("Uncaught (in promise) Rejecting respondWith promise");
+  console_listener.WaitForConsoleMessages(2);
   ASSERT_NE(base::string16::npos,
-            console_listener.messages()[0].find(expected));
+            console_listener.messages()[0].find(expected1));
+  ASSERT_EQ(0u, console_listener.messages()[1].find(expected2));
   version_->embedded_worker()->RemoveListener(&console_listener);
 
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
