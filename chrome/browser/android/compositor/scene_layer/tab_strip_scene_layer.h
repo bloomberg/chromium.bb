@@ -26,6 +26,8 @@ namespace android {
 class LayerTitleCache;
 class TabHandleLayer;
 
+// A scene layer to draw one or more tab strips. Note that content tree can be
+// added as a subtree.
 class TabStripSceneLayer : public SceneLayer {
  public:
   TabStripSceneLayer(JNIEnv* env, jobject jobj);
@@ -33,7 +35,7 @@ class TabStripSceneLayer : public SceneLayer {
 
   void SetContentTree(JNIEnv* env, jobject jobj, jobject jcontent_tree);
 
-  void BeginBuildingFrame(JNIEnv* env, jobject jobj);
+  void BeginBuildingFrame(JNIEnv* env, jobject jobj, jboolean visible);
   void FinishBuildingFrame(JNIEnv* env, jobject jobj);
 
   void UpdateTabStripLayer(JNIEnv* env,
@@ -86,7 +88,7 @@ class TabStripSceneLayer : public SceneLayer {
 
   typedef std::vector<scoped_refptr<TabHandleLayer>> TabHandleLayerList;
 
-  scoped_refptr<cc::SolidColorLayer> background_layer_;
+  scoped_refptr<cc::SolidColorLayer> tab_strip_layer_;
   scoped_refptr<cc::UIResourceLayer> new_tab_button_;
   scoped_refptr<cc::UIResourceLayer> model_selector_button_;
 

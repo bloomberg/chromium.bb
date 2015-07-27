@@ -17,7 +17,7 @@ namespace android {
 
 TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
     : SceneLayer(env, jobj),
-      background_layer_(
+      tab_strip_layer_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       new_tab_button_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
@@ -26,13 +26,13 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
       strip_brightness_(1.f),
       write_index_(0),
       content_tree_(nullptr) {
-  background_layer_->SetBackgroundColor(SK_ColorBLACK);
-  background_layer_->SetIsDrawable(true);
   new_tab_button_->SetIsDrawable(true);
   model_selector_button_->SetIsDrawable(true);
-  layer()->AddChild(background_layer_);
-  layer()->AddChild(new_tab_button_);
-  layer()->AddChild(model_selector_button_);
+  tab_strip_layer_->SetBackgroundColor(SK_ColorBLACK);
+  tab_strip_layer_->SetIsDrawable(true);
+  tab_strip_layer_->AddChild(new_tab_button_);
+  tab_strip_layer_->AddChild(model_selector_button_);
+  layer()->AddChild(tab_strip_layer_);
 }
 
 TabStripSceneLayer::~TabStripSceneLayer() {
@@ -59,11 +59,17 @@ void TabStripSceneLayer::SetContentTree(JNIEnv* env,
   }
 }
 
-void TabStripSceneLayer::BeginBuildingFrame(JNIEnv* env, jobject jobj) {
+void TabStripSceneLayer::BeginBuildingFrame(JNIEnv* env,
+                                            jobject jobj,
+                                            jboolean visible) {
   write_index_ = 0;
+  tab_strip_layer_->SetHideLayerAndSubtree(!visible);
 }
 
 void TabStripSceneLayer::FinishBuildingFrame(JNIEnv* env, jobject jobj) {
+  if (tab_strip_layer_->hide_layer_and_subtree())
+    return;
+
   for (unsigned i = write_index_; i < tab_handle_layers_.size(); ++i)
     tab_handle_layers_[i]->layer()->RemoveFromParent();
 
@@ -80,7 +86,9 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
   strip_brightness_ = strip_brightness;
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
-  background_layer_->SetBounds(gfx::Size(width, height));
+  tab_strip_layer_->SetBounds(gfx::Size(width, height));
+
+  // Content tree should not be affected by tab strip scene layer visibility.
   if (content_tree_)
     content_tree_->layer()->SetPosition(gfx::PointF(0, -y_offset));
 }
@@ -176,7 +184,7 @@ scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(
   scoped_refptr<TabHandleLayer> layer_tree =
       TabHandleLayer::Create(layer_title_cache);
   tab_handle_layers_.push_back(layer_tree);
-  this->layer()->AddChild(layer_tree->layer());
+  tab_strip_layer_->AddChild(layer_tree->layer());
   write_index_++;
   return layer_tree;
 }
