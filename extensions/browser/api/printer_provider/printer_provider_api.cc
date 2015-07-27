@@ -287,7 +287,8 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
   bool WillRequestPrinters(int request_id,
                            content::BrowserContext* browser_context,
                            const Extension* extension,
-                           base::ListValue* args);
+                           base::ListValue* args,
+                           const base::DictionaryValue* listener_filter);
 
   content::BrowserContext* browser_context_;
 
@@ -741,7 +742,8 @@ bool PrinterProviderAPIImpl::WillRequestPrinters(
     int request_id,
     content::BrowserContext* browser_context,
     const Extension* extension,
-    base::ListValue* args) {
+    base::ListValue* args,
+    const base::DictionaryValue* listener_filter) {
   if (!extension)
     return false;
   EventRouter* event_router = EventRouter::Get(browser_context_);

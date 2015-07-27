@@ -102,11 +102,13 @@ void WindowsEventRouter::Observe(
 #endif
 }
 
-static bool WillDispatchWindowFocusedEvent(BrowserContext* new_active_context,
-                                           int window_id,
-                                           BrowserContext* context,
-                                           const Extension* extension,
-                                           base::ListValue* event_args) {
+static bool WillDispatchWindowFocusedEvent(
+    BrowserContext* new_active_context,
+    int window_id,
+    BrowserContext* context,
+    const Extension* extension,
+    base::ListValue* event_args,
+    const base::DictionaryValue* listener_filter) {
   // When switching between windows in the default and incognito profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.

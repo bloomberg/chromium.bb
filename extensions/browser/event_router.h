@@ -241,14 +241,16 @@ class EventRouter : public KeyedService,
   // event dispatch that is queued.
   void DispatchLazyEvent(const std::string& extension_id,
                          const linked_ptr<Event>& event,
-                         std::set<EventDispatchIdentifier>* already_dispatched);
+                         std::set<EventDispatchIdentifier>* already_dispatched,
+                         const base::DictionaryValue* listener_filter);
 
   // Dispatches the event to the specified extension or URL running in
   // |process|.
   void DispatchEventToProcess(const std::string& extension_id,
                               const GURL& listener_url,
                               content::RenderProcessHost* process,
-                              const linked_ptr<Event>& event);
+                              const linked_ptr<Event>& event,
+                              const base::DictionaryValue* listener_filter);
 
   // Returns false when the event is scoped to a context and the listening
   // extension does not have access to events from that context. Also fills
@@ -264,7 +266,8 @@ class EventRouter : public KeyedService,
   bool MaybeLoadLazyBackgroundPageToDispatchEvent(
       content::BrowserContext* context,
       const Extension* extension,
-      const linked_ptr<Event>& event);
+      const linked_ptr<Event>& event,
+      const base::DictionaryValue* listener_filter);
 
   // Adds a filter to an event.
   void AddFilterToEvent(const std::string& event_name,
@@ -334,7 +337,9 @@ struct Event {
   // given context and extension, and false otherwise.
   typedef base::Callback<bool(content::BrowserContext*,
                               const Extension*,
-                              base::ListValue*)> WillDispatchCallback;
+                              base::ListValue*,
+                              const base::DictionaryValue*)>
+      WillDispatchCallback;
 
   // The identifier for the event, for histograms. In most cases this
   // correlates 1:1 with |event_name|, in some cases events will generate

@@ -46,7 +46,8 @@ bool WillDispatchTabUpdatedEvent(
     const base::DictionaryValue* changed_properties,
     content::BrowserContext* context,
     const Extension* extension,
-    base::ListValue* event_args) {
+    base::ListValue* event_args,
+    const base::DictionaryValue* listener_filter) {
   // Overwrite the second argument with the appropriate properties dictionary,
   // depending on extension permissions.
   base::DictionaryValue* properties_value = changed_properties->DeepCopy();
@@ -205,11 +206,13 @@ void TabsEventRouter::OnBrowserSetLastActive(Browser* browser) {
   }
 }
 
-static bool WillDispatchTabCreatedEvent(WebContents* contents,
-                                        bool active,
-                                        content::BrowserContext* context,
-                                        const Extension* extension,
-                                        base::ListValue* event_args) {
+static bool WillDispatchTabCreatedEvent(
+    WebContents* contents,
+    bool active,
+    content::BrowserContext* context,
+    const Extension* extension,
+    base::ListValue* event_args,
+    const base::DictionaryValue* listener_filter) {
   base::DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
       contents, extension);
   event_args->Clear();

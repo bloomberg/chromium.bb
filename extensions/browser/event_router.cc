@@ -506,7 +506,8 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     if (restrict_to_extension_id.empty() ||
         restrict_to_extension_id == listener->extension_id()) {
       if (listener->IsLazy()) {
-        DispatchLazyEvent(listener->extension_id(), event, &already_dispatched);
+        DispatchLazyEvent(listener->extension_id(), event, &already_dispatched,
+                          listener->filter());
       }
     }
   }
@@ -521,9 +522,8 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
                                             listener->extension_id());
         if (!ContainsKey(already_dispatched, dispatch_id)) {
           DispatchEventToProcess(listener->extension_id(),
-                                 listener->listener_url(),
-                                 listener->process(),
-                                 event);
+                                 listener->listener_url(), listener->process(),
+                                 event, listener->filter());
         }
       }
     }
@@ -533,7 +533,8 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
 void EventRouter::DispatchLazyEvent(
     const std::string& extension_id,
     const linked_ptr<Event>& event,
-    std::set<EventDispatchIdentifier>* already_dispatched) {
+    std::set<EventDispatchIdentifier>* already_dispatched,
+    const base::DictionaryValue* listener_filter) {
   // Check both the original and the incognito browser context to see if we
   // should load a lazy bg page to handle the event. The latter case
   // occurs in the case of split-mode extensions.
@@ -543,8 +544,8 @@ void EventRouter::DispatchLazyEvent(
   if (!extension)
     return;
 
-  if (MaybeLoadLazyBackgroundPageToDispatchEvent(
-          browser_context_, extension, event)) {
+  if (MaybeLoadLazyBackgroundPageToDispatchEvent(browser_context_, extension,
+                                                 event, listener_filter)) {
     already_dispatched->insert(std::make_pair(browser_context_, extension_id));
   }
 
@@ -553,18 +554,20 @@ void EventRouter::DispatchLazyEvent(
       IncognitoInfo::IsSplitMode(extension)) {
     BrowserContext* incognito_context =
         browser_client->GetOffTheRecordContext(browser_context_);
-    if (MaybeLoadLazyBackgroundPageToDispatchEvent(
-            incognito_context, extension, event)) {
+    if (MaybeLoadLazyBackgroundPageToDispatchEvent(incognito_context, extension,
+                                                   event, listener_filter)) {
       already_dispatched->insert(
           std::make_pair(incognito_context, extension_id));
     }
   }
 }
 
-void EventRouter::DispatchEventToProcess(const std::string& extension_id,
-                                         const GURL& listener_url,
-                                         content::RenderProcessHost* process,
-                                         const linked_ptr<Event>& event) {
+void EventRouter::DispatchEventToProcess(
+    const std::string& extension_id,
+    const GURL& listener_url,
+    content::RenderProcessHost* process,
+    const linked_ptr<Event>& event,
+    const base::DictionaryValue* listener_filter) {
   BrowserContext* listener_context = process->GetBrowserContext();
   ProcessMap* process_map = ProcessMap::Get(listener_context);
 
@@ -623,7 +626,8 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
 
   if (!event->will_dispatch_callback.is_null() &&
       !event->will_dispatch_callback.Run(listener_context, extension,
-                                         event->event_args.get())) {
+                                         event->event_args.get(),
+                                         listener_filter)) {
     return;
   }
 
@@ -655,7 +659,8 @@ bool EventRouter::CanDispatchEventToBrowserContext(
 bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     BrowserContext* context,
     const Extension* extension,
-    const linked_ptr<Event>& event) {
+    const linked_ptr<Event>& event,
+    const base::DictionaryValue* listener_filter) {
   if (!CanDispatchEventToBrowserContext(context, extension, event))
     return false;
 
@@ -669,7 +674,8 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     if (!event->will_dispatch_callback.is_null()) {
       dispatched_event.reset(event->DeepCopy());
       if (!dispatched_event->will_dispatch_callback.Run(
-              context, extension, dispatched_event->event_args.get())) {
+              context, extension, dispatched_event->event_args.get(),
+              listener_filter)) {
         // The event has been canceled.
         return true;
       }
@@ -749,8 +755,8 @@ void EventRouter::DispatchPendingEvent(const linked_ptr<Event>& event,
   if (listeners_.HasProcessListener(host->render_process_host(),
                                     host->extension()->id())) {
     // URL events cannot be lazy therefore can't be pending, hence the GURL().
-    DispatchEventToProcess(
-        host->extension()->id(), GURL(), host->render_process_host(), event);
+    DispatchEventToProcess(host->extension()->id(), GURL(),
+                           host->render_process_host(), event, nullptr);
   }
 }
 
