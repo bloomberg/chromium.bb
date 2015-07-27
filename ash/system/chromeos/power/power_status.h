@@ -5,6 +5,9 @@
 #ifndef ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_H_
 #define ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_H_
 
+#include <string>
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/observer_list.h"
@@ -36,6 +39,45 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
 
    protected:
     virtual ~Observer() {}
+  };
+
+  // Power source types.
+  enum DeviceType {
+    // Dedicated charger (AC adapter, USB power supply, etc.).
+    DEDICATED_CHARGER,
+
+    // Dual-role device.
+    DUAL_ROLE_USB,
+  };
+
+  // Port locations.
+  enum Port {
+    // Unknown, or the only port.
+    UNKNOWN_PORT,
+    LEFT_PORT,
+    RIGHT_PORT,
+    BACK_PORT,
+    FRONT_PORT,
+
+    // First word takes precedence, e.g. "frontmost port on the left side".
+    LEFT_FRONT_PORT,
+    LEFT_BACK_PORT,
+    RIGHT_FRONT_PORT,
+    RIGHT_BACK_PORT,
+    BACK_LEFT_PORT,
+    BACK_RIGHT_PORT,
+  };
+
+  // Information about an available power source.
+  struct PowerSource {
+    // ID provided by kernel.
+    std::string id;
+
+    // Type of power source.
+    DeviceType type;
+
+    // Location of the port used.
+    Port port;
   };
 
   // Maximum battery time-to-full or time-to-empty that should be displayed
@@ -74,6 +116,9 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
 
   // Requests updated status from the power manager.
   void RequestStatusUpdate();
+
+  // Changes the power source to the source with the given ID.
+  void SetPowerSource(const std::string& id);
 
   // Returns true if a battery is present.
   bool IsBatteryPresent() const;
@@ -125,6 +170,16 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Returns true if the system allows some connected devices to function as
   // either power sources or sinks.
   bool SupportsDualRoleDevices() const;
+
+  // Returns true if at least one dual-role device is connected.
+  bool HasDualRoleDevices() const;
+
+  // Returns a list of available power sources which the user may select.
+  std::vector<PowerSource> GetPowerSources() const;
+
+  // Returns the ID of the currently used power source, or an empty string if no
+  // power source is selected.
+  std::string GetCurrentPowerSourceID() const;
 
   // Returns the image that should be shown for the battery's current state.
   gfx::ImageSkia GetBatteryImage(IconSet icon_set) const;

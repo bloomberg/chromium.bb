@@ -227,6 +227,17 @@ class PowerManagerClientImpl : public PowerManagerClient {
     last_is_projecting_ = is_projecting;
   }
 
+  void SetPowerSource(const std::string& id) override {
+    POWER_LOG(USER) << "SetPowerSource: " << id;
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kSetPowerSourceMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(id);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
   base::Closure GetSuspendReadinessCallback() override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);

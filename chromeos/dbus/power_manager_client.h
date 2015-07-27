@@ -176,6 +176,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // video outputs attached.
   virtual void SetIsProjecting(bool is_projecting) = 0;
 
+  // Tells powerd to change the power source to the given ID. An empty string
+  // causes powerd to switch to using the battery on devices with type-C ports.
+  virtual void SetPowerSource(const std::string& id) = 0;
+
   // Returns a callback that can be called by an observer to report
   // readiness for suspend.  See Observer::SuspendImminent().
   virtual base::Closure GetSuspendReadinessCallback() = 0;

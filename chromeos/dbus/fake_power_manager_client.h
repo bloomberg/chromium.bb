@@ -59,6 +59,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void NotifyVideoActivity(bool is_fullscreen) override;
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override;
   void SetIsProjecting(bool is_projecting) override;
+  void SetPowerSource(const std::string& id) override;
   base::Closure GetSuspendReadinessCallback() override;
   int GetNumPendingSuspendReadinessCallbacks() override;
 

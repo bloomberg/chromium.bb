@@ -111,6 +111,8 @@ void FakePowerManagerClient::SetIsProjecting(bool is_projecting) {
   is_projecting_ = is_projecting;
 }
 
+void FakePowerManagerClient::SetPowerSource(const std::string& id) {}
+
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
   ++num_pending_suspend_readiness_callbacks_;
 
