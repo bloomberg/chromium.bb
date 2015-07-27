@@ -22,10 +22,11 @@ cr.define('media_router', function() {
    *   C++ MediaCastMode.
    * @param {string} title The title of the cast mode.
    * @param {string} description The description of the cast mode.
+   * @param {string} host The hostname of the site to cast.
    * @constructor
    * @struct
    */
-  var CastMode = function(type, title, description) {
+  var CastMode = function(type, title, description, host) {
     /** @type {number} */
     this.type = type;
 
@@ -34,6 +35,9 @@ cr.define('media_router', function() {
 
     /** @type {string} */
     this.description = description;
+
+    /** @type {string} */
+    this.host = host || null;
   };
 
 

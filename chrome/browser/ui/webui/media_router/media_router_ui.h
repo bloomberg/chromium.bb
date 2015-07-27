@@ -108,6 +108,11 @@ class MediaRouterUI
   // initially loaded. The header text is determined by the preferred cast mode.
   std::string GetInitialHeaderText() const;
 
+  // Returns the tooltip text for the header that should be displayed
+  // in the UI when it is initially loaded. At present, this text is
+  // just the full hostname of the current site.
+  std::string GetInitialHeaderTextTooltip() const;
+
   // Returns the hostname of the default source's parent frame URL.
   std::string GetFrameURLHost() const;
   bool has_pending_route_request() const { return has_pending_route_request_; }

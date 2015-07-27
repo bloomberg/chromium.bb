@@ -7,15 +7,34 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
+
+namespace {
+
+std::string TruncateHostToRegisteredDomain(const std::string& host) {
+  const std::string truncated =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          host,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  // The truncation will be empty in some scenarios (e.g. host is
+  // simply an IP address). Fail gracefully.
+  if (truncated.empty()) {
+    return host;
+  }
+  return truncated;
+}
+
+}  // namespace
 
 std::string MediaCastModeToTitle(MediaCastMode mode, const std::string& host) {
   switch (mode) {
     case MediaCastMode::DEFAULT:
       return l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE_TITLE, base::UTF8ToUTF16(host));
+          IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE_TITLE,
+          base::UTF8ToUTF16(TruncateHostToRegisteredDomain(host)));
     case MediaCastMode::TAB_MIRROR:
       return l10n_util::GetStringUTF8(
           IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE_TITLE);
@@ -33,7 +52,8 @@ std::string MediaCastModeToDescription(
   switch (mode) {
     case MediaCastMode::DEFAULT:
       return l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE, base::UTF8ToUTF16(host));
+          IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE,
+          base::UTF8ToUTF16(TruncateHostToRegisteredDomain(host)));
     case MediaCastMode::TAB_MIRROR:
       return l10n_util::GetStringUTF8(
           IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE);

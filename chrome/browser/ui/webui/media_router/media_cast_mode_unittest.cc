@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::Not;
+using testing::HasSubstr;
 
 namespace media_router {
 
@@ -50,6 +55,39 @@ TEST(MediaCastModeTest, IsValidCastModeNum) {
   }
   EXPECT_FALSE(IsValidCastModeNum(MediaCastMode::NUM_CAST_MODES));
   EXPECT_FALSE(IsValidCastModeNum(-1));
+}
+
+TEST(MediaCastModeTest, ProperlyTruncatesHostnames) {
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.com"),
+      Not(HasSubstr("www")));
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.com"),
+      HasSubstr("kurtisawesome.com"));
+
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.co.uk"),
+      Not(HasSubstr("www")));
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT, "www.kurtisawesome.co.uk"),
+      HasSubstr("kurtisawesome.co.uk"));
+
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT,
+          "www.my.kurtisawesome.qld.edu.au"),
+      Not(HasSubstr("www")));
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT,
+          "www.my.kurtisawesome.qld.edu.au"),
+      Not(HasSubstr("www")));
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT,
+          "www.my.kurtisawesome.qld.edu.au"),
+      HasSubstr("kurtisawesome.qld.edu.au"));
+
+  EXPECT_THAT(
+      MediaCastModeToTitle(MediaCastMode::DEFAULT, "192.168.0.1"),
+      HasSubstr("192.168.0.1"));
 }
 
 }  // namespace media_router

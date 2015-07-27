@@ -88,6 +88,7 @@ scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
     cast_mode_val->SetInteger("type", cast_mode);
     cast_mode_val->SetString("title",
                              MediaCastModeToTitle(cast_mode, source_host));
+    cast_mode_val->SetString("host", source_host);
     cast_mode_val->SetString(
         "description", MediaCastModeToDescription(cast_mode, source_host));
     value->Append(cast_mode_val.release());
@@ -218,6 +219,8 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   base::DictionaryValue initial_data;
 
   initial_data.SetString("headerText", media_router_ui->GetInitialHeaderText());
+  initial_data.SetString("headerTextTooltip",
+      media_router_ui->GetInitialHeaderTextTooltip());
 
   scoped_ptr<base::ListValue> sinks(SinksToValue(media_router_ui->sinks()));
   initial_data.Set("sinks", sinks.release());
@@ -355,4 +358,3 @@ MediaRouterUI* MediaRouterWebUIMessageHandler::GetMediaRouterUI() {
 }
 
 }  // namespace media_router
-

@@ -252,6 +252,13 @@ std::string MediaRouterUI::GetInitialHeaderText() const {
                                     GetHostFromURL(frame_url_));
 }
 
+std::string MediaRouterUI::GetInitialHeaderTextTooltip() const {
+  if (cast_modes_.empty())
+    return std::string();
+
+  return GetHostFromURL(frame_url_);
+}
+
 void MediaRouterUI::OnResultsUpdated(
     const std::vector<MediaSinkWithCastModes>& sinks) {
   sinks_ = sinks;

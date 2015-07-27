@@ -74,6 +74,16 @@ Polymer({
     },
 
     /**
+     * The header text tooltip. This would be descriptive of the
+     * source origin, whether a host name, tab URL, etc.
+     * @type {string}
+     */
+    headerTextTooltip: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The issue to show.
      * @type {?media_router.Issue}
      */
@@ -339,8 +349,8 @@ Polymer({
   },
 
   /**
-   * Handles a cast mode selection. Updates |headerText| and
-   * |selectedCastModeValue_|.
+   * Handles a cast mode selection. Updates |headerText|, |headerTextTooltip|,
+   * and |selectedCastModeValue_|.
    *
    * @param {!Event} event The event object.
    * @private
@@ -348,6 +358,7 @@ Polymer({
   onCastModeClick_: function(event) {
     var clickedMode = this.$.castModeList.itemForElement(event.target);
     this.headerText = clickedMode.description;
+    this.headerTextTooltip = clickedMode.host;
     this.selectedCastModeValue_ = clickedMode.type;
   },
 
