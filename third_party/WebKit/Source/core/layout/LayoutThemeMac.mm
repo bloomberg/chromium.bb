@@ -928,7 +928,7 @@ void LayoutThemeMac::setSearchFieldSize(ComputedStyle& style) const
 }
 
 const int searchFieldBorderWidth = 2;
-void LayoutThemeMac::adjustSearchFieldStyle(ComputedStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldStyle(ComputedStyle& style) const
 {
     // Override border.
     style.resetBorder();
@@ -967,7 +967,7 @@ const IntSize* LayoutThemeMac::cancelButtonSizes() const
     return sizes;
 }
 
-void LayoutThemeMac::adjustSearchFieldCancelButtonStyle(ComputedStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldCancelButtonStyle(ComputedStyle& style) const
 {
     IntSize size = sizeForSystemFont(style, cancelButtonSizes());
     style.setWidth(Length(size.width(), Fixed));
@@ -981,7 +981,7 @@ const IntSize* LayoutThemeMac::resultsButtonSizes() const
     return sizes;
 }
 
-void LayoutThemeMac::adjustSearchFieldDecorationStyle(ComputedStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldDecorationStyle(ComputedStyle& style) const
 {
     NSControlSize controlSize = controlSizeForSystemFont(style);
     IntSize searchFieldSize = searchFieldSizes()[controlSize];
@@ -991,7 +991,7 @@ void LayoutThemeMac::adjustSearchFieldDecorationStyle(ComputedStyle& style, Elem
     style.setBoxShadow(nullptr);
 }
 
-void LayoutThemeMac::adjustSearchFieldResultsDecorationStyle(ComputedStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldResultsDecorationStyle(ComputedStyle& style) const
 {
     IntSize size = sizeForSystemFont(style, resultsButtonSizes());
     style.setWidth(Length(size.width(), Fixed));
@@ -1009,7 +1009,7 @@ int LayoutThemeMac::sliderTickOffsetFromTrackCenter() const
     return -9;
 }
 
-void LayoutThemeMac::adjustSliderThumbSize(ComputedStyle& style, Element*) const
+void LayoutThemeMac::adjustSliderThumbSize(ComputedStyle& style) const
 {
     float zoomLevel = style.effectiveZoom();
     if (style.appearance() == SliderThumbHorizontalPart || style.appearance() == SliderThumbVerticalPart) {

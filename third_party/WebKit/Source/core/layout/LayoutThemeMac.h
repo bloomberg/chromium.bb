@@ -59,7 +59,7 @@ public:
 
     int minimumMenuListSize(const ComputedStyle&) const override;
 
-    void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
+    void adjustSliderThumbSize(ComputedStyle&) const override;
 
     IntSize sliderTickSize() const override;
     int sliderTickOffsetFromTrackCenter() const override;
@@ -92,10 +92,10 @@ protected:
 
     void adjustMenuListStyle(ComputedStyle&, Element*) const override;
     void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldStyle(ComputedStyle&) const override;
+    void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
+    void adjustSearchFieldDecorationStyle(ComputedStyle&) const override;
+    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const override;
 
 public:
     // Constants and methods shared with ThemePainterMac

@@ -59,13 +59,13 @@ public:
 
     IntSize sliderTickSize() const override;
     int sliderTickOffsetFromTrackCenter() const override;
-    void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
+    void adjustSliderThumbSize(ComputedStyle&) const override;
 
     static void setCaretBlinkInterval(double);
 
     void setCheckboxSize(ComputedStyle&) const override;
     void setRadioSize(ComputedStyle&) const override;
-    void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustInnerSpinButtonStyle(ComputedStyle&) const override;
 
     bool popsMenuBySpaceKey() const final { return true; }
     bool popsMenuByReturnKey() const final { return true; }
@@ -91,11 +91,11 @@ public:
 
     int minimumMenuListSize(const ComputedStyle&) const override;
 
-    void adjustButtonStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
+    void adjustButtonStyle(ComputedStyle&) const override;
+    void adjustSearchFieldStyle(ComputedStyle&) const override;
+    void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
+    void adjustSearchFieldDecorationStyle(ComputedStyle&) const override;
+    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const override;
 
     // MenuList refers to an unstyled menulist (meaning a menulist without
     // background-color or border set) and MenuListButton refers to a styled

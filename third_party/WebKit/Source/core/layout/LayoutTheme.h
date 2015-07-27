@@ -138,7 +138,7 @@ public:
 
     virtual int minimumMenuListSize(const ComputedStyle&) const { return 0; }
 
-    virtual void adjustSliderThumbSize(ComputedStyle&, Element*) const;
+    virtual void adjustSliderThumbSize(ComputedStyle&) const;
 
     virtual int popupInternalPaddingLeft(const ComputedStyle&) const { return 0; }
     virtual int popupInternalPaddingRight(const ComputedStyle&) const { return 0; }
@@ -203,26 +203,26 @@ protected:
 
 #if !USE(NEW_THEME)
     // Methods for each appearance value.
-    virtual void adjustCheckboxStyle(ComputedStyle&, Element*) const;
+    virtual void adjustCheckboxStyle(ComputedStyle&) const;
     virtual void setCheckboxSize(ComputedStyle&) const { }
 
-    virtual void adjustRadioStyle(ComputedStyle&, Element*) const;
+    virtual void adjustRadioStyle(ComputedStyle&) const;
     virtual void setRadioSize(ComputedStyle&) const { }
 
-    virtual void adjustButtonStyle(ComputedStyle&, Element*) const;
-    virtual void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const;
+    virtual void adjustButtonStyle(ComputedStyle&) const;
+    virtual void adjustInnerSpinButtonStyle(ComputedStyle&) const;
 #endif
 
     virtual void adjustMenuListStyle(ComputedStyle&, Element*) const;
     virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const;
-    virtual void adjustSliderThumbStyle(ComputedStyle&, Element*) const;
-    virtual void adjustSearchFieldStyle(ComputedStyle&, Element*) const;
-    virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const;
-    virtual void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const;
-    virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const;
-    void adjustStyleUsingFallbackTheme(ComputedStyle&, Element*);
-    void adjustCheckboxStyleUsingFallbackTheme(ComputedStyle&, Element*) const;
-    void adjustRadioStyleUsingFallbackTheme(ComputedStyle&, Element*) const;
+    virtual void adjustSliderThumbStyle(ComputedStyle&) const;
+    virtual void adjustSearchFieldStyle(ComputedStyle&) const;
+    virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const;
+    virtual void adjustSearchFieldDecorationStyle(ComputedStyle&) const;
+    virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const;
+    void adjustStyleUsingFallbackTheme(ComputedStyle&);
+    void adjustCheckboxStyleUsingFallbackTheme(ComputedStyle&) const;
+    void adjustRadioStyleUsingFallbackTheme(ComputedStyle&) const;
 
 public:
     // Methods for state querying

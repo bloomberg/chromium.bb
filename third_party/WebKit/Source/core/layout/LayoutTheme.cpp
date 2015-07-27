@@ -103,7 +103,7 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e, const AuthorStyl
         return;
 
     if (shouldUseFallbackTheme(style)) {
-        adjustStyleUsingFallbackTheme(style, e);
+        adjustStyleUsingFallbackTheme(style);
         return;
     }
 
@@ -190,15 +190,15 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e, const AuthorStyl
     switch (style.appearance()) {
 #if !USE(NEW_THEME)
     case CheckboxPart:
-        return adjustCheckboxStyle(style, e);
+        return adjustCheckboxStyle(style);
     case RadioPart:
-        return adjustRadioStyle(style, e);
+        return adjustRadioStyle(style);
     case PushButtonPart:
     case SquareButtonPart:
     case ButtonPart:
-        return adjustButtonStyle(style, e);
+        return adjustButtonStyle(style);
     case InnerSpinButtonPart:
-        return adjustInnerSpinButtonStyle(style, e);
+        return adjustInnerSpinButtonStyle(style);
 #endif
     case MenulistPart:
         return adjustMenuListStyle(style, e);
@@ -206,15 +206,15 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e, const AuthorStyl
         return adjustMenuListButtonStyle(style, e);
     case SliderThumbHorizontalPart:
     case SliderThumbVerticalPart:
-        return adjustSliderThumbStyle(style, e);
+        return adjustSliderThumbStyle(style);
     case SearchFieldPart:
-        return adjustSearchFieldStyle(style, e);
+        return adjustSearchFieldStyle(style);
     case SearchFieldCancelButtonPart:
-        return adjustSearchFieldCancelButtonStyle(style, e);
+        return adjustSearchFieldCancelButtonStyle(style);
     case SearchFieldDecorationPart:
-        return adjustSearchFieldDecorationStyle(style, e);
+        return adjustSearchFieldDecorationStyle(style);
     case SearchFieldResultsDecorationPart:
-        return adjustSearchFieldResultsDecorationStyle(style, e);
+        return adjustSearchFieldResultsDecorationStyle(style);
     default:
         break;
     }
@@ -562,7 +562,7 @@ bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject* o)
 
 #if !USE(NEW_THEME)
 
-void LayoutTheme::adjustCheckboxStyle(ComputedStyle& style, Element*) const
+void LayoutTheme::adjustCheckboxStyle(ComputedStyle& style) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
     // width/height - honored (WinIE actually scales its control for small widths, but lets it overflow for small heights.)
@@ -577,7 +577,7 @@ void LayoutTheme::adjustCheckboxStyle(ComputedStyle& style, Element*) const
     style.resetBorder();
 }
 
-void LayoutTheme::adjustRadioStyle(ComputedStyle& style, Element*) const
+void LayoutTheme::adjustRadioStyle(ComputedStyle& style) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
     // width/height - honored (WinIE actually scales its control for small widths, but lets it overflow for small heights.)
@@ -592,11 +592,11 @@ void LayoutTheme::adjustRadioStyle(ComputedStyle& style, Element*) const
     style.resetBorder();
 }
 
-void LayoutTheme::adjustButtonStyle(ComputedStyle& style, Element*) const
+void LayoutTheme::adjustButtonStyle(ComputedStyle& style) const
 {
 }
 
-void LayoutTheme::adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const
+void LayoutTheme::adjustInnerSpinButtonStyle(ComputedStyle&) const
 {
 }
 #endif
@@ -634,28 +634,28 @@ void LayoutTheme::adjustMenuListButtonStyle(ComputedStyle&, Element*) const
 {
 }
 
-void LayoutTheme::adjustSliderThumbStyle(ComputedStyle& style, Element* element) const
+void LayoutTheme::adjustSliderThumbStyle(ComputedStyle& style) const
 {
-    adjustSliderThumbSize(style, element);
+    adjustSliderThumbSize(style);
 }
 
-void LayoutTheme::adjustSliderThumbSize(ComputedStyle&, Element*) const
-{
-}
-
-void LayoutTheme::adjustSearchFieldStyle(ComputedStyle&, Element*) const
+void LayoutTheme::adjustSliderThumbSize(ComputedStyle&) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const
+void LayoutTheme::adjustSearchFieldStyle(ComputedStyle&) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const
+void LayoutTheme::adjustSearchFieldCancelButtonStyle(ComputedStyle&) const
 {
 }
 
-void LayoutTheme::adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const
+void LayoutTheme::adjustSearchFieldDecorationStyle(ComputedStyle&) const
+{
+}
+
+void LayoutTheme::adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const
 {
 }
 
@@ -867,14 +867,14 @@ bool LayoutTheme::shouldUseFallbackTheme(const ComputedStyle&) const
     return false;
 }
 
-void LayoutTheme::adjustStyleUsingFallbackTheme(ComputedStyle& style, Element* e)
+void LayoutTheme::adjustStyleUsingFallbackTheme(ComputedStyle& style)
 {
     ControlPart part = style.appearance();
     switch (part) {
     case CheckboxPart:
-        return adjustCheckboxStyleUsingFallbackTheme(style, e);
+        return adjustCheckboxStyleUsingFallbackTheme(style);
     case RadioPart:
-        return adjustRadioStyleUsingFallbackTheme(style, e);
+        return adjustRadioStyleUsingFallbackTheme(style);
     default:
         break;
     }
@@ -889,7 +889,7 @@ void LayoutTheme::setSizeIfAuto(ComputedStyle& style, const IntSize& size)
         style.setHeight(Length(size.height(), Fixed));
 }
 
-void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(ComputedStyle& style, Element*) const
+void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(ComputedStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -909,7 +909,7 @@ void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(ComputedStyle& style, El
     style.resetBorder();
 }
 
-void LayoutTheme::adjustRadioStyleUsingFallbackTheme(ComputedStyle& style, Element*) const
+void LayoutTheme::adjustRadioStyleUsingFallbackTheme(ComputedStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())

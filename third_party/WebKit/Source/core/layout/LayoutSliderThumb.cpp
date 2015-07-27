@@ -55,7 +55,7 @@ void LayoutSliderThumb::updateAppearance(const ComputedStyle& parentStyle)
     else if (parentStyle.appearance() == MediaFullScreenVolumeSliderPart)
         mutableStyleRef().setAppearance(MediaFullScreenVolumeSliderThumbPart);
     if (styleRef().hasAppearance())
-        LayoutTheme::theme().adjustSliderThumbSize(mutableStyleRef(), toElement(node()));
+        LayoutTheme::theme().adjustSliderThumbSize(mutableStyleRef());
 }
 
 } // namespace blink
