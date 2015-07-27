@@ -4,12 +4,40 @@
 
 #include "chrome/browser/android/intercept_download_resource_throttle.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/resource_controller.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+
+namespace {
+
+// UMA histogram for tracking reasons that chrome fails to intercept the
+// download. Keep this in sync with MobileDownloadInterceptFailureReasons in
+// histograms.xml.
+enum MobileDownloadInterceptFailureReason {
+  NO_FAILURE = 0,
+  EMPTY_URL,
+  NON_HTTP_OR_HTTPS,
+  NON_GET_METHODS,
+  NO_REQUEST_HEADERS,
+  USE_HTTP_AUTH,
+  USE_CHANNEL_BOUND_COOKIES,
+  // FAILURE_REASON_SIZE should always be last - this is a count of the number
+  // of items in this enum.
+  FAILURE_REASON_SIZE,
+};
+
+void RecordInterceptFailureReasons(
+    MobileDownloadInterceptFailureReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("MobileDownload.InterceptFailureReason",
+                            reason,
+                            FAILURE_REASON_SIZE);
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -36,21 +64,27 @@ const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
 }
 
 void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
-  // TODO(qinmin): add UMA stats for all reasons that downloads are not
-  // intercepted by the Android Download Manager. http://crbug.com/385272.
-  if (request_->url_chain().empty())
+  if (request_->url_chain().empty()) {
+    RecordInterceptFailureReasons(EMPTY_URL);
     return;
+  }
 
   GURL url = request_->url_chain().back();
-  if (!url.SchemeIsHTTPOrHTTPS())
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    RecordInterceptFailureReasons(NON_HTTP_OR_HTTPS);
     return;
+  }
 
-  if (request_->method() != net::HttpRequestHeaders::kGetMethod)
+  if (request_->method() != net::HttpRequestHeaders::kGetMethod) {
+    RecordInterceptFailureReasons(NON_GET_METHODS);
     return;
+  }
 
   net::HttpRequestHeaders headers;
-  if (!request_->GetFullRequestHeaders(&headers))
+  if (!request_->GetFullRequestHeaders(&headers)) {
+    RecordInterceptFailureReasons(NO_REQUEST_HEADERS);
     return;
+  }
 
   // In general, if the request uses HTTP authorization, either with the origin
   // or a proxy, then the network stack should handle the download. The one
@@ -61,6 +95,7 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
         !(request_->response_info().headers.get() &&
           data_reduction_proxy::HasDataReductionProxyViaHeader(
               request_->response_info().headers.get(), NULL))) {
+      RecordInterceptFailureReasons(USE_HTTP_AUTH);
       return;
     }
   }
@@ -68,12 +103,15 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   // If the cookie is possibly channel-bound, don't pass it to android download
   // manager.
   // TODO(qinmin): add a test for this. http://crbug.com/430541.
-  if (request_->ssl_info().channel_id_sent)
+  if (request_->ssl_info().channel_id_sent) {
+    RecordInterceptFailureReasons(USE_CHANNEL_BOUND_COOKIES);
     return;
+  }
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(
       render_process_id_, render_view_id_, request_id_);
   controller()->Cancel();
+  RecordInterceptFailureReasons(NO_FAILURE);
 }
 
 }  // namespace chrome

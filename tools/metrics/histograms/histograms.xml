@@ -17641,6 +17641,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileDownload.InterceptFailureReason"
+    enum="MobileDownloadInterceptFailureReason">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records the reason that Chrome fails to intercept a download and
+    pass it to the Android DownloadManager.
+  </summary>
+</histogram>
+
 <histogram name="MobileFre.SignInChoice" enum="MobileFreSignInChoice">
   <owner>aruslan@chromium.org</owner>
   <summary>
@@ -62667,6 +62676,16 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MistSwitchResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="MobileDownloadInterceptFailureReason" type="int">
+  <int value="0" label="No failure"/>
+  <int value="1" label="Empty url"/>
+  <int value="2" label="Non http or https"/>
+  <int value="3" label="Non GET method"/>
+  <int value="4" label="No request headers"/>
+  <int value="5" label="Use http auth"/>
+  <int value="6" label="Use channel bound cookies"/>
 </enum>
 
 <enum name="MobileFreSignInChoice" type="int">
