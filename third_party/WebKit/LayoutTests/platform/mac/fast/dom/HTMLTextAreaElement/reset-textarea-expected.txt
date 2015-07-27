@@ -4,14 +4,14 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {FORM} at (0,0) size 784x37
-        LayoutText {#text} at (161,18) size 4x18
-          text run at (161,18) width 4: " "
-        LayoutText {#text} at (326,18) size 4x18
-          text run at (326,18) width 4: " "
-        LayoutButton {INPUT} at (330,19) size 44.94x18 [bgcolor=#C0C0C0]
-          LayoutBlockFlow (anonymous) at (8,2) size 28.94x13
-            LayoutText {#text} at (0,0) size 29x13
-              text run at (0,0) width 29: "Reset"
+        LayoutText {#text} at (141,18) size 4x18
+          text run at (141,18) width 4: " "
+        LayoutText {#text} at (286,18) size 4x18
+          text run at (286,18) width 4: " "
+        LayoutButton {INPUT} at (290,19) size 46.30x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 30.30x13
+            LayoutText {#text} at (0,0) size 31x13
+              text run at (0,0) width 31: "Reset"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,53) size 784x72
         LayoutText {#text} at (0,0) size 369x18
@@ -25,11 +25,11 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (175,50) size 1x0
         LayoutText {#text} at (0,54) size 177x18
           text run at (0,54) width 177: "hasDefaultText: SUCCESS"
-layer at (8,8) size 161x32 clip at (9,9) size 159x30
-  LayoutTextControl {TEXTAREA} at (0,0) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (3,3) size 155x13
-layer at (173,8) size 161x32 clip at (174,9) size 159x30
-  LayoutTextControl {TEXTAREA} at (165,0) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (3,3) size 155x13
-      LayoutText {#text} at (0,0) size 67x13
-        text run at (0,0) width 67: "Default Text"
+layer at (8,8) size 141x32 clip at (9,9) size 139x30
+  LayoutTextControl {TEXTAREA} at (0,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13
+layer at (153,8) size 141x32 clip at (154,9) size 139x30
+  LayoutTextControl {TEXTAREA} at (145,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13
+      LayoutText {#text} at (0,0) size 64x13
+        text run at (0,0) width 64: "Default Text"

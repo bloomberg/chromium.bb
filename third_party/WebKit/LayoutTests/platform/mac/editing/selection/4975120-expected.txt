@@ -10,12 +10,12 @@ layer at (0,0) size 800x600
           text run at (31,18) width 742: "To run manually, make another window active and then make this window active. Only the subframe should appear"
           text run at (0,36) width 43: "active."
       LayoutBlockFlow (anonymous) at (0,70) size 784x173
-        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutBR {BR} at (123,14) size 0x0
+        LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutBR {BR} at (131,14) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,81) size 117x13
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (11,81) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 18x13
       text run at (0,0) width 18: "foo"
 layer at (8,97) size 304x154

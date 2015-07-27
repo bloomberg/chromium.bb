@@ -17,15 +17,15 @@ layer at (0,0) size 785x3163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 119: "back up to the top."
       LayoutBlockFlow {DIV} at (0,86) size 769x3000
       LayoutBlockFlow (anonymous) at (0,3086) size 769x19
-        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,3121) size 769x18
         LayoutText {#text} at (0,0) size 412x18
           text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
-layer at (11,3097) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 126
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
-    LayoutText {#text} at (0,0) size 126x13
-      text run at (0,0) width 126: "select some of this text"
-selection start: position 2 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
+layer at (11,3097) size 125x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
+    LayoutText {#text} at (0,0) size 124x13
+      text run at (0,0) width 124: "select some of this text"
+selection start: position 1 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 17 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 scrolled to 0,2563

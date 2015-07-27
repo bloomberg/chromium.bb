@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
                             LayoutTableRow {TR} at (0,2) size 135x36
                               LayoutTableCell {TD} at (2,2) size 131x36 [r=0 c=0 rs=1 cs=1]
                                 LayoutBlockFlow {FORM} at (1,1) size 129x18
-                                  LayoutButton {INPUT} at (0,0) size 128.59x18 [bgcolor=#C0C0C0]
-                                    LayoutBlockFlow (anonymous) at (8,2) size 112.59x13
+                                  LayoutButton {INPUT} at (0,0) size 128.25x18 [bgcolor=#C0C0C0]
+                                    LayoutBlockFlow (anonymous) at (8,2) size 112.25x13
                                       LayoutText {#text} at (0,0) size 113x13
                                         text run at (0,0) width 113: "ApplyForThisPosition"
                                   LayoutText {#text} at (0,0) size 0x0

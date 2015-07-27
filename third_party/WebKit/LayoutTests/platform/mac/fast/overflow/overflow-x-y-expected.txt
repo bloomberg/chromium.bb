@@ -7,8 +7,8 @@ layer at (0,0) size 785x600
         LayoutText {#text} at (0,0) size 318x18
           text run at (0,0) width 318: "The body should always have a vertical scrollbar."
       LayoutBlockFlow (anonymous) at (0,218) size 769x51
-        LayoutText {#text} at (161,33) size 4x18
-          text run at (161,33) width 4: " "
+        LayoutText {#text} at (141,33) size 4x18
+          text run at (141,33) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 300x100 clip at (8,26) size 285x100 scrollHeight 324
   LayoutBlockFlow {DIV} at (0,18) size 300x100
@@ -72,13 +72,13 @@ layer at (8,126) size 300x100 clip at (8,126) size 300x85 scrollWidth 1208
       text run at (0,0) width 496: "X scroll X scroll X scroll X scroll X scroll X scroll X scroll X scroll X scroll "
       text run at (495,0) width 332: "X scroll X scroll X scroll X scroll X scroll X scroll "
       text run at (826,0) width 383: "X scroll X scroll X scroll X scroll X scroll X scroll X scroll"
-layer at (8,241) size 161x32 clip at (9,242) size 144x30
-  LayoutTextControl {TEXTAREA} at (0,15) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (3,3) size 140x13
-      LayoutText {#text} at (0,0) size 92x13
-        text run at (0,0) width 92: "Textarea y-scroll"
-layer at (173,226) size 161x47 clip at (174,227) size 159x30
-  LayoutTextControl {TEXTAREA} at (165,0) size 161x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-    LayoutBlockFlow {DIV} at (3,3) size 155x13
-      LayoutText {#text} at (0,0) size 93x13
-        text run at (0,0) width 93: "Textarea x-scroll"
+layer at (8,241) size 141x32 clip at (9,242) size 124x30
+  LayoutTextControl {TEXTAREA} at (0,15) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 120x13
+      LayoutText {#text} at (0,0) size 89x13
+        text run at (0,0) width 89: "Textarea y-scroll"
+layer at (153,226) size 141x47 clip at (154,227) size 139x30
+  LayoutTextControl {TEXTAREA} at (145,0) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 135x13
+      LayoutText {#text} at (0,0) size 89x13
+        text run at (0,0) width 89: "Textarea x-scroll"

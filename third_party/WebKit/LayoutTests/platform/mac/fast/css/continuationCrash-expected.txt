@@ -47,20 +47,20 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 206x18
             text run at (0,0) width 206: "2. 3. will not crash Safari either."
         LayoutBlockFlow (anonymous) at (40,144) size 744x19
-          LayoutButton {INPUT} at (0,1) size 135.66x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 119.66x13
+          LayoutButton {INPUT} at (0,1) size 133.94x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 117.94x13
+              LayoutText {#text} at (0,0) size 118x13
+                text run at (0,0) width 118: "1. Set outline property"
+          LayoutText {#text} at (133,0) size 5x18
+            text run at (133,0) width 5: " "
+          LayoutButton {INPUT} at (137.94,1) size 136x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 120x13
               LayoutText {#text} at (0,0) size 120x13
-                text run at (0,0) width 120: "1. Set outline property"
-          LayoutText {#text} at (135,0) size 5x18
-            text run at (135,0) width 5: " "
-          LayoutButton {INPUT} at (139.66,1) size 136.28x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 120.28x13
-              LayoutText {#text} at (0,0) size 121x13
-                text run at (0,0) width 121: "2. Set display property"
-          LayoutText {#text} at (275,0) size 5x18
-            text run at (275,0) width 5: " "
-          LayoutButton {INPUT} at (279.94,1) size 149x18 [bgcolor=#C0C0C0]
-            LayoutBlockFlow (anonymous) at (8,2) size 133x13
-              LayoutText {#text} at (0,0) size 133x13
-                text run at (0,0) width 133: "3. Replace span-element"
+                text run at (0,0) width 120: "2. Set display property"
+          LayoutText {#text} at (273,0) size 5x18
+            text run at (273,0) width 5: " "
+          LayoutButton {INPUT} at (277.94,1) size 147.81x18 [bgcolor=#C0C0C0]
+            LayoutBlockFlow (anonymous) at (8,2) size 131.81x13
+              LayoutText {#text} at (0,0) size 132x13
+                text run at (0,0) width 132: "3. Replace span-element"
           LayoutText {#text} at (0,0) size 0x0

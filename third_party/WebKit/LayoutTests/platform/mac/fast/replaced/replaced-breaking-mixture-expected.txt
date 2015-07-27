@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,79) size 10x37
         LayoutText {#text} at (0,0) size 25x18
           text run at (0,0) width 25: "Foo"
-        LayoutTextControl {INPUT} at (0,18) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,116) size 10x43
         LayoutImage {IMG} at (0,0) size 25x25
         LayoutText {#text} at (0,25) size 25x18
@@ -30,10 +30,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,18) size 25x18
           text run at (0,18) width 25: "Foo"
       LayoutBlockFlow {DIV} at (0,195) size 10x37
-        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,19) size 25x18
           text run at (0,19) width 25: "Foo"
-layer at (11,108) size 117x13
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (11,206) size 117x13
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (11,108) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
+layer at (11,206) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13

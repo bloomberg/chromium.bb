@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (16,0) size 61x18
             text run at (16,0) width 61: "summary"
         LayoutBlockFlow {DIV} at (0,18) size 784x19
-          LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
-layer at (11,29) size 117x13
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (11,29) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13

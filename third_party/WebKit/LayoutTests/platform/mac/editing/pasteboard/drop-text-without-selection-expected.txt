@@ -25,17 +25,17 @@ layer at (0,0) size 800x600
           text run at (487,0) width 181: "no text is currently selected."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,96) size 784x19
-        LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (123,0) size 4x18
-          text run at (123,0) width 4: " "
+        LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (131,0) size 4x18
+          text run at (131,0) width 4: " "
         LayoutInline {A} at (0,0) size 167x18 [color=#0000EE]
-          LayoutText {#text} at (127,0) size 167x18
-            text run at (127,0) width 167: "drop me into the text field"
+          LayoutText {#text} at (135,0) size 167x18
+            text run at (135,0) width 167: "drop me into the text field"
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,107) size 117x13 scrollWidth 119
-  LayoutBlockFlow {DIV} at (3,3) size 117x13
-    LayoutText {#text} at (0,0) size 119x13
-      text run at (0,0) width 119: "http://www.ibm.com/"
+layer at (11,107) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
+    LayoutText {#text} at (0,0) size 113x13
+      text run at (0,0) width 113: "http://www.ibm.com/"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 19 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
