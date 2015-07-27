@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -131,6 +132,15 @@ bool ICUIsRTL() {
 }
 
 TextDirection GetTextDirectionForLocale(const char* locale_name) {
+  const std::string group_name =
+      FieldTrialList::FindFullName("LightSpeed");
+  // StartsWith allows flexibility for this experiment to apply to multiple
+  // group names. To start, this will apply to AvoidMMapOnStartup.
+  if (StartsWith(group_name, "AvoidMMap", CompareCase::SENSITIVE)) {
+    static const char kEnglishLocale[] = "en_";
+    if (StartsWith(locale_name, kEnglishLocale, CompareCase::SENSITIVE))
+      return LEFT_TO_RIGHT;
+  }
   UErrorCode status = U_ZERO_ERROR;
   ULayoutType layout_dir = uloc_getCharacterOrientation(locale_name, &status);
   DCHECK(U_SUCCESS(status));
