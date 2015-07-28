@@ -179,6 +179,7 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_range_map_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator_unittest \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm_unittest \
@@ -353,6 +354,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/google_breakpad/processor/minidump_processor.h \
 	src/google_breakpad/processor/process_result.h \
 	src/google_breakpad/processor/process_state.h \
+	src/google_breakpad/processor/proc_maps_linux.h \
 	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
 	src/google_breakpad/processor/stack_frame.h \
@@ -395,7 +397,8 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/pathname_stripper.h \
 	src/processor/postfix_evaluator-inl.h \
 	src/processor/postfix_evaluator.h \
-	src/processor/process_state.cc src/processor/range_map-inl.h \
+	src/processor/process_state.cc \
+	src/processor/proc_maps_linux.cc src/processor/range_map-inl.h \
 	src/processor/range_map.h \
 	src/processor/simple_serializer-inl.h \
 	src/processor/simple_serializer.h \
@@ -458,6 +461,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/module_serializer.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.$(OBJEXT) \
@@ -548,6 +552,7 @@ src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_range_map_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator_unittest$(EXEEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm_unittest$(EXEEXT) \
@@ -589,6 +594,7 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 	src/processor/dump_context.cc src/processor/dump_object.cc \
 	src/processor/logging.cc src/processor/minidump.cc \
 	src/processor/pathname_stripper.cc \
+	src/processor/proc_maps_linux.cc \
 	src/common/android/breakpad_getcontext.S \
 	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 	src/common/android/breakpad_getcontext_unittest.cc
@@ -618,6 +624,7 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-logging.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-minidump.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.$(OBJEXT) \
 @LINUX_HOST_TRUE@	$(am__objects_2) \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.$(OBJEXT) \
 @LINUX_HOST_TRUE@	$(am__objects_3)
@@ -851,6 +858,7 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
@@ -987,7 +995,8 @@ src_processor_minidump_dump_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o
 am__src_processor_minidump_processor_unittest_SOURCES_DIST =  \
 	src/processor/minidump_processor_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -1013,6 +1022,7 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
@@ -1053,6 +1063,7 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
@@ -1093,6 +1104,7 @@ src_processor_minidump_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_pathname_stripper_unittest_SOURCES_DIST =  \
@@ -1112,6 +1124,25 @@ src_processor_postfix_evaluator_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@src_processor_postfix_evaluator_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
+am__src_processor_proc_maps_linux_unittest_SOURCES_DIST =  \
+	src/processor/proc_maps_linux.cc \
+	src/processor/proc_maps_linux_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+@DISABLE_PROCESSOR_FALSE@am_src_processor_proc_maps_linux_unittest_OBJECTS = src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.$(OBJEXT)
+src_processor_proc_maps_linux_unittest_OBJECTS =  \
+	$(am_src_processor_proc_maps_linux_unittest_OBJECTS)
+@DISABLE_PROCESSOR_FALSE@src_processor_proc_maps_linux_unittest_DEPENDENCIES =  \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_range_map_unittest_SOURCES_DIST =  \
@@ -1225,6 +1256,7 @@ src_processor_stackwalker_selftest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
@@ -1491,6 +1523,7 @@ SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
 	$(src_processor_minidump_unittest_SOURCES) \
 	$(src_processor_pathname_stripper_unittest_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
+	$(src_processor_proc_maps_linux_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_stackwalker_address_list_unittest_SOURCES) \
 	$(src_processor_stackwalker_amd64_unittest_SOURCES) \
@@ -1536,6 +1569,7 @@ DIST_SOURCES =  \
 	$(am__src_processor_minidump_unittest_SOURCES_DIST) \
 	$(am__src_processor_pathname_stripper_unittest_SOURCES_DIST) \
 	$(am__src_processor_postfix_evaluator_unittest_SOURCES_DIST) \
+	$(am__src_processor_proc_maps_linux_unittest_SOURCES_DIST) \
 	$(am__src_processor_range_map_unittest_SOURCES_DIST) \
 	$(am__src_processor_stackwalker_address_list_unittest_SOURCES_DIST) \
 	$(am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST) \
@@ -1974,6 +2008,7 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/minidump_processor.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/process_result.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/process_state.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/proc_maps_linux.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/source_line_resolver_base.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/source_line_resolver_interface.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/stack_frame.h \
@@ -2026,6 +2061,7 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator-inl.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map-inl.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_serializer-inl.h \
@@ -2149,6 +2185,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/processor/logging.cc \
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
 @LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
+@LINUX_HOST_TRUE@	src/processor/proc_maps_linux.cc \
 @LINUX_HOST_TRUE@	$(am__append_18) \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 @LINUX_HOST_TRUE@	$(am__append_19)
@@ -2415,6 +2452,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
@@ -2531,7 +2569,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
-@DISABLE_PROCESSOR_FALSE@  	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+@DISABLE_PROCESSOR_FALSE@ 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor_unittest.cc \
@@ -2561,6 +2599,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
@@ -2601,6 +2640,27 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
+@DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+@DISABLE_PROCESSOR_FALSE@src_processor_proc_maps_linux_unittest_SOURCES = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux_unittest.cc \
+@DISABLE_PROCESSOR_FALSE@	src/testing/gtest/src/gtest-all.cc \
+@DISABLE_PROCESSOR_FALSE@	src/testing/gtest/src/gtest_main.cc \
+@DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
+
+@DISABLE_PROCESSOR_FALSE@src_processor_proc_maps_linux_unittest_CPPFLAGS = \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
+
+@DISABLE_PROCESSOR_FALSE@src_processor_proc_maps_linux_unittest_LDADD = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_address_map_unittest_SOURCES = \
@@ -2708,6 +2768,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
@@ -2876,7 +2937,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_stackwalk_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk.cc
@@ -2933,6 +2995,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
@@ -3372,6 +3435,9 @@ src/processor/pathname_stripper.$(OBJEXT):  \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/process_state.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/proc_maps_linux.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/simple_symbol_supplier.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -3625,6 +3691,9 @@ src/processor/src_client_linux_linux_client_unittest_shlib-minidump.$(OBJEXT):  
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT):  \
@@ -4010,6 +4079,25 @@ src/processor/postfix_evaluator_unittest.$(OBJEXT):  \
 src/processor/postfix_evaluator_unittest$(EXEEXT): $(src_processor_postfix_evaluator_unittest_OBJECTS) $(src_processor_postfix_evaluator_unittest_DEPENDENCIES) $(EXTRA_src_processor_postfix_evaluator_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/postfix_evaluator_unittest$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_postfix_evaluator_unittest_OBJECTS) $(src_processor_postfix_evaluator_unittest_LDADD) $(LIBS)
+src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.$(OBJEXT):  \
+	src/testing/src/$(am__dirstamp) \
+	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+
+src/processor/proc_maps_linux_unittest$(EXEEXT): $(src_processor_proc_maps_linux_unittest_OBJECTS) $(src_processor_proc_maps_linux_unittest_DEPENDENCIES) $(EXTRA_src_processor_proc_maps_linux_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/proc_maps_linux_unittest$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_proc_maps_linux_unittest_OBJECTS) $(src_processor_proc_maps_linux_unittest_LDADD) $(LIBS)
 src/processor/range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -4493,6 +4581,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/pathname_stripper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/pathname_stripper_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/postfix_evaluator_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/proc_maps_linux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/process_state.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Po@am__quote@
@@ -4503,6 +4592,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-logging.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-pathname_stripper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_basic_source_line_resolver_unittest-basic_source_line_resolver_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_binarystream_unittest-binarystream_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Po@am__quote@
@@ -4514,6 +4604,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_processor_unittest-minidump_processor_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-minidump_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-stackwalker_address_list_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_stackwalker_amd64_unittest-stackwalker_amd64_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_stackwalker_arm64_unittest-stackwalker_arm64_unittest.Po@am__quote@
@@ -4561,6 +4653,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_stackwalker_amd64_unittest-gtest-all.Po@am__quote@
@@ -4594,6 +4688,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_microdump_processor_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_stackwalker_amd64_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_stackwalker_arm64_unittest-gmock-all.Po@am__quote@
@@ -5024,6 +5119,20 @@ src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.obj
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/pathname_stripper.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.obj `if test -f 'src/processor/pathname_stripper.cc'; then $(CYGPATH_W) 'src/processor/pathname_stripper.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/pathname_stripper.cc'; fi`
+
+src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.o: src/processor/proc_maps_linux.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.o -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.o `test -f 'src/processor/proc_maps_linux.cc' || echo '$(srcdir)/'`src/processor/proc_maps_linux.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Tpo src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/proc_maps_linux.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.o `test -f 'src/processor/proc_maps_linux.cc' || echo '$(srcdir)/'`src/processor/proc_maps_linux.cc
+
+src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.obj: src/processor/proc_maps_linux.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.obj -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.obj `if test -f 'src/processor/proc_maps_linux.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Tpo src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/proc_maps_linux.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-proc_maps_linux.obj `if test -f 'src/processor/proc_maps_linux.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux.cc'; fi`
 
 src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o: src/client/linux/microdump_writer/microdump_writer_unittest.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o -MD -MP -MF src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Tpo -c -o src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o `test -f 'src/client/linux/microdump_writer/microdump_writer_unittest.cc' || echo '$(srcdir)/'`src/client/linux/microdump_writer/microdump_writer_unittest.cc
@@ -6284,6 +6393,76 @@ src/testing/src/src_processor_minidump_unittest-gmock-all.obj: src/testing/src/g
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_minidump_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_minidump_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+
+src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.o: src/processor/proc_maps_linux.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Tpo -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.o `test -f 'src/processor/proc_maps_linux.cc' || echo '$(srcdir)/'`src/processor/proc_maps_linux.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Tpo src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/proc_maps_linux.cc' object='src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.o `test -f 'src/processor/proc_maps_linux.cc' || echo '$(srcdir)/'`src/processor/proc_maps_linux.cc
+
+src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.obj: src/processor/proc_maps_linux.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Tpo -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.obj `if test -f 'src/processor/proc_maps_linux.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Tpo src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/proc_maps_linux.cc' object='src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux.obj `if test -f 'src/processor/proc_maps_linux.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux.cc'; fi`
+
+src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.o: src/processor/proc_maps_linux_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Tpo -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.o `test -f 'src/processor/proc_maps_linux_unittest.cc' || echo '$(srcdir)/'`src/processor/proc_maps_linux_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Tpo src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/proc_maps_linux_unittest.cc' object='src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.o `test -f 'src/processor/proc_maps_linux_unittest.cc' || echo '$(srcdir)/'`src/processor/proc_maps_linux_unittest.cc
+
+src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.obj: src/processor/proc_maps_linux_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Tpo -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.obj `if test -f 'src/processor/proc_maps_linux_unittest.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Tpo src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/proc_maps_linux_unittest.cc' object='src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.obj `if test -f 'src/processor/proc_maps_linux_unittest.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux_unittest.cc'; fi`
+
+src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+
+src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+
+src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_proc_maps_linux_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
+src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.o: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+
+src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.obj: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_proc_maps_linux_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_proc_maps_linux_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
 
 src/common/src_processor_stackwalker_address_list_unittest-test_assembler.o: src/common/test_assembler.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_stackwalker_address_list_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_processor_stackwalker_address_list_unittest-test_assembler.o -MD -MP -MF src/common/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-test_assembler.Tpo -c -o src/common/src_processor_stackwalker_address_list_unittest-test_assembler.o `test -f 'src/common/test_assembler.cc' || echo '$(srcdir)/'`src/common/test_assembler.cc
@@ -7552,6 +7731,13 @@ src/processor/pathname_stripper_unittest.log: src/processor/pathname_stripper_un
 src/processor/postfix_evaluator_unittest.log: src/processor/postfix_evaluator_unittest$(EXEEXT)
 	@p='src/processor/postfix_evaluator_unittest$(EXEEXT)'; \
 	b='src/processor/postfix_evaluator_unittest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+src/processor/proc_maps_linux_unittest.log: src/processor/proc_maps_linux_unittest$(EXEEXT)
+	@p='src/processor/proc_maps_linux_unittest$(EXEEXT)'; \
+	b='src/processor/proc_maps_linux_unittest'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

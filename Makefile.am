@@ -174,6 +174,7 @@ src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/processor/minidump_processor.h \
 	src/google_breakpad/processor/process_result.h \
 	src/google_breakpad/processor/process_state.h \
+	src/google_breakpad/processor/proc_maps_linux.h \
 	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
 	src/google_breakpad/processor/stack_frame.h \
@@ -226,6 +227,7 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/postfix_evaluator-inl.h \
 	src/processor/postfix_evaluator.h \
 	src/processor/process_state.cc \
+	src/processor/proc_maps_linux.cc \
 	src/processor/range_map-inl.h \
 	src/processor/range_map.h \
 	src/processor/simple_serializer-inl.h \
@@ -345,6 +347,7 @@ check_PROGRAMS += \
 	src/processor/static_range_map_unittest \
 	src/processor/pathname_stripper_unittest \
 	src/processor/postfix_evaluator_unittest \
+	src/processor/proc_maps_linux_unittest \
 	src/processor/range_map_unittest \
 	src/processor/stackwalker_amd64_unittest \
 	src/processor/stackwalker_arm_unittest \
@@ -435,7 +438,8 @@ src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	src/processor/dump_object.cc \
 	src/processor/logging.cc \
 	src/processor/minidump.cc \
-	src/processor/pathname_stripper.cc
+	src/processor/pathname_stripper.cc \
+	src/processor/proc_maps_linux.cc
 if ANDROID_HOST
 src_client_linux_linux_client_unittest_shlib_SOURCES += \
 	src/common/android/breakpad_getcontext.S
@@ -710,6 +714,7 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
+	src/processor/proc_maps_linux.o \
 	src/processor/simple_symbol_supplier.o \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_cpu.o \
@@ -818,7 +823,7 @@ src_processor_microdump_processor_unittest_LDADD = \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
-  	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+ 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc \
@@ -846,6 +851,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
 	src/processor/process_state.o \
+	src/processor/proc_maps_linux.o \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_cpu.o \
 	src/processor/stack_frame_symbolizer.o \
@@ -884,6 +890,25 @@ src_processor_minidump_unittest_LDADD = \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
+	src/processor/proc_maps_linux.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+src_processor_proc_maps_linux_unittest_SOURCES = \
+	src/processor/proc_maps_linux.cc \
+	src/processor/proc_maps_linux_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+src_processor_proc_maps_linux_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/testing/include \
+	-I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+src_processor_proc_maps_linux_unittest_LDADD = \
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o \
+	src/third_party/libdisasm/libdisasm.a \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_static_address_map_unittest_SOURCES = \
@@ -979,6 +1004,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
+	src/processor/proc_maps_linux.o \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_cpu.o \
 	src/processor/stack_frame_symbolizer.o \
@@ -1135,7 +1161,8 @@ src_processor_minidump_dump_LDADD = \
 	src/processor/dump_object.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	src/processor/proc_maps_linux.o
 
 src_processor_microdump_stackwalk_SOURCES = \
 	src/processor/microdump_stackwalk.cc
@@ -1190,6 +1217,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/minidump_processor.o \
 	src/processor/pathname_stripper.o \
 	src/processor/process_state.o \
+	src/processor/proc_maps_linux.o \
 	src/processor/simple_symbol_supplier.o \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_cpu.o \
