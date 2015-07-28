@@ -12,9 +12,12 @@ namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebEncryptedMediaKeyInformation {
 public:
+    // TODO(jrummell): Remove OutputNotAllowed once Chromium stops using it.
+    // http://crbug.com/507791.
     enum class KeyStatus {
         Usable,
         Expired,
+        OutputRestricted,
         OutputDownscaled,
         OutputNotAllowed,
         StatusPending,

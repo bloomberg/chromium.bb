@@ -92,10 +92,14 @@ static String ConvertKeyStatusToString(const WebEncryptedMediaKeyInformation::Ke
         return "usable";
     case WebEncryptedMediaKeyInformation::KeyStatus::Expired:
         return "expired";
+    case WebEncryptedMediaKeyInformation::KeyStatus::OutputRestricted:
+        return "output-restricted";
     case WebEncryptedMediaKeyInformation::KeyStatus::OutputDownscaled:
         return "output-downscaled";
     case WebEncryptedMediaKeyInformation::KeyStatus::OutputNotAllowed:
-        return "output-not-allowed";
+        // TODO(jrummell): Remove KeyStatus::OutputNotAllowed when it's no
+        // longer used. http://crbug.com/507791.
+        return "output-restricted";
     case WebEncryptedMediaKeyInformation::KeyStatus::StatusPending:
         return "status-pending";
     case WebEncryptedMediaKeyInformation::KeyStatus::InternalError:
