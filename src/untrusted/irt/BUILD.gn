@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 executable("irt_core") {
-  cflags_c = [ "-std=c99" ]
+  cflags_c = [ "-std=gnu99" ]
 
   sources = [
     "irt_core_resource.c",

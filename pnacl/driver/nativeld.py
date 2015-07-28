@@ -233,47 +233,31 @@ def RunLDSandboxed():
   # Have a list of everything else.
   other_inputs = all_inputs[:first_mainfile] + all_inputs[first_extra:]
 
-  ld_flags = env.get('LD_FLAGS')
+  # We use colons as separators, so they can't appear in the filenames.
+  # (However, there are other special characters that we don't handle
+  # cleanly.)
+  for filename in llc_outputs:
+    assert ':' not in filename, filename
 
-  script = MakeSelUniversalScriptForLD(ld_flags,
-                                       llc_outputs,
-                                       outfile)
+  if driver_tools.GetBuildOS() == 'linux':
+    sel_ldr_command = ('${BOOTSTRAP_LDR} ${SEL_LDR} --reserved_at_zero=0x%s'
+                       % ('X' * 16))
+  else:
+    sel_ldr_command = '${SEL_LDR}'
 
   native_libs_dirname = pathtools.tosys(GetNativeLibsDirname(other_inputs))
-  Run('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-      '${SEL_UNIVERSAL_FLAGS} -a ' +
+  Run('${SEL_LDR_PREFIX} ' + sel_ldr_command + ' ' +
+      '${SEL_LDR_FLAGS} -a ' +
+      '-E NACL_IRT_PNACL_TRANSLATOR_LINK_INPUTS=%s ' % ':'.join(llc_outputs) +
+      '-E NACL_IRT_PNACL_TRANSLATOR_LINK_OUTPUT=%s ' % outfile +
       '-E NACL_IRT_OPEN_RESOURCE_BASE=' + native_libs_dirname + ' ' +
       '-E NACL_IRT_OPEN_RESOURCE_REMAP=' +
       'libpnacl_irt_shim.a:libpnacl_irt_shim_dummy.a' +
       ' -- ${LD_SB}',
-      stdin_contents=script,
       # stdout/stderr will be automatically dumped
       # upon failure
       redirect_stderr=subprocess.PIPE,
       redirect_stdout=subprocess.PIPE)
-
-
-def MakeSelUniversalScriptForLD(ld_flags,
-                                llc_outputs,
-                                outfile):
-  """ Return sel_universal script text for invoking LD.nexe with the
-  given ld_flags, and llc_outputs (which are treated specially).
-  The output will be written to outfile.  """
-  script = []
-
-  # Open the output file.
-  script.append('readwrite_file nexefile %s' % outfile)
-
-  modules = len(llc_outputs)
-  script.extend(['readonly_file objfile%d %s' % (i, f)
-                 for i, f in zip(range(modules), llc_outputs)])
-  script.append('rpc RunWithSplit i(%d) ' % modules +
-                ' '.join(['h(objfile%s)' % m for m in range(modules)] +
-                         ['h(invalid)' for x in range(modules, 16)]) +
-                ' h(nexefile) *')
-  script.append('echo "ld complete"')
-  script.append('')
-  return '\n'.join(script)
 
 
 def GetNativeLibsDirname(other_inputs):

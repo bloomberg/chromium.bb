@@ -132,11 +132,15 @@ INITIAL_ENV = {
   'SCONS_STAGING_ARM'   : '${SCONS_OUT}/opt-${SCONS_OS}-arm/staging',
   'SCONS_STAGING_MIPS32': '${SCONS_OUT}/opt-${SCONS_OS}-mips32/staging',
 
-  'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
-  'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
+  'SEL_LDR_PREFIX'      : '${USE_EMULATOR ? ${EMULATOR}}',
   # NOTE: -Q skips sel_ldr qualification tests, -c -c skips validation
-  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error -B ${IRT_BLOB} ' +
-                          '${USE_EMULATOR ? -Q -c -c --command_prefix ${EMULATOR}}',
+  'SEL_LDR_FLAGS'       : '-B ${IRT_BLOB} ' +
+                          '${USE_EMULATOR ? -Q -c -c}',
+
+  'SEL_UNIVERSAL_PREFIX': '${SEL_LDR_PREFIX}',
+  'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
+  'SEL_UNIVERSAL_FLAGS' : '${SEL_LDR_FLAGS} --abort_on_error ' +
+                          '${USE_EMULATOR ? --command_prefix ${EMULATOR}}',
 
   'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
   'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',
