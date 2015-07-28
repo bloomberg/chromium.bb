@@ -25,7 +25,7 @@ using base::android::ToJavaIntArray;
 using content::BrowserThread;
 using content::MessagePortProvider;
 
-//static
+// static
 AwMessagePortServiceImpl* AwMessagePortServiceImpl::GetInstance() {
   return static_cast<AwMessagePortServiceImpl*>(
       AwBrowserContext::GetDefault()->GetMessagePortService());

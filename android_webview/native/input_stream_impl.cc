@@ -34,7 +34,7 @@ bool RegisterInputStream(JNIEnv* env) {
 // Maximum number of bytes to be read in a single read.
 const int InputStreamImpl::kBufferSize = 4096;
 
-//static
+// static
 const InputStreamImpl* InputStreamImpl::FromInputStream(
         const InputStream* input_stream) {
     return static_cast<const InputStreamImpl*>(input_stream);

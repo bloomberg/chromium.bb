@@ -30,7 +30,7 @@ class VibrationManagerEmptyImpl : public VibrationManager {
 
 }  // namespace
 
-//static
+// static
 void VibrationManagerImpl::Create(
     mojo::InterfaceRequest<VibrationManager> request) {
   new VibrationManagerEmptyImpl(request.Pass());

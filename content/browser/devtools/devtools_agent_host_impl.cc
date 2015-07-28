@@ -98,7 +98,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
   return it->second;
 }
 
-//static
+// static
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Create(
     DevToolsExternalAgentProxyDelegate* delegate) {
   return new ForwardingAgentHost(delegate);

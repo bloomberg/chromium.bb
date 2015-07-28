@@ -17,7 +17,7 @@ using blink::WebMimeRegistry;
 
 namespace content {
 
-//static
+// static
 std::string SimpleWebMimeRegistryImpl::ToASCIIOrEmpty(const WebString& string) {
   return base::IsStringASCII(string)
       ? base::UTF16ToASCII(base::StringPiece16(string))

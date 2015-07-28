@@ -25,7 +25,7 @@ RsaKeyPair::RsaKeyPair(scoped_ptr<crypto::RSAPrivateKey> key)
 
 RsaKeyPair::~RsaKeyPair() {}
 
-//static
+// static
 scoped_refptr<RsaKeyPair> RsaKeyPair::Generate() {
   scoped_ptr<crypto::RSAPrivateKey> key(crypto::RSAPrivateKey::Create(2048));
   if (!key) {
@@ -35,7 +35,7 @@ scoped_refptr<RsaKeyPair> RsaKeyPair::Generate() {
   return new RsaKeyPair(key.Pass());
 }
 
-//static
+// static
 scoped_refptr<RsaKeyPair> RsaKeyPair::FromString(
     const std::string& key_base64) {
   std::string key_str;

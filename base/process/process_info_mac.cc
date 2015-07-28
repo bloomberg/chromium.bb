@@ -14,7 +14,7 @@
 
 namespace base {
 
-//static
+// static
 const Time CurrentProcessInfo::CreationTime() {
   int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
   size_t len = 0;

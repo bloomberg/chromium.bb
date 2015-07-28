@@ -16,7 +16,7 @@ using blink::WebVector;
 
 namespace content {
 
-//static
+// static
 DropData DropDataBuilder::Build(const WebDragData& drag_data) {
   DropData result;
   result.referrer_policy = blink::WebReferrerPolicyDefault;

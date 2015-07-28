@@ -59,7 +59,7 @@ float Display::GetForcedDeviceScaleFactor() {
   return g_forced_device_scale_factor;
 }
 
-//static
+// static
 bool Display::HasForceDeviceScaleFactor() {
   if (g_has_forced_device_scale_factor == -1)
     g_has_forced_device_scale_factor = HasForceDeviceScaleFactorImpl();

@@ -297,7 +297,7 @@ ChannelIDService::~ChannelIDService() {
   STLDeleteValues(&inflight_);
 }
 
-//static
+// static
 std::string ChannelIDService::GetDomainForHost(const std::string& host) {
   std::string domain =
       registry_controlled_domains::GetDomainAndRegistry(

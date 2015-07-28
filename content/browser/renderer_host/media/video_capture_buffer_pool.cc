@@ -193,7 +193,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
   return true;
 }
 
-//static
+// static
 scoped_ptr<VideoCaptureBufferPool::Tracker>
 VideoCaptureBufferPool::Tracker::CreateTracker(bool use_gmb) {
   if (!use_gmb)

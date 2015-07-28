@@ -148,7 +148,7 @@ int Tween::IntValueBetween(double value, int start, int target) {
 #endif
 }
 
-//static
+// static
 int Tween::LinearIntValueBetween(double value, int start, int target) {
   // NOTE: Do not use ToRoundedInt()!  See comments on function declaration.
   return ToFlooredInt(0.5 + DoubleValueBetween(value, start, target));

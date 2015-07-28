@@ -111,7 +111,7 @@ bool ProcUtil::HasOpenDirectory() {
   return HasOpenDirectory(proc_fd.get());
 }
 
-//static
+// static
 base::ScopedFD ProcUtil::OpenProc() {
   return OpenDirectory("/proc/");
 }

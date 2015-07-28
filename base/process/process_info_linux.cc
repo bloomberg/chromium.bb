@@ -12,7 +12,7 @@
 
 namespace base {
 
-//static
+// static
 const Time CurrentProcessInfo::CreationTime() {
   ProcessHandle pid = GetCurrentProcessHandle();
   int64 start_ticks =

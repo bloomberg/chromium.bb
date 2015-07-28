@@ -18,7 +18,7 @@ BluetoothAdapter::ServiceOptions::~ServiceOptions() {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX) && \
     !defined(OS_WIN)
-//static
+// static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
     const InitCallback& init_callback) {
   return base::WeakPtr<BluetoothAdapter>();

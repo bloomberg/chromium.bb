@@ -265,7 +265,7 @@ bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
   return agent_host && agent_host->IsAttached();
 }
 
-//static
+// static
 void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
     DevToolsAgentHost::List* result) {
   base::Callback<void(RenderFrameHost*)> callback = base::Bind(

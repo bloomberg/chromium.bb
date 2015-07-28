@@ -85,18 +85,18 @@ HBRUSH Background::GetNativeControlBrush() const {
 }
 #endif
 
-//static
+// static
 Background* Background::CreateSolidBackground(SkColor color) {
   return new SolidBackground(color);
 }
 
-//static
+// static
 Background* Background::CreateStandardPanelBackground() {
   // TODO(beng): Should be in NativeTheme.
   return CreateSolidBackground(SK_ColorWHITE);
 }
 
-//static
+// static
 Background* Background::CreateVerticalGradientBackground(SkColor color1,
                                                          SkColor color2) {
   Background* background = CreateBackgroundPainter(
@@ -107,7 +107,7 @@ Background* Background::CreateVerticalGradientBackground(SkColor color1,
   return background;
 }
 
-//static
+// static
 Background* Background::CreateVerticalMultiColorGradientBackground(
     SkColor* colors,
     SkScalar* pos,
@@ -120,7 +120,7 @@ Background* Background::CreateVerticalMultiColorGradientBackground(
   return background;
 }
 
-//static
+// static
 Background* Background::CreateBackgroundPainter(bool owns_painter,
                                                 Painter* painter) {
   return new BackgroundPainter(owns_painter, painter);

@@ -89,7 +89,7 @@ int WindowResizer::GetBoundsChangeForWindowComponent(int component) {
   return bounds_change;
 }
 
-//static
+// static
 int WindowResizer::GetPositionChangeDirectionForWindowComponent(
     int window_component) {
   int pos_change_direction = WindowResizer::kBoundsChangeDirection_None;
