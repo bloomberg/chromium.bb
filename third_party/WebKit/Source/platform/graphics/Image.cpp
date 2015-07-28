@@ -215,8 +215,11 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
     const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect, const IntSize& repeatSpacing)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
+
+    // TODO(fmalita): get rid of the bitmap, switch to SkImage drawing
     SkBitmap bitmap;
-    if (!deprecatedBitmapForCurrentFrame(&bitmap))
+    RefPtr<SkImage> image = imageForCurrentFrame();
+    if (!image || !image->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode))
         return;
 
     FloatRect normSrcRect = floatSrcRect;
@@ -254,7 +257,7 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
     }
 
     if (currentFrameIsLazyDecoded())
-        PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
+        PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
 }
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)

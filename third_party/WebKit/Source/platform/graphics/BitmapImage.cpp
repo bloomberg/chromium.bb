@@ -277,8 +277,10 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
 
+    // TODO(fmalita): get rid of the bitmap, switch to SkImage drawing
     SkBitmap bitmap;
-    if (!deprecatedBitmapForCurrentFrame(&bitmap))
+    RefPtr<SkImage> image = imageForCurrentFrame();
+    if (!image || !image->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode))
         return; // It's too early and we don't have an image yet.
 
     FloatRect adjustedSrcRect = srcRect;
@@ -316,7 +318,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     canvas->restoreToCount(initialSaveCount);
 
     if (currentFrameIsLazyDecoded())
-        PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
+        PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);

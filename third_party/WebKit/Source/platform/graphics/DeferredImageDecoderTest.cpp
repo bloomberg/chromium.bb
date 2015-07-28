@@ -40,6 +40,7 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
@@ -335,6 +336,34 @@ TEST_F(DeferredImageDecoderTest, smallerFrameCount)
     m_frameCount = 0;
     m_lazyDecoder->setData(*m_data, true);
     EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
+}
+
+TEST_F(DeferredImageDecoderTest, frameOpacity)
+{
+    OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(*m_data,
+        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+    OwnPtr<DeferredImageDecoder> decoder = DeferredImageDecoder::createForTesting(actualDecoder.release());
+    decoder->setData(*m_data, true);
+
+    SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);
+    SkAutoPixmapStorage pixels;
+    pixels.alloc(pixInfo);
+
+    // Before decoding, the frame is not known to be opaque.
+    RefPtr<SkImage> frame = decoder->createFrameAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_FALSE(frame->isOpaque());
+
+    // Force a lazy decode by reading pixels.
+    EXPECT_TRUE(frame->readPixels(pixels, 0, 0));
+
+    // After decoding, the frame is known to be opaque.
+    frame = decoder->createFrameAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_TRUE(frame->isOpaque());
+
+    // Re-generating the opaque-marked frame should not fail.
+    EXPECT_TRUE(frame->readPixels(pixels, 0, 0));
 }
 
 } // namespace blink

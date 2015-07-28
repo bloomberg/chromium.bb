@@ -34,6 +34,23 @@
 
 namespace blink {
 
+static bool compatibleInfo(const SkImageInfo& src, const SkImageInfo& dst)
+{
+    if (src == dst)
+        return true;
+
+    // It is legal to write kOpaque_SkAlphaType pixels into a kPremul_SkAlphaType buffer.
+    // This can happen when DeferredImageDecoder allocates an kOpaque_SkAlphaType image
+    // generator based on cached frame info, while the ImageFrame-allocated dest bitmap
+    // stays kPremul_SkAlphaType.
+    if (src.alphaType() == kOpaque_SkAlphaType && dst.alphaType() == kPremul_SkAlphaType) {
+        const SkImageInfo& tmp = src.makeAlphaType(kPremul_SkAlphaType);
+        return tmp == dst;
+    }
+
+    return false;
+}
+
 // Creates a SkPixelRef such that the memory for pixels is given by an external body.
 // This is used to write directly to the memory given by Skia during decoding.
 class ImageFrameGenerator::ExternalMemoryAllocator : public SkBitmap::Allocator {
@@ -51,10 +68,10 @@ public:
         if (kUnknown_SkColorType == info.colorType())
             return false;
 
-        if (info != m_info || m_rowBytes != dst->rowBytes())
+        if (!compatibleInfo(m_info, info) || m_rowBytes != dst->rowBytes())
             return false;
 
-        if (!dst->installPixels(m_info, m_pixels, m_rowBytes))
+        if (!dst->installPixels(info, m_pixels, m_rowBytes))
             return false;
         dst->lockPixels();
         return true;
