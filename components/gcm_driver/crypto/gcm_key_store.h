@@ -6,17 +6,25 @@
 #define COMPONENTS_GCM_DRIVER_CRYPTO_GCM_KEY_STORE_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/crypto/proto/gcm_encryption_data.pb.h"
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
-#include "components/leveldb_proto/proto_database.h"
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace leveldb_proto {
+template <typename T>
+class ProtoDatabase;
 }
 
 namespace gcm {
@@ -28,10 +36,7 @@ namespace gcm {
 // This class is backed by a proto database and might end up doing file I/O on
 // a background task runner. For this reason, all public APIs take a callback
 // rather than returning the result. Do not rely on the timing of the callbacks.
-//
-// Started operations will be completed even after the reference to the store
-// has been freed (asynchronous operations increase reference count to |this|).
-class GCMKeyStore : public base::RefCounted<GCMKeyStore> {
+class GCMKeyStore {
  public:
   using KeysCallback = base::Callback<void(const KeyPair& pair)>;
   using DeleteCallback = base::Callback<void(bool success)>;
@@ -39,6 +44,7 @@ class GCMKeyStore : public base::RefCounted<GCMKeyStore> {
   GCMKeyStore(
       const base::FilePath& key_store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+  ~GCMKeyStore();
 
   // Retrieves the public/private key-pair associated with |app_id|, and
   // invokes |callback| when they are available, or when an error occurred.
@@ -53,10 +59,6 @@ class GCMKeyStore : public base::RefCounted<GCMKeyStore> {
   void DeleteKeys(const std::string& app_id, const DeleteCallback& callback);
 
  private:
-  friend class base::RefCounted<GCMKeyStore>;
-
-  virtual ~GCMKeyStore();
-
   // Initializes the database if necessary, and runs |done_closure| when done.
   void LazyInitialize(const base::Closure& done_closure);
 
@@ -103,6 +105,8 @@ class GCMKeyStore : public base::RefCounted<GCMKeyStore> {
 
   // Mapping of an app id to the loaded EncryptedData structure.
   std::map<std::string, KeyPair> key_pairs_;
+
+  base::WeakPtrFactory<GCMKeyStore> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMKeyStore);
 };

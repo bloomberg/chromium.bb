@@ -30,7 +30,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    gcm_key_store_ = nullptr;
+    gcm_key_store_.reset();
 
     // |gcm_key_store_| owns a ProtoDatabaseImpl whose destructor deletes the
     // underlying LevelDB database on the task runner.
@@ -40,8 +40,8 @@ class GCMKeyStoreTest : public ::testing::Test {
   // Creates the GCM Key Store instance. May be called from within a test's body
   // to re-create the key store, causing the database to re-open.
   void CreateKeyStore() {
-    gcm_key_store_ = new GCMKeyStore(scoped_temp_dir_.path(),
-                                     message_loop_.task_runner());
+    gcm_key_store_.reset(
+        new GCMKeyStore(scoped_temp_dir_.path(), message_loop_.task_runner()));
   }
 
   // Callback to use with GCMKeyStore::{GetKeys, CreateKeys} calls.
@@ -65,7 +65,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedTempDir scoped_temp_dir_;
 
-  scoped_refptr<GCMKeyStore> gcm_key_store_;
+  scoped_ptr<GCMKeyStore> gcm_key_store_;
 };
 
 TEST_F(GCMKeyStoreTest, CreatedByDefault) {

@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -53,7 +52,7 @@ class GCMEncryptionProvider {
   void DidCreatePublicKey(const PublicKeyCallback& callback,
                           const KeyPair& pair);
 
-  scoped_refptr<GCMKeyStore> key_store_;
+  scoped_ptr<GCMKeyStore> key_store_;
 
   base::WeakPtrFactory<GCMEncryptionProvider> weak_ptr_factory_;
 

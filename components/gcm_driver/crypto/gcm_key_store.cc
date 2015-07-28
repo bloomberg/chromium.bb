@@ -25,7 +25,8 @@ GCMKeyStore::GCMKeyStore(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : key_store_path_(key_store_path),
       blocking_task_runner_(blocking_task_runner),
-      state_(State::UNINITIALIZED) {
+      state_(State::UNINITIALIZED),
+      weak_factory_(this) {
   DCHECK(blocking_task_runner);
 }
 
@@ -33,8 +34,8 @@ GCMKeyStore::~GCMKeyStore() {}
 
 void GCMKeyStore::GetKeys(const std::string& app_id,
                           const KeysCallback& callback) {
-  LazyInitialize(base::Bind(&GCMKeyStore::GetKeysAfterInitialize, this, app_id,
-                            callback));
+  LazyInitialize(base::Bind(&GCMKeyStore::GetKeysAfterInitialize,
+                            weak_factory_.GetWeakPtr(), app_id, callback));
 }
 
 void GCMKeyStore::GetKeysAfterInitialize(const std::string& app_id,
@@ -51,8 +52,8 @@ void GCMKeyStore::GetKeysAfterInitialize(const std::string& app_id,
 
 void GCMKeyStore::CreateKeys(const std::string& app_id,
                              const KeysCallback& callback) {
-  LazyInitialize(base::Bind(&GCMKeyStore::CreateKeysAfterInitialize, this,
-                            app_id, callback));
+  LazyInitialize(base::Bind(&GCMKeyStore::CreateKeysAfterInitialize,
+                            weak_factory_.GetWeakPtr(), app_id, callback));
 }
 
 void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
@@ -93,9 +94,10 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
 
   entries_to_save->push_back(std::make_pair(app_id, encryption_data));
 
-  database_->UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(),
-                           base::Bind(&GCMKeyStore::DidStoreKeys, this, app_id,
-                                      *pair, callback));
+  database_->UpdateEntries(
+      entries_to_save.Pass(), keys_to_remove.Pass(),
+      base::Bind(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(), app_id,
+                 *pair, callback));
 }
 
 void GCMKeyStore::DidStoreKeys(const std::string& app_id,
@@ -117,8 +119,8 @@ void GCMKeyStore::DidStoreKeys(const std::string& app_id,
 
 void GCMKeyStore::DeleteKeys(const std::string& app_id,
                              const DeleteCallback& callback) {
-  LazyInitialize(base::Bind(&GCMKeyStore::DeleteKeysAfterInitialize, this,
-                            app_id, callback));
+  LazyInitialize(base::Bind(&GCMKeyStore::DeleteKeysAfterInitialize,
+                            weak_factory_.GetWeakPtr(), app_id, callback));
 }
 
 void GCMKeyStore::DeleteKeysAfterInitialize(const std::string& app_id,
@@ -139,7 +141,8 @@ void GCMKeyStore::DeleteKeysAfterInitialize(const std::string& app_id,
 
   database_->UpdateEntries(
       entries_to_save.Pass(), keys_to_remove.Pass(),
-      base::Bind(&GCMKeyStore::DidDeleteKeys, this, app_id, callback));
+      base::Bind(&GCMKeyStore::DidDeleteKeys, weak_factory_.GetWeakPtr(),
+                 app_id, callback));
 }
 
 void GCMKeyStore::DidDeleteKeys(const std::string& app_id,
@@ -171,8 +174,8 @@ void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
   database_.reset(new leveldb_proto::ProtoDatabaseImpl<EncryptionData>(
       blocking_task_runner_));
 
-  database_->Init(key_store_path_,
-                  base::Bind(&GCMKeyStore::DidInitialize, this));
+  database_->Init(key_store_path_, base::Bind(&GCMKeyStore::DidInitialize,
+                                              weak_factory_.GetWeakPtr()));
 }
 
 void GCMKeyStore::DidInitialize(bool success) {
@@ -184,7 +187,8 @@ void GCMKeyStore::DidInitialize(bool success) {
     return;
   }
 
-  database_->LoadEntries(base::Bind(&GCMKeyStore::DidLoadKeys, this));
+  database_->LoadEntries(
+      base::Bind(&GCMKeyStore::DidLoadKeys, weak_factory_.GetWeakPtr()));
 }
 
 void GCMKeyStore::DidLoadKeys(bool success,

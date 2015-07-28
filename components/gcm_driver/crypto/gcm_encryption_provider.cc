@@ -34,7 +34,8 @@ void GCMEncryptionProvider::Init(
   if (!store_path.empty())
     encryption_store_path = store_path.Append(kEncryptionDirectoryName);
 
-  key_store_ = new GCMKeyStore(encryption_store_path, blocking_task_runner);
+  key_store_.reset(
+      new GCMKeyStore(encryption_store_path, blocking_task_runner));
 }
 
 void GCMEncryptionProvider::GetPublicKey(const std::string& app_id,
