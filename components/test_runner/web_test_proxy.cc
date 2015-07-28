@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/test_runner/accessibility_controller.h"
 #include "components/test_runner/event_sender.h"
@@ -758,11 +759,17 @@ void WebTestProxyBase::ScheduleAnimation() {
 
 void WebTestProxyBase::AnimateNow() {
   if (animate_scheduled_) {
+    base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
+    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(16666);
+    blink::WebBeginFrameArgs args(animate_time.InSecondsF(),
+                                  (animate_time + interval).InSecondsF(),
+                                  interval.InSecondsF());
+
     animate_scheduled_ = false;
-    web_widget_->beginFrame(blink::WebBeginFrameArgs(0.0, 0.0, 0.0));
+    web_widget_->beginFrame(args);
     web_widget_->layout();
     if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
-      popup->beginFrame(blink::WebBeginFrameArgs(0.0, 0.0, 0.0));
+      popup->beginFrame(args);
       popup->layout();
     }
   }
