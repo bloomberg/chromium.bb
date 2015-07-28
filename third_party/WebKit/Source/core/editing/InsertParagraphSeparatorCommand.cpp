@@ -363,7 +363,7 @@ void InsertParagraphSeparatorCommand::doApply()
         if (textOffset > 0 && !atEnd) {
             splitTextNode(textNode, textOffset);
             positionAfterSplit = firstPositionInNode(textNode.get());
-            insertionPosition.moveToPosition(textNode->previousSibling(), textOffset);
+            insertionPosition = Position(textNode->previousSibling(), textOffset);
             visiblePos = VisiblePosition(insertionPosition);
         }
     }

@@ -170,19 +170,6 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(const PositionAlgorithm& other)
 // --
 
 template <typename Strategy>
-void PositionAlgorithm<Strategy>::moveToPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
-{
-    ASSERT(!Strategy::editingIgnoresContent(node.get()));
-    ASSERT(isOffsetInAnchor() || m_isLegacyEditingPosition);
-    m_anchorNode = node;
-    m_offset = offset;
-    if (!m_isLegacyEditingPosition)
-        return;
-    m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
-    m_isLegacyEditingPosition = m_anchorType == PositionAnchorType::AfterAnchor;
-}
-
-template <typename Strategy>
 void PositionAlgorithm<Strategy>::moveToOffset(int offset)
 {
     ASSERT(isOffsetInAnchor() || m_isLegacyEditingPosition);

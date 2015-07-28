@@ -167,7 +167,6 @@ public:
 
     // These should only be used for PositionAnchorType::OffsetInAnchor
     // positions, unless the position is a legacy editing position.
-    void moveToPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
     void moveToOffset(int offset);
 
     bool isNull() const { return !m_anchorNode; }

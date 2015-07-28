@@ -1420,7 +1420,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
             if (positionOnlyToBeUpdated.containerNode() == text)
                 positionOnlyToBeUpdated.moveToOffset(previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
             else if (positionOnlyToBeUpdated.containerNode() == previous)
-                positionOnlyToBeUpdated.moveToPosition(text, positionOnlyToBeUpdated.offsetInContainerNode());
+                positionOnlyToBeUpdated = Position(text, positionOnlyToBeUpdated.offsetInContainerNode());
         } else {
             updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
         }
@@ -1436,7 +1436,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
             updatePositionForNodeRemoval(position, *next);
 
         if (positionOnlyToBeUpdatedIsOffsetInAnchor && positionOnlyToBeUpdated.containerNode() == next)
-            positionOnlyToBeUpdated.moveToPosition(text, originalLength + positionOnlyToBeUpdated.offsetInContainerNode());
+            positionOnlyToBeUpdated = Position(text, originalLength + positionOnlyToBeUpdated.offsetInContainerNode());
         else
             updatePositionForNodeRemoval(positionOnlyToBeUpdated, *next);
 
