@@ -174,7 +174,6 @@
             'nacl_common',
             '../content/content.gyp:content_renderer',
             '../components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin',
-            '../third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
             '../third_party/WebKit/public/blink.gyp:blink',
           ],
         },

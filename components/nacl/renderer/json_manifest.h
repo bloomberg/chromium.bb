@@ -9,9 +9,9 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
-#include "ppapi/c/pp_array_output.h"
-#include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace nacl {
 class JsonManifest;
@@ -29,6 +29,7 @@ class JsonManifest {
                const std::string& sandbox_isa,
                bool nonsfi_enabled,
                bool pnacl_debug);
+  ~JsonManifest();
 
   // Initialize the manifest object for use by later lookups. Returns
   // true if the manifest parses correctly and matches the schema.
@@ -56,11 +57,11 @@ class JsonManifest {
 
  private:
   bool MatchesSchema(ErrorInfo* error_info);
-  bool GetKeyUrl(const Json::Value& dictionary,
+  bool GetKeyUrl(const base::DictionaryValue& dictionary,
                  const std::string& key,
                  std::string* full_url,
                  PP_PNaClOptions* pnacl_options) const;
-  bool GetURLFromISADictionary(const Json::Value& dictionary,
+  bool GetURLFromISADictionary(const base::DictionaryValue& parent_dictionary,
                                const std::string& parent_key,
                                std::string* url,
                                PP_PNaClOptions* pnacl_options,
@@ -73,7 +74,7 @@ class JsonManifest {
   bool pnacl_debug_;
 
   // The dictionary of manifest information parsed in Init().
-  Json::Value dictionary_;
+  scoped_ptr<base::DictionaryValue> dictionary_;
 };
 
 }  // namespace nacl
