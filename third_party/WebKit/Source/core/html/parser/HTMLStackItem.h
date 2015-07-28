@@ -220,8 +220,8 @@ private:
             m_isDocumentFragmentNode = true;
             break;
         case ItemForContextElement:
-            m_tokenLocalName = m_node->localName();
-            m_namespaceURI = m_node->namespaceURI();
+            m_tokenLocalName = element()->localName();
+            m_namespaceURI = element()->namespaceURI();
             m_isDocumentFragmentNode = false;
             break;
         }

@@ -365,9 +365,28 @@ static inline String expandedNameLocalPart(Node* node)
 {
     // The local part of an XPath expanded-name matches DOM local name for most node types, except for namespace nodes and processing instruction nodes.
     // But note that Blink does not support namespace nodes.
-    if (node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE)
+    switch (node->nodeType()) {
+    case Node::ELEMENT_NODE:
+        return toElement(node)->localName();
+    case Node::ATTRIBUTE_NODE:
+        return toAttr(node)->localName();
+    case Node::PROCESSING_INSTRUCTION_NODE:
         return toProcessingInstruction(node)->target();
-    return node->localName().string();
+    default:
+        return String();
+    }
+}
+
+static inline String expandedNamespaceURI(Node* node)
+{
+    switch (node->nodeType()) {
+    case Node::ELEMENT_NODE:
+        return toElement(node)->namespaceURI();
+    case Node::ATTRIBUTE_NODE:
+        return toAttr(node)->namespaceURI();
+    default:
+        return String();
+    }
 }
 
 static inline String expandedName(Node* node)
@@ -410,10 +429,10 @@ Value FunNamespaceURI::evaluate(EvaluationContext& context) const
             return "";
 
         Node* node = a.toNodeSet(&context).firstNode();
-        return node ? node->namespaceURI().string() : "";
+        return node ? expandedNamespaceURI(node) : "";
     }
 
-    return context.node->namespaceURI().string();
+    return expandedNamespaceURI(context.node.get());
 }
 
 Value FunName::evaluate(EvaluationContext& context) const

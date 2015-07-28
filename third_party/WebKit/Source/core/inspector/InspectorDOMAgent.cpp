@@ -1597,11 +1597,12 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             nodeValue = nodeValue.left(maxTextSize) + ellipsisUChar;
         break;
     case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::DOCUMENT_NODE:
+        localName = toAttr(node)->localName();
+        break;
     case Node::ELEMENT_NODE:
+        localName = toElement(node)->localName();
+        break;
     default:
-        localName = node->localName();
         break;
     }
 

@@ -53,8 +53,8 @@ public:
     void attachToElement(Element*, const AtomicString&);
     void detachFromElementWithValue(const AtomicString&);
 
-    const AtomicString& localName() const override { return m_name.localName(); }
-    const AtomicString& namespaceURI() const override { return m_name.namespaceURI(); }
+    const AtomicString& localName() const { return m_name.localName(); }
+    const AtomicString& namespaceURI() const { return m_name.namespaceURI(); }
     const AtomicString& prefix() const { return m_name.prefix(); }
 
     DECLARE_VIRTUAL_TRACE();

@@ -243,10 +243,10 @@ public:
     // A fast function for checking the local name against another atomic string.
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
 
-    const AtomicString& localName() const final { return m_tagName.localName(); }
+    const AtomicString& localName() const { return m_tagName.localName(); }
     AtomicString localNameForSelectorMatching() const;
     const AtomicString& prefix() const { return m_tagName.prefix(); }
-    const AtomicString& namespaceURI() const final { return m_tagName.namespaceURI(); }
+    const AtomicString& namespaceURI() const { return m_tagName.namespaceURI(); }
 
     const AtomicString& locateNamespacePrefix(const AtomicString& namespaceURI) const;
 

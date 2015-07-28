@@ -3352,8 +3352,6 @@ interface Node
     getter childNodes
     getter firstChild
     getter lastChild
-    getter localName
-    getter namespaceURI
     getter nextSibling
     getter nodeName
     getter nodeType

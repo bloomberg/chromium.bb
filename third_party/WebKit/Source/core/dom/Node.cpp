@@ -519,16 +519,6 @@ void Node::normalize()
     }
 }
 
-const AtomicString& Node::localName() const
-{
-    return nullAtom;
-}
-
-const AtomicString& Node::namespaceURI() const
-{
-    return nullAtom;
-}
-
 bool Node::isContentEditable(UserSelectAllTreatment treatment)
 {
     document().updateLayoutTreeIfNeeded();
@@ -1100,17 +1090,25 @@ bool Node::isEqualNode(Node* other) const
     if (nodeName() != other->nodeName())
         return false;
 
-    if (localName() != other->localName())
-        return false;
-
-    if (namespaceURI() != other->namespaceURI())
-        return false;
-
     if (nodeValue() != other->nodeValue())
         return false;
 
-    if (isElementNode() && !toElement(this)->hasEquivalentAttributes(toElement(other)))
-        return false;
+    if (isAttributeNode()) {
+        if (toAttr(this)->localName() != toAttr(other)->localName())
+            return false;
+
+        if (toAttr(this)->namespaceURI() != toAttr(other)->namespaceURI())
+            return false;
+    } else if (isElementNode()) {
+        if (toElement(this)->localName() != toElement(other)->localName())
+            return false;
+
+        if (toElement(this)->namespaceURI() != toElement(other)->namespaceURI())
+            return false;
+
+        if (!toElement(this)->hasEquivalentAttributes(toElement(other)))
+            return false;
+    }
 
     Node* child = firstChild();
     Node* otherChild = other->firstChild();

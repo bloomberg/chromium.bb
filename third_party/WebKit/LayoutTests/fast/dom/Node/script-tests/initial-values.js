@@ -46,38 +46,36 @@ shouldBe("attr.value", "''");
 
 var comment = document.createComment("foo");
 shouldBe("comment.nodeName", "'#comment'");
-shouldBe("comment.localName", "null");
-shouldBe("comment.namespaceURI", "null");
+shouldBe("comment.localName", "undefined");
+shouldBe("comment.namespaceURI", "undefined");
 shouldBe("comment.nodeValue", "'foo'");
 shouldBe("comment.data", "'foo'");
 
 shouldThrow("document.createCDATASection('foo')");
 var cdata = xmlDoc.createCDATASection("foo");
 shouldBe("cdata.nodeName", "'#cdata-section'");
-shouldBe("cdata.localName", "null");
-shouldBe("cdata.namespaceURI", "null");
+shouldBe("cdata.localName", "undefined");
+shouldBe("cdata.namespaceURI", "undefined");
 shouldBe("cdata.nodeValue", "'foo'");
 shouldBe("cdata.data", "'foo'");
 
 var fragment = document.createDocumentFragment();
 shouldBe("fragment.nodeName", "'#document-fragment'");
-shouldBe("fragment.localName", "null");
-shouldBe("fragment.namespaceURI", "null");
+shouldBe("fragment.localName", "undefined");
+shouldBe("fragment.namespaceURI", "undefined");
 shouldBe("fragment.nodeValue", "null");
 
 var doc = document.implementation.createDocument("http://www.w3.org/1999/xhtml", "html", null);
 shouldBe("doc.nodeName", "'#document'");
-shouldBe("doc.localName", "null");
-// Spec: http://www.w3.org/TR/DOM-Level-2-Core/core.html#Level-2-Core-DOM-createDocument
-// Currently both FF and WebKit return null here, disagreeing with the spec
-shouldBe("doc.namespaceURI", "'http://www.w3.org/1999/xhtml'");
+shouldBe("doc.localName", "undefined");
+shouldBe("doc.namespaceURI", "undefined");
 shouldBe("doc.nodeValue", "null");
 
 var doctype = document.implementation.createDocumentType("svg", "-//W3C//DTD SVG 1.1//EN", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd");
 shouldBe("doctype.nodeName", "'svg'");
 shouldBe("doctype.name", "'svg'");
-shouldBe("doctype.localName", "null");
-shouldBe("doctype.namespaceURI", "null");
+shouldBe("doctype.localName", "undefined");
+shouldBe("doctype.namespaceURI", "undefined");
 shouldBe("doctype.nodeValue", "null");
 
 debug("Element creation using createElement on an HTML doc:")
@@ -152,8 +150,8 @@ shouldBe("element.attributes.toString()", "'[object NamedNodeMap]'");
 debug("Processing instruction creation using createProcessingInstruction on an HTML doc:")
 var processingInstruction = document.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"');
 shouldBe("processingInstruction.nodeName", "'xml-stylesheet'");
-shouldBe("processingInstruction.localName", "null");
-shouldBe("processingInstruction.namespaceURI", "null");
+shouldBe("processingInstruction.localName", "undefined");
+shouldBe("processingInstruction.namespaceURI", "undefined");
 // DOM Core Level 2 and DOM Core Level 3 disagree on ProcessingInstruction.nodeValue
 // L2: entire content excluding the target
 // L3: same as ProcessingInstruction.data
@@ -165,8 +163,8 @@ shouldBe("processingInstruction.data", "'type=\"text/xsl\" href=\"missing.xsl\"'
 debug("Processing instruction creation using createProcessingInstruction on an XHTML doc:")
 processingInstruction = xmlDoc.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"');
 shouldBe("processingInstruction.nodeName", "'xml-stylesheet'");
-shouldBe("processingInstruction.localName", "null");
-shouldBe("processingInstruction.namespaceURI", "null");
+shouldBe("processingInstruction.localName", "undefined");
+shouldBe("processingInstruction.namespaceURI", "undefined");
 shouldBe("processingInstruction.nodeValue", "'type=\"text/xsl\" href=\"missing.xsl\"'");
 shouldBe("processingInstruction.target", "'xml-stylesheet'");
 shouldBe("processingInstruction.data", "'type=\"text/xsl\" href=\"missing.xsl\"'");
@@ -174,7 +172,7 @@ shouldBe("processingInstruction.data", "'type=\"text/xsl\" href=\"missing.xsl\"'
 debug("Text node creation using createTextNode on an HTML doc:")
 var text = document.createTextNode("foo");
 shouldBe("text.nodeName", "'#text'");
-shouldBe("text.localName", "null");
-shouldBe("text.namespaceURI", "null");
+shouldBe("text.localName", "undefined");
+shouldBe("text.namespaceURI", "undefined");
 shouldBe("text.nodeValue", "'foo'");
 shouldBe("text.data", "'foo'");

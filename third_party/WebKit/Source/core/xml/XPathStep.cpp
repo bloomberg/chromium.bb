@@ -186,17 +186,17 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
         const AtomicString& namespaceURI = nodeTest.namespaceURI();
 
         if (axis == Step::AttributeAxis) {
-            ASSERT(node->isAttributeNode());
+            Attr* attr = toAttr(node);
 
             // In XPath land, namespace nodes are not accessible on the
             // attribute axis.
-            if (node->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
+            if (attr->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
                 return false;
 
             if (name == starAtom)
-                return namespaceURI.isEmpty() || node->namespaceURI() == namespaceURI;
+                return namespaceURI.isEmpty() || attr->namespaceURI() == namespaceURI;
 
-            return node->localName() == name && node->namespaceURI() == namespaceURI;
+            return attr->localName() == name && attr->namespaceURI() == namespaceURI;
         }
 
         // Node test on the namespace axis is not implemented yet, the caller
@@ -372,12 +372,12 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         // Avoid lazily creating attribute nodes for attributes that we do not
         // need anyway.
         if (nodeTest().kind() == NodeTest::NameTest && nodeTest().data() != starAtom) {
-            RefPtrWillBeRawPtr<Node> n = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
+            RefPtrWillBeRawPtr<Attr> attr = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
             // In XPath land, namespace nodes are not accessible on the attribute axis.
-            if (n && n->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
+            if (attr && attr->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
                 // Still need to check merged predicates.
-                if (nodeMatches(evaluationContext, n.get(), AttributeAxis, nodeTest()))
-                    nodes.append(n.release());
+                if (nodeMatches(evaluationContext, attr.get(), AttributeAxis, nodeTest()))
+                    nodes.append(attr.release());
             }
             return;
         }

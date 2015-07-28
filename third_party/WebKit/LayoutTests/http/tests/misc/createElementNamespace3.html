@@ -13,7 +13,7 @@
     log("");
 
     log("Test1: document.namespaceURI")
-    shouldBe("document.namespaceURI", "null");
+    shouldBe("document.namespaceURI", "undefined");
     log("");
 
     log("Test2: document.createElement().namespaceURI")
@@ -27,7 +27,7 @@
 
     var newDoc = document.implementation.createDocument("http://www.w3.org/1999/xhtml", "", null);
     log("Test4: created document.namespaceURI");
-    shouldBe("newDoc.namespaceURI", "null");
+    shouldBe("newDoc.namespaceURI", "undefined");
     log("");
 
     log("Test5: created document.createElement.namespaceURI");

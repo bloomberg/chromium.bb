@@ -225,8 +225,6 @@ public:
 
     bool hasChildren() const { return firstChild(); }
     virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = false) = 0;
-    virtual const AtomicString& localName() const;
-    virtual const AtomicString& namespaceURI() const;
     void normalize();
 
     bool isSameNode(Node* other) const { return this == other; }
