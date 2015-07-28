@@ -27,6 +27,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "jni/WebContentsImpl_jni.h"
@@ -483,6 +484,19 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(JNIEnv* env,
   web_contents_->GetMainFrame()->AddMessageToConsole(
       static_cast<ConsoleMessageLevel>(level),
       ConvertJavaStringToUTF8(env, message));
+}
+
+void WebContentsAndroid::SendMessageToFrame(JNIEnv* env,
+                                            jobject obj,
+                                            jstring frame_name,
+                                            jstring message,
+                                            jstring target_origin) {
+  base::string16 source_origin;
+  base::string16 j_target_origin(ConvertJavaStringToUTF16(env, target_origin));
+  base::string16 j_message(ConvertJavaStringToUTF16(env, message));
+  std::vector<content::TransferredMessagePort> ports;
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents_, source_origin, j_target_origin, j_message, ports);
 }
 
 jboolean WebContentsAndroid::HasAccessedInitialDocument(

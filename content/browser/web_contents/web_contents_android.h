@@ -96,6 +96,12 @@ class CONTENT_EXPORT WebContentsAndroid
                                    jint level,
                                    jstring message);
 
+  void SendMessageToFrame(JNIEnv* env,
+                          jobject obj,
+                          jstring frame_name,
+                          jstring message,
+                          jstring target_origin);
+
   jboolean HasAccessedInitialDocument(JNIEnv* env, jobject jobj);
 
   jint GetThemeColor(JNIEnv* env, jobject obj);

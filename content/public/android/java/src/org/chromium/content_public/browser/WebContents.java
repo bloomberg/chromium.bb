@@ -249,6 +249,11 @@ public interface WebContents extends Parcelable {
     void addMessageToDevToolsConsole(int level, String message);
 
     /**
+     * Dispatches a Message event to the specified frame.
+     */
+    void sendMessageToFrame(String frameName, String message, String targetOrigin);
+
+    /**
      * Returns whether the initial empty page has been accessed by a script from another
      * page. Always false after the first commit.
      *

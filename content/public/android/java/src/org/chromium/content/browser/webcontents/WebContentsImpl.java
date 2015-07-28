@@ -309,6 +309,11 @@ import java.util.UUID;
     }
 
     @Override
+    public void sendMessageToFrame(String frameName, String message, String targetOrigin) {
+        nativeSendMessageToFrame(mNativeWebContentsAndroid, frameName, message, targetOrigin);
+    }
+
+    @Override
     public boolean hasAccessedInitialDocument() {
         return nativeHasAccessedInitialDocument(mNativeWebContentsAndroid);
     }
@@ -435,6 +440,8 @@ import java.util.UUID;
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);
+    private native void nativeSendMessageToFrame(long nativeWebContentsAndroid,
+            String frameName, String message, String targetOrigin);
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
