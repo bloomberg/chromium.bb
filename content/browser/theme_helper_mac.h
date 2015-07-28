@@ -27,9 +27,7 @@ class ThemeHelperMac : public NotificationObserver {
       float autoscroll_button_delay,
       bool jump_on_track_click,
       blink::ScrollerStyle preferred_scroller_style,
-      bool redraw,
-      bool scroll_animation_enabled,
-      blink::ScrollbarButtonsPlacement button_placement);
+      bool redraw);
 
  private:
   friend struct DefaultSingletonTraits<ThemeHelperMac>;
