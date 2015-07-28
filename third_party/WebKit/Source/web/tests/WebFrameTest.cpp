@@ -7842,52 +7842,6 @@ TEST_F(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll)
     Mock::VerifyAndClearExpectations(&client);
 }
 
-TEST_F(WebFrameOverscrollTest, NoOverscrollOnNonScrollableaxes)
-{
-    OverscrollWebViewClient client;
-    registerMockedHttpURLLoad("overscroll/no-overscroll-on-nonscrollable-axes.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/no-overscroll-on-nonscrollable-axes.html", true, 0, &client, configureAndroid);
-
-    // Overscroll is not reported in all the directions.
-    ScrollBegin(&webViewHelper);
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, 0, -1);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, 0, 1);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, 1, 0);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, -1, 0);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, 1, 1);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, -1, 1);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, 1, -1);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollUpdate(&webViewHelper, -1, -1);
-    Mock::VerifyAndClearExpectations(&client);
-
-    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
-    ScrollEnd(&webViewHelper);
-    Mock::VerifyAndClearExpectations(&client);
-}
-
 TEST_F(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
 {
     OverscrollWebViewClient client;

@@ -2344,13 +2344,6 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     ScrollResult scrollResult = m_frame->applyScrollDelta(delta, false);
     FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
     FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
-    if (m_frame->isMainFrame() && m_frame->view() && m_frame->view()->scrollableArea()) {
-        ScrollableArea* scrollablearea = m_frame->view()->scrollableArea();
-        // TODO(sataya.m) : In Case of android set unusedDelta to 0 to ensure overflow is not reported
-        // on non-scrollable axis. Move this check to CC to block OverscrollGlow Animation on non-scrollable axes.
-        scrollResult.unusedScrollDeltaX = scrollablearea->scrollSize(HorizontalScrollbar) ? scrollResult.unusedScrollDeltaX : 0;
-        scrollResult.unusedScrollDeltaY = scrollablearea->scrollSize(VerticalScrollbar) ? scrollResult.unusedScrollDeltaY : 0;
-    }
     handleOverscroll(scrollResult, position, velocity);
     if (scrollResult.didScroll()) {
         setFrameWasScrolledByUser();
