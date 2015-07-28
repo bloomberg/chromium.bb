@@ -7,9 +7,11 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/instant_types.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
 
+class AutocompleteResult;
 class GURL;
 class SessionID;
 class TemplateURL;
@@ -20,6 +22,8 @@ namespace content {
 class NavigationController;
 }
 
+typedef base::Callback<void(const SkBitmap& bitmap)> BitmapFetchedCallback;
+
 // Interface that allows the omnibox component to interact with its embedder
 // (e.g., getting information about the current page, retrieving objects
 // associated with the current tab, or performing operations that rely on such
@@ -27,6 +31,10 @@ class NavigationController;
 class OmniboxClient {
  public:
   virtual ~OmniboxClient() {}
+
+  // Returns an AutocompleteProviderClient specific to the embedder context.
+  virtual scoped_ptr<AutocompleteProviderClient>
+      CreateAutocompleteProviderClient() = 0;
 
   // Returns whether there is any associated current page.  For example, during
   // startup or shutdown, the omnibox may exist but have no attached page.
@@ -67,6 +75,17 @@ class OmniboxClient {
   virtual void OnFocusChanged(OmniboxFocusState state,
                               OmniboxFocusChangeReason reason) = 0;
 
+  // Called when the autocomplete result has changed. If the embedder supports
+  // fetching of bitmaps for URLs (not all embedders do), |on_bitmap_fetched|
+  // will be called when the bitmap has been fetched.
+  virtual void OnResultChanged(
+      const AutocompleteResult& result,
+      bool default_match_changed,
+      const BitmapFetchedCallback& on_bitmap_fetched) = 0;
+
+  // Called when the current autocomplete match has changed.
+  virtual void OnCurrentMatchChanged(const AutocompleteMatch& match) = 0;
+
   // Called to notify clients that a URL was opened from the omnibox.
   // TODO(blundell): Eliminate this method in favor of having all //chrome-
   // level listeners of the OMNIBOX_OPENED_URL instead observe OmniboxEditModel.
@@ -78,6 +97,11 @@ class OmniboxClient {
 
   // Performs prerendering for |match|.
   virtual void DoPrerender(const AutocompleteMatch& match) = 0;
+
+  // Performs preconnection for |match|.
+  // TODO(blundell): Remove from this interface once OmniboxEditModel no
+  // longer refers to it.
+  virtual void DoPreconnect(const AutocompleteMatch& match) = 0;
 
   // Sends the current SearchProvider suggestion to the Instant page if any.
   virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) = 0;

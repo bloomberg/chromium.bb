@@ -440,13 +440,15 @@ class OmniboxEditModel {
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
 
+  // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
+  // reference to the former.
+  scoped_ptr<OmniboxClient> client_;
+
   scoped_ptr<OmniboxController> omnibox_controller_;
 
   OmniboxView* view_;
 
   OmniboxEditController* controller_;
-
-  scoped_ptr<OmniboxClient> client_;
 
   OmniboxFocusState focus_state_;
 

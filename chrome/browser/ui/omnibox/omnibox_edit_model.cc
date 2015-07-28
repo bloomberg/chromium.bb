@@ -195,9 +195,9 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
                                    scoped_ptr<OmniboxClient> client,
                                    Profile* profile)
-    : view_(view),
+    : client_(client.Pass()),
+      view_(view),
       controller_(controller),
-      client_(client.Pass()),
       focus_state_(OMNIBOX_FOCUS_NONE),
       focus_source_(INVALID),
       user_input_in_progress_(false),
@@ -210,7 +210,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       profile_(profile),
       in_revert_(false),
       allow_exact_keyword_match_(false) {
-  omnibox_controller_.reset(new OmniboxController(this, profile));
+  omnibox_controller_.reset(new OmniboxController(this, client_.get()));
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
@@ -399,7 +399,7 @@ void OmniboxEditModel::OnChanged() {
         client_->DoPrerender(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_PRECONNECT:
-      omnibox_controller_->DoPreconnect(current_match);
+      client_->DoPreconnect(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_NONE:
       break;
@@ -1347,6 +1347,8 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   has_temporary_text_ = false;
 
   const AutocompleteMatch& match = omnibox_controller_->current_match();
+
+  client_->OnCurrentMatchChanged(match);
 
   // We store |keyword| and |is_keyword_hint| in temporary variables since
   // OnPopupDataChanged use their previous state to detect changes.
