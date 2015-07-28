@@ -13,12 +13,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/tracked_objects.h"
 
 #if defined(OS_LINUX)
 #include <sys/syscall.h>
@@ -37,23 +34,16 @@ namespace {
 
 struct ThreadParams {
   ThreadParams()
-      : delegate(NULL),
-        joinable(false),
-        priority(ThreadPriority::NORMAL),
-        handle(NULL),
-        handle_set(false, false) {
-  }
+      : delegate(NULL), joinable(false), priority(ThreadPriority::NORMAL) {}
 
   PlatformThread::Delegate* delegate;
   bool joinable;
   ThreadPriority priority;
-  PlatformThreadHandle* handle;
-  WaitableEvent handle_set;
 };
 
 void* ThreadFunc(void* params) {
   base::InitOnThread();
-  ThreadParams* thread_params = static_cast<ThreadParams*>(params);
+  scoped_ptr<ThreadParams> thread_params(static_cast<ThreadParams*>(params));
 
   PlatformThread::Delegate* delegate = thread_params->delegate;
   if (!thread_params->joinable)
@@ -61,11 +51,6 @@ void* ThreadFunc(void* params) {
 
   if (thread_params->priority != ThreadPriority::NORMAL)
     PlatformThread::SetCurrentThreadPriority(thread_params->priority);
-
-  // Stash the id in the handle so the calling thread has a complete
-  // handle, and unblock the parent thread.
-  *(thread_params->handle) = PlatformThreadHandle(pthread_self());
-  thread_params->handle_set.Signal();
 
   ThreadIdNameManager::GetInstance()->RegisterThread(
       PlatformThread::CurrentHandle().platform_handle(),
@@ -81,21 +66,21 @@ void* ThreadFunc(void* params) {
   return NULL;
 }
 
-bool CreateThread(size_t stack_size, bool joinable,
+bool CreateThread(size_t stack_size,
+                  bool joinable,
                   PlatformThread::Delegate* delegate,
                   PlatformThreadHandle* thread_handle,
                   ThreadPriority priority) {
+  DCHECK(thread_handle);
   base::InitThreading();
 
-  bool success = false;
   pthread_attr_t attributes;
   pthread_attr_init(&attributes);
 
   // Pthreads are joinable by default, so only specify the detached
   // attribute if the thread should be non-joinable.
-  if (!joinable) {
+  if (!joinable)
     pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
-  }
 
   // Get a better default if available.
   if (stack_size == 0)
@@ -104,37 +89,27 @@ bool CreateThread(size_t stack_size, bool joinable,
   if (stack_size > 0)
     pthread_attr_setstacksize(&attributes, stack_size);
 
-  ThreadParams params;
-  params.delegate = delegate;
-  params.joinable = joinable;
-  params.priority = priority;
-  params.handle = thread_handle;
+  scoped_ptr<ThreadParams> params(new ThreadParams);
+  params->delegate = delegate;
+  params->joinable = joinable;
+  params->priority = priority;
 
   pthread_t handle;
-  int err = pthread_create(&handle,
-                           &attributes,
-                           ThreadFunc,
-                           &params);
-  success = !err;
-  if (!success) {
+  int err =
+      pthread_create(&handle, &attributes, ThreadFunc, params.get());
+  bool success = !err;
+  if (success) {
+    // ThreadParams should be deleted on the created thread after used.
+    ignore_result(params.release());
+  } else {
     // Value of |handle| is undefined if pthread_create fails.
     handle = 0;
     errno = err;
     PLOG(ERROR) << "pthread_create";
   }
+  *thread_handle = PlatformThreadHandle(handle);
 
   pthread_attr_destroy(&attributes);
-
-  // Don't let this call complete until the thread id
-  // is set in the handle.
-  if (success) {
-    // TODO(toyoshim): Remove this after a few days (crbug.com/495097)
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "495097 pthread_create and handle_set.Wait"));
-    params.handle_set.Wait();
-  }
-  CHECK_EQ(handle, thread_handle->platform_handle());
 
   return success;
 }
@@ -202,7 +177,6 @@ const char* PlatformThread::GetName() {
 bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
                                         PlatformThreadHandle* thread_handle,
                                         ThreadPriority priority) {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   return CreateThread(stack_size, true,  // joinable thread
                       delegate, thread_handle, priority);
 }
@@ -211,7 +185,6 @@ bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
 bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
   PlatformThreadHandle unused;
 
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   bool result = CreateThread(stack_size, false /* non-joinable thread */,
                              delegate, &unused, ThreadPriority::NORMAL);
   return result;
