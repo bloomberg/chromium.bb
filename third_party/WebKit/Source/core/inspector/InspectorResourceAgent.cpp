@@ -507,6 +507,7 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
 void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
     ASSERT(xhr);
+    ASSERT(!m_pendingXHR);
     m_pendingXHR = client;
     m_pendingXHRReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData.get(), includeCredentials);
     for (const auto& header : headers)
@@ -543,19 +544,21 @@ void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XML
     delayedRemoveReplayXHR(xhr);
 
     ThreadableLoaderClientRequestIdMap::iterator it = m_xhrRequestIdMap.find(client);
+    if (it == m_xhrRequestIdMap.end())
+        return;
 
-    if (m_state->getBoolean(ResourceAgentState::monitoringXHR) && it != m_eventSourceRequestIdMap.end()) {
+    if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
         String message = (success ? "XHR finished loading: " : "XHR failed loading: ") + method + " \"" + url + "\".";
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(it->value);
         m_pageAgent->frameHost()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
     }
-
     m_xhrRequestIdMap.remove(client);
 }
 
 void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* eventSource)
 {
+    ASSERT(!m_pendingEventSource);
     m_pendingEventSource = eventSource;
 }
 
@@ -720,6 +723,8 @@ void InspectorResourceAgent::enable()
 
 void InspectorResourceAgent::disable(ErrorString*)
 {
+    ASSERT(!m_pendingXHR);
+    ASSERT(!m_pendingEventSource);
     m_state->setBoolean(ResourceAgentState::resourceAgentEnabled, false);
     m_state->setString(ResourceAgentState::userAgentOverride, "");
     m_instrumentingAgents->setInspectorResourceAgent(0);
