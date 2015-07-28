@@ -228,6 +228,8 @@ _OS_NEGATIVE_FILTER['android:chrome_shell'] = (
         'ClickTest.testShouldClickOnFirstBoundingClientRectWithNonZeroSize',
         'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
         'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
+        # https://code.google.com/p/chromedriver/issues/detail?id=1171
+        'ChromeDriverTests.testOptionsForUninitializedWebDriver',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
