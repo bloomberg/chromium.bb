@@ -500,6 +500,8 @@ void ProfileImplIOData::InitializeInternal(
       fraudulent_certificate_reporter());
 
   main_context->set_proxy_service(proxy_service());
+  main_context->set_backoff_manager(
+      io_thread_globals->url_request_backoff_manager.get());
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   net::ChannelIDService* channel_id_service = NULL;
@@ -605,6 +607,7 @@ void ProfileImplIOData::
     InitializeExtensionsRequestContext(ProfileParams* profile_params) const {
   net::URLRequestContext* extensions_context = extensions_request_context();
   IOThread* const io_thread = profile_params->io_thread;
+  IOThread::Globals* const io_thread_globals = io_thread->globals();
   ApplyProfileParamsToContext(extensions_context);
 
   extensions_context->set_transport_security_state(transport_security_state());
@@ -643,6 +646,8 @@ void ProfileImplIOData::
       NULL,
       ftp_factory_.get());
   extensions_context->set_job_factory(extensions_job_factory_.get());
+  extensions_context->set_backoff_manager(
+      io_thread_globals->url_request_backoff_manager.get());
 }
 
 net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(

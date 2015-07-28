@@ -225,6 +225,8 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   main_context->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());
+  main_context->set_backoff_manager(
+      io_thread_globals->url_request_backoff_manager.get());
 
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
   set_http_server_properties(
@@ -296,6 +298,8 @@ void OffTheRecordProfileIOData::
   extensions_context->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());
 
+  extensions_context->set_backoff_manager(
+      io_thread_globals->url_request_backoff_manager.get());
   // All we care about for extensions is the cookie store. For incognito, we
   // use a non-persistent cookie store.
   net::CookieMonster* extensions_cookie_store =
