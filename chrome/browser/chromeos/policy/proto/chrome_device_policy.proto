@@ -629,7 +629,7 @@ message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
-  optional OBSOLETE_DeviceProxySettingsProto device_proxy_settings = 4 
+  optional OBSOLETE_DeviceProxySettingsProto device_proxy_settings = 4
       [deprecated = true];
   optional CameraEnabledProto camera_enabled = 5;
   optional ShowUserNamesOnSigninProto show_user_names = 6;
