@@ -61,6 +61,7 @@ CHROMIUM_REPO = 'https://chromium.googlesource.com/chromium/src.git'
 
 CODE_REVIEW_SERVER = 'https://codereview.chromium.org'
 
+COMMITISH_DIGITS = 10
 
 class GNRoller(object):
   def __init__(self):
@@ -159,8 +160,11 @@ class GNRoller(object):
       return 1
 
     print('Starting try jobs')
-    self.Call('git-cl try -b linux_chromium_gn_upload '
-              '-b mac_chromium_gn_upload '
+    self.Call('git-cl try -m tryserver.chromium.linux '
+              '-b linux_chromium_gn_upload -r %s' % self.new_gn_commitish)
+    self.Call('git-cl try -m tryserver.chromium.mac '
+              '-b mac_chromium_gn_upload -r %s' % self.new_gn_commitish)
+    self.Call('git-cl try -m tryserver.chromium.win '
               '-b win8_chromium_gn_upload -r %s' % self.new_gn_commitish)
 
     return 0
@@ -286,14 +290,27 @@ class GNRoller(object):
     finally:
       os.remove(desc_file.name)
 
-    self.Call('git cl push', cwd=self.buildtools_dir)
+    ret, out, err = self.Call('git cl land', cwd=self.buildtools_dir)
+    if ret:
+        print("buildtools git cl land failed: %d" % ret)
+        if out:
+            print(out)
+        if err:
+            print(err)
+        return ret
 
     # Fetch the revision we just committed so that RollDEPS will find it.
-    self.Call('git cl fetch', cwd=self.buildtools_dir)
+    self.Call('git fetch', cwd=self.buildtools_dir)
 
     return 0
 
   def RollDEPS(self):
+    ret, _, _ = self.Call('git new-branch roll_gn_%s' % self.new_gn_version)
+    if ret:
+      print('Failed to create a new branch for roll_gn_%s' %
+            self.new_gn_version)
+      return 1
+
     _, out, _ = self.Call('git rev-parse origin/master',
                           cwd=self.buildtools_dir)
     new_buildtools_commitish = out.strip()
@@ -324,7 +341,7 @@ class GNRoller(object):
       desc_file.write(desc)
       desc_file.close()
       self.Call('git commit -a -F %s' % desc_file.name)
-      self.Call('git-cl upload -f --send-mail --commit-queue')
+      self.Call('git-cl upload -f --send-mail --use-commit-queue')
     finally:
       os.remove(desc_file.name)
     return 0
@@ -332,13 +349,13 @@ class GNRoller(object):
   def GetBuildtoolsDesc(self):
     gn_changes = self.GetGNChanges()
     return (
-      'Roll gn %s..%s (r%s:%s)\n'
+      'Roll gn %s..%s (r%s:r%s)\n'
       '\n'
       '%s'
       '\n'
       'TBR=%s\n' % (
-        self.old_gn_commitish,
-        self.new_gn_commitish,
+        self.old_gn_commitish[:COMMITISH_DIGITS],
+        self.new_gn_commitish[:COMMITISH_DIGITS],
         self.old_gn_version,
         self.new_gn_version,
         gn_changes,
@@ -351,7 +368,8 @@ class GNRoller(object):
     return (
       'Roll DEPS %s..%s\n'
       '\n'
-      '  in order to roll GN %s..%s (r%s:%s)\n'
+      '  In order to roll GN %s..%s (r%s:r%s) and pick up\n'
+      '  the following changes:\n'
       '\n'
       '%s'
       '\n'
@@ -360,10 +378,10 @@ class GNRoller(object):
       'mac_chromium_gn_dbg;'
       'tryserver.chromium.win:win8_chromium_gn_dbg,'
       'win_chromium_gn_x64_rel\n' % (
-        old_buildtools_commitish,
-        new_buildtools_commitish,
-        self.old_gn_commitish,
-        self.new_gn_commitish,
+        old_buildtools_commitish[:COMMITISH_DIGITS],
+        new_buildtools_commitish[:COMMITISH_DIGITS],
+        self.old_gn_commitish[:COMMITISH_DIGITS],
+        self.new_gn_commitish[:COMMITISH_DIGITS],
         self.old_gn_version,
         self.new_gn_version,
         gn_changes,
