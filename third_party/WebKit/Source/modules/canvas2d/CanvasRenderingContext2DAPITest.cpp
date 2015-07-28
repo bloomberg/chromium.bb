@@ -6,13 +6,17 @@
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/ImageData.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
+#include "modules/canvas2d/HitRegionOptions.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include <gmock/gmock.h>
@@ -233,6 +237,71 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageData)
     EXPECT_EQ((unsigned)800, imgdata2->data()->length());
     EXPECT_EQ((unsigned)800, imgdata3->data()->length());
     EXPECT_EQ((unsigned)800, imgdata4->data()->length());
+}
+
+void resetCanvasForAccessibilityRectTest(HTMLDocument& document)
+{
+    document.documentElement()->setInnerHTML(
+        "<canvas id='canvas' style='position:absolute; top:0px; left:0px; padding:10px; margin:5px;'>"
+        "<button id='button'></button></canvas>", ASSERT_NO_EXCEPTION);
+    document.settings()->setAccessibilityEnabled(true);
+    HTMLCanvasElement* canvas = toHTMLCanvasElement(document.getElementById("canvas"));
+
+    String canvasType("2d");
+    CanvasContextCreationAttributes attributes;
+    attributes.setAlpha(true);
+    canvas->getCanvasRenderingContext(canvasType, attributes);
+
+    EXPECT_NE(nullptr, canvas->renderingContext());
+    EXPECT_TRUE(canvas->renderingContext()->is2d());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion)
+{
+    resetCanvasForAccessibilityRectTest(document());
+
+    Element* buttonElement = document().getElementById("button");
+    HTMLCanvasElement* canvas = toHTMLCanvasElement(document().getElementById("canvas"));
+    CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->renderingContext());
+
+    NonThrowableExceptionState exceptionState;
+    HitRegionOptions options;
+    options.setControl(buttonElement);
+
+    context->beginPath();
+    context->rect(10, 10, 40, 40);
+    context->addHitRegion(options, exceptionState);
+
+    AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(document().existingAXObjectCache());
+    AXObject* axObject = axObjectCache->getOrCreate(buttonElement);
+
+    EXPECT_EQ(25, axObject->elementRect().x().toInt());
+    EXPECT_EQ(25, axObject->elementRect().y().toInt());
+    EXPECT_EQ(40, axObject->elementRect().width().toInt());
+    EXPECT_EQ(40, axObject->elementRect().height().toInt());
+}
+
+TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForDrawFocusIfNeeded)
+{
+    resetCanvasForAccessibilityRectTest(document());
+
+    Element* buttonElement = document().getElementById("button");
+    HTMLCanvasElement* canvas = toHTMLCanvasElement(document().getElementById("canvas"));
+    CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->renderingContext());
+
+    document().updateLayoutTreeForNodeIfNeeded(canvas);
+
+    context->beginPath();
+    context->rect(10, 10, 40, 40);
+    context->drawFocusIfNeeded(buttonElement);
+
+    AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(document().existingAXObjectCache());
+    AXObject* axObject = axObjectCache->getOrCreate(buttonElement);
+
+    EXPECT_EQ(25, axObject->elementRect().x().toInt());
+    EXPECT_EQ(25, axObject->elementRect().y().toInt());
+    EXPECT_EQ(40, axObject->elementRect().width().toInt());
+    EXPECT_EQ(40, axObject->elementRect().height().toInt());
 }
 
 } // namespace blink

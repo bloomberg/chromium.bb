@@ -2168,6 +2168,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 
 void CanvasRenderingContext2D::updateElementAccessibility(const Path& path, Element* element)
 {
+    element->document().updateLayoutIgnorePendingStylesheets();
     AXObjectCache* axObjectCache = element->document().existingAXObjectCache();
     LayoutBoxModelObject* lbmo = canvas()->layoutBoxModelObject();
     LayoutObject* renderer = canvas()->layoutObject();
