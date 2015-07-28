@@ -22,8 +22,8 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (7,1) size 2x20 [r=0 c=2 rs=1 cs=1]
               LayoutMenuList {SELECT} at (1,1) size 0x18 [bgcolor=#F8F8F8]
                 LayoutBlockFlow (anonymous) at (0,0) size 31x18
-                  LayoutText (anonymous) at (8,2) size 28x13
-                    text run at (8,2) width 28: "three"
+                  LayoutText (anonymous) at (8,2) size 27x13
+                    text run at (8,2) width 27: "three"
             LayoutTableCell {TD} at (10,1) size 773x20 [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 4x18
                 text run at (1,1) width 4: " "
