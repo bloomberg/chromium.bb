@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/common/chrome_version_info.h"
@@ -452,8 +451,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("scrapedPasswordVerificationFailed",
               &GaiaScreenHandler::HandleScrapedPasswordVerificationFailed);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
-  AddCallback("toggleWebviewSignin",
-              &GaiaScreenHandler::HandleToggleWebviewSignin);
   AddCallback("toggleEasyBootstrap",
               &GaiaScreenHandler::HandleToggleEasyBootstrap);
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
@@ -608,13 +605,6 @@ void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
 
 void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
   RecordSAMLScrapingVerificationResultInHistogram(false);
-}
-
-void GaiaScreenHandler::HandleToggleWebviewSignin() {
-  if (StartupUtils::EnableWebviewSignin(
-        !StartupUtils::IsWebviewSigninEnabled())) {
-    chrome::AttemptRestart();
-  }
 }
 
 void GaiaScreenHandler::HandleToggleEasyBootstrap() {

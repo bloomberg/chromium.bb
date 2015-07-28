@@ -1860,11 +1860,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION,
      kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kDisableTimeZoneTrackingOption)},
-    {"disable-webview-signin-flow",
-     IDS_FLAGS_DISABLE_WEBVIEW_SIGNIN_FLOW_NAME,
-     IDS_FLAGS_DISABLE_WEBVIEW_SIGNIN_FLOW_DESCRIPTION,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kDisableWebviewSigninFlow)},
 #endif  // defined(OS_CHROMEOS)
     {"data-reduction-proxy-lo-fi",
      IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME,

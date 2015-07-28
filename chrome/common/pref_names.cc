@@ -1877,10 +1877,6 @@ const char kConsumerManagementStage[] = "consumer_management.stage";
 // A boolean pref. If set to true, experimental webview based signin flow
 // is deactivated.
 const char kWebviewSigninDisabled[] = "webview_signin_disabled";
-
-// A boolean pref. If set to true, then on the network screen we should display
-// whether the WebView-based sign-in flow is active.
-const char kNewLoginUIPopup[] = "new_login_ui_popup";
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

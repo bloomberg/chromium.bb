@@ -50,10 +50,6 @@ class StartupUtils {
   // Returns true if webview based signin flow has been activated.
   static bool IsWebviewSigninEnabled();
 
-  // Set enabled state for webview based signin flow if allowed. Returns true if
-  // it is allowed to activate webview based signin flow.
-  static bool EnableWebviewSignin(bool is_enabled);
-
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 };

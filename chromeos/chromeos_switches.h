@@ -103,7 +103,6 @@ CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
 CHROMEOS_EXPORT extern const char kWakeOnPackets[];
 CHROMEOS_EXPORT extern const char kDisableCaptivePortalBypassProxy[];
 CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];
-CHROMEOS_EXPORT extern const char kDisableWebviewSigninFlow[];
 CHROMEOS_EXPORT extern const char kDisableDataSaverPrompt[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
 CHROMEOS_EXPORT extern const char kDataSaverPromptDemoMode[];

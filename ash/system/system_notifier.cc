@@ -27,7 +27,6 @@ const char* kAlwaysShownSystemNotifierIds[] = {
     kNotifierDisplayError,
 #if defined(OS_CHROMEOS)
     ui::NetworkStateNotifier::kNotifierNetworkError,
-    kNotifierOobeScreen,
 #endif
     kNotifierPower,
     // Note: Order doesn't matter here, so keep this in alphabetic order, don't
@@ -77,7 +76,6 @@ const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 const char kNotifierLocale[] = "ash.locale";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
-const char kNotifierOobeScreen[] = "ash.oobe-screen";
 const char kNotifierPower[] = "ash.power";
 const char kNotifierScreenshot[] = "ash.screenshot";
 const char kNotifierScreenCapture[] = "ash.screen-capture";

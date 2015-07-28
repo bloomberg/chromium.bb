@@ -138,8 +138,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   void HandleToggleEasyBootstrap();
 
-  void HandleToggleWebviewSignin();
-
   void HandleIdentifierEntered(const std::string& account_identifier);
 
   // This is called when ConsumerManagementService::SetOwner() returns.

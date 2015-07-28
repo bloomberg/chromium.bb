@@ -44,14 +44,10 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
   void ReloadLocalizedContent() override;
 
   // BaseScreenHandler implementation:
-  void RegisterMessages() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
-
-  // WebUI message handlers.
-  void HandleToggleNewLoginUI();
 
  private:
   // Returns available timezones. Caller gets the ownership.

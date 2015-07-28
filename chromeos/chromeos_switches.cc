@@ -311,9 +311,6 @@ const char kDisableCaptivePortalBypassProxy[] =
 const char kDisableTimeZoneTrackingOption[] =
     "disable-timezone-tracking-option";
 
-// Disable new GAIA sign-in flow.
-const char kDisableWebviewSigninFlow[] = "disable-webview-signin-flow";
-
 // Switches and optional value for Data Saver prompt on cellular networks.
 const char kDisableDataSaverPrompt[] = "disable-datasaver-prompt";
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";

@@ -47,11 +47,6 @@ void SaveStringPreferenceForced(const char* pref_name,
   prefs->CommitPendingWrite();
 }
 
-bool IsWebViewDisabledCmdLine() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableWebviewSigninFlow);
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -64,7 +59,6 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
   registry->RegisterBooleanPref(prefs::kWebviewSigninDisabled, false);
-  registry->RegisterBooleanPref(prefs::kNewLoginUIPopup, false);
 }
 
 // static
@@ -184,21 +178,8 @@ std::string StartupUtils::GetInitialLocale() {
 
 // static
 bool StartupUtils::IsWebviewSigninEnabled() {
-  const bool is_webview_disabled_pref =
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kWebviewSigninDisabled);
-
-  return !IsWebViewDisabledCmdLine() && !is_webview_disabled_pref;
-}
-
-// static
-bool StartupUtils::EnableWebviewSignin(bool is_enabled) {
-  if (is_enabled && IsWebViewDisabledCmdLine())
-    return false;
-
-  g_browser_process->local_state()->SetBoolean(prefs::kWebviewSigninDisabled,
-                                               !is_enabled);
-  return true;
+  return !g_browser_process->local_state()->GetBoolean(
+      prefs::kWebviewSigninDisabled);
 }
 
 // static
