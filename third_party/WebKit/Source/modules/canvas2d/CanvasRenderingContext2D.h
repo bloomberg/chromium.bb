@@ -210,7 +210,7 @@ public:
     void addHitRegion(const HitRegionOptions&, ExceptionState&);
     void removeHitRegion(const String& id);
     void clearHitRegions();
-    HitRegion* hitRegionAtPoint(const LayoutPoint&);
+    HitRegion* hitRegionAtPoint(const FloatPoint&);
     unsigned hitRegionsCount() const override;
 
     void loseContext(LostContextMode) override;

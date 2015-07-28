@@ -25,15 +25,14 @@ String EventHitRegion::regionIdFromAbsoluteLocation(HTMLCanvasElement& canvas, c
     // Adjust offsetLocation to be relative to the canvas's position.
     LayoutObject* layoutObject = canvas.layoutObject();
     FloatPoint localPos = layoutObject->absoluteToLocal(FloatPoint(location), UseTransforms);
-    LayoutPoint localLayoutPoint = roundedLayoutPoint(localPos);
 
     LocalFrame* frame = document.frame();
     float zoomFactor = frame ? frame->pageZoomFactor() : 1;
     float scaleFactor = 1 / zoomFactor;
     if (scaleFactor != 1.0f)
-        localLayoutPoint.scale(scaleFactor, scaleFactor);
+        localPos.scale(scaleFactor, scaleFactor);
 
-    HitRegion* hitRegion = toCanvasRenderingContext2D(context)->hitRegionAtPoint(localLayoutPoint);
+    HitRegion* hitRegion = toCanvasRenderingContext2D(context)->hitRegionAtPoint(localPos);
     if (!hitRegion || hitRegion->id().isEmpty())
         return String();
 

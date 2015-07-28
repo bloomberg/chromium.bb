@@ -2239,7 +2239,7 @@ void CanvasRenderingContext2D::clearHitRegions()
         m_hitRegionManager->removeAllHitRegions();
 }
 
-HitRegion* CanvasRenderingContext2D::hitRegionAtPoint(const LayoutPoint& point)
+HitRegion* CanvasRenderingContext2D::hitRegionAtPoint(const FloatPoint& point)
 {
     if (m_hitRegionManager)
         return m_hitRegionManager->getHitRegionAtPoint(point);

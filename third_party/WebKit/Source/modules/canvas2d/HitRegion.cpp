@@ -21,11 +21,6 @@ HitRegion::HitRegion(const Path& path, const HitRegionOptions& options)
         m_fillRule = RULE_EVENODD;
 }
 
-bool HitRegion::contains(const LayoutPoint& point) const
-{
-    return m_path.contains(FloatPoint(point), m_fillRule);
-}
-
 bool HitRegion::contains(const FloatPoint& point) const
 {
     return m_path.contains(point, m_fillRule);
@@ -120,7 +115,7 @@ HitRegion* HitRegionManager::getHitRegionByControl(Element* control) const
     return nullptr;
 }
 
-HitRegion* HitRegionManager::getHitRegionAtPoint(const LayoutPoint& point) const
+HitRegion* HitRegionManager::getHitRegionAtPoint(const FloatPoint& point) const
 {
     HitRegionIterator itEnd = m_hitRegionList.rend();
 
