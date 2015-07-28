@@ -4,6 +4,13 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
+import android.app.ActivityManager;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.LruCache;
+import android.util.Pair;
+
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
@@ -22,6 +29,8 @@ import java.util.List;
  * the UI to acquire data from the backend.
  */
 public class EnhancedBookmarksModel extends BookmarksBridge {
+    private static final int FAVICON_MAX_CACHE_SIZE = 10 * 1024 * 1024; // 10MB
+
     /**
      * Observer that listens to delete event. This interface is used by undo controllers to know
      * which bookmarks were deleted. Note this observer only listens to events that go through
@@ -39,6 +48,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
 
     private LargeIconBridge mLargeIconBridge;
     private ObserverList<EnhancedBookmarkDeleteObserver> mDeleteObservers = new ObserverList<>();
+    private LruCache<String, Pair<Bitmap, Integer>> mFaviconCache;
 
     /**
      * Initialize enhanced bookmark model for last used non-incognito profile.
@@ -51,6 +61,21 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     public EnhancedBookmarksModel(Profile profile) {
         super(profile);
         mLargeIconBridge = new LargeIconBridge();
+
+        ActivityManager activityManager = ((ActivityManager) ApplicationStatus
+                .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
+        int maxSize = Math.min(activityManager.getMemoryClass() / 4 * 1024 * 1024,
+                FAVICON_MAX_CACHE_SIZE);
+        mFaviconCache = new LruCache<String, Pair<Bitmap, Integer>>(maxSize) {
+            @Override
+            protected int sizeOf(String key, Pair<Bitmap, Integer> icon) {
+                int size = Integer.SIZE;
+                if (icon.first != null) {
+                    size += icon.first.getByteCount();
+                }
+                return size;
+            }
+        };
     }
 
     /**
@@ -60,6 +85,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     public void destroy() {
         super.destroy();
         mLargeIconBridge.destroy();
+        mFaviconCache = null;
     }
 
     /**
@@ -135,10 +161,32 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     }
 
     /**
+     * Retrieves a favicon and fallback color for the given |url|. An LRU cache is used to store the
+     * favicons. If the favicon is not already present in the cache, it is retrieved using
+     * LargeIconBridge#getLargeIconForUrl().
+     *
      * @see LargeIconBridge#getLargeIconForUrl(Profile, String, int, LargeIconCallback)
      */
-    public void getLargeIcon(String url, int minSize, LargeIconCallback callback) {
-        mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), url, minSize, callback);
+    public void getLargeIcon(final String url, int minSize, final LargeIconCallback callback) {
+        assert callback != null;
+        LargeIconCallback callbackWrapper = callback;
+
+        Pair<Bitmap, Integer> cached = mFaviconCache.get(url);
+        if (cached != null) {
+            callback.onLargeIconAvailable(cached.first, cached.second);
+            return;
+        }
+
+        callbackWrapper = new LargeIconCallback() {
+            @Override
+            public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
+                mFaviconCache.put(url, new Pair<Bitmap, Integer>(icon, fallbackColor));
+                callback.onLargeIconAvailable(icon, fallbackColor);
+            }
+        };
+
+        mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), url, minSize,
+                callbackWrapper);
     }
 
     /**
