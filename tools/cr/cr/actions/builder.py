@@ -77,3 +77,6 @@ class SkipBuilder(Builder):
   def Clean(self, targets, arguments):
     pass
 
+  def IsTarget(self, target_name):
+    return True
+
