@@ -40,6 +40,7 @@ class SuggestionsStore;
 extern const char kSuggestionsURL[];
 extern const char kSuggestionsBlacklistURLPrefix[];
 extern const char kSuggestionsBlacklistURLParam[];
+extern const char kSuggestionsBlacklistClearURL[];
 extern const int64 kDefaultExpiryUsec;
 
 // An interface to fetch server suggestions asynchronously.
@@ -87,6 +88,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
                         const ResponseCallback& callback,
                         const base::Closure& fail_callback);
 
+  // Removes all URLs from the blacklist then invokes |callback|.
+  void ClearBlacklist(const ResponseCallback& callback);
+
   // Determines which URL a blacklist request was for, irrespective of the
   // request's status. Returns false if |request| is not a blacklist request.
   static bool GetBlacklistedUrl(const net::URLFetcher& request, GURL* url);
@@ -106,6 +110,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   friend class SuggestionsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLRequestFails);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, ClearBlacklist);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURLFailsHelper);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
@@ -137,6 +142,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Updates |scheduling_delay_| based on the success of the last request.
   void UpdateBlacklistDelay(bool last_request_successful);
+
+  // Adds favicon URLs to suggestions profile.
+  void PopulateFaviconUrls(SuggestionsProfile* suggestions);
 
   // Test seams.
   base::TimeDelta blacklist_delay() const { return scheduling_delay_; }

@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -81,16 +82,30 @@ const int kSchedulingBackoffMultiplier = 2;
 // this are rejected. This means the maximum backoff is at least 5 / 2 minutes.
 const int kSchedulingMaxDelaySec = 5 * 60;
 
+const char kFaviconURL[] =
+    "https://s2.googleusercontent.com/s2/favicons?domain_url=%s&alt=s&sz=32";
+
 }  // namespace
 
 // TODO(mathp): Put this in TemplateURL.
+// TODO(fserb): Add logic to decide the device type of the request.
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=2";
 const char kSuggestionsBlacklistURLPrefix[] =
     "https://www.google.com/chromesuggestions/blacklist?t=2&url=";
+const char kSuggestionsBlacklistClearURL[] =
+    "https://www.google.com/chromesuggestions/blacklist/clear?t=2";
+#else
+const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=1";
+const char kSuggestionsBlacklistURLPrefix[] =
+    "https://www.google.com/chromesuggestions/blacklist?t=1&url=";
+const char kSuggestionsBlacklistClearURL[] =
+    "https://www.google.com/chromesuggestions/blacklist/clear?t=1";
+#endif
 const char kSuggestionsBlacklistURLParam[] = "url";
 
-// The default expiry timeout is 72 hours.
-const int64 kDefaultExpiryUsec = 72 * base::Time::kMicrosecondsPerHour;
+// The default expiry timeout is 168 hours.
+const int64 kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
 SuggestionsService::SuggestionsService(
     net::URLRequestContextGetter* url_request_context,
@@ -173,6 +188,14 @@ void SuggestionsService::UndoBlacklistURL(
     return;
   }
   fail_callback.Run();
+}
+
+void SuggestionsService::ClearBlacklist(const ResponseCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  blacklist_store_->ClearBlacklist();
+  IssueRequestIfNoneOngoing(GURL(kSuggestionsBlacklistClearURL));
+  waiting_requestors_.push_back(callback);
+  ServeFromCache();
 }
 
 // static
@@ -296,6 +319,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
         .ToInternalValue();
     SetDefaultExpiryTimestamp(&suggestions, now_usec + kDefaultExpiryUsec);
+    PopulateFaviconUrls(&suggestions);
     suggestions_store_->StoreSuggestions(suggestions);
   } else {
     LogResponseState(RESPONSE_INVALID);
@@ -303,6 +327,15 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   UpdateBlacklistDelay(true);
   ScheduleBlacklistUpload();
+}
+
+void SuggestionsService::PopulateFaviconUrls(SuggestionsProfile* suggestions) {
+  for (int i = 0; i < suggestions->suggestions_size(); ++i) {
+    suggestions::ChromeSuggestion* s = suggestions->mutable_suggestions(i);
+    if (!s->has_favicon_url() || s->favicon_url().empty()) {
+      s->set_favicon_url(base::StringPrintf(kFaviconURL, s->url().c_str()));
+    }
+  }
 }
 
 void SuggestionsService::Shutdown() {

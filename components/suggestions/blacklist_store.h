@@ -38,6 +38,9 @@ class BlacklistStore {
   // was already in the blacklist, its blacklisting timestamp gets updated.
   virtual bool BlacklistUrl(const GURL& url);
 
+  // Clears any blacklist data from the profile's preferences.
+  virtual void ClearBlacklist();
+
   // Gets the time until any URL is ready for upload. Returns false if the
   // blacklist is empty.
   virtual bool GetTimeUntilReadyForUpload(base::TimeDelta* delta);
@@ -75,9 +78,6 @@ class BlacklistStore {
   // Stores the provided |blacklist| to the Profile preferences, using
   // a base64 encoding of its protobuf serialization.
   bool StoreBlacklist(const SuggestionsBlacklist& blacklist);
-
-  // Clears any blacklist data from the profile's preferences.
-  void ClearBlacklist();
 
  private:
   // The pref service used to persist the suggestions blacklist.
