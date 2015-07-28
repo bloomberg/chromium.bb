@@ -217,8 +217,9 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   #override
   def _RunTest(self, device, test):
     # Run the test.
+    timeout = 900 * self.GetTool(device).GetTimeoutScale()
     output = self._delegate.Run(
-        test, device, timeout=900, retries=0)
+        test, device, timeout=timeout, retries=0)
     for s in self._servers[str(device)]:
       s.Reset()
     if self._test_instance.app_files:
