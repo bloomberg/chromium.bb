@@ -25,9 +25,6 @@ var ClassicCompatibility = function() {
    */
   this.commands_ = [];
 
-  /** @type {!cvox.KeyMap} */
-  this.keyMap = cvox.KeyMap.fromCurrentKeyMap();
-
   // We grab the list of commands from the manifest because
   // chrome.commands.getAll is buggy.
   /** @type {!Object} */
@@ -47,10 +44,11 @@ ClassicCompatibility.prototype = {
    */
   onGotCommand: function(command) {
     var evt = this.buildKeyEvent_(command);
-    if (!evt)
-      return false;
-    this.simulateKeyDownNext_(evt);
-    return true;
+    if (evt) {
+      this.simulateKeyDownNext_(evt);
+      return true;
+    }
+    cvox.KeyUtil.sequencing = false;
   },
 
   /**
@@ -86,7 +84,8 @@ ClassicCompatibility.prototype = {
    */
   simulateKeyDownNext_: function(evt) {
     var keySequence = cvox.KeyUtil.keyEventToKeySequence(evt);
-    var classicCommand = this.keyMap.commandForKey(keySequence);
+    var classicCommand =
+        cvox.KeyMap.fromCurrentKeyMap().commandForKey(keySequence);
     if (classicCommand) {
       var nextCommand = this.getNextCommand_(classicCommand);
       if (nextCommand)
@@ -100,7 +99,8 @@ ClassicCompatibility.prototype = {
    */
   simulateKeyDownClassic_: function(evt) {
     var keySequence = cvox.KeyUtil.keyEventToKeySequence(evt);
-    var classicCommand = this.keyMap.commandForKey(keySequence);
+    var classicCommand =
+        cvox.KeyMap.fromCurrentKeyMap().commandForKey(keySequence);
     if (classicCommand) {
       cvox.ExtensionBridge.send({
         'message': 'USER_COMMAND',

@@ -16,7 +16,7 @@ class KeyEvent;
 // Receives requests for spoken feedback enabled state and command dispatch.
 class SpokenFeedbackEventRewriterDelegate {
  public:
-  SpokenFeedbackEventRewriterDelegate() {}
+  SpokenFeedbackEventRewriterDelegate();
   virtual ~SpokenFeedbackEventRewriterDelegate() {}
 
   // Returns true when ChromeVox is enabled.
@@ -26,6 +26,9 @@ class SpokenFeedbackEventRewriterDelegate {
   virtual bool DispatchKeyEventToChromeVox(const ui::KeyEvent& key_event);
 
  private:
+  // Whether the user previously hit a sequencing prefix command.
+  bool is_sequencing_;
+
   DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackEventRewriterDelegate);
 };
 

@@ -310,6 +310,10 @@ Background.prototype = {
           return;
         }
         break;
+      case 'showOptionsPage':
+        var optionsPage = {url: 'chromevox/background/options.html'};
+        chrome.tabs.create(optionsPage);
+        break;
     }
 
     if (pred) {
