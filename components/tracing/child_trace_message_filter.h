@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "ipc/message_filter.h"
 
@@ -85,6 +86,8 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
 
   // callback of the outstanding memory dump request, if any.
   base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
+
+  base::Time histogram_last_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);
 };

@@ -14,6 +14,12 @@ using base::trace_event::TraceLog;
 
 namespace tracing {
 
+namespace {
+
+const int kMinTimeBetweenHistogramChangesInSeconds = 10;
+
+}  // namespace
+
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::SingleThreadTaskRunner* ipc_task_runner)
     : sender_(NULL),
@@ -243,6 +249,15 @@ void ChildTraceMessageFilter::OnHistogramChanged(
 
 void ChildTraceMessageFilter::SendTriggerMessage(
     const std::string& histogram_name) {
+  if (!histogram_last_changed_.is_null()) {
+    base::Time computed_next_allowed_time =
+        histogram_last_changed_ +
+        base::TimeDelta::FromSeconds(kMinTimeBetweenHistogramChangesInSeconds);
+    if (computed_next_allowed_time > base::Time::Now())
+      return;
+  }
+  histogram_last_changed_ = base::Time::Now();
+
   if (sender_)
     sender_->Send(new TracingHostMsg_TriggerBackgroundTrace(histogram_name));
 }
@@ -250,6 +265,7 @@ void ChildTraceMessageFilter::SendTriggerMessage(
 void ChildTraceMessageFilter::OnSetUMACallback(
     const std::string& histogram_name,
     int histogram_value) {
+  histogram_last_changed_ = base::Time();
   base::StatisticsRecorder::SetCallback(
       histogram_name, base::Bind(&ChildTraceMessageFilter::OnHistogramChanged,
                                  this, histogram_name, histogram_value));
@@ -257,6 +273,7 @@ void ChildTraceMessageFilter::OnSetUMACallback(
 
 void ChildTraceMessageFilter::OnClearUMACallback(
     const std::string& histogram_name) {
+  histogram_last_changed_ = base::Time();
   base::StatisticsRecorder::ClearCallback(histogram_name);
 }
 

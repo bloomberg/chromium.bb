@@ -260,8 +260,6 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   receive_callback_ = receive_callback;
   requires_anonymized_data_ = requires_anonymized_data;
 
-  SetupUMACallbacks(BIND_CALLBACKS);
-
   EnableRecordingIfConfigNeedsIt();
 
   RecordBackgroundTracingMetric(SCENARIO_ACTIVATED_SUCCESSFULLY);
@@ -327,6 +325,8 @@ void BackgroundTracingManagerImpl::ValidateStartupScenario() {
 void BackgroundTracingManagerImpl::EnableRecordingIfConfigNeedsIt() {
   if (!config_)
     return;
+
+  SetupUMACallbacks(BIND_CALLBACKS);
 
   if (config_->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
     EnableRecording(GetCategoryFilterStringForCategoryPreset(
@@ -528,6 +528,10 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
       delegate_->IsAllowedToBeginBackgroundScenario(
           *config_.get(), requires_anonymized_data_)) {
     EnableRecordingIfConfigNeedsIt();
+  } else {
+    // Clear all the callbacks so we don't keep hearing about histogram changes,
+    // etc. anymore, both in this process and in any child processes.
+    SetupUMACallbacks(CLEAR_CALLBACKS);
   }
 
   RecordBackgroundTracingMetric(FINALIZATION_COMPLETE);
