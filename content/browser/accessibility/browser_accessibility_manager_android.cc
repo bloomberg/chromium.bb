@@ -192,7 +192,10 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
 }
 
 jint BrowserAccessibilityManagerAndroid::GetRootId(JNIEnv* env, jobject obj) {
-  return static_cast<jint>(GetRoot()->GetId());
+  if (GetRoot())
+    return static_cast<jint>(GetRoot()->GetId());
+  else
+    return -1;
 }
 
 jboolean BrowserAccessibilityManagerAndroid::IsNodeValid(

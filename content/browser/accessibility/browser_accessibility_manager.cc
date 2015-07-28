@@ -129,7 +129,9 @@ ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
-  return GetFromAXNode(tree_->root());
+  // tree_->root() can be null during AXTreeDelegate callbacks.
+  ui::AXNode* root = tree_->root();
+  return root ? GetFromAXNode(root) : nullptr;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(

@@ -188,8 +188,10 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
   // internal state and find newly-added live regions this time.
   BrowserAccessibilityMac* root =
       static_cast<BrowserAccessibilityMac*>(GetRoot());
-  root->RecreateNativeObject();
-  NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, root);
+  if (root) {
+    root->RecreateNativeObject();
+    NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, root);
+  }
 }
 
 }  // namespace content
