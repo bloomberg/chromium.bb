@@ -53,7 +53,7 @@ bool FetchDumps(const std::string& lockfile_path,
   }
 
   for (base::Value* elem : *dump_list) {
-    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(*elem));
+    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(elem));
     if (!dump->valid()) {
       return false;
     }

@@ -230,7 +230,7 @@ ScopedVector<DumpInfo> SynchronizedMinidumpManager::GetDumps() {
   }
 
   for (const base::Value* elem : *dump_list) {
-    dumps.push_back(new DumpInfo(*elem));
+    dumps.push_back(new DumpInfo(elem));
   }
 
   return dumps.Pass();

@@ -23,7 +23,7 @@ class DumpInfo {
  public:
   // Validate the input as a valid JSON representation of DumpInfo, then
   // populate the relevant fields.
-  explicit DumpInfo(const base::Value& entry);
+  explicit DumpInfo(const base::Value* entry);
 
   // Attempt to construct a DumpInfo object that has the following info:
   //

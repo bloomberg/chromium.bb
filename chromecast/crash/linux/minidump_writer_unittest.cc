@@ -39,7 +39,7 @@ int FakeDumpState(const std::string& minidump_path) {
 
 scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
   scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
-  return make_scoped_ptr(new DumpInfo(*value));
+  return make_scoped_ptr(new DumpInfo(value.get()));
 }
 
 }  // namespace

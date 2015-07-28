@@ -91,7 +91,7 @@ bool FetchDumps(const std::string& lockfile_path,
   }
 
   for (base::Value* elem : *dump_list) {
-    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(*elem));
+    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(elem));
     if (!dump->valid()) {
       return false;
     }
@@ -175,11 +175,6 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
   scoped_ptr<base::ScopedPathOverride> path_override_;
 };
 
-scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
-  scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
-  return make_scoped_ptr(new DumpInfo(*value));
-}
-
 }  // namespace
 
 TEST_F(SynchronizedMinidumpManagerTest, FilePathsAreCorrect) {
@@ -231,9 +226,12 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
 TEST_F(SynchronizedMinidumpManagerTest,
        AddEntryToLockFile_FailsWithInvalidEntry) {
+  // Create invalid dump info value
+  base::DictionaryValue val;
+
   // Test that the manager tried to log the entry and failed.
   SynchronizedMinidumpManagerSimple manager;
-  manager.SetDumpInfoToWrite(CreateDumpInfo(""));
+  manager.SetDumpInfoToWrite(make_scoped_ptr(new DumpInfo(&val)));
   ASSERT_EQ(0, manager.DoWorkLocked());
   ASSERT_EQ(-1, manager.add_entry_return_code());
 

@@ -31,7 +31,7 @@ const char kBuildNumberKey[] = "build_number";
 
 }  // namespace
 
-DumpInfo::DumpInfo(const base::Value& entry) : valid_(ParseEntry(&entry)) {
+DumpInfo::DumpInfo(const base::Value* entry) : valid_(ParseEntry(entry)) {
 }
 
 DumpInfo::DumpInfo(const std::string& crashed_process_dump,
