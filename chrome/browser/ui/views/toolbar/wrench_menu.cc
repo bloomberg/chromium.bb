@@ -371,6 +371,7 @@ class WrenchMenuView : public views::View,
 
  protected:
   WrenchMenu* menu() { return menu_; }
+  const WrenchMenu* menu() const { return menu_; }
   ButtonMenuItemModel* menu_model() { return menu_model_; }
 
  private:
@@ -492,7 +493,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         zoom_label_(NULL),
         decrement_button_(NULL),
         fullscreen_button_(NULL),
-        zoom_label_width_(0) {
+        zoom_label_max_width_(0),
+        zoom_label_max_width_valid_(false) {
     browser_zoom_subscription_ =
         ui_zoom::ZoomEventManager::GetForBrowserContext(
             menu->browser_->profile())
@@ -514,7 +516,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     zoom_label_->set_background(center_bg);
 
     AddChildView(zoom_label_);
-    zoom_label_width_ = MaxWidthForZoomLabel();
+    zoom_label_max_width_valid_ = false;
 
     increment_button_ = CreateButtonWithAccName(
         IDS_ZOOM_PLUS2, InMenuButtonBackground::RIGHT_BUTTON,
@@ -560,8 +562,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview. Note that we have overridden the height when
     // constructing the menu.
-    return gfx::Size(button_width + zoom_label_width_ + button_width +
-                     fullscreen_width, 0);
+    return gfx::Size(
+        button_width + ZoomLabelMaxWidth() + button_width + fullscreen_width,
+        0);
   }
 
   void Layout() override {
@@ -574,7 +577,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
     x += bounds.width();
     bounds.set_x(x);
-    bounds.set_width(zoom_label_width_);
+    bounds.set_width(ZoomLabelMaxWidth());
     zoom_label_->SetBoundsRect(bounds);
 
     x += bounds.width();
@@ -596,7 +599,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     zoom_label_->SetBorder(views::Border::CreateEmptyBorder(
         0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
     zoom_label_->SetFontList(menu_config.font_list);
-    zoom_label_width_ = MaxWidthForZoomLabel();
+    zoom_label_max_width_valid_ = false;
 
     if (theme) {
       zoom_label_->SetEnabledColor(theme->GetSystemColor(
@@ -651,35 +654,40 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     zoom_label_->SetText(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, zoom));
 
-    zoom_label_width_ = MaxWidthForZoomLabel();
+    zoom_label_max_width_valid_ = false;
   }
 
-  // Calculates the max width the zoom string can be.
-  int MaxWidthForZoomLabel() {
-    const gfx::FontList& font_list = zoom_label_->font_list();
-    int border_width =
-        zoom_label_->border() ? zoom_label_->border()->GetInsets().width() : 0;
+  // Returns the max width the zoom string can be.
+  int ZoomLabelMaxWidth() const {
+    if (!zoom_label_max_width_valid_) {
+      const gfx::FontList& font_list = zoom_label_->font_list();
+      int border_width = zoom_label_->border()
+                             ? zoom_label_->border()->GetInsets().width()
+                             : 0;
 
-    int max_w = 0;
+      int max_w = 0;
 
-    WebContents* selected_tab =
-        menu()->browser_->tab_strip_model()->GetActiveWebContents();
-    if (selected_tab) {
-      int min_percent = selected_tab->GetMinimumZoomPercent();
-      int max_percent = selected_tab->GetMaximumZoomPercent();
+      WebContents* selected_tab =
+          menu()->browser_->tab_strip_model()->GetActiveWebContents();
+      if (selected_tab) {
+        int min_percent = selected_tab->GetMinimumZoomPercent();
+        int max_percent = selected_tab->GetMaximumZoomPercent();
 
-      int step = (max_percent - min_percent) / 10;
-      for (int i = min_percent; i <= max_percent; i += step) {
-        int w = gfx::GetStringWidth(
-            l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, i), font_list);
-        max_w = std::max(w, max_w);
+        int step = (max_percent - min_percent) / 10;
+        for (int i = min_percent; i <= max_percent; i += step) {
+          int w = gfx::GetStringWidth(
+              l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, i), font_list);
+          max_w = std::max(w, max_w);
+        }
+      } else {
+        max_w = gfx::GetStringWidth(
+            l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100), font_list);
       }
-    } else {
-      max_w = gfx::GetStringWidth(
-          l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100), font_list);
-    }
+      zoom_label_max_width_ = max_w + border_width;
 
-    return max_w + border_width;
+      zoom_label_max_width_valid_ = true;
+    }
+    return zoom_label_max_width_;
   }
 
   // Index of the fullscreen menu item in the model.
@@ -699,8 +707,15 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
   ImageButton* fullscreen_button_;
 
-  // Width given to |zoom_label_|. This is the width at 100%.
-  int zoom_label_width_;
+  // Cached width of how wide the zoom label string can be. This is the width at
+  // 100%. This should not be accessed directly, use ZoomLabelMaxWidth()
+  // instead. This value is cached because is depends on multiple calls to
+  // gfx::GetStringWidth(...) which are expensive.
+  mutable int zoom_label_max_width_;
+
+  // Flag tracking whether calls to ZoomLabelMaxWidth() need to re-calculate
+  // the label width, because the cached value may no longer be correct.
+  mutable bool zoom_label_max_width_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };
