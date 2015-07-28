@@ -289,6 +289,8 @@ PP_CdmMessageType CdmMessageTypeToPpMessageType(cdm::MessageType message) {
 }
 
 PP_CdmKeyStatus CdmKeyStatusToPpKeyStatus(cdm::KeyStatus status) {
+  // TODO(jrummell): Remove kOutputNotAllowed, add kOutputRestricted to CDM
+  // interface. http://crbug.com/507791.
   switch (status) {
     case cdm::kUsable:
       return PP_CDMKEYSTATUS_USABLE;
@@ -297,7 +299,7 @@ PP_CdmKeyStatus CdmKeyStatusToPpKeyStatus(cdm::KeyStatus status) {
     case cdm::kExpired:
       return PP_CDMKEYSTATUS_EXPIRED;
     case cdm::kOutputNotAllowed:
-      return PP_CDMKEYSTATUS_OUTPUTNOTALLOWED;
+      return PP_CDMKEYSTATUS_OUTPUTRESTRICTED;
     case cdm::kOutputDownscaled:
       return PP_CDMKEYSTATUS_OUTPUTDOWNSCALED;
     case cdm::kStatusPending:

@@ -176,6 +176,8 @@ static media::EmeInitDataType ConvertInitDataType(
 }
 
 cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
+  // TODO(jrummell): Remove kOutputNotAllowed, add kOutputRestricted to CDM
+  // interface. http://crbug.com/507791.
   switch (status) {
     case media::CdmKeyInformation::KeyStatus::USABLE:
       return cdm::kUsable;
@@ -183,7 +185,7 @@ cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
       return cdm::kInternalError;
     case media::CdmKeyInformation::KeyStatus::EXPIRED:
       return cdm::kExpired;
-    case media::CdmKeyInformation::KeyStatus::OUTPUT_NOT_ALLOWED:
+    case media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED:
       return cdm::kOutputNotAllowed;
     case media::CdmKeyInformation::KeyStatus::OUTPUT_DOWNSCALED:
       return cdm::kOutputDownscaled;

@@ -68,9 +68,9 @@ static blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
       return blink::WebEncryptedMediaKeyInformation::KeyStatus::InternalError;
     case media::CdmKeyInformation::EXPIRED:
       return blink::WebEncryptedMediaKeyInformation::KeyStatus::Expired;
-    case media::CdmKeyInformation::OUTPUT_NOT_ALLOWED:
+    case media::CdmKeyInformation::OUTPUT_RESTRICTED:
       return blink::WebEncryptedMediaKeyInformation::KeyStatus::
-          OutputNotAllowed;
+          OutputRestricted;
     case media::CdmKeyInformation::OUTPUT_DOWNSCALED:
       return blink::WebEncryptedMediaKeyInformation::KeyStatus::
           OutputDownscaled;

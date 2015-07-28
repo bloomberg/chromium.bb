@@ -316,8 +316,8 @@ media::CdmKeyInformation::KeyStatus PpCdmKeyStatusToCdmKeyInformationKeyStatus(
       return media::CdmKeyInformation::INTERNAL_ERROR;
     case PP_CDMKEYSTATUS_EXPIRED:
       return media::CdmKeyInformation::EXPIRED;
-    case PP_CDMKEYSTATUS_OUTPUTNOTALLOWED:
-      return media::CdmKeyInformation::OUTPUT_NOT_ALLOWED;
+    case PP_CDMKEYSTATUS_OUTPUTRESTRICTED:
+      return media::CdmKeyInformation::OUTPUT_RESTRICTED;
     case PP_CDMKEYSTATUS_OUTPUTDOWNSCALED:
       return media::CdmKeyInformation::OUTPUT_DOWNSCALED;
     case PP_CDMKEYSTATUS_STATUSPENDING:
