@@ -39276,7 +39276,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Signin.AndroidSigninPromo" enum="AndroidSigninPromoAction">
+<histogram name="Signin.AndroidSigninPromoAction"
+    enum="AndroidSigninPromoAction">
   <owner>guohui@chromium.org</owner>
   <summary>Track how a user interfacts with the android signin promo.</summary>
 </histogram>
