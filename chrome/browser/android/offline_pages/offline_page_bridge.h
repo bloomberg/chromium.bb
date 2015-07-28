@@ -29,6 +29,11 @@ class OfflinePageBridge {
                     content::BrowserContext* browser_context);
   void Destroy(JNIEnv*, jobject);
 
+  void LoadAllPages(JNIEnv* env,
+                    jobject obj,
+                    jobject j_callback_obj,
+                    jobject j_result_obj);
+
  private:
 
   JavaObjectWeakGlobalRef weak_java_ref_;

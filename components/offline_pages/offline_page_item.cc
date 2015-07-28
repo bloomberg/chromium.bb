@@ -45,7 +45,7 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
 OfflinePageItem::~OfflinePageItem() {
 }
 
-GURL OfflinePageItem::GetOfflineURL() {
+GURL OfflinePageItem::GetOfflineURL() const {
   return net::FilePathToFileURL(file_path);
 }
 

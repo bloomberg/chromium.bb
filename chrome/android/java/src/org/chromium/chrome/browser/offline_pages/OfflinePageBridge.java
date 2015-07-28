@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Access gate to C++ side offline pages functionalities.
@@ -16,8 +21,25 @@ public final class OfflinePageBridge {
     private long mNativeOfflinePageBridge;
 
     /**
+     * Interface with callbacks to public calls on OfflinePageBrdige.
+     */
+    public interface OfflinePageCallback {
+        /**
+         * Delivers result of loading all pages.
+         *
+         * @param loadResult Result of the loading the page. Uses
+         *     {@see org.chromium.components.offline_pages.LoadResult} enum.
+         * @param offlinePages A list of loaded offline pages.
+         * @see OfflinePageBridge#loadAllPages()
+         */
+        @CalledByNative("OfflinePageCallback")
+        void onLoadAllPagesDone(int loadResult, List<OfflinePageItem> offlinePages);
+    }
+
+    /**
      * Creates offline pages bridge for a given profile.
      */
+    @VisibleForTesting
     public OfflinePageBridge(Profile profile) {
         mNativeOfflinePageBridge = nativeInit(profile);
     }
@@ -32,6 +54,26 @@ public final class OfflinePageBridge {
         mNativeOfflinePageBridge = 0;
     }
 
+    /**
+     * Loads a list of all available offline pages. Results are returned through
+     * provided callback interface.
+     *
+     * @param callback Interface that contains a callback.
+     * @see OfflinePageCallback
+     */
+    @VisibleForTesting
+    public void loadAllPages(OfflinePageCallback callback) {
+        nativeLoadAllPages(mNativeOfflinePageBridge, callback, new ArrayList<OfflinePageItem>());
+    }
+
+    @CalledByNative
+    private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
+            String url, String title, String offlineUrl, long fileSize) {
+        offlinePagesList.add(new OfflinePageItem(url, title, offlineUrl, fileSize));
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeOfflinePageBridge);
+    private native void nativeLoadAllPages(long nativeOfflinePageBridge,
+            OfflinePageCallback callback, List<OfflinePageItem> offlinePages);
 }

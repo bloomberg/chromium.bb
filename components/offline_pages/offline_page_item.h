@@ -31,7 +31,7 @@ struct OfflinePageItem {
   ~OfflinePageItem();
 
   // Gets a URL of the file under |file_path|.
-  GURL GetOfflineURL();
+  GURL GetOfflineURL() const;
 
   // The URL of the page.
   GURL url;
