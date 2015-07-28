@@ -133,6 +133,7 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebGraphicsContext.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
 #include "public/web/WebMediaPlayerAction.h"
@@ -291,6 +292,32 @@ private:
     void handleEvent(ExecutionContext* executionContext, Event*) override
     {
     }
+};
+
+class ColorOverlay : public WebPageOverlay {
+public:
+    ColorOverlay(WebColor color)
+        : m_color(color)
+    {
+    }
+
+    virtual ~ColorOverlay()
+    {
+    }
+
+private:
+    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size)
+    {
+        WebFloatRect rect(0, 0, size.width, size.height);
+        WebCanvas* canvas = context->beginDrawing(rect);
+        SkPaint paint;
+        paint.setColor(m_color);
+        paint.setStyle(SkPaint::kFill_Style);
+        canvas->drawRectCoords(0, 0, size.width, size.height, paint);
+        context->endDrawing();
+    }
+
+    WebColor m_color;
 };
 
 } // namespace
@@ -3969,6 +3996,20 @@ void WebViewImpl::addPageOverlay(WebPageOverlay* overlay, int zOrder)
         m_pageOverlays = PageOverlayList::create(this);
 
     m_pageOverlays->add(overlay, zOrder);
+}
+
+void WebViewImpl::setPageOverlayColor(WebColor color)
+{
+    if (m_pageColorOverlay) {
+        removePageOverlay(m_pageColorOverlay.get());
+        m_pageColorOverlay.clear();
+    }
+
+    if (color == Color::transparent)
+        return;
+
+    m_pageColorOverlay = adoptPtr(new ColorOverlay(color));
+    addPageOverlay(m_pageColorOverlay.get(), 0);
 }
 
 void WebViewImpl::removePageOverlay(WebPageOverlay* overlay)

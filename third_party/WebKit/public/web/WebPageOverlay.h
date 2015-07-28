@@ -41,8 +41,6 @@ class BLINK_EXPORT WebPageOverlay {
 public:
     // Paints page overlay contents.
     virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) = 0;
-
-protected:
     virtual ~WebPageOverlay() { }
 };
 

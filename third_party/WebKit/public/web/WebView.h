@@ -446,6 +446,9 @@ public:
     // the page overlays with smaller z-order number. If two page overlays have
     // the same z-order number, the later added one will be on top.
     virtual void addPageOverlay(WebPageOverlay*, int /*z-order*/) = 0;
+
+    // Overlay this WebView with a solid color.
+    virtual void setPageOverlayColor(WebColor) = 0;
     virtual void removePageOverlay(WebPageOverlay*) = 0;
 
 

@@ -258,6 +258,7 @@ public:
     void extractSmartClipData(WebRect, WebString&, WebString&, WebRect&) override;
     void hidePopups() override;
     void addPageOverlay(WebPageOverlay*, int /* zOrder */) override;
+    void setPageOverlayColor(WebColor) override;
     void removePageOverlay(WebPageOverlay*) override;
     void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&) override;
     bool endActiveFlingAnimation() override;
@@ -755,6 +756,7 @@ private:
     FloatSize m_elasticOverscroll;
 
     RefPtrWillBePersistent<EventListener> m_popupMouseWheelEventListener;
+    OwnPtr<WebPageOverlay> m_pageColorOverlay;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());
