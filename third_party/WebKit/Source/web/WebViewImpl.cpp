@@ -482,7 +482,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     initializeLayerTreeView();
 
-    m_devToolsEmulator = adoptPtr(new DevToolsEmulator(this));
+    m_devToolsEmulator = DevToolsEmulator::create(this);
 
     allInstances().add(this);
 }

@@ -75,6 +75,16 @@ DevToolsEmulator::~DevToolsEmulator()
 {
 }
 
+PassOwnPtrWillBeRawPtr<DevToolsEmulator> DevToolsEmulator::create(WebViewImpl* webViewImpl)
+{
+    return adoptPtrWillBeNoop(new DevToolsEmulator(webViewImpl));
+}
+
+DEFINE_TRACE(DevToolsEmulator)
+{
+    visitor->trace(m_emulationAgent);
+}
+
 void DevToolsEmulator::setEmulationAgent(InspectorEmulationAgent* agent)
 {
     m_emulationAgent = agent;

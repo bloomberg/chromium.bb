@@ -708,7 +708,7 @@ private:
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
     OwnPtrWillBePersistent<InspectorOverlayImpl> m_inspectorOverlay;
-    OwnPtr<DevToolsEmulator> m_devToolsEmulator;
+    OwnPtrWillBePersistent<DevToolsEmulator> m_devToolsEmulator;
     OwnPtr<PageOverlayList> m_pageOverlays;
 
     // Whether the webview is rendering transparently.
