@@ -3290,6 +3290,12 @@ void WebViewImpl::updateMainFrameLayoutSize()
         layoutSize.height = 0;
 
     view->setLayoutSize(layoutSize);
+
+    // Resizing marks the frame as needsLayout. Inform clients so that they
+    // will perform the layout. Widgets held by WebPluginContainerImpl do not otherwise
+    // see this resize layout invalidation.
+    if (client())
+        client()->didUpdateLayoutSize(layoutSize);
 }
 
 IntSize WebViewImpl::contentsSize() const

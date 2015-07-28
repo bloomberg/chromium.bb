@@ -41,13 +41,13 @@
 
 namespace blink {
 
-struct WebFloatPoint;
-struct WebFloatSize;
 class WebGestureEvent;
 class WebNode;
 class WebString;
 class WebWidget;
 struct WebCursorInfo;
+struct WebFloatPoint;
+struct WebFloatSize;
 struct WebSize;
 
 class WebWidgetClient {
@@ -57,6 +57,13 @@ public:
 
     // Called when the Widget has changed size as a result of an auto-resize.
     virtual void didAutoResize(const WebSize& newSize) { }
+
+    // Called when the Widget has a new layout size. As a result of
+    // setting the new layout size, the frame for this widget has possibly
+    // been marked as needing layout. Widgets must mark their containers
+    // for layout when the plguin container controls widget layout, otherwise
+    // the frame layout will not occur.
+    virtual void didUpdateLayoutSize(const WebSize& newSize) { }
 
     // Attempt to initialize compositing for this widget. If this is successful,
     // layerTreeView() will return a valid WebLayerTreeView.
