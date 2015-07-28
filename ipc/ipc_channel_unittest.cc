@@ -22,7 +22,12 @@ namespace {
 class IPCChannelTest : public IPCTestBase {
 };
 
-TEST_F(IPCChannelTest, ChannelTest) {
+#if defined(OS_ANDROID)
+#define MAYBE_ChannelTest DISABLED_ChannelTest
+#else
+#define MAYBE_ChannelTest ChannelTest
+#endif
+TEST_F(IPCChannelTest, MAYBE_ChannelTest) {
   Init("GenericClient");
 
   // Set up IPC channel and start client.
@@ -84,7 +89,12 @@ TEST_F(IPCChannelTest, ChannelTestExistingPipe) {
 }
 #endif  // defined (OS_WIN)
 
-TEST_F(IPCChannelTest, ChannelProxyTest) {
+#if defined(OS_ANDROID)
+#define MAYBE_ChannelProxyTest DISABLED_ChannelProxyTest
+#else
+#define MAYBE_ChannelProxyTest ChannelProxyTest
+#endif
+TEST_F(IPCChannelTest, MAYBE_ChannelProxyTest) {
   Init("GenericClient");
 
   base::Thread thread("ChannelProxyTestServer");
@@ -121,7 +131,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::TestChannelListener {
   }
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
 // Acting flakey in Windows. http://crbug.com/129595
 #define MAYBE_SendMessageInChannelConnected DISABLED_SendMessageInChannelConnected
 #else

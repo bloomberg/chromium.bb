@@ -166,7 +166,12 @@ TEST_F(IPCMessageParameterTest, EmptyDispatcherWithParam) {
   EXPECT_TRUE(called_);
 }
 
-TEST_F(IPCMessageParameterTest, OneIntegerWithParam) {
+#if defined(OS_ANDROID)
+#define MAYBE_OneIntegerWithParam DISABLED_OneIntegerWithParam
+#else
+#define MAYBE_OneIntegerWithParam OneIntegerWithParam
+#endif
+TEST_F(IPCMessageParameterTest, MAYBE_OneIntegerWithParam) {
   TestMsgClassI message(42);
   EXPECT_TRUE(OnMessageReceived(message));
   EXPECT_TRUE(called_);

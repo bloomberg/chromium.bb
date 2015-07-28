@@ -81,7 +81,12 @@ TEST(MessageAttachmentSet, MaxSize) {
   set->CommitAll();
 }
 
-TEST(MessageAttachmentSet, SetDescriptors) {
+#if defined(OS_ANDROID)
+#define MAYBE_SetDescriptors DISABLED_SetDescriptors
+#else
+#define MAYBE_SetDescriptors SetDescriptors
+#endif
+TEST(MessageAttachmentSet, MAYBE_SetDescriptors) {
   scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   ASSERT_TRUE(set->empty());
@@ -176,7 +181,12 @@ TEST(MessageAttachmentSet, WalkCycle) {
   set->CommitAll();
 }
 
-TEST(MessageAttachmentSet, DontClose) {
+#if defined(OS_ANDROID)
+#define MAYBE_DontClose DISABLED_DontClose
+#else
+#define MAYBE_DontClose DontClose
+#endif
+TEST(MessageAttachmentSet, MAYBE_DontClose) {
   scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
   const int fd = GetSafeFd();

@@ -301,8 +301,13 @@ void Simple(bool pump_during_send) {
   RunTest(workers);
 }
 
+#if defined(OS_ANDROID)
+#define MAYBE_Simple DISABLED_Simple
+#else
+#define MAYBE_Simple Simple
+#endif
 // Tests basic synchronous call
-TEST_F(IPCSyncChannelTest, Simple) {
+TEST_F(IPCSyncChannelTest, MAYBE_Simple) {
   Simple(false);
   Simple(true);
 }
@@ -517,8 +522,13 @@ TEST_F(IPCSyncChannelTest, Unblock) {
 
 //------------------------------------------------------------------------------
 
+#if defined(OS_ANDROID)
+#define MAYBE_ChannelDeleteDuringSend DISABLED_ChannelDeleteDuringSend
+#else
+#define MAYBE_ChannelDeleteDuringSend ChannelDeleteDuringSend
+#endif
 // Tests that the the SyncChannel object can be deleted during a Send.
-TEST_F(IPCSyncChannelTest, ChannelDeleteDuringSend) {
+TEST_F(IPCSyncChannelTest, MAYBE_ChannelDeleteDuringSend) {
   Unblock(false, false, true);
   Unblock(false, true, true);
   Unblock(true, false, true);
@@ -868,10 +878,16 @@ void ChattyServer(bool pump_during_send) {
   RunTest(workers);
 }
 
+#if defined(OS_ANDROID)
+// Times out.
+#define MAYBE_ChattyServer DISABLED_ChattyServer
+#else
+#define MAYBE_ChattyServer ChattyServer
+#endif
 // Tests http://b/1093251 - that sending lots of sync messages while
 // the receiver is waiting for a sync reply does not overflow the PostMessage
 // queue.
-TEST_F(IPCSyncChannelTest, ChattyServer) {
+TEST_F(IPCSyncChannelTest, MAYBE_ChattyServer) {
   ChattyServer(false);
   ChattyServer(true);
 }
@@ -911,10 +927,15 @@ class DoneEventRaceServer : public Worker {
   }
 };
 
+#if defined(OS_ANDROID)
+#define MAYBE_DoneEventRace DISABLED_DoneEventRace
+#else
+#define MAYBE_DoneEventRace DoneEventRace
+#endif
 // Tests http://b/1474092 - that if after the done_event is set but before
 // OnObjectSignaled is called another message is sent out, then after its
 // reply comes back OnObjectSignaled will be called for the first message.
-TEST_F(IPCSyncChannelTest, DoneEventRace) {
+TEST_F(IPCSyncChannelTest, MAYBE_DoneEventRace) {
   std::vector<Worker*> workers;
   workers.push_back(new DoneEventRaceServer());
   workers.push_back(new SimpleClient());
@@ -1563,7 +1584,13 @@ class RestrictedDispatchPipeWorker : public Worker {
   int* success_;
 };
 
-TEST_F(IPCSyncChannelTest, RestrictedDispatch4WayDeadlock) {
+#if defined(OS_ANDROID)
+#define MAYBE_RestrictedDispatch4WayDeadlock \
+  DISABLED_RestrictedDispatch4WayDeadlock
+#else
+#define MAYBE_RestrictedDispatch4WayDeadlock RestrictedDispatch4WayDeadlock
+#endif
+TEST_F(IPCSyncChannelTest, MAYBE_RestrictedDispatch4WayDeadlock) {
   int success = 0;
   std::vector<Worker*> workers;
   WaitableEvent event0(true, false);

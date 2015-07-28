@@ -280,7 +280,12 @@ TEST_F(IPCChannelPosixTest, AcceptHangTest) {
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, out_listener.status());
 }
 
-TEST_F(IPCChannelPosixTest, AdvancedConnected) {
+#if defined(OS_ANDROID)
+#define MAYBE_AdvancedConnected DISABLED_AdvancedConnected
+#else
+#define MAYBE_AdvancedConnected AdvancedConnected
+#endif
+TEST_F(IPCChannelPosixTest, MAYBE_AdvancedConnected) {
   // Test creating a connection to an external process.
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
@@ -309,7 +314,12 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   unlink(chan_handle.name.c_str());
 }
 
-TEST_F(IPCChannelPosixTest, ResetState) {
+#if defined(OS_ANDROID)
+#define MAYBE_ResetState DISABLED_ResetState
+#else
+#define MAYBE_ResetState ResetState
+#endif
+TEST_F(IPCChannelPosixTest, MAYBE_ResetState) {
   // Test creating a connection to an external process. Close the connection,
   // but continue to listen and make sure another external process can connect
   // to us.
@@ -371,7 +381,12 @@ TEST_F(IPCChannelPosixTest, BadChannelName) {
   EXPECT_FALSE(channel2->Connect());
 }
 
-TEST_F(IPCChannelPosixTest, MultiConnection) {
+#if defined(OS_ANDROID)
+#define MAYBE_MultiConnection DISABLED_MultiConnection
+#else
+#define MAYBE_MultiConnection MultiConnection
+#endif
+TEST_F(IPCChannelPosixTest, MAYBE_MultiConnection) {
   // Test setting up a connection to an external process, and then have
   // another external process attempt to connect to us.
   IPCChannelPosixTestListener listener(false);
