@@ -15,7 +15,7 @@ package metrics;
 // Next tag: 4
 message CastLogsProto {
   // Cast specific device information.
-  // Next tag: 4
+  // Next tag: 5
   message CastDeviceInfo {
     // The product type of Cast device sent from Cast-enabled devices.
     // Next tag: 5
@@ -33,6 +33,9 @@ message CastLogsProto {
     // The manufacturer of Cast device, this value is empty when the device
     // is manufactured by Google.
     optional string manufacturer = 3;
+
+    // The model of the Cast device.
+    optional string model = 4;
   }
   // The device sends this information at least once per day.
   optional CastDeviceInfo cast_device_info = 1;
