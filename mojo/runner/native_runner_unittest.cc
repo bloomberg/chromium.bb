@@ -33,6 +33,7 @@ class TestNativeRunner : public shell::NativeRunner {
     base::MessageLoop::current()->Quit();
   }
   void Start(const base::FilePath& app_path,
+             bool start_sandboxed,
              shell::NativeApplicationCleanup cleanup,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override {

@@ -27,6 +27,7 @@ class OutOfProcessNativeRunner : public shell::NativeRunner {
 
   // |NativeRunner| method:
   void Start(const base::FilePath& app_path,
+             bool start_sandboxed,
              shell::NativeApplicationCleanup cleanup,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override;

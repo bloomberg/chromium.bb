@@ -7,6 +7,7 @@ include_rules = [
   "+components/view_manager/public",
   "+crypto",
   "+jni",
+  "+sandbox",
   "+third_party/mojo_services",
   "+ui",
 ]

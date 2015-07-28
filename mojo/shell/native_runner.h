@@ -37,6 +37,7 @@ class NativeRunner {
   // factory's Create(). Rationale: The factory may need information from the
   // file to decide what kind of NativeRunner to make.
   virtual void Start(const base::FilePath& app_path,
+                     bool start_sandboxed,
                      NativeApplicationCleanup cleanup,
                      InterfaceRequest<Application> application_request,
                      const base::Closure& app_completed_callback) = 0;

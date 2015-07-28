@@ -210,6 +210,7 @@ class ApplicationManager {
                            scoped_ptr<Fetcher> fetcher);
 
   void RunNativeApplication(InterfaceRequest<Application> application_request,
+                            bool start_sandboxed,
                             const NativeRunnerFactory::Options& options,
                             NativeApplicationCleanup cleanup,
                             scoped_ptr<Fetcher> fetcher,

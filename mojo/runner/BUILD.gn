@@ -134,6 +134,10 @@ source_set("lib") {
     "//url",
   ]
 
+  if (is_linux && !is_android) {
+    deps += [ "//sandbox/linux:sandbox_services" ]
+  }
+
   public_deps = [
     ":switches",
   ]

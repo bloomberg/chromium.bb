@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -41,9 +42,13 @@ void WaitForDebuggerIfNecessary() {
     base::SplitString(
         command_line->GetSwitchValueASCII(switches::kWaitForDebugger), ',',
         &apps_to_debug);
-    std::string app = command_line->GetSwitchValueASCII(switches::kApp);
-    if (app.empty())
-      app = "launcher";  // If we're not in a child process look for "launcher".
+    std::string app = "launcher";
+    if (command_line->HasSwitch(switches::kChildProcess)) {
+      app = command_line->GetSwitchValuePath(switches::kChildProcess)
+                .BaseName()
+                .RemoveExtension()
+                .MaybeAsASCII();
+    }
     if (apps_to_debug.empty() || ContainsValue(apps_to_debug, app)) {
 #if defined(OS_WIN)
       base::string16 appw = base::UTF8ToUTF16(app);

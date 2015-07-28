@@ -30,6 +30,7 @@ OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
 
 void OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
+    bool start_sandboxed,
     shell::NativeApplicationCleanup cleanup,
     InterfaceRequest<Application> application_request,
     const base::Closure& app_completed_callback) {
@@ -38,14 +39,12 @@ void OutOfProcessNativeRunner::Start(
   DCHECK(app_completed_callback_.is_null());
   app_completed_callback_ = app_completed_callback;
 
-  std::string name = app_path.BaseName().RemoveExtension().MaybeAsASCII();
-  child_process_host_.reset(new ChildProcessHost(context_, name));
+  bool clean_app_path = cleanup == shell::NativeApplicationCleanup::DELETE;
+  child_process_host_.reset(new ChildProcessHost(context_, start_sandboxed,
+                                                 app_path, clean_app_path));
   child_process_host_->Start();
 
-  // TODO(vtl): |app_path.AsUTF8Unsafe()| is unsafe.
   child_process_host_->StartApp(
-      app_path.AsUTF8Unsafe(),
-      cleanup == shell::NativeApplicationCleanup::DELETE,
       application_request.Pass(),
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));

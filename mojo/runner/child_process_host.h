@@ -5,6 +5,7 @@
 #ifndef MOJO_RUNNER_CHILD_PROCESS_HOST_H_
 #define MOJO_RUNNER_CHILD_PROCESS_HOST_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "mojo/edk/embedder/channel_info_forward.h"
@@ -30,8 +31,14 @@ class Context;
 // remained alive until the |on_app_complete| callback is called.
 class ChildProcessHost {
  public:
-  // |name| is just for debugging ease.
-  ChildProcessHost(Context* context, const std::string& name);
+  // |name| is just for debugging ease. We will spawn off a process so that it
+  // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
+  // mojo application we wish to start. |clean_app_path| cleans up transient
+  // applications after execution.
+  ChildProcessHost(Context* context,
+                   bool start_sandboxed,
+                   const base::FilePath& app_path,
+                   bool clean_app_path);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
@@ -47,9 +54,7 @@ class ChildProcessHost {
   int Join();
 
   // See |ChildController|:
-  void StartApp(const String& app_path,
-                bool clean_app_path,
-                InterfaceRequest<Application> application_request,
+  void StartApp(InterfaceRequest<Application> application_request,
                 const ChildController::StartAppCallback& on_app_complete);
   void ExitNow(int32_t exit_code);
 
@@ -66,7 +71,9 @@ class ChildProcessHost {
   void DidCreateChannel(embedder::ChannelInfo* channel_info);
 
   Context* const context_;
-  const std::string name_;
+  bool start_sandboxed_;
+  const base::FilePath app_path_;
+  bool clean_app_path_;
   base::Process child_process_;
   embedder::PlatformChannelPair platform_channel_pair_;
   ChildControllerPtr controller_;

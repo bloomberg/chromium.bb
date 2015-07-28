@@ -22,13 +22,23 @@
 #include "mojo/runner/switches.h"
 #include "mojo/runner/task_runners.h"
 
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#include "sandbox/linux/services/namespace_sandbox.h"
+#endif
+
 namespace mojo {
 namespace runner {
 
-ChildProcessHost::ChildProcessHost(Context* context, const std::string& name)
-    : context_(context), name_(name), channel_info_(nullptr) {
+ChildProcessHost::ChildProcessHost(Context* context,
+                                   bool start_sandboxed,
+                                   const base::FilePath& app_path,
+                                   bool clean_app_path)
+    : context_(context),
+      start_sandboxed_(start_sandboxed),
+      app_path_(app_path),
+      clean_app_path_(clean_app_path),
+      channel_info_(nullptr) {
   platform_channel_ = platform_channel_pair_.PassServerHandle();
-  DCHECK(!name.empty());
   CHECK(platform_channel_.is_valid());
 }
 
@@ -66,15 +76,13 @@ int ChildProcessHost::Join() {
 }
 
 void ChildProcessHost::StartApp(
-    const String& app_path,
-    bool clean_app_path,
     InterfaceRequest<Application> application_request,
     const ChildController::StartAppCallback& on_app_complete) {
   DCHECK(controller_);
 
   on_app_complete_ = on_app_complete;
   controller_->StartApp(
-      app_path, clean_app_path, application_request.Pass(),
+      app_path_.AsUTF8Unsafe(), clean_app_path_, application_request.Pass(),
       base::Bind(&ChildProcessHost::AppCompleted, base::Unretained(this)));
 }
 
@@ -99,8 +107,10 @@ bool ChildProcessHost::DoLaunch() {
       base::CommandLine::ForCurrentProcess();
   base::CommandLine child_command_line(parent_command_line->GetProgram());
   child_command_line.AppendArguments(*parent_command_line, false);
-  child_command_line.AppendSwitchASCII(switches::kApp, name_);
-  child_command_line.AppendSwitch(switches::kChildProcess);
+  child_command_line.AppendSwitchPath(switches::kChildProcess, app_path_);
+
+  if (start_sandboxed_)
+    child_command_line.AppendSwitch(switches::kEnableSandbox);
 
   embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_.PrepareToPassClientHandleToChildProcess(
@@ -110,11 +120,26 @@ bool ChildProcessHost::DoLaunch() {
 #if defined(OS_WIN)
   options.handles_to_inherit = &handle_passing_info;
 #elif defined(OS_POSIX)
+  handle_passing_info.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
+  handle_passing_info.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
+  handle_passing_info.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
   options.fds_to_remap = &handle_passing_info;
 #endif
   DVLOG(2) << "Launching child with command line: "
            << child_command_line.GetCommandLineString();
-  child_process_ = base::LaunchProcess(child_command_line, options);
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  if (start_sandboxed_) {
+    child_process_ =
+        sandbox::NamespaceSandbox::LaunchProcess(child_command_line, options);
+    if (!child_process_.IsValid()) {
+      LOG(ERROR) << "Starting the process with a sandbox failed. Missing kernel"
+                 << " support.";
+      return false;
+    }
+  } else
+#endif
+    child_process_ = base::LaunchProcess(child_command_line, options);
+
   if (!child_process_.IsValid())
     return false;
 

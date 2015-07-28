@@ -25,6 +25,15 @@ executable("mandoline") {
     "//mojo/runner:lib",
   ]
 
+  if (is_linux && !is_android) {
+    sources += [
+      "linux_sandbox.cc",
+      "linux_sandbox.h",
+    ]
+
+    deps += [ "//sandbox/linux:sandbox" ]
+  }
+
   data_deps = [
     "//components/html_viewer",
     "//mandoline/services/core_services",

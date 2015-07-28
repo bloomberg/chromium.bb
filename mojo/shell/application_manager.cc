@@ -382,15 +382,22 @@ void ApplicationManager::HandleFetchCallback(
     options = url_to_native_options_[base_resolved_url];
   }
 
-  fetcher->AsPath(
-      blocking_pool_,
-      base::Bind(&ApplicationManager::RunNativeApplication,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(request.Pass()),
-                 options, cleanup, base::Passed(fetcher.Pass())));
+  // TODO(erg): Have a better way of switching the sandbox on. For now, switch
+  // it on hard coded when we're using some of the sandboxable core services.
+  bool start_sandboxed = false;
+  if (app_url == GURL("mojo://core_services/") && qualifier == "Sandboxed Core")
+    start_sandboxed = true;
+
+  fetcher->AsPath(blocking_pool_,
+                  base::Bind(&ApplicationManager::RunNativeApplication,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(request.Pass()), start_sandboxed,
+                             options, cleanup, base::Passed(fetcher.Pass())));
 }
 
 void ApplicationManager::RunNativeApplication(
     InterfaceRequest<Application> application_request,
+    bool start_sandboxed,
     const NativeRunnerFactory::Options& options,
     NativeApplicationCleanup cleanup,
     scoped_ptr<Fetcher> fetcher,
@@ -411,7 +418,7 @@ void ApplicationManager::RunNativeApplication(
                path.AsUTF8Unsafe());
   NativeRunner* runner = native_runner_factory_->Create(options).release();
   native_runners_.push_back(runner);
-  runner->Start(path, cleanup, application_request.Pass(),
+  runner->Start(path, start_sandboxed, cleanup, application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner));
 }
