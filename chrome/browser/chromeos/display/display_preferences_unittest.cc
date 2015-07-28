@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "ash/content/display/screen_orientation_controller_chromeos.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/display/resolution_notification_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -238,8 +238,8 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
 }
 
 TEST_F(DisplayPreferencesTest, BasicStores) {
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
+  ash::WindowTreeHostManager* window_tree_host_manager =
+      ash::Shell::GetInstance()->window_tree_host_manager();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
@@ -265,10 +265,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   StoreDisplayLayoutPrefForTest(
       id1, dummy_id, ash::DisplayLayout(ash::DisplayLayout::LEFT, 20));
   // Can't switch to a display that does not exist.
-  display_controller->SetPrimaryDisplayId(dummy_id);
+  window_tree_host_manager->SetPrimaryDisplayId(dummy_id);
   EXPECT_NE(dummy_id, ash::Shell::GetScreen()->GetPrimaryDisplay().id());
 
-  display_controller->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90,
                                       gfx::Display::ROTATION_SOURCE_USER);
   EXPECT_TRUE(ash::SetDisplayUIScale(id1, 1.25f));
@@ -346,7 +346,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   mode.device_scale_factor = 1.25f;
   display_manager->SetDisplayMode(id2, mode);
 
-  display_controller->SetPrimaryDisplayId(id2);
+  window_tree_host_manager->SetPrimaryDisplayId(id2);
 
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id1), &property));
   width = 0;
@@ -520,9 +520,9 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
 
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-  display_controller->SwapPrimaryDisplay();
+  ash::WindowTreeHostManager* window_tree_host_manager =
+      ash::Shell::GetInstance()->window_tree_host_manager();
+  window_tree_host_manager->SwapPrimaryDisplay();
   ASSERT_EQ(id1, ash::ScreenUtil::GetSecondaryDisplay().id());
 
   LoggedInAsUser();
@@ -542,7 +542,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   EXPECT_EQ(layout.offset, stored_layout.offset);
   EXPECT_EQ(id2, stored_layout.primary_id);
 
-  display_controller->SwapPrimaryDisplay();
+  window_tree_host_manager->SwapPrimaryDisplay();
   EXPECT_TRUE(displays->GetDictionary(key, &new_value));
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
   EXPECT_EQ(layout.position, stored_layout.position);
@@ -580,8 +580,8 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
 }
 
 TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
+  ash::WindowTreeHostManager* window_tree_host_manager =
+      ash::Shell::GetInstance()->window_tree_host_manager();
 
   UpdateDisplay("200x200*2,200x200");
 
@@ -594,11 +594,10 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ash::SetDisplayUIScale(id1, 1.25f);
-  display_controller->SetPrimaryDisplayId(id2);
+  window_tree_host_manager->SetPrimaryDisplayId(id2);
   int64 new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
-  display_controller->SetOverscanInsets(
-      new_primary,
-      gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(new_primary,
+                                              gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(new_primary, gfx::Display::ROTATE_90,
                                       gfx::Display::ROTATION_SOURCE_USER);
 

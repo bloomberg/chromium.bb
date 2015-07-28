@@ -4,7 +4,6 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -150,12 +149,12 @@ ResolutionNotificationController::ResolutionChangeInfo::
 }
 
 ResolutionNotificationController::ResolutionNotificationController() {
-  Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   Shell::GetScreen()->AddObserver(this);
 }
 
 ResolutionNotificationController::~ResolutionNotificationController() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   Shell::GetScreen()->RemoveObserver(this);
 }
 

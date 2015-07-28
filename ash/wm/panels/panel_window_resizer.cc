@@ -4,7 +4,7 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
@@ -70,8 +70,9 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     // complete it would begin positioning the panel.
     if (GetTarget()->parent() != panel_container_)
       GetPanelLayoutManager(panel_container_)->FinishDragging();
-    aura::Window* dst_root = Shell::GetInstance()->display_controller()->
-        GetRootWindowForDisplayId(dst_display.id());
+    aura::Window* dst_root = Shell::GetInstance()
+                                 ->window_tree_host_manager()
+                                 ->GetRootWindowForDisplayId(dst_display.id());
     panel_container_ =
         Shell::GetContainer(dst_root, kShellWindowId_PanelContainer);
 

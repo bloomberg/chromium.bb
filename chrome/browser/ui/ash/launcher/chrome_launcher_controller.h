@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -86,7 +86,7 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 class ChromeLauncherController : public ash::ShelfDelegate,
                                  public ash::ShelfModelObserver,
                                  public ash::ShellObserver,
-                                 public ash::DisplayController::Observer,
+                                 public ash::WindowTreeHostManager::Observer,
                                  public extensions::ExtensionRegistryObserver,
                                  public extensions::AppIconLoader::Delegate,
                                  public PrefServiceSyncableObserver,
@@ -315,7 +315,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // ash::ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
-  // ash::DisplayController::Observer:
+  // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // ExtensionRegistryObserver:

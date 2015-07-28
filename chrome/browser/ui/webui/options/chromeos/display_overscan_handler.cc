@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -121,11 +121,10 @@ void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
   if (!display.is_valid())
     return;
 
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
+  ash::WindowTreeHostManager* window_tree_host_manager =
+      ash::Shell::GetInstance()->window_tree_host_manager();
   overscan_calibrator_.reset(new OverscanCalibrator(
-      display,
-      display_controller->GetOverscanInsets(display_id)));
+      display, window_tree_host_manager->GetOverscanInsets(display_id)));
 }
 
 void DisplayOverscanHandler::HandleCommit(const base::ListValue* unused_args) {

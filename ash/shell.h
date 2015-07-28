@@ -84,7 +84,7 @@ class DesktopBackgroundController;
 class DisplayChangeObserver;
 class DisplayColorManager;
 class DisplayConfiguratorAnimation;
-class DisplayController;
+class WindowTreeHostManager;
 class DisplayErrorObserver;
 class DisplayManager;
 class DragDropController;
@@ -374,8 +374,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return window_selector_controller_.get();
   }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
-  DisplayController* display_controller() {
-    return display_controller_.get();
+  WindowTreeHostManager* window_tree_host_manager() {
+    return window_tree_host_manager_.get();
   }
 #if defined(OS_CHROMEOS)
   PowerEventObserver* power_event_observer() {
@@ -514,7 +514,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 
 #if defined(OS_CHROMEOS)
-  // TODO(oshima): Move these objects to DisplayController.
+  // TODO(oshima): Move these objects to WindowTreeHostManager.
   ui::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
   }
@@ -671,7 +671,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<WindowSelectorController> window_selector_controller_;
   scoped_ptr<FocusCycler> focus_cycler_;
-  scoped_ptr<DisplayController> display_controller_;
+  scoped_ptr<WindowTreeHostManager> window_tree_host_manager_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<MagnificationController> magnification_controller_;
   scoped_ptr<PartialMagnificationController> partial_magnification_controller_;

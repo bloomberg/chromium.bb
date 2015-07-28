@@ -7,8 +7,8 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
@@ -1221,8 +1221,10 @@ TEST_F(ShelfLayoutManagerTest, DimmingBehaviorDualDisplay) {
   UpdateDisplay("0+0-200x200,+200+0-100x100");
   EXPECT_EQ(2U, shell->display_manager()->GetNumDisplays());
 
-  DisplayController* display_controller = shell->display_controller();
-  aura::Window::Windows root_windows = display_controller->GetAllRootWindows();
+  WindowTreeHostManager* window_tree_host_manager =
+      shell->window_tree_host_manager();
+  aura::Window::Windows root_windows =
+      window_tree_host_manager->GetAllRootWindows();
   EXPECT_EQ(root_windows.size(), 2U);
 
   std::vector<ShelfWidget*> shelf_widgets;
@@ -1449,8 +1451,10 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   UpdateDisplay("0+0-200x200,+200+0-100x100");
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
 
-  DisplayController* display_controller = shell->display_controller();
-  aura::Window::Windows root_windows = display_controller->GetAllRootWindows();
+  WindowTreeHostManager* window_tree_host_manager =
+      shell->window_tree_host_manager();
+  aura::Window::Windows root_windows =
+      window_tree_host_manager->GetAllRootWindows();
   EXPECT_EQ(root_windows.size(), 2U);
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
@@ -1582,8 +1586,10 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   UpdateDisplay("200x200,100x100");
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
 
-  DisplayController* display_controller = shell->display_controller();
-  aura::Window::Windows root_windows = display_controller->GetAllRootWindows();
+  WindowTreeHostManager* window_tree_host_manager =
+      shell->window_tree_host_manager();
+  aura::Window::Windows root_windows =
+      window_tree_host_manager->GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
   // Get the shelves in both displays and set them to be 'AutoHide'.

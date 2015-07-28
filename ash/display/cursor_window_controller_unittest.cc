@@ -4,7 +4,7 @@
 
 #include "ash/display/cursor_window_controller.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -43,8 +43,9 @@ class CursorWindowControllerTest : public test::AshTestBase {
   }
 
   void SetCursorCompositionEnabled(bool enabled) {
-    cursor_window_controller_ =
-        Shell::GetInstance()->display_controller()->cursor_window_controller();
+    cursor_window_controller_ = Shell::GetInstance()
+                                    ->window_tree_host_manager()
+                                    ->cursor_window_controller();
     cursor_window_controller_->SetCursorCompositingEnabled(enabled);
   }
 
@@ -63,14 +64,14 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
 
   UpdateDisplay("200x200,200x200*2/r");
 
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  int64 primary_display_id = display_controller->GetPrimaryDisplayId();
+  WindowTreeHostManager* window_tree_host_manager =
+      Shell::GetInstance()->window_tree_host_manager();
+  int64 primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
   int64 secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
   aura::Window* primary_root =
-      display_controller->GetRootWindowForDisplayId(primary_display_id);
+      window_tree_host_manager->GetRootWindowForDisplayId(primary_display_id);
   aura::Window* secondary_root =
-      display_controller->GetRootWindowForDisplayId(secondary_display_id);
+      window_tree_host_manager->GetRootWindowForDisplayId(secondary_display_id);
 
   ui::test::EventGenerator primary_generator(primary_root);
   primary_generator.MoveMouseToInHost(20, 50);

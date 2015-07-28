@@ -6,7 +6,7 @@
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -37,7 +37,7 @@ class DesktopBackgroundControllerObserver;
 
 // Updates background layer if necessary.
 class ASH_EXPORT DesktopBackgroundController
-    : public DisplayController::Observer,
+    : public WindowTreeHostManager::Observer,
       public ShellObserver {
  public:
   class TestAPI;
@@ -87,7 +87,7 @@ class ASH_EXPORT DesktopBackgroundController
   // Returns true if the desktop moved.
   bool MoveDesktopToUnlockedContainer();
 
-  // DisplayController::Observer:
+  // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:

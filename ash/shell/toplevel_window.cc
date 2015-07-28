@@ -4,7 +4,6 @@
 
 #include "ash/shell/toplevel_window.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"

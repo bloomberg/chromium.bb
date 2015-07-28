@@ -8,7 +8,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/memory/scoped_ptr.h"
@@ -52,8 +52,9 @@ void SetMouseLocationInScreen(const gfx::Point& screen_location) {
       screen_location);
   if (!display.is_valid())
     return;
-  aura::Window* root_window = Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
+  aura::Window* root_window = Shell::GetInstance()
+                                  ->window_tree_host_manager()
+                                  ->GetRootWindowForDisplayId(display.id());
   gfx::Point host_location(screen_location);
   aura::client::ScreenPositionClient* client =
       aura::client::GetScreenPositionClient(root_window);

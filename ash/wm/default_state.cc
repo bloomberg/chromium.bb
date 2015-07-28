@@ -4,7 +4,7 @@
 
 #include "ash/wm/default_state.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -58,10 +58,10 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   if (!display_area.Intersects(restore_bounds)) {
     const gfx::Display& display =
         Shell::GetScreen()->GetDisplayMatching(restore_bounds);
-    DisplayController* display_controller =
-        Shell::GetInstance()->display_controller();
+    WindowTreeHostManager* window_tree_host_manager =
+        Shell::GetInstance()->window_tree_host_manager();
     aura::Window* new_root =
-        display_controller->GetRootWindowForDisplayId(display.id());
+        window_tree_host_manager->GetRootWindowForDisplayId(display.id());
     if (new_root != window_state->window()->GetRootWindow()) {
       aura::Window* new_container =
           Shell::GetContainer(new_root, window_state->window()->parent()->id());

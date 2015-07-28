@@ -4,8 +4,8 @@
 
 #include "ash/display/cursor_window_controller.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/mirror_window_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -122,10 +122,10 @@ void CursorWindowController::UpdateContainer() {
     if (display.is_valid())
       SetDisplay(display);
   } else {
-    aura::Window* mirror_window = Shell::GetInstance()->
-        display_controller()->
-        mirror_window_controller()->
-        GetWindow();
+    aura::Window* mirror_window = Shell::GetInstance()
+                                      ->window_tree_host_manager()
+                                      ->mirror_window_controller()
+                                      ->GetWindow();
     if (mirror_window)
       display_ = Shell::GetScreen()->GetPrimaryDisplay();
     SetContainer(mirror_window);
@@ -139,8 +139,9 @@ void CursorWindowController::SetDisplay(const gfx::Display& display) {
     return;
 
   display_ = display;
-  aura::Window* root_window = Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
+  aura::Window* root_window = Shell::GetInstance()
+                                  ->window_tree_host_manager()
+                                  ->GetRootWindowForDisplayId(display.id());
   if (!root_window)
     return;
 

@@ -4,8 +4,8 @@
 
 #include "ash/display/screen_ash.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -194,7 +194,7 @@ gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
 
 gfx::Display ScreenAsh::GetPrimaryDisplay() const {
   return GetDisplayManager()->GetDisplayForId(
-      DisplayController::GetPrimaryDisplayId());
+      WindowTreeHostManager::GetPrimaryDisplayId());
 }
 
 void ScreenAsh::AddObserver(gfx::DisplayObserver* observer) {

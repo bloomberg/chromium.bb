@@ -4,7 +4,6 @@
 
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"

@@ -5,6 +5,7 @@
 #include "ash/wm/dock/docked_window_resizer.h"
 
 #include "ash/ash_switches.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -100,8 +101,9 @@ class DockedWindowResizerTest
     } else {
       gfx::Display display =
           Shell::GetScreen()->GetDisplayMatching(bounds);
-      aura::Window* root = ash::Shell::GetInstance()->display_controller()->
-          GetRootWindowForDisplayId(display.id());
+      aura::Window* root = ash::Shell::GetInstance()
+                               ->window_tree_host_manager()
+                               ->GetRootWindowForDisplayId(display.id());
       gfx::Point origin = bounds.origin();
       ::wm::ConvertPointFromScreen(root, &origin);
       window->SetBounds(gfx::Rect(origin, bounds.size()));

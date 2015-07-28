@@ -4,8 +4,8 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -55,16 +55,18 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // The overlay should belong to the secondary root window.
   StickyKeysOverlay overlay;
   views::Widget* overlay_widget = overlay.GetWidgetForTesting();
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  EXPECT_EQ(display_controller->GetRootWindowForDisplayId(secondary_display_id),
-            overlay_widget->GetNativeWindow()->GetRootWindow());
+  WindowTreeHostManager* window_tree_host_manager =
+      Shell::GetInstance()->window_tree_host_manager();
+  EXPECT_EQ(
+      window_tree_host_manager->GetRootWindowForDisplayId(secondary_display_id),
+      overlay_widget->GetNativeWindow()->GetRootWindow());
 
   // Removing the second display should move the overlay to the primary root
   // window.
   UpdateDisplay("1280x1024");
-  EXPECT_EQ(display_controller->GetRootWindowForDisplayId(primary_display_id),
-            overlay_widget->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(
+      window_tree_host_manager->GetRootWindowForDisplayId(primary_display_id),
+      overlay_widget->GetNativeWindow()->GetRootWindow());
 
   overlay.SetModifierKeyState(ui::EF_SHIFT_DOWN, STICKY_KEY_STATE_ENABLED);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED,

@@ -405,7 +405,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   // Right now ash::Shell isn't created for tests.
   // TODO(mukai): Allows it to observe display change and write tests.
   if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()->display_controller()->AddObserver(this);
+    ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
     // If it got already set, we remove the observer first again and swap the
     // ItemDelegateManager.
     if (item_delegate_manager_)
@@ -433,7 +433,7 @@ ChromeLauncherController::~ChromeLauncherController() {
 
   model_->RemoveObserver(this);
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
+    ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   for (IDToItemControllerMap::iterator i = id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
     int index = model_->ItemIndexByID(i->first);

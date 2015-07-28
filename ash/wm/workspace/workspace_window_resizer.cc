@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -383,8 +383,9 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   // Track the last screen that the pointer was on to keep the snap phantom
   // window there.
   if (display.is_valid()) {
-    root = Shell::GetInstance()->display_controller()->
-        GetRootWindowForDisplayId(display.id());
+    root = Shell::GetInstance()
+               ->window_tree_host_manager()
+               ->GetRootWindowForDisplayId(display.id());
   }
   if (!attached_windows_.empty())
     LayoutAttachedWindows(&bounds);

@@ -6,8 +6,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/content/display/screen_orientation_controller_chromeos.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -56,8 +56,8 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
     return ash::Shell::GetInstance()->display_manager();
   }
 
-  ash::DisplayController* GetDisplayController() const {
-    return ash::Shell::GetInstance()->display_controller();
+  ash::WindowTreeHostManager* GetWindowTreeHostManager() const {
+    return ash::Shell::GetInstance()->window_tree_host_manager();
   }
 
   std::string SystemInfoDisplayInsetsToString(
@@ -181,7 +181,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
   EXPECT_EQ(2 * 96, result[1]->dpi_x);
   EXPECT_EQ(2 * 96, result[1]->dpi_y);
 
-  GetDisplayController()->SwapPrimaryDisplay();
+  GetWindowTreeHostManager()->SwapPrimaryDisplay();
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 

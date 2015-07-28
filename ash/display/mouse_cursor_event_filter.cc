@@ -15,11 +15,11 @@
 namespace ash {
 
 MouseCursorEventFilter::MouseCursorEventFilter() : mouse_warp_enabled_(true) {
-  Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 MouseCursorEventFilter::~MouseCursorEventFilter() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void MouseCursorEventFilter::ShowSharedEdgeIndicator(aura::Window* from) {
@@ -57,8 +57,10 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       return;
   }
 
-  Shell::GetInstance()->display_controller()->
-      cursor_window_controller()->UpdateLocation();
+  Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->UpdateLocation();
   mouse_warp_controller_->SetEnabled(mouse_warp_enabled_);
 
   if (mouse_warp_controller_->WarpMouseCursor(event))

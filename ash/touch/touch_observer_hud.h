@@ -6,7 +6,7 @@
 #define ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget_observer.h"
@@ -29,7 +29,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
 #if defined(OS_CHROMEOS)
                                     public ui::DisplayConfigurator::Observer,
 #endif  // defined(OS_CHROMEOS)
-                                    public DisplayController::Observer {
+                                    public WindowTreeHostManager::Observer {
  public:
   // Called to clear touch points and traces from the screen. Default
   // implementation does nothing. Sub-classes should implement appropriately.
@@ -70,7 +70,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 #endif  // defined(OS_CHROMEOS)
 
-  // Overriden form DisplayController::Observer.
+  // Overriden form WindowTreeHostManager::Observer.
   void OnDisplaysInitialized() override;
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;

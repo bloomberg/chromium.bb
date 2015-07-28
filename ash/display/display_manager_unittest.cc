@@ -5,11 +5,11 @@
 #include "ash/display/display_manager.h"
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
 #include "ash/display/mirror_window_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -395,7 +395,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             updated_display_info2.GetOverscanInsetsInPixel().ToString());
 
   // Make sure switching primary display applies the overscan offset only once.
-  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
+  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplay(
       ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ("-500,0 500x500",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
@@ -650,7 +650,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
 
   UpdateDisplay("100+0-500x500,0+501-400x400");
 
-  const int64 primary_id = DisplayController::GetPrimaryDisplayId();
+  const int64 primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
   const int64 secondary_id = ScreenUtil::GetSecondaryDisplay().id();
 
   DisplayInfo primary_info = display_manager()->GetDisplayInfo(primary_id);
@@ -667,7 +667,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   display_info_list.push_back(secondary_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
-  EXPECT_EQ(third_id, DisplayController::GetPrimaryDisplayId());
+  EXPECT_EQ(third_id, WindowTreeHostManager::GetPrimaryDisplayId());
   EXPECT_EQ("600x600", GetDisplayForId(third_id).size().ToString());
   EXPECT_EQ(secondary_id, ScreenUtil::GetSecondaryDisplay().id());
 }
@@ -722,7 +722,7 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100", GetDisplayForId(10).bounds().ToString());
 
-  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
+  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplay(
       GetDisplayForId(secondary_display_info.id()));
   EXPECT_EQ("-500,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
@@ -1317,14 +1317,16 @@ TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
 
   EXPECT_TRUE(display_manager->IsInMirrorMode());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
-  DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-  EXPECT_TRUE(display_controller->mirror_window_controller()->GetWindow());
+  WindowTreeHostManager* window_tree_host_manager =
+      ash::Shell::GetInstance()->window_tree_host_manager();
+  EXPECT_TRUE(
+      window_tree_host_manager->mirror_window_controller()->GetWindow());
 
   UpdateDisplay("600x400");
   EXPECT_FALSE(display_manager->IsInMirrorMode());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
-  EXPECT_FALSE(display_controller->mirror_window_controller()->GetWindow());
+  EXPECT_FALSE(
+      window_tree_host_manager->mirror_window_controller()->GetWindow());
 }
 
 #if defined(OS_CHROMEOS)
@@ -1422,7 +1424,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("500x500,500x500");
-  ash::Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
+  ash::Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplay();
   reset();
   UpdateDisplay("500x500");
   EXPECT_FALSE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
@@ -1432,7 +1434,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
               gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY);
 
   UpdateDisplay("500x500,500x500");
-  ash::Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
+  ash::Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplay();
   reset();
   UpdateDisplay("500x400");
   EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);

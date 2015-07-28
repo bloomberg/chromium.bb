@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
@@ -68,8 +68,10 @@ class AshEventGeneratorDelegate
       const gfx::Point& point_in_screen) const override {
     gfx::Screen* screen = Shell::GetScreen();
     gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
-    return Shell::GetInstance()->display_controller()->
-        GetRootWindowForDisplayId(display.id())->GetHost();
+    return Shell::GetInstance()
+        ->window_tree_host_manager()
+        ->GetRootWindowForDisplayId(display.id())
+        ->GetHost();
   }
 
   aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -271,8 +273,9 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   } else {
     gfx::Display display =
         Shell::GetScreen()->GetDisplayMatching(bounds);
-    aura::Window* root = ash::Shell::GetInstance()->display_controller()->
-        GetRootWindowForDisplayId(display.id());
+    aura::Window* root = ash::Shell::GetInstance()
+                             ->window_tree_host_manager()
+                             ->GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();
     ::wm::ConvertPointFromScreen(root, &origin);
     window->SetBounds(gfx::Rect(origin, bounds.size()));
@@ -361,7 +364,9 @@ void AshTestBase::UnblockUserSession() {
 
 void AshTestBase::DisableIME() {
   Shell::GetInstance()->RemovePreTargetHandler(
-      Shell::GetInstance()->display_controller()->input_method_event_handler());
+      Shell::GetInstance()
+          ->window_tree_host_manager()
+          ->input_method_event_handler());
 }
 
 }  // namespace test

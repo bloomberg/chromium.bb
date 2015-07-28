@@ -53,12 +53,12 @@ DesktopBackgroundController::DesktopBackgroundController()
     : locked_(false),
       desktop_background_mode_(BACKGROUND_NONE),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs) {
-  Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 

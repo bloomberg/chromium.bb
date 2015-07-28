@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
@@ -12,11 +12,11 @@
 namespace chromeos {
 
 DisplayConfigurationObserver::DisplayConfigurationObserver() {
-  ash::Shell::GetInstance()->display_controller()->AddObserver(this);
+  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 DisplayConfigurationObserver::~DisplayConfigurationObserver() {
-  ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void DisplayConfigurationObserver::OnDisplaysInitialized() {

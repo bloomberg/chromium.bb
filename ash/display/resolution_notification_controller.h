@@ -6,7 +6,7 @@
 #define ASH_DISPLAY_RESOLUTION_NOTIFICATION_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
@@ -30,7 +30,7 @@ struct DisplayMode;
 // also manages the timeout in case the new resolution is unusable.
 class ASH_EXPORT ResolutionNotificationController
     : public gfx::DisplayObserver,
-      public DisplayController::Observer {
+      public WindowTreeHostManager::Observer {
  public:
   ResolutionNotificationController();
   ~ResolutionNotificationController() override;
@@ -91,7 +91,7 @@ class ASH_EXPORT ResolutionNotificationController
   void OnDisplayMetricsChanged(const gfx::Display& display,
                                uint32_t metrics) override;
 
-  // DisplayController::Observer overrides:
+  // WindowTreeHostManager::Observer overrides:
   void OnDisplayConfigurationChanged() override;
 
   static void SuppressTimerForTest();

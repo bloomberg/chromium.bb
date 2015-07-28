@@ -8,7 +8,7 @@
 #include <list>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
@@ -58,7 +58,7 @@ class ASH_EXPORT PanelLayoutManager
       public wm::WindowStateObserver,
       public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
-      public DisplayController::Observer,
+      public WindowTreeHostManager::Observer,
       public ShelfLayoutManagerObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
@@ -113,7 +113,7 @@ class ASH_EXPORT PanelLayoutManager
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
-  // Overridden from DisplayController::Observer
+  // Overridden from WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
 
   // Overridden from ShelfLayoutManagerObserver

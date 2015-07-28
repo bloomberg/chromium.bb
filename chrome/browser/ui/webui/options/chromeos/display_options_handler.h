@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {
@@ -20,7 +20,7 @@ namespace options {
 
 // Display options overlay page UI handler.
 class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
-                              public ash::DisplayController::Observer {
+                              public ash::WindowTreeHostManager::Observer {
  public:
   DisplayOptionsHandler();
   ~DisplayOptionsHandler() override;
@@ -32,7 +32,7 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // ash::DisplayController::Observer implementation.
+  // ash::WindowTreeHostManager::Observer implementation.
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
 

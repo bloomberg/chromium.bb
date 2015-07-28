@@ -51,7 +51,6 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"

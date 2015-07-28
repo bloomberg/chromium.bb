@@ -4,7 +4,6 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"

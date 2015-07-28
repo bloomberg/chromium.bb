@@ -4,7 +4,7 @@
 
 #include "ash/wm/dock/docked_window_resizer.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -40,8 +40,9 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
   gfx::Display display = ScreenUtil::FindDisplayContainingPoint(point);
   if (!display.is_valid())
     return NULL;
-  aura::Window* root = Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
+  aura::Window* root = Shell::GetInstance()
+                           ->window_tree_host_manager()
+                           ->GetRootWindowForDisplayId(display.id());
   aura::Window* dock_container = Shell::GetContainer(
       root, kShellWindowId_DockedContainer);
   return static_cast<DockedWindowLayoutManager*>(

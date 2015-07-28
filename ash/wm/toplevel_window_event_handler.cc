@@ -166,11 +166,11 @@ ToplevelWindowEventHandler::ToplevelWindowEventHandler()
       in_gesture_drag_(false),
       drag_reverted_(false),
       destroyed_(NULL) {
-  Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   if (destroyed_)
     *destroyed_ = true;
 }

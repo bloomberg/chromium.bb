@@ -5,8 +5,8 @@
 #include "ash/utility/partial_screenshot_controller.h"
 
 #include "ash/display/cursor_window_controller.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -195,7 +195,7 @@ TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
 TEST_F(PartialScreenshotControllerTest, LargeCursor) {
   Shell::GetInstance()->cursor_manager()->SetCursorSet(ui::CURSOR_SET_LARGE);
   Shell::GetInstance()
-      ->display_controller()
+      ->window_tree_host_manager()
       ->cursor_window_controller()
       ->SetCursorCompositingEnabled(true);
 

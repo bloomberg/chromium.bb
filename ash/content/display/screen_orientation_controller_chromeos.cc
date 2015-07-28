@@ -79,7 +79,7 @@ ScreenOrientationController::~ScreenOrientationController() {
   content::ScreenOrientationProvider::SetDelegate(NULL);
   Shell::GetInstance()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
   for (auto& windows : locking_windows_)
     windows.first->RemoveObserver(this);
@@ -232,12 +232,12 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
   if (!rotation_locked_)
     LoadDisplayRotationProperties();
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
-  Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 void ScreenOrientationController::OnMaximizeModeEnded() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   if (current_rotation_ != user_rotation_)
     SetDisplayRotation(user_rotation_, gfx::Display::ROTATION_SOURCE_USER);
 }

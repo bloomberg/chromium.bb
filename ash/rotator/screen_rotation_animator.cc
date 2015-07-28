@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -171,9 +171,9 @@ void RotateScreen(int64 display_id,
                   int rotation_degree_offset,
                   gfx::Tween::Type tween_type,
                   bool should_scale) {
-  aura::Window* root_window =
-      Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
-          display_id);
+  aura::Window* root_window = Shell::GetInstance()
+                                  ->window_tree_host_manager()
+                                  ->GetRootWindowForDisplayId(display_id);
 
   const gfx::Display::Rotation initial_orientation =
       GetCurrentRotation(display_id);

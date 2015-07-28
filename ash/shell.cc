@@ -17,11 +17,11 @@
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/cursor_window_controller.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_position_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
@@ -222,14 +222,15 @@ RootWindowController* Shell::GetPrimaryRootWindowController() {
 // static
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
   CHECK(HasInstance());
-  return Shell::GetInstance()->display_controller()->
-      GetAllRootWindowControllers();
+  return Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->GetAllRootWindowControllers();
 }
 
 // static
 aura::Window* Shell::GetPrimaryRootWindow() {
   CHECK(HasInstance());
-  return GetInstance()->display_controller()->GetPrimaryRootWindow();
+  return GetInstance()->window_tree_host_manager()->GetPrimaryRootWindow();
 }
 
 // static
@@ -249,8 +250,7 @@ gfx::Screen* Shell::GetScreen() {
 // static
 aura::Window::Windows Shell::GetAllRootWindows() {
   CHECK(HasInstance());
-  return Shell::GetInstance()->display_controller()->
-      GetAllRootWindows();
+  return Shell::GetInstance()->window_tree_host_manager()->GetAllRootWindows();
 }
 
 // static
@@ -367,7 +367,7 @@ void Shell::RotateFocus(Direction direction) {
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  if (!display_controller_->UpdateWorkAreaOfDisplayNearestWindow(
+  if (!window_tree_host_manager_->UpdateWorkAreaOfDisplayNearestWindow(
           contains, insets)) {
     return;
   }
@@ -618,8 +618,8 @@ ash::FirstRunHelper* Shell::CreateFirstRunHelper() {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  display_controller_->cursor_window_controller()->SetCursorCompositingEnabled(
-      enabled);
+  window_tree_host_manager_->cursor_window_controller()
+      ->SetCursorCompositingEnabled(enabled);
   native_cursor_manager_->SetNativeCursorEnabled(!enabled);
 }
 #endif  // defined(OS_CHROMEOS)
@@ -649,7 +649,7 @@ Shell::Shell(ShellDelegate* delegate)
   DCHECK(delegate_.get());
   gpu_support_.reset(delegate_->CreateGPUSupport());
   display_manager_.reset(new DisplayManager);
-  display_controller_.reset(new DisplayController);
+  window_tree_host_manager_.reset(new WindowTreeHostManager);
   user_metrics_recorder_.reset(new UserMetricsRecorder);
 
 #if defined(OS_CHROMEOS)
@@ -674,7 +674,8 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
-  RemovePreTargetHandler(display_controller_->input_method_event_handler());
+  RemovePreTargetHandler(
+      window_tree_host_manager_->input_method_event_handler());
 #if defined(OS_CHROMEOS)
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
@@ -734,7 +735,7 @@ Shell::~Shell() {
   drag_drop_controller_.reset();
 
   // Controllers who have WindowObserver added must be deleted
-  // before |display_controller_| is deleted.
+  // before |window_tree_host_manager_| is deleted.
 
 #if defined(OS_CHROMEOS)
   // VideoActivityNotifier must be deleted before |video_detector_| is
@@ -756,7 +757,7 @@ Shell::~Shell() {
   shelf_window_watcher_.reset();
 
   // Destroy all child windows including widgets.
-  display_controller_->CloseChildWindows();
+  window_tree_host_manager_->CloseChildWindows();
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
@@ -801,11 +802,12 @@ Shell::~Shell() {
 #endif  // defined(OS_CHROMEOS)
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
-  // DisplayController before resetting |display_controller_|, since destruction
+  // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
+  // destruction
   // of its owned RootWindowControllers relies on the value.
   display_manager_->CreateScreenForShutdown();
-  display_controller_->Shutdown();
-  display_controller_.reset();
+  window_tree_host_manager_->Shutdown();
+  window_tree_host_manager_.reset();
   screen_position_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
@@ -902,10 +904,10 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   screen_position_controller_.reset(new ScreenPositionController);
 
-  display_controller_->Start();
-  display_controller_->CreatePrimaryHost(
+  window_tree_host_manager_->Start();
+  window_tree_host_manager_->CreatePrimaryHost(
       ShellInitParamsToAshWindowTreeHostInitParams(init_params));
-  aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
+  aura::Window* root_window = window_tree_host_manager_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 
 #if defined(OS_CHROMEOS)
@@ -920,7 +922,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   accelerator_controller_.reset(new AcceleratorController);
   maximize_mode_controller_.reset(new MaximizeModeController());
 
-  AddPreTargetHandler(display_controller_->input_method_event_handler());
+  AddPreTargetHandler(window_tree_host_manager_->input_method_event_handler());
 
 #if defined(OS_CHROMEOS)
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
@@ -1041,13 +1043,14 @@ void Shell::Init(const ShellInitParams& init_params) {
       base::Bind(&SystemTrayDelegate::SignOut,
                  base::Unretained(system_tray_delegate_.get()))));
 
-  // Create TouchTransformerController before DisplayController::InitDisplays()
+  // Create TouchTransformerController before
+  // WindowTreeHostManager::InitDisplays()
   // since TouchTransformerController listens on
-  // DisplayController::Observer::OnDisplaysInitialized().
+  // WindowTreeHostManager::Observer::OnDisplaysInitialized().
   touch_transformer_controller_.reset(new TouchTransformerController());
 #endif  // defined(OS_CHROMEOS)
 
-  display_controller_->InitDisplays();
+  window_tree_host_manager_->InitHosts();
 
 #if defined(OS_CHROMEOS)
   // Needs to be created after InitDisplays() since it may cause the virtual

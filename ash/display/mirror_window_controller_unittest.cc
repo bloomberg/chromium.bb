@@ -5,8 +5,8 @@
 #include "ash/display/mirror_window_controller.h"
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -217,17 +217,18 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
 TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::GetInstance();
-  DisplayController* display_controller = shell->display_controller();
+  WindowTreeHostManager* window_tree_host_manager =
+      shell->window_tree_host_manager();
 
   UpdateDisplay("400x400*2/r,400x400");
-  int64 primary_display_id = display_controller->GetPrimaryDisplayId();
+  int64 primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
   int64 secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
   test::ScopedSetInternalDisplayId set_internal(primary_display_id);
 
   // Chrome uses the internal display as the source display for software mirror
   // mode. Move the cursor to the external display.
   aura::Window* secondary_root_window =
-      display_controller->GetRootWindowForDisplayId(secondary_display_id);
+      window_tree_host_manager->GetRootWindowForDisplayId(secondary_display_id);
   secondary_root_window->MoveCursorTo(gfx::Point(100, 200));
   EXPECT_EQ("300,200", env->last_mouse_location().ToString());
   test::CursorManagerTestApi cursor_test_api(shell->cursor_manager());

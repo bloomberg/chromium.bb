@@ -5,7 +5,7 @@
 #include "ash/wm/ash_native_cursor_manager.h"
 
 #include "ash/display/cursor_window_controller.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
@@ -25,8 +25,10 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
        iter != root_windows.end(); ++iter)
     (*iter)->GetHost()->SetCursor(cursor);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->display_controller()->
-      cursor_window_controller()->SetCursor(cursor);
+  Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->SetCursor(cursor);
 #endif
 }
 
@@ -37,8 +39,10 @@ void NotifyCursorVisibilityChange(bool visible) {
        iter != root_windows.end(); ++iter)
     (*iter)->GetHost()->OnCursorVisibilityChanged(visible);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->display_controller()->cursor_window_controller()->
-      SetVisibility(visible);
+  Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->SetVisibility(visible);
 #endif
 }
 
@@ -89,8 +93,10 @@ void AshNativeCursorManager::SetDisplay(
   if (image_cursors_->SetDisplay(display, cursor_scale))
     SetCursor(delegate->GetCursor(), delegate);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->display_controller()->cursor_window_controller()->
-      SetDisplay(display);
+  Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->SetDisplay(display);
 #endif
 }
 
@@ -129,8 +135,10 @@ void AshNativeCursorManager::SetCursorSet(
     SetCursor(delegate->GetCursor(), delegate);
 
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->display_controller()->cursor_window_controller()->
-      SetCursorSet(cursor_set);
+  Shell::GetInstance()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->SetCursorSet(cursor_set);
 #endif
 }
 

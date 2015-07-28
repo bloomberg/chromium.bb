@@ -38,7 +38,6 @@ class Screen;
 
 namespace ash {
 class AcceleratorControllerTest;
-class DisplayController;
 class DisplayLayoutStore;
 class MouseWarpController;
 class ScreenAsh;

@@ -68,13 +68,13 @@ class TouchHudTestBase : public test::AshTestBase {
   void SetInternalAsPrimary() {
     const gfx::Display& internal_display =
         GetDisplayManager()->GetDisplayForId(internal_display_id_);
-    GetDisplayController()->SetPrimaryDisplay(internal_display);
+    GetWindowTreeHostManager()->SetPrimaryDisplay(internal_display);
   }
 
   void SetExternalAsPrimary() {
     const gfx::Display& external_display =
         GetDisplayManager()->GetDisplayForId(external_display_id_);
-    GetDisplayController()->SetPrimaryDisplay(external_display);
+    GetWindowTreeHostManager()->SetPrimaryDisplay(external_display);
   }
 
   void MirrorDisplays() {
@@ -131,8 +131,8 @@ class TouchHudTestBase : public test::AshTestBase {
     return Shell::GetInstance()->display_manager();
   }
 
-  DisplayController* GetDisplayController() {
-    return Shell::GetInstance()->display_controller();
+  WindowTreeHostManager* GetWindowTreeHostManager() {
+    return Shell::GetInstance()->window_tree_host_manager();
   }
 
   const gfx::Display& GetInternalDisplay() {
@@ -144,23 +144,23 @@ class TouchHudTestBase : public test::AshTestBase {
   }
 
   aura::Window* GetInternalRootWindow() {
-    return GetDisplayController()->GetRootWindowForDisplayId(
+    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(
         internal_display_id_);
   }
 
   aura::Window* GetExternalRootWindow() {
-    return GetDisplayController()->GetRootWindowForDisplayId(
+    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(
         external_display_id_);
   }
 
   aura::Window* GetPrimaryRootWindow() {
     const gfx::Display& display = GetPrimaryDisplay();
-    return GetDisplayController()->GetRootWindowForDisplayId(display.id());
+    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(display.id());
   }
 
   aura::Window* GetSecondaryRootWindow() {
     const gfx::Display& display = GetSecondaryDisplay();
-    return GetDisplayController()->GetRootWindowForDisplayId(display.id());
+    return GetWindowTreeHostManager()->GetRootWindowForDisplayId(display.id());
   }
 
   RootWindowController* GetInternalRootController() {

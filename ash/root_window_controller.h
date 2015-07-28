@@ -74,7 +74,7 @@ class AshTouchExplorationManager;
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
 // deleted upon the deletion of the root window. This object is
-// indirectly owned and deleted by |DisplayController|.
+// indirectly owned and deleted by |WindowTreeHostManager|.
 // The RootWindowController for particular root window is stored in
 // its property (RootWindowSettings) and can be obtained using
 // |GetRootWindowController(aura::WindowEventDispatcher*)| function.

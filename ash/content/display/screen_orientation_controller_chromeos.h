@@ -8,7 +8,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -36,7 +36,7 @@ class ASH_EXPORT ScreenOrientationController
       public aura::WindowObserver,
       public chromeos::AccelerometerReader::Observer,
       public content::ScreenOrientationDelegate,
-      public DisplayController::Observer,
+      public WindowTreeHostManager::Observer,
       public ShellObserver {
  public:
   // Observer that reports changes to the state of ScreenOrientationProvider's
@@ -96,7 +96,7 @@ class ASH_EXPORT ScreenOrientationController
   bool ScreenOrientationProviderSupported() override;
   void Unlock(content::WebContents* web_contents) override;
 
-  // DisplayController::Observer:
+  // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:

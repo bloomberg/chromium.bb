@@ -8,9 +8,9 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_configurator_animation.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -149,12 +149,12 @@ base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
 DisplayOptionsHandler::DisplayOptionsHandler() {
   // ash::Shell doesn't exist in Athena.
   // See: http://crbug.com/416961
-  ash::Shell::GetInstance()->display_controller()->AddObserver(this);
+  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 DisplayOptionsHandler::~DisplayOptionsHandler() {
   // ash::Shell doesn't exist in Athena.
-  ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void DisplayOptionsHandler::GetLocalizedValues(
@@ -377,8 +377,8 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
     return;
 
   content::RecordAction(base::UserMetricsAction("Options_DisplaySetPrimary"));
-  ash::Shell::GetInstance()->display_controller()->
-      SetPrimaryDisplayId(display_id);
+  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+      display_id);
 }
 
 void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {

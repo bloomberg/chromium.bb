@@ -4,7 +4,7 @@
 
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -49,7 +49,7 @@ void AshPopupAlignmentDelegate::StartObserving(gfx::Screen* screen,
   screen_ = screen;
   work_area_ = display.work_area();
   root_window_ = ash::Shell::GetInstance()
-                     ->display_controller()
+                     ->window_tree_host_manager()
                      ->GetRootWindowForDisplayId(display.id());
   UpdateShelf();
   screen->AddObserver(this);

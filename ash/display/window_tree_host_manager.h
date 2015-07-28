@@ -31,7 +31,8 @@ class WindowTreeHost;
 
 namespace base {
 class Value;
-template <typename T> class JSONValueConverter;
+template <typename T>
+class JSONValueConverter;
 }
 
 namespace gfx {
@@ -50,13 +51,15 @@ class InputMethodEventHandler;
 class MirrorWindowController;
 class RootWindowController;
 
-// DisplayController owns and maintains RootWindows for each attached
+// WindowTreeHostManager owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
-class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
-                                     public aura::WindowTreeHostObserver,
-                                     public DisplayManager::Delegate,
-                                     public ui::internal::InputMethodDelegate {
+class ASH_EXPORT WindowTreeHostManager
+    : public gfx::DisplayObserver,
+      public aura::WindowTreeHostObserver,
+      public DisplayManager::Delegate,
+      public ui::internal::InputMethodDelegate {
  public:
+  // TODO(oshima): Consider moving this to gfx::DisplayObserver.
   class ASH_EXPORT Observer {
    public:
     // Invoked only once after all displays are initialized
@@ -69,20 +72,20 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
     // Invoked when the all display configuration changes
     // have been applied.
-    virtual void OnDisplayConfigurationChanged() {};
+    virtual void OnDisplayConfigurationChanged(){};
 
    protected:
     virtual ~Observer() {}
   };
 
-  DisplayController();
-  ~DisplayController() override;
+  WindowTreeHostManager();
+  ~WindowTreeHostManager() override;
 
   void Start();
   void Shutdown();
 
   // Returns primary display's ID.
-  // TODO(oshima): Move this out from DisplayController;
+  // TODO(oshima): Move this out from WindowTreeHostManager;
   static int64 GetPrimaryDisplayId();
 
   CursorWindowController* cursor_window_controller() {
@@ -97,8 +100,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // |initial_bounds| in |init_params|.
   void CreatePrimaryHost(const AshWindowTreeHostInitParams& init_params);
 
-  // Initializes all displays.
-  void InitDisplays();
+  // Initializes all WindowTreeHosts.
+  void InitHosts();
 
   // Add/Remove observers.
   void AddObserver(Observer* observer);
@@ -178,8 +181,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, BoundsUpdated);
-  FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, SecondaryDisplayLayout);
+  FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, BoundsUpdated);
+  FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, SecondaryDisplayLayout);
   friend class DisplayManager;
   friend class MirrorWindowController;
 
@@ -246,9 +249,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // should be moved after a display configuration change.
   int64 cursor_display_id_for_restore_;
 
-  base::WeakPtrFactory<DisplayController> weak_ptr_factory_;
+  base::WeakPtrFactory<WindowTreeHostManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayController);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManager);
 };
 
 }  // namespace ash

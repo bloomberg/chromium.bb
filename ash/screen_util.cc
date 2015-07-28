@@ -4,7 +4,6 @@
 
 #include "ash/screen_util.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"

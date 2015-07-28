@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/display_info_provider_chromeos.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "extensions/common/api/system_display.h"
@@ -290,9 +290,9 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   DCHECK(display_manager);
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-  DCHECK(display_controller);
+  ash::WindowTreeHostManager* window_tree_host_manager =
+      ash::Shell::GetInstance()->window_tree_host_manager();
+  DCHECK(window_tree_host_manager);
 
   const gfx::Display target = GetTargetDisplay(display_id_str, display_manager);
 
@@ -313,12 +313,12 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 
   // Process 'isPrimary' parameter.
   if (info.is_primary && *info.is_primary && target.id() != primary.id())
-    display_controller->SetPrimaryDisplayId(display_id);
+    window_tree_host_manager->SetPrimaryDisplayId(display_id);
 
   // Process 'mirroringSourceId' parameter.
   if (info.mirroring_source_id &&
       info.mirroring_source_id->empty() == display_manager->IsInMirrorMode()) {
-    display_controller->ToggleMirrorMode();
+    window_tree_host_manager->ToggleMirrorMode();
   }
 
   // Process 'overscan' parameter.

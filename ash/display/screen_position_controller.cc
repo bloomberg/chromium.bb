@@ -4,7 +4,7 @@
 
 #include "ash/display/screen_position_controller.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -38,8 +38,9 @@ bool ShouldStayInSameRootWindow(const aura::Window* window) {
 // the child windows and transient children of the transient children.
 void MoveAllTransientChildrenToNewRoot(const gfx::Display& display,
                                        aura::Window* window) {
-  aura::Window* dst_root = Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
+  aura::Window* dst_root = Shell::GetInstance()
+                               ->window_tree_host_manager()
+                               ->GetRootWindowForDisplayId(display.id());
   aura::Window::Windows transient_children =
       ::wm::GetTransientChildren(window);
   for (aura::Window::Windows::iterator iter = transient_children.begin();
@@ -166,9 +167,9 @@ void ScreenPositionController::SetBounds(aura::Window* window,
   //    outside of the display.
   if (!::wm::GetTransientParent(window) &&
       !ShouldStayInSameRootWindow(window)) {
-    aura::Window* dst_root =
-        Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
-            display.id());
+    aura::Window* dst_root = Shell::GetInstance()
+                                 ->window_tree_host_manager()
+                                 ->GetRootWindowForDisplayId(display.id());
     DCHECK(dst_root);
     aura::Window* dst_container = NULL;
     if (dst_root != window->GetRootWindow()) {

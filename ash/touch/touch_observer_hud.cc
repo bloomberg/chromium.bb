@@ -51,12 +51,12 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
   Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif  // defined(OS_CHROMEOS)
 
-  Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
 }
 
 TouchObserverHUD::~TouchObserverHUD() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
@@ -136,8 +136,9 @@ void TouchObserverHUD::OnDisplayConfigurationChanged() {
   if (root_window_)
     return;
 
-  root_window_ = Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display_id_);
+  root_window_ = Shell::GetInstance()
+                     ->window_tree_host_manager()
+                     ->GetRootWindowForDisplayId(display_id_);
 
   views::Widget::ReparentNativeView(
       widget_->GetNativeView(),
