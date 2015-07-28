@@ -125,7 +125,8 @@ bool ConvertValueToDisplayMode(const base::DictionaryValue* dict,
 
 base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
                                                  const ash::DisplayMode& mode) {
-  bool is_internal = gfx::Display::InternalDisplayId() == display_id;
+  bool is_internal = gfx::Display::HasInternalDisplay() &&
+                     gfx::Display::InternalDisplayId() == display_id;
   base::DictionaryValue* result = new base::DictionaryValue();
   gfx::Size size_dip = mode.GetSizeInDIP(is_internal);
   result->SetInteger("width", size_dip.width());
@@ -260,9 +261,8 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
   DisplayManager* display_manager = GetDisplayManager();
 
   std::vector<gfx::Display> displays;
-  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
+  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i)
     displays.push_back(display_manager->GetDisplayAt(i));
-  }
   SendDisplayInfo(displays);
 }
 

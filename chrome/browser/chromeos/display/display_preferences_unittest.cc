@@ -902,18 +902,15 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kDisplayProperties);
   int64 unified_id = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  ASSERT_TRUE(
+  EXPECT_FALSE(
       displays->GetDictionary(base::Int64ToString(unified_id), &new_value));
-  int ui_scale = 0;
-  EXPECT_FALSE(new_value->GetInteger("ui-scale", &ui_scale));
 
-  ash::SetDisplayUIScale(unified_id, 0.5f);
+  ash::test::SetDisplayResolution(unified_id, gfx::Size(200, 100));
   EXPECT_EQ(
       "200x100",
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().size().ToString());
-  ASSERT_TRUE(
+  EXPECT_FALSE(
       displays->GetDictionary(base::Int64ToString(unified_id), &new_value));
-  EXPECT_FALSE(new_value->GetInteger("ui-scale", &ui_scale));
 
   // Mirror mode should remember if the default mode was unified.
   display_manager->SetMirrorMode(true);

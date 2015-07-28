@@ -1115,7 +1115,7 @@ TEST_F(DisplayManagerTest, Use125DSFForUIScaling) {
   EXPECT_EQ("2400x1350", GetDisplayForId(display_id).size().ToString());
 }
 
-TEST_F(DisplayManagerTest, UIScaleInUnifiedMode) {
+TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -1129,6 +1129,10 @@ TEST_F(DisplayManagerTest, UIScaleInUnifiedMode) {
   UpdateDisplay("200x200, 400x400");
 
   int64 unified_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  DisplayInfo info = display_manager->GetDisplayInfo(unified_id);
+  ASSERT_EQ(2u, info.display_modes().size());
+  EXPECT_EQ("400x200", info.display_modes()[0].size.ToString());
+  EXPECT_EQ("800x400", info.display_modes()[1].size.ToString());
   EXPECT_EQ("800x400",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
   DisplayMode active_mode =
@@ -1136,14 +1140,15 @@ TEST_F(DisplayManagerTest, UIScaleInUnifiedMode) {
   EXPECT_EQ(1.0f, active_mode.ui_scale);
   EXPECT_EQ("800x400", active_mode.size.ToString());
 
-  EXPECT_TRUE(SetDisplayUIScale(unified_id, 0.5f));
+  EXPECT_TRUE(test::SetDisplayResolution(unified_id, gfx::Size(400, 200)));
   EXPECT_EQ("400x200",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
-  active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
-  EXPECT_EQ(0.5f, active_mode.ui_scale);
-  EXPECT_EQ("800x400", active_mode.size.ToString());
 
-  // UI scale will not persist in unified desktop mode.
+  active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
+  EXPECT_EQ(1.0f, active_mode.ui_scale);
+  EXPECT_EQ("400x200", active_mode.size.ToString());
+
+  // resolution change will not persist in unified desktop mode.
   UpdateDisplay("200x200, 600x600");
   EXPECT_EQ("1200x600",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());

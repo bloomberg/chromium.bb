@@ -15,6 +15,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(OS_CHROMEOS)
@@ -92,6 +93,19 @@ bool GetDisplayModeForUIScale(const DisplayInfo& info,
   return true;
 }
 
+void FindNextMode(std::vector<DisplayMode>::const_iterator& iter,
+                  const std::vector<DisplayMode>& modes,
+                  bool up,
+                  DisplayMode* out) {
+  DCHECK(iter != modes.end());
+  if (up && (iter + 1) != modes.end())
+    *out = *(iter + 1);
+  else if (!up && iter != modes.begin())
+    *out = *(iter - 1);
+  else
+    *out = *iter;
+}
+
 }  // namespace
 
 std::vector<DisplayMode> CreateInternalDisplayModeList(
@@ -115,11 +129,12 @@ std::vector<DisplayMode> CreateUnifiedDisplayModeList(
     const std::set<float>& scales) {
   std::vector<DisplayMode> display_mode_list;
 
-  float native_ui_scale = native_mode.device_scale_factor;
   for (float ui_scale : scales) {
     DisplayMode mode = native_mode;
-    mode.ui_scale = ui_scale;
-    mode.native = (ui_scale == native_ui_scale);
+    gfx::SizeF scaled_size(native_mode.size);
+    scaled_size.Scale(ui_scale);
+    mode.size = gfx::ToFlooredSize(scaled_size);
+    mode.native = mode.size == native_mode.size;
     display_mode_list.push_back(mode);
   }
   return display_mode_list;
@@ -128,10 +143,7 @@ std::vector<DisplayMode> CreateUnifiedDisplayModeList(
 bool GetDisplayModeForResolution(const DisplayInfo& info,
                                  const gfx::Size& resolution,
                                  DisplayMode* out) {
-  // TODO(oshima): Replace this with IsInternalDisplayId once
-  // the unified desktop mode is convered to not to use UI scaling.
-  if (Shell::GetInstance()->display_manager()->GetDisplayIdForUIScaling() ==
-      info.id())
+  if (gfx::Display::IsInternalDisplayId(info.id()))
     return false;
 
   const std::vector<DisplayMode>& modes = info.display_modes();
@@ -154,26 +166,28 @@ bool GetDisplayModeForResolution(const DisplayInfo& info,
 bool GetDisplayModeForNextUIScale(const DisplayInfo& info,
                                   bool up,
                                   DisplayMode* out) {
-  // TODO(oshima): Replace this with IsInternalDisplayId once
-  // the unified desktop mode is convered to not to use UI scaling.
-  if (Shell::GetInstance()->display_manager()->GetDisplayIdForUIScaling() !=
-      info.id())
+  if (!gfx::Display::IsInternalDisplayId(info.id()))
     return false;
-  ScaleComparator comparator(info.configured_ui_scale());
   const std::vector<DisplayMode>& modes = info.display_modes();
-  for (auto iter = modes.begin(); iter != modes.end(); ++iter) {
-    if (comparator(*iter)) {
-      if (up && (iter + 1) != modes.end())
-        *out = *(iter + 1);
-      if (!up && iter != modes.begin())
-        *out = *(iter - 1);
-      else
-        *out = *iter;
-      return true;
-    }
-  }
-  NOTREACHED();
-  return false;
+  ScaleComparator comparator(info.configured_ui_scale());
+  auto iter = std::find_if(modes.begin(), modes.end(), comparator);
+  FindNextMode(iter, modes, up, out);
+  return true;
+}
+
+bool GetDisplayModeForNextResolution(const DisplayInfo& info,
+                                     bool up,
+                                     DisplayMode* out) {
+  if (gfx::Display::IsInternalDisplayId(info.id()))
+    return false;
+  const std::vector<DisplayMode>& modes = info.display_modes();
+  const gfx::Size& resolution = info.size_in_pixel();
+  auto iter = std::find_if(modes.begin(), modes.end(),
+                           [resolution](const DisplayMode& mode) {
+                             return mode.size == resolution;
+                           });
+  FindNextMode(iter, modes, up, out);
+  return true;
 }
 
 bool SetDisplayUIScale(int64 id, float ui_scale) {

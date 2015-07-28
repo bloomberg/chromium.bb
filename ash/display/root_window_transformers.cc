@@ -290,11 +290,11 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
     DisplayInfo display_info =
         Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
     root_bounds_ = gfx::Rect(display_info.bounds_in_native().size());
-    transform_.Translate(-SkIntToMScalar(display.bounds().x()),
-                         -SkIntToMScalar(display.bounds().y()));
     float scale =
         root_bounds_.height() / static_cast<float>(screen_bounds.height());
     transform_.Scale(scale, scale);
+    transform_.Translate(-SkIntToMScalar(display.bounds().x()),
+                         -SkIntToMScalar(display.bounds().y()));
   }
 
   // RootWindowTransformer:

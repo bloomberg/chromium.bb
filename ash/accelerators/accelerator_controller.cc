@@ -288,38 +288,51 @@ void HandleRotateActiveWindow() {
   }
 }
 
-bool CanHandleScaleReset() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  int64 display_id = display_manager->GetDisplayIdForUIScaling();
-  return (display_id != gfx::Display::kInvalidDisplayID &&
-          display_manager->GetDisplayInfo(display_id).configured_ui_scale() !=
-              1.0f);
-}
-
 void HandleScaleReset() {
   base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Reset"));
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  int64 display_id = display_manager->GetDisplayIdForUIScaling();
-  SetDisplayUIScale(display_id, 1.0f);
+
+  if (display_manager->IsInUnifiedMode()) {
+    const DisplayInfo& display_info =
+        display_manager->GetDisplayInfo(DisplayManager::kUnifiedDisplayId);
+    const std::vector<DisplayMode>& modes = display_info.display_modes();
+    auto iter =
+        std::find_if(modes.begin(), modes.end(),
+                     [](const DisplayMode& mode) { return mode.native; });
+    display_manager->SetDisplayMode(DisplayManager::kUnifiedDisplayId, *iter);
+  } else {
+    SetDisplayUIScale(display_manager->GetDisplayIdForUIScaling(), 1.0f);
+  }
 }
 
 bool CanHandleScaleUI() {
-  return Shell::GetInstance()->display_manager()->IsDisplayUIScalingEnabled();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  return display_manager->IsDisplayUIScalingEnabled() ||
+         display_manager->IsInUnifiedMode();
 }
 
 void HandleScaleUI(bool up) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  int64 display_id = display_manager->GetDisplayIdForUIScaling();
-
   if (up)
     base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Up"));
   else
     base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Down"));
 
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  int64 display_id = display_manager->IsInUnifiedMode()
+                         ? DisplayManager::kUnifiedDisplayId
+                         : display_manager->GetDisplayIdForUIScaling();
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
   DisplayMode mode;
-  if (GetDisplayModeForNextUIScale(display_info, up, &mode))
-    display_manager->SetDisplayMode(display_id, mode);
+
+  if (display_manager->IsInUnifiedMode()) {
+    if (!GetDisplayModeForNextResolution(display_info, up, &mode))
+      return;
+  } else {
+    if (!GetDisplayModeForNextUIScale(display_info, up, &mode))
+      return;
+  }
+  display_manager->SetDisplayMode(display_id, mode);
 }
 
 void HandleShowKeyboardOverlay() {
@@ -871,7 +884,6 @@ bool AcceleratorController::CanPerformAction(
     case PREVIOUS_IME:
       return CanHandlePreviousIme(ime_control_delegate_.get());
     case SCALE_UI_RESET:
-      return CanHandleScaleReset();
     case SCALE_UI_UP:
     case SCALE_UI_DOWN:
       return CanHandleScaleUI();

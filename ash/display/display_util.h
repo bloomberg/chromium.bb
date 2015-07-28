@@ -46,6 +46,12 @@ ASH_EXPORT bool GetDisplayModeForNextUIScale(const DisplayInfo& info,
                                              bool up,
                                              DisplayMode* out);
 
+// Gets the display mode for the next valid resolution. Returns false
+// if the display is an internal display.
+ASH_EXPORT bool GetDisplayModeForNextResolution(const DisplayInfo& info,
+                                                bool up,
+                                                DisplayMode* out);
+
 // Sets the UI scale for the |display_id|. Returns false if the
 // display_id is not an internal display.
 ASH_EXPORT bool SetDisplayUIScale(int64 display_id, float scale);
