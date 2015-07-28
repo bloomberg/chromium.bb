@@ -131,9 +131,15 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
       message_label_(nullptr),
       button_view_(nullptr),
       browser_fullscreen_exit_accelerator_(accelerator) {
+  views::BubbleBorder::Shadow shadow_type = views::BubbleBorder::BIG_SHADOW;
+#if defined(OS_CHROMEOS)
+  // Use a smaller shadow on ChromeOS as the shadow assets can overlap
+  // each other in a fullscreen notification bubble. crbug.com/462983.
+  shadow_type = views::BubbleBorder::SMALL_SHADOW;
+#endif
   scoped_ptr<views::BubbleBorder> bubble_border(
       new views::BubbleBorder(views::BubbleBorder::NONE,
-                              views::BubbleBorder::BIG_SHADOW, SK_ColorWHITE));
+                              shadow_type, SK_ColorWHITE));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(bubble_border.Pass());
   SetFocusable(false);
