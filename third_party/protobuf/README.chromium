@@ -45,4 +45,6 @@ Cherry-pick pherl changes to make protobuf build on VS2015.
 
 Cherry-pick c3cb53b (fix "sometimes-uninitialized" warning).
 
-Cherry-pick https://github.com/google/protobuf/pull/621
+Cherry-pick https://github.com/google/protobuf/commit/56a90a2081379a5
+
+Cherry-pick https://github.com/google/protobuf/commit/69d660b39ceabea
