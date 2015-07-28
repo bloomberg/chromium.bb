@@ -392,6 +392,11 @@
       # Enable with GYP_DEFINES=win_analyze=1
       'win_analyze%': 0,
 
+      # /debug:fastlink is off by default on Windows because it generates PDBs
+      # that are machine-local. But, great for local builds.
+      # Enable with GYP_DEFINES=win_fastlink=1
+      'win_fastlink%': 0,
+
       # Set to select the Title Case versions of strings in GRD files.
       'use_titlecase_in_grd%': 0,
 
@@ -1147,6 +1152,7 @@
     'system_libdir%': '<(system_libdir)',
     'component%': '<(component)',
     'win_analyze%': '<(win_analyze)',
+    'win_fastlink%': '<(win_fastlink)',
     'enable_resource_whitelist_generation%': '<(enable_resource_whitelist_generation)',
     'use_titlecase_in_grd%': '<(use_titlecase_in_grd)',
     'use_third_party_translations%': '<(use_third_party_translations)',
@@ -3537,6 +3543,34 @@
           }],
           ['OS=="win"', {
             'defines': ['NO_TCMALLOC'],
+            'conditions': [
+              ['win_fastlink==1', {
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    # /PROFILE is incompatible with /debug:fastlink
+                    'Profile': 'false',
+                    'AdditionalOptions': [
+                      # Tell VS 2015+ to create a PDB that references debug
+                      # information in .obj and .lib files instead of copying
+                      # it all.
+                      '/DEBUG:FASTLINK',
+                    ],
+                  },
+                },
+              }, {
+                # win_fastlink==0
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    # This corresponds to the /PROFILE flag which ensures the PDB
+                    # file contains FIXUP information (growing the PDB file by about
+                    # 5%) but does not otherwise alter the output binary. This
+                    # information is used by the Syzygy optimization tool when
+                    # decomposing the release image.
+                    'Profile': 'true',
+                  },
+                },
+              }],
+            ],
           }],
           # _FORTIFY_SOURCE isn't really supported by Clang now, see
           # http://llvm.org/bugs/show_bug.cgi?id=16821.

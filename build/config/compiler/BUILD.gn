@@ -148,6 +148,7 @@ config("compiler") {
 
     if (is_syzyasan) {
       # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
+      assert(!is_win_fastlink, "/PROFILE and /DEBUG:FASTLINK are incompatible")
       ldflags += [ "/PROFILE" ]
     }
   } else {
@@ -1245,7 +1246,14 @@ config("symbols") {
     } else {
       cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
     }
-    ldflags = [ "/DEBUG" ]
+    if (is_win_fastlink) {
+      # Tell VS 2015+ to create a PDB that references debug
+      # information in .obj and .lib files instead of copying
+      # it all. This flag is incompatible with /PROFILE
+      ldflags = [ "/DEBUG:FASTLINK" ]
+    } else {
+      ldflags = [ "/DEBUG" ]
+    }
   } else {
     cflags = [ "-g2" ]
     if (use_debug_fission) {
@@ -1257,7 +1265,14 @@ config("symbols") {
 config("minimal_symbols") {
   if (is_win) {
     # Linker symbols for backtraces only.
-    ldflags = [ "/DEBUG" ]
+    if (is_win_fastlink) {
+      # Tell VS 2015+ to create a PDB that references debug
+      # information in .obj and .lib files instead of copying
+      # it all. This flag is incompatible with /PROFILE
+      ldflags = [ "/DEBUG:FASTLINK" ]
+    } else {
+      ldflags = [ "/DEBUG" ]
+    }
   } else {
     cflags = [ "-g1" ]
     if (use_debug_fission) {
