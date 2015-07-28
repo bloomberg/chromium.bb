@@ -13,9 +13,12 @@ per-file ScreenOrientation*.java=mlamouri@chromium.org
 jdduke@chromium.org
 
 # Process management related
-per-file BindingManager*.java=ppi@chromium.org
-per-file ChildProcessConnection*.java=ppi@chromium.org
-per-file ChildProcessLauncher.java=ppi@chromium.org
+per-file BindingManager*.java=jaekyun@chromium.org
+per-file BindingManager*.java=mariakhomenko@chromium.org
+per-file ChildProcessConnection*.java=jaekyun@chromium.org
+per-file ChildProcessConnection*.java=mariakhomenko@chromium.org
+per-file ChildProcessLauncher.java=jaekyun@chromium.org
+per-file ChildProcessLauncher.java=mariakhomenko@chromium.org
 
 # Mojo related
 per-file ServiceRegistrar.java=ppi@chromium.org
