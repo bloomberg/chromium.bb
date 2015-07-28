@@ -633,8 +633,8 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
     InstallShortcutLevel level = installer_state.system_install() ?
         ALL_USERS : CURRENT_USER;
     base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
-    CreateOrUpdateShortcuts(
-        chrome_exe, chrome, prefs, level, INSTALL_SHORTCUT_REPLACE_EXISTING);
+    CreateOrUpdateShortcuts(chrome_exe, chrome, prefs, level,
+                            INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
     RegisterChromeOnMachine(installer_state, chrome, false);
 
     UpdateOsUpgradeBeacon(installer_state.system_install(),
