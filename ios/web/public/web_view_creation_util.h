@@ -17,8 +17,12 @@ bool IsWKWebViewSupported();
 
 // Returns a new WKWebView for displaying regular web content.
 // WKWebViewConfiguration object for resulting web view will be obtained from
-// the given |browser_state| which must not be null.
-// The BrowsingDataPartition must be synchronized before this method is called.
+// the given |browser_state|.
+//
+// Preconditions for creation of a WKWebView:
+// 1) |browser_state| is not null.
+// 2) web::BrowsingDataPartition is synchronized.
+//
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state);
 

@@ -33,9 +33,13 @@ UIWebView* CreateWebView(CGRect frame);
 
 // Creates and returns a WKWebView. The returned WKWebView will have a
 // user agent string that includes the |request_group_id|.
-// |browser_state| cannot be null. The |configuration| should have the same
-// WKProcessPool as the WKWebViewConfiguration associated with |browser_state|.
-// The BrowsingDataPartition must be synchronized before this method is called.
+//
+// Preconditions for creation of a WKWebView:
+// 1) |browser_state|, |configuration| are not null.
+// 2) web::BrowsingDataPartition is synchronized.
+// 3) The WKProcessPool of the configuration is the same as the WKProcessPool
+//    of the WKWebViewConfiguration associated with |browser_state|.
+//
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
@@ -44,9 +48,8 @@ WKWebView* CreateWKWebView(CGRect frame,
                            BOOL use_desktop_user_agent);
 
 // Creates and returns a new WKWebView for displaying regular web content.
-// |browser_state| cannot be null. The |configuration| should have the same
-// WKProcessPool as the WKWebViewConfiguration associated with |browser_state|.
-// The BrowsingDataPartition must be synchronized before this method is called.
+// The preconditions for the creation of a WKWebView are the same as the
+// previous method.
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
@@ -55,6 +58,9 @@ WKWebView* CreateWKWebView(CGRect frame,
 // Returns the total number of WKWebViews that are currently present.
 // NOTE: This only works in Debug builds and should not be used in Release
 // builds.
+// DEPRECATED. Please use web::WebViewCounter instead.
+// TODO(shreyasv): Remove this once all callers have stopped using it.
+// crbug.com/480507
 NSUInteger GetActiveWKWebViewsCount();
 
 // Returns a CRWSimpleWebViewController for managing/showing a web view.

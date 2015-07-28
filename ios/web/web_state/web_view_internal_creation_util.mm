@@ -13,6 +13,7 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/browsing_data_partition.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_view_counter.h"
 #import "ios/web/public/web_view_creation_util.h"
 #include "ios/web/ui_web_view_util.h"
 #import "ios/web/weak_nsobject_counter.h"
@@ -20,6 +21,7 @@
 #import "ios/web/web_state/ui/crw_ui_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_wk_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#import "ios/web/web_view_counter_impl.h"
 
 #if !defined(NDEBUG)
 #import "ios/web/web_state/ui/crw_debug_web_view.h"
@@ -29,6 +31,9 @@
 
 namespace {
 // Returns the counter of all the active WKWebViews.
+// DEPRECATED. Please use web::WebViewCounter instead.
+// TODO(shreyasv): Remove this once all callers have stopped using it.
+// crbug.com/480507
 web::WeakNSObjectCounter& GetActiveWKWebViewCounter() {
   static web::WeakNSObjectCounter active_wk_web_view_counter;
   return active_wk_web_view_counter;
@@ -61,6 +66,54 @@ BOOL gAllowWKWebViewCreation = NO;
 #endif  // !defined(NDEBUG)
 
 namespace web {
+
+namespace {
+
+// Verifies the preconditions for creating a WKWebView. Must be called before
+// a WKWebView is allocated. Not verifying the preconditions before creating
+// a WKWebView will lead to undefined behavior.
+void VerifyWKWebViewCreationPreConditions(
+    BrowserState* browser_state,
+    WKWebViewConfiguration* configuration) {
+  DCHECK(browser_state);
+  DCHECK(configuration);
+  DCHECK(web::BrowsingDataPartition::IsSynchronized());
+  WKWebViewConfigurationProvider& config_provider =
+      WKWebViewConfigurationProvider::FromBrowserState(browser_state);
+  DCHECK_EQ([config_provider.GetWebViewConfiguration() processPool],
+            [configuration processPool]);
+}
+
+// Called before a WKWebView is created.
+void PreWKWebViewCreation() {
+  DCHECK(web::GetWebClient());
+  web::GetWebClient()->PreWebViewCreation();
+
+#if !defined(NDEBUG)
+  gAllowWKWebViewCreation = YES;
+#endif
+}
+
+// Called after the WKWebView |web_view| is created.
+void PostWKWebViewCreation(WKWebView* web_view, BrowserState* browser_state) {
+  DCHECK(web_view);
+
+#if !defined(NDEBUG)
+  GetActiveWKWebViewCounter().Insert(web_view);
+  gAllowWKWebViewCreation = NO;
+#endif
+
+  WebViewCounterImpl* web_view_counter =
+      WebViewCounterImpl::FromBrowserState(browser_state);
+  DCHECK(web_view_counter);
+  web_view_counter->InsertWKWebView(web_view);
+
+  // TODO(stuartmorgan): Figure out how to make this work; two different client
+  // methods for the two web view types?
+  // web::GetWebClient()->PostWebViewCreation(result);
+}
+
+}  // namespace
 
 UIWebView* CreateWebView(CGRect frame,
                          NSString* request_group_id,
@@ -111,30 +164,12 @@ WKWebView* CreateWKWebView(CGRect frame,
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state) {
-  DCHECK(browser_state);
-  DCHECK(configuration);
-  DCHECK(web::BrowsingDataPartition::IsSynchronized());
-  WKWebViewConfigurationProvider& config_provider =
-      WKWebViewConfigurationProvider::FromBrowserState(browser_state);
-  DCHECK_EQ([config_provider.GetWebViewConfiguration() processPool],
-            [configuration processPool]);
+  VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
-  DCHECK(web::GetWebClient());
-  web::GetWebClient()->PreWebViewCreation();
-#if !defined(NDEBUG)
-  gAllowWKWebViewCreation = YES;
-#endif
-
+  PreWKWebViewCreation();
   WKWebView* result =
       [[WKWebView alloc] initWithFrame:frame configuration:configuration];
-#if !defined(NDEBUG)
-  GetActiveWKWebViewCounter().Insert(result);
-  gAllowWKWebViewCreation = NO;
-#endif
-
-  // TODO(stuartmorgan): Figure out how to make this work; two different client
-  // methods for the two web view types?
-  // web::GetWebClient()->PostWebViewCreation(result);
+  PostWKWebViewCreation(result, browser_state);
 
   return result;
 }
