@@ -73,6 +73,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/url_request/certificate_report_sender.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
@@ -640,6 +641,11 @@ ProfileIOData::~ProfileIOData() {
            static_cast<void*>(it->second), sizeof(void*));
   }
 
+  // Destroy certificate_report_sender_ before main_request_context_,
+  // since the former has a reference to the latter.
+  transport_security_state_->SetReportSender(nullptr);
+  certificate_report_sender_.reset();
+
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
   if (main_request_context_)
@@ -1058,6 +1064,11 @@ void ProfileIOData::Init(
               pool->GetSequenceToken(),
               base::SequencedWorkerPool::BLOCK_SHUTDOWN),
           IsOffTheRecord()));
+
+  certificate_report_sender_.reset(new net::CertificateReportSender(
+      main_request_context_.get(),
+      net::CertificateReportSender::DO_NOT_SEND_COOKIES));
+  transport_security_state_->SetReportSender(certificate_report_sender_.get());
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

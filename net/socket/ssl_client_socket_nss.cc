@@ -3090,10 +3090,11 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
-          host_and_port_.host(),
-          server_cert_verify_result_.is_issued_by_known_root,
+          host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
           server_cert_verify_result_.public_key_hashes,
-          &pinning_failure_log_)) {
+          core_->state().server_cert.get(),
+          server_cert_verify_result_.verified_cert.get(),
+          TransportSecurityState::ENABLE_PIN_REPORTS, &pinning_failure_log_)) {
     result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
   }
 

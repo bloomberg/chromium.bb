@@ -32,9 +32,6 @@ struct NET_EXPORT SHA256HashValue {
 enum HashValueTag {
   HASH_VALUE_SHA1,
   HASH_VALUE_SHA256,
-
-  // This must always be last.
-  HASH_VALUE_TAGS_COUNT
 };
 
 class NET_EXPORT HashValue {

@@ -598,10 +598,17 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
     return false;
 
   std::string pinning_failure_log;
+  // DISABLE_PIN_REPORTS is set here because this check can fail in
+  // normal operation without being indicative of a misconfiguration or
+  // attack.
+  //
+  // TODO(estark): replace 0 below with the port of the connection
+  // (though it won't actually be used since reports aren't getting
+  // sent).
   if (!transport_security_state->CheckPublicKeyPins(
-          new_hostname,
-          ssl_info.is_issued_by_known_root,
-          ssl_info.public_key_hashes,
+          HostPortPair(new_hostname, 0), ssl_info.is_issued_by_known_root,
+          ssl_info.public_key_hashes, ssl_info.unverified_cert.get(),
+          ssl_info.cert.get(), TransportSecurityState::DISABLE_PIN_REPORTS,
           &pinning_failure_log)) {
     return false;
   }

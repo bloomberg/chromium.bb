@@ -58,6 +58,7 @@ class InfoMap;
 }
 
 namespace net {
+class CertificateReportSender;
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
@@ -557,6 +558,7 @@ class ProfileIOData {
 
   mutable scoped_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
+  mutable scoped_ptr<net::CertificateReportSender> certificate_report_sender_;
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.

@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "crypto/signature_verifier.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
@@ -243,13 +244,16 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   const CertVerifyResult& cert_verify_result =
       verify_details_->cert_verify_result;
   const CertStatus cert_status = cert_verify_result.cert_status;
+  // TODO(estark): replace 0 below with the port of the connection.
   if (transport_security_state_ &&
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
-          hostname_,
+          HostPortPair(hostname_, 0),
           cert_verify_result.is_issued_by_known_root,
-          cert_verify_result.public_key_hashes,
+          cert_verify_result.public_key_hashes, cert_.get(),
+          cert_verify_result.verified_cert.get(),
+          TransportSecurityState::ENABLE_PIN_REPORTS,
           &verify_details_->pinning_failure_log)) {
     result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
   }

@@ -5,12 +5,13 @@
 #ifndef NET_HTTP_TRANSPORT_SECURITY_STATE_H_
 #define NET_HTTP_TRANSPORT_SECURITY_STATE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -19,8 +20,11 @@
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
+class GURL;
+
 namespace net {
 
+class HostPortPair;
 class SSLInfo;
 
 // Tracks which hosts have enabled strict transport security and/or public
@@ -45,19 +49,6 @@ class NET_EXPORT TransportSecurityState
    protected:
     virtual ~Delegate() {}
   };
-
-  // An interface for asynchronously sending HPKP violation reports.
-  class NET_EXPORT ReportSender {
-   public:
-    // Sends the given serialized |report| to |report_uri|.
-    virtual void Send(const GURL& report_uri, const std::string& report) = 0;
-
-   protected:
-    virtual ~ReportSender() {}
-  };
-
-  TransportSecurityState();
-  ~TransportSecurityState();
 
   // A STSState describes the strict transport security state (required
   // upgrade to HTTPS).
@@ -189,15 +180,35 @@ class NET_EXPORT TransportSecurityState
     std::map<std::string, PKPState>::const_iterator end_;
   };
 
+  // An interface for asynchronously sending HPKP violation reports.
+  class NET_EXPORT ReportSender {
+   public:
+    // Sends the given serialized |report| to |report_uri|.
+    virtual void Send(const GURL& report_uri, const std::string& report) = 0;
+
+   protected:
+    virtual ~ReportSender() {}
+  };
+
+  // Indicates whether or not a public key pin check should send a
+  // report if a violation is detected.
+  enum PublicKeyPinReportStatus { ENABLE_PIN_REPORTS, DISABLE_PIN_REPORTS };
+
+  TransportSecurityState();
+  ~TransportSecurityState();
+
   // These functions search for static and dynamic STS and PKP states, and
-  // invoke the
-  // functions of the same name on them. These functions are the primary public
-  // interface; direct access to STS and PKP states is best left to tests.
+  // invoke the functions of the same name on them. These functions are the
+  // primary public interface; direct access to STS and PKP states is best
+  // left to tests.
   bool ShouldSSLErrorsBeFatal(const std::string& host);
   bool ShouldUpgradeToSSL(const std::string& host);
-  bool CheckPublicKeyPins(const std::string& host,
+  bool CheckPublicKeyPins(const HostPortPair& host_port_pair,
                           bool is_issued_by_known_root,
                           const HashValueVector& hashes,
+                          const X509Certificate* served_certificate_chain,
+                          const X509Certificate* validated_certificate_chain,
+                          const PublicKeyPinReportStatus report_status,
                           std::string* failure_log);
   bool HasPublicKeyPins(const std::string& host);
 
@@ -207,6 +218,8 @@ class NET_EXPORT TransportSecurityState
   // Note: This is only used for serializing/deserializing the
   // TransportSecurityState.
   void SetDelegate(Delegate* delegate);
+
+  void SetReportSender(ReportSender* report_sender);
 
   // Clears all dynamic data (e.g. HSTS and HPKP data).
   //
@@ -322,9 +335,13 @@ class NET_EXPORT TransportSecurityState
   static bool IsBuildTimely();
 
   // Helper method for actually checking pins.
-  bool CheckPublicKeyPinsImpl(const std::string& host,
-                              const HashValueVector& hashes,
-                              std::string* failure_log);
+  bool CheckPublicKeyPinsImpl(
+      const HostPortPair& host_port_pair,
+      const HashValueVector& hashes,
+      const X509Certificate* served_certificate_chain,
+      const X509Certificate* validated_certificate_chain,
+      const PublicKeyPinReportStatus report_status,
+      std::string* failure_log);
 
   // If a Delegate is present, notify it that the internal state has
   // changed.
@@ -360,6 +377,8 @@ class NET_EXPORT TransportSecurityState
   PKPStateMap enabled_pkp_hosts_;
 
   Delegate* delegate_;
+
+  ReportSender* report_sender_;
 
   // True if static pins should be used.
   bool enable_static_pins_;

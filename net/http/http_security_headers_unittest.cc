@@ -9,6 +9,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_security_headers.h"
 #include "net/http/http_util.h"
@@ -678,8 +679,10 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   hashes.push_back(good_hash);
   std::string failure_log;
   const bool is_issued_by_known_root = true;
+  HostPortPair domain_port(domain, 443);
   EXPECT_TRUE(state.CheckPublicKeyPins(
-      domain, is_issued_by_known_root, hashes, &failure_log));
+      domain_port, is_issued_by_known_root, hashes, nullptr, nullptr,
+      TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 
   TransportSecurityState::PKPState new_dynamic_pkp_state;
   EXPECT_TRUE(state.GetDynamicPKPState(domain, &new_dynamic_pkp_state));
@@ -771,9 +774,11 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   new_static_pkp_state2.spki_hashes[2].data()[0] ^= 0x80;
 
   const bool is_issued_by_known_root = true;
-  EXPECT_FALSE(state.CheckPublicKeyPins(domain, is_issued_by_known_root,
-                                        new_static_pkp_state2.spki_hashes,
-                                        &failure_log));
+  HostPortPair domain_port(domain, 443);
+  EXPECT_FALSE(state.CheckPublicKeyPins(
+      domain_port, is_issued_by_known_root, new_static_pkp_state2.spki_hashes,
+      nullptr, nullptr, TransportSecurityState::DISABLE_PIN_REPORTS,
+      &failure_log));
   EXPECT_NE(0UL, failure_log.length());
 }
 
@@ -805,10 +810,10 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
   EXPECT_TRUE(state.ShouldUpgradeToSSL(domain));
   std::string failure_log;
   const bool is_issued_by_known_root = true;
-  EXPECT_TRUE(state.CheckPublicKeyPins(domain,
-                                       is_issued_by_known_root,
-                                       saved_hashes,
-                                       &failure_log));
+  HostPortPair domain_port(domain, 443);
+  EXPECT_TRUE(state.CheckPublicKeyPins(
+      domain_port, is_issued_by_known_root, saved_hashes, nullptr, nullptr,
+      TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 
   // Add an HPKP header, which should only update the dynamic state.
   HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
@@ -828,10 +833,9 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
   EXPECT_TRUE(state.ShouldUpgradeToSSL(domain));
   // The dynamic pins, which do not match |saved_hashes|, should take
   // precedence over the static pins and cause the check to fail.
-  EXPECT_FALSE(state.CheckPublicKeyPins(domain,
-                                        is_issued_by_known_root,
-                                        saved_hashes,
-                                        &failure_log));
+  EXPECT_FALSE(state.CheckPublicKeyPins(
+      domain_port, is_issued_by_known_root, saved_hashes, nullptr, nullptr,
+      TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 }
 
 // Tests that seeing an invalid HPKP header leaves the existing one alone.
@@ -855,9 +859,10 @@ TEST_F(HttpSecurityHeadersTest, IgnoreInvalidHeaders) {
   EXPECT_TRUE(state.HasPublicKeyPins("example.com"));
   std::string failure_log;
   bool is_issued_by_known_root = true;
-  EXPECT_TRUE(state.CheckPublicKeyPins("example.com", is_issued_by_known_root,
-                                       ssl_info.public_key_hashes,
-                                       &failure_log));
+  HostPortPair domain_port("example.com", 443);
+  EXPECT_TRUE(state.CheckPublicKeyPins(
+      domain_port, is_issued_by_known_root, ssl_info.public_key_hashes, nullptr,
+      nullptr, TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 
   // Now assert an invalid one. This should fail.
   EXPECT_FALSE(state.AddHPKPHeader(
@@ -866,9 +871,9 @@ TEST_F(HttpSecurityHeadersTest, IgnoreInvalidHeaders) {
 
   // The old pins must still exist.
   EXPECT_TRUE(state.HasPublicKeyPins("example.com"));
-  EXPECT_TRUE(state.CheckPublicKeyPins("example.com", is_issued_by_known_root,
-                                       ssl_info.public_key_hashes,
-                                       &failure_log));
+  EXPECT_TRUE(state.CheckPublicKeyPins(
+      domain_port, is_issued_by_known_root, ssl_info.public_key_hashes, nullptr,
+      nullptr, TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 }
 
 };    // namespace net
