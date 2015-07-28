@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
+import("//build/toolchain/goma.gni")
 
 declare_args() {
   # When set, turns off the (normally-on) iterator debugging and related stuff
@@ -418,10 +419,7 @@ config("default_libs") {
 #
 # Recommend precompiled headers for targets with more than 50 .cc files.
 config("precompiled_headers") {
-  # TODO(brettw) enable this when everything is working. A previous attempt
-  # to enable this caused some bot redness which needs ot be investigated.
-  #if (is_win) {
-  if (false) {
+  if (is_win && !is_official_build && !use_goma) {
     # This is a string rather than a file GN knows about. It has to match
     # exactly what's in the /FI flag below, and what might appear in the source
     # code in quotes for an #include directive.
@@ -434,5 +432,16 @@ config("precompiled_headers") {
 
     # Force include the header.
     cflags = [ "/FI$precompiled_header" ]
+
+    # Disable warning for "this file was empty after preprocessing". This
+    # error is generated only in C mode for ANSI compatibility. It conflicts
+    # with precompiled headers since the source file that's "compiled" for
+    # making the precompiled header is empty.
+    #
+    # This error doesn't happen every time. In VS2013, it seems if the .pch
+    # file doesn't exist, no error will be generated (probably MS tested this
+    # case but forgot the other one?). To reproduce this error, do a build,
+    # then delete the precompile.c.obj file, then build again.
+    cflags_c = [ "/wd4206" ]
   }
 }
