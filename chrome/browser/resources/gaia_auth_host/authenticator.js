@@ -110,7 +110,6 @@ cr.define('cr.login', function() {
     this.skipForNow_ = false;
     this.authFlow = AuthFlow.DEFAULT;
     this.authDomain = '';
-    this.loaded_ = false;
     this.idpOrigin_ = null;
     this.continueUrl_ = null;
     this.continueUrlWithoutParams_ = null;
@@ -196,7 +195,6 @@ cr.define('cr.login', function() {
   Authenticator.prototype.load = function(authMode, data) {
     this.authMode = authMode;
     this.clearCredentials_();
-    this.loaded_ = false;
     // gaiaUrl parameter is used for testing. Once defined, it is never changed.
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
     this.continueUrl_ = data.continueUrl || CONTINUE_URL;
@@ -243,7 +241,6 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.reload = function() {
     this.clearCredentials_();
-    this.loaded_ = false;
     this.webview_.src = this.reloadUrl_;
   };
 
@@ -703,6 +700,10 @@ cr.define('cr.login', function() {
       };
 
       this.webview_.contentWindow.postMessage(msg, currentUrl);
+
+      this.dispatchEvent(new Event('ready'));
+      // Focus webview after dispatching event when webview is already visible.
+      this.webview_.focus();
     }
   };
 
@@ -721,13 +722,6 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadStop_ = function(e) {
-    if (!this.loaded_) {
-      this.loaded_ = true;
-      this.dispatchEvent(new Event('ready'));
-      // Focus webview after dispatching event when webview is already visible.
-      this.webview_.focus();
-    }
-
     // Sends client id to EAFE on every loadstop after a small timeout. This is
     // needed because EAFE sits behind SSO and initialize asynchrounouly
     // and we don't know for sure when it is loaded and ready to listen
