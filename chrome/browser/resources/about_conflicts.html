@@ -14,39 +14,23 @@ a {
   font-size: 103%;
 }
 
-div#header {
-  margin-bottom: 1.05em;
-  /* 67px is the height of the header's background image. */
-  min-height: 67px;
-  overflow: hidden;
-  padding-bottom: 20px;
+#header {
   -webkit-padding-start: 0;
-  padding-top: 20px;
-  position: relative;
+  background: url(../../../ui/webui/resources/images/warning.svg)
+      left center / 48px no-repeat;
   box-sizing: border-box;
+  margin-bottom: 1.05em;
+  overflow: hidden;
+  position: relative;
+}
+
+html[dir=rtl] #header {
+  background-position-x: right;
 }
 
 #header h1 {
-  background-image: -webkit-image-set(
-      url('../../app/theme/default_100_percent/common/about_conflicts.png') 1x,
-      url('../../app/theme/default_200_percent/common/about_conflicts.png') 2x);
-  background-position: 0px 20px;
-  background-repeat: no-repeat;
-  display: inline;
-  margin: 0;
-  padding-bottom: 43px;
-  padding-left: 75px;
-  padding-top: 40px;
-}
-
-html[dir=rtl] #header h1 {
-  background-image: -webkit-image-set(
-      url('../../app/theme/default_100_percent/common/about_conflicts.png') 1x,
-      url('../../app/theme/default_200_percent/common/about_conflicts.png') 2x);
-  background-position: right;
-  background-repeat: no-repeat;
-  padding-right: 95px;
-  padding-left: 0;
+  -webkit-padding-start: 51px;
+  line-height: 48px;
 }
 
 h1 {
