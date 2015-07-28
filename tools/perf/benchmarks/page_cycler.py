@@ -220,25 +220,22 @@ class PageCyclerTypical25(_PageCycler):
   def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
-class PageCyclerBasicOopifIsolated(_PageCycler):
-  """ A benchmark measuring performance of out-of-process iframes. """
-  page_set = page_sets.OopifBasicPageSet
-
+# crbug.com/273986: This test is flakey on Windows.
+@benchmark.Disabled  # crbug.com/463346: Test is crashing Chrome.
+class PageCyclerOopifTypical25(_PageCycler):
+  """ A varation of the benchmark above, but running in --site-per-process
+  to allow measuring performance of out-of-process iframes.
+  """
   @classmethod
   def Name(cls):
-    return 'page_cycler_site_isolation.basic_oopif'
+    return 'page_cycler_oopif.typical_25'
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--site-per-process'])
 
-class PageCyclerBasicOopif(_PageCycler):
-  """ A benchmark measuring performance of the out-of-process iframes page
-  set, without running in out-of-process iframes mode.. """
-  page_set = page_sets.OopifBasicPageSet
+  def CreateStorySet(self, options):
+    return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
-  @classmethod
-  def Name(cls):
-    return 'page_cycler.basic_oopif'
 
 @benchmark.Disabled # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
