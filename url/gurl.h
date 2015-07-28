@@ -244,8 +244,8 @@ class URL_EXPORT GURL {
   }
 
   // The "content" of the URL is everything after the scheme (skipping the
-  // scheme delimiting colon). It is an error to get the origin of an invalid
-  // URL. The result will be an empty string.
+  // scheme delimiting colon). It is an error to get the content of an invalid
+  // URL: the result will be an empty string.
   std::string GetContent() const;
 
   // Returns true if the hostname is an IP address. Note: this function isn't

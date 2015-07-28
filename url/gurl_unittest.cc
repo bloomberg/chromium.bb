@@ -642,4 +642,29 @@ TEST(GURLTest, SchemeIsBlob) {
   EXPECT_FALSE(GURL("http://bar/").SchemeIsBlob());
 }
 
+TEST(GURLTest, ContentAndPathForNonStandardURLs) {
+  struct TestCase {
+    const char* url;
+    const char* expected;
+  } cases[] = {
+      {"null", ""},
+      {"not-a-standard-scheme:this is arbitrary content",
+       "this is arbitrary content"},
+      {"view-source:http://example.com/path", "http://example.com/path"},
+      {"blob:http://example.com/GUID", "http://example.com/GUID"},
+      {"blob://http://example.com/GUID", "//http://example.com/GUID"},
+      {"blob:http://user:password@example.com/GUID",
+       "http://user:password@example.com/GUID"},
+
+      // TODO(mkwst): This seems like a bug. https://crbug.com/513600
+      {"filesystem:http://example.com/path", "/"},
+  };
+
+  for (const auto& test : cases) {
+    GURL url(test.url);
+    EXPECT_EQ(test.expected, url.path()) << test.url;
+    EXPECT_EQ(test.expected, url.GetContent()) << test.url;
+  }
+}
+
 }  // namespace url

@@ -26,11 +26,11 @@ Origin::Origin(const GURL& url) : unique_(true) {
   if (url.SchemeIsFileSystem()) {
     tuple_ = SchemeHostPort(*url.inner_url());
   } else if (url.SchemeIsBlob()) {
-    // TODO(mkwst): This relies on the fact that GURL pushes the unparseable
-    // bits and pieces of a non-standard scheme into the GURL's path. It seems
-    // fairly fragile, so it might be worth teaching GURL about blobs' data in
-    // the same way it's been taught about filesystems' inner URLs.
-    tuple_ = SchemeHostPort(GURL(url.path()));
+    // If we're dealing with a 'blob:' URL, https://url.spec.whatwg.org/#origin
+    // defines the origin as the origin of the URL which results from parsing
+    // the "path", which boils down to everything after the scheme. GURL's
+    // 'GetContent()' gives us exactly that.
+    tuple_ = SchemeHostPort(GURL(url.GetContent()));
   } else {
     tuple_ = SchemeHostPort(url);
   }
