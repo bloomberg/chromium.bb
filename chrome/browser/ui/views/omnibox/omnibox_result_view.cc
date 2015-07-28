@@ -17,6 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -218,9 +219,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
                                      int model_index,
                                      LocationBarView* location_bar_view,
                                      const gfx::FontList& font_list)
-    : edge_item_padding_(LocationBarView::kItemPadding),
-      item_padding_(LocationBarView::kItemPadding),
-      model_(model),
+    : model_(model),
       model_index_(model_index),
       location_bar_view_(location_bar_view),
       font_list_(font_list),
@@ -276,7 +275,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
     RemoveChildView(keyword_icon_.get());
   }
 
-  Layout();
+  if (GetWidget())
+    Layout();
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
@@ -355,7 +355,9 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
             answer_image_,
             0, 0, answer_image_.width(), answer_image_.height(),
             GetMirroredXInView(x), y, answer_icon_size, answer_icon_size, true);
-        x += answer_icon_size + LocationBarView::kIconInternalPadding;
+        x += answer_icon_size +
+             GetThemeProvider()->GetDisplayProperty(
+                 ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING);
       }
     } else {
       x = DrawRenderText(match, separator_rendertext_.get(), false, canvas,
@@ -606,29 +608,32 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
 
 void OmniboxResultView::Layout() {
   const gfx::ImageSkia icon = GetIcon();
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const int horizontal_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
+  const int trailing_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING);
 
   icon_bounds_.SetRect(
-      edge_item_padding_ + ((icon.width() == default_icon_size_)
-                                ? 0
-                                : LocationBarView::kIconInternalPadding),
+      horizontal_padding +
+          ((icon.width() == default_icon_size_) ? 0 : trailing_padding),
       (GetContentLineHeight() - icon.height()) / 2, icon.width(),
       icon.height());
 
-  int text_x = edge_item_padding_ + default_icon_size_ + item_padding_;
-  int text_width = width() - text_x - edge_item_padding_;
+  int text_x = (2 * horizontal_padding) + default_icon_size_;
+  int text_width = width() - text_x - horizontal_padding;
 
   if (match_.associated_keyword.get()) {
-    const int kw_collapsed_size =
-        keyword_icon_->width() + edge_item_padding_;
+    const int kw_collapsed_size = keyword_icon_->width() + horizontal_padding;
     const int max_kw_x = width() - kw_collapsed_size;
     const int kw_x =
-        animation_->CurrentValueBetween(max_kw_x, edge_item_padding_);
-    const int kw_text_x = kw_x + keyword_icon_->width() + item_padding_;
+        animation_->CurrentValueBetween(max_kw_x, horizontal_padding);
+    const int kw_text_x = kw_x + keyword_icon_->width() + horizontal_padding;
 
-    text_width = kw_x - text_x - item_padding_;
+    text_width = kw_x - text_x - horizontal_padding;
     keyword_text_bounds_.SetRect(
-        kw_text_x, 0,
-        std::max(width() - kw_text_x - edge_item_padding_, 0), height());
+        kw_text_x, 0, std::max(width() - kw_text_x - horizontal_padding, 0),
+        height());
     keyword_icon_->SetPosition(
         gfx::Point(kw_x, (height() - keyword_icon_->height()) / 2));
   }

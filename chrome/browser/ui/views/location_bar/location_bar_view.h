@@ -260,18 +260,6 @@ class LocationBarView : public LocationBar,
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
 
-  // Thickness of the edges of the omnibox background images, in normal mode.
-  static const int kNormalEdgeThickness;
-  // The same, but for popup mode.
-  static const int kPopupEdgeThickness;
-  // Space between items in the location bar, as well as between items and the
-  // edges.
-  static const int kItemPadding;
-  // Amount of padding built into the standard omnibox icons.
-  static const int kIconInternalPadding;
-  // Space between the edge and a bubble.
-  static const int kBubblePadding;
-
  private:
   typedef std::vector<ContentSettingImageView*> ContentSettingViews;
 
@@ -282,15 +270,16 @@ class LocationBarView : public LocationBar,
 
   // Helper for GetMinimumWidth().  Calculates the incremental minimum width
   // |view| should add to the trailing width after the omnibox.
-  static int IncrementalMinimumWidth(views::View* view);
+  int IncrementalMinimumWidth(views::View* view) const;
 
   // Returns the thickness of any visible left and right edge, in pixels.
   int GetHorizontalEdgeThickness() const;
 
   // The same, but for the top and bottom edges.
-  int vertical_edge_thickness() const {
-    return is_popup_mode_ ? kPopupEdgeThickness : kNormalEdgeThickness;
-  }
+  int GetVerticalEdgeThickness() const;
+
+  // The vertical padding to be applied to all contained views.
+  int VerticalPadding() const;
 
   // Updates the visibility state of the Content Blocked icons to reflect what
   // is actually blocked on the current page. Returns true if the visibility

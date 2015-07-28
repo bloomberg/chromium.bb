@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/image_view.h"
@@ -26,9 +27,11 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
       label_(new views::Label(base::string16(), font_list)),
       is_extension_icon_(false),
       in_hover_(false) {
-  image_->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          contained_image));
+  if (contained_image) {
+    image_->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            contained_image));
+  }
 
   // Disable separate hit testing for |image_|.  This prevents views treating
   // |image_| as a separate mouse hover region from |this|.
@@ -78,23 +81,49 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
+bool IconLabelBubbleView::ShouldShowBackground() const {
+  return true;
+}
+
+double IconLabelBubbleView::WidthMultiplier() const {
+  return 1.0;
+}
+
 gfx::Size IconLabelBubbleView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(label_->GetPreferredSize().width());
 }
 
 void IconLabelBubbleView::Layout() {
-  image_->SetBounds(GetBubbleOuterPadding(!is_extension_icon_), 0,
-                    image_->GetPreferredSize().width(), height());
-  const int pre_label_width = GetPreLabelWidth();
+  const int image_width = image()->GetPreferredSize().width();
+  image_->SetBounds(std::min((width() - image_width) / 2,
+                             GetBubbleOuterPadding(!is_extension_icon_)),
+                    0, image_->GetPreferredSize().width(), height());
+  const int horizontal_item_padding = GetThemeProvider()->GetDisplayProperty(
+      ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
+  int pre_label_width =
+      GetBubbleOuterPadding(true) +
+      (image_width ? (image_width + horizontal_item_padding) : 0);
+
   label_->SetBounds(pre_label_width, 0,
                     width() - pre_label_width - GetBubbleOuterPadding(false),
                     height());
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
-  gfx::Size size(GetPreLabelWidth() + width + GetBubbleOuterPadding(false), 0);
-  size.SetToMax(background_painter_->GetMinimumSize());
+  gfx::Size size(image_->GetPreferredSize());
+  if (ShouldShowBackground()) {
+    const int image_width = image_->width();
+    const int horizontal_item_padding = GetThemeProvider()->GetDisplayProperty(
+        ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
+    const int non_label_width =
+        GetBubbleOuterPadding(true) +
+        (image_width ? (image_width + horizontal_item_padding) : 0) +
+        GetBubbleOuterPadding(false);
+    size.Enlarge(WidthMultiplier() * (width + non_label_width), 0);
+    size.SetToMax(background_painter_->GetMinimumSize());
+  }
+
   return size;
 }
 
@@ -110,10 +139,16 @@ void IconLabelBubbleView::OnMouseExited(const ui::MouseEvent& event) {
     SchedulePaint();
 }
 
-// static
-int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) {
-  return LocationBarView::kItemPadding - LocationBarView::kBubblePadding +
-      (by_icon ? 0 : LocationBarView::kIconInternalPadding);
+int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) const {
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const int bubble_horizontal_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING);
+  const int horizontal_item_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
+  const int right_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING);
+  return horizontal_item_padding - bubble_horizontal_padding +
+         (by_icon ? 0 : right_padding);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {
@@ -121,13 +156,9 @@ const char* IconLabelBubbleView::GetClassName() const {
 }
 
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
+  if (!ShouldShowBackground())
+    return;
   views::Painter* painter = (in_hover_ && hover_background_painter_) ?
       hover_background_painter_.get() : background_painter_.get();
   painter->Paint(canvas, size());
-}
-
-int IconLabelBubbleView::GetPreLabelWidth() const {
-  const int image_width = image_->GetPreferredSize().width();
-  return GetBubbleOuterPadding(true) +
-      (image_width ? (image_width + LocationBarView::kItemPadding) : 0);
 }

@@ -24,9 +24,9 @@ class Label;
 class Painter;
 }
 
-// View used to draw a bubble to the left of the address, containing an icon and
-// a label.  We use this as a base for the classes that handle the EV bubble and
-// tab-to-search UI.
+// View used to draw a bubble, containing an icon and a label.  We use this as a
+// base for the classes that handle the EV bubble, tab-to-search UI, and
+// content settings.
 class IconLabelBubbleView : public views::View {
  public:
   // |hover_background_images| is an optional set of images to be used in place
@@ -47,6 +47,17 @@ class IconLabelBubbleView : public views::View {
   }
 
  protected:
+  views::ImageView* image() { return image_; }
+  views::Label* label() { return label_; }
+
+  // Returns true when the background should be rendered.
+  virtual bool ShouldShowBackground() const;
+
+  // Returns a multiplier used to calculate the actual width of the view based
+  // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
+  // full-width view and can be used to animate the width of the view.
+  virtual double WidthMultiplier() const;
+
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
@@ -63,13 +74,11 @@ class IconLabelBubbleView : public views::View {
   // label.  (We increase padding next to the label by the amount of padding
   // "built in" to the icon in order to make the bubble appear to have
   // symmetrical padding.)
-  static int GetBubbleOuterPadding(bool by_icon);
+  int GetBubbleOuterPadding(bool by_icon) const;
 
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
-
-  int GetPreLabelWidth() const;
 
   // For painting the background.
   scoped_ptr<views::Painter> background_painter_;

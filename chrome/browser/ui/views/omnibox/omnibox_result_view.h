@@ -119,9 +119,6 @@ class OmniboxResultView : public views::View,
 
   const gfx::Rect& text_bounds() const { return text_bounds_; }
 
-  void set_edge_item_padding(int value) { edge_item_padding_ = value; }
-  void set_item_padding(int value) { item_padding_ = value; }
-
  private:
   // views::View:
   const char* GetClassName() const override;
@@ -180,10 +177,6 @@ class OmniboxResultView : public views::View,
                               bool is_bold);
 
   static int default_icon_size_;
-
-  // Default values cached here, may be overridden using the setters above.
-  int edge_item_padding_;
-  int item_padding_;
 
   // This row's model and model index.
   OmniboxPopupContentsView* model_;

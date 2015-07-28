@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
@@ -69,11 +69,12 @@ LocationBarDecoration::LocationBarDecoration(int y,
 
 // LocationBarLayout ---------------------------------------------------------
 
-LocationBarLayout::LocationBarLayout(Position position, int item_edit_padding)
+LocationBarLayout::LocationBarLayout(Position position,
+                                     int item_padding,
+                                     int item_edit_padding)
     : position_(position),
-      item_edit_padding_(item_edit_padding) {
-}
-
+      item_padding_(item_padding),
+      item_edit_padding_(item_edit_padding) {}
 
 LocationBarLayout::~LocationBarLayout() {
 }
@@ -94,8 +95,7 @@ void LocationBarLayout::AddDecoration(int y,
                                       int height,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
-      y, height, false, 0, LocationBarView::kItemPadding,
-      LocationBarView::kItemPadding, view));
+      y, height, false, 0, item_padding_, item_padding_, view));
 }
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {

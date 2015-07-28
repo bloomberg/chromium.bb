@@ -67,8 +67,11 @@ bool ToolbarButton::IsMenuShowing() const {
 gfx::Size ToolbarButton::GetPreferredSize() const {
   gfx::Size size(image()->GetPreferredSize());
   gfx::Size label_size = label()->GetPreferredSize();
-  if (label_size.width() > 0)
-    size.Enlarge(label_size.width() + LocationBarView::kItemPadding, 0);
+  if (label_size.width() > 0) {
+    const int horizontal_item_padding = GetThemeProvider()->GetDisplayProperty(
+        ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
+    size.Enlarge(label_size.width() + horizontal_item_padding, 0);
+  }
   // For non-material assets the entire size of the button is captured in the
   // image resource. For Material Design the excess whitespace is being removed
   // from the image assets. Enlarge the button by the theme provided insets.
