@@ -37,7 +37,7 @@
       });
     });
 
-    testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
+    testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
     for (let i = 0; i < numIframes; i++) {
       let iframe = document.createElement('iframe');
       iframe.src = 'resources/requestDevice-in-iframe.html';
