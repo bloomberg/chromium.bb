@@ -72,7 +72,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     bool isPrinting = paintInfo.isPrinting();
 
     // Determine whether or not we're selected.
-    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_inlineTextBox.selectionState() != LayoutObject::SelectionNone;
+    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_inlineTextBox.selectionState() != SelectionNone;
     if (!haveSelection && paintInfo.phase == PaintPhaseSelection) {
         // When only painting the selection, don't bother to paint if there is none.
         return;

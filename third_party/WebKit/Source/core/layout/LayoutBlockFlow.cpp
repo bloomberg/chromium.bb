@@ -45,6 +45,7 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -2829,12 +2830,12 @@ LayoutRect LayoutBlockFlow::logicalRightSelectionGap(const LayoutBlock* rootBloc
 void LayoutBlockFlow::getSelectionGapInfo(SelectionState state, bool& leftGap, bool& rightGap) const
 {
     bool ltr = style()->isLeftToRightDirection();
-    leftGap = (state == LayoutObject::SelectionInside)
-        || (state == LayoutObject::SelectionEnd && ltr)
-        || (state == LayoutObject::SelectionStart && !ltr);
-    rightGap = (state == LayoutObject::SelectionInside)
-        || (state == LayoutObject::SelectionStart && ltr)
-        || (state == LayoutObject::SelectionEnd && !ltr);
+    leftGap = (state == SelectionInside)
+        || (state == SelectionEnd && ltr)
+        || (state == SelectionStart && !ltr);
+    rightGap = (state == SelectionInside)
+        || (state == SelectionStart && ltr)
+        || (state == SelectionEnd && !ltr);
 }
 
 void LayoutBlockFlow::setPaginationStrut(LayoutUnit strut)

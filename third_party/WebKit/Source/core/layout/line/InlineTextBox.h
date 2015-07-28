@@ -24,6 +24,7 @@
 #define InlineTextBox_h
 
 #include "core/layout/LayoutText.h" // so textLayoutObject() can be inline
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
@@ -122,7 +123,7 @@ private:
     void attachLine() final;
 
 public:
-    LayoutObject::SelectionState selectionState() const final;
+    SelectionState selectionState() const final;
 
 private:
     void clearTruncation() final { m_truncation = cNoTruncation; }

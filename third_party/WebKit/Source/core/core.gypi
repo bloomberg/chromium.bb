@@ -510,6 +510,7 @@
             'layout/api/LineLayoutSVGInlineText.h',
             'layout/api/LineLayoutText.h',
             'layout/api/LineLayoutTextCombine.h',
+            'layout/api/SelectionState.h',
             'layout/BidiRun.h',
             'layout/BidiRunForLine.cpp',
             'layout/BidiRunForLine.h',

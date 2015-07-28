@@ -294,7 +294,7 @@ InlineBox* InlineBox::prevLeafChildIgnoringLineBreak() const
     return (leaf && leaf->isLineBreak()) ? nullptr : leaf;
 }
 
-LayoutObject::SelectionState InlineBox::selectionState() const
+SelectionState InlineBox::selectionState() const
 {
     return layoutObject().selectionState();
 }

@@ -138,10 +138,10 @@ bool InlineTextBox::isSelected(int startPos, int endPos) const
     return (sPos < ePos);
 }
 
-LayoutObject::SelectionState InlineTextBox::selectionState() const
+SelectionState InlineTextBox::selectionState() const
 {
-    LayoutObject::SelectionState state = layoutObject().selectionState();
-    if (state == LayoutObject::SelectionStart || state == LayoutObject::SelectionEnd || state == LayoutObject::SelectionBoth) {
+    SelectionState state = layoutObject().selectionState();
+    if (state == SelectionStart || state == SelectionEnd || state == SelectionBoth) {
         int startPos, endPos;
         layoutObject().selectionStartEnd(startPos, endPos);
         // The position after a hard line break is considered to be past its end.
@@ -150,25 +150,25 @@ LayoutObject::SelectionState InlineTextBox::selectionState() const
 
         // FIXME: Remove -webkit-line-break: LineBreakAfterWhiteSpace.
         int endOfLineAdjustmentForCSSLineBreak = layoutObject().style()->lineBreak() == LineBreakAfterWhiteSpace ? -1 : 0;
-        bool start = (state != LayoutObject::SelectionEnd && startPos >= m_start && startPos <= m_start + m_len + endOfLineAdjustmentForCSSLineBreak);
-        bool end = (state != LayoutObject::SelectionStart && endPos > m_start && endPos <= lastSelectable);
+        bool start = (state != SelectionEnd && startPos >= m_start && startPos <= m_start + m_len + endOfLineAdjustmentForCSSLineBreak);
+        bool end = (state != SelectionStart && endPos > m_start && endPos <= lastSelectable);
         if (start && end)
-            state = LayoutObject::SelectionBoth;
+            state = SelectionBoth;
         else if (start)
-            state = LayoutObject::SelectionStart;
+            state = SelectionStart;
         else if (end)
-            state = LayoutObject::SelectionEnd;
-        else if ((state == LayoutObject::SelectionEnd || startPos < m_start)
-            && (state == LayoutObject::SelectionStart || endPos > lastSelectable))
-            state = LayoutObject::SelectionInside;
-        else if (state == LayoutObject::SelectionBoth)
-            state = LayoutObject::SelectionNone;
+            state = SelectionEnd;
+        else if ((state == SelectionEnd || startPos < m_start)
+            && (state == SelectionStart || endPos > lastSelectable))
+            state = SelectionInside;
+        else if (state == SelectionBoth)
+            state = SelectionNone;
     }
 
     // If there are ellipsis following, make sure their selection is updated.
     if (m_truncation != cNoTruncation && root().ellipsisBox()) {
         EllipsisBox* ellipsis = root().ellipsisBox();
-        if (state != LayoutObject::SelectionNone) {
+        if (state != SelectionNone) {
             int start, end;
             selectionStartEnd(start, end);
             // The ellipsis should be considered to be selected if the end of
@@ -176,9 +176,9 @@ LayoutObject::SelectionState InlineTextBox::selectionState() const
             // beginning of the selection is before or at the beginning of the
             // truncation.
             ellipsis->setSelectionState(end >= m_truncation && start <= m_truncation ?
-                LayoutObject::SelectionInside : LayoutObject::SelectionNone);
+                SelectionInside : SelectionNone);
         } else {
-            ellipsis->setSelectionState(LayoutObject::SelectionNone);
+            ellipsis->setSelectionState(SelectionNone);
         }
     }
 
@@ -370,14 +370,14 @@ void InlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
 void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const
 {
     int startPos, endPos;
-    if (layoutObject().selectionState() == LayoutObject::SelectionInside) {
+    if (layoutObject().selectionState() == SelectionInside) {
         startPos = 0;
         endPos = layoutObject().textLength();
     } else {
         layoutObject().selectionStartEnd(startPos, endPos);
-        if (layoutObject().selectionState() == LayoutObject::SelectionStart)
+        if (layoutObject().selectionState() == SelectionStart)
             endPos = layoutObject().textLength();
-        else if (layoutObject().selectionState() == LayoutObject::SelectionEnd)
+        else if (layoutObject().selectionState() == SelectionEnd)
             startPos = 0;
     }
 

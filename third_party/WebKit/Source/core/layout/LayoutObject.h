@@ -42,6 +42,7 @@
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/api/HitTestAction.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/compositing/CompositingState.h"
 #include "core/layout/compositing/CompositingTriggers.h"
 #include "core/style/ComputedStyle.h"
@@ -890,14 +891,6 @@ public:
     float opacity() const { return style()->opacity(); }
 
     bool hasReflection() const { return m_bitfields.hasReflection(); }
-
-    enum SelectionState {
-        SelectionNone, // The object is not selected.
-        SelectionStart, // The object either contains the start of a selection run or is the start of a run
-        SelectionInside, // The object is fully encompassed by a selection run
-        SelectionEnd, // The object either contains the end of a selection run or is the end of a run
-        SelectionBoth // The object contains an entire run or is the sole selected object in that run
-    };
 
     // The current selection state for an object.  For blocks, the state refers to the state of the leaf
     // descendants (as described above in the SelectionState enum declaration).

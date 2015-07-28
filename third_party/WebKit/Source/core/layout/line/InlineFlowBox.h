@@ -23,6 +23,7 @@
 
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/OverflowModel.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
 #include "core/style/ShadowData.h"
 
@@ -198,7 +199,7 @@ public:
 
     void removeChild(InlineBox* child, MarkLineBoxes);
 
-    LayoutObject::SelectionState selectionState() const override;
+    SelectionState selectionState() const override;
 
     bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const final;
     LayoutUnit placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool&) override;

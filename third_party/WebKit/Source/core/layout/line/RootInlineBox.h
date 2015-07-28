@@ -22,6 +22,7 @@
 #define RootInlineBox_h
 
 #include "core/layout/api/LineLayoutItem.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "platform/text/BidiContext.h"
 
@@ -111,7 +112,7 @@ public:
     using InlineBox::hasSelectedChildren;
     using InlineBox::setHasSelectedChildren;
 
-    LayoutObject::SelectionState selectionState() const final;
+    SelectionState selectionState() const final;
     InlineBox* firstSelectedBox() const;
     InlineBox* lastSelectedBox() const;
 

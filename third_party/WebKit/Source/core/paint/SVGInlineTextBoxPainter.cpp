@@ -10,6 +10,7 @@
 #include "core/editing/Editor.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -33,7 +34,7 @@ static inline bool textShouldBePainted(LayoutSVGInlineText& textLayoutObject)
 
 bool SVGInlineTextBoxPainter::shouldPaintSelection(const PaintInfo& paintInfo) const
 {
-    return !paintInfo.isPrinting() && m_svgInlineTextBox.selectionState() != LayoutObject::SelectionNone;
+    return !paintInfo.isPrinting() && m_svgInlineTextBox.selectionState() != SelectionNone;
 }
 
 void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

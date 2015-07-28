@@ -6,6 +6,7 @@
 #include "core/paint/EllipsisBoxPainter.h"
 
 #include "core/layout/TextRunConstructor.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/PaintInfo.h"
@@ -23,7 +24,7 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
-    bool haveSelection = !paintInfo.isPrinting() && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != LayoutObject::SelectionNone;
+    bool haveSelection = !paintInfo.isPrinting() && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != SelectionNone;
 
     LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
     if (haveSelection)

@@ -8,6 +8,7 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
@@ -30,7 +31,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
     LayoutRect overflowRect(m_layoutListMarker.visualOverflowRect());
-    if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone)
+    if (m_layoutListMarker.selectionState() != SelectionNone)
         overflowRect.unite(m_layoutListMarker.localSelectionRect());
     overflowRect.moveBy(boxOrigin);
 
@@ -49,7 +50,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     if (m_layoutListMarker.isImage()) {
         context->drawImage(m_layoutListMarker.image()->image(&m_layoutListMarker, marker.size()).get(), marker);
-        if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone) {
+        if (m_layoutListMarker.selectionState() != SelectionNone) {
             LayoutRect selRect = m_layoutListMarker.localSelectionRect();
             selRect.moveBy(boxOrigin);
             context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
@@ -57,7 +58,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         return;
     }
 
-    if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone) {
+    if (m_layoutListMarker.selectionState() != SelectionNone) {
         LayoutRect selRect = m_layoutListMarker.localSelectionRect();
         selRect.moveBy(boxOrigin);
         context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());

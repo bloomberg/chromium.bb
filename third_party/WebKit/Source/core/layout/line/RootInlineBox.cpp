@@ -283,7 +283,7 @@ LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
 
 GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo* paintInfo) const
 {
-    LayoutObject::SelectionState lineState = selectionState();
+    SelectionState lineState = selectionState();
 
     bool leftGap, rightGap;
     block().getSelectionGapInfo(lineState, leftGap, rightGap);
@@ -311,9 +311,9 @@ GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const Lay
     if (firstBox && firstBox != lastBox) {
         // Now fill in any gaps on the line that occurred between two selected elements.
         LayoutUnit lastLogicalLeft = firstBox->logicalRight();
-        bool isPreviousBoxSelected = firstBox->selectionState() != LayoutObject::SelectionNone;
+        bool isPreviousBoxSelected = firstBox->selectionState() != SelectionNone;
         for (InlineBox* box = firstBox->nextLeafChild(); box; box = box->nextLeafChild()) {
-            if (box->selectionState() != LayoutObject::SelectionNone) {
+            if (box->selectionState() != SelectionNone) {
                 LayoutRect logicalRect(lastLogicalLeft, selTop, box->logicalLeft() - lastLogicalLeft, selHeight);
                 logicalRect.move(layoutObject().isHorizontalWritingMode() ? offsetFromRootBlock : LayoutSize(offsetFromRootBlock.height(), offsetFromRootBlock.width()));
                 LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, logicalRect);
@@ -327,29 +327,29 @@ GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const Lay
             }
             if (box == lastBox)
                 break;
-            isPreviousBoxSelected = box->selectionState() != LayoutObject::SelectionNone;
+            isPreviousBoxSelected = box->selectionState() != SelectionNone;
         }
     }
 
     return result;
 }
 
-LayoutObject::SelectionState RootInlineBox::selectionState() const
+SelectionState RootInlineBox::selectionState() const
 {
     // Walk over all of the selected boxes.
-    LayoutObject::SelectionState state = LayoutObject::SelectionNone;
+    SelectionState state = SelectionNone;
     for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-        LayoutObject::SelectionState boxState = box->selectionState();
-        if ((boxState == LayoutObject::SelectionStart && state == LayoutObject::SelectionEnd)
-            || (boxState == LayoutObject::SelectionEnd && state == LayoutObject::SelectionStart)) {
-            state = LayoutObject::SelectionBoth;
-        } else if (state == LayoutObject::SelectionNone || ((boxState == LayoutObject::SelectionStart || boxState == LayoutObject::SelectionEnd) && (state == LayoutObject::SelectionNone || state == LayoutObject::SelectionInside))) {
+        SelectionState boxState = box->selectionState();
+        if ((boxState == SelectionStart && state == SelectionEnd)
+            || (boxState == SelectionEnd && state == SelectionStart)) {
+            state = SelectionBoth;
+        } else if (state == SelectionNone || ((boxState == SelectionStart || boxState == SelectionEnd) && (state == SelectionNone || state == SelectionInside))) {
             state = boxState;
-        } else if (boxState == LayoutObject::SelectionNone && state == LayoutObject::SelectionStart) {
+        } else if (boxState == SelectionNone && state == SelectionStart) {
             // We are past the end of the selection.
-            state = LayoutObject::SelectionBoth;
+            state = SelectionBoth;
         }
-        if (state == LayoutObject::SelectionBoth)
+        if (state == SelectionBoth)
             break;
     }
 
@@ -359,7 +359,7 @@ LayoutObject::SelectionState RootInlineBox::selectionState() const
 InlineBox* RootInlineBox::firstSelectedBox() const
 {
     for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-        if (box->selectionState() != LayoutObject::SelectionNone)
+        if (box->selectionState() != SelectionNone)
             return box;
     }
 
@@ -369,7 +369,7 @@ InlineBox* RootInlineBox::firstSelectedBox() const
 InlineBox* RootInlineBox::lastSelectedBox() const
 {
     for (InlineBox* box = lastLeafChild(); box; box = box->prevLeafChild()) {
-        if (box->selectionState() != LayoutObject::SelectionNone)
+        if (box->selectionState() != SelectionNone)
             return box;
     }
 
@@ -406,16 +406,16 @@ LayoutUnit RootInlineBox::selectionTopAdjustedForPrecedingBlock() const
 {
     LayoutUnit top = selectionTop();
 
-    LayoutObject::SelectionState blockSelectionState = root().block().selectionState();
-    if (blockSelectionState != LayoutObject::SelectionInside && blockSelectionState != LayoutObject::SelectionEnd)
+    SelectionState blockSelectionState = root().block().selectionState();
+    if (blockSelectionState != SelectionInside && blockSelectionState != SelectionEnd)
         return top;
 
     LayoutSize offsetToBlockBefore;
     if (LayoutBlock* block = root().block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
         if (block->isLayoutBlockFlow()) {
             if (RootInlineBox* lastLine = toLayoutBlockFlow(block)->lastRootBox()) {
-                LayoutObject::SelectionState lastLineSelectionState = lastLine->selectionState();
-                if (lastLineSelectionState != LayoutObject::SelectionInside && lastLineSelectionState != LayoutObject::SelectionStart)
+                SelectionState lastLineSelectionState = lastLine->selectionState();
+                if (lastLineSelectionState != SelectionInside && lastLineSelectionState != SelectionStart)
                     return top;
 
                 LayoutUnit lastLineSelectionBottom = lastLine->selectionBottom() + offsetToBlockBefore.height();

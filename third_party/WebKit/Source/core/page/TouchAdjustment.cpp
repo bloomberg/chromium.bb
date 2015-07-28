@@ -32,6 +32,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/api/SelectionState.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
@@ -131,7 +132,7 @@ bool providesContextMenuItems(Node* node)
             return true;
         // Only the selected part of the layoutObject is a valid target, but this will be corrected in
         // appendContextSubtargetsForNode.
-        if (node->layoutObject()->selectionState() != LayoutObject::SelectionNone)
+        if (node->layoutObject()->selectionState() != SelectionNone)
             return true;
     }
     return false;
@@ -185,24 +186,24 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
             lastOffset = offset;
         }
     } else {
-        if (textLayoutObject->selectionState() == LayoutObject::SelectionNone)
+        if (textLayoutObject->selectionState() == SelectionNone)
             return appendBasicSubtargetsForNode(node, subtargets);
         // If selected, make subtargets out of only the selected part of the text.
         int startPos, endPos;
         switch (textLayoutObject->selectionState()) {
-        case LayoutObject::SelectionInside:
+        case SelectionInside:
             startPos = 0;
             endPos = textLayoutObject->textLength();
             break;
-        case LayoutObject::SelectionStart:
+        case SelectionStart:
             textLayoutObject->selectionStartEnd(startPos, endPos);
             endPos = textLayoutObject->textLength();
             break;
-        case LayoutObject::SelectionEnd:
+        case SelectionEnd:
             textLayoutObject->selectionStartEnd(startPos, endPos);
             startPos = 0;
             break;
-        case LayoutObject::SelectionBoth:
+        case SelectionBoth:
             textLayoutObject->selectionStartEnd(startPos, endPos);
             break;
         default:

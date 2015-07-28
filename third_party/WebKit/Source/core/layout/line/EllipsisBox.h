@@ -20,6 +20,7 @@
 #ifndef EllipsisBox_h
 #define EllipsisBox_h
 
+#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
 
 namespace blink {
@@ -34,18 +35,18 @@ public:
         : InlineBox(obj, LayoutPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
         , m_height(height)
         , m_str(ellipsisStr)
-        , m_selectionState(LayoutObject::SelectionNone)
+        , m_selectionState(SelectionNone)
     {
         setHasVirtualLogicalHeight();
     }
 
     void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
-    void setSelectionState(LayoutObject::SelectionState s) { m_selectionState = s; }
+    void setSelectionState(SelectionState s) { m_selectionState = s; }
     IntRect selectionRect();
 
     LayoutUnit virtualLogicalHeight() const override { return m_height; }
-    LayoutObject::SelectionState selectionState() const override { return m_selectionState; }
+    SelectionState selectionState() const override { return m_selectionState; }
     const AtomicString& ellipsisStr() { return m_str; }
 
     const char* boxName() const override;
@@ -54,7 +55,7 @@ private:
 
     int m_height;
     AtomicString m_str;
-    LayoutObject::SelectionState m_selectionState;
+    SelectionState m_selectionState;
 };
 
 } // namespace blink

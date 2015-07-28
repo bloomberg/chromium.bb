@@ -23,6 +23,7 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/api/SelectionState.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
 
@@ -250,7 +251,7 @@ public:
 
     virtual void dirtyLineBoxes();
 
-    virtual LayoutObject::SelectionState selectionState() const;
+    virtual SelectionState selectionState() const;
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const;
     // visibleLeftEdge, visibleRightEdge are in the parent's coordinate system.
