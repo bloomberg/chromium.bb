@@ -22,7 +22,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-#include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
 namespace blink {

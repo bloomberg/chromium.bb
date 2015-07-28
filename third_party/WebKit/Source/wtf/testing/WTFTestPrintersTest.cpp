@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#include "wtf/testing/WTFTestHelpers.h"
 
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"

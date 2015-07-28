@@ -41,7 +41,6 @@
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
 namespace blink {

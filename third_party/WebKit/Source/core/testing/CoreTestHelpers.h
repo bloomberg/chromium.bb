@@ -6,7 +6,6 @@
 #define CoreTestHelpers_h
 
 #include "core/dom/Position.h"
-#include "wtf/testing/WTFTestHelpers.h"
 
 namespace blink {
 

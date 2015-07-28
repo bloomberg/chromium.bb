@@ -33,7 +33,6 @@
 
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
 namespace blink {

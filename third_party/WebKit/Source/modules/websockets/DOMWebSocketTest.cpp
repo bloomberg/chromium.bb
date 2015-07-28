@@ -18,7 +18,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/testing/WTFTestHelpers.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 #include <gmock/gmock.h>

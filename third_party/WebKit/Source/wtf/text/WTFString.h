@@ -27,10 +27,12 @@
 
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
+#include "wtf/testing/WTFUnitTestHelpersExport.h"
 #include "wtf/text/ASCIIFastPath.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/StringView.h"
 #include <algorithm>
+#include <iosfwd>
 
 #ifdef __OBJC__
 #include <objc/objc.h>
@@ -632,6 +634,9 @@ template<> struct DefaultHash<String> {
 WTF_EXPORT const String& emptyString();
 WTF_EXPORT const String& emptyString16Bit();
 WTF_EXPORT extern const String& xmlnsWithColon;
+
+// Pretty printer for gtest. Declared here to avoid ODR violations.
+WTF_UNITTEST_HELPERS_EXPORT std::ostream& operator<<(std::ostream&, const String&);
 
 } // namespace WTF
 

@@ -6,7 +6,6 @@
 #include "HTTPParsers.h"
 
 #include "wtf/MathExtras.h"
-#include "wtf/testing/WTFTestHelpers.h"
 #include "wtf/text/AtomicString.h"
 
 #include <gtest/gtest.h>

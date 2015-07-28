@@ -33,7 +33,6 @@
 #include "wtf/text/StringBuilder.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/testing/WTFTestHelpers.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
