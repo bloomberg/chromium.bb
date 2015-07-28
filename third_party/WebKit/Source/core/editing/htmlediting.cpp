@@ -353,14 +353,20 @@ PositionInComposedTree nextCandidate(const PositionInComposedTree& position)
     return nextCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
+// |nextVisuallyDistinctCandidate| is similar to |nextCandidate| except
+// for returning position which |downstream()| not equal to initial position's
+// |downstream()|.
 Position nextVisuallyDistinctCandidate(const Position& position)
 {
-    Position p = position;
-    Position downstreamStart = p.downstream();
-    while (!p.atEndOfTree()) {
-        p = p.next(Character);
-        if (p.isCandidate() && p.downstream() != downstreamStart)
-            return p;
+    if (position.isNull())
+        return position;
+    PositionIterator p(position);
+    Position downstreamStart = position.downstream();
+    while (!p.atEnd()) {
+        p.increment();
+        Position candidate = p.computePosition();
+        if (candidate.isCandidate() && candidate.downstream() != downstreamStart)
+            return candidate;
     }
     return Position();
 }
@@ -388,27 +394,33 @@ PositionInComposedTree previousCandidate(const PositionInComposedTree& position)
     return previousCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
-template <typename PositionType>
-PositionType previousVisuallyDistinctCandidateAlgorithm(const PositionType& position)
+// |previousVisuallyDistinctCandidate| is similar to |previousCandidate| except
+// for returning position which |downstream()| not equal to initial position's
+// |downstream()|.
+template <typename Strategy>
+PositionAlgorithm<Strategy> previousVisuallyDistinctCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    PositionType p = position;
-    PositionType downstreamStart = p.downstream();
-    while (!p.atStartOfTree()) {
-        p = p.previous(Character);
-        if (p.isCandidate() && p.downstream() != downstreamStart)
-            return p;
+    if (position.isNull())
+        return position;
+    PositionIteratorAlgorithm<Strategy> p(position);
+    PositionAlgorithm<Strategy> downstreamStart = position.downstream();
+    while (!p.atStart()) {
+        p.decrement();
+        PositionAlgorithm<Strategy> candidate = p.computePosition();
+        if (candidate.isCandidate() && candidate.downstream() != downstreamStart)
+            return candidate;
     }
-    return PositionType();
+    return PositionAlgorithm<Strategy>();
 }
 
 Position previousVisuallyDistinctCandidate(const Position& position)
 {
-    return previousVisuallyDistinctCandidateAlgorithm<Position>(position);
+    return previousVisuallyDistinctCandidateAlgorithm<EditingStrategy>(position);
 }
 
 PositionInComposedTree previousVisuallyDistinctCandidate(const PositionInComposedTree& position)
 {
-    return previousVisuallyDistinctCandidateAlgorithm<PositionInComposedTree>(position);
+    return previousVisuallyDistinctCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, ContainerNode* highestRoot)
