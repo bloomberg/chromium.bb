@@ -747,13 +747,13 @@ void DeleteSelectionCommand::calculateTypingStyleAfterDelete()
 void DeleteSelectionCommand::clearTransientState()
 {
     m_selectionToDelete = VisibleSelection();
-    m_upstreamStart.clear();
-    m_downstreamStart.clear();
-    m_upstreamEnd.clear();
-    m_downstreamEnd.clear();
-    m_endingPosition.clear();
-    m_leadingWhitespace.clear();
-    m_trailingWhitespace.clear();
+    m_upstreamStart = Position();
+    m_downstreamStart = Position();
+    m_upstreamEnd = Position();
+    m_downstreamEnd = Position();
+    m_endingPosition = Position();
+    m_leadingWhitespace = Position();
+    m_trailingWhitespace = Position();
 }
 
 // This method removes div elements with no attributes that have only one child or no children at all.

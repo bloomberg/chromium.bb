@@ -107,8 +107,6 @@ public:
     bool isBeforeChildren() const { return m_anchorType == PositionAnchorType::BeforeChildren; }
     bool isOffsetInAnchor() const { return m_anchorType == PositionAnchorType::OffsetInAnchor; }
 
-    void clear() { m_anchorNode.clear(); m_offset = 0; m_anchorType = PositionAnchorType::OffsetInAnchor; m_isLegacyEditingPosition = false; }
-
     // These are always DOM compliant values.  Editing positions like [img, 0] (aka [img, before])
     // will return img->parentNode() and img->nodeIndex() from these functions.
     Node* containerNode() const; // null for a before/after position anchored to a node with no parent
