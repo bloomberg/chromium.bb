@@ -226,6 +226,12 @@ void MessageCenterSettingsController::GetNotifierList(
       continue;
     }
 
+    // Hosted apps are no longer able to affect the notifications permission
+    // state for web notifications.
+    // TODO(dewittj): Deprecate the 'notifications' permission for hosted apps.
+    if (extension->is_hosted_app())
+      continue;
+
     NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
     notifiers->push_back(new Notifier(
         notifier_id,
