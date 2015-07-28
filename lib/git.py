@@ -1264,30 +1264,6 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
   RunGit(git_repo, ['checkout', '-B', branch, '-t', remote_push_branch.ref])
 
 
-def Reset(git_repo, commit, hard=False):
-  """Resets the ref pointed to by HEAD to the commit |commit|.
-
-  Args:
-    git_repo: Git repository to reset.
-    commit: The commit to reset the current ref to.
-    hard: Whether to also blow away the index and working copy with "--hard".
-  """
-  cmd = ['reset', commit]
-  if hard:
-    cmd.append('--hard')
-  RunGit(git_repo, cmd)
-
-
-def SyncRemote(git_repo, remote):
-  """Fetch changes for a remote ref.
-
-  Args:
-    git_repo: path of a Git repository.
-    remote: The remote ref to Sync
-  """
-  RunGit(git_repo, ['remote', 'update', remote])
-
-
 def SyncPushBranch(git_repo, remote, rebase_target):
   """Sync and rebase a local push branch to the latest remote version.
 
@@ -1304,7 +1280,8 @@ def SyncPushBranch(git_repo, remote, rebase_target):
         'This is highly indicative of an internal bug.  remote %s, rebase %s'
         % (remote, rebase_target))
 
-  SyncRemote(git_repo, remote)
+  cmd = ['remote', 'update', remote]
+  RunGit(git_repo, cmd)
 
   try:
     RunGit(git_repo, ['rebase', rebase_target])

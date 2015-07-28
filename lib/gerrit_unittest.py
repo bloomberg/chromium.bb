@@ -8,17 +8,14 @@ from __future__ import print_function
 
 import getpass
 import httplib
-import os
 import mock
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
-from chromite.lib import osutils
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
@@ -50,6 +47,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """
     (revision, changeid) = self.createCommit(clone_path, **kwargs)
     self.uploadChange(clone_path)
+    # TODO(phobbs): there is a race condition here.  We need to retry this.
     def PatchQuery():
       return self._GetHelper().QuerySingleRecord(
           change=changeid, project=project, branch='master')
@@ -251,7 +249,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
   def test009SubmitOutdatedCommit(self):
     """Tests that we can parse a json to check if a change is committed."""
     project = self.createProject('test009')
-    clone_path = self.cloneProject(project, 'p1')
+    clone_path = self.cloneProject(project)
 
     # Create a change.
     gpatch1 = self.createPatch(clone_path, project)
@@ -274,58 +272,64 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     helper.SubmitChange(gpatch2)
     helper.IsChangeCommitted(gpatch2.gerrit_number)
 
-  def test010SubmitBatchUsingGit(self):
-    project = self.createProject('test012')
+  def test010SubmitUsingGit(self, projectName='test010', submitC=True):
+    """Tests that we can rebase & submit a change."""
+    project = self.createProject(projectName)
 
+    # Init the repository first.
     helper = self._GetHelper()
-    repo = self.cloneProject(project, 'p1')
-    initial_patch = self.createPatch(repo, project, msg='Init')
-    helper.SetReview(initial_patch.gerrit_number, labels={'Code-Review':'+2'})
-    helper.SubmitChange(initial_patch)
+    clone_path1 = self.cloneProject(project, 'p1')
+    gpatch1 = self.createPatch(clone_path1, project, msg='Init')
+    helper.SetReview(gpatch1.gerrit_number, labels={'Code-Review':'+2'})
+    helper.SubmitChange(gpatch1)
     # GoB does not guarantee that the change will be in "merged" state
     # atomically after the /Submit endpoint is called.
     timeout_util.WaitForReturnTrue(
-        lambda: helper.IsChangeCommitted(initial_patch.gerrit_number),
-        timeout=60)
+        lambda: helper.IsChangeCommitted(gpatch1.gerrit_number),
+        timeout=30)
 
-    patchA = self.createPatch(repo, project,
-                              msg='Change A',
-                              filename='a.txt')
+    # Create a change.
+    clone_path2 = self.cloneProject(project, 'p2')
+    git.CreateBranch(clone_path2, 'patch', 'origin/master', track=True)
+    gpatchA = self.createPatch(clone_path2, project, msg='Change A',
+                               filename='a.txt')
 
-    osutils.WriteFile(os.path.join(repo, 'aoeu.txt'), 'asdf')
-    git.RunGit(repo, ['add', 'aoeu.txt'])
-    git.RunGit(repo, ['commit', '--amend', '--reuse-message=HEAD'])
-    sha1 = git.RunGit(repo,
-                      ['rev-list', '-n1', 'HEAD']).output.strip()
+    # Create another change.
+    clone_path3 = self.cloneProject(project, 'p3')
+    git.CreateBranch(clone_path3, 'patch', 'origin/master', track=True)
+    gpatchB = self.createPatch(clone_path3, project, msg='Change B',
+                               filename='b.txt')
 
-    patchA.sha1 = sha1
-    patchA.revision = sha1
+    # Create another two changes.
+    gpatchC = self.createPatch(clone_path2, project, msg='Change C',
+                               filename='a.txt')
+    gpatchD = self.createPatch(clone_path2, project, msg='Change D',
+                               filename='a.txt')
 
-    patchB = self.createPatch(repo, project,
-                              msg='Change B',
-                              filename='b.txt')
+    # Submit patch A.
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchA, clone_path2))
+    self.assertTrue(helper.IsChangeCommitted(gpatchA.gerrit_number))
 
-    pool = validation_pool.ValidationPool(
-        overlays=constants.PUBLIC,
-        build_root='',
-        build_number=0,
-        builder_name='',
-        is_master=False,
-        dryrun=False)
+    # Submit patch B.
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchB, clone_path3))
+    self.assertTrue(helper.IsChangeCommitted(gpatchB.gerrit_number))
 
-    by_repo = {repo: [patchA, patchB]}
-    pool.SubmitLocalChanges(
-        by_repo,
-        reason="Testing submitting changes in batch via Git.")
+    # Submit patch C and D.
+    if submitC:
+      self.assertTrue(helper.SubmitChangeUsingGit(gpatchC, clone_path2))
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchD, clone_path2))
 
-    self.assertTrue(helper.IsChangeCommitted(patchB.gerrit_number))
-    self.assertTrue(helper.IsChangeCommitted(patchA.gerrit_number))
-    for patch in [patchA, patchB]:
-      self.assertTrue(helper.IsChangeCommitted(patch.gerrit_number))
+    # Check that C and D are submitted.
+    self.assertTrue(helper.IsChangeCommitted(gpatchC.gerrit_number))
+    self.assertTrue(helper.IsChangeCommitted(gpatchD.gerrit_number))
 
-  def test011ResetReviewLabels(self):
+  def test011SubmitStackUsingGit(self):
+    """Test case where we submit C implicitly, via submitting D."""
+    self.test010SubmitUsingGit('test011', submitC=False)
+
+  def test012ResetReviewLabels(self):
     """Tests that we can remove a code review label."""
-    project = self.createProject('test011')
+    project = self.createProject('test012')
     helper = self._GetHelper()
     clone_path = self.cloneProject(project, 'p1')
     gpatch = self.createPatch(clone_path, project, msg='Init')
@@ -333,7 +337,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     gob_util.ResetReviewLabels(helper.host, gpatch.gerrit_number,
                                label='Code-Review', notify='OWNER')
 
-  def test012ApprovalTime(self):
+  def test013ApprovalTime(self):
     """Approval timestamp should be reset when a new patchset is created."""
     # Create a change.
     project = self.createProject('test012')
