@@ -26,12 +26,13 @@
       'target_name': 'gcm_driver',
       'type': 'static_library',
       'dependencies': [
+        'gcm_driver_common',
+        'gcm_driver_crypto',
         'os_crypt',
         '../base/base.gyp:base',
         '../google_apis/gcm/gcm.gyp:gcm',
         '../net/net.gyp:net',
         '../sync/sync.gyp:sync_proto',
-        'gcm_driver_common',
       ],
       'include_dirs': [
         '..',
@@ -207,6 +208,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'gcm_driver/crypto/gcm_encryption_provider.cc',
+        'gcm_driver/crypto/gcm_encryption_provider.h',
         'gcm_driver/crypto/gcm_key_store.cc',
         'gcm_driver/crypto/gcm_key_store.h',
         'gcm_driver/crypto/gcm_message_cryptographer.cc',

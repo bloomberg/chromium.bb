@@ -830,7 +830,6 @@
         'components.gyp:favicon_base',
         'components.gyp:favicon_core',
         'components.gyp:gcm_driver',
-        'components.gyp:gcm_driver_crypto',
         'components.gyp:gcm_driver_test_support',
         'components.gyp:google_core_browser',
         'components.gyp:history_core_browser',

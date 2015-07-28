@@ -36,8 +36,9 @@ class GCMKeyStore : public base::RefCounted<GCMKeyStore> {
   using KeysCallback = base::Callback<void(const KeyPair& pair)>;
   using DeleteCallback = base::Callback<void(bool success)>;
 
-  GCMKeyStore(const base::FilePath& key_store_path,
-              scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+  GCMKeyStore(
+      const base::FilePath& key_store_path,
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
 
   // Retrieves the public/private key-pair associated with |app_id|, and
   // invokes |callback| when they are available, or when an error occurred.
@@ -84,6 +85,9 @@ class GCMKeyStore : public base::RefCounted<GCMKeyStore> {
 
   // Path in which the key store database will be saved.
   base::FilePath key_store_path_;
+
+  // Blocking task runner which the database will do I/O operations on.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Instance of the ProtoDatabase backing the key store.
   scoped_ptr<leveldb_proto::ProtoDatabase<EncryptionData>> database_;

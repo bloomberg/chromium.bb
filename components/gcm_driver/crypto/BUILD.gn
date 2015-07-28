@@ -7,6 +7,8 @@ import("//build/config/crypto.gni")
 # GYP version: components/gcm_driver.gypi:gcm_driver_crypto
 source_set("crypto") {
   sources = [
+    "gcm_encryption_provider.cc",
+    "gcm_encryption_provider.h",
     "gcm_key_store.cc",
     "gcm_key_store.h",
     "gcm_message_cryptographer.cc",
@@ -16,11 +18,10 @@ source_set("crypto") {
   ]
 
   deps = [
+    "proto",
     "//base",
     "//crypto",
     "//crypto:platform",
-    "//components/gcm_driver",
-    "//components/gcm_driver/crypto/proto",
     "//components/leveldb_proto",
     "//third_party/protobuf:protobuf_lite",
   ]

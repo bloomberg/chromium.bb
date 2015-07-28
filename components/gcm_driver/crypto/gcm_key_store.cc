@@ -22,11 +22,11 @@ enum class GCMKeyStore::State {
 
 GCMKeyStore::GCMKeyStore(
     const base::FilePath& key_store_path,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : key_store_path_(key_store_path),
-      database_(new leveldb_proto::ProtoDatabaseImpl<EncryptionData>(
-                    background_task_runner)),
+      blocking_task_runner_(blocking_task_runner),
       state_(State::UNINITIALIZED) {
+  DCHECK(blocking_task_runner);
 }
 
 GCMKeyStore::~GCMKeyStore() {}
@@ -167,6 +167,9 @@ void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
     return;
 
   state_ = State::INITIALIZING;
+
+  database_.reset(new leveldb_proto::ProtoDatabaseImpl<EncryptionData>(
+      blocking_task_runner_));
 
   database_->Init(key_store_path_,
                   base::Bind(&GCMKeyStore::DidInitialize, this));
