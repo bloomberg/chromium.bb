@@ -30,7 +30,6 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/DocumentLoader.h"
-#include "platform/network/NetworkHints.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -50,7 +49,7 @@ DEFINE_TRACE(HTMLResourcePreloader)
     visitor->trace(m_document);
 }
 
-static void preconnectHost(PreloadRequest* request)
+static void preconnectHost(PreloadRequest* request, const NetworkHintsInterface& networkHintsInterface)
 {
     ASSERT(request);
     ASSERT(request->isPreconnect());
@@ -64,13 +63,13 @@ static void preconnectHost(PreloadRequest* request)
         else
             crossOrigin = CrossOriginAttributeAnonymous;
     }
-    preconnect(host, crossOrigin);
+    networkHintsInterface.preconnectHost(host, crossOrigin);
 }
 
-void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
+void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload, const NetworkHintsInterface& networkHintsInterface)
 {
     if (preload->isPreconnect()) {
-        preconnectHost(preload.get());
+        preconnectHost(preload.get(), networkHintsInterface);
         return;
     }
     // TODO(yoichio): Should preload if document is imported.

@@ -10,11 +10,13 @@
 
 namespace blink {
 
+class NetworkHintsInterface;
+
 class CORE_EXPORT ResourcePreloader {
 public:
     virtual void takeAndPreload(PreloadRequestStream&);
 private:
-    virtual void preload(PassOwnPtr<PreloadRequest>) = 0;
+    virtual void preload(PassOwnPtr<PreloadRequest>, const NetworkHintsInterface&) = 0;
 };
 
 }

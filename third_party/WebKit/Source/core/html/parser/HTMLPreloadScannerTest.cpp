@@ -63,7 +63,7 @@ public:
     }
 
 protected:
-    void preload(PassOwnPtr<PreloadRequest> preloadRequest) override
+    void preload(PassOwnPtr<PreloadRequest> preloadRequest, const NetworkHintsInterface&) override
     {
         m_preloadRequest = preloadRequest;
     }

@@ -3778,6 +3778,7 @@
             'html/forms/FileInputTypeTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
             'html/parser/HTMLPreloadScannerTest.cpp',
+            'html/parser/HTMLResourcePreloaderTest.cpp',
             'html/parser/HTMLSrcsetParserTest.cpp',
             'html/track/vtt/BufferedLineReaderTest.cpp',
             'html/track/vtt/VTTScannerTest.cpp',

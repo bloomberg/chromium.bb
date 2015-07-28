@@ -4,16 +4,18 @@
 
 #include "config.h"
 #include "core/html/parser/ResourcePreloader.h"
+#include "core/loader/NetworkHintsInterface.h"
 
 namespace blink {
 
 void ResourcePreloader::takeAndPreload(PreloadRequestStream& r)
 {
     PreloadRequestStream requests;
+    NetworkHintsInterfaceImpl networkHintsInterface;
     requests.swap(r);
 
     for (PreloadRequestStream::iterator it = requests.begin(); it != requests.end(); ++it)
-        preload(it->release());
+        preload(it->release(), networkHintsInterface);
 }
 
 }
