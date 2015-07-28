@@ -528,6 +528,11 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   base::ShadowingAtExitManager at_exit_manager;
 
+  // Needed to enable DVLOG through --vmodule.
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  CHECK(logging::InitLogging(settings));
+
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
 
@@ -544,6 +549,8 @@ int main(int argc, char** argv) {
       content::g_save_to_file = true;
       continue;
     }
+    if (it->first == "v" || it->first == "vmodule")
+      continue;
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)

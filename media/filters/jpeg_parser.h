@@ -11,6 +11,28 @@
 
 namespace media {
 
+enum JpegMarker {
+  JPEG_SOF0 = 0xC0,   // start of frame (baseline)
+  JPEG_SOF1 = 0xC1,   // start of frame (extended sequential)
+  JPEG_SOF2 = 0xC2,   // start of frame (progressive)
+  JPEG_SOF3 = 0xC3,   // start of frame (lossless))
+  JPEG_SOF5 = 0xC5,   // start of frame (differential, sequential)
+  JPEG_SOF6 = 0xC6,   // start of frame (differential, progressive)
+  JPEG_SOF7 = 0xC7,   // start of frame (differential, lossless)
+  JPEG_SOF9 = 0xC9,   // start of frame (arithmetic coding, extended)
+  JPEG_SOF10 = 0xCA,  // start of frame (arithmetic coding, progressive)
+  JPEG_SOF11 = 0xCB,  // start of frame (arithmetic coding, lossless)
+  JPEG_SOF13 = 0xCD,  // start of frame (differential, arithmetic, sequential)
+  JPEG_SOF14 = 0xCE,  // start of frame (differential, arithmetic, progressive)
+  JPEG_SOF15 = 0xCF,  // start of frame (differential, arithmetic, lossless)
+  JPEG_DHT = 0xC4,    // define huffman table
+  JPEG_SOI = 0xD8,    // start of image
+  JPEG_SOS = 0xDA,    // start of scan
+  JPEG_DQT = 0xDB,    // define quantization table
+  JPEG_DRI = 0xDD,    // define restart internal
+  JPEG_MARKER_PREFIX = 0xFF,  // jpeg marker prefix
+};
+
 const size_t kJpegMaxHuffmanTableNumBaseline = 2;
 const size_t kJpegMaxComponents = 4;
 const size_t kJpegMaxQuantizationTableNum = 4;

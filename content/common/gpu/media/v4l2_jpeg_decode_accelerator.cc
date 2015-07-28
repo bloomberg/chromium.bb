@@ -5,9 +5,11 @@
 #include <linux/videodev2.h>
 #include <sys/mman.h>
 
+#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/media/v4l2_jpeg_decode_accelerator.h"
+#include "media/filters/jpeg_parser.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)      \
   do {                                                                \
@@ -32,7 +34,72 @@
     }                                                               \
   } while (0)
 
+#define READ_U8_OR_RETURN_FALSE(reader, out)                               \
+  do {                                                                     \
+    uint8_t _out;                                                          \
+    if (!reader.ReadU8(&_out)) {                                           \
+      DVLOG(1)                                                             \
+          << "Error in stream: unexpected EOS while trying to read " #out; \
+      return false;                                                        \
+    }                                                                      \
+    *(out) = _out;                                                         \
+  } while (0)
+
+#define READ_U16_OR_RETURN_FALSE(reader, out)                              \
+  do {                                                                     \
+    uint16_t _out;                                                         \
+    if (!reader.ReadU16(&_out)) {                                          \
+      DVLOG(1)                                                             \
+          << "Error in stream: unexpected EOS while trying to read " #out; \
+      return false;                                                        \
+    }                                                                      \
+    *(out) = _out;                                                         \
+  } while (0)
+
 namespace content {
+
+// This is default huffman segment for 8-bit precision luminance and
+// chrominance. The default huffman segment is constructed with the tables from
+// JPEG standard section K.3. Actually there are no default tables. They are
+// typical tables. These tables are useful for many applications. Lots of
+// softwares use them as standard tables such as ffmpeg.
+const uint8_t kDefaultDhtSeg[] = {
+  0xFF, 0xC4, 0x01, 0xA2, 0x00, 0x00, 0x01, 0x05, 0x01, 0x01, 0x01, 0x01,
+  0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02,
+  0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x01, 0x00, 0x03,
+  0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+  0x0A, 0x0B, 0x10, 0x00, 0x02, 0x01, 0x03, 0x03, 0x02, 0x04, 0x03, 0x05,
+  0x05, 0x04, 0x04, 0x00, 0x00, 0x01, 0x7D, 0x01, 0x02, 0x03, 0x00, 0x04,
+  0x11, 0x05, 0x12, 0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07, 0x22,
+  0x71, 0x14, 0x32, 0x81, 0x91, 0xA1, 0x08, 0x23, 0x42, 0xB1, 0xC1, 0x15,
+  0x52, 0xD1, 0xF0, 0x24, 0x33, 0x62, 0x72, 0x82, 0x09, 0x0A, 0x16, 0x17,
+  0x18, 0x19, 0x1A, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x34, 0x35, 0x36,
+  0x37, 0x38, 0x39, 0x3A, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A,
+  0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x63, 0x64, 0x65, 0x66,
+  0x67, 0x68, 0x69, 0x6A, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A,
+  0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x92, 0x93, 0x94, 0x95,
+  0x96, 0x97, 0x98, 0x99, 0x9A, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8,
+  0xA9, 0xAA, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xC2,
+  0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xD2, 0xD3, 0xD4, 0xD5,
+  0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
+  0xE8, 0xE9, 0xEA, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9,
+  0xFA, 0x11, 0x00, 0x02, 0x01, 0x02, 0x04, 0x04, 0x03, 0x04, 0x07, 0x05,
+  0x04, 0x04, 0x00, 0x01, 0x02, 0x77, 0x00, 0x01, 0x02, 0x03, 0x11, 0x04,
+  0x05, 0x21, 0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71, 0x13, 0x22,
+  0x32, 0x81, 0x08, 0x14, 0x42, 0x91, 0xA1, 0xB1, 0xC1, 0x09, 0x23, 0x33,
+  0x52, 0xF0, 0x15, 0x62, 0x72, 0xD1, 0x0A, 0x16, 0x24, 0x34, 0xE1, 0x25,
+  0xF1, 0x17, 0x18, 0x19, 0x1A, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x35, 0x36,
+  0x37, 0x38, 0x39, 0x3A, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A,
+  0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x63, 0x64, 0x65, 0x66,
+  0x67, 0x68, 0x69, 0x6A, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A,
+  0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x92, 0x93, 0x94,
+  0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+  0xA8, 0xA9, 0xAA, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA,
+  0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xD2, 0xD3, 0xD4,
+  0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
+  0xE8, 0xE9, 0xEA, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA
+};
 
 V4L2JpegDecodeAccelerator::BufferRecord::BufferRecord()
     : address(nullptr), length(0), at_device(false) {
@@ -211,7 +278,8 @@ bool V4L2JpegDecodeAccelerator::ShouldRecreateInputBuffers() {
   linked_ptr<JobRecord> job_record = input_jobs_.front();
   // Check input buffer size is enough
   return (input_buffer_map_.empty() ||
-      job_record->bitstream_buffer.size() > input_buffer_map_.front().length);
+          (job_record->bitstream_buffer.size() + sizeof(kDefaultDhtSeg)) >
+              input_buffer_map_.front().length);
 }
 
 bool V4L2JpegDecodeAccelerator::ShouldRecreateOutputBuffers() {
@@ -245,14 +313,13 @@ bool V4L2JpegDecodeAccelerator::CreateBuffersIfNecessary() {
   if (!running_jobs_.empty())
     return true;
 
-  if (input_streamon_ || output_streamon_) {
+  if (input_streamon_ || output_streamon_)
     ResetQueues();
-    if (recreate_input_buffers_pending_)
-      DestroyInputBuffers();
 
-    if (recreate_output_buffers_pending_)
-      DestroyOutputBuffers();
-  }
+  if (recreate_input_buffers_pending_)
+    DestroyInputBuffers();
+  if (recreate_output_buffers_pending_)
+    DestroyOutputBuffers();
 
   if (recreate_input_buffers_pending_ && !CreateInputBuffers()) {
     LOG(ERROR) << "Create input buffers failed.";
@@ -272,9 +339,11 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
   DCHECK(!input_streamon_);
   DCHECK(!input_jobs_.empty());
   linked_ptr<JobRecord> job_record = input_jobs_.front();
+  // The input image may miss huffman table. We didn't parse the image before,
+  // so we create more to avoid the situation of not enough memory.
   // Reserve twice size to avoid recreating input buffer frequently.
-  size_t reserve_size = job_record->bitstream_buffer.size() * 2;
-
+  size_t reserve_size =
+      (job_record->bitstream_buffer.size() + sizeof(kDefaultDhtSeg)) * 2;
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
@@ -574,6 +643,87 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
   }
 }
 
+static bool AddHuffmanTable(const void* input_ptr,
+                            size_t input_size,
+                            void* output_ptr,
+                            size_t output_size) {
+  DCHECK(!input_ptr);
+  DCHECK(!output_ptr);
+  DCHECK_LE((input_size + sizeof(kDefaultDhtSeg)), output_size);
+
+  base::BigEndianReader reader(static_cast<const char*>(input_ptr), input_size);
+  bool has_marker_dht = false;
+  bool has_marker_sos = false;
+  uint8_t marker1, marker2;
+  READ_U8_OR_RETURN_FALSE(reader, &marker1);
+  READ_U8_OR_RETURN_FALSE(reader, &marker2);
+  if (marker1 != media::JPEG_MARKER_PREFIX || marker2 != media::JPEG_SOI) {
+    DLOG(ERROR) << __func__ << ": The input is not a Jpeg";
+    return false;
+  }
+
+  // copy SOI marker (0xFF, 0xD8)
+  memcpy(output_ptr, input_ptr, 2);
+  size_t current_offset = 2;
+
+  while (!has_marker_sos && !has_marker_dht) {
+    const char* start_addr = reader.ptr();
+    READ_U8_OR_RETURN_FALSE(reader, &marker1);
+    if (marker1 != media::JPEG_MARKER_PREFIX) {
+      DLOG(ERROR) << __func__ << ": marker1 != 0xFF";
+      return false;
+    }
+    do {
+      READ_U8_OR_RETURN_FALSE(reader, &marker2);
+    } while (marker2 == media::JPEG_MARKER_PREFIX);  // skip fill bytes
+
+    uint16_t size;
+    READ_U16_OR_RETURN_FALSE(reader, &size);
+    // The size includes the size field itself.
+    if (size < sizeof(size)) {
+      DLOG(ERROR) << __func__ << ": Ill-formed JPEG. Segment size (" << size
+                  << ") is smaller than size field (" << sizeof(size) << ")";
+      return false;
+    }
+    size -= sizeof(size);
+
+    switch (marker2) {
+      case media::JPEG_DHT: {
+        has_marker_dht = true;
+        break;
+      }
+      case media::JPEG_SOS: {
+        if (!has_marker_dht) {
+          memcpy(static_cast<uint8_t*>(output_ptr) + current_offset,
+                 kDefaultDhtSeg, sizeof(kDefaultDhtSeg));
+          current_offset += sizeof(kDefaultDhtSeg);
+        }
+        has_marker_sos = true;
+        break;
+      }
+      default:
+        break;
+    }
+
+    if (!reader.Skip(size)) {
+      DLOG(ERROR) << __func__ << ": Ill-formed JPEG. Remaining size ("
+                  << reader.remaining()
+                  << ") is smaller than header specified (" << size << ")";
+      return false;
+    }
+
+    size_t segment_size = static_cast<size_t>(reader.ptr() - start_addr);
+    memcpy(static_cast<uint8_t*>(output_ptr) + current_offset, start_addr,
+           segment_size);
+    current_offset += segment_size;
+  }
+  if (reader.remaining()) {
+    memcpy(static_cast<uint8_t*>(output_ptr) + current_offset, reader.ptr(),
+           reader.remaining());
+  }
+  return true;
+}
+
 bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   DCHECK(!input_jobs_.empty());
   DCHECK(!free_input_buffers_.empty());
@@ -585,10 +735,16 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   BufferRecord& input_record = input_buffer_map_[index];
   DCHECK(!input_record.at_device);
 
+  // It will add default huffman segment if it's missing.
+  if (!AddHuffmanTable(job_record->shm->memory(),
+                       job_record->bitstream_buffer.size(),
+                       input_record.address, input_record.length)) {
+    PostNotifyError(job_record->bitstream_buffer.id(), PARSE_JPEG_FAILED);
+    return false;
+  }
+
   struct v4l2_buffer qbuf;
   memset(&qbuf, 0, sizeof(qbuf));
-  memcpy(input_record.address, job_record->shm->memory(),
-         job_record->bitstream_buffer.size());
   qbuf.index = index;
   qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
   qbuf.memory = V4L2_MEMORY_MMAP;

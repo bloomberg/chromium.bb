@@ -33,30 +33,6 @@ using base::BigEndianReader;
 
 namespace media {
 
-namespace {
-enum JpegMarker {
-  SOF0 = 0xC0,     // start of frame (baseline)
-  SOF1 = 0xC1,     // start of frame (extended sequential)
-  SOF2 = 0xC2,     // start of frame (progressive)
-  SOF3 = 0xC3,     // start of frame (lossless))
-  SOF5 = 0xC5,     // start of frame (differential, sequential)
-  SOF6 = 0xC6,     // start of frame (differential, progressive)
-  SOF7 = 0xC7,     // start of frame (differential, lossless)
-  SOF9 = 0xC9,     // start of frame (arithmetic coding, extended)
-  SOF10 = 0xCA,    // start of frame (arithmetic coding, progressive)
-  SOF11 = 0xCB,    // start of frame (arithmetic coding, lossless)
-  SOF13 = 0xCD,    // start of frame (differential, arithmetic, sequential)
-  SOF14 = 0xCE,    // start of frame (differential, arithmetic, progressive)
-  SOF15 = 0xCF,    // start of frame (differential, arithmetic, lossless)
-  DHT = 0xC4,      // define huffman table
-  SOI = 0xD8,      // start of image
-  SOS = 0xDA,      // start of scan
-  DQT = 0xDB,      // define quantization table
-  DRI = 0xDD,      // define restart internal
-  MARKER1 = 0xFF,  // jpeg marker prefix
-};
-}
-
 static bool InRange(int value, int a, int b) {
   return a <= value && value <= b;
 }
@@ -309,12 +285,12 @@ static bool ParseSOI(const char* buffer,
   // Once reached SOS, all neccesary data are parsed.
   while (!has_marker_sos) {
     READ_U8_OR_RETURN_FALSE(&marker1);
-    if (marker1 != MARKER1)
+    if (marker1 != JPEG_MARKER_PREFIX)
       return false;
 
     do {
       READ_U8_OR_RETURN_FALSE(&marker2);
-    } while (marker2 == MARKER1);  // skip fill bytes
+    } while (marker2 == JPEG_MARKER_PREFIX);  // skip fill bytes
 
     uint16_t size;
     READ_U16_OR_RETURN_FALSE(&size);
@@ -333,47 +309,47 @@ static bool ParseSOI(const char* buffer,
     size -= sizeof(size);
 
     switch (marker2) {
-      case SOF0:
+      case JPEG_SOF0:
         if (!ParseSOF(reader.ptr(), size, &result->frame_header)) {
           DLOG(ERROR) << "ParseSOF failed";
           return false;
         }
         break;
-      case SOF1:
-      case SOF2:
-      case SOF3:
-      case SOF5:
-      case SOF6:
-      case SOF7:
-      case SOF9:
-      case SOF10:
-      case SOF11:
-      case SOF13:
-      case SOF14:
-      case SOF15:
+      case JPEG_SOF1:
+      case JPEG_SOF2:
+      case JPEG_SOF3:
+      case JPEG_SOF5:
+      case JPEG_SOF6:
+      case JPEG_SOF7:
+      case JPEG_SOF9:
+      case JPEG_SOF10:
+      case JPEG_SOF11:
+      case JPEG_SOF13:
+      case JPEG_SOF14:
+      case JPEG_SOF15:
         DLOG(ERROR) << "Only SOF0 (baseline) is supported, but got SOF"
-                    << (marker2 - SOF0);
+                    << (marker2 - JPEG_SOF0);
         return false;
-      case DQT:
+      case JPEG_DQT:
         if (!ParseDQT(reader.ptr(), size, result->q_table)) {
           DLOG(ERROR) << "ParseDQT failed";
           return false;
         }
         has_marker_dqt = true;
         break;
-      case DHT:
+      case JPEG_DHT:
         if (!ParseDHT(reader.ptr(), size, result->dc_table, result->ac_table)) {
           DLOG(ERROR) << "ParseDHT failed";
           return false;
         }
         break;
-      case DRI:
+      case JPEG_DRI:
         if (!ParseDRI(reader.ptr(), size, &result->restart_interval)) {
           DLOG(ERROR) << "ParseDRI failed";
           return false;
         }
         break;
-      case SOS:
+      case JPEG_SOS:
         if (!ParseSOS(reader.ptr(), size, result->frame_header,
                       &result->scan)) {
           DLOG(ERROR) << "ParseSOS failed";
@@ -411,7 +387,7 @@ bool ParseJpegPicture(const uint8_t* buffer,
   uint8_t marker1, marker2;
   READ_U8_OR_RETURN_FALSE(&marker1);
   READ_U8_OR_RETURN_FALSE(&marker2);
-  if (marker1 != MARKER1 || marker2 != SOI) {
+  if (marker1 != JPEG_MARKER_PREFIX || marker2 != JPEG_SOI) {
     DLOG(ERROR) << "Not a JPEG";
     return false;
   }
