@@ -87,6 +87,12 @@ const char kScriptsRequireAction[] = "scripts-require-action";
 // as --scripts-require-action=1.
 const char kEnableScriptsRequireAction[] = "enable-scripts-require-action";
 
+#if defined(CHROMIUM_BUILD)
+// Should we prompt the user before allowing external extensions to install?
+// This flag is available on Chromium for testing purposes.
+const char kPromptForExternalExtensions[] = "prompt-for-external-extensions";
+#endif
+
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";

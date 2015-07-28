@@ -20,11 +20,16 @@ class CommonSwitches {
       : easy_off_store_install(NULL, FeatureSwitch::DEFAULT_DISABLED),
         force_dev_mode_highlighting(switches::kForceDevModeHighlighting,
                                     FeatureSwitch::DEFAULT_DISABLED),
-        prompt_for_external_extensions(NULL,
-#if defined(OS_WIN)
-                                       FeatureSwitch::DEFAULT_ENABLED),
+        prompt_for_external_extensions(
+#if defined(CHROMIUM_BUILD)
+            switches::kPromptForExternalExtensions,
 #else
-                                       FeatureSwitch::DEFAULT_DISABLED),
+            NULL,
+#endif
+#if defined(OS_WIN)
+            FeatureSwitch::DEFAULT_ENABLED),
+#else
+            FeatureSwitch::DEFAULT_DISABLED),
 #endif
         error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_DISABLED),
         enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
