@@ -256,19 +256,15 @@ bool IsDownloadDisplayable(const content::DownloadItem& item) {
 
 }  // namespace
 
-DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
-    : main_notifier_(dlm, this),
+DownloadsDOMHandler::DownloadsDOMHandler(
+    content::DownloadManager* download_manager)
+    : download_manager_(download_manager),
       update_scheduled_(false),
       weak_ptr_factory_(this) {
   // Create our fileicon data source.
-  Profile* profile = Profile::FromBrowserContext(dlm->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      download_manager->GetBrowserContext());
   content::URLDataSource::Add(profile, new FileIconSource());
-
-  if (profile->IsOffTheRecord()) {
-    original_notifier_.reset(new AllDownloadItemNotifier(
-        BrowserContext::GetDownloadManager(profile->GetOriginalProfile()),
-        this));
-  }
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {
@@ -366,9 +362,10 @@ void DownloadsDOMHandler::OnDownloadUpdated(
       return;
   }
 
+  DCHECK(manager);
   scoped_ptr<base::DictionaryValue> item(CreateDownloadItemValue(
       download_item,
-      original_notifier_ && manager == main_notifier_.GetManager()));
+      original_notifier_ && manager == GetMainNotifierManager()));
   CallUpdateItem(*item);
 }
 
@@ -395,6 +392,18 @@ void DownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
   search_terms_.reset(args && !args->empty() ? args->DeepCopy() : NULL);
   ScheduleSendCurrentDownloads();
+
+  if (!main_notifier_) {
+    main_notifier_.reset(new AllDownloadItemNotifier(download_manager_, this));
+
+    Profile* profile = Profile::FromBrowserContext(
+        download_manager_->GetBrowserContext());
+    if (profile->IsOffTheRecord()) {
+      original_notifier_.reset(new AllDownloadItemNotifier(
+          BrowserContext::GetDownloadManager(profile->GetOriginalProfile()),
+          this));
+    }
+  }
 }
 
 void DownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
@@ -519,8 +528,8 @@ void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   std::vector<content::DownloadItem*> downloads;
   if (GetMainNotifierManager())
     GetMainNotifierManager()->GetAllDownloads(&downloads);
-  if (original_notifier_ && original_notifier_->GetManager())
-    original_notifier_->GetManager()->GetAllDownloads(&downloads);
+  if (GetOriginalNotifierManager())
+    GetOriginalNotifierManager()->GetAllDownloads(&downloads);
   RemoveDownloads(downloads);
 }
 
@@ -547,7 +556,7 @@ void DownloadsDOMHandler::RemoveDownloads(
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(
     const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
-  content::DownloadManager* manager = main_notifier_.GetManager();
+  content::DownloadManager* manager = GetMainNotifierManager();
   if (manager) {
     platform_util::OpenItem(
         Profile::FromBrowserContext(manager->GetBrowserContext()),
@@ -573,8 +582,13 @@ void DownloadsDOMHandler::ScheduleSendCurrentDownloads() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-content::DownloadManager* DownloadsDOMHandler::GetMainNotifierManager() {
-  return main_notifier_.GetManager();
+content::DownloadManager* DownloadsDOMHandler::GetMainNotifierManager() const {
+  return main_notifier_ ? main_notifier_->GetManager() : nullptr;
+}
+
+content::DownloadManager* DownloadsDOMHandler::GetOriginalNotifierManager()
+    const {
+  return original_notifier_ ? original_notifier_->GetManager() : nullptr;
 }
 
 void DownloadsDOMHandler::FinalizeRemovals() {
@@ -594,13 +608,13 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
   update_scheduled_ = false;
 
   content::DownloadManager::DownloadVector all_items, filtered_items;
-  if (main_notifier_.GetManager()) {
-    main_notifier_.GetManager()->GetAllDownloads(&all_items);
-    main_notifier_.GetManager()->CheckForHistoryFilesRemoval();
+  if (GetMainNotifierManager()) {
+    GetMainNotifierManager()->GetAllDownloads(&all_items);
+    GetMainNotifierManager()->CheckForHistoryFilesRemoval();
   }
-  if (original_notifier_ && original_notifier_->GetManager()) {
-    original_notifier_->GetManager()->GetAllDownloads(&all_items);
-    original_notifier_->GetManager()->CheckForHistoryFilesRemoval();
+  if (GetOriginalNotifierManager()) {
+    GetOriginalNotifierManager()->GetAllDownloads(&all_items);
+    GetOriginalNotifierManager()->CheckForHistoryFilesRemoval();
   }
 
   DownloadQuery query;
@@ -615,8 +629,8 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
   for (auto* item : filtered_items) {
     results_value.Append(CreateDownloadItemValue(
         item,
-        original_notifier_ && main_notifier_.GetManager() &&
-            main_notifier_.GetManager()->GetDownload(item->GetId()) == item));
+        original_notifier_ && GetMainNotifierManager() &&
+            GetMainNotifierManager()->GetDownload(item->GetId()) == item));
   }
   CallUpdateAll(results_value);
 }
@@ -638,10 +652,10 @@ void DownloadsDOMHandler::DangerPromptDone(
   if (action != DownloadDangerPrompt::ACCEPT)
     return;
   content::DownloadItem* item = NULL;
-  if (main_notifier_.GetManager())
-    item = main_notifier_.GetManager()->GetDownload(download_id);
-  if (!item && original_notifier_.get() && original_notifier_->GetManager())
-    item = original_notifier_->GetManager()->GetDownload(download_id);
+  if (GetMainNotifierManager())
+    item = GetMainNotifierManager()->GetDownload(download_id);
+  if (!item && GetOriginalNotifierManager())
+    item = GetOriginalNotifierManager()->GetDownload(download_id);
   if (!item || item->IsDone())
     return;
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
@@ -649,7 +663,7 @@ void DownloadsDOMHandler::DangerPromptDone(
 }
 
 bool DownloadsDOMHandler::IsDeletingHistoryAllowed() {
-  content::DownloadManager* manager = main_notifier_.GetManager();
+  content::DownloadManager* manager = GetMainNotifierManager();
   return manager &&
          Profile::FromBrowserContext(manager->GetBrowserContext())->
              GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
@@ -676,8 +690,8 @@ content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32 id) {
   content::DownloadItem* item = NULL;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(id);
-  if (!item && original_notifier_ && original_notifier_->GetManager())
-    item = original_notifier_->GetManager()->GetDownload(id);
+  if (!item && GetOriginalNotifierManager())
+    item = GetOriginalNotifierManager()->GetDownload(id);
   return item;
 }
 

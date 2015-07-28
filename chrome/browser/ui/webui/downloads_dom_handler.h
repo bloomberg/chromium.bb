@@ -29,7 +29,7 @@ class WebContents;
 class DownloadsDOMHandler : public content::WebUIMessageHandler,
                             public AllDownloadItemNotifier::Observer {
  public:
-  explicit DownloadsDOMHandler(content::DownloadManager* dlm);
+  explicit DownloadsDOMHandler(content::DownloadManager* download_manager);
   ~DownloadsDOMHandler() override;
 
   void Init();
@@ -103,9 +103,6 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // iteration. Protected rather than private for use in tests.
   void ScheduleSendCurrentDownloads();
 
-  // Protected for testing.
-  virtual content::DownloadManager* GetMainNotifierManager();
-
   // Actually remove downloads with an ID in |removals_|. This cannot be undone.
   void FinalizeRemovals();
 
@@ -113,6 +110,14 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Shorthand for |observing_items_|, which tracks all items that this is
   // observing so that RemoveObserver will be called for all of them.
   typedef std::set<content::DownloadItem*> DownloadSet;
+
+  // Convenience method to call |main_notifier_->GetManager()| while
+  // null-checking |main_notifier_|.
+  content::DownloadManager* GetMainNotifierManager() const;
+
+  // Convenience method to call |original_notifier_->GetManager()| while
+  // null-checking |original_notifier_|.
+  content::DownloadManager* GetOriginalNotifierManager() const;
 
   // Sends the current list of downloads to the page.
   void SendCurrentDownloads();
@@ -142,11 +147,15 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Remove all downloads in |to_remove| with the ability to undo removal later.
   void RemoveDownloads(const std::vector<content::DownloadItem*>& to_remove);
 
+  // Weak reference to the DownloadManager this class was constructed with. You
+  // should probably be using use Get{Main,Original}NotifierManager() instead.
+  content::DownloadManager* download_manager_;
+
   // Current search terms.
   scoped_ptr<base::ListValue> search_terms_;
 
   // Notifies OnDownload*() and provides safe access to the DownloadManager.
-  AllDownloadItemNotifier main_notifier_;
+  scoped_ptr<AllDownloadItemNotifier> main_notifier_;
 
   // If |main_notifier_| observes an incognito profile, then this observes the
   // DownloadManager for the original profile; otherwise, this is NULL.
