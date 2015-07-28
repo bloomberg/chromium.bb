@@ -1203,11 +1203,6 @@ crbug.com/450706 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ P
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ MountainLion Mavericks Retina ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-crbug.com/507950 fast/repaint/content-into-overflow.html [ NeedsRebaseline ]
-crbug.com/507950 fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
-crbug.com/507950 fast/repaint/float-overflow.html [ NeedsRebaseline ]
-crbug.com/507950 fast/repaint/overflow-into-content.html [ NeedsRebaseline ]
-
 crbug.com/417782 [ Win Linux ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Pass ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
