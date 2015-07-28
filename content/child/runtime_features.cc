@@ -95,9 +95,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::enableDatabase(false);
 
-  if (command_line.HasSwitch(scheduler::switches::kDisableBlinkScheduler))
-    WebRuntimeFeatures::enableBlinkScheduler(false);
-
   if (command_line.HasSwitch(switches::kDisableMediaSource))
     WebRuntimeFeatures::enableMediaSource(false);
 
