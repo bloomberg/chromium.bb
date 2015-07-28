@@ -64,6 +64,23 @@ TEST(WeakNSObjectCounter, SameObject) {
   EXPECT_EQ(1U, object_counter.Size());
 }
 
+// Tests that WeakNSObjectCounters keep track of the same object correctly.
+TEST(WeakNSObjectCounter, SameObjectTwoCounters) {
+  base::scoped_nsobject<NSObject> object([[NSObject alloc] init]);
+  web::WeakNSObjectCounter object_counter_1;
+  web::WeakNSObjectCounter object_counter_2;
+  object_counter_1.Insert(object);
+  EXPECT_EQ(1U, object_counter_1.Size());
+
+  object_counter_2.Insert(object);
+  EXPECT_EQ(1U, object_counter_1.Size());
+  EXPECT_EQ(1U, object_counter_2.Size());
+
+  object.reset();
+  EXPECT_EQ(0U, object_counter_1.Size());
+  EXPECT_EQ(0U, object_counter_2.Size());
+}
+
 // Tests that WeakNSObjectCounter correctly maintains a reference to the object
 // and reduces its size only when the last reference to the object goes away.
 TEST(WeakNSObjectCounter, LastReference) {
