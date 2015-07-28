@@ -29,6 +29,7 @@
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
@@ -128,6 +129,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
 #include "skia/ext/event_tracer_impl.h"
+#include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -738,6 +740,8 @@ void RenderThreadImpl::Init() {
   GetContentClient()->renderer()->RenderThreadStarted();
 
   InitSkiaEventTracer();
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      skia::SkiaMemoryDumpProvider::GetInstance());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
