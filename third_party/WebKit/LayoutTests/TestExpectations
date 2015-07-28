@@ -2862,7 +2862,7 @@ crbug.com/509025 [ Yosemite ] tables/mozilla_expected_failures/collapsing_border
 crbug.com/509025 [ Yosemite ] tables/mozilla_expected_failures/collapsing_borders/bug41262-6.html [ Failure ]
 #crbug.com/509025 [ Yosemite ] fast/text/emphasis.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/text/international/complex-character-based-fallback.html [ Failure ]
-crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/autoscroll.html [ Failure ]
+crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/autoscroll.html [ Failure ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/autoscroll.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/context-no-deselect.html [ Failure ]
@@ -2883,3 +2883,6 @@ crbug.com/513073 [ Win ] http/tests/inspector/network/network-disable-cache-memo
 crbug.com/513073 [ Win ] http/tests/inspector/extensions-ignore-cache.html [ Pass Timeout ]
 crbug.com/513073 [ Win ] http/tests/inspector/network/network-memory-cached-resource.html [ Pass Timeout ]
 crbug.com/513073 [ XP ] http/tests/security/suborigins/crossorigin/suborigin-cors.php [ Pass Timeout ]
+
+crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
+crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
