@@ -230,9 +230,10 @@ TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
 
   EXPECT_TRUE(estimator.GetEstimate(&network_quality));
   // |network_quality| should be equal to the 50 percentile value.
-  EXPECT_EQ(estimator.GetEstimate(50).downstream_throughput_kbps(),
-            network_quality.downstream_throughput_kbps());
-  EXPECT_EQ(estimator.GetEstimate(50).rtt(), network_quality.rtt());
+  EXPECT_EQ(network_quality.downstream_throughput_kbps() > 0,
+            estimator.GetEstimate(50).downstream_throughput_kbps() > 0);
+  EXPECT_EQ(network_quality.rtt() != NetworkQuality::InvalidRTT(),
+            estimator.GetEstimate(50).rtt() != NetworkQuality::InvalidRTT());
 }
 
 // Verifies that the percentiles are correctly computed. Observations have
@@ -513,8 +514,6 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
 
 // Tests if the cache size remains bounded. Also, ensure that the cache is
 // LRU.
-// Disabled on Windows due to flakiness. See https://crbug.com/510689.
-#if !defined(OS_WIN)
 TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);
@@ -527,11 +526,16 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
   size_t network_count =
       NetworkQualityEstimator::kMaximumNetworkQualityCacheSize + 100;
 
+  base::TimeTicks update_time_of_network_100;
   for (size_t i = 0; i < network_count; ++i) {
     estimator.kbps_observations_.AddObservation(
         NetworkQualityEstimator::Observation(2, base::TimeTicks::Now()));
     estimator.rtt_msec_observations_.AddObservation(
         NetworkQualityEstimator::Observation(500, base::TimeTicks::Now()));
+
+    if (i == 100)
+      update_time_of_network_100 = base::TimeTicks::Now();
+
     estimator.SimulateNetworkChangeTo(
         net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
         base::IntToString(i));
@@ -553,20 +557,13 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
                 NetworkQualityEstimator::kMaximumNetworkQualityCacheSize),
             estimator.cached_network_qualities_.size());
 
-  // Test that the cache is LRU by examining its contents.
-  for (size_t i = 0; i < network_count; ++i) {
-    // The first 100 networks should not be present in the cache.
-    bool expect_present_in_cache = i >= 100;
-
-    NetworkQualityEstimator::NetworkID network_id(
-        NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-        base::IntToString(i));
-
-    bool found = estimator.cached_network_qualities_.find(network_id) !=
-                 estimator.cached_network_qualities_.end();
-    EXPECT_EQ(expect_present_in_cache, found);
+  // Test that the cache is LRU by examining its contents. Networks in cache
+  // must all be newer than the 100th network.
+  for (NetworkQualityEstimator::CachedNetworkQualities::iterator it =
+           estimator.cached_network_qualities_.begin();
+       it != estimator.cached_network_qualities_.end(); ++it) {
+    EXPECT_GE((it->second).last_update_time_, update_time_of_network_100);
   }
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace net
