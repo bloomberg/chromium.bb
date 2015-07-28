@@ -35,48 +35,6 @@ using namespace std;
 string g_lastError;
 HMODULE g_hModule = NULL;
 
-static bool split(const wstring& s, wstring &path)
-{
-	bool bResult = false;
-	vector<wstring> output;
-
-	wstring::size_type prev_pos = 0, pos = 0;
-
-	while((pos = s.find(L';', pos)) != wstring::npos)
-	{
-		wstring substring( s.substr(prev_pos, pos-prev_pos) );
-		if (substring.find(L"Power Gadget 2.") != wstring::npos)
-		{
-			path = substring;
-			bResult = true;
-			break;
-		}
-		prev_pos = ++pos;
-	}
-
-	if (!bResult)
-	{
-		wstring substring(s.substr(prev_pos, pos-prev_pos));
-
-		if (substring.find(L"Power Gadget 2.") != wstring::npos)
-		{
-			path = substring;
-			bResult = true;
-		}
-	}	
-
-	if (bResult)
-	{
-		basic_string <char>::size_type pos = path.rfind(L" ");
-		wstring version = path.substr(pos+1, path.length());
-		double fVer = _wtof(version.c_str());
-		if (fVer > 2.6)
-			bResult = true;
-	}
-	
-	return bResult;
-}
-
 static bool GetLibraryLocation(wstring& strLocation)
 {
 	TCHAR *pszPath = _wgetenv(L"IPG_Dir");
