@@ -188,11 +188,6 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     // location in the flow thread to a location in a given column. The fragment.paginationClip
     // rectangle, on the other hand, is in flow thread coordinates, but otherwise completely
     // physical in terms of writing mode.
-    //
-    // All other rectangles in this method are sized physically, and the inline direction coordinate
-    // is physical too, but the block direction coordinate is "logical top". This is the same as
-    // e.g. LayoutBox::frameRect(). These rectangles also pretend that there's only one long column,
-    // i.e. they are for the flow thread.
 
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
     bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
@@ -230,52 +225,17 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
         endColumn = lastColumnInDirtyRect;
     ASSERT(endColumn >= startColumn);
 
-    LayoutUnit colLogicalWidth = m_columnSet.pageLogicalWidth();
-    LayoutUnit colGap = m_columnSet.columnGap();
-    unsigned colCount = actualColumnCount();
-
-    bool progressionIsInline = flowThread->progressionIsInline();
-    bool leftToRight = m_columnSet.style()->isLeftToRightDirection();
-
-    LayoutUnit initialBlockOffset = m_columnSet.logicalTop() + logicalTop() - flowThread->logicalTop();
-
     for (unsigned i = startColumn; i <= endColumn; i++) {
-        // Get the portion of the flow thread that corresponds to this column.
-        LayoutRect flowThreadPortion = flowThreadPortionRectAt(i);
-
-        // Now get the overflow rect that corresponds to the column.
-        LayoutRect flowThreadOverflowPortion = flowThreadPortionOverflowRect(flowThreadPortion, i, colCount, colGap);
-
-        LayoutPoint translationOffset;
-        LayoutUnit inlineOffset = progressionIsInline ? i * (colLogicalWidth + colGap) : LayoutUnit();
-        if (!leftToRight)
-            inlineOffset = -inlineOffset;
-        translationOffset.setX(inlineOffset);
-        LayoutUnit blockOffset;
-        if (progressionIsInline) {
-            blockOffset = initialBlockOffset + (isHorizontalWritingMode ? -flowThreadPortion.y() : -flowThreadPortion.x());
-        } else {
-            // Column gap can apply in the block direction for page fragmentainers.
-            // There is currently no spec which calls for column-gap to apply
-            // for page fragmentainers at all, but it's applied here for compatibility
-            // with the old multicolumn implementation.
-            blockOffset = i * colGap;
-        }
-        if (isFlippedBlocksWritingMode(m_columnSet.style()->writingMode()))
-            blockOffset = -blockOffset;
-        translationOffset.setY(blockOffset);
-        if (!isHorizontalWritingMode)
-            translationOffset = translationOffset.transposedPoint();
-
-        // Make a fragment now and supply the physical translation offset and the clip rect for the
-        // column with that offset applied.
         DeprecatedPaintLayerFragment fragment;
-        fragment.paginationOffset = translationOffset;
 
-        LayoutRect flippedFlowThreadOverflowPortion(flowThreadOverflowPortion);
+        // Set the physical translation offset.
+        fragment.paginationOffset = toLayoutPoint(flowThreadTranslationAtOffset(logicalTopInFlowThreadAt(i)));
+
+        // Set the overflow clip rect that corresponds to the column.
+        fragment.paginationClip = flowThreadPortionOverflowRectAt(i);
         // Flip it into more a physical (DeprecatedPaintLayer-style) rectangle.
-        flowThread->flipForWritingMode(flippedFlowThreadOverflowPortion);
-        fragment.paginationClip = flippedFlowThreadOverflowPortion;
+        flowThread->flipForWritingMode(fragment.paginationClip);
+
         fragments.append(fragment);
     }
 }
@@ -479,7 +439,7 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionRectAt(unsigned colum
     return LayoutRect(logicalTop, LayoutUnit(), portionLogicalHeight, m_columnSet.pageLogicalWidth());
 }
 
-LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const LayoutRect& portionRect, unsigned columnIndex, unsigned columnCount, LayoutUnit columnGap) const
+LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRectAt(unsigned columnIndex) const
 {
     // This function determines the portion of the flow thread that paints for the column. Along the inline axis, columns are
     // unclipped at outside edges (i.e., the first and last column in the set), and they clip to half the column
@@ -491,17 +451,19 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const La
     // FIXME: Eventually we will know overflow on a per-column basis, but we can't do this until we have a painting
     // mode that understands not to paint contents from a previous column in the overflow area of a following column.
     bool isFirstColumn = !columnIndex;
-    bool isLastColumn = columnIndex == columnCount - 1;
+    bool isLastColumn = columnIndex == actualColumnCount() - 1;
     bool isLTR = m_columnSet.style()->isLeftToRightDirection();
     bool isLeftmostColumn = isLTR ? isFirstColumn : isLastColumn;
     bool isRightmostColumn = isLTR ? isLastColumn : isFirstColumn;
 
+    LayoutRect portionRect = flowThreadPortionRectAt(columnIndex);
     // Calculate the overflow rectangle, based on the flow thread's, clipped at column logical
     // top/bottom unless it's the first/last column.
     LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(portionRect, isFirstColumn && !m_columnSet.previousSiblingMultiColumnSet(), isLastColumn && !m_columnSet.nextSiblingMultiColumnSet());
 
     // Avoid overflowing into neighboring columns, by clipping in the middle of adjacent column
     // gaps. Also make sure that we avoid rounding errors.
+    LayoutUnit columnGap = m_columnSet.columnGap();
     if (m_columnSet.isHorizontalWritingMode()) {
         if (!isLeftmostColumn)
             overflowRect.shiftXEdgeTo(portionRect.x() - columnGap / 2);

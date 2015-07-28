@@ -86,7 +86,7 @@ private:
     LayoutRect columnRectAt(unsigned columnIndex) const;
     LayoutUnit logicalTopInFlowThreadAt(unsigned columnIndex) const { return m_logicalTopInFlowThread + columnIndex * m_columnHeight; }
     LayoutRect flowThreadPortionRectAt(unsigned columnIndex) const;
-    LayoutRect flowThreadPortionOverflowRect(const LayoutRect& flowThreadPortion, unsigned columnIndex, unsigned columnCount, LayoutUnit columnGap) const;
+    LayoutRect flowThreadPortionOverflowRectAt(unsigned columnIndex) const;
 
     enum ColumnIndexCalculationMode {
         ClampToExistingColumns, // Stay within the range of already existing columns.
