@@ -10,6 +10,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -35,6 +36,7 @@ const int kIconSize = 32;
 const int kIconPad = 5;
 const int kIconPadVertical = 6;
 const int kAttentionThrobDurationMS = 800;
+const int kMaxAnimationSeconds = 10;
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
@@ -115,7 +117,9 @@ class ShelfButton::BarView : public views::ImageView,
  public:
   BarView(ShelfButton* host)
       : host_(host),
-        show_attention_(false) {
+        show_attention_(false),
+        animation_end_time_(base::TimeTicks()),
+        animating_(false) {
     // Make sure the events reach the parent view for handling.
     set_interactive(false);
   }
@@ -128,7 +132,8 @@ class ShelfButton::BarView : public views::ImageView,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     if (show_attention_) {
-      int alpha = ShelfButtonAnimation::GetInstance()->GetAlpha();
+      int alpha =
+          animating_ ? ShelfButtonAnimation::GetInstance()->GetAlpha() : 255;
       canvas->SaveLayerAlpha(alpha);
       views::ImageView::OnPaint(canvas);
       canvas->Restore();
@@ -151,10 +156,15 @@ class ShelfButton::BarView : public views::ImageView,
   void ShowAttention(bool show) {
     if (show_attention_ != show) {
       show_attention_ = show;
-      if (show_attention_)
+      if (show_attention_) {
+        animating_ = true;
+        animation_end_time_ = base::TimeTicks::Now() +
+            base::TimeDelta::FromSeconds(kMaxAnimationSeconds);
         ShelfButtonAnimation::GetInstance()->AddObserver(this);
-      else
+      } else {
+        animating_ = false;
         ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
+      }
     }
     UpdateBounds();
   }
@@ -167,7 +177,8 @@ class ShelfButton::BarView : public views::ImageView,
       // visible width of the image), so the animation "rests" briefly at full
       // visible width.  Cap bounds length at kIconSize to prevent visual
       // flutter while centering bar within further expanding bounds.
-      double animation = ShelfButtonAnimation::GetInstance()->GetAnimation();
+      double animation = animating_ ?
+          ShelfButtonAnimation::GetInstance()->GetAnimation() : 1.0;
       double scale = .35 + .65 * animation;
       if (host_->shelf_layout_manager()->GetAlignment() ==
           SHELF_ALIGNMENT_BOTTOM) {
@@ -175,18 +186,31 @@ class ShelfButton::BarView : public views::ImageView,
         bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
         bounds.set_x(base_bounds_.x() + x_offset);
+        UpdateAnimating(bounds.width() == kIconSize);
       } else {
         int height = base_bounds_.height() * scale;
         bounds.set_height(std::min(height, kIconSize));
         int y_offset = (base_bounds_.height() - bounds.height()) / 2;
         bounds.set_y(base_bounds_.y() + y_offset);
+        UpdateAnimating(bounds.height() == kIconSize);
       }
     }
     SetBoundsRect(bounds);
   }
 
+  void UpdateAnimating(bool max_length) {
+    if (!max_length)
+      return;
+    if (base::TimeTicks::Now() > animation_end_time_) {
+      animating_ = false;
+      ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
+    }
+  }
+
   ShelfButton* host_;
   bool show_attention_;
+  base::TimeTicks animation_end_time_;  // For attention throbbing underline.
+  bool animating_;  // Is time-limited attention animation running?
   gfx::Rect base_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(BarView);
@@ -519,8 +543,10 @@ void ShelfButton::UpdateBar() {
   }
 
   int bar_id = 0;
-  if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
+  if (state_ & (STATE_ACTIVE))
     bar_id = IDR_ASH_SHELF_UNDERLINE_ACTIVE;
+  else if (state_ & STATE_ATTENTION)
+    bar_id = IDR_ASH_SHELF_UNDERLINE_ATTENTION;
   else if (state_ & STATE_RUNNING)
     bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;
 

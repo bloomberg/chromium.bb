@@ -21,6 +21,7 @@
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER" file="common/shelf/window_switcher_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_OVERFLOW" file="common/shelf/shelf_overflow.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_ACTIVE" file="common/shelf/shelf_underline_active.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_ATTENTION" file="common/shelf/shelf_underline_attention.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_RUNNING" file="common/shelf/shelf_underline_running.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_SETTINGS" file="common/shelf/settings_app_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
