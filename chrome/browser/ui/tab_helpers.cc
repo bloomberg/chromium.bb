@@ -48,6 +48,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_web_contents_observer.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
@@ -175,6 +176,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if defined(OS_ANDROID)
   ContextMenuHelper::CreateForWebContents(web_contents);
+  offline_pages::OfflinePageWebContentsObserver::CreateForWebContents(
+      web_contents);
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   VoiceSearchTabHelper::CreateForWebContents(web_contents);
   WindowAndroidHelper::CreateForWebContents(web_contents);

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/offline_pages/offline_page_web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
 
 namespace offline_pages {
@@ -35,6 +36,13 @@ OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
 }
 
 OfflinePageMHTMLArchiver::~OfflinePageMHTMLArchiver() {
+  if (web_contents_) {
+    OfflinePageWebContentsObserver* web_contents_observer =
+        OfflinePageWebContentsObserver::FromWebContents(web_contents_);
+    if (web_contents_observer)
+      web_contents_observer->set_main_frame_document_loaded_callback(
+          base::Closure());
+  }
 }
 
 void OfflinePageMHTMLArchiver::CreateArchive(
@@ -43,18 +51,7 @@ void OfflinePageMHTMLArchiver::CreateArchive(
   DCHECK(!callback.is_null());
   callback_ = callback;
 
-  if (!IsWebContentsValid()) {
-    DVLOG(1) << "WebContents is invalid. Can't create archive.";
-    ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
-    return;
-  }
-
   GenerateMHTML();
-}
-
-bool OfflinePageMHTMLArchiver::IsWebContentsValid() const {
-  // TODO(fgorski): Make sure that web_contents is valid (use WCObserver).
-  return true;
 }
 
 void OfflinePageMHTMLArchiver::GenerateMHTML() {
@@ -63,6 +60,27 @@ void OfflinePageMHTMLArchiver::GenerateMHTML() {
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
     return;
   }
+
+  OfflinePageWebContentsObserver* web_contents_observer =
+      OfflinePageWebContentsObserver::FromWebContents(web_contents_);
+  if (!web_contents_observer) {
+    DVLOG(1) << "WebContentsObserver is missing. Can't create archive.";
+    ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
+    return;
+  }
+
+  // If main frame document has not been loaded yet, wait until it is.
+  if (!web_contents_observer->is_document_loaded_in_main_frame()) {
+    web_contents_observer->set_main_frame_document_loaded_callback(
+        base::Bind(&OfflinePageMHTMLArchiver::DoGenerateMHTML,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  DoGenerateMHTML();
+}
+
+void OfflinePageMHTMLArchiver::DoGenerateMHTML() {
   // TODO(fgorski): Figure out if the actual URL or title can be different at
   // the end of MHTML generation. Perhaps we should pull it out after the MHTML
   // is generated.

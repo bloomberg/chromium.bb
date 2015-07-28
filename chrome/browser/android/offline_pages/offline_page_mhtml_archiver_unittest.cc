@@ -12,17 +12,19 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "chrome/browser/android/offline_pages/offline_page_web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
 namespace {
+
 const char kTestURL[] = "http://example.com/";
 const base::string16 kTestTitle = base::ASCIIToUTF16("Test page title");
 const base::FilePath::CharType kTestFilePath[] = FILE_PATH_LITERAL(
     "/archive_dir/offline_page.mhtml");
 const int64 kTestFileSize = 123456LL;
-}  // namespace
 
 class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
  public:
@@ -41,7 +43,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   ~TestMHTMLArchiver() override;
 
  private:
-  bool IsWebContentsValid() const override;
   void GenerateMHTML() override;
 
   const GURL url_;
@@ -66,21 +67,27 @@ TestMHTMLArchiver::TestMHTMLArchiver(
 TestMHTMLArchiver::~TestMHTMLArchiver() {
 }
 
-bool TestMHTMLArchiver::IsWebContentsValid() const {
-  return test_scenario_ != TestScenario::WEB_CONTENTS_MISSING;
+void TestMHTMLArchiver::GenerateMHTML() {
+  if (test_scenario_ == TestScenario::WEB_CONTENTS_MISSING) {
+    ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
+    return;
+  }
+
+  if (test_scenario_ == TestScenario::NOT_ABLE_TO_ARCHIVE) {
+    ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
+                 base::Unretained(this),
+                 url_,
+                 title_,
+                 kTestFileSize));
 }
 
-void TestMHTMLArchiver::GenerateMHTML() {
-  int64 file_size = kTestFileSize;
-  if (test_scenario_ == TestScenario::NOT_ABLE_TO_ARCHIVE)
-    file_size = -1;
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
-                                    base::Unretained(this),
-                                    url_,
-                                    title_,
-                                    file_size));
-}
+}  // namespace
 
 class OfflinePageMHTMLArchiverTest : public testing::Test {
  public:
@@ -148,7 +155,8 @@ scoped_ptr<TestMHTMLArchiver> OfflinePageMHTMLArchiverTest::CreateArchiver(
     const base::string16& title,
     TestMHTMLArchiver::TestScenario scenario) {
   return scoped_ptr<TestMHTMLArchiver>(new TestMHTMLArchiver(
-      url, title, scenario, GetTestFilePath(), message_loop_.task_runner()));
+      url, title, scenario, GetTestFilePath(),
+      base::ThreadTaskRunnerHandle::Get()));
 }
 
 void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(

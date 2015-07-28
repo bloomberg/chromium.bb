@@ -22,7 +22,6 @@ class WebContents;
 }  // namespace content
 
 namespace offline_pages {
-class TestMHTMLArchiver;
 
 // Class implementing an offline page archiver using MHTML as an archive format.
 //
@@ -49,13 +48,24 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // OfflinePageArchiver implementation:
   void CreateArchive(const CreateArchiveCallback& callback) override;
 
- private:
-  friend class offline_pages::TestMHTMLArchiver;
-
+ protected:
   // Allows to overload the archiver for testing.
   OfflinePageMHTMLArchiver(
       const base::FilePath& file_path,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
+  // Try to generate MHTML.
+  // Might be overridden for testing purpose.
+  virtual void GenerateMHTML();
+
+  // Actual call to generate MHTML.
+  // Might be overridden for testing purpose.
+  virtual void DoGenerateMHTML();
+
+  // Callback for Generating MHTML.
+  void OnGenerateMHTMLDone(const GURL& url,
+                           const base::string16& title,
+                           int64 file_size);
 
   // Sends the result of archiving a page to the client that requested archive
   // creation.
@@ -65,15 +75,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
                     int64 file_size);
   void ReportFailure(ArchiverResult result);
 
-  // Checks that |web_contents_| is still valid.
-  virtual bool IsWebContentsValid() const;
-  // Actual call to generate MHTML.
-  virtual void GenerateMHTML();
-  // Callback for Generating MHTML.
-  void OnGenerateMHTMLDone(const GURL& url,
-                           const base::string16& title,
-                           int64 file_size);
-
+ private:
   // Path to the archive file.
   const base::FilePath file_path_;
   // Contents of the web page to be serialized. Not owned.
