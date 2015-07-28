@@ -112,17 +112,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_HIRAGANA, L"ms pgothic"},
         {USCRIPT_KATAKANA, L"ms pgothic"},
         {USCRIPT_KATAKANA_OR_HIRAGANA, L"ms pgothic"},
-        {USCRIPT_THAI, L"tahoma"},
-        {USCRIPT_HEBREW, L"david"},
-        {USCRIPT_ARABIC, L"tahoma"},
-        {USCRIPT_GURMUKHI, L"raavi"},
-        {USCRIPT_TAMIL, L"latha"},
-        {USCRIPT_KANNADA, L"tunga"},
-        {USCRIPT_GEORGIAN, L"sylfaen"},
-        {USCRIPT_ARMENIAN, L"sylfaen"},
         {USCRIPT_THAANA, L"mv boli"},
-        {USCRIPT_CANADIAN_ABORIGINAL, L"euphemia"},
-        {USCRIPT_CHEROKEE, L"plantagenet cherokee"},
         {USCRIPT_MONGOLIAN, L"mongolian balti"},
         // For USCRIPT_COMMON, we map blocks to scripts when
         // that makes sense.
@@ -160,6 +150,16 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* gujaratiFonts[] = {L"shruti", L"Nirmala UI", 0};
     static const UChar* bengaliFonts[] = {L"vrinda", L"Nirmala UI", 0};
     static const UChar* teluguFonts[] = {L"gautami", L"Nirmala UI", 0};
+    static const UChar* tamilFonts[] = {L"latha", L"Nirmala UI", 0};
+    static const UChar* kannadaFonts[] = {L"tunga", L"Nirmala UI", 0};
+    static const UChar* gurumukhiFonts[] = {L"raavi", L"Nirmala UI", 0};
+    static const UChar* thaiFonts[] = {L"tahoma", L"Leelawadee UI", L"Leelawadee", 0};
+    static const UChar* hebrewFonts[] = {L"david", L"Segoe UI", 0};
+    static const UChar* arabicFonts[] = {L"tahoma", L"Segoe UI", 0};
+    static const UChar* georgianFonts[] = {L"sylfaen", L"Segoe UI", 0};
+    static const UChar* armenianFonts[] = {L"sylfaen", L"Segoe UI", 0};
+    static const UChar* canadianAboriginalFonts[] = {L"euphemia", L"Gadugi", 0};
+    static const UChar* cherokeeFonts[] = {L"plantagenet cherokee", L"Gadugi", 0};
 
     static const ScriptToFontFamilies scriptToFontFamilies[] = {
         {USCRIPT_MALAYALAM, malayalamFonts},
@@ -178,6 +178,16 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_GUJARATI, gujaratiFonts},
         {USCRIPT_BENGALI, bengaliFonts},
         {USCRIPT_TELUGU, teluguFonts},
+        {USCRIPT_TAMIL, tamilFonts},
+        {USCRIPT_KANNADA, kannadaFonts},
+        {USCRIPT_GURMUKHI, gurumukhiFonts},
+        {USCRIPT_THAI, thaiFonts},
+        {USCRIPT_HEBREW, hebrewFonts},
+        {USCRIPT_ARABIC, arabicFonts},
+        {USCRIPT_GEORGIAN, georgianFonts},
+        {USCRIPT_ARMENIAN, armenianFonts},
+        {USCRIPT_CANADIAN_ABORIGINAL, canadianAboriginalFonts},
+        {USCRIPT_CHEROKEE, cherokeeFonts},
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
