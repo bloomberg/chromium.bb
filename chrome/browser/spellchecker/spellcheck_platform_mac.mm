@@ -196,13 +196,13 @@ bool CheckSpelling(const base::string16& word_to_check, int tag) {
 void FillSuggestionList(const base::string16& wrong_word,
                         std::vector<base::string16>* optional_suggestions) {
   NSString* ns_wrong_word = base::SysUTF16ToNSString(wrong_word);
-  // The suggested words for |wrong_word|.
-  // TODO(groby): guessesForWord: has been deprecated since OSX 10.6.
-  // http://www.crbug.com/479014.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  NSArray* guesses = [SharedSpellChecker() guessesForWord:ns_wrong_word];
-#pragma clang diagnostic pop
+  NSSpellChecker* checker = SharedSpellChecker();
+  NSString* language = [checker language];
+  NSArray* guesses =
+      [checker guessesForWordRange:NSMakeRange(0, [ns_wrong_word length])
+                          inString:ns_wrong_word
+                          language:language
+            inSpellDocumentWithTag:last_seen_tag_];
   int i = 0;
   for (NSString* guess in guesses) {
     optional_suggestions->push_back(base::SysNSStringToUTF16(guess));
