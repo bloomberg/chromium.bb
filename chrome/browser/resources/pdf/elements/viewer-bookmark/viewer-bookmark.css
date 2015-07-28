@@ -7,13 +7,27 @@
   color: rgb(80, 80, 80);
   cursor: pointer;
   min-height: 40px;
+  overflow: hidden;
   position: relative;
-  @apply(--paper-font-subhead);
+  white-space: nowrap;
   @apply(--layout-horizontal);
   @apply(--layout-center);
+  @apply(--paper-font-subhead);
 }
 
 #item:hover {
   background-color: rgb(237, 237, 237);
   color: rgb(20, 20, 20);
+}
+
+#expand {
+  height: 20px;
+  min-width: 20px;
+  padding: 6px;
+  transition: transform 150ms;
+  width: 20px;
+}
+
+#expand.open {
+  transform: rotate(90deg);
 }

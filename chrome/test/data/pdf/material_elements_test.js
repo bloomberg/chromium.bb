@@ -112,7 +112,7 @@ var tests = [
       var subBookmarks =
           rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');
       chrome.test.assertEq(2, subBookmarks.length, "two sub bookmarks");
-      chrome.test.assertEq(2, subBookmarks[1].depth,
+      chrome.test.assertEq(1, subBookmarks[1].depth,
                              "sub bookmark depth correct");
 
       var lastPageChange;
@@ -125,6 +125,14 @@ var tests = [
 
       MockInteractions.tap(subBookmarks[1].$.item);
       chrome.test.assertEq(3, lastPageChange);
+
+      var subBookmarkDiv =
+          rootBookmark.shadowRoot.querySelector('.sub-bookmark');
+
+      chrome.test.assertTrue(subBookmarkDiv.hidden);
+      MockInteractions.tap(rootBookmark.$.expand);
+      chrome.test.assertFalse(subBookmarkDiv.hidden);
+      chrome.test.assertEq('hidden', subBookmarks[1].$.expand.style.visibility);
 
       chrome.test.succeed();
     });
