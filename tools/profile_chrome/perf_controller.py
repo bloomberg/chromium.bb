@@ -12,7 +12,6 @@ import tempfile
 from profile_chrome import controllers
 from profile_chrome import ui
 
-from pylib import android_commands
 from pylib import constants
 from pylib.perf import perf_control
 from pylib.utils import device_temp_file
