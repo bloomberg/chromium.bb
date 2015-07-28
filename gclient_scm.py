@@ -1173,7 +1173,7 @@ class SVNWrapper(SCMWrapper):
     'Oh hai! You are using subversion. Chrome infra is eager to get rid of',
     'svn support so please switch to git.',
     'Tracking bug: http://crbug.com/475320',
-    'Request a new git repository at: ',
+    'If you are a project owner, you may request git migration assistance at: ',
     '  https://code.google.com/p/chromium/issues/entry?template=Infra-Git')
 
   def __init__(self, *args, **kwargs):
