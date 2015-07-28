@@ -1161,22 +1161,6 @@ crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failur
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 
-crbug.com/470884 [ Win ] editing/selection/vertical-lr-ltr-extend-line-backward-br.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-lr-ltr-extend-line-forward-br.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-rl-ltr-extend-line-backward-br.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-rl-ltr-extend-line-backward-p.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-rl-ltr-extend-line-backward-wrap.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-rl-ltr-extend-line-forward-br.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-rl-ltr-extend-line-forward-p.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] editing/selection/vertical-rl-ltr-extend-line-forward-wrap.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/dynamic/text-combine.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/text/emphasis-vertical.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ NeedsRebaseline ]
-crbug.com/470884 [ Win ] fast/writing-mode/fallback-orientation.html [ NeedsRebaseline ]
-
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
