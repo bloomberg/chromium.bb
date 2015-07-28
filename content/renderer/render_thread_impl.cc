@@ -1879,9 +1879,10 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
       blink_platform_impl_->scrollbarBehavior())
       ->set_jump_on_track_click(params.jump_on_track_click);
 
-  blink::WebScrollbarTheme::updateScrollbars(
+  blink::WebScrollbarTheme::updateScrollbarsWithNSDefaults(
       params.initial_button_delay, params.autoscroll_button_delay,
-      params.preferred_scroller_style, params.redraw);
+      params.preferred_scroller_style, params.redraw,
+      params.scroll_animation_enabled, params.button_placement);
 }
 #endif
 

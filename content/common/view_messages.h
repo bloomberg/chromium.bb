@@ -117,6 +117,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
 #if defined(OS_MACOSX)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    blink::ScrollbarButtonsPlacement,
+    blink::ScrollbarButtonsPlacement::ScrollbarButtonsPlacementLast)
+
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
 
 IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
@@ -552,6 +556,8 @@ IPC_STRUCT_BEGIN(ViewMsg_UpdateScrollbarTheme_Params)
   IPC_STRUCT_MEMBER(bool, jump_on_track_click)
   IPC_STRUCT_MEMBER(blink::ScrollerStyle, preferred_scroller_style)
   IPC_STRUCT_MEMBER(bool, redraw)
+  IPC_STRUCT_MEMBER(bool, scroll_animation_enabled)
+  IPC_STRUCT_MEMBER(blink::ScrollbarButtonsPlacement, button_placement)
 IPC_STRUCT_END()
 #endif
 
