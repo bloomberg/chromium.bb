@@ -12,6 +12,8 @@ import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -31,6 +33,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
+// TODO(dskiba): remove the following switch once we have Svelte bots running L
+@CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
 public class DocumentModeLowEndTest extends DocumentModeTestBase {
 
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
