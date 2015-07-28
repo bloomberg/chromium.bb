@@ -140,7 +140,7 @@ class IncidentReportingService : public content::NotificationObserver {
   bool IsProcessingReport() const;
 
  private:
-  class ProfileContext;
+  struct ProfileContext;
   class UploadContext;
   class Receiver;
 

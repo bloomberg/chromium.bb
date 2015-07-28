@@ -2533,8 +2533,6 @@
       'browser/safe_browsing/incident_reporting/resource_request_detector.h',
       'browser/safe_browsing/incident_reporting/resource_request_incident.cc',
       'browser/safe_browsing/incident_reporting/resource_request_incident.h',
-      'browser/safe_browsing/incident_reporting/state_store.cc',
-      'browser/safe_browsing/incident_reporting/state_store.h',
       'browser/safe_browsing/incident_reporting/tracked_preference_incident.cc',
       'browser/safe_browsing/incident_reporting/tracked_preference_incident.h',
       'browser/safe_browsing/incident_reporting/variations_seed_signature_analyzer.cc',
