@@ -100,7 +100,7 @@ if (is_linux) {
 
 if (is_ios) {
   source_set("sqlite_regexp") {
-    defines += [
+    defines = [
       # Necessary to statically compile the extension.
       "SQLITE_CORE",
     ]
