@@ -28,6 +28,76 @@
 
 namespace blink {
 
+namespace {
+
+const char* fontWeightToString(FontWeight weight)
+{
+    switch (weight) {
+    case FontWeight100:
+        return "100";
+    case FontWeight200:
+        return "200";
+    case FontWeight300:
+        return "300";
+    case FontWeight400:
+        return "400";
+    case FontWeight500:
+        return "500";
+    case FontWeight600:
+        return "600";
+    case FontWeight700:
+        return "700";
+    case FontWeight800:
+        return "800";
+    case FontWeight900:
+        return "900";
+    }
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
+const char* fontVariantToString(FontVariant variant)
+{
+    switch (variant) {
+    case FontVariantNormal:
+        return "normal";
+    case FontVariantSmallCaps:
+        return "small-caps";
+    }
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
+const char* fontStyleToString(FontStyle style)
+{
+    switch (style) {
+    case FontStyleNormal:
+        return "normal";
+    case FontStyleItalic:
+        return "italic";
+    }
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
+const char* textTransformToString(ETextTransform transform)
+{
+    switch (transform) {
+    case CAPITALIZE:
+        return "capitalize";
+    case UPPERCASE:
+        return "uppercase";
+    case LOWERCASE:
+        return "lowercase";
+    case TTNONE:
+        return "none";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
+} // anonymous namespace
+
 class PopupMenuCSSFontSelector : public CSSFontSelector, private CSSFontSelectorClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
 public:
@@ -178,78 +248,6 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     data->append(Platform::current()->loadResource("pickerCommon.js"));
     data->append(Platform::current()->loadResource("listPicker.js"));
     PagePopupClient::addString("</script></body>\n", data);
-}
-
-const char* fontWeightToString(FontWeight weight)
-{
-    switch (weight) {
-    case FontWeight100:
-        return "100";
-    case FontWeight200:
-        return "200";
-    case FontWeight300:
-        return "300";
-    case FontWeight400:
-        return "400";
-    case FontWeight500:
-        return "500";
-    case FontWeight600:
-        return "600";
-    case FontWeight700:
-        return "700";
-    case FontWeight800:
-        return "800";
-    case FontWeight900:
-        return "900";
-    default:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    return 0;
-}
-
-const char* fontVariantToString(FontVariant variant)
-{
-    switch (variant) {
-    case FontVariantNormal:
-        return "normal";
-    case FontVariantSmallCaps:
-        return "small-caps";
-    default:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    return 0;
-}
-
-const char* fontStyleToString(FontStyle style)
-{
-    switch (style) {
-    case FontStyleNormal:
-        return "normal";
-    case FontStyleItalic:
-        return "italic";
-    default:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    return 0;
-}
-
-static const char* textTransformToString(ETextTransform transform)
-{
-    switch (transform) {
-    case CAPITALIZE:
-        return "capitalize";
-    case UPPERCASE:
-        return "uppercase";
-    case LOWERCASE:
-        return "lowercase";
-    case TTNONE:
-        return "none";
-    }
-    ASSERT_NOT_REACHED();
-    return "";
 }
 
 void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element)
