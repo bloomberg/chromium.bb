@@ -263,7 +263,7 @@ class LayoutTestBluetoothAdapterProvider {
   //   - CreateGattConnection:
   //       - Run success callback with BaseGATTConnection
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetConnectableDeviceNew(
+  GetConnectableDevice(
       device::MockBluetoothAdapter* adapter,
       const std::string& device_name = "Connectable Device",
       device::BluetoothDevice::UUIDList = device::BluetoothDevice::UUIDList());
@@ -373,52 +373,6 @@ class LayoutTestBluetoothAdapterProvider {
   // returns "00:00:DE:AD:BE:EF".
   static std::string makeMACAddress(uint64_t addr);
 
-  // The functions after this haven't been updated to the new design yet.
-
-  // Returns "SingleEmptyDeviceAdapter" fake BluetoothAdapter with the following
-  // characteristics:
-  //  - |StartDiscoverySessionWithFilter| runs the success callback with
-  //  |DiscoverySession|
-  //    as argument.
-  //  - |GetDevices| returns a list with an |EmptyDevice|.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetSingleEmptyDeviceAdapter();
-
-  // Returns "ConnectableDeviceAdapter" fake BluetoothAdapter with the
-  // following characteristics:
-  //  - |StartDiscoverySessionWithFilter| runs the success callback with
-  //  |DiscoverySession|
-  //    as argument.
-  //  - |GetDevices| returns a list with a |ConnectableDevice|.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetConnectableDeviceAdapter();
-
-  // Returns an |EmptyDevice| with the following characeteristics:
-  //  - |GetAddress| returns "Empty Mock Device instanceID".
-  //  - |GetName| returns "Empty Mock Device name".
-  //  - |GetBluetoothClass| returns 0x1F00.  "Unspecified Device Class": see
-  //    bluetooth.org/en-us/specification/assigned-numbers/baseband
-  //  - |GetVendorIDSource| returns |BluetoothDevice::VENDOR_ID_BLUETOOTH|.
-  //  - |GetVendorID| returns 0xFFFF.
-  //  - |GetProductID| returns 1.
-  //  - |GetDeviceID| returns 2.
-  //  - |IsPaired| returns true.
-  //  - |GetUUIDs| returns a list with two UUIDs: "1800" and "1801".
-  //  - |GetGattServices| returns a list with one service "Generic Access".
-  //    "Generic Access" has a "Device Name" characteristic, with a value of
-  //    "Empty Mock Device Name" that can be read but not written, and a
-  //    "Reconnection Address" characteristic which can't be read, but can be
-  //    written.
-  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetEmptyDevice(device::MockBluetoothAdapter* adapter,
-                 const std::string& device_name = "Empty Mock Device");
-
-  // Returns a fake |ConnectableDevice| with the same characteristics as
-  // |EmptyDevice| except:
-  //  - |CreateGattConnection| runs success callback with a
-  //    fake BluetoothGattConnection as argument.
-  static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetConnectableDevice(device::MockBluetoothAdapter* adapter);
 };
 
 }  // namespace content
