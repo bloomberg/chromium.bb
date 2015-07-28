@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
@@ -70,6 +71,7 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
 #if defined(OS_CHROMEOS)
   DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
 #endif

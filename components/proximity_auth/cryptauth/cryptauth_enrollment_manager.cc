@@ -41,17 +41,19 @@ CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
     const std::string& user_public_key,
     const std::string& user_private_key,
     const cryptauth::GcmDeviceInfo& device_info,
+    CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
     : clock_(clock.Pass()),
       enroller_factory_(enroller_factory.Pass()),
       user_public_key_(user_public_key),
       user_private_key_(user_private_key),
       device_info_(device_info),
+      gcm_manager_(gcm_manager),
       pref_service_(pref_service),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 CryptAuthEnrollmentManager::~CryptAuthEnrollmentManager() {
+  gcm_manager_->RemoveObserver(this);
 }
 
 // static
@@ -65,6 +67,8 @@ void CryptAuthEnrollmentManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void CryptAuthEnrollmentManager::Start() {
+  gcm_manager_->AddObserver(this);
+
   bool is_recovering_from_failure =
       pref_service_->GetBoolean(
           prefs::kCryptAuthEnrollmentIsRecoveringFromFailure) ||
@@ -150,13 +154,37 @@ scoped_ptr<SyncScheduler> CryptAuthEnrollmentManager::CreateSyncScheduler() {
       kEnrollmentMaxJitterRatio, "CryptAuth Enrollment"));
 }
 
+void CryptAuthEnrollmentManager::OnGCMRegistrationResult(bool success) {
+  if (!sync_request_)
+    return;
+
+  PA_LOG(INFO) << "GCM registration for CryptAuth Enrollment completed: "
+               << success;
+  if (success)
+    DoCryptAuthEnrollment();
+  else
+    OnEnrollmentFinished(false);
+}
+
+void CryptAuthEnrollmentManager::OnReenrollMessage() {
+  ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+}
+
 void CryptAuthEnrollmentManager::OnSyncRequested(
     scoped_ptr<SyncScheduler::SyncRequest> sync_request) {
   FOR_EACH_OBSERVER(Observer, observers_, OnEnrollmentStarted());
 
   sync_request_ = sync_request.Pass();
-  cryptauth_enroller_ = enroller_factory_->CreateInstance();
 
+  if (gcm_manager_->GetRegistrationId().empty()) {
+    gcm_manager_->RegisterWithGCM();
+  } else {
+    DoCryptAuthEnrollment();
+  }
+}
+
+void CryptAuthEnrollmentManager::DoCryptAuthEnrollment() {
+  DCHECK(sync_request_);
   cryptauth::InvocationReason invocation_reason =
       cryptauth::INVOCATION_REASON_UNKNOWN;
 
@@ -180,6 +208,7 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
   }
 
   PA_LOG(INFO) << "Making enrollment with reason: " << invocation_reason;
+  cryptauth_enroller_ = enroller_factory_->CreateInstance();
   cryptauth_enroller_->Enroll(
       user_public_key_, user_private_key_, device_info_, invocation_reason,
       base::Bind(&CryptAuthEnrollmentManager::OnEnrollmentFinished,

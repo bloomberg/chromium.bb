@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/webui/cryptauth_enroller_factory_impl.h"
@@ -151,6 +152,8 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
                                     base::Unretained(this)));
 
   LogBuffer::GetInstance()->AddObserver(this);
+
+  InitGCMManager();
   InitEnrollmentManager();
   InitDeviceManager();
 }
@@ -240,6 +243,11 @@ void ProximityAuthWebUIHandler::ForceDeviceSync(const base::ListValue* args) {
     device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 }
 
+void ProximityAuthWebUIHandler::InitGCMManager() {
+  gcm_manager_.reset(new CryptAuthGCMManagerImpl(delegate_->GetGCMDriver(),
+                                                 delegate_->GetPrefService()));
+}
+
 void ProximityAuthWebUIHandler::InitEnrollmentManager() {
 #if defined(OS_CHROMEOS)
   // TODO(tengs): We initialize a CryptAuthEnrollmentManager here for
@@ -294,7 +302,7 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
   enrollment_manager_.reset(new CryptAuthEnrollmentManager(
       make_scoped_ptr(new base::DefaultClock()),
       make_scoped_ptr(new CryptAuthEnrollerFactoryImpl(delegate_)),
-      user_public_key, user_private_key, device_info,
+      user_public_key, user_private_key, device_info, gcm_manager_.get(),
       delegate_->GetPrefService()));
   enrollment_manager_->AddObserver(this);
   enrollment_manager_->Start();
@@ -306,7 +314,8 @@ void ProximityAuthWebUIHandler::InitDeviceManager() {
   // development and testing purposes until it is ready to be moved into Chrome.
   device_manager_.reset(new CryptAuthDeviceManager(
       make_scoped_ptr(new base::DefaultClock()),
-      delegate_->CreateCryptAuthClientFactory(), delegate_->GetPrefService()));
+      delegate_->CreateCryptAuthClientFactory(), gcm_manager_.get(),
+      delegate_->GetPrefService()));
   device_manager_->AddObserver(this);
   device_manager_->Start();
 }

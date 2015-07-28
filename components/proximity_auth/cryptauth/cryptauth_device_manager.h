@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler.h"
 
@@ -27,7 +28,8 @@ class CryptAuthClientFactory;
 // The manager periodically syncs the user's devices from CryptAuth to keep the
 // list of unlock keys fresh. If a sync attempts fails, the manager will
 // schedule the next sync more aggressively to recover.
-class CryptAuthDeviceManager : public SyncScheduler::Delegate {
+class CryptAuthDeviceManager : public SyncScheduler::Delegate,
+                               public CryptAuthGCMManager::Observer {
  public:
   // Respresents the success result of a sync attempt.
   enum class SyncResult { SUCCESS, FAILURE };
@@ -56,11 +58,14 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate {
   // Creates the manager:
   // |clock|: Used to determine the time between sync attempts.
   // |client_factory|: Creates CryptAuthClient instances to perform each sync.
+  // |gcm_manager|: Notifies when GCM push messages trigger device syncs.
+  //                Not owned and must outlive this instance.
   // |pref_service|: Stores syncing metadata and unlock key information to
   //                 persist across browser restarts. Must already be registered
   //                 with RegisterPrefs().
   CryptAuthDeviceManager(scoped_ptr<base::Clock> clock,
                          scoped_ptr<CryptAuthClientFactory> client_factory,
+                         CryptAuthGCMManager* gcm_manager,
                          PrefService* pref_service);
 
   ~CryptAuthDeviceManager() override;
@@ -108,6 +113,9 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate {
   virtual scoped_ptr<SyncScheduler> CreateSyncScheduler();
 
  private:
+  // CryptAuthGCMManager::Observer:
+  void OnResyncMessage() override;
+
   // Updates |unlock_keys_| by fetching the list stored in |pref_service_|.
   void UpdateUnlockKeysFromPrefs();
 
@@ -125,7 +133,11 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate {
   // Creates CryptAuthClient instances for each sync attempt.
   scoped_ptr<CryptAuthClientFactory> client_factory_;
 
-  // Contains perferences that outlive the lifetime of this object and across
+  // Notifies when GCM push messages trigger device sync. Not owned and must
+  // outlive this instance.
+  CryptAuthGCMManager* gcm_manager_;
+
+  // Contains preferences that outlive the lifetime of this object and across
   // process restarts. |pref_service_| must outlive the lifetime of this
   // instance.
   PrefService* const pref_service_;

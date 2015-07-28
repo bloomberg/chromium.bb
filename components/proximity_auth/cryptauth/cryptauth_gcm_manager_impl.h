@@ -31,7 +31,7 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
   // |pref_service|: Contains preferences across browser restarts, and should
   //     have been registered through RegisterPrefs(). The service is not owned
   //     and must outlive this instance.
-  CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_deriver,
+  CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
                           PrefService* pref_service);
 
   ~CryptAuthGCMManagerImpl() override;

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler.h"
 
@@ -29,7 +30,8 @@ class CryptAuthEnrollerFactory;
 // re-enrolling to keep the state on the server fresh. If an enrollment fails,
 // the manager will schedule the next enrollment more aggressively to recover
 // from the failure.
-class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
+class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
+                                   public CryptAuthGCMManager::Observer {
  public:
   class Observer {
    public:
@@ -51,6 +53,9 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
   // |user_private_key|: The corresponding private key to |user_public_key|.
   // |device_info|: Contains information about the local device that will be
   //                uploaded to CryptAuth with each enrollment request.
+  // |gcm_manager|: Used to perform GCM registrations and also notifies when GCM
+  //                push messages trigger re-enrollments.
+  //                Not owned and must outlive this instance.
   // |pref_service|: Contains preferences across browser restarts, and should
   //                 have been registered through RegisterPrefs().
   CryptAuthEnrollmentManager(
@@ -59,6 +64,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
       const std::string& user_public_key,
       const std::string& user_private_key,
       const cryptauth::GcmDeviceInfo& device_info,
+      CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service);
 
   ~CryptAuthEnrollmentManager() override;
@@ -105,9 +111,16 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
   virtual scoped_ptr<SyncScheduler> CreateSyncScheduler();
 
  private:
+  // CryptAuthGCMManager::Observer:
+  void OnGCMRegistrationResult(bool success) override;
+  void OnReenrollMessage() override;
+
   // SyncScheduler::Delegate:
   void OnSyncRequested(
       scoped_ptr<SyncScheduler::SyncRequest> sync_request) override;
+
+  // Starts a CryptAuth enrollment attempt.
+  void DoCryptAuthEnrollment();
 
   // Callback when |cryptauth_enroller_| completes.
   void OnEnrollmentFinished(bool success);
@@ -124,6 +137,10 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
 
   // The local device information to upload to CryptAuth.
   const cryptauth::GcmDeviceInfo device_info_;
+
+  //  Used to perform GCM registrations and also notifies when GCM push messages
+  //  trigger re-enrollments. Not owned and must outlive this instance.
+  CryptAuthGCMManager* gcm_manager_;
 
   // Contains perferences that outlive the lifetime of this object and across
   // process restarts.

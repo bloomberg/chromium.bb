@@ -10,6 +10,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
+#include "components/proximity_auth/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/proximity_auth/cryptauth/mock_sync_scheduler.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,6 +24,9 @@ using ::testing::SaveArg;
 namespace proximity_auth {
 
 namespace {
+
+// The GCM registration id from a successful registration.
+const char kGCMRegistrationId[] = "new gcm registration id";
 
 // The user's persistent key pair identifying the local device.
 const char kUserPublicKey[] = "user public key";
@@ -93,12 +97,14 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
       scoped_ptr<base::Clock> clock,
       scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
       const cryptauth::GcmDeviceInfo& device_info,
+      CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service)
       : CryptAuthEnrollmentManager(clock.Pass(),
                                    enroller_factory.Pass(),
                                    kUserPublicKey,
                                    kUserPrivateKey,
                                    device_info,
+                                   gcm_manager,
                                    pref_service),
         scoped_sync_scheduler_(new NiceMock<MockSyncScheduler>()),
         weak_sync_scheduler_factory_(scoped_sync_scheduler_.get()) {}
@@ -137,9 +143,11 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
   ProximityAuthCryptAuthEnrollmentManagerTest()
       : clock_(new base::SimpleTestClock()),
         enroller_factory_(new MockCryptAuthEnrollerFactory()),
+        gcm_manager_(kGCMRegistrationId),
         enrollment_manager_(make_scoped_ptr(clock_),
                             make_scoped_ptr(enroller_factory_),
                             device_info_,
+                            &gcm_manager_,
                             &pref_service_) {}
 
   // testing::Test:
@@ -218,6 +226,8 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
 
   TestingPrefServiceSimple pref_service_;
 
+  FakeCryptAuthGCMManager gcm_manager_;
+
   TestCryptAuthEnrollmentManager enrollment_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthCryptAuthEnrollmentManagerTest);
@@ -268,7 +278,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
 
   TestCryptAuthEnrollmentManager enrollment_manager(
       clock.Pass(), make_scoped_ptr(new MockCryptAuthEnrollerFactory()),
-      device_info_, &pref_service);
+      device_info_, &gcm_manager_, &pref_service);
 
   EXPECT_CALL(
       *enrollment_manager.GetSyncScheduler(),
@@ -368,6 +378,67 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
   EXPECT_EQ(clock_->Now(), enrollment_manager_.GetLastEnrollmentTime());
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kCryptAuthEnrollmentIsRecoveringFromFailure));
+}
+
+TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
+       EnrollWithoutGCMRegistrationId) {
+  // Initialize |enrollment_manager_|.
+  ON_CALL(*sync_scheduler(), GetStrategy())
+      .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
+  gcm_manager_.set_registration_id(std::string());
+  enrollment_manager_.Start();
+
+  // Trigger a sync request.
+  EXPECT_CALL(*this, OnEnrollmentStartedProxy());
+  auto sync_request = make_scoped_ptr(
+      new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
+  static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
+      ->OnSyncRequested(sync_request.Pass());
+
+  // Complete GCM registration successfully.
+  CryptAuthEnroller::EnrollmentFinishedCallback enrollment_callback;
+  EXPECT_CALL(*next_cryptauth_enroller(),
+              Enroll(kUserPublicKey, kUserPrivateKey, _,
+                     cryptauth::INVOCATION_REASON_PERIODIC, _))
+      .WillOnce(SaveArg<4>(&enrollment_callback));
+  ASSERT_TRUE(gcm_manager_.registration_in_progress());
+  gcm_manager_.CompleteRegistration(kGCMRegistrationId);
+
+  // Complete CryptAuth enrollment.
+  ASSERT_FALSE(enrollment_callback.is_null());
+  EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
+  enrollment_callback.Run(true);
+}
+
+TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GCMRegistrationFails) {
+  // Initialize |enrollment_manager_|.
+  ON_CALL(*sync_scheduler(), GetStrategy())
+      .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
+  gcm_manager_.set_registration_id(std::string());
+  enrollment_manager_.Start();
+
+  // Trigger a sync request.
+  EXPECT_CALL(*this, OnEnrollmentStartedProxy());
+  auto sync_request = make_scoped_ptr(
+      new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
+  static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
+      ->OnSyncRequested(sync_request.Pass());
+
+  // Complete GCM registration with failure.
+  EXPECT_CALL(*this, OnEnrollmentFinishedProxy(false));
+  gcm_manager_.CompleteRegistration(std::string());
+}
+
+TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, ReenrollOnGCMPushMessage) {
+  enrollment_manager_.Start();
+
+  // Simulate receiving a GCM push message, forcing the device to re-enroll.
+  gcm_manager_.PushReenrollMessage();
+  auto completion_callback =
+      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+
+  EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
+  completion_callback.Run(true);
 }
 
 }  // namespace proximity_auth

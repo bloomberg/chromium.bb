@@ -21,6 +21,8 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
@@ -683,6 +685,12 @@ cryptauth::DeviceClassifier EasyUnlockService::GetDeviceClassifier() {
 
   device_classifier.set_device_software_package(version_info.Name());
   return device_classifier;
+}
+
+gcm::GCMDriver* EasyUnlockService::GetGCMDriver() {
+  gcm::GCMProfileService* gcm_profile_service =
+      gcm::GCMProfileServiceFactory::GetForProfile(profile_);
+  return gcm_profile_service->driver();
 }
 
 void EasyUnlockService::Shutdown() {

@@ -88,14 +88,16 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
 CryptAuthDeviceManager::CryptAuthDeviceManager(
     scoped_ptr<base::Clock> clock,
     scoped_ptr<CryptAuthClientFactory> client_factory,
+    CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
     : clock_(clock.Pass()),
       client_factory_(client_factory.Pass()),
+      gcm_manager_(gcm_manager),
       pref_service_(pref_service),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 CryptAuthDeviceManager::~CryptAuthDeviceManager() {
+  gcm_manager_->RemoveObserver(this);
 }
 
 // static
@@ -111,6 +113,8 @@ void CryptAuthDeviceManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void CryptAuthDeviceManager::Start() {
   UpdateUnlockKeysFromPrefs();
+
+  gcm_manager_->AddObserver(this);
 
   base::Time last_successful_sync = GetLastSyncTime();
   base::TimeDelta elapsed_time_since_last_sync =
@@ -214,6 +218,10 @@ scoped_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
       this, base::TimeDelta::FromHours(kRefreshPeriodHours),
       base::TimeDelta::FromMinutes(kDeviceSyncBaseRecoveryPeriodMinutes),
       kDeviceSyncMaxJitterRatio, "CryptAuth DeviceSync"));
+}
+
+void CryptAuthDeviceManager::OnResyncMessage() {
+  ForceSyncNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 }
 
 void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {

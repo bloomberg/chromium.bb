@@ -55,6 +55,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "fake_cryptauth_gcm_manager.cc",
+    "fake_cryptauth_gcm_manager.h",
     "fake_secure_message_delegate.cc",
     "fake_secure_message_delegate.h",
     "mock_cryptauth_client.cc",

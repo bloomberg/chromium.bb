@@ -194,6 +194,8 @@
         '../testing/gmock.gyp:gmock',
       ],
       'sources': [
+        "proximity_auth/cryptauth/fake_cryptauth_gcm_manager.cc",
+        "proximity_auth/cryptauth/fake_cryptauth_gcm_manager.h",
         "proximity_auth/cryptauth/fake_secure_message_delegate.cc",
         "proximity_auth/cryptauth/fake_secure_message_delegate.h",
         "proximity_auth/cryptauth/mock_cryptauth_client.cc",

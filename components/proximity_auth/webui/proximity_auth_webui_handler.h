@@ -10,6 +10,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/logging/log_buffer.h"
 #include "components/proximity_auth/webui/proximity_auth_ui_delegate.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -57,6 +58,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void ForceDeviceSync(const base::ListValue* args);
 
   // Initializes CryptAuth managers, used for development purposes.
+  void InitGCMManager();
   void InitEnrollmentManager();
   void InitDeviceManager();
 
@@ -84,6 +86,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // TODO(tengs): These members are temporarily used for development.
   scoped_ptr<PrefService> pref_service;
+  scoped_ptr<CryptAuthGCMManager> gcm_manager_;
   scoped_ptr<CryptAuthEnrollmentManager> enrollment_manager_;
   scoped_ptr<CryptAuthDeviceManager> device_manager_;
 

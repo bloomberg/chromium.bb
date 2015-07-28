@@ -10,6 +10,10 @@
 
 class PrefService;
 
+namespace gcm {
+class GCMDriver;
+}
+
 namespace proximity_auth {
 
 class CryptAuthClientFactory;
@@ -33,6 +37,9 @@ class ProximityAuthUIDelegate {
   // Constructs the DeviceClassifier message that is sent to CryptAuth for all
   // API requests.
   virtual cryptauth::DeviceClassifier GetDeviceClassifier() = 0;
+
+  // Returns the GCMDriver instance used by Chrome.
+  virtual gcm::GCMDriver* GetGCMDriver() = 0;
 };
 
 }  // namespace proximity_auth
