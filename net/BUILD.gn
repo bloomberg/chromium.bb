@@ -78,8 +78,12 @@ component("net") {
     "NET_IMPLEMENTATION",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
   public_configs = [ ":net_config" ]
   include_dirs = []
 
@@ -688,8 +692,12 @@ source_set("test_support") {
     "url_request/url_request_test_util.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   public_deps = [
     "//base",
@@ -1308,8 +1316,12 @@ if (!is_mac) {
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    configs += [
+      "//build/config:precompiled_headers",
+
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      "//build/config/compiler:no_size_t_to_int_warning",
+    ]
     defines = []
 
     deps = [

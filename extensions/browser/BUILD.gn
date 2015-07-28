@@ -31,8 +31,12 @@ source_set("browser") {
     "//third_party/re2",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   if (enable_extensions) {
     # Includes all API implementations and the ExtensionsApiClient

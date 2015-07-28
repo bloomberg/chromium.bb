@@ -60,6 +60,7 @@ if (is_desktop_linux) {
 source_set("browser") {
   configs += [
     "//build/config/compiler:wexit_time_destructors",
+    "//build/config:precompiled_headers",
     "//third_party/WebKit/public:debug_devtools",
   ]
   defines = []
@@ -1034,6 +1035,8 @@ source_set("test_support") {
     "ui/webui/signin/login_ui_test_utils.cc",
     "ui/webui/signin/login_ui_test_utils.h",
   ]
+
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     ":browser",

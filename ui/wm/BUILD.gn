@@ -70,6 +70,7 @@ component("wm") {
     "wm_export.h",
   ]
 
+  configs += [ "//build/config:precompiled_headers" ]
   defines = [ "WM_IMPLEMENTATION" ]
 
   deps = [

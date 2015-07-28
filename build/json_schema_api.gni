@@ -47,6 +47,9 @@
 #   A list of schema files which should not be compiled, but which should still
 #   be processed for API bundle generation.
 #
+# configs [optional]
+#   Extra configs to apply to the compile step.
+#
 # deps [optional]
 #   If any deps are specified they will be inherited by the static library
 #   target.
@@ -198,6 +201,9 @@ template("json_schema_api") {
   lib_deps = []
   lib_public_deps = []
   lib_extra_configs = []
+  if (defined(invoker.configs)) {
+    lib_extra_configs += invoker.configs
+  }
 
   if (schemas) {
     lib_sources += get_target_outputs(":$schema_generator_name")

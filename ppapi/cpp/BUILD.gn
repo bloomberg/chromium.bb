@@ -23,4 +23,5 @@ source_set("cpp") {
 # themselves.
 source_set("objects") {
   sources = rebase_path(ppapi_sources.cpp_source_files, ".", "..")
+  configs += [ "//build/config:precompiled_headers" ]
 }

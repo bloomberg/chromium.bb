@@ -11,6 +11,7 @@ assert(enable_extensions)
 json_schema_api("api") {
   schemas = true
   bundle = true
+  configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "Chrome"
 
   deps = schema_dependencies
@@ -20,6 +21,7 @@ json_schema_api("api") {
 json_schema_api("api_registration") {
   impl_dir = "//chrome/browser/extensions/api"
   bundle_registration = true
+  configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "Chrome"
 
   deps = [

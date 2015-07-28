@@ -43,7 +43,10 @@ source_set("browser_sources") {
     sources -= [ "context_factory.h" ]
   }
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//content:content_implementation",
+  ]
 
   public_deps = [
     "//content/public/common:mojo_bindings",

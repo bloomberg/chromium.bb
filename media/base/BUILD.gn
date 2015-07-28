@@ -210,6 +210,7 @@ source_set("base") {
   configs += [
     # This target uses the ALLOCATOR_SHIM define.
     "//base/allocator:allocator_shim_define",
+    "//build/config:precompiled_headers",
     "//media:media_config",
     "//media:media_implementation",
   ]

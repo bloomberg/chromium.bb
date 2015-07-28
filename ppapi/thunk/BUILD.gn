@@ -187,6 +187,7 @@ source_set("thunk") {
     ]
   }
 
+  configs += [ "//build/config:precompiled_headers" ]
   defines = [
     # This target goes in the same library as shared_impl (in GYP they are the
     # same).

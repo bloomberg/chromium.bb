@@ -14,6 +14,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 component("ash") {
   sources = gypi_values.ash_sources
 
+  configs += [ "//build/config:precompiled_headers" ]
   defines = [ "ASH_IMPLEMENTATION" ]
 
   public_deps = [
@@ -173,9 +174,10 @@ component("ash_with_content") {
   ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = gypi_values.ash_test_support_sources
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     ":ash",
@@ -251,6 +253,7 @@ static_library("ash_shell_lib") {
 
 test("ash_unittests") {
   sources = gypi_values.ash_unittests_sources
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":ash",

@@ -418,7 +418,8 @@ config("default_libs") {
 #
 # Recommend precompiled headers for targets with more than 50 .cc files.
 config("precompiled_headers") {
-  # TODO(brettw) enable this when GN support in the binary has been rolled.
+  # TODO(brettw) enable this when everything is working. A previous attempt
+  # to enable this caused some bot redness which needs ot be investigated.
   #if (is_win) {
   if (false) {
     # This is a string rather than a file GN knows about. It has to match

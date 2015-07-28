@@ -173,8 +173,12 @@ static_library("content_shell_lib") {
     "utility/shell_content_utility_client.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
 

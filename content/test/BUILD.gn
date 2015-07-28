@@ -22,6 +22,7 @@ content_tests_gypi_values =
 # GYP version //content/content_tests.gypi:test_support_content
 source_set("test_support") {
   testonly = true
+  configs += [ "//build/config:precompiled_headers" ]
   public_deps = [
     "//content/public/app:both",
     "//content/public/browser",
@@ -309,7 +310,10 @@ if (!is_mac) {
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    configs += [
+      "//build/config:precompiled_headers",
+      "//build/config/compiler:no_size_t_to_int_warning",
+    ]
 
     deps = [
       ":browsertest_support",
@@ -494,6 +498,8 @@ test("content_unittests") {
       data += [ "$root_out_dir/content_shell.pak" ]
     }
   }
+
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":test_support",
