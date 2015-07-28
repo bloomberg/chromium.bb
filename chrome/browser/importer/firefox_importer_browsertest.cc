@@ -350,3 +350,10 @@ IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
   scoped_refptr<FirefoxObserver> observer(new FirefoxObserver(true));
   FirefoxImporterBrowserTest("firefox_profile", observer.get(), observer.get());
 }
+
+IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
+                       MAYBE_IMPORTER(Firefox320Importer)) {
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver(true));
+  FirefoxImporterBrowserTest("firefox320_profile", observer.get(),
+                             observer.get());
+}

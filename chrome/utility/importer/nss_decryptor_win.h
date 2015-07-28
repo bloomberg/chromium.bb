@@ -104,6 +104,8 @@ typedef void (*SECITEMFreeItemFunc)(SECItem *item, PRBool free_it);
 typedef void (*PLArenaFinishFunc)(void);
 typedef PRStatus (*PRCleanupFunc)(void);
 
+struct FirefoxRawPasswordInfo;
+
 namespace autofill {
 struct PasswordForm;
 }
@@ -129,7 +131,7 @@ class NSSDecryptor {
   // Parses the Firefox password file content, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
-  void ParseSignons(const std::string& content,
+  void ParseSignons(const base::FilePath& signon_file,
                     std::vector<autofill::PasswordForm>* forms);
 
   // Reads and parses the Firefox password sqlite db, decrypts the
@@ -138,6 +140,12 @@ class NSSDecryptor {
   bool ReadAndParseSignons(const base::FilePath& sqlite_file,
                            std::vector<autofill::PasswordForm>* forms);
 
+  // Reads and parses the Firefox password file logins.json, decrypts the
+  // username/password and reads other related information.
+  // The result will be stored in |forms|.
+  bool ReadAndParseLogins(const base::FilePath& json_file,
+                          std::vector<autofill::PasswordForm>* forms);
+
  private:
   // Call NSS initialization funcs.
   bool InitNSS(const base::FilePath& db_path,
@@ -145,7 +153,14 @@ class NSSDecryptor {
                base::NativeLibrary nspr4_dll);
 
   PK11SlotInfo* GetKeySlotForDB() const { return PK11_GetInternalKeySlot(); }
+
   void FreeSlot(PK11SlotInfo* slot) const { PK11_FreeSlot(slot); }
+
+  // Turns unprocessed information extracted from Firefox's password file
+  // into PasswordForm.
+  bool CreatePasswordFormFromRawInfo(
+      const FirefoxRawPasswordInfo& raw_password_info,
+      autofill::PasswordForm* form);
 
   // Methods in Firefox security components.
   NSSInitFunc NSS_Init;

@@ -360,19 +360,21 @@ void FirefoxImporter::ImportPasswords() {
 
   std::vector<autofill::PasswordForm> forms;
   base::FilePath source_path = source_path_;
-  base::FilePath file = source_path.AppendASCII("signons.sqlite");
-  if (base::PathExists(file)) {
+  const base::FilePath sqlite_file = source_path.AppendASCII("signons.sqlite");
+  const base::FilePath json_file = source_path.AppendASCII("logins.json");
+  const base::FilePath signon3_file = source_path.AppendASCII("signons3.txt");
+  const base::FilePath signon2_file = source_path.AppendASCII("signons2.txt");
+  if (base::PathExists(json_file)) {
+    // Since Firefox 32, passwords are in logins.json.
+    decryptor.ReadAndParseLogins(json_file, &forms);
+  } else if (base::PathExists(sqlite_file)) {
     // Since Firefox 3.1, passwords are in signons.sqlite db.
-    decryptor.ReadAndParseSignons(file, &forms);
-  } else {
+    decryptor.ReadAndParseSignons(sqlite_file, &forms);
+  } else if (base::PathExists(signon3_file)) {
     // Firefox 3.0 uses signons3.txt to store the passwords.
-    file = source_path.AppendASCII("signons3.txt");
-    if (!base::PathExists(file))
-      file = source_path.AppendASCII("signons2.txt");
-
-    std::string content;
-    base::ReadFileToString(file, &content);
-    decryptor.ParseSignons(content, &forms);
+    decryptor.ParseSignons(signon3_file, &forms);
+  } else {
+    decryptor.ParseSignons(signon2_file, &forms);
   }
 
   if (!cancelled()) {
