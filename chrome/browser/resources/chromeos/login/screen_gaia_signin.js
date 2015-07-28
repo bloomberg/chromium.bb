@@ -561,7 +561,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (this.isNewGaiaFlow) {
         $('login-header-bar').showCreateSupervisedButton =
-            data.supervisedUsersCanCreate;
+            data.supervisedUsersEnabled && data.supervisedUsersCanCreate;
         $('login-header-bar').showGuestButton = data.guestSignin;
       } else {
         $('createAccount').hidden = !data.createAccount;
