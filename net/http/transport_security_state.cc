@@ -561,7 +561,7 @@ bool DecodeHSTSPreload(const std::string& hostname, PreloadResult* out) {
 }  // namespace
 
 TransportSecurityState::TransportSecurityState()
-    : delegate_(NULL), enable_static_pins_(true) {
+    : delegate_(nullptr), report_sender_(nullptr), enable_static_pins_(true) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
 #if !defined(OFFICIAL_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
