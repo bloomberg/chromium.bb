@@ -9,7 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,16 +19,15 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for Chrome on Android's usage of the PersonalDataManager API.
  */
-public class PersonalDataManagerTest extends ChromeShellTestBase {
+public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     private AutofillTestHelper mHelper;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        ApplicationData.clearAppData(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
 
         mHelper = new AutofillTestHelper();
     }
