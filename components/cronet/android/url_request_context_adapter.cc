@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "components/cronet/url_request_context_config.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/net_errors.h"
@@ -193,7 +194,8 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
           net::AlternateProtocol::QUIC, "",
           static_cast<uint16>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
-          quic_hint_host_port_pair, alternative_service, 1.0f);
+          quic_hint_host_port_pair, alternative_service, 1.0f,
+          base::Time::Max());
     }
   }
   load_disable_cache_ = config_->load_disable_cache;

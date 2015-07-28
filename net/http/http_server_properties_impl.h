@@ -91,7 +91,8 @@ class NET_EXPORT HttpServerPropertiesImpl
       const HostPortPair& origin) override;
   bool SetAlternativeService(const HostPortPair& origin,
                              const AlternativeService& alternative_service,
-                             double alternative_probability) override;
+                             double alternative_probability,
+                             base::Time expiration) override;
   bool SetAlternativeServices(const HostPortPair& origin,
                               const AlternativeServiceInfoVector&
                                   alternative_service_info_vector) override;

@@ -327,8 +327,9 @@ class QuicNetworkTransactionTest
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
     HostPortPair host_port_pair = HostPortPair::FromURL(request_.url);
     AlternativeService alternative_service(QUIC, host_port_pair.host(), 80);
-    http_server_properties_.SetAlternativeService(host_port_pair,
-                                                  alternative_service, 1.0);
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    http_server_properties_.SetAlternativeService(
+        host_port_pair, alternative_service, 1.0, expiration);
   }
 
   void ExpectBrokenAlternateProtocolMapping() {
@@ -893,8 +894,9 @@ class QuicAltSvcCertificateVerificationTest
 
     CreateSessionWithNextProtos();
     AlternativeService alternative_service(QUIC, alternative);
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_->http_server_properties()->SetAlternativeService(
-        origin, alternative_service, 1.0);
+        origin, alternative_service, 1.0, expiration);
     scoped_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback callback;

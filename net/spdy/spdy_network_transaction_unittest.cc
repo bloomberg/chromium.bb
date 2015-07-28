@@ -96,11 +96,12 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
   session_deps->use_alternate_protocols = true;
   session_deps->next_protos = SpdyNextProtos();
   if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_deps->http_server_properties.SetAlternativeService(
         HostPortPair("www.example.org", 80),
         AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
                            "www.example.org", 443),
-        1);
+        1.0, expiration);
   }
 }
 

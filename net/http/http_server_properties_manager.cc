@@ -64,6 +64,7 @@ const char kProtocolKey[] = "protocol_str";
 const char kHostKey[] = "host";
 const char kPortKey[] = "port";
 const char kProbabilityKey[] = "probability";
+const char kExpirationKey[] = "expiration";
 const char kNetworkStatsKey[] = "network_stats";
 const char kSrttKey[] = "srtt";
 
@@ -200,10 +201,11 @@ AlternativeServiceVector HttpServerPropertiesManager::GetAlternativeServices(
 bool HttpServerPropertiesManager::SetAlternativeService(
     const HostPortPair& origin,
     const AlternativeService& alternative_service,
-    double alternative_probability) {
+    double alternative_probability,
+    base::Time expiration) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   const bool changed = http_server_properties_impl_->SetAlternativeService(
-      origin, alternative_service, alternative_probability);
+      origin, alternative_service, alternative_probability, expiration);
   if (changed) {
     ScheduleUpdatePrefsOnNetworkThread(SET_ALTERNATIVE_SERVICES);
   }
@@ -572,6 +574,23 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
     DVLOG(1) << "Malformed alternative service probability for server: "
              << server_str;
     return false;
+  }
+
+  // Expiration is optional, defaults to one day.
+  base::Time expiration;
+  if (alternative_service_dict.HasKey(kExpirationKey)) {
+    double expiration_double;
+    if (!alternative_service_dict.GetDoubleWithoutPathExpansion(
+            kExpirationKey, &expiration_double)) {
+      DVLOG(1) << "Malformed alternative service expiration for server: "
+               << server_str;
+      return false;
+    }
+    alternative_service_info->expiration =
+        base::Time::FromDoubleT(expiration_double);
+  } else {
+    alternative_service_info->expiration =
+        base::Time::Now() + base::TimeDelta::FromDays(1);
   }
 
   return true;
@@ -983,6 +1002,8 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
         kProtocolKey, AlternateProtocolToString(alternative_service.protocol));
     alternative_service_dict->SetDouble(kProbabilityKey,
                                         alternative_service_info.probability);
+    alternative_service_dict->SetDouble(
+        kExpirationKey, alternative_service_info.expiration.ToDoubleT());
     alternative_service_list->Append(alternative_service_dict);
   }
   if (alternative_service_list->GetSize() == 0)

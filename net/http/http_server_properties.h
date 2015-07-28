@@ -143,14 +143,20 @@ struct NET_EXPORT AlternativeServiceInfo {
   AlternativeServiceInfo() : alternative_service(), probability(0.0) {}
 
   AlternativeServiceInfo(const AlternativeService& alternative_service,
-                         double probability)
-      : alternative_service(alternative_service), probability(probability) {}
+                         double probability,
+                         base::Time expiration)
+      : alternative_service(alternative_service),
+        probability(probability),
+        expiration(expiration) {}
 
   AlternativeServiceInfo(AlternateProtocol protocol,
                          const std::string& host,
                          uint16 port,
-                         double probability)
-      : alternative_service(protocol, host, port), probability(probability) {}
+                         double probability,
+                         base::Time expiration)
+      : alternative_service(protocol, host, port),
+        probability(probability),
+        expiration(expiration) {}
 
   AlternativeServiceInfo(
       const AlternativeServiceInfo& alternative_service_info) = default;
@@ -159,7 +165,7 @@ struct NET_EXPORT AlternativeServiceInfo {
 
   bool operator==(const AlternativeServiceInfo& other) const {
     return alternative_service == other.alternative_service &&
-           probability == other.probability;
+           probability == other.probability && expiration == other.expiration;
   }
 
   bool operator!=(const AlternativeServiceInfo& other) const {
@@ -170,6 +176,7 @@ struct NET_EXPORT AlternativeServiceInfo {
 
   AlternativeService alternative_service;
   double probability;
+  base::Time expiration;
 };
 
 struct NET_EXPORT SupportsQuic {
@@ -264,7 +271,8 @@ class NET_EXPORT HttpServerProperties {
   virtual bool SetAlternativeService(
       const HostPortPair& origin,
       const AlternativeService& alternative_service,
-      double alternative_probability) = 0;
+      double alternative_probability,
+      base::Time expiration) = 0;
 
   // Set alternative services for |origin|.  Previous alternative services for
   // |origin| are discarded.

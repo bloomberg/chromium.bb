@@ -17,6 +17,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/cronet/url_request_context_config.h"
 #include "jni/CronetUrlRequestContext_jni.h"
@@ -277,7 +278,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
           net::AlternateProtocol::QUIC, "",
           static_cast<uint16>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
-          quic_hint_host_port_pair, alternative_service, 1.0f);
+          quic_hint_host_port_pair, alternative_service, 1.0f,
+          base::Time::Max());
     }
   }
 
