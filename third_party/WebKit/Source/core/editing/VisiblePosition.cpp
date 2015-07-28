@@ -663,17 +663,8 @@ UChar32 VisiblePosition::characterAfter() const
     // We canonicalize to the first of two equivalent candidates, but the second of the two candidates
     // is the one that will be inside the text node containing the character after this visible position.
     Position pos = m_deepPosition.downstream();
-    if (!pos.containerNode() || !pos.containerNode()->isTextNode())
+    if (!pos.containerNode() || !pos.containerNode()->isTextNode() || !pos.isOffsetInAnchor())
         return 0;
-    switch (pos.anchorType()) {
-    case PositionAnchorType::AfterChildren:
-    case PositionAnchorType::AfterAnchor:
-    case PositionAnchorType::BeforeAnchor:
-    case PositionAnchorType::BeforeChildren:
-        return 0;
-    case PositionAnchorType::OffsetInAnchor:
-        break;
-    }
     unsigned offset = static_cast<unsigned>(pos.offsetInContainerNode());
     Text* textNode = pos.containerText();
     unsigned length = textNode->length();

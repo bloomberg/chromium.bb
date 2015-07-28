@@ -404,7 +404,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
 
 static void updatePositionForTextRemoval(Text* node, int offset, int count, Position& position)
 {
-    if (position.anchorType() != PositionAnchorType::OffsetInAnchor || position.containerNode() != node)
+    if (!position.isOffsetInAnchor() || position.containerNode() != node)
         return;
 
     if (position.offsetInContainerNode() > offset + count)

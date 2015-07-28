@@ -1287,7 +1287,7 @@ bool ApplyStyleCommand::isValidCaretPositionInTextNode(const Position& position)
     ASSERT(position.isNotNull());
 
     Node* node = position.containerNode();
-    if (position.anchorType() != PositionAnchorType::OffsetInAnchor || !node->isTextNode())
+    if (!position.isOffsetInAnchor() || !node->isTextNode())
         return false;
     int offsetInText = position.offsetInContainerNode();
     return offsetInText > caretMinOffset(node) && offsetInText < caretMaxOffset(node);

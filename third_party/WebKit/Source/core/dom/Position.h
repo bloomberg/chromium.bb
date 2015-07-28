@@ -288,7 +288,7 @@ bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<St
     if (a.anchorNode() != b.anchorNode() || a.anchorType() != b.anchorType())
         return false;
 
-    if (a.anchorType() != PositionAnchorType::OffsetInAnchor) {
+    if (!a.isOffsetInAnchor()) {
         // Note: |m_offset| only has meaning when |PositionAnchorType::OffsetInAnchor|.
         return true;
     }

@@ -175,7 +175,7 @@ static bool isNewLineAtPosition(const Position& position)
 
 static const ComputedStyle* computedStyleOfEnclosingTextNode(const Position& position)
 {
-    if (position.anchorType() != PositionAnchorType::OffsetInAnchor || !position.containerNode() || !position.containerNode()->isTextNode())
+    if (!position.isOffsetInAnchor() || !position.containerNode() || !position.containerNode()->isTextNode())
         return 0;
     return position.containerNode()->computedStyle();
 }

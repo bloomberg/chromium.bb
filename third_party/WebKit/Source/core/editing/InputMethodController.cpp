@@ -311,7 +311,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
         m_compositionNode = nullptr;
         m_customCompositionUnderlines.clear();
 
-        if (base.anchorType() != PositionAnchorType::OffsetInAnchor)
+        if (!base.isOffsetInAnchor())
             return;
         if (baseNode != frame().selection().extent().anchorNode())
             return;

@@ -771,8 +771,8 @@ HTMLElement* HTMLTextFormControlElement::innerEditorElement() const
 
 static Position innerNodePosition(const Position& innerPosition)
 {
-    ASSERT(innerPosition.anchorType() != PositionAnchorType::BeforeAnchor);
-    ASSERT(innerPosition.anchorType() != PositionAnchorType::AfterAnchor);
+    ASSERT(!innerPosition.isBeforeAnchor());
+    ASSERT(!innerPosition.isAfterAnchor());
     HTMLElement* element = toHTMLElement(innerPosition.anchorNode());
     ASSERT(element);
     RefPtrWillBeRawPtr<NodeList> childNodes = element->childNodes();
@@ -781,16 +781,10 @@ static Position innerNodePosition(const Position& innerPosition)
 
     unsigned offset = 0;
 
-    switch (innerPosition.anchorType()) {
-    case PositionAnchorType::OffsetInAnchor:
+    if (innerPosition.isOffsetInAnchor())
         offset = std::max(0, std::min(innerPosition.offsetInContainerNode(), static_cast<int>(childNodes->length())));
-        break;
-    case PositionAnchorType::AfterChildren:
+    else if (innerPosition.isAfterChildren())
         offset = childNodes->length();
-        break;
-    default:
-        break;
-    }
 
     if (offset == childNodes->length())
         return Position(element->lastChild(), PositionAnchorType::AfterAnchor);
@@ -915,25 +909,26 @@ static Position previousIfPositionIsAfterLineBreak(const Position& position, HTM
 
     // Move back if position is just after line break.
     if (isHTMLBRElement(*position.anchorNode())) {
-        switch (position.anchorType()) {
-        case PositionAnchorType::AfterAnchor:
+        if (position.isAfterAnchor())
             return Position(position.anchorNode(), PositionAnchorType::BeforeAnchor);
-        case PositionAnchorType::BeforeAnchor:
+        if (position.isBeforeAnchor())
             return previousIfPositionIsAfterLineBreak(endOfPrevious(*position.anchorNode(), innerEditor), innerEditor);
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    } else if (position.anchorNode()->isTextNode()) {
-        Text* textNode = toText(position.anchorNode());
-        unsigned offset = position.offsetInContainerNode();
-        if (textNode->length() == 0 || offset == 0) {
-            return previousIfPositionIsAfterLineBreak(endOfPrevious(*position.anchorNode(), innerEditor), innerEditor);
-        }
-
-        if (offset <= textNode->length() && textNode->data()[offset - 1] == '\n') {
-            return Position(textNode, offset - 1);
-        }
+        // We don't place caret into BR element, since well-formed BR element
+        // doesn't have child nodes.
+        ASSERT_NOT_REACHED();
+        return position;
     }
+
+    if (!position.anchorNode()->isTextNode())
+        return position;
+
+    Text* textNode = toText(position.anchorNode());
+    unsigned offset = position.offsetInContainerNode();
+    if (textNode->length() == 0 || offset == 0)
+        return previousIfPositionIsAfterLineBreak(endOfPrevious(*position.anchorNode(), innerEditor), innerEditor);
+
+    if (offset <= textNode->length() && textNode->data()[offset - 1] == '\n')
+        return Position(textNode, offset - 1);
 
     return position;
 }

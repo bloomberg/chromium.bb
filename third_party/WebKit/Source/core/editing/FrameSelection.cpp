@@ -408,7 +408,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
 
 static Position updatePositionAfterAdoptingTextReplacement(const Position& position, CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
 {
-    if (!position.anchorNode() || position.anchorNode() != node || position.anchorType() != PositionAnchorType::OffsetInAnchor)
+    if (!position.anchorNode() || position.anchorNode() != node || !position.isOffsetInAnchor())
         return position;
 
     // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
@@ -450,7 +450,7 @@ void FrameSelection::didUpdateCharacterData(CharacterData* node, unsigned offset
 
 static Position updatePostionAfterAdoptingTextNodesMerged(const Position& position, const Text& oldNode, unsigned offset)
 {
-    if (!position.anchorNode() || position.anchorType() != PositionAnchorType::OffsetInAnchor)
+    if (!position.anchorNode() || !position.isOffsetInAnchor())
         return position;
 
     ASSERT(position.offsetInContainerNode() >= 0);
@@ -478,7 +478,7 @@ void FrameSelection::didMergeTextNodes(const Text& oldNode, unsigned offset)
 
 static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position, const Text& oldNode)
 {
-    if (!position.anchorNode() || position.anchorNode() != &oldNode || position.anchorType() != PositionAnchorType::OffsetInAnchor)
+    if (!position.anchorNode() || position.anchorNode() != &oldNode || !position.isOffsetInAnchor())
         return position;
     // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
     ASSERT(position.offsetInContainerNode() >= 0);

@@ -620,7 +620,7 @@ static bool isEnclosedBy(const PositionInComposedTree& position, const Node& nod
     ASSERT(position.isNotNull());
     Node* anchorNode = position.anchorNode();
     if (anchorNode == node)
-        return position.anchorType() != PositionAnchorType::AfterAnchor && position.anchorType() != PositionAnchorType::BeforeAnchor;
+        return !position.isAfterAnchor() && !position.isBeforeAnchor();
 
     return ComposedTreeTraversal::isDescendantOf(*anchorNode, node);
 }
@@ -1111,7 +1111,7 @@ static bool isValidPosition(const Position& position)
     if (!position.inDocument())
         return false;
 
-    if (position.anchorType() != PositionAnchorType::OffsetInAnchor)
+    if (!position.isOffsetInAnchor())
         return true;
 
     if (position.offsetInContainerNode() < 0)
