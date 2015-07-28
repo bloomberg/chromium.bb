@@ -78,6 +78,7 @@ Message::Message(const Message& other) : base::Pickle(other) {
 
 void Message::Init() {
   dispatch_error_ = false;
+  sender_pid_ = base::kNullProcessId;
 #ifdef IPC_MESSAGE_LOG_ENABLED
   received_time_ = 0;
   dont_log_ = false;

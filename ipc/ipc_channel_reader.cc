@@ -150,6 +150,8 @@ ChannelReader::DispatchState ChannelReader::DispatchMessages() {
 }
 
 void ChannelReader::DispatchMessage(Message* m) {
+  m->set_sender_pid(GetSenderPID());
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
   std::string name;
   Logging::GetInstance()->GetMessageText(m->type(), &name, m, NULL);

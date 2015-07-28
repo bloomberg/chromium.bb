@@ -243,6 +243,10 @@ void ChannelWin::HandleInternalMessage(const Message& msg) {
   listener()->OnChannelConnected(claimed_pid);
 }
 
+base::ProcessId ChannelWin::GetSenderPID() {
+  return GetPeerPID();
+}
+
 bool ChannelWin::DidEmptyInputBuffers() {
   // We don't need to do anything here.
   return true;

@@ -27,10 +27,7 @@ bool AttachmentBrokerWin::SendAttachmentToProcess(
           static_cast<const internal::HandleAttachmentWin*>(attachment);
       internal::HandleAttachmentWin::WireFormat format =
           handle_attachment->GetWireFormat(destination_process);
-      // TODO(erikchen): Replace the call to base::Process::Current().Pid() with
-      // a non-forgeable mechanism. http://crbug.com/513431.
-      return sender_->Send(new AttachmentBrokerMsg_DuplicateWinHandle(
-          format, base::Process::Current().Pid()));
+      return sender_->Send(new AttachmentBrokerMsg_DuplicateWinHandle(format));
   }
   return false;
 }

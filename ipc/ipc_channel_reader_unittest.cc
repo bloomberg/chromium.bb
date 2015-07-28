@@ -79,6 +79,8 @@ class MockChannelReader : public ChannelReader {
 
   void DispatchMessage(Message* m) override { last_dispatched_message_ = m; }
 
+  base::ProcessId GetSenderPID() override { return base::kNullProcessId; }
+
   AttachmentBroker* GetAttachmentBroker() override { return broker_; }
 
   // This instance takes ownership of |m|.

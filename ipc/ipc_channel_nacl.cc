@@ -379,6 +379,12 @@ void ChannelNacl::HandleInternalMessage(const Message& msg) {
   NOTREACHED();
 }
 
+base::ProcessId ChannelNacl::GetSenderPID() {
+  // The untrusted side of the IPC::Channel should never have to worry about
+  // sender's process id.
+  return base::kNullProcessId;
+}
+
 // Channel's methods
 
 // static

@@ -951,6 +951,10 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
   }
 }
 
+base::ProcessId ChannelPosix::GetSenderPID() {
+  return GetPeerPID();
+}
+
 void ChannelPosix::Close() {
   // Close can be called multiple time, so we need to make sure we're
   // idempotent.

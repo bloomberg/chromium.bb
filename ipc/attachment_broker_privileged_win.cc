@@ -39,11 +39,11 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
 
 bool AttachmentBrokerPrivilegedWin::OnMessageReceived(const Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AttachmentBrokerPrivilegedWin, msg)
-    IPC_MESSAGE_HANDLER(AttachmentBrokerMsg_DuplicateWinHandle,
-                        OnDuplicateWinHandle)
+  switch (msg.type()) {
+    IPC_MESSAGE_HANDLER_GENERIC(AttachmentBrokerMsg_DuplicateWinHandle,
+                                OnDuplicateWinHandle(msg))
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+  }
   return handled;
 }
 
@@ -62,13 +62,18 @@ void AttachmentBrokerPrivilegedWin::DeregisterCommunicationChannel(
 }
 
 void AttachmentBrokerPrivilegedWin::OnDuplicateWinHandle(
-    const HandleWireFormat& wire_format,
-    base::ProcessId source_pid) {
+    const IPC::Message& message) {
+  AttachmentBrokerMsg_DuplicateWinHandle::Param param;
+  if (!AttachmentBrokerMsg_DuplicateWinHandle::Read(&message, &param))
+    return;
+  IPC::internal::HandleAttachmentWin::WireFormat wire_format =
+      base::get<0>(param);
+
   if (wire_format.destination_process == base::kNullProcessId)
     return;
 
   HandleWireFormat new_wire_format =
-      DuplicateWinHandle(wire_format, source_pid);
+      DuplicateWinHandle(wire_format, message.get_sender_pid());
   RouteDuplicatedHandle(new_wire_format);
 }
 

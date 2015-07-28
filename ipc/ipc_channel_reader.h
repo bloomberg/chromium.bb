@@ -114,6 +114,9 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // Exposed for testing purposes only.
   virtual void DispatchMessage(Message* m);
 
+  // Get the process ID for the sender of the message.
+  virtual base::ProcessId GetSenderPID() = 0;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentAlreadyBrokered);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentNotYetBrokered);
