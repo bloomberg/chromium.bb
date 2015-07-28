@@ -201,9 +201,10 @@ void SystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
                     OnOutputNodeVolumeChanged(node_id, volume));
 }
 
-void SystemTrayNotifier::NotifyAudioOutputMuteChanged(bool mute_on) {
+void SystemTrayNotifier::NotifyAudioOutputMuteChanged(bool mute_on,
+                                                      bool system_adjust) {
   FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnOutputMuteChanged(mute_on));
+                    OnOutputMuteChanged(mute_on, system_adjust));
 }
 
 void SystemTrayNotifier::NotifyAudioNodesChanged() {

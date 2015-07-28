@@ -39,8 +39,8 @@ void ShellAudioController::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                                      int /* volume */) {
 }
 
-void ShellAudioController::OnOutputMuteChanged(bool /* mute_on */) {
-}
+void ShellAudioController::OnOutputMuteChanged(bool /* mute_on */,
+                                               bool /* system_adjust */) {}
 
 void ShellAudioController::OnInputNodeGainChanged(uint64_t /* node_id */,
                                                   int /* gain */) {

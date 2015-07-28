@@ -41,7 +41,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     virtual void OnOutputNodeVolumeChanged(uint64_t node_id, int volume);
 
     // Called when output mute state changed.
-    virtual void OnOutputMuteChanged(bool mute_on);
+    // |mute_on|: True if output is muted.
+    // |system_adjust|: True if the mute state is adjusted by the system
+    // automatically(i.e. not by user). UI should reflect the system's mute
+    // state, but it should not be too loud, e.g., the volume pop up window
+    // should not be triggered.
+    virtual void OnOutputMuteChanged(bool mute_on, bool system_adjust);
 
     // Called when active input node's gain changed.
     virtual void OnInputNodeGainChanged(uint64_t node_id, int gain);

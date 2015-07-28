@@ -69,8 +69,9 @@ void CrasAudioHandler::AudioObserver::OnInputNodeGainChanged(
     int /* gain */) {
 }
 
-void CrasAudioHandler::AudioObserver::OnOutputMuteChanged(bool /* mute_on */) {
-}
+void CrasAudioHandler::AudioObserver::OnOutputMuteChanged(
+    bool /* mute_on */,
+    bool /* system_adjust */) {}
 
 void CrasAudioHandler::AudioObserver::OnInputMuteChanged(bool /* mute_on */) {
 }
@@ -370,8 +371,9 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
     }
   }
 
-  FOR_EACH_OBSERVER(AudioObserver, observers_,
-                    OnOutputMuteChanged(output_mute_on_));
+  FOR_EACH_OBSERVER(
+      AudioObserver, observers_,
+      OnOutputMuteChanged(output_mute_on_, false /* system_adjust */));
 }
 
 void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
@@ -1014,8 +1016,13 @@ void CrasAudioHandler::UpdateAudioAfterHDMIRediscoverGracePeriod() {
   hdmi_rediscovering_ = false;
   if (!IsOutputMutedForDevice(active_output_node_id_)) {
     // Unmute the audio output after the HDMI transition period.
-    VLOG(1) << "Unmute output after HDMI rediscovring grace period.";
+    VLOG(1) << "Unmute output after HDMI rediscovering grace period.";
     SetOutputMuteInternal(false);
+
+    // Notify UI about the mute state change.
+    FOR_EACH_OBSERVER(
+        AudioObserver, observers_,
+        OnOutputMuteChanged(output_mute_on_, true /* system adjustment */));
   }
 }
 

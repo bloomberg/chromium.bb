@@ -113,14 +113,14 @@ void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
   PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
-void TrayAudio::OnOutputMuteChanged(bool /* mute_on */) {
+void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
   if (tray_view())
       tray_view()->SetVisible(GetInitialVisibility());
 
   if (volume_view_) {
     volume_view_->Update();
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
-  } else {
+  } else if (!system_adjust) {
     pop_up_volume_view_ = true;
     PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
   }

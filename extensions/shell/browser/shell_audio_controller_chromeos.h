@@ -18,7 +18,7 @@ class ShellAudioController : public chromeos::CrasAudioHandler::AudioObserver {
 
   // chromeos::CrasAudioHandler::Observer implementation:
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
-  void OnOutputMuteChanged(bool mute_on) override;
+  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
   void OnInputNodeGainChanged(uint64_t node_id, int gain) override;
   void OnInputMuteChanged(bool mute_on) override;
   void OnAudioNodesChanged() override;

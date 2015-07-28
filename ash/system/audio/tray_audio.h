@@ -60,7 +60,7 @@ class TrayAudio : public TrayImageItem,
 
   // Overridden from AudioObserver.
   void OnOutputNodeVolumeChanged(uint64_t node_id, double volume) override;
-  void OnOutputMuteChanged(bool mute_on) override;
+  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;
   void OnActiveInputNodeChanged() override;

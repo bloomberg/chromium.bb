@@ -192,14 +192,15 @@ const AudioNode kUSBCameraInput(true,
 
 class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  TestObserver() : active_output_node_changed_count_(0),
-                   active_input_node_changed_count_(0),
-                   audio_nodes_changed_count_(0),
-                   output_mute_changed_count_(0),
-                   input_mute_changed_count_(0),
-                   output_volume_changed_count_(0),
-                   input_gain_changed_count_(0) {
-  }
+  TestObserver()
+      : active_output_node_changed_count_(0),
+        active_input_node_changed_count_(0),
+        audio_nodes_changed_count_(0),
+        output_mute_changed_count_(0),
+        input_mute_changed_count_(0),
+        output_volume_changed_count_(0),
+        input_gain_changed_count_(0),
+        output_mute_by_system_(false) {}
 
   int active_output_node_changed_count() const {
     return active_output_node_changed_count_;
@@ -225,6 +226,8 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     return output_mute_changed_count_;
   }
 
+  void reset_output_mute_changed_count() { input_mute_changed_count_ = 0; }
+
   int input_mute_changed_count() const {
     return input_mute_changed_count_;
   }
@@ -236,6 +239,8 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   int input_gain_changed_count() const {
     return input_gain_changed_count_;
   }
+
+  bool output_mute_by_system() const { return output_mute_by_system_; }
 
   ~TestObserver() override {}
 
@@ -251,8 +256,9 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   void OnAudioNodesChanged() override { ++audio_nodes_changed_count_; }
 
-  void OnOutputMuteChanged(bool /* mute_on */) override {
+  void OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) override {
     ++output_mute_changed_count_;
+    output_mute_by_system_ = system_adjust;
   }
 
   void OnInputMuteChanged(bool /* mute_on */) override {
@@ -276,6 +282,7 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   int input_mute_changed_count_;
   int output_volume_changed_count_;
   int input_gain_changed_count_;
+  bool output_mute_by_system_;  // output mute state adjusted by system.
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -2598,6 +2605,56 @@ TEST_F(CrasAudioHandlerTest, HDMIOutputRediscover) {
   EXPECT_EQ(kHDMIOutput.id, active_output.id);
   EXPECT_EQ(kHDMIOutput.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
+}
+
+// This tests the case of output unmuting event is notified after the hdmi
+// output re-discover grace period ends, see crbug.com/512601.
+TEST_F(CrasAudioHandlerTest, HDMIOutputUnplugDuringSuspension) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  audio_nodes.push_back(kHDMIOutput);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the HDMI device has been selected as the active output, and audio
+  // output is not muted.
+  AudioDevice active_output;
+  EXPECT_TRUE(
+      cras_audio_handler_->GetPrimaryActiveOutputDevice(&active_output));
+  EXPECT_EQ(kHDMIOutput.id, active_output.id);
+  EXPECT_EQ(kHDMIOutput.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+  EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
+
+  // Trigger HDMI rediscovering grace period, and remove the HDMI node.
+  const int grace_period_in_ms = 200;
+  SetHDMIRediscoverGracePeriodDuration(grace_period_in_ms);
+  SetActiveHDMIRediscover();
+  AudioNodeList audio_nodes_lost_hdmi;
+  audio_nodes_lost_hdmi.push_back(kInternalSpeaker);
+  ChangeAudioNodes(audio_nodes_lost_hdmi);
+
+  // Verify the active output is switched to internal speaker, it is not muted
+  // by preference, but the system output is muted during the grace period.
+  EXPECT_TRUE(
+      cras_audio_handler_->GetPrimaryActiveOutputDevice(&active_output));
+  EXPECT_EQ(kInternalSpeaker.id, active_output.id);
+  EXPECT_FALSE(
+      cras_audio_handler_->IsOutputMutedForDevice(kInternalSpeaker.id));
+  EXPECT_TRUE(cras_audio_handler_->IsOutputMuted());
+
+  // After HDMI re-discover grace period, verify internal speaker is still the
+  // active output and not muted, and unmute event by system is notified.
+  test_observer_->reset_output_mute_changed_count();
+  HDMIRediscoverWaiter waiter(this, grace_period_in_ms);
+  waiter.WaitUntilHDMIRediscoverGracePeriodEnd();
+  EXPECT_TRUE(
+      cras_audio_handler_->GetPrimaryActiveOutputDevice(&active_output));
+  EXPECT_EQ(kInternalSpeaker.id, active_output.id);
+  EXPECT_EQ(kInternalSpeaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+  EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
+  EXPECT_EQ(1, test_observer_->output_mute_changed_count());
+  EXPECT_TRUE(test_observer_->output_mute_by_system());
 }
 
 }  // namespace chromeos

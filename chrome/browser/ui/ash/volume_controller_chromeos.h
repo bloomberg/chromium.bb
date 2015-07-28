@@ -24,7 +24,7 @@ class VolumeController : public ash::VolumeControlDelegate,
 
   // Overridden from chromeos::CrasAudioHandler::AudioObserver.
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
-  void OnOutputMuteChanged(bool mute_on) override;
+  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
 
  private:
 
