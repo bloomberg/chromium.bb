@@ -54,11 +54,11 @@ copy_ex("copy_mandoline_assets") {
   deps = [
     "//components/devtools_service",
     "//components/html_viewer",
-    "//mandoline/services/core_services",
-    "//mojo/services/network",
     "//components/resource_provider",
+    "//mandoline/services/core_services",
     "//mojo/runner:bootstrap",
     "//mojo/runner:bootstrap_java",
+    "//mojo/services/network",
   ]
   sources = [
     "$root_out_dir/lib.stripped/libbootstrap$android_product_extension",
@@ -75,10 +75,7 @@ copy_ex("copy_mandoline_assets") {
   ]
 
   if (use_aura) {
-    deps += [
-      "//mandoline/ui/browser",
-      "//mandoline/ui/omnibox",
-    ]
+    deps += [ "//mandoline/ui" ]
 
     args += [
       "--files=" + rebase_path("$root_out_dir/browser", root_build_dir),

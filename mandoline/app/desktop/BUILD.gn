@@ -27,6 +27,8 @@ executable("mandoline") {
 
   data_deps = [
     "//components/html_viewer",
-    "//mandoline/services/core_services/",
+    "//mandoline/services/core_services",
+    "//mandoline/services/updater",
+    "//mandoline/ui",
   ]
 }

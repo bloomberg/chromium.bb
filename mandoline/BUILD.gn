@@ -13,7 +13,11 @@ group("all") {
   ]
 
   if (!is_component_build) {
-    deps += [ "//mandoline/app" ]
+    if (is_android) {
+      deps += [ "//mandoline/app/android" ]
+    } else {
+      deps += [ "//mandoline/app/desktop" ]
+    }
   }
 }
 
@@ -27,7 +31,6 @@ group("tests") {
     deps += [ "//tools/xdisplaycheck" ]
   }
 
-  # TODO(GYP): Make this work.
   if (!is_component_build && !is_mac) {
     deps += [
       "//components/clipboard:apptests",
