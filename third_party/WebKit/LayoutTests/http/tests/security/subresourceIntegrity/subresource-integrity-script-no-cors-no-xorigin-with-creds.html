@@ -8,11 +8,11 @@
     <script>
         var result = '';
         var scriptLoaded = function() {
-            assert_equals(result, 'ran', 'Script ran.');
+            assert_unreached('Script ran.');
             done();
         };
         var scriptError = function() {
-            assert_unreached('Script did not run.');
+            assert_equals(result, '', 'Script did not run.');
             done();
         };
     </script>

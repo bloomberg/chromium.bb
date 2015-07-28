@@ -439,10 +439,7 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
     expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, insecureURL);
     expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, insecureURL);
 
-    // The cross origin (http -> https case) should return true, but it will
-    // output a console error.
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, insecureURL, NoCors);
-
+    expectIntegrityFailure(kSha256Integrity, kBasicScript, secureURL, insecureURL, NoCors);
     expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, insecureURL);
 }
 

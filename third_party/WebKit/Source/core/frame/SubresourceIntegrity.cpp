@@ -112,7 +112,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     if (!resource.isEligibleForIntegrityCheck(document.securityOrigin())) {
         UseCounter::count(document, UseCounter::SRIElementIntegrityAttributeButIneligible);
         logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' has an integrity attribute, but the resource requires the request to be CORS enabled to check the integrity, and it is not. The resource has not been blocked, but no integrity check occurred.", document);
-        return true;
+        return false;
     }
 
     WTF::Vector<IntegrityMetadata> metadataList;
