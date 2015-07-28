@@ -68,7 +68,6 @@ using net::ProofVerifierChromium;
 using net::TransportSecurityState;
 using std::cout;
 using std::cerr;
-using std::map;
 using std::string;
 using std::vector;
 using std::endl;
@@ -270,7 +269,7 @@ int main(int argc, char *argv[]) {
   client.set_store_response(true);
 
   // Send the request.
-  map<string, string> header_block =
+  net::SpdyHeaderBlock header_block =
       net::tools::SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
           headers, client.session()->connection()->version());
   client.SendRequestAndWaitForResponse(headers, FLAGS_body, /*fin=*/true);

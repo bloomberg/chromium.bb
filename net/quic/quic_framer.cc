@@ -282,7 +282,7 @@ size_t QuicFramer::GetSerializedFrameLength(
                 << " seq num length:" << sequence_number_length;
     set_error(QUIC_INTERNAL_ERROR);
     visitor_->OnError(this);
-    return false;
+    return 0;
   }
   if (frame.type == PADDING_FRAME) {
     // PADDING implies end of packet.

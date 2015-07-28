@@ -110,7 +110,7 @@ class QuicTestClient : public SimpleClient,
   void Connect() override;
   void ResetConnection() override;
   void Disconnect() override;
-  IPEndPoint LocalSocketAddress() const override;
+  IPEndPoint local_address() const override;
   void ClearPerRequestState() override;
   void WaitForResponseForMs(int timeout_ms) override;
   void WaitForInitialResponseForMs(int timeout_ms) override;

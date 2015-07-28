@@ -389,6 +389,7 @@ TEST_P(CryptoServerTest, BadSNI) {
 }
 
 // TODO(rtenneti): Enable the DefaultCert test after implementing ProofSource.
+// See http://crbug.com/514472.
 TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
   // Check that the server replies with a default certificate when no SNI is
   // specified.

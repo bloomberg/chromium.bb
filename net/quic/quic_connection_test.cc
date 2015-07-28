@@ -3276,6 +3276,7 @@ TEST_P(QuicConnectionTest, MtuDiscoveryDisabled) {
   for (QuicPacketCount i = 0; i < number_of_packets; i++) {
     SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
     EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+    EXPECT_EQ(0u, connection_.mtu_probe_count());
   }
 }
 
@@ -3320,6 +3321,8 @@ TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
     SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
     ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
   }
+
+  EXPECT_EQ(1u, connection_.mtu_probe_count());
 }
 
 // Tests whether MTU discovery works correctly when the probes never get
@@ -3333,11 +3336,21 @@ TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
 
   const QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(100);
 
+  EXPECT_EQ(kPacketsBetweenMtuProbesBase,
+            QuicConnectionPeer::GetPacketsBetweenMtuProbes(&connection_));
+  // Lower the number of probes between packets in order to make the test go
+  // much faster.
+  const QuicPacketCount packets_between_probes_base = 10;
+  QuicConnectionPeer::SetPacketsBetweenMtuProbes(&connection_,
+                                                 packets_between_probes_base);
+  QuicConnectionPeer::SetNextMtuProbeAt(&connection_,
+                                        packets_between_probes_base);
+
   // This tests sends more packets than strictly necessary to make sure that if
   // the connection was to send more discovery packets than needed, those would
   // get caught as well.
   const QuicPacketCount number_of_packets =
-      kPacketsBetweenMtuProbesBase * (1 << (kMtuDiscoveryAttempts + 1));
+      packets_between_probes_base * (1 << (kMtuDiscoveryAttempts + 1));
   vector<QuicPacketSequenceNumber> mtu_discovery_packets;
   // Called by the first ack.
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -3351,8 +3364,9 @@ TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
     // Receive an ACK, which marks all data packets as received, and all MTU
     // discovery packets as missing.
     QuicAckFrame ack = InitAckFrame(creator_->sequence_number());
-    ack.missing_packets = SequenceNumberSet(mtu_discovery_packets.begin(),
-                                            mtu_discovery_packets.end());
+    for (QuicPacketSequenceNumber& packet : mtu_discovery_packets) {
+      NackPacket(packet, &ack);
+    }
     ProcessAckPacket(&ack);
 
     // Trigger MTU probe if it would be scheduled now.
@@ -3375,12 +3389,13 @@ TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
   for (QuicPacketSequenceNumber i = 0; i < kMtuDiscoveryAttempts; i++) {
     // 2^0 + 2^1 + 2^2 + ... + 2^n = 2^(n + 1) - 1
     const QuicPacketCount packets_between_probes =
-        kPacketsBetweenMtuProbesBase * ((1 << (i + 1)) - 1);
+        packets_between_probes_base * ((1 << (i + 1)) - 1);
     EXPECT_EQ(packets_between_probes + (i + 1), mtu_discovery_packets[i]);
   }
 
   EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
   EXPECT_EQ(kDefaultMaxPacketSize, connection_.max_packet_length());
+  EXPECT_EQ(kMtuDiscoveryAttempts, connection_.mtu_probe_count());
 }
 
 TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {

@@ -1715,7 +1715,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
     DLOG(ERROR) << ENDPOINT << "failed writing " << encrypted->length()
-                << "bytes "
+                << " bytes "
                 << " from host " << self_address().ToStringWithoutPort()
                 << " to address " << peer_address().ToString();
     return false;

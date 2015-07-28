@@ -1667,12 +1667,12 @@ TEST_F(QuicSentPacketManagerTest, ReceiveWindowLimited) {
         QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i,
-                                               1024, HAS_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i, 1024,
+                                               HAS_RETRANSMITTABLE_DATA))
         .WillOnce(Return(true));
     SerializedPacket packet(CreatePacket(i, true));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024,
-                          NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024, NOT_RETRANSMISSION,
+                          HAS_RETRANSMITTABLE_DATA);
   }
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));

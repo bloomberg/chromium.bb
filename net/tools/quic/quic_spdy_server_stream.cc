@@ -74,7 +74,7 @@ void QuicSpdyServerStream::OnFinRead() {
 bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
                                                uint32 data_len) {
   DCHECK(headers_decompressed());
-  SpdyFramer framer(SPDY3);
+  SpdyFramer framer(HTTP2);
   size_t len = framer.ParseHeaderBlockInBuffer(data,
                                                data_len,
                                                &request_headers_);

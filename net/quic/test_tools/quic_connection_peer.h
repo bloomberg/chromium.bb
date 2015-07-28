@@ -112,6 +112,13 @@ class QuicConnectionPeer {
 
   static QuicConnectionStats* GetStats(QuicConnection* connection);
 
+  static QuicPacketCount GetPacketsBetweenMtuProbes(QuicConnection* connection);
+
+  static void SetPacketsBetweenMtuProbes(QuicConnection* connection,
+                                         QuicPacketCount packets);
+  static void SetNextMtuProbeAt(QuicConnection* connection,
+                                QuicPacketSequenceNumber number);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
 };

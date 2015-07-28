@@ -414,7 +414,7 @@ void QuicTestClient::Disconnect() {
   connect_attempted_ = false;
 }
 
-IPEndPoint QuicTestClient::LocalSocketAddress() const {
+IPEndPoint QuicTestClient::local_address() const {
   return client_->client_address();
 }
 

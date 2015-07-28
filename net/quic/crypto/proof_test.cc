@@ -108,7 +108,7 @@ string LoadTestCert(const string& file_name) {
 
 }  // namespace
 
-// TODO(rtenneti): Enable testing of ProofVerifier.
+// TODO(rtenneti): Enable testing of ProofVerifier. See http://crbug.com/514468.
 TEST(ProofTest, DISABLED_Verify) {
   scoped_ptr<ProofSource> source(CryptoTestUtils::ProofSourceForTesting());
   scoped_ptr<ProofVerifier> verifier(

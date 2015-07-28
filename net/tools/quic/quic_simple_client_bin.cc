@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
   // Send the request.
   net::SpdyHeaderBlock header_block;
   net::CreateSpdyHeadersFromHttpRequest(request, request.extra_headers,
-                                        net::SPDY3, /*direct=*/ true,
+                                        net::HTTP2, /*direct=*/true,
                                         &header_block);
   client.SendRequestAndWaitForResponse(request, FLAGS_body, /*fin=*/true);
 

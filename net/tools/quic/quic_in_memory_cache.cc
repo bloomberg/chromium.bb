@@ -154,7 +154,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
     // format to store response. Once SPDY/3 responses are no longer
     // required, the cache can store SPDY/4 headers.
     SpdyHeaderBlock header_block;
-    CreateSpdyHeadersFromHttpResponse(*response_headers, SPDY3, &header_block);
+    CreateSpdyHeadersFromHttpResponse(*response_headers, HTTP2, &header_block);
     AddResponse(host, path, header_block, body);
   }
 }

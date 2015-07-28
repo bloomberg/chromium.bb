@@ -450,6 +450,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicRandom* random_generator() const { return random_generator_; }
   QuicByteCount max_packet_length() const;
   void set_max_packet_length(QuicByteCount length);
+
   size_t mtu_probe_count() const { return mtu_probe_count_; }
 
   bool connected() const { return connected_; }
