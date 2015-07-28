@@ -31,7 +31,6 @@ private:
     PopupMenuImpl(ChromeClientImpl*, PopupMenuClient*);
 
     class ItemIterationContext;
-    bool hasTooManyItemsForStyling();
     void addOption(ItemIterationContext&, HTMLOptionElement&);
     void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&);
     void addSeparator(ItemIterationContext&, HTMLHRElement&);

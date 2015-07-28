@@ -79,6 +79,7 @@ ListPicker.prototype._handleWindowDidHide = function() {
 ListPicker.prototype._handleWindowMessage = function(event) {
     eval(event.data);
     if (window.updateData.type === "update") {
+        this._config.baseStyle = window.updateData.baseStyle;
         this._config.children = window.updateData.children;
         this._update();
     }
@@ -224,7 +225,13 @@ ListPicker.prototype._listItemCount = function() {
 ListPicker.prototype._layout = function() {
     if (this._config.isRTL)
         this._element.classList.add("rtl");
-    this._selectElement.style.backgroundColor = this._config.backgroundColor;
+    this._selectElement.style.backgroundColor = this._config.baseStyle.backgroundColor;
+    this._selectElement.style.color = this._config.baseStyle.color;
+    this._selectElement.style.textTransform = this._config.baseStyle.textTransform;
+    this._selectElement.style.fontSize = this._config.baseStyle.fontSize + "px";
+    this._selectElement.style.fontFamily = this._config.baseStyle.fontFamily.join(",");
+    this._selectElement.style.fontStyle = this._config.baseStyle.fontStyle;
+    this._selectElement.style.fontVariant = this._config.baseStyle.fontVariant;
     this._updateChildren(this._selectElement, this._config);
 };
 
@@ -347,16 +354,14 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
     style.display = styleConfig.display ? styleConfig.display : "";
     style.direction = styleConfig.direction ? styleConfig.direction : "";
     style.unicodeBidi = styleConfig.unicodeBidi ? styleConfig.unicodeBidi : "";
-    if (!styleConfig.color)
-        return;
-    style.color = styleConfig.color;
-    style.backgroundColor = styleConfig.backgroundColor;
-    style.fontSize = styleConfig.fontSize + "px";
-    style.fontWeight = styleConfig.fontWeight;
-    style.fontFamily = styleConfig.fontFamily.join(",");
-    style.fontStyle = styleConfig.fontStyle;
-    style.fontVariant = styleConfig.fontVariant;
-    style.textTransform = styleConfig.textTransform;
+    style.color = styleConfig.color ? styleConfig.color : "";
+    style.backgroundColor = styleConfig.backgroundColor ? styleConfig.backgroundColor : "";
+    style.fontSize = styleConfig.fontSize ? styleConfig.fontSize + "px" : "";
+    style.fontWeight = styleConfig.fontWeight ? styleConfig.fontWeight : "";
+    style.fontFamily = styleConfig.fontFamily ? styleConfig.fontFamily.join(",") : "";
+    style.fontStyle = styleConfig.fontStyle ? styleConfig.fontStyle : "";
+    style.fontVariant = styleConfig.fontVariant ? styleConfig.fontVariant : "";
+    style.textTransform = styleConfig.textTransform ? styleConfig.textTransform : "";
 };
 
 ListPicker.prototype._configureItem = function(element, config, inGroup) {

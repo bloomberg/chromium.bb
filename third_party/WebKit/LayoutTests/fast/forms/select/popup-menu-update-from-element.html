@@ -29,7 +29,8 @@ function test1() {
 
     function onUpdate() {
         setTimeout(function() {
-            shouldBeEqualToString('picker._selectElement.options[0].style.color', 'rgb(123, 0, 0)');
+            shouldBeEqualToString('picker._selectElement.style.color', 'rgb(123, 0, 0)');
+            shouldBeEqualToString('picker._selectElement.options[0].style.color', '');
             picker.removeListener("didUpdate", onUpdate);
             test2();
         });
