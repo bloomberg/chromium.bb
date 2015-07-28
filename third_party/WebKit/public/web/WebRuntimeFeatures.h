@@ -70,8 +70,6 @@ public:
 
     BLINK_EXPORT static void enableBleedingEdgeFastPaths(bool);
 
-    BLINK_EXPORT static void enableBlinkScheduler(bool);
-
     BLINK_EXPORT static void enableCompositorAnimationTimelines(bool);
 
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
