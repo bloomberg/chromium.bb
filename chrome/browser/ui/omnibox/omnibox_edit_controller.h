@@ -31,9 +31,9 @@ class OmniboxEditController {
                             WindowOpenDisposition disposition,
                             ui::PageTransition transition);
 
-  // Updates the controller, and, if |contents| is non-NULL, restores saved
-  // state that the tab holds.
-  virtual void Update(const content::WebContents* contents) = 0;
+  // Called when the the controller should update itself without restoring any
+  // tab state.
+  virtual void UpdateWithoutTabRestore() = 0;
 
   // Called when anything has changed that might affect the layout or contents
   // of the views around the edit, including the text of the edit and the

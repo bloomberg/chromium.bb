@@ -523,7 +523,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   }
 
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);
-  controller_->Update(NULL);
+  controller_->UpdateWithoutTabRestore();
 
   if (user_input_in_progress_ || !in_revert_)
     client_->OnInputStateChanged();

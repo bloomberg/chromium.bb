@@ -232,6 +232,10 @@ class LocationBarView : public LocationBar,
                                       int* left_margin,
                                       int* right_margin);
 
+  // Updates the controller, and, if |contents| is non-null, restores saved
+  // state that the tab holds.
+  void Update(const content::WebContents* contents);
+
   // Clears the location bar's state for |contents|.
   void ResetTabState(content::WebContents* contents);
 
@@ -247,7 +251,7 @@ class LocationBarView : public LocationBar,
   void Layout() override;
 
   // OmniboxEditController:
-  void Update(const content::WebContents* contents) override;
+  void UpdateWithoutTabRestore() override;
   void ShowURL() override;
   ToolbarModel* GetToolbarModel() override;
   content::WebContents* GetWebContents() override;

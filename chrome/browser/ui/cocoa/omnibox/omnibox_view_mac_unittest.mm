@@ -88,7 +88,7 @@ class TestingOmniboxEditController : public OmniboxEditController {
 
  protected:
   // Overridden from OmniboxEditController:
-  void Update(const content::WebContents* contents) override {}
+  void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}

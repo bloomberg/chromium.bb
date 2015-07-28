@@ -153,11 +153,15 @@ class LocationBarViewMac : public LocationBar,
   // is called and this function returns |NSZeroPoint|.
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
+  // Updates the controller, and, if |contents| is non-null, restores saved
+  // state that the tab holds.
+  void Update(const content::WebContents* contents);
+
   // Clears any location bar state stored for |contents|.
   void ResetTabState(content::WebContents* contents);
 
   // OmniboxEditController:
-  void Update(const content::WebContents* contents) override;
+  void UpdateWithoutTabRestore() override;
   void OnChanged() override;
   void OnSetFocus() override;
   void ShowURL() override;

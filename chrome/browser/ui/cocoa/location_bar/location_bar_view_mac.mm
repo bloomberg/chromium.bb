@@ -529,6 +529,10 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   OnChanged();
 }
 
+void LocationBarViewMac::UpdateWithoutTabRestore() {
+  Update(nullptr);
+}
+
 void LocationBarViewMac::OnChanged() {
   // Update the location-bar icon.
   const int resource_id = omnibox_view_->GetIcon();

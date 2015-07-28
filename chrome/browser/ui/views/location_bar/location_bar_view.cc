@@ -152,8 +152,8 @@ LocationBarView::LocationBarView(Browser* browser,
       web_contents_null_at_last_refresh_(true) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
-      base::Bind(&LocationBarView::Update, base::Unretained(this),
-                 static_cast<content::WebContents*>(NULL)));
+      base::Bind(&LocationBarView::UpdateWithoutTabRestore,
+                 base::Unretained(this)));
 
   if (browser_)
     browser_->search_model()->AddObserver(this);
@@ -800,9 +800,6 @@ void LocationBarView::Layout() {
   omnibox_view_->SetBoundsRect(location_bounds);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, public OmniboxEditController implementation:
-
 void LocationBarView::Update(const WebContents* contents) {
   mic_search_view_->SetVisible(
       !GetToolbarModel()->input_in_progress() && browser_ &&
@@ -830,6 +827,13 @@ void LocationBarView::Update(const WebContents* contents) {
 
 void LocationBarView::ResetTabState(WebContents* contents) {
   omnibox_view_->ResetTabState(contents);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, public OmniboxEditController implementation:
+
+void LocationBarView::UpdateWithoutTabRestore() {
+  Update(nullptr);
 }
 
 void LocationBarView::ShowURL() {
