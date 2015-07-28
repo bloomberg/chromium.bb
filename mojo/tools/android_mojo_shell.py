@@ -40,6 +40,7 @@ def main():
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=runner_args.target_cpu,
                   is_debug=runner_args.debug,
+                  is_verbose=runner_args.verbose,
                   apk_name=runner_args.apk)
   shell = AndroidShell(config)
   shell.InitShell(runner_args.origin, runner_args.device)

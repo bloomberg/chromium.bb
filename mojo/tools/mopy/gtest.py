@@ -214,9 +214,12 @@ def _run_test(config, shell, args, apptest, env, result):
       process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, env=env)
       result.put(process)
-      output = process.communicate()[0]
+      (output, stderr_output) = process.communicate()
       if process.returncode:
-        exception = 'Error: Test exited with code: %d' % process.returncode
+        exception = 'Error: Test exited with code: %d\n%s' % (
+            process.returncode, stderr_output)
+      elif config.is_verbose:
+        output += '\n' + stderr_output
     else:
       assert shell
       result.put(shell)

@@ -26,19 +26,21 @@ class Config(object):
   ARCH_ARM = 'arm'
 
   def __init__(self, build_dir=None, target_os=None, target_cpu=None,
-               is_debug=None, apk_name='MojoRunner.apk'):
+               is_debug=None, is_verbose=None, apk_name='MojoRunner.apk'):
     '''Function arguments take precedence over GN args and default values.'''
     assert target_os in (None, Config.OS_ANDROID, Config.OS_CHROMEOS,
                          Config.OS_LINUX, Config.OS_MAC, Config.OS_WINDOWS)
     assert target_cpu in (None, Config.ARCH_X86, Config.ARCH_X64,
                           Config.ARCH_ARM)
     assert is_debug in (None, True, False)
+    assert is_verbose in (None, True, False)
 
     self.values = {
       'build_dir': build_dir,
       'target_os': self.GetHostOS(),
       'target_cpu': self.GetHostCPU(),
       'is_debug': True,
+      'is_verbose': True,
       'dcheck_always_on': False,
       'is_asan': False,
       'apk_name': apk_name,
@@ -51,6 +53,8 @@ class Config(object):
       self.values['target_cpu'] = target_cpu
     if is_debug is not None:
       self.values['is_debug'] = is_debug
+    if is_verbose is not None:
+      self.values['is_verbose'] = is_verbose
 
   @staticmethod
   def GetHostOS():
@@ -114,6 +118,11 @@ class Config(object):
   def is_debug(self):
     '''Is Debug build?'''
     return self.values['is_debug']
+
+  @property
+  def is_verbose(self):
+    '''Should print additional logging information?'''
+    return self.values['is_verbose']
 
   @property
   def dcheck_always_on(self):
