@@ -554,6 +554,10 @@ static inline void setAttributes(Element* element, Vector<Attribute>& attributeV
 
 static void switchEncoding(xmlParserCtxtPtr ctxt, bool is8Bit)
 {
+    // Make sure we don't call xmlSwitchEncoding in an error state.
+    if ((ctxt->errNo != XML_ERR_OK) && (ctxt->disableSAX == 1))
+        return;
+
     // Hack around libxml2's lack of encoding overide support by manually
     // resetting the encoding to UTF-16 before every chunk. Otherwise libxml
     // will detect <?xml version="1.0" encoding="<encoding name>"?> blocks and
