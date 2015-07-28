@@ -70,13 +70,16 @@ namespace {
 const unsigned int kMaxSwapBuffers = 2U;
 
 // Used to override capabilities_.adjust_deadline_for_parent to false
-class OutputSurfaceWithoutParent : public cc::OutputSurface {
+class OutputSurfaceWithoutParent : public cc::OutputSurface,
+                                   public CompositorImpl::VSyncObserver {
  public:
   OutputSurfaceWithoutParent(
+      CompositorImpl* compositor,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const base::Callback<void(gpu::Capabilities)>&
           populate_gpu_capabilities_callback)
       : cc::OutputSurface(context_provider),
+        compositor_(compositor),
         populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
         swap_buffers_completion_callback_(
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
@@ -84,6 +87,8 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = 2;
   }
+
+  ~OutputSurfaceWithoutParent() override { compositor_->RemoveObserver(this); }
 
   void SwapBuffers(cc::CompositorFrame* frame) override {
     GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
@@ -102,6 +107,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 
     populate_gpu_capabilities_callback_.Run(
         context_provider_->ContextCapabilities().gpu);
+    compositor_->AddObserver(this);
 
     return true;
   }
@@ -123,6 +129,12 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     OutputSurface::OnSwapBuffersComplete();
   }
 
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override {
+    CommitVSyncParameters(timebase, interval);
+  }
+
+  CompositorImpl* compositor_;
   base::Callback<void(gpu::Capabilities)> populate_gpu_capabilities_callback_;
   base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
                                 gfx::SwapResult)>
@@ -646,8 +658,9 @@ void CompositorImpl::CreateOutputSurface() {
 
   scoped_ptr<cc::OutputSurface> real_output_surface(
       new OutputSurfaceWithoutParent(
-          context_provider, base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                                       base::Unretained(this))));
+          this, context_provider,
+          base::Bind(&CompositorImpl::PopulateGpuCapabilities,
+                     base::Unretained(this))));
 
   cc::SurfaceManager* manager = GetSurfaceManager();
   if (manager) {
@@ -673,6 +686,14 @@ void CompositorImpl::PopulateGpuCapabilities(
     gpu::Capabilities gpu_capabilities) {
   ui_resource_provider_.SetSupportsETC1NonPowerOfTwo(
       gpu_capabilities.texture_format_etc1_npot);
+}
+
+void CompositorImpl::AddObserver(VSyncObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void CompositorImpl::RemoveObserver(VSyncObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void CompositorImpl::ScheduleComposite() {
@@ -755,6 +776,9 @@ void CompositorImpl::OnVSync(base::TimeTicks frame_time,
     composite_on_vsync_trigger_ = DO_NOT_COMPOSITE;
     PostComposite(trigger);
   }
+
+  FOR_EACH_OBSERVER(VSyncObserver, observer_list_,
+                    OnUpdateVSyncParameters(frame_time, vsync_period));
 }
 
 void CompositorImpl::SetNeedsAnimate() {

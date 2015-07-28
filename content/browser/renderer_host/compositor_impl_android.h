@@ -45,6 +45,12 @@ class CONTENT_EXPORT CompositorImpl
       public cc::LayerTreeHostSingleThreadClient,
       public ui::WindowAndroidCompositor {
  public:
+  class VSyncObserver {
+   public:
+    virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                         base::TimeDelta interval) = 0;
+  };
+
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   ~CompositorImpl() override;
 
@@ -54,6 +60,9 @@ class CONTENT_EXPORT CompositorImpl
   static scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
 
   void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
+
+  void AddObserver(VSyncObserver* observer);
+  void RemoveObserver(VSyncObserver* observer);
 
  private:
   // Compositor implementation.
@@ -203,6 +212,8 @@ class CONTENT_EXPORT CompositorImpl
   // if |host_| is deleted or we succeed in creating *and* initializing an
   // OutputSurface (which is essentially the contract with cc).
   bool output_surface_request_pending_;
+
+  base::ObserverList<VSyncObserver, true> observer_list_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
