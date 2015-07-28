@@ -563,7 +563,7 @@ void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid) {
       base::win::GetVersion() == base::win::VERSION_WIN8_1) {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kDisableAppContainer)) {
+    if (command_line.HasSwitch(switches::kEnableAppContainer)) {
       policy->SetLowBox(sid);
     }
   }

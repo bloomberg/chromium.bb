@@ -609,8 +609,8 @@ const char kNoReferrers[]                   = "no-referrers";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
-// Disables appcontainer/lowbox for renderer on Win8+ platforms.
-const char kDisableAppContainer[]           = "disable-appcontainer";
+// Enables appcontainer/lowbox for renderer on Win8+ platforms.
+const char kEnableAppContainer[]           = "enable-appcontainer";
 
 // Number of worker threads used to rasterize content.
 const char kNumRasterThreads[]              = "num-raster-threads";
