@@ -359,7 +359,8 @@
                           object:nil
                            queue:[NSOperationQueue mainQueue]
                       usingBlock:^(NSNotification* notif) {
-                          if (![[notif object] isSheet])
+                          if (![[notif object] isSheet] &&
+                              [NSApp keyWindow] != [self window])
                             [self windowDidResignKey:note];
                       }];
 }

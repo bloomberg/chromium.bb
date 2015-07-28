@@ -6,6 +6,7 @@
 
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -17,6 +18,8 @@ const CGFloat kBubbleWindowWidth = 100;
 const CGFloat kBubbleWindowHeight = 50;
 const CGFloat kAnchorPointX = 400;
 const CGFloat kAnchorPointY = 300;
+
+NSWindow* g_key_window = nil;
 }  // namespace
 
 @interface ContextMenuController : NSObject<NSMenuDelegate> {
@@ -84,6 +87,18 @@ const CGFloat kAnchorPointY = 300;
 }
 
 @end
+
+// A helper class to swizzle [NSApplication keyWindow].
+@interface FakeKeyWindow : NSObject
+@property(readonly) NSWindow* keyWindow;
+@end
+
+@implementation FakeKeyWindow
+- (NSWindow*)keyWindow {
+  return g_key_window;
+}
+@end
+
 
 class BaseBubbleControllerTest : public CocoaTest {
  public:
@@ -423,4 +438,31 @@ TEST_F(BaseBubbleControllerTest, ExitFullscreen) {
                         object:test_window()];
 
   EXPECT_FALSE([bubble_window_ isVisible]);
+}
+
+// Tests that a bubble will not close when it's becoming a key window.
+TEST_F(BaseBubbleControllerTest, StayOnFocus) {
+  // The event tap is only installed on 10.7+.
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  [controller_ setShouldOpenAsKeyWindow:NO];
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
+
+  EXPECT_TRUE([bubble_window_ isVisible]);
+  EXPECT_TRUE([controller_ shouldCloseOnResignKey]);  // Verify default value.
+
+  // Make the bubble a key window.
+  g_key_window = [controller_ window];
+  base::mac::ScopedObjCClassSwizzler swizzler(
+      [NSApplication class], [FakeKeyWindow class], @selector(keyWindow));
+
+  // Post the "resign key" notification for another window.
+  NSNotification* notif =
+      [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                    object:test_window()];
+  [[NSNotificationCenter defaultCenter] postNotification:notif];
+
+  EXPECT_TRUE([bubble_window_ isVisible]);
+  g_key_window = nil;
 }
