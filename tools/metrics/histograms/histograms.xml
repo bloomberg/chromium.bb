@@ -17594,6 +17594,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MemoryAndroid.LowRamDevice" enum="Boolean">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Whether the OS is running in low_ram mode. This histogram is reported on
+    every upload by Android devices. The low_ram status is configured by the OS
+    and reported via ActivityManager.isLowRamDevice().
+  </summary>
+</histogram>
+
 <histogram name="MemoryAndroid.NotificationBackground"
     enum="AndroidMemoryNotificationBackground">
   <owner>hajimehoshi@chromium.org</owner>

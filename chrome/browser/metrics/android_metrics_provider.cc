@@ -8,6 +8,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/common/pref_names.h"
@@ -53,6 +54,9 @@ void AndroidMetricsProvider::ProvideGeneralMetrics(
       "CustomTabs.Visible",
       chrome::android::GetCustomTabsVisibleValue(),
       chrome::android::CUSTOM_TABS_VISIBILITY_MAX);
+  UMA_HISTOGRAM_BOOLEAN(
+      "MemoryAndroid.LowRamDevice",
+      base::SysInfo::IsLowEndDevice());
 }
 
 void AndroidMetricsProvider::OnForegroundActivityChanged(
