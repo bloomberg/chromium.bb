@@ -542,6 +542,9 @@ bool SelectionController::handlePasteGlobalSelection(const PlatformMouseEvent& m
 
 bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& gestureEvent, const HitTestResult& hitTestResult)
 {
+    if (hitTestResult.isLiveLink())
+        return false;
+
 #if OS(ANDROID)
     bool shouldLongPressSelectWord = true;
 #else
@@ -551,11 +554,12 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
         return false;
 
     Node* innerNode = hitTestResult.innerNode();
-    if (hitTestResult.isLiveLink() || !innerNode || !(innerNode->isContentEditable() || innerNode->isTextNode()
 #if OS(ANDROID)
-        || innerNode->canStartSelection()
+    bool innerNodeIsSelectable = innerNode && (innerNode->isContentEditable() || innerNode->isTextNode() || innerNode->canStartSelection());
+#else
+    bool innerNodeIsSelectable = innerNode && (innerNode->isContentEditable() || innerNode->isTextNode());
 #endif
-        ))
+    if (!innerNodeIsSelectable)
         return false;
 
     selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend);
