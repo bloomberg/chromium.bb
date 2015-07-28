@@ -8,13 +8,9 @@
 <script>
 test(function() {
     function popupCallback() {
-        // To handle platforms (Mac) that doesn't support testing popup menu windows,
-        // phrase the check so that openPicker()'s errorCallback produces the same
-        // expected output when invoked.
-        var popupWindowScreenOrientation = popupWindow ? popupWindow.screen.orientation : null;
-        assert_equals(popupWindowScreenOrientation, null);
+        assert_equals(popupWindow.screen.orientation, null);
     }
-    openPicker(document.getElementById('date'), popupCallback, popupCallback);
+    openPicker(document.getElementById('date'), popupCallback);
 }, "Verify that accessing screen.orientation where unsupported doesn't crash.");
 </script>
 </body>
