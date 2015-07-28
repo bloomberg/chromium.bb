@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.sync.ui;
 
 import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Color;
@@ -348,7 +349,12 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     private void closeDialogIfOpen(String tag) {
-        DialogFragment df = (DialogFragment) getFragmentManager().findFragmentByTag(tag);
+        FragmentManager manager = getFragmentManager();
+        if (manager == null) {
+            // Do nothing if the manager doesn't exist yet; see http://crbug.com/480544.
+            return;
+        }
+        DialogFragment df = (DialogFragment) manager.findFragmentByTag(tag);
         if (df != null) {
             df.dismiss();
         }
