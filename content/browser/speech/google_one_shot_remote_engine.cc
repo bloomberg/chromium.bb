@@ -34,7 +34,6 @@ const char* const kConfidenceString = "confidence";
 const int kWebServiceStatusNoError = 0;
 const int kWebServiceStatusNoSpeech = 4;
 const int kWebServiceStatusNoMatch = 5;
-const AudioEncoder::Codec kDefaultAudioCodec = AudioEncoder::CODEC_FLAC;
 
 bool ParseServerResponse(const std::string& response_body,
                          SpeechRecognitionResult* result,
@@ -208,8 +207,7 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
   GURL url(std::string(kDefaultSpeechRecognitionUrl) +
            base::JoinString(parts, "&"));
 
-  encoder_.reset(AudioEncoder::Create(kDefaultAudioCodec,
-                                      config_.audio_sample_rate,
+  encoder_.reset(AudioEncoder::Create(config_.audio_sample_rate,
                                       config_.audio_num_bits_per_sample));
   DCHECK(encoder_.get());
   url_fetcher_ = net::URLFetcher::Create(url_fetcher_id_for_tests, url,

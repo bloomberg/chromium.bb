@@ -471,10 +471,7 @@ source_set("browser") {
   }
 
   if (enable_web_speech) {
-    deps += [
-      "//third_party/flac",
-      "//third_party/speex",
-    ]
+    deps += [ "//third_party/flac" ]
   }
 
   if (is_linux && use_dbus) {

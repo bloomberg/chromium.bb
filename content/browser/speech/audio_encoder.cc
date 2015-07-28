@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "third_party/flac/include/FLAC/stream_encoder.h"
-#include "third_party/speex/include/speex/speex.h"
 
 namespace content {
 namespace {
@@ -100,82 +99,10 @@ void FLACEncoder::Flush() {
   FLAC__stream_encoder_finish(encoder_);
 }
 
-//-------------------------------- SpeexEncoder --------------------------------
-
-const char* const kContentTypeSpeex = "audio/x-speex-with-header-byte; rate=";
-const int kSpeexEncodingQuality = 8;
-const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
-
-// Since the frame length gets written out as a byte in the encoded packet,
-// make sure it is within the byte range.
-static_assert(kMaxSpeexFrameLength <= 0xFF, "invalid length");
-
-class SpeexEncoder : public AudioEncoder {
- public:
-  explicit SpeexEncoder(int sampling_rate, int bits_per_sample);
-  ~SpeexEncoder() override;
-  void Encode(const AudioChunk& raw_audio) override;
-  void Flush() override {}
-
- private:
-  void* encoder_state_;
-  SpeexBits bits_;
-  int samples_per_frame_;
-  char encoded_frame_data_[kMaxSpeexFrameLength + 1];  // +1 for the frame size.
-  DISALLOW_COPY_AND_ASSIGN(SpeexEncoder);
-};
-
-SpeexEncoder::SpeexEncoder(int sampling_rate, int bits_per_sample)
-    : AudioEncoder(std::string(kContentTypeSpeex) +
-                   base::IntToString(sampling_rate),
-                   bits_per_sample) {
-   // speex_bits_init() does not initialize all of the |bits_| struct.
-   memset(&bits_, 0, sizeof(bits_));
-   speex_bits_init(&bits_);
-   encoder_state_ = speex_encoder_init(&speex_wb_mode);
-   DCHECK(encoder_state_);
-   speex_encoder_ctl(encoder_state_, SPEEX_GET_FRAME_SIZE, &samples_per_frame_);
-   DCHECK(samples_per_frame_ > 0);
-   int quality = kSpeexEncodingQuality;
-   speex_encoder_ctl(encoder_state_, SPEEX_SET_QUALITY, &quality);
-   int vbr = 1;
-   speex_encoder_ctl(encoder_state_, SPEEX_SET_VBR, &vbr);
-   memset(encoded_frame_data_, 0, sizeof(encoded_frame_data_));
-}
-
-SpeexEncoder::~SpeexEncoder() {
-  speex_bits_destroy(&bits_);
-  speex_encoder_destroy(encoder_state_);
-}
-
-void SpeexEncoder::Encode(const AudioChunk& raw_audio) {
-  spx_int16_t* src_buffer =
-      const_cast<spx_int16_t*>(raw_audio.SamplesData16());
-  int num_samples = raw_audio.NumSamples();
-  // Drop incomplete frames, typically those which come in when recording stops.
-  num_samples -= (num_samples % samples_per_frame_);
-  for (int i = 0; i < num_samples; i += samples_per_frame_) {
-    speex_bits_reset(&bits_);
-    speex_encode_int(encoder_state_, src_buffer + i, &bits_);
-
-    // Encode the frame and place the size of the frame as the first byte. This
-    // is the packet format for MIME type x-speex-with-header-byte.
-    int frame_length = speex_bits_write(&bits_, encoded_frame_data_ + 1,
-                                        kMaxSpeexFrameLength);
-    encoded_frame_data_[0] = static_cast<char>(frame_length);
-    encoded_audio_buffer_.Enqueue(
-        reinterpret_cast<uint8*>(&encoded_frame_data_[0]), frame_length + 1);
-  }
-}
-
 }  // namespace
 
-AudioEncoder* AudioEncoder::Create(Codec codec,
-                                   int sampling_rate,
-                                   int bits_per_sample) {
-  if (codec == CODEC_FLAC)
-    return new FLACEncoder(sampling_rate, bits_per_sample);
-  return new SpeexEncoder(sampling_rate, bits_per_sample);
+AudioEncoder* AudioEncoder::Create(int sampling_rate, int bits_per_sample) {
+  return new FLACEncoder(sampling_rate, bits_per_sample);
 }
 
 AudioEncoder::AudioEncoder(const std::string& mime_type, int bits_per_sample)

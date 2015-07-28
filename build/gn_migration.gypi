@@ -327,7 +327,6 @@
             #"//third_party/mesa",
             #"//third_party/mockito:mockito_java",
             #"//third_party/openmax_dl/dl",
-            #"//third_party/speex",
             #"//ui/android:ui_java",
 
             # TODO(GYP): Are these needed?
@@ -444,7 +443,6 @@
             #"//third_party/ots",
             #"//third_party/qcms",
             #"//third_party/smhasher:murmurhash3",
-            #"//third_party/speex",
             #"//third_party/webrtc/system_wrappers",
             #"//ui/native_theme",
             #"//ui/snapshot",

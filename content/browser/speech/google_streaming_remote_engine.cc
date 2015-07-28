@@ -36,7 +36,6 @@ const char kWebServiceBaseUrl[] =
     "https://www.google.com/speech-api/full-duplex/v1";
 const char kDownstreamUrl[] = "/down?";
 const char kUpstreamUrl[] = "/up?";
-const AudioEncoder::Codec kDefaultAudioCodec = AudioEncoder::CODEC_FLAC;
 
 // This matches the maximum maxAlternatives value supported by the server.
 const uint32 kMaxMaxAlternatives = 30;
@@ -294,8 +293,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   DCHECK(!upstream_fetcher_.get());
   DCHECK(!downstream_fetcher_.get());
 
-  encoder_.reset(AudioEncoder::Create(kDefaultAudioCodec,
-                                      config_.audio_sample_rate,
+  encoder_.reset(AudioEncoder::Create(config_.audio_sample_rate,
                                       config_.audio_num_bits_per_sample));
   DCHECK(encoder_.get());
   const std::string request_key = GenerateRequestKey();
@@ -307,7 +305,6 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                            !config_.auth_scope.empty());
   if (use_framed_post_data_) {
     preamble_encoder_.reset(AudioEncoder::Create(
-        kDefaultAudioCodec,
         config_.preamble->sample_rate,
         config_.preamble->sample_depth * 8));
   }

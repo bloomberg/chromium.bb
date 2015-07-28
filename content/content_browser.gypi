@@ -2083,7 +2083,6 @@
     ['enable_web_speech==1', {
       'dependencies': [
         '../third_party/flac/flac.gyp:libflac',
-        '../third_party/speex/speex.gyp:libspeex',
       ],
     }],
     ['enable_web_speech==0 and OS=="android"', {

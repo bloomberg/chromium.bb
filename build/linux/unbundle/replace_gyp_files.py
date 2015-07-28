@@ -35,7 +35,6 @@ REPLACEMENTS = {
   'use_system_protobuf': 'third_party/protobuf/protobuf.gyp',
   'use_system_re2': 'third_party/re2/re2.gyp',
   'use_system_snappy': 'third_party/snappy/snappy.gyp',
-  'use_system_speex': 'third_party/speex/speex.gyp',
   'use_system_sqlite': 'third_party/sqlite/sqlite.gyp',
   'use_system_v8': 'v8/tools/gyp/v8.gyp',
   'use_system_zlib': 'third_party/zlib/zlib.gyp',

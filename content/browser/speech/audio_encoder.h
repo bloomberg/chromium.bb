@@ -15,18 +15,10 @@
 namespace content{
 class AudioChunk;
 
-// Provides a simple interface to encode raw audio using the various speech
-// codecs.
+// Provides a simple interface to encode raw audio using FLAC codec.
 class AudioEncoder {
  public:
-  enum Codec {
-    CODEC_FLAC,
-    CODEC_SPEEX,
-  };
-
-  static AudioEncoder* Create(Codec codec,
-                              int sampling_rate,
-                              int bits_per_sample);
+  static AudioEncoder* Create(int sampling_rate, int bits_per_sample);
 
   virtual ~AudioEncoder();
 
