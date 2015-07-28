@@ -87,6 +87,7 @@ if (use_system_harfbuzz) {
       "src/hb-ot-maxp-table.hh",
       "src/hb-ot-name-table.hh",
       "src/hb-ot-shape-complex-arabic-fallback.hh",
+      "src/hb-ot-shape-complex-arabic-private.hh",
       "src/hb-ot-shape-complex-arabic-table.hh",
       "src/hb-ot-shape-complex-arabic.cc",
       "src/hb-ot-shape-complex-default.cc",
@@ -99,10 +100,12 @@ if (use_system_harfbuzz) {
       "src/hb-ot-shape-complex-myanmar-machine.hh",
       "src/hb-ot-shape-complex-myanmar.cc",
       "src/hb-ot-shape-complex-private.hh",
-      "src/hb-ot-shape-complex-sea-machine.hh",
-      "src/hb-ot-shape-complex-sea.cc",
       "src/hb-ot-shape-complex-thai.cc",
       "src/hb-ot-shape-complex-tibetan.cc",
+      "src/hb-ot-shape-complex-use-machine.hh",
+      "src/hb-ot-shape-complex-use-private.hh",
+      "src/hb-ot-shape-complex-use-table.cc",
+      "src/hb-ot-shape-complex-use.cc",
       "src/hb-ot-shape-fallback-private.hh",
       "src/hb-ot-shape-fallback.cc",
       "src/hb-ot-shape-normalize-private.hh",
@@ -150,6 +153,7 @@ if (use_system_harfbuzz) {
       if (is_clang) {
         cflags += [
           "-Wno-unused-value",
+
           # Harfbuzz uses unused typedefs for its static asserts (and its
           # static asserts are strange enough that they can't be replaced
           # by static_assert).

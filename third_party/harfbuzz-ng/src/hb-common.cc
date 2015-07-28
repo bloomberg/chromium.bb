@@ -57,7 +57,7 @@ _hb_options_init (void)
 
 /**
  * hb_tag_from_string:
- * @str: (array length=len): 
+ * @str: (array length=len) (element-type uint8_t): 
  * @len: 
  *
  * 
@@ -92,7 +92,7 @@ hb_tag_from_string (const char *str, int len)
  *
  * 
  *
- * Since: 1.0
+ * Since: 0.9.5
  **/
 void
 hb_tag_to_string (hb_tag_t tag, char *buf)
@@ -115,7 +115,7 @@ const char direction_strings[][4] = {
 
 /**
  * hb_direction_from_string:
- * @str: (array length=len): 
+ * @str: (array length=len) (element-type uint8_t): 
  * @len: 
  *
  * 
@@ -179,7 +179,7 @@ static const char canon_map[256] = {
   'p', 'q', 'r', 's', 't', 'u', 'v', 'w',  'x', 'y', 'z',  0,   0,   0,   0,   0
 };
 
-static hb_bool_t
+static bool
 lang_equal (hb_language_t  v1,
 	    const void    *v2)
 {
@@ -281,12 +281,12 @@ retry:
 
 /**
  * hb_language_from_string:
- * @str: (array length=len): 
+ * @str: (array length=len) (element-type uint8_t): 
  * @len: 
  *
  * 
  *
- * Return value: 
+ * Return value: (transfer none):
  *
  * Since: 1.0
  **/
@@ -334,7 +334,7 @@ hb_language_to_string (hb_language_t language)
  *
  * 
  *
- * Return value: 
+ * Return value: (transfer none):
  *
  * Since: 1.0
  **/
@@ -401,7 +401,7 @@ hb_script_from_iso15924_tag (hb_tag_t tag)
 
 /**
  * hb_script_from_string:
- * @s: (array length=len): 
+ * @s: (array length=len) (element-type uint8_t): 
  * @len: 
  *
  * 
@@ -493,6 +493,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
     case HB_SCRIPT_PALMYRENE:
     case HB_SCRIPT_PSALTER_PAHLAVI:
 
+    /* Unicode-8.0 additions */
+    case HB_SCRIPT_OLD_HUNGARIAN:
+
       return HB_DIRECTION_RTL;
   }
 
@@ -579,7 +582,7 @@ hb_version_string (void)
  *
  * Return value: 
  *
- * Since: 1.0
+ * Since: 0.9.30
  **/
 hb_bool_t
 hb_version_atleast (unsigned int major,

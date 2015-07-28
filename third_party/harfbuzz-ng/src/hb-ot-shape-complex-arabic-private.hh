@@ -1,5 +1,6 @@
 /*
- * Copyright © 2011  Google, Inc.
+ * Copyright © 2015  Mozilla Foundation.
+ * Copyright © 2015  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,46 +22,29 @@
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
+ * Mozilla Author(s): Jonathan Kew
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
-#error "Include <hb.h> instead."
-#endif
+#ifndef HB_OT_SHAPE_COMPLEX_ARABIC_PRIVATE_HH
+#define HB_OT_SHAPE_COMPLEX_ARABIC_PRIVATE_HH
 
-#ifndef HB_VERSION_H
-#define HB_VERSION_H
+#include "hb-private.hh"
 
-#include "hb-common.h"
-
-HB_BEGIN_DECLS
+#include "hb-ot-shape-complex-private.hh"
 
 
-#define HB_VERSION_MAJOR 1
-#define HB_VERSION_MINOR 0
-#define HB_VERSION_MICRO 0
+struct arabic_shape_plan_t;
 
-#define HB_VERSION_STRING "1.0.0"
+HB_INTERNAL void *
+data_create_arabic (const hb_ot_shape_plan_t *plan);
 
-#define HB_VERSION_ATLEAST(major,minor,micro) \
-	((major)*10000+(minor)*100+(micro) <= \
-	 HB_VERSION_MAJOR*10000+HB_VERSION_MINOR*100+HB_VERSION_MICRO)
+HB_INTERNAL void
+data_destroy_arabic (void *data);
 
+HB_INTERNAL void
+setup_masks_arabic_plan (const arabic_shape_plan_t *arabic_plan,
+			 hb_buffer_t               *buffer,
+			 hb_script_t                script);
 
-void
-hb_version (unsigned int *major,
-	    unsigned int *minor,
-	    unsigned int *micro);
-
-const char *
-hb_version_string (void);
-
-hb_bool_t
-hb_version_atleast (unsigned int major,
-		    unsigned int minor,
-		    unsigned int micro);
-
-
-HB_END_DECLS
-
-#endif /* HB_VERSION_H */
+#endif /* HB_OT_SHAPE_COMPLEX_ARABIC_PRIVATE_HH */
