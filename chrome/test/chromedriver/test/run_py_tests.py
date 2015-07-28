@@ -55,6 +55,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
     # crbug.com/469947
     'ChromeDriverTest.testTouchPinch'
+    # https://code.google.com/p/chromedriver/issues/detail?id=1167
+    'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
