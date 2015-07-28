@@ -11,38 +11,11 @@
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/identity.h"
 #include "url/gurl.h"
 
 namespace mojo {
-
-// TODO(beng): upstream this into mojo repo, array.h so it can be shared with
-//             application_impl.cc.
-// A |TypeConverter| that will create an |std::set<E>| containing a copy of
-// the contents of an |Array<T>|, using |TypeConverter<E, T>| to copy each
-// element. If the input array is null, the output set will be empty.
-template <typename E, typename T>
-struct TypeConverter <std::set<E>, Array<T>> {
-  static std::set<E> Convert(const Array<T>& input) {
-    std::set<E> result;
-    if (!input.is_null()) {
-      for (size_t i = 0; i < input.size(); ++i)
-        result.insert(TypeConverter<E, T>::Convert(input[i]));
-    }
-    return result;
-  }
-};
-
-template <typename T, typename E>
-struct TypeConverter <Array<T>, std::set<E>> {
-  static Array<T> Convert(const std::set<E>& input) {
-    Array<T> result(0u);
-    for (auto i : input)
-      result.push_back(TypeConverter<T, E>::Convert(i));
-    return result.Pass();
-  }
-};
-
 namespace shell {
 
 class ApplicationManager;
@@ -51,9 +24,6 @@ class ApplicationManager;
 // shell's ApplicationManager.
 class ApplicationInstance : public Shell {
  public:
-  using AllowedInterfaces = std::set<std::string>;
-  using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
-
   ApplicationInstance(ApplicationPtr application,
                       ApplicationManager* manager,
                       const Identity& originator_identity,
@@ -70,7 +40,7 @@ class ApplicationInstance : public Shell {
                        const GURL& requestor_url,
                        InterfaceRequest<ServiceProvider> services,
                        ServiceProviderPtr exposed_services,
-                       CapabilityFilterPtr filter);
+                       const CapabilityFilter& filter);
 
   // Returns the set of interfaces this application instance is allowed to see
   // from an instance with |identity|.
@@ -106,7 +76,7 @@ class ApplicationInstance : public Shell {
     GURL requestor_url;
     InterfaceRequest<ServiceProvider> services;
     ServiceProviderPtr exposed_services;
-    CapabilityFilterPtr filter;
+    CapabilityFilter filter;
   };
 
   ApplicationManager* const manager_;

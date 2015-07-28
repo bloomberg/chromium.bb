@@ -10,10 +10,12 @@ namespace mojo {
 namespace shell {
 
 ContentHandlerConnection::ContentHandlerConnection(
+    ApplicationInstance* originator,
     ApplicationManager* manager,
     const GURL& content_handler_url,
     const GURL& requestor_url,
-    const std::string& qualifier)
+    const std::string& qualifier,
+    const CapabilityFilter& filter)
     : manager_(manager),
       content_handler_url_(content_handler_url),
       content_handler_qualifier_(qualifier),
@@ -21,11 +23,9 @@ ContentHandlerConnection::ContentHandlerConnection(
   ServiceProviderPtr services;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(content_handler_url.spec());
-  // TODO(beng): Need to figure out how to deal with originator and
-  //             CapabilityFilter here.
   manager->ConnectToApplication(
-      nullptr, request.Pass(), qualifier, requestor_url, GetProxy(&services),
-      nullptr, nullptr, base::Closure());
+      originator, request.Pass(), qualifier, requestor_url, GetProxy(&services),
+      nullptr, filter, base::Closure());
   MessagePipe pipe;
   content_handler_.Bind(
       InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));

@@ -55,7 +55,7 @@ void ApplicationInstance::ConnectToClient(
     const GURL& requestor_url,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
-    CapabilityFilterPtr filter) {
+    const CapabilityFilter& filter) {
   if (queue_requests_) {
     QueuedClientRequest* queued_request = new QueuedClientRequest();
     queued_request->originator = originator;
@@ -63,7 +63,7 @@ void ApplicationInstance::ConnectToClient(
     queued_request->requestor_url = requestor_url;
     queued_request->services = services.Pass();
     queued_request->exposed_services = exposed_services.Pass();
-    queued_request->filter = filter.Pass();
+    queued_request->filter = filter;
     queued_client_requests_.push_back(queued_request);
     return;
   }
@@ -72,9 +72,8 @@ void ApplicationInstance::ConnectToClient(
                        exposed_services.Pass(), requested_url);
 }
 
-ApplicationInstance::AllowedInterfaces
-    ApplicationInstance::GetAllowedInterfaces(
-        const Identity& identity) const {
+AllowedInterfaces ApplicationInstance::GetAllowedInterfaces(
+    const Identity& identity) const {
   // Start by looking for interfaces specific to the supplied identity.
   auto it = filter_.find(identity.url.spec());
   if (it != filter_.end())
@@ -101,12 +100,16 @@ void ApplicationInstance::ConnectToApplication(
     return;
   }
   if (allow_any_application_ || filter_.find(url_string) != filter_.end()) {
+    CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
+    if (!filter.is_null())
+      capability_filter = filter->filter.To<CapabilityFilter>();
     manager_->ConnectToApplication(this, app_request.Pass(), std::string(),
                                    identity_.url, services.Pass(),
-                                   exposed_services.Pass(), filter.Pass(),
+                                   exposed_services.Pass(), capability_filter,
                                    base::Closure());
   } else {
-    DVLOG(2) << "CapabilityFilter prevented connection to: " << url_string;
+    DVLOG(1) << "CapabilityFilter prevented connection from: " <<
+        identity_.url << " to: " << url_string;
   }
 }
 
@@ -152,7 +155,7 @@ void ApplicationInstance::OnConnectionError() {
                                   request->requestor_url,
                                   request->services.Pass(),
                                   request->exposed_services.Pass(),
-                                  request->filter.Pass(),
+                                  request->filter,
                                   base::Closure());
   }
   STLDeleteElements(&queued_client_requests);

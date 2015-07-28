@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "mojo/shell/capability_filter.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
@@ -52,7 +53,8 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
   request->url = mojo::String::From(application_url.spec());
   shell_context_.application_manager()->ConnectToApplication(
       nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
-      nullptr, nullptr, base::Bind(&QuitIfRunning));
+      nullptr, shell::GetPermissiveCapabilityFilter(),
+      base::Bind(&QuitIfRunning));
   MessagePipe pipe;
   services->ConnectToService(service_name, pipe.handle1.Pass());
   return pipe.handle0.Pass();

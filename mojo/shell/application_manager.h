@@ -18,6 +18,7 @@
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/updater/updater.mojom.h"
 #include "mojo/shell/application_loader.h"
+#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
@@ -80,15 +81,14 @@ class ApplicationManager {
   // |originator| can be NULL (e.g. for the first application or in tests), but
   // typically is non-NULL and identifies the instance initiating the
   // connection.
-  void ConnectToApplication(
-      ApplicationInstance* originator,
-      URLRequestPtr requested_url,
-      const std::string& qualifier,
-      const GURL& requestor_url,
-      InterfaceRequest<ServiceProvider> services,
-      ServiceProviderPtr exposed_services,
-      CapabilityFilterPtr filter,
-      const base::Closure& on_application_end);
+  void ConnectToApplication(ApplicationInstance* originator,
+                            URLRequestPtr requested_url,
+                            const std::string& qualifier,
+                            const GURL& requestor_url,
+                            InterfaceRequest<ServiceProvider> services,
+                            ServiceProviderPtr exposed_services,
+                            const CapabilityFilter& capability_filter,
+                            const base::Closure& on_application_end);
 
   // Must only be used by shell internals and test code as it does not forward
   // capability filters.
@@ -172,7 +172,7 @@ class ApplicationManager {
                                    const GURL& requestor_url,
                                    InterfaceRequest<ServiceProvider>* services,
                                    ServiceProviderPtr* exposed_services,
-                                   CapabilityFilterPtr* filter);
+                                   const CapabilityFilter& filter);
 
   bool ConnectToApplicationWithLoader(
       ApplicationInstance* originator,
@@ -182,7 +182,7 @@ class ApplicationManager {
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider>* services,
       ServiceProviderPtr* exposed_services,
-      CapabilityFilterPtr* filter,
+      const CapabilityFilter& filter,
       const base::Closure& on_application_end,
       ApplicationLoader* loader);
 
@@ -193,7 +193,7 @@ class ApplicationManager {
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
-      CapabilityFilterPtr filter,
+      const CapabilityFilter& filter,
       const base::Closure& on_application_end);
 
   // Called once |fetcher| has found app. |requested_url| is the url of the
@@ -204,7 +204,7 @@ class ApplicationManager {
                            const GURL& requestor_url,
                            InterfaceRequest<ServiceProvider> services,
                            ServiceProviderPtr exposed_services,
-                           CapabilityFilterPtr filter,
+                           const CapabilityFilter& filter,
                            const base::Closure& on_application_end,
                            NativeApplicationCleanup cleanup,
                            scoped_ptr<Fetcher> fetcher);
@@ -217,9 +217,11 @@ class ApplicationManager {
                             const base::FilePath& file_path,
                             bool path_exists);
 
-  void LoadWithContentHandler(const GURL& content_handler_url,
+  void LoadWithContentHandler(ApplicationInstance* originator,
+                              const GURL& content_handler_url,
                               const GURL& requestor_url,
                               const std::string& qualifier,
+                              const CapabilityFilter& filter,
                               InterfaceRequest<Application> application_request,
                               URLResponsePtr url_response);
 

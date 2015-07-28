@@ -43,7 +43,7 @@ class CONTENT_EXPORT MojoShellContext
       const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
-      mojo::CapabilityFilterPtr filter);
+      const mojo::shell::CapabilityFilter& filter);
 
   static void SetApplicationsForTest(const StaticApplicationMap* apps);
 
@@ -56,7 +56,7 @@ class CONTENT_EXPORT MojoShellContext
       const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
-      mojo::CapabilityFilterPtr filter);
+      const mojo::shell::CapabilityFilter& filter);
 
   // mojo::shell::ApplicationManager::Delegate:
   GURL ResolveMappings(const GURL& url) override;

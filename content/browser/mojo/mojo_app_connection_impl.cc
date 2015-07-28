@@ -5,6 +5,7 @@
 #include "content/browser/mojo/mojo_app_connection_impl.h"
 
 #include "content/browser/mojo/mojo_shell_context.h"
+#include "mojo/shell/capability_filter.h"
 
 namespace content {
 
@@ -20,10 +21,9 @@ scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
 
 MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
                                              const GURL& requestor_url) {
-  MojoShellContext::ConnectToApplication(url, requestor_url,
-                                         mojo::GetProxy(&services_),
-                                         mojo::ServiceProviderPtr(),
-                                         nullptr);
+  MojoShellContext::ConnectToApplication(
+      url, requestor_url, mojo::GetProxy(&services_),
+      mojo::ServiceProviderPtr(), mojo::shell::GetPermissiveCapabilityFilter());
 }
 
 MojoAppConnectionImpl::~MojoAppConnectionImpl() {

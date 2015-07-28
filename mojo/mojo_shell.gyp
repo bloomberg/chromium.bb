@@ -12,6 +12,8 @@
       'shell/application_loader.h',
       'shell/application_manager.cc',
       'shell/application_manager.h',
+      'shell/capability_filter.cc',
+      'shell/capability_filter.h',
       'shell/content_handler_connection.cc',
       'shell/content_handler_connection.h',
       'shell/data_pipe_peek.cc',

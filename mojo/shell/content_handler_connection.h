@@ -8,11 +8,13 @@
 #include <string>
 
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
+#include "mojo/shell/capability_filter.h"
 #include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
 
+class ApplicationInstance;
 class ApplicationManager;
 
 // A ContentHandlerConnection is responsible for creating and maintaining a
@@ -23,12 +25,14 @@ class ApplicationManager;
 // destruction.
 class ContentHandlerConnection {
  public:
-  ContentHandlerConnection(ApplicationManager* manager,
+  ContentHandlerConnection(ApplicationInstance* originator,
+                           ApplicationManager* manager,
                            const GURL& content_handler_url,
                            const GURL& requestor_url,
-                           const std::string& qualifier);
+                           const std::string& qualifier,
+                           const CapabilityFilter& filter);
 
-  // Closes the connection and destorys |this| object.
+  // Closes the connection and destroys |this| object.
   void CloseConnection();
 
   ContentHandler* content_handler() { return content_handler_.get(); }

@@ -759,7 +759,8 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("test:test");
   application_manager_->ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL(), nullptr, nullptr, nullptr,
+      nullptr, request.Pass(), std::string(), GURL(), nullptr, nullptr,
+      GetPermissiveCapabilityFilter(),
       base::Bind(&QuitClosure, base::Unretained(&called)));
   loop_.Run();
   EXPECT_TRUE(called);
@@ -787,7 +788,8 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
   request->url = mojo::String::From("test:test");
   application_manager.ConnectToApplication(
       nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
-      nullptr, base::Bind(&QuitClosure, base::Unretained(&called)));
+      GetPermissiveCapabilityFilter(),
+      base::Bind(&QuitClosure, base::Unretained(&called)));
   loop.Run();
   EXPECT_TRUE(called);
 

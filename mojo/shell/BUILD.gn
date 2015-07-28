@@ -13,6 +13,8 @@ source_set("shell") {
     "application_loader.h",
     "application_manager.cc",
     "application_manager.h",
+    "capability_filter.cc",
+    "capability_filter.h",
     "content_handler_connection.cc",
     "content_handler_connection.h",
     "data_pipe_peek.cc",

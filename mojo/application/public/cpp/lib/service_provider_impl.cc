@@ -24,11 +24,6 @@ void ServiceProviderImpl::Bind(InterfaceRequest<ServiceProvider> request) {
   binding_.Bind(request.Pass());
 }
 
-void ServiceProviderImpl::Close() {
-  if (binding_.is_bound())
-    binding_.Close();
-}
-
 void ServiceProviderImpl::ConnectToService(
     const String& service_name,
     ScopedMessagePipeHandle client_handle) {

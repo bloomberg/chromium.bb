@@ -10,7 +10,7 @@
 #include "mojo/application/public/cpp/lib/interface_factory_connector.h"
 #include "mojo/application/public/cpp/lib/service_connector_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 
@@ -22,9 +22,6 @@ class ServiceProviderImpl : public ServiceProvider {
   ~ServiceProviderImpl() override;
 
   void Bind(InterfaceRequest<ServiceProvider> request);
-  // Disconnect this service provider and put it in a state where it can be
-  // rebound to a new request.
-  void Close();
 
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {
@@ -41,7 +38,7 @@ class ServiceProviderImpl : public ServiceProvider {
   void SetServiceConnectorForName(ServiceConnector* service_connector,
                                   const std::string& interface_name);
 
-  Binding<ServiceProvider> binding_;
+  StrongBinding<ServiceProvider> binding_;
 
   internal::ServiceConnectorRegistry service_connector_registry_;
 
