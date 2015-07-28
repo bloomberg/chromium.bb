@@ -138,6 +138,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
   }
 
   void SetUp() override {
+    InProcessBrowserTest::SetUp();
     // Start the threads and create the starters.
     for (size_t i = 0; i < kNbThreads; ++i) {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
@@ -216,13 +217,9 @@ class ProcessSingletonTest : public InProcessBrowserTest {
   base::ScopedTempDir temp_profile_dir_;
 };
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// http://crbug.com/58219
-#define MAYBE_StartupRaceCondition DISABLED_StartupRaceCondition
-#else
-#define MAYBE_StartupRaceCondition StartupRaceCondition
-#endif
-IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
+// Disabled on all platforms after code rot due to http://crbug.com/513534.
+// Originally disabled on some platforms due to http://crbug.com/58219.
+IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, DISABLED_StartupRaceCondition) {
   // We use this to stop the attempts loop on the first failure.
   bool failed = false;
   for (size_t attempt = 0; attempt < kNbAttempts && !failed; ++attempt) {
