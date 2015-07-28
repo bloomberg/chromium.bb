@@ -1011,9 +1011,6 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeHarfBuzzRuns()
             fontDescription, m_normalizedBuffer.get(), currentRun->m_startIndex,
             currentRun->m_numCharacters);
 
-        if (fontDescription.isVerticalAnyUpright())
-            face->setScriptForVerticalGlyphSubstitution(harfBuzzBuffer.get());
-
         HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(), hb_font_destroy);
         hb_shape(harfBuzzFont.get(), harfBuzzBuffer.get(), m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
         shapeResult(result.get(), i, currentRun, harfBuzzBuffer.get());

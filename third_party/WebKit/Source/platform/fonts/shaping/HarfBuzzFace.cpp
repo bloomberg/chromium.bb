@@ -92,7 +92,6 @@ static HarfBuzzFaceCache* harfBuzzFaceCache()
 HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
     : m_platformData(platformData)
     , m_uniqueID(uniqueID)
-    , m_scriptForVerticalText(HB_SCRIPT_INVALID)
 {
     HarfBuzzFaceCache::AddResult result = harfBuzzFaceCache()->add(m_uniqueID, nullptr);
     if (result.isNewEntry)
@@ -110,36 +109,6 @@ HarfBuzzFace::~HarfBuzzFace()
     result.get()->value->deref();
     if (result.get()->value->refCount() == 1)
         harfBuzzFaceCache()->remove(m_uniqueID);
-}
-
-static hb_script_t findScriptForVerticalGlyphSubstitution(hb_face_t* face)
-{
-    static const unsigned maxCount = 32;
-
-    unsigned scriptCount = maxCount;
-    hb_tag_t scriptTags[maxCount];
-    hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, 0, &scriptCount, scriptTags);
-    for (unsigned scriptIndex = 0; scriptIndex < scriptCount; ++scriptIndex) {
-        unsigned languageCount = maxCount;
-        hb_tag_t languageTags[maxCount];
-        hb_ot_layout_script_get_language_tags(face, HB_OT_TAG_GSUB, scriptIndex, 0, &languageCount, languageTags);
-        unsigned featureIndex;
-        for (unsigned languageIndex = 0; languageIndex < languageCount; ++languageIndex) {
-            if (hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, languageIndex, HarfBuzzFace::vertTag, &featureIndex))
-                return hb_ot_tag_to_script(scriptTags[scriptIndex]);
-        }
-        // Try DefaultLangSys if all LangSys failed.
-        if (hb_ot_layout_language_find_feature(face, HB_OT_TAG_GSUB, scriptIndex, HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX, HarfBuzzFace::vertTag, &featureIndex))
-            return hb_ot_tag_to_script(scriptTags[scriptIndex]);
-    }
-    return HB_SCRIPT_INVALID;
-}
-
-void HarfBuzzFace::setScriptForVerticalGlyphSubstitution(hb_buffer_t* buffer)
-{
-    if (m_scriptForVerticalText == HB_SCRIPT_INVALID)
-        m_scriptForVerticalText = findScriptForVerticalGlyphSubstitution(m_face);
-    hb_buffer_set_script(buffer, m_scriptForVerticalText);
 }
 
 struct HarfBuzzFontData {

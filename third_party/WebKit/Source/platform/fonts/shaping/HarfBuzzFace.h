@@ -56,8 +56,6 @@ public:
     hb_font_t* createFont() const;
     hb_face_t* face() const { return m_face; }
 
-    void setScriptForVerticalGlyphSubstitution(hb_buffer_t*);
-
 private:
     HarfBuzzFace(FontPlatformData*, uint64_t);
 
@@ -67,8 +65,6 @@ private:
     uint64_t m_uniqueID;
     hb_face_t* m_face;
     WTF::HashMap<uint32_t, uint16_t>* m_glyphCacheForFaceCacheEntry;
-
-    hb_script_t m_scriptForVerticalText;
 };
 
 } // namespace blink
