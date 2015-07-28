@@ -118,6 +118,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetGenericAccessAdapter();
   else if (fake_adapter_name == "FailingConnectionsAdapter")
     return GetFailingConnectionsAdapter();
+  else if (fake_adapter_name == "FailingGATTOperationsAdapter")
+    return GetFailingGATTOperationsAdapter();
   else if (fake_adapter_name == "")
     return NULL;
 
@@ -295,6 +297,35 @@ LayoutTestBluetoothAdapterProvider::GetFailingConnectionsAdapter() {
 }
 
 // static
+scoped_refptr<NiceMock<MockBluetoothAdapter>>
+LayoutTestBluetoothAdapterProvider::GetFailingGATTOperationsAdapter() {
+  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetEmptyAdapter());
+
+  const std::string errorsServiceUUID = errorUUID(0xA0);
+
+  BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(errorsServiceUUID));
+
+  scoped_ptr<NiceMock<MockBluetoothDevice>> device(
+      GetConnectableDeviceNew(adapter.get(), "Errors Device", uuids));
+
+  scoped_ptr<NiceMock<MockBluetoothGattService>> service(
+      GetBaseGATTService(device.get(), errorsServiceUUID));
+
+  for (int error = BluetoothGattService::GATT_ERROR_UNKNOWN;
+       error <= BluetoothGattService::GATT_ERROR_NOT_SUPPORTED; error++) {
+    service->AddMockCharacteristic(GetErrorCharacteristic(
+        service.get(),
+        static_cast<BluetoothGattService::GattErrorCode>(error)));
+  }
+
+  device->AddMockService(service.Pass());
+  adapter->AddMockDevice(device.Pass());
+
+  return adapter.Pass();
+}
+
+// static
 scoped_ptr<NiceMock<MockBluetoothDevice>>
 LayoutTestBluetoothAdapterProvider::GetBaseDevice(
     MockBluetoothAdapter* adapter,
@@ -444,6 +475,26 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
   return make_scoped_ptr(new NiceMock<MockBluetoothGattCharacteristic>(
       service, uuid + " Identifier", BluetoothUUID(uuid), false /* is_local */,
       NULL /* properties */, NULL /* permissions */));
+}
+
+// static
+scoped_ptr<NiceMock<MockBluetoothGattCharacteristic>>
+LayoutTestBluetoothAdapterProvider::GetErrorCharacteristic(
+    MockBluetoothGattService* service,
+    BluetoothGattService::GattErrorCode error_code) {
+  uint32_t error_alias = error_code + 0xA1;  // Error UUIDs start at 0xA1.
+  scoped_ptr<NiceMock<MockBluetoothGattCharacteristic>> characteristic(
+      GetBaseGATTCharacteristic(service, errorUUID(error_alias)));
+
+  // Read response.
+  ON_CALL(*characteristic, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
+
+  // Write response.
+  ON_CALL(*characteristic, WriteRemoteCharacteristic(_, _, _))
+      .WillByDefault(RunCallback<2 /* error_callback */>(error_code));
+
+  return characteristic.Pass();
 }
 
 // static
