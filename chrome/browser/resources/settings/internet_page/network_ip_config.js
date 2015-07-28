@@ -110,9 +110,11 @@ Polymer({
     if (this.automatic || !this.savedStaticIp_) {
       // Save the static IP configuration when switching to automatic.
       this.savedStaticIp_ = this.ipConfig.ipv4;
+      var configType =
+          this.automatic ? CrOnc.IPConfigType.DHCP : CrOnc.IPConfigType.STATIC;
       this.fire('ip-change', {
         field: 'IPAddressConfigType',
-        value: this.automatic ? 'DHCP' : 'Static'
+        value: configType
       });
     } else {
       // Restore the saved static IP configuration.

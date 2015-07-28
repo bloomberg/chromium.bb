@@ -83,7 +83,7 @@ Polymer({
     var configType =
         CrOnc.getActiveValue(this.networkState, 'NameServersConfigType');
     var type;
-    if (configType == 'Static') {
+    if (configType == CrOnc.IPConfigType.STATIC) {
       if (nameservers.join(',') == this.GoogleNameservers.join(','))
         type = 'google';
       else
@@ -197,7 +197,7 @@ Polymer({
       // automatic
       this.fire('nameservers-change', {
         field: 'NameServersConfigType',
-        value: 'DHCP'
+        value: CrOnc.IPConfigType.DHCP
       });
     }
   },

@@ -45,7 +45,13 @@ var NetworkStateObject;
 var NetworkStateListObject;
 
 /** @const {!Array<string>} */
-var NETWORK_TYPES = ['Ethernet', 'WiFi', 'Cellular', 'WiMAX', 'VPN'];
+var NETWORK_TYPES = [
+  CrOnc.Type.ETHERNET,
+  CrOnc.Type.WIFI,
+  CrOnc.Type.CELLULAR,
+  CrOnc.Type.WIMAX,
+  CrOnc.Type.VPN
+];
 
 Polymer({
   is: 'network-summary',
@@ -299,7 +305,7 @@ Polymer({
 
     // Create a VPN entry in deviceStates if there are any VPN networks.
     if (networkStateLists.VPN && networkStateLists.VPN.length > 0) {
-      var vpn = { Type: 'VPN', State: 'Enabled' };
+      var vpn = { Type: CrOnc.Type.VPN, State: 'Enabled' };
       this.set('deviceStates.VPN', vpn);
     }
   },

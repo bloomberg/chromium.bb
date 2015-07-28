@@ -33,11 +33,11 @@ function getText(text, args) {
  * @param {string} name The name of the network.
  */
 function getConnectionStateText(state, name) {
-  if (state == 'Connected')
+  if (state == CrOnc.ConnectionState.CONNECTED)
     return getText('Connected to %1', [name]);
-  if (state == 'Connecting')
+  if (state == CrOnc.ConnectionState.CONNECTING)
     return getText('Connecting to %1...', [name]);
-  if (state == 'NotConnected')
+  if (state == CrOnc.ConnectionState.NOT_CONNECTED)
     return getText('Not Connected');
   return getText(state);
 };

@@ -91,7 +91,7 @@
               <cr-collapse opened="[[addressExpanded]]">
                 <div class="layout vertical flex">
                   <network-apnlist editable
-                      hidden$="[[!isType_(networkState, 'Cellular')]]"
+                      hidden$="[[!isType_(networkState, NetworkType.CELLULAR)]]"
                       network-state="[[networkState]]"
                       apnlist="[[networkState.Cellular.APNList]]"
                       on-apn-change="onApnChange_">

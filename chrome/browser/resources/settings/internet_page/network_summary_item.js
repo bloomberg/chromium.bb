@@ -122,7 +122,8 @@ Polymer({
    */
   getDeviceEnabledButtonClass_: function(deviceState) {
     var visible = deviceState &&
-        deviceState.Type != 'Ethernet' && deviceState.Type != 'VPN';
+        deviceState.Type != CrOnc.Type.ETHERNET &&
+        deviceState.Type != CrOnc.Type.VPN;
     return visible ? '' : 'invisible';
   },
 
@@ -146,7 +147,7 @@ Polymer({
   expandIsVisible_: function(deviceState, networkList) {
     if (!this.deviceIsEnabled_(deviceState))
       return false;
-    var minLength = (this.type == 'WiFi') ? 1 : 2;
+    var minLength = (this.type == CrOnc.Type.WIFI) ? 1 : 2;
     return networkList.length >= minLength;
   },
 
