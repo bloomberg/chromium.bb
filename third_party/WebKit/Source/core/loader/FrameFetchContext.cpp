@@ -566,8 +566,12 @@ bool FrameFetchContext::updateTimingInfoForIFrameNavigation(ResourceTimingInfo* 
     // FIXME: Resource timing is broken when the parent is a remote frame.
     if (!frame()->deprecatedLocalOwner() || frame()->deprecatedLocalOwner()->loadedNonEmptyDocument())
         return false;
-    info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
     frame()->deprecatedLocalOwner()->didLoadNonEmptyDocument();
+    // Do not report iframe navigation that restored from history, since its
+    // location may have been changed after initial navigation.
+    if (frame()->loader().loadType() == FrameLoadTypeInitialHistoryLoad)
+        return false;
+    info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
     return true;
 }
 
