@@ -13,8 +13,6 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib import valgrind_tools
 
-# TODO(jbudorick) Remove once telemetry gets switched over.
-import pylib.android_commands
 import pylib.device.device_utils
 
 
@@ -73,8 +71,6 @@ class Forwarder(object):
     Raises:
       Exception on failure to forward the port.
     """
-    # TODO(jbudorick) Remove once telemetry gets switched over.
-    assert not isinstance(device, pylib.android_commands.AndroidCommands)
     if not tool:
       tool = valgrind_tools.CreateTool(None, device)
     with _FileLock(Forwarder._LOCK_PATH):
@@ -122,8 +118,6 @@ class Forwarder(object):
       device: A DeviceUtils instance.
       device_port: A previously forwarded port (through Map()).
     """
-    # TODO(jbudorick) Remove once telemetry gets switched over.
-    assert not isinstance(device, pylib.android_commands.AndroidCommands)
     with _FileLock(Forwarder._LOCK_PATH):
       Forwarder._UnmapDevicePortLocked(device_port, device)
 
@@ -135,8 +129,6 @@ class Forwarder(object):
       device: A DeviceUtils instance.
       port_pairs: A list of tuples (device_port, host_port) to unmap.
     """
-    # TODO(jbudorick) Remove once telemetry gets switched over.
-    assert not isinstance(device, pylib.android_commands.AndroidCommands)
     with _FileLock(Forwarder._LOCK_PATH):
       if not Forwarder._instance:
         return

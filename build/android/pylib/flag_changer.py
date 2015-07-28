@@ -4,7 +4,6 @@
 
 import logging
 
-import pylib.android_commands
 import pylib.device.device_utils
 
 from pylib.device import device_errors
@@ -27,8 +26,6 @@ class FlagChanger(object):
       device: A DeviceUtils instance.
       cmdline_file: Path to the command line file on the device.
     """
-    # TODO(jbudorick) Remove once telemetry switches over.
-    assert not isinstance(device, pylib.android_commands.AndroidCommands)
     self._device = device
     self._cmdline_file = cmdline_file
 

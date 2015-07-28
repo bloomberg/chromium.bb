@@ -7,7 +7,6 @@ import datetime
 import logging
 import re
 import threading
-from pylib import android_commands
 from pylib.device import device_utils
 
 
@@ -24,8 +23,6 @@ class SurfaceStatsCollector(object):
   """
 
   def __init__(self, device):
-    # TODO(jbudorick) Remove once telemetry gets switched over.
-    assert not isinstance(device, android_commands.AndroidCommands)
     self._device = device
     self._collector_thread = None
     self._surface_before = None

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import logging
-from pylib import android_commands
 from pylib.device import device_utils
 
 
@@ -73,8 +72,6 @@ class ThermalThrottle(object):
   """
 
   def __init__(self, device):
-    # TODO(jbudorick) Remove once telemetry gets switched over.
-    assert not isinstance(device, android_commands.AndroidCommands)
     self._device = device
     self._throttled = False
     self._detector = None
