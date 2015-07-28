@@ -19,8 +19,7 @@ class TargetProcess;
 // subsystem on 64 bit OSes, from the point of view of interceptions.
 class Wow64 {
  public:
-  Wow64(TargetProcess* child, HMODULE ntdll)
-      : child_(child), ntdll_(ntdll), dll_load_(NULL), continue_load_(NULL) {}
+  Wow64(TargetProcess* child, HMODULE ntdll);
   ~Wow64();
 
   // Waits for the 32 bit DLL to get loaded on the child process. This function

@@ -18,7 +18,7 @@ namespace sandbox {
 //   job.AssignProcessToJob(process_handle);
 class Job {
  public:
-  Job() : job_handle_(NULL) { }
+  Job();
 
   ~Job();
 

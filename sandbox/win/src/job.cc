@@ -9,6 +9,9 @@
 
 namespace sandbox {
 
+Job::Job() : job_handle_(NULL) {
+};
+
 Job::~Job() {
 };
 
