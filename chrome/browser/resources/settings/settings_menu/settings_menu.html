@@ -7,7 +7,7 @@
 <dom-module id="cr-settings-menu">
   <link rel="import" type="css" href="settings_menu.css">
   <template>
-    <paper-menu selected="{{selectedId}}" attr-for-selected="data-id">
+    <paper-menu selected="{{selectedPageId}}" attr-for-selected="data-id">
       <template is="dom-repeat" items="[[pages]]">
         <paper-icon-item data-id$="[[item.PAGE_ID]]" icon-width="34px">
           <iron-icon icon="[[item.icon]]" item-icon></iron-icon>

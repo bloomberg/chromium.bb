@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 :host {
-  background-color: rgb(38, 50, 56);
   color: white;
   display: flex;
   flex-direction: column;
@@ -11,8 +10,9 @@
 }
 
 paper-menu {
+  background-color: transparent;
   margin: 0;
-  padding-top: 20px;
+  padding: 0;
 }
 
 paper-menu > * {

@@ -9,7 +9,7 @@
 :host > paper-material {
   @apply(--shadow-elevation-4dp);
   background-color: white;
-  margin: 16px;
+  margin-bottom: 16px;
   width: 605px;
 }
 

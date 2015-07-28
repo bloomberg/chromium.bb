@@ -30,9 +30,8 @@ Polymer({
     /**
      * ID of the currently selected page.
      */
-    selectedId: {
+    selectedPageId: {
       type: String,
-      value: '',
       notify: true,
     },
   },

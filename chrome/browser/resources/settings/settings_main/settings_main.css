@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 :host {
-  background-color: rgb(219, 222, 224);
   bottom: 0;
   color: black;
   display: block;
@@ -17,11 +16,7 @@
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
-}
-
-#pageContainer {
-  -webkit-margin-end: 20px;
-  -webkit-margin-start: 20px;
+  padding: 34px 16px;
 }
 
 ::content core-icon-button {

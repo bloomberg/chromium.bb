@@ -1,6 +1,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/typography.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
 <link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
@@ -8,9 +11,12 @@
 <dom-module id="cr-settings-ui">
   <link rel="import" type="css" href="settings_ui.css">
   <template>
-    <paper-drawer-panel drawer-width="280px">
-      <cr-settings-menu drawer class="flex" selected-id="{{selectedPageId}}"
-          pages="[[pages]]">
+    <paper-toolbar>
+      <div class="title">Settings</div>
+    </paper-toolbar>
+    <paper-drawer-panel drawer-width="256px">
+      <cr-settings-menu drawer class="flex"
+          selected-page-id="{{selectedPageId}}" pages="[[pages]]">
       </cr-settings-menu>
       <cr-settings-main main pages="{{pages}}" prefs="{{prefs}}"
           selected-page-id="{{selectedPageId}}">

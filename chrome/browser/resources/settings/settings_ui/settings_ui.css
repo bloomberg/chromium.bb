@@ -3,11 +3,27 @@
  * found in the LICENSE file. */
 
 :host {
+  @apply(--layout-vertical);
+  @apply(--layout-fit);
+  @apply(--paper-font-body1);
   -webkit-user-select: none;
-  background-color: rgb(219, 222, 224);
-  display: block;
-  font-family: Roboto;
-  height: 100%;
+  background-color: rgb(230, 230, 230);
+  color: rgba(0, 0, 0, .87);
+}
+
+paper-toolbar {
+  @apply(--shadow-elevation-4dp);
+  background-color: rgb(63, 85, 102);
+  position: relative;
+}
+
+paper-drawer-panel {
+  @apply(--layout-flex);
+  --paper-drawer-panel-left-drawer-container: {
+    background-color: rgb(230, 230, 230);
+    margin-top: 34px;
+  };
+  position: relative;
 }
 
 cr-settings-main paper-icon-button {
