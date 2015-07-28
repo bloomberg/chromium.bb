@@ -157,6 +157,10 @@ android_library("chrome_java") {
     google_play_services_library,
   ]
 
+  if (android_sdk_version != "M") {
+    deps += [ "//third_party/android_tools:preview_java_sources" ]
+  }
+
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
     ":chrome_version_srcjar",

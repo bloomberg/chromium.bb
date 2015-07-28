@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
+import android.app.assist.AssistContent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -678,6 +680,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onPause() {
         super.onPause();
         if (mSnackbarManager != null) mSnackbarManager.dismissSnackbar(false);
+    }
+
+    // @TargetApi(Build.VERSION_CODES.M) TODO(sgurun) add method document once API is public
+    // crbug/512264
+    // @Override
+    public void onProvideAssistContent(AssistContent outContent) {
+        if (getAssistStatusHandler() == null || !getAssistStatusHandler().isAssistSupported()) {
+            // No information is provided in incognito mode.
+            return;
+        }
+        Tab tab = getActivityTab();
+        if (tab != null && !isInOverviewMode()) {
+            outContent.setWebUri(Uri.parse(tab.getUrl()));
+        }
     }
 
     @Override
