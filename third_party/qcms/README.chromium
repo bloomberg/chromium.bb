@@ -97,6 +97,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=506607
  - Check matrix transforms have the same PCS 
    - https://code.google.com/p/chromium/issues/detail?id=510682
+ - Apply Don't reject valid profiles with no CLUT offset
+   - https://bugzilla.mozilla.org/show_bug.cgi?id=1176551
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
