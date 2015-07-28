@@ -53,7 +53,8 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     std::string ready_state;
     if (status.IsError() || !result->GetString("result.value", &ready_state))
       return status;
-    *is_pending = ready_state != "complete";
+    if (ready_state == "complete")
+      loading_state_ = kNotLoading;
   } else {
     if (loading_state_ == kUnknown) {
       scoped_ptr<base::DictionaryValue> result;
@@ -104,8 +105,8 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       if (loading_state_ == kUnknown)
         loading_state_ = kLoading;
     }
-    *is_pending = loading_state_ == kLoading;
   }
+  *is_pending = loading_state_ == kLoading;
 
   if (frame_id.empty()) {
     *is_pending |= scheduled_frame_set_.size() > 0;
@@ -198,14 +199,33 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       pending_frame_set_.clear();
       scheduled_frame_set_.clear();
     }
-  } else if (method == "Inspector.targetCrashed") {
+  } else if (method == "Runtime.executionContextsCleared" ||
+             method == "Runtime.executionContextDestroyed") {
+    ResetLoadingState(kLoading);
+  } else if (method == "Page.loadEventFired" ||
+             method == "Inspector.targetCrashed") {
     ResetLoadingState(kNotLoading);
   }
   return Status(kOk);
 }
 
-Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
-                                           const std::string& method) {
+Status NavigationTracker::OnCommandSuccess(
+    DevToolsClient* client,
+    const std::string& method,
+    const base::DictionaryValue& result) {
+  if (method == "Page.navigate" && loading_state_ == kLoading) {
+    // In all versions of Chrome that are supported by ChromeDriver, except for
+    // old versions of Android WebView, Page.navigate will return a frameId in
+    // the command response. We'll get a notification that the frame has loaded
+    // when we get the Page.frameStoppedLoading event, so keep track of the
+    // pending frame id here.
+    std::string pending_frame_id;
+    if (result.GetString("frameId", &pending_frame_id)) {
+      pending_frame_set_.insert(pending_frame_id);
+      return Status(kOk);
+    }
+  }
+
   if ((method == "Page.navigate" || method == "Page.navigateToHistoryEntry") &&
       loading_state_ != kLoading) {
     // At this point the browser has initiated the navigation, but besides that,

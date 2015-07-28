@@ -447,8 +447,10 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfCommandResponse() {
     DevToolsEventListener* listener =
         unnotified_cmd_response_listeners_.front();
     unnotified_cmd_response_listeners_.pop_front();
-    Status status =
-        listener->OnCommandSuccess(this, unnotified_cmd_response_info_->method);
+    Status status = listener->OnCommandSuccess(
+        this,
+        unnotified_cmd_response_info_->method,
+        *unnotified_cmd_response_info_->response.result.get());
     if (status.IsError())
       return status;
   }

@@ -49,7 +49,8 @@ class NavigationTracker : public DevToolsEventListener {
                  const std::string& method,
                  const base::DictionaryValue& params) override;
   Status OnCommandSuccess(DevToolsClient* client,
-                          const std::string& method) override;
+                          const std::string& method,
+                          const base::DictionaryValue& result) override;
 
  private:
   DevToolsClient* client_;

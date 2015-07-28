@@ -20,7 +20,8 @@ Status DevToolsEventListener::OnEvent(DevToolsClient* client,
 
 Status DevToolsEventListener::OnCommandSuccess(
     DevToolsClient* client,
-    const std::string& method) {
+    const std::string& method,
+    const base::DictionaryValue& result) {
   return Status(kOk);
 }
 

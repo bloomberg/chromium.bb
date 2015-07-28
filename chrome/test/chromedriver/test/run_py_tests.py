@@ -54,7 +54,7 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
     # crbug.com/469947
-    'ChromeDriverTest.testTouchPinch'
+    'ChromeDriverTest.testTouchPinch',
     # https://code.google.com/p/chromedriver/issues/detail?id=1167
     'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
 ]
@@ -1104,6 +1104,10 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     a = self._driver.FindElement('tag name', 'a')
     a.Click()
     self.assertTrue(self._driver.GetCurrentUrl().endswith('#two'))
+
+  def testDoesntHangOnFragmentNavigation(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html#x'))
 
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):

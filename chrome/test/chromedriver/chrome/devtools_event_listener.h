@@ -30,7 +30,8 @@ class DevToolsEventListener {
 
   // Called when a command success response is received.
   virtual Status OnCommandSuccess(DevToolsClient* client,
-                                  const std::string& method);
+                                  const std::string& method,
+                                  const base::DictionaryValue& result);
 
   // True if the listener should be added to the browser-wide |DevToolsClient|
   // in addition to all webview |DevToolsClient|s. False by default. If set to
