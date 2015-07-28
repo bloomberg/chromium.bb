@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_tree_host.h"
@@ -35,6 +36,11 @@
 #if defined(OS_CHROMEOS)
 using media::SoundsManager;
 #endif
+
+#define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                     \
+  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                         \
+                             base::TimeDelta::FromMilliseconds(1), \
+                             base::TimeDelta::FromSeconds(50), 100)
 
 namespace ash {
 
@@ -222,6 +228,8 @@ void LockStateController::OnAppTerminating() {
 }
 
 void LockStateController::OnLockStateChanged(bool locked) {
+  DCHECK((lock_fail_timer_.IsRunning() && lock_duration_timer_ != nullptr) ||
+         (!lock_fail_timer_.IsRunning() && lock_duration_timer_ == nullptr));
   VLOG(1) << "OnLockStateChanged " << locked;
   if (shutting_down_ || (system_is_locked_ == locked))
     return;
@@ -231,12 +239,20 @@ void LockStateController::OnLockStateChanged(bool locked) {
   if (locked) {
     StartPostLockAnimation();
     lock_fail_timer_.Stop();
+    if (lock_duration_timer_) {
+      UMA_HISTOGRAM_LOCK_TIMES("Ash.WindowManager.Lock.Success",
+                               lock_duration_timer_->Elapsed());
+      lock_duration_timer_.reset();
+    }
   } else {
     StartUnlockAnimationAfterUIDestroyed();
   }
 }
 
 void LockStateController::OnLockFailTimeout() {
+  UMA_HISTOGRAM_LOCK_TIMES("Ash.WindowManager.Lock.Timeout",
+                           lock_duration_timer_->Elapsed());
+  lock_duration_timer_.reset();
   DCHECK(!system_is_locked_);
   LOG(FATAL) << "Screen lock took too long; crashing intentionally";
 }
@@ -505,6 +521,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 #endif
   lock_fail_timer_.Start(
       FROM_HERE, timeout, this, &LockStateController::OnLockFailTimeout);
+  lock_duration_timer_.reset(new base::ElapsedTimer());
 }
 
 void LockStateController::PostLockAnimationFinished() {

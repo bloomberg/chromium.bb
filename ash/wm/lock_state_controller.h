@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_tree_host_observer.h"
 
@@ -305,6 +306,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   bool can_cancel_lock_animation_;
 
   scoped_ptr<UnlockedStateProperties> unlocked_properties_;
+
+  // How long has it been since the request to lock the screen?
+  scoped_ptr<base::ElapsedTimer> lock_duration_timer_;
 
   // Started when we request that the screen be locked.  When it fires, we
   // assume that our request got dropped.

@@ -1024,6 +1024,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowManager.Lock.Success" units="milliseconds">
+  <owner>jdufault@chromium.org</owner>
+  <summary>
+    How long it took for the screen lock process to complete. This does not
+    include timeouts.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowManager.Lock.Timeout" units="milliseconds">
+  <owner>jdufault@chromium.org</owner>
+  <summary>
+    How long it took for the screen lock process to complete, for timeouts only.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.ArrowKeyPresses">
   <owner>flackr@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
