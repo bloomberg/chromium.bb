@@ -1321,7 +1321,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         if (endNode->isTextNode()) {
             insertTextIntoNode(toText(endNode), endOffset, collapseWhiteSpace ? nonBreakingSpaceString() : " ");
             if (m_endOfInsertedContent.containerNode() == endNode)
-                m_endOfInsertedContent.moveToOffset(m_endOfInsertedContent.offsetInContainerNode() + 1);
+                m_endOfInsertedContent = Position(endNode, m_endOfInsertedContent.offsetInContainerNode() + 1);
         } else {
             RefPtrWillBeRawPtr<Text> node = document().createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
             insertNodeAfter(node, endNode);
@@ -1345,7 +1345,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         if (startNode->isTextNode()) {
             insertTextIntoNode(toText(startNode), startOffset, collapseWhiteSpace ? nonBreakingSpaceString() : " ");
             if (m_endOfInsertedContent.containerNode() == startNode && m_endOfInsertedContent.offsetInContainerNode())
-                m_endOfInsertedContent.moveToOffset(m_endOfInsertedContent.offsetInContainerNode() + 1);
+                m_endOfInsertedContent = Position(startNode, m_endOfInsertedContent.offsetInContainerNode() + 1);
         } else {
             RefPtrWillBeRawPtr<Text> node = document().createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
             // Don't updateNodesInserted. Doing so would set m_endOfInsertedContent to be the node containing the leading space,
@@ -1412,13 +1412,13 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         insertTextIntoNode(text, 0, previous->data());
 
         if (positionIsOffsetInAnchor)
-            position.moveToOffset(previous->length() + position.offsetInContainerNode());
+            position = Position(position.containerNode(), previous->length() + position.offsetInContainerNode());
         else
             updatePositionForNodeRemoval(position, *previous);
 
         if (positionOnlyToBeUpdatedIsOffsetInAnchor) {
             if (positionOnlyToBeUpdated.containerNode() == text)
-                positionOnlyToBeUpdated.moveToOffset(previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
+                positionOnlyToBeUpdated = Position(text, previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
             else if (positionOnlyToBeUpdated.containerNode() == previous)
                 positionOnlyToBeUpdated = Position(text, positionOnlyToBeUpdated.offsetInContainerNode());
         } else {

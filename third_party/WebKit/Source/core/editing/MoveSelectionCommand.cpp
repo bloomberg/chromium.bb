@@ -49,11 +49,11 @@ void MoveSelectionCommand::doApply()
     Position selectionEnd = endingSelection().end();
     if (pos.isOffsetInAnchor() && selectionEnd.isOffsetInAnchor()
         && selectionEnd.containerNode() == pos.containerNode() && selectionEnd.offsetInContainerNode() < pos.offsetInContainerNode()) {
-        pos.moveToOffset(pos.offsetInContainerNode() - selectionEnd.offsetInContainerNode());
+        pos = Position(pos.containerNode(), pos.offsetInContainerNode() - selectionEnd.offsetInContainerNode());
 
         Position selectionStart = endingSelection().start();
         if (selectionStart.isOffsetInAnchor() && selectionStart.containerNode() == pos.containerNode())
-            pos.moveToOffset(pos.offsetInContainerNode() + selectionStart.offsetInContainerNode());
+            pos = Position(pos.containerNode(), pos.offsetInContainerNode() + selectionStart.offsetInContainerNode());
     }
 
     deleteSelection(m_smartDelete);

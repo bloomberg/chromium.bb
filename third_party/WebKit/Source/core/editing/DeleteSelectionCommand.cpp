@@ -408,9 +408,9 @@ static void updatePositionForTextRemoval(Text* node, int offset, int count, Posi
         return;
 
     if (position.offsetInContainerNode() > offset + count)
-        position.moveToOffset(position.offsetInContainerNode() - count);
+        position = Position(position.containerNode(), position.offsetInContainerNode() - count);
     else if (position.offsetInContainerNode() > offset)
-        position.moveToOffset(offset);
+        position = Position(position.containerNode(), offset);
 }
 
 void DeleteSelectionCommand::deleteTextFromNode(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)

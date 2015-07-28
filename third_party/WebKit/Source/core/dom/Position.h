@@ -76,6 +76,7 @@ enum class PositionAnchorType : unsigned {
     AfterChildren,
 };
 
+// Instances of |PositionAlgorithm<Strategy>| are immutable.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionAlgorithm {
     DISALLOW_ALLOCATION();
@@ -164,10 +165,6 @@ public:
         Node* container = containerNode();
         return container ? container->rootEditableElement() : 0;
     }
-
-    // These should only be used for PositionAnchorType::OffsetInAnchor
-    // positions, unless the position is a legacy editing position.
-    void moveToOffset(int offset);
 
     bool isNull() const { return !m_anchorNode; }
     bool isNotNull() const { return m_anchorNode; }

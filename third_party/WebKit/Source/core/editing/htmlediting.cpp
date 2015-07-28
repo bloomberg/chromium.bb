@@ -1192,7 +1192,7 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
         break;
     case PositionAnchorType::OffsetInAnchor:
         if (position.containerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
-            position.moveToOffset(position.offsetInContainerNode() - 1);
+            position = Position(position.containerNode(), position.offsetInContainerNode() - 1);
         else if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentBeforeNode(node);
         break;

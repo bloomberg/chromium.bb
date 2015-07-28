@@ -170,17 +170,6 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(const PositionAlgorithm& other)
 // --
 
 template <typename Strategy>
-void PositionAlgorithm<Strategy>::moveToOffset(int offset)
-{
-    ASSERT(isOffsetInAnchor() || m_isLegacyEditingPosition);
-    m_offset = offset;
-    if (!m_isLegacyEditingPosition)
-        return;
-    m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
-    m_isLegacyEditingPosition = m_anchorType == PositionAnchorType::AfterAnchor;
-}
-
-template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::containerNode() const
 {
     if (!m_anchorNode)

@@ -419,8 +419,9 @@ void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Positi
 {
     int offset = position.isOffsetInAnchor() ? position.offsetInContainerNode() : 0;
     updatePositionForNodeRemoval(position, node);
-    if (offset)
-        position.moveToOffset(offset);
+    if (offset == 0)
+        return;
+    position = Position(position.containerNode(), offset);
 }
 
 HTMLSpanElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement> node)
