@@ -67,7 +67,7 @@ void PresentationController::didStartDefaultSession(WebPresentationSessionClient
 {
     OwnPtr<WebPresentationSessionClient> client = adoptPtr(sessionClient);
     PresentationSession* session = PresentationSession::take(this, client.release());
-    m_defaultRequest->dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::connect, session));
+    m_defaultRequest->dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::sessionconnect, session));
 }
 
 void PresentationController::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState state)
