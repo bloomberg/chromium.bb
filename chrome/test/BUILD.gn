@@ -750,8 +750,7 @@ if (!is_android) {
       deps += [
         "//dbus",
         "//dbus:test_support",
-
-        #"//ui/login:resources",  TODO(GYP) bug 512913
+        "//ui/login:resources",
       ]
     } else {
       sources -= [
