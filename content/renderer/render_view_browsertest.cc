@@ -1953,10 +1953,10 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
   SSLStatus ssl_status = view()->GetSSLStatusOfFrame(frame);
   EXPECT_FALSE(net::IsCertStatusError(ssl_status.cert_status));
 
-  SSLStatus status;
-  status.cert_status = net::CERT_STATUS_ALL_ERRORS;
-  const_cast<blink::WebURLResponse&>(frame->dataSource()->response())
-      .setSecurityInfo(SerializeSecurityInfo(status));
+  const_cast<blink::WebURLResponse&>(frame->dataSource()->response()).
+      setSecurityInfo(
+          SerializeSecurityInfo(0, net::CERT_STATUS_ALL_ERRORS, 0, 0,
+                                SignedCertificateTimestampIDStatusList()));
   ssl_status = view()->GetSSLStatusOfFrame(frame);
   EXPECT_TRUE(net::IsCertStatusError(ssl_status.cert_status));
 }

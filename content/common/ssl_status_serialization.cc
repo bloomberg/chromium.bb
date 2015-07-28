@@ -7,37 +7,24 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 
-namespace {
-
-// Checks that an integer |security_style| is a valid SecurityStyle enum
-// value. Returns true if valid, false otherwise.
-bool CheckSecurityStyle(int security_style) {
-  switch (security_style) {
-    case content::SECURITY_STYLE_UNKNOWN:
-    case content::SECURITY_STYLE_UNAUTHENTICATED:
-    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-    case content::SECURITY_STYLE_WARNING:
-    case content::SECURITY_STYLE_AUTHENTICATED:
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
-
 namespace content {
 
-std::string SerializeSecurityInfo(const SSLStatus& ssl_status) {
+std::string SerializeSecurityInfo(
+    int cert_id,
+    net::CertStatus cert_status,
+    int security_bits,
+    int ssl_connection_status,
+    const SignedCertificateTimestampIDStatusList&
+        signed_certificate_timestamp_ids) {
   base::Pickle pickle;
-  pickle.WriteInt(ssl_status.security_style);
-  pickle.WriteInt(ssl_status.cert_id);
-  pickle.WriteUInt32(ssl_status.cert_status);
-  pickle.WriteInt(ssl_status.security_bits);
-  pickle.WriteInt(ssl_status.connection_status);
-  pickle.WriteInt(ssl_status.signed_certificate_timestamp_ids.size());
+  pickle.WriteInt(cert_id);
+  pickle.WriteUInt32(cert_status);
+  pickle.WriteInt(security_bits);
+  pickle.WriteInt(ssl_connection_status);
+  pickle.WriteInt(signed_certificate_timestamp_ids.size());
   for (SignedCertificateTimestampIDStatusList::const_iterator iter =
-           ssl_status.signed_certificate_timestamp_ids.begin();
-       iter != ssl_status.signed_certificate_timestamp_ids.end(); ++iter) {
+           signed_certificate_timestamp_ids.begin();
+       iter != signed_certificate_timestamp_ids.end(); ++iter) {
     pickle.WriteInt(iter->id);
     pickle.WriteUInt16(iter->status);
   }
@@ -54,9 +41,8 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
 
   base::Pickle pickle(state.data(), static_cast<int>(state.size()));
   base::PickleIterator iter(pickle);
-  int security_style;
   int num_scts_to_read;
-  if (!iter.ReadInt(&security_style) || !iter.ReadInt(&ssl_status->cert_id) ||
+  if (!iter.ReadInt(&ssl_status->cert_id) ||
       !iter.ReadUInt32(&ssl_status->cert_status) ||
       !iter.ReadInt(&ssl_status->security_bits) ||
       !iter.ReadInt(&ssl_status->connection_status) ||
@@ -64,13 +50,6 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
     *ssl_status = SSLStatus();
     return false;
   }
-
-  if (!CheckSecurityStyle(security_style)) {
-    *ssl_status = SSLStatus();
-    return false;
-  }
-
-  ssl_status->security_style = static_cast<SecurityStyle>(security_style);
 
   // Sanity check |security_bits|: the only allowed negative value is -1.
   if (ssl_status->security_bits < -1) {
