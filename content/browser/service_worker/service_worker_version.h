@@ -459,6 +459,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports);
   void OnFocusClient(int request_id, const std::string& client_uuid);
+  void OnNavigateClient(int request_id,
+                        const std::string& client_uuid,
+                        const GURL& url);
+  void DidNavigateClient(int request_id,
+                         int render_process_id,
+                         int render_frame_id);
+  void OnNavigateClientFinished(int request_id,
+                                const std::string& client_uuid,
+                                const ServiceWorkerClientInfo& client);
   void OnSkipWaiting(int request_id);
   void OnClaimClients(int request_id);
   void OnPongFromWorker();

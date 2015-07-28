@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
@@ -176,21 +177,18 @@ void RunErrorServicePortConnectCallback(
                base::string16());
 }
 
-using WindowOpenedCallback = base::Callback<void(int, int)>;
+using OpenURLCallback = base::Callback<void(int, int)>;
 
-// The WindowOpenedObserver class is a WebContentsObserver that will wait for a
-// new Window's WebContents to be initialized, run the |callback| passed to its
-// constructor then self destroy.
+// The OpenURLObserver class is a WebContentsObserver that will wait for a
+// WebContents to be initialized, run the |callback| passed to its constructor
+// then self destroy.
 // The callback will receive the process and frame ids. If something went wrong
 // those will be (kInvalidUniqueID, MSG_ROUTING_NONE).
 // The callback will be called in the IO thread.
-class WindowOpenedObserver : public WebContentsObserver {
+class OpenURLObserver : public WebContentsObserver {
  public:
-  WindowOpenedObserver(WebContents* web_contents,
-                       const WindowOpenedCallback& callback)
-    : WebContentsObserver(web_contents),
-      callback_(callback)
-  {}
+  OpenURLObserver(WebContents* web_contents, const OpenURLCallback& callback)
+      : WebContentsObserver(web_contents), callback_(callback) {}
 
   void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
@@ -228,16 +226,44 @@ class WindowOpenedObserver : public WebContentsObserver {
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  const WindowOpenedCallback callback_;
+  const OpenURLCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowOpenedObserver);
+  DISALLOW_COPY_AND_ASSIGN(OpenURLObserver);
 };
 
-void DidOpenURL(const WindowOpenedCallback& callback,
-                WebContents* web_contents) {
+void DidOpenURL(const OpenURLCallback& callback, WebContents* web_contents) {
   DCHECK(web_contents);
 
-  new WindowOpenedObserver(web_contents, callback);
+  new OpenURLObserver(web_contents, callback);
+}
+
+void NavigateClientOnUI(const GURL& url,
+                        const GURL& script_url,
+                        int process_id,
+                        int frame_id,
+                        const OpenURLCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(process_id, frame_id);
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+
+  if (!render_frame_host || !web_contents) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, ChildProcessHost::kInvalidUniqueID,
+                   MSG_ROUTING_NONE));
+    return;
+  }
+
+  OpenURLParams params(
+      url, Referrer::SanitizeForRequest(
+               url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
+      CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      true /* is_renderer_initiated */);
+  web_contents->OpenURL(params);
+  DidOpenURL(callback, web_contents);
 }
 
 void OpenWindowOnUI(
@@ -245,7 +271,7 @@ void OpenWindowOnUI(
     const GURL& script_url,
     int process_id,
     const scoped_refptr<ServiceWorkerContextWrapper>& context_wrapper,
-    const WindowOpenedCallback& callback) {
+    const OpenURLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context = context_wrapper->storage_partition()
@@ -1187,6 +1213,7 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnPostMessageToClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
                         OnFocusClient)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NavigateClient, OnNavigateClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
                         OnSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
@@ -1644,6 +1671,105 @@ void ServiceWorkerVersion::OnFocusClientFinished(
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
       request_id, client_info));
+}
+
+void ServiceWorkerVersion::OnNavigateClient(int request_id,
+                                            const std::string& client_uuid,
+                                            const GURL& url) {
+  if (!context_)
+    return;
+
+  TRACE_EVENT2("ServiceWorker", "ServiceWorkerVersion::OnNavigateClient",
+               "Request id", request_id, "Client id", client_uuid);
+
+  if (!url.is_valid() || !base::IsValidGUID(client_uuid)) {
+    DVLOG(1) << "Received unexpected invalid URL/UUID from renderer process.";
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&KillEmbeddedWorkerProcess, embedded_worker_->process_id(),
+                   RESULT_CODE_KILLED_BAD_MESSAGE));
+    return;
+  }
+
+  // Reject requests for URLs that the process is not allowed to access. It's
+  // possible to receive such requests since the renderer-side checks are
+  // slightly different. For example, the view-source scheme will not be
+  // filtered out by Blink.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          embedded_worker_->process_id(), url)) {
+    embedded_worker_->SendMessage(
+        ServiceWorkerMsg_NavigateClientError(request_id, url));
+    return;
+  }
+
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host || provider_host->active_version() != this) {
+    embedded_worker_->SendMessage(
+        ServiceWorkerMsg_NavigateClientError(request_id, url));
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NavigateClientOnUI, url, script_url_,
+                 provider_host->process_id(), provider_host->frame_id(),
+                 base::Bind(&ServiceWorkerVersion::DidNavigateClient,
+                            weak_factory_.GetWeakPtr(), request_id)));
+}
+
+void ServiceWorkerVersion::DidNavigateClient(int request_id,
+                                             int render_process_id,
+                                             int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (running_status() != RUNNING)
+    return;
+
+  if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
+      render_frame_id == MSG_ROUTING_NONE) {
+    embedded_worker_->SendMessage(
+        ServiceWorkerMsg_NavigateClientError(request_id, GURL()));
+    return;
+  }
+
+  for (auto it =
+           context_->GetClientProviderHostIterator(script_url_.GetOrigin());
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
+    if (provider_host->process_id() != render_process_id ||
+        provider_host->frame_id() != render_frame_id) {
+      continue;
+    }
+    provider_host->GetWindowClientInfo(base::Bind(
+        &ServiceWorkerVersion::OnNavigateClientFinished,
+        weak_factory_.GetWeakPtr(), request_id, provider_host->client_uuid()));
+    return;
+  }
+
+  OnNavigateClientFinished(request_id, std::string(),
+                           ServiceWorkerClientInfo());
+}
+
+void ServiceWorkerVersion::OnNavigateClientFinished(
+    int request_id,
+    const std::string& client_uuid,
+    const ServiceWorkerClientInfo& client_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (running_status() != RUNNING)
+    return;
+
+  ServiceWorkerClientInfo client(client_info);
+
+  // If the |client_info| is empty, it means that the navigated client wasn't
+  // controlled but the action still succeeded. The renderer process is
+  // expecting an empty client in such case.
+  if (!client.IsEmpty())
+    client.client_uuid = client_uuid;
+
+  embedded_worker_->SendMessage(
+      ServiceWorkerMsg_NavigateClientResponse(request_id, client));
 }
 
 void ServiceWorkerVersion::OnSkipWaiting(int request_id) {

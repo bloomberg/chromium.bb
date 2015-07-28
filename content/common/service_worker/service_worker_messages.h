@@ -272,6 +272,12 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
                     int /* request_id */,
                     std::string /* uuid */)
 
+// Ask the browser to navigate a client (renderer->browser).
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NavigateClient,
+                    int /* request_id */,
+                    std::string /* uuid */,
+                    GURL /* url */)
+
 // Asks the browser to force this worker to become activated.
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
                     int /* request_id */)
@@ -468,3 +474,13 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
                      int /* request_id */,
                      content::ServiceWorkerClientInfo /* client */)
+
+// Sent via EmbeddedWorker as a response of NavigateClient.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_NavigateClientResponse,
+                     int /* request_id */,
+                     content::ServiceWorkerClientInfo /* client */)
+
+// Sent via EmbeddedWorker as an error response of NavigateClient.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_NavigateClientError,
+                     int /* request_id */,
+                     GURL /* url */)

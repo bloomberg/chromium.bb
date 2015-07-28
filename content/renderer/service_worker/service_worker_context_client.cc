@@ -258,6 +258,10 @@ void ServiceWorkerContextClient::OnMessageReceived(
                         OnOpenWindowError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FocusClientResponse,
                         OnFocusClientResponse)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NavigateClientResponse,
+                        OnNavigateClientResponse)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NavigateClientError,
+                        OnNavigateClientError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSkipWaiting, OnDidSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidClaimClients, OnDidClaimClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ClaimClientsError, OnClaimClientsError)
@@ -587,6 +591,17 @@ void ServiceWorkerContextClient::focus(
       base::UTF16ToUTF8(base::StringPiece16(uuid))));
 }
 
+void ServiceWorkerContextClient::navigate(
+    const blink::WebString& uuid,
+    const blink::WebURL& url,
+    blink::WebServiceWorkerClientCallbacks* callback) {
+  DCHECK(callback);
+  int request_id = context_->client_callbacks.Add(callback);
+  Send(new ServiceWorkerHostMsg_NavigateClient(
+      GetRoutingID(), request_id, base::UTF16ToUTF8(base::StringPiece16(uuid)),
+      url));
+}
+
 void ServiceWorkerContextClient::skipWaiting(
     blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) {
   DCHECK(callbacks);
@@ -851,6 +866,46 @@ void ServiceWorkerContextClient::OnFocusClientResponse(
     callback->onError(error.release());
   }
 
+  context_->client_callbacks.Remove(request_id);
+}
+
+void ServiceWorkerContextClient::OnNavigateClientResponse(
+    int request_id,
+    const ServiceWorkerClientInfo& client) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::OnNavigateClientResponse");
+  blink::WebServiceWorkerClientCallbacks* callbacks =
+      context_->client_callbacks.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  scoped_ptr<blink::WebServiceWorkerClientInfo> web_client;
+  if (!client.IsEmpty()) {
+    DCHECK(client.IsValid());
+    web_client.reset(new blink::WebServiceWorkerClientInfo(
+        ToWebServiceWorkerClientInfo(client)));
+  }
+  callbacks->onSuccess(web_client.release());
+  context_->client_callbacks.Remove(request_id);
+}
+
+void ServiceWorkerContextClient::OnNavigateClientError(int request_id,
+                                                       const GURL& url) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::OnNavigateClientError");
+  blink::WebServiceWorkerClientCallbacks* callbacks =
+      context_->client_callbacks.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  std::string message = "Cannot navigate to URL: " + url.spec();
+  scoped_ptr<blink::WebServiceWorkerError> error(
+      new blink::WebServiceWorkerError(
+          blink::WebServiceWorkerError::ErrorTypeUnknown,
+          blink::WebString::fromUTF8(message)));
+  callbacks->onError(error.release());
   context_->client_callbacks.Remove(request_id);
 }
 
