@@ -11,7 +11,6 @@ import page_sets.key_silk_cases
 from telemetry import benchmark
 
 
-@benchmark.Disabled('win', 'mac', 'linux')  # crbug.com/510818
 class SmoothnessTop25(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 
