@@ -102,7 +102,7 @@ void FileImpl::Write(mojo::Array<uint8_t> bytes_to_write,
   // actually wrote that much).
   if (bytes_to_write.size() >
 #if defined(OS_WIN)
-      std::numeric_limits<INT>::max()) {
+      static_cast<size_t>(std::numeric_limits<int>::max())) {
 #else
       static_cast<size_t>(std::numeric_limits<ssize_t>::max())) {
 #endif

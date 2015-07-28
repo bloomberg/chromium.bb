@@ -31,6 +31,10 @@ static_library("snappy") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public_configs = [ ":snappy_config" ]
 
+  if (is_win) {
+    cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+  }
+
   if (is_clang) {
     # snappy-stubs-internal.h unapologetically has: using namespace std
     # https://code.google.com/p/snappy/issues/detail?id=70
