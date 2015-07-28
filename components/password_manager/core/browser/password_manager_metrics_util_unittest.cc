@@ -34,16 +34,11 @@ class PasswordManagerMetricsUtilTest : public testing::Test {
 
 TEST_F(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
   const char* const kMonitoredWebsites[] = {
-      "https://www.google.com",
-      "https://www.yahoo.com",
-      "https://www.baidu.com",
-      "https://www.wikipedia.org",
-      "https://www.linkedin.com",
-      "https://www.twitter.com",
-      "https://www.facebook.com",
-      "https://www.amazon.com",
-      "https://www.ebay.com",
-      "https://www.tumblr.com",
+      "https://www.google.com",   "https://www.yahoo.com",
+      "https://www.baidu.com",    "https://www.wikipedia.org",
+      "https://www.linkedin.com", "https://www.twitter.com",
+      "https://www.facebook.com", "https://www.amazon.com",
+      "https://www.ebay.com",     "https://www.tumblr.com",
   };
   const size_t kMonitoredWebsitesLength = arraysize(kMonitoredWebsites);
 
