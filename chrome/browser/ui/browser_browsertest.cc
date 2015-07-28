@@ -384,7 +384,8 @@ class SecurityStyleTestObserver : public WebContentsObserver {
 
 // Check that |observer|'s latest event was for an expired certificate
 // and that it saw the proper SecurityStyle and explanations.
-void CheckExpiredSecurityStyle(const SecurityStyleTestObserver& observer) {
+void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
+                              int error) {
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
             observer.latest_security_style());
 
@@ -397,8 +398,7 @@ void CheckExpiredSecurityStyle(const SecurityStyleTestObserver& observer) {
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
             expired_explanation.broken_explanations[0].summary);
 
-  base::string16 error_string =
-      base::UTF8ToUTF16(net::ErrorToString(net::ERR_CERT_DATE_INVALID));
+  base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(error));
   EXPECT_EQ(l10n_util::GetStringFUTF8(
                 IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
             expired_explanation.broken_explanations[0].description);
@@ -2950,6 +2950,29 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
 
+  // Navigate to a bad HTTPS page on a different host, and then click
+  // Back to verify that the previous good security style is seen again.
+  host_resolver()->AddRule("www.example_broken.test", "127.0.0.1");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("www.example_broken.test");
+  GURL https_url_different_host =
+      valid_https_url.ReplaceComponents(replace_host);
+  ui_test_utils::NavigateToURL(browser(), https_url_different_host);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID);
+  ProceedThroughInterstitial(web_contents);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID);
+
+  content::WindowedNotificationObserver back_nav_load_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(&web_contents->GetController()));
+  chrome::GoBack(browser(), CURRENT_TAB);
+  back_nav_load_observer.Wait();
+
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
+            observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path;
   ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
@@ -2977,7 +3000,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   // interstitial should fire.
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
-  CheckExpiredSecurityStyle(observer);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
 
   // Before clicking through, navigate to a different page, and then go
   // back to the interstitial.
@@ -2992,16 +3015,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ui_test_utils::NavigateToURL(browser(), expired_url);
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
-  CheckExpiredSecurityStyle(observer);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
 
   // Since the next expected style is the same as the previous, clear
   // the observer (to make sure that the event fires twice and we don't
   // just see the previous event's style).
   observer.ClearLatestSecurityStyleAndExplanations();
 
-  // Other conditions cannot be tested after clicking through because
-  // once the interstitial is clicked through, all URLs for this host
-  // will remain in a broken state.
+  // Other conditions cannot be tested on this host after clicking
+  // through because once the interstitial is clicked through, all URLs
+  // for this host will remain in a broken state.
   ProceedThroughInterstitial(web_contents);
-  CheckExpiredSecurityStyle(observer);
+  CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
 }

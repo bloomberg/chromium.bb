@@ -19,11 +19,12 @@
 #include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "net/ssl/ssl_info.h"
-
+#include "url/gurl.h"
 
 namespace content {
 
@@ -138,37 +139,22 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
 }
 
 void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
-                            WebContentsImpl* web_contents) {
+                            WebContents* web_contents) {
   DCHECK(entry);
 
   InitializeEntryIfNeeded(entry);
 
-  if (!entry->GetURL().SchemeIsCryptographic())
+  if (entry->GetSSL().security_style == SECURITY_STYLE_UNAUTHENTICATED)
     return;
 
   if (!web_contents->DisplayedInsecureContent())
     entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
 
-  // An HTTPS response may not have a certificate for some reason.  When that
-  // happens, use the unauthenticated (HTTP) rather than the authentication
-  // broken security style so that we can detect this error condition.
-  if (!entry->GetSSL().cert_id) {
-    entry->GetSSL().security_style = SECURITY_STYLE_UNAUTHENTICATED;
-    return;
-  }
-
   if (web_contents->DisplayedInsecureContent())
     entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
 
-  if (net::IsCertStatusError(entry->GetSSL().cert_status)) {
-    // Minor errors don't lower the security style to
-    // SECURITY_STYLE_AUTHENTICATION_BROKEN.
-    if (!net::IsCertStatusMinorError(entry->GetSSL().cert_status)) {
-      entry->GetSSL().security_style =
-          SECURITY_STYLE_AUTHENTICATION_BROKEN;
-    }
+  if (entry->GetSSL().security_style == SECURITY_STYLE_AUTHENTICATION_BROKEN)
     return;
-  }
 
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
@@ -182,6 +168,25 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
     return;
   }
+}
+
+// Static
+SecurityStyle SSLPolicy::GetSecurityStyleForResource(const GURL& url,
+                                                     const SSLStatus& ssl) {
+  // An HTTPS response may not have a certificate for some reason.  When that
+  // happens, use the unauthenticated (HTTP) rather than the authentication
+  // broken security style so that we can detect this error condition.
+  if (!url.SchemeIsCryptographic() || !ssl.cert_id)
+    return SECURITY_STYLE_UNAUTHENTICATED;
+
+  // Minor errors don't lower the security style to
+  // SECURITY_STYLE_AUTHENTICATION_BROKEN.
+  if (net::IsCertStatusError(ssl.cert_status) &&
+      !net::IsCertStatusMinorError(ssl.cert_status)) {
+    return SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  }
+
+  return SECURITY_STYLE_AUTHENTICATED;
 }
 
 void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
@@ -251,9 +256,8 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
   if (entry->GetSSL().security_style != SECURITY_STYLE_UNKNOWN)
     return;
 
-  entry->GetSSL().security_style = entry->GetURL().SchemeIsCryptographic()
-                                       ? SECURITY_STYLE_AUTHENTICATED
-                                       : SECURITY_STYLE_UNAUTHENTICATED;
+  entry->GetSSL().security_style =
+      GetSecurityStyleForResource(entry->GetURL(), entry->GetSSL());
 }
 
 void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
