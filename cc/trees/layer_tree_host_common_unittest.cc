@@ -1442,94 +1442,56 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   // In this configuration, grand_child and great_grand_child are completely
   // outside the clip rect, and they should never get scheduled on the list of
   // render surfaces.
-  //
 
-  const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
-  scoped_refptr<Layer> great_grand_child = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  parent->AddChild(child);
-  child->AddChild(grand_child);
-  grand_child->AddChild(great_grand_child);
-
-  host()->SetRootLayer(parent);
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  LayerImpl* great_grand_child = AddChild<LayerImpl>(grand_child);
 
   // leaf_node1 ensures that parent and child are kept on the
   // render_surface_layer_list, even though grand_child and great_grand_child
   // should be clipped.
-  child->AddChild(leaf_node1);
-  great_grand_child->AddChild(leaf_node2);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(child);
+  leaf_node1->SetDrawsContent(true);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(great_grand_child);
+  leaf_node2->SetDrawsContent(true);
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(500, 500),
-                               true,
+  const gfx::Transform identity_matrix;
+
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(500, 500), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(45.f, 45.f), gfx::Size(10, 10), true,
+                               false, false);
+  SetLayerPropertiesForTesting(great_grand_child, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false, false);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(500, 500), true, false,
                                false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(45.f, 45.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(great_grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node1.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(500, 500),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node2.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
                                false);
 
   child->SetMasksToBounds(true);
   child->SetOpacity(0.4f);
-  child->SetForceRenderSurface(true);
   grand_child->SetOpacity(0.5f);
   great_grand_child->SetOpacity(0.4f);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawProperties(parent);
 
-  ASSERT_EQ(2U, render_surface_layer_list.size());
-  EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(child->id(), render_surface_layer_list.at(1)->id());
+  ASSERT_EQ(2U, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(parent->id(), render_surface_layer_list_impl()->at(0)->id());
+  EXPECT_EQ(child->id(), render_surface_layer_list_impl()->at(1)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   // When a render surface has a clip rect, it is used to clip the content rect
-  // of the surface. When the render surface is animating its transforms, then
-  // the content rect's position in the clip rect is not defined on the main
-  // thread, and its content rect should not be clipped.
+  // of the surface.
 
   // The test tree is set up as follows:
   //  - parent is a container layer that masksToBounds=true to cause clipping.
@@ -1540,88 +1502,39 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
 
   // In this configuration, grand_child should be outside the clipped
   // content rect of the child, making grand_child not appear in the
-  // render_surface_layer_list. However, when we place an animation on the
-  // child, this clipping should be avoided and we should keep the grand_child
-  // in the render_surface_layer_list.
+  // render_surface_layer_list.
+
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  LayerImpl* leaf_node = AddChild<LayerImpl>(grand_child);
+  leaf_node->SetDrawsContent(true);
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  parent->AddChild(child);
-  child->AddChild(grand_child);
-  grand_child->AddChild(leaf_node);
 
-  host()->SetRootLayer(parent);
-
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(200.f, 200.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(200.f, 200.f), gfx::Size(10, 10),
+                               true, false, true);
+  SetLayerPropertiesForTesting(leaf_node, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
 
   parent->SetMasksToBounds(true);
   child->SetOpacity(0.4f);
-  child->SetForceRenderSurface(true);
   grand_child->SetOpacity(0.4f);
-  grand_child->SetForceRenderSurface(true);
 
-  {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        parent.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawProperties(parent);
 
-    // Without an animation, we should cull child and grand_child from the
-    // render_surface_layer_list.
-    ASSERT_EQ(1U, render_surface_layer_list.size());
-    EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-  }
-
-  // Now put an animating transform on child.
-  AddAnimatedTransformToController(
-      child->layer_animation_controller(), 10.0, 30, 0);
-
-  {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        parent.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-    // With an animating transform, we should keep child and grand_child in the
-    // render_surface_layer_list.
-    ASSERT_EQ(3U, render_surface_layer_list.size());
-    EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-    EXPECT_EQ(child->id(), render_surface_layer_list.at(1)->id());
-    EXPECT_EQ(grand_child->id(), render_surface_layer_list.at(2)->id());
-  }
+  // We should cull child and grand_child from the
+  // render_surface_layer_list.
+  ASSERT_EQ(1U, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(parent->id(), render_surface_layer_list_impl()->at(0)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
@@ -1887,106 +1800,54 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   // clipping; instead the surface will enforce the clip for the entire subtree.
   // They may still have a clip rect of their own layer bounds, however, if
   // masksToBounds was true.
-  const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child3 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child4 = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> leaf_node4 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  parent->AddChild(child);
-  child->AddChild(grand_child1);
-  child->AddChild(grand_child2);
-  child->AddChild(grand_child3);
-  child->AddChild(grand_child4);
-
-  host()->SetRootLayer(parent);
-
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child1 = AddChild<LayerImpl>(child);
+  LayerImpl* grand_child2 = AddChild<LayerImpl>(child);
+  LayerImpl* grand_child3 = AddChild<LayerImpl>(child);
+  LayerImpl* grand_child4 = AddChild<LayerImpl>(child);
   // the leaf nodes ensure that these grand_children become render surfaces for
   // this test.
-  grand_child1->AddChild(leaf_node1);
-  grand_child2->AddChild(leaf_node2);
-  grand_child3->AddChild(leaf_node3);
-  grand_child4->AddChild(leaf_node4);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(grand_child1);
+  leaf_node1->SetDrawsContent(true);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(grand_child2);
+  leaf_node2->SetDrawsContent(true);
+  LayerImpl* leaf_node3 = AddChild<LayerImpl>(grand_child3);
+  leaf_node3->SetDrawsContent(true);
+  LayerImpl* leaf_node4 = AddChild<LayerImpl>(grand_child4);
+  leaf_node4->SetDrawsContent(true);
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(500, 500),
-                               true,
+  const gfx::Transform identity_matrix;
+
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(500, 500), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(5.f, 5.f), gfx::Size(10, 10), true,
+                               false, true);
+  SetLayerPropertiesForTesting(grand_child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(15.f, 15.f), gfx::Size(10, 10), true,
+                               false, true);
+  SetLayerPropertiesForTesting(grand_child3, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(15.f, 15.f), gfx::Size(10, 10), true,
+                               false, true);
+  SetLayerPropertiesForTesting(grand_child4, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(45.f, 45.f), gfx::Size(10, 10), true,
+                               false, true);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  SetLayerPropertiesForTesting(grand_child1.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(5.f, 5.f),
-                               gfx::Size(10, 10),
-                               true,
+  SetLayerPropertiesForTesting(leaf_node3, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  SetLayerPropertiesForTesting(grand_child2.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(15.f, 15.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child3.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(15.f, 15.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child4.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(45.f, 45.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node1.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node2.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node3.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(leaf_node4.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
+  SetLayerPropertiesForTesting(leaf_node4, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
 
   child->SetMasksToBounds(true);
@@ -1995,21 +1856,13 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
 
   // Force everyone to be a render surface.
   child->SetOpacity(0.4f);
-  child->SetForceRenderSurface(true);
   grand_child1->SetOpacity(0.5f);
-  grand_child1->SetForceRenderSurface(true);
   grand_child2->SetOpacity(0.5f);
-  grand_child2->SetForceRenderSurface(true);
   grand_child3->SetOpacity(0.5f);
-  grand_child3->SetForceRenderSurface(true);
   grand_child4->SetOpacity(0.5f);
-  grand_child4->SetForceRenderSurface(true);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawProperties(parent);
+
   ASSERT_TRUE(grand_child1->render_surface());
   ASSERT_TRUE(grand_child2->render_surface());
   ASSERT_TRUE(grand_child3->render_surface());
