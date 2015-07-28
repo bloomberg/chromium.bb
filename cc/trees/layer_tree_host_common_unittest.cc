@@ -4915,78 +4915,43 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   //          + render_surface2 (also sets opacity)
   //            + clip_child
   //
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> intervening = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* intervening = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(intervening);
+  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
+  clip_child->SetDrawsContent(true);
 
-  root->AddChild(clip_parent);
-  clip_parent->AddChild(render_surface1);
-  render_surface1->AddChild(intervening);
-  intervening->AddChild(render_surface2);
-  render_surface2->AddChild(clip_child);
-
-  clip_child->SetClipParent(clip_parent.get());
+  clip_child->SetClipParent(clip_parent);
 
   intervening->SetMasksToBounds(true);
   clip_parent->SetMasksToBounds(true);
-
-  render_surface1->SetForceRenderSurface(true);
-  render_surface2->SetForceRenderSurface(true);
 
   gfx::Transform translation_transform;
   translation_transform.Translate(2, 2);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(clip_parent.get(),
-                               translation_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(1.f, 1.f),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface1.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(intervening.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(1.f, 1.f),
-                               gfx::Size(5, 5),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface2.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(clip_child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(-10.f, -10.f),
-                               gfx::Size(60, 60),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, translation_transform,
+                               gfx::Point3F(), gfx::PointF(1.f, 1.f),
+                               gfx::Size(40, 40), true, false, false);
+  SetLayerPropertiesForTesting(render_surface1, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false, true);
+  SetLayerPropertiesForTesting(intervening, identity_transform, gfx::Point3F(),
+                               gfx::PointF(1.f, 1.f), gfx::Size(5, 5), true,
+                               false, false);
+  SetLayerPropertiesForTesting(render_surface2, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false, true);
+  SetLayerPropertiesForTesting(clip_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(-10.f, -10.f), gfx::Size(60, 60),
+                               true, false, false);
 
-  host()->SetRootLayer(root);
-
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->render_surface());
   EXPECT_TRUE(render_surface1->render_surface());
@@ -5041,80 +5006,45 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   //          + render_surface2 (also sets opacity)
   //            + clip_child
   //
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> intervening = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* intervening = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(intervening);
+  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
+  clip_child->SetDrawsContent(true);
 
-  root->AddChild(clip_parent);
-  clip_parent->AddChild(render_surface1);
-  render_surface1->AddChild(intervening);
-  intervening->AddChild(render_surface2);
-  render_surface2->AddChild(clip_child);
-
-  clip_child->SetClipParent(clip_parent.get());
+  clip_child->SetClipParent(clip_parent);
 
   intervening->SetMasksToBounds(true);
   clip_parent->SetMasksToBounds(true);
-  intervening->SetScrollClipLayerId(clip_parent->id());
-  intervening->SetScrollOffset(gfx::ScrollOffset(3, 3));
-
-  render_surface1->SetForceRenderSurface(true);
-  render_surface2->SetForceRenderSurface(true);
+  intervening->SetScrollClipLayer(clip_parent->id());
+  intervening->SetCurrentScrollOffset(gfx::ScrollOffset(3, 3));
 
   gfx::Transform translation_transform;
   translation_transform.Translate(2, 2);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(clip_parent.get(),
-                               translation_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(1.f, 1.f),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface1.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(intervening.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(1.f, 1.f),
-                               gfx::Size(5, 5),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface2.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(clip_child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(-10.f, -10.f),
-                               gfx::Size(60, 60),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, translation_transform,
+                               gfx::Point3F(), gfx::PointF(1.f, 1.f),
+                               gfx::Size(40, 40), true, false, false);
+  SetLayerPropertiesForTesting(render_surface1, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false, true);
+  SetLayerPropertiesForTesting(intervening, identity_transform, gfx::Point3F(),
+                               gfx::PointF(1.f, 1.f), gfx::Size(5, 5), true,
+                               false, false);
+  SetLayerPropertiesForTesting(render_surface2, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false, true);
+  SetLayerPropertiesForTesting(clip_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(-10.f, -10.f), gfx::Size(60, 60),
+                               true, false, false);
 
-  host()->SetRootLayer(root);
-
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->render_surface());
   EXPECT_TRUE(render_surface1->render_surface());
