@@ -59,8 +59,14 @@
         'signin/core/browser/account_reconcilor.h',
         'signin/core/browser/account_tracker_service.cc',
         'signin/core/browser/account_tracker_service.h',
+        'signin/core/browser/android/component_jni_registrar.cc',
+        'signin/core/browser/android/component_jni_registrar.h',
         'signin/core/browser/child_account_info_fetcher.cc',
         'signin/core/browser/child_account_info_fetcher.h',
+        'signin/core/browser/child_account_info_fetcher_android.cc',
+        'signin/core/browser/child_account_info_fetcher_android.h',
+        'signin/core/browser/child_account_info_fetcher_impl.cc',
+        'signin/core/browser/child_account_info_fetcher_impl.h',
         'signin/core/browser/device_activity_fetcher.cc',
         'signin/core/browser/device_activity_fetcher.h',
         'signin/core/browser/gaia_cookie_manager_service.cc',
@@ -97,6 +103,15 @@
         'signin/core/browser/webdata/token_web_data.h',
       ],
       'conditions': [
+        ['OS=="android"', {
+          'dependencies': [
+            'signin_core_browser_jni_headers',
+          ],
+          'sources!': [
+            'signin/core/browser/child_account_info_fetcher_impl.cc',
+            'signin/core/browser/child_account_info_fetcher_impl.h',
+          ],
+        }],
         ['chromeos==1', {
           'sources!': [
             'signin/core/browser/signin_manager.cc',
@@ -131,6 +146,35 @@
     },
   ],
   'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          # GN version: //components/signin/core/browser/android:java
+          'target_name': 'signin_core_browser_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../sync/sync.gyp:sync_java',
+          ],
+          'variables': {
+            'java_in_dir': 'signin/core/browser/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          # GN version: //components/signin/core/browser/android:jni_headers
+          'target_name': 'signin_core_browser_jni_headers',
+          'type': 'none',
+          'sources': [
+            'signin/core/browser/android/java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'components/signin',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],
+    }],
     ['OS == "ios"', {
       # GN version: //components/signin/core/browser:ios
       'targets': [

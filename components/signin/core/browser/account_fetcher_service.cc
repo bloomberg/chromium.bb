@@ -185,9 +185,9 @@ void AccountFetcherService::StartFetchingChildInfo(
   if (!AccountSupportsUserInfo(account_id))
     return;
   child_request_account_id_ = account_id;
-  child_info_request_.reset(new ChildAccountInfoFetcher(
-      token_service_, signin_client_->GetURLRequestContext(), this,
-      invalidation_service_, child_request_account_id_));
+  child_info_request_.reset(ChildAccountInfoFetcher::CreateFrom(
+      child_request_account_id_, this, token_service_,
+      signin_client_->GetURLRequestContext(), invalidation_service_));
 }
 
 void AccountFetcherService::ResetChildInfo() {
@@ -267,7 +267,8 @@ void AccountFetcherService::OnUserInfoFetchSuccess(
 
 void AccountFetcherService::SetIsChildAccount(const std::string& account_id,
                                               bool is_child_account) {
-  account_tracker_service_->SetIsChildAccount(account_id, is_child_account);
+  if (child_request_account_id_ == account_id)
+    account_tracker_service_->SetIsChildAccount(account_id, is_child_account);
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(
@@ -283,8 +284,8 @@ void AccountFetcherService::OnRefreshTokenAvailable(
   // (such as fetching the signin token "handle" in order to look for password
   // changes) once everything is initialized and the refresh token is present.
   signin_client_->DoFinalInit();
-  UpdateChildInfo();
   RefreshAccountInfo(account_id, true);
+  UpdateChildInfo();
 }
 
 void AccountFetcherService::OnRefreshTokenRevoked(

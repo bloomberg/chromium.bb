@@ -1554,6 +1554,7 @@
           'dependencies': [
             'components_unittests',
             'components.gyp:invalidation_java',
+            'components.gyp:signin_core_browser_java',
           ],
           'variables': {
             'test_suite_name': 'components_unittests',

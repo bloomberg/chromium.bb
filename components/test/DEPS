@@ -4,6 +4,7 @@ include_rules = [
   "+components/invalidation/impl/android/component_jni_registrar.h",
   "+components/policy/core/browser/android/component_jni_registrar.h",
   "+components/safe_json/android/component_jni_registrar.h",
+  "+components/signin/core/browser/android/component_jni_registrar.h",
   "+content/public/android/java/src/org/chromium/content/browser",
   "+content/public/app/content_jni_onload.h",
   "+content/public/app/content_main.h",

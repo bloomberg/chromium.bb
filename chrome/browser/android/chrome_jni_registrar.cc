@@ -134,6 +134,7 @@
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 #include "components/service_tab_launcher/component_jni_registrar.h"
+#include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
@@ -156,6 +157,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      navigation_interception::RegisterNavigationInterceptionJni},
     {"Policy", policy::android::RegisterPolicy},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
+    {"Signin", signin::android::RegisterSigninJni},
     {"WebContentsDelegateAndroid",
      web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni},
     // Register JNI for chrome classes.
@@ -174,9 +176,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
          RegisterAutofillDialogControllerAndroid},
     {"AutofillDialogResult",
      autofill::AutofillDialogResult::RegisterAutofillDialogResult},
-    {"AutofillKeyboardAccessory",
-     autofill::AutofillKeyboardAccessoryView::
-         RegisterAutofillKeyboardAccessoryView},
+    {"AutofillKeyboardAccessory", autofill::AutofillKeyboardAccessoryView::
+                                      RegisterAutofillKeyboardAccessoryView},
     {"AutofillLoggerAndroid", autofill::AutofillLoggerAndroid::Register},
     {"AutofillPopup",
      autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
@@ -252,8 +253,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      NotificationUIManagerAndroid::RegisterNotificationUIManager},
     {"OAuth2TokenServiceDelegateAndroid",
      OAuth2TokenServiceDelegateAndroid::Register},
-    {"OfflinePageBridge",
-     offline_pages::android::RegisterOfflinePageBridge},
+    {"OfflinePageBridge", offline_pages::android::RegisterOfflinePageBridge},
     {"OmniboxPrerender", RegisterOmniboxPrerender},
     {"OmniboxUrlEmphasizer",
      OmniboxUrlEmphasizer::RegisterOmniboxUrlEmphasizer},

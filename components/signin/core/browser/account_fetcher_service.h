@@ -59,7 +59,8 @@ class AccountFetcherService : public KeyedService,
 
  private:
   friend class AccountInfoFetcher;
-  friend class ChildAccountInfoFetcher;
+  friend class ChildAccountInfoFetcherImpl;
+  friend class ChildAccountInfoFetcherAndroid;
 
   void RefreshAllAccountInfo(bool only_fetch_if_invalid);
   void RefreshAllAccountsAndScheduleNext();
