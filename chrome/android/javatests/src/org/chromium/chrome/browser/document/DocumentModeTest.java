@@ -34,7 +34,6 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -584,55 +583,6 @@ public class DocumentModeTest extends DocumentModeTestBase {
     }
 
     /**
-     * Tests that tabs opened via window.open() load properly.
-     * Tabs opened this way have their WebContents paused while the new Activity that will host
-     * the WebContents starts asynchronously.
-     */
-    @MediumTest
-    public void testWindowOpen() throws Exception {
-        launchViaLaunchDocumentInstance(false, ONCLICK_LINK, "window.open page");
-
-        final DocumentActivity firstActivity =
-                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
-
-        // Save the current tab ID.
-        final DocumentTabModelSelector selector =
-                ChromeApplication.getDocumentTabModelSelector();
-        final TabModel tabModel = selector.getModel(false);
-        final int firstTabId = selector.getCurrentTabId();
-        final int firstTabIndex = tabModel.index();
-
-        // Do a plain click to make the link open in a new foreground Document via a window.open().
-        // If the window is opened successfully, javascript on the first page triggers and changes
-        // its URL as a signal for this test.
-        Runnable fgTrigger = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DOMUtils.clickNode(null, firstActivity.getCurrentContentViewCore(), "body");
-                } catch (Exception e) {
-
-                }
-            }
-        };
-
-        // Wait for the new Activity to finish loading and make sure the Activities are in the
-        // correct state.
-        DocumentActivity secondActivity = ActivityUtils.waitForActivity(
-                getInstrumentation(), DocumentActivity.class, fgTrigger);
-        waitForFullLoad(secondActivity, "Page 4");
-        assertEquals("New WebContents was not created",
-                SUCCESS_URL, firstActivity.getActivityTab().getUrl());
-        assertEquals("Wrong number of tabs", 2, tabModel.getCount());
-        assertNotSame("Wrong tab selected", firstTabIndex, tabModel.index());
-        assertNotSame("Wrong tab ID in foreground", firstTabId, selector.getCurrentTabId());
-        assertNotSame("Wrong Activity in foreground",
-                firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
-        assertEquals("URL is not in the Intent",
-                URL_4, IntentHandler.getUrlFromIntent(secondActivity.getIntent()));
-    }
-
-    /**
      * Tests that tab ID is properly set when tabs change.
      */
     @MediumTest
@@ -678,11 +628,43 @@ public class DocumentModeTest extends DocumentModeTestBase {
     }
 
     /**
-     * Tests that the page loads fine when a new page is opened and the opener is suppressed.
+     * Tests that the page loads fine when a new page is opened via:
+     * <a href="" target="_blank" rel="noreferrer">
      */
     @MediumTest
-    public void testWindowOpenerSuppressed() throws Exception {
-        launchViaLaunchDocumentInstance(false, HREF_NO_REFERRER_LINK, "href no referrer link page");
+    public void testTargetBlank() throws Exception {
+        Intent lastIntent = performNewWindowTest(
+                HREF_NO_REFERRER_LINK, "href no referrer link page", false);
+        assertEquals("URL is not in the Intent", URL_4, IntentHandler.getUrlFromIntent(lastIntent));
+    }
+
+    /**
+     * Tests that tabs opened via window.open() load properly and with the URL in the Intent.
+     * Tabs opened this way have their WebContents paused while the new Activity that will host
+     * the WebContents starts asynchronously.
+     */
+    @MediumTest
+    public void testWindowOpen() throws Exception {
+        Intent lastIntent = performNewWindowTest(ONCLICK_LINK, "window.open page", true);
+        assertEquals("URL is not in the Intent",
+                URL_4, IntentHandler.getUrlFromIntent(lastIntent));
+    }
+
+    /**
+     * Tests that the page loads fine when a new page is opened via window.open() and the opener is
+     * set to null immediately afterward.
+     */
+    @MediumTest
+    public void testWindowOpenWithOpenerSuppressed() throws Exception {
+        Intent lastIntent = performNewWindowTest(
+                ONCLICK_NO_REFERRER_LINK, "window.open page, opener set to null", true);
+        assertEquals("Intent wasn't fired with about:blank",
+                "about:blank", IntentHandler.getUrlFromIntent(lastIntent));
+    }
+
+    private Intent performNewWindowTest(String url, String title, boolean checkWindowOpenSuccess)
+            throws Exception {
+        launchViaLaunchDocumentInstance(false, url, title);
 
         final DocumentActivity firstActivity =
                 (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
@@ -708,15 +690,20 @@ public class DocumentModeTest extends DocumentModeTestBase {
             }
         };
 
-        final DocumentActivity thirdActivity = ActivityUtils.waitForActivity(
+        final DocumentActivity lastActivity = ActivityUtils.waitForActivity(
                     getInstrumentation(), DocumentActivity.class, fgTrigger);
-        waitForFullLoad(thirdActivity, "Page 4");
+        waitForFullLoad(lastActivity, "Page 4");
         assertEquals("Wrong number of tabs", 2, tabModel.getCount());
         assertNotSame("Wrong tab selected", firstTabIndex, tabModel.index());
         assertNotSame("Wrong tab ID in foreground", firstTabId, selector.getCurrentTabId());
         assertNotSame("Wrong Activity in foreground",
                 firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
-        assertEquals("URL is not in the Intent",
-                URL_4, IntentHandler.getUrlFromIntent(thirdActivity.getIntent()));
+
+        if (checkWindowOpenSuccess) {
+            assertEquals("New WebContents was not created",
+                    SUCCESS_URL, firstActivity.getActivityTab().getUrl());
+        }
+
+        return lastActivity.getIntent();
     }
 }
