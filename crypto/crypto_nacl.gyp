@@ -20,7 +20,6 @@
         'build_glibc': 0,
         'build_newlib': 0,
         'build_pnacl_newlib': 1,
-        'build_irt': 1,
       },
       'dependencies': [
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',

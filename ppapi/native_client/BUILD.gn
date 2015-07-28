@@ -16,7 +16,6 @@ if (enable_nacl && enable_nacl_untrusted) {
     deps = [
       "//base",
       "//components/tracing",
-      "//crypto",
       "//gpu/command_buffer/client",
       "//gpu/command_buffer/common",
       "//gpu/command_buffer/client:gles2_implementation",
