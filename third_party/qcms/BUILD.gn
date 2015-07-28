@@ -32,7 +32,6 @@ source_set("qcms") {
 
   if (is_win) {
     cflags = [
-      "/wd4018",  # Signed/unsigned mismatch in comparison.
       "/wd4056",  # Overflow in floating-point constant arithmetic (INFINITY).
       "/wd4756",  # Overflow in constant arithmetic (INFINITY).
     ]

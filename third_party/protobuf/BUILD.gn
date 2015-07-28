@@ -77,11 +77,11 @@ protobuf_lite_sources = [
 protobuf_lite_cflags = []
 if (is_win) {
   protobuf_lite_cflags = [
-    "/wd4018",  # Signed/unsigned mismatch in comparison.
-    "/wd4244",  # Implicit conversion, possible loss of data.
-    "/wd4355",  # 'this' used in base member initializer list.
-    "/wd4267",  # Size_t to int truncation.
-    "/wd4291",  # No matching operator delete for a placement new.
+    "/wd4018",  # signed/unsigned mismatch in comparison
+    "/wd4244",  # implicit conversion, possible loss of data
+    "/wd4355",  # 'this' used in base member initializer list
+    "/wd4267",  # size_t to int truncation
+    "/wd4291",  # no matching operator delete for a placement new
   ]
 }
 

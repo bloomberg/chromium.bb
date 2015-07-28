@@ -60,7 +60,7 @@ if (!is_linux || is_chromeos) {
 
       ldflags = [ "/DEF:" + rebase_path("libexif.def") ]
 
-      cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+      cflags = [ "/wd4018" ]  # size/unsigned mismatch
 
       # TODO(GYP): Handle /analyze switch, when it will be used in GN.
     } else if (is_linux) {

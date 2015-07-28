@@ -113,10 +113,6 @@ static_library("leveldatabase") {
     "//third_party/re2",
     "//third_party/snappy",
   ]
-
-  if (is_win) {
-    cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
-  }
 }
 
 if (!is_android) {

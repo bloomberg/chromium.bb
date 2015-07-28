@@ -155,10 +155,7 @@ static_library("libxml") {
   ]
 
   if (is_win) {
-    cflags_c = [
-      "/wd4018",  # Signed/unsigned mismatch in comparison.
-      "/wd4101",  # Unreferenced local variable.
-    ]
+    cflags_c = [ "/wd4101" ]  # Unreferenced local variable.
   } else if (is_mac || is_ios || is_android) {
     # http://www.xmlsoft.org/threads.html says that this is required when using
     # libxml from several threads, which can possibly happen in chrome. On

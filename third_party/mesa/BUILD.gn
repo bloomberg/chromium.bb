@@ -125,7 +125,6 @@ config("mesa_internal_warnings") {
     cflags += [
       "-Wno-tautological-constant-out-of-range-compare",
       "-Wno-mismatched-tags",  # Fixed upstream.
-
       # mesa's STATIC_ASSERT() macro expands to an ununused typedef.
       "-Wno-unused-local-typedef",
     ]
@@ -135,7 +134,6 @@ config("mesa_internal_warnings") {
     # Mesa is ever rolled and the warnings are fixed.
     cflags += [
       "/wd4005",  # Macro defined twice.
-      "/wd4018",  # Signed/unsigned mismatch in comparison.
       "/wd4065",  # Switch statement contains 'default' but no 'case' labels.
       "/wd4090",  # 'Operation' : different 'modifier' qualifiers
       "/wd4099",  # Type name struct-vs-class doesn't match.
