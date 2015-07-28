@@ -7,7 +7,9 @@
 
 <dom-module id="downloads-toolbar">
   <template>
-    <h1 i18n-content="title" id="title"></h1>
+    <div id="title">
+      <h1 i18n-content="title"></h1>
+    </div>
     <div id="actions">
       <cr-button id="clear-all" i18n-content="clearAll"
           on-click="onClearAllClick_"

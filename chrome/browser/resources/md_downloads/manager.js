@@ -18,6 +18,12 @@ cr.define('downloads', function() {
       },
     },
 
+    ready: function() {
+      window.addEventListener('resize', this.onResize_.bind(this));
+      // onResize_() doesn't need to be called immediately here because it's
+      // guaranteed to be called again shortly when items are received.
+    },
+
     /**
      * @return {number} A guess at how many items could be visible at once.
      * @private
@@ -64,6 +70,16 @@ cr.define('downloads', function() {
 
       // Shows all downloads.
       this.actionService_.search('');
+    },
+
+    /** @private */
+    onResize_: function() {
+      // TODO(dbeam): expose <paper-header-panel>'s #mainContainer in Polymer.
+      var container = this.$.panel.$.mainContainer;
+      var scrollbarWidth = container.offsetWidth - container.clientWidth;
+      this.items_.forEach(function(item) {
+        item.scrollbarWidth = scrollbarWidth;
+      });
     },
 
     /**
@@ -142,6 +158,8 @@ cr.define('downloads', function() {
 
       if (loadTimeData.getBoolean('allowDeletingHistory'))
         this.$.toolbar.canClearAll = this.hasDownloads_;
+
+      this.onResize_();
     },
 
     /**
@@ -150,6 +168,7 @@ cr.define('downloads', function() {
      */
     updateItem_: function(data) {
       this.idMap_[data.id].update(data);
+      this.onResize_();
     },
   });
 

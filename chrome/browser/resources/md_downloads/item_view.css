@@ -5,17 +5,20 @@
 :host {
   @apply(--downloads-shared-style);
   display: flex;
-  padding: 0 24px;
-  margin: 34px 0;
+  margin: 32px 0;
 }
 
 :host([hide-date]) {
-  margin-top: -18px;
+  margin-top: -16px;
 }
 
 #date-container,
 #end-cap {
   flex: 1 0 var(--downloads-side-column-basis);
+}
+
+#date-container > * {
+  -webkit-margin-start: 24px;
 }
 
 :host([hide-date]) #date-container {
@@ -44,7 +47,7 @@
 }
 
 #details {
-  -webkit-border-start: 1px #e6e6e6 solid;
+  -webkit-border-start: 1px #d8d8d8 solid;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -74,9 +77,16 @@
   word-break: break-all;
 }
 
+#name {
+  color: #212121;
+  font-weight: bold;
+}
+
 #src-url {
+  color: rgb(88, 152, 251);
   margin-top: 6px;
   overflow: hidden;
+  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

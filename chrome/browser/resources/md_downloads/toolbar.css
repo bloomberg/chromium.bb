@@ -4,8 +4,6 @@
 
 :host {
   @apply(--downloads-shared-style);
-  -webkit-padding-end: 8px;  /* + 8px from the search/(X) icon = 16px. */
-  -webkit-padding-start: 24px;
   align-items: center;
   background: rgb(63, 85, 102);
   color: white;
@@ -15,13 +13,16 @@
   padding-top: 8px;
 }
 
-#title {
-  margin: 0;
-}
-
 #title,
 #search {
   flex: 1 0 var(--downloads-side-column-basis);
+}
+
+#title h1 {
+  -webkit-margin-end: 0;
+  -webkit-margin-start: 24px;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 
 #actions {
@@ -45,4 +46,5 @@
   --paper-input-container-label: {
     font-size: 14px;
   };
+  -webkit-margin-end: 8px;
 }

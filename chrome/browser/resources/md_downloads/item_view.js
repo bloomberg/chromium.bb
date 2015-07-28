@@ -25,6 +25,12 @@ cr.define('downloads', function() {
         value: false,
       },
 
+      scrollbarWidth: {
+        type: Number,
+        value: 0,
+        observer: 'onScrollbarWidthChange_',
+      },
+
       isDangerous_: {type: Boolean, value: false},
 
       /** Only set when |isDangerous| is true. */
@@ -230,8 +236,23 @@ cr.define('downloads', function() {
       this.actionService_.resume(this.id_);
     },
 
+    /** @private */
     onRetryClick_: function() {
       this.actionService_.download(this.$['file-link'].href);
+    },
+
+    /** @private */
+    onScrollbarWidthChange_: function() {
+      if (!this.$)
+        return;
+
+      var endCap = this.$['end-cap'];
+      endCap.style.flexBasis = '';
+
+      if (this.scrollbarWidth) {
+        var basis = parseInt(getComputedStyle(endCap).flexBasis, 10);
+        endCap.style.flexBasis = basis - this.scrollbarWidth + 'px';
+      }
     },
 
     /** @private */
