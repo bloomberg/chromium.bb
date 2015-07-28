@@ -534,6 +534,7 @@ crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-4x.html [ Crash Pass ]
 crbug.com/489548 fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489548 virtual/pointerevent/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489548 virtual/trustedeventsdefaultaction/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
+crbug.com/489556 virtual/trustedeventsdefaultaction/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
 crbug.com/489556 virtual/pointerevent/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
 
 crbug.com/467649 webaudio/audionode-disconnect-audioparam.html [ Pass Failure ]
