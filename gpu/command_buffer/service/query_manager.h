@@ -151,6 +151,18 @@ class GPU_EXPORT QueryManager {
       manager_->EndQueryHelper(target);
     }
 
+    void SafelyResetDisjointValue() {
+      manager_->SafelyResetDisjointValue();
+    }
+
+    void UpdateDisjointValue() {
+      manager_->UpdateDisjointValue();
+    }
+
+    void BeginContinualDisjointUpdate() {
+      manager_->update_disjoints_continually_ = true;
+    }
+
     base::subtle::Atomic32 submit_count() const { return submit_count_; }
 
    private:
@@ -197,6 +209,9 @@ class GPU_EXPORT QueryManager {
   // Must call before destruction.
   void Destroy(bool have_context);
 
+  // Sets up a location to be incremented whenever a disjoint is detected.
+  void SetDisjointSync(int32 shm_id, uint32 shm_offset);
+
   // Creates a Query for the given query.
   Query* CreateQuery(
       GLenum target, GLuint client_id, int32 shm_id, uint32 shm_offset);
@@ -237,6 +252,9 @@ class GPU_EXPORT QueryManager {
   // True if there are pending transfer queries.
   bool HavePendingTransferQueries();
 
+  // Do any updates we need to do when the frame has begun.
+  void ProcessFrameBeginUpdates();
+
   GLES2Decoder* decoder() const {
     return decoder_;
   }
@@ -273,11 +291,27 @@ class GPU_EXPORT QueryManager {
   // used to emulate a query.
   GLenum AdjustTargetForEmulation(GLenum target);
 
+  // Checks and notifies if a disjoint occurred.
+  void UpdateDisjointValue();
+
+  // Safely resets the disjoint value if no queries are active.
+  void SafelyResetDisjointValue();
+
   // Used to validate shared memory and get GL errors.
   GLES2Decoder* decoder_;
 
   bool use_arb_occlusion_query2_for_occlusion_query_boolean_;
   bool use_arb_occlusion_query_for_occlusion_query_boolean_;
+
+  // Whether we are tracking disjoint values every frame.
+  bool update_disjoints_continually_;
+
+  // The shared memory used for disjoint notifications.
+  int32_t disjoint_notify_shm_id_;
+  uint32_t disjoint_notify_shm_offset_;
+
+  // Current number of disjoints notified.
+  uint32_t disjoints_notified_;
 
   // Counts the number of Queries allocated with 'this' as their manager.
   // Allows checking no Query will outlive this.

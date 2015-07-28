@@ -231,6 +231,23 @@ struct AsyncUploadSync {
   base::subtle::Atomic32 async_upload_token;
 };
 
+struct DisjointValueSync {
+  void Reset() {
+    base::subtle::Release_Store(&disjoint_count, 0);
+  }
+
+  void SetDisjointCount(uint32_t token) {
+    DCHECK_NE(token, 0u);
+    base::subtle::Release_Store(&disjoint_count, token);
+  }
+
+  uint32_t GetDisjointCount() {
+    return base::subtle::Acquire_Load(&disjoint_count);
+  }
+
+  base::subtle::Atomic32 disjoint_count;
+};
+
 static_assert(sizeof(ProgramInput) == 20, "size of ProgramInput should be 20");
 static_assert(offsetof(ProgramInput, type) == 0,
               "offset of ProgramInput.type should be 0");

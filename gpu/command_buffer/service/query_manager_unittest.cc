@@ -28,9 +28,11 @@ namespace gles2 {
 class QueryManagerTest : public GpuServiceTest {
  public:
   static const int32 kSharedMemoryId = 401;
-  static const size_t kSharedBufferSize = 2048;
   static const uint32 kSharedMemoryOffset = 132;
-  static const int32 kInvalidSharedMemoryId = 402;
+  static const int32 kSharedMemory2Id = 402;
+  static const uint32 kSharedMemory2Offset = 232;
+  static const size_t kSharedBufferSize = 2048;
+  static const int32 kInvalidSharedMemoryId = 403;
   static const uint32 kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
   static const uint32 kInitialResult = 0xBDBDBDBDu;
   static const uint8 kInitialMemoryValue = 0xBDu;
@@ -44,17 +46,7 @@ class QueryManagerTest : public GpuServiceTest {
     GpuServiceTest::SetUpWithGLVersion("3.2",
                                        "GL_ARB_occlusion_query, "
                                        "GL_ARB_timer_query");
-    engine_.reset(new MockCommandBufferEngine());
-    decoder_.reset(new MockGLES2Decoder());
-    decoder_->set_engine(engine_.get());
-    TestHelper::SetupFeatureInfoInitExpectations(
-        gl_.get(),
-        "GL_EXT_occlusion_query_boolean, GL_ARB_timer_query");
-    EXPECT_CALL(*decoder_.get(), GetGLContext())
-      .WillRepeatedly(Return(GetGLContext()));
-    scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-    feature_info->Initialize();
-    manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
+    SetUpMockGL("GL_EXT_occlusion_query_boolean, GL_ARB_timer_query");
   }
 
   void TearDown() override {
@@ -63,6 +55,19 @@ class QueryManagerTest : public GpuServiceTest {
     manager_.reset();
     engine_.reset();
     GpuServiceTest::TearDown();
+  }
+
+  void SetUpMockGL(const char* extension_expectations) {
+    engine_.reset(new MockCommandBufferEngine());
+    decoder_.reset(new MockGLES2Decoder());
+    decoder_->set_engine(engine_.get());
+    TestHelper::SetupFeatureInfoInitExpectations(
+        gl_.get(), extension_expectations);
+    EXPECT_CALL(*decoder_.get(), GetGLContext())
+      .WillRepeatedly(Return(GetGLContext()));
+    scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
+    feature_info->Initialize();
+    manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
   }
 
   QueryManager::Query* CreateQuery(
@@ -98,18 +103,28 @@ class QueryManagerTest : public GpuServiceTest {
       shared_memory->CreateAndMapAnonymous(kSharedBufferSize);
       valid_buffer_ =
           MakeBufferFromSharedMemory(shared_memory.Pass(), kSharedBufferSize);
-      data_ = static_cast<uint8*>(valid_buffer_->memory());
+
+      scoped_ptr<base::SharedMemory> shared_memory2(new base::SharedMemory());
+      shared_memory2->CreateAndMapAnonymous(kSharedBufferSize);
+      valid_buffer2_ =
+          MakeBufferFromSharedMemory(shared_memory2.Pass(), kSharedBufferSize);
+
       ClearSharedMemory();
     }
 
     ~MockCommandBufferEngine() override {}
 
     scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) override {
-      return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
+      switch (shm_id) {
+        case kSharedMemoryId: return valid_buffer_;
+        case kSharedMemory2Id: return valid_buffer2_;
+        default: return invalid_buffer_;
+      }
     }
 
     void ClearSharedMemory() {
-      memset(data_, kInitialMemoryValue, kSharedBufferSize);
+      memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
+      memset(valid_buffer2_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
     void set_token(int32 token) override { DCHECK(false); }
@@ -132,19 +147,28 @@ class QueryManagerTest : public GpuServiceTest {
     }
 
    private:
-    uint8* data_;
     scoped_refptr<gpu::Buffer> valid_buffer_;
+    scoped_refptr<gpu::Buffer> valid_buffer2_;
     scoped_refptr<gpu::Buffer> invalid_buffer_;
   };
 
   scoped_ptr<MockCommandBufferEngine> engine_;
 };
 
+class QueryManagerManualSetupTest : public QueryManagerTest {
+ protected:
+  void SetUp() override {
+    // Let test setup manually.
+  }
+};
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const int32 QueryManagerTest::kSharedMemoryId;
-const size_t QueryManagerTest::kSharedBufferSize;
 const uint32 QueryManagerTest::kSharedMemoryOffset;
+const int32 QueryManagerTest::kSharedMemory2Id;
+const uint32 QueryManagerTest::kSharedMemory2Offset;
+const size_t QueryManagerTest::kSharedBufferSize;
 const int32 QueryManagerTest::kInvalidSharedMemoryId;
 const uint32 QueryManagerTest::kInvalidSharedMemoryOffset;
 const uint32 QueryManagerTest::kInitialResult;
@@ -721,11 +745,151 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
   manager_->Destroy(false);
 }
 
+TEST_F(QueryManagerManualSetupTest, TimeElapsedDisjoint) {
+  GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
+                                     "GL_EXT_disjoint_timer_query");
+  gfx::GPUTimingFake fake_timing_queries;
+  fake_timing_queries.ExpectDisjointCalls(*gl_);
+  SetUpMockGL("GL_EXT_disjoint_timer_query");
+
+  DisjointValueSync* disjoint_sync =
+      decoder_->GetSharedMemoryAs<DisjointValueSync*>(kSharedMemory2Id,
+                                                      kSharedMemory2Offset,
+                                                      sizeof(*disjoint_sync));
+  manager_->SetDisjointSync(kSharedMemory2Id, kSharedMemory2Offset);
+
+  const uint32_t current_disjoint_value = disjoint_sync->GetDisjointCount();
+  ASSERT_EQ(0u, current_disjoint_value);
+
+  const GLuint kClient1Id = 1;
+  const GLenum kTarget = GL_TIME_ELAPSED_EXT;
+  const base::subtle::Atomic32 kSubmitCount = 123;
+
+  QueryManager::Query* query = manager_->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  // Disjoint happening before the query should not trigger a disjoint event.
+  fake_timing_queries.SetDisjoint();
+
+  fake_timing_queries.ExpectGPUTimerQuery(*gl_, true);
+  EXPECT_TRUE(manager_->BeginQuery(query));
+  EXPECT_TRUE(manager_->EndQuery(query, kSubmitCount));
+  EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  EXPECT_TRUE(query->IsFinished());
+  EXPECT_EQ(current_disjoint_value, disjoint_sync->GetDisjointCount());
+
+  // Disjoint happening during query should trigger disjoint event.
+  fake_timing_queries.ExpectGPUTimerQuery(*gl_, true);
+  EXPECT_TRUE(manager_->BeginQuery(query));
+  fake_timing_queries.SetDisjoint();
+  EXPECT_TRUE(manager_->EndQuery(query, kSubmitCount));
+  EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  EXPECT_TRUE(query->IsFinished());
+  EXPECT_NE(current_disjoint_value, disjoint_sync->GetDisjointCount());
+
+  manager_->Destroy(false);
+}
+
 TEST_F(QueryManagerTest, TimeStampQuery) {
   const GLuint kClient1Id = 1;
   const GLenum kTarget = GL_TIMESTAMP_EXT;
   const base::subtle::Atomic32 kSubmitCount = 123;
   gfx::GPUTimingFake fake_timing_queries;
+
+  decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
+      base::Bind(&gfx::GPUTimingFake::GetFakeCPUTime));
+
+  QueryManager::Query* query = manager_->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  const uint64_t expected_result =
+      100u * base::Time::kNanosecondsPerMicrosecond;
+  fake_timing_queries.SetCurrentGLTime(expected_result);
+  fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
+  EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
+  EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
+  EXPECT_EQ(expected_result, sync->result);
+
+  manager_->Destroy(false);
+}
+
+TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
+  GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
+                                     "GL_EXT_disjoint_timer_query");
+  gfx::GPUTimingFake fake_timing_queries;
+  fake_timing_queries.ExpectDisjointCalls(*gl_);
+  SetUpMockGL("GL_EXT_disjoint_timer_query");
+
+  DisjointValueSync* disjoint_sync =
+      decoder_->GetSharedMemoryAs<DisjointValueSync*>(kSharedMemory2Id,
+                                                      kSharedMemory2Offset,
+                                                      sizeof(*disjoint_sync));
+  manager_->SetDisjointSync(kSharedMemory2Id, kSharedMemory2Offset);
+
+  const uint32_t current_disjoint_value = disjoint_sync->GetDisjointCount();
+  ASSERT_EQ(0u, current_disjoint_value);
+
+  const GLuint kClient1Id = 1;
+  const GLenum kTarget = GL_TIMESTAMP_EXT;
+  const base::subtle::Atomic32 kSubmitCount = 123;
+
+  QueryManager::Query* query = manager_->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  // Disjoint happening before the query should not trigger a disjoint event.
+  fake_timing_queries.SetDisjoint();
+
+  fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
+  EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
+  EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  EXPECT_TRUE(query->IsFinished());
+  EXPECT_EQ(current_disjoint_value, disjoint_sync->GetDisjointCount());
+
+  // Disjoint happening during query should trigger disjoint event.
+  fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
+  EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
+  fake_timing_queries.SetDisjoint();
+  EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  EXPECT_TRUE(query->IsFinished());
+  EXPECT_NE(current_disjoint_value, disjoint_sync->GetDisjointCount());
+
+  manager_->Destroy(false);
+}
+
+TEST_F(QueryManagerManualSetupTest, DisjointContinualTest) {
+  GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
+                                     "GL_EXT_disjoint_timer_query");
+  gfx::GPUTimingFake fake_timing_queries;
+  fake_timing_queries.ExpectDisjointCalls(*gl_);
+  SetUpMockGL("GL_EXT_disjoint_timer_query");
+
+  DisjointValueSync* disjoint_sync =
+      decoder_->GetSharedMemoryAs<DisjointValueSync*>(kSharedMemory2Id,
+                                                      kSharedMemory2Offset,
+                                                      sizeof(*disjoint_sync));
+  manager_->SetDisjointSync(kSharedMemory2Id, kSharedMemory2Offset);
+
+  const uint32_t current_disjoint_value = disjoint_sync->GetDisjointCount();
+  ASSERT_EQ(0u, current_disjoint_value);
+
+  // Disjoint value should not be updated until we have a timestamp query.
+  fake_timing_queries.SetDisjoint();
+  manager_->ProcessFrameBeginUpdates();
+  EXPECT_EQ(current_disjoint_value, disjoint_sync->GetDisjointCount());
+
+  const GLuint kClient1Id = 1;
+  const GLenum kTarget = GL_TIMESTAMP_EXT;
+  const base::subtle::Atomic32 kSubmitCount = 123;
 
   QueryManager::Query* query = manager_->CreateQuery(
       kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
@@ -734,6 +898,12 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
   fake_timing_queries.ExpectGPUTimeStampQuery(*gl_, false);
   EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
   EXPECT_TRUE(manager_->ProcessPendingQueries(false));
+
+  EXPECT_EQ(current_disjoint_value, disjoint_sync->GetDisjointCount());
+  fake_timing_queries.SetDisjoint();
+  manager_->ProcessFrameBeginUpdates();
+  EXPECT_NE(current_disjoint_value, disjoint_sync->GetDisjointCount());
+
   manager_->Destroy(false);
 }
 

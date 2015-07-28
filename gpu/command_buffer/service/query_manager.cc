@@ -616,6 +616,8 @@ TimeElapsedQuery::TimeElapsedQuery(QueryManager* manager,
 }
 
 bool TimeElapsedQuery::Begin() {
+  // Reset the disjoint value before the query begins if it is safe.
+  SafelyResetDisjointValue();
   MarkAsActive();
   gpu_timer_->Start();
   return true;
@@ -642,6 +644,12 @@ void TimeElapsedQuery::Resume() {
 bool TimeElapsedQuery::Process(bool did_finish) {
   if (!gpu_timer_->IsAvailable())
     return true;
+
+  // Make sure disjoint value is up to date. This disjoint check is the only one
+  // that needs to be done to validate that this query is valid. If a disjoint
+  // occurs before the client checks the query value we will just hide the
+  // disjoint state since it did not affect this query.
+  UpdateDisjointValue();
 
   const uint64_t nano_seconds = gpu_timer_->GetDeltaElapsed() *
                                 base::Time::kNanosecondsPerMicrosecond;
@@ -703,7 +711,13 @@ void TimeStampQuery::Resume() {
 }
 
 bool TimeStampQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  // Reset the disjoint value before the query begins if it is safe.
+  SafelyResetDisjointValue();
   MarkAsActive();
+  // After a timestamp has begun, we will want to continually detect
+  // the disjoint value every frame until the context is destroyed.
+  BeginContinualDisjointUpdate();
+
   gpu_timer_->QueryTimeStamp();
   return AddToPendingQueue(submit_count);
 }
@@ -711,6 +725,12 @@ bool TimeStampQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
 bool TimeStampQuery::Process(bool did_finish) {
   if (!gpu_timer_->IsAvailable())
     return true;
+
+  // Make sure disjoint value is up to date. This disjoint check is the only one
+  // that needs to be done to validate that this query is valid. If a disjoint
+  // occurs before the client checks the query value we will just hide the
+  // disjoint state since it did not affect this query.
+  UpdateDisjointValue();
 
   int64_t start = 0;
   int64_t end = 0;
@@ -740,6 +760,10 @@ QueryManager::QueryManager(
       use_arb_occlusion_query_for_occlusion_query_boolean_(
           feature_info->feature_flags(
             ).use_arb_occlusion_query_for_occlusion_query_boolean),
+      update_disjoints_continually_(false),
+      disjoint_notify_shm_id_(-1),
+      disjoint_notify_shm_offset_(0),
+      disjoints_notified_(0),
       query_count_(0) {
   DCHECK(!(use_arb_occlusion_query_for_occlusion_query_boolean_ &&
            use_arb_occlusion_query2_for_occlusion_query_boolean_));
@@ -768,6 +792,20 @@ void QueryManager::Destroy(bool have_context) {
     query->Destroy(have_context);
     queries_.erase(queries_.begin());
   }
+}
+
+void QueryManager::SetDisjointSync(int32 shm_id, uint32 shm_offset) {
+  DCHECK(disjoint_notify_shm_id_ == -1);
+  DCHECK(shm_id != -1);
+
+  DisjointValueSync* sync = decoder_->GetSharedMemoryAs<DisjointValueSync*>(
+      shm_id, shm_offset, sizeof(*sync));
+  DCHECK(sync);
+  sync->Reset();
+  disjoints_notified_ = 0;
+
+  disjoint_notify_shm_id_ = shm_id;
+  disjoint_notify_shm_offset_ = shm_offset;
 }
 
 QueryManager::Query* QueryManager::CreateQuery(
@@ -903,6 +941,33 @@ void QueryManager::EndQueryHelper(GLenum target) {
   glEndQuery(target);
 }
 
+void QueryManager::UpdateDisjointValue() {
+  if (disjoint_notify_shm_id_ != -1) {
+    if (gpu_timing_client_->CheckAndResetTimerErrors()) {
+      disjoints_notified_++;
+
+      DisjointValueSync* sync = decoder_->GetSharedMemoryAs<DisjointValueSync*>(
+          disjoint_notify_shm_id_, disjoint_notify_shm_offset_, sizeof(*sync));
+      if (!sync) {
+        // Shared memory does not seem to be valid, ignore the shm id/offset.
+        disjoint_notify_shm_id_ = -1;
+        disjoint_notify_shm_offset_ = 0;
+      } else {
+        sync->SetDisjointCount(disjoints_notified_);
+      }
+    }
+  }
+}
+
+void QueryManager::SafelyResetDisjointValue() {
+  // It is only safe to reset the disjoint value is there is no active
+  // elapsed timer and we are not continually updating the disjoint value.
+  if (!update_disjoints_continually_ && !GetActiveQuery(GL_TIME_ELAPSED)) {
+    // Reset the error state without storing the result.
+    gpu_timing_client_->CheckAndResetTimerErrors();
+  }
+}
+
 QueryManager::Query::Query(
      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
     : manager_(manager),
@@ -1001,6 +1066,11 @@ bool QueryManager::ProcessPendingTransferQueries() {
 
 bool QueryManager::HavePendingTransferQueries() {
   return !pending_transfer_queries_.empty();
+}
+
+void QueryManager::ProcessFrameBeginUpdates() {
+  if (update_disjoints_continually_)
+    UpdateDisjointValue();
 }
 
 bool QueryManager::AddPendingQuery(Query* query,
