@@ -6,8 +6,6 @@
 
 #include "base/metrics/histogram_delta_serialization.h"
 #include "chrome/common/service_messages.h"
-#include "chrome/service/cloud_print/cloud_print_proxy.h"
-#include "chrome/service/service_process.h"
 #include "ipc/ipc_logging.h"
 
 ServiceIPCServer::ServiceIPCServer(
@@ -87,6 +85,10 @@ bool ServiceIPCServer::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
+void ServiceIPCServer::AddMessageHandler(scoped_ptr<MessageHandler> handler) {
+  message_handlers_.push_back(handler.release());
+}
+
 bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   // When we get a message, always mark the IPC client as connected. The
@@ -95,34 +97,23 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   // again on subsequent connections.
   ipc_client_connected_ = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
-    IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxyWithRobot,
-                        OnEnableCloudPrintProxyWithRobot)
-    IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
-                        OnDisableCloudPrintProxy)
-    IPC_MESSAGE_HANDLER(ServiceMsg_GetCloudPrintProxyInfo,
-                        OnGetCloudPrintProxyInfo)
     IPC_MESSAGE_HANDLER(ServiceMsg_GetHistograms, OnGetHistograms)
-    IPC_MESSAGE_HANDLER(ServiceMsg_GetPrinters, OnGetPrinters)
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (!handled) {
+    // Make a copy of the handlers to prevent modification during iteration.
+    std::vector<MessageHandler*> temp_handlers = message_handlers_.get();
+    for (const auto& handler : temp_handlers) {
+      handled = handler->HandleMessage(msg);
+      if (handled)
+        break;
+    }
+  }
+
   return handled;
-}
-
-void ServiceIPCServer::OnEnableCloudPrintProxyWithRobot(
-    const std::string& robot_auth_code,
-    const std::string& robot_email,
-    const std::string& user_email,
-    const base::DictionaryValue& user_settings) {
-  g_service_process->GetCloudPrintProxy()->EnableForUserWithRobot(
-      robot_auth_code, robot_email, user_email, user_settings);
-}
-
-void ServiceIPCServer::OnGetCloudPrintProxyInfo() {
-  cloud_print::CloudPrintProxyInfo info;
-  g_service_process->GetCloudPrintProxy()->GetProxyInfo(&info);
-  channel_->Send(new ServiceHostMsg_CloudPrintProxy_Info(info));
 }
 
 void ServiceIPCServer::OnGetHistograms() {
@@ -133,19 +124,6 @@ void ServiceIPCServer::OnGetHistograms() {
   std::vector<std::string> deltas;
   histogram_delta_serializer_->PrepareAndSerializeDeltas(&deltas);
   channel_->Send(new ServiceHostMsg_Histograms(deltas));
-}
-
-void ServiceIPCServer::OnGetPrinters() {
-  std::vector<std::string> printers;
-  g_service_process->GetCloudPrintProxy()->GetPrinters(&printers);
-  channel_->Send(new ServiceHostMsg_Printers(printers));
-}
-
-void ServiceIPCServer::OnDisableCloudPrintProxy() {
-  // User disabled CloudPrint proxy explicitly. Delete printers
-  // registered from this proxy and disable proxy.
-  g_service_process->GetCloudPrintProxy()->
-      UnregisterPrintersAndDisableForUser();
 }
 
 void ServiceIPCServer::OnShutdown() {

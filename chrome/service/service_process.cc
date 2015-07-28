@@ -18,7 +18,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -28,6 +30,7 @@
 #include "chrome/common/service_process_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/service/cloud_print/cloud_print_message_handler.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/net/service_url_request_context_getter.h"
 #include "chrome/service/service_process_prefs.h"
@@ -193,6 +196,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
       io_task_runner(),
       service_process_state_->GetServiceProcessChannel(),
       &shutdown_event_));
+  ipc_server_->AddMessageHandler(make_scoped_ptr(
+      new cloud_print::CloudPrintMessageHandler(ipc_server_.get(), this)));
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is

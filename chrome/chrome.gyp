@@ -741,6 +741,8 @@
             'service/cloud_print/cloud_print_auth.h',
             'service/cloud_print/cloud_print_connector.cc',
             'service/cloud_print/cloud_print_connector.h',
+            'service/cloud_print/cloud_print_message_handler.cc',
+            'service/cloud_print/cloud_print_message_handler.h',
             'service/cloud_print/cloud_print_proxy.cc',
             'service/cloud_print/cloud_print_proxy.h',
             'service/cloud_print/cloud_print_proxy_backend.cc',

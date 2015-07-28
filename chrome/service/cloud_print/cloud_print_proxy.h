@@ -36,6 +36,12 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   CloudPrintProxy();
   ~CloudPrintProxy() override;
 
+  // Provides a CloudPrintProxy instance, which may be lazily instantiated.
+  class Provider {
+   public:
+    virtual CloudPrintProxy* GetCloudPrintProxy() = 0;
+  };
+
   // Initializes the object. This should be called every time an object of this
   // class is constructed.
   void Initialize(ServiceProcessPrefs* service_prefs, Client* client);

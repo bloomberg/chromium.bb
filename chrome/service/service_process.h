@@ -10,9 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_ipc_server.h"
 
@@ -22,6 +20,8 @@ class ServiceProcessState;
 
 namespace base {
 class CommandLine;
+class SequencedWorkerPool;
+class WaitableEvent;
 }
 
 namespace net {
@@ -33,7 +33,8 @@ class NetworkChangeNotifier;
 // ServiceProcess Design Notes
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/service-processes
 class ServiceProcess : public ServiceIPCServer::Client,
-                       public cloud_print::CloudPrintProxy::Client {
+                       public cloud_print::CloudPrintProxy::Client,
+                       public cloud_print::CloudPrintProxy::Provider {
  public:
   ServiceProcess();
   ~ServiceProcess() override;
@@ -76,7 +77,8 @@ class ServiceProcess : public ServiceIPCServer::Client,
   void OnUpdateAvailable() override;
   bool OnIPCClientDisconnect() override;
 
-  cloud_print::CloudPrintProxy* GetCloudPrintProxy();
+  // CloudPrintProxy::Provider implementation.
+  cloud_print::CloudPrintProxy* GetCloudPrintProxy() override;
 
   // CloudPrintProxy::Client implementation.
   void OnCloudPrintProxyEnabled(bool persist_state) override;
