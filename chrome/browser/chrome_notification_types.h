@@ -357,9 +357,11 @@ enum NotificationType {
 
   // Cookies -----------------------------------------------------------------
 
-  // Sent when a cookie changes. The source is a Profile object, the details
-  // are a ChromeCookieDetails object.
-  NOTIFICATION_COOKIE_CHANGED,
+#if defined(ENABLE_EXTENSIONS)
+  // Sent when a cookie changes, for consumption by extensions. The source is a
+  // Profile object, the details are a ChromeCookieDetails object.
+  NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS,
+#endif
 
   // Download Notifications --------------------------------------------------
 

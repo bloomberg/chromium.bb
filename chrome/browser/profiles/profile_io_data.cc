@@ -94,6 +94,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_cookie_monster_delegate.h"
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
@@ -378,12 +379,15 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->ssl_config_service = profile->GetSSLConfigService();
-  params->cookie_monster_delegate =
-      chrome_browser_net::CreateCookieDelegate(profile);
+
+  scoped_refptr<net::CookieMonsterDelegate> next_cookie_monster_delegate;
 #if defined(ENABLE_EXTENSIONS)
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
+  next_cookie_monster_delegate = new ExtensionCookieMonsterDelegate(profile);
 #endif
+  params->cookie_monster_delegate =
+      chrome_browser_net::CreateCookieDelegate(next_cookie_monster_delegate);
 
   if (predictors::ResourcePrefetchPredictor* predictor =
           predictors::ResourcePrefetchPredictorFactory::GetForProfile(

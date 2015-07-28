@@ -107,7 +107,7 @@ CookiesEventRouter::CookiesEventRouter(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
-                 chrome::NOTIFICATION_COOKIE_CHANGED,
+                 chrome::NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -123,7 +123,7 @@ void CookiesEventRouter::Observe(
     return;
 
   switch (type) {
-    case chrome::NOTIFICATION_COOKIE_CHANGED:
+    case chrome::NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS:
       CookieChanged(
           profile,
           content::Details<ChromeCookieDetails>(details).ptr());

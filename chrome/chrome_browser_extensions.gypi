@@ -627,6 +627,8 @@
       'browser/extensions/extension_commands_global_registry.h',
       'browser/extensions/extension_context_menu_model.cc',
       'browser/extensions/extension_context_menu_model.h',
+      'browser/extensions/extension_cookie_monster_delegate.cc',
+      'browser/extensions/extension_cookie_monster_delegate.h',
       'browser/extensions/extension_creator.cc',
       'browser/extensions/extension_creator.h',
       'browser/extensions/extension_creator_filter.cc',
