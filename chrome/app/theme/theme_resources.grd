@@ -332,7 +332,6 @@
         </if>
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_HOVER" file="common/edit_button_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="common/edit_button_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LOCKED" file="common/icon_locked.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="common/avatar_menu_profile.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_CHILD" file="common/avatar_menu_child.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_DISCONNECT" file="common/avatar_menu_disconnect.png" />
