@@ -53,6 +53,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -996,6 +997,13 @@ void Gtk2UI::LoadGtkValues() {
       GdkColorToSkColor(entry_style->base[GTK_STATE_ACTIVE]);
   inactive_selection_fg_color_ =
       GdkColorToSkColor(entry_style->text[GTK_STATE_ACTIVE]);
+
+  colors_[ThemeProperties::COLOR_THROBBER_SPINNING] =
+      NativeThemeGtk2::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
+  colors_[ThemeProperties::COLOR_THROBBER_WAITING] =
+      NativeThemeGtk2::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberWaitingColor);
 }
 
 GdkColor Gtk2UI::BuildFrameColors(GtkStyle* frame_style) {

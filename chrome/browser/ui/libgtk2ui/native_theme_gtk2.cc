@@ -412,7 +412,11 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GetEntryStyle()->bg[GTK_STATE_SELECTED];
     }
 
-    case kColorId_ThrobberWaitingColor:
+    case kColorId_ThrobberWaitingColor: {
+      return GdkAlphaBlend(GetEntryStyle()->bg[GTK_STATE_SELECTED],
+                           GetWindowStyle()->bg[GTK_STATE_NORMAL], 0xff / 2);
+    }
+
     case kColorId_NumColors:
       NOTREACHED();
       break;
