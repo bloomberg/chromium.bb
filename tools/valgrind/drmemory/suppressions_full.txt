@@ -1838,13 +1838,6 @@ name=bug_468169
 *!encode_nonrd_sb_row
 *!vp9_encode_tile
 
-UNADDRESSABLE ACCESS
-name=bug_470055
-blink_web.dll!blink::*::focused*Frame
-blink_web.dll!blink::WebFrameWidgetImpl::selectionBounds
-content.dll!content::RenderWidget::UpdateSelectionBounds
-content.dll!content::RenderWidget::willBeginCompositorFrame
-
 UNINITIALIZED READ
 name=bug_470848
 blink_platform.dll!blink::Heap::RegionTree::lookup

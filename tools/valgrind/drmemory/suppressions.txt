@@ -714,58 +714,6 @@ skia.dll!SkPaint::measureText
 content.dll!content::DoPreSandboxWarmupForTypeface
 content.dll!content::`anonymous namespace'::WarmupDirectWrite
 
-UNADDRESSABLE ACCESS
-name=http://crbug.com/463261
-...
-blink_web.dll!blink::WebFrameWidgetImpl::selectionBounds
-...
-content.dll!content::RenderWidget::UpdateSelectionBounds
-content.dll!content::RenderWidget::WillBeginCompositorFrame
-cc.dll!base::internal::InvokeHelper<>::MakeItSo
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/476586
-*!blink::WebFrameWidgetImpl::beginFrame
-*!content::RenderWidgetCompositor::BeginMainFrame
-*!cc::LayerTreeHost::BeginMainFrame
-*!cc::ThreadProxy::BeginMainFrame
-*!base::internal::InvokeHelper<>::MakeItSo
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/476586b
-*!blink::PageWidgetDelegate::animate
-*!blink::WebFrameWidgetImpl::beginFrame
-*!content::RenderWidgetCompositor::BeginMainFrame
-*!cc::LayerTreeHost::BeginMainFrame
-*!cc::ThreadProxy::BeginMainFrame
-*!base::internal::InvokeHelper<>::MakeItSo
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/483305
-blink_web.dll!blink::WebFrameWidgetImpl::suppressInvalidations
-blink_web.dll!blink::WebFrameWidgetImpl::setRootGraphicsLayer
-blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
-blink_web.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/483305b
-blink_web.dll!blink::WebFrameWidgetImpl::setRootGraphicsLayer
-blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
-blink_web.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/484352
-blink_web.dll!blink::WebFrameWidgetImpl::setIsAcceleratedCompositingActive
-blink_web.dll!blink::WebFrameWidgetImpl::willCloseLayerTreeView
-scheduler.dll!scheduler::TaskQueueManager::ProcessTaskFromWorkQueue
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/484352b
-...
-blink_web.dll!blink::WebFrameWidgetImpl::setRootGraphicsLayer
-blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
-*.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
-
 HANDLE LEAK
 name=http://crbug.com/487500
 system call NtCreateEvent
@@ -779,13 +727,3 @@ system call NtCreateEvent
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlEncodePointer
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/508820
-...
-*!blink::FocusController::focusedOrMainFrame
-*!content::RenderWidget::UpdateSelectionBounds
-*!content::RenderWidget::WillBeginCompositorFrame
-*!base::internal::InvokeHelper<>::MakeItSo
-*!base::internal::Invoker<>::Run
-*!base::debug::TaskAnnotator::RunTask
