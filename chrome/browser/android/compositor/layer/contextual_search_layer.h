@@ -32,7 +32,7 @@ class ContextualSearchLayer : public Layer {
   static scoped_refptr<ContextualSearchLayer> Create(
       ui::ResourceManager* resource_manager);
 
-  void SetProperties(int search_bar_background_resource_id,
+  void SetProperties(int panel_shaddow_resource_id,
                      int search_bar_text_resource_id,
                      int search_bar_shadow_resource_id,
                      int search_provider_icon_resource_id,
@@ -50,7 +50,6 @@ class ContextualSearchLayer : public Layer {
                      float search_panel_y,
                      float search_panel_width,
                      float search_panel_height,
-                     float search_bar_margin_top,
                      float search_bar_margin_side,
                      float search_bar_height,
                      float search_bar_text_opacity,
@@ -84,7 +83,8 @@ class ContextualSearchLayer : public Layer {
   ui::ResourceManager* resource_manager_;
 
   scoped_refptr<cc::Layer> layer_;
-  scoped_refptr<cc::NinePatchLayer> search_bar_background_;
+  scoped_refptr<cc::NinePatchLayer> panel_shadow_;
+  scoped_refptr<cc::SolidColorLayer> search_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_bar_text_;
   scoped_refptr<cc::UIResourceLayer> search_bar_shadow_;
   scoped_refptr<cc::UIResourceLayer> search_provider_icon_;

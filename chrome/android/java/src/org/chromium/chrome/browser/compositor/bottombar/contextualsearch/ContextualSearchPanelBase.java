@@ -28,12 +28,6 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  */
 abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandler
         implements ContextualSearchPromoHost {
-
-    /**
-     * The margin top of the Contextual Search Bar in dps.
-     */
-    private static final float SEARCH_BAR_MARGIN_TOP_DP = 16.f;
-
     /**
      * The side padding of Search Bar icons in dps.
      */
@@ -249,8 +243,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mSearchBarPaddingTop = PANEL_SHADOW_HEIGHT_DP;
 
         mSearchBarHeightPeeking = context.getResources().getDimension(
-                R.dimen.contextual_search_bar_height) * mPxToDp + mSearchBarPaddingTop;
-        mSearchBarHeightMaximized = mToolbarHeight + mSearchBarPaddingTop;
+                R.dimen.contextual_search_bar_height) * mPxToDp;
+        mSearchBarHeightMaximized = mToolbarHeight;
         mSearchBarHeightExpanded =
                 Math.round((mSearchBarHeightPeeking + mSearchBarHeightMaximized) / 2.f);
 
@@ -551,8 +545,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // --------------------------------------------------------------------------------------------
     // Contextual Search Bar states
     // --------------------------------------------------------------------------------------------
-
-    private float mSearchBarMarginTop;
     private float mSearchBarMarginSide;
     private float mSearchBarHeight;
     private float mSearchBarTextOpacity;
@@ -572,13 +564,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
     private float mCloseIconOpacity;
     private float mCloseIconWidth;
-
-    /**
-     * @return The top margin of the Contextual Search Bar.
-     */
-    public float getSearchBarMarginTop() {
-        return mSearchBarMarginTop;
-    }
 
     /**
      * @return The side margin of the Contextual Search Bar.
@@ -863,7 +848,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mIsShowing = false;
 
         // Static values.
-        mSearchBarMarginTop = SEARCH_BAR_MARGIN_TOP_DP;
         mSearchBarMarginSide = SEARCH_BAR_ICON_SIDE_PADDING_DP;
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mSearchBarBorderHeight = SEARCH_BAR_BORDER_HEIGHT_DP;
@@ -892,18 +876,15 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             panelHeight = mSearchBarHeightPeeking;
         } else if (state == PanelState.EXPANDED) {
             if (isFullscreenSizePanel()) {
-                panelHeight = fullscreenHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE
-                        + mSearchBarPaddingTop;
+                panelHeight = fullscreenHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             } else {
-                panelHeight = fullscreenHeight * NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE
-                        + mSearchBarPaddingTop;
+                panelHeight = fullscreenHeight * NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             }
         } else if (state == PanelState.MAXIMIZED) {
             if (isFullscreenSizePanel()) {
-                panelHeight = fullscreenHeight + mSearchBarPaddingTop;
+                panelHeight = fullscreenHeight;
             } else {
-                panelHeight = fullscreenHeight * NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE
-                        + mSearchBarPaddingTop;
+                panelHeight = fullscreenHeight * NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE;
             }
         }
 

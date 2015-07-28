@@ -44,7 +44,6 @@ class ContextualSearchSceneLayer : public SceneLayer {
                                    jfloat search_panel_y,
                                    jfloat search_panel_width,
                                    jfloat search_panel_height,
-                                   jfloat search_bar_margin_top,
                                    jfloat search_bar_margin_side,
                                    jfloat search_bar_height,
                                    jfloat search_bar_text_opacity,

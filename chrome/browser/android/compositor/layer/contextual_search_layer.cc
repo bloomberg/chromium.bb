@@ -18,6 +18,7 @@
 namespace {
 
 const SkColor kSearchBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
+const SkColor kSearchBarBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
 const SkColor kSearchBarBorderColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 
 }  // namespace
@@ -32,7 +33,7 @@ scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
 }
 
 void ContextualSearchLayer::SetProperties(
-    int search_bar_background_resource_id,
+    int panel_shadow_resource_id,
     int search_bar_text_resource_id,
     int search_bar_shadow_resource_id,
     int search_provider_icon_resource_id,
@@ -50,7 +51,6 @@ void ContextualSearchLayer::SetProperties(
     float search_panel_y,
     float search_panel_width,
     float search_panel_height,
-    float search_bar_margin_top,
     float search_bar_margin_side,
     float search_bar_height,
     float search_bar_text_opacity,
@@ -79,32 +79,46 @@ void ContextualSearchLayer::SetProperties(
                                      search_bar_text_resource_id);
 
   // Grabs required static resources.
-  ui::ResourceManager::Resource* search_bar_background_resource =
+  ui::ResourceManager::Resource* panel_shadow_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     search_bar_background_resource_id);
+                                     panel_shadow_resource_id);
   ui::ResourceManager::Resource* search_provider_icon_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      search_provider_icon_resource_id);
 
-  DCHECK(search_bar_background_resource);
+  DCHECK(panel_shadow_resource);
   DCHECK(search_provider_icon_resource);
 
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
-  search_bar_margin_top = floor(search_bar_margin_top);
 
   bool is_rtl = l10n_util::IsLayoutRtl();
+
+  // ---------------------------------------------------------------------------
+  // Panel Shadow
+  // ---------------------------------------------------------------------------
+  gfx::Size shadow_res_size = panel_shadow_resource->size;
+  gfx::Rect shadow_res_padding = panel_shadow_resource->padding;
+  gfx::Size shadow_bounds(
+      search_panel_width + shadow_res_size.width()
+          - shadow_res_padding.size().width(),
+      search_panel_height + shadow_res_size.height()
+          - shadow_res_padding.size().height());
+  panel_shadow_->SetUIResourceId(panel_shadow_resource->ui_resource->id());
+  panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
+  panel_shadow_->SetAperture(panel_shadow_resource->aperture);
+  panel_shadow_->SetBounds(shadow_bounds);
+  gfx::Point shadow_position(
+      -shadow_res_padding.origin().x(),
+      -shadow_res_padding.origin().y());
+  panel_shadow_->SetPosition(shadow_position);
 
   // ---------------------------------------------------------------------------
   // Search Bar Background
   // ---------------------------------------------------------------------------
   gfx::Size background_size(search_panel_width, search_bar_height);
-  search_bar_background_->SetUIResourceId(
-      search_bar_background_resource->ui_resource->id());
-  search_bar_background_->SetBorder(
-      search_bar_background_resource->Border(background_size));
-  search_bar_background_->SetAperture(search_bar_background_resource->aperture);
   search_bar_background_->SetBounds(background_size);
+  search_bar_background_->SetPosition(gfx::PointF(0.f, 0.f));
 
   // ---------------------------------------------------------------------------
   // Search Bar Text
@@ -112,8 +126,7 @@ void ContextualSearchLayer::SetProperties(
   if (search_bar_text_resource) {
     // Centers the text vertically in the Search Bar.
     float search_bar_padding_top =
-        search_bar_margin_top +
-        (search_bar_height - search_bar_margin_top) / 2 -
+        search_bar_height / 2 -
         search_bar_text_resource->size.height() / 2;
     search_bar_text_->SetUIResourceId(
         search_bar_text_resource->ui_resource->id());
@@ -136,15 +149,16 @@ void ContextualSearchLayer::SetProperties(
       search_provider_icon_left = search_bar_margin_side;
     }
     // Centers the Search Provider Icon vertically in the Search Bar.
-    search_provider_icon_top = search_bar_margin_top +
-        (search_bar_height - search_bar_margin_top) / 2 -
+    search_provider_icon_top =
+        search_bar_height / 2 -
         search_provider_icon_resource->size.height() / 2;
   } else {
     // Centers the Search Provider Icon horizontally in the Search Bar.
     search_provider_icon_left =
         search_panel_width / 2.f -
         search_provider_icon_resource->size.width() / 2.f;
-    search_provider_icon_top = 0.f;
+    search_provider_icon_top =
+        -search_provider_icon_resource->size.height() / 2;
   }
   search_provider_icon_->SetUIResourceId(
       search_provider_icon_resource->ui_resource->id());
@@ -175,8 +189,8 @@ void ContextualSearchLayer::SetProperties(
     }
 
     // Centers the Search Icon vertically in the Search Bar.
-    float search_icon_top = search_bar_margin_top +
-        (search_bar_height - search_bar_margin_top) / 2 -
+    float search_icon_top =
+        search_bar_height / 2 -
         search_icon_resource->size.height() / 2;
     search_icon_->SetUIResourceId(search_icon_resource->ui_resource->id());
     search_icon_->SetBounds(search_icon_resource->size);
@@ -210,8 +224,7 @@ void ContextualSearchLayer::SetProperties(
     }
 
     // Centers the Arrow Icon vertically in the Search Bar.
-    float arrow_icon_top = search_bar_margin_top +
-        (search_bar_height - search_bar_margin_top) / 2 -
+    float arrow_icon_top = search_bar_height / 2 -
         arrow_icon_resource->size.height() / 2;
 
     arrow_icon_->SetUIResourceId(arrow_icon_resource->ui_resource->id());
@@ -258,8 +271,8 @@ void ContextualSearchLayer::SetProperties(
     }
 
     // Centers the Close Icon vertically in the Search Bar.
-    float close_icon_top = search_bar_margin_top +
-        (search_bar_height - search_bar_margin_top) / 2 -
+    float close_icon_top =
+        search_bar_height / 2 -
         close_icon_resource->size.height() / 2;
 
     close_icon_->SetUIResourceId(close_icon_resource->ui_resource->id());
@@ -429,8 +442,10 @@ ContextualSearchLayer::ContextualSearchLayer(
     ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
       layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
-      search_bar_background_(
+      panel_shadow_(
           cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      search_bar_background_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       search_bar_text_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       search_bar_shadow_(
@@ -458,9 +473,14 @@ ContextualSearchLayer::ContextualSearchLayer(
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 
+  // Panel Shadow
+  panel_shadow_->SetIsDrawable(true);
+  panel_shadow_->SetFillCenter(false);
+  layer_->AddChild(panel_shadow_);
+
   // Search Bar Background
   search_bar_background_->SetIsDrawable(true);
-  search_bar_background_->SetFillCenter(true);
+  search_bar_background_->SetBackgroundColor(kSearchBarBackgroundColor);
   layer_->AddChild(search_bar_background_);
 
   // Search Bar Text
