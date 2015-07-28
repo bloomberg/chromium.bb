@@ -462,9 +462,8 @@ DoublePoint PinchViewport::maximumScrollPositionDouble() const
     FloatSize frameViewSize(contentsSize());
 
     if (m_topControlsAdjustment) {
-        float aspectRatio = visibleRect().width() / visibleRect().height();
-        float adjustment = frameViewSize.width() / aspectRatio - frameViewSize.height();
-        frameViewSize.expand(0, adjustment);
+        float minScale = frameHost().pageScaleConstraintsSet().finalConstraints().minimumScale;
+        frameViewSize.expand(0, m_topControlsAdjustment / minScale);
     }
 
     frameViewSize.scale(m_scale);

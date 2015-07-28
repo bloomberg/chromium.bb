@@ -1785,24 +1785,13 @@ void WebViewImpl::didUpdateTopControls()
     if (!view)
         return;
 
-    float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
 
     PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
-
-    if (pinchViewport.visibleRect().isEmpty())
-        return;
-
+    float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
     pinchViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
 
-    // On ChromeOS the pinch viewport can change size independent of the layout viewport due to the
-    // on screen keyboard so we should only set the FrameView adjustment on Android.
-    if (settings() && settings()->mainFrameResizesAreOrientationChanges()) {
-        // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
-        float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
-        float newHeight = view->visibleContentSize(ExcludeScrollbars).width() / aspectRatio;
-        float adjustment = newHeight - view->visibleContentSize(ExcludeScrollbars).height();
-        view->setTopControlsViewportAdjustment(adjustment);
-    }
+    // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
+    view->setTopControlsViewportAdjustment(topControlsViewportAdjustment / minimumPageScaleFactor());
 }
 
 TopControls& WebViewImpl::topControls()
