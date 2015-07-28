@@ -1694,7 +1694,7 @@ void LayoutBlockFlow::addOverflowFromFloats()
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
         const FloatingObject& floatingObject = *it->get();
-        if (floatingObject.isDescendant())
+        if (floatingObject.isDirectlyContained())
             addOverflowFromChild(floatingObject.layoutObject(), LayoutSize(xPositionForFloatIncludingMargin(floatingObject), yPositionForFloatIncludingMargin(floatingObject)));
     }
 }
