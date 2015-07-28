@@ -20,6 +20,8 @@
 namespace remoting {
 namespace test {
 
+ChromotingTestDriverEnvironment* g_chromoting_shared_data = nullptr;
+
 ChromotingTestDriverEnvironment::EnvironmentOptions::EnvironmentOptions() {
 }
 
@@ -30,6 +32,7 @@ ChromotingTestDriverEnvironment::ChromotingTestDriverEnvironment(
     const EnvironmentOptions& options)
     : host_name_(options.host_name),
       user_name_(options.user_name),
+      pin_(options.pin),
       refresh_token_file_path_(options.refresh_token_file_path),
       test_access_token_fetcher_(nullptr),
       test_refresh_token_store_(nullptr),

@@ -2,33 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
-#include "remoting/test/access_token_fetcher.h"
-#include "remoting/test/host_info.h"
-#include "remoting/test/host_list_fetcher.h"
-#include "remoting/test/refresh_token_store.h"
-#include "remoting/test/test_chromoting_client.h"
+#include "remoting/test/chromoting_test_driver_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace switches {
 const char kAuthCodeSwitchName[] = "authcode";
-const char kPinSwitchName[] = "pin";
 const char kHelpSwitchName[] = "help";
 const char kHostNameSwitchName[] = "hostname";
 const char kLoggingLevelSwitchName[] = "verbosity";
+const char kPinSwitchName[] = "pin";
 const char kRefreshTokenPathSwitchName[] = "refresh-token-path";
 const char kSingleProcessTestsSwitchName[] = "single-process-tests";
 const char kUserNameSwitchName[] = "username";
@@ -39,8 +32,6 @@ const char kChromotingAuthScopeValues[] =
     "https://www.googleapis.com/auth/chromoting "
     "https://www.googleapis.com/auth/googletalk "
     "https://www.googleapis.com/auth/userinfo.email";
-
-const unsigned int kConnectionTimeoutSeconds = 10;
 
 std::string GetAuthorizationCodeUri() {
   // Replace space characters with a '+' sign when formatting.
@@ -80,11 +71,8 @@ void PrintUsage() {
          switches::kHelpSwitchName);
   printf("  %s: Path to a JSON file containing username/refresh_token KVPs\n",
          switches::kRefreshTokenPathSwitchName);
-  printf("  %s: Used to authenticate a chromoting connection with the host\n",
-         switches::kPinSwitchName);
   printf("  %s: Specifies the optional logging level of the tool (0-3)."
-         " [default: off]\n",
-         switches::kLoggingLevelSwitchName);
+         " [default: off]\n", switches::kLoggingLevelSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -144,41 +132,34 @@ void PrintJsonFileInfo() {
          switches::kHostNameSwitchName, switches::kRefreshTokenPathSwitchName);
 }
 
+// This class exists so that we can create a test suite which does not create
+// its own AtExitManager.  The problem we are working around occurs when
+// the test suite does not create an AtExitManager (e.g. if no tests are run)
+// and the environment object destroys its MessageLoop, then a crash will occur.
+class NoAtExitBaseTestSuite : public base::TestSuite {
+ public:
+  NoAtExitBaseTestSuite(int argc, char** argv)
+      : base::TestSuite(argc, argv, false) {}
+
+  static int RunTestSuite(int argc, char** argv) {
+    return NoAtExitBaseTestSuite(argc, argv).Run();
+  }
+};
+
 }  // namespace
 
-void OnHostlistRetrieved(
-    base::Closure done_closure,
-    std::vector<remoting::test::HostInfo>* hostlist,
-    const std::vector<remoting::test::HostInfo>& retrieved_hostlist) {
-
-  VLOG(1) << "OnHostlistRetrieved() Called";
-
-  DCHECK(hostlist);
-
-  *hostlist = retrieved_hostlist;
-
-  VLOG(1) << "There are " << hostlist->size() << " hosts in the hostlist";
-
-  done_closure.Run();
-}
-
-void OnAccessTokenRetrieved(
-    base::Closure done_closure,
-    std::string* access_token,
-    const std::string& retrieved_access_token,
-    const std::string& retrieved_refresh_token) {
-
-  VLOG(1) << "OnAccessTokenRetrieved() Called";
-  VLOG(1) << "Access Token: " << retrieved_access_token;
-
-  *access_token = retrieved_access_token;
-
-  done_closure.Run();
-}
-
 int main(int argc, char* argv[]) {
+  base::AtExitManager at_exit;
+  base::MessageLoopForIO message_loop;
   testing::InitGoogleTest(&argc, argv);
   base::TestSuite test_suite(argc, argv);
+
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
+    if (!base::CommandLine::Init(argc, argv)) {
+      LOG(ERROR) << "Failed to initialize command line singleton.";
+      return -1;
+    }
+  }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   DCHECK(command_line);
@@ -190,11 +171,16 @@ int main(int argc, char* argv[]) {
   // To avoid shared resource contention, tests will be run one at a time.
   command_line->AppendSwitch(switches::kSingleProcessTestsSwitchName);
 
+  // If the user passed in the help flag, then show the help info for this tool
+  // and 'run' the tests which will print the gtest specific help and then exit.
+  // NOTE: We do this check after updating the switches as otherwise the gtest
+  //       help is written in parallel with our text and can appear interleaved.
   if (command_line->HasSwitch(switches::kHelpSwitchName)) {
     PrintUsage();
     PrintJsonFileInfo();
     PrintAuthCodeInfo();
-    return 0;
+    return base::LaunchUnitTestsSerially(
+      argc, argv, base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
   }
 
   // Update the logging verbosity level is user specified one.
@@ -209,112 +195,54 @@ int main(int argc, char* argv[]) {
     logging::InitLogging(logging_settings);
   }
 
-  // The username is used to run the tests and determines which refresh token to
-  // select in the refresh token file.
-  const std::string username =
+  remoting::test::ChromotingTestDriverEnvironment::EnvironmentOptions options;
+
+  options.user_name =
       command_line->GetSwitchValueASCII(switches::kUserNameSwitchName);
-  if (username.empty()) {
+  if (options.user_name.empty()) {
     LOG(ERROR) << "No username passed in, can't authenticate or run tests!";
     return -1;
   }
-  VLOG(1) << "Running chromoting tests as: " << username;
+  VLOG(1) << "Running chromoting tests as: " << options.user_name;
 
   // Check to see if the user passed in a one time use auth_code for
   // refreshing their credentials.
   std::string auth_code =
       command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName);
-
-  const base::FilePath refresh_token_path =
+  options.refresh_token_file_path =
      command_line->GetSwitchValuePath(switches::kRefreshTokenPathSwitchName);
 
-  // The hostname determines which host to initiate a session with from the list
-  // returned from the directory service.
-  const std::string hostname =
+  // The host name determines which host to initiate a session with from the
+  // host list returned from the directory service.
+  options.host_name =
       command_line->GetSwitchValueASCII(switches::kHostNameSwitchName);
-  if (hostname.empty()) {
-    LOG(ERROR) << "No hostname passed in, finding the host requires hostname!";
+
+  if (options.host_name.empty()) {
+    LOG(ERROR) << "No hostname passed in, connect to host requires hostname!";
     return -1;
   }
-  VLOG(1) << "Chromoting tests will connect to: " << hostname;
+  VLOG(1) << "Chromoting tests will connect to: " << options.host_name;
 
-  const std::string pin =
-      command_line->GetSwitchValueASCII(switches::kPinSwitchName);
+  options.pin = command_line->GetSwitchValueASCII(switches::kPinSwitchName);
 
-  // TODO(TonyChun): Move this logic into a shared environment class.
-  scoped_ptr<remoting::test::RefreshTokenStore> refresh_token_store =
-      remoting::test::RefreshTokenStore::OnDisk(username, refresh_token_path);
+  // Create and register our global test data object. It will handle
+  // retrieving an access token or host list for the user. The GTest framework
+  // will own the lifetime of this object once it is registered below.
+  scoped_ptr<remoting::test::ChromotingTestDriverEnvironment> shared_data(
+      new remoting::test::ChromotingTestDriverEnvironment(options));
 
-  std::string refresh_token = refresh_token_store->FetchRefreshToken();
-  if (auth_code.empty() && refresh_token.empty()) {
-    // RefreshTokenStore already logs which specific error occured.
+  if (!shared_data->Initialize(auth_code)) {
+    // If we failed to initialize our shared data object, then bail.
     return -1;
   }
 
-  // Used for running network request tasks.
-  // TODO(TonyChun): Move this logic into a shared environment class.
-  base::MessageLoopForIO message_loop;
+  // Since we've successfully set up our shared_data object, we'll assign the
+  // value to our global* and transfer ownership to the framework.
+  remoting::test::g_chromoting_shared_data = shared_data.release();
+  testing::AddGlobalTestEnvironment(remoting::test::g_chromoting_shared_data);
 
-  // Uses the refresh token to get the access token from GAIA.
-  remoting::test::AccessTokenFetcher access_token_fetcher;
-
-  // A RunLoop that yields to the thread's MessageLoop.
-  scoped_ptr<base::RunLoop> run_loop;
-
-  // RunLoop to handle callback from GAIA.
-  run_loop.reset(new base::RunLoop());
-
-  std::string access_token;
-  remoting::test::AccessTokenCallback access_token_callback =
-      base::Bind(&OnAccessTokenRetrieved,
-                 run_loop->QuitClosure(),
-                 &access_token);
-
-  if (!auth_code.empty()) {
-    access_token_fetcher.GetAccessTokenFromAuthCode(auth_code,
-                                                    access_token_callback);
-  } else {
-    DCHECK(!refresh_token.empty());
-    access_token_fetcher.GetAccessTokenFromRefreshToken(refresh_token,
-                                                        access_token_callback);
-  }
-
-  run_loop->Run();
-
-  run_loop.reset(new base::RunLoop());
-
-  std::vector<remoting::test::HostInfo> hostlist;
-  remoting::test::HostListFetcher::HostlistCallback hostlist_request_callback =
-      base::Bind(&OnHostlistRetrieved, run_loop->QuitClosure(), &hostlist);
-
-  // Uses the access token to get the hostlist from the directory service.
-  remoting::test::HostListFetcher hostlist_fetcher;
-  hostlist_fetcher.RetrieveHostlist(access_token, hostlist_request_callback);
-
-  run_loop->Run();
-
-  run_loop.reset(new base::RunLoop());
-
-  remoting::test::TestChromotingClient test_chromoting_client;
-
-  // Check if requested host is online and ready to receive connections.
-  auto it = std::find_if(hostlist.begin(), hostlist.end(),
-                        [&hostname](const remoting::test::HostInfo& host_info) {
-                          return host_info.host_name == hostname &&
-                                 host_info.IsReadyForConnection();
-                        });
-  if (it != hostlist.end()) {
-    // Host is online and ready, initiate a remote session.
-    base::Timer timer(true, false);
-    timer.Start(FROM_HERE,
-                base::TimeDelta::FromSeconds(kConnectionTimeoutSeconds),
-                run_loop->QuitClosure());
-    test_chromoting_client.StartConnection(
-        it->GenerateConnectionSetupInfo(access_token, username, pin));
-    run_loop->Run();
-    test_chromoting_client.EndConnection();
-  } else {
-    LOG(ERROR) << "Requested host not found or not ready to connect";
-  }
-
-  return 0;
+  // Running the tests serially will avoid clients from connecting to the same
+  // host.
+  return base::LaunchUnitTestsSerially(
+      argc, argv, base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
 }

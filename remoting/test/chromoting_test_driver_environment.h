@@ -36,6 +36,7 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
 
     std::string user_name;
     std::string host_name;
+    std::string pin;
     base::FilePath refresh_token_file_path;
   };
 
@@ -98,6 +99,9 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   // The test account for a test case.
   std::string user_name_;
 
+  // Used to authenticate a connection with |host_name_|.
+  std::string pin_;
+
   // Path to a JSON file containing refresh tokens.
   base::FilePath refresh_token_file_path_;
 
@@ -118,6 +122,11 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingTestDriverEnvironment);
 };
+
+// Unfortunately a global var is how the GTEST framework handles sharing data
+// between tests and keeping long-lived objects around. Used to share access
+// tokens and a host list across tests.
+extern ChromotingTestDriverEnvironment* g_chromoting_shared_data;
 
 }  // namespace test
 }  // namespace remoting
