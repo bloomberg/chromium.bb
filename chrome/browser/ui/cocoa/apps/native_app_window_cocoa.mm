@@ -99,6 +99,10 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 
 @synthesize appWindow = appWindow_;
 
+- (void)setTitlebarBackgroundView:(NSView*)view {
+  titlebar_background_view_.reset([view retain]);
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
   if (appWindow_)
     appWindow_->WindowWillClose();
@@ -112,6 +116,14 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 - (void)windowDidResignKey:(NSNotification*)notification {
   if (appWindow_)
     appWindow_->WindowDidResignKey();
+}
+
+- (void)windowDidBecomeMain:(NSNotification*)notification {
+  [titlebar_background_view_ setNeedsDisplay:YES];
+}
+
+- (void)windowDidResignMain:(NSNotification*)notification {
+  [titlebar_background_view_ setNeedsDisplay:YES];
 }
 
 - (void)windowDidResize:(NSNotification*)notification {
@@ -249,7 +261,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       inactive_frame_color_(params.inactive_frame_color) {
   Observe(WebContents());
 
-  base::scoped_nsobject<NSWindow> window;
   Class window_class = has_frame_ ?
       [AppNSWindow class] : [AppFramelessNSWindow class];
 
@@ -257,11 +268,11 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   // the window bounds and constraints can be set precisely.
   NSRect cocoa_bounds = GfxToCocoaBounds(
       params.GetInitialWindowBounds(gfx::Insets()));
-  window.reset([[window_class alloc]
-      initWithContentRect:cocoa_bounds
-                styleMask:GetWindowStyleMask()
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
+  NSWindow* window =
+      [[window_class alloc] initWithContentRect:cocoa_bounds
+                                      styleMask:GetWindowStyleMask()
+                                        backing:NSBackingStoreBuffered
+                                          defer:NO];
 
   std::string name;
   const extensions::Extension* extension = app_window_->GetExtension();
@@ -269,11 +280,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     name = extension->name();
   [window setTitle:base::SysUTF8ToNSString(name)];
   [[window contentView] setWantsLayer:YES];
-  if (has_frame_ && has_frame_color_) {
-    [TitlebarBackgroundView addToNSWindow:window
-                              activeColor:active_frame_color_
-                            inactiveColor:inactive_frame_color_];
-  }
 
   if (base::mac::IsOSSnowLeopard() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
@@ -286,14 +292,22 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
                                          params.visible_on_all_workspaces);
 
   window_controller_.reset(
-      [[NativeAppWindowController alloc] initWithWindow:window.release()]);
+      [[NativeAppWindowController alloc] initWithWindow:window]);
+
+  if (has_frame_ && has_frame_color_) {
+    TitlebarBackgroundView* view =
+        [TitlebarBackgroundView addToNSWindow:window
+                                  activeColor:active_frame_color_
+                                inactiveColor:inactive_frame_color_];
+    [window_controller_ setTitlebarBackgroundView:view];
+  }
 
   NSView* view = WebContents()->GetNativeView();
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
   InstallView();
 
-  [[window_controller_ window] setDelegate:window_controller_];
+  [window setDelegate:window_controller_];
   [window_controller_ setAppWindow:this];
 
   // We can now compute the precise window bounds and constraints.
@@ -303,7 +317,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
                             params.GetContentMaximumSize(insets));
 
   // Initialize |restored_bounds_|.
-  restored_bounds_ = [this->window() frame];
+  restored_bounds_ = [window frame];
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
       Profile::FromBrowserContext(app_window_->browser_context()),

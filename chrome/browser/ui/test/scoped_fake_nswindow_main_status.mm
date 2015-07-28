@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/foundation_util.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 
 namespace {
 
@@ -26,13 +27,21 @@ NSWindow* g_fake_main_window = nil;
 @end
 
 ScopedFakeNSWindowMainStatus::ScopedFakeNSWindowMainStatus(NSWindow* window)
-    : swizzler_([NSWindow class],
-                [IsMainWindowDonorForWindow class],
-                @selector(isMainWindow)) {
+    : swizzler_(new base::mac::ScopedObjCClassSwizzler(
+          [NSWindow class],
+          [IsMainWindowDonorForWindow class],
+          @selector(isMainWindow))) {
   DCHECK(!g_fake_main_window);
   g_fake_main_window = window;
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:g_fake_main_window];
 }
 
 ScopedFakeNSWindowMainStatus::~ScopedFakeNSWindowMainStatus() {
+  NSWindow* window = g_fake_main_window;
   g_fake_main_window = nil;
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidResignMainNotification
+                    object:window];
 }

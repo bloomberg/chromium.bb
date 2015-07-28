@@ -31,9 +31,15 @@ class SkRegion;
                                        BrowserCommandExecutor> {
  @private
   NativeAppWindowCocoa* appWindow_;  // Weak; owns self.
+  base::scoped_nsobject<NSView> titlebar_background_view_;
 }
 
 @property(assign, nonatomic) NativeAppWindowCocoa* appWindow;
+
+// NativeAppWindowController will retain this view and call
+// -[NSView setNeedsDisplay:YES] when the window changes main status. This is
+// necessary because it does not always happen. See http://crbug.com/508722.
+- (void)setTitlebarBackgroundView:(NSView*)view;
 
 // Consults the Command Registry to see if this |event| needs to be handled as
 // an extension command and returns YES if so (NO otherwise).
