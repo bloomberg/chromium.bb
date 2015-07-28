@@ -35,8 +35,6 @@ function handleNavigation() {
     for (var key in tests) {
       var test = tests[key];
       var args = [{key: key}, '', key];
-      if ('options' in test)
-        args.push(test.options);
 
       if (test.type == 'push') {
         history.pushState.apply(history, args);
@@ -44,6 +42,9 @@ function handleNavigation() {
         history.pushState(null, '', key);
         history.replaceState.apply(history, args);
       }
+
+      if ('options' in test)
+         history.scrollRestoration = test.options.scrollRestoration;
 
       window.scrollBy(50, 100);
     }

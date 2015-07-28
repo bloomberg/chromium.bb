@@ -15,8 +15,8 @@ PASS window.cached_applicationCache.onprogress is null
 PASS window.cached_applicationCache.onupdateready is null
 PASS window.cached_applicationCache.status is 0
 PASS window.cached_history.length is 0
+PASS window.cached_history.scrollRestoration is 'auto'
 PASS window.cached_history.state is null
-PASS window.cached_history_options.scrollRestoration is 'auto'
 FAIL window.cached_location.hash should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.host should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.hostname should be  (of type string). Was undefined (of type undefined).

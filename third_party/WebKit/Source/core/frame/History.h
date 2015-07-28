@@ -39,7 +39,6 @@ class LocalFrame;
 class KURL;
 class ExecutionContext;
 class ExceptionState;
-class StateOptions;
 
 class History final : public GarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
@@ -52,26 +51,27 @@ public:
 
     unsigned length() const;
     SerializedScriptValue* state();
-    void options(StateOptions&);
 
     void back(ExecutionContext*);
     void forward(ExecutionContext*);
     void go(ExecutionContext*, int delta);
 
-    void pushState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, const StateOptions& options, ExceptionState& exceptionState)
+    void pushState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, ExceptionState& exceptionState)
     {
-        stateObjectAdded(data, title, url, options, FrameLoadTypeStandard, exceptionState);
+        stateObjectAdded(data, title, url, scrollRestorationInternal(), FrameLoadTypeStandard, exceptionState);
     }
 
-    void replaceState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, const StateOptions& options, ExceptionState& exceptionState)
+    void replaceState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, ExceptionState& exceptionState)
     {
-        stateObjectAdded(data, title, url, options, FrameLoadTypeReplaceCurrentItem, exceptionState);
+        stateObjectAdded(data, title, url, scrollRestorationInternal(), FrameLoadTypeReplaceCurrentItem, exceptionState);
     }
+
+    void setScrollRestoration(const String& value);
+    String scrollRestoration();
 
     bool stateChanged() const;
     bool isSameAsCurrentState(SerializedScriptValue*) const;
 
-    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, const StateOptions&, FrameLoadType, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -80,7 +80,9 @@ private:
 
     KURL urlForState(const String& url);
 
+    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, HistoryScrollRestorationType, FrameLoadType, ExceptionState&);
     SerializedScriptValue* stateInternal() const;
+    HistoryScrollRestorationType scrollRestorationInternal() const;
 
     RefPtr<SerializedScriptValue> m_lastStateObjectRequested;
 };

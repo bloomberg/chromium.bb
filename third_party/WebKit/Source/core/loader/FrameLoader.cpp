@@ -377,6 +377,8 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     m_currentItem->setPinchViewportScrollPoint(oldItem->pinchViewportScrollPoint());
     m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
     m_currentItem->setStateObject(oldItem->stateObject());
+    m_currentItem->setScrollRestorationType(oldItem->scrollRestorationType());
+
     // The item sequence number determines whether items are "the same", such back/forward navigation
     // between items with the same item sequence number is a no-op. Only treat this as identical if the
     // navigation did not create a back/forward entry and the url is identical or it was loaded via
@@ -573,6 +575,8 @@ void FrameLoader::checkCompleted()
         m_progressTracker->progressCompleted();
         // Retry restoring scroll offset since finishing loading disables content
         // size clamping.
+        // TODO(majidvp): Remove this call as it appears to be a no-op because
+        // we set load type to |FrameLoadTypeStandard| just above.
         restoreScrollPositionAndViewState();
         m_frame->localDOMWindow()->finishedLoading();
 
@@ -692,9 +696,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
 
     m_frame->view()->setWasScrolledByUser(false);
 
-    // We need to scroll to the fragment whether or not a hash change occurred, since
-    // the user might have scrolled since the previous navigation.
-    processFragment(url, NavigationWithinSameDocument);
     checkCompleted();
 
     m_frame->localDOMWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
@@ -921,6 +922,10 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
 
         if (sameDocumentHistoryNavigation)
             restoreScrollPositionAndViewState();
+
+        // We need to scroll to the fragment whether or not a hash change occurred, since
+        // the user might have scrolled since the previous navigation.
+        processFragment(url, NavigationWithinSameDocument);
         return;
     }
 
@@ -1102,8 +1107,10 @@ void FrameLoader::restoreScrollPositionAndViewState()
     if (!needsHistoryItemRestore(m_loadType))
         return;
 
-    if (m_currentItem->scrollRestorationType() == ScrollRestorationManual)
+    if (m_currentItem->scrollRestorationType() == ScrollRestorationManual) {
+        documentLoader()->initialScrollState().didRestoreFromHistory = true;
         return;
+    }
 
     // This tries to balance 1. restoring as soon as possible, 2. detecting
     // clamping to avoid repeatedly popping the scroll position down as the
@@ -1230,9 +1237,13 @@ void FrameLoader::processFragment(const KURL& url, LoadStartType loadStartType)
     if (boundaryFrame && boundaryFrame->isLocalFrame())
         toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
 
-    view->processUrlFragment(url,
-        loadStartType == NavigationToDifferentDocument && documentLoader()->initialScrollState().didRestoreFromHistory ?
-            FrameView::UrlFragmentDontScroll : FrameView::UrlFragmentScroll);
+    // If scroll position is restored from history fragment then we should not override it unless
+    // this is a same document reload.
+    bool shouldScrollToFragment = (loadStartType == NavigationWithinSameDocument && !isBackForwardLoadType(m_loadType))
+        || !documentLoader()->initialScrollState().didRestoreFromHistory;
+
+    view->processUrlFragment(url, shouldScrollToFragment ?
+        FrameView::UrlFragmentScroll : FrameView::UrlFragmentDontScroll);
 
     if (boundaryFrame && boundaryFrame->isLocalFrame())
         toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);

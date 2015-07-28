@@ -25,6 +25,8 @@
 
 // https://html.spec.whatwg.org/#the-history-interface
 
+enum ScrollRestoration {"auto", "manual"};
+
 [
     GarbageCollected,
 ] interface History {
@@ -40,11 +42,10 @@
     [CallWith=ExecutionContext] void forward();
     // TODO(philipj): The SerializedScriptValue types should be any.
     // TODO(philipj): The title arguments should simply be 'DOMString title'.
-    // Note: The options arguments are part of the Scroll Restoration API.
-    [RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null, optional StateOptions options);
-    [RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null, optional StateOptions options);
+    [RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
+    [RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
 
     // Experimental Scroll Restoration API
     // https://www.chromestatus.com/features/5657284784947200
-    [RuntimeEnabled=ScrollRestoration] readonly attribute StateOptions options;
+    [RuntimeEnabled=ScrollRestoration] attribute ScrollRestoration scrollRestoration;
 };

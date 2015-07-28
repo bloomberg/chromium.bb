@@ -30,7 +30,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/StateOptions.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -78,14 +77,35 @@ SerializedScriptValue* History::stateInternal() const
     return 0;
 }
 
-void History::options(StateOptions& options)
+void History::setScrollRestoration(const String& value)
 {
-    if (!m_frame)
+    ASSERT(value == "manual"  || value == "auto");
+    if (!m_frame || !m_frame->loader().client() || !RuntimeEnabledFeatures::scrollRestorationEnabled())
+        return;
+
+    HistoryScrollRestorationType scrollRestoration = value == "manual" ? ScrollRestorationManual : ScrollRestorationAuto;
+    if (scrollRestoration == scrollRestorationInternal())
         return;
 
     if (HistoryItem* historyItem = m_frame->loader().currentItem()) {
-        options.setScrollRestoration(historyItem->scrollRestorationType() == ScrollRestorationManual ? "manual" : "auto");
+        historyItem->setScrollRestorationType(scrollRestoration);
+        m_frame->loader().client()->didUpdateCurrentHistoryItem();
     }
+}
+
+String History::scrollRestoration()
+{
+    return scrollRestorationInternal() == ScrollRestorationManual ? "manual" : "auto";
+}
+
+HistoryScrollRestorationType History::scrollRestorationInternal() const
+{
+    if (m_frame && RuntimeEnabledFeatures::scrollRestorationEnabled()) {
+        if (HistoryItem* historyItem = m_frame->loader().currentItem())
+            return historyItem->scrollRestorationType();
+    }
+
+    return ScrollRestorationAuto;
 }
 
 bool History::stateChanged() const
@@ -139,7 +159,7 @@ KURL History::urlForState(const String& urlString)
     return KURL(document->baseURL(), urlString);
 }
 
-void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, const StateOptions& options, FrameLoadType type, ExceptionState& exceptionState)
+void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, HistoryScrollRestorationType restorationType, FrameLoadType type, ExceptionState& exceptionState)
 {
     if (!m_frame || !m_frame->page() || !m_frame->loader().documentLoader())
         return;
@@ -150,10 +170,6 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         exceptionState.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "'.");
         return;
     }
-
-    HistoryScrollRestorationType restorationType = ScrollRestorationAuto;
-    if (RuntimeEnabledFeatures::scrollRestorationEnabled() && options.scrollRestoration() == "manual")
-        restorationType = ScrollRestorationManual;
 
     m_frame->loader().updateForSameDocumentNavigation(fullURL, SameDocumentNavigationHistoryApi, data, restorationType, type);
 }

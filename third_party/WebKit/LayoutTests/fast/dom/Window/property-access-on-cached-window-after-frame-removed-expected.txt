@@ -20,7 +20,7 @@ PASS childWindow.defaultstatus is ''
 PASS childWindow.devicePixelRatio is 0
 PASS childWindow.frameElement is null
 PASS childWindow.history.length is 0
-PASS childWindow.history.options.scrollRestoration is 'auto'
+PASS childWindow.history.scrollRestoration is 'auto'
 PASS childWindow.history.state is null
 PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0

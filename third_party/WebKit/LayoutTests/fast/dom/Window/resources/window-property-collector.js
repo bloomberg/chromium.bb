@@ -75,7 +75,7 @@ function emitExpectedResult(path, expected)
     case "screen.orientation":
         expected = "'portrait-primary'";
         break;
-    case "history.options.scrollRestoration":
+    case "history.scrollRestoration":
         expected = "'auto'";
         break;
     }
