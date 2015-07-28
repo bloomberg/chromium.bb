@@ -1355,6 +1355,8 @@ void ChromeContentRendererClient::SetExtensionDispatcherForTest(
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
+  RenderThread::Get()->RegisterExtension(
+      extensions::SafeBuiltins::CreateV8Extension());
 }
 
 extensions::Dispatcher*

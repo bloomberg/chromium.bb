@@ -1317,6 +1317,7 @@ cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
+  EnsureWebKitInitialized();
   WebScriptController::registerExtension(extension);
 }
 

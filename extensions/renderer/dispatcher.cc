@@ -202,8 +202,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
         kInitialExtensionIdleHandlerDelayMs);
   }
 
-  RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
-
   script_context_set_.reset(
       new ScriptContextSet(&extensions_, &active_extension_ids_));
   user_script_set_manager_.reset(new UserScriptSetManager(&extensions_));
@@ -745,6 +743,8 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
 }
 
 void Dispatcher::WebKitInitialized() {
+  RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
+
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (set_idle_notifications_) {
