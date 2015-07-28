@@ -60,7 +60,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
 // routine exists because regular histogram macros are cached thus can't be used
 // if the name of the histogram will change at a given call site.
 void logLoadTimeHistogram(const std::string& histogram, base::TimeDelta value) {
-  base::HistogramBase* counter = base::LinearHistogram::FactoryTimeGet(
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       histogram,
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromSeconds(60), 100,
