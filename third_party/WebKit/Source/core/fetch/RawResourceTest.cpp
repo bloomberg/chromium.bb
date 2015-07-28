@@ -120,7 +120,7 @@ public:
     }
 private:
     DummyClient* m_dummyClient;
-    Resource* m_resource;
+    ResourcePtr<Resource> m_resource;
     Timer<AddingClient> m_removeClientTimer;
 };
 
