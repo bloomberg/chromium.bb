@@ -18,12 +18,19 @@ class CastDetailedView;
 class CastDuplexView;
 }  // namespace tray
 
-class TrayCast : public SystemTrayItem, public ShellObserver {
+class ASH_EXPORT TrayCast : public SystemTrayItem, public ShellObserver {
  public:
   explicit TrayCast(SystemTray* system_tray);
   ~TrayCast() override;
 
  private:
+  // Helper/utility methods for testing.
+  friend class TrayCastTestAPI;
+  void StartCastForTest(const std::string& receiver_id);
+  void StopCastForTest();
+  const views::View* GetDefaultView() const;
+  enum ChildViewId { TRAY_VIEW = 1, SELECT_VIEW, CAST_VIEW };
+
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(user::LoginStatus status) override;
   views::View* CreateDefaultView(user::LoginStatus status) override;

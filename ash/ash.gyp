@@ -741,6 +741,8 @@
       'test/test_user_wallpaper_delegate.h',
       'test/test_volume_control_delegate.cc',
       'test/test_volume_control_delegate.h',
+      'test/tray_cast_test_api.cc',
+      'test/tray_cast_test_api.h',
       'test/ui_controls_factory_ash.cc',
       'test/ui_controls_factory_ash.h',
       'test/user_metrics_recorder_test_api.cc',

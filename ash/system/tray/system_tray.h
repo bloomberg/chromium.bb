@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/cast/tray_cast.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
@@ -150,6 +151,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Get the tray item view (or NULL) for a given |tray_item| in a unit test.
   views::View* GetTrayItemViewForTest(SystemTrayItem* tray_item);
 
+  // Gets tray_cast_ for browser tests.
+  TrayCast* GetTrayCastForTesting() const;
+
   // Gets tray_date_ for browser tests.
   TrayDate* GetTrayDateForTesting() const;
 
@@ -232,6 +236,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   bool full_system_tray_menu_;
 
   TrayAccessibility* tray_accessibility_;  // not owned
+  TrayCast* tray_cast_;
   TrayDate* tray_date_;
 
   // A reference to the Screen share and capture item.

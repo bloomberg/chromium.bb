@@ -114,6 +114,8 @@ class CastCastView : public views::View, public views::ButtonListener {
   explicit CastCastView(CastConfigDelegate* cast_config_delegate);
   ~CastCastView() override;
 
+  void StopCasting();
+
   // Updates the label for the stop view to include information about the
   // current device that is being casted.
   void UpdateLabel();
@@ -206,6 +208,12 @@ void CastCastView::Layout() {
   }
 }
 
+void CastCastView::StopCasting() {
+  cast_config_delegate_->StopCasting();
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+      ash::UMA_STATUS_AREA_CAST_STOP_CAST);
+}
+
 void CastCastView::UpdateLabel() {
   if (cast_config_delegate_ == nullptr ||
       cast_config_delegate_->HasCastExtension() == false)
@@ -245,9 +253,7 @@ void CastCastView::UpdateLabelCallback(
 void CastCastView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   DCHECK(sender == stop_button_);
-  cast_config_delegate_->StopCasting();
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_CAST_STOP_CAST);
+  StopCasting();
 }
 
 // This view by itself does very little. It acts as a front-end for managing
@@ -388,6 +394,10 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
                    user::LoginStatus login);
   ~CastDetailedView() override;
 
+  // Makes the detail view think the view associated with the given receiver_id
+  // was clicked. This will start a cast.
+  void SimulateViewClickedForTest(const std::string& receiver_id);
+
  private:
   void CreateItems();
 
@@ -428,6 +438,16 @@ CastDetailedView::CastDetailedView(SystemTrayItem* owner,
 }
 
 CastDetailedView::~CastDetailedView() {
+}
+
+void CastDetailedView::SimulateViewClickedForTest(
+    const std::string& receiver_id) {
+  for (auto& it : receiver_activity_map_) {
+    if (it.second == receiver_id) {
+      OnViewClicked(it.first);
+      break;
+    }
+  }
 }
 
 void CastDetailedView::CreateItems() {
@@ -548,6 +568,19 @@ TrayCast::~TrayCast() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
+void TrayCast::StartCastForTest(const std::string& receiver_id) {
+  if (detailed_ != nullptr)
+    detailed_->SimulateViewClickedForTest(receiver_id);
+}
+
+void TrayCast::StopCastForTest() {
+  default_->cast_view()->StopCasting();
+}
+
+const views::View* TrayCast::GetDefaultView() const {
+  return default_;
+}
+
 views::View* TrayCast::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_ == nullptr);
   tray_ = new tray::CastTrayView(this);
@@ -557,8 +590,13 @@ views::View* TrayCast::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayCast::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == nullptr);
+
   default_ = new tray::CastDuplexView(this, cast_config_delegate_,
                                       status != user::LOGGED_IN_LOCKED);
+  default_->set_id(TRAY_VIEW);
+  default_->select_view()->set_id(SELECT_VIEW);
+  default_->cast_view()->set_id(CAST_VIEW);
+
   UpdatePrimaryView();
   return default_;
 }

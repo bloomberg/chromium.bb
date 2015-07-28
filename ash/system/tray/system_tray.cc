@@ -182,7 +182,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayVPN(this));
   AddTrayItem(new TraySms(this));
   AddTrayItem(new TrayBluetooth(this));
-  AddTrayItem(new TrayCast(this));
+  tray_cast_ = new TrayCast(this);
+  AddTrayItem(tray_cast_);
   AddTrayItem(new TrayDisplay(this));
   screen_capture_tray_item_ = new ScreenCaptureTrayItem(this);
   AddTrayItem(screen_capture_tray_item_);
@@ -205,7 +206,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #elif defined(OS_LINUX)
   AddTrayItem(tray_accessibility_);
   AddTrayItem(new TrayBluetooth(this));
-  AddTrayItem(new TrayCast(this));
   AddTrayItem(new TrayUpdate(this));
   AddTrayItem(tray_date_);
 #endif
@@ -693,6 +693,8 @@ views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
       tray_item_map_.find(item);
   return it == tray_item_map_.end() ? NULL : it->second;
 }
+
+TrayCast* SystemTray::GetTrayCastForTesting() const { return tray_cast_; }
 
 TrayDate* SystemTray::GetTrayDateForTesting() const { return tray_date_; }
 
