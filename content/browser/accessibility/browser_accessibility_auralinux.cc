@@ -21,6 +21,90 @@ static BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
 }
 
 //
+// AtkAction interface.
+//
+
+static BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
+    AtkAction* atk_action) {
+  if (!IS_BROWSER_ACCESSIBILITY(atk_action))
+    return NULL;
+
+  return ToBrowserAccessibilityAuraLinux(BROWSER_ACCESSIBILITY(atk_action));
+}
+
+static gboolean browser_accessibility_do_action(AtkAction* atk_action,
+                                                gint index) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), FALSE);
+  g_return_val_if_fail(!index, FALSE);
+
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinux(atk_action);
+  if (!obj)
+    return FALSE;
+
+  obj->manager()->DoDefaultAction(*obj);
+
+  return TRUE;
+}
+
+static gint browser_accessibility_get_n_actions(AtkAction* atk_action) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), 0);
+
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinux(atk_action);
+  if (!obj)
+    return 0;
+
+  return 1;
+}
+
+static const gchar* browser_accessibility_get_description(AtkAction* atk_action,
+                                                          gint) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), 0);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinux(atk_action);
+  if (!obj)
+    return 0;
+
+  return 0;
+}
+
+static const gchar* browser_accessibility_get_name(AtkAction* atk_action,
+                                                   gint index) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), 0);
+  g_return_val_if_fail(!index, 0);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinux(atk_action);
+  if (!obj)
+    return 0;
+
+  return obj->GetStringAttribute(ui::AX_ATTR_ACTION).c_str();
+}
+
+static const gchar* browser_accessibility_get_keybinding(AtkAction* atk_action,
+                                                         gint index) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), 0);
+  g_return_val_if_fail(!index, 0);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinux(atk_action);
+  if (!obj)
+    return 0;
+
+  return obj->GetStringAttribute(ui::AX_ATTR_ACCESS_KEY).c_str();
+}
+
+static void ActionInterfaceInit(AtkActionIface* iface) {
+  iface->do_action = browser_accessibility_do_action;
+  iface->get_n_actions = browser_accessibility_get_n_actions;
+  iface->get_description = browser_accessibility_get_description;
+  iface->get_name = browser_accessibility_get_name;
+  iface->get_keybinding = browser_accessibility_get_keybinding;
+}
+
+static const GInterfaceInfo ActionInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ActionInterfaceInit), 0, 0};
+
+//
 // AtkComponent interface.
 //
 
@@ -104,6 +188,85 @@ static const GInterfaceInfo ComponentInfo = {
     reinterpret_cast<GInterfaceInitFunc>(ComponentInterfaceInit),
     0,
     0};
+
+//
+// AtkDocument interface.
+//
+
+static BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
+    AtkDocument* atk_doc) {
+  if (!IS_BROWSER_ACCESSIBILITY(atk_doc))
+    return NULL;
+
+  return ToBrowserAccessibilityAuraLinux(BROWSER_ACCESSIBILITY(atk_doc));
+}
+
+static const gchar* GetDocumentAttributeValue(
+    BrowserAccessibilityAuraLinux* obj,
+    const gchar* attribute) {
+  if (!g_ascii_strcasecmp(attribute, "DocType"))
+    return obj->GetStringAttribute(ui::AX_ATTR_DOC_DOCTYPE).c_str();
+  else if (!g_ascii_strcasecmp(attribute, "MimeType"))
+    return obj->GetStringAttribute(ui::AX_ATTR_DOC_MIMETYPE).c_str();
+  else if (!g_ascii_strcasecmp(attribute, "Title"))
+    return obj->GetStringAttribute(ui::AX_ATTR_DOC_TITLE).c_str();
+  else if (!g_ascii_strcasecmp(attribute, "URI"))
+    return obj->GetStringAttribute(ui::AX_ATTR_DOC_URL).c_str();
+
+  return 0;
+}
+
+AtkAttributeSet* SetAtkAttributeSet(AtkAttributeSet* attribute_set,
+                                    const char* name,
+                                    const char* value) {
+  AtkAttribute* attribute =
+      static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
+  attribute->name = g_strdup(name);
+  attribute->value = g_strdup(value);
+  attribute_set = g_slist_prepend(attribute_set, attribute);
+  return attribute_set;
+}
+
+static const gchar* browser_accessibility_get_attribute_value(
+    AtkDocument* atk_doc,
+    const gchar* attribute) {
+  g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), 0);
+  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(atk_doc);
+  if (!obj)
+    return 0;
+
+  return GetDocumentAttributeValue(obj, attribute);
+}
+
+static AtkAttributeSet* browser_accessibility_get_attributes(
+    AtkDocument* atk_doc) {
+  g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), 0);
+  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(atk_doc);
+  if (!obj)
+    return 0;
+
+  AtkAttributeSet* attribute_set = 0;
+  const gchar* doc_attributes[] = {"DocType", "MimeType", "Title", "URI"};
+  const gchar* value = 0;
+
+  for (unsigned i = 0; i < G_N_ELEMENTS(doc_attributes); i++) {
+    value = GetDocumentAttributeValue(obj, doc_attributes[i]);
+    if (value)
+      attribute_set =
+          SetAtkAttributeSet(attribute_set, doc_attributes[i], value);
+  }
+
+  return attribute_set;
+}
+
+static void DocumentInterfaceInit(AtkDocumentIface* iface) {
+  iface->get_document_attribute_value =
+      browser_accessibility_get_attribute_value;
+  iface->get_document_attributes = browser_accessibility_get_attributes;
+}
+
+static const GInterfaceInfo DocumentInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(DocumentInterfaceInit), 0, 0};
 
 //
 // AtkValue interface.
@@ -411,11 +574,21 @@ static int GetInterfaceMaskFromObject(BrowserAccessibilityAuraLinux* obj) {
   // Component interface is always supported.
   interface_mask |= 1 << ATK_COMPONENT_INTERFACE;
 
+  // Action interface is basic one. It just relays on executing default action
+  // for each object.
+  interface_mask |= 1 << ATK_ACTION_INTERFACE;
+
+  // Value Interface
   int role = obj->GetRole();
   if (role == ui::AX_ROLE_PROGRESS_INDICATOR ||
       role == ui::AX_ROLE_SCROLL_BAR || role == ui::AX_ROLE_SLIDER) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
+
+  // Document Interface
+  if (role == ui::AX_ROLE_DOCUMENT || role == ui::AX_ROLE_ROOT_WEB_AREA ||
+      role == ui::AX_ROLE_WEB_AREA)
+    interface_mask |= 1 << ATK_DOCUMENT_INTERFACE;
 
   return interface_mask;
 }
@@ -443,8 +616,12 @@ static GType GetAccessibilityTypeFromObject(
 
   type = g_type_register_static(BROWSER_ACCESSIBILITY_TYPE, atk_type_name,
                                 &type_info, GTypeFlags(0));
+  if (interface_mask & (1 << ATK_ACTION_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_ACTION, &ActionInfo);
   if (interface_mask & (1 << ATK_COMPONENT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &ComponentInfo);
+  if (interface_mask & (1 << ATK_DOCUMENT_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &DocumentInfo);
   if (interface_mask & (1 << ATK_VALUE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_VALUE, &ValueInfo);
 
