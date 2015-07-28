@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #if defined(__GNUC__) && (__GNUC__ >= 4)
 #define FC_ATTRIBUTE_SENTINEL(x) __attribute__((__sentinel__(0)))
@@ -235,6 +236,12 @@ typedef enum _FcResult {
     FcResultMatch, FcResultNoMatch, FcResultTypeMismatch, FcResultNoId,
     FcResultOutOfMemory
 } FcResult;
+
+typedef enum _FcValueBinding {
+    FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame,
+    /* to make sure sizeof (FcValueBinding) == 4 even with -fshort-enums */
+    FcValueBindingEnd = INT_MAX
+} FcValueBinding;
 
 typedef struct _FcPattern   FcPattern;
 
@@ -837,7 +844,10 @@ FcPatternAddWeak (FcPattern *p, const char *object, FcValue value, FcBool append
     
 FcPublic FcResult
 FcPatternGet (const FcPattern *p, const char *object, int id, FcValue *v);
-    
+
+FcPublic FcResult
+FcPatternGetWithBinding (const FcPattern *p, const char *object, int id, FcValue *v, FcValueBinding *b);
+
 FcPublic FcBool
 FcPatternDel (FcPattern *p, const char *object);
 
