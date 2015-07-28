@@ -47,20 +47,6 @@ bool AttachmentBrokerPrivilegedWin::OnMessageReceived(const Message& msg) {
   return handled;
 }
 
-void AttachmentBrokerPrivilegedWin::RegisterCommunicationChannel(
-    Channel* channel) {
-  auto it = std::find(channels_.begin(), channels_.end(), channel);
-  DCHECK(channels_.end() == it);
-  channels_.push_back(channel);
-}
-
-void AttachmentBrokerPrivilegedWin::DeregisterCommunicationChannel(
-    Channel* channel) {
-  auto it = std::find(channels_.begin(), channels_.end(), channel);
-  DCHECK(it != channels_.end());
-  channels_.erase(it);
-}
-
 void AttachmentBrokerPrivilegedWin::OnDuplicateWinHandle(
     const IPC::Message& message) {
   AttachmentBrokerMsg_DuplicateWinHandle::Param param;
@@ -89,10 +75,8 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
 
   // Another process is the destination.
   base::ProcessId dest = wire_format.destination_process;
-  auto it =
-      std::find_if(channels_.begin(), channels_.end(),
-                   [dest](Channel* c) { return c->GetPeerPID() == dest; });
-  if (it == channels_.end()) {
+  Channel* channel = GetChannelWithProcessId(dest);
+  if (!channel) {
     // Assuming that this message was not sent from a malicious process, the
     // channel endpoint that would have received this message will block
     // forever.
@@ -101,7 +85,8 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
     return;
   }
 
-  (*it)->Send(new AttachmentBrokerMsg_WinHandleHasBeenDuplicated(wire_format));
+  channel->Send(
+      new AttachmentBrokerMsg_WinHandleHasBeenDuplicated(wire_format));
 }
 
 AttachmentBrokerPrivilegedWin::HandleWireFormat

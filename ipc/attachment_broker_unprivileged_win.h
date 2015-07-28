@@ -2,27 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_ATTACHMENT_BROKER_WIN_H_
-#define IPC_ATTACHMENT_BROKER_WIN_H_
+#ifndef IPC_ATTACHMENT_BROKER_UNPRIVILEGED_WIN_H_
+#define IPC_ATTACHMENT_BROKER_UNPRIVILEGED_WIN_H_
 
-#include <vector>
-
-#include "base/memory/ref_counted.h"
-#include "ipc/attachment_broker.h"
-#include "ipc/brokerable_attachment.h"
+#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/handle_attachment_win.h"
 #include "ipc/ipc_export.h"
 
 namespace IPC {
 
-class Sender;
+class BrokerableAttachment;
 
 // This class is an implementation of AttachmentBroker for the Windows platform
 // for non-privileged processes.
-class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
+class IPC_EXPORT AttachmentBrokerUnprivilegedWin
+    : public IPC::AttachmentBrokerUnprivileged {
  public:
-  AttachmentBrokerWin();
-  ~AttachmentBrokerWin() override;
+  AttachmentBrokerUnprivilegedWin();
+  ~AttachmentBrokerUnprivilegedWin() override;
 
   // IPC::AttachmentBroker overrides.
   bool SendAttachmentToProcess(const BrokerableAttachment* attachment,
@@ -31,21 +28,14 @@ class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;
 
-  // |sender_| is used to send Messages to the broker. |sender_| must live at
-  // least as long as this instance.
-  void set_sender(IPC::Sender* sender) { sender_ = sender; }
-
  private:
   // IPC message handlers.
   void OnWinHandleHasBeenDuplicated(
       const IPC::internal::HandleAttachmentWin::WireFormat& wire_format);
 
-  // |sender_| is used to send Messages to the broker. |sender_| must live at
-  // least as long as this instance.
-  IPC::Sender* sender_;
-  DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerWin);
+  DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerUnprivilegedWin);
 };
 
 }  // namespace IPC
 
-#endif  // IPC_ATTACHMENT_BROKER_WIN_H_
+#endif  // IPC_ATTACHMENT_BROKER_UNPRIVILEGED_WIN_H_

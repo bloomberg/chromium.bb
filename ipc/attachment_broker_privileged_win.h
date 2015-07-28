@@ -5,21 +5,16 @@
 #ifndef IPC_ATTACHMENT_BROKER_PRIVILEGED_WIN_H_
 #define IPC_ATTACHMENT_BROKER_PRIVILEGED_WIN_H_
 
-#include <vector>
-
-#include "ipc/attachment_broker.h"
+#include "ipc/attachment_broker_privileged.h"
 #include "ipc/handle_attachment_win.h"
 #include "ipc/ipc_export.h"
 
 namespace IPC {
 
-class Channel;
-
-// This class is an implementation of AttachmentBroker for a privileged process
-// on the Windows platform. When unprivileged processes want to send
-// attachments, the attachments get routed through the privileged process, and
-// more specifically, an instance of this class.
-class IPC_EXPORT AttachmentBrokerPrivilegedWin : public AttachmentBroker {
+// This class is a concrete subclass of AttachmentBrokerPrivileged for the
+// Windows platform.
+class IPC_EXPORT AttachmentBrokerPrivilegedWin
+    : public AttachmentBrokerPrivileged {
  public:
   AttachmentBrokerPrivilegedWin();
   ~AttachmentBrokerPrivilegedWin() override;
@@ -30,13 +25,6 @@ class IPC_EXPORT AttachmentBrokerPrivilegedWin : public AttachmentBroker {
 
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;
-
-  // Each unprivileged process should have one IPC channel on which it
-  // communicates attachment information with this privileged process. These
-  // channels must be registered and deregistered with the Attachment Broker as
-  // they are created and destroyed.
-  void RegisterCommunicationChannel(Channel* channel);
-  void DeregisterCommunicationChannel(Channel* channel);
 
  private:
   using HandleWireFormat = internal::HandleAttachmentWin::WireFormat;
@@ -52,7 +40,6 @@ class IPC_EXPORT AttachmentBrokerPrivilegedWin : public AttachmentBroker {
   // observers. Otherwise, send it in an IPC to its destination.
   void RouteDuplicatedHandle(const HandleWireFormat& wire_format);
 
-  std::vector<Channel*> channels_;
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivilegedWin);
 };
 

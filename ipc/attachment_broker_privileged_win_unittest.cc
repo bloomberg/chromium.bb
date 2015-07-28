@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/attachment_broker_privileged_win.h"
-#include "ipc/attachment_broker_win.h"
+#include "ipc/attachment_broker_unprivileged_win.h"
 #include "ipc/handle_attachment_win.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
@@ -151,11 +151,13 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   void TearDown() override { IPCTestBase::TearDown(); }
 
   // Takes ownership of |broker|. Has no effect if called after CommonSetUp().
-  void set_broker(IPC::AttachmentBrokerWin* broker) { broker_.reset(broker); }
+  void set_broker(IPC::AttachmentBrokerUnprivilegedWin* broker) {
+    broker_.reset(broker);
+  }
 
   void CommonSetUp() {
     if (!broker_.get())
-      set_broker(new IPC::AttachmentBrokerWin);
+      set_broker(new IPC::AttachmentBrokerUnprivilegedWin);
     broker_->AddObserver(&observer_);
     set_attachment_broker(broker_.get());
     CreateChannel(&proxy_listener_);
@@ -195,7 +197,7 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   }
 
   ProxyListener* get_proxy_listener() { return &proxy_listener_; }
-  IPC::AttachmentBrokerWin* get_broker() { return broker_.get(); }
+  IPC::AttachmentBrokerUnprivilegedWin* get_broker() { return broker_.get(); }
   MockObserver* get_observer() { return &observer_; }
 
  private:
@@ -203,19 +205,19 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   base::FilePath temp_path_;
   int message_index_;
   ProxyListener proxy_listener_;
-  scoped_ptr<IPC::AttachmentBrokerWin> broker_;
+  scoped_ptr<IPC::AttachmentBrokerUnprivilegedWin> broker_;
   MockObserver observer_;
 };
 
 // A broker which always sets the current process as the destination process
 // for attachments.
-class MockBroker : public IPC::AttachmentBrokerWin {
+class MockBroker : public IPC::AttachmentBrokerUnprivilegedWin {
  public:
   MockBroker() {}
   ~MockBroker() override {}
   bool SendAttachmentToProcess(const IPC::BrokerableAttachment* attachment,
                                base::ProcessId destination_process) override {
-    return IPC::AttachmentBrokerWin::SendAttachmentToProcess(
+    return IPC::AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
         attachment, base::Process::Current().Pid());
   }
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/attachment_broker_win.h"
+#include "ipc/attachment_broker_unprivileged_win.h"
 
 #include "base/process/process.h"
 #include "ipc/attachment_broker_messages.h"
@@ -12,13 +12,11 @@
 
 namespace IPC {
 
-AttachmentBrokerWin::AttachmentBrokerWin() {
-}
+AttachmentBrokerUnprivilegedWin::AttachmentBrokerUnprivilegedWin() {}
 
-AttachmentBrokerWin::~AttachmentBrokerWin() {
-}
+AttachmentBrokerUnprivilegedWin::~AttachmentBrokerUnprivilegedWin() {}
 
-bool AttachmentBrokerWin::SendAttachmentToProcess(
+bool AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
     const BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
@@ -27,14 +25,15 @@ bool AttachmentBrokerWin::SendAttachmentToProcess(
           static_cast<const internal::HandleAttachmentWin*>(attachment);
       internal::HandleAttachmentWin::WireFormat format =
           handle_attachment->GetWireFormat(destination_process);
-      return sender_->Send(new AttachmentBrokerMsg_DuplicateWinHandle(format));
+      return get_sender()->Send(
+          new AttachmentBrokerMsg_DuplicateWinHandle(format));
   }
   return false;
 }
 
-bool AttachmentBrokerWin::OnMessageReceived(const Message& msg) {
+bool AttachmentBrokerUnprivilegedWin::OnMessageReceived(const Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AttachmentBrokerWin, msg)
+  IPC_BEGIN_MESSAGE_MAP(AttachmentBrokerUnprivilegedWin, msg)
     IPC_MESSAGE_HANDLER(AttachmentBrokerMsg_WinHandleHasBeenDuplicated,
                         OnWinHandleHasBeenDuplicated)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -42,7 +41,7 @@ bool AttachmentBrokerWin::OnMessageReceived(const Message& msg) {
   return handled;
 }
 
-void AttachmentBrokerWin::OnWinHandleHasBeenDuplicated(
+void AttachmentBrokerUnprivilegedWin::OnWinHandleHasBeenDuplicated(
     const IPC::internal::HandleAttachmentWin::WireFormat& wire_format) {
   // The IPC message was intended for a different process. Ignore it.
   if (wire_format.destination_process != base::Process::Current().Pid())

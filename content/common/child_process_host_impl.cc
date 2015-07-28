@@ -32,12 +32,12 @@
 #include "base/linux_util.h"
 #elif defined(OS_WIN)
 #include "content/common/font_cache_dispatcher_win.h"
-#include "ipc/attachment_broker_win.h"
+#include "ipc/attachment_broker_privileged_win.h"
 #endif  // OS_LINUX
 
 #if defined(OS_WIN)
-base::LazyInstance<IPC::AttachmentBrokerWin>::Leaky g_attachment_broker =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IPC::AttachmentBrokerPrivilegedWin>::Leaky
+    g_attachment_broker = LAZY_INSTANCE_INITIALIZER;
 #endif  // defined(OS_WIN)
 
 namespace {

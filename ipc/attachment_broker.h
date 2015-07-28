@@ -84,8 +84,10 @@ class IPC_EXPORT AttachmentBroker : public Listener {
 
  private:
 #if defined(OS_WIN)
-  FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerWinTest, ReceiveValidMessage);
-  FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerWinTest, ReceiveInvalidMessage);
+  FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerUnprivilegedWinTest,
+                           ReceiveValidMessage);
+  FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerUnprivilegedWinTest,
+                           ReceiveInvalidMessage);
 #endif  // defined(OS_WIN)
 
   // A vector of BrokerableAttachments that have been received, but not yet

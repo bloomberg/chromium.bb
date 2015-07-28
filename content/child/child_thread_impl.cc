@@ -69,7 +69,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ipc/attachment_broker_win.h"
+#include "ipc/attachment_broker_unprivileged_win.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -361,7 +361,7 @@ void ChildThreadImpl::Init(const Options& options) {
 #endif
 
 #if defined(OS_WIN)
-  attachment_broker_.reset(new IPC::AttachmentBrokerWin());
+  attachment_broker_.reset(new IPC::AttachmentBrokerUnprivilegedWin());
 #endif
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
