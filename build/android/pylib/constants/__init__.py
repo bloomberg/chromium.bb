@@ -19,10 +19,6 @@ DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
 ISOLATE_DEPS_DIR = os.path.join(DIR_SOURCE_ROOT, 'isolate_deps_dir')
 
-CHROME_SHELL_HOST_DRIVEN_DIR = os.path.join(
-    DIR_SOURCE_ROOT, 'chrome', 'android')
-
-
 PackageInfo = collections.namedtuple('PackageInfo',
     ['package', 'activity', 'cmdline_file', 'devtools_socket',
      'test_package'])
