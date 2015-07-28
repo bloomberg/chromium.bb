@@ -2990,6 +2990,13 @@ void RenderViewImpl::DidFlushPaint() {
     }
   }
 
+  // There's nothing to do if there are no local frames in this RenderView's
+  // frame tree. This can happen if DidFlushPaint is called after the
+  // RenderView's local main frame is swapped to a remote frame. See
+  // http://crbug.com/513552.
+  if (main_frame->isWebRemoteFrame())
+    return;
+
   // If we have a provisional frame we are between the start and commit stages
   // of loading and we don't want to save stats.
   if (!main_frame->provisionalDataSource()) {

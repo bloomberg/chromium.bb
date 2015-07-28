@@ -799,6 +799,30 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   EXPECT_TRUE(web_frame->lastChild()->securityOrigin().isUnique());
 }
 
+// Verify that DidFlushPaint doesn't crash if called after a RenderView is
+// swapped out. See https://crbug.com/513552.
+TEST_F(RenderViewImplTest, PaintAfterSwapOut) {
+  // Create a new main frame RenderFrame so that we don't interfere with the
+  // shutdown of frame() in RenderViewTest.TearDown.
+  blink::WebURLRequest popup_request(GURL("http://foo.com"));
+  blink::WebView* new_web_view = view()->createView(
+      GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
+      blink::WebNavigationPolicyNewForegroundTab, false);
+  RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
+
+  // Respond to a swap out request.
+  TestRenderFrame* new_main_frame =
+      static_cast<TestRenderFrame*>(new_view->GetMainRenderFrame());
+  new_main_frame->SwapOut(kProxyRoutingId, true,
+                          content::FrameReplicationState());
+
+  // Simulate getting painted after swapping out.
+  new_view->DidFlushPaint();
+
+  new_view->Close();
+  new_view->Release();
+}
+
 // Test that we get the correct UpdateState message when we go back twice
 // quickly without committing.  Regression test for http://crbug.com/58082.
 // Disabled: http://crbug.com/157357 .
