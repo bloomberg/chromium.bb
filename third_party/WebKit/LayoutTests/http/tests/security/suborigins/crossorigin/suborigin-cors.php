@@ -5,6 +5,7 @@ header("Content-Security-Policy: suborigin foobar");
 <html>
 <head>
 <title>Allow suborigin in HTTP header</title>
+<meta name="timeout" content="long">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>
