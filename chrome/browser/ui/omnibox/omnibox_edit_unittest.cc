@@ -23,7 +23,7 @@ namespace {
 class TestingOmniboxView : public OmniboxView {
  public:
   explicit TestingOmniboxView(OmniboxEditController* controller)
-      : OmniboxView(nullptr, controller, nullptr, nullptr) {}
+      : OmniboxView(nullptr, controller, nullptr) {}
 
   // OmniboxView:
   void Update() override {}

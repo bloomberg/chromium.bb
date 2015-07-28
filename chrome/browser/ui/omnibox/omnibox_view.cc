@@ -179,9 +179,8 @@ void OmniboxView::OnMatchOpened(const AutocompleteMatch& match) {
 
 OmniboxView::OmniboxView(Profile* profile,
                          OmniboxEditController* controller,
-                         scoped_ptr<OmniboxClient> client,
-                         CommandUpdater* command_updater)
-    : controller_(controller), command_updater_(command_updater) {
+                         scoped_ptr<OmniboxClient> client)
+    : controller_(controller) {
   // |profile| can be NULL in tests.
   if (profile)
     model_.reset(

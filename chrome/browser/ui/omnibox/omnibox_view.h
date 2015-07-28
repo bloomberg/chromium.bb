@@ -21,7 +21,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
-class CommandUpdater;
 class GURL;
 class OmniboxClient;
 class OmniboxEditController;
@@ -36,9 +35,6 @@ class OmniboxView {
   // Used by the automation system for getting at the model from the view.
   OmniboxEditModel* model() { return model_.get(); }
   const OmniboxEditModel* model() const { return model_.get(); }
-
-  CommandUpdater* command_updater() { return command_updater_; }
-  const CommandUpdater* command_updater() const { return command_updater_; }
 
   // Shared cross-platform focus handling.
   void OnDidKillFocus();
@@ -240,8 +236,7 @@ class OmniboxView {
  protected:
   OmniboxView(Profile* profile,
               OmniboxEditController* controller,
-              scoped_ptr<OmniboxClient> client,
-              CommandUpdater* command_updater);
+              scoped_ptr<OmniboxClient> client);
 
   // Internally invoked whenever the text changes in some way.
   virtual void TextChanged();
@@ -254,7 +249,6 @@ class OmniboxView {
   // Try to parse the current text as a URL and colorize the components.
   virtual void EmphasizeURLComponents() = 0;
 
-  Profile* profile() { return model_->profile(); }
   OmniboxEditController* controller() { return controller_; }
   const OmniboxEditController* controller() const { return controller_; }
 
@@ -266,9 +260,7 @@ class OmniboxView {
   scoped_ptr<OmniboxEditModel> model_;
   OmniboxEditController* controller_;
 
-  // The object that handles additional command functionality exposed on the
-  // edit, such as invoking the keyword editor.
-  CommandUpdater* command_updater_;
+  DISALLOW_COPY_AND_ASSIGN(OmniboxView);
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_

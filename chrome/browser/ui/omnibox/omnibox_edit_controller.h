@@ -52,11 +52,13 @@ class OmniboxEditController {
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
 
+  CommandUpdater* command_updater() { return command_updater_; }
+  const CommandUpdater* command_updater() const { return command_updater_; }
+
  protected:
   explicit OmniboxEditController(CommandUpdater* command_updater);
   virtual ~OmniboxEditController();
 
-  CommandUpdater* command_updater() { return command_updater_; }
   GURL destination_url() const { return destination_url_; }
   WindowOpenDisposition disposition() const { return disposition_; }
   ui::PageTransition transition() const { return transition_; }

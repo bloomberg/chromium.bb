@@ -22,6 +22,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
 
+class CommandUpdater;
 class LocationBarView;
 class OmniboxPopupView;
 class Profile;
@@ -192,6 +193,8 @@ class OmniboxViewViews
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
+
+  Profile* profile_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 
+class CommandUpdater;
 class OmniboxPopupView;
 
 namespace content {
@@ -183,6 +184,8 @@ class OmniboxViewMac : public OmniboxView,
 
   // Returns true if the caret is at the end of the content.
   bool IsCaretAtEnd() const;
+
+  Profile* profile_;
 
   scoped_ptr<OmniboxPopupView> popup_view_;
 

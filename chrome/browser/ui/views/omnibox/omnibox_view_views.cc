@@ -135,10 +135,11 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar,
                                    const gfx::FontList& font_list)
-    : OmniboxView(profile,
-                  controller,
-                  make_scoped_ptr(new ChromeOmniboxClient(controller, profile)),
-                  command_updater),
+    : OmniboxView(
+          profile,
+          controller,
+          make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
+      profile_(profile),
       popup_window_mode_(popup_window_mode),
       security_level_(connection_security::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
@@ -356,7 +357,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       controller()->ShowURL();
       return;
     case IDC_EDIT_SEARCH_ENGINES:
-      command_updater()->ExecuteCommand(command_id);
+      location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
     case IDS_MOVE_DOWN:
     case IDS_MOVE_UP:
@@ -375,7 +376,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
         return;
       }
       OnBeforePossibleChange();
-      command_updater()->ExecuteCommand(command_id);
+      location_bar_view_->command_updater()->ExecuteCommand(command_id);
       OnAfterPossibleChange();
       return;
   }
@@ -592,7 +593,7 @@ void OmniboxViewViews::ShowImeIfNeeded() {
 
 void OmniboxViewViews::OnMatchOpened(const AutocompleteMatch& match) {
   extensions::MaybeShowExtensionControlledSearchNotification(
-      profile(), location_bar_view_->GetWebContents(), match);
+      profile_, location_bar_view_->GetWebContents(), match);
 }
 
 int OmniboxViewViews::GetOmniboxTextLength() const {
@@ -621,7 +622,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // And Go system uses.
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
-      text(), ChromeAutocompleteSchemeClassifier(profile()), &scheme, &host);
+      text(), ChromeAutocompleteSchemeClassifier(profile_), &scheme, &host);
   bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
       base::UTF8ToUTF16(extensions::kExtensionScheme);
   bool grey_base = text_is_url && (host.is_nonempty() || grey_out_url);
@@ -891,7 +892,7 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return controller()->GetToolbarModel()->WouldReplaceURL();
   return command_id == IDS_MOVE_DOWN || command_id == IDS_MOVE_UP ||
          Textfield::IsCommandIdEnabled(command_id) ||
-         command_updater()->IsCommandEnabled(command_id);
+         location_bar_view_->command_updater()->IsCommandEnabled(command_id);
 }
 
 base::string16 OmniboxViewViews::GetSelectionClipboardText() const {

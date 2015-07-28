@@ -44,6 +44,9 @@ class OmniboxClient {
   // Returns whether the current page is loading.
   virtual bool IsLoading() const = 0;
 
+  // Returns whether paste-and-go functionality is enabled.
+  virtual bool IsPasteAndGoEnabled() const = 0;
+
   // Returns the NavigationController for the current page.
   virtual content::NavigationController& GetNavigationController() const = 0;
 

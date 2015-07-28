@@ -16,12 +16,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
@@ -606,7 +604,7 @@ void OmniboxEditModel::StopAutocomplete() {
 }
 
 bool OmniboxEditModel::CanPasteAndGo(const base::string16& text) const {
-  if (!view_->command_updater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
+  if (!client_->IsPasteAndGoEnabled())
     return false;
 
   AutocompleteMatch match;
