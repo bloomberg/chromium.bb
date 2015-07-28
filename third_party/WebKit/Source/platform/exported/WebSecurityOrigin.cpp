@@ -99,6 +99,12 @@ unsigned short WebSecurityOrigin::port() const
     return m_private->port();
 }
 
+unsigned short WebSecurityOrigin::effectivePort() const
+{
+    ASSERT(m_private);
+    return m_private->effectivePort();
+}
+
 bool WebSecurityOrigin::isUnique() const
 {
     ASSERT(m_private);

@@ -33,7 +33,11 @@ namespace blink {
 
 class KURL;
 
-PLATFORM_EXPORT bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
+// Returns true if |port| is known to be the default for |protocol|. |protocol| must be lower case.
+PLATFORM_EXPORT bool isDefaultPortForProtocol(unsigned short port, const WTF::String& protocol);
+
+// Returns 0 for unknown protocols. |protocol| must be lower case.
+PLATFORM_EXPORT unsigned short defaultPortForProtocol(const WTF::String& protocol);
 
 } // namespace blink
 

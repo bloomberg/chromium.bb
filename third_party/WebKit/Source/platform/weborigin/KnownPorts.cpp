@@ -27,31 +27,38 @@
 #include "config.h"
 #include "platform/weborigin/KnownPorts.h"
 
-#include "platform/weborigin/KURL.h"
-#include "wtf/HashMap.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Threading.h"
-#include "wtf/text/StringHash.h"
-#include <algorithm>
-
 namespace blink {
 
-bool isDefaultPortForProtocol(unsigned short port, const String& protocol)
+bool isDefaultPortForProtocol(unsigned short port, const WTF::String& protocol)
 {
     if (protocol.isEmpty())
         return false;
 
     switch (port) {
     case 80:
-        return protocol == "http";
+        return protocol == "http" || protocol == "ws";
     case 443:
-        return protocol == "https";
+        return protocol == "https" || protocol == "wss";
     case 21:
         return protocol == "ftp";
     case 990:
         return protocol == "ftps";
     }
     return false;
+}
+
+unsigned short defaultPortForProtocol(const WTF::String& protocol)
+{
+    if (protocol == "http" || protocol == "ws")
+        return 80;
+    if (protocol == "https" || protocol == "wss")
+        return 443;
+    if (protocol == "ftp")
+        return 21;
+    if (protocol == "ftps")
+        return 990;
+
+    return 0;
 }
 
 }

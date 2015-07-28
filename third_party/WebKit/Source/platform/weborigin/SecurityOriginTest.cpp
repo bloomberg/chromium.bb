@@ -340,4 +340,26 @@ TEST_F(SecurityOriginTest, CanRequest)
     }
 }
 
+TEST_F(SecurityOriginTest, EffectivePort)
+{
+    struct TestCase {
+        unsigned short port;
+        unsigned short effectivePort;
+        const char* origin;
+    } cases[] = {
+        {0, 80, "http://example.com"},
+        {0, 80, "http://example.com:80"},
+        {81, 81, "http://example.com:81"},
+        {0, 443, "https://example.com"},
+        {0, 443, "https://example.com:443"},
+        {444, 444, "https://example.com:444"},
+    };
+
+    for (const auto& test : cases) {
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(test.origin);
+        EXPECT_EQ(test.port, origin->port());
+        EXPECT_EQ(test.effectivePort, origin->effectivePort());
+    }
+}
+
 } // namespace blink

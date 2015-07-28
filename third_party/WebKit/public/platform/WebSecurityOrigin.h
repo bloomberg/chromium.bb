@@ -72,6 +72,11 @@ public:
     BLINK_PLATFORM_EXPORT WebString host() const;
     BLINK_PLATFORM_EXPORT unsigned short port() const;
 
+    // |port()| will return 0 if the port is the default for an origin. This method
+    // instead returns the effective port, even if it is the default port
+    // (e.g. "http" => 80).
+    BLINK_PLATFORM_EXPORT unsigned short effectivePort() const;
+
     // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
     BLINK_PLATFORM_EXPORT bool isUnique() const;
 
@@ -120,7 +125,7 @@ public:
     {
         return isUnique()
             ? url::Origin()
-            : url::Origin::UnsafelyCreateOriginWithoutNormalization(protocol().utf8(), host().utf8(), port());
+            : url::Origin::UnsafelyCreateOriginWithoutNormalization(protocol().utf8(), host().utf8(), effectivePort());
     }
 
     WebSecurityOrigin(const url::Origin& origin)

@@ -76,6 +76,11 @@ public:
     String domain() const { return m_domain; }
     unsigned short port() const { return m_port; }
 
+    // |port()| will return 0 if the port is the default for an origin. This
+    // method instead returns the effective port, even if it is the default port
+    // (e.g. "http" => 80).
+    unsigned short effectivePort() const { return m_effectivePort; }
+
     // Returns true if a given URL is secure, based either directly on its
     // own protocol, or, when relevant, on the protocol of its "inner URL"
     // Protocols like blob: and filesystem: fall into this latter category.
@@ -250,6 +255,7 @@ private:
     String m_domain;
     String m_suboriginName;
     unsigned short m_port;
+    unsigned short m_effectivePort;
     bool m_isUnique;
     bool m_universalAccess;
     bool m_domainWasSetInDOM;
