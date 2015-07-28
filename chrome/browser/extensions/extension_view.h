@@ -11,6 +11,7 @@ class Browser;
 
 namespace content {
 struct NativeWebKeyboardEvent;
+class RenderViewHost;
 class WebContents;
 }
 
@@ -33,11 +34,12 @@ class ExtensionView {
 
   // Method for the ExtensionHost to notify us about the correct size for
   // extension contents.
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) = 0;
+  virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
+                                     const gfx::Size& new_size) = 0;
 
   // Method for the ExtensionHost to notify us when the RenderViewHost has a
   // connection.
-  virtual void RenderViewCreated() = 0;
+  virtual void RenderViewCreated(content::RenderViewHost* render_view_host) = 0;
 
   // Handles unhandled keyboard messages coming back from the renderer process.
   virtual void HandleKeyboardEvent(

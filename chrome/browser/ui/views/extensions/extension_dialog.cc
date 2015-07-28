@@ -149,7 +149,8 @@ int ExtensionDialog::GetDialogButtons() const {
 
 bool ExtensionDialog::CanResize() const {
   // Can resize only if minimum contents size set.
-  return GetExtensionView(host_.get())->GetPreferredSize() != gfx::Size();
+  return static_cast<views::View*>(GetExtensionView(host_.get()))->
+      GetPreferredSize() != gfx::Size();
 }
 
 void ExtensionDialog::SetMinimumContentsSize(int width, int height) {

@@ -227,15 +227,15 @@ void ExtensionViewHost::RunFileChooser(
 
 
 void ExtensionViewHost::ResizeDueToAutoResize(WebContents* source,
-                                          const gfx::Size& new_size) {
-  view_->ResizeDueToAutoResize(new_size);
+                                              const gfx::Size& new_size) {
+  view_->ResizeDueToAutoResize(source, new_size);
 }
 
 // content::WebContentsObserver overrides:
 
 void ExtensionViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
   ExtensionHost::RenderViewCreated(render_view_host);
-  view_->RenderViewCreated();
+  view_->RenderViewCreated(render_view_host);
 }
 
 // web_modal::WebContentsModalDialogManagerDelegate overrides:

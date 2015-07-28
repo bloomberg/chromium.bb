@@ -341,6 +341,8 @@ void WebView::AttachWebContents() {
         parent()->GetNativeViewAccessible());
   }
 #endif
+
+  OnWebContentsAttached();
 }
 
 void WebView::DetachWebContents() {
