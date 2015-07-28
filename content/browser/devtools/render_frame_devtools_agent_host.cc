@@ -509,6 +509,7 @@ void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
 void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   DCHECK(current_);
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
+  UpdateProtocolHandlers(nullptr);
   if (IsAttached())
     OnClientDetached();
   HostClosed();
