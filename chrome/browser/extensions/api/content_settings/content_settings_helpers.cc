@@ -7,6 +7,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
 
@@ -16,32 +18,6 @@ const char kNoPathWildcardsError[] =
     "Path wildcards in file URL patterns are not allowed.";
 const char kNoPathsError[] = "Specific paths are not allowed.";
 const char kInvalidPatternError[] = "The pattern \"*\" is invalid.";
-
-const char* const kContentSettingsTypeNames[] = {
-  "cookies",
-  "images",
-  "javascript",
-  "plugins",
-  "popups",
-  "location",
-  "notifications",
-  "auto-select-certificate",
-  "fullscreen",
-  "mouselock",
-  "mixed-script",
-  "media-stream",
-  "media-stream-mic",
-  "media-stream-camera",
-  "register-protocol-handler",
-  "ppapi-broker",
-  "multiple-automatic-downloads"
-};
-
-// TODO(msramek): Assert that |kContentSettingsTypeNames| is synced with
-// enum |ContentSettingsType|.
-static_assert(arraysize(kContentSettingsTypeNames) <=
-              CONTENT_SETTINGS_NUM_TYPES,
-              "kContentSettingsTypeNames has an unexpected number of elements");
 
 const char* const kContentSettingNames[] = {
   "default",
@@ -129,17 +105,19 @@ ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
 
 ContentSettingsType StringToContentSettingsType(
     const std::string& content_type) {
-  for (size_t type = 0; type < arraysize(kContentSettingsTypeNames); ++type) {
-    if (content_type == kContentSettingsTypeNames[type])
-      return static_cast<ContentSettingsType>(type);
-  }
+  const content_settings::WebsiteSettingsInfo* info =
+      content_settings::WebsiteSettingsRegistry::GetInstance()->GetByName(
+          content_type);
+  if (info)
+    return info->type();
+
   return CONTENT_SETTINGS_TYPE_DEFAULT;
 }
 
-const char* ContentSettingsTypeToString(ContentSettingsType type) {
-  size_t index = static_cast<size_t>(type);
-  DCHECK_LT(index, arraysize(kContentSettingsTypeNames));
-  return kContentSettingsTypeNames[index];
+std::string ContentSettingsTypeToString(ContentSettingsType type) {
+  return content_settings::WebsiteSettingsRegistry::GetInstance()
+      ->Get(type)
+      ->name();
 }
 
 bool StringToContentSetting(const std::string& setting_str,

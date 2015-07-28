@@ -36,6 +36,10 @@ static_library("browser") {
     "local_shared_objects_counter.h",
     "plugins_field_trial.cc",
     "plugins_field_trial.h",
+    "website_settings_info.cc",
+    "website_settings_info.h",
+    "website_settings_registry.cc",
+    "website_settings_registry.h",
   ]
 
   deps = [

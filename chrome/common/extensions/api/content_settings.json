@@ -260,7 +260,7 @@
         "$ref": "ContentSetting",
         "description": "Whether to allow Geolocation. One of <br><var>allow</var>: Allow sites to track your physical location,<br><var>block</var>: Don't allow sites to track your physical location,<br><var>ask</var>: Ask before allowing sites to track your physical location. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested location data. The secondary URL is the URL of the top-level frame (which may or may not differ from the requesting URL).",
         "value": [
-          "location",
+          "geolocation",
           {"$ref":"LocationContentSetting"}
         ]
       },

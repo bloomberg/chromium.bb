@@ -16,45 +16,13 @@
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "url/gurl.h"
 
 namespace {
-
-// The names of the ContentSettingsType values, for use with dictionary prefs.
-const char* kTypeNames[] = {
-  "cookies",
-  "images",
-  "javascript",
-  "plugins",
-  "popups",
-  "geolocation",
-  "notifications",
-  "auto-select-certificate",
-  "fullscreen",
-  "mouselock",
-  "mixed-script",
-  "media-stream",
-  "media-stream-mic",
-  "media-stream-camera",
-  "register-protocol-handler",
-  "ppapi-broker",
-  "multiple-automatic-downloads",
-  "midi-sysex",
-  "push-messaging",
-  "ssl-cert-decisions",
-#if defined(OS_WIN)
-  "metro-switch-to-desktop",
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  "protected-media-identifier",
-#endif
-  "app-banner",
-  "site-engagement",
-  "durable-storage"
-};
-static_assert(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
-              "kTypeNames should have CONTENT_SETTINGS_NUM_TYPES elements");
 
 const char kPatternSeparator[] = ",";
 
@@ -63,7 +31,7 @@ const char kPatternSeparator[] = ",";
 namespace content_settings {
 
 std::string GetTypeName(ContentSettingsType type) {
-  return std::string(kTypeNames[type]);
+  return WebsiteSettingsRegistry::GetInstance()->Get(type)->name();
 }
 
 std::string ContentSettingToString(ContentSetting setting) {

@@ -28,7 +28,7 @@ ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
 ContentSettingsType StringToContentSettingsType(
     const std::string& content_type);
 // Returns a string representation of a ContentSettingsType.
-const char* ContentSettingsTypeToString(ContentSettingsType type);
+std::string ContentSettingsTypeToString(ContentSettingsType type);
 
 // Converts a content setting string to the corresponding ContentSetting.
 // Returns true if |setting_str| specifies a valid content setting,

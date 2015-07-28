@@ -104,6 +104,7 @@
       'content_settings/core/browser/content_settings_utils_unittest.cc',
       'content_settings/core/browser/cookie_settings_unittest.cc',
       'content_settings/core/browser/plugins_field_trial_unittest.cc',
+      'content_settings/core/browser/website_settings_registry_unittest.cc',
       'content_settings/core/common/content_settings_pattern_parser_unittest.cc',
       'content_settings/core/common/content_settings_pattern_unittest.cc',
     ],
