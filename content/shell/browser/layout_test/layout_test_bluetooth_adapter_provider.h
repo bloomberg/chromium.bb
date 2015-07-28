@@ -6,7 +6,6 @@
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BLUETOOTH_ADAPTER_PROVIDER_H_
 
 #include "base/callback.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
@@ -32,7 +31,7 @@ class LayoutTestBluetoothAdapterProvider {
   // Adapters
 
   // |BaseAdapter|
-  // Devices Added:
+  // Devices added:
   //  None.
   // Mock Functions:
   //  - GetDevices:
@@ -49,7 +48,7 @@ class LayoutTestBluetoothAdapterProvider {
   // method is called with a filter consisting of the standard battery, heart
   // rate, and glucose services.
   // Devices added:
-  //  - BatteryDevice
+  //  - |BatteryDevice|
   // Mock Functions:
   //  - StartDiscoverySessionWithFilter:
   //      - With correct arguments: Run success callback.
@@ -87,24 +86,37 @@ class LayoutTestBluetoothAdapterProvider {
   GetGlucoseHeartRateAdapter();
 
   // |MissingServiceGenericAccessAdapter|
-  // Inherits from EmptyAdapter
+  // Inherits from |EmptyAdapter|
   // Internal Structure:
-  //   - GenericAccessDevice
+  //   - Generic Access Device
   //       - Generic Access UUID (0x1800)
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetMissingServiceGenericAccessAdapter();
 
   // |MissingCharacteristicGenericAccessAdapter|
-  // Inherits from EmptyAdapter
+  // Inherits from |EmptyAdapter|
   // Internal Structure:
-  //   - GenericAccessDevice
-  //       - GenericAccess UUID (0x1800)
-  //       - GenericAccessService
+  //   - Generic Access Device
+  //       - Generic Access UUID (0x1800)
+  //       - Generic Access Service
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetMissingCharacteristicGenericAccessAdapter();
 
+  // |GenericAccessAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //  - Generic Access Device
+  //     - Generic Access UUID (0x1800)
+  //     - Generic Access Service
+  //        - Device Name Characteristic:
+  //          - Mock Functions:
+  //            - Read: Calls success callback with device's name.
+  //            - Write: Calls success callback.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetGenericAccessAdapter();
+
   // |FailingConnectionsAdapter|
-  // Inherits from BaseAdapter
+  // Inherits from |BaseAdapter|
   // FailingConnectionsAdapter holds a device for each type of connection error
   // that can occur. This way we don’t need to create an adapter for each type
   // of error. Each of the devices has a service with a different UUID so that
@@ -122,19 +134,6 @@ class LayoutTestBluetoothAdapterProvider {
   //    errorUUID(0x7)
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetFailingConnectionsAdapter();
-
-  // |GenericAccessAdapter|
-  // Inherits from EmptyAdapter
-  // Internal Structure:
-  //  - GenericAccessDevice
-  //  - GenericAccess UUID (0x1800)
-  //     - GenericAccessService
-  //        - DeviceNameCharacteristic:
-  //          - Mock Functions:
-  //            - Read: Calls success callback with device's name.
-  //            - Write: Calls success callback.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetGenericAccessAdapter();
 
   // |FailingGATTOperationsAdapter|
   // Inherits from |EmptyAdapter|
@@ -218,11 +217,11 @@ class LayoutTestBluetoothAdapterProvider {
                 const std::string& device_name = "Base Device",
                 device::BluetoothDevice::UUIDList uuids =
                     device::BluetoothDevice::UUIDList(),
-                const std::string& address = "00:00:00:00:00");
+                const std::string& address = "00:00:00:00:00:00");
 
   // |BatteryDevice|
-  // Inherits from BaseDevice(adapter, "Battery Device", uuids,
-  //                          "00:00:00:00:01")
+  // Inherits from |BaseDevice|(adapter, "Battery Device", uuids,
+  //                            "00:00:00:00:00:01")
   // Adv UUIDs added:
   //   - Generic Access (0x1800)
   //   - Battery Service UUID (0x180F)
@@ -232,8 +231,8 @@ class LayoutTestBluetoothAdapterProvider {
   GetBatteryDevice(device::MockBluetoothAdapter* adapter);
 
   // |GlucoseDevice|
-  // Inherits from BaseDevice(adapter, "Glucose Device", uuids,
-  //                          "00:00:00:00:02")
+  // Inherits from |BaseDevice|(adapter, "Glucose Device", uuids,
+  //                            "00:00:00:00:00:02")
   // Adv UUIDs added:
   //   - Generic Access (0x1800)
   //   - Glucose UUID (0x1808)
@@ -243,8 +242,8 @@ class LayoutTestBluetoothAdapterProvider {
   GetGlucoseDevice(device::MockBluetoothAdapter* adapter);
 
   // |HeartRateDevice|
-  // Inherits from BaseDevice(adapter, "Heart Rate Device", uuids,
-  //                          "00:00:00:00:03")
+  // Inherits from |BaseDevice|(adapter, "Heart Rate Device", uuids,
+  //                            "00:00:00:00:00:03")
   // Adv UUIDs added:
   //   - Generic Access (0x1800)
   //   - Heart Rate UUID (0x180D)
@@ -254,10 +253,10 @@ class LayoutTestBluetoothAdapterProvider {
   GetHeartRateDevice(device::MockBluetoothAdapter* adapter);
 
   // |ConnectableDevice|
-  // Inherits from BaseDevice(adapter, device_name)
-  // Adv UUIDs Added:
+  // Inherits from |BaseDevice|(adapter, device_name)
+  // Adv UUIDs added:
   // None.
-  // Services Added:
+  // Services added:
   // None.
   // Mock Functions:
   //   - CreateGattConnection:
@@ -269,10 +268,10 @@ class LayoutTestBluetoothAdapterProvider {
       device::BluetoothDevice::UUIDList = device::BluetoothDevice::UUIDList());
 
   // |UnconnectableDevice|
-  // Inherits from BaseDevice(adapter, device_name)
-  // Adv UUIDs Added:
+  // Inherits from |BaseDevice|(adapter, device_name)
+  // Adv UUIDs added:
   //  - errorUUID(error_code)
-  // Services Added:
+  // Services added:
   // None.
   // Mock Functions:
   //  - CreateGATTConnection:
@@ -284,10 +283,10 @@ class LayoutTestBluetoothAdapterProvider {
       const std::string& device_name = "Unconnectable Device");
 
   // |GenericAccessDevice|
-  // Inherits from ConnectableDevice(adapter, device_name)
-  // Adv UUIDs Added:
+  // Inherits from |ConnectableDevice|(adapter, device_name)
+  // Adv UUIDs added:
   //   - Generic Access UUID (0x1800)
-  // Services Added:
+  // Services added:
   // None. Each user of the GenericAccessDevice is in charge of adding the
   // relevant services, characteristics, and descriptors.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
@@ -298,7 +297,7 @@ class LayoutTestBluetoothAdapterProvider {
   // Services
 
   // |BaseGATTService|
-  // Characteristics Added:
+  // Characteristics added:
   // None.
   // Mock Functions:
   //   - GetCharacteristics:
@@ -320,8 +319,10 @@ class LayoutTestBluetoothAdapterProvider {
   GetBaseGATTService(device::MockBluetoothDevice* device,
                      const std::string& uuid);
 
-  // BaseCharacteristic(service, uuid)
-  // Descriptors Added:
+  // Characteristics
+
+  // |BaseCharacteristic|(service, uuid)
+  // Descriptors added:
   // None.
   // Mock Functions:
   //   - TODO(ortuno): http://crbug.com/483347 GetDescriptors:
@@ -345,9 +346,9 @@ class LayoutTestBluetoothAdapterProvider {
   GetBaseGATTCharacteristic(device::MockBluetoothGattService* service,
                             const std::string& uuid);
 
-  // ErrorCharacteristic(service, error_type)
+  // |ErrorCharacteristic|(service, error_type)
   // Inherits from BaseCharacteristic(service, errorUUID(error_type + 0xA1))
-  // Descriptors Added:
+  // Descriptors added:
   // None.
   // Mock Functions:
   //   - ReadRemoteCharacteristic:
@@ -372,7 +373,6 @@ class LayoutTestBluetoothAdapterProvider {
   // XX:XX:XX:XX:XX:XX. For example makeMACAddress(0xdeadbeef)
   // returns "00:00:DE:AD:BE:EF".
   static std::string makeMACAddress(uint64_t addr);
-
 };
 
 }  // namespace content
