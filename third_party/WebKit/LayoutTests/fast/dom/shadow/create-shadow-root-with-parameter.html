@@ -18,8 +18,7 @@ shouldBeNonNull(root1);
 
 debug('Create closed shadow root.');
 var host2 = document.querySelector('#host2');
-// TODO(kochi): Closed mode is not implemented yet. crbug.com/459136
-shouldThrow("host2.createShadowRoot({mode: 'closed'})");
+shouldBeNonNull("host2.createShadowRoot({mode: 'closed'})");
 
 debug('Create shadow root with empty parameter.');
 var host3 = document.querySelector('#host3');

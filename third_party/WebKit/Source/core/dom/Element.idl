@@ -67,7 +67,7 @@
     [RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     [RuntimeEnabled=CreateShadowRootWithParameter, RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot(ShadowRootInit shadowRootInitDict);
     NodeList getDestinationInsertionPoints();
-    [PerWorldBindings] readonly attribute ShadowRoot? shadowRoot;
+    [PerWorldBindings, ImplementedAs=openShadowRoot] readonly attribute ShadowRoot? shadowRoot;
 
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-element-interface

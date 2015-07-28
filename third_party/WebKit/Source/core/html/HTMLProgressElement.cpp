@@ -60,7 +60,7 @@ PassRefPtrWillBeRawPtr<HTMLProgressElement> HTMLProgressElement::create(Document
 
 LayoutObject* HTMLProgressElement::createLayoutObject(const ComputedStyle& style)
 {
-    if (!style.hasAppearance() || hasOpenShadowRoot())
+    if (!style.hasAppearance() || openShadowRoot())
         return LayoutObject::createObject(this, style);
     return new LayoutProgress(this);
 }

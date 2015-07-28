@@ -148,7 +148,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    if (type == ShadowRootType::Open) {
+    if (type == ShadowRootType::OpenByDefault) {
         if (!youngestShadowRoot()) {
             shadowHost.willAddFirstAuthorShadowRoot();
         } else if (youngestShadowRoot()->type() == ShadowRootType::UserAgent) {
@@ -157,6 +157,8 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
         } else {
             UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);
         }
+    } else if (type == ShadowRootType::Open || type == ShadowRootType::Closed) {
+        shadowHost.willAddFirstAuthorShadowRoot();
     }
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())

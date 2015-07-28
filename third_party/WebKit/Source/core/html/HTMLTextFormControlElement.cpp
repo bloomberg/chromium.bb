@@ -217,7 +217,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
         exceptionState.throwDOMException(IndexSizeError, "The provided start value (" + String::number(start) + ") is larger than the provided end value (" + String::number(end) + ").");
         return;
     }
-    if (hasOpenShadowRoot())
+    if (openShadowRoot())
         return;
 
     String text = innerEditorValue();
@@ -349,7 +349,7 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
 
 void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour, SelectionOption selectionOption)
 {
-    if (hasOpenShadowRoot() || !isTextFormControl() || !inDocument())
+    if (openShadowRoot() || !isTextFormControl() || !inDocument())
         return;
 
     const int editorValueLength = static_cast<int>(innerEditorValue().length());
@@ -624,8 +624,8 @@ bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
 
 void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
 {
-    ASSERT(!hasOpenShadowRoot());
-    if (!isTextFormControl() || hasOpenShadowRoot())
+    ASSERT(!openShadowRoot());
+    if (!isTextFormControl() || openShadowRoot())
         return;
 
     bool textIsChanged = value != innerEditorValue();
@@ -652,7 +652,7 @@ static String finishText(StringBuilder& result)
 
 String HTMLTextFormControlElement::innerEditorValue() const
 {
-    ASSERT(!hasOpenShadowRoot());
+    ASSERT(!openShadowRoot());
     HTMLElement* innerEditor = innerEditorElement();
     if (!innerEditor || !isTextFormControl())
         return emptyString();

@@ -618,7 +618,7 @@ Element* Element::offsetParent()
     if (!element)
         return nullptr;
 
-    if (element->isInShadowTree() && !element->containingShadowRoot()->shouldExposeToBindings())
+    if (element->isInShadowTree() && !element->containingShadowRoot()->isOpen())
         return nullptr;
 
     return element;
@@ -1840,7 +1840,12 @@ CustomElementDefinition* Element::customElementDefinition() const
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
 {
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
-    return createShadowRoot(exceptionState);
+    ShadowRoot* root = shadowRoot();
+    if (root && (root->type() == ShadowRootType::Open || root->type() == ShadowRootType::Closed)) {
+        exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts this type of shadow tree.");
+        return nullptr;
+    }
+    return createShadowRootInternal(ShadowRootType::OpenByDefault, exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
@@ -1850,19 +1855,26 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
 
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
 
-    if (shadowRootInitDict.hasMode()) {
-        if (shadowRoot()) {
-            exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a shadow tree.");
-            return nullptr;
-        }
-        // TODO(kochi): Add support for closed shadow root. crbug.com/459136
-        if (shadowRootInitDict.mode() == "closed") {
-            exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not implemented yet.");
-            return nullptr;
-        }
+    if (shadowRootInitDict.hasMode() && shadowRoot()) {
+        exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a shadow tree.");
+        return nullptr;
     }
 
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRoot(exceptionState);
+    ShadowRootType type = ShadowRootType::OpenByDefault;
+    if (shadowRootInitDict.hasMode())
+        type = shadowRootInitDict.mode() == "open" ? ShadowRootType::Open : ShadowRootType::Closed;
+
+    if (type == ShadowRootType::Closed) {
+        if (!RuntimeEnabledFeatures::shadowRootClosedModeEnabled()) {
+            exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not supported yet.");
+            return nullptr;
+        }
+        UseCounter::count(document(), UseCounter::ElementCreateShadowRootClosed);
+    } else if (type == ShadowRootType::Open) {
+        UseCounter::count(document(), UseCounter::ElementCreateShadowRootOpen);
+    }
+
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootInternal(type, exceptionState);
 
     if (shadowRootInitDict.hasDelegatesFocus())
         shadowRoot->setDelegatesFocus(shadowRootInitDict.delegatesFocus());
@@ -1870,8 +1882,10 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
     return shadowRoot.release();
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRootInternal(ShadowRootType type, ExceptionState& exceptionState)
 {
+    ASSERT(!closedShadowRoot());
+
     if (alwaysCreateUserAgentShadowRoot())
         ensureUserAgentShadowRoot();
 
@@ -1883,7 +1897,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exc
         return nullptr;
     }
 
-    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRootType::Open));
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, type));
 }
 
 ShadowRoot* Element::shadowRoot() const
@@ -1891,18 +1905,39 @@ ShadowRoot* Element::shadowRoot() const
     ElementShadow* elementShadow = shadow();
     if (!elementShadow)
         return nullptr;
-    ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
-    if (shadowRoot->type() == ShadowRootType::Open)
-        return shadowRoot;
-    return nullptr;
+    return elementShadow->youngestShadowRoot();
+}
+
+ShadowRoot* Element::openShadowRoot() const
+{
+    ShadowRoot* root = shadowRoot();
+    if (!root)
+        return nullptr;
+    return root->type() == ShadowRootType::OpenByDefault || root->type() == ShadowRootType::Open ? root : nullptr;
+}
+
+ShadowRoot* Element::closedShadowRoot() const
+{
+    ShadowRoot* root = shadowRoot();
+    if (!root)
+        return nullptr;
+    return root->type() == ShadowRootType::Closed ? root : nullptr;
+}
+
+ShadowRoot* Element::authorShadowRoot() const
+{
+    ShadowRoot* root = shadowRoot();
+    if (!root)
+        return nullptr;
+    return root->type() != ShadowRootType::UserAgent ? root : nullptr;
 }
 
 ShadowRoot* Element::userAgentShadowRoot() const
 {
     if (ElementShadow* elementShadow = shadow()) {
-        if (ShadowRoot* shadowRoot = elementShadow->oldestShadowRoot()) {
-            ASSERT(shadowRoot->type() == ShadowRootType::UserAgent);
-            return shadowRoot;
+        if (ShadowRoot* root = elementShadow->oldestShadowRoot()) {
+            ASSERT(root->type() == ShadowRootType::UserAgent);
+            return root;
         }
     }
 
@@ -2244,7 +2279,7 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type)
     if (!isFocusable())
         return;
 
-    if (shadowRoot() && shadowRoot()->delegatesFocus()) {
+    if (openShadowRoot() && openShadowRoot()->delegatesFocus()) {
         if (containsIncludingShadowDOM(document().focusedElement()))
             return;
 
@@ -2320,7 +2355,7 @@ bool Element::supportsFocus() const
     // it won't be focusable. Furthermore, supportsFocus cannot just return true
     // always or else tabIndex() will change for all HTML elements.
     return hasElementFlag(TabIndexWasSetExplicitly) || (hasEditableStyle() && parentNode() && !parentNode()->hasEditableStyle())
-        || (isShadowHost(this) && shadowRoot() && shadowRoot()->delegatesFocus())
+        || (isShadowHost(this) && openShadowRoot() && openShadowRoot()->delegatesFocus())
         || supportsSpatialNavigationFocus();
 }
 

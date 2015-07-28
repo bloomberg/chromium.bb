@@ -45,7 +45,7 @@ BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 
 void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
 {
-    if (element().isDisabledOrReadOnly() || !element().layoutObject() || !UserGestureIndicator::processingUserGesture() || element().hasOpenShadowRoot())
+    if (element().isDisabledOrReadOnly() || !element().layoutObject() || !UserGestureIndicator::processingUserGesture() || element().openShadowRoot())
         return;
 
     if (m_dateTimeChooser)

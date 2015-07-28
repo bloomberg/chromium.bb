@@ -70,7 +70,7 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(Element
 {
     // If we have an author shadow root or have not created the UA shadow root yet, bail early. We can't
     // use ensureUserAgentShadowRoot() here because that would alter the DOM tree during style recalc.
-    if (element.shadowRoot() || !element.userAgentShadowRoot())
+    if (element.authorShadowRoot() || !element.userAgentShadowRoot())
         return newStyle;
 
     Element* placeHolder = element.userAgentShadowRoot()->getElementById("alttext-container");

@@ -283,9 +283,9 @@ void TextIteratorAlgorithm<Strategy>::advance()
         } else {
             // Enter author shadow roots, from youngest, if any and if necessary.
             if (m_iterationProgress < HandledOpenShadowRoots) {
-                if (entersOpenShadowRoots() && m_node->isElementNode() && toElement(m_node)->hasOpenShadowRoot()) {
-                    ShadowRoot* youngestShadowRoot = toElement(m_node)->shadowRoot();
-                    ASSERT(youngestShadowRoot->type() == ShadowRootType::Open);
+                if (entersOpenShadowRoots() && m_node->isElementNode() && toElement(m_node)->openShadowRoot()) {
+                    ShadowRoot* youngestShadowRoot = toElement(m_node)->openShadowRoot();
+                    ASSERT(youngestShadowRoot->type() == ShadowRootType::OpenByDefault || youngestShadowRoot->type() == ShadowRootType::Open);
                     m_node = youngestShadowRoot;
                     m_iterationProgress = HandledNone;
                     ++m_shadowDepth;
@@ -369,9 +369,9 @@ void TextIteratorAlgorithm<Strategy>::advance()
                     // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
                     // sibling shadow root, if any.
                     ShadowRoot* shadowRoot = toShadowRoot(m_node);
-                    if (shadowRoot->type() == ShadowRootType::Open) {
+                    if (shadowRoot->type() == ShadowRootType::OpenByDefault || shadowRoot->type() == ShadowRootType::Open) {
                         ShadowRoot* nextShadowRoot = shadowRoot->olderShadowRoot();
-                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRootType::Open) {
+                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRootType::OpenByDefault) {
                             m_fullyClippedStack.pop();
                             m_node = nextShadowRoot;
                             m_iterationProgress = HandledNone;
@@ -385,8 +385,9 @@ void TextIteratorAlgorithm<Strategy>::advance()
                             m_fullyClippedStack.pop();
                         }
                     } else {
-                        // If we are in a user-agent shadow root, then go back to the host.
-                        ASSERT(shadowRoot->type() == ShadowRootType::UserAgent);
+                        // If we are in a closed or user-agent shadow root, then go back to the host.
+                        // TODO(kochi): Make sure we treat closed shadow as user agent shadow here.
+                        ASSERT(shadowRoot->type() == ShadowRootType::Closed || shadowRoot->type() == ShadowRootType::UserAgent);
                         m_node = shadowRoot->host();
                         m_iterationProgress = HandledUserAgentShadowRoot;
                         --m_shadowDepth;

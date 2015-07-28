@@ -388,7 +388,7 @@ static ShadowRoot* authorShadowRootOf(const ContainerNode& node)
     ElementShadow* shadow = toElement(node).shadow();
     ASSERT(shadow);
     for (ShadowRoot* shadowRoot = shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
-        if (shadowRoot->type() == ShadowRootType::Open)
+        if (shadowRoot->type() == ShadowRootType::OpenByDefault || shadowRoot->type() == ShadowRootType::Open)
             return shadowRoot;
     }
     return nullptr;
@@ -418,8 +418,8 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node, const 
         if (shadowRoot == rootNode)
             return nullptr;
         if (ShadowRoot* youngerShadowRoot = shadowRoot->youngerShadowRoot()) {
-            // Should not obtain any elements in user-agent shadow root.
-            ASSERT(youngerShadowRoot->type() == ShadowRootType::Open);
+            // Should not obtain any elements in closed or user-agent shadow root.
+            ASSERT(youngerShadowRoot->type() == ShadowRootType::OpenByDefault || youngerShadowRoot->type() == ShadowRootType::Open);
             return youngerShadowRoot;
         }
 

@@ -138,6 +138,7 @@ ServiceWorkerClientAttributes status=stable
 ServiceWorkerNotifications status=stable
 ServiceWorkerPerformanceTimeline status=experimental
 ServiceWorkerWindowClientNavigate status=experimental
+ShadowRootClosedMode status=experimental
 ShadowRootDelegatesFocus status=experimental
 SharedArrayBuffer
 SharedWorker status=stable

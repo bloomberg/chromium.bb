@@ -661,8 +661,12 @@ String Internals::shadowRootType(const Node* root, ExceptionState& exceptionStat
     switch (toShadowRoot(root)->type()) {
     case ShadowRootType::UserAgent:
         return String("UserAgentShadowRoot");
+    case ShadowRootType::OpenByDefault:
+        return String("OpenByDefaultShadowRoot");
     case ShadowRootType::Open:
         return String("OpenShadowRoot");
+    case ShadowRootType::Closed:
+        return String("ClosedShadowRoot");
     default:
         ASSERT_NOT_REACHED();
         return String("Unknown");

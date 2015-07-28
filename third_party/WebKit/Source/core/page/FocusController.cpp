@@ -233,7 +233,7 @@ inline bool isNonFocusableFocusScopeOwner(Element& element)
 
 inline bool isShadowHostDelegatesFocus(const Element& element)
 {
-    return element.shadowRoot() && element.shadowRoot()->delegatesFocus();
+    return element.openShadowRoot() && element.openShadowRoot()->delegatesFocus();
 }
 
 inline int adjustedTabIndex(Node& node)

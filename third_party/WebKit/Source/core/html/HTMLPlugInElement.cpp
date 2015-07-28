@@ -665,7 +665,7 @@ bool HTMLPlugInElement::hasFallbackContent() const
 
 bool HTMLPlugInElement::useFallbackContent() const
 {
-    return hasOpenShadowRoot();
+    return openShadowRoot();
 }
 
 void HTMLPlugInElement::lazyReattachIfNeeded()

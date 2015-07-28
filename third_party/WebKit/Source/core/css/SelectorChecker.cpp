@@ -297,7 +297,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
 
 static inline bool isOpenShadowRoot(const Node* node)
 {
-    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRootType::Open;
+    return node && node->isShadowRoot() && (toShadowRoot(node)->type() == ShadowRootType::OpenByDefault || toShadowRoot(node)->type() == ShadowRootType::Open);
 }
 
 SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult& result) const

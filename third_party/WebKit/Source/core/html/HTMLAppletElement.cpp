@@ -85,14 +85,14 @@ bool HTMLAppletElement::hasLegalLinkAttribute(const QualifiedName& name) const
 
 bool HTMLAppletElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
-    if (!fastHasAttribute(codeAttr) && !hasOpenShadowRoot())
+    if (!fastHasAttribute(codeAttr) && !openShadowRoot())
         return false;
     return HTMLPlugInElement::layoutObjectIsNeeded(style);
 }
 
 LayoutObject* HTMLAppletElement::createLayoutObject(const ComputedStyle& style)
 {
-    if (!canEmbedJava() || hasOpenShadowRoot())
+    if (!canEmbedJava() || openShadowRoot())
         return LayoutObject::createObject(this, style);
 
     if (usePlaceholderContent())

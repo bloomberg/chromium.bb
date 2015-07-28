@@ -84,6 +84,8 @@ enum ElementFlags {
     NumberOfElementFlags = 6, // Required size of bitfield used to store the flags.
 };
 
+enum class ShadowRootType;
+
 typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
 
 class CORE_EXPORT Element : public ContainerNode {
@@ -325,14 +327,20 @@ public:
 
     ElementShadow* shadow() const;
     ElementShadow& ensureShadow();
+    // If type of ShadowRoot (either closed or open) is explicitly specified, creation of multiple
+    // shadow roots is prohibited in any combination and throws an exception. Multiple shadow roots
+    // are allowed only when createShadowRoot() is used without any parameters from JavaScript.
     PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(const ScriptState*, ExceptionState&);
     PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(const ScriptState*, const ShadowRootInit&, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(ExceptionState&);
-    ShadowRoot* shadowRoot() const;
+    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootInternal(ShadowRootType, ExceptionState&);
+
+    ShadowRoot* openShadowRoot() const;
+    ShadowRoot* closedShadowRoot() const;
+    ShadowRoot* authorShadowRoot() const;
+    ShadowRoot* userAgentShadowRoot() const;
+
     ShadowRoot* youngestShadowRoot() const;
 
-    bool hasOpenShadowRoot() const { return shadowRoot(); }
-    ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot& ensureUserAgentShadowRoot();
     virtual void willAddFirstAuthorShadowRoot() { }
 
@@ -583,6 +591,8 @@ private:
     bool updateFirstLetter(Element*);
 
     inline void createPseudoElementIfNeeded(PseudoId);
+
+    ShadowRoot* shadowRoot() const;
 
     // FIXME: Everyone should allow author shadows.
     virtual bool areAuthorShadowsAllowed() const { return true; }

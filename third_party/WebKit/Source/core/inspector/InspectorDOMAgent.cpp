@@ -956,7 +956,7 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
         if (elementShadow) {
             ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
             if (shadowRoot) {
-                if (shadowRoot->type() == ShadowRootType::Open || includeUserAgentShadowDOM)
+                if (shadowRoot->type() != ShadowRootType::UserAgent || includeUserAgentShadowDOM)
                     return shadowRoot;
             }
         }
@@ -1573,7 +1573,9 @@ static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowR
     switch (shadowRoot->type()) {
     case ShadowRootType::UserAgent:
         return TypeBuilder::DOM::ShadowRootType::User_agent;
+    case ShadowRootType::OpenByDefault:
     case ShadowRootType::Open:
+    case ShadowRootType::Closed:
         return TypeBuilder::DOM::ShadowRootType::Author;
     }
     ASSERT_NOT_REACHED();
@@ -2079,7 +2081,7 @@ static ShadowRoot* shadowRootForNode(Node* node, const String& type)
     if (!node->isElementNode())
         return nullptr;
     if (type == "a")
-        return toElement(node)->shadowRoot();
+        return toElement(node)->authorShadowRoot();
     if (type == "u")
         return toElement(node)->userAgentShadowRoot();
     return nullptr;

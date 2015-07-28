@@ -462,7 +462,7 @@ void HTMLInputElement::updateType()
     lazyReattachIfAttached();
 
     m_inputType = newType.release();
-    if (hasOpenShadowRoot())
+    if (openShadowRoot())
         m_inputTypeView = InputTypeView::create(*this);
     else
         m_inputTypeView = m_inputType;

@@ -70,7 +70,7 @@ LayoutObject* ProgressInnerElement::createLayoutObject(const ComputedStyle&)
 
 bool ProgressInnerElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
-    if (progressElement()->hasOpenShadowRoot())
+    if (progressElement()->openShadowRoot())
         return HTMLDivElement::layoutObjectIsNeeded(style);
 
     LayoutObject* progressLayoutObject = progressElement()->layoutObject();

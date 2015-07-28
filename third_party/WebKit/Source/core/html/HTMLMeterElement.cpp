@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& docu
 
 LayoutObject* HTMLMeterElement::createLayoutObject(const ComputedStyle& style)
 {
-    if (hasOpenShadowRoot() || !LayoutTheme::theme().supportsMeter(style.appearance()))
+    if (openShadowRoot() || !LayoutTheme::theme().supportsMeter(style.appearance()))
         return LayoutObject::createObject(this, style);
     return new LayoutMeter(this);
 }

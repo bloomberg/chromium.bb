@@ -44,7 +44,7 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& TreeScopeEventContext::ensure
     m_eventPath->reserveCapacity(path.size() + (window ? 1 : 0));
     for (size_t i = 0; i < path.size(); ++i) {
         Node& rootNode = path[i].treeScopeEventContext().rootNode();
-        if (rootNode.isShadowRoot() && toShadowRoot(rootNode).type() == ShadowRootType::Open)
+        if (rootNode.isShadowRoot() && (toShadowRoot(rootNode).type() == ShadowRootType::OpenByDefault || toShadowRoot(rootNode).type() == ShadowRootType::Open))
             m_eventPath->append(path[i].node());
         else if (path[i].treeScopeEventContext().isInclusiveAncestorOf(*this))
             m_eventPath->append(path[i].node());

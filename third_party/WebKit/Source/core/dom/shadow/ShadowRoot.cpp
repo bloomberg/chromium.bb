@@ -105,9 +105,9 @@ void ShadowRoot::dispose()
 ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
 {
     ShadowRoot* older = olderShadowRoot();
-    while (older && !older->shouldExposeToBindings())
+    while (older && !older->isOpen())
         older = older->olderShadowRoot();
-    ASSERT(!older || older->shouldExposeToBindings());
+    ASSERT(!older || older->isOpen());
     return older;
 }
 
