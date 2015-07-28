@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
@@ -368,6 +369,13 @@ public class ChromeTab extends Tab {
             // The URL can't be taken from the WebContents if it's paused.  Save it for later.
             assert mWebContentsUrlMapping == null;
             mWebContentsUrlMapping = Pair.create(newWebContents, targetUrl);
+
+            // TODO(dfalcantara): Re-remove this once crbug.com/508366 is fixed.
+            TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
+            assert tabCreator != null;
+            if (tabCreator.createsTabsAsynchronously()) {
+                DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
+            }
         }
 
         @Override
