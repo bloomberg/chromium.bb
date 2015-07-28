@@ -25,13 +25,15 @@ scoped_ptr<mojo::ApplicationDelegate> MojoMediaApplication::CreateApp() {
 }
 
 // TODO(xhwang): Hook up MediaLog when possible.
-MojoMediaApplication::MojoMediaApplication() : media_log_(new MediaLog()) {
-}
+MojoMediaApplication::MojoMediaApplication()
+    : app_impl_(nullptr), media_log_(new MediaLog()) {}
 
 MojoMediaApplication::~MojoMediaApplication() {
 }
 
 void MojoMediaApplication::Initialize(mojo::ApplicationImpl* app) {
+  app_impl_ = app;
+
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
@@ -50,7 +52,8 @@ void MojoMediaApplication::Create(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
   // The created object is owned by the pipe.
   new ServiceFactoryImpl(request.Pass(), connection->GetServiceProvider(),
-                         media_log_);
+                         media_log_,
+                         app_impl_->app_lifetime_helper()->CreateAppRefCount());
 }
 
 }  // namespace media

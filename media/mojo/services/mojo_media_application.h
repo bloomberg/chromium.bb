@@ -32,6 +32,7 @@ class MojoMediaApplication
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<interfaces::ServiceFactory> request) final;
 
+  mojo::ApplicationImpl* app_impl_;
   scoped_refptr<MediaLog> media_log_;
 };
 

@@ -46,15 +46,14 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request,
-                                 const base::Closure& termination_closure)
+                                 const Closure& termination_closure)
     : delegate_(delegate),
       binding_(this, request.Pass()),
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
       quit_requested_(false),
       in_destructor_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 void ApplicationImpl::ClearConnections() {
   // Copy the ServiceRegistryLists because they will be mutated by

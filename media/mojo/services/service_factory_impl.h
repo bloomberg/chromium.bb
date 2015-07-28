@@ -6,11 +6,13 @@
 #define MEDIA_MOJO_SERVICES_SERVICE_FACTORY_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
+class AppRefCount;
 class ServiceProvider;
 }
 
@@ -24,7 +26,8 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
  public:
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
                      mojo::ServiceProvider* service_provider,
-                     scoped_refptr<MediaLog> media_log);
+                     scoped_refptr<MediaLog> media_log,
+                     scoped_ptr<mojo::AppRefCount> parent_app_refcount);
   ~ServiceFactoryImpl() final;
 
   // interfaces::ServiceFactory implementation.
@@ -42,6 +45,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
   mojo::ServiceProvider* service_provider_;
   scoped_refptr<MediaLog> media_log_;
+  scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
 
   scoped_ptr<RendererFactory> renderer_factory_;
   scoped_ptr<CdmFactory> cdm_factory_;

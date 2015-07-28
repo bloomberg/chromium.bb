@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -15,6 +14,7 @@
 #include "mojo/application/public/cpp/lib/service_registry.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -63,7 +63,7 @@ class ApplicationImpl : public Application {
   // quitting the current MessageLoop.
   ApplicationImpl(ApplicationDelegate* delegate,
                   InterfaceRequest<Application> request,
-                  const base::Closure& termination_closure);
+                  const Closure& termination_closure);
   ~ApplicationImpl() override;
 
   // The Mojo shell. This will return a valid pointer after Initialize() has
@@ -141,7 +141,7 @@ class ApplicationImpl : public Application {
   Binding<Application> binding_;
   ShellPtr shell_;
   std::string url_;
-  base::Closure termination_closure_;
+  Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;
   bool in_destructor_;

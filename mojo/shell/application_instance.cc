@@ -14,8 +14,8 @@
 namespace mojo {
 namespace shell {
 
-ApplicationInstance::QueuedClientRequest::QueuedClientRequest() {
-}
+ApplicationInstance::QueuedClientRequest::QueuedClientRequest()
+    : originator(nullptr) {}
 
 ApplicationInstance::QueuedClientRequest::~QueuedClientRequest() {
 }
@@ -57,13 +57,13 @@ void ApplicationInstance::ConnectToClient(
     ServiceProviderPtr exposed_services,
     CapabilityFilterPtr filter) {
   if (queue_requests_) {
-    QueuedClientRequest* queued_request = new QueuedClientRequest;
+    QueuedClientRequest* queued_request = new QueuedClientRequest();
     queued_request->originator = originator;
     queued_request->requested_url = requested_url;
     queued_request->requestor_url = requestor_url;
     queued_request->services = services.Pass();
     queued_request->exposed_services = exposed_services.Pass();
-    queued_request->filter = filter.Pass(),
+    queued_request->filter = filter.Pass();
     queued_client_requests_.push_back(queued_request);
     return;
   }

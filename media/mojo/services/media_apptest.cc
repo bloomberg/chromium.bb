@@ -61,6 +61,8 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
     request->url = "mojo:media";
     mojo::ApplicationConnection* connection =
         application_impl()->ConnectToApplication(request.Pass());
+    connection->SetRemoteServiceProviderConnectionErrorHandler(
+        base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 
     connection->ConnectToService(&service_factory_);
     service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
@@ -105,6 +107,8 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
                                      base::Unretained(this)));
   }
 
+  MOCK_METHOD0(ConnectionClosed, void());
+
  protected:
   scoped_ptr<base::RunLoop> run_loop_;
 
@@ -143,6 +147,21 @@ TEST_F(MediaAppTest, InitializeRenderer_Success) {
 
 TEST_F(MediaAppTest, InitializeRenderer_InvalidConfig) {
   InitializeRenderer(TestVideoConfig::Invalid(), false);
+  run_loop_->Run();
+}
+
+TEST_F(MediaAppTest, Lifetime) {
+  // Disconnecting CDM and Renderer services doesn't terminate the app.
+  cdm_.reset();
+  renderer_.reset();
+
+  // Disconnecting ServiceFactory service should terminate the app, which will
+  // close the connection.
+  EXPECT_CALL(*this, ConnectionClosed())
+      .Times(Exactly(1))
+      .WillOnce(Invoke(run_loop_.get(), &base::RunLoop::Quit));
+  service_factory_.reset();
+
   run_loop_->Run();
 }
 

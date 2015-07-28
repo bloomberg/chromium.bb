@@ -11,16 +11,19 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/mojo_renderer_service.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 
 namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<interfaces::ServiceFactory> request,
     mojo::ServiceProvider* service_provider,
-    scoped_refptr<MediaLog> media_log)
+    scoped_refptr<MediaLog> media_log,
+    scoped_ptr<mojo::AppRefCount> parent_app_refcount)
     : binding_(this, request.Pass()),
       service_provider_(service_provider),
-      media_log_(media_log) {
+      media_log_(media_log),
+      parent_app_refcount_(parent_app_refcount.Pass()) {
   DVLOG(1) << __FUNCTION__;
 }
 
