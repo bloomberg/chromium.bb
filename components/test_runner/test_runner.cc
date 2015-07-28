@@ -39,7 +39,6 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebPageOverlay.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
@@ -1524,23 +1523,6 @@ void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {
 }
 
-class TestPageOverlay : public WebPageOverlay {
- public:
-  TestPageOverlay() {}
-  virtual ~TestPageOverlay() {}
-
-  virtual void paintPageOverlay(WebGraphicsContext* context,
-                                const WebSize& webViewSize) {
-    gfx::Rect rect(webViewSize);
-    SkCanvas* canvas = context->beginDrawing(gfx::RectF(rect));
-    SkPaint paint;
-    paint.setColor(SK_ColorCYAN);
-    paint.setStyle(SkPaint::kFill_Style);
-    canvas->drawRect(gfx::RectToSkRect(rect), paint);
-    context->endDrawing();
-  }
-};
-
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
     : frozen_(false)
     , controller_(controller) {}
@@ -1606,7 +1588,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       test_interfaces_(interfaces),
       delegate_(nullptr),
       web_view_(nullptr),
-      page_overlay_(nullptr),
       web_content_settings_(new WebContentSettings()),
       weak_factory_(this) {}
 
@@ -1640,11 +1621,7 @@ void TestRunner::Reset() {
     web_view_->setVisibilityState(WebPageVisibilityStateVisible, true);
     web_view_->mainFrame()->enableViewSourceMode(false);
 
-    if (page_overlay_) {
-      web_view_->removePageOverlay(page_overlay_);
-      delete page_overlay_;
-      page_overlay_ = nullptr;
-    }
+    web_view_->setPageOverlayColor(SK_ColorTRANSPARENT);
   }
 
   top_loading_frame_ = nullptr;
@@ -2909,18 +2886,13 @@ void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
 }
 
 void TestRunner::AddWebPageOverlay() {
-  if (web_view_ && !page_overlay_) {
-    page_overlay_ = new TestPageOverlay;
-    web_view_->addPageOverlay(page_overlay_, 0);
-  }
+  if (web_view_)
+    web_view_->setPageOverlayColor(SK_ColorCYAN);
 }
 
 void TestRunner::RemoveWebPageOverlay() {
-  if (web_view_ && page_overlay_) {
-    web_view_->removePageOverlay(page_overlay_);
-    delete page_overlay_;
-    page_overlay_ = nullptr;
-  }
+  if (web_view_)
+    web_view_->setPageOverlayColor(SK_ColorTRANSPARENT);
 }
 
 void TestRunner::LayoutAndPaintAsync() {

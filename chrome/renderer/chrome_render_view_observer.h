@@ -20,8 +20,6 @@
 
 class ContentSettingsObserver;
 class SkBitmap;
-class WebViewColorOverlay;
-class WebViewAnimatingOverlay;
 
 namespace blink {
 class WebView;
@@ -104,8 +102,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   translate::TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 
-  // A color page overlay when visually de-emaphasized.
-  scoped_ptr<WebViewColorOverlay> dimmed_color_overlay_;
+  // true if webview is overlayed with grey color.
+  bool webview_visually_deemphasized_;
 
   // Used to delay calling CapturePageInfo.
   base::Timer capture_timer_;

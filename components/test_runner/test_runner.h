@@ -37,7 +37,6 @@ namespace test_runner {
 
 class InvokeCallbackTask;
 class TestInterfaces;
-class TestPageOverlay;
 class WebContentSettings;
 class WebTestDelegate;
 class WebTestProxyBase;
@@ -801,7 +800,6 @@ class TestRunner : public WebTestRunner,
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;
   blink::WebView* web_view_;
-  TestPageOverlay* page_overlay_;
   WebTestProxyBase* proxy_;
 
   // This is non-0 IFF a load is in progress.

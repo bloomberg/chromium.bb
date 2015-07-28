@@ -61,8 +61,6 @@
       'renderer/tts_dispatcher.h',
       'renderer/web_apps.cc',
       'renderer/web_apps.h',
-      'renderer/webview_color_overlay.cc',
-      'renderer/webview_color_overlay.h',
       'renderer/worker_content_settings_client_proxy.cc',
       'renderer/worker_content_settings_client_proxy.h',
     ],
