@@ -1119,8 +1119,6 @@ crbug.com/431172 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Timeout
 
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass ]
 
-crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
-
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
