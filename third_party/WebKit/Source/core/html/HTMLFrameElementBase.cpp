@@ -100,7 +100,13 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem)
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == srcdocAttr) {
-        setLocation("about:srcdoc");
+        if (!value.isNull()) {
+            setLocation("about:srcdoc");
+        } else {
+            const AtomicString& srcValue = fastGetAttribute(srcAttr);
+            if (!srcValue.isNull())
+                setLocation(stripLeadingAndTrailingHTMLSpaces(srcValue));
+        }
     } else if (name == srcAttr && !fastHasAttribute(srcdocAttr)) {
         setLocation(stripLeadingAndTrailingHTMLSpaces(value));
     } else if (name == idAttr) {
