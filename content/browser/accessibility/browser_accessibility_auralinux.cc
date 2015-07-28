@@ -269,6 +269,77 @@ static const GInterfaceInfo DocumentInfo = {
     reinterpret_cast<GInterfaceInitFunc>(DocumentInterfaceInit), 0, 0};
 
 //
+// AtkImage interface.
+//
+
+static BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
+    AtkImage* atk_img) {
+  if (!IS_BROWSER_ACCESSIBILITY(atk_img))
+    return NULL;
+
+  return ToBrowserAccessibilityAuraLinux(BROWSER_ACCESSIBILITY(atk_img));
+}
+
+void GetImagePositionSize(BrowserAccessibilityAuraLinux* obj,
+                          gint* x,
+                          gint* y,
+                          gint* width,
+                          gint* height) {
+  gfx::Rect img_pos_size = obj->GetGlobalBoundsRect();
+
+  if (x)
+    *x = img_pos_size.x();
+  if (y)
+    *y = img_pos_size.y();
+  if (width)
+    *width = img_pos_size.width();
+  if (height)
+    *height = img_pos_size.height();
+}
+
+static void browser_accessibility_get_image_position(AtkImage* atk_img,
+                                                     gint* x,
+                                                     gint* y,
+                                                     AtkCoordType coordType) {
+  g_return_if_fail(ATK_IMAGE(atk_img));
+  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(atk_img);
+  if (!obj)
+    return;
+
+  GetImagePositionSize(obj, x, y, nullptr, nullptr);
+}
+
+static const gchar* browser_accessibility_get_image_description(
+    AtkImage* atk_img) {
+  g_return_val_if_fail(ATK_IMAGE(atk_img), 0);
+  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(atk_img);
+  if (!obj)
+    return 0;
+
+  return obj->GetStringAttribute(ui::AX_ATTR_DESCRIPTION).c_str();
+}
+
+static void browser_accessibility_get_image_size(AtkImage* atk_img,
+                                                 gint* width,
+                                                 gint* height) {
+  g_return_if_fail(ATK_IMAGE(atk_img));
+  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(atk_img);
+  if (!obj)
+    return;
+
+  GetImagePositionSize(obj, nullptr, nullptr, width, height);
+}
+
+void ImageInterfaceInit(AtkImageIface* iface) {
+  iface->get_image_position = browser_accessibility_get_image_position;
+  iface->get_image_description = browser_accessibility_get_image_description;
+  iface->get_image_size = browser_accessibility_get_image_size;
+}
+
+static const GInterfaceInfo ImageInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ImageInterfaceInit), 0, 0};
+
+//
 // AtkValue interface.
 //
 
@@ -590,6 +661,10 @@ static int GetInterfaceMaskFromObject(BrowserAccessibilityAuraLinux* obj) {
       role == ui::AX_ROLE_WEB_AREA)
     interface_mask |= 1 << ATK_DOCUMENT_INTERFACE;
 
+  // Image Interface
+  if (role == ui::AX_ROLE_IMAGE || role == ui::AX_ROLE_IMAGE_MAP)
+    interface_mask |= 1 << ATK_IMAGE_INTERFACE;
+
   return interface_mask;
 }
 
@@ -622,6 +697,8 @@ static GType GetAccessibilityTypeFromObject(
     g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &ComponentInfo);
   if (interface_mask & (1 << ATK_DOCUMENT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &DocumentInfo);
+  if (interface_mask & (1 << ATK_IMAGE_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_IMAGE, &ImageInfo);
   if (interface_mask & (1 << ATK_VALUE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_VALUE, &ValueInfo);
 
