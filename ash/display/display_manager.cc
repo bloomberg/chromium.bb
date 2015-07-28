@@ -356,13 +356,7 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
 
 bool DisplayManager::SetDisplayMode(int64 display_id,
                                     const DisplayMode& display_mode) {
-  if (GetDisplayIdForUIScaling() == display_id)
-    return SetDisplayUIScale(display_id, display_mode.ui_scale);
-
-  // UI scaling should not be applied to non internal display.
-  DCHECK_EQ(1.0f, display_mode.ui_scale);
-  if (display_mode.ui_scale != 1.0f)
-    return false;
+  bool change_ui_scale = GetDisplayIdForUIScaling() == display_id;
 
   DisplayInfoList display_info_list;
   bool display_property_changed = false;
@@ -376,16 +370,26 @@ bool DisplayManager::SetDisplayMode(int64 display_id,
                        modes.end(),
                        DisplayModeMatcher(display_mode));
       if (iter == modes.end()) {
-        LOG(WARNING) << "Unsupported resolution was requested:"
-                     << display_mode.size.ToString();
+        LOG(WARNING) << "Unsupported display mode was requested:"
+                     << "size=" << display_mode.size.ToString()
+                     << ", ui scale=" << display_mode.ui_scale
+                     << ", scale fator=" << display_mode.device_scale_factor;
         return false;
       }
-      display_modes_[display_id] = *iter;
-      if (info.bounds_in_native().size() != display_mode.size)
-        resolution_changed = true;
-      if (info.device_scale_factor() != display_mode.device_scale_factor) {
-        info.set_device_scale_factor(display_mode.device_scale_factor);
+
+      if (change_ui_scale) {
+        if (info.configured_ui_scale() == display_mode.ui_scale)
+          return true;
+        info.set_configured_ui_scale(display_mode.ui_scale);
         display_property_changed = true;
+      } else {
+        display_modes_[display_id] = *iter;
+        if (info.bounds_in_native().size() != display_mode.size)
+          resolution_changed = true;
+        if (info.device_scale_factor() != display_mode.device_scale_factor) {
+          info.set_device_scale_factor(display_mode.device_scale_factor);
+          display_property_changed = true;
+        }
       }
     }
     display_info_list.push_back(info);
@@ -398,7 +402,7 @@ bool DisplayManager::SetDisplayMode(int64 display_id,
   if (resolution_changed && base::SysInfo::IsRunningOnChromeOS())
     Shell::GetInstance()->display_configurator()->OnConfigurationChanged();
 #endif
-  return resolution_changed;
+  return resolution_changed || display_property_changed;
 }
 
 void DisplayManager::RegisterDisplayProperty(
@@ -1071,33 +1075,6 @@ void DisplayManager::UpdateInternalDisplayModeListForTest() {
     return;
   DisplayInfo* info = &display_info_[gfx::Display::InternalDisplayId()];
   SetInternalDisplayModeList(info);
-}
-
-// TODO(oshima|mukai): Merge this logic into SetDisplayMode.
-bool DisplayManager::SetDisplayUIScale(int64 display_id, float ui_scale) {
-  if (GetDisplayIdForUIScaling() != display_id)
-    return false;
-
-  bool found = false;
-  DisplayInfoList display_info_list;
-  for (const auto& display : active_display_list_) {
-    DisplayInfo info = GetDisplayInfo(display.id());
-    if (info.id() == display_id) {
-      found = true;
-      if (info.configured_ui_scale() == ui_scale)
-        return true;
-      if (!HasDisplayModeForUIScale(info, ui_scale))
-        return false;
-      info.set_configured_ui_scale(ui_scale);
-    }
-    display_info_list.push_back(info);
-  }
-  if (found) {
-    AddMirrorDisplayInfoIfAny(&display_info_list);
-    UpdateDisplays(display_info_list);
-    return true;
-  }
-  return false;
 }
 
 void DisplayManager::CreateSoftwareMirroringDisplayInfo(

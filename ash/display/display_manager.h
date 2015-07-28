@@ -341,10 +341,6 @@ private:
   void set_change_display_upon_host_resize(bool value) {
     change_display_upon_host_resize_ = value;
   }
-  // Sets the display's ui scale. Returns true if it's successful, or
-  // false otherwise.  TODO(mukai): remove this and merge into
-  // SetDisplayMode.
-  bool SetDisplayUIScale(int64 display_id, float ui_scale);
 
   // Creates software mirroring display related information. The display
   // used to mirror the content is removed from the |display_info_list|.
