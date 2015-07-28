@@ -30,9 +30,13 @@
 #include "config.h"
 #include "core/css/DOMWindowCSS.h"
 
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSMarkup.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/ExceptionCode.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -52,6 +56,16 @@ bool DOMWindowCSS::supports(const String& property, const String& value)
 bool DOMWindowCSS::supports(const String& conditionText)
 {
     return CSSParser::parseSupportsCondition(conditionText);
+}
+
+String DOMWindowCSS::escape(const String& ident, ExceptionState& exceptionState)
+{
+    StringBuilder builder;
+    if (!serializeIdentifier(ident, builder)) {
+        exceptionState.throwDOMException(InvalidCharacterError, "The string contains an invalid character.");
+        return String();
+    }
+    return builder.toString();
 }
 
 }

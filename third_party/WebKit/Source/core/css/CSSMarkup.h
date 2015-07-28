@@ -33,7 +33,7 @@ String quoteCSSStringIfNeeded(const String&);
 String quoteCSSURLIfNeeded(const String&);
 
 // Common serializing methods. See: http://dev.w3.org/csswg/cssom/#common-serializing-idioms
-void serializeIdentifier(const String& identifier, StringBuilder& appendTo);
+bool serializeIdentifier(const String& identifier, StringBuilder& appendTo);
 void serializeString(const String&, StringBuilder& appendTo);
 String serializeString(const String&);
 

@@ -200,7 +200,7 @@ static void serializeCharacterAsCodePoint(UChar32 c, StringBuilder& appendTo)
     appendTo.append(' ');
 }
 
-void serializeIdentifier(const String& identifier, StringBuilder& appendTo)
+bool serializeIdentifier(const String& identifier, StringBuilder& appendTo)
 {
     bool isFirst = true;
     bool isSecond = false;
@@ -208,12 +208,17 @@ void serializeIdentifier(const String& identifier, StringBuilder& appendTo)
     unsigned index = 0;
     while (index < identifier.length()) {
         UChar32 c = identifier.characterStartingAt(index);
+        if (c == 0) {
+            // Check for lone surrogate which characterStartingAt does not return.
+            c = identifier[index];
+            if (c == 0)
+                return false;
+        }
+
         index += U16_LENGTH(c);
 
-        if (c <= 0x1f || (0x30 <= c && c <= 0x39 && (isFirst || (isSecond && isFirstCharHyphen))))
+        if (c <= 0x1f || c == 0x7f || (0x30 <= c && c <= 0x39 && (isFirst || (isSecond && isFirstCharHyphen))))
             serializeCharacterAsCodePoint(c, appendTo);
-        else if (c == 0x2d && isSecond && isFirstCharHyphen)
-            serializeCharacter(c, appendTo);
         else if (0x80 <= c || c == 0x2d || c == 0x5f || (0x30 <= c && c <= 0x39) || (0x41 <= c && c <= 0x5a) || (0x61 <= c && c <= 0x7a))
             appendTo.append(c);
         else
@@ -227,6 +232,7 @@ void serializeIdentifier(const String& identifier, StringBuilder& appendTo)
             isSecond = false;
         }
     }
+    return true;
 }
 
 void serializeString(const String& string, StringBuilder& appendTo)

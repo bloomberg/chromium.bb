@@ -116,18 +116,21 @@ void CSSParserToken::serialize(StringBuilder& builder) const
     // simple we handle some of the edge cases incorrectly (see comments below).
     switch (type()) {
     case IdentToken:
-        return serializeIdentifier(value(), builder);
+        serializeIdentifier(value(), builder);
+        break;
     case FunctionToken:
         serializeIdentifier(value(), builder);
         return builder.append('(');
     case AtKeywordToken:
         builder.append('@');
-        return serializeIdentifier(value(), builder);
+        serializeIdentifier(value(), builder);
+        break;
     case HashToken:
         // This will always serialize as a hash-token with 'id' type instead of
         // preserving the type of the input.
         builder.append('#');
-        return serializeIdentifier(value(), builder);
+        serializeIdentifier(value(), builder);
+        break;
     case UrlToken:
         builder.append("url(");
         serializeIdentifier(value(), builder);
@@ -145,7 +148,8 @@ void CSSParserToken::serialize(StringBuilder& builder) const
     case DimensionToken:
         // This will incorrectly serialize e.g. 4e3e2 as 4000e2
         builder.appendNumber(numericValue());
-        return serializeIdentifier(value(), builder);
+        serializeIdentifier(value(), builder);
+        break;
     case UnicodeRangeToken:
         return builder.append(String::format("U+%X-%X", unicodeRangeStart(), unicodeRangeEnd()));
     case StringToken:
