@@ -31,7 +31,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/browser/google_util.h"

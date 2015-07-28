@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
-#include "chrome/common/cast_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
@@ -24,6 +23,7 @@ namespace cast {
 class CastTransportHostFilter : public content::BrowserMessageFilter {
  public:
   CastTransportHostFilter();
+
  private:
   ~CastTransportHostFilter() override;
 

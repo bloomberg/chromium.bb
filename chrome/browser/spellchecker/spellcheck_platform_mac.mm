@@ -15,7 +15,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"

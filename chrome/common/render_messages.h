@@ -4,30 +4,19 @@
 
 // Multiply-included file, no traditional include guard.
 #include <stdint.h>
-#include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/shared_memory.h"
-#include "base/process/process.h"
 #include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/search_provider.h"
 #include "chrome/common/web_application_info.h"
-#include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/nacl/common/nacl_types.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/referrer.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -35,10 +24,6 @@
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/window_open_disposition.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/ipc/gfx_param_traits.h"
 
 // Singly-included section for enums and custom IPC traits.
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_

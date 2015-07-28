@@ -30,7 +30,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/metrics/version_utils.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_service.h"

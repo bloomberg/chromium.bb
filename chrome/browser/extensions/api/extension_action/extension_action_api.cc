@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"

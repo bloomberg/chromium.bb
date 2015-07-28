@@ -21,6 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -1272,7 +1272,7 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
 
   std::vector<size_t> offsets;
   base::string16 text =
-      l10n_util::GetStringFUTF16(resource_id, link_names,&offsets);
+      l10n_util::GetStringFUTF16(resource_id, link_names, &offsets);
 
   // Tack on the location string if need be.
   size_t base_offset = 0;

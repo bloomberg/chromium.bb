@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"

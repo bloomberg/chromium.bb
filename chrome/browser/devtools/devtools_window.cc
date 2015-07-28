@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/ui/zoom/page_zoom.h"
@@ -661,7 +660,7 @@ bool DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(
 
 // static
 void DevToolsWindow::OnPageCloseCanceled(WebContents* contents) {
-  DevToolsWindow *window =
+  DevToolsWindow* window =
       DevToolsWindow::GetInstanceForInspectedWebContents(contents);
   if (!window)
     return;

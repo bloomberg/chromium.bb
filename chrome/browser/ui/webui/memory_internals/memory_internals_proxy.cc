@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_handler.h"
-#include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"

@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
+#include "chrome/common/cast_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/cast/logging/logging_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -22,7 +22,6 @@
 #include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"

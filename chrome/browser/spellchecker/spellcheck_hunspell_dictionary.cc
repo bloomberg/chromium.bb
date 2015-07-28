@@ -12,7 +12,6 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/load_flags.h"
@@ -70,7 +69,7 @@ bool SaveDictionaryData(scoped_ptr<std::string> data,
 SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile() {
 }
 
- SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
+SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
   if (file.IsValid()) {
     BrowserThread::PostTask(
         BrowserThread::FILE,
@@ -322,7 +321,6 @@ void SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete(
   dictionary_file_ = file.Pass();
 
   if (!dictionary_file_.file.IsValid()) {
-
     // Notify browser tests that this dictionary is corrupted. Skip downloading
     // the dictionary in browser tests.
     // TODO(rouslan): Remove this test-only case.

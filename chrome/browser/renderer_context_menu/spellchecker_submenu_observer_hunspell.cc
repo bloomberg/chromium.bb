@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"

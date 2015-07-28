@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
-#include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"

@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_flash.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
@@ -53,7 +52,6 @@
 #endif
 
 #if defined(ENABLE_PLUGINS)
-#include "chrome/common/pepper_flash.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "ppapi/shared_impl/ppapi_permissions.h"

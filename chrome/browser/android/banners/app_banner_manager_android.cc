@@ -11,7 +11,6 @@
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/render_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "jni/AppBannerManager_jni.h"
