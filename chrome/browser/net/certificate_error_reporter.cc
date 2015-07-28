@@ -16,11 +16,7 @@
 #include "crypto/curve25519.h"
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
-#include "net/base/elements_upload_data_stream.h"
-#include "net/base/load_flags.h"
-#include "net/base/request_priority.h"
-#include "net/base/upload_bytes_element_reader.h"
-#include "net/url_request/url_request_context.h"
+#include "net/url_request/certificate_report_sender.h"
 
 namespace {
 
@@ -87,30 +83,28 @@ namespace chrome_browser_net {
 CertificateErrorReporter::CertificateErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
-    CookiesPreference cookies_preference)
-    : CertificateErrorReporter(request_context,
-                               upload_url,
-                               cookies_preference,
+    net::CertificateReportSender::CookiesPreference cookies_preference)
+    : CertificateErrorReporter(upload_url,
                                kServerPublicKey,
-                               kServerPublicKeyVersion) {
-}
+                               kServerPublicKeyVersion,
+                               make_scoped_ptr(new net::CertificateReportSender(
+                                   request_context,
+                                   cookies_preference))) {}
 
 CertificateErrorReporter::CertificateErrorReporter(
-    net::URLRequestContext* request_context,
     const GURL& upload_url,
-    CookiesPreference cookies_preference,
     const uint8 server_public_key[32],
-    const uint32 server_public_key_version)
-    : request_context_(request_context),
+    const uint32 server_public_key_version,
+    scoped_ptr<net::CertificateReportSender> certificate_report_sender)
+    : certificate_report_sender_(certificate_report_sender.Pass()),
       upload_url_(upload_url),
-      cookies_preference_(cookies_preference),
       server_public_key_(server_public_key),
       server_public_key_version_(server_public_key_version) {
+  DCHECK(certificate_report_sender_);
   DCHECK(!upload_url.is_empty());
 }
 
 CertificateErrorReporter::~CertificateErrorReporter() {
-  STLDeleteElements(&inflight_requests_);
 }
 
 void CertificateErrorReporter::SendReport(
@@ -118,11 +112,11 @@ void CertificateErrorReporter::SendReport(
     const std::string& serialized_report) {
   switch (type) {
     case REPORT_TYPE_PINNING_VIOLATION:
-      SendSerializedRequest(serialized_report);
+      certificate_report_sender_->Send(upload_url_, serialized_report);
       break;
     case REPORT_TYPE_EXTENDED_REPORTING:
       if (upload_url_.SchemeIsCryptographic()) {
-        SendSerializedRequest(serialized_report);
+        certificate_report_sender_->Send(upload_url_, serialized_report);
       } else {
         DCHECK(IsHttpUploadUrlSupported());
 #if defined(USE_OPENSSL)
@@ -135,41 +129,14 @@ void CertificateErrorReporter::SendReport(
         }
         std::string serialized_encrypted_report;
         encrypted_report.SerializeToString(&serialized_encrypted_report);
-        SendSerializedRequest(serialized_encrypted_report);
+        certificate_report_sender_->Send(upload_url_,
+                                         serialized_encrypted_report);
 #endif
       }
       break;
     default:
       NOTREACHED();
   }
-}
-
-void CertificateErrorReporter::OnResponseStarted(net::URLRequest* request) {
-  const net::URLRequestStatus& status(request->status());
-  if (!status.is_success()) {
-    LOG(WARNING) << "Certificate upload failed"
-                 << " status:" << status.status()
-                 << " error:" << status.error();
-  } else if (request->GetResponseCode() != 200) {
-    LOG(WARNING) << "Certificate upload HTTP status: "
-                 << request->GetResponseCode();
-  }
-  RequestComplete(request);
-}
-
-void CertificateErrorReporter::OnReadCompleted(net::URLRequest* request,
-                                               int bytes_read) {
-}
-
-scoped_ptr<net::URLRequest> CertificateErrorReporter::CreateURLRequest(
-    net::URLRequestContext* context) {
-  scoped_ptr<net::URLRequest> request =
-      context->CreateRequest(upload_url_, net::DEFAULT_PRIORITY, this);
-  if (cookies_preference_ != SEND_COOKIES) {
-    request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                          net::LOAD_DO_NOT_SAVE_COOKIES);
-  }
-  return request.Pass();
 }
 
 bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
@@ -210,32 +177,5 @@ bool CertificateErrorReporter::DecryptCertificateErrorReport(
                    decrypted_serialized_report);
 }
 #endif
-
-void CertificateErrorReporter::SendSerializedRequest(
-    const std::string& serialized_request) {
-  scoped_ptr<net::URLRequest> url_request = CreateURLRequest(request_context_);
-  url_request->set_method("POST");
-
-  scoped_ptr<net::UploadElementReader> reader(
-      net::UploadOwnedBytesElementReader::CreateWithString(serialized_request));
-  url_request->set_upload(
-      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
-
-  net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                    "x-application/chrome-fraudulent-cert-report");
-  url_request->SetExtraRequestHeaders(headers);
-
-  net::URLRequest* raw_url_request = url_request.get();
-  inflight_requests_.insert(url_request.release());
-  raw_url_request->Start();
-}
-
-void CertificateErrorReporter::RequestComplete(net::URLRequest* request) {
-  std::set<net::URLRequest*>::iterator i = inflight_requests_.find(request);
-  DCHECK(i != inflight_requests_.end());
-  scoped_ptr<net::URLRequest> url_request(*i);
-  inflight_requests_.erase(i);
-}
 
 }  // namespace chrome_browser_net

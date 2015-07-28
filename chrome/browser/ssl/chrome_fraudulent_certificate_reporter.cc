@@ -8,6 +8,7 @@
 #include "chrome/browser/net/certificate_error_reporter.h"
 #include "chrome/browser/ssl/certificate_error_report.h"
 #include "net/ssl/ssl_info.h"
+#include "net/url_request/certificate_report_sender.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
@@ -25,8 +26,7 @@ ChromeFraudulentCertificateReporter::ChromeFraudulentCertificateReporter(
     : certificate_reporter_(new chrome_browser_net::CertificateErrorReporter(
           request_context,
           GURL(kFraudulentCertificateUploadEndpoint),
-          chrome_browser_net::CertificateErrorReporter::DO_NOT_SEND_COOKIES)) {
-}
+          net::CertificateReportSender::DO_NOT_SEND_COOKIES)) {}
 
 ChromeFraudulentCertificateReporter::ChromeFraudulentCertificateReporter(
     scoped_ptr<chrome_browser_net::CertificateErrorReporter>

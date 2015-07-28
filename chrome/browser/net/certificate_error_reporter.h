@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/certificate_report_sender.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -24,7 +24,7 @@ class EncryptedCertLoggerRequest;
 
 // Provides functionality for sending reports about invalid SSL
 // certificate chains to a report collection server.
-class CertificateErrorReporter : public net::URLRequest::Delegate {
+class CertificateErrorReporter {
  public:
   // These represent the types of reports that can be sent.
   enum ReportType {
@@ -36,26 +36,24 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
     REPORT_TYPE_EXTENDED_REPORTING
   };
 
-  // Represents whether or not to send cookies along with reports sent
-  // to the server.
-  enum CookiesPreference { SEND_COOKIES, DO_NOT_SEND_COOKIES };
-
   // Creates a certificate error reporter that will send certificate
   // error reports to |upload_url|, using |request_context| as the
   // context for the reports. |cookies_preference| controls whether
   // cookies will be sent along with the reports.
-  CertificateErrorReporter(net::URLRequestContext* request_context,
-                           const GURL& upload_url,
-                           CookiesPreference cookies_preference);
+  CertificateErrorReporter(
+      net::URLRequestContext* request_context,
+      const GURL& upload_url,
+      net::CertificateReportSender::CookiesPreference cookies_preference);
 
-  // Allows tests to use a server public key with known private key.
-  CertificateErrorReporter(net::URLRequestContext* request_context,
-                           const GURL& upload_url,
-                           CookiesPreference cookies_preference,
-                           const uint8 server_public_key[32],
-                           const uint32 server_public_key_version);
+  // Allows tests to use a server public key with known private key and
+  // a mock CertificateReportSender.
+  CertificateErrorReporter(
+      const GURL& upload_url,
+      const uint8 server_public_key[32],
+      const uint32 server_public_key_version,
+      scoped_ptr<net::CertificateReportSender> certificate_report_sender);
 
-  ~CertificateErrorReporter() override;
+  virtual ~CertificateErrorReporter();
 
   // Sends a certificate report to the report collection server. The
   // |serialized_report| is expected to be a serialized protobuf
@@ -74,40 +72,22 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   virtual void SendReport(ReportType type,
                           const std::string& serialized_report);
 
-  // net::URLRequest::Delegate
-  void OnResponseStarted(net::URLRequest* request) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
-
   // Callers can use this method to determine if sending reports over
   // HTTP is supported.
   static bool IsHttpUploadUrlSupported();
 
+#if defined(USE_OPENSSL)
   // Used by tests.
   static bool DecryptCertificateErrorReport(
       const uint8 server_private_key[32],
       const EncryptedCertLoggerRequest& encrypted_report,
       std::string* decrypted_serialized_report);
+#endif
 
  private:
-  // Creates a URLRequest with which to send a certificate report to the
-  // server.
-  virtual scoped_ptr<net::URLRequest> CreateURLRequest(
-      net::URLRequestContext* context);
+  scoped_ptr<net::CertificateReportSender> certificate_report_sender_;
 
-  // Sends a serialized report (encrypted or not) to the report
-  // collection server.
-  void SendSerializedRequest(const std::string& serialized_request);
-
-  // Performs post-report cleanup.
-  void RequestComplete(net::URLRequest* request);
-
-  net::URLRequestContext* const request_context_;
   const GURL upload_url_;
-
-  // Owns the contained requests.
-  std::set<net::URLRequest*> inflight_requests_;
-
-  CookiesPreference cookies_preference_;
 
   const uint8* server_public_key_;
   const uint32 server_public_key_version_;

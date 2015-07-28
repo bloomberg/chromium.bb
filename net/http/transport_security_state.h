@@ -46,6 +46,16 @@ class NET_EXPORT TransportSecurityState
     virtual ~Delegate() {}
   };
 
+  // An interface for asynchronously sending HPKP violation reports.
+  class NET_EXPORT ReportSender {
+   public:
+    // Sends the given serialized |report| to |report_uri|.
+    virtual void Send(const GURL& report_uri, const std::string& report) = 0;
+
+   protected:
+    virtual ~ReportSender() {}
+  };
+
   TransportSecurityState();
   ~TransportSecurityState();
 

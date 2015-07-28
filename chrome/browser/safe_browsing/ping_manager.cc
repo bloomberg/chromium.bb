@@ -15,6 +15,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/url_request/certificate_report_sender.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -58,13 +59,13 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     bool use_insecure_certificate_upload_url =
         CertificateErrorReporter::IsHttpUploadUrlSupported();
 
-    CertificateErrorReporter::CookiesPreference cookies_preference;
+    net::CertificateReportSender::CookiesPreference cookies_preference;
     GURL certificate_upload_url;
     if (use_insecure_certificate_upload_url) {
-      cookies_preference = CertificateErrorReporter::DO_NOT_SEND_COOKIES;
+      cookies_preference = net::CertificateReportSender::DO_NOT_SEND_COOKIES;
       certificate_upload_url = GURL(kExtendedReportingUploadUrlInsecure);
     } else {
-      cookies_preference = CertificateErrorReporter::SEND_COOKIES;
+      cookies_preference = net::CertificateReportSender::SEND_COOKIES;
       certificate_upload_url = GURL(kExtendedReportingUploadUrlSecure);
     }
 

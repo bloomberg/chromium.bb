@@ -10,341 +10,123 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/net/encrypted_cert_logger.pb.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/browser_thread.h"
 #include "crypto/curve25519.h"
-#include "net/base/load_flags.h"
-#include "net/base/network_delegate_impl.h"
-#include "net/base/upload_bytes_element_reader.h"
-#include "net/base/upload_data_stream.h"
-#include "net/base/upload_element_reader.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_data_job.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/certificate_report_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_browser_net::CertificateErrorReporter;
-using content::BrowserThread;
-using net::CertStatus;
-using net::CompletionCallback;
-using net::NetworkDelegateImpl;
-using net::TestURLRequestContext;
-using net::URLRequest;
 
 namespace {
 
-const char kDummyReport[] = "test.mail.google.com";
-const char kSecondDummyReport[] = "test2.mail.google.com";
+const char kDummyHttpReportUri[] = "http://example.test";
+const char kDummyHttpsReportUri[] = "https://example.test";
+const char kDummyReport[] = "a dummy report";
 const uint32 kServerPublicKeyVersion = 1;
 
-void EnableUrlRequestMocks(bool enable) {
-  net::URLRequestFilter::GetInstance()->ClearHandlers();
-  if (!enable)
-    return;
+// A mock CertificateReportSender that keeps track of the last report
+// sent.
+class MockCertificateReportSender : public net::CertificateReportSender {
+ public:
+  MockCertificateReportSender()
+      : net::CertificateReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
+  ~MockCertificateReportSender() override {}
 
-  net::URLRequestFailedJob::AddUrlHandler();
-  net::URLRequestMockDataJob::AddUrlHandler();
+  void Send(const GURL& report_uri, const std::string& report) override {
+    latest_report_uri_ = report_uri;
+    latest_report_ = report;
+  }
+
+  const GURL& latest_report_uri() { return latest_report_uri_; }
+
+  const std::string& latest_report() { return latest_report_; }
+
+ private:
+  GURL latest_report_uri_;
+  std::string latest_report_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCertificateReportSender);
+};
+
+class CertificateErrorReporterTest : public ::testing::Test {
+ public:
+  CertificateErrorReporterTest() {
+    memset(server_private_key_, 1, sizeof(server_private_key_));
+    crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
+  }
+
+  ~CertificateErrorReporterTest() override {}
+
+  const uint8_t* server_public_key() { return server_public_key_; }
+  const uint8_t* server_private_key() { return server_private_key_; }
+
+ private:
+  uint8_t server_public_key_[32];
+  uint8_t server_private_key_[32];
+};
+
+// Test that CertificateErrorReporter::SendReport sends a plaintext
+// report for pinning violation reports.
+TEST_F(CertificateErrorReporterTest, PinningViolationSendReport) {
+  GURL url(kDummyHttpReportUri);
+  MockCertificateReportSender* mock_report_sender =
+      new MockCertificateReportSender();
+  CertificateErrorReporter reporter(url, server_public_key(),
+                                    kServerPublicKeyVersion,
+                                    make_scoped_ptr(mock_report_sender));
+  reporter.SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
+                      kDummyReport);
+  EXPECT_EQ(mock_report_sender->latest_report_uri(), url);
+  EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 }
 
-// Check that data uploaded in the request matches the test report
-// data. The sent reports will be erased from |expect_reports|.
-void CheckUploadData(URLRequest* request,
-                     std::set<std::string>* expect_reports,
-                     bool encrypted,
-                     const uint8* server_private_key) {
-  const net::UploadDataStream* upload = request->get_upload();
-  ASSERT_TRUE(upload);
-  ASSERT_TRUE(upload->GetElementReaders());
-  EXPECT_EQ(1u, upload->GetElementReaders()->size());
+// Test that CertificateErrorReporter::SendReport sends an encrypted or
+// plaintext extended reporting report as appropriate.
+TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReport) {
+  // Data should not be encrypted when sent to an HTTPS URL.
+  MockCertificateReportSender* mock_report_sender =
+      new MockCertificateReportSender();
+  GURL https_url(kDummyHttpsReportUri);
+  CertificateErrorReporter https_reporter(https_url, server_public_key(),
+                                          kServerPublicKeyVersion,
+                                          make_scoped_ptr(mock_report_sender));
+  https_reporter.SendReport(
+      CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, kDummyReport);
+  EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
+  EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 
-  const net::UploadBytesElementReader* reader =
-      (*upload->GetElementReaders())[0]->AsBytesReader();
-  ASSERT_TRUE(reader);
-  std::string upload_data(reader->bytes(), reader->length());
+  // Data should be encrypted when sent to an HTTP URL.
+  if (CertificateErrorReporter::IsHttpUploadUrlSupported()) {
+    MockCertificateReportSender* http_mock_report_sender =
+        new MockCertificateReportSender();
+    GURL http_url(kDummyHttpReportUri);
+    CertificateErrorReporter http_reporter(
+        http_url, server_public_key(), kServerPublicKeyVersion,
+        make_scoped_ptr(http_mock_report_sender));
+    http_reporter.SendReport(
+        CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, kDummyReport);
 
-  std::string uploaded_report;
+    EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
+
+    std::string uploaded_report;
 #if defined(USE_OPENSSL)
-  if (encrypted) {
     chrome_browser_net::EncryptedCertLoggerRequest encrypted_request;
-    ASSERT_TRUE(encrypted_request.ParseFromString(upload_data));
+    ASSERT_TRUE(encrypted_request.ParseFromString(
+        http_mock_report_sender->latest_report()));
     EXPECT_EQ(kServerPublicKeyVersion,
               encrypted_request.server_public_key_version());
     EXPECT_EQ(chrome_browser_net::EncryptedCertLoggerRequest::
                   AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
               encrypted_request.algorithm());
     ASSERT_TRUE(CertificateErrorReporter::DecryptCertificateErrorReport(
-        server_private_key, encrypted_request, &uploaded_report));
-  } else {
-    uploaded_report = upload_data;
-  }
+        server_private_key(), encrypted_request, &uploaded_report));
 #else
-  uploaded_report = upload_data;
+    ADD_FAILURE() << "Only supported in OpenSSL ports";
 #endif
 
-  EXPECT_EQ(1u, expect_reports->count(uploaded_report));
-  expect_reports->erase(uploaded_report);
-}
-
-// A network delegate that lets tests check that a certificate error
-// report was sent. It counts the number of requests and lets tests
-// register a callback to run when the request is destroyed. It also
-// checks that the uploaded data is as expected.
-class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
- public:
-  TestCertificateErrorReporterNetworkDelegate()
-      : url_request_destroyed_callback_(base::Bind(&base::DoNothing)),
-        all_url_requests_destroyed_callback_(base::Bind(&base::DoNothing)),
-        num_requests_(0),
-        expect_cookies_(false),
-        expect_request_encrypted_(false) {
-    memset(server_private_key_, 1, sizeof(server_private_key_));
-    crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
+    EXPECT_EQ(kDummyReport, uploaded_report);
   }
-
-  ~TestCertificateErrorReporterNetworkDelegate() override {}
-
-  void ExpectReport(const std::string& report) {
-    expect_reports_.insert(report);
-  }
-
-  void set_all_url_requests_destroyed_callback(
-      const base::Closure& all_url_requests_destroyed_callback) {
-    all_url_requests_destroyed_callback_ = all_url_requests_destroyed_callback;
-  }
-
-  void set_url_request_destroyed_callback(
-      const base::Closure& url_request_destroyed_callback) {
-    url_request_destroyed_callback_ = url_request_destroyed_callback;
-  }
-
-  void set_expect_url(const GURL& expect_url) { expect_url_ = expect_url; }
-
-  int num_requests() const { return num_requests_; }
-
-  // Sets whether cookies are expected to be sent on requests. If set to
-  // true, then |OnHeadersReceived| will expect a cookie
-  // "cookie_name=cookie_value".
-  void set_expect_cookies(bool expect_cookies) {
-    expect_cookies_ = expect_cookies;
-  }
-
-  void set_expect_request_encrypted(bool expect_request_encrypted) {
-    expect_request_encrypted_ = expect_request_encrypted;
-  }
-
-  // NetworkDelegateImpl implementation
-  int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
-                         GURL* new_url) override {
-    num_requests_++;
-    EXPECT_EQ(expect_url_, request->url());
-    EXPECT_EQ("POST", request->method());
-
-    if (expect_cookies_) {
-      EXPECT_FALSE(request->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES);
-      EXPECT_FALSE(request->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES);
-    } else {
-      EXPECT_TRUE(request->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES);
-      EXPECT_TRUE(request->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES);
-    }
-
-    CheckUploadData(request, &expect_reports_, expect_request_encrypted_,
-                    server_private_key_);
-    return net::OK;
-  }
-
-  void OnURLRequestDestroyed(URLRequest* request) override {
-    url_request_destroyed_callback_.Run();
-    if (expect_reports_.empty())
-      all_url_requests_destroyed_callback_.Run();
-  }
-
-  const uint8* server_public_key() { return server_public_key_; }
-  const uint8* server_private_key() { return server_private_key_; }
-
- private:
-  base::Closure url_request_destroyed_callback_;
-  base::Closure all_url_requests_destroyed_callback_;
-  int num_requests_;
-  GURL expect_url_;
-  std::set<std::string> expect_reports_;
-  bool expect_cookies_;
-  bool expect_request_encrypted_;
-
-  uint8 server_public_key_[32];
-  uint8 server_private_key_[32];
-
-  DISALLOW_COPY_AND_ASSIGN(TestCertificateErrorReporterNetworkDelegate);
-};
-
-class CertificateErrorReporterTest : public ::testing::Test {
- public:
-  CertificateErrorReporterTest() : context_(true) {
-    EnableUrlRequestMocks(true);
-    context_.set_network_delegate(&network_delegate_);
-    context_.Init();
-  }
-
-  ~CertificateErrorReporterTest() override { EnableUrlRequestMocks(false); }
-
-  TestCertificateErrorReporterNetworkDelegate* network_delegate() {
-    return &network_delegate_;
-  }
-
-  TestURLRequestContext* context() { return &context_; }
-
- private:
-  base::MessageLoop message_loop_;
-  TestCertificateErrorReporterNetworkDelegate network_delegate_;
-  TestURLRequestContext context_;
-};
-
-void SendReport(CertificateErrorReporter* reporter,
-                TestCertificateErrorReporterNetworkDelegate* network_delegate,
-                const std::string& report,
-                const GURL& url,
-                int request_sequence_number,
-                CertificateErrorReporter::ReportType type) {
-  base::RunLoop run_loop;
-  network_delegate->set_url_request_destroyed_callback(run_loop.QuitClosure());
-
-  network_delegate->set_expect_url(url);
-  network_delegate->ExpectReport(report);
-
-  EXPECT_EQ(request_sequence_number, network_delegate->num_requests());
-
-  reporter->SendReport(type, report);
-  run_loop.Run();
-
-  EXPECT_EQ(request_sequence_number + 1, network_delegate->num_requests());
-}
-
-// Test that CertificateErrorReporter::SendReport creates a URLRequest
-// for the endpoint and sends the expected data.
-TEST_F(CertificateErrorReporterTest, PinningViolationSendReportSendsRequest) {
-  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateErrorReporter reporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kDummyReport, url, 0,
-             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
-}
-
-TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReportSendsRequest) {
-  // Data should not be encrypted when sent to an HTTPS URL.
-  GURL https_url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateErrorReporter https_reporter(
-      context(), https_url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  network_delegate()->set_expect_request_encrypted(false);
-  SendReport(&https_reporter, network_delegate(), kDummyReport, https_url, 0,
-             CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING);
-
-  // Data should be encrypted when sent to an HTTP URL.
-  if (CertificateErrorReporter::IsHttpUploadUrlSupported()) {
-    GURL http_url = net::URLRequestMockDataJob::GetMockHttpUrl("dummy data", 1);
-    CertificateErrorReporter http_reporter(
-        context(), http_url, CertificateErrorReporter::DO_NOT_SEND_COOKIES,
-        network_delegate()->server_public_key(), kServerPublicKeyVersion);
-    network_delegate()->set_expect_request_encrypted(true);
-    SendReport(&http_reporter, network_delegate(), kDummyReport, http_url, 1,
-               CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING);
-  }
-}
-
-TEST_F(CertificateErrorReporterTest, SendMultipleReportsSequentially) {
-  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateErrorReporter reporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kDummyReport, url, 0,
-             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
-  SendReport(&reporter, network_delegate(), kDummyReport, url, 1,
-             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
-}
-
-TEST_F(CertificateErrorReporterTest, SendMultipleReportsSimultaneously) {
-  base::RunLoop run_loop;
-  network_delegate()->set_all_url_requests_destroyed_callback(
-      run_loop.QuitClosure());
-
-  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  network_delegate()->set_expect_url(url);
-  network_delegate()->ExpectReport(kDummyReport);
-  network_delegate()->ExpectReport(kSecondDummyReport);
-
-  CertificateErrorReporter reporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-
-  EXPECT_EQ(0, network_delegate()->num_requests());
-
-  reporter.SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
-                      kDummyReport);
-  reporter.SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
-                      kSecondDummyReport);
-
-  run_loop.Run();
-
-  EXPECT_EQ(2, network_delegate()->num_requests());
-}
-
-// Test that pending URLRequests get cleaned up when the reporter is
-// deleted.
-TEST_F(CertificateErrorReporterTest, PendingRequestGetsDeleted) {
-  base::RunLoop run_loop;
-  network_delegate()->set_url_request_destroyed_callback(
-      run_loop.QuitClosure());
-
-  GURL url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
-      net::URLRequestFailedJob::START, net::ERR_IO_PENDING);
-  network_delegate()->set_expect_url(url);
-  network_delegate()->ExpectReport(kDummyReport);
-
-  EXPECT_EQ(0, network_delegate()->num_requests());
-
-  scoped_ptr<CertificateErrorReporter> reporter(new CertificateErrorReporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES));
-  reporter->SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
-                       kDummyReport);
-  reporter.reset();
-
-  run_loop.Run();
-
-  EXPECT_EQ(1, network_delegate()->num_requests());
-}
-
-// Test that a request that returns an error gets cleaned up.
-TEST_F(CertificateErrorReporterTest, ErroredRequestGetsDeleted) {
-  GURL url = net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_FAILED);
-  CertificateErrorReporter reporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kDummyReport, url, 0,
-             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
-}
-
-// Test that cookies are sent or not sent according to the error
-// reporter's cookies preference.
-
-TEST_F(CertificateErrorReporterTest, SendCookiesPreference) {
-  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateErrorReporter reporter(context(), url,
-                                    CertificateErrorReporter::SEND_COOKIES);
-
-  network_delegate()->set_expect_cookies(true);
-  SendReport(&reporter, network_delegate(), kDummyReport, url, 0,
-             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
-}
-
-TEST_F(CertificateErrorReporterTest, DoNotSendCookiesPreference) {
-  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateErrorReporter reporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-
-  network_delegate()->set_expect_cookies(false);
-  SendReport(&reporter, network_delegate(), kDummyReport, url, 0,
-             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
 }
 
 #if defined(USE_OPENSSL)
@@ -504,10 +286,10 @@ TEST_F(CertificateErrorReporterTest, DecryptExampleReport) {
   ASSERT_TRUE(encrypted_request.ParseFromString(
       std::string(reinterpret_cast<const char*>(kSerializedEncryptedReport),
                   sizeof(kSerializedEncryptedReport))));
-  ASSERT_TRUE(chrome_browser_net::CertificateErrorReporter::
-                  DecryptCertificateErrorReport(
-                      network_delegate()->server_private_key(),
-                      encrypted_request, &decrypted_serialized_report));
+  ASSERT_TRUE(
+      chrome_browser_net::CertificateErrorReporter::
+          DecryptCertificateErrorReport(server_private_key(), encrypted_request,
+                                        &decrypted_serialized_report));
 }
 #endif
 

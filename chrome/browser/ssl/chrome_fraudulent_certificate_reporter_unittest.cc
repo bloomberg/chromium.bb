@@ -22,6 +22,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
+#include "net/url_request/certificate_report_sender.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -33,6 +34,11 @@ using content::BrowserThread;
 using net::SSLInfo;
 
 namespace {
+
+const uint32 kServerPublicKeyVersion = 1;
+const uint8 kServerPublicKey[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Builds an SSLInfo from an invalid cert chain. In this case, the cert is
 // expired; what matters is that the cert would not pass even a normal
@@ -116,28 +122,41 @@ class NotSendingTestReporter : public TestReporter {
   }
 };
 
+class MockCertificateReportSender : public net::CertificateReportSender {
+ public:
+  MockCertificateReportSender(
+      net::URLRequestContext* request_context,
+      net::CertificateReportSender::CookiesPreference cookies_preference)
+      : net::CertificateReportSender(request_context, cookies_preference) {}
+
+ private:
+  scoped_ptr<net::URLRequest> CreateURLRequest(
+      net::URLRequestContext* context,
+      const GURL& report_uri) override {
+    return context->CreateRequest(GURL(std::string()), net::DEFAULT_PRIORITY,
+                                  NULL);
+  }
+};
+
 // A CertificateErrorReporter that uses a MockURLRequest, but is
 // otherwise normal: reports are constructed and sent in the usual way.
 class MockReporter : public CertificateErrorReporter {
  public:
   explicit MockReporter(net::URLRequestContext* request_context)
       : CertificateErrorReporter(
-            request_context,
             GURL("http://example.com"),
-            CertificateErrorReporter::DO_NOT_SEND_COOKIES) {}
+            kServerPublicKey,
+            kServerPublicKeyVersion,
+            scoped_ptr<net::CertificateReportSender>(
+                new MockCertificateReportSender(
+                    request_context,
+                    net::CertificateReportSender::DO_NOT_SEND_COOKIES))) {}
 
   void SendReport(ReportType type,
                   const std::string& serialized_report) override {
     EXPECT_EQ(type, REPORT_TYPE_PINNING_VIOLATION);
     EXPECT_FALSE(serialized_report.empty());
     CertificateErrorReporter::SendReport(type, serialized_report);
-  }
-
- private:
-  scoped_ptr<net::URLRequest> CreateURLRequest(
-      net::URLRequestContext* context) override {
-    return context->CreateRequest(GURL(std::string()), net::DEFAULT_PRIORITY,
-                                  NULL);
   }
 };
 
