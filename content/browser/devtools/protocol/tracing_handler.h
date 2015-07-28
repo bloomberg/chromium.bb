@@ -51,6 +51,9 @@ class TracingHandler {
 
   void OnCategoriesReceived(DevToolsCommandId command_id,
                             const std::set<std::string>& category_set);
+  void OnMemoryDumpFinished(DevToolsCommandId command_id,
+                            uint64 dump_guid,
+                            bool success);
 
   void SetupTimer(double usage_reporting_interval);
 

@@ -276,7 +276,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
       skip_dump = true;
     } else if (mdp == g_mmaps_dump_provider &&
                pmd_async_state->req_args.dump_type !=
-                   MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS) {
+                   MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS &&
+               pmd_async_state->req_args.dump_type !=
+                   MemoryDumpType::EXPLICITLY_TRIGGERED) {
       // Mmaps dumping is very heavyweight and cannot be performed at the same
       // rate of other dumps. TODO(primiano): this is a hack and should be
       // cleaned up as part of crbug.com/499731.
