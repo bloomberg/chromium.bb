@@ -4265,10 +4265,10 @@ Even if you have downloaded files from this website before, the website might ha
       <!-- Extension toolbar bubble -->
       <if expr="enable_extensions">
         <message name="IDS_EXTENSION_TOOLBAR_BUBBLE_HEADING" desc="Heading of the bubble to tell users that all extensions are now visible in the toolbar (the extension toolbar info bubble).">
-          Your extensions can now be found here.
+          All your extensions are here
         </message>
         <message name="IDS_EXTENSION_TOOLBAR_BUBBLE_CONTENT" desc="Content of the extension toolbar info bubble.">
-          Right click to remove the extensions you don't want or hide them in the menu.
+          Use the context (right-click) menu to remove the extensions you don't need.
         </message>
         <message name="IDS_EXTENSION_TOOLBAR_BUBBLE_OK" desc="Button label for the extension toolbar info bubble.">
           Got it
