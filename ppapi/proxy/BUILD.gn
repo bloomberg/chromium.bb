@@ -265,10 +265,7 @@ component("proxy") {
     ]
   }
 
-  configs += [
-    ":proxy_implementation",
-    "//build/config:precompiled_headers",
-  ]
+  configs += [ ":proxy_implementation" ]
 
   deps = [
     "//base",

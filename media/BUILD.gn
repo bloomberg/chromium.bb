@@ -275,7 +275,6 @@ component("media") {
   configs += [
     ":media_config",
     ":media_implementation",
-    "//build/config:precompiled_headers",
 
     # TODO(wolenetz): Fix size_t to int trunctaion in win64.
     # See http://crbug.com/171009

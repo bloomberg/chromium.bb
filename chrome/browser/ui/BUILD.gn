@@ -19,7 +19,6 @@ source_set("ui") {
   libs = []
 
   configs += [
-    "//build/config:precompiled_headers",
     "//build/config/compiler:wexit_time_destructors",
     "//third_party/WebKit/public:debug_devtools",
   ]

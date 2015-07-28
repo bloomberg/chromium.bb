@@ -124,8 +124,6 @@ source_set("test_support") {
     "values_test_util.h",
   ]
 
-  configs += [ "//build/config:precompiled_headers" ]
-
   data = [
     # The isolate needs this script for setting up the test. It's not actually
     # needed to run this target locally.

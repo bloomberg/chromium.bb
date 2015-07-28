@@ -13,7 +13,6 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 static_library("utility") {
   sources = rebase_path(gypi_values.chrome_utility_sources, ".", "..")
   defines = []
-  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = []
   deps = [

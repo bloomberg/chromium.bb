@@ -40,10 +40,7 @@ static_library("common") {
   sources = rebase_path(gypi_values.chrome_common_sources, ".", "//chrome")
   defines = []
 
-  configs += [
-    "//build/config:precompiled_headers",
-    "//build/config/compiler:wexit_time_destructors",
-  ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
     "//chrome/common:constants",

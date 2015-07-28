@@ -126,8 +126,6 @@ source_set("common") {
       "schema_registry_tracking_policy_provider.h",
     ]
 
-    configs += [ "//build/config:precompiled_headers" ]
-
     deps = [
       "//base:prefs",
       "//base/third_party/dynamic_annotations",

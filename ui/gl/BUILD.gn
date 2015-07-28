@@ -104,7 +104,6 @@ component("gl") {
     "sync_control_vsync_provider.h",
   ]
 
-  configs += [ "//build/config:precompiled_headers" ]
   defines = [ "GL_IMPLEMENTATION" ]
 
   include_dirs = [

@@ -148,8 +148,6 @@ test("extensions_unittests") {
     "shell/browser/shell_display_info_provider.cc",
   ]
 
-  configs += [ "//build/config:precompiled_headers" ]
-
   deps = [
     ":extensions_resources",
     ":shell_and_test_pak",

@@ -159,8 +159,6 @@ source_set("sandbox") {
     ]
   }
 
-  configs += [ "//build/config:precompiled_headers" ]
-
   deps = [
     "//base",
     "//base:base_static",

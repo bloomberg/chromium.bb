@@ -135,7 +135,6 @@ source_set("service_sources") {
   ]
 
   configs += [
-    "//build/config:precompiled_headers",
     "//gpu:gpu_implementation",
     "//third_party/khronos:khronos_headers",
   ]

@@ -151,7 +151,6 @@ component("shared_impl") {
     ]
   }
 
-  configs += [ "//build/config:precompiled_headers" ]
   defines = [
     "PPAPI_SHARED_IMPLEMENTATION",
 
