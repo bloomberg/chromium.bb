@@ -79,16 +79,6 @@ ACTION(InvokeEmptyConsumer) {
 
 ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
 
-class TestPasswordManager : public PasswordManager {
- public:
-  explicit TestPasswordManager(PasswordManagerClient* client)
-      : PasswordManager(client) {}
-  ~TestPasswordManager() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPasswordManager);
-};
-
 }  // namespace
 
 class PasswordManagerTest : public testing::Test {
@@ -104,7 +94,7 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(store_.get()));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
 
-    manager_.reset(new TestPasswordManager(&client_));
+    manager_.reset(new PasswordManager(&client_));
     password_autofill_manager_.reset(
         new PasswordAutofillManager(client_.GetDriver(), nullptr));
 
@@ -177,7 +167,7 @@ class PasswordManagerTest : public testing::Test {
     return form;
   }
 
-  TestPasswordManager* manager() { return manager_.get(); }
+  PasswordManager* manager() { return manager_.get(); }
 
   void OnPasswordFormSubmitted(const PasswordForm& form) {
     manager()->OnPasswordFormSubmitted(&driver_, form);
@@ -195,7 +185,7 @@ class PasswordManagerTest : public testing::Test {
   MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_ptr<PasswordAutofillManager> password_autofill_manager_;
-  scoped_ptr<TestPasswordManager> manager_;
+  scoped_ptr<PasswordManager> manager_;
   PasswordForm submitted_form_;
 };
 
