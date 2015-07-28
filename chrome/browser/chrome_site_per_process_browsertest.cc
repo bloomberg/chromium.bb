@@ -53,11 +53,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, RenderFrameProxyHostShutdown) {
 // and FileSystem APIs.  These features involve a check on the
 // WebSecurityOrigin of the topmost WebFrame in ContentSettingsObserver, and
 // this test ensures this check works when the top frame is remote.
-//
-// Disabled due to a shutdown race condition that can lead to UAF in the
-// renderer (https://crbug.com/470055).
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
-                       DISABLED_OriginReplicationAllowsAccessToStorage) {
+                       OriginReplicationAllowsAccessToStorage) {
   // Navigate to a page with a same-site iframe.
   GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
