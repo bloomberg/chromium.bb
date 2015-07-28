@@ -54,3 +54,46 @@ TEST(PlatformFontMacTest, ConstructFromNativeFont) {
   EXPECT_EQ("Helvetica", bold_italic_font.GetFontName());
   EXPECT_EQ(gfx::Font::BOLD | gfx::Font::ITALIC, bold_italic_font.GetStyle());
 }
+
+// Ensures that the Font's reported height is consistent with the native font's
+// ascender and descender metrics.
+TEST(PlatformFontMacTest, ValidateFontHeight) {
+  // Use the default ResourceBundle system font. E.g. Helvetica Neue in 10.10,
+  // Lucida Grande before that, and San Francisco after.
+  gfx::Font default_font;
+  gfx::Font::FontStyle styles[] = {
+    gfx::Font::NORMAL, gfx::Font::BOLD, gfx::Font::ITALIC, gfx::Font::UNDERLINE
+  };
+
+  for (size_t i = 0; i < arraysize(styles); ++i) {
+    SCOPED_TRACE(testing::Message() << "Font::FontStyle: " << styles[i]);
+    // Include the range of sizes used by ResourceBundle::FontStyle (-1 to +8).
+    for (int delta = -1; delta <= 8; ++delta) {
+      gfx::Font font = default_font.Derive(delta, styles[i]);
+      SCOPED_TRACE(testing::Message() << "FontSize(): " << font.GetFontSize());
+      NSFont* native_font = font.GetNativeFont();
+
+      // Font height (an integer) should be the sum of these.
+      CGFloat ascender = [native_font ascender];
+      CGFloat descender = [native_font descender];
+      CGFloat leading = [native_font leading];
+
+      // NSFont always gives a negative value for descender. Others positive.
+      EXPECT_GE(0, descender);
+      EXPECT_LE(0, ascender);
+      EXPECT_LE(0, leading);
+
+      int sum = ceil(ascender - descender + leading);
+
+      // Text layout is performed using an integral baseline offset derived from
+      // the ascender. The height needs to be enough to fit the full descender
+      // (plus baseline). So the height depends on the rounding of the ascender,
+      // and can be as much as 1 greater than the simple sum of floats.
+      EXPECT_LE(sum, font.GetHeight());
+      EXPECT_GE(sum + 1, font.GetHeight());
+
+      // Recreate the rounding performed for GetBaseLine().
+      EXPECT_EQ(ceil(ceil(ascender) - descender + leading), font.GetHeight());
+    }
+  }
+}
