@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "extensions/browser/extensions_test.h"
 
 namespace base {
@@ -89,7 +89,7 @@ class ApiUnitTest : public ExtensionsTest {
   scoped_ptr<content::NotificationService> notification_service_;
 
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  TestingPrefServiceSimple testing_pref_service_;
+  user_prefs::TestingPrefServiceSyncable testing_pref_service_;
 
   // The WebContents used to associate a RenderViewHost with API function calls,
   // or null.

@@ -83,6 +83,7 @@ source_set("test_support") {
     "//base",
     "//base:prefs_test_support",
     "//components/guest_view/browser:test_support",
+    "//components/pref_registry:test_support",
     "//content/public/common",
     "//content/test:test_support",
     "//extensions/browser",

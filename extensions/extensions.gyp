@@ -248,6 +248,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs_test_support',
+        '../components/components.gyp:pref_registry_test_support',
         '../components/components.gyp:user_prefs',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
