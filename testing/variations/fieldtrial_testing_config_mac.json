@@ -4,6 +4,11 @@
             "group_name": "Enabled"
         }
     ],
+    "RefreshTokenDeviceId": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ReportCertificateErrors": [
         {
             "group_name": "ShowAndPossiblySend",
