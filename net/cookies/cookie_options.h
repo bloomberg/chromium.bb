@@ -7,11 +7,13 @@
 #ifndef NET_COOKIES_COOKIE_OPTIONS_H_
 #define NET_COOKIES_COOKIE_OPTIONS_H_
 
+#include "base/time/time.h"
+#include "net/base/net_export.h"
 #include "url/gurl.h"
 
 namespace net {
 
-class CookieOptions {
+class NET_EXPORT CookieOptions {
  public:
   // Default is to exclude httponly completely, and exclude first-party from
   // being read, which means:
@@ -21,10 +23,7 @@ class CookieOptions {
   //
   // If a first-party URL is set, then first-party cookies which match that URL
   // will be returned.
-  CookieOptions()
-      : exclude_httponly_(true),
-        include_first_party_only_(false),
-        server_time_() {}
+  CookieOptions();
 
   void set_exclude_httponly() { exclude_httponly_ = true; }
   void set_include_httponly() { exclude_httponly_ = false; }

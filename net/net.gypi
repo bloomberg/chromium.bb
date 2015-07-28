@@ -421,6 +421,7 @@
       'cookies/cookie_constants.h',
       'cookies/cookie_monster.cc',
       'cookies/cookie_monster.h',
+      'cookies/cookie_options.cc',
       'cookies/cookie_options.h',
       'cookies/cookie_store.cc',
       'cookies/cookie_store.h',
