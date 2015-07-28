@@ -402,6 +402,7 @@ void WebDevToolsAgentImpl::webFrameWidgetImplClosed(WebFrameWidgetImpl* webFrame
 
 DEFINE_TRACE(WebDevToolsAgentImpl)
 {
+    visitor->trace(m_webLocalFrameImpl);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_resourceContentLoader);

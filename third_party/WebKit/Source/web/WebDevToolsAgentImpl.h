@@ -133,7 +133,7 @@ private:
     bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
 
     WebDevToolsAgentClient* m_client;
-    WebLocalFrameImpl* m_webLocalFrameImpl;
+    RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
     bool m_attached;
 #if ENABLE(ASSERT)
     bool m_hasBeenDisposed;
