@@ -113,6 +113,8 @@ public abstract class ContentUriUtils {
             Log.w(TAG, "Cannot open content uri: " + uriString, e);
         } catch (IllegalArgumentException e) {
             Log.w(TAG, "Unknown content uri: " + uriString, e);
+        } catch (IllegalStateException e) {
+            Log.w(TAG, "Unknown content uri: " + uriString, e);
         }
         return pfd;
     }
