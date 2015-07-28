@@ -205,7 +205,12 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
         }
     }
 
-    private static List<String> getLogcat() throws IOException, InterruptedException {
+    @VisibleForTesting
+    protected List<String> getLogcat() throws IOException, InterruptedException {
+        return getLogcatInternal();
+    }
+
+    private static List<String> getLogcatInternal() throws IOException, InterruptedException {
         LinkedList<String> rawLogcat = new LinkedList<String>();
         String logLn = null;
         Integer exitValue = null;
