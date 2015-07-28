@@ -27,6 +27,8 @@ public:
     virtual void dispatchFailedSignIn(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchStore(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchRequireUserMediation(NotificationCallbacks*) { }
+    virtual void dispatchGet(bool zeroClickOnly, const WebVector<WebURL>& federations, RequestCallbacks*) { }
+    // TODO(dvadym): Drop this once the Chromium side is updated. https://crbug.com/494880
     virtual void dispatchRequest(bool zeroClickOnly, const WebVector<WebURL>& federations, RequestCallbacks*) { }
 };
 

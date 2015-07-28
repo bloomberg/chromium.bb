@@ -22,7 +22,7 @@ public:
     static CredentialsContainer* create();
 
     // CredentialsContainer.h
-    ScriptPromise request(ScriptState*, const CredentialRequestOptions&);
+    ScriptPromise get(ScriptState*, const CredentialRequestOptions&);
     ScriptPromise store(ScriptState*, Credential* = 0);
     ScriptPromise requireUserMediation(ScriptState*);
 

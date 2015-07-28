@@ -116,7 +116,7 @@ static bool checkBoilerplate(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resol
     return true;
 }
 
-ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const CredentialRequestOptions& options)
+ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const CredentialRequestOptions& options)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -132,7 +132,7 @@ ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Cred
         }
     }
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchRequest(options.suppressUI(), providers, new RequestCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.suppressUI(), providers, new RequestCallbacks(resolver));
     return promise;
 }
 
