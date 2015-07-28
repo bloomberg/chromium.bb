@@ -13251,6 +13251,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.UserDeletedCookieOrCache"
+    enum="CookieOrCacheDeletion">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Recorded when the user deletes their browsing data. Shows whether cookies
+    and/or cache were among the selected data types.
+  </summary>
+</histogram>
+
 <histogram name="History.DeleteFTSIndexDatabases">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -52778,6 +52787,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The cookie deletion occurred because the server overwrote it with an already
     expired cookie (this is a common idiom for server deletions of cookies).
   </int>
+</enum>
+
+<enum name="CookieOrCacheDeletion" type="int">
+  <int value="0" label="Neither"/>
+  <int value="1" label="Only cookies"/>
+  <int value="2" label="Only cache"/>
+  <int value="3" label="Both"/>
 </enum>
 
 <enum name="CookieType" type="int">
