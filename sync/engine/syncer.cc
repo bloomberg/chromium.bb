@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "sync/engine/apply_control_data_updates.h"
+#include "sync/engine/clear_server_data.h"
 #include "sync/engine/commit.h"
 #include "sync/engine/commit_processor.h"
 #include "sync/engine/conflict_resolver.h"
@@ -220,6 +221,13 @@ bool Syncer::HandleCycleEnd(
   } else {
     return false;
   }
+}
+
+bool Syncer::PostClearServerData(SyncSession* session) {
+  DCHECK(session);
+  ClearServerData clear_server_data(session->context()->account_name());
+  const SyncerError post_result = clear_server_data.SendRequest(session);
+  return post_result == SYNCER_OK;
 }
 
 }  // namespace syncer

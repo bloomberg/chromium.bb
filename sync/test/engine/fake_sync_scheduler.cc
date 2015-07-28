@@ -37,6 +37,10 @@ void FakeSyncScheduler::ScheduleConfiguration(
   params.ready_task.Run();
 }
 
+void FakeSyncScheduler::ScheduleClearServerData(const ClearParams& params) {
+  NOTIMPLEMENTED();
+}
+
 void FakeSyncScheduler::ScheduleInitialSyncNudge(syncer::ModelType model_type) {
 }
 

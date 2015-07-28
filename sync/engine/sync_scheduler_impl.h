@@ -53,6 +53,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   void Start(Mode mode, base::Time last_poll_time) override;
   void ScheduleConfiguration(const ConfigurationParams& params) override;
+  void ScheduleClearServerData(const ClearParams& params) override;
   void Stop() override;
   void ScheduleLocalNudge(
       ModelTypeSet types,
@@ -150,6 +151,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // Invoke the syncer to perform a configuration job.
   void DoConfigurationSyncSessionJob(JobPriority priority);
+
+  void DoClearServerDataSyncSessionJob(JobPriority priority);
 
   // Helper function for Do{Nudge,Configuration,Poll}SyncSessionJob.
   void HandleSuccess();
@@ -271,6 +274,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Storage for variables related to an in-progress configure request.  Note
   // that (mode_ != CONFIGURATION_MODE) \implies !pending_configure_params_.
   scoped_ptr<ConfigurationParams> pending_configure_params_;
+
+  scoped_ptr<ClearParams> pending_clear_params_;
 
   // If we have a nudge pending to run soon, it will be listed here.
   base::TimeTicks scheduled_nudge_time_;

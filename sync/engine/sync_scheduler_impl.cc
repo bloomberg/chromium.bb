@@ -79,6 +79,14 @@ bool IsActionableError(
   return (error.action != UNKNOWN_ACTION);
 }
 
+void RunAndReset(base::Closure* task) {
+  DCHECK(task);
+  if (task->is_null())
+    return;
+  task->Run();
+  task->Reset();
+}
+
 }  // namespace
 
 ConfigurationParams::ConfigurationParams()
@@ -97,6 +105,12 @@ ConfigurationParams::ConfigurationParams(
   DCHECK(!ready_task.is_null());
 }
 ConfigurationParams::~ConfigurationParams() {}
+
+ClearParams::ClearParams(const base::Closure& report_success_task)
+    : report_success_task(report_success_task) {
+  DCHECK(!report_success_task.is_null());
+}
+ClearParams::~ClearParams() {}
 
 SyncSchedulerImpl::WaitInterval::WaitInterval()
     : mode(UNKNOWN) {}
@@ -218,6 +232,10 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
 
   DCHECK(!session_context_->account_name().empty());
   DCHECK(syncer_.get());
+
+  if (mode == CLEAR_SERVER_DATA_MODE) {
+    DCHECK_EQ(mode_, CONFIGURATION_MODE);
+  }
   Mode old_mode = mode_;
   mode_ = mode;
   // Only adjust the poll reset time if it was valid and in the past.
@@ -313,6 +331,16 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   }
 }
 
+void SyncSchedulerImpl::ScheduleClearServerData(const ClearParams& params) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(CLEAR_SERVER_DATA_MODE, mode_);
+  DCHECK(!pending_configure_params_);
+  DCHECK(!params.report_success_task.is_null());
+  CHECK(started_) << "Scheduler must be running to clear.";
+  pending_clear_params_.reset(new ClearParams(params));
+  TrySyncSessionJob();
+}
+
 bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   if (IsCurrentlyThrottled()) {
@@ -347,8 +375,8 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
     return false;
   }
 
-  if (mode_ == CONFIGURATION_MODE) {
-    SDVLOG(1) << "Not running nudge because we're in configuration mode.";
+  if (mode_ != NORMAL_MODE) {
+    SDVLOG(1) << "Not running nudge because we're not in normal mode.";
     return false;
   }
 
@@ -450,6 +478,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
 const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
   switch (mode) {
     ENUM_CASE(CONFIGURATION_MODE);
+    ENUM_CASE(CLEAR_SERVER_DATA_MODE);
     ENUM_CASE(NORMAL_MODE);
   }
   return "";
@@ -496,10 +525,7 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
 
   if (!CanRunJobNow(priority)) {
     SDVLOG(2) << "Unable to run configure job right now.";
-    if (!pending_configure_params_->retry_task.is_null()) {
-      pending_configure_params_->retry_task.Run();
-      pending_configure_params_->retry_task.Reset();
-    }
+    RunAndReset(&pending_configure_params_->retry_task);
     return;
   }
 
@@ -520,11 +546,32 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
     HandleFailure(session->status_controller().model_neutral_state());
     // Sync cycle might receive response from server that causes scheduler to
     // stop and draws pending_configure_params_ invalid.
-    if (started_ && !pending_configure_params_->retry_task.is_null()) {
-      pending_configure_params_->retry_task.Run();
-      pending_configure_params_->retry_task.Reset();
-    }
+    if (started_)
+      RunAndReset(&pending_configure_params_->retry_task);
   }
+}
+
+void SyncSchedulerImpl::DoClearServerDataSyncSessionJob(JobPriority priority) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(mode_, CLEAR_SERVER_DATA_MODE);
+
+  if (!CanRunJobNow(priority)) {
+    SDVLOG(2) << "Unable to run clear server data job right now.";
+    RunAndReset(&pending_configure_params_->retry_task);
+    return;
+  }
+
+  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
+  const bool success = syncer_->PostClearServerData(session.get());
+  if (!success) {
+    HandleFailure(session->status_controller().model_neutral_state());
+    return;
+  }
+
+  SDVLOG(2) << "Clear succeeded.";
+  pending_clear_params_->report_success_task.Run();
+  pending_clear_params_.reset();
+  HandleSuccess();
 }
 
 void SyncSchedulerImpl::HandleSuccess() {
@@ -673,6 +720,7 @@ void SyncSchedulerImpl::Stop() {
   poll_timer_.Stop();
   pending_wakeup_timer_.Stop();
   pending_configure_params_.reset();
+  pending_clear_params_.reset();
   if (started_)
     started_ = false;
 }
@@ -704,6 +752,10 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
     if (pending_configure_params_) {
       SDVLOG(2) << "Found pending configure job";
       DoConfigurationSyncSessionJob(priority);
+    }
+  } else if (mode_ == CLEAR_SERVER_DATA_MODE) {
+    if (pending_clear_params_) {
+      DoClearServerDataSyncSessionJob(priority);
     }
   } else if (CanRunNudgeJobNow(priority)) {
     if (nudge_tracker_.IsSyncRequired()) {

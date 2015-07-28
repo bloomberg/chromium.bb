@@ -32,6 +32,8 @@ class FakeSyncScheduler : public SyncScheduler {
       scoped_ptr<InvalidationInterface> interface,
       const tracked_objects::Location& nudge_location) override;
   void ScheduleConfiguration(const ConfigurationParams& params) override;
+  void ScheduleClearServerData(const ClearParams& params) override;
+
   void ScheduleInitialSyncNudge(syncer::ModelType model_type) override;
   void SetNotificationsEnabled(bool notifications_enabled) override;
 

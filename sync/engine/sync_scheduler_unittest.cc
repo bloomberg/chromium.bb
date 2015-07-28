@@ -1437,4 +1437,40 @@ TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
   StopSyncScheduler();
 }
 
+TEST_F(SyncSchedulerTest, ScheduleClearServerData_Succeeds) {
+  StartSyncConfiguration();
+  scheduler()->Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, base::Time());
+  CallbackCounter success_counter;
+  ClearParams params(base::Bind(&CallbackCounter::Callback,
+                                base::Unretained(&success_counter)));
+  scheduler()->ScheduleClearServerData(params);
+  PumpLoop();
+  ASSERT_EQ(1, success_counter.times_called());
+}
+
+TEST_F(SyncSchedulerTest, ScheduleClearServerData_FailsRetriesSucceeds) {
+  UseMockDelayProvider();
+  TimeDelta delta(TimeDelta::FromMilliseconds(20));
+  EXPECT_CALL(*delay(), GetDelay(_)).WillRepeatedly(Return(delta));
+
+  StartSyncConfiguration();
+  scheduler()->Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, base::Time());
+  CallbackCounter success_counter;
+  ClearParams params(base::Bind(&CallbackCounter::Callback,
+                                base::Unretained(&success_counter)));
+
+  // Next request will fail.
+  connection()->SetServerNotReachable();
+  scheduler()->ScheduleClearServerData(params);
+  PumpLoop();
+  ASSERT_EQ(0, success_counter.times_called());
+  ASSERT_TRUE(scheduler()->IsBackingOff());
+
+  // Now succeed.
+  connection()->SetServerReachable();
+  PumpLoopFor(2 * delta);
+  ASSERT_EQ(1, success_counter.times_called());
+  ASSERT_FALSE(scheduler()->IsBackingOff());
+}
+
 }  // namespace syncer

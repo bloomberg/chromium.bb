@@ -78,6 +78,11 @@ class SYNC_EXPORT_PRIVATE Syncer {
   virtual bool PollSyncShare(ModelTypeSet request_types,
                              sessions::SyncSession* session);
 
+  // Posts a ClearServerData command.
+  // Returns: false if an error occurred and retries should backoff, true
+  // otherwise.
+  virtual bool PostClearServerData(sessions::SyncSession* session);
+
  private:
   friend class SyncerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);
