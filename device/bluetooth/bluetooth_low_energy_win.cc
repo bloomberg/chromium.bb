@@ -522,20 +522,6 @@ HRESULT OpenBluetoothLowEnergyDevices(ScopedDeviceInfoSetHandle* handle) {
   return S_OK;
 }
 
-// Opens a Device Info Set that can be used to enumerate Bluetooth LE devices
-// exposing a service GUID.
-HRESULT OpenBluetoothLowEnergyService(const GUID& service_guid,
-                                      ScopedDeviceInfoSetHandle* handle) {
-  ScopedDeviceInfoSetHandle result(SetupDiGetClassDevs(
-      &service_guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
-  if (!result.IsValid()) {
-    return HRESULT_FROM_WIN32(::GetLastError());
-  }
-
-  (*handle) = result.Pass();
-  return S_OK;
-}
-
 }  // namespace
 
 namespace device {

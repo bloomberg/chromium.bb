@@ -124,17 +124,6 @@ bool operator<(const LangToOffset& left, const std::wstring& right) {
   return left.language < right;
 }
 
-// A less-than overload to do slightly more efficient searches in the
-// sorted arrays.
-bool operator<(const std::wstring& left, const LangToOffset& right) {
-  return left < right.language;
-}
-
-// A not-so-efficient less-than overload for the same uses as above.
-bool operator<(const LangToOffset& left, const LangToOffset& right) {
-  return std::wstring(left.language) < right.language;
-}
-
 // A compare function for searching in a sorted array by offset.
 bool IsOffsetLessThan(const LangToOffset& left, const LangToOffset& right) {
   return left.offset < right.offset;

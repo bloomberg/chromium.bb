@@ -22,6 +22,7 @@ namespace {
 // Size of the uint64 hash_key number in Hex format in a string.
 const size_t kEntryHashKeyAsHexStringSize = 2 * sizeof(uint64);
 
+#if defined(OS_POSIX)
 // TODO(clamy, gavinp): this should go in base
 bool GetNanoSecsFromStat(const struct stat& st,
                          time_t* out_sec,
@@ -42,6 +43,7 @@ bool GetNanoSecsFromStat(const struct stat& st,
   return false;
 #endif
 }
+#endif  // defined(OS_POSIX)
 
 }  // namespace
 

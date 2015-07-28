@@ -21,6 +21,7 @@ using base::TimeTicks;
 
 namespace {
 
+#if defined(OS_POSIX)
 // Returns the executable name of the current Chrome helper process.
 std::vector<base::FilePath::StringType> GetRunningHelperExecutableNames() {
   base::FilePath::StringType name = chrome::kHelperProcessExecutableName;
@@ -43,6 +44,7 @@ std::vector<base::FilePath::StringType> GetRunningHelperExecutableNames() {
 
   return names;
 }
+#endif  // defined(OS_POSIX)
 
 }  // namespace
 

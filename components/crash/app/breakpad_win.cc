@@ -287,6 +287,7 @@ long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
+#if !defined(COMPONENT_BUILD)
 // Installed via base::debug::SetCrashKeyReportingFunctions.
 void SetCrashKeyValueForBaseDebug(const base::StringPiece& key,
                                   const base::StringPiece& value) {
@@ -300,6 +301,7 @@ void ClearCrashKeyForBaseDebug(const base::StringPiece& key) {
   DCHECK(CrashKeysWin::keeper());
   CrashKeysWin::keeper()->ClearCrashKeyValue(base::UTF8ToUTF16(key));
 }
+#endif  // !defined(COMPONENT_BUILD)
 
 }  // namespace
 

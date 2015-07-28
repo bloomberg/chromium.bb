@@ -102,6 +102,7 @@ bool IsUnstableChannel() {
          channel == chrome::VersionInfo::CHANNEL_CANARY;
 }
 
+#if !defined(OS_WIN)
 // This task identifies whether we are running an unstable version. And then it
 // unconditionally calls back the provided task.
 void CheckForUnstableChannel(const base::Closure& callback_task,
@@ -109,8 +110,7 @@ void CheckForUnstableChannel(const base::Closure& callback_task,
   *is_unstable_channel = IsUnstableChannel();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
 }
-
-#if defined(OS_WIN)
+#else
 // Return true if the currently running Chrome is a system install.
 bool IsSystemInstall() {
   // Get the version of the currently *installed* instance of Chrome,
@@ -125,6 +125,7 @@ bool IsSystemInstall() {
   return !InstallUtil::IsPerUserInstall(exe_path);
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 // Sets |is_unstable_channel| to true if the current chrome is on the dev or
 // canary channels. Sets |is_auto_update_enabled| to true if Google Update will
 // update the current chrome. Unconditionally posts |callback_task| to the UI
@@ -142,7 +143,8 @@ void DetectUpdatability(const base::Closure& callback_task,
   *is_unstable_channel = IsUnstableChannel();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // !defined(OS_WIN)
 
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.

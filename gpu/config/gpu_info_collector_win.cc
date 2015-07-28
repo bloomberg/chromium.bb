@@ -51,18 +51,6 @@ enum DisplayLinkInstallationStatus {
   DISPLAY_LINK_INSTALLATION_STATUS_MAX
 };
 
-float ReadXMLFloatValue(XmlReader* reader) {
-  std::string score_string;
-  if (!reader->ReadElementContent(&score_string))
-    return 0.0;
-
-  double score;
-  if (!base::StringToDouble(score_string, &score))
-    return 0.0;
-
-  return static_cast<float>(score);
-}
-
 // Returns the display link driver version or an invalid version if it is
 // not installed.
 Version DisplayLinkVersion() {

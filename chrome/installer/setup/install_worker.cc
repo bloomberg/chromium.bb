@@ -174,46 +174,6 @@ base::string16 GetRegCommandKey(BrowserDistribution* dist,
   return GetRegistrationDataCommandKey(dist->GetAppRegistrationData(), name);
 }
 
-// Adds work items to create (or delete if uninstalling) app commands to launch
-// the app with a switch. The following criteria should be true:
-//  1. The switch takes one parameter.
-//  2. The command send pings.
-//  3. The command is web accessible.
-//  4. The command is run as the user.
-void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
-                                      const InstallationState& machine_state,
-                                      const Version& new_version,
-                                      const Product& product,
-                                      const wchar_t* command_key,
-                                      const wchar_t* app,
-                                      const char* command_with_parameter,
-                                      WorkItemList* work_item_list) {
-  DCHECK(command_key);
-  DCHECK(app);
-  DCHECK(command_with_parameter);
-  DCHECK(work_item_list);
-
-  base::string16 full_cmd_key(
-      GetRegCommandKey(product.distribution(), command_key));
-
-  if (installer_state.operation() == InstallerState::UNINSTALL) {
-    work_item_list->AddDeleteRegKeyWorkItem(installer_state.root_key(),
-                                            full_cmd_key,
-                                            KEY_WOW64_32KEY)
-        ->set_log_message("removing " + base::UTF16ToASCII(command_key) +
-                          " command");
-  } else {
-    base::CommandLine cmd_line(installer_state.target_path().Append(app));
-    cmd_line.AppendSwitchASCII(command_with_parameter, "%1");
-
-    AppCommand cmd(cmd_line.GetCommandLineString());
-    cmd.set_sends_pings(true);
-    cmd.set_is_web_accessible(true);
-    cmd.set_is_run_as_user(true);
-    cmd.AddWorkItems(installer_state.root_key(), full_cmd_key, work_item_list);
-  }
-}
-
 // A callback invoked by |work_item| that adds firewall rules for Chrome. Rules
 // are left in-place on rollback unless |remove_on_rollback| is true. This is
 // the case for new installs only. Updates and overinstalls leave the rule

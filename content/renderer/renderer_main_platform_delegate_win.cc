@@ -41,17 +41,6 @@ void SkiaPreCacheFont(const LOGFONT& logfont) {
   }
 }
 
-void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
-                                const wchar_t* text,
-                                unsigned int text_length) {
-  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-  if (render_thread_impl) {
-    render_thread_impl->PreCacheFontCharacters(
-        logfont,
-        base::string16(text, text_length));
-  }
-}
-
 void WarmupDirectWrite() {
   // The objects used here are intentionally not freed as we want the Skia
   // code to use these objects after warmup.

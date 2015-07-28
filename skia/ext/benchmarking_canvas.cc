@@ -307,14 +307,6 @@ scoped_ptr<base::Value> AsValue(const SkRegion& region) {
 }
 
 WARN_UNUSED_RESULT
-scoped_ptr<base::Value> AsValue(const SkPicture& picture) {
-  scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
-  val->Set("cull-rect", AsValue(picture.cullRect()));
-
-  return val.Pass();
-}
-
-WARN_UNUSED_RESULT
 scoped_ptr<base::Value> AsValue(const SkBitmap& bitmap) {
   scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
   val->Set("size", AsValue(SkSize::Make(bitmap.width(), bitmap.height())));

@@ -21,20 +21,6 @@ void CheckIfFailed(HRESULT hr) {
     DVLOG(0) << "Direct3D call failed, hr = " << hr;
 }
 
-// TODO(ananta)
-// This function does not return the correct value as the IDisplayProperties
-// interface does not work correctly in Windows 8 in metro mode. Needs
-// more investigation.
-float GetLogicalDpi() {
-  mswr::ComPtr<wingfx::Display::IDisplayPropertiesStatics> display_properties;
-  CheckIfFailed(winrt_utils::CreateActivationFactory(
-      RuntimeClass_Windows_Graphics_Display_DisplayProperties,
-      display_properties.GetAddressOf()));
-  float dpi = 0.0;
-  CheckIfFailed(display_properties->get_LogicalDpi(&dpi));
-  return dpi;
-}
-
 float ConvertDipsToPixels(float dips) {
   return floor(dips * gfx::GetDPIScale() + 0.5f);
 }

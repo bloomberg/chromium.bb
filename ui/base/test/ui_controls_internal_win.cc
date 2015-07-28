@@ -148,19 +148,6 @@ bool FillKeyboardInput(ui::KeyboardCode key, INPUT* input, bool key_up) {
   return true;
 }
 
-// Send a key event (up/down)
-bool SendKeyEvent(ui::KeyboardCode key, bool up) {
-  INPUT input = { 0 };
-
-  if (!FillKeyboardInput(key, &input, up))
-    return false;
-
-  if (!::SendInput(1, &input, sizeof(INPUT)))
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 namespace ui_controls {

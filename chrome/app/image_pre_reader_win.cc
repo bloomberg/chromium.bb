@@ -28,10 +28,8 @@ const size_t kMinHeaderBufferSize = 0x400;
 // A handy symbolic constant.
 const size_t kOneHundredPercent = 100;
 
-void StaticAssertions() {
-  COMPILE_ASSERT(kMinHeaderBufferSize >= sizeof(IMAGE_DOS_HEADER),
-                 min_header_buffer_size_at_least_as_big_as_the_dos_header);
-}
+static_assert(kMinHeaderBufferSize >= sizeof(IMAGE_DOS_HEADER),
+              "kMinHeaderBufferSize must be at least as big as the dos header");
 
 // This struct provides a deallocation functor for use with scoped_ptr<T>
 // allocated with ::VirtualAlloc().

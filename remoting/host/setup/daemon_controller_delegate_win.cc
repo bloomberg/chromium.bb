@@ -265,17 +265,6 @@ void InvokeCompletionCallback(
   done.Run(async_result);
 }
 
-bool SetConfig(const std::string& config) {
-  // Determine the config directory path and create it if necessary.
-  base::FilePath config_dir = remoting::GetConfigDir();
-  if (!base::CreateDirectory(config_dir)) {
-    PLOG(ERROR) << "Failed to create the config directory.";
-    return false;
-  }
-
-  return WriteConfig(config);
-}
-
 bool StartDaemon() {
   DWORD access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS |
                  SERVICE_START | SERVICE_STOP;

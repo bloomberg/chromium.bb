@@ -197,23 +197,6 @@ void CommonSubprocessInit(const std::string& process_type) {
 #endif
 }
 
-// Only needed on Windows for creating stats tables.
-#if defined(OS_WIN)
-static base::ProcessId GetBrowserPid(const base::CommandLine& command_line) {
-  base::ProcessId browser_pid = base::GetCurrentProcId();
-  if (command_line.HasSwitch(switches::kProcessChannelID)) {
-    std::string channel_name =
-        command_line.GetSwitchValueASCII(switches::kProcessChannelID);
-
-    int browser_pid_int;
-    base::StringToInt(channel_name, &browser_pid_int);
-    browser_pid = static_cast<base::ProcessId>(browser_pid_int);
-    DCHECK_NE(browser_pid_int, 0);
-  }
-  return browser_pid;
-}
-#endif
-
 class ContentClientInitializer {
  public:
   static void Set(const std::string& process_type,

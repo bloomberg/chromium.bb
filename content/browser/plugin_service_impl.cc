@@ -107,7 +107,8 @@ void NotifyPluginsOfActivation() {
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
+#if defined(OS_POSIX)
+#if !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 void NotifyPluginDirChanged(const base::FilePath& path, bool error) {
   if (error) {
     // TODO(pastarmovj): Add some sensible error handling. Maybe silently
@@ -123,13 +124,14 @@ void NotifyPluginDirChanged(const base::FilePath& path, bool error) {
       base::Bind(&PluginService::PurgePluginListCache,
                  static_cast<BrowserContext*>(NULL), false));
 }
-#endif
+#endif  // !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 
 void ForwardCallback(base::SingleThreadTaskRunner* target_task_runner,
                      const PluginService::GetPluginsCallback& callback,
                      const std::vector<WebPluginInfo>& plugins) {
   target_task_runner->PostTask(FROM_HERE, base::Bind(callback, plugins));
 }
+#endif  // defined(OS_POSIX)
 
 }  // namespace
 

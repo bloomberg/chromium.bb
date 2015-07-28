@@ -35,18 +35,6 @@ typedef crypto::ScopedCAPIHandle<
     crypto::CAPIDestroyerWithFlags<HCERTSTORE,
                                    CertCloseStore, 0> > ScopedHCERTSTORE;
 
-void ExplodedTimeToSystemTime(const base::Time::Exploded& exploded,
-                              SYSTEMTIME* system_time) {
-  system_time->wYear = static_cast<WORD>(exploded.year);
-  system_time->wMonth = static_cast<WORD>(exploded.month);
-  system_time->wDayOfWeek = static_cast<WORD>(exploded.day_of_week);
-  system_time->wDay = static_cast<WORD>(exploded.day_of_month);
-  system_time->wHour = static_cast<WORD>(exploded.hour);
-  system_time->wMinute = static_cast<WORD>(exploded.minute);
-  system_time->wSecond = static_cast<WORD>(exploded.second);
-  system_time->wMilliseconds = static_cast<WORD>(exploded.millisecond);
-}
-
 //-----------------------------------------------------------------------------
 
 // Decodes the cert's subjectAltName extension into a CERT_ALT_NAME_INFO

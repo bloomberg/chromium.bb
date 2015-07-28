@@ -182,6 +182,7 @@ bool GetChromeChannelInternal(bool system_install,
   return true;
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 // Populates |update_policy| with the UpdatePolicy enum value corresponding to a
 // DWORD read from the registry and returns true if |value| is within range.
 // If |value| is out of range, returns false without modifying |update_policy|.
@@ -200,6 +201,7 @@ bool GetUpdatePolicyFromDword(
   }
   return false;
 }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 // Convenience routine: GoogleUpdateSettings::UpdateDidRunStateForApp()
 // specialized for Chrome Binaries.

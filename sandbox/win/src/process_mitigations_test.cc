@@ -39,6 +39,7 @@ bool CheckWin8DepPolicy() {
   return policy.Enable && policy.Permanent;
 }
 
+#if defined(NDEBUG)
 bool CheckWin8AslrPolicy() {
   PROCESS_MITIGATION_ASLR_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(), ProcessASLRPolicy,
@@ -47,6 +48,7 @@ bool CheckWin8AslrPolicy() {
   }
   return policy.EnableForceRelocateImages && policy.DisallowStrippedImages;
 }
+#endif  // defined(NDEBUG)
 
 bool CheckWin8StrictHandlePolicy() {
   PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = {};

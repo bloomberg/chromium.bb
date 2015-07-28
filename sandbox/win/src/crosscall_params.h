@@ -14,16 +14,13 @@
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_types.h"
 
-namespace {
-
 // Increases |value| until there is no need for padding given an int64
 // alignment. Returns the increased value.
-uint32 Align(uint32 value) {
+inline uint32 Align(uint32 value) {
   uint32 alignment = sizeof(int64);
   return ((value + alignment - 1) / alignment) * alignment;
 }
 
-}
 // This header is part of CrossCall: the sandbox inter-process communication.
 // This header defines the basic types used both in the client IPC and in the
 // server IPC code. CrossCallParams and ActualCallParams model the input

@@ -25,10 +25,6 @@ void SimpleModifyWorldTransform(HDC context,
   DCHECK_NE(res, 0);
 }
 
-void DrawRect(HDC context, gfx::Rect rect) {
-  Rectangle(context, rect.x(), rect.y(), rect.right(), rect.bottom());
-}
-
 }  // namespace
 
 namespace printing {

@@ -609,13 +609,13 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
   front_buffer_diff_ = gfx::Rect();
 }
 
+#if !defined(OS_WIN)
 static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
   const size_t stride =
       skia::PlatformCanvasStrideForWidth(plugin_rect.width());
   return stride * plugin_rect.height();
 }
 
-#if !defined(OS_WIN)
 bool WebPluginDelegateProxy::CreateLocalBitmap(
     std::vector<uint8>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {

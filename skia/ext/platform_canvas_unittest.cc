@@ -63,7 +63,7 @@ bool VerifyRect(const PlatformCanvas& canvas,
   return true;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
 // Return true if canvas has something that passes for a rounded-corner
 // rectangle. Basically, we're just checking to make sure that the pixels in the
 // middle are of rect_color and pixels in the corners are of canvas_color.
@@ -100,10 +100,12 @@ bool VerifyBlackRect(const PlatformCanvas& canvas, int x, int y, int w, int h) {
   return VerifyRect(canvas, SK_ColorWHITE, SK_ColorBLACK, x, y, w, h);
 }
 
+#if !defined(USE_AURA)  // http://crbug.com/154358
 // Check that every pixel in the canvas is a single color.
 bool VerifyCanvasColor(const PlatformCanvas& canvas, uint32_t canvas_color) {
   return VerifyRect(canvas, canvas_color, 0, 0, 0, 0, 0);
 }
+#endif  // !defined(USE_AURA)
 
 #if defined(OS_WIN)
 void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
@@ -208,7 +210,6 @@ TEST(PlatformCanvas, SkLayer) {
 }
 
 #if !defined(USE_AURA)  // http://crbug.com/154358
-
 // Test native clipping.
 TEST(PlatformCanvas, ClipRegion) {
   // Initialize a white canvas
@@ -233,7 +234,6 @@ TEST(PlatformCanvas, ClipRegion) {
   }
   EXPECT_TRUE(VerifyCanvasColor(*canvas, SK_ColorWHITE));
 }
-
 #endif  // !defined(USE_AURA)
 
 // Test the layers get filled properly by native rendering.

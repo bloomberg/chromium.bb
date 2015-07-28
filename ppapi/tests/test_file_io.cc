@@ -127,6 +127,7 @@ int32_t ReadToArrayEntireFile(PP_Instance instance,
   return PP_OK;
 }
 
+#if !defined(PPAPI_OS_WIN)
 bool ReadEntireFileFromFileHandle(int fd, std::string* data) {
   if (lseek(fd, 0, SEEK_SET) < 0)
     return false;
@@ -141,6 +142,7 @@ bool ReadEntireFileFromFileHandle(int fd, std::string* data) {
   } while (ret > 0);
   return ret == 0;
 }
+#endif  // !defined(PPAPI_OS_WIN)
 
 int32_t WriteEntireBuffer(PP_Instance instance,
                           pp::FileIO* file_io,

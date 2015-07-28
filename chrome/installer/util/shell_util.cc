@@ -921,18 +921,6 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
   return true;
 }
 
-// Launches the Windows 7 and Windows 8 application association dialog, which
-// is the only documented way to make a browser the default browser on
-// Windows 8.
-bool LaunchApplicationAssociationDialog(const base::string16& app_id) {
-  base::win::ScopedComPtr<IApplicationAssociationRegistrationUI> aarui;
-  HRESULT hr = aarui.CreateInstance(CLSID_ApplicationAssociationRegistrationUI);
-  if (FAILED(hr))
-    return false;
-  hr = aarui->LaunchAdvancedAssociationUI(app_id.c_str());
-  return SUCCEEDED(hr);
-}
-
 // Returns true if the current install's |chrome_exe| has been registered with
 // |suffix|.
 // |confirmation_level| is the level of verification desired as described in

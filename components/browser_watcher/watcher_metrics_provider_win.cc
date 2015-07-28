@@ -18,14 +18,12 @@ namespace browser_watcher {
 
 namespace {
 
-void CompileAsserts() {
-  // Process ID APIs on Windows talk in DWORDs, whereas for string formatting
-  // and parsing, this code uses int. In practice there are no process IDs with
-  // the high bit set on Windows, so there's no danger of overflow if this is
-  // done consistently.
-  static_assert(sizeof(DWORD) == sizeof(int),
-                "process ids are expected to be no larger than int");
-}
+// Process ID APIs on Windows talk in DWORDs, whereas for string formatting
+// and parsing, this code uses int. In practice there are no process IDs with
+// the high bit set on Windows, so there's no danger of overflow if this is
+// done consistently.
+static_assert(sizeof(DWORD) == sizeof(int),
+              "process ids are expected to be no larger than int");
 
 // This function does soft matching on the PID recorded in the key only.
 // Due to PID reuse, the possibility exists that the process that's now live

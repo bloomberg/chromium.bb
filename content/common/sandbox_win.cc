@@ -121,6 +121,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
 };
 
+#if !defined(NACL_WIN64)
 // Adds the policy rules for the path and path\ with the semantic |access|.
 // If |children| is set to true, we need to add the wildcard rules to also
 // apply the rule to the subfiles and subfolders.
@@ -152,26 +153,7 @@ bool AddDirectory(int path, const wchar_t* sub_dir, bool children,
 
   return true;
 }
-
-// Adds the policy rules for the path and path\* with the semantic |access|.
-// We need to add the wildcard rules to also apply the rule to the subkeys.
-bool AddKeyAndSubkeys(std::wstring key,
-                      sandbox::TargetPolicy::Semantics access,
-                      sandbox::TargetPolicy* policy) {
-  sandbox::ResultCode result;
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_REGISTRY, access,
-                           key.c_str());
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-  key += L"\\*";
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_REGISTRY, access,
-                           key.c_str());
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-  return true;
-}
+#endif  // !defined(NACL_WIN64)
 
 // Compares the loaded |module| file name matches |module_name|.
 bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {

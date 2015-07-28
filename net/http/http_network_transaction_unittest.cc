@@ -494,6 +494,7 @@ void FillLargeHeadersString(std::string* str, int size) {
     str->append(row, sizeof_row);
 }
 
+#if defined(NTLM_PORTABLE)
 // Alternative functions that eliminate randomness and dependency on the local
 // host name so that the generated NTLM messages are reproducible.
 void MockGenerateRandom1(uint8* output, size_t n) {
@@ -522,6 +523,7 @@ void MockGenerateRandom2(uint8* output, size_t n) {
 std::string MockGetHostName() {
   return "WTC-WIN7";
 }
+#endif  // defined(NTLM_PORTABLE)
 
 template<typename ParentPool>
 class CaptureGroupNameSocketPool : public ParentPool {
@@ -641,6 +643,7 @@ bool CheckDigestServerAuth(const AuthChallengeInfo* auth_challenge) {
   return true;
 }
 
+#if defined(NTLM_PORTABLE)
 bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
   if (!auth_challenge)
     return false;
@@ -650,6 +653,7 @@ bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
   EXPECT_EQ("ntlm", auth_challenge->scheme);
   return true;
 }
+#endif  // defined(NTLM_PORTABLE)
 
 }  // namespace
 

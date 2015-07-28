@@ -244,15 +244,6 @@ std::wstring ReadTextFile(const FilePath& filename) {
   return std::wstring(contents);
 }
 
-#if defined(OS_WIN)
-uint64 FileTimeAsUint64(const FILETIME& ft) {
-  ULARGE_INTEGER u;
-  u.LowPart = ft.dwLowDateTime;
-  u.HighPart = ft.dwHighDateTime;
-  return u.QuadPart;
-}
-#endif
-
 TEST_F(FileUtilTest, FileAndDirectorySize) {
   // Create three files of 20, 30 and 3 chars (utf8). ComputeDirectorySize
   // should return 53 bytes.
