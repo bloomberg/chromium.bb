@@ -688,10 +688,6 @@ void AsyncPixelTransferManagerEGL::BindCompletedAsyncTransfers() {
 void AsyncPixelTransferManagerEGL::AsyncNotifyCompletion(
     const AsyncMemoryParams& mem_params,
     AsyncPixelTransferCompletionObserver* observer) {
-  if (shared_state_.pending_allocations.empty()) {
-    observer->DidComplete(mem_params);
-    return;
-  }
   // Post a PerformNotifyCompletion task to the upload thread. This task
   // will run after all async transfers are complete.
   transfer_task_runner()->PostTask(
