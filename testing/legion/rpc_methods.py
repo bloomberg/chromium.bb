@@ -6,6 +6,7 @@
 
 import logging
 import os
+import socket
 import sys
 import threading
 
@@ -77,3 +78,11 @@ class RPCMethods(object):
   def ListDir(self, path):
     """Returns the results of os.listdir."""
     return os.listdir(path)
+
+  def GetIpAddress(self):
+    """Returns the local IPv4 address."""
+    return socket.gethostbyname(socket.gethostname())
+
+  def GetHostname(self):
+    """Returns the hostname."""
+    return socket.gethostname()
