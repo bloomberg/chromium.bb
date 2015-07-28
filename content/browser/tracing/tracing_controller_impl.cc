@@ -14,6 +14,7 @@
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -825,6 +826,10 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
 
 bool TracingControllerImpl::IsCoordinatorProcess() const {
   return true;
+}
+
+uint64 TracingControllerImpl::GetTracingProcessId() const {
+  return ChildProcessHost::kBrowserTracingProcessId;
 }
 
 void TracingControllerImpl::SetTraceMessageFilterAddedCallback(

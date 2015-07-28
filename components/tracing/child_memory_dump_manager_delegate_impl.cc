@@ -18,7 +18,9 @@ ChildMemoryDumpManagerDelegateImpl::GetInstance() {
 }
 
 ChildMemoryDumpManagerDelegateImpl::ChildMemoryDumpManagerDelegateImpl()
-    : ctmf_(nullptr) {
+    : ctmf_(nullptr),
+      tracing_process_id_(
+          base::trace_event::MemoryDumpManager::kInvalidTracingProcessId) {
   base::trace_event::MemoryDumpManager::GetInstance()->SetDelegate(this);
 }
 
@@ -70,6 +72,10 @@ void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
 
 bool ChildMemoryDumpManagerDelegateImpl::IsCoordinatorProcess() const {
   return false;
+}
+
+uint64 ChildMemoryDumpManagerDelegateImpl::GetTracingProcessId() const {
+  return tracing_process_id_;
 }
 
 }  // namespace tracing

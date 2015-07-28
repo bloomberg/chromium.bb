@@ -233,8 +233,7 @@ void BrowserGpuChannelHostFactory::Terminate() {
 
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
-      gpu_client_tracing_id_(base::trace_event::MemoryDumpManager::GetInstance()
-                                 ->tracing_process_id()),
+      gpu_client_tracing_id_(ChildProcessHost::kBrowserTracingProcessId),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_memory_buffer_manager_(
           new BrowserGpuMemoryBufferManager(gpu_client_id_)),

@@ -9,7 +9,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/hash.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
@@ -71,10 +70,10 @@ void RequestPeriodicGlobalDump() {
 const char* const MemoryDumpManager::kTraceCategoryForTesting = kTraceCategory;
 
 // static
-const uint64 MemoryDumpManager::kInvalidTracingProcessId = 0;
+const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;
 
 // static
-const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;
+const uint64 MemoryDumpManager::kInvalidTracingProcessId = 0;
 
 // static
 MemoryDumpManager* MemoryDumpManager::GetInstance() {
@@ -443,13 +442,8 @@ void MemoryDumpManager::OnTraceLogDisabled() {
   session_state_ = nullptr;
 }
 
-// static
-uint64 MemoryDumpManager::ChildProcessIdToTracingProcessId(
-    int child_process_id) {
-  return static_cast<uint64>(
-             Hash(reinterpret_cast<const char*>(&child_process_id),
-                  sizeof(child_process_id))) +
-         1;
+uint64 MemoryDumpManager::GetTracingProcessId() const {
+  return delegate_->GetTracingProcessId();
 }
 
 MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(

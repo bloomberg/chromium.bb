@@ -9,6 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -94,6 +95,9 @@ base::StaticAtomicSequenceNumber g_next_gpu_memory_buffer_id;
 namespace content {
 
 int ChildProcessHost::kInvalidUniqueID = -1;
+
+uint64 ChildProcessHost::kBrowserTracingProcessId =
+    std::numeric_limits<uint64>::max();
 
 // static
 ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
@@ -242,6 +246,25 @@ int ChildProcessHostImpl::GenerateChildProcessUniqueId() {
   CHECK_NE(kInvalidUniqueID, id);
 
   return id;
+}
+
+uint64 ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
+    int child_process_id) {
+  // In single process mode, all the children are hosted in the same process,
+  // therefore the generated memory dump guids should not be conditioned by the
+  // child process id. The clients need not be aware of SPM and the conversion
+  // takes care of the SPM special case while translating child process ids to
+  // tracing process ids.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess))
+    return ChildProcessHost::kBrowserTracingProcessId;
+
+  // The hash value is incremented so that the tracing id is never equal to
+  // MemoryDumpManager::kInvalidTracingProcessId.
+  return static_cast<uint64>(
+             base::Hash(reinterpret_cast<const char*>(&child_process_id),
+                        sizeof(child_process_id))) +
+         1;
 }
 
 bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {

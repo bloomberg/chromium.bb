@@ -32,8 +32,11 @@ class MemoryDumpSessionState;
 // RequestDumpPoint(). The extension by Un(RegisterDumpProvider).
 class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
  public:
-  static const uint64 kInvalidTracingProcessId;
   static const char* const kTraceCategoryForTesting;
+
+  // This value is returned as the tracing id of the child processes by
+  // GetTracingProcessId() when tracing is not enabled.
+  static const uint64 kInvalidTracingProcessId;
 
   static MemoryDumpManager* GetInstance();
 
@@ -78,21 +81,11 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     return session_state_;
   }
 
-  // Derives a tracing process id from a child process id. Child process ids
-  // cannot be used directly in tracing for security reasons (see: discussion in
-  // crrev.com/1173263004). This method is meant to be used when dumping
-  // cross-process shared memory from a process which knows the child process id
-  // of its endpoints. The value returned by this method is guaranteed to be
-  // equal to the value returned by tracing_process_id() in the corresponding
-  // child process.
-  // This will never return kInvalidTracingProcessId.
-  static uint64 ChildProcessIdToTracingProcessId(int child_id);
-
-  // Returns a unique id for the current process. The id can be retrieved only
-  // by child processes and only when tracing is enabled. This is intended to
-  // express cross-process sharing of memory dumps on the child-process side,
-  // without having to know its own child process id.
-  uint64 tracing_process_id() const { return tracing_process_id_; }
+  // Returns a unique id for identifying the processes. The id can be
+  // retrieved by child processes only when tracing is enabled. This is
+  // intended to express cross-process sharing of memory dumps on the
+  // child-process side, without having to know its own child process id.
+  uint64 GetTracingProcessId() const;
 
   // Returns the name for a the allocated_objects dump. Use this to declare
   // suballocator dumps from other dump providers.
@@ -189,13 +182,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void ContinueAsyncProcessDump(
       scoped_ptr<ProcessMemoryDumpAsyncState> pmd_async_state);
 
-  // Pass kInvalidTracingProcessId to invalidate the id.
-  void set_tracing_process_id(uint64 id) {
-    DCHECK(tracing_process_id_ == kInvalidTracingProcessId ||
-           id == kInvalidTracingProcessId || tracing_process_id_ == id);
-    tracing_process_id_ = id;
-  }
-
   // An ordererd set of registered MemoryDumpProviderInfo(s), sorted by thread
   // affinity (MDPs belonging to the same thread are adjacent).
   MemoryDumpProviderInfoSet dump_providers_;
@@ -244,6 +230,10 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
   // (the ones which initiates and coordinates the multiprocess dumps) or not.
   virtual bool IsCoordinatorProcess() const = 0;
 
+  // Returns tracing process id of the current process. This is used by
+  // MemoryDumpManager::GetTracingProcessId.
+  virtual uint64 GetTracingProcessId() const = 0;
+
  protected:
   MemoryDumpManagerDelegate() {}
   virtual ~MemoryDumpManagerDelegate() {}
@@ -251,10 +241,6 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
   void CreateProcessDump(const MemoryDumpRequestArgs& args,
                          const MemoryDumpCallback& callback) {
     MemoryDumpManager::GetInstance()->CreateProcessDump(args, callback);
-  }
-
-  void set_tracing_process_id(uint64 id) {
-    MemoryDumpManager::GetInstance()->set_tracing_process_id(id);
   }
 
  private:

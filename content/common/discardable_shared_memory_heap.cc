@@ -378,7 +378,8 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
   // them. In the special case of single-process-mode, this will be the only
   // dumper active and the single ownership edge will become a no-op in the UI.
   const uint64 tracing_process_id =
-      base::trace_event::MemoryDumpManager::GetInstance()->tracing_process_id();
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->GetTracingProcessId();
   base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
       GetSegmentGUIDForTracing(tracing_process_id, segment_id);
   pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);

@@ -10,10 +10,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "content/common/gpu/gpu_memory_buffer_factory_shared_memory.h"
@@ -294,8 +294,9 @@ bool BrowserGpuMemoryBufferManager::OnMemoryDump(
       // corresponding dump for the same buffer, this will avoid to
       // double-count them in tracing. If, instead, no other process will emit a
       // dump with the same guid, the segment will be accounted to the browser.
-      const uint64 client_tracing_process_id = base::trace_event::
-          MemoryDumpManager::ChildProcessIdToTracingProcessId(client_id);
+      const uint64 client_tracing_process_id =
+          ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
+              client_id);
       base::trace_event::MemoryAllocatorDumpGuid shared_buffer_guid =
           gfx::GetGpuMemoryBufferGUIDForTracing(client_tracing_process_id,
                                                 buffer_id);

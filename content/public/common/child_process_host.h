@@ -34,6 +34,11 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // any kind, including the values returned by RenderProcessHost::GetID().
   static int kInvalidUniqueID;
 
+  // This value is used as the tracing id of the browser process for identifying
+  // cross-process shared memory segments when tracing.
+  // Note: In single-process mode all the clients of tracing will use this id.
+  static uint64 kBrowserTracingProcessId;
+
   // Used to create a child process host. The delegate must outlive this object.
   static ChildProcessHost* Create(ChildProcessHostDelegate* delegate);
 

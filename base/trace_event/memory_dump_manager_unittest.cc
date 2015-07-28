@@ -33,6 +33,9 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
   }
 
   bool IsCoordinatorProcess() const override { return false; }
+  uint64 GetTracingProcessId() const override {
+    return MemoryDumpManager::kInvalidTracingProcessId;
+  }
 };
 
 class MemoryDumpManagerTest : public testing::Test {

@@ -10,12 +10,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
@@ -134,7 +134,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   bool share_contexts = true;
   host->EstablishGpuChannel(
       render_process_id_,
-      base::trace_event::MemoryDumpManager::ChildProcessIdToTracingProcessId(
+      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
           render_process_id_),
       share_contexts, false,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,

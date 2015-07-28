@@ -55,6 +55,20 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   // This will never return ChildProcessHost::kInvalidUniqueID.
   static int GenerateChildProcessUniqueId();
 
+  // Derives a tracing process id from a child process id. Child process ids
+  // cannot be used directly in child process for tracing due to security
+  // reasons (see: discussion in crrev.com/1173263004). This method is meant to
+  // be used when tracing for identifying cross-process shared memory from a
+  // process which knows the child process id of its endpoints. The value
+  // returned by this method is guaranteed to be equal to the value returned by
+  // MemoryDumpManager::GetTracingProcessId() in the corresponding child
+  // process.
+  //
+  // Never returns MemoryDumpManager::kInvalidTracingProcessId.
+  // Returns only ChildProcessHost::kBrowserTracingProcessId in single-process
+  // mode.
+  static uint64 ChildProcessUniqueIdToTracingProcessId(int child_process_id);
+
   // ChildProcessHost implementation
   bool Send(IPC::Message* message) override;
   void ForceShutdown() override;
