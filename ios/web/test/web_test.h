@@ -42,6 +42,9 @@ class WebTest : public PlatformTest {
   void SetUp() override;
   void TearDown() override;
 
+  // Returns the WebClient that is used for testing.
+  TestWebClient* GetWebClient() { return &client_; }
+
   // Returns the BrowserState that is used for testing.
   BrowserState* GetBrowserState() { return &browser_state_; }
 

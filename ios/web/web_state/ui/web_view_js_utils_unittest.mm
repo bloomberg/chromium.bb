@@ -12,6 +12,7 @@
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
+#import "ios/web/test/web_test.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
@@ -34,23 +35,7 @@ NSString* EvaluateJavaScript(WebView web_view, NSString* js) {
 }
 
 // Base test fixture for web::EvaluateJavaScript testing.
-class WebViewJSUtilsTest : public PlatformTest {
- protected:
-  void SetUp() override {
-    PlatformTest::SetUp();
-    web::SetWebClient(&test_web_client_);
-  }
-  void TearDown() override {
-    web::SetWebClient(nullptr);
-    PlatformTest::TearDown();
-  }
-  // BrowserState required for web view creation.
-  web::TestBrowserState browser_state_;
-
- private:
-  // Required by web::CreateWebView/web::CreateWKWebView functions.
-  web::TestWebClient test_web_client_;
-};
+typedef web::WebTest WebViewJSUtilsTest;
 
 // Test fixture for web::EvaluateJavaScript(UIWebView*..) testing.
 class UIWebViewJSUtilsTest : public WebViewJSUtilsTest {
@@ -70,7 +55,7 @@ class WKWebViewJSUtilsTest : public WebViewJSUtilsTest {
     // SetUp crashes on iOS 7.
     CR_TEST_REQUIRES_WK_WEB_VIEW();
     WebViewJSUtilsTest::SetUp();
-    web_view_.reset(web::CreateWKWebView(CGRectZero, &browser_state_));
+    web_view_.reset(web::CreateWKWebView(CGRectZero, GetBrowserState()));
   }
   // WKWebView created for testing.
   base::scoped_nsobject<WKWebView> web_view_;

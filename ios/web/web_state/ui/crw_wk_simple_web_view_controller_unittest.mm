@@ -13,19 +13,20 @@
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
+#include "ios/web/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
 namespace {
 
-class CRWWKSimpleWebViewControllerTest : public PlatformTest {
+// A test fixture for testing CRWWKSimpleWebViewController.
+class CRWWKSimpleWebViewControllerTest : public web::WebTest {
  protected:
   void SetUp() override {
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    web::SetWebClient(&web_client_);
+    web::WebTest::SetUp();
     mock_web_view_.reset(
         [[OCMockObject niceMockForClass:[WKWebView class]] retain]);
     web_view_controller_.reset([[CRWWKSimpleWebViewController alloc]
@@ -37,7 +38,7 @@ class CRWWKSimpleWebViewControllerTest : public PlatformTest {
 
   void TearDown() override {
     CR_TEST_REQUIRES_WK_WEB_VIEW();
-    web::SetWebClient(&web_client_);
+    web::WebTest::TearDown();
   }
 
   // Tests that |shouldStartLoadWithRequest:| decision by the delegate is
@@ -70,12 +71,6 @@ class CRWWKSimpleWebViewControllerTest : public PlatformTest {
   base::scoped_nsobject<id> mock_web_view_;
   base::scoped_nsobject<id> mock_delegate_;
   base::scoped_nsobject<CRWWKSimpleWebViewController> web_view_controller_;
-  // BrowserState, required for WKWebView creation.
-  web::TestBrowserState browser_state_;
-
- private:
-  // WebClient for testing.
-  web::TestWebClient web_client_;
 };
 
 // Tests to make sure a CRWWKSimpleWebViewController correctly sets the backing
@@ -90,7 +85,7 @@ TEST_F(CRWWKSimpleWebViewControllerTest, View) {
 TEST_F(CRWWKSimpleWebViewControllerTest, Delegate) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view(
-      web::CreateWKWebView(CGRectZero, &browser_state_));
+      web::CreateWKWebView(CGRectZero, GetBrowserState()));
   ASSERT_TRUE(web_view);
   web_view_controller_.reset([[CRWWKSimpleWebViewController alloc]
       initWithWKWebView:web_view]);
@@ -187,7 +182,7 @@ TEST_F(CRWWKSimpleWebViewControllerTest, ShouldStartLoadRespectedNo) {
 TEST_F(CRWWKSimpleWebViewControllerTest, TitleMayHaveChanged) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view(
-      web::CreateWKWebView(CGRectZero, &browser_state_));
+      web::CreateWKWebView(CGRectZero, GetBrowserState()));
   base::scoped_nsobject<WKWebView> mock_web_view(
       [[OCMockObject partialMockForObject:web_view] retain]);
   web_view_controller_.reset(

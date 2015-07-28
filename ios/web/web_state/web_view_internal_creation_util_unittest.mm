@@ -19,9 +19,9 @@
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#include "ios/web/test/web_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 
 @interface CRWStaticFileWebView (Testing)
 + (BOOL)isStaticFileUserAgent:(NSString*)userAgent;
@@ -47,23 +47,24 @@ class CreationUtilsWebClient : public TestWebClient {
   MOCK_CONST_METHOD1(PostWebViewCreation, void(UIWebView* web_view));
 };
 
-class WebViewCreationUtilsTest : public PlatformTest {
+class WebViewCreationUtilsTest : public WebTest {
  public:
-  WebViewCreationUtilsTest() : ui_thread_(WebThread::UI, &message_loop_) {}
+  WebViewCreationUtilsTest() {}
 
  protected:
   void SetUp() override {
-    PlatformTest::SetUp();
+    WebTest::SetUp();
     logJavaScriptPref_ =
         [[NSUserDefaults standardUserDefaults] boolForKey:@"LogJavascript"];
+    original_web_client_ = GetWebClient();
     SetWebClient(&creation_utils_web_client_);
     creation_utils_web_client_.SetUserAgent("TestUA", false);
   }
   void TearDown() override {
-    SetWebClient(nullptr);
+    SetWebClient(original_web_client_);
     [[NSUserDefaults standardUserDefaults] setBool:logJavaScriptPref_
                                             forKey:@"LogJavascript"];
-    PlatformTest::TearDown();
+    WebTest::TearDown();
   }
   // Sets up expectation for WebClient::PreWebViewCreation and
   // WebClient::PostWebViewCreation calls. Captures UIWebView passed to
@@ -75,16 +76,13 @@ class WebViewCreationUtilsTest : public PlatformTest {
         .WillOnce(testing::SaveArg<0>(captured_web_view));
   }
 
-  // BrowserState, UIThread and MessageLoop required by factory functions.
-  web::TestBrowserState browser_state_;
-  base::MessageLoop message_loop_;
-  web::TestWebThread ui_thread_;
-
  private:
   // Original value of @"LogJavascript" pref from NSUserDefaults.
   BOOL logJavaScriptPref_;
   // WebClient that stubs PreWebViewCreation/PostWebViewCreation.
   CreationUtilsWebClient creation_utils_web_client_;
+  // The WebClient that was set before this test was run.
+  WebClient* original_web_client_;
 };
 
 // Tests that a web view created with a certain id returns the same
@@ -138,7 +136,7 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   base::scoped_nsobject<WKWebView> web_view(
-      CreateWKWebView(kTestFrame, &browser_state_));
+      CreateWKWebView(kTestFrame, GetBrowserState()));
 
   EXPECT_TRUE([web_view isKindOfClass:[WKWebView class]]);
   EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
@@ -147,7 +145,7 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
   // browser state's configuration. Otherwise cookie will not be immediately
   // shared between different web views.
   WKWebViewConfigurationProvider& config_provider =
-      WKWebViewConfigurationProvider::FromBrowserState(&browser_state_);
+      WKWebViewConfigurationProvider::FromBrowserState(GetBrowserState());
   EXPECT_EQ(config_provider.GetWebViewConfiguration().processPool,
             [[web_view configuration] processPool]);
 }
@@ -158,10 +156,10 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   base::scoped_nsobject<WKWebView> web_view(
-      CreateWKWebView(kTestFrame, &browser_state_));
+      CreateWKWebView(kTestFrame, GetBrowserState()));
   ASSERT_TRUE(web_view);
   base::scoped_nsobject<WKWebView> web_view2(
-      CreateWKWebView(kTestFrame, &browser_state_));
+      CreateWKWebView(kTestFrame, GetBrowserState()));
   ASSERT_TRUE(web_view2);
 
   // Make sure that web views share the same non-nil process pool. Otherwise
@@ -193,10 +191,10 @@ TEST_F(WebViewCreationUtilsTest, DebugCreation) {
 TEST_F(WebViewCreationUtilsTest, GetActiveWKWebViewsCount) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view1(
-      CreateWKWebView(CGRectZero, &browser_state_));
+      CreateWKWebView(CGRectZero, GetBrowserState()));
   EXPECT_EQ(1U, GetActiveWKWebViewsCount());
   base::scoped_nsobject<WKWebView> web_view2(
-      CreateWKWebView(CGRectZero, &browser_state_));
+      CreateWKWebView(CGRectZero, GetBrowserState()));
   EXPECT_EQ(2U, GetActiveWKWebViewsCount());
   web_view2.reset();
   EXPECT_EQ(1U, GetActiveWKWebViewsCount());
@@ -214,7 +212,7 @@ TEST_F(WebViewCreationUtilsTest, TestNewStaticFileWebViewTrue) {
   ExpectWebClientCalls(&captured_web_view);
 
   base::scoped_nsobject<UIWebView> web_view(
-      CreateStaticFileWebView(kTestFrame, &browser_state_));
+      CreateStaticFileWebView(kTestFrame, GetBrowserState()));
   ASSERT_TRUE([web_view isMemberOfClass:[CRWStaticFileWebView class]]);
   EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
   EXPECT_NSEQ(web_view, captured_web_view);

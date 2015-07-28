@@ -7,25 +7,13 @@
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test_util.h"
+#include "ios/web/test/web_test.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
-#include "testing/platform_test.h"
 
 namespace {
 
-class CRWWKWebViewCrashDetectorTest : public PlatformTest {
- public:
-  void SetUp() override {
-    PlatformTest::SetUp();
-    web::SetWebClient(&web_client_);
-  }
-  void TearDown() override {
-    web::SetWebClient(nullptr);
-    PlatformTest::TearDown();
-  }
- private:
-  // WebClient for testing.
-  web::TestWebClient web_client_;
-};
+// A test fixture for testing CRWWKWebViewCrashDetector.
+typedef web::WebTest CRWWKWebViewCrashDetectorTest;
 
 // Tests that crash is reported for WKWebView if
 // WKErrorWebContentProcessTerminated happend during JavaScript evaluation.
