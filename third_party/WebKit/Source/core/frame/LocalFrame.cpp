@@ -87,7 +87,6 @@ public:
     ScopedFramePaintingState(LocalFrame* frame, Node* node)
         : frame(frame)
         , node(node)
-        , paintBehavior(frame->view()->paintBehavior())
     {
         ASSERT(!node || node->layoutObject());
         if (node)
@@ -98,13 +97,11 @@ public:
     {
         if (node && node->layoutObject())
             node->layoutObject()->updateDragState(false);
-        frame->view()->setPaintBehavior(paintBehavior);
         frame->view()->setNodeToDraw(0);
     }
 
     RawPtrWillBeMember<LocalFrame> frame;
     RawPtrWillBeMember<Node> node;
-    PaintBehavior paintBehavior;
 };
 
 inline float parentPageZoomFactor(LocalFrame* frame)
@@ -633,8 +630,6 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 
     m_view->updateAllLifecyclePhases();
 
-    m_view->setPaintBehavior(state.paintBehavior | PaintBehaviorFlattenCompositingLayers);
-
     m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
 
     // Document::updateLayout may have blown away the original LayoutObject.
@@ -654,7 +649,6 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
         return nullptr;
 
     const ScopedFramePaintingState state(this, 0);
-    m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
     m_view->updateAllLifecyclePhases();
 
     return paintIntoDragImage(*this, DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers, enclosingIntRect(selection().bounds()));

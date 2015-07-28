@@ -2119,13 +2119,13 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
 
     if (paintInfo.paintLayer->compositingState() != PaintsIntoGroupedBacking) {
         // FIXME: GraphicsLayers need a way to split for multicol.
-        DeprecatedPaintLayerPaintingInfo paintingInfo(paintInfo.paintLayer, LayoutRect(dirtyRect), PaintBehaviorNormal, paintInfo.paintLayer->subpixelAccumulation());
+        DeprecatedPaintLayerPaintingInfo paintingInfo(paintInfo.paintLayer, LayoutRect(dirtyRect), GlobalPaintNormalPhase, paintInfo.paintLayer->subpixelAccumulation());
         DeprecatedPaintLayerPainter(*paintInfo.paintLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 
         if (paintInfo.paintLayer->containsDirtyOverlayScrollbars())
             DeprecatedPaintLayerPainter(*paintInfo.paintLayer).paintLayerContents(context, paintingInfo, paintLayerFlags | PaintLayerPaintingOverlayScrollbars);
     } else {
-        DeprecatedPaintLayerPaintingInfo paintingInfo(paintInfo.paintLayer, LayoutRect(dirtyRect), PaintBehaviorNormal, paintInfo.paintLayer->subpixelAccumulation());
+        DeprecatedPaintLayerPaintingInfo paintingInfo(paintInfo.paintLayer, LayoutRect(dirtyRect), GlobalPaintNormalPhase, paintInfo.paintLayer->subpixelAccumulation());
 
         // DeprecatedPaintLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
         // since there is no graphics layer to clip them precisely. Furthermore, in some cases we squash layers that need clipping in software

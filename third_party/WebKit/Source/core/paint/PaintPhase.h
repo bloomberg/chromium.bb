@@ -55,19 +55,8 @@ enum PaintPhase {
     // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
 };
 
-enum PaintBehaviorFlags {
-    PaintBehaviorNormal = 0,
-    // TODO(jchaffraix): Remove those once we have migrated to GlobalPaintFlags.
-    PaintBehaviorSelectionOnly = 1 << 0,
-    PaintBehaviorFlattenCompositingLayers = 1 << 2,
-};
-
-typedef unsigned PaintBehavior;
-
 // Those flags are meant as global tree operations. This means
 // that they should be constant for a paint phase.
-// TODO(jchaffraix): We should pass these as a const variable
-// during paint to ensure they are not modified.
 enum GlobalPaintFlag {
     GlobalPaintNormalPhase = 0,
     // Used when painting selection as part of a drag-image. This

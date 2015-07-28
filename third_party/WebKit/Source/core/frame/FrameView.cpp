@@ -209,7 +209,6 @@ void FrameView::reset()
     m_isTrackingPaintInvalidations = false;
     m_trackedPaintInvalidationRects.clear();
     m_lastPaintTime = 0;
-    m_paintBehavior = PaintBehaviorNormal;
     m_isPainting = false;
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
@@ -2420,16 +2419,6 @@ void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
 {
     m_maintainScrollPositionAnchor = nullptr;
     m_wasScrolledByUser = wasScrolledByUser;
-}
-
-void FrameView::setPaintBehavior(PaintBehavior behavior)
-{
-    m_paintBehavior = behavior;
-}
-
-PaintBehavior FrameView::paintBehavior() const
-{
-    return m_paintBehavior;
 }
 
 bool FrameView::isPainting() const

@@ -91,16 +91,9 @@ static void paintInternal(Page& page, PageOverlayList* overlays, WebCanvas* canv
         if (view) {
             ClipRecorder clipRecorder(paintContext, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
-            // TODO(jchaffraix): Remove this scaffolding code once we have migrated all the code to GlobalPaintFlags.
-            PaintBehavior oldPaintBehavior = view->paintBehavior();
-            if (globalPaintFlags & GlobalPaintFlattenCompositingLayers)
-                view->setPaintBehavior(oldPaintBehavior | PaintBehaviorFlattenCompositingLayers);
-
             view->paint(&paintContext, globalPaintFlags, dirtyRect);
             if (overlays)
                 overlays->paintWebFrame(paintContext);
-
-            view->setPaintBehavior(oldPaintBehavior);
         } else if (!DrawingRecorder::useCachedDrawingIfPossible(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback)) {
             DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
             paintContext.fillRect(dirtyRect, Color::white);

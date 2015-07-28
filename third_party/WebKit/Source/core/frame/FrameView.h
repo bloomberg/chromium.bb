@@ -217,8 +217,6 @@ public:
 
     void addPartToUpdate(LayoutEmbeddedObject&);
 
-    void setPaintBehavior(PaintBehavior);
-    PaintBehavior paintBehavior() const;
     void setIsPainting(bool val) { m_isPainting = val; }
     bool isPainting() const;
     void setLastPaintTime(double val) { m_lastPaintTime = val; }
@@ -775,7 +773,6 @@ private:
     Vector<IntRect> m_trackedPaintInvalidationRects;
 
     RefPtrWillBeMember<Node> m_nodeToDraw;
-    PaintBehavior m_paintBehavior;
     bool m_isPainting;
 
     unsigned m_visuallyNonEmptyCharacterCount;
