@@ -498,8 +498,56 @@ class Page36(ToughVideoCasesPage):
   def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
-class ToughVideoCasesPageSet(story.StorySet):
+class Page37(ToughVideoCasesPage):
 
+  def __init__(self, page_set):
+    super(Page37, self).__init__(
+      url='file://tough_video_cases/video.html?src=crowd1080_vp9.webm&canvas=true',
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+
+  def RunPageInteractions(self, action_runner):
+    self.PlayAction(action_runner)
+
+class Page38(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page38, self).__init__(
+      url='file://tough_video_cases/video.html?src=tulip2.mp4&canvas=true',
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+
+  def RunPageInteractions(self, action_runner):
+    self.SeekBeforeAndAfterPlayhead(action_runner)
+
+class Page39(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page39, self).__init__(
+      url='file://tough_video_cases/video.html?src=garden2_10s.webm&canvas=true',
+      page_set=page_set, labels=['is_4k'])
+
+    self.add_browser_metrics = True
+
+  def RunPageInteractions(self, action_runner):
+    self.PlayAction(action_runner)
+
+class Page40(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page40, self).__init__(
+      url='file://tough_video_cases/video.html?src=crowd1080.ogv&canvas=true',
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+    self.is_50fps = True
+
+  def RunPageInteractions(self, action_runner):
+    self.PlayAction(action_runner)
+
+class ToughVideoCasesPageSet(story.StorySet):
   """
   Description: Video Stack Perf benchmark
   """
@@ -543,3 +591,7 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page34(self))
     self.AddStory(Page35(self))
     self.AddStory(Page36(self))
+    self.AddStory(Page37(self))
+    self.AddStory(Page38(self))
+    self.AddStory(Page39(self))
+    self.AddStory(Page40(self))
