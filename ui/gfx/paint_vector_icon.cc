@@ -4,6 +4,9 @@
 
 #include "ui/gfx/paint_vector_icon.h"
 
+#include <map>
+
+#include "base/lazy_instance.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -35,6 +38,53 @@ class VectorIconSource : public CanvasImageSource {
 
   DISALLOW_COPY_AND_ASSIGN(VectorIconSource);
 };
+
+// This class caches vector icons (as ImageSkia) so they don't have to be drawn
+// more than once. This also guarantees the backing data for the images returned
+// by CreateVectorIcon will persist in memory until program termination.
+class VectorIconCache {
+ public:
+  VectorIconCache() {}
+  ~VectorIconCache() {}
+
+  ImageSkia GetOrCreateIcon(VectorIconId id, size_t dip_size, SkColor color) {
+    IconDescription description(id, dip_size, color);
+    auto iter = images_.find(description);
+    if (iter != images_.end())
+      return iter->second;
+
+    ImageSkia icon(
+        new VectorIconSource(id, dip_size, color),
+        gfx::Size(static_cast<int>(dip_size), static_cast<int>(dip_size)));
+    images_.insert(std::make_pair(description, icon));
+    return icon;
+  }
+
+ private:
+  struct IconDescription {
+    IconDescription(VectorIconId id, size_t dip_size, SkColor color)
+        : id(id), dip_size(dip_size), color(color) {}
+
+    bool operator<(const IconDescription& other) const {
+      if (id != other.id)
+        return id < other.id;
+      if (dip_size != other.dip_size)
+        return dip_size < other.dip_size;
+      return color < other.color;
+    }
+
+    VectorIconId id;
+    size_t dip_size;
+    SkColor color;
+  };
+
+  std::map<IconDescription, ImageSkia> images_;
+
+  DISALLOW_COPY_AND_ASSIGN(VectorIconCache);
+};
+
+static base::LazyInstance<VectorIconCache> g_icon_cache =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -147,9 +197,7 @@ void PaintVectorIcon(Canvas* canvas,
 }
 
 ImageSkia CreateVectorIcon(VectorIconId id, size_t dip_size, SkColor color) {
-  return ImageSkia(
-      new VectorIconSource(id, dip_size, color),
-      gfx::Size(static_cast<int>(dip_size), static_cast<int>(dip_size)));
+  return g_icon_cache.Get().GetOrCreateIcon(id, dip_size, color);
 }
 
 }  // namespace gfx
