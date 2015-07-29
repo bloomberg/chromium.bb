@@ -21,7 +21,11 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -108,9 +112,15 @@ void ExtensionIconManager::OnImageLoaded(const std::string& extension_id,
 
 void ExtensionIconManager::EnsureDefaultIcon() {
   if (default_icon_.empty()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SkBitmap src = rb.GetImageNamed(IDR_EXTENSIONS_SECTION).AsBitmap();
-    default_icon_ = ApplyTransforms(src);
+    SkColor icon_color;
+    ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                  &icon_color);
+    // TODO(estade): use correct scale factor instead of 1x.
+    default_icon_ =
+        ApplyPadding(*gfx::CreateVectorIcon(gfx::VectorIconId::EXTENSION,
+                                            gfx::kFaviconSize, icon_color)
+                          .bitmap(),
+                     padding_);
   }
 }
 

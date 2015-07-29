@@ -400,6 +400,7 @@ action("aggregate_vector_icons") {
   script = "vector_icons/aggregate_vector_icons.py"
   sources = [
     "vector_icons/check_circle.icon",
+    "vector_icons/extension.icon",
     "vector_icons/help_outline.icon",
     "vector_icons/location_on.icon",
     "vector_icons/notifications.icon",

@@ -324,6 +324,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ResultsTableNegativeText,
     kColorId_ResultsTableNegativeHoveredText,
     kColorId_ResultsTableNegativeSelectedText,
+    // For MD icons.
+    kColorId_ChromeIconGrey,
     // Colors for the material spinner (aka throbber).
     kColorId_ThrobberSpinningColor,
     kColorId_ThrobberWaitingColor,

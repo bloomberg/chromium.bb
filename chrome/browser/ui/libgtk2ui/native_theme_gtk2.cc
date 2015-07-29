@@ -417,6 +417,7 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
                            GetWindowStyle()->bg[GTK_STATE_NORMAL], 0xff / 2);
     }
 
+    case kColorId_ChromeIconGrey:
     case kColorId_NumColors:
       NOTREACHED();
       break;
