@@ -122,6 +122,8 @@ void CommandBufferHelper::FreeResources() {
     command_buffer_->DestroyTransferBuffer(ring_buffer_id_);
     ring_buffer_id_ = -1;
     CalcImmediateEntries(0);
+    entries_ = nullptr;
+    ring_buffer_ = nullptr;
   }
 }
 
