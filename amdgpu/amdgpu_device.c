@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "xf86drm.h"
 #include "amdgpu_drm.h"
@@ -153,7 +154,7 @@ int amdgpu_device_initialize(int fd,
 			return r;
 		}
 		if ((flag_auth) && (!flag_authexist)) {
-			dev->flink_fd = fd;
+			dev->flink_fd = dup(fd);
 		}
 		*major_version = dev->major_version;
 		*minor_version = dev->minor_version;
@@ -167,6 +168,9 @@ int amdgpu_device_initialize(int fd,
 		pthread_mutex_unlock(&fd_mutex);
 		return -ENOMEM;
 	}
+
+	dev->fd = -1;
+	dev->flink_fd = -1;
 
 	atomic_set(&dev->refcount, 1);
 
@@ -183,8 +187,8 @@ int amdgpu_device_initialize(int fd,
 		goto cleanup;
 	}
 
-	dev->fd = fd;
-	dev->flink_fd = fd;
+	dev->fd = dup(fd);
+	dev->flink_fd = dev->fd;
 	dev->major_version = version->version_major;
 	dev->minor_version = version->version_minor;
 	drmFreeVersion(version);
@@ -212,12 +216,14 @@ int amdgpu_device_initialize(int fd,
 	*major_version = dev->major_version;
 	*minor_version = dev->minor_version;
 	*device_handle = dev;
-	util_hash_table_set(fd_tab, UINT_TO_PTR(fd), dev);
+	util_hash_table_set(fd_tab, UINT_TO_PTR(dev->fd), dev);
 	pthread_mutex_unlock(&fd_mutex);
 
 	return 0;
 
 cleanup:
+	if (dev->fd >= 0)
+		close(dev->fd);
 	free(dev);
 	pthread_mutex_unlock(&fd_mutex);
 	return r;
@@ -230,6 +236,9 @@ void amdgpu_device_free_internal(amdgpu_device_handle dev)
 	util_hash_table_destroy(dev->bo_handles);
 	pthread_mutex_destroy(&dev->bo_table_mutex);
 	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
+	close(dev->fd);
+	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
+		close(dev->flink_fd);
 	free(dev);
 }
 
