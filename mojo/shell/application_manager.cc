@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/fetcher.h"

@@ -9,7 +9,6 @@
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 

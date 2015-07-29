@@ -25,7 +25,6 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace base {
 class SingleThreadTaskRunner;

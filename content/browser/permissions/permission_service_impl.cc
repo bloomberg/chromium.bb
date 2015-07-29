@@ -68,6 +68,9 @@ PermissionServiceImpl::PermissionServiceImpl(
     : context_(context),
       binding_(this, request.Pass()),
       weak_factory_(this) {
+  binding_.set_connection_error_handler(
+      base::Bind(&PermissionServiceImpl::OnConnectionError,
+                 base::Unretained(this)));
 }
 
 PermissionServiceImpl::~PermissionServiceImpl() {

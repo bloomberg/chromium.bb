@@ -12,7 +12,6 @@
 #include "media/mojo/services/media_type_converters.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 #include "url/gurl.h"
 
 namespace media {

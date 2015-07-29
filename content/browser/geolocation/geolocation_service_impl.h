@@ -7,7 +7,6 @@
 #include "content/common/geolocation_service.mojom.h"
 #include "content/public/common/mojo_geoposition.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
@@ -18,8 +17,7 @@ class GeolocationProvider;
 class GeolocationServiceContext;
 
 // Implements the GeolocationService Mojo interface.
-class GeolocationServiceImpl : public GeolocationService,
-                               public mojo::ErrorHandler {
+class GeolocationServiceImpl : public GeolocationService {
  public:
   // |context| must outlive this object. |update_callback| will be called when
   // location updates are sent, allowing the client to know when the service
@@ -47,8 +45,7 @@ class GeolocationServiceImpl : public GeolocationService,
   void SetHighAccuracy(bool high_accuracy) override;
   void QueryNextPosition(const PositionCallback& callback) override;
 
-  // mojo::ErrorHandler:
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   void OnLocationUpdate(const Geoposition& position);
   void ReportCurrentPosition();

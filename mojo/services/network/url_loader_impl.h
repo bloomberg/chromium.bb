@@ -13,7 +13,6 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace mojo {
 

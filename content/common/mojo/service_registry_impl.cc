@@ -10,7 +10,9 @@ namespace content {
 
 ServiceRegistryImpl::ServiceRegistryImpl()
     : binding_(this), weak_factory_(this) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(
+      base::Bind(&ServiceRegistryImpl::OnConnectionError,
+                 base::Unretained(this)));
 }
 
 ServiceRegistryImpl::~ServiceRegistryImpl() {

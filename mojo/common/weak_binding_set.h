@@ -28,17 +28,6 @@ class WeakBindingSet {
     error_handler_ = error_handler;
   }
 
-  // NOTE: Deprecated. Please use the method above.
-  // TODO(yzshen): Remove this method once all callsites are converted.
-  void set_error_handler(ErrorHandler* error_handler) {
-    if (error_handler) {
-      set_connection_error_handler(
-          [error_handler]() { error_handler->OnConnectionError(); });
-    } else {
-      set_connection_error_handler(Closure());
-    }
-  }
-
   void AddBinding(Interface* impl, InterfaceRequest<Interface> request) {
     auto binding = new WeakBinding<Interface>(impl, request.Pass());
     binding->set_connection_error_handler([this]() { OnConnectionError(); });

@@ -68,7 +68,9 @@ GeolocationServiceImpl::GeolocationServiceImpl(
       high_accuracy_(false),
       has_position_to_report_(false) {
   DCHECK(context_);
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(
+      base::Bind(&GeolocationServiceImpl::OnConnectionError,
+                 base::Unretained(this)));
 }
 
 GeolocationServiceImpl::~GeolocationServiceImpl() {
