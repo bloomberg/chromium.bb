@@ -282,9 +282,7 @@ component("proxy") {
     "//third_party/icu",
   ]
 
-  if (is_nacl) {
-    deps += [ "//ui/events:latency_info" ]
-  } else {
+  if (!is_nacl) {
     deps += [
       "//base/third_party/dynamic_annotations",
       "//gin",

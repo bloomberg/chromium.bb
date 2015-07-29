@@ -378,14 +378,3 @@ test("events_unittests") {
     sources += [ "gestures/gesture_provider_aura_unittest.cc" ]
   }
 }
-
-if (is_nacl) {
-  source_set("latency_info") {
-    sources = [
-      "ipc/latency_info_param_traits.cc",
-      "ipc/latency_info_param_traits.h",
-      "latency_info.cc",
-      "latency_info.h",
-    ]
-  }
-}
