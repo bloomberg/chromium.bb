@@ -743,10 +743,10 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.SetAutoReporting(True)
     self.assertTrue(self._driver.IsAutoReporting())
     url = self.GetHttpUrlForFile('/chromedriver/console_log.html')
-    self.assertRaisesRegexp(chromedriver.UnknownError,
-                            '.*(404|Failed to load resource).*',
-                            self._driver.Load,
-                            url)
+    self.assertRaisesRegexp(
+        chromedriver.UnknownError,
+        ".*Uncaught TypeError: Cannot read property 'y' of undefined.*",
+        self._driver.Load, url)
 
   def testContextMenuEventFired(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/context_menu.html'))
