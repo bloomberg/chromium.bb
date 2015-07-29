@@ -57,6 +57,7 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testTouchPinch',
     # https://code.google.com/p/chromedriver/issues/detail?id=1167
     'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+    'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -721,12 +722,12 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/console_log.html'))
     logs = self._driver.GetLog('browser')
 
-    self.assertEqual('network', logs[0]['source'])
-    self.assertTrue('nonexistent.png' in logs[0]['message'])
-    self.assertTrue('404' in logs[0]['message'])
+    self.assertEqual('javascript', logs[0]['source'])
+    self.assertTrue('TypeError' in logs[0]['message'])
 
-    self.assertEqual('javascript', logs[1]['source'])
-    self.assertTrue('TypeError' in logs[1]['message'])
+    self.assertEqual('network', logs[1]['source'])
+    self.assertTrue('nonexistent.png' in logs[1]['message'])
+    self.assertTrue('404' in logs[1]['message'])
 
     # Sometimes, we also get an error for a missing favicon.
     if len(logs) > 2:
