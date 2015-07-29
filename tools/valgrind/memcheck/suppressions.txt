@@ -3523,7 +3523,6 @@
    fun:_ZN5blink17CSSPropertyParser10parseValueENS_13CSSPropertyIDEb
    fun:_ZN5blink17CSSPropertyParser10parseValueENS_13CSSPropertyIDEbPNS_18CSSParserValueListERKNS_16CSSParserContextERN3WTF6VectorINS_11CSSPropertyELm256ENS7_16DefaultAllocatorEEENS_13StyleRuleBase4TypeE
    fun:_ZN5blink13CSSParserImpl23consumeDeclarationValueENS_19CSSParserTokenRangeENS_13CSSPropertyIDEbNS_13StyleRuleBase4TypeE
-   fun:_ZN5blink13CSSParserImpl18consumeDeclarationENS_19CSSParserTokenRangeENS_13StyleRuleBase4TypeE
 }
 {
    bug_514434
@@ -3552,4 +3551,12 @@
    fun:_ZN4base8internal12CopyToStringERKNS_16BasicStringPieceISsEEPSs
    fun:_ZNK4base16BasicStringPieceISsE12CopyToStringEPSs
    fun:_ZN4base8FilePathC1ENS_16BasicStringPieceISsEE
+}
+{
+   bug_514925
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16SkDashPathEffect6CreateEPKfif
+   fun:_ZNK5blink29CanvasRenderingContext2DState14updateLineDashEv
+   fun:_ZNK5blink29CanvasRenderingContext2DState8getPaintENS0_9PaintTypeENS_10ShadowModeENS0_9ImageTypeE
 }
