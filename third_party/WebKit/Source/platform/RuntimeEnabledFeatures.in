@@ -83,7 +83,7 @@ InputModeAttribute status=experimental
 KeyboardEventCode status=experimental
 KeyboardEventKey status=test
 LangAttributeAwareFormControlUI
-LinkPreconnect status=experimental
+LinkPreconnect status=stable
 LinkPreload status=experimental
 LinkHeader status=stable
 FractionalScrollOffsets status=experimental
