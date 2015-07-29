@@ -36,6 +36,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -1078,7 +1079,7 @@ void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase)
     setNeedsDisplay();
 }
 
-void GraphicsLayer::addLinkHighlight(LinkHighlightClient* linkHighlight)
+void GraphicsLayer::addLinkHighlight(LinkHighlight* linkHighlight)
 {
     ASSERT(linkHighlight && !m_linkHighlights.contains(linkHighlight));
     m_linkHighlights.append(linkHighlight);
@@ -1086,7 +1087,7 @@ void GraphicsLayer::addLinkHighlight(LinkHighlightClient* linkHighlight)
     updateChildList();
 }
 
-void GraphicsLayer::removeLinkHighlight(LinkHighlightClient* linkHighlight)
+void GraphicsLayer::removeLinkHighlight(LinkHighlight* linkHighlight)
 {
     m_linkHighlights.remove(m_linkHighlights.find(linkHighlight));
     updateChildList();

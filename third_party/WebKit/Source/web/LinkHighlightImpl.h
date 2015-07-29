@@ -23,33 +23,36 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LinkHighlight_h
-#define LinkHighlight_h
+#ifndef LinkHighlightImpl_h
+#define LinkHighlightImpl_h
 
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/Path.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebCompositorAnimationPlayer.h"
 #include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
-#include "public/platform/WebLayer.h"
+#include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
+class GraphicsLayer;
 class LayoutBoxModelObject;
 class Node;
-struct WebRect;
+class WebContentLayer;
+class WebLayer;
 class WebViewImpl;
 
-class LinkHighlight final : public WebContentLayerClient, public WebCompositorAnimationDelegate, LinkHighlightClient, WebCompositorAnimationPlayerClient {
+class LinkHighlightImpl final : public LinkHighlight
+    , public WebContentLayerClient
+    , public WebCompositorAnimationDelegate
+    , public WebCompositorAnimationPlayerClient {
 public:
-    static PassOwnPtr<LinkHighlight> create(Node*, WebViewImpl*);
-    ~LinkHighlight() override;
+    static PassOwnPtr<LinkHighlightImpl> create(Node*, WebViewImpl*);
+    ~LinkHighlightImpl() override;
 
     WebContentLayer* contentLayer();
     WebLayer* clipLayer();
@@ -64,7 +67,7 @@ public:
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override;
 
-    // LinkHighlightClient implementation.
+    // LinkHighlight implementation.
     void invalidate() override;
     WebLayer* layer() override;
     void clearCurrentGraphicsLayer() override;
@@ -75,10 +78,10 @@ public:
     GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
 
 private:
-    LinkHighlight(Node*, WebViewImpl*);
+    LinkHighlightImpl(Node*, WebViewImpl*);
 
     void releaseResources();
-    void computeQuads(const Node&, WTF::Vector<FloatQuad>&) const;
+    void computeQuads(const Node&, Vector<FloatQuad>&) const;
 
     void attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject* paintInvalidationContainer);
     void clearGraphicsLayerLinkHighlightPointer();
@@ -102,4 +105,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // LinkHighlightImpl_h

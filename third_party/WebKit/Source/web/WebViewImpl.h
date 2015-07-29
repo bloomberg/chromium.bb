@@ -72,7 +72,7 @@ class Frame;
 class FullscreenController;
 class InspectorOverlay;
 class InspectorOverlayImpl;
-class LinkHighlight;
+class LinkHighlightImpl;
 class PageScaleConstraintsSet;
 class DeprecatedPaintLayerCompositor;
 class TopControls;
@@ -500,7 +500,7 @@ public:
 
     // Exposed for tests.
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
-    LinkHighlight* linkHighlight(int i) { return m_linkHighlights[i].get(); }
+    LinkHighlightImpl* linkHighlight(int i) { return m_linkHighlights[i].get(); }
 
     WebSettingsImpl* settingsImpl();
 
@@ -741,7 +741,7 @@ private:
     WebPoint m_globalPositionOnFlingStart;
     int m_flingModifier;
     bool m_flingSourceDevice;
-    Vector<OwnPtr<LinkHighlight>> m_linkHighlights;
+    Vector<OwnPtr<LinkHighlightImpl>> m_linkHighlights;
     OwnPtr<WebCompositorAnimationTimeline> m_linkHighlightsTimeline;
     OwnPtrWillBePersistent<FullscreenController> m_fullscreenController;
 

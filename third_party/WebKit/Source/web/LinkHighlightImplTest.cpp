@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "web/LinkHighlight.h"
+#include "web/LinkHighlightImpl.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
@@ -57,7 +57,7 @@ GestureEventWithHitTestResults getTargetedEvent(WebViewImpl* webViewImpl, WebGes
     return webViewImpl->page()->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(platformEvent, true);
 }
 
-TEST(LinkHighlightTest, verifyWebViewImplIntegration)
+TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
 {
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
@@ -126,7 +126,7 @@ WebViewClient* compositingWebViewClient()
 
 } // anonymous namespace
 
-TEST(LinkHighlightTest, resetDuringNodeRemoval)
+TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
 {
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");
@@ -163,7 +163,7 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 
-TEST(LinkHighlightTest, multipleHighlights)
+TEST(LinkHighlightImplTest, multipleHighlights)
 {
     const std::string baseURL("http://www.test.com/");
     const std::string fileName("test_touch_link_highlight.html");

@@ -60,21 +60,11 @@ class GraphicsLayer;
 class GraphicsLayerFactory;
 class GraphicsLayerFactoryChromium;
 class Image;
+class LinkHighlight;
 class JSONObject;
 class ScrollableArea;
 class WebCompositorAnimation;
 class WebLayer;
-
-// FIXME: find a better home for this declaration.
-class PLATFORM_EXPORT LinkHighlightClient {
-public:
-    virtual void invalidate() = 0;
-    virtual void clearCurrentGraphicsLayer() = 0;
-    virtual WebLayer* layer() = 0;
-
-protected:
-    virtual ~LinkHighlightClient() { }
-};
 
 typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 
@@ -232,11 +222,11 @@ public:
     void trackPaintInvalidationRect(const FloatRect&);
     void trackPaintInvalidationObject(const String&);
 
-    void addLinkHighlight(LinkHighlightClient*);
-    void removeLinkHighlight(LinkHighlightClient*);
+    void addLinkHighlight(LinkHighlight*);
+    void removeLinkHighlight(LinkHighlight*);
     // Exposed for tests
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
-    LinkHighlightClient* linkHighlight(int i) { return m_linkHighlights[i]; }
+    LinkHighlight* linkHighlight(int i) { return m_linkHighlights[i]; }
 
     void setScrollableArea(ScrollableArea*, bool isViewport);
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
@@ -358,7 +348,7 @@ private:
     // on.
     int m_contentsLayerId;
 
-    Vector<LinkHighlightClient*> m_linkHighlights;
+    Vector<LinkHighlight*> m_linkHighlights;
 
     OwnPtr<ContentLayerDelegate> m_contentLayerDelegate;
 

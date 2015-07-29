@@ -152,7 +152,7 @@
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/InspectorOverlayImpl.h"
-#include "web/LinkHighlight.h"
+#include "web/LinkHighlightImpl.h"
 #include "web/PrerendererClientImpl.h"
 #include "web/ResizeViewportAnchor.h"
 #include "web/RotationViewportAnchor.h"
@@ -1378,7 +1378,7 @@ void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>
         if (!highlightColor.alpha())
             continue;
 
-        m_linkHighlights.append(LinkHighlight::create(node, this));
+        m_linkHighlights.append(LinkHighlightImpl::create(node, this));
     }
 }
 

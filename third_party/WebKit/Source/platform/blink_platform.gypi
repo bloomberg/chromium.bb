@@ -548,6 +548,7 @@
       'graphics/ImageSource.h',
       'graphics/InterceptingCanvas.cpp',
       'graphics/InterceptingCanvas.h',
+      'graphics/LinkHighlight.h',
       'graphics/ListContainer.cpp',
       'graphics/ListContainer.h',
       'graphics/LoggingCanvas.cpp',

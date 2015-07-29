@@ -24,8 +24,7 @@
  */
 
 #include "config.h"
-
-#include "web/LinkHighlight.h"
+#include "web/LinkHighlightImpl.h"
 
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
@@ -35,17 +34,19 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/style/ShadowData.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebContentLayer.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebLayer.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/web/WebKit.h"
@@ -56,17 +57,16 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
-class WebViewImpl;
-
-PassOwnPtr<LinkHighlight> LinkHighlight::create(Node* node, WebViewImpl* owningWebViewImpl)
+PassOwnPtr<LinkHighlightImpl> LinkHighlightImpl::create(Node* node, WebViewImpl* owningWebViewImpl)
 {
-    return adoptPtr(new LinkHighlight(node, owningWebViewImpl));
+    return adoptPtr(new LinkHighlightImpl(node, owningWebViewImpl));
 }
 
-LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
+LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     : m_node(node)
     , m_owningWebViewImpl(owningWebViewImpl)
     , m_currentGraphicsLayer(0)
@@ -98,7 +98,7 @@ LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
     updateGeometry();
 }
 
-LinkHighlight::~LinkHighlight()
+LinkHighlightImpl::~LinkHighlightImpl()
 {
     if (m_compositorPlayer) {
         m_compositorPlayer->detachLayer();
@@ -111,22 +111,22 @@ LinkHighlight::~LinkHighlight()
     releaseResources();
 }
 
-WebContentLayer* LinkHighlight::contentLayer()
+WebContentLayer* LinkHighlightImpl::contentLayer()
 {
     return m_contentLayer.get();
 }
 
-WebLayer* LinkHighlight::clipLayer()
+WebLayer* LinkHighlightImpl::clipLayer()
 {
     return m_clipLayer.get();
 }
 
-void LinkHighlight::releaseResources()
+void LinkHighlightImpl::releaseResources()
 {
     m_node.clear();
 }
 
-void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject* paintInvalidationContainer)
+void LinkHighlightImpl::attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject* paintInvalidationContainer)
 {
     GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBacking();
     // FIXME: There should always be a GraphicsLayer. See crbug.com/431961.
@@ -184,7 +184,7 @@ static void addQuadToPath(const FloatQuad& quad, Path& path)
     path.closeSubpath();
 }
 
-void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) const
+void LinkHighlightImpl::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) const
 {
     if (!node.layoutObject())
         return;
@@ -205,7 +205,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     }
 }
 
-bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObject* paintInvalidationContainer)
+bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(const LayoutBoxModelObject* paintInvalidationContainer)
 {
     if (!m_node || !m_node->layoutObject() || !m_currentGraphicsLayer)
         return false;
@@ -238,8 +238,9 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
             && !m_owningWebViewImpl->settingsImpl()->mockGestureTapHighlightsEnabled()) {
             FloatSize rectRoundingRadii(3, 3);
             newPath.addRoundedRect(transformedQuad.boundingBox(), rectRoundingRadii);
-        } else
+        } else {
             addQuadToPath(transformedQuad, newPath);
+        }
     }
 
     FloatRect boundingRect = newPath.boundingRect();
@@ -256,7 +257,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
     return pathHasChanged;
 }
 
-void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect&, WebContentLayerClient::PaintingControlSetting paintingControl)
+void LinkHighlightImpl::paintContents(WebCanvas* canvas, const WebRect&, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_node || !m_node->layoutObject())
         return;
@@ -268,7 +269,7 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect&, WebContentL
     canvas->drawPath(m_path.skPath(), paint);
 }
 
-void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
+void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_node || !m_node->layoutObject())
         return;
@@ -281,7 +282,7 @@ void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const 
     webDisplayItemList->appendDrawingItem(picture.get());
 }
 
-void LinkHighlight::startHighlightAnimationIfNeeded()
+void LinkHighlightImpl::startHighlightAnimationIfNeeded()
 {
     if (m_isAnimating)
         return;
@@ -318,7 +319,7 @@ void LinkHighlight::startHighlightAnimationIfNeeded()
     m_owningWebViewImpl->scheduleAnimation();
 }
 
-void LinkHighlight::clearGraphicsLayerLinkHighlightPointer()
+void LinkHighlightImpl::clearGraphicsLayerLinkHighlightPointer()
 {
     if (m_currentGraphicsLayer) {
         m_currentGraphicsLayer->removeLinkHighlight(this);
@@ -326,11 +327,11 @@ void LinkHighlight::clearGraphicsLayerLinkHighlightPointer()
     }
 }
 
-void LinkHighlight::notifyAnimationStarted(double, int)
+void LinkHighlightImpl::notifyAnimationStarted(double, int)
 {
 }
 
-void LinkHighlight::notifyAnimationFinished(double, int)
+void LinkHighlightImpl::notifyAnimationFinished(double, int)
 {
     // Since WebViewImpl may hang on to us for a while, make sure we
     // release resources as soon as possible.
@@ -338,7 +339,7 @@ void LinkHighlight::notifyAnimationFinished(double, int)
     releaseResources();
 }
 
-void LinkHighlight::updateGeometry()
+void LinkHighlightImpl::updateGeometry()
 {
     // To avoid unnecessary updates (e.g. other entities have requested animations from our WebViewImpl),
     // only proceed if we actually requested an update.
@@ -364,24 +365,24 @@ void LinkHighlight::updateGeometry()
     }
 }
 
-void LinkHighlight::clearCurrentGraphicsLayer()
+void LinkHighlightImpl::clearCurrentGraphicsLayer()
 {
     m_currentGraphicsLayer = 0;
     m_geometryNeedsUpdate = true;
 }
 
-void LinkHighlight::invalidate()
+void LinkHighlightImpl::invalidate()
 {
     // Make sure we update geometry on the next callback from WebViewImpl::layout().
     m_geometryNeedsUpdate = true;
 }
 
-WebLayer* LinkHighlight::layer()
+WebLayer* LinkHighlightImpl::layer()
 {
     return clipLayer();
 }
 
-WebCompositorAnimationPlayer* LinkHighlight::compositorPlayer() const
+WebCompositorAnimationPlayer* LinkHighlightImpl::compositorPlayer() const
 {
     return m_compositorPlayer.get();
 }
