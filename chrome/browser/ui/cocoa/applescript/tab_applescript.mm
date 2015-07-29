@@ -13,6 +13,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/cocoa/applescript/apple_event_util.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/session_id.h"
 #include "content/public/browser/navigation_controller.h"
@@ -287,7 +288,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 
   base::string16 script = base::SysNSStringToUTF16(
       [[command evaluatedArguments] objectForKey:@"javascript"]);
-  frame->ExecuteJavaScript(script, callback);
+  frame->ExecuteJavaScriptInIsolatedWorld(
+      script, callback, chrome::ISOLATED_WORLD_ID_APPLESCRIPT);
 
   return nil;
 }
