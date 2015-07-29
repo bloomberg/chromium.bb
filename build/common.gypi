@@ -1901,7 +1901,7 @@
             ['OS=="ios"', {
               'mac_sdk_min%': '10.8',
             }, {  # else OS!="ios"
-              'mac_sdk_min%': '10.10',
+              'mac_sdk_min%': '10.6',
             }],
           ],
           'mac_sdk_path%': '',
