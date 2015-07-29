@@ -468,7 +468,7 @@ const char kAboutDiscardsRunCommand[] = "run";
 std::string WrapWithTag(const std::string& tag, const std::string& text) {
   return "<" + tag + ">" + text + "</" + tag + ">";
 }
-#if defined(OS_CHROMEOS)
+
 // Helper function to wrap Html with <td> tag.
 std::string WrapWithTD(const std::string& text) {
   return "<td>" + text + "</td>";
@@ -485,7 +485,7 @@ std::string AddStringRow(const std::string& name, const std::string& value) {
   row.append(WrapWithTD(value));
   return WrapWithTR(row);
 }
-#endif
+
 void AddContentSecurityPolicy(std::string* output) {
   output->append("<meta http-equiv='Content-Security-Policy' "
       "content='default-src 'none';'>");
@@ -576,7 +576,6 @@ std::string AboutDiscards(const std::string& path) {
                                    chrome::kChromeUIDiscardsURL,
                                    kAboutDiscardsRunCommand));
 
-#if defined(OS_CHROMEOS)
   base::SystemMemoryInfoKB meminfo;
   base::GetSystemMemoryInfo(&meminfo);
   output.append("<h3>System memory information in MB</h3>");
@@ -586,6 +585,7 @@ std::string AboutDiscards(const std::string& path) {
       "Total", base::IntToString(meminfo.total / 1024)));
   output.append(AddStringRow(
       "Free", base::IntToString(meminfo.free / 1024)));
+#if defined(OS_CHROMEOS)
   int mem_allocated_kb = meminfo.active_anon + meminfo.inactive_anon;
 #if defined(ARCH_CPU_ARM_FAMILY)
   // ARM counts allocated graphics memory separately from anonymous.
@@ -608,8 +608,8 @@ std::string AboutDiscards(const std::string& path) {
       "Shared", base::IntToString(meminfo.shmem / 1024)));
   output.append(AddStringRow(
       "Graphics", base::IntToString(meminfo.gem_size / 1024 / 1024)));
-  output.append("</table>");
 #endif  // OS_CHROMEOS
+  output.append("</table>");
   AppendFooter(&output);
   return output;
 }
