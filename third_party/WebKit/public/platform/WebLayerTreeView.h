@@ -103,6 +103,8 @@ public:
     // Flow control and scheduling ---------------------------------------
 
     // Indicates that an animation needs to be updated.
+    // TODO(skyostil): Remove once all callers have migrated to requesting
+    // begin frames or compositor updates.
     virtual void setNeedsAnimate() { }
 
     // Indicates that blink needs a BeginFrame, but that nothing might actually be dirty.

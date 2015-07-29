@@ -4164,7 +4164,7 @@ GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 void WebViewImpl::scheduleAnimation()
 {
     if (m_layerTreeView) {
-        m_layerTreeView->setNeedsCompositorUpdate();
+        m_layerTreeView->setNeedsBeginFrame();
         return;
     }
     if (m_client)
