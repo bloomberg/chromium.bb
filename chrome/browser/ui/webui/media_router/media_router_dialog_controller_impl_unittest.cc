@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_test.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
-#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 
 using content::WebContents;
 

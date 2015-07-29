@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/common/extension_messages.h"
 #include "testing/gmock/include/gmock/gmock.h"

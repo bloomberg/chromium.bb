@@ -5,6 +5,7 @@
 #include "content/public/test/test_utils.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -15,6 +16,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -183,6 +186,15 @@ scoped_ptr<base::Value> ExecuteScriptAndGetValue(
   return observer.result().Pass();
 }
 
+bool AreAllSitesIsolatedForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+}
+
+void IsolateAllSitesForTesting(base::CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kSitePerProcess);
+}
+
 MessageLoopRunner::MessageLoopRunner()
     : loop_running_(false),
       quit_closure_called_(false) {
@@ -309,6 +321,55 @@ void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
 
   if (runner_.get())
     runner_->Quit();
+}
+
+RenderFrameDeletedObserver::RenderFrameDeletedObserver(RenderFrameHost* rfh)
+    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+      process_id_(rfh->GetProcess()->GetID()),
+      routing_id_(rfh->GetRoutingID()),
+      deleted_(false) {}
+
+RenderFrameDeletedObserver::~RenderFrameDeletedObserver() {}
+
+void RenderFrameDeletedObserver::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  if (render_frame_host->GetProcess()->GetID() == process_id_ &&
+      render_frame_host->GetRoutingID() == routing_id_) {
+    deleted_ = true;
+
+    if (runner_.get())
+      runner_->Quit();
+  }
+}
+
+bool RenderFrameDeletedObserver::deleted() {
+  return deleted_;
+}
+
+void RenderFrameDeletedObserver::WaitUntilDeleted() {
+  if (deleted_)
+    return;
+
+  runner_.reset(new base::RunLoop());
+  runner_->Run();
+  runner_.reset();
+}
+
+WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      message_loop_runner_(new MessageLoopRunner) {
+  EXPECT_TRUE(web_contents != NULL);
+}
+
+WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {}
+
+void WebContentsDestroyedWatcher::Wait() {
+  message_loop_runner_->Run();
+}
+
+void WebContentsDestroyedWatcher::WebContentsDestroyed() {
+  message_loop_runner_->Quit();
 }
 
 }  // namespace content

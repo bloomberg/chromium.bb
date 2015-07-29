@@ -15,7 +15,6 @@
 #include "components/power/origin_power_map.h"
 #include "components/power/origin_power_map_factory.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/app_window_registry.h"

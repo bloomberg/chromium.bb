@@ -5,8 +5,8 @@
 #include <limits>
 
 #include "content/public/common/content_constants.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/test_render_view_host.h"
 
 namespace content {

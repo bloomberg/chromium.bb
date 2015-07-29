@@ -31,8 +31,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
@@ -743,15 +741,6 @@ void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
   loop_runner->Run();
 }
 
-bool AreAllSitesIsolatedForTesting() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
-}
-
-void IsolateAllSitesForTesting(base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kSitePerProcess);
-}
-
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
   if (!rfh)
     return false;
@@ -816,24 +805,6 @@ void TitleWatcher::TestTitle() {
     return;
 
   observed_title_ = *it;
-  message_loop_runner_->Quit();
-}
-
-WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(
-    WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      message_loop_runner_(new MessageLoopRunner) {
-  EXPECT_TRUE(web_contents != NULL);
-}
-
-WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {
-}
-
-void WebContentsDestroyedWatcher::Wait() {
-  message_loop_runner_->Run();
-}
-
-void WebContentsDestroyedWatcher::WebContentsDestroyed() {
   message_loop_runner_->Quit();
 }
 
@@ -1018,41 +989,6 @@ void FrameWatcher::WaitFrames(int frames_to_wait) {
   base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
   base::AutoReset<int> reset_frames_to_wait(&frames_to_wait_, frames_to_wait);
   run_loop.Run();
-}
-
-RenderFrameDeletedObserver::RenderFrameDeletedObserver(
-    RenderFrameHost* rfh)
-    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-      process_id_(rfh->GetProcess()->GetID()),
-      routing_id_(rfh->GetRoutingID()),
-      deleted_(false) {
-}
-
-RenderFrameDeletedObserver::~RenderFrameDeletedObserver() {
-}
-
-void RenderFrameDeletedObserver::RenderFrameDeleted(
-    RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetProcess()->GetID() == process_id_ &&
-      render_frame_host->GetRoutingID() == routing_id_) {
-    deleted_ = true;
-
-    if (runner_.get())
-      runner_->Quit();
-  }
-}
-
-bool RenderFrameDeletedObserver::deleted() {
-  return deleted_;
-}
-
-void RenderFrameDeletedObserver::WaitUntilDeleted() {
-  if (deleted_)
-    return;
-
-  runner_.reset(new base::RunLoop());
-  runner_->Run();
-  runner_.reset();
 }
 
 }  // namespace content

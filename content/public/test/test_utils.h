@@ -15,9 +15,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace base {
 class Value;
+class CommandLine;
 }  // namespace base
 
 // A collection of functions designed for use with unit and browser tests.
@@ -58,6 +60,19 @@ base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
 // browser_test_utils is preferable.
 scoped_ptr<base::Value> ExecuteScriptAndGetValue(
     RenderFrameHost* render_frame_host, const std::string& script);
+
+// Returns true if all sites are isolated. Typically used to bail from a test
+// that is incompatible with --site-per-process.
+bool AreAllSitesIsolatedForTesting();
+
+// Appends --site-per-process to the command line, enabling tests to exercise
+// site isolation and cross-process iframes.
+//
+// TODO(nick): In some places this method is called from the top of a test
+// body. That's not strictly safe (it's setting a command line after it
+// already may have been read). We should try make that pattern safer, as it
+// makes browser tests easier to write.
+void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
@@ -215,6 +230,46 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
+};
+
+// This observer keeps track of the last deleted RenderFrame to avoid
+// accessing it and causing use-after-free condition.
+class RenderFrameDeletedObserver : public WebContentsObserver {
+ public:
+  RenderFrameDeletedObserver(RenderFrameHost* rfh);
+  ~RenderFrameDeletedObserver() override;
+
+  // Overridden WebContentsObserver methods.
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+
+  void WaitUntilDeleted();
+  bool deleted();
+
+ private:
+  int process_id_;
+  int routing_id_;
+  bool deleted_;
+  scoped_ptr<base::RunLoop> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameDeletedObserver);
+};
+
+// Watches a WebContents and blocks until it is destroyed.
+class WebContentsDestroyedWatcher : public WebContentsObserver {
+ public:
+  explicit WebContentsDestroyedWatcher(WebContents* web_contents);
+  ~WebContentsDestroyedWatcher() override;
+
+  // Waits until the WebContents is destroyed.
+  void Wait();
+
+ private:
+  // Overridden WebContentsObserver methods.
+  void WebContentsDestroyed() override;
+
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };
 
 }  // namespace content

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -247,19 +246,6 @@ void WaitForInterstitialDetach(content::WebContents* web_contents);
 void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
                                          const base::Closure& task);
 
-// Returns true if all sites are isolated. Typically used to bail from a test
-// that is incompatible with --site-per-process.
-bool AreAllSitesIsolatedForTesting();
-
-// Appends --site-per-process to the command line, enabling tests to exercise
-// site isolation and cross-process iframes.
-//
-// TODO(nick): In some places this method is called from the top of a test
-// body. That's not strictly safe (it's setting a command line after it
-// already may have been read). We should try make that pattern safer, as it
-// makes browser tests easier to write.
-void IsolateAllSitesForTesting(base::CommandLine* command_line);
-
 // Waits until all resources have loaded in the given RenderFrameHost.
 // When the load completes, this function sends a "pageLoadComplete" message
 // via domAutomationController. The caller should make sure this extra
@@ -299,24 +285,6 @@ class TitleWatcher : public WebContentsObserver {
   base::string16 observed_title_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
-};
-
-// Watches a WebContents and blocks until it is destroyed.
-class WebContentsDestroyedWatcher : public WebContentsObserver {
- public:
-  explicit WebContentsDestroyedWatcher(WebContents* web_contents);
-  ~WebContentsDestroyedWatcher() override;
-
-  // Waits until the WebContents is destroyed.
-  void Wait();
-
- private:
-  // Overridden WebContentsObserver methods.
-  void WebContentsDestroyed() override;
-
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };
 
 // Watches a RenderProcessHost and waits for specified destruction events.
@@ -444,28 +412,6 @@ class FrameWatcher : public BrowserMessageFilter {
   base::Closure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
-};
-
-// This observer keeps track of the last deleted RenderFrame to avoid
-// accessing it and causing use-after-free condition.
-class RenderFrameDeletedObserver : public WebContentsObserver {
- public:
-  RenderFrameDeletedObserver(RenderFrameHost* rfh);
-  ~RenderFrameDeletedObserver() override;
-
-  // Overridden WebContentsObserver methods.
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-
-  void WaitUntilDeleted();
-  bool deleted();
-
- private:
-  int process_id_;
-  int routing_id_;
-  bool deleted_;
-  scoped_ptr<base::RunLoop> runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameDeletedObserver);
 };
 
 }  // namespace content
