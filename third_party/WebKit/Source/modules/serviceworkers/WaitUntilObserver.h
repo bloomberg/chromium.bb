@@ -16,6 +16,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
+class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 
@@ -39,7 +40,7 @@ public:
 
     // Observes the promise and delays calling the continuation until
     // the given promise is resolved or rejected.
-    void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
+    void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 

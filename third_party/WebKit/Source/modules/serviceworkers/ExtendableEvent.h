@@ -31,7 +31,7 @@
 #ifndef ExtendableEvent_h
 #define ExtendableEvent_h
 
-#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ExtendableEventInit.h"
@@ -49,7 +49,7 @@ public:
 
     ~ExtendableEvent() override;
 
-    void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
+    void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
 
     const AtomicString& interfaceName() const override;
     DECLARE_VIRTUAL_TRACE();

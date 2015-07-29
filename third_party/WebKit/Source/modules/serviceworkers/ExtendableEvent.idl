@@ -34,5 +34,5 @@
     Exposed=ServiceWorker,
     TypeChecking=Interface,
 ] interface ExtendableEvent : Event {
-    [CallWith=ScriptState, RaisesException] void waitUntil(any value);
+    [CallWith=ScriptState, RaisesException] void waitUntil(Promise<any> f);
 };

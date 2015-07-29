@@ -107,7 +107,7 @@ void WaitUntilObserver::didDispatchEvent(bool errorOccurred)
     m_eventDispatched = true;
 }
 
-void WaitUntilObserver::waitUntil(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
+void WaitUntilObserver::waitUntil(ScriptState* scriptState, ScriptPromise scriptPromise, ExceptionState& exceptionState)
 {
     if (m_eventDispatched) {
         exceptionState.throwDOMException(InvalidStateError, "The event handler is already finished.");
@@ -126,7 +126,7 @@ void WaitUntilObserver::waitUntil(ScriptState* scriptState, const ScriptValue& v
         m_consumeWindowInteractionTimer.startOneShot(windowInteractionTimeout(), FROM_HERE);
 
     incrementPendingActivity();
-    ScriptPromise::cast(scriptState, value).then(
+    scriptPromise.then(
         ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
         ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
 }
