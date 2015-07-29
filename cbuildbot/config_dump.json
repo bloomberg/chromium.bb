@@ -26268,6 +26268,72 @@
             "-chrome_internal"
         ]
     },
+    "x86-generic_freon-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "x86-generic_freon-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "vm_tests": []
+    },
+    "x86-generic_freon-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "name": "x86-generic_freon-compile-only-pre-cq"
+    },
+    "x86-generic_freon-full": {
+        "_template": "full",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "name": "x86-generic_freon-full",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "x86-generic_freon-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "name": "x86-generic_freon-no-vmtest-pre-cq"
+    },
+    "x86-generic_freon-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "important": false,
+        "name": "x86-generic_freon-paladin",
+        "vm_tests": []
+    },
+    "x86-generic_freon-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "name": "x86-generic_freon-pre-cq"
+    },
+    "x86-generic_freon-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "x86-generic_freon"
+        ],
+        "name": "x86-generic_freon-tot-chromium-pfq-informational",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "x86-mario-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

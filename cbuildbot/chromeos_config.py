@@ -461,6 +461,7 @@ _x86_external_boards = frozenset([
     'gizmo',
     'x32-generic',
     'x86-generic',
+    'x86-generic_freon',
 ])
 
 _mips_internal_release_boards = frozenset([
@@ -649,6 +650,9 @@ _waterfall_config_map = {
         # Toolchain Builders.
         'internal-toolchain-major',
         'internal-toolchain-minor',
+
+        # Experimental PFQs
+        'x86-generic_freon-chromium-pfq',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -1082,6 +1086,13 @@ def GetConfig():
       _base_configs['amd64-generic_freon'],
       disk_layout='2gb-rootfs',
       vm_tests=[],
+  )
+
+  site_config.AddConfig(
+      internal_chromium_pfq, 'x86-generic_freon-chromium-pfq',
+      _base_configs['x86-generic_freon'],
+      vm_tests=[],
+      important=False,
   )
 
   _chrome_pfq_important_boards = frozenset([
