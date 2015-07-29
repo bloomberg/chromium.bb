@@ -19,6 +19,7 @@ we drop the support for JB-MR1.
 Please refer to http://crbug.com/235118 for the details.
 """
 
+import codecs
 import optparse
 import os
 import re
@@ -96,7 +97,7 @@ def AssertNotDeprecatedAttribute(name, value, filename):
 def WriteDomToFile(dom, filename):
   """Write the given dom to filename."""
   build_utils.MakeDirectory(os.path.dirname(filename))
-  with open(filename, 'w') as f:
+  with codecs.open(filename, 'w', 'utf-8') as f:
     dom.writexml(f, '', '  ', '\n', encoding='utf-8')
 
 
