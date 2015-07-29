@@ -68,7 +68,7 @@ fast/dom/Window/window-scaled-viewport-properties.html
 fast/dom/element-bounding-client-rect-relative-to-viewport.html
 fast/encoding/GBK/csgb231280.html
 fast/eventsource/eventsource-attribute-listeners.html
-fast/flexbox/assert-generated-new-flexbox.html
+fast/deprecated-flexbox/assert-generated-new-flexbox.html
 fast/harness/check-layout-error-no-attributes.html
 fast/harness/internals-profilers-heap.html
 fast/harness/override-preferences-2.html

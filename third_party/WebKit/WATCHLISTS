@@ -78,7 +78,7 @@
     },
     'css_flexbox': {
       'filepath': 'Source/core/rendering/.*Flex' \
-                  '|LayoutTests/fast/flexbox/' \
+                  '|LayoutTests/fast/deprecated-flexbox/' \
                   '|LayoutTests/css3/flexbox/' \
                   '|LayoutTests/ietestcenter/css3/flexbox/'
     },

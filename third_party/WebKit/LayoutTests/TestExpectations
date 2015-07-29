@@ -918,7 +918,7 @@ crbug.com/474121 [ Debug Win7 ] editing/deleting/password-delete-performance.htm
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
-crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
+crbug.com/339259 fast/deprecated-flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 crbug.com/24308  http/tests/navigation/back-send-referrer.html [ Pass Timeout ]
@@ -1996,8 +1996,8 @@ crbug.com/509025 [ Yosemite ] fast/dynamic/anchor-lock.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fast/dynamic/text-combine.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fast/encoding/invalid-UTF-8.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fast/events/reveal-link-when-focused.html [ ImageOnlyFailure ]
-crbug.com/509025 [ Yosemite ] fast/flexbox/009-horizontal.html [ ImageOnlyFailure ]
-crbug.com/509025 [ Yosemite ] fast/flexbox/009.html [ ImageOnlyFailure ]
+crbug.com/509025 [ Yosemite ] fast/deprecated-flexbox/009-horizontal.html [ ImageOnlyFailure ]
+crbug.com/509025 [ Yosemite ] fast/deprecated-flexbox/009.html [ ImageOnlyFailure ]
 # Reference test failure by off-by-one.
 crbug.com/509025 [ Yosemite ] fast/forms/button-generated-content.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] fast/frames/frame-scrolling-attribute.html [ ImageOnlyFailure ]
