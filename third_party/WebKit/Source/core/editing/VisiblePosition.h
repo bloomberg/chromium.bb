@@ -150,9 +150,6 @@ CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedT
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 
-bool isFirstVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
-bool isLastVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
-
 } // namespace blink
 
 #ifndef NDEBUG

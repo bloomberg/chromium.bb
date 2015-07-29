@@ -40,6 +40,34 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
+bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
+{
+    if (visiblePosition.isNull())
+        return false;
+
+    if (!visiblePosition.deepEquivalent().containerNode()->isDescendantOf(node))
+        return false;
+
+    VisiblePosition previous = visiblePosition.previous();
+    return previous.isNull() || !previous.deepEquivalent().anchorNode()->isDescendantOf(node);
+}
+
+bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
+{
+    if (visiblePosition.isNull())
+        return false;
+
+    if (!visiblePosition.deepEquivalent().containerNode()->isDescendantOf(node))
+        return false;
+
+    VisiblePosition next = visiblePosition.next();
+    return next.isNull() || !next.deepEquivalent().anchorNode()->isDescendantOf(node);
+}
+
+} // namespace
+
 BreakBlockquoteCommand::BreakBlockquoteCommand(Document& document)
     : CompositeEditCommand(document)
 {

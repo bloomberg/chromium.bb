@@ -766,30 +766,6 @@ bool setEnd(Range *r, const VisiblePosition &visiblePosition)
     return !exceptionState.hadException();
 }
 
-bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
-{
-    if (visiblePosition.isNull())
-        return false;
-
-    if (!visiblePosition.deepEquivalent().containerNode()->isDescendantOf(node))
-        return false;
-
-    VisiblePosition previous = visiblePosition.previous();
-    return previous.isNull() || !previous.deepEquivalent().anchorNode()->isDescendantOf(node);
-}
-
-bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
-{
-    if (visiblePosition.isNull())
-        return false;
-
-    if (!visiblePosition.deepEquivalent().containerNode()->isDescendantOf(node))
-        return false;
-
-    VisiblePosition next = visiblePosition.next();
-    return next.isNull() || !next.deepEquivalent().anchorNode()->isDescendantOf(node);
-}
-
 DEFINE_TRACE(VisiblePosition)
 {
     visitor->trace(m_deepPosition);
