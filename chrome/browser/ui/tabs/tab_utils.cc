@@ -182,8 +182,8 @@ const gfx::Image& GetTabMediaIndicatorAffordanceImage(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (media_state) {
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
+      return rb.GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
-      return rb.GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_AFFORDANCE);
     case TAB_MEDIA_STATE_NONE:
     case TAB_MEDIA_STATE_RECORDING:
     case TAB_MEDIA_STATE_CAPTURING:
