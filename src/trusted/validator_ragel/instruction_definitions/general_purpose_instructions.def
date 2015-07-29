@@ -477,7 +477,7 @@ movmskpd Upd Gy, 0x66 0x0f 0x50, CPUFeature_SSE2
 # for "Gy" and "Gd" operands.  We use objdump's description.
 movmskps Ups Gy, 0x0f 0x50, CPUFeature_SSE
 ######## MOVNTI ################################################################
-movnti Gy My, 0x0f 0xc3, CPUFeature_SSE2
+movnti Gy My, 0x0f 0xc3, CPUFeature_SSE2 nacl-unsupported
 ######## MOVS/MOVSB/MOVSW/MOVSD/MOVSQ ##########################################
 movs X Y, 0xa4, rep nacl-amd64-forbidden
 ######## MOVSX #################################################################
@@ -616,7 +616,7 @@ prefetch Mb, 0x0f 0x0d /5, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
 prefetch Mb, 0x0f 0x0d /6, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
 prefetch Mb, 0x0f 0x0d /7, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
 ######## PREFETCHlevel #########################################################
-prefetchnta Mb, 0x0f 0x18 /0, CPUFeature_SSE no_memory_access
+prefetchnta Mb, 0x0f 0x18 /0, CPUFeature_SSE no_memory_access nacl-unsupported
 prefetcht0 Mb, 0x0f 0x18 /1, CPUFeature_SSE no_memory_access
 prefetcht1 Mb, 0x0f 0x18 /2, CPUFeature_SSE no_memory_access
 prefetcht2 Mb, 0x0f 0x18 /3, CPUFeature_SSE no_memory_access

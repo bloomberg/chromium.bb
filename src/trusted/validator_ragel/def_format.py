@@ -291,6 +291,7 @@ SUPPORTED_ATTRIBUTES = [
     'nacl-ia32-forbidden',
     'nacl-amd64-forbidden',
     'nacl-forbidden',
+    'nacl-unsupported',
     'nacl-amd64-zero-extends',
     'nacl-amd64-modifiable',
     'disabled_untested',

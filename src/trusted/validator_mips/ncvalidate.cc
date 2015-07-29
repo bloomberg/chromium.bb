@@ -10,6 +10,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 #include "native_client/src/trusted/cpu_features/arch/mips/cpu_mips.h"
@@ -117,10 +118,12 @@ static NaClValidationStatus ApplyValidatorMips(
     uint8_t *data,
     size_t size,
     int stubout_mode,
+    uint32_t flags,
     int readonly_text,
     const NaClCPUFeatures *cpu_features,
     const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
+  CHECK((flags & MIPS_VALIDATION_FLAGS_MASK) == 0);
   void *query = NULL;
   const NaClCPUFeaturesMips *features =
       (const NaClCPUFeaturesMips *) cpu_features;

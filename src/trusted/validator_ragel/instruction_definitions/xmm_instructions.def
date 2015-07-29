@@ -609,23 +609,29 @@ vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50, CPUFeature_AVX
 movmskps Ups Gy, 0x0f 0x50, CPUFeature_SSE
 vmovmskps Upsx Gd, 0xc4 RXB.00001 x.1111.L.00 0x50, CPUFeature_AVX
 ######## MOVNTDQ/VMOVNTDQ ######################################################
-movntdq Vdq Mdq, 0x66 0x0f 0xe7, CPUFeature_SSE2
-vmovntdq Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0xe7, CPUFeature_AVX
-vmovntdq Vdo Mdo, 0xc4 RXB.00001 x.1111.1.01 0xe7, CPUFeature_AVX
+movntdq Vdq Mdq, 0x66 0x0f 0xe7, CPUFeature_SSE2 nacl-unsupported
+vmovntdq Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0xe7,
+    CPUFeature_AVX nacl-unsupported
+vmovntdq Vdo Mdo, 0xc4 RXB.00001 x.1111.1.01 0xe7,
+    CPUFeature_AVX nacl-unsupported
 ######## MOVNTDQA/VMOVNTDQA ####################################################
-movntdqa Mo Vo, 0x66 0x0f 0x38 0x2a, CPUFeature_SSE41
-vmovntdqa Mo Vo, 0xc4 RXB.00010 x.1111.0.01 0x2a, CPUFeature_AVX
-vmovntdqa Mdo Vdo, 0xc4 RXB.00010 x.1111.1.01 0x2a, CPUFeature_AVX2
+movntdqa Mo Vo, 0x66 0x0f 0x38 0x2a, CPUFeature_SSE41 nacl-unsupported
+vmovntdqa Mo Vo, 0xc4 RXB.00010 x.1111.0.01 0x2a,
+    CPUFeature_AVX nacl-unsupported
+vmovntdqa Mdo Vdo, 0xc4 RXB.00010 x.1111.1.01 0x2a,
+    CPUFeature_AVX2 nacl-unsupported
 ######## MOVNTPD/VMOVNTPD ######################################################
-movntpd Vpd Mpd, 0x66 0x0f 0x2b, CPUFeature_SSE2
-vmovntpd Vpdx Mpdx, 0xc4 RXB.00001 x.1111.L.01 0x2b, CPUFeature_AVX
+movntpd Vpd Mpd, 0x66 0x0f 0x2b, CPUFeature_SSE2 nacl-unsupported
+vmovntpd Vpdx Mpdx, 0xc4 RXB.00001 x.1111.L.01 0x2b,
+    CPUFeature_AVX nacl-unsupported
 ######## MOVNTPS/VMOVNTPS ######################################################
-movntps Vps Mps, 0x0f 0x2b, CPUFeature_SSE
-vmovntps Vpsx Mpsx, 0xc4 RXB.00001 x.1111.L.00 0x2b, CPUFeature_AVX
+movntps Vps Mps, 0x0f 0x2b, CPUFeature_SSE nacl-unsupported
+vmovntps Vpsx Mpsx, 0xc4 RXB.00001 x.1111.L.00 0x2b,
+    CPUFeature_AVX nacl-unsupported
 ######## MOVNTSD ###############################################################
-movntsd Vsd Mq, 0xf2 0x0f 0x2b, CPUFeature_SSE4A
+movntsd Vsd Mq, 0xf2 0x0f 0x2b, CPUFeature_SSE4A nacl-unsupported
 ######## MOVNTSS ###############################################################
-movntss Vss Md, 0xf3 0x0f 0x2b, CPUFeature_SSE4A
+movntss Vss Md, 0xf3 0x0f 0x2b, CPUFeature_SSE4A nacl-unsupported
 ######## MOVQ/VMOVQ ############################################################
 movq Wq Vq, 0xf3 0x0f 0x7e, CPUFeature_SSE2
 movq Vq Wq, 0x66 0x0f 0xd6, CPUFeature_SSE2

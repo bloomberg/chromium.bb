@@ -375,6 +375,8 @@ if ragel_involved:
      '20150223.crc32w', '20150226.jecxz'),
     ('vmovd_proof.py', ('32', '64'),
      '20150226.jecxz', '20150430.vmovd_bugfix'),
+    ('nacl_unsupported_proof.py', ('32', '64'),
+     '20150430.vmovd_bugfix', '20150723.nacl_unsupported'),
   ]
   # Run the 5 latest proofs by default.
   for proof_file, bitnesses, old, new in trie_proofs[-5:]:

@@ -31,10 +31,16 @@
 Bool NaClDfaProcessValidationError(const uint8_t *begin, const uint8_t *end,
                                    uint32_t info, void *callback_data);
 
-Bool NaClDfaStubOutCPUUnsupportedInstruction(const uint8_t *begin,
-                                             const uint8_t *end,
-                                             uint32_t info,
-                                             void *callback_data);
+struct StubOutCallbackData {
+  uint32_t flags;
+  int did_rewrite;
+};
+
+Bool NaClDfaStubOutUnsupportedInstruction(const uint8_t *begin,
+                                          const uint8_t *end,
+                                          uint32_t info,
+                                          void *callback_data);
+
 struct CodeCopyCallbackData {
   NaClCopyInstructionFunc copy_func;
   /* Difference between addresses: dest - src.  */

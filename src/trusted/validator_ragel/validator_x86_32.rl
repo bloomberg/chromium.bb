@@ -58,6 +58,10 @@
   include cpuid_actions
     "native_client/src/trusted/validator_ragel/parse_instruction.rl";
 
+  action unsupported_instruction {
+    instruction_info_collected |= UNSUPPORTED_INSTRUCTION;
+  }
+
   include decode_x86_32 "validator_x86_32_instruction.rl";
 
   special_instruction =

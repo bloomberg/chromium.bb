@@ -168,6 +168,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
   NaClValidationStatus Validate() {
     return validator->Validate(0, code_buffer, 32,
                                FALSE,  /* stubout_mode */
+                               0,      /* flags */
                                FALSE,  /* readonly_test */
                                cpu_features,
                                metadata_ptr,
@@ -194,6 +195,7 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
   NaClValidationStatus status = validator->Validate(
       0, code_buffer, CODE_SIZE,
       FALSE, /* stubout_mode */
+      0,     /* flags */
       FALSE, /* readonly_test */
       cpu_features,
       NULL, /* metadata */

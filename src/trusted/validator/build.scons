@@ -47,3 +47,18 @@ if env.Bit('build_x86') or env.Bit('build_arm'):
 
   env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                          'run_validator_debug_stub_test')
+
+if env.Bit('build_x86_64'):
+  gtest_env = env.MakeGTestEnv()
+
+  validation_disable_nontemporals_test_exe = gtest_env.ComponentProgram(
+      'validation_disable_nontemporals_test',
+      ['validation_disable_nontemporals_test.cc'],
+      EXTRA_LIBS=['validators', 'nrd_xfer'])
+
+  node = gtest_env.CommandTest(
+      'validation_disable_nontemporals_test.out',
+      command=[validation_disable_nontemporals_test_exe])
+
+  env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                         'run_disable_nontemporals_test')

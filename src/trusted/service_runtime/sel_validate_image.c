@@ -35,6 +35,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   NaClValidationStatus status = NaClValidationSucceeded;
   struct NaClValidationCache *cache = nap->validation_cache;
   const struct NaClValidatorInterface *validator = nap->validator;
+  uint32_t flags = nap->pnacl_mode ? DISABLE_NONTEMPORALS : 0;
 
   if (size < kMinimumCachedCodeSize) {
     /*
@@ -73,6 +74,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
        allowable HLTs. */
     status = validator->Validate(guest_addr, data, size,
                                  TRUE, /* stub out */
+                                 flags,
                                  FALSE, /* text is not read-only */
                                  nap->cpu_features,
                                  metadata,
@@ -83,6 +85,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     int readonly_text = nap->fixed_feature_cpu_mode;
     status = validator->Validate(guest_addr, data, size,
                                  FALSE, /* do not stub out */
+                                 flags,
                                  readonly_text,
                                  nap->cpu_features,
                                  metadata,

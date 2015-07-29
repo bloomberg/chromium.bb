@@ -45,6 +45,11 @@ Bool ExtractRestrictedRegisterCallback(
     void *data) {
 
   struct CallbackData *callback_data = data;
+  /* UNSUPPORTED_INSTRUCTION indicates validation failure only for pnacl-mode.
+   * Since by default we are in non-pnacl-mode, the flag is simply cleared.
+   */
+  info &= ~UNSUPPORTED_INSTRUCTION;
+
   if (end <= callback_data->actual_end && (info & VALIDATION_ERRORS_MASK)) {
     callback_data->valid = FALSE;
   }

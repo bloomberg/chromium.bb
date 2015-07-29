@@ -20,6 +20,14 @@ EXTERN_C_BEGIN
 struct NaClValidationCache;
 struct NaClValidationMetadata;
 
+/* Defines possible validation flags. */
+typedef enum NaClValidationFlags {
+  DISABLE_NONTEMPORALS = 0x1,
+  X86_VALIDATION_FLAGS_MASK = 0x1,
+  ARM_VALIDATION_FLAGS_MASK = 0x0,
+  MIPS_VALIDATION_FLAGS_MASK = 0x0
+} NaClValidationFlags;
+
 /* Defines possible validation status values. */
 typedef enum NaClValidationStatus {
   /* The call to the validator succeeded. */
@@ -63,6 +71,7 @@ typedef NaClValidationStatus (*NaClValidateFunc)(
     uint8_t *data,
     size_t size,
     int stubout_mode,
+    uint32_t flags,
     int readonly_text,
     const NaClCPUFeatures *cpu_features,
     const struct NaClValidationMetadata *metadata,

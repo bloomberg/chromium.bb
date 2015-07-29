@@ -33,16 +33,26 @@ Bool NaClDfaProcessValidationError(const uint8_t *begin, const uint8_t *end,
   return FALSE;
 }
 
-Bool NaClDfaStubOutCPUUnsupportedInstruction(const uint8_t *begin,
-                                             const uint8_t *end,
-                                             uint32_t info,
-                                             void *callback_data) {
+Bool NaClDfaStubOutUnsupportedInstruction(const uint8_t *begin,
+                                          const uint8_t *end,
+                                          uint32_t info,
+                                          void *callback_data) {
+  struct StubOutCallbackData *data = callback_data;
   /* Stub-out instructions unsupported on this CPU, but valid on other CPUs.  */
   if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
-    int *did_stubout = callback_data;
-    *did_stubout = 1;
+    data->did_rewrite = 1;
     memset((uint8_t *)begin, NACL_HALT_OPCODE, end - begin);
     return TRUE;
+  } else if ((info & VALIDATION_ERRORS_MASK) == UNSUPPORTED_INSTRUCTION) {
+    if (data->flags == DISABLE_NONTEMPORALS) {
+      return FALSE;
+    } else {
+      /* TODO(ruiq): rewrite instruction. For now, we keep the original
+       * instruction and indicate validation success, which is consistent
+       * with current validation results. */
+      data->did_rewrite = 0;
+      return TRUE;
+    }
   } else {
     return FALSE;
   }

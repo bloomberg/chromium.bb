@@ -14,7 +14,8 @@ import objdump_parser
 
 
 # Some constants from validator.h
-VALIDATION_ERRORS_MASK = 0x01ffc000
+VALIDATION_ERRORS_MASK = 0x05ffc000
+UNSUPPORTED_INSTRUCTION = 0x04000000
 BAD_JUMP_TARGET = 0x40000000
 
 RESTRICTED_REGISTER_MASK = 0x00001f00
@@ -175,6 +176,10 @@ class Validator(object):
         begin_index = ctypes.cast(begin, ctypes.c_void_p).value - data_addr
         end_index = ctypes.cast(end, ctypes.c_void_p).value - data_addr
         callback(begin_index, end_index, info)
+
+      # UNSUPPORTED_INSTRUCTION indicates validator failure only for pnacl-mode.
+      # Since by default we are in non-pnacl-mode, the flag is simply cleared.
+      info &= ~UNSUPPORTED_INSTRUCTION
 
       # See validator.h for details
       if info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET) != 0:

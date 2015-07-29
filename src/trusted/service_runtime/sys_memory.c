@@ -267,6 +267,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   nacl_off64_t                file_bytes;
   nacl_off64_t                host_rounded_file_bytes;
   size_t                      alloc_rounded_file_bytes;
+  uint32_t                    val_flags;
 
   holding_app_lock = 0;
   ndp = NULL;
@@ -721,6 +722,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         goto cleanup;
       }
 
+      val_flags = nap->pnacl_mode ? DISABLE_NONTEMPORALS : 0;
       /* Ask validator / validation cache */
       NaClMetadataFromNaClDescCtor(&metadata, ndp);
       validator_status = NACL_FI("MMAP_FORCE_MMAP_VALIDATION_FAIL",
@@ -729,6 +731,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                                             (uint8_t *) image_sys_addr,
                                             length,
                                             0,  /* stubout_mode: no */
+                                            val_flags,
                                             1,  /* readonly_text: yes */
                                             nap->cpu_features,
                                             &metadata,

@@ -644,6 +644,10 @@ class InstructionPrinter(object):
       if Attribute('nacl-amd64-modifiable') in instruction.attributes:
         self._out.write('@modifiable_instruction\n')
 
+    if self._mode == VALIDATOR:
+      if Attribute('nacl-unsupported') in instruction.attributes:
+        self._out.write('@unsupported_instruction\n')
+
   def _NeedOperandInfo(self, operand):
     """Whether we need to print actions describing operand format and source."""
     if self._mode == DECODER:

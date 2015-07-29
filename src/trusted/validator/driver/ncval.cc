@@ -55,14 +55,17 @@ struct UserData {
   vector<Error> *errors;
   vector<Jump> *jumps;
   set<uint32_t> *bad_jump_targets;
+  uint32_t flags;
   UserData(Segment segment,
            vector<Error> *errors,
            vector<Jump> *jumps,
-           set<uint32_t> *bad_jump_targets)
+           set<uint32_t> *bad_jump_targets,
+           uint32_t flags)
       : segment(segment),
         errors(errors),
         jumps(jumps),
-        bad_jump_targets(bad_jump_targets) {
+        bad_jump_targets(bad_jump_targets),
+        flags(flags) {
   }
 };
 
@@ -94,6 +97,11 @@ Bool ProcessInstruction(
     }
   }
 
+  // If we are not disabling non-temporals, they should pass validation, and
+  // the corresponding validation_info bit is simply cleared.
+  if (user_data.flags != DISABLE_NONTEMPORALS)
+    validation_info &= ~UNSUPPORTED_INSTRUCTION;
+
   Bool result = (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
                 ? FALSE
                 : TRUE;
@@ -118,6 +126,11 @@ Bool ProcessInstruction(
   if (validation_info & CPUID_UNSUPPORTED_INSTRUCTION) {
     validation_info &= ~CPUID_UNSUPPORTED_INSTRUCTION;
     errors.push_back(Error(offset, "required CPU feature not found"));
+  }
+
+  if (validation_info & UNSUPPORTED_INSTRUCTION) {
+    validation_info &= ~UNSUPPORTED_INSTRUCTION;
+    errors.push_back(Error(offset, "unsupported instruction"));
   }
 
   if (validation_info & FORBIDDEN_BASE_REGISTER) {
@@ -192,9 +205,18 @@ Bool ProcessError(
     uint32_t validation_info, void *user_data_ptr) {
   UNREFERENCED_PARAMETER(begin);
   UNREFERENCED_PARAMETER(end);
-  UNREFERENCED_PARAMETER(validation_info);
-  UNREFERENCED_PARAMETER(user_data_ptr);
-  return FALSE;
+  UserData &user_data = *reinterpret_cast<UserData *>(user_data_ptr);
+
+  // We do the same thing as in ProcessInstruction(): If we are not disabling
+  // non-temporals, they should pass validation, and the corresponding
+  // validation_info bit is simply cleared.
+  if (user_data.flags != DISABLE_NONTEMPORALS)
+    validation_info &= ~UNSUPPORTED_INSTRUCTION;
+
+  Bool result = (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+                ? FALSE
+                : TRUE;
+  return result;
 }
 
 
@@ -209,7 +231,8 @@ typedef Bool ValidateChunkFunc(
 bool ValidateX86(
     const Segment &segment,
     ValidateChunkFunc validate_chunk,
-    vector<Error> *errors) {
+    vector<Error> *errors,
+    uint32_t flags) {
 
   errors->clear();
 
@@ -233,7 +256,7 @@ bool ValidateX86(
   vector<Jump> jumps;
   set<uint32_t> bad_jump_targets;
 
-  UserData user_data(segment, errors, &jumps, &bad_jump_targets);
+  UserData user_data(segment, errors, &jumps, &bad_jump_targets, flags);
 
   // TODO(shcherbina): customize from command line
 
@@ -258,7 +281,7 @@ bool ValidateX86(
   CHECK(result == validate_chunk(
       segment.data, segment.size,
       0, &kFullCPUIDFeatures,
-      ProcessError, NULL));
+      ProcessError, &user_data));
 
   return static_cast<bool>(result);
 }
@@ -319,23 +342,27 @@ bool ValidateArm(const Segment &segment, vector<Error> *errors) {
 
 void Usage() {
   fprintf(stderr, "Usage:\n");
-  fprintf(stderr, "    ncval [-v] <ELF file>\n");
+  fprintf(stderr, "    ncval [-vd] <ELF file>\n");
 }
 
 
 struct Options {
-  Options() : input_file(NULL), verbose(false) {}
+  Options() : input_file(NULL), verbose(false), flags(0) {}
   const char *input_file;
   bool verbose;
+  uint32_t flags;
 };
 
 
 void ParseOptions(int argc, char **argv, Options *options) {
   int opt;
-  while ((opt = getopt(argc, argv, "v")) != -1) {
+  while ((opt = getopt(argc, argv, "vd")) != -1) {
     switch (opt) {
       case 'v':
         options->verbose = true;
+        break;
+      case 'd':
+        options->flags = DISABLE_NONTEMPORALS;
         break;
       default:
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
@@ -368,10 +395,12 @@ int main(int argc, char **argv) {
   bool result = false;
   switch (architecture) {
     case elf_load::X86_32:
-      result = ValidateX86(segment, ValidateChunkIA32, &errors);
+      result = ValidateX86(segment, ValidateChunkIA32, &errors,
+                           options.flags);
       break;
     case elf_load::X86_64:
-      result = ValidateX86(segment, ValidateChunkAMD64, &errors);
+      result = ValidateX86(segment, ValidateChunkAMD64, &errors,
+                           options.flags);
       break;
     case elf_load::ARM:
       result = ValidateArm(segment, &errors);

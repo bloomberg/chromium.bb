@@ -64,7 +64,7 @@ enum validation_callback_info {
   /* Was restricted_register from previous instruction used in this one?  */
   RESTRICTED_REGISTER_USED      = 0x00002000,
   /* Mask to select all validation errors.  */
-  VALIDATION_ERRORS_MASK        = 0x01ffc000,
+  VALIDATION_ERRORS_MASK        = 0x05ffc000,
   /* Unrecognized instruction: fatal error, processing stops here.  */
   UNRECOGNIZED_INSTRUCTION      = 0x00004000,
   /* Direct jump to unaligned address outside of given region.  */
@@ -95,6 +95,8 @@ enum validation_callback_info {
   SP_MODIFIED                   = 0x01000000,
   /* Bad call alignment: "call" must end at the end of the bundle.  */
   BAD_CALL_ALIGNMENT            = 0x02000000,
+  /* The instruction should be either forbidden or rewritten. */
+  UNSUPPORTED_INSTRUCTION       = 0x04000000,
   /* Instruction is modifiable by nacl_dyncode_modify.  */
   MODIFIABLE_INSTRUCTION        = 0x08000000,
   /* Special instruction.  Uses different, non-standard validation rules.  */

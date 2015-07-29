@@ -30,6 +30,7 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
     uint8_t *data,
     size_t size,
     int stubout_mode,
+    uint32_t flags,
     int readonly_text,
     const NaClCPUFeatures *f,
     const struct NaClValidationMetadata *metadata,
@@ -37,8 +38,10 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
   /* TODO(jfb) Use a safe cast here. */
   NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   enum NaClValidationStatus status = NaClValidationFailed;
-  int did_stubout = 0;
   void *query = NULL;
+  struct StubOutCallbackData callback_data;
+  callback_data.flags = flags;
+  callback_data.did_rewrite = 0;
   UNREFERENCED_PARAMETER(guest_addr);
 
   if (stubout_mode)
@@ -72,8 +75,8 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
       status = NaClValidationSucceeded;
   } else {
     if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
-                          NaClDfaStubOutCPUUnsupportedInstruction,
-                          &did_stubout))
+                          NaClDfaStubOutUnsupportedInstruction,
+                          &callback_data))
       status = NaClValidationSucceeded;
   }
   if (status != NaClValidationSucceeded && errno == ENOMEM)
@@ -81,7 +84,7 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
 
   /* Cache the result if validation succeeded and the code was not modified. */
   if (query != NULL) {
-    if (status == NaClValidationSucceeded && did_stubout == 0)
+    if (status == NaClValidationSucceeded && callback_data.did_rewrite == 0)
       cache->SetKnownToValidate(query);
     cache->DestroyQuery(query);
   }

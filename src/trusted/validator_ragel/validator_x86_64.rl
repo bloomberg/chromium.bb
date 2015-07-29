@@ -70,6 +70,10 @@
                       &instruction_info_collected);
   }
 
+  action unsupported_instruction {
+    instruction_info_collected |= UNSUPPORTED_INSTRUCTION;
+  }
+
   action modifiable_instruction {
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
