@@ -20,7 +20,7 @@ class CertificatePolicyCache;
 // Adapter for web::CertificatePolicyCache, which is used to remember decisions
 // about how to handle invalid certs that have been given a user exception.
 // web::CertificatePolicyCache can be used only on IO thread while
-// CRWCertPolicyCache is asynchronous and can be used on the main thread.
+// CRWCertPolicyCache is threadsafe and can be used on any thread.
 @interface CRWCertPolicyCache : NSObject
 
 // Unavailable, use |initWithCache:| instead.
@@ -37,11 +37,9 @@ class CertificatePolicyCache;
                        status:(net::CertStatus)certStatus
             completionHandler:(void (^)(web::CertPolicy::Judgment))handler;
 
-// Asynchronously records that |cert| is permitted to be used for |host| in the
-// future. |handler| can not be null and is always called on the main thread.
+// Records that |cert| is permitted to be used for |host| in the future.
 - (void)allowCert:(scoped_refptr<net::X509Certificate>)cert
-              forHost:(NSString*)host
-               status:(net::CertStatus)status
-    completionHandler:(ProceduralBlock)handler;
+          forHost:(NSString*)host
+           status:(net::CertStatus)status;
 
 @end

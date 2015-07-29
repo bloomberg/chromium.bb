@@ -47,13 +47,10 @@
 }
 
 - (void)allowCert:(scoped_refptr<net::X509Certificate>)cert
-              forHost:(NSString*)host
-               status:(net::CertStatus)status
-    completionHandler:(ProceduralBlock)handler {
-  DCHECK(handler);
+          forHost:(NSString*)host
+           status:(net::CertStatus)status {
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
     _impl->AllowCertForHost(cert.get(), base::SysNSStringToUTF8(host), status);
-    dispatch_async(dispatch_get_main_queue(), handler);
   }));
 }
 

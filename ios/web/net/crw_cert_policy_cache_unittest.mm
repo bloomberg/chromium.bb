@@ -48,7 +48,8 @@ class CRWCertPolicyCacheTest : public PlatformTest {
       : cert_(new X509Certificate("test", "test", base::Time(), base::Time())),
         cache_mock_(new CertificatePolicyCacheMock()),
         testable_([[CRWCertPolicyCache alloc] initWithCache:cache_mock_]),
-        thread_bundle_(web::TestWebThreadBundle::REAL_IO_THREAD) {}
+        thread_bundle_(new web::TestWebThreadBundle(
+            web::TestWebThreadBundle::REAL_IO_THREAD)) {}
 
   // Fake certificate created for testing.
   scoped_refptr<X509Certificate> cert_;
@@ -57,7 +58,7 @@ class CRWCertPolicyCacheTest : public PlatformTest {
   // Testable |CertVerifierBlockAdapter| object.
   base::scoped_nsobject<CRWCertPolicyCache> testable_;
   // The threads used for testing.
-  web::TestWebThreadBundle thread_bundle_;
+  scoped_ptr<web::TestWebThreadBundle> thread_bundle_;
 };
 
 // Tests |allowCert:forHost:status:| with default arguments.
@@ -68,18 +69,11 @@ TEST_F(CRWCertPolicyCacheTest, TestAllowingCertForHost) {
       .Times(1)
       .WillOnce(CheckIOThread());
 
-  // Run and wait for completion.
-  __block bool verification_completed = false;
+  // Run and wait for IO thread completion.
   [testable_ allowCert:cert_.get()
-                forHost:base::SysUTF8ToNSString(kHostName)
-                 status:CERT_STATUS_ALL_ERRORS
-      completionHandler:^{
-        verification_completed = true;
-      }];
-
-  base::test::ios::WaitUntilCondition(^{
-    return verification_completed;
-  });
+               forHost:base::SysUTF8ToNSString(kHostName)
+                status:CERT_STATUS_ALL_ERRORS];
+  thread_bundle_.reset();
 }
 
 // Tests |queryJudgementForCert:forHost:status:| with default arguments.
