@@ -77,8 +77,6 @@ class ChildProcessResource : public Resource {
   // plugins.
   static gfx::ImageSkia* default_icon_;
 
-  base::WeakPtrFactory<ChildProcessResource> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ChildProcessResource);
 };
 
@@ -108,8 +106,7 @@ ChildProcessResource::ChildProcessResource(int process_type,
       name_(name),
       handle_(handle),
       unique_process_id_(unique_process_id),
-      network_usage_support_(false),
-      weak_factory_(this) {
+      network_usage_support_(false) {
   // We cache the process id because it's not cheap to calculate, and it won't
   // be available when we get the plugin disconnected notification.
   pid_ = base::GetProcId(handle);

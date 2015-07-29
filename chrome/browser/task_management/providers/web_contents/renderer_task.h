@@ -74,7 +74,7 @@ class RendererTask : public Task {
   // The render process host of the task this object represents.
   content::RenderProcessHost* render_process_host_;
 
-  // The Mojo service wrapper that will provider with the V8 memory usage and
+  // The Mojo service wrapper that will provide us with the V8 memory usage and
   // the WebCache resource stats of the render process represented by this
   // object.
   scoped_ptr<ProcessResourceUsage> renderer_resources_sampler_;
