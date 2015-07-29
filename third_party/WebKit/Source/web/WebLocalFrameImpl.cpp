@@ -1245,11 +1245,11 @@ WebString WebLocalFrameImpl::selectionAsText() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsText();
 
-    RefPtrWillBeRawPtr<Range> range = frame()->selection().toNormalizedRange();
-    if (!range)
+    const EphemeralRange range = frame()->selection().selection().toNormalizedEphemeralRange();
+    if (range.isNull())
         return WebString();
 
-    String text = range->text();
+    String text = plainText(range, TextIteratorEmitsObjectReplacementCharacter);
 #if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(text);
 #endif
