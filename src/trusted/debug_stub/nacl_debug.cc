@@ -129,9 +129,6 @@ int NaClDebugInit(struct NaClApp *nap) {
   if (!NaClDebugBindSocket()) {
     return 0;
   }
-#if NACL_WINDOWS
-  nap->debug_stub_port = g_socket_binding->GetBoundPort();
-#endif
 
   NaClThread *thread = new NaClThread;
   CHECK(thread != NULL);
@@ -141,3 +138,11 @@ int NaClDebugInit(struct NaClApp *nap) {
 
   return 1;
 }
+
+#if NACL_WINDOWS
+// TODO(leslieb): Remove when windows doesn't need the port.
+uint16_t NaClDebugGetBoundPort() {
+  CHECK(g_socket_binding != NULL);
+  return g_socket_binding->GetBoundPort();
+}
+#endif

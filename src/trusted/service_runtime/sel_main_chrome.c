@@ -359,7 +359,8 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
     }
 #if NACL_WINDOWS
     if (NULL != args->debug_stub_server_port_selected_handler_func) {
-      args->debug_stub_server_port_selected_handler_func(nap->debug_stub_port);
+      args->debug_stub_server_port_selected_handler_func(
+          NaClDebugGetBoundPort());
     }
 #endif
   }

@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_DEBUG_INIT_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_DEBUG_INIT_H_ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability_sockets.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -33,6 +34,14 @@ void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket);
  * security to the same extent that we normally would.
  */
 int NaClDebugInit(struct NaClApp *nap);
+
+/*
+ * Returns the port bound in NaClDebugBindSocket() or NaClDebugSetBoundSocket().
+ * TODO(leslieb): remove when windows no longer needs the port information.
+ */
+#if NACL_WINDOWS
+uint16_t NaClDebugGetBoundPort();
+#endif
 
 EXTERN_C_END
 
