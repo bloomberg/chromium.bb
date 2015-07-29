@@ -94,7 +94,6 @@ public:
         Kilohertz,
         CustomIdentifier,
         URI,
-        Identifier,
         Attribute,
         Counter,
         Rect,

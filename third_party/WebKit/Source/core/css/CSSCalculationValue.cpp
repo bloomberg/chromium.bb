@@ -123,7 +123,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::UnitType::CustomIdentifier:
     case CSSPrimitiveValue::UnitType::String:
     case CSSPrimitiveValue::UnitType::URI:
-    case CSSPrimitiveValue::UnitType::Identifier:
     case CSSPrimitiveValue::UnitType::Attribute:
     case CSSPrimitiveValue::UnitType::Counter:
     case CSSPrimitiveValue::UnitType::Rect:

@@ -54,7 +54,8 @@ struct CSSParserValue {
         Function  = 0x100001,
         ValueList = 0x100002,
         HexColor = 0x100004,
-        // Represents a dimension by a list of two values, a UnitType::Number and a UnitType::Identifier
+        Identifier = 0x100005,
+        // Represents a dimension by a list of two values, a UnitType::Number and an Identifier
         DimensionList = 0x100006,
         // Represents a unicode range by a pair of UChar32 values
         UnicodeRange = 0x100007,

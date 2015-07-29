@@ -115,7 +115,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
         case IdentToken: {
             value.id = cssValueKeywordID(token.value());
             value.isInt = false;
-            value.setUnit(CSSPrimitiveValue::UnitType::Identifier);
+            value.m_unit = CSSParserValue::Identifier;
             value.string = token.value();
             break;
         }
@@ -138,7 +138,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
 
                 CSSParserValue unit;
                 unit.string = token.value();
-                unit.setUnit(CSSPrimitiveValue::UnitType::Identifier);
+                unit.m_unit = CSSParserValue::Identifier;
                 list->addValue(unit);
 
                 break;

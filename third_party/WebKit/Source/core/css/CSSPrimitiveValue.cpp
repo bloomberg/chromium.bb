@@ -168,9 +168,6 @@ static CSSTextCache& cssTextCache()
 
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const
 {
-    if (type() == UnitType::PropertyID || type() == UnitType::ValueID)
-        return UnitType::Identifier;
-
     if (type() != UnitType::Calc)
         return type();
 
@@ -472,7 +469,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::DotsPerInch:
     case UnitType::DotsPerCentimeter:
     case UnitType::Fraction:
-    case UnitType::Identifier:
     case UnitType::RGBColor:
     case UnitType::Unknown:
     case UnitType::PropertyID:
@@ -929,7 +925,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::Pair:
     case UnitType::Calc:
     case UnitType::Shape:
-    case UnitType::Identifier:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
     case UnitType::QuirkyEms:
@@ -1053,7 +1048,6 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::Shape:
         text = m_value.shape->cssText();
         break;
-    case UnitType::Identifier:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
     case UnitType::QuirkyEms:
@@ -1126,7 +1120,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
     case UnitType::Shape:
         return m_value.shape && other.m_value.shape && m_value.shape->equals(*other.m_value.shape);
-    case UnitType::Identifier:
     case UnitType::Integer:
     case UnitType::Chs:
     case UnitType::CalcPercentageWithNumber:
