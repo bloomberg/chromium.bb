@@ -111,51 +111,59 @@ LauncherSearch.prototype.initializeEventListeners_ = function(
 LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   this.queryId_ = queryId;
 
-  chrome.fileManagerPrivate.searchDriveMetadata(
-      {
-        query: query,
-        types: 'ALL',
-        maxResults: limit
-      }, function(results) {
-        // If query is already changed, discard the results.
-        if (queryId !== this.queryId_ || results.length === 0)
-          return;
+  // Request an instance of volume manager to ensure that all volumes are
+  // initialized. When user searches while background page of Files.app is not
+  // running, it happens that this method is executed before all volumes are
+  // initialized. In this method, chrome.fileManagerPrivate.searchDriveMetadata
+  // resolves url internally, and it fails if filesystem of the url is not
+  // initialized.
+  VolumeManager.getInstance().then(function() {
+    chrome.fileManagerPrivate.searchDriveMetadata(
+        {
+          query: query,
+          types: 'ALL',
+          maxResults: limit
+        }, function(results) {
+          // If query is already changed, discard the results.
+          if (queryId !== this.queryId_ || results.length === 0)
+            return;
 
-        chrome.launcherSearchProvider.setSearchResults(
-            queryId,
-            results.map(function(result) {
-              // TODO(yawano): Use filetype_folder_shared.png for a shared
-              //     folder.
-              // TODO(yawano): Add archive launcher filetype icon.
-              var icon = FileType.getIcon(result.entry);
-              if (icon === 'UNKNOWN' || icon === 'archive')
-                icon = 'generic';
+          chrome.launcherSearchProvider.setSearchResults(
+              queryId,
+              results.map(function(result) {
+                // TODO(yawano): Use filetype_folder_shared.png for a shared
+                //     folder.
+                // TODO(yawano): Add archive launcher filetype icon.
+                var icon = FileType.getIcon(result.entry);
+                if (icon === 'UNKNOWN' || icon === 'archive')
+                  icon = 'generic';
 
-              var useHighDpiIcon = window.devicePixelRatio > 1.0;
-              var iconUrl = chrome.runtime.getURL(
-                  'foreground/images/launcher_filetypes/' +
-                  (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' +
-                  icon + '.png');
+                var useHighDpiIcon = window.devicePixelRatio > 1.0;
+                var iconUrl = chrome.runtime.getURL(
+                    'foreground/images/launcher_filetypes/' +
+                    (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' +
+                    icon + '.png');
 
-              // Hide extensions for hosted files.
-              var title = FileType.isHosted(result.entry) ?
-                  result.entry.name.substr(
-                      0,
-                      result.entry.name.length -
-                          FileType.getExtension(result.entry).length) :
-                  result.entry.name;
+                // Hide extensions for hosted files.
+                var title = FileType.isHosted(result.entry) ?
+                    result.entry.name.substr(
+                        0,
+                        result.entry.name.length -
+                            FileType.getExtension(result.entry).length) :
+                    result.entry.name;
 
-              return {
-                itemId: result.entry.toURL(),
-                title: title,
-                iconUrl: iconUrl,
-                // Relevance is set as 2 for all results as a temporary
-                // implementation. 2 is the middle value.
-                // TODO(yawano): Implement practical relevance calculation.
-                relevance: 2
-              };
-            }));
-      }.bind(this));
+                return {
+                  itemId: result.entry.toURL(),
+                  title: title,
+                  iconUrl: iconUrl,
+                  // Relevance is set as 2 for all results as a temporary
+                  // implementation. 2 is the middle value.
+                  // TODO(yawano): Implement practical relevance calculation.
+                  relevance: 2
+                };
+              }));
+        }.bind(this));
+  }.bind(this));
 };
 
 /**
@@ -171,57 +179,62 @@ LauncherSearch.prototype.onQueryEnded_ = function(queryId) {
  * @param {string} itemId
  */
 LauncherSearch.prototype.onOpenResult_ = function(itemId) {
-  util.urlToEntry(itemId).then(function(entry) {
-    if (entry.isDirectory) {
-      // If it's directory, open the directory with file manager.
-      launchFileManager(
-          { currentDirectoryURL: entry.toURL() },
-          undefined, /* App ID */
-          LaunchType.FOCUS_SAME_OR_CREATE);
-    } else {
-      // If the file is not directory, try to execute default task.
-      chrome.fileManagerPrivate.getFileTasks([entry], function(tasks) {
-        // Select default task.
-        var defaultTask = null;
-        for (var i = 0; i < tasks.length; i++) {
-          var task = tasks[i];
-          if (task.isDefault) {
-            defaultTask = task;
-            break;
-          }
-        }
-
-        // If we haven't picked a default task yet, then just pick the first one
-        // which is not genric file hanlder as default task.
-        // TODO(yawano) Share task execution logic with file_tasks.js.
-        if (!defaultTask) {
+  // Request an instance of volume manager to ensure that all volumes are
+  // initialized. webkitResolveLocalFileSystemURL in util.urlToEntry fails if
+  // filesystem of the url is not initialized.
+  VolumeManager.getInstance().then(function() {
+    util.urlToEntry(itemId).then(function(entry) {
+      if (entry.isDirectory) {
+        // If it's directory, open the directory with file manager.
+        launchFileManager(
+            { currentDirectoryURL: entry.toURL() },
+            undefined, /* App ID */
+            LaunchType.FOCUS_SAME_OR_CREATE);
+      } else {
+        // If the file is not directory, try to execute default task.
+        chrome.fileManagerPrivate.getFileTasks([entry], function(tasks) {
+          // Select default task.
+          var defaultTask = null;
           for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
-            if (!task.isGenericFileHandler) {
+            if (task.isDefault) {
               defaultTask = task;
               break;
             }
           }
-        }
 
-        if (defaultTask) {
-          // Execute default task.
-          chrome.fileManagerPrivate.executeTask(
-              defaultTask.taskId,
-              [entry],
-              function(result) {
-                if (result === 'opened' || result === 'message_sent')
-                  return;
-                this.openFileManagerWithSelectionURL_(entry.toURL());
-              }.bind(this));
-        } else {
-          // If there is no default task for the url, open a file manager with
-          // selecting it.
-          // TODO(yawano): Add fallback to view-in-browser as file_tasks.js do.
-          this.openFileManagerWithSelectionURL_(entry.toURL());
-        }
-      }.bind(this));
-    }
+          // If we haven't picked a default task yet, then just pick the first
+          // one which is not genric file hanlder as default task.
+          // TODO(yawano) Share task execution logic with file_tasks.js.
+          if (!defaultTask) {
+            for (var i = 0; i < tasks.length; i++) {
+              var task = tasks[i];
+              if (!task.isGenericFileHandler) {
+                defaultTask = task;
+                break;
+              }
+            }
+          }
+
+          if (defaultTask) {
+            // Execute default task.
+            chrome.fileManagerPrivate.executeTask(
+                defaultTask.taskId,
+                [entry],
+                function(result) {
+                  if (result === 'opened' || result === 'message_sent')
+                    return;
+                  this.openFileManagerWithSelectionURL_(entry.toURL());
+                }.bind(this));
+          } else {
+            // If there is no default task for the url, open a file manager with
+            // selecting it.
+            // TODO(yawano): Add fallback to view-in-browser as file_tasks.js do
+            this.openFileManagerWithSelectionURL_(entry.toURL());
+          }
+        }.bind(this));
+      }
+    }.bind(this));
   }.bind(this));
 };
 
