@@ -128,8 +128,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDownloadDirTest.*',
         # https://crbug.com/274650
         'ChromeDriverTest.testCloseWindow',
-        # https://code.google.com/p/chromedriver/issues/detail?id=270
-        'ChromeDriverTest.testPopups',
         # https://code.google.com/p/chromedriver/issues/detail?id=298
         'ChromeDriverTest.testWindowPosition',
         'ChromeDriverTest.testWindowSize',
@@ -189,6 +187,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testTouchDoubleTapElement',
         'ChromeDriverTest.testTouchLongPressElement',
         'ChromeDriverTest.testTouchPinch',
+        # WebView shell doesn't support popups or popup blocking.
+        'ChromeDriverTest.testPopups',
     ]
 )
 
