@@ -539,8 +539,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
 
     for (int iter = 0; iter < kNumChunksToCheck; ++iter) {
         checkRange = fullParagraphToCheck.subrange(currentChunkStart, kChunkSize);
-        setStart(checkRange.get(), startOfSentence(VisiblePosition(checkRange->startPosition())));
-        setEnd(checkRange.get(), endOfSentence(VisiblePosition(checkRange->endPosition())));
+        expandRangeToSentenceBoundary(*checkRange);
 
         int checkingLength = 0;
         markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), checkRange.get(), asynchronous, iter, &checkingLength);

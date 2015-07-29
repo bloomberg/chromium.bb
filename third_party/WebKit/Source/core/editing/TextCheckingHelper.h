@@ -100,7 +100,7 @@ private:
 };
 
 void checkTextOfParagraph(TextCheckerClient&, const String&, TextCheckingTypeMask, Vector<TextCheckingResult>&);
-
+void expandRangeToSentenceBoundary(Range&);
 bool unifiedTextCheckerEnabled(const LocalFrame*);
 
 } // namespace blink

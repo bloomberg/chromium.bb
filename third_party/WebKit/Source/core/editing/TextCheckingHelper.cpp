@@ -99,6 +99,12 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
     }
 }
 
+void expandRangeToSentenceBoundary(Range& range)
+{
+    setStart(&range, startOfSentence(VisiblePosition(range.startPosition())));
+    setEnd(&range, endOfSentence(VisiblePosition(range.endPosition())));
+}
+
 static PassRefPtrWillBeRawPtr<Range> expandToParagraphBoundary(PassRefPtrWillBeRawPtr<Range> range)
 {
     RefPtrWillBeRawPtr<Range> paragraphRange = range->cloneRange();
