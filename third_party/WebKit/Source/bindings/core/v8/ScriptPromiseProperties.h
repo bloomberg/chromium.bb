@@ -11,8 +11,6 @@
     P(Closed ## __VA_ARGS__) \
     P(Finished ## __VA_ARGS__) \
     P(Loaded ## __VA_ARGS__) \
-    P(Prompt ## __VA_ARGS__) \
-    P(Released ## __VA_ARGS__) \
-    P(UserChoice ## __VA_ARGS__)
+    P(Released ## __VA_ARGS__)
 
 #endif // ScriptPromiseProperties_h

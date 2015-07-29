@@ -63,16 +63,12 @@ function verify_prompt_reject(e, t) {
     );
 }
 
-function verify_userChoice(e, t, test_case, index, prompt_called) {
+function verify_userChoice(e, t, test_case, index) {
     e.userChoice.then(t.step_func(function(result) {
         assert_equals(result.platform, test_case.platform, 'Resolved platform');
         assert_equals(result.outcome, test_case.outcome, 'Outcome');
     })).then(t.step_func(function() {
-        if (prompt_called) {
-            verify_prompt_resolve(e, t);
-        } else {
-            verify_prompt_reject(e, t);
-        }
+        verify_prompt_reject(e, t);
     })).then(t.step_func(function() {
         prompt_test(index + 1);
         t.done();
@@ -96,16 +92,13 @@ function prompt_test(index) {
             assert_equals(e.platforms[0], 'foo', 'First platform');
             assert_equals(e.platforms[1], 'bar', 'Second platform');
 
-            if (test_case.cancel) {
-                e.preventDefault();
-            }
-
             if (test_case.late) {
                 return;
             }
 
             if (test_case.cancel) {
-                // Call prompt() to restart the pipeline.
+                // Cancel the event, then call prompt() to restart the display pipeline.
+                e.preventDefault();
                 verify_prompt_resolve(e, t);
             } else {
                 // A call to prompt() before preventDefault should reject.
@@ -114,7 +107,7 @@ function prompt_test(index) {
 
             // prompt() has been fired or the event has not been canceled, so check
             // the userChoice promise and call the next test.
-            verify_userChoice(e, t, test_case, index, test_case.cancel);
+            verify_userChoice(e, t, test_case, index);
         });
         window.addEventListener('beforeinstallprompt', event_handler);
 
@@ -125,12 +118,13 @@ function prompt_test(index) {
         // Test that firing prompt() outside of the handler resolves or rejects correctly.
         if (test_case.late) {
             if (test_case.cancel) {
+                event.preventDefault();
                 verify_prompt_resolve(event, t);
             } else {
                 verify_prompt_reject(event, t);
             }
             // Check userChoice and call the next test.
-            verify_userChoice(event, t, test_case, index, test_case.cancel);
+            verify_userChoice(event, t, test_case, index);
         }
     }, test_case.name);
 }
