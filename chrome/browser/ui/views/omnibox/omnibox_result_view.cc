@@ -609,6 +609,10 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
 void OmniboxResultView::Layout() {
   const gfx::ImageSkia icon = GetIcon();
   ui::ThemeProvider* theme_provider = GetThemeProvider();
+  // |theme_provider| can be null when animations are running during shutdown,
+  // after OmniboxResultView has been removed from the tree of Views.
+  if (!theme_provider)
+    return;
   const int horizontal_padding = theme_provider->GetDisplayProperty(
       ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
   const int trailing_padding = theme_provider->GetDisplayProperty(
