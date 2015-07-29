@@ -628,7 +628,7 @@ std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
     case SPDY3:
       return "spdy/3";
     case HTTP2:
-      return "h2-14";
+      return "h2";
     default:
       LOG(DFATAL) << "Unsupported SPDY major version: " << version;
       return "spdy/3";
