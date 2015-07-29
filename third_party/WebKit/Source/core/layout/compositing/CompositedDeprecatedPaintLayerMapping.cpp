@@ -2294,9 +2294,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateSquashingLayerAssignment(Depre
         // Must invalidate before adding the squashed layer to the mapping.
         compositor()->paintInvalidationOnCompositingChange(squashedLayer);
 
-        // Clear pointer on the previous entry.
-        clearLayerGroupingIfNoPrecedingEntry(nextSquashedLayerIndex);
-        m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
+        m_squashedLayers.insert(nextSquashedLayerIndex, paintInfo);
     } else {
         // Must invalidate before adding the squashed layer to the mapping.
         compositor()->paintInvalidationOnCompositingChange(squashedLayer);

@@ -139,9 +139,6 @@ CASE 5, overlap2 gets added back:
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 100, 100]
-      ],
       "children": [
         {
           "shouldFlattenTransform": false,
@@ -159,6 +156,7 @@ CASE 5, overlap2 gets added back:
               "drawsContent": true,
               "repaintRects": [
                 [80, 80, 100, 100],
+                [0, 0, 100, 100],
                 [0, 0, 100, 100]
               ]
             }
@@ -176,9 +174,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 100, 100]
-      ],
       "children": [
         {
           "shouldFlattenTransform": false,
@@ -197,6 +192,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
               "repaintRects": [
                 [80, 80, 100, 100],
                 [80, 80, 100, 100],
+                [0, 0, 100, 100],
                 [0, 0, 100, 100]
               ]
             }
