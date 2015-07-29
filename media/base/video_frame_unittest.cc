@@ -330,6 +330,50 @@ TEST(VideoFrame,
   EXPECT_EQ(release_sync_point, called_sync_point);
 }
 
+TEST(VideoFrame, IsValidConfig_OddCodedSize) {
+  // Odd sizes are valid for all formats. Odd formats may be internally rounded
+  // in VideoFrame::CreateFrame because VideoFrame owns the allocation and can
+  // pad the requested coded_size to ensure the UV sample boundaries line up
+  // with the Y plane after subsample scaling. See CreateFrame_OddWidth.
+  gfx::Size odd_size(677, 288);
+
+  // First choosing a format with sub-sampling for UV.
+  EXPECT_TRUE(VideoFrame::IsValidConfig(
+      PIXEL_FORMAT_I420, VideoFrame::STORAGE_OWNED_MEMORY, odd_size,
+      gfx::Rect(odd_size), odd_size));
+
+  // Next try a format with no sub-sampling for UV.
+  EXPECT_TRUE(VideoFrame::IsValidConfig(
+      PIXEL_FORMAT_YV24, VideoFrame::STORAGE_OWNED_MEMORY, odd_size,
+      gfx::Rect(odd_size), odd_size));
+}
+
+TEST(VideoFrame, CreateFrame_OddWidth) {
+  // Odd sizes are non-standard for YUV formats that subsample the UV, but they
+  // do exist in the wild and should be gracefully handled by VideoFrame in
+  // situations where VideoFrame allocates the YUV memory. See discussion in
+  // crrev.com/1240833003
+  const gfx::Size odd_size(677, 288);
+  const base::TimeDelta kTimestamp = base::TimeDelta();
+
+  // First create a frame that sub-samples UV.
+  scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
+      PIXEL_FORMAT_I420, odd_size, gfx::Rect(odd_size), odd_size, kTimestamp);
+  ASSERT_TRUE(frame.get());
+  // I420 aligns UV to every 2 Y pixels. Hence, 677 should be rounded to 678
+  // which is the nearest value such that width % 2 == 0
+  EXPECT_EQ(678, frame->coded_size().width());
+
+  // Next create a frame that does not sub-sample UV.
+  frame = VideoFrame::CreateFrame(PIXEL_FORMAT_YV24, odd_size,
+                                  gfx::Rect(odd_size), odd_size, kTimestamp);
+  ASSERT_TRUE(frame.get());
+  // No sub-sampling for YV24 will mean odd width can remain odd since any pixel
+  // in the Y plane has a a corresponding pixel in the UV planes at the same
+  // index.
+  EXPECT_EQ(677, frame->coded_size().width());
+}
+
 TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
   VideoFrameMetadata metadata;
 
