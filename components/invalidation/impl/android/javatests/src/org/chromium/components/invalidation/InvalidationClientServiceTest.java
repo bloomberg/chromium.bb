@@ -807,6 +807,16 @@ public class InvalidationClientServiceTest extends
 
     @SmallTest
     @Feature({"Sync"})
+    public void testNullIntent() {
+        getService().setShouldRunStates(true, true);
+        getService().onCreate();
+        // onHandleIntent must gracefully handle receiving a null intent.
+        getService().onHandleIntent(null);
+        // No crash == success.
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
     public void testRegistrationRetries() {
         /*
          * Test plan: validate that the alarm receiver used by the AndroidListener underlying

@@ -78,6 +78,10 @@ public class InvalidationClientService extends AndroidListener {
 
     @Override
     public void onHandleIntent(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+
         // Ensure that a client is or is not running, as appropriate, and that it is for the
         // correct account. ensureAccount will stop the client if account is non-null and doesn't
         // match the stored account. Then, if a client should be running, ensureClientStartState
