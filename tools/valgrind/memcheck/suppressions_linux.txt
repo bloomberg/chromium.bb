@@ -77,3 +77,15 @@
    fun:_ZN6crypto20ClearOpenSSLERRStackERKN15tracked_objects8LocationE
    fun:_ZN6crypto21OpenSSLErrStackTracerD2Ev
 }
+{
+   bug_512204_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net13CTLogVerifier6CreateERKN4base16BasicStringPieceISsEES5_S5_
+   fun:_ZN3net2ct30CreateLogVerifiersForKnownLogsEv
+   fun:_ZN8IOThread4InitEv
+   fun:_ZN7content17BrowserThreadImpl4InitEv
+   fun:_ZN7content21TestBrowserThreadImpl4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
