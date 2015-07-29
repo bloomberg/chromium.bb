@@ -1791,6 +1791,55 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsTest):
           self.device.GetMemoryUsageForPid(4321))
 
 
+class DeviceUtilsDismissCrashDialogIfNeededTest(DeviceUtilsTest):
+
+  def testDismissCrashDialogIfNeeded_crashedPageckageNotFound(self):
+    sample_dumpsys_output = '''
+WINDOW MANAGER WINDOWS (dumpsys window windows)
+  Window #11 Window{f8b647a u0 SearchPanel}:
+    mDisplayId=0 mSession=Session{8 94:122} mClient=android.os.BinderProxy@1ba5
+    mOwnerUid=100 mShowToOwnerOnly=false package=com.android.systemui appop=NONE
+    mAttrs=WM.LayoutParams{(0,0)(fillxfill) gr=#53 sim=#31 ty=2024 fl=100
+    Requested w=1080 h=1920 mLayoutSeq=426
+    mBaseLayer=211000 mSubLayer=0 mAnimLayer=211000+0=211000 mLastLayer=211000
+'''
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), sample_dumpsys_output.split('\n'))):
+      package_name = self.device.DismissCrashDialogIfNeeded()
+      self.assertIsNone(package_name)
+
+  def testDismissCrashDialogIfNeeded_crashedPageckageFound(self):
+    sample_dumpsys_output = '''
+WINDOW MANAGER WINDOWS (dumpsys window windows)
+  Window #11 Window{f8b647a u0 SearchPanel}:
+    mDisplayId=0 mSession=Session{8 94:122} mClient=android.os.BinderProxy@1ba5
+    mOwnerUid=102 mShowToOwnerOnly=false package=com.android.systemui appop=NONE
+    mAttrs=WM.LayoutParams{(0,0)(fillxfill) gr=#53 sim=#31 ty=2024 fl=100
+    Requested w=1080 h=1920 mLayoutSeq=426
+    mBaseLayer=211000 mSubLayer=0 mAnimLayer=211000+0=211000 mLastLayer=211000
+  mHasPermanentDpad=false
+  mCurrentFocus=Window{3a27740f u0 Application Error: com.android.chrome}
+  mFocusedApp=AppWindowToken{470af6f token=Token{272ec24e ActivityRecord{t894}}}
+'''
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), sample_dumpsys_output.split('\n')),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '22'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '22'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '66'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), [])):
+      package_name = self.device.DismissCrashDialogIfNeeded()
+      self.assertEqual(package_name, 'com.android.chrome')
+
+
 class DeviceUtilsClientCache(DeviceUtilsTest):
 
   def testClientCache_twoCaches(self):

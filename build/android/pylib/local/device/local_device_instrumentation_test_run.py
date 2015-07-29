@@ -32,7 +32,7 @@ def DidPackageCrashOnDevice(package_name, device):
   # loop or we are failing to dismiss.
   try:
     for _ in xrange(10):
-      package = _DismissCrashDialog(device)
+      package = device.DismissCrashDialogIfNeeded()
       if not package:
         return False
       # Assume test package convention of ".test" suffix
@@ -45,22 +45,6 @@ def DidPackageCrashOnDevice(package_name, device):
 
 _CURRENT_FOCUS_CRASH_RE = re.compile(
     r'\s*mCurrentFocus.*Application (Error|Not Responding): (\S+)}')
-
-
-def _DismissCrashDialog(device):
-  # TODO(jbudorick): Try to grep the output on the device instead of using
-  # large_output if/when DeviceUtils exposes a public interface for piped
-  # shell command handling.
-  for l in device.RunShellCommand(
-      ['dumpsys', 'window', 'windows'], check_return=True, large_output=True):
-    m = re.match(_CURRENT_FOCUS_CRASH_RE, l)
-    if m:
-      device.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
-      device.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
-      device.SendKeyEvent(keyevent.KEYCODE_ENTER)
-      return m.group(2)
-
-  return None
 
 
 class LocalDeviceInstrumentationTestRun(
