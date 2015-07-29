@@ -8,15 +8,19 @@
  */
 
 var startSessionPromise = null;
-var currentSession = null;
-var presentation = window.navigator.presentation;
-var presUrl = "http://www.google.com/#__testprovider__=true";
+var startedSession = null;
+var joinedSession = null;
+var presentationUrl = "http://www.google.com/#__testprovider__=true";
+var startSessionRequest = new PresentationRequest(presentationUrl);
+
+window.navigator.presentation.defaultRequest = startSessionRequest;
 
 /**
  * Waits until one device is available.
  */
 function waitUntilDeviceAvailable() {
-  presentation.getAvailability(presUrl).then(function(availability) {
+  startSessionRequest.getAvailability(presentationUrl).then(
+  function(availability) {
     console.log('availability ' + availability.value + '\n');
     if (availability.value) {
       sendResult(true, '');
@@ -32,8 +36,7 @@ function waitUntilDeviceAvailable() {
  * Starts session.
  */
 function startSession() {
-  var presId = Math.random().toFixed(6).substr(2);
-  startSessionPromise = presentation.startSession(presUrl, presId);
+  startSessionPromise = startSessionRequest.start();
   console.log('start session');
   sendResult(true, '');
 }
@@ -45,17 +48,17 @@ function checkSession() {
   if (!startSessionPromise) {
     sendResult(false, 'Failed to start session');
   } else {
-    startSessionPromise.then(function (currentSession) {
-      if(!currentSession) {
+    startSessionPromise.then(function(session) {
+      if(!session) {
         sendResult(false, 'Failed to start session');
       } else {
         // set the new session
-        currentSession = currentSession;
+        startedSession = session;
         sendResult(true, '');
       }
     }).catch(function() {
       // close old session if exists
-      currentSession && currentSession.close();
+      startedSession && startedSession.close();
       sendResult(false, 'Failed to start session');
     })
   }
@@ -66,12 +69,30 @@ function checkSession() {
  * Stops current session.
  */
 function stopSession() {
-  if (currentSession) {
-    currentSession.close();
+  if (startedSession) {
+    startedSession.close();
   }
   sendResult(true, '');
 }
 
+
+/**
+ * Joins the started session and verify that it succeeds.
+ * @param {!string} sessionId ID of session to join.
+ */
+function joinSession(sessionId) {
+  var joinSessionRequest = new PresentationRequest(presentationUrl);
+  joinSessionRequest.join(sessionId).then(function(session) {
+    if (!session) {
+      sendResult(false, 'joinSession returned null session');
+    } else {
+      joinedSession = session;
+      sendResult(true, '');
+    }
+  }).catch(function(error) {
+    sendResult(false, 'joinSession failed: ' + error.message);
+  });
+}
 
 /**
  * Sends the test result back to browser test.

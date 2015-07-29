@@ -23,8 +23,8 @@ PresentationSessionStateObserver::~PresentationSessionStateObserver() {
 
 void PresentationSessionStateObserver::OnPresentationSessionConnected(
     const MediaRoute::Id& route_id) {
-  DCHECK(!ContainsValue(tracked_route_ids_, route_id));
-  tracked_route_ids_.push_back(route_id);
+  if (!ContainsValue(tracked_route_ids_, route_id))
+    tracked_route_ids_.push_back(route_id);
   InvokeCallback(route_id, content::PRESENTATION_SESSION_STATE_CONNECTED);
 }
 

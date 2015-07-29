@@ -1,8 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>MR Integration Basic Test</title>
-    <link href="https://www.google.com/cast?__testprovider__=true" rel="default-presentation">
+    <title>MR Integration No Provider Test</title>
     <script type="text/javascript" src="common.js"></script>
     <script>
     /**
@@ -13,7 +12,7 @@
         sendResult(false, 'Failed to start session');
       } else {
         startSessionPromise.then(
-          function (currentSession) {
+          function (session) {
             sendResult(false, 'Session should not be started successfully.');
           }).catch(function(e) {
             if (e.message.indexOf('No provider supports it') > -1) {

@@ -33,6 +33,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
                             const std::string& script);
 
   void OpenTestPage(base::FilePath::StringPieceType file);
+  void OpenTestPageInNewTab(base::FilePath::StringPieceType file);
 
   void SetTestData(base::FilePath::StringPieceType test_data_file);
 
