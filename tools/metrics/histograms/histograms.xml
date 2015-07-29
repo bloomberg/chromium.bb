@@ -49907,6 +49907,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.InputHeightInPixels" units="pixels">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average input height per frame (for incoming frames to video engine) for
+    a sent video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.InputWidthInPixels" units="pixels">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average input width per frame (for incoming frames to video engine) for
+    a sent video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.KeyFramesReceivedInPermille" units="permille">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -50001,6 +50017,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.ReceivedHeightInPixels" units="pixels">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average received height per frame for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.ReceivedPacketsLostInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -50009,10 +50033,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.ReceivedWidthInPixels" units="pixels">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average received width per frame for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.RecoveredMediaPacketsInPercentOfFec" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
     Percentage of recovered media packets from FEC packets for a received video
+    stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.RenderFramesPerSecond" units="fps">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The number of sent frames to the renderer per second for a received video
     stream. Recorded when a stream is removed.
   </summary>
 </histogram>
@@ -50057,10 +50097,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.SentHeightInPixels" units="pixels">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average sent height per frame for a sent video stream. Recorded when a
+    stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.SentPacketsLostInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
     Percentage of sent packets lost for a sent video stream. Recorded when a
+    stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.SentWidthInPixels" units="pixels">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average sent width per frame for a sent video stream. Recorded when a
     stream is removed.
   </summary>
 </histogram>
