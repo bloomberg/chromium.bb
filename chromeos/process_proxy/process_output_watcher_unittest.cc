@@ -105,6 +105,15 @@ class ProcessOutputWatcherTest : public testing::Test {
 
   void OnRead(ProcessOutputType type, const std::string& output) {
     ASSERT_FALSE(failed_);
+    // There may be an EXIT signal sent during test tear down (which is sent
+    // by process output watcher when master end of test pseudo-terminal is
+    // closed). If this happens, ignore it. If EXIT is seen before test
+    // expectations are met, fall through in order to fail the test.
+    if (type == PROCESS_OUTPUT_TYPE_EXIT && expectations_.IsDone()) {
+      ASSERT_TRUE(test_case_done_callback_.is_null());
+      return;
+    }
+
     failed_ = !expectations_.CheckExpectations(output, type);
     if (failed_ || expectations_.IsDone()) {
       ASSERT_FALSE(test_case_done_callback_.is_null());
@@ -176,8 +185,7 @@ class ProcessOutputWatcherTest : public testing::Test {
   std::vector<TestCase> exp;
 };
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_OutputWatcher) {
+TEST_F(ProcessOutputWatcherTest, OutputWatcher) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("t", false));
   test_cases.push_back(TestCase("testing output\n", false));
@@ -192,8 +200,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_OutputWatcher) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_SplitUTF8Character) {
+TEST_F(ProcessOutputWatcherTest, SplitUTF8Character) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("test1\xc2", false, "test1"));
   test_cases.push_back(TestCase("\xb5test1", false, "\xc2\xb5test1"));
@@ -201,8 +208,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_SplitUTF8Character) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_SplitSoleUTF8Character) {
+TEST_F(ProcessOutputWatcherTest, SplitSoleUTF8Character) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("\xc2", false, ""));
   test_cases.push_back(TestCase("\xb5", false, "\xc2\xb5"));
@@ -210,8 +216,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_SplitSoleUTF8Character) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_SplitUTF8CharacterLength3) {
+TEST_F(ProcessOutputWatcherTest, SplitUTF8CharacterLength3) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("test3\xe2\x82", false, "test3"));
   test_cases.push_back(TestCase("\xac", false, "\xe2\x82\xac"));
@@ -219,8 +224,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_SplitUTF8CharacterLength3) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_SplitSoleUTF8CharacterThreeWays) {
+TEST_F(ProcessOutputWatcherTest, SplitSoleUTF8CharacterThreeWays) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("\xe2", false, ""));
   test_cases.push_back(TestCase("\x82", false, ""));
@@ -258,8 +262,7 @@ TEST_F(ProcessOutputWatcherTest, MulitByteUTF8CharNullTerminated) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_MultipleMultiByteUTF8Characters) {
+TEST_F(ProcessOutputWatcherTest, MultipleMultiByteUTF8Characters) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(
       TestCase("test\xe2\x82\xac\xc2", false, "test\xe2\x82\xac"));
@@ -275,8 +278,7 @@ TEST_F(ProcessOutputWatcherTest, ContainsInvalidUTF8) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_InvalidUTF8SeriesOfTrailingBytes) {
+TEST_F(ProcessOutputWatcherTest, InvalidUTF8SeriesOfTrailingBytes) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("\x82\x82\x82", false, "\x82\x82\x82"));
   test_cases.push_back(TestCase("\x82\x82\x82", false, "\x82\x82\x82"));
@@ -291,8 +293,7 @@ TEST_F(ProcessOutputWatcherTest, EndsWithInvalidUTF8) {
   RunTest(test_cases);
 }
 
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_FourByteUTF8) {
+TEST_F(ProcessOutputWatcherTest, FourByteUTF8) {
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("\xf0\xa4\xad", false, ""));
   test_cases.push_back(TestCase("\xa2", false, "\xf0\xa4\xad\xa2"));
@@ -302,8 +303,7 @@ TEST_F(ProcessOutputWatcherTest, DISABLED_FourByteUTF8) {
 
 // Verifies that sending '\0' generates PROCESS_OUTPUT_TYPE_OUT event and does
 // not terminate output watcher.
-// http://crbug.com/396496
-TEST_F(ProcessOutputWatcherTest, DISABLED_SendNull) {
+TEST_F(ProcessOutputWatcherTest, SendNull) {
   std::vector<TestCase> test_cases;
   // This will send '\0' to output watcher.
   test_cases.push_back(TestCase("", true));
