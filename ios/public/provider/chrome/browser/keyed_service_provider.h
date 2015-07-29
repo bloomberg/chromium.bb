@@ -13,7 +13,7 @@ enum class ServiceAccessType;
 class KeyedServiceBaseFactory;
 
 namespace bookmarks {
-class BookmarkModel;
+class ManagedBookmarkService;
 }
 
 namespace sync_driver {
@@ -39,13 +39,15 @@ class KeyedServiceProvider {
   // Ensures that all KeyedService factories are instantiated. Must be called
   // before any BrowserState instance is created so that dependencies are
   // correct.
-  virtual void AssertKeyedFactoriesBuilt() = 0;
+  void AssertKeyedFactoriesBuilt();
 
-  // Returns the bookmarks::BookmarkModel factory for dependencies.
-  virtual KeyedServiceBaseFactory* GetBookmarkModelFactory() = 0;
+  // Returns the bookmarks::ManagedBookmarkService factory for dependencies.
+  virtual KeyedServiceBaseFactory* GetManagedBookmarkServiceFactory() = 0;
 
-  // Returns an instance of bookmarks::BookmarkModel tied to |browser_state|.
-  virtual bookmarks::BookmarkModel* GetBookmarkModelForBrowserState(
+  // Returns an instance of bookmarks::ManagedBookmarkService tied to
+  // |browser_state|.
+  virtual bookmarks::ManagedBookmarkService*
+  GetManagedBookmarkServiceForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
   // Returns the sync_driver::SyncService factory for dependencies.

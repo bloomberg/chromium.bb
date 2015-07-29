@@ -28,4 +28,9 @@ KeyedServiceProvider::KeyedServiceProvider() {
 KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
+void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
+  GetManagedBookmarkServiceFactory();
+  GetSyncServiceFactory();
+}
+
 }  // namespace ios

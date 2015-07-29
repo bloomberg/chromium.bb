@@ -12,11 +12,11 @@
 #include "components/history/ios/browser/history_database_helper.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/history/history_client_impl.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
 
@@ -59,7 +59,7 @@ HistoryServiceFactory::HistoryServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "HistoryService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(GetKeyedServiceProvider()->GetBookmarkModelFactory());
+  DependsOn(ios::BookmarkModelFactory::GetInstance());
 }
 
 HistoryServiceFactory::~HistoryServiceFactory() {
@@ -72,8 +72,7 @@ scoped_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<history::HistoryService> history_service(
       new history::HistoryService(
           make_scoped_ptr(new HistoryClientImpl(
-              GetKeyedServiceProvider()->GetBookmarkModelForBrowserState(
-                  browser_state))),
+              ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
           nullptr));
   if (!history_service->Init(
           browser_state->GetPrefs()->GetString(ios::prefs::kAcceptLanguages),

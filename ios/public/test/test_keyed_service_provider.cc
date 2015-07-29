@@ -67,17 +67,13 @@ TestKeyedServiceProvider::TestKeyedServiceProvider() {
 TestKeyedServiceProvider::~TestKeyedServiceProvider() {
 }
 
-void TestKeyedServiceProvider::AssertKeyedFactoriesBuilt() {
-  FakeSyncServiceFactory::GetInstance();
-  MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-KeyedServiceBaseFactory* TestKeyedServiceProvider::GetBookmarkModelFactory() {
+KeyedServiceBaseFactory*
+TestKeyedServiceProvider::GetManagedBookmarkServiceFactory() {
   return MissingServiceKeyedServiceFactory::GetInstance();
 }
 
-bookmarks::BookmarkModel*
-TestKeyedServiceProvider::GetBookmarkModelForBrowserState(
+bookmarks::ManagedBookmarkService*
+TestKeyedServiceProvider::GetManagedBookmarkServiceForBrowserState(
     ChromeBrowserState* browser_state) {
   return nullptr;
 }
