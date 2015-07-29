@@ -43,14 +43,19 @@ struct ThreadParams {
 
 void* ThreadFunc(void* params) {
   base::InitOnThread();
-  scoped_ptr<ThreadParams> thread_params(static_cast<ThreadParams*>(params));
 
-  PlatformThread::Delegate* delegate = thread_params->delegate;
-  if (!thread_params->joinable)
-    base::ThreadRestrictions::SetSingletonAllowed(false);
+  PlatformThread::Delegate* delegate = nullptr;
 
-  if (thread_params->priority != ThreadPriority::NORMAL)
-    PlatformThread::SetCurrentThreadPriority(thread_params->priority);
+  {
+    scoped_ptr<ThreadParams> thread_params(static_cast<ThreadParams*>(params));
+
+    delegate = thread_params->delegate;
+    if (!thread_params->joinable)
+      base::ThreadRestrictions::SetSingletonAllowed(false);
+
+    if (thread_params->priority != ThreadPriority::NORMAL)
+      PlatformThread::SetCurrentThreadPriority(thread_params->priority);
+  }
 
   ThreadIdNameManager::GetInstance()->RegisterThread(
       PlatformThread::CurrentHandle().platform_handle(),
