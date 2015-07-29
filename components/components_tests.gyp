@@ -856,7 +856,6 @@
         'components.gyp:os_crypt',
         'components.gyp:packed_ct_ev_whitelist',
         'components.gyp:password_manager_core_browser',
-        'components.gyp:password_manager_core_browser',
         'components.gyp:password_manager_core_browser_test_support',
         'components.gyp:precache_core',
         'components.gyp:pref_registry_test_support',
