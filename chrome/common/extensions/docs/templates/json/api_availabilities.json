@@ -43,5 +43,9 @@
   "webviewTag": {
     "channel": "stable",
     "version": 25
+  },
+  "webviewTag.WebRequestEventInterface": {
+    "channel": "stable",
+    "version": 33
   }
 }

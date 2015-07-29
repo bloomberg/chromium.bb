@@ -136,19 +136,19 @@ class AvailabilityFinder(object):
     # to lookup availability.
     self._schema_processor = schema_processor_factory.Create(True)
 
-  def _GetPredeterminedAvailability(self, api_name):
+  def _GetPredeterminedNodeAvailability(self, node_name):
     '''Checks a configuration file for hardcoded (i.e. predetermined)
-    availability information for an API.
+    availability information for an API node.
     '''
-    api_info = self._json_fs.GetFromFile(
-        JSON_TEMPLATES + 'api_availabilities.json').Get().get(api_name)
-    if api_info is None:
+    node_info = self._json_fs.GetFromFile(
+        JSON_TEMPLATES + 'api_availabilities.json').Get().get(node_name)
+    if node_info is None:
       return None
-    if api_info['channel'] == 'stable':
+    if node_info['channel'] == 'stable':
       return AvailabilityInfo(
-          self._branch_utility.GetStableChannelInfo(api_info['version']))
+          self._branch_utility.GetStableChannelInfo(node_info['version']))
     return AvailabilityInfo(
-        self._branch_utility.GetChannelInfo(api_info['channel']))
+        self._branch_utility.GetChannelInfo(node_info['channel']))
 
   @memoize
   def _CreateAPISchemaFileSystem(self, file_system):
@@ -328,6 +328,12 @@ class AvailabilityFinder(object):
   def _CheckAPINodeAvailability(self, node_name, earliest_channel_info):
     '''Gets availability data for a node by checking _features files.
     '''
+    # Check for predetermined availability and cache this information if found.
+    availability = self._GetPredeterminedNodeAvailability(node_name)
+    if availability is not None:
+      self._top_level_object_store.Set(node_name, availability)
+      return availability
+
     def check_node_availability(file_system, channel_info):
       return self._CheckChannelAvailabilityForNode(node_name,
                                                    file_system,
@@ -356,7 +362,7 @@ class AvailabilityFinder(object):
       return availability
 
     # Check for predetermined availability and cache this information if found.
-    availability = self._GetPredeterminedAvailability(api_name)
+    availability = self._GetPredeterminedNodeAvailability(api_name)
     if availability is not None:
       self._top_level_object_store.Set(api_name, availability)
       return availability

@@ -207,6 +207,10 @@ class AvailabilityFinderTest(unittest.TestCase):
       tabs_graph = avail_finder.GetAPINodeAvailability('tabs')
       fake_tabs_graph = avail_finder.GetAPINodeAvailability('fakeTabs')
 
+      # Test an API node with predetermined availability.
+      assertEquals(True, self._branch_utility.GetStableChannelInfo(27),
+          tabs_graph.Lookup('tabs', 'properties', 'fakeTabsProperty4'))
+
       assertEquals(True, self._branch_utility.GetChannelInfo('master'),
           tabs_graph.Lookup('tabs', 'properties', 'fakeTabsProperty3'))
       assertEquals(True, self._branch_utility.GetChannelInfo('dev'),

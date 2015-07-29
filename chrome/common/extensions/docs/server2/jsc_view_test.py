@@ -391,7 +391,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
     assertEquals('tabs.Tab', model_dict['types'][0]['availability'])
     # Test property.
     assertEquals('tabs.fakeTabsProperty1',
-                 model_dict['properties'][0]['availability'])
+                 model_dict['properties'][1]['availability'])
     # Test function.
     assertEquals('tabs.get', model_dict['functions'][1]['availability'])
     # Test event.
@@ -404,7 +404,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
                  model_dict['types'][1]['availability']['version'])
     # Test property.
     assertEquals('tabs.fakeTabsProperty2',
-                 model_dict['properties'][2]['availability']['version'])
+                 model_dict['properties'][3]['availability']['version'])
     # Test function.
     assertEquals('tabs.getCurrent',
                  model_dict['functions'][0]['availability']['version'])

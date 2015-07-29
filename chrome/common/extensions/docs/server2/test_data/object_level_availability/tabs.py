@@ -36,7 +36,12 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
     'docs': {
       'templates': {
         'json': {
-          'api_availabilities.json': '{}',
+          'api_availabilities.json': json.dumps({
+            'tabs.fakeTabsProperty4': {
+              'channel': 'stable',
+              'version': 27
+            }
+          }),
           'intro_tables.json': '{}'
         }
       }
@@ -108,6 +113,9 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'type': 'any'
           },
           'fakeTabsProperty3': {
+            'type': 'any'
+          },
+          'fakeTabsProperty4': {
             'type': 'any'
           }
         },
