@@ -56,7 +56,8 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
       const std::string& source_path) const override;
   const MountPointMap& mount_points() const override;
   void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback) override;
+      const EnsureMountInfoRefreshedCallback& callback,
+      bool force) override;
   void MountPath(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,

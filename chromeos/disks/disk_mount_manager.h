@@ -246,9 +246,10 @@ class CHROMEOS_EXPORT DiskMountManager {
 
   // Refreshes all the information about mounting if it is not yet done and
   // invokes |callback| when finished. If the information is already refreshed
-  // It just runs |callback| immediately.
+  // and |force| is false, it just runs |callback| immediately.
   virtual void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback) = 0;
+      const EnsureMountInfoRefreshedCallback& callback,
+      bool force) = 0;
 
   // Mounts a device.
   // Note that the mount operation may fail. To find out the result, one should

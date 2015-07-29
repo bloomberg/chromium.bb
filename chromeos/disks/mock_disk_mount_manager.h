@@ -32,8 +32,8 @@ class MockDiskMountManager : public DiskMountManager {
                      const DiskMountManager::Disk*(const std::string&));
   MOCK_CONST_METHOD0(mount_points,
                      const DiskMountManager::MountPointMap&(void));
-  MOCK_METHOD1(EnsureMountInfoRefreshed,
-               void(const EnsureMountInfoRefreshedCallback&));
+  MOCK_METHOD2(EnsureMountInfoRefreshed,
+               void(const EnsureMountInfoRefreshedCallback&, bool));
   MOCK_METHOD4(MountPath, void(const std::string&, const std::string&,
                                const std::string&, MountType));
   MOCK_METHOD3(UnmountPath, void(const std::string&,
@@ -92,7 +92,8 @@ class MockDiskMountManager : public DiskMountManager {
 
   // Is used to implement EnsureMountInfoRefreshed.
   void EnsureMountInfoRefreshedInternal(
-      const EnsureMountInfoRefreshedCallback& callback);
+      const EnsureMountInfoRefreshedCallback& callback,
+      bool force);
 
   // Notifies observers about device status update.
   void NotifyDeviceChanged(DeviceEvent event,

@@ -9,6 +9,11 @@
 
 namespace chromeos {
 namespace disks {
+namespace {
+
+void OnRefreshCompleted(bool success) {}
+
+}  // namespace
 
 SuspendUnmountManager::SuspendUnmountManager(
     DiskMountManager* disk_mount_manager,
@@ -54,6 +59,8 @@ void SuspendUnmountManager::SuspendDone(const base::TimeDelta& sleep_duration) {
   // SuspendDone can be called before OnUnmountComplete when suspend is
   // cancelled, or it takes long time to unmount volumes.
   unmounting_paths_.clear();
+  disk_mount_manager_->EnsureMountInfoRefreshed(base::Bind(&OnRefreshCompleted),
+                                                true /* force */);
   suspend_readiness_callback_.Reset();
 }
 
@@ -68,5 +75,5 @@ void SuspendUnmountManager::OnUnmountComplete(const std::string& mount_path,
   }
 }
 
-}  // namespace chromeos
 }  // namespace disks
+}  // namespace chromeos

@@ -337,7 +337,8 @@ void VolumeManager::Initialize() {
   disk_mount_manager_->AddObserver(this);
   disk_mount_manager_->EnsureMountInfoRefreshed(
       base::Bind(&VolumeManager::OnDiskMountManagerRefreshed,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      false /* force */);
 
   // Subscribe to FileSystemProviderService and register currently mounted
   // volumes for the profile.

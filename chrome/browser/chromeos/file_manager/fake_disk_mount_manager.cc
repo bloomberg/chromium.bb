@@ -64,7 +64,8 @@ FakeDiskMountManager::mount_points() const {
 }
 
 void FakeDiskMountManager::EnsureMountInfoRefreshed(
-    const EnsureMountInfoRefreshedCallback& callback) {
+    const EnsureMountInfoRefreshedCallback& callback,
+    bool force) {
   callback.Run(true);
 }
 

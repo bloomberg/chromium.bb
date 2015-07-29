@@ -58,7 +58,7 @@ MockDiskMountManager::MockDiskMountManager() {
   ON_CALL(*this, FindDiskBySourcePath(_))
       .WillByDefault(Invoke(
           this, &MockDiskMountManager::FindDiskBySourcePathInternal));
-  ON_CALL(*this, EnsureMountInfoRefreshed(_))
+  ON_CALL(*this, EnsureMountInfoRefreshed(_, _))
       .WillByDefault(Invoke(
           this, &MockDiskMountManager::EnsureMountInfoRefreshedInternal));
 }
@@ -168,8 +168,7 @@ void MockDiskMountManager::SetupDefaultReplies() {
       .WillRepeatedly(ReturnRef(mount_points_));
   EXPECT_CALL(*this, FindDiskBySourcePath(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*this, EnsureMountInfoRefreshed(_))
-      .Times(AnyNumber());
+  EXPECT_CALL(*this, EnsureMountInfoRefreshed(_, _)).Times(AnyNumber());
   EXPECT_CALL(*this, MountPath(_, _, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(*this, UnmountPath(_, _, _))
@@ -243,7 +242,8 @@ MockDiskMountManager::FindDiskBySourcePathInternal(
 }
 
 void MockDiskMountManager::EnsureMountInfoRefreshedInternal(
-    const EnsureMountInfoRefreshedCallback& callback) {
+    const EnsureMountInfoRefreshedCallback& callback,
+    bool force) {
   callback.Run(true);
 }
 

@@ -194,8 +194,9 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   // DiskMountManager override.
   void EnsureMountInfoRefreshed(
-      const EnsureMountInfoRefreshedCallback& callback) override {
-    if (already_refreshed_) {
+      const EnsureMountInfoRefreshedCallback& callback,
+      bool force) override {
+    if (!force && already_refreshed_) {
       callback.Run(true);
       return;
     }
