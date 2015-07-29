@@ -6,10 +6,29 @@
       <tr>
         <td class="option-name" i18n-content="batteryStatusLabel">
         </td>
-        <td id="battery-status-value">
+        <td id="battery-status-value" class="option-value">
+        </td>
+      </tr>
+      <tr id="power-sources" hidden>
+        <td class="option-name">
+          <label id="power-source-label" i18n-content="powerSourceLabel">
+          </label>
+        </td>
+        <td class="option-value">
+          <select id="power-source-dropdown"
+              aria-labelledby="power-source-label"></select>
+        </td>
+      </tr>
+      <tr id="power-source-charger" hidden>
+        <td class="option-name" i18n-content="powerSourceLabel">
+        </td>
+        <td id="power-source-charger-type" class="option-value">
         </td>
       </tr>
     </table>
+    <div id="charging-description" class="settings-row" hidden
+        i18n-content="chargingDevices">
+    </div>
   </div>
   <div class="action-area">
     <div class="button-strip">

@@ -904,6 +904,7 @@
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.js',
       'browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js',
       'browser/ui/webui/options/chromeos/date_time_options_browsertest.js',
+      'browser/ui/webui/options/chromeos/power_overlay_browsertest.js',
       'browser/ui/webui/options/content_options_browsertest.js',
       'browser/ui/webui/options/content_settings_exception_area_browsertest.js',
       'browser/ui/webui/options/cookies_view_browsertest.js',

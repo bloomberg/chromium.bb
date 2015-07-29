@@ -463,8 +463,10 @@ list:not([disabled]) > .network-group[selected] {
   width: 100%;
 }
 
-#keyboard-overlay table {
+#keyboard-overlay table,
+#power-overlay table {
   /* Same as .settings-row {margin}. */
+  -webkit-border-horizontal-spacing: 0;
   -webkit-border-vertical-spacing: 0.65em;
 }
 

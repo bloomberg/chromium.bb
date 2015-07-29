@@ -107,10 +107,6 @@
     <h3 i18n-content="sectionTitleDevice"></h3>
     <div>
       <span i18n-content="deviceGroupDescription"></span>
-      <div class="settings-row" id="power-row" hidden>
-        <a is="action-link" id="power-settings-button"
-            i18n-content="powerSettingsButton"></a>
-      </div>
       <div id="touchpad-settings" class="settings-row" hidden>
         <span class="option-name" i18n-content="touchpadSpeed"></span>
         <input id="touchpad-sensitivity-range" type="range" min="1" max="5"
@@ -134,6 +130,10 @@
           <button id="display-options" i18n-content="displayOptions" disabled>
           </button>
         </span>
+      </div>
+      <div class="settings-row" id="power-row" hidden>
+        <a is="action-link" id="power-settings-button"
+            i18n-content="powerSettingsButton"></a>
       </div>
     </div>
   </section>

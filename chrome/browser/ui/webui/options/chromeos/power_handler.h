@@ -33,6 +33,15 @@ private:
   // calculated. Returns an empty string if there is no battery.
   base::string16 GetStatusValue() const;
 
+  // Handler to request updating the power status.
+  void UpdatePowerStatus(const base::ListValue* args);
+
+  // Handler to change the power source.
+  void SetPowerSource(const base::ListValue* args);
+
+  // Updates the UI with the latest power source information.
+  void UpdatePowerSources();
+
   // Whether the UI should show the power status.
   bool show_power_status_;
 
