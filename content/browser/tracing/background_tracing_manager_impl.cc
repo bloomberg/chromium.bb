@@ -115,12 +115,10 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
   if (config->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
     BackgroundTracingPreemptiveConfig* preemptive_config =
         static_cast<BackgroundTracingPreemptiveConfig*>(config);
-    const std::vector<BackgroundTracingPreemptiveConfig::MonitoringRule>&
-        configs = preemptive_config->configs;
-    for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].type == BackgroundTracingPreemptiveConfig::
-                                 MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED ||
-          configs[i].type ==
+    for (const auto& config : preemptive_config->configs) {
+      if (config.type == BackgroundTracingPreemptiveConfig::
+                             MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED ||
+          config.type ==
               BackgroundTracingPreemptiveConfig::
                   MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
         continue;
@@ -132,10 +130,8 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
   if (config->mode == BackgroundTracingConfig::REACTIVE_TRACING_MODE) {
     BackgroundTracingReactiveConfig* reactive_config =
         static_cast<BackgroundTracingReactiveConfig*>(config);
-    const std::vector<BackgroundTracingReactiveConfig::TracingRule>&
-        configs = reactive_config->configs;
-    for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].type !=
+    for (const auto& config : reactive_config->configs) {
+      if (config.type !=
           BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL)
         return false;
     }
@@ -152,25 +148,22 @@ void BackgroundTracingManagerImpl::SetupUMACallbacks(
 
   BackgroundTracingPreemptiveConfig* preemptive_config =
       static_cast<BackgroundTracingPreemptiveConfig*>(config_.get());
-  const std::vector<BackgroundTracingPreemptiveConfig::MonitoringRule>&
-      configs = preemptive_config->configs;
-  for (size_t i = 0; i < configs.size(); ++i) {
-    if (configs[i].type !=
-        BackgroundTracingPreemptiveConfig::
-            MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
+  for (const auto& config : preemptive_config->configs) {
+    if (config.type != BackgroundTracingPreemptiveConfig::
+                           MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
       continue;
     }
 
     if (mode == CLEAR_CALLBACKS) {
       base::StatisticsRecorder::ClearCallback(
-          configs[i].histogram_trigger_info.histogram_name);
+          config.histogram_trigger_info.histogram_name);
     } else {
       base::StatisticsRecorder::SetCallback(
-          configs[i].histogram_trigger_info.histogram_name,
+          config.histogram_trigger_info.histogram_name,
           base::Bind(&BackgroundTracingManagerImpl::OnHistogramChangedCallback,
                      base::Unretained(this),
-                     configs[i].histogram_trigger_info.histogram_name,
-                     configs[i].histogram_trigger_info.histogram_value));
+                     config.histogram_trigger_info.histogram_name,
+                     config.histogram_trigger_info.histogram_value));
     }
   }
 
@@ -356,13 +349,10 @@ bool BackgroundTracingManagerImpl::IsAbleToTriggerTracing(
     BackgroundTracingPreemptiveConfig* preemptive_config =
         static_cast<BackgroundTracingPreemptiveConfig*>(config_.get());
 
-    const std::vector<BackgroundTracingPreemptiveConfig::MonitoringRule>&
-        configs = preemptive_config->configs;
-
-    for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].type == BackgroundTracingPreemptiveConfig::
-                                 MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED &&
-          configs[i].named_trigger_info.trigger_name == trigger_name) {
+    for (const auto& config : preemptive_config->configs) {
+      if (config.type == BackgroundTracingPreemptiveConfig::
+                             MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED &&
+          config.named_trigger_info.trigger_name == trigger_name) {
         return true;
       }
     }
@@ -370,15 +360,11 @@ bool BackgroundTracingManagerImpl::IsAbleToTriggerTracing(
     BackgroundTracingReactiveConfig* reactive_config =
         static_cast<BackgroundTracingReactiveConfig*>(config_.get());
 
-    const std::vector<BackgroundTracingReactiveConfig::TracingRule>&
-        configs = reactive_config->configs;
-
-    for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].type !=
-              BackgroundTracingReactiveConfig::
-                  TRACE_FOR_10S_OR_TRIGGER_OR_FULL)
+    for (const auto& config : reactive_config->configs) {
+      if (config.type !=
+          BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL)
         continue;
-      if (trigger_name == configs[i].trigger_name) {
+      if (trigger_name == config.trigger_name) {
         return true;
       }
     }
@@ -417,14 +403,11 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     // It was not already tracing, start a new trace.
     BackgroundTracingReactiveConfig* reactive_config =
         static_cast<BackgroundTracingReactiveConfig*>(config_.get());
-    const std::vector<BackgroundTracingReactiveConfig::TracingRule>&
-        configs = reactive_config->configs;
     std::string trigger_name = GetTriggerNameFromHandle(handle);
-    for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].trigger_name == trigger_name) {
+    for (const auto& config : reactive_config->configs) {
+      if (config.trigger_name == trigger_name) {
         EnableRecording(
-            GetCategoryFilterStringForCategoryPreset(
-                configs[i].category_preset),
+            GetCategoryFilterStringForCategoryPreset(config.category_preset),
             base::trace_event::RECORD_UNTIL_FULL);
         tracing_timer_.reset(new TracingTimer(callback));
         tracing_timer_->StartTimer();
@@ -459,10 +442,8 @@ std::string BackgroundTracingManagerImpl::GetTriggerNameFromHandle(
 
 void BackgroundTracingManagerImpl::GetTriggerNameList(
     std::vector<std::string>* trigger_names) {
-  for (std::map<TriggerHandle, std::string>::iterator it =
-           trigger_handles_.begin();
-       it != trigger_handles_.end(); ++it)
-    trigger_names->push_back(it->second);
+  for (const auto& it : trigger_handles_)
+    trigger_names->push_back(it.second);
 }
 
 void BackgroundTracingManagerImpl::InvalidateTriggerHandlesForTesting() {
