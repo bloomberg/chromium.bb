@@ -1,0 +1,23 @@
+# speech not enabled crbug.com/487255
+interface SpeechSynthesisEvent # speech not enabled
+interface SpeechSynthesisUtterance
+interface webkitSpeechGrammar
+interface webkitSpeechGrammarList
+interface webkitSpeechRecognition
+interface webkitSpeechRecognitionError
+interface webkitSpeechRecognitionEvent
+
+# permissions api not enabled in webview crbug.com/490120
+interface PermissionStatus
+interface Permissions
+
+# notifications api not enabled in webview crbug.com/434712
+interface Notification
+
+# not yet supported in webview.
+interface SharedWorker
+
+# TODO(timvolodine): check screen orientation lock api
+# TODO(timvolodine): check notifications in service workers
+# TODO(timvolodine): add Presentation API
+# TODO(timvolodine): add File System API
