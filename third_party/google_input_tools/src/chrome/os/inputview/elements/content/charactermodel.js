@@ -36,14 +36,13 @@ var StateType = i18n.input.chrome.inputview.StateType;
  * @param {!i18n.input.chrome.inputview.StateManager} stateManager The state
  *     manager.
  * @param {boolean} enableShiftRendering .
- * @param {boolean} isQpInputView .
  * @param {string=} opt_capslockCharacter .
  * @constructor
  */
 i18n.input.chrome.inputview.elements.content.CharacterModel = function(
     character, belongToLetterKey, hasAltGrCharacterInTheKeyset,
     alwaysRenderAltGrCharacter, stateType, stateManager, enableShiftRendering,
-    isQpInputView, opt_capslockCharacter) {
+    opt_capslockCharacter) {
 
   /**
    * The character.
@@ -102,9 +101,6 @@ i18n.input.chrome.inputview.elements.content.CharacterModel = function(
 
   /** @private {boolean} */
   this.enableShiftRendering_ = enableShiftRendering;
-
-  /** @private {boolean} */
-  this.isQpInputView_ = isQpInputView;
 };
 var CharacterModel = i18n.input.chrome.inputview.elements.content.
     CharacterModel;
@@ -156,12 +152,10 @@ CharacterModel.prototype.isVisible = function() {
   var hasShift = this.stateManager_.hasState(StateType.SHIFT);
   var enableShiftLetter = !this.belongToLetterKey_ || hasShift;
   var enableDefaultLetter = !this.belongToLetterKey_ || !hasShift;
-  if (this.isQpInputView_) {
-    enableShiftLetter = (this.enableShiftRendering_ &&
-        !this.belongToLetterKey_) || hasShift;
-    enableDefaultLetter = (this.enableShiftRendering_ &&
-        !this.belongToLetterKey_) || !hasShift;
-  }
+  enableShiftLetter = (this.enableShiftRendering_ &&
+      !this.belongToLetterKey_) || hasShift;
+  enableDefaultLetter = (this.enableShiftRendering_ &&
+      !this.belongToLetterKey_) || !hasShift;
   if (this.stateType_ == StateType.DEFAULT) {
     return !this.stateManager_.hasState(StateType.ALTGR) && enableDefaultLetter;
   }
@@ -249,7 +243,6 @@ CharacterModel.prototype.isVerticalAlignCenter = function() {
  * @return {!Array.<string>} The attributes.
  */
 CharacterModel.prototype.getPositionAttribute = function() {
-  var index;
   switch (this.stateType_) {
     case StateType.DEFAULT:
       return CharacterModel.CORNERS_[0];

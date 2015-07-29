@@ -36,13 +36,12 @@ var ReadyState = i18n.input.chrome.inputview.ReadyState;
  *
  * @enum {number}
  */
-ReadyState.StateType = {
+ReadyState.State = {
   IME_LIST_READY: 0x1,
   KEYBOARD_CONFIG_READY: 0x10,
   LAYOUT_READY: 0x100,
   LAYOUT_CONFIG_READY: 0x1000,
-  M17N_LAYOUT_READY: 0x10000,
-  INPUT_METHOD_CONFIG_READY: 0x100000
+  M17N_LAYOUT_READY: 0x10000
 };
 
 
@@ -61,31 +60,31 @@ ReadyState.prototype.state_ = 0;
  */
 ReadyState.prototype.isAllReady = function() {
   return !!(this.state_ & (
-      ReadyState.StateType.IME_LIST_READY |
-      ReadyState.StateType.KEYBOARD_CONFIG_READY |
-      ReadyState.StateType.LAYOUT_READY |
-      ReadyState.StateType.LAYOUT_CONFIG_READY |
-      ReadyState.StateType.M17N_LAYOUT_READY));
+      ReadyState.State.IME_LIST_READY |
+      ReadyState.State.KEYBOARD_CONFIG_READY |
+      ReadyState.State.LAYOUT_READY |
+      ReadyState.State.LAYOUT_CONFIG_READY |
+      ReadyState.State.M17N_LAYOUT_READY));
 };
 
 
 /**
  * Gets whether a specific state type is ready.
  *
- * @param {ReadyState.StateType} stateType .
+ * @param {ReadyState.State} state .
  * @return {boolean} Whether is ready.
  */
-ReadyState.prototype.isReady = function(stateType) {
-  return !!(this.state_ & stateType);
+ReadyState.prototype.isReady = function(state) {
+  return !!(this.state_ & state);
 };
 
 
 /**
  * Sets state ready for the given state type.
  *
- * @param {ReadyState.StateType} stateType .
+ * @param {ReadyState.State} state .
  */
-ReadyState.prototype.markStateReady = function(stateType) {
-  this.state_ |= stateType;
+ReadyState.prototype.markStateReady = function(state) {
+  this.state_ |= state;
 };
 });  // goog.scope

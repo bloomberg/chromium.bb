@@ -29,6 +29,7 @@ goog.scope(function() {
 var CharacterModel = i18n.input.chrome.inputview.elements.content.
     CharacterModel;
 var Character = i18n.input.chrome.inputview.elements.content.Character;
+var StateType = i18n.input.chrome.inputview.StateType;
 
 
 
@@ -50,8 +51,6 @@ var Character = i18n.input.chrome.inputview.elements.content.Character;
  * @param {boolean} enableShiftRendering Whether renders two letter vertically,
  *     it means show shift letter when in letter state, shows default letter
  *     when in shift state, same as the altgr state.
- * @param {boolean} isQpInputView Temporary flag to indicate it is in material
- *     design.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.content.SoftKey}
@@ -59,7 +58,7 @@ var Character = i18n.input.chrome.inputview.elements.content.Character;
 i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
     keyCode, characters, isLetterKey, hasAltGrCharacterInTheKeyset,
     alwaysRenderAltGrCharacter, stateManager, isRTL,
-    enableShiftRendering, isQpInputView, opt_eventTarget) {
+    enableShiftRendering, opt_eventTarget) {
   goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
       CHARACTER_KEY, opt_eventTarget);
 
@@ -119,9 +118,6 @@ i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
   /** @private {boolean} */
   this.enableShiftRendering_ = enableShiftRendering;
 
-  /** @private {boolean} */
-  this.isQpInputView_ = isQpInputView;
-
   this.pointerConfig.longPressWithPointerUp = true;
   this.pointerConfig.longPressDelay = 500;
 };
@@ -145,20 +141,16 @@ CharacterKey.prototype.flickerredCharacter = '';
  * @private
  */
 CharacterKey.STATE_LIST_ = [
-  i18n.input.chrome.inputview.StateType.DEFAULT,
-  i18n.input.chrome.inputview.StateType.SHIFT,
-  i18n.input.chrome.inputview.StateType.ALTGR,
-  i18n.input.chrome.inputview.StateType.ALTGR |
-      i18n.input.chrome.inputview.StateType.SHIFT
+  StateType.DEFAULT,
+  StateType.SHIFT,
+  StateType.ALTGR,
+  StateType.ALTGR | StateType.SHIFT
 ];
 
 
 /** @override */
 CharacterKey.prototype.createDom = function() {
   goog.base(this, 'createDom');
-
-  var elem = this.getElement();
-  var dom = this.getDomHelper();
 
   for (var i = 0; i < CharacterKey.STATE_LIST_.length; i++) {
     var ch = this.characters.length > i ? this.characters[i] : '';
@@ -169,7 +161,6 @@ CharacterKey.prototype.createDom = function() {
           CharacterKey.STATE_LIST_[i],
           this.stateManager_,
           this.enableShiftRendering_,
-          this.isQpInputView_,
           this.getCapslockCharacter_(i));
       var character = new Character(this.id + '-' + i, model, this.isRTL_);
       this.addChild(character, true);
@@ -255,10 +246,8 @@ CharacterKey.prototype.getActiveCharacter = function() {
  */
 CharacterKey.prototype.getCharacterByGesture =
     function(upOrDown) {
-  var hasAltGrState = this.stateManager_.hasState(
-      i18n.input.chrome.inputview.StateType.ALTGR);
-  var hasShiftState = this.stateManager_.hasState(i18n.input.chrome.inputview.
-      StateType.SHIFT);
+  var hasAltGrState = this.stateManager_.hasState(StateType.ALTGR);
+  var hasShiftState = this.stateManager_.hasState(StateType.SHIFT);
 
   if (upOrDown == hasShiftState) {
     // When shift is on, we only take swipe down, otherwise we only
@@ -295,13 +284,18 @@ CharacterKey.prototype.update = function() {
   goog.base(this, 'update');
 
   this.pointerConfig.flickerDirection = this.stateManager_.hasState(
-      i18n.input.chrome.inputview.StateType.SHIFT) ?
+      StateType.SHIFT) ?
       i18n.input.chrome.inputview.SwipeDirection.DOWN :
       i18n.input.chrome.inputview.SwipeDirection.UP;
 
+  var ariaLabel = this.getActiveCharacter();
+  if (this.isLetterKey &&
+      (this.stateManager_.hasState(StateType.SHIFT) ||
+          this.stateManager_.hasState(StateType.CAPSLOCK))) {
+    ariaLabel = 'cap ' + ariaLabel;
+  }
   goog.a11y.aria.setState(/** @type {!Element} */ (this.getElement()),
-      goog.a11y.aria.State.LABEL,
-      this.getActiveCharacter());
+      goog.a11y.aria.State.LABEL, ariaLabel);
 };
 
 });  // goog.scope

@@ -11,8 +11,8 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.require('i18n.input.chrome.inputview.layouts.CompactSpaceRow');
-goog.require('i18n.input.chrome.inputview.layouts.RowsOfCompact');
+goog.require('i18n.input.chrome.inputview.ConditionName');
+goog.require('i18n.input.chrome.inputview.layouts.RowsOfCompactZhuyin');
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
 
@@ -41,8 +41,8 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
     'heightInWeight': 4
   });
   var space = i18n.input.chrome.inputview.layouts.util.createKey({
-      'widthInWeight': 3,
-      'heightInWeight': 4
+    'widthInWeight': 3,
+    'heightInWeight': 4
   });
   var character = i18n.input.chrome.inputview.layouts.util.createKey({
     'widthInWeight': 1,
@@ -67,7 +67,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
       createLinearLayout({
         'id': 'spaceKeyrow',
         'children': [digitSwitcher, globeOrSymbolKey, menuKey, comma,
-            space, character, period, switcher, hide]
+          space, character, period, switcher, hide]
       });
 
   // Keyboard view.

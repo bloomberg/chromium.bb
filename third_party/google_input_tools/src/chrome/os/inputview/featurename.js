@@ -13,6 +13,7 @@
 //
 goog.provide('i18n.input.chrome.inputview.FeatureName');
 
+
 /**
  * All features.
  *
@@ -20,9 +21,13 @@ goog.provide('i18n.input.chrome.inputview.FeatureName');
  */
 i18n.input.chrome.inputview.FeatureName = {
   // List all features.
-  GESTURE_SELECTION: 'gestureselection',
-  GESTURE_DELETION: 'gesturedeletion',
-  GESTURE_TYPING: 'gesturetyping',
+  EXPERIMENTAL: 'experimental',
+  FLOATING_VIRTUAL_KEYBOARD: 'floatingvirtualkeyboard',
+  GESTURE_SELECTION_OPTION: 'gestureselection',
+  GESTURE_DELETION_OPTION: 'gesturedeletion',
+  GESTURE_EDITING_OPTION: 'gestureediting',
+  GESTURE_TYPING_OPTION: 'gesturetyping',
   OPTIMIZED_LAYOUTS: 'optimized-layouts',
-  EXPERIMENTAL: 'experimental'
+  PHYSICAL_AUTOCORRECT: 'physicalautocorrect',
+  VOICE_INPUT: 'voiceinput'
 };

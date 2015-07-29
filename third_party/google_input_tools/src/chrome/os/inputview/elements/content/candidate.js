@@ -72,7 +72,8 @@ goog.inherits(Candidate, i18n.input.chrome.inputview.elements.Element);
  */
 Candidate.Type = {
   CANDIDATE: 0,
-  NUMBER: 1
+  NUMBER: 1,
+  TOOLTIP: 2
 };
 
 
@@ -92,6 +93,9 @@ Candidate.prototype.createDom = function() {
   }
   if (this.candidateType == Candidate.Type.NUMBER) {
     goog.dom.classlist.add(elem, Css.CANDIDATE_NUMBER);
+  }
+  if (this.candidateType == Candidate.Type.TOOLTIP) {
+    goog.dom.classlist.add(elem, Css.TOOLTIP);
   }
   this.wrapper_ = dom.createDom('div', {
     'class': Css.CANDIDATE_INTERNAL_WRAPPER

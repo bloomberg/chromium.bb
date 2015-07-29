@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "seta para baixo"
   },
+  "drag_button": {
+    "message": "Arrastar para mover o teclado virtual"
+  },
   "ee_est_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado est\u00f3nio"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Ativar preenchimento"
   },
+  "enable_gesture_editing": {
+    "message": "Deslize rapidamente a partir das extremidades do teclado para mover o cursor ou a partir da tecla de retrocesso para eliminar palavras inteiras."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Ativar previs\u00e3o da palavra seguinte"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado finland\u00eas"
   },
+  "footer_docking_button": {
+    "message": "minimizar o teclado virtual"
+  },
   "footer_emoji_button": {
     "message": "mudar para emoji"
+  },
+  "footer_floating_button": {
+    "message": "tornar o teclado virtual flutuante"
   },
   "footer_handwriting_button": {
     "message": "mudar para escrita manual"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Teclado lituano"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Teclado malaiala (Fon\u00e9tica)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Teclado esloveno"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Teclado curdo sorani baseado no \u00e1rabe"
+    "message": "Teclado curdo baseado no \u00e1rabe"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Teclado curdo sorani baseado no ingl\u00eas"
+    "message": "Teclado curdo baseado no ingl\u00eas"
   },
   "keyboard_spanish": {
     "message": "Teclado espanhol"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "espa\u00e7o"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "mudar para "

@@ -23,7 +23,7 @@ var SizeSpec = i18n.input.chrome.inputview.SizeSpec;
 /**
  * The height of the keyboard in a11y mode.
  *
- * @type {number}
+ * @const {number}
  */
 SizeSpec.A11Y_HEIGHT = 280;
 
@@ -31,17 +31,52 @@ SizeSpec.A11Y_HEIGHT = 280;
 /**
  * The height of the keyboard in non-a11y mode.
  *
- * @type {number}
+ * @const {number}
  */
 SizeSpec.NON_A11Y_HEIGHT = 372;
 
 
-/** @type {number} */
+/**
+ * The height of the candidate view in a11y mode.
+ *
+ * @const {number}
+ */
 SizeSpec.A11Y_CANDIDATE_VIEW_HEIGHT = 30;
 
 
-/** @type {number} */
+/**
+ * The height of the candidate view in non-a11y mode.
+ *
+ * @const {number}
+ */
 SizeSpec.NON_A11Y_CANDIDATE_VIEW_HEIGHT = 45;
+
+
+/**
+ * The height of the candidate view for small size virtual keyboard.
+ *
+ * @const {number}
+ */
+/** @const {number} */
+SizeSpec.SMALL_SIZE_CANDIDATE_VIEW_HEIGHT = 30;
+
+
+/**
+ * The height of the small size virtual keyboard.
+ *
+ * @const {number}
+ */
+/** @const {number} */
+SizeSpec.SMALL_SIZE_HEIGHT = 230;
+
+
+/**
+ * The width of the small size virtual keyboard.
+ *
+ * @const {number}
+ */
+/** @const {number} */
+SizeSpec.SMALL_SIZE_WIDTH = 350;
 
 
 /**

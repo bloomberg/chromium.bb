@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "a\u015fa\u011f\u0131 ok"
   },
+  "drag_button": {
+    "message": "Sanal klavyeyi ta\u015f\u0131mak i\u00e7in s\u00fcr\u00fckleyin"
+  },
   "ee_est_settings_page": {
     "message": "Estonca Klavye Ayarlar\u0131 Sayfas\u0131"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Tamamlamay\u0131 etkinle\u015ftir"
   },
+  "enable_gesture_editing": {
+    "message": "\u0130mleci hareket ettirmek i\u00e7in klavyenin kenar\u0131ndan h\u0131zl\u0131ca kayd\u0131r\u0131n veya kelimelerin tamam\u0131n\u0131 silmek i\u00e7in geri silme tu\u015fundan h\u0131zl\u0131ca kayd\u0131r\u0131n."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Sonraki kelime tahminini etkinle\u015ftir"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Fince Klavye Ayarlar\u0131 Sayfas\u0131"
   },
+  "footer_docking_button": {
+    "message": "sanal klavyeyi yuvaya yerle\u015ftir"
+  },
   "footer_emoji_button": {
     "message": "emoji'ye ge\u00e7"
+  },
+  "footer_floating_button": {
+    "message": "sanal klavyeyi ta\u015f\u0131nabilir yap\u0131n"
   },
   "footer_handwriting_button": {
     "message": "el yaz\u0131s\u0131na ge\u00e7"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Litvanca klavye"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam dili klavye (Fonetik)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Slovence klavye"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Sorani K\u00fcrt\u00e7e Arap\u00e7a temelli klavye"
+    "message": "K\u00fcrt\u00e7e Arap\u00e7a temelli klavye"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Sorani K\u00fcrt\u00e7e \u0130ngilizce temelli klavye"
+    "message": "K\u00fcrt\u00e7e \u0130ngilizce temelli klavye"
   },
   "keyboard_spanish": {
     "message": "\u0130spanyolca klavye"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "bo\u015fluk"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "\u015fu d\u00fczene ge\u00e7: "

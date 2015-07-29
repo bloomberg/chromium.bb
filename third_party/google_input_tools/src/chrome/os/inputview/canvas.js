@@ -47,7 +47,8 @@ goog.require('i18n.input.hwt.css');
  */
 i18n.input.hwt.Canvas = function(opt_topDocument, opt_domHelper,
     opt_eventTarget, opt_inkWidth, opt_inkColor) {
-  goog.base(this, undefined, undefined, opt_domHelper);
+  i18n.input.hwt.Canvas.base(this, 'constructor', undefined, undefined,
+                             opt_domHelper);
   this.setParentEventTarget(opt_eventTarget || null);
 
   /**
@@ -165,7 +166,7 @@ i18n.input.hwt.Canvas.MSG_HANDWRITING_HINT = goog.getMsg('Draw a symbol here');
 
 /** @override */
 i18n.input.hwt.Canvas.prototype.createDom = function() {
-  goog.base(this, 'createDom');
+  i18n.input.hwt.Canvas.base(this, 'createDom');
 
   var dom = this.getDomHelper();
   this.writingCanvas_ = dom.createDom(goog.dom.TagName.CANVAS,
@@ -179,7 +180,7 @@ i18n.input.hwt.Canvas.prototype.createDom = function() {
 
 /** @override */
 i18n.input.hwt.Canvas.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
+  i18n.input.hwt.Canvas.base(this, 'enterDocument');
 
   this.setFocusable(false);
   this.setFocusableChildrenAllowed(false);
@@ -339,9 +340,8 @@ i18n.input.hwt.Canvas.prototype.reset = function() {
 /** @override */
 i18n.input.hwt.Canvas.prototype.disposeInternal = function() {
   goog.dispose(this.handler_);
-  goog.base(this, 'disposeInternal');
+  i18n.input.hwt.Canvas.base(this, 'disposeInternal');
 };
-
 
 /**
  * Gets the width of the canvas.

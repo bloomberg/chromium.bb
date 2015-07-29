@@ -19,10 +19,10 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
 (function() {
   var ConditionName = i18n.input.chrome.inputview.ConditionName;
   var util = i18n.input.chrome.inputview.layouts.util;
-  i18n.input.chrome.inputview.layouts.util.setPrefix('jpkbd-k-');
+  var RowsOfJP = i18n.input.chrome.inputview.layouts.RowsOfJP;
+  util.setPrefix('jpkbd-k-');
 
-  var topFourRows = i18n.input.chrome.inputview.layouts.RowsOfJP.create();
-
+  var topFourRows = RowsOfJP.create();
   // Creates the space row.
   var globeKey = util.createKey({
     'condition': ConditionName.SHOW_GLOBE_OR_SYMBOL,
@@ -38,6 +38,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   var altKey = util.createKey({
     'widthInWeight': 1
   });
+
 
   var leftIMEKey = util.createKey({'widthInWeight': 1});
   var spaceKey = util.createKey({'widthInWeight': 6});
@@ -58,10 +59,10 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   });
 
   var keys = [
-    globeKey,
-    menuKey,
     ctrlKey,
     altKey,
+    globeKey,
+    menuKey,
     leftIMEKey,
     spaceKey,
     rightIMEKey,
@@ -77,21 +78,20 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
 
 
   // Keyboard view.
-  var keyboardView = i18n.input.chrome.inputview.layouts.util.createLayoutView({
+  var keyboardView = util.createLayoutView({
     'id': 'keyboardView',
     'children': [topFourRows, spaceRow],
     'widthPercent': 100,
     'heightPercent': 100
   });
 
-  var keyboardContainer = i18n.input.chrome.inputview.layouts.util.
-      createLinearLayout({
-        'id': 'keyboardContainer',
-        'children': [keyboardView]
-      });
+  var keyboardContainer = util.createLinearLayout({
+    'id': 'keyboardContainer',
+    'children': [keyboardView]
+  });
 
   var data = {
-    'layoutID': 'jpkbd',
+    'layoutID': 'm-jpkbd',
     'widthInWeight': 15,
     'children': [keyboardContainer]
   };

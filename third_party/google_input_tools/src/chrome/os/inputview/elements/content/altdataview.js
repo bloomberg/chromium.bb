@@ -13,13 +13,15 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.AltDataView');
 
+goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.math.Coordinate');
-goog.require('goog.object');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.WindowUtil');
+goog.require('i18n.input.chrome.inputview.Accents');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.content.Constants');
 goog.require('i18n.input.chrome.inputview.elements.Element');
@@ -29,6 +31,7 @@ goog.require('i18n.input.chrome.inputview.util');
 
 
 goog.scope(function() {
+var Accents = i18n.input.chrome.inputview.Accents;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var Util = i18n.input.chrome.inputview.handler.Util;
 
@@ -36,8 +39,8 @@ var Util = i18n.input.chrome.inputview.handler.Util;
 /**
  * Converts cooridnate in the keyboard window to coordinate in screen.
  *
- * @param {goog.math.Coordinate} coordinate The coordinate in keyboard window.
- * @return {goog.math.Coordinate} The cooridnate in screen.
+ * @param {!goog.math.Coordinate} coordinate The coordinate in keyboard window.
+ * @return {!goog.math.Coordinate} The cooridnate in screen.
  */
 function convertToScreenCoordinate(coordinate) {
   var screenCoordinate = coordinate.clone();
@@ -65,18 +68,30 @@ i18n.input.chrome.inputview.elements.content.AltDataView = function(
   /**
    * The alternative elements.
    *
-   * @type {!Array.<!Element>}
-   * @private
+   * @private {!Array.<!Element>}
    */
   this.altdataElements_ = [];
 
   /**
    * The window that shows accented characters.
    *
-   * @type {chrome.app.window.AppWindow}
-   * @private
+   * @private {i18n.input.chrome.inputview.Accents}
    */
   this.altdataWindow_ = null;
+
+  /**
+   * True if create IME window to show accented characters.
+   *
+   * @private {boolean}
+   */
+  this.useIMEWindow_ = !!(chrome.app.window && chrome.app.window.create);
+
+  /**
+   * Floating window position.
+   *
+   * @private {!goog.math.Coordinate}
+   */
+  this.floatingWndPos_;
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.AltDataView,
     i18n.input.chrome.inputview.elements.Element);
@@ -86,8 +101,7 @@ var AltDataView = i18n.input.chrome.inputview.elements.content.AltDataView;
 /**
  * The padding between the alt data view and the key.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
 AltDataView.PADDING_ = 8;
 
@@ -95,8 +109,7 @@ AltDataView.PADDING_ = 8;
 /**
  * The URL of the window which displays accented characters.
  *
- * @type {string}
- * @private
+ * @private {string}
  */
 AltDataView.ACCENTS_WINDOW_URL_ = 'imewindows/accents.html';
 
@@ -105,8 +118,7 @@ AltDataView.ACCENTS_WINDOW_URL_ = 'imewindows/accents.html';
  * Index of highlighted accent. Use this index to represent no highlighted
  * accent.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
 AltDataView.INVALIDINDEX_ = -1;
 
@@ -115,8 +127,7 @@ AltDataView.INVALIDINDEX_ = -1;
  * The distance between finger to altdata view which will cancel the altdata
  * view.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
 AltDataView.FINGER_DISTANCE_TO_CANCEL_ALTDATA_ = 100;
 
@@ -135,8 +146,7 @@ AltDataView.DEFAULT_MAX_COLUMNS_ = 5;
  * Note: The reason we use a separate cover element instead of the view is
  * because of the opacity. We can not reassign the opacity in child element.
  *
- * @type {!Element}
- * @private
+ * @private {!Element}
  */
 AltDataView.prototype.coverElement_;
 
@@ -144,8 +154,7 @@ AltDataView.prototype.coverElement_;
 /**
  * The index of the alternative element which is highlighted.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
 AltDataView.prototype.highlightIndex_ = AltDataView.INVALIDINDEX_;
 
@@ -167,19 +176,9 @@ AltDataView.prototype.identifier = Util.INVALID_EVENT_IDENTIFIER;
 
 
 /**
- * True if create IME window to show accented characters.
- *
- * @type {boolean}
- * @private
- */
-AltDataView.prototype.useIMEWindow_ = false;
-
-
-/**
  * True if show is called and false if hide is called.
  *
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
 AltDataView.prototype.visible_ = false;
 
@@ -209,7 +208,7 @@ AltDataView.prototype.enterDocument = function() {
 
 
 /**
- * Shows the alt data viwe.
+ * Shows the alt data view.
  *
  * @param {!i18n.input.chrome.inputview.elements.content.SoftKey} key The key
  *     triggerred this altdata view.
@@ -254,12 +253,7 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
 
   var w = isCompact ? Math.round(width * 0.8) : Math.round(width * 0.9);
   var h = isCompact ? Math.round(height * 0.8) : Math.round(height * 0.9);
-  this.useIMEWindow_ = !!(chrome.app.window && chrome.app.window.create);
   if (this.useIMEWindow_) {
-    if (this.altdataWindow_) {
-      this.altdataWindow_.close();
-    }
-
     var numOfKeys = characters.length;
     var maxColumns =
         fixedColumns ? fixedColumns : this.getOptimizedMaxColumns_(numOfKeys);
@@ -273,46 +267,33 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
     var windowTop = parentKeyLeftTop.y - altDataWindowHeight -
         AltDataView.PADDING_;
     var windowLeft = parentKeyLeftTop.x - startKeyIndex * w;
-    var screenCoordinate = convertToScreenCoordinate(
+    this.floatingWndPos_ = convertToScreenCoordinate(
         new goog.math.Coordinate(windowLeft, windowTop));
-    var windowBounds = goog.object.create('left', screenCoordinate.x,
-        'top', screenCoordinate.y, 'width', altDataWindowWidth,
-        'height', altDataWindowHeight);
-    var self = this;
-    inputview.createWindow(
-        chrome.runtime.getURL(AltDataView.ACCENTS_WINDOW_URL_),
-        goog.object.create('outerBounds', windowBounds, 'frame', 'none',
-            'hidden', true, 'alphaEnabled', true),
-        function(newWindow) {
-          self.altdataWindow_ = newWindow;
-          var contentWindow = self.altdataWindow_.contentWindow;
-          contentWindow.addEventListener('load', function() {
-            contentWindow.accents.setAccents(characters, numOfColumns,
+
+
+    if (this.altdataWindow_) {
+      this.altdataWindow_.setAccents(characters, numOfColumns,
+          numOfRows, w, h, startKeyIndex, isCompact);
+      this.highlightItem(Math.ceil(parentKeyLeftTop.x + w / 2),
+          Math.ceil(parentKeyLeftTop.y + h / 2),
+          identifier);
+      this.altdataWindow_.reposition(this.floatingWndPos_);
+      this.altdataWindow_.setVisible(true);
+    } else {
+      i18n.input.chrome.WindowUtil.createWindow(
+          function(newWindow) {
+            this.altdataWindow_ = new Accents(newWindow);
+            this.altdataWindow_.render();
+            this.altdataWindow_.setAccents(characters, numOfColumns,
                 numOfRows, w, h, startKeyIndex, isCompact);
-            self.highlightItem(
-                Math.ceil(parentKeyLeftTop.x + w / 2),
-                Math.ceil(parentKeyLeftTop.y + h / 2),
-                identifier);
-            var marginBox = goog.style.getMarginBox(
-                contentWindow.document.body);
-            // Adjust the window bounds to compensate body's margin. The margin
-            // box is used to display shadow.
-            var outerBounds = self.altdataWindow_.outerBounds;
-            outerBounds.left -= marginBox.left;
-            outerBounds.top -= marginBox.top;
-            outerBounds.width += (marginBox.left + marginBox.right);
-            outerBounds.height += (marginBox.top + marginBox.bottom);
-            self.altdataWindow_.outerBounds = outerBounds;
+            this.highlightItem(Math.ceil(parentKeyLeftTop.x + w / 2),
+                Math.ceil(parentKeyLeftTop.y + h / 2), identifier);
+            this.altdataWindow_.reposition(this.floatingWndPos_);
             // Function hide maybe called before loading complete. Do not show
             // the window in this case.
-            if (self.visible_) {
-              self.altdataWindow_.show();
-            } else {
-              self.altdataWindow_.close();
-              self.altdataWindow_ = null;
-            }
-          });
-        });
+            this.altdataWindow_.setVisible(this.visible_);
+          }.bind(this));
+    }
   } else {
     // The total width of the characters + the separators, every separator has
     // width = 1.
@@ -340,10 +321,10 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
         this.addSeparator_(height);
       }
     }
-    goog.style.setPosition(this.getElement(), left, elemTop);
     this.highlightItem(Math.ceil(parentKeyLeftTop.x + w / 2),
                        Math.ceil(parentKeyLeftTop.y + h / 2),
                        identifier);
+    goog.style.setPosition(this.getElement(), left, elemTop);
   }
 
   goog.style.setElementShown(this.coverElement_, true);
@@ -424,7 +405,7 @@ AltDataView.prototype.getOptimizedMaxColumns_ = function(numOfKeys) {
 AltDataView.prototype.hide = function() {
   this.visible_ = false;
   if (this.useIMEWindow_ && this.altdataWindow_) {
-    this.altdataWindow_.close();
+    this.altdataWindow_.dispose();
     this.altdataWindow_ = null;
   } else {
     this.altdataElements_ = [];
@@ -443,20 +424,25 @@ AltDataView.prototype.hide = function() {
  *
  * @param {number} x .
  * @param {number} y .
- * @param {number} identifier The identifer of event which trigger show.
+ * @param {number} identifier The identifier of the event which triggered.
  */
 AltDataView.prototype.highlightItem = function(x, y, identifier) {
   if (this.identifier != identifier) {
     return;
   }
   if (this.useIMEWindow_) {
-    if (this.altdataWindow_) {
-      var screenCoordinate = convertToScreenCoordinate(
-          new goog.math.Coordinate(x, y));
-      this.altdataWindow_.contentWindow.accents.highlightItem(
-          screenCoordinate.x, screenCoordinate.y,
-          AltDataView.FINGER_DISTANCE_TO_CANCEL_ALTDATA_);
-    }
+    // If you manipulate the Dom of floating window, then you need yield
+    // the JS thread to next cycle to get correct value of Dom.
+    goog.Timer.callOnce(function() {
+      if (this.altdataWindow_) {
+        var screenCoordinate = convertToScreenCoordinate(
+            new goog.math.Coordinate(x, y));
+        this.altdataWindow_.highlightItem(
+            screenCoordinate.x - this.floatingWndPos_.x,
+            screenCoordinate.y - this.floatingWndPos_.y,
+            AltDataView.FINGER_DISTANCE_TO_CANCEL_ALTDATA_);
+      }
+    }, 0, this);
   } else {
     for (var i = 0; i < this.altdataElements_.length; i++) {
       var elem = this.altdataElements_[i];
@@ -518,7 +504,7 @@ AltDataView.prototype.setElementBackground_ =
  */
 AltDataView.prototype.getHighlightedCharacter = function() {
   if (this.useIMEWindow_) {
-    return this.altdataWindow_.contentWindow.accents.highlightedAccent();
+    return this.altdataWindow_.getHighlightedAccent();
   } else {
     return goog.dom.getTextContent(this.altdataElements_[this.highlightIndex_]);
   }
@@ -584,8 +570,7 @@ AltDataView.prototype.resize = function(width, height) {
 /** @override */
 AltDataView.prototype.disposeInternal = function() {
   this.getElement()['view'] = null;
-
+  goog.dispose(this.altdataWindow_);
   goog.base(this, 'disposeInternal');
 };
-
 });  // goog.scope

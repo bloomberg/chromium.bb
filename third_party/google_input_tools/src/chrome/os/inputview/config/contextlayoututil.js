@@ -13,6 +13,7 @@
 //
 goog.provide('i18n.input.chrome.inputview.content.ContextlayoutUtil');
 
+goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.content.compact.util');
 goog.require('i18n.input.chrome.inputview.content.compact.util.CompactKeysetSpec');
 goog.require('i18n.input.chrome.message.ContextType');
@@ -22,6 +23,7 @@ var ContextType = i18n.input.chrome.message.ContextType;
 var util = i18n.input.chrome.inputview.content.ContextlayoutUtil;
 var compact = i18n.input.chrome.inputview.content.compact.util;
 var keysetSpecNode = compact.CompactKeysetSpec;
+var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 
 
 /**
@@ -40,10 +42,10 @@ util.generateContextLayouts = function(inputTypeToKeysetSpecMap, onLoaded) {
       var spec = inputTypeToKeysetSpecMap[inputType];
       var data = compact.createCompactData(
           spec, 'compactkbd-k-', 'compactkbd-k-key-');
-      data['id'] = spec[keysetSpecNode.ID];
-      data['showMenuKey'] = false;
-      data['noShift'] = true;
-      data['onContext'] = inputType;
+      data[SpecNodeName.ID] = spec[keysetSpecNode.ID];
+      data[SpecNodeName.SHOW_MENU_KEY] = false;
+      data[SpecNodeName.NO_SHIFT] = true;
+      data[SpecNodeName.ON_CONTEXT] = inputType;
       onLoaded(data);
     }
   }

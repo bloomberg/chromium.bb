@@ -20,13 +20,9 @@ goog.require('goog.dom.classlist');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.EmojiType');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
-goog.require('i18n.input.chrome.message.Name');
-goog.require('i18n.input.chrome.message.Type');
 
 goog.scope(function() {
 
-var Type = i18n.input.chrome.message.Type;
-var Name = i18n.input.chrome.message.Name;
 var Css = i18n.input.chrome.inputview.Css;
 var EmojiType = i18n.input.chrome.inputview.EmojiType;
 
@@ -84,16 +80,12 @@ TabBarKey.prototype.BORDER_HEIGHT_ = 4;
 /** @override */
 TabBarKey.prototype.createDom = function() {
   goog.base(this, 'createDom');
-  var dom = this.getDomHelper();
   var elem = this.getElement();
   goog.dom.classlist.remove(elem, Css.SOFT_KEY);
   goog.dom.classlist.add(elem, Css.EMOJI_TABBAR_SK);
   goog.dom.classlist.remove(this.bgElem, Css.SPECIAL_KEY_BG);
   goog.dom.classlist.add(this.bgElem, Css.EMOJI_TABBAR_KEY);
   goog.dom.classlist.add(this.iconElem, Css.EMOJI_SWITCH);
-  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    this.createSeparator_();
-  }
 
   // Sets aria label.
   var ariaLabel = '';
@@ -135,11 +127,6 @@ TabBarKey.prototype.resize = function(width,
   this.tableCell.style.width = this.availableWidth + 'px';
   this.tableCell.style.height = this.availableHeight -
       this.BORDER_HEIGHT_ + 'px';
-  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    this.sepTableCell.style.height = this.availableHeight -
-        this.BORDER_HEIGHT_ + 'px';
-    this.separator.style.height = this.availableHeight * 0.32 + 'px';
-  }
 };
 
 
@@ -150,7 +137,6 @@ TabBarKey.prototype.resize = function(width,
  */
 TabBarKey.prototype.createSeparator_ = function() {
   var dom = this.getDomHelper();
-  var elem = this.getElement();
   this.sepTableCell = dom.createDom(goog.dom.TagName.DIV, Css.TABLE_CELL);
   this.separator = dom.createDom(goog.dom.TagName.DIV,
       Css.CANDIDATE_SEPARATOR);

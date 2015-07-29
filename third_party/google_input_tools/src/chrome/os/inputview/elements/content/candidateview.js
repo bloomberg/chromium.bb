@@ -20,11 +20,12 @@ goog.require('goog.dom.classlist');
 goog.require('goog.object');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateButton');
+goog.require('i18n.input.chrome.inputview.elements.content.DragButton');
+goog.require('i18n.input.chrome.inputview.elements.content.FloatingVKButton');
 goog.require('i18n.input.chrome.inputview.elements.content.ToolbarButton');
 goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.Name');
@@ -76,12 +77,23 @@ i18n.input.chrome.inputview.elements.content.CandidateView = function(id,
   this.iconButtons_[IconType.SHRINK_CANDIDATES] = new content.
       CandidateButton('', ElementType.SHRINK_CANDIDATES,
           Css.SHRINK_CANDIDATES_ICON, '', this);
-
   this.iconButtons_[IconType.EXPAND_CANDIDATES] = new content.
       CandidateButton('', ElementType.EXPAND_CANDIDATES,
           Css.EXPAND_CANDIDATES_ICON, '', this);
   this.iconButtons_[IconType.VOICE] = new content.CandidateButton('',
       ElementType.VOICE_BTN, Css.VOICE_MIC_BAR, '', this, true);
+
+  /**
+   * The floating virtual keyboard buttons..
+   *
+   * @private {!Array.<!i18n.input.chrome.inputview.elements.Element>}
+   */
+  this.fvkButtons_ = [];
+
+  this.fvkButtons_.push(new content.
+      DragButton('', ElementType.DRAG, Css.DRAG_BUTTON, this));
+  this.fvkButtons_.push(new content.
+      FloatingVKButton('', ElementType.RESIZE, Css.RESIZE_BUTTON, this));
 
   /**
    * Toolbar buttons.
@@ -129,20 +141,79 @@ var IconType = CandidateView.IconType;
 
 
 /**
- * How many candidates in this view.
+ * The current use of the candidate view.
  *
- * @type {number}
+ * @enum {number}
  */
-CandidateView.prototype.candidateCount = 0;
+CandidateView.CandidateViewType = {
+  NONE: 0,
+  CANDIDATES: 1,
+  NUMBER_ROW: 2,
+  TOOLTIP: 3
+};
+var CandidateViewType = CandidateView.CandidateViewType;
 
 
 /**
  * The padding between candidates.
  *
- * @type {number}
+ * @const {number}
  * @private
  */
 CandidateView.PADDING_ = 50;
+
+
+/**
+ * The width for a candidate when showing in THREE_CANDIDATE mode.
+ *
+ * @const {number}
+ * @private
+ */
+CandidateView.WIDTH_FOR_THREE_CANDIDATES_ = 200;
+
+
+/**
+ * The width for a candidate when showing in small resolution virtual keyboard.
+ *
+ * @const {number}
+ * @private
+ */
+CandidateView.SMALL_WIDTH_FOR_THREE_CANDIDATES_ = 75;
+
+
+/**
+ * The width of icons in the toolbar.
+ *
+ * @const {number}
+ * @private
+ */
+CandidateView.TOOLBAR_ICON_WIDTH_ = 40;
+
+
+/**
+ * The handwriting keyset code.
+ *
+ * @const {string}
+ * @private
+ */
+CandidateView.HANDWRITING_VIEW_CODE_ = 'hwt';
+
+
+/**
+ * The emoji keyset code.
+ *
+ * @const {string}
+ * @private
+ */
+CandidateView.EMOJI_VIEW_CODE_ = 'emoji';
+
+
+/**
+ * How many candidates in this view.
+ *
+ * @type {number}
+ */
+CandidateView.prototype.candidateCount = 0;
 
 
 /**
@@ -163,7 +234,7 @@ CandidateView.prototype.backspaceWeight_ = 0;
 
 
 /**
- * The width of the icon like voice/down/up arrow.
+ * The width of an icon e.g voice/down/up arrow.
  *
  * @private {number}
  */
@@ -171,60 +242,19 @@ CandidateView.prototype.iconWidth_ = 120;
 
 
 /**
- * True if it is showing candidate.
+ * The current candidate view type.
+ *
+ * @private {CandidateViewType}
+ */
+CandidateView.prototype.candidateViewType_ = CandidateViewType.NONE;
+
+
+/**
+ * True if trying to show the toolbar row.
  *
  * @type {boolean}
  */
-CandidateView.prototype.showingCandidates = false;
-
-
-/**
- * True if it is showing number row.
- *
- * @type {boolean}
- */
-CandidateView.prototype.showingNumberRow = false;
-
-
-/**
- * True if showing the toolbar row.
- *
- * @type {boolean}
- */
-CandidateView.prototype.showingToolbar = false;
-
-
-/**
- * The width for a candidate when showing in THREE_CANDIDATE mode.
- *
- * @type {number}
- * @private
- */
-CandidateView.WIDTH_FOR_THREE_CANDIDATES_ = 200;
-
-
-/**
- * The width of icons in the toolbar.
- *
- * @private {number}
- */
-CandidateView.TOOLBAR_ICON_WIDTH_ = 40;
-
-
-/**
- * The handwriting keyset code.
- *
- * @private {string}
- */
-CandidateView.HANDWRITING_VIEW_CODE_ = 'hwt';
-
-
-/**
- * The emoji keyset code.
- *
- * @private {string}
- */
-CandidateView.EMOJI_VIEW_CODE_ = 'emoji';
+CandidateView.prototype.tryShowingToolbar = false;
 
 
 /** @private {string} */
@@ -261,6 +291,12 @@ CandidateView.prototype.createDom = function() {
     button.setVisible(false);
   }
 
+  for (var i = 0; i < this.fvkButtons_.length; i++) {
+    var button = this.fvkButtons_[i];
+    button.render(elem);
+    button.setVisible(false);
+  }
+
   this.interContainer_ = dom.createDom(TagName.DIV,
       Css.CANDIDATE_INTER_CONTAINER);
   dom.appendChild(elem, this.interContainer_);
@@ -290,9 +326,9 @@ CandidateView.prototype.createDom = function() {
  * Hides the number row.
  */
 CandidateView.prototype.hideNumberRow = function() {
-  if (this.showingNumberRow) {
+  if (this.candidateViewType_ == CandidateViewType.NUMBER_ROW) {
+    this.candidateViewType_ = CandidateViewType.NONE;
     this.getDomHelper().removeChildren(this.interContainer_);
-    this.showingNumberRow = false;
   }
 };
 
@@ -301,6 +337,7 @@ CandidateView.prototype.hideNumberRow = function() {
  * Shows the number row.
  */
 CandidateView.prototype.showNumberRow = function() {
+  this.candidateViewType_ = CandidateViewType.NUMBER_ROW;
   goog.dom.classlist.remove(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
   var dom = this.getDomHelper();
@@ -317,8 +354,37 @@ CandidateView.prototype.showNumberRow = function() {
         Type.NUMBER, this.height, false, values[i], this);
     candidateElem.render(this.interContainer_);
   }
-  this.showingNumberRow = true;
-  this.showingCandidates = false;
+};
+
+
+/**
+ * Shows a tooltop in place of candidates.
+ *
+ * @param {string=} opt_text The text to display.
+ */
+CandidateView.prototype.showTooltip = function(opt_text) {
+  this.candidateViewType_ = CandidateViewType.TOOLTIP;
+  goog.dom.classlist.remove(this.getElement(),
+      i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
+  var dom = this.getDomHelper();
+  dom.removeChildren(this.interContainer_);
+  var candidateElem = new Candidate('tooltip', goog.object.create(
+      Name.CANDIDATE, opt_text || ''),
+      Type.TOOLTIP, this.height, false, this.width, this);
+  candidateElem.render(this.interContainer_);
+  this.switchToIcon(IconType.VOICE, false);
+};
+
+
+/**
+ * Hides the tooltip.
+ */
+CandidateView.prototype.hideTooltip = function() {
+  if (this.candidateViewType_ == CandidateViewType.TOOLTIP) {
+    this.candidateViewType_ = CandidateViewType.NONE;
+    this.getDomHelper().removeChildren(this.interContainer_);
+    this.switchToIcon(IconType.VOICE, this.needToShowVoiceIcon_());
+  }
 };
 
 
@@ -335,6 +401,7 @@ CandidateView.prototype.showCandidates = function(candidates,
   this.clearCandidates();
   this.sumOfCandidates_ = candidates.length;
   if (candidates.length > 0) {
+    this.candidateViewType_ = CandidateViewType.CANDIDATES;
     if (showThreeCandidates) {
       this.addThreeCandidates_(candidates);
     } else {
@@ -344,8 +411,6 @@ CandidateView.prototype.showCandidates = function(candidates,
             !!opt_expandable && this.candidateCount < candidates.length);
       }
     }
-    this.showingCandidates = true;
-    this.showingNumberRow = false;
   }
 };
 
@@ -362,7 +427,13 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
   this.interContainer_.style.width = 'auto';
   var num = Math.min(3, candidates.length);
   var width = CandidateView.WIDTH_FOR_THREE_CANDIDATES_;
-  if (this.showingToolbar) {
+  if (this.adapter_.isFloating) {
+    //TODO: large size floating virtual keyboard may still use the regular
+    //width. Add an enum to distinguish small size from large and middle size
+    //for floating virtual keyboard.
+    width = CandidateView.SMALL_WIDTH_FOR_THREE_CANDIDATES_;
+  }
+  if (this.tryShowingToolbar && this.hasEnoughSpaceForToolbar_()) {
     width -= this.iconWidth_ / 3;
   }
   for (var i = 0; i < num; i++) {
@@ -379,10 +450,10 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
  */
 CandidateView.prototype.clearCandidates = function() {
   this.sumOfCandidates_ = 0;
-  if (this.showingCandidates) {
+  if (this.candidateViewType_ == CandidateViewType.CANDIDATES) {
+    this.candidateViewType_ = CandidateViewType.NONE;
     this.candidateCount = 0;
     this.getDomHelper().removeChildren(this.interContainer_);
-    this.showingCandidates = false;
   }
 };
 
@@ -397,6 +468,10 @@ CandidateView.prototype.addFullCandidates_ = function(candidates) {
   goog.dom.classlist.remove(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
   var totalWidth = Math.floor(this.width - this.iconWidth_);
+  if (this.tryShowingToolbar && this.hasEnoughSpaceForToolbar_()) {
+    totalWidth -=
+        (CandidateView.TOOLBAR_ICON_WIDTH_ * this.toolbarButtons_.length);
+  }
   var w = 0;
   var i;
   for (i = 0; i < candidates.length; i++) {
@@ -440,43 +515,69 @@ CandidateView.prototype.setWidthInWeight = function(widthInWeight,
 
 /** @override */
 CandidateView.prototype.resize = function(width, height) {
+  goog.style.setSize(this.getElement(), width, height);
+
+  var remainingWidth = width;
   if (this.backspaceWeight_ > 0) {
     var weightArray = [Math.round(this.widthInWeight_ - this.backspaceWeight_)];
     weightArray.push(this.backspaceWeight_);
     var values = util.splitValue(weightArray, width);
     this.iconWidth_ = values[values.length - 1];
   }
-  goog.style.setSize(this.getElement(), width, height);
-  if (!goog.dom.classlist.contains(this.getElement(),
-      i18n.input.chrome.inputview.Css.THREE_CANDIDATES)) {
-    goog.style.setSize(this.interContainer_, (width - this.iconWidth_), height);
-  }
   for (var i = 0; i < this.iconButtons_.length; i++) {
     var button = this.iconButtons_[i];
     button.resize(this.iconWidth_, height);
   }
+  // At most one icon in iconButtons can be visible and the space must be
+  // reserved.
+  remainingWidth = width - this.iconWidth_;
 
-  for (var i = 0; i < this.toolbarButtons_.length; i++) {
-    var button = this.toolbarButtons_[i];
-    button.resize(CandidateView.TOOLBAR_ICON_WIDTH_, height);
+
+  for (var i = 0; i < this.fvkButtons_.length; i++) {
+    var button = this.fvkButtons_[i];
+    if (button.isVisible()) {
+      // Uses square buttons
+      button.resize(height, height);
+      remainingWidth -= height;
+    }
   }
 
-  // Resets the candidates elements visibility.
+  if (this.tryShowingToolbar) {
+    if (this.hasEnoughSpaceForToolbar_()) {
+      for (var i = 0; i < this.toolbarButtons_.length; i++) {
+        var button = this.toolbarButtons_[i];
+        button.resize(CandidateView.TOOLBAR_ICON_WIDTH_, height);
+        // Button may be invisible previously due to not enough space.
+        button.setVisible(true);
+        remainingWidth -= CandidateView.TOOLBAR_ICON_WIDTH_;
+      }
+    } else {
+      for (var i = 0; i < this.toolbarButtons_.length; i++) {
+        this.toolbarButtons_[i].setVisible(false);
+      }
+    }
+  }
+
+  // Only show candidates which could fit into the remaining width.
   if (this.candidateCount > 0) {
-    var totalWidth = Math.floor(width - this.iconWidth_);
     var w = 0;
     for (i = 0; i < this.candidateCount; i++) {
-      if (w <= totalWidth) {
+      if (w <= remainingWidth) {
         w += goog.style.getSize(this.interContainer_.children[i]).width;
       }
       goog.style.setElementShown(this.interContainer_.children[i],
-          w <= totalWidth);
+          w <= remainingWidth);
     }
+  }
+  // Three candidates has width: auto.
+  if (!goog.dom.classlist.contains(this.getElement(),
+      i18n.input.chrome.inputview.Css.THREE_CANDIDATES)) {
+    goog.style.setSize(this.interContainer_, remainingWidth, height);
   }
 
   goog.base(this, 'resize', width, height);
 
-  if (this.showingNumberRow) {
+  if (this.candidateViewType_ == CandidateViewType.NUMBER_ROW) {
     this.showNumberRow();
   }
 };
@@ -501,9 +602,21 @@ CandidateView.prototype.switchToIcon = function(type, visible) {
   } else {
     this.iconButtons_[type].setVisible(false);
     // When some icon turn to invisible, need to show voice icon.
-    if (!visible && type != IconType.VOICE && this.needToShowVoiceIcon_()) {
+    if (type != IconType.VOICE && this.needToShowVoiceIcon_()) {
       this.iconButtons_[IconType.VOICE].setVisible(true);
     }
+  }
+};
+
+
+/**
+ * Changes the visibility of the floating virtual keyboard related buttons.
+ *
+ * @param {boolean} visible The drag button visibility.
+ */
+CandidateView.prototype.setFloatingVKButtonsVisible = function(visible) {
+  for (var i = 0; i < this.fvkButtons_.length; i++) {
+    this.fvkButtons_[i].setVisible(visible);
   }
 };
 
@@ -514,10 +627,33 @@ CandidateView.prototype.switchToIcon = function(type, visible) {
  * @param {boolean} visible The target visibility.
  */
 CandidateView.prototype.setToolbarVisible = function(visible) {
-  this.showingToolbar = visible;
-  for (var i = 0; i < this.toolbarButtons_.length; i++) {
-    this.toolbarButtons_[i].setVisible(visible);
+  this.tryShowingToolbar = visible;
+  if (this.hasEnoughSpaceForToolbar_()) {
+    for (var i = 0; i < this.toolbarButtons_.length; i++) {
+      this.toolbarButtons_[i].setVisible(visible);
+    }
   }
+};
+
+
+/**
+ * Whether there is enough space to show toolbar in this view.
+ *
+ * @return {boolean}
+ * @private
+ */
+CandidateView.prototype.hasEnoughSpaceForToolbar_ = function() {
+  var toolbarSpace =
+      CandidateView.TOOLBAR_ICON_WIDTH_ * this.toolbarButtons_.length;
+  // Reserve space to display at least 3 candidates
+  var candidatesSpace = CandidateView.WIDTH_FOR_THREE_CANDIDATES_ * 3;
+  if (this.adapter_.isFloating) {
+    //TODO: large size floating virtual keyboard may still use the regular
+    //width. Add an enum to distinguish small size from large and middle size
+    //for floating virtual keyboard.
+    candidatesSpace = CandidateView.SMALL_WIDTH_FOR_THREE_CANDIDATES_ * 3;
+  }
+  return toolbarSpace + candidatesSpace < this.width;
 };
 
 
@@ -535,12 +671,7 @@ CandidateView.prototype.updateByKeyset = function(
   if (keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
       keyset == CandidateView.EMOJI_VIEW_CODE_) {
     // Handwriting and emoji keyset do not allow to show voice icon.
-    // When it's not material design style, need to show BACK icon.
-    if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-      this.switchToIcon(IconType.BACK, true);
-    } else {
-      this.switchToIcon(IconType.VOICE, false);
-    }
+    this.switchToIcon(IconType.VOICE, false);
   } else {
     this.switchToIcon(IconType.VOICE, this.needToShowVoiceIcon_());
   }
@@ -575,6 +706,7 @@ CandidateView.prototype.needToShowVoiceIcon_ = function() {
       this.adapter_.contextType != 'password' &&
       this.keyset_ != CandidateView.HANDWRITING_VIEW_CODE_ &&
       this.keyset_ != CandidateView.EMOJI_VIEW_CODE_ &&
+      this.candidateViewType_ != CandidateViewType.TOOLTIP &&
       (!this.navigation_ || this.candidateCount == this.sumOfCandidates_);
 };
 

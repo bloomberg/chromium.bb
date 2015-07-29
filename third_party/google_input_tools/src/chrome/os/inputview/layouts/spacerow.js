@@ -17,35 +17,40 @@ goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
 
+goog.scope(function() {
+var layouts = i18n.input.chrome.inputview.layouts;
+var util = layouts.util;
+
+
 /**
  * Creates the spaceKey row.
  *
  * @return {!Object} The spaceKey row.
  */
-i18n.input.chrome.inputview.layouts.SpaceRow.create = function() {
-  var globeKey = i18n.input.chrome.inputview.layouts.util.createKey({
+layouts.SpaceRow.create = function() {
+  var globeKey = util.createKey({
     'condition': i18n.input.chrome.inputview.ConditionName.SHOW_GLOBE_OR_SYMBOL,
     'widthInWeight': 1
   });
-  var menuKey = i18n.input.chrome.inputview.layouts.util.createKey({
+  var menuKey = util.createKey({
     'condition': i18n.input.chrome.inputview.ConditionName.SHOW_MENU,
     'widthInWeight': 1
   });
-  var ctrlKey = i18n.input.chrome.inputview.layouts.util.createKey({
+  var ctrlKey = util.createKey({
     'widthInWeight': 1
   });
-  var altKey = i18n.input.chrome.inputview.layouts.util.createKey({
+  var altKey = util.createKey({
     'widthInWeight': 1
   });
-  var spaceKey = i18n.input.chrome.inputview.layouts.util.createKey({
-    'widthInWeight': 4.87
+  var spaceKey = util.createKey({
+    'widthInWeight': 5.21
   });
-  var enSwitcher = i18n.input.chrome.inputview.layouts.util.createKey({
+  var enSwitcher = util.createKey({
     'widthInWeight': 1,
     'condition': i18n.input.chrome.inputview.ConditionName.
         SHOW_EN_SWITCHER_KEY
   });
-  var altGrKey = i18n.input.chrome.inputview.layouts.util.createKey({
+  var altGrKey = util.createKey({
     'widthInWeight': 1.25,
     'condition': i18n.input.chrome.inputview.ConditionName.
         SHOW_ALTGR
@@ -56,21 +61,21 @@ i18n.input.chrome.inputview.layouts.SpaceRow.create = function() {
   altGrKey['spec']['giveWeightTo'] = spaceKey['spec']['id'];
   enSwitcher['spec']['giveWeightTo'] = spaceKey['spec']['id'];
 
-  var leftKey = i18n.input.chrome.inputview.layouts.util.createKey({
-    'widthInWeight': 1.08
+  var leftKey = util.createKey({
+    'widthInWeight': 1
   });
-  var rightKey = i18n.input.chrome.inputview.layouts.util.createKey({
-    'widthInWeight': 1.08
+  var rightKey = util.createKey({
+    'widthInWeight': 1
   });
-  var hideKeyboardKey = i18n.input.chrome.inputview.layouts.util.createKey({
-    'widthInWeight': 1.08
+  var hideKeyboardKey = util.createKey({
+    'widthInWeight': 1
   });
-  var spaceKeyRow = i18n.input.chrome.inputview.layouts.util.
-      createLinearLayout({
+  var spaceKeyRow = util.createLinearLayout({
         'id': 'spaceKeyrow',
-        'children': [globeKey, menuKey, ctrlKey, altKey, spaceKey,
-             enSwitcher, altGrKey, leftKey, rightKey, hideKeyboardKey]
+        'children': [ctrlKey, altKey, globeKey, menuKey, spaceKey,
+      enSwitcher, altGrKey, leftKey, rightKey, hideKeyboardKey]
       });
   return spaceKeyRow;
 };
 
+});  // goog.scope

@@ -42,6 +42,19 @@ var TagName = goog.dom.TagName;
 i18n.input.chrome.inputview.elements.content.SelectView = function(
     opt_eventTarget) {
   goog.base(this, '', ElementType.SELECT_VIEW, opt_eventTarget);
+
+  /**
+   * Whether swipe selection is enabled by the settings page.
+   * @private {boolean}
+   */
+  this.enabled_ = false;
+
+  /**
+   * Whether the current keyset supports swipe selection.
+   *
+   * @private {boolean}
+   */
+  this.isKeysetSupported_ = false;
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.SelectView,
     i18n.input.chrome.inputview.elements.Element);
@@ -70,7 +83,15 @@ SelectView.prototype.right_;
  *
  * @private {number}
  */
-SelectView.WIDTH_ = 25;
+SelectView.WIDTH_ = 37;
+
+
+/**
+ * Width when in portrait mode.
+ *
+ * @private {number}
+ */
+SelectView.PORTRAIT_WIDTH_ = 15;
 
 
 /** @override */
@@ -79,12 +100,12 @@ SelectView.prototype.createDom = function() {
 
   var dom = this.getDomHelper();
   var elem = this.getElement();
-  var knob = dom.createDom(TagName.DIV, undefined, dom.createTextNode('>'));
+  var knob = dom.createDom(TagName.DIV);
   var knobContainer = dom.createDom(TagName.DIV, undefined, knob);
   this.left_ = dom.createDom(TagName.DIV, Css.SELECT_KNOB_LEFT, knobContainer);
   dom.appendChild(this.getElement(), this.left_);
 
-  knob = dom.createDom(TagName.DIV, undefined, dom.createTextNode('<'));
+  knob = dom.createDom(TagName.DIV);
   knobContainer = dom.createDom(TagName.DIV, undefined, knob);
   this.right_ =
       dom.createDom(TagName.DIV, Css.SELECT_KNOB_RIGHT, knobContainer);
@@ -95,16 +116,57 @@ SelectView.prototype.createDom = function() {
 /** @override */
 SelectView.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
+  var isLandscape = screen.width > screen.height;
+  var affordanceWidth = isLandscape ?
+    SelectView.WIDTH_ : SelectView.PORTRAIT_WIDTH_;
+  if (isLandscape) {
+    goog.dom.classlist.addRemove(this.getElement(),
+        Css.PORTRAIT, Css.LANDSCAPE);
+  } else {
+    goog.dom.classlist.addRemove(this.getElement(),
+        Css.LANDSCAPE, Css.PORTRAIT);
+  }
   this.left_ && goog.style.setStyle(this.left_, {
     'height': height + 'px',
-    'width': SelectView.WIDTH_ + 'px'
+    'width': affordanceWidth + 'px'
   });
   this.right_ && goog.style.setStyle(this.right_, {
     'height': height + 'px',
-    'width': SelectView.WIDTH_ + 'px',
-    'left': width - SelectView.WIDTH_ + 'px'
+    'width': affordanceWidth + 'px',
+    'left': width - affordanceWidth + 'px'
   });
+};
 
+
+/**
+ * Sets whether swipe selection is enabled by the settings page.
+ *
+ * @param {boolean} enabled .
+ */
+SelectView.prototype.setSettingsEnabled = function(enabled) {
+  this.enabled_ = enabled;
+  this.update_();
+};
+
+
+/**
+ * Sets whether the current keyset supports swipe selection.
+ *
+ * @param {boolean} supported .
+ */
+SelectView.prototype.setKeysetSupported = function(supported) {
+  this.isKeysetSupported_ = supported;
+  this.update_();
+};
+
+
+/**
+ * Update elements visibility.
+ *
+ * @private
+ */
+SelectView.prototype.update_ = function() {
+  this.setVisible(this.enabled_ && this.isKeysetSupported_);
 };
 
 
@@ -120,7 +182,11 @@ SelectView.prototype.disposeInternal = function() {
 /** @override */
 SelectView.prototype.setVisible = function(visible) {
   SelectView.base(this, 'setVisible', visible);
-  goog.style.setElementShown(this.left_, visible);
-  goog.style.setElementShown(this.right_, visible);
+  if (this.left_) {
+    goog.style.setElementShown(this.left_, visible);
+  }
+  if (this.right_) {
+    goog.style.setElementShown(this.right_, visible);
+  }
 };
 });  // goog.scope

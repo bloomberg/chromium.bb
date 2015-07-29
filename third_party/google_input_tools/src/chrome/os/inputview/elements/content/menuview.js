@@ -20,7 +20,6 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuItem');
@@ -35,13 +34,13 @@ var Css = i18n.input.chrome.inputview.Css;
 
 
 /**
- * The view for IME switcher, layout switcher and settings menu popup..
+ * The view for IME switcher, layout switcher and settings menu popup.
  *
  * @param {goog.events.EventTarget=} opt_eventTarget The parent event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
-// TODO: MenuView could extend from AltDataView after some refactor.
+// TODO: Refactor MenuView to extend AltDataView.
 i18n.input.chrome.inputview.elements.content.MenuView = function(
     opt_eventTarget) {
   goog.base(this, '', ElementType.MENU_VIEW, opt_eventTarget);
@@ -55,7 +54,7 @@ var MenuView = i18n.input.chrome.inputview.elements.content.MenuView;
 
 
 /**
- * The supported command.
+ * The commands which items in MenuView may send to inputview/controller.js.
  *
  * @enum {number}
  */
@@ -64,45 +63,53 @@ MenuView.Command = {
   SWITCH_KEYSET: 1,
   OPEN_EMOJI: 2,
   OPEN_HANDWRITING: 3,
-  OPEN_SETTING: 4
+  OPEN_SETTING: 4,
+  FLOATING: 5,
+  DOCKING: 6
 };
 
 
 /**
  * The maximal number of visible input methods in the view. If more than 3 input
  * methods are enabled, only 3 of them will show and others can be scrolled into
- * view. The reason we have this limiation is because menu view can not be
+ * view. The reason we have this limitation is because menu view can not be
  * higher than the keyboard view.
- *
- * @type {number}
- * @private
- */
-MenuView.prototype.visibleItems_ = 4;
-
-
-/**
- * The width of the popup menu.
- * The total width include padding is 300px, the padding left is 41px.
- *
- * @type {number}
- * @private
- */
-MenuView.width_ = 300;
-
-
-/**
- * The padding-left of the menu item.
  *
  * @private {number}
  */
-MenuView.paddingLeft_ = 0;
+MenuView.VISIBLE_ITEMS_ = 4;
 
 
 /**
- * The height of the popup menu item.
+ * Same as VISIBLE_ITEM_ but for a11y keyboard. A11y virtual keyboard is shorter
+ * than normal keyboard so 3 is used.
  *
- * @type {number}
- * @private
+ * @private {number}
+ */
+MenuView.VISIBLE_ITEMS_A11Y_ = 3;
+
+
+/**
+ * The width in px of the popup menu.
+ * The total width including padding is 300px, the left padding is 41px.
+ *
+ * @private {number}
+ */
+MenuView.WIDTH_ = 275;
+
+
+/**
+ * The left padding in px of the menu item.
+ *
+ * @private {number}
+ */
+MenuView.PADDING_LEFT_ = 25;
+
+
+/**
+ * The height in px of the popup menu item.
+ *
+ * @private {number}
  */
 MenuView.LIST_ITEM_HEIGHT_ = 45;
 
@@ -112,8 +119,7 @@ MenuView.LIST_ITEM_HEIGHT_ = 45;
  * Note: The reason we use a separate cover element instead of the view is
  * because of the opacity. We can not reassign the opacity in child element.
  *
- * @type {!Element}
- * @private
+ * @private {!Element}
  */
 MenuView.prototype.coverElement_;
 
@@ -146,55 +152,55 @@ MenuView.prototype.enterDocument = function() {
 /**
  * Shows the menu view.
  * @param {!i18n.input.chrome.inputview.elements.content.SoftKey} key The key
- *     triggerred this altdata view.
+ *     triggerred this menu view.
  * @param {!string} currentKeysetId The keyset ID that this menu key belongs to.
  * @param {boolean} isCompact True if the keyset that owns the menu key is a
  *     compact layout.
  * @param {boolean} enableCompactLayout True if the keyset that owns the menu
  *     key enabled compact layout.
  * @param {!string} currentInputMethod The current input method ID.
- * @param {?Array.<Object>} inputMethods The list of activated input methods.
+ * @param {?Array.<Object<string, string, string>>} inputMethods The list of
+ *     activated input methods.
  * @param {boolean} hasHwt Whether to add handwriting button.
  * @param {boolean} enableSettings Whether to add a link to settings page.
  * @param {boolean} hasEmoji Whether to enable emoji.
- * @param {boolean} isA11y .
+ * @param {boolean} isA11y Whether the current keyboard is a11y-optimized.
+ * @param {boolean} enableFVK Whether to enable floating virtual keyboard.
+ * @param {boolean} isFloating Whether the virtual keyboard is floating.
  */
 MenuView.prototype.show = function(key, currentKeysetId, isCompact,
     enableCompactLayout, currentInputMethod, inputMethods, hasHwt,
-    enableSettings, hasEmoji, isA11y) {
-  if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    // Temporary overwrites the value for material design.
-    MenuView.width_ = 259;
-    MenuView.paddingLeft_ = 41;
-  }
-  this.visibleItems_ = isA11y ? 3 : 4;
+    enableSettings, hasEmoji, isA11y, enableFVK, isFloating) {
   var ElementType = i18n.input.chrome.inputview.elements.ElementType;
   var dom = this.getDomHelper();
   if (key.type != ElementType.MENU_KEY) {
-    console.error('Only menu key should trigger menu view to show');
+    console.error('Unexpected key triggered the menu view. Key type = ' +
+        key.type + '.');
     return;
   }
   this.triggeredBy = key;
   var coordinate = goog.style.getClientPosition(key.getElement());
   var x = coordinate.x;
-  // y is the maximual height that menu view can have.
+  // y is the maximal height that menu view can have.
   var y = coordinate.y;
 
   goog.style.setElementShown(this.getElement(), true);
-  // may not need to remove child.
+  // TODO: May not need to remove child.
   dom.removeChildren(this.getElement());
 
   var totalHeight = 0;
-  totalHeight += this.addInputMethodItems_(currentInputMethod, inputMethods);
+  totalHeight += this.addInputMethodItems_(currentInputMethod, inputMethods,
+      isA11y);
   totalHeight += this.addLayoutSwitcherItem_(key, currentKeysetId, isCompact,
       enableCompactLayout);
   if (hasHwt || enableSettings || hasEmoji) {
-    totalHeight += this.addFooterItems_(hasHwt, enableSettings, hasEmoji);
+    totalHeight += this.addFooterItems_(hasHwt, enableSettings, hasEmoji,
+        enableFVK, isFloating);
   }
 
 
   var left = x;
-  //TODO: take care of elemTop < 0. A scrollable view is probably needed.
+  // TODO: Take care of elemTop < 0. A scrollable view is probably needed.
   var elemTop = y - totalHeight;
 
   goog.style.setPosition(this.getElement(), left, elemTop);
@@ -219,15 +225,19 @@ MenuView.prototype.hide = function() {
  * Adds the list of activated input methods.
  *
  * @param {!string} currentInputMethod The current input method ID.
- * @param {?Array.<Object>} inputMethods The list of activated input methods.
+ * @param {?Array.<Object<string, string, string>>} inputMethods The list of
+ *     activated input methods.
+ * @param {boolean} isA11y Whether the current keyboard is a11y-optimized.
  * @return {number} The height of the ime list container.
  * @private
  */
 MenuView.prototype.addInputMethodItems_ = function(currentInputMethod,
-    inputMethods) {
+    inputMethods, isA11y) {
   var dom = this.getDomHelper();
   var container = dom.createDom(goog.dom.TagName.DIV,
       Css.IME_LIST_CONTAINER);
+  var visibleItems = isA11y ?
+      MenuView.VISIBLE_ITEMS_A11Y_ : MenuView.VISIBLE_ITEMS_;
 
   for (var i = 0; i < inputMethods.length; i++) {
     var inputMethod = inputMethods[i];
@@ -249,14 +259,14 @@ MenuView.prototype.addInputMethodItems_ = function(currentInputMethod,
       imeItem.check();
     }
     goog.style.setSize(imeItem.getElement(),
-        (MenuView.width_ + MenuView.paddingLeft_),
+        (MenuView.WIDTH_ + MenuView.PADDING_LEFT_),
         MenuView.LIST_ITEM_HEIGHT_);
   }
 
-  var containerHeight = inputMethods.length > this.visibleItems_ ?
-      MenuView.LIST_ITEM_HEIGHT_ * this.visibleItems_ :
+  var containerHeight = inputMethods.length > visibleItems ?
+      MenuView.LIST_ITEM_HEIGHT_ * visibleItems :
       MenuView.LIST_ITEM_HEIGHT_ * inputMethods.length;
-  goog.style.setSize(container, MenuView.width_ + MenuView.paddingLeft_,
+  goog.style.setSize(container, MenuView.WIDTH_ + MenuView.PADDING_LEFT_,
       containerHeight);
 
   dom.appendChild(this.getElement(), container);
@@ -269,7 +279,7 @@ MenuView.prototype.addInputMethodItems_ = function(currentInputMethod,
  * disabled compact layout, this is a noop.
  *
  * @param {!i18n.input.chrome.inputview.elements.content.SoftKey} key The key
- *     triggerred this altdata view.
+ *     triggerred this menu view.
  * @param {!string} currentKeysetId The keyset ID that this menu key belongs to.
  * @param {boolean} isCompact True if the keyset that owns the menu key is a
  *     compact layout.
@@ -312,7 +322,7 @@ MenuView.prototype.addLayoutSwitcherItem_ = function(key, currentKeysetId,
         chrome.i18n.getMessage('SWITCH_TO_COMPACT_LAYOUT'));
   }
   layoutSwitcherItem.render(this.getElement());
-  goog.style.setSize(layoutSwitcherItem.getElement(), MenuView.width_,
+  goog.style.setSize(layoutSwitcherItem.getElement(), MenuView.WIDTH_,
       MenuView.LIST_ITEM_HEIGHT_);
 
   return MenuView.LIST_ITEM_HEIGHT_;
@@ -326,11 +336,13 @@ MenuView.prototype.addLayoutSwitcherItem_ = function(key, currentKeysetId,
  * @param {boolean} hasHwt Whether to add handwriting button.
  * @param {boolean} enableSettings Whether to add settings button.
  * @param {boolean} hasEmoji Whether to add emoji button.
+ * @param {boolean} enableFVK Whether to add floating virtual keyboard button.
+ * @param {boolean} isFloating Whether the virtual keyboard is floating.
  * @return {number} The height of the footer.
  * @private
  */
 MenuView.prototype.addFooterItems_ = function(hasHwt, enableSettings,
-    hasEmoji) {
+    hasEmoji, enableFVK, isFloating) {
   var dom = this.getDomHelper();
   var footer = dom.createDom(goog.dom.TagName.DIV, Css.MENU_FOOTER);
   if (hasEmoji) {
@@ -363,19 +375,38 @@ MenuView.prototype.addFooterItems_ = function(hasHwt, enableSettings,
     settingFooter.render(footer);
   }
 
+  if (enableFVK) {
+    var floating = {};
+    if (isFloating) {
+      floating['iconCssClass'] = Css.MENU_FOOTER_DOCKING_BUTTON;
+      floating['command'] = [MenuView.Command.DOCKING];
+      var floatingFooter = new MenuItem('dock', floating,
+          MenuItem.Type.FOOTER_ITEM,
+          chrome.i18n.getMessage('FOOTER_DOCKING_BUTTON'));
+      floatingFooter.render(footer);
+    } else {
+      floating['iconCssClass'] = Css.MENU_FOOTER_FLOATING_BUTTON;
+      floating['command'] = [MenuView.Command.FLOATING];
+      var floatingFooter = new MenuItem('floating', floating,
+          MenuItem.Type.FOOTER_ITEM,
+          chrome.i18n.getMessage('FOOTER_FLOATING_BUTTON'));
+      floatingFooter.render(footer);
+    }
+  }
+
   // Sets footer itmes' width.
   var elems = dom.getChildren(footer);
   var len = elems.length;
-  var subWidth = Math.ceil((MenuView.width_ + MenuView.paddingLeft_) / len);
+  var subWidth = Math.ceil((MenuView.WIDTH_ + MenuView.PADDING_LEFT_) / len);
   var i = 0;
   for (; i < len - 1; i++) {
     elems[i].style.width = subWidth + 'px';
   }
-  elems[i].style.width = (MenuView.width_ + MenuView.paddingLeft_ -
+  elems[i].style.width = (MenuView.WIDTH_ + MenuView.PADDING_LEFT_ -
       subWidth * (len - 1)) + 'px';
 
   dom.appendChild(this.getElement(), footer);
-  goog.style.setSize(footer, (MenuView.width_ + MenuView.paddingLeft_),
+  goog.style.setSize(footer, (MenuView.WIDTH_ + MenuView.PADDING_LEFT_),
       MenuView.LIST_ITEM_HEIGHT_);
 
   return MenuView.LIST_ITEM_HEIGHT_;
@@ -409,4 +440,5 @@ MenuView.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
 };
 });  // goog.scope
+
 

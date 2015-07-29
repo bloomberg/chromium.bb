@@ -15,9 +15,7 @@ goog.provide('i18n.input.chrome.inputview.elements.layout.HandwritingLayout');
 
 goog.require('goog.dom.classlist');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
-goog.require('i18n.input.chrome.inputview.elements.Weightable');
 goog.require('i18n.input.chrome.inputview.elements.layout.LinearLayout');
 
 goog.scope(function() {
@@ -58,12 +56,6 @@ HandwritingLayout.prototype.createDom = function() {
 /** @override */
 HandwritingLayout.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
-
-  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    // 85/140 = 0.6
-    this.getElement().style.top =
-        Math.ceil(height * 0.6 / this.getHeightInWeight());
-  }
 };
 
 });  // goog.scope

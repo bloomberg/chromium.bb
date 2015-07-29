@@ -19,7 +19,6 @@ goog.require('goog.positioning.AnchoredViewportPosition');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
@@ -35,9 +34,7 @@ var KeysetView = i18n.input.chrome.inputview.elements.content.KeysetView;
 var PointerHandler = i18n.input.chrome.inputview.handler.PointerHandler;
 var Css = i18n.input.chrome.inputview.Css;
 var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
-var ExtendedLayout = i18n.input.chrome.inputview.elements.layout.ExtendedLayout;
 var PageIndicator = i18n.input.chrome.inputview.elements.content.PageIndicator;
-var VerticalLayout = i18n.input.chrome.inputview.elements.layout.VerticalLayout;
 
 
 
@@ -152,7 +149,7 @@ EmojiView.prototype.emojiRows_;
 /**
  * The emoji slider of the emoji slider.
  *
- * @private {!VerticalLayout}
+ * @private {!i18n.input.chrome.inputview.elements.layout.VerticalLayout}
  */
 EmojiView.prototype.emojiSlider_;
 
@@ -182,7 +179,7 @@ EmojiView.prototype.emojiWidthPercent_ = 1;
 
 
 /**
- * Whether it is a drag event.
+ * The ID of the selected emoji category.
  *
  * @private {number}
  */
@@ -229,6 +226,14 @@ EmojiView.EMOJI_DRAG_SCROLL_DISTANCE_ = 60;
 EmojiView.EMOJI_DRAG_START_DISTANCE_ = 10;
 
 
+/**
+ * The default emoji category ID.
+ *
+ * @private {number}
+ */
+EmojiView.EMOJI_DEFAULT_CATEGORY_ID_ = 2;
+
+
 /** @private {!PointerHandler} */
 EmojiView.prototype.pointerHandler_;
 
@@ -244,9 +249,11 @@ EmojiView.prototype.createDom = function() {
       listen(this.pointerHandler_, EventType.POINTER_OUT, this.onPointerOut_).
       listen(this.pointerHandler_, EventType.DRAG, this.onDragEvent_);
   this.emojiRows_ =
-      /** @type {!ExtendedLayout} */ (this.getChildViewById('emojiRows'));
+      /** @type {!i18n.input.chrome.inputview.elements.layout.ExtendedLayout} */
+      (this.getChildViewById('emojiRows'));
   this.emojiSlider_ =
-      /** @type {!VerticalLayout} */ (this.getChildViewById('emojiSlider'));
+      /** @type {!i18n.input.chrome.inputview.elements.layout.VerticalLayout} */
+      (this.getChildViewById('emojiSlider'));
   for (var i = 0; i < this.keysPerPage_; i++) {
     this.recentEmojiKeys_.push(
         /** @type {!i18n.input.chrome.inputview.elements.content.EmojiKey} */
@@ -272,34 +279,28 @@ EmojiView.prototype.enterDocument = function() {
 /** @override */
 EmojiView.prototype.resize = function(outerWidth, outerHeight, widthPercent,
     opt_force) {
-  if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    if (this.getElement() && (!!opt_force || this.outerHeight != outerHeight ||
-        this.outerWidth != outerWidth ||
-        this.emojiWidthPercent_ != widthPercent)) {
-      this.outerHeight = outerHeight;
-      this.outerWidth = outerWidth;
-      goog.style.setSize(this.getElement(), outerWidth, outerHeight);
-      this.emojiWidthPercent_ = widthPercent;
-      var marginOrPadding = Math.round((outerWidth -
-          outerWidth * widthPercent) / 2);
-      var w = outerWidth - 2 * marginOrPadding;
-      var tabBar = /** @type {!Element} */ (
-          this.getChildViewById('tabBar').getElement());
-      tabBar.style.paddingLeft = tabBar.style.paddingRight =
-          marginOrPadding + 'px';
-      var rowsAndKeys = /** @type {!Element} */ (
-          this.getChildViewById('rowsAndSideKeys').getElement());
-      rowsAndKeys.style.marginLeft = rowsAndKeys.style.marginRight =
-          marginOrPadding + 'px';
-      var spaceRow = /**@type {!Element} */ (
-          this.getChildViewById('emojiSpaceRow').getElement());
-      spaceRow.style.marginLeft = spaceRow.style.marginRight =
-          marginOrPadding + 'px';
-      this.resizeRows(outerWidth, outerHeight);
-    }
-  } else {
-    goog.base(this, 'resize', outerWidth, outerHeight, widthPercent,
-        opt_force);
+  if (this.getElement() && (!!opt_force || this.outerHeight != outerHeight ||
+      this.outerWidth != outerWidth ||
+      this.emojiWidthPercent_ != widthPercent)) {
+    this.outerHeight = outerHeight;
+    this.outerWidth = outerWidth;
+    goog.style.setSize(this.getElement(), outerWidth, outerHeight);
+    this.emojiWidthPercent_ = widthPercent;
+    var marginOrPadding = Math.round((outerWidth -
+        outerWidth * widthPercent) / 2);
+    var tabBar = /** @type {!Element} */ (
+        this.getChildViewById('tabBar').getElement());
+    tabBar.style.paddingLeft = tabBar.style.paddingRight =
+        marginOrPadding + 'px';
+    var rowsAndKeys = /** @type {!Element} */ (
+        this.getChildViewById('rowsAndSideKeys').getElement());
+    rowsAndKeys.style.marginLeft = rowsAndKeys.style.marginRight =
+        marginOrPadding + 'px';
+    var spaceRow = /**@type {!Element} */ (
+        this.getChildViewById('emojiSpaceRow').getElement());
+    spaceRow.style.marginLeft = spaceRow.style.marginRight =
+        marginOrPadding + 'px';
+    this.resizeRows(outerWidth, outerHeight);
   }
   // Reposition must happen before clear because it will set the width.
   this.repositionIndicator_();
@@ -340,9 +341,9 @@ EmojiView.prototype.onDragEnd_ = function(timestamp) {
   if (interval < EmojiView.EMOJI_DRAG_INTERVAL_ &&
       Math.abs(this.dragDistance_) >=
       EmojiView.EMOJI_DRAG_SCROLL_DISTANCE_) {
-    this.adjustMarginLeft_(this.dragDistance_);
+    this.adjustXPosition_(this.dragDistance_);
   } else {
-    this.adjustMarginLeft_();
+    this.adjustXPosition_();
   }
 };
 
@@ -389,7 +390,7 @@ EmojiView.prototype.onPointerUp_ = function(e) {
       break;
     case ElementType.PAGE_INDICATOR:
       if (this.isDragging) {
-        this.adjustMarginLeft_();
+        this.adjustXPosition_();
         this.update();
       }
       break;
@@ -465,8 +466,8 @@ EmojiView.prototype.updateCategory_ = function(categoryID) {
  * @param {number=} opt_distance The distance to adjust to.
  * @private
  */
-EmojiView.prototype.adjustMarginLeft_ = function(opt_distance) {
-  var pageNum = this.emojiRows_.adjustMarginLeft(opt_distance);
+EmojiView.prototype.adjustXPosition_ = function(opt_distance) {
+  var pageNum = this.emojiRows_.adjustXPosition(opt_distance);
   this.categoryID_ = this.pageToCategory_[pageNum];
   this.pageIndicator_.gotoPage(
       pageNum - this.pageOffsets_[this.categoryID_],
@@ -481,7 +482,8 @@ EmojiView.prototype.adjustMarginLeft_ = function(opt_distance) {
  *
  */
 EmojiView.prototype.clearEmojiStates = function() {
-  this.updateCategory_(this.recentEmojiList_.length > 0 ? 0 : 1);
+  this.updateCategory_(this.recentEmojiList_.length > 0 ?
+      0 : EmojiView.EMOJI_DEFAULT_CATEGORY_ID_);
 };
 
 

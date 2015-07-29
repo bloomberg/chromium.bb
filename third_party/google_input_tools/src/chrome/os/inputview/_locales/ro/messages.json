@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "s\u0103geat\u0103 \u00een jos"
   },
+  "drag_button": {
+    "message": "Trage pentru a muta tastatura virtual\u0103"
+  },
   "ee_est_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura eston\u0103"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Activeaz\u0103 completarea"
   },
+  "enable_gesture_editing": {
+    "message": "Gliseaz\u0103 dinspre marginile tastaturii pentru a muta cursorul sau dinspre tasta backspace pentru a \u0219terge cuvinte \u00eentregi."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Activeaz\u0103 predic\u021bia urm\u0103torului cuv\u00e2nt"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura finlandez\u0103"
   },
+  "footer_docking_button": {
+    "message": "andocheaz\u0103 tastatura virtual\u0103"
+  },
   "footer_emoji_button": {
     "message": "comut\u0103 la emoji"
+  },
+  "footer_floating_button": {
+    "message": "transform\u0103 tastatura virtual\u0103 \u00eentr-una mobil\u0103"
   },
   "footer_handwriting_button": {
     "message": "comut\u0103 la scriere de m\u00e2n\u0103"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Tastatur\u0103 lituanian\u0103"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Tastatur\u0103 malayalam (Fonetic\u0103)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Tastatur\u0103 sloven\u0103"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Tastatur\u0103 kurd\u0103 sorani bazat\u0103 pe arab\u0103"
+    "message": "Tastatur\u0103 kurd\u0103 bazat\u0103 pe arab\u0103"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Tastatur\u0103 kurd\u0103 sorani bazat\u0103 pe englez\u0103"
+    "message": "Tastatur\u0103 kurd\u0103 bazat\u0103 pe englez\u0103"
   },
   "keyboard_spanish": {
     "message": "Tastatur\u0103 spaniol\u0103"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "spa\u021biu"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "comut\u0103 la "

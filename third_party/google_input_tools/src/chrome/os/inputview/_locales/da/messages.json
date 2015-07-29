@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "pil ned"
   },
+  "drag_button": {
+    "message": "Tr\u00e6k for at flytte det virtuelle tastatur"
+  },
   "ee_est_settings_page": {
     "message": "Side med indstillinger for estisk tastatur"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Aktiv\u00e9r automatisk fuldf\u00f8relse"
   },
+  "enable_gesture_editing": {
+    "message": "Stryg fra kanterne af tastaturet for at flytte mark\u00f8ren eller fra tilbagetasten for at slette hele ord."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Aktiv\u00e9r forudsigelse af n\u00e6ste ord"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Side med indstillinger for finsk tastatur"
   },
+  "footer_docking_button": {
+    "message": "fastg\u00f8r virtuelt tastatur"
+  },
   "footer_emoji_button": {
     "message": "skift til emoji"
+  },
+  "footer_floating_button": {
+    "message": "g\u00f8r det virtuelle tastatur bev\u00e6geligt"
   },
   "footer_handwriting_button": {
     "message": "skift til h\u00e5ndskrift"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Litauisk tastatur"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam-tastatur (fonetisk)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Slovensk tastatur"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Sorani-kurdisk (arabiskbaseret) tastatur"
+    "message": "Kurdisk tastatur (arabiskbaseret)"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Sorani-kurdisk (engelskbaseret) tastatur"
+    "message": "Kurdisk tastatur (engelskbaseret)"
   },
   "keyboard_spanish": {
     "message": "Spansk tastatur"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "mellemrum"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "skift til "

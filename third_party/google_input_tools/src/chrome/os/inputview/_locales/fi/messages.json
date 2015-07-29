@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "alanuoli"
   },
+  "drag_button": {
+    "message": "Liikuta virtuaalista n\u00e4pp\u00e4imist\u00f6\u00e4 vet\u00e4m\u00e4ll\u00e4"
+  },
   "ee_est_settings_page": {
     "message": "Viron n\u00e4pp\u00e4imist\u00f6n asetukset"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Ota t\u00e4ydent\u00e4minen k\u00e4ytt\u00f6\u00f6n"
   },
+  "enable_gesture_editing": {
+    "message": "Siirr\u00e4 osoitinta pyyhk\u00e4isem\u00e4ll\u00e4 n\u00e4pp\u00e4imist\u00f6n reunalta tai poista kokonaisia sanoja pyyhk\u00e4isem\u00e4ll\u00e4 askelpalautinn\u00e4pp\u00e4int\u00e4."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Ota seuraavan sanan ennakointi k\u00e4ytt\u00f6\u00f6n"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Suomen n\u00e4pp\u00e4imist\u00f6n asetukset"
   },
+  "footer_docking_button": {
+    "message": "kiinnit\u00e4 virtuaalinen n\u00e4pp\u00e4imist\u00f6"
+  },
   "footer_emoji_button": {
     "message": "siirry emoji-n\u00e4pp\u00e4imiin"
+  },
+  "footer_floating_button": {
+    "message": "tee virtuaalisesta n\u00e4pp\u00e4imist\u00f6st\u00e4 liikuteltava"
   },
   "footer_handwriting_button": {
     "message": "siirry k\u00e4sinkirjoitukseen"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "N\u00e4pp\u00e4imist\u00f6: liettua"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malajalaminkielinen n\u00e4pp\u00e4imist\u00f6 (foneettinen)"
   },
@@ -2900,10 +2918,10 @@
     "message": "N\u00e4pp\u00e4imist\u00f6: sloveeni"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Soran\u00een arabiaan perustuva n\u00e4pp\u00e4imist\u00f6"
+    "message": "Kurdin arabiaan perustuva n\u00e4pp\u00e4imist\u00f6"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Soran\u00een englantiin perustuva n\u00e4pp\u00e4imist\u00f6"
+    "message": "Kurdin englantiin perustuva n\u00e4pp\u00e4imist\u00f6"
   },
   "keyboard_spanish": {
     "message": "N\u00e4pp\u00e4imist\u00f6: espanja"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "v\u00e4lily\u00f6nti"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "vaihda kohteeseen "

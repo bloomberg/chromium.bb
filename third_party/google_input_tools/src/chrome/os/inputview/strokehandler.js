@@ -42,7 +42,7 @@ goog.require('i18n.input.hwt.util');
  * @extends {goog.events.EventTarget}
  */
 i18n.input.hwt.StrokeHandler = function(canvas, topDocument) {
-  goog.base(this);
+  i18n.input.hwt.StrokeHandler.base(this, 'constructor');
 
   /**
    * The event handler.
@@ -240,7 +240,7 @@ i18n.input.hwt.StrokeHandler.EventType = {
  * @extends {goog.events.Event}
  */
 i18n.input.hwt.StrokeHandler.StrokeEvent = function(type, point) {
-  goog.base(this, type);
+  i18n.input.hwt.StrokeHandler.StrokeEvent.base(this, 'constructor', type);
 
   /**
    * The point.

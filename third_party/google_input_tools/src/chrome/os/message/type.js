@@ -33,6 +33,7 @@ i18n.input.chrome.message.Type = {
   CONTEXT_BLUR: 'context_blur',
   CONTEXT_FOCUS: 'context_focus',
   FRONT_TOGGLE_LANGUAGE_STATE: 'front_toggle_language_state',
+  GESTURES_BACK: 'gestures_back',
   HWT_NETWORK_ERROR: 'hwt_network_error',
   SURROUNDING_TEXT_CHANGED: 'surrounding_text_changed',
   UPDATE_SETTINGS: 'update_settings',
@@ -41,6 +42,7 @@ i18n.input.chrome.message.Type = {
   // Inputview -> Background
   COMMIT_TEXT: 'commit_text',
   COMPLETION: 'completion',
+  CONFIRM_GESTURE_RESULT: 'confirm_gesture_result',
   CONNECT: 'connect',
   DATASOURCE_READY: 'datasource_ready',
   DISCONNECT: 'disconnect',
@@ -52,8 +54,11 @@ i18n.input.chrome.message.Type = {
   OPTION_CHANGE: 'option_change',
   PREDICTION: 'prediction',
   SELECT_CANDIDATE: 'select_candidate',
+  SEND_GESTURE_EVENT: 'send_gesture_event',
   SEND_KEY_EVENT: 'send_key_event',
+  SEND_KEYBOARD_LAYOUT: 'send_keyboard_layout',
   SET_COMPOSITION: 'set_composition',
+  SET_GESTURE_EDITING: 'set_gesture_editing',
   SET_LANGUAGE: 'set_language',
   SWITCH_KEYSET: 'switch_keyset',
   TOGGLE_LANGUAGE_STATE: 'toggle_language_state',
@@ -111,6 +116,7 @@ i18n.input.chrome.message.getMessageSource = function(type) {
     case Type.CONTEXT_BLUR:
     case Type.CONTEXT_FOCUS:
     case Type.FRONT_TOGGLE_LANGUAGE_STATE:
+    case Type.GESTURES_BACK:
     case Type.HWT_NETWORK_ERROR:
     case Type.SURROUNDING_TEXT_CHANGED:
     case Type.UPDATE_SETTINGS:
@@ -120,6 +126,7 @@ i18n.input.chrome.message.getMessageSource = function(type) {
     // Inputview -> Background
     case Type.COMMIT_TEXT:
     case Type.COMPLETION:
+    case Type.CONFIRM_GESTURE_RESULT:
     case Type.CONNECT:
     case Type.DATASOURCE_READY:
     case Type.DISCONNECT:
@@ -131,8 +138,11 @@ i18n.input.chrome.message.getMessageSource = function(type) {
     case Type.OPTION_CHANGE:
     case Type.PREDICTION:
     case Type.SELECT_CANDIDATE:
+    case Type.SEND_GESTURE_EVENT:
     case Type.SEND_KEY_EVENT:
+    case Type.SEND_KEYBOARD_LAYOUT:
     case Type.SET_COMPOSITION:
+    case Type.SET_GESTURE_EDITING:
     case Type.SET_LANGUAGE:
     case Type.SWITCH_KEYSET:
     case Type.TOGGLE_LANGUAGE_STATE:

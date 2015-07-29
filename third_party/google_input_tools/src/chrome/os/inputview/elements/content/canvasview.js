@@ -24,6 +24,7 @@ goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
 goog.require('i18n.input.chrome.inputview.elements.content.SpanElement');
+goog.require('i18n.input.chrome.inputview.events.EventType');
 goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
 goog.require('i18n.input.hwt.Canvas');
@@ -37,6 +38,7 @@ var Css = i18n.input.chrome.inputview.Css;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var Name = i18n.input.chrome.message.Name;
 var SpanElement = i18n.input.chrome.inputview.elements.content.SpanElement;
+var EventType = i18n.input.chrome.inputview.events.EventType;
 var Type = i18n.input.chrome.message.Type;
 
 
@@ -193,7 +195,7 @@ CanvasView.prototype.enterDocument = function() {
           this.onStrokeEnd_).
       listen(this.adapter_,
           [i18n.input.chrome.DataSource.EventType.CANDIDATES_BACK,
-           Type.HWT_NETWORK_ERROR],
+           EventType.HWT_NETWORK_ERROR],
           this.onNetworkState_).
       listen(this.adapter_, Type.HWT_PRIVACY_GOT_IT,
           this.onConfirmPrivacyInfo_);
@@ -291,7 +293,7 @@ CanvasView.prototype.hasStrokesOnCanvas = function() {
  */
 CanvasView.prototype.onNetworkState_ = function(e) {
   goog.style.setElementShown(
-      this.networkErrorDiv_, e.type == Type.HWT_NETWORK_ERROR);
+      this.networkErrorDiv_, e.type == EventType.HWT_NETWORK_ERROR);
 };
 
 

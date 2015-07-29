@@ -20,14 +20,14 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
 (function() {
 
   var viewIdPrefix = 'emoji-k-';
-  var emojiKeyAmount = 27;
+  var emojiKeysPerPage = 27;
   var util = i18n.input.chrome.inputview.content.util;
   var ElementType = i18n.input.chrome.inputview.elements.ElementType;
   var EmojiType = i18n.input.chrome.inputview.EmojiType;
   var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
   var Css = i18n.input.chrome.inputview.Css;
 
-  var keyCharacters = [
+  var emojiGroups = [
     // Recent
     [''],
 
@@ -457,91 +457,72 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
   ];
   var keyList = [];
   var mapping = {};
+  var viewId = 0;
   keyList.push(util.createTabBarKey('Tabbar0', EmojiType.RECENT,
       Css.EMOJI_TABBAR_RECENT));
+  mapping['Tabbar0'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar1', EmojiType.HOT,
       Css.EMOJI_TABBAR_HOT));
+  mapping['Tabbar1'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar2', EmojiType.EMOTION,
       Css.EMOJI_TABBAR_EMOTION));
+  mapping['Tabbar2'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar3', EmojiType.ITEMS,
       Css.EMOJI_TABBAR_ITEMS));
+  mapping['Tabbar3'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar4', EmojiType.NATURE,
       Css.EMOJI_TABBAR_NATURE));
+  mapping['Tabbar4'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar5', EmojiType.PLACES_OF_INTERESTS,
       Css.EMOJI_TABBAR_PLACES_OF_INTERESTS));
+  mapping['Tabbar5'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar6',
       EmojiType.SPECIAL_CHARACTERS,
       Css.EMOJI_TABBAR_SPECIAL_CHARACTERS));
+  mapping['Tabbar6'] = viewIdPrefix + viewId++;
   keyList.push(util.createTabBarKey('Tabbar7', EmojiType.EMOTICON,
       Css.EMOJI_TABBAR_EMOTICON));
-  keyList.push(util.createBackKey());
+  mapping['Tabbar7'] = viewIdPrefix + viewId++;
 
-  var amount = 0;
-  var acturalLength = 0;
-  for (var i = 0, len = keyCharacters.length; i < len; i++) {
-    acturalLength = Math.ceil(keyCharacters[i].length / emojiKeyAmount) *
-        emojiKeyAmount;
-    for (var j = 0, lenJ = keyCharacters[i].length; j < lenJ; j++) {
+  // Tab bar layout has 10 keys but we only need 8 keys here, skip two keys.
+  viewId += 2;
+  for (var i = 0, count = 0; i < emojiGroups.length; i++) {
+    var pages = Math.ceil(emojiGroups[i].length / emojiKeysPerPage);
+    for (var j = 0; j < pages * emojiKeysPerPage; j++) {
       var spec = {};
-      spec[SpecNodeName.ID] = 'emojikey' + amount;
+      spec[SpecNodeName.ID] = 'emojikey' + count;
       spec[SpecNodeName.TYPE] = ElementType.EMOJI_KEY;
-      spec[SpecNodeName.TEXT] = keyCharacters[i][j];
+      spec[SpecNodeName.TEXT] =
+          j < emojiGroups[i].length ? emojiGroups[i][j] : '';
       spec[SpecNodeName.IS_EMOTICON] = (i == EmojiType.EMOTICON);
       var key = i18n.input.chrome.inputview.content.util.createKey(spec);
+      mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + viewId++;
       keyList.push(key);
-      amount++;
-    }
-    for (var j = keyCharacters[i].length; j < acturalLength; j++) {
-      var spec = {};
-      spec[SpecNodeName.ID] = 'emojikey' + amount;
-      spec[SpecNodeName.TYPE] = ElementType.EMOJI_KEY;
-      spec[SpecNodeName.TEXT] = '';
-      spec[SpecNodeName.IS_EMOTICON] = (i == EmojiType.EMOTICON);
-      var key = i18n.input.chrome.inputview.content.util.createKey(spec);
-      keyList.push(key);
-      amount++;
+      count++;
     }
   }
-  keyList.push(util.createBackspaceKey());
-  keyList.push(util.createEnterKey());
-  keyList.push(util.createHideKeyboardKey());
+  var tmp = util.createBackspaceKey();
+  keyList.push(tmp);
+  mapping[tmp['spec'][SpecNodeName.ID]] = viewIdPrefix + viewId++;
+  tmp = util.createEnterKey();
+  keyList.push(tmp);
+  mapping[tmp['spec'][SpecNodeName.ID]] = viewIdPrefix + viewId++;
+  // SideKeys layout has 3 keys but we only need 2 keys here, skip one key.
+  viewId++;
 
-  var tabbarLength = 1 + keyCharacters.length;
-  var key = [];
-
-  // Map the tabbars.
-  for (var i = 0, len = keyCharacters.length; i < len; i++) {
-    key = keyList[i];
-    mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + i;
-  }
-
-  // Map the back key.
-  key = keyList[keyCharacters.length];
-  mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + tabbarLength;
-
-  // Map the emoji keys.
-  amount = 0;
-  var offset = tabbarLength + 1;
-  for (var i = 0, len = keyCharacters.length; i < len; i++) {
-    acturalLength = Math.ceil(keyCharacters[i].length / emojiKeyAmount) *
-        emojiKeyAmount;
-    for (var j = 0, lenJ = acturalLength; j < lenJ; j++) {
-      key = keyList[amount + tabbarLength];
-      mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + (amount +
-          offset);
-      amount++;
-    }
-  }
-
-  // Map the side keys
-  for (var i = 0; i < 3; ++i) {
-    key = keyList[i + amount + tabbarLength];
-    mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix +
-        (i + amount + offset);
-  }
+  //The space row.
+  tmp = util.createBackToKeyboardKey();
+  keyList.push(tmp);
+  mapping[tmp['spec'][SpecNodeName.ID]] = viewIdPrefix + viewId++;
+  tmp = util.createSpaceKey();
+  keyList.push(tmp);
+  mapping[tmp['spec'][SpecNodeName.ID]] = viewIdPrefix + viewId++;
+  tmp = util.createHideKeyboardKey();
+  keyList.push(tmp);
+  mapping[tmp['spec'][SpecNodeName.ID]] = viewIdPrefix + viewId++;
 
   var result = [];
-  result[SpecNodeName.TEXT] = keyCharacters;
+  result[SpecNodeName.TEXT] = emojiGroups;
   result[SpecNodeName.KEY_LIST] = keyList;
   result[SpecNodeName.MAPPING] = mapping;
   result[SpecNodeName.LAYOUT] = 'emoji';

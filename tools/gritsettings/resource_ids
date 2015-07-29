@@ -58,6 +58,9 @@
     "includes": [6100],
     "structures": [6150],
   },
+  "ui/keyboard/keyboard_resources.grd": {
+    "includes": [6850],
+  },
   "chrome/app/theme/theme_resources.grd": {
     "structures": [7000],
   },
@@ -212,9 +215,6 @@
   },
   "device/bluetooth/bluetooth_strings.grd": {
     "messages": [28000],
-  },
-  "ui/keyboard/keyboard_resources.grd": {
-    "includes": [28050],
   },
   "ui/file_manager/file_manager_resources.grd": {
     "includes": [28110],

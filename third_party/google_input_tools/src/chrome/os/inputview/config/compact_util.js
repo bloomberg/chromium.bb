@@ -14,7 +14,9 @@
 goog.provide('i18n.input.chrome.inputview.content.compact.util');
 goog.provide('i18n.input.chrome.inputview.content.compact.util.CompactKeysetSpec');
 
+goog.require('goog.object');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.content.Constants');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
@@ -23,6 +25,7 @@ var util = i18n.input.chrome.inputview.content.compact.util;
 var NON_LETTER_KEYS =
     i18n.input.chrome.inputview.content.Constants.NON_LETTER_KEYS;
 var Css = i18n.input.chrome.inputview.Css;
+var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 
 
 /**
@@ -93,19 +96,22 @@ util.createCompactData = function(keysetSpec, viewIdPrefix, keyIdPrefix) {
   for (var i = 0; i < keysetSpec[keysetSpecNode.DATA].length; i++) {
     var keySpec = keysetSpec[keysetSpecNode.DATA][i];
     if (keySpec == NON_LETTER_KEYS.MENU) {
-      keySpec['toKeyset'] = keysetSpec[keysetSpecNode.ID].split('.')[0];
+      keySpec[SpecNodeName.TO_KEYSET] =
+          keysetSpec[keysetSpecNode.ID].split('.')[0];
     }
-    var id = keySpec['id'] ? keySpec['id'] : keyIdPrefix + i;
+    var id = keySpec[SpecNodeName.ID] ?
+        keySpec[SpecNodeName.ID] :
+        keyIdPrefix + i;
     var key = util.createCompactKey(id, keySpec);
     keyList.push(key);
-    mapping[key['spec']['id']] = viewIdPrefix + i;
+    mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + i;
   }
 
-  return {
-    'keyList': keyList,
-    'mapping': mapping,
-    'layout': keysetSpec[keysetSpecNode.LAYOUT]
-  };
+  var compactKeyData = {};
+  compactKeyData[SpecNodeName.KEY_LIST] = keyList;
+  compactKeyData[SpecNodeName.MAPPING] = mapping;
+  compactKeyData[SpecNodeName.LAYOUT] = keysetSpec[keysetSpecNode.LAYOUT];
+  return compactKeyData;
 };
 
 
@@ -118,9 +124,10 @@ util.createCompactData = function(keysetSpec, viewIdPrefix, keyIdPrefix) {
  */
 util.createCompactKey = function(id, keySpec) {
   var spec = keySpec;
-  spec['id'] = id;
-  if (!spec['type'])
-    spec['type'] = i18n.input.chrome.inputview.elements.ElementType.COMPACT_KEY;
+  spec[SpecNodeName.ID] = id;
+  if (!spec[SpecNodeName.TYPE])
+    spec[SpecNodeName.TYPE] =
+        i18n.input.chrome.inputview.elements.ElementType.COMPACT_KEY;
 
   var newSpec = {};
   for (var key in spec) {
@@ -140,22 +147,27 @@ util.createCompactKey = function(id, keySpec) {
  * @param {!Array.<!Object>} switcherKeys The customized switcher keys.
  */
 util.customizeSwitchers = function(keyCharacters, switcherKeys) {
-  var j = 0;
+  var switcherKeyIndex = 0;
   for (var i = 0; i < keyCharacters.length; i++) {
     if (keyCharacters[i] == NON_LETTER_KEYS.SWITCHER) {
-      if (j >= switcherKeys.length) {
+      if (switcherKeyIndex >= switcherKeys.length) {
         console.error('The number of switcher key spec is less than' +
             ' the number of switcher keys in the keyset.');
         return;
       }
-      var newSpec = switcherKeys[j++];
-      for (var key in keyCharacters[i]) {
-        newSpec[key] = keyCharacters[i][key];
-      }
+
+      // Merge the switcher key and key character specifications.
+      var newSpec = {};
+      goog.object.extend(newSpec, switcherKeys[switcherKeyIndex]);
+      goog.object.extend(newSpec, keyCharacters[i]);
+
+      // Assign the merged specification to the key and
+      // move on to the next switcher key.
       keyCharacters[i] = newSpec;
+      switcherKeyIndex++;
     }
   }
-  if (j < switcherKeys.length - 1) {
+  if (switcherKeyIndex < switcherKeys.length) {
     console.error('The number of switcher key spec is more than' +
         ' the number of switcher keys in the keyset.');
   }
@@ -163,73 +175,88 @@ util.customizeSwitchers = function(keyCharacters, switcherKeys) {
 
 
 /**
- * Generates letter, symbol and more compact keysets and load them.
+ * Attaches a keyset to the spacebar.
+ * This is used to switch to the letter keyset when space is entered
+ * after a symbol.
+ *
+ * @param {!Array.<!Object>} keyCharacters The key characters.
+ * @param {string} letterKeysetId The ID of the letter keyset.
+ * @private
+ */
+util.addKeysetToSpacebar_ = function(keyCharacters, letterKeysetId) {
+  for (var i = 0; i < keyCharacters.length; i++) {
+    if (keyCharacters[i] == NON_LETTER_KEYS.SPACE) {
+      keyCharacters[i][SpecNodeName.TO_KEYSET] = letterKeysetId;
+      break;
+    }
+  }
+};
+
+
+/**
+ * Generates letter, symbol and more compact keysets, and loads them.
  *
  * @param {!Object} letterKeysetSpec The spec of letter keyset.
  * @param {!Object} symbolKeysetSpec The spec of symbol keyset.
  * @param {!Object} moreKeysetSpec The spec of more keyset.
- * @param {!function(!Object): void} onLoaded The function to call once a keyset
+ * @param {!function(!Object): void} onLoaded The function to call once keyset
  *     data is ready.
  */
 util.generateCompactKeyboard =
     function(letterKeysetSpec, symbolKeysetSpec, moreKeysetSpec, onLoaded) {
-  // Creates compacty qwerty keyset.
+  // Creates the switcher key specifications.
   var keysetSpecNode = util.CompactKeysetSpec;
+
+  var lettersSwitcherKey = {};
+  lettersSwitcherKey[SpecNodeName.NAME] = 'abc';
+  lettersSwitcherKey[SpecNodeName.TO_KEYSET] =
+      letterKeysetSpec[keysetSpecNode.ID];
+  lettersSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_MAIN_LAYOUT;
+
+  var symbolsSwitcherKey = {};
+  symbolsSwitcherKey[SpecNodeName.NAME] = '?123';
+  symbolsSwitcherKey[SpecNodeName.TO_KEYSET] =
+      symbolKeysetSpec[keysetSpecNode.ID];
+  symbolsSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_NUMBER_AND_SYMBOL;
+
+  var moreSwitcherKey = {};
+  moreSwitcherKey[SpecNodeName.NAME] = '~[<';
+  moreSwitcherKey[SpecNodeName.TO_KEYSET] = moreKeysetSpec[keysetSpecNode.ID];
+  moreSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_MORE_SYMBOLS;
+
+  // Creates compact qwerty keyset.
   util.customizeSwitchers(
       letterKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '?123',
-         'toKeyset': symbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_NUMBER_AND_SYMBOL
-       }]);
-
+      [symbolsSwitcherKey]);
   var data = util.createCompactData(
       letterKeysetSpec, 'compactkbd-k-', 'compactkbd-k-key-');
-  data['id'] = letterKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = true;
+  data[SpecNodeName.ID] = letterKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = true;
   onLoaded(data);
 
-  // Creates compacty symbol keyset.
+  // Creates compact symbol keyset.
   util.customizeSwitchers(
       symbolKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '~[<',
-         'toKeyset': moreKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MORE_SYMBOLS
-       },
-       { 'name': '~[<',
-         'toKeyset': moreKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MORE_SYMBOLS
-       },
-       { 'name': 'abc',
-         'toKeyset': letterKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MAIN_LAYOUT
-       }]);
+      [moreSwitcherKey, moreSwitcherKey, lettersSwitcherKey]);
+  util.addKeysetToSpacebar_(
+      symbolKeysetSpec[keysetSpecNode.DATA],
+      letterKeysetSpec[keysetSpecNode.ID]);
   data = util.createCompactData(
       symbolKeysetSpec, 'compactkbd-k-', 'compactkbd-k-key-');
-  data['id'] = symbolKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = false;
-  data['noShift'] = true;
+  data[SpecNodeName.ID] = symbolKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = false;
+  data[SpecNodeName.NO_SHIFT] = true;
   onLoaded(data);
 
   // Creates compact more keyset.
   util.customizeSwitchers(
       moreKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '?123',
-         'toKeyset': symbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_NUMBER_AND_SYMBOL
-       },
-       { 'name': '?123',
-         'toKeyset': symbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_NUMBER_AND_SYMBOL
-       },
-       { 'name': 'abc',
-         'toKeyset': letterKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MAIN_LAYOUT
-       }]);
+      [symbolsSwitcherKey, symbolsSwitcherKey, lettersSwitcherKey]);
   data = util.createCompactData(moreKeysetSpec, 'compactkbd-k-',
       'compactkbd-k-key-');
-  data['id'] = moreKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = false;
-  data['noShift'] = true;
+  data[SpecNodeName.ID] = moreKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = false;
+  data[SpecNodeName.NO_SHIFT] = true;
   onLoaded(data);
 };
 
@@ -250,129 +277,120 @@ util.generateCompactKeyboard =
 util.generatePinyinCompactKeyboard = function(letterKeysetSpec, engKeysetSpec,
     symbolKeysetSpec, engSymbolKeysetSpec,
     moreKeysetSpec, engMoreKeysetSpec, onLoaded) {
-  // Creates compacty qwerty keyset for pinyin.
+  // Creates the switcher key specifications.
   var keysetSpecNode = util.CompactKeysetSpec;
+
+  var lettersSwitcherKey = {};
+  lettersSwitcherKey[SpecNodeName.NAME] = 'abc';
+  lettersSwitcherKey[SpecNodeName.TO_KEYSET] =
+      letterKeysetSpec[keysetSpecNode.ID];
+  lettersSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_MAIN_LAYOUT;
+
+  var symbolsSwitcherKey = {};
+  symbolsSwitcherKey[SpecNodeName.NAME] = '?123';
+  symbolsSwitcherKey[SpecNodeName.TO_KEYSET] =
+      symbolKeysetSpec[keysetSpecNode.ID];
+  symbolsSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_NUMBER_AND_SYMBOL;
+
+  var moreSwitcherKey = {};
+  moreSwitcherKey[SpecNodeName.NAME] = '~[<';
+  moreSwitcherKey[SpecNodeName.TO_KEYSET] = moreKeysetSpec[keysetSpecNode.ID];
+  moreSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_MORE_SYMBOLS;
+
+  var engLettersSwitcherKey = {};
+  engLettersSwitcherKey[SpecNodeName.NAME] = 'abc';
+  engLettersSwitcherKey[SpecNodeName.TO_KEYSET] =
+      engKeysetSpec[keysetSpecNode.ID];
+  engLettersSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_ENG_MAIN_LAYOUT;
+
+  var engSymbolsSwitcherKey = {};
+  engSymbolsSwitcherKey[SpecNodeName.NAME] = '?123';
+  engSymbolsSwitcherKey[SpecNodeName.TO_KEYSET] =
+      engSymbolKeysetSpec[keysetSpecNode.ID];
+  engSymbolsSwitcherKey[SpecNodeName.TO_KEYSET_NAME] =
+      util.MSG_ENG_NUMBER_AND_SYMBOL;
+
+  var engMoreSwitcherKey = {};
+  engMoreSwitcherKey[SpecNodeName.NAME] = '~[<';
+  engMoreSwitcherKey[SpecNodeName.TO_KEYSET] =
+      engMoreKeysetSpec[keysetSpecNode.ID];
+  engMoreSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_ENG_MORE_SYMBOLS;
+
+  var lettersSwitcherKeyWithIcon = {};
+  lettersSwitcherKeyWithIcon[SpecNodeName.TO_KEYSET] =
+      letterKeysetSpec[keysetSpecNode.ID];
+  lettersSwitcherKeyWithIcon[SpecNodeName.TO_KEYSET_NAME] =
+      util.MSG_MAIN_LAYOUT;
+  lettersSwitcherKeyWithIcon[SpecNodeName.ICON_CSS_CLASS] =
+      Css.SWITCHER_ENGLISH;
+
+  var engSwitcherKey = {};
+  engSwitcherKey[SpecNodeName.TO_KEYSET] = engKeysetSpec[keysetSpecNode.ID];
+  engSwitcherKey[SpecNodeName.TO_KEYSET_NAME] = util.MSG_ENG_MAIN_LAYOUT;
+  engSwitcherKey[SpecNodeName.ICON_CSS_CLASS] = Css.SWITCHER_CHINESE;
+
+  // Creates compact qwerty keyset for pinyin.
   util.customizeSwitchers(
       letterKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '?123',
-         'toKeyset': symbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_NUMBER_AND_SYMBOL
-       },
-       { 'toKeyset': engKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_MAIN_LAYOUT,
-         'iconCssClass': Css.SWITCHER_CHINESE
-       }]);
-
+      [symbolsSwitcherKey, engSwitcherKey]);
   var data = util.createCompactData(
       letterKeysetSpec, 'compactkbd-k-', 'compactkbd-k-key-');
-  data['id'] = letterKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = true;
+  data[SpecNodeName.ID] = letterKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = true;
   onLoaded(data);
 
-  // Creates the compacty qwerty keyset for pinyin's English mode.
+  // Creates the compact qwerty keyset for pinyin's English mode.
   util.customizeSwitchers(
       engKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '?123',
-         'toKeyset': engSymbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_NUMBER_AND_SYMBOL
-       },
-       { 'toKeyset': letterKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MAIN_LAYOUT,
-         'iconCssClass': Css.SWITCHER_ENGLISH
-       }]);
-
+      [engSymbolsSwitcherKey, lettersSwitcherKeyWithIcon]);
   data = util.createCompactData(
       engKeysetSpec, 'compactkbd-k-', 'compactkbd-k-key-');
-  data['id'] = engKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = true;
+  data[SpecNodeName.ID] = engKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = true;
   onLoaded(data);
 
-  // Creates compacty symbol keyset for pinyin.
+  // Creates compact symbol keyset for pinyin.
   util.customizeSwitchers(
       symbolKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '~[<',
-         'toKeyset': moreKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MORE_SYMBOLS
-       },
-       { 'name': '~[<',
-         'toKeyset': moreKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MORE_SYMBOLS
-       },
-       { 'name': 'abc',
-         'toKeyset': letterKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MAIN_LAYOUT
-       }]);
+      [moreSwitcherKey, moreSwitcherKey, lettersSwitcherKey]);
   data = util.createCompactData(
       symbolKeysetSpec, 'compactkbd-k-', 'compactkbd-k-key-');
-  data['id'] = symbolKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = false;
-  data['noShift'] = true;
+  data[SpecNodeName.ID] = symbolKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = false;
+  data[SpecNodeName.NO_SHIFT] = true;
   onLoaded(data);
 
-  // Creates compacty symbol keyset for English mode.
+  // Creates compact symbol keyset for English mode.
   util.customizeSwitchers(
       engSymbolKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '~[<',
-         'toKeyset': engMoreKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_MORE_SYMBOLS
-       },
-       { 'name': '~[<',
-         'toKeyset': engMoreKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_MORE_SYMBOLS
-       },
-       { 'name': 'abc',
-         'toKeyset': engKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_MAIN_LAYOUT
-       }]);
+      [engMoreSwitcherKey, engMoreSwitcherKey, engLettersSwitcherKey]);
   data = util.createCompactData(
       engSymbolKeysetSpec, 'compactkbd-k-', 'compactkbd-k-key-');
-  data['id'] = engSymbolKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = false;
-  data['noShift'] = true;
+  data[SpecNodeName.ID] = engSymbolKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = false;
+  data[SpecNodeName.NO_SHIFT] = true;
   onLoaded(data);
 
   // Creates compact more keyset for pinyin.
   util.customizeSwitchers(
       moreKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '?123',
-         'toKeyset': symbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_NUMBER_AND_SYMBOL
-       },
-       { 'name': '?123',
-         'toKeyset': symbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_NUMBER_AND_SYMBOL
-       },
-       { 'name': 'abc',
-         'toKeyset': letterKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_MAIN_LAYOUT
-       }]);
+      [symbolsSwitcherKey, symbolsSwitcherKey, lettersSwitcherKey]);
   data = util.createCompactData(moreKeysetSpec, 'compactkbd-k-',
       'compactkbd-k-key-');
-  data['id'] = moreKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = false;
-  data['noShift'] = true;
+  data[SpecNodeName.ID] = moreKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = false;
+  data[SpecNodeName.NO_SHIFT] = true;
   onLoaded(data);
 
   // Creates the compact more keyset of english mode.
   util.customizeSwitchers(
       engMoreKeysetSpec[keysetSpecNode.DATA],
-      [{ 'name': '?123',
-         'toKeyset': engSymbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_NUMBER_AND_SYMBOL
-       },
-       { 'name': '?123',
-         'toKeyset': engSymbolKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_NUMBER_AND_SYMBOL
-       },
-       { 'name': 'abc',
-         'toKeyset': engKeysetSpec[keysetSpecNode.ID],
-         'toKeysetName': util.MSG_ENG_MAIN_LAYOUT
-       }]);
+      [engSymbolsSwitcherKey, engSymbolsSwitcherKey, engLettersSwitcherKey]);
   data = util.createCompactData(engMoreKeysetSpec, 'compactkbd-k-',
       'compactkbd-k-key-');
-  data['id'] = engMoreKeysetSpec[keysetSpecNode.ID];
-  data['showMenuKey'] = false;
-  data['noShift'] = true;
+  data[SpecNodeName.ID] = engMoreKeysetSpec[keysetSpecNode.ID];
+  data[SpecNodeName.SHOW_MENU_KEY] = false;
+  data[SpecNodeName.NO_SHIFT] = true;
   onLoaded(data);
 };
 });  // goog.scope

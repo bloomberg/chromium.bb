@@ -23,7 +23,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
     'widthInWeight': 1,
     'heightInWeight': 1
   };
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 4; i++) {
     verticalRows.push(util.createKey(baseKeySpec));
   }
   var leftSideColumn = util.createVerticalLayout({
@@ -32,7 +32,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   });
 
   verticalRows = [];
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 4; i++) {
     verticalRows.push(util.createKey(baseKeySpec));
   }
   var rightSideColumn = util.createVerticalLayout({

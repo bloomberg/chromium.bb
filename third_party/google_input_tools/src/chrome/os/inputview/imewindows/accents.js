@@ -13,17 +13,41 @@
 //
 goog.provide('i18n.input.chrome.inputview.Accents');
 
-goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.FloatingWindow');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.util');
 
 
 goog.scope(function() {
-var Accents = i18n.input.chrome.inputview.Accents;
 var Css = i18n.input.chrome.inputview.Css;
+var FloatingWindow = i18n.input.chrome.FloatingWindow;
+var TagName = goog.dom.TagName;
+
+
+
+/**
+ * The accents floating windows.
+ *
+ * @param {!chrome.app.window.AppWindow} parentWindow The parent app window.
+ * @constructor
+ * @extends {i18n.input.chrome.FloatingWindow}
+ */
+i18n.input.chrome.inputview.Accents = function(parentWindow) {
+  i18n.input.chrome.inputview.Accents.base(this, 'constructor',
+      parentWindow, undefined, Accents.CSS_FILE);
+};
+var Accents = i18n.input.chrome.inputview.Accents;
+goog.inherits(Accents, FloatingWindow);
+
+
+
+/**
+ * @const {string} The css file name for accents component.
+ */
+Accents.CSS_FILE = 'accents_css.css'
 
 
 /**
@@ -32,64 +56,68 @@ var Css = i18n.input.chrome.inputview.Css;
  * @type {Element}
  * @private
  */
-Accents.highlightedItem_ = null;
+Accents.prototype.highlightedItem_ = null;
+
+
+/** @override */
+Accents.prototype.createDom = function() {
+  Accents.base(this, 'createDom');
+  var container = this.getElement();
+  goog.dom.classlist.add(container, Css.ACCENT_CONTAINER);
+  container.id = 'container';
+};
 
 
 /**
  * Gets the highlighted character.
  *
  * @return {string} The character.
- * @private
  */
-Accents.getHighlightedAccent_ = function() {
-  return Accents.highlightedItem_ ?
-      Accents.highlightedItem_.textContent.trim() : '';
+Accents.prototype.getHighlightedAccent = function() {
+  return this.highlightedItem_ ?
+      this.highlightedItem_.textContent.trim() : '';
 };
 
 
 /**
  * Highlights the item according to the current coordinate of the finger.
  *
- * @param {number} x The x position of finger in screen coordinate system.
- * @param {number} y The y position of finger in screen coordinate system.
+ * @param {number} x The x position of finger in client view.
+ * @param {number} y The y position of finger in client view.
  * @param {number} offset The offset to cancel highlight.
- * @private
  */
-Accents.highlightItem_ = function(x, y, offset) {
-  var highlightedItem = Accents.getHighlightedItem_(x, y, offset);
-  if (Accents.highlightedItem_ != highlightedItem) {
-    if (Accents.highlightedItem_) {
-      goog.dom.classlist.remove(Accents.highlightedItem_,
-          i18n.input.chrome.inputview.Css.ELEMENT_HIGHLIGHT);
+Accents.prototype.highlightItem = function(x, y, offset) {
+  var highlightedItem = this.getHighlightedItem_(x, y, offset);
+  if (this.highlightedItem_ != highlightedItem) {
+    if (this.highlightedItem_) {
+      goog.dom.classlist.remove(this.highlightedItem_, Css.ELEMENT_HIGHLIGHT);
     }
-    Accents.highlightedItem_ = highlightedItem;
-    if (Accents.highlightedItem_ &&
-        Accents.highlightedItem_.textContent.trim()) {
-      goog.dom.classlist.add(Accents.highlightedItem_,
-          i18n.input.chrome.inputview.Css.ELEMENT_HIGHLIGHT);
+    this.highlightedItem_ = highlightedItem;
+    if (this.highlightedItem_ &&
+        this.highlightedItem_.textContent.trim()) {
+      goog.dom.classlist.add(this.highlightedItem_, Css.ELEMENT_HIGHLIGHT);
     }
   }
 };
 
 
 /**
- * Gets the higlighted item from |x| and |y| position.
- * @param {number} x The x position of finger in screen coordinate system.
- * @param {number} y The y position of finger in screen coordinate system.
+ * Gets the highlighted item from |x| and |y| position.
+ * @param {number} x The x position of client View.
+ * @param {number} y The y position of client View.
  * @param {number} offset The offset to cancel highlight.
  * @return {Element} .
  * @private
  */
-Accents.getHighlightedItem_ = function(x, y, offset) {
-  var dom = goog.dom.getDomHelper();
+Accents.prototype.getHighlightedItem_ = function(x, y, offset) {
+  var dom = this.getDomHelper();
   var row = null;
-  var rows = dom.getElementsByClass(i18n.input.chrome.inputview.Css.ACCENT_ROW);
+  var rows = dom.getElementsByClass(Css.ACCENT_ROW);
   for (var i = 0; i < rows.length; i++) {
     var coordinate = goog.style.getClientPosition(rows[i]);
     var size = goog.style.getSize(rows[i]);
-    var screenYStart = coordinate.y + window.screenY;
-    screenYStart = i == 0 ? screenYStart - offset : screenYStart;
-    var screenYEnd = coordinate.y + window.screenY + size.height;
+    var screenYStart = (i == 0 ? coordinate.y - offset : coordinate.y);
+    var screenYEnd = coordinate.y + size.height;
     screenYEnd = i == rows.length - 1 ? screenYEnd + offset : screenYEnd;
     if (screenYStart < y && screenYEnd > y) {
       row = rows[i];
@@ -101,9 +129,8 @@ Accents.getHighlightedItem_ = function(x, y, offset) {
     for (var i = 0; i < children.length; i++) {
       var coordinate = goog.style.getClientPosition(children[i]);
       var size = goog.style.getSize(children[i]);
-      var screenXStart = coordinate.x + window.screenX;
-      screenXStart = i == 0 ? screenXStart - offset : screenXStart;
-      var screenXEnd = coordinate.x + window.screenX + size.width;
+      var screenXStart = (i == 0 ? coordinate.x - offset : coordinate.x);
+      var screenXEnd = coordinate.x + size.width;
       screenXEnd = i == children.length - 1 ? screenXEnd + offset : screenXEnd;
       if (screenXStart < x && screenXEnd > x) {
         return children[i];
@@ -125,16 +152,13 @@ Accents.getHighlightedItem_ = function(x, y, offset) {
  * @param {number} startKeyIndex The index of the start key in bottom row.
  * @param {boolean} isCompact True if this accents window is for compact
  * keyboard.
- * @private
  */
-Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
+Accents.prototype.setAccents = function(accents, numOfColumns, numOfRows, width,
     height, startKeyIndex, isCompact) {
-  var TagName = goog.dom.TagName;
-  var dom = goog.dom.getDomHelper();
-  var container = dom.createDom(TagName.DIV, Css.ACCENT_CONTAINER);
-  container.id = 'container';
-
-  var orderedAccents = Accents.reorderAccents_(accents, numOfColumns, numOfRows,
+  var dom = this.getDomHelper();
+  var container = this.getElement();
+  dom.removeChildren(container);
+  var orderedAccents = this.reorderAccents_(accents, numOfColumns, numOfRows,
       startKeyIndex);
   var row = null;
   for (var i = 0; i < orderedAccents.length; i++) {
@@ -164,7 +188,6 @@ Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
     dom.appendChild(row, keyElem);
   }
   dom.appendChild(container, row);
-  dom.appendChild(document.body, container);
 };
 
 
@@ -181,7 +204,7 @@ Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
  * @return {!Array.<string>} .
  * @private
  */
-Accents.reorderAccents_ = function(accents, numOfColumns, numOfRows,
+Accents.prototype.reorderAccents_ = function(accents, numOfColumns, numOfRows,
     startKeyIndex) {
   var orderedAccents = new Array(numOfColumns * numOfRows);
 
@@ -214,9 +237,4 @@ Accents.reorderAccents_ = function(accents, numOfColumns, numOfRows,
 
   return orderedAccents;
 };
-
-goog.exportSymbol('accents.highlightedAccent', Accents.getHighlightedAccent_);
-goog.exportSymbol('accents.highlightItem', Accents.highlightItem_);
-goog.exportSymbol('accents.setAccents', Accents.setAccents_);
-
 });  // goog.scope

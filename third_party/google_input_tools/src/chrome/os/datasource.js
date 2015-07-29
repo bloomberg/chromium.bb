@@ -29,11 +29,13 @@ var EventTarget = goog.events.EventTarget;
  * The data source.
  *
  * @param {number} numOfCanddiate The number of canddiate to fetch.
- * @param {function(string, !Array.<!Object>)} callback .
+ * @param {function(string, !Array.<!Object>)} candidatesCallback .
+ * @param {function(!Array.<string>)} gestureCallback .
  * @constructor
  * @extends {EventTarget}
  */
-i18n.input.chrome.DataSource = function(numOfCanddiate, callback) {
+i18n.input.chrome.DataSource = function(numOfCanddiate, candidatesCallback,
+    gestureCallback) {
   goog.base(this);
 
   /**
@@ -44,7 +46,10 @@ i18n.input.chrome.DataSource = function(numOfCanddiate, callback) {
   this.numOfCandidate = numOfCanddiate;
 
   /** @protected {function(string, !Array.<!Object>)} */
-  this.callback = callback;
+  this.candidatesCallback = candidatesCallback;
+
+  /** @protected {function(!Array.<string>)} */
+  this.gestureCallback = gestureCallback;
 };
 var DataSource = i18n.input.chrome.DataSource;
 goog.inherits(DataSource, EventTarget);
@@ -57,6 +62,7 @@ goog.inherits(DataSource, EventTarget);
  */
 DataSource.EventType = {
   CANDIDATES_BACK: goog.events.getUniqueId('cb'),
+  GESTURES_BACK: goog.events.getUniqueId('gb'),
   READY: goog.events.getUniqueId('r')
 };
 
@@ -198,7 +204,7 @@ DataSource.prototype.clear = goog.functions.NULL;
 
 
 /**
- * The candidates is fetched back.
+ * The candidates are fetched back.
  *
  * @param {string} source The source.
  * @param {!Array.<!Object>} candidates The candidates.
@@ -224,5 +230,27 @@ DataSource.CandidatesBackEvent = function(source, candidates) {
   this.candidates = candidates;
 };
 goog.inherits(DataSource.CandidatesBackEvent, Event);
+
+
+
+/**
+ * The gesture results are fetched back.
+ *
+ * @param {!Array.<!string>} results The gesture results.
+ * @constructor
+ * @extends {Event}
+ */
+DataSource.GesturesBackEvent = function(results) {
+  DataSource.GesturesBackEvent.base(
+      this, 'constructor', DataSource.EventType.GESTURES_BACK);
+
+  /**
+   * The gesture results list.
+   *
+   * @type {!Array.<!string>}
+   */
+  this.results = results;
+};
+goog.inherits(DataSource.GesturesBackEvent, Event);
 
 });  // goog.scope

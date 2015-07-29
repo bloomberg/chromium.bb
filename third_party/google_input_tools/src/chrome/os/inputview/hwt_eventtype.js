@@ -54,7 +54,8 @@ i18n.input.hwt.EventType = {
  * @extends {goog.events.Event}
  */
 i18n.input.hwt.CandidateSelectEvent = function(candidate) {
-  goog.base(this, i18n.input.hwt.EventType.CANDIDATE_SELECT);
+  i18n.input.hwt.CandidateSelectEvent.base(
+      this, 'constructor', i18n.input.hwt.EventType.CANDIDATE_SELECT);
 
   /**
    * The candidate.
@@ -76,7 +77,8 @@ goog.inherits(i18n.input.hwt.CandidateSelectEvent, goog.events.Event);
  * @extends {goog.events.Event}
  */
 i18n.input.hwt.CommitEvent = function(text, opt_back) {
-  goog.base(this, i18n.input.hwt.EventType.COMMIT);
+  i18n.input.hwt.CommitEvent.base(this, 'constructor',
+                                  i18n.input.hwt.EventType.COMMIT);
 
   /**
    * The text.

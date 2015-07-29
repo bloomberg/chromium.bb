@@ -33,6 +33,12 @@ i18n.input.lang.InputToolCode = {
   INPUTMETHOD_PINYIN_CHINESE_SIMPLIFIED: 'zh-t-i0-pinyin',
   INPUTMETHOD_PINYIN_CHINESE_TRADITIONAL: 'zh-hant-t-i0-pinyin',
   INPUTMETHOD_HANGUL_KOREAN: 'ko-t-i0-und',
+  INPUTMETHOD_SHUANGPING_ABC: 'zh-t-i0-pinyin-x0-shuangpin-abc',
+  INPUTMETHOD_SHUANGPING_FLYPY: 'zh-t-i0-pinyin-x0-shuangpin-flypy',
+  INPUTMETHOD_SHUANGPING_JIAJIA: 'zh-t-i0-pinyin-x0-shuangpin-jiajia',
+  INPUTMETHOD_SHUANGPING_MS: 'zh-t-i0-pinyin-x0-shuangpin-ms',
+  INPUTMETHOD_SHUANGPING_ZIGUANG: 'zh-t-i0-pinyin-x0-shuangpin-ziguang',
+  INPUTMETHOD_SHUANGPING_ZIRANMA: 'zh-t-i0-pinyin-x0-shuangpin-ziranma',
   INPUTMETHOD_TRANSLITERATION_AMHARIC: 'am-t-i0-und',
   INPUTMETHOD_TRANSLITERATION_ARABIC: 'ar-t-i0-und',
   INPUTMETHOD_TRANSLITERATION_BELARUSIAN: 'be-t-i0-und',
@@ -75,6 +81,7 @@ i18n.input.lang.InputToolCode = {
   INPUTMETHOD_WUBI_CHINESE_SIMPLIFIED: 'zh-t-i0-wubi-1986',
   INPUTMETHOD_ZHUYIN_CHINESE_TRADITIONAL: 'zh-hant-t-i0-und',
   INPUTMETHOD_ZHUYIN_CHINESE_TRADITIONAL_BOPOMOFO: 'zh-hant-t-i0-bopomofo',
+
 
   // For keyboard
   KEYBOARD_ALBANIAN: 'sq-t-k0-und',
@@ -358,6 +365,7 @@ i18n.input.lang.InputToolCode = {
   XKB_LT_LIT: 'xkb:lt::lit',
   XKB_LV_APOSTROPHE_LAV: 'xkb:lv:apostrophe:lav',
   XKB_MN_MON: 'xkb:mn::mon',
+  XKB_MK_MKD: 'xkb:mk::mkd',
   XKB_MT_MLT: 'xkb:mt::mlt',
   XKB_NO_NOB: 'xkb:no::nob',
   XKB_PL_POL: 'xkb:pl::pol',
@@ -379,6 +387,7 @@ i18n.input.lang.InputToolCode = {
   XKB_US_ALTGR_INTL_ENG: 'xkb:us:altgr-intl:eng',
   XKB_US_COLEMAK_ENG: 'xkb:us:colemak:eng',
   XKB_US_DVORAK_ENG: 'xkb:us:dvorak:eng',
+  XKB_US_DVP_ENG: 'xkb:us:dvp:eng',
   XKB_US_INTL_ENG: 'xkb:us:intl:eng',
   XKB_US_INTL_NLD: 'xkb:us:intl:nld',
   XKB_US_INTL_POR: 'xkb:us:intl:por'

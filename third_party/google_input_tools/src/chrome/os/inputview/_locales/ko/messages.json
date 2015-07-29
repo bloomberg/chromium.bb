@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "\uc544\ub798\ucabd \ud654\uc0b4\ud45c"
   },
+  "drag_button": {
+    "message": "\ub4dc\ub798\uadf8\ud558\uc5ec \uac00\uc0c1 \ud0a4\ubcf4\ub4dc \uc774\ub3d9"
+  },
   "ee_est_settings_page": {
     "message": "\uc5d0\uc2a4\ud1a0\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "\uc790\ub3d9 \uc644\uc131 \uc0ac\uc6a9"
   },
+  "enable_gesture_editing": {
+    "message": "\ud0a4\ubcf4\ub4dc\uc758 \uac00\uc7a5\uc790\ub9ac\uc5d0\uc11c \uc2a4\uc640\uc774\ud504\ud558\uc5ec \ucee4\uc11c\ub97c \uc774\ub3d9\ud558\uac70\ub098 \ubc31\uc2a4\ud398\uc774\uc2a4 \ud0a4\uc5d0\uc11c \uc2a4\uc640\uc774\ud504\ud558\uc5ec \uc804\uccb4 \ub2e8\uc5b4\ub97c \uc0ad\uc81c\ud569\ub2c8\ub2e4."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "\ub2e4\uc74c \ub2e8\uc5b4 \ucd94\ucc9c \uc0ac\uc6a9"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "\ud540\ub780\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
+  "footer_docking_button": {
+    "message": "\uac00\uc0c1 \ud0a4\ubcf4\ub4dc \ub3c4\ud0b9"
+  },
   "footer_emoji_button": {
     "message": "\uadf8\ub9bc \uc774\ubaa8\ud2f0\ucf58\uc73c\ub85c \uc804\ud658"
+  },
+  "footer_floating_button": {
+    "message": "\uac00\uc0c1 \ud0a4\ubcf4\ub4dc \uc774\ub3d9"
   },
   "footer_handwriting_button": {
     "message": "\ud544\uae30\ub85c \uc804\ud658"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "\ub9ac\ud22c\uc544\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "\ub9d0\ub77c\uc584\ub78c\uc5b4 \ud0a4\ubcf4\ub4dc(\uc74c\uc5ed)"
   },
@@ -2900,10 +2918,10 @@
     "message": "\uc2ac\ub85c\ubca0\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "\uc18c\ub77c\ub2c8 \ucfe0\ub974\ub4dc\uc5b4 \uc544\ub78d\uc5b4 \uae30\ubc18 \ud0a4\ubcf4\ub4dc"
+    "message": "\ucfe0\ub974\ub4dc\uc5b4 \uc544\ub78d\uc5b4 \uae30\ubc18 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_soranikurdish_en": {
-    "message": "\uc18c\ub77c\ub2c8 \ucfe0\ub974\ub4dc\uc5b4 \uc601\uc5b4 \uae30\ubc18 \ud0a4\ubcf4\ub4dc"
+    "message": "\ucfe0\ub974\ub4dc\uc5b4 \uc601\uc5b4 \uae30\ubc18 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_spanish": {
     "message": "\uc2a4\ud398\uc778\uc5b4 \ud0a4\ubcf4\ub4dc"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "Space"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "\ub2e4\uc74c\uc73c\ub85c \uc804\ud658: "

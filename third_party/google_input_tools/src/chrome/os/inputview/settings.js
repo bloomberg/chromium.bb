@@ -59,6 +59,14 @@ Settings.prototype.doubleSpacePeriod = false;
 Settings.prototype.soundOnKeypress = false;
 
 
+/** @type {boolean} */
+Settings.prototype.gestureEditing = false;
+
+
+/** @type {boolean} */
+Settings.prototype.gestureTyping = false;
+
+
 /**
  * The flag to control whether candidates naviagation feature is enabled.
  *

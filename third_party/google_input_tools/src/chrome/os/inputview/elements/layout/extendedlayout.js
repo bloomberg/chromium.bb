@@ -15,6 +15,7 @@ goog.provide('i18n.input.chrome.inputview.elements.layout.ExtendedLayout');
 
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('goog.style.transform');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
@@ -70,6 +71,15 @@ ExtendedLayout.prototype.heightInWeight_ = 0;
  * @private
  */
 ExtendedLayout.prototype.widthInWeight_ = 0;
+
+
+/**
+ * The current X (horizontal) position of the layout.
+ *
+ * @type {number}
+ * @private
+ */
+ExtendedLayout.prototype.xPosition_ = 0;
 
 
 /**
@@ -156,7 +166,8 @@ ExtendedLayout.prototype.calculate_ = function() {
 ExtendedLayout.prototype.gotoPage = function(pageNum) {
   var width = goog.style.getSize(this.getElement()).width;
   var childNum = this.getChildCount();
-  this.elem.style.marginLeft = 0 - width / childNum * pageNum + 'px';
+  this.xPosition_ = 0 - width / childNum * pageNum;
+  goog.style.transform.setTranslation(this.elem, this.xPosition_, 0);
 };
 
 
@@ -167,22 +178,22 @@ ExtendedLayout.prototype.gotoPage = function(pageNum) {
  */
 ExtendedLayout.prototype.slide = function(deltaX) {
   this.elem.style.transition = '';
-  var marginLeft = goog.style.getMarginBox(this.elem).left + deltaX;
-  this.elem.style.marginLeft = marginLeft + 'px';
+  this.xPosition_ += deltaX;
+  goog.style.transform.setTranslation(this.elem, this.xPosition_, 0);
 };
 
 
 /**
- * Adjust the marginleft to the beginning of a page.
+ * Adjust the the horizontal position of the layout to align with a page.
  *
  * @param {number=} opt_distance The distance to adjust to.
  * @return {number} The page to adjust to after calculation.
  */
-ExtendedLayout.prototype.adjustMarginLeft = function(opt_distance) {
+ExtendedLayout.prototype.adjustXPosition = function(opt_distance) {
   var childNum = this.getChildCount();
   var width = goog.style.getSize(this.elem).width / childNum;
-  var marginLeft = Math.abs(goog.style.getMarginBox(this.elem).left);
-  var prev = Math.floor(marginLeft / width);
+  var absXPosition = Math.abs(this.xPosition_);
+  var prev = Math.floor(absXPosition / width);
   var next = prev + 1;
   var pageNum = 0;
   if (opt_distance) {
@@ -191,7 +202,7 @@ ExtendedLayout.prototype.adjustMarginLeft = function(opt_distance) {
     } else {
       pageNum = next;
     }
-  } else if (marginLeft - prev * width < next * width - marginLeft) {
+  } else if (absXPosition - prev * width < next * width - absXPosition) {
     pageNum = prev;
   } else {
     pageNum = next;
@@ -202,13 +213,13 @@ ExtendedLayout.prototype.adjustMarginLeft = function(opt_distance) {
     pageNum = childNum - 1;
   }
   if (opt_distance) {
-    this.elem.style.transition = 'margin-left ' +
+    this.elem.style.transition = 'transform ' +
         ExtendedLayout.BASE_TRANSITION_DURATION_ + 's';
   } else {
-    var transitionDuration = Math.abs(marginLeft - pageNum * width) /
+    var transitionDuration = Math.abs(absXPosition - pageNum * width) /
         ExtendedLayout.BASE_TRANSITION_DISTANCE_ *
         ExtendedLayout.BASE_TRANSITION_DURATION_;
-    this.elem.style.transition = 'margin-left ' +
+    this.elem.style.transition = 'transform ' +
         transitionDuration + 's ease-in';
   }
   this.gotoPage(pageNum);

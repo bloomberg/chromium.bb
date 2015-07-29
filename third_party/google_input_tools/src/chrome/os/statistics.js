@@ -231,37 +231,39 @@ Statistics.prototype.recordCommit = function(
   if (!this.inputMethodId_) {
     return;
   }
+  var CommitTypes = Statistics.CommitTypes;
+  var commitType = -1;
   var length = target.length;
-  // Increment to include space.
-  if (triggerType == TriggerType.RESET) {
-    length++;
-  } else if (triggerType == TriggerType.REVERT) {
+
+  if (triggerType == TriggerType.REVERT) {
     length -= this.lastCommitLength_;
+    commitType = CommitTypes.REVERT;
+  } else if (triggerType == TriggerType.VOICE) {
+    commitType = CommitTypes.VOICE;
+  } else if (triggerType == TriggerType.RESET) {
+    // Increment to include space.
+    length++;
+  } else if (triggerType == TriggerType.CANDIDATE ||
+      triggerType == TriggerType.SPACE) {
+    if (!source && target) {
+      commitType = CommitTypes.PREDICTION;
+    } else if (targetIndex == 0 && source == target) {
+      commitType = CommitTypes.X_X0;
+    } else if (targetIndex == 0 && source != target) {
+      commitType = CommitTypes.X_Y0;
+    } else if (targetIndex == 1 && source == target) {
+      commitType = CommitTypes.X_X1;
+    } else if (targetIndex == 1 && source != target) {
+      commitType = CommitTypes.X_Y1;
+    } else if (targetIndex > 1 && source == target) {
+      commitType = CommitTypes.X_X2;
+    } else if (targetIndex > 1 && source != target) {
+      commitType = CommitTypes.X_Y2;
+    }
   }
   this.lastCommitLength_ = length;
   this.charactersCommitted_ += length;
 
-  var CommitTypes = Statistics.CommitTypes;
-  var commitType = -1;
-  if (targetIndex == 0 && source == target) {
-    commitType = CommitTypes.X_X0;
-  } else if (targetIndex == 0 && source != target) {
-    commitType = CommitTypes.X_Y0;
-  } else if (targetIndex == 1 && source == target) {
-    commitType = CommitTypes.X_X1;
-  } else if (targetIndex == 1 && source != target) {
-    commitType = CommitTypes.X_Y1;
-  } else if (targetIndex > 1 && source == target) {
-    commitType = CommitTypes.X_X2;
-  } else if (targetIndex > 1 && source != target) {
-    commitType = CommitTypes.X_Y2;
-  } else if (!source && source != target) {
-    commitType = CommitTypes.PREDICTION;
-  } else if (triggerType == TriggerType.REVERT) {
-    commitType = CommitTypes.REVERT;
-  } else if (triggerType == TriggerType.VOICE) {
-    commitType = CommitTypes.VOICE;
-  }
   if (commitType < 0) {
     return;
   }

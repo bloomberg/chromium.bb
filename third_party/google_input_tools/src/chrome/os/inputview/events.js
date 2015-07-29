@@ -16,6 +16,7 @@ goog.provide('i18n.input.chrome.inputview.events.ContextUpdateEvent');
 goog.provide('i18n.input.chrome.inputview.events.DragEvent');
 goog.provide('i18n.input.chrome.inputview.events.EventType');
 goog.provide('i18n.input.chrome.inputview.events.LayoutLoadedEvent');
+goog.provide('i18n.input.chrome.inputview.events.MessageEvent');
 goog.provide('i18n.input.chrome.inputview.events.PointerEvent');
 goog.provide('i18n.input.chrome.inputview.events.SurroundingTextChangedEvent');
 goog.provide('i18n.input.chrome.inputview.events.SwipeEvent');
@@ -55,7 +56,11 @@ events.EventType = {
   CONTEXT_BLUR: goog.events.getUniqueId('cb'),
   VISIBILITY_CHANGE: goog.events.getUniqueId('vc'),
   MODEL_UPDATE: goog.events.getUniqueId('mu'),
-  URL_CHANGED: goog.events.getUniqueId('uc')
+  URL_CHANGED: goog.events.getUniqueId('uc'),
+  UPDATE_SETTINGS: goog.events.getUniqueId('us'),
+  VOICE_STATE_CHANGE: goog.events.getUniqueId('vsc'),
+  HWT_NETWORK_ERROR: goog.events.getUniqueId('hne'),
+  FRONT_TOGGLE_LANGUAGE_STATE: goog.events.getUniqueId('ftls')
 };
 
 
@@ -99,6 +104,25 @@ events.ConfigLoadedEvent = function(data) {
   this.data = data;
 };
 goog.inherits(events.ConfigLoadedEvent, goog.events.Event);
+
+
+
+/**
+ * The events generated from receiving a message. It dispatched from adapter to
+ * controller or other parts which do not have access to chrome APIs.
+ *
+ * @param {events.EventType} type .
+ * @param {*} msg .
+ * @constructor
+ * @extends {goog.events.Event}
+ */
+events.MessageEvent = function(type, msg) {
+  goog.base(this, type);
+
+  /** @type {*} */
+  this.msg = msg;
+};
+goog.inherits(events.MessageEvent, goog.events.Event);
 
 
 

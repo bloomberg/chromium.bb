@@ -108,10 +108,6 @@ ModifierKey.prototype.createDom = function() {
     dom.appendChild(this.tableCell, this.dotIcon_);
   }
 
-  if (this.toState == i18n.input.chrome.inputview.StateType.SHIFT) {
-    this.disableBackgroundHighlight();
-  }
-
   this.setAriaLabel(this.getChromeVoxMessage());
 };
 

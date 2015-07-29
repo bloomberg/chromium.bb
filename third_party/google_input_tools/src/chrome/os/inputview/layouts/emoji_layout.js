@@ -12,106 +12,102 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
 (function() {
   var util = i18n.input.chrome.inputview.layouts.util;
-  var ElementType = i18n.input.chrome.inputview.elements.ElementType;
   util.setPrefix('emoji-k-');
-  var ids = ['recent', 'favorits', 'faces', 'emoticon',
-    'symbol', 'nature', 'places', 'objects'];
-  var length = [1, 3, 6, 4, 6, 7, 5, 8];
+  // TODO: we should avoid using hard-coded number.
+  var pages = [1, 3, 6, 4, 6, 7, 5, 8];
   var emojiPage = {};
   var emojiList = [];
-  // Tab Rows
-  var tabRows = [];
-  var keySpec = {
+  var baseKeySpec = {
     'widthInWeight': 1,
-    'heightInWeight': 13
-  };
-  var baseSpec = {
-    'widthInWeight': 1.4,
-    'heightInWeight': 13
+    'heightInWeight': 1
   };
 
-  //TODO: needs modification when there are more kinds of emoji.
-  for (var i = 0, len = ids.length; i < len; i++) {
-    tabRows.push(util.createKey(keySpec));
-  }
-  tabRows.push(util.createKey(baseSpec));
-  tabRows.push(util.createKey(keySpec));
+  // The top tabbar row.
+  var keySequenceOf9 = util.createKeySequence(baseKeySpec, 9);
+  var rightKey = util.createKey({
+    'widthInWeight': 1.037,
+    'heightInWeight': 1
+  });
   var tabBar = util.createLinearLayout({
     'id': 'tabBar',
-    'children': tabRows,
+    'children': [keySequenceOf9, rightKey],
     'iconCssClass': i18n.input.chrome.inputview.Css.LINEAR_LAYOUT_BORDER
   });
 
-  keySpec = {
+  // The emoji pages.
+  baseKeySpec = {
     'widthInWeight': 1,
-    'heightInWeight': 19
+    'heightInWeight': 1.67
   };
-  for (var i = 0, len = ids.length; i < len; ++i) {
-    for (var j = 0, lenJ = length[i]; j < lenJ; ++j) {
-      // Row1
-      var keysOfRow1 = util.createKeySequence(keySpec, 9);
-      var row1 = util.createLinearLayout({
-        'id': ids[i] + 'Row1',
-        'children': [keysOfRow1]
+  var totalPages = 0;
+  for (var i = 0; i < pages.length; i++) {
+    totalPages += pages[i];
+  }
+  for (var i = 0; i < totalPages; i++) {
+    var rows = [];
+    for (var j = 0; j < 3; j++) {
+      keySequenceOf9 = util.createKeySequence(baseKeySpec, 9);
+      var row = util.createLinearLayout({
+        'id': 'page-' + i + '-row-' + j,
+        'children': [keySequenceOf9],
+        'iconCssClass': i18n.input.chrome.inputview.Css.LINEAR_LAYOUT_BORDER
       });
-
-      // Row2
-      var keysOfRow2 = util.createKeySequence(keySpec, 9);
-      var row2 = util.createLinearLayout({
-        'id': ids[i] + 'Row2',
-        'children': [keysOfRow2]
-      });
-
-      // Row3
-      var keysOfRow3 = util.createKeySequence(keySpec, 9);
-      var row3 = util.createLinearLayout({
-        'id': ids[i] + 'Row3',
-        'children': [keysOfRow3]
-      });
-
-      emojiPage = util.createVerticalLayout({
-        'id': ids[i] + j,
-        'children': [row1, row2, row3]
-      });
-      emojiList.push(emojiPage);
+      rows.push(row);
     }
+    emojiPage = util.createVerticalLayout({
+      'id': 'page-' + i,
+      'children': rows
+    });
+    emojiList.push(emojiPage);
   }
   var emojiRows = util.createExtendedLayout({
     'id': 'emojiRows',
     'children': emojiList
   });
-  keySpec = {
-    'widthInWeight': 1,
-    'heightInWeight': 1
-  };
-
   var emojiSlider = util.createVerticalLayout({
     'id': 'emojiSlider',
     'children': [emojiRows]
   });
 
-  keySpec = {
-    'widthInWeight': 1.42,
-    'heightInWeight': 14
+  // The right side keys.
+  baseKeySpec = {
+    'widthInWeight': 1.037,
+    'heightInWeight': 1.67
   };
   var sideKeys = util.createVerticalLayout({
     'id': 'sideKeys',
-    'children': [util.createKey(keySpec), util.createKey(keySpec),
-      util.createKey(keySpec)]
+    'children': [util.createKeySequence(baseKeySpec, 3)]
   });
 
   var rowsAndSideKeys = util.createLinearLayout({
     'id': 'rowsAndSideKeys',
     'children': [emojiSlider, sideKeys]
   });
+
+  var backToKeyboardKey = util.createKey({
+    'widthInWeight': 2,
+    'heightInWeight': 1.67
+  });
+  var spaceKey = util.createKey({
+    'widthInWeight': 7,
+    'heightInWeight': 1.67
+  });
+  var hideKeyboardKey = util.createKey({
+    'widthInWeight': 1.037,
+    'heightInWeight': 1.67
+  });
+  var spaceRow = util.createLinearLayout({
+    'id': 'emojiSpaceRow',
+    'children': [backToKeyboardKey, spaceKey, hideKeyboardKey]
+  });
+
   var emojiView = util.createVerticalLayout({
     'id': 'emojiView',
-    'children': [tabBar, rowsAndSideKeys]
+    'children': [tabBar, rowsAndSideKeys, spaceRow]
   });
 
   // Keyboard view.

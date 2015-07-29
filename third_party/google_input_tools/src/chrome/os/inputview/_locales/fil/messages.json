@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "pababang arrow"
   },
+  "drag_button": {
+    "message": "I-drag upang ilipat ang virtual na keyboard"
+  },
   "ee_est_settings_page": {
     "message": "Page ng Mga Setting ng Estonian na Keyboard"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "I-enable ang pagkumpleto"
   },
+  "enable_gesture_editing": {
+    "message": "Mag-swipe mula sa mga gilid ng keyboard upang ilipat ang cursor, o mula sa backspace key upang i-delete ang mga buong salita."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "I-enable ang hula sa susunod na salita"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Page ng Mga Setting ng Finnish na Keyboard"
   },
+  "footer_docking_button": {
+    "message": "i-dock ang virtual na keyboard"
+  },
   "footer_emoji_button": {
     "message": "lumipat sa emoji"
+  },
+  "footer_floating_button": {
+    "message": "gawing nalilipat ang virtual na keyboard"
   },
   "footer_handwriting_button": {
     "message": "lumipat sa sulat-kamay"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Lithuanian na keyboard"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam keyboard (Phonetic)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Slovenian na keyboard"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Keyboard na batay sa Sorani Kurdish Arabic"
+    "message": "Keyboard na batay sa Kurdish Arabic"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Keyboard na batay sa Sorani Kurdish English"
+    "message": "Keyboard na batay sa Kurdish English"
   },
   "keyboard_spanish": {
     "message": "Spanish na keyboard"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "space"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "lumipat sa "

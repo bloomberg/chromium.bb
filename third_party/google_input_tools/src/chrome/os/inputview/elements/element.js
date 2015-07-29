@@ -142,7 +142,10 @@ Element.prototype.isVisible = function() {
  * @param {boolean} visibility True if the element is visible.
  */
 Element.prototype.setVisible = function(visibility) {
-  this.getElement().style.display = visibility ? this.display_ : 'none';
+  // TODO: Figure out why element can be null.
+  var element = this.getElement();
+  if (element)
+    element.style.display = visibility ? this.display_ : 'none';
 };
 
 

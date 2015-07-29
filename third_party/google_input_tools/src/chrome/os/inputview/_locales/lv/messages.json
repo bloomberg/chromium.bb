@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "lejupv\u0113rst\u0101 bulti\u0146a"
   },
+  "drag_button": {
+    "message": "Vilkt virtu\u0101lo tastat\u016bru, lai to p\u0101rvietotu"
+  },
   "ee_est_settings_page": {
     "message": "Igau\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Iesp\u0113jot pabeig\u0161anu"
   },
+  "enable_gesture_editing": {
+    "message": "Velciet no tastat\u016bras mal\u0101m, lai p\u0101rvietotu kursoru, vai velciet no atpaka\u013catk\u0101pes tausti\u0146a, lai dz\u0113stu visu v\u0101rdu."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Iesp\u0113jot n\u0101kam\u0101 v\u0101rda paredz\u0113\u0161anu"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Somu valodas tastat\u016bras iestat\u012bjumu lapa"
   },
+  "footer_docking_button": {
+    "message": "dokot virtu\u0101lo tastat\u016bru"
+  },
   "footer_emoji_button": {
     "message": "p\u0101rsl\u0113gties uz emocijz\u012bm\u0113m"
+  },
+  "footer_floating_button": {
+    "message": "padara virtu\u0101lo tastat\u016bru p\u0101rvietojamu"
   },
   "footer_handwriting_button": {
     "message": "p\u0101rsl\u0113gties uz rokrakstu"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Lietuvie\u0161u valodas tastat\u016bra"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malajalu valodas tastat\u016bra (fon\u0113tisk\u0101)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Slov\u0113\u0146u valodas tastat\u016bra"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Uz ar\u0101bu valodu balst\u012bta kurdu (Sorani) tastat\u016bra"
+    "message": "Uz ar\u0101bu valodu balst\u012bta kurdu tastat\u016bra"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Uz ang\u013cu valodu balst\u012bta kurdu (Sorani) tastat\u016bra"
+    "message": "Uz ang\u013cu valodu balst\u012bta kurdu tastat\u016bra"
   },
   "keyboard_spanish": {
     "message": "Sp\u0101\u0146u valodas tastat\u016bra"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "atstarpes tausti\u0146\u0161"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "p\u0101rsl\u0113gt uz \u0161o izk\u0101rtojumu: "

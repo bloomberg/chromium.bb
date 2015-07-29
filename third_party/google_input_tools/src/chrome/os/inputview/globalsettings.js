@@ -241,3 +241,10 @@ i18n.input.common.GlobalSettings.enableVoice = false;
  */
 i18n.input.common.GlobalSettings.enableGlobalEventDelegate = true;
 
+
+/**
+ * Whether to adapter in mobile devices.
+ *
+ * @type {boolean}
+ */
+i18n.input.common.GlobalSettings.mobile = goog.userAgent.MOBILE;

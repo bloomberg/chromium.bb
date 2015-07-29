@@ -12,13 +12,13 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.provide('i18n.input.chrome.inputview.layouts.util');
-goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 
 
 goog.scope(function() {
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var util = i18n.input.chrome.inputview.layouts.util;
 
 
 /**
@@ -27,7 +27,7 @@ var ElementType = i18n.input.chrome.inputview.elements.ElementType;
  * @type {number}
  * @private
  */
-i18n.input.chrome.inputview.layouts.util.keyId_ = 0;
+util.keyId_ = 0;
 
 
 /**
@@ -35,16 +35,18 @@ i18n.input.chrome.inputview.layouts.util.keyId_ = 0;
  *
  * @type {string}
  */
-i18n.input.chrome.inputview.layouts.util.keyIdPrefix = '';
+util.keyIdPrefix = '';
+
 
 /**
  * Resets id counter for keys in preparation for processing a new layout.
  * @param {string} prefix  The prefix for the key id.
  */
-i18n.input.chrome.inputview.layouts.util.setPrefix = function(prefix) {
-  i18n.input.chrome.inputview.layouts.util.keyIdPrefix = prefix;
-  i18n.input.chrome.inputview.layouts.util.keyId_ = 0;
+util.setPrefix = function(prefix) {
+  util.keyIdPrefix = prefix;
+  util.keyId_ = 0;
 };
+
 
 /**
  * Creates a sequence of key with the same specification.
@@ -53,11 +55,11 @@ i18n.input.chrome.inputview.layouts.util.setPrefix = function(prefix) {
  * @param {number} num How many keys.
  * @return {!Array.<Object>} The keys.
  */
-i18n.input.chrome.inputview.layouts.util.createKeySequence = function(spec,
+util.createKeySequence = function(spec,
     num) {
   var sequence = [];
   for (var i = 0; i < num; i++) {
-    sequence.push(i18n.input.chrome.inputview.layouts.util.createKey(spec));
+    sequence.push(util.createKey(spec));
   }
   return sequence;
 };
@@ -70,10 +72,10 @@ i18n.input.chrome.inputview.layouts.util.createKeySequence = function(spec,
  * @param {string=} opt_id The id.
  * @return {!Object} The soft key view.
  */
-i18n.input.chrome.inputview.layouts.util.createKey = function(spec, opt_id) {
-  var id = i18n.input.chrome.inputview.layouts.util.keyIdPrefix +
-      i18n.input.chrome.inputview.layouts.util.keyId_++;
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+util.createKey = function(spec, opt_id) {
+  var id = util.keyIdPrefix +
+      util.keyId_++;
+  return util.createElem(
       ElementType.SOFT_KEY_VIEW, spec, id);
 };
 
@@ -85,9 +87,9 @@ i18n.input.chrome.inputview.layouts.util.createKey = function(spec, opt_id) {
  * @param {string=} opt_id The id.
  * @return {!Object} The linear layout.
  */
-i18n.input.chrome.inputview.layouts.util.createLinearLayout = function(spec,
+util.createLinearLayout = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.LINEAR_LAYOUT, spec, opt_id, spec['iconCssClass']);
 };
 
@@ -99,9 +101,9 @@ i18n.input.chrome.inputview.layouts.util.createLinearLayout = function(spec,
  * @param {string=} opt_id The id.
  * @return {!Object} The extended layout.
  */
-i18n.input.chrome.inputview.layouts.util.createExtendedLayout = function(spec,
+util.createExtendedLayout = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.EXTENDED_LAYOUT, spec, opt_id, spec['iconCssClass']);
 };
 
@@ -113,9 +115,9 @@ i18n.input.chrome.inputview.layouts.util.createExtendedLayout = function(spec,
  * @param {string=} opt_id The id.
  * @return {!Object} The handwriting layout.
  */
-i18n.input.chrome.inputview.layouts.util.createHandwritingLayout =
+util.createHandwritingLayout =
     function(spec, opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.HANDWRITING_LAYOUT, spec, opt_id);
 };
 
@@ -127,9 +129,9 @@ i18n.input.chrome.inputview.layouts.util.createHandwritingLayout =
  * @param {string=} opt_id The id.
  * @return {!Object} The vertical layout.
  */
-i18n.input.chrome.inputview.layouts.util.createVerticalLayout = function(spec,
+util.createVerticalLayout = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.VERTICAL_LAYOUT, spec, opt_id);
 };
 
@@ -141,9 +143,9 @@ i18n.input.chrome.inputview.layouts.util.createVerticalLayout = function(spec,
  * @param {string=} opt_id The id.
  * @return {!Object} The view.
  */
-i18n.input.chrome.inputview.layouts.util.createLayoutView = function(spec,
+util.createLayoutView = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.LAYOUT_VIEW, spec, opt_id);
 };
 
@@ -155,9 +157,9 @@ i18n.input.chrome.inputview.layouts.util.createLayoutView = function(spec,
  * @param {string=} opt_id The id.
  * @return {!Object} The view.
  */
-i18n.input.chrome.inputview.layouts.util.createCandidateView = function(spec,
+util.createCandidateView = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.CANDIDATE_VIEW, spec, opt_id);
 };
 
@@ -169,9 +171,9 @@ i18n.input.chrome.inputview.layouts.util.createCandidateView = function(spec,
  * @param {string=} opt_id The id.
  * @return {!Object} The view.
  */
-i18n.input.chrome.inputview.layouts.util.createCanvasView = function(spec,
+util.createCanvasView = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.CANVAS_VIEW, spec, opt_id);
 };
 
@@ -183,9 +185,9 @@ i18n.input.chrome.inputview.layouts.util.createCanvasView = function(spec,
  * @param {string=} opt_id The id.
  * @return {Object} The keyboard.
  */
-i18n.input.chrome.inputview.layouts.util.createKeyboard = function(spec,
+util.createKeyboard = function(spec,
     opt_id) {
-  return i18n.input.chrome.inputview.layouts.util.createElem(
+  return util.createElem(
       ElementType.KEYBOARD, spec, opt_id);
 };
 
@@ -197,10 +199,10 @@ i18n.input.chrome.inputview.layouts.util.createKeyboard = function(spec,
  * @param {!ElementType} type The type.
  * @param {Object} spec The specification.
  * @param {string=} opt_id The id.
- * @param {i18n.input.chrome.inputview.Css=} opt_iconCssClass The Css class.
+ * @param {string=} opt_iconCssClass The Css class.
  * @return {!Object} The element.
  */
-i18n.input.chrome.inputview.layouts.util.createElem = function(type, spec,
+util.createElem = function(type, spec,
     opt_id, opt_iconCssClass) {
   var newSpec = {};
   for (var key in spec) {

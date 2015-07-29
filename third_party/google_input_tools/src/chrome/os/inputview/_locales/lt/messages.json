@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "rodykl\u0117 \u017eemyn"
   },
+  "drag_button": {
+    "message": "Vilkti, kad b\u016bt\u0173 galima perkelti virtuali\u0105j\u0105 klaviat\u016br\u0105"
+  },
   "ee_est_settings_page": {
     "message": "Esti\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "\u012egalinti u\u017ebaigim\u0105"
   },
+  "enable_gesture_editing": {
+    "message": "Perbraukite nuo klaviat\u016bros kra\u0161t\u0173, kad perkeltum\u0117te \u017eymekl\u012f, arba nuo tarpo klavi\u0161o, kad i\u0161trintum\u0117te vis\u0105 \u017eod\u012f."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "\u012egalinti kito \u017eod\u017eio numatymo funkcij\u0105"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Suomi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
   },
+  "footer_docking_button": {
+    "message": "pritvirtinti virtuali\u0105j\u0105 klaviat\u016br\u0105"
+  },
   "footer_emoji_button": {
     "message": "perjungti \u012f jaustukus"
+  },
+  "footer_floating_button": {
+    "message": "padaryti virtuali\u0105j\u0105 klaviat\u016br\u0105 perkeliam\u0105"
   },
   "footer_handwriting_button": {
     "message": "perjungti \u012f ra\u0161ymo ranka funkcij\u0105"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Lietuvi\u0161ka klaviat\u016bra"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malajali\u0161ka klaviat\u016bra (fonetin\u0117)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Slov\u0117ni\u0161ka klaviat\u016bra"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Sorani\u0173 kurd\u0173 arabi\u0161ka klaviat\u016bra"
+    "message": "Kurd\u0173 arabi\u0161ka klaviat\u016bra"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Sorani\u0173 kurd\u0173 angli\u0161ka klaviat\u016bra"
+    "message": "Kurd\u0173 angli\u0161ka klaviat\u016bra"
   },
   "keyboard_spanish": {
     "message": "Ispani\u0161ka klaviat\u016bra"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "tarpo klavi\u0161as"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "perjungti \u012f "

@@ -17,20 +17,24 @@ goog.require('i18n.input.chrome.inputview.layouts.SpaceRow');
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
 
-(function() {
-  i18n.input.chrome.inputview.layouts.util.setPrefix('102kbd-k-');
+goog.scope(function() {
+var layouts = i18n.input.chrome.inputview.layouts;
+var util = layouts.util;
 
-  var topFourRows = i18n.input.chrome.inputview.layouts.RowsOf102.create();
-  var spaceRow = i18n.input.chrome.inputview.layouts.SpaceRow.create();
+(function() {
+  util.setPrefix('102kbd-k-');
+
+  var topFourRows = layouts.RowsOf102.create();
+  var spaceRow = layouts.SpaceRow.create();
 
   // Keyboard view.
-  var keyboardView = i18n.input.chrome.inputview.layouts.util.createLayoutView({
+  var keyboardView = util.createLayoutView({
     'id': 'keyboardView',
     'children': [topFourRows, spaceRow],
     'widthPercent': 100,
     'heightPercent': 100
   });
-  var keyboardContainer = i18n.input.chrome.inputview.layouts.util.
+  var keyboardContainer = util.
       createLinearLayout({
         'id': 'keyboardContainer',
         'children': [keyboardView]
@@ -45,3 +49,5 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   google.ime.chrome.inputview.onLayoutLoaded(data);
 
 }) ();
+
+});  // goog.scope

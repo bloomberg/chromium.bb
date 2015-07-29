@@ -17,7 +17,6 @@ goog.require('goog.object');
 goog.require('i18n.input.chrome.inputview.FeatureName');
 
 goog.scope(function() {
-var Adapter = i18n.input.chrome.inputview.Adapter;
 var FeatureName = i18n.input.chrome.inputview.FeatureName;
 
 
@@ -43,6 +42,13 @@ i18n.input.chrome.inputview.FeatureTracker = function() {
    * @private {!Array<FeatureName>}
    */
   this.ENABLED_BY_DEFAULT_ = [];
+
+  /**
+   * Whether the features list is ready.
+   *
+   * @private {boolean}
+   */
+  this.ready_ = false;
 };
 
 var FeatureTracker = i18n.input.chrome.inputview.FeatureTracker;
@@ -55,6 +61,9 @@ var FeatureTracker = i18n.input.chrome.inputview.FeatureTracker;
  * @return {boolean}
  */
 FeatureTracker.prototype.isEnabled = function(feature) {
+  if (!this.ready_) {
+    console.error('Features not present in config or not ready yet.');
+  }
   if (feature in this.features_) {
     return this.features_[feature];
   }
@@ -83,6 +92,7 @@ FeatureTracker.prototype.initialize = function(config) {
         console.error('Unrecognized flag: ' + features[i]);
       }
     }
+    this.ready_ = true;
   } else {
     console.error('API Error. Features not present in config.');
     return;

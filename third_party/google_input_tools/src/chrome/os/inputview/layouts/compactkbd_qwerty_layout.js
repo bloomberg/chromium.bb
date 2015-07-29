@@ -15,34 +15,37 @@ goog.require('i18n.input.chrome.inputview.layouts.CompactSpaceRow');
 goog.require('i18n.input.chrome.inputview.layouts.RowsOfCompact');
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
+goog.scope(function() {
+var layouts = i18n.input.chrome.inputview.layouts;
+var util = layouts.util;
 
 (function() {
-  i18n.input.chrome.inputview.layouts.util.setPrefix('compactkbd-k-');
+  layouts.util.setPrefix('compactkbd-k-');
 
-  var topThreeRows = i18n.input.chrome.inputview.layouts.RowsOfCompact.create();
-  var spaceRow =
-      i18n.input.chrome.inputview.layouts.CompactSpaceRow.create(false);
+  var topThreeRows = layouts.RowsOfCompact.create();
+  var spaceRow = layouts.CompactSpaceRow.create(false);
 
   // Keyboard view.
-  var keyboardView = i18n.input.chrome.inputview.layouts.util.createLayoutView({
+  var keyboardView = util.createLayoutView({
     'id': 'keyboardView',
     'children': [topThreeRows, spaceRow],
     'widthPercent': 100,
     'heightPercent': 100
   });
 
-  var keyboardContainer = i18n.input.chrome.inputview.layouts.util.
-      createLinearLayout({
-        'id': 'keyboardContainer',
-        'children': [keyboardView]
-      });
+  var keyboardContainer = util.createLinearLayout({
+    'id': 'keyboardContainer',
+    'children': [keyboardView]
+  });
 
   var data = {
     'layoutID': 'compactkbd-qwerty',
-    'widthInWeight': 15,
+    'widthInWeight': 11.15625,
     'children': [keyboardContainer]
   };
 
   google.ime.chrome.inputview.onLayoutLoaded(data);
 
 }) ();
+
+});  // goog.scope

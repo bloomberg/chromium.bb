@@ -26,8 +26,8 @@ goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
-goog.require('i18n.input.chrome.inputview.elements.content.CompactKeyModel');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
+goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.ContextType');
 
 
@@ -38,6 +38,9 @@ var CompactKeyModel =
 var ContextType = i18n.input.chrome.message.ContextType;
 var MoreKeysShiftOperation = i18n.input.chrome.inputview.MoreKeysShiftOperation;
 var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
+var StateType = i18n.input.chrome.inputview.StateType;
+var util = i18n.input.chrome.inputview.util;
+
 
 
 /**
@@ -156,6 +159,7 @@ CompactKey.prototype.resize = function(width, height) {
 /**
  * Gets the active character factoring in the current input type context.
  *
+ * @return {string} The text to display on this key.
  * @private
  */
 CompactKey.prototype.getContextOptimizedText_ = function() {
@@ -174,8 +178,7 @@ CompactKey.prototype.getContextOptimizedText_ = function() {
         this.compactKeyModel_.
         textOnContext[context][SpecNodeName.TEXT_CSS_CLASS];
     goog.dom.classlist.add(this.tableCell, newCss);
-  } else if (this.hasShift_ && this.stateManager_.hasState(
-      i18n.input.chrome.inputview.StateType.SHIFT)) {
+  } else if (this.hasShift_ && this.stateManager_.hasState(StateType.SHIFT)) {
     // When there is specific text to display when shift is pressed down,
     // the text should be set accordingly.
     text = this.compactKeyModel_.textOnShift ?
@@ -210,8 +213,7 @@ CompactKey.prototype.update = function() {
   var text = this.getContextOptimizedText_();
   var displayHintText = this.stateManager_.contextType != ContextType.PASSWORD;
   if (this.compactKeyModel_.textOnShift) {
-    if (this.hasShift_ && this.stateManager_.hasState(
-      i18n.input.chrome.inputview.StateType.SHIFT)) {
+    if (this.hasShift_ && this.stateManager_.hasState(StateType.SHIFT)) {
       // Deal with the case that when shift is pressed down,
       // only one character should show in the compact key.
       displayHintText = false;
@@ -221,11 +223,19 @@ CompactKey.prototype.update = function() {
   this.hintTextElem &&
       goog.style.setElementShown(this.hintTextElem, displayHintText);
   text = this.compactKeyModel_.title ?
-    chrome.i18n.getMessage(this.compactKeyModel_.title) : text;
+      chrome.i18n.getMessage(this.compactKeyModel_.title) : text;
   goog.dom.setTextContent(this.textElem, text);
 
+
+  var ariaLabel = text;
+  if (this.hasShift_ && this.stateManager_.hasState(StateType.SHIFT) &&
+      util.toUpper(text) != this.text) {
+    // Punctuation keys do not change on shift, do not add cap to their aria
+    // labels.
+    ariaLabel = 'cap ' + text;
+  }
   goog.a11y.aria.setState(/** @type {!Element} */ (this.textElem),
-      goog.a11y.aria.State.LABEL, text);
+      goog.a11y.aria.State.LABEL, ariaLabel);
 };
 
 
@@ -255,8 +265,7 @@ CompactKey.prototype.getMoreCharacters = function() {
         }
         return moreCharacters;
       case MoreKeysShiftOperation.TO_LOWER_CASE:
-        if (this.hasShift_ && this.stateManager_.hasState(
-            i18n.input.chrome.inputview.StateType.SHIFT)) {
+        if (this.hasShift_ && this.stateManager_.hasState(StateType.SHIFT)) {
           for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
             moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toLowerCase();
           }

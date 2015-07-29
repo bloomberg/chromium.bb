@@ -2411,7 +2411,7 @@
     "message": "Naam woordenboek"
   },
   "dictionarytooldonebutton": {
-    "message": "Klaar"
+    "message": "Gereed"
   },
   "dictionarytoolexportbutton": {
     "message": "Exporteren"
@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "pijl-omlaag"
   },
+  "drag_button": {
+    "message": "Slepen om virtueel toetsenbord te verplaatsen"
+  },
   "ee_est_settings_page": {
     "message": "Pagina met instellingen voor Estlands toetsenbord"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Aanvulling inschakelen"
   },
+  "enable_gesture_editing": {
+    "message": "Veeg vanaf de randen van het toetsenbord om de cursor te verplaatsen of veeg vanaf de Backspace-toets om hele woorden te verwijderen."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Voorspelling voor volgend woord inschakelen"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Pagina met instellingen voor Fins toetsenbord"
   },
+  "footer_docking_button": {
+    "message": "virtueel toetsenbord docken"
+  },
   "footer_emoji_button": {
     "message": "overschakelen naar emoji"
+  },
+  "footer_floating_button": {
+    "message": "virtueel toetsenbord verplaatsbaar maken"
   },
   "footer_handwriting_button": {
     "message": "overschakelen naar handschrift"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Litouws toetsenbord"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam toetsenbord (fonetisch)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Sloveens toetsenbord"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Op Arabisch gebaseerd toetsenbord voor Soran\u00ee"
+    "message": "Op Arabisch gebaseerd toetsenbord voor Koerdisch"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Op Engels gebaseerd toetsenbord voor Soran\u00ee"
+    "message": "Op Engels gebaseerd toetsenbord voor Koerdisch"
   },
   "keyboard_spanish": {
     "message": "Spaans toetsenbord"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "spatiebalk"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "overschakelen naar "

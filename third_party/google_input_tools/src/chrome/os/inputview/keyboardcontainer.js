@@ -17,14 +17,15 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.i18n.bidi');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.AltDataView');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiView');
 goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView');
+goog.require('i18n.input.chrome.inputview.elements.content.FloatingView');
 goog.require('i18n.input.chrome.inputview.elements.content.GestureCanvasView');
+goog.require('i18n.input.chrome.inputview.elements.content.GesturePreviewView');
 goog.require('i18n.input.chrome.inputview.elements.content.HandwritingView');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
@@ -66,16 +67,14 @@ i18n.input.chrome.inputview.KeyboardContainer =
   /** @type {!content.AltDataView} */
   this.altDataView = new content.AltDataView(this);
 
+  /** @type {!content.GesturePreviewView} */
+  this.gesturePreviewView = new content.GesturePreviewView(this);
+
   /** @type {!content.SwipeView} */
-  this.swipeView = new content.SwipeView(adapter, this);
+  this.swipeView = new content.SwipeView(adapter, this.candidateView, this);
 
   /** @type {!content.SelectView} */
   this.selectView = new content.SelectView(this);
-
-  if (adapter.isGestureTypingEnabled()) {
-    /** @type {!content.GestureCanvasView} */
-    this.gestureCanvasView = new content.GestureCanvasView(this);
-  }
 
   /** @type {!content.MenuView} */
   this.menuView = new content.MenuView(this);
@@ -136,6 +135,22 @@ KeyboardContainer.TAB_MARGIN_ = 11;
 KeyboardContainer.prototype.wrapperDiv_ = null;
 
 
+/**
+ * The gesture canvas view.
+ *
+ * @type {content.GestureCanvasView}
+ */
+KeyboardContainer.prototype.gestureCanvasView = null;
+
+
+/**
+ * The gesture canvas view.
+ *
+ * @type {content.FloatingView}
+ */
+KeyboardContainer.prototype.floatingView = null;
+
+
 /** @override */
 KeyboardContainer.prototype.createDom = function() {
   goog.base(this, 'createDom');
@@ -146,6 +161,7 @@ KeyboardContainer.prototype.createDom = function() {
   this.candidateView.render(this.wrapperDiv_);
   dom.appendChild(elem, this.wrapperDiv_);
   this.altDataView.render();
+  this.gesturePreviewView.render();
   this.swipeView.render();
   this.selectView.render();
   this.menuView.render();
@@ -153,9 +169,12 @@ KeyboardContainer.prototype.createDom = function() {
   this.voiceView.setVisible(false);
   this.expandedCandidateView.render(this.wrapperDiv_);
   this.expandedCandidateView.setVisible(false);
-  if (this.adapter_.isGestureTypingEnabled()) {
-    this.gestureCanvasView.render(this.wrapperDiv_);
+  if (this.adapter_.isFloatingVirtualKeyboardEnabled()) {
+    this.floatingView = new content.FloatingView(this);
+    this.floatingView.render();
   }
+  this.gestureCanvasView = new content.GestureCanvasView(this);
+  this.gestureCanvasView.render(this.wrapperDiv_);
   goog.dom.classlist.add(elem, Css.CONTAINER);
 };
 
@@ -251,7 +270,9 @@ KeyboardContainer.prototype.switchToKeyset = function(keyset, title,
       view.setVisible(false);
     }
   }
-
+  var isCompact = keyset.indexOf('compact') >= 0;
+  this.selectView.setKeysetSupported(isCompact);
+  this.swipeView.setKeysetSupported(isCompact);
   return true;
 };
 
@@ -273,10 +294,6 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
 
   var h = height;
   var wrapperMargin = 0;
-  if (this.currentKeysetView.isTabStyle()) {
-    h = height - 2 * KeyboardContainer.TAB_MARGIN_;
-    wrapperMargin = KeyboardContainer.TAB_MARGIN_;
-  }
   this.wrapperDiv_.style.marginTop = this.wrapperDiv_.style.marginBottom =
       wrapperMargin + 'px';
   h -= KeyboardContainer.PADDING_BOTTOM_;
@@ -297,18 +314,13 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
   this.expandedCandidateView.setWidthInWeight(
       this.currentKeysetView.getWidthInWeight(), backspaceWeight);
   this.expandedCandidateView.resize(w, h);
-  if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    var candidateElem = this.candidateView.getElement();
-    candidateElem.style.paddingLeft = candidateElem.style.paddingRight =
-        padding + 'px';
-    this.currentKeysetView.resize(width, h, widthPercent);
-    var expandViewElem = this.expandedCandidateView.getElement();
-    expandViewElem.style.marginLeft = expandViewElem.style.marginRight =
-        padding + 'px';
-  } else {
-    this.currentKeysetView.resize(w, h, 1);
-    elem.style.paddingLeft = elem.style.paddingRight = padding + 'px';
-  }
+  var candidateElem = this.candidateView.getElement();
+  candidateElem.style.paddingLeft = candidateElem.style.paddingRight =
+      padding + 'px';
+  this.currentKeysetView.resize(width, h, widthPercent);
+  var expandViewElem = this.expandedCandidateView.getElement();
+  expandViewElem.style.marginLeft = expandViewElem.style.marginRight =
+      padding + 'px';
   if (this.expandedCandidateView.isVisible()) {
     // Closes the expanded candidate view if it's visible.
     // This is to avoid mis-layout issue for the expanded candidate when screen
@@ -319,14 +331,16 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
     this.expandedCandidateView.setVisible(false);
     this.currentKeysetView.setVisible(true);
   }
-  this.altDataView.resize(screen.width, height);
-  this.swipeView.resize(screen.width, height);
-  this.selectView.resize(screen.width, height);
-  this.menuView.resize(screen.width, height);
+  this.altDataView.resize(width, height);
+  this.gesturePreviewView.resize(width, height);
+  this.swipeView.resize(width, height);
+  this.selectView.resize(width, height);
+  this.menuView.resize(width, height);
   this.voiceView.resize(w + padding, height);
-  if (this.adapter_.isGestureTypingEnabled()) {
-    this.gestureCanvasView.resize(screen.width, height);
+  if (this.floatingView) {
+    this.floatingView.resize(width, height);
   }
+  this.gestureCanvasView.resize(width, height);
 };
 
 
@@ -334,13 +348,15 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
 KeyboardContainer.prototype.disposeInternal = function() {
   goog.dispose(this.candidateView);
   goog.dispose(this.altDataView);
+  goog.dispose(this.gesturePreviewView);
   goog.dispose(this.swipeView);
   goog.dispose(this.selectView);
   goog.dispose(this.menuView);
   goog.dispose(this.voiceView);
-  if (this.adapter_.isGestureTypingEnabled()) {
-    goog.dispose(this.gestureCanvasView);
+  if (this.floatingView) {
+    goog.dispose(this.floatingView);
   }
+  goog.dispose(this.gestureCanvasView);
   for (var key in this.keysetViewMap) {
     goog.dispose(this.keysetViewMap[key]);
   }

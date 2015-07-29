@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "down arrow"
   },
+  "drag_button": {
+    "message": "Drag to move virtual keyboard"
+  },
   "ee_est_settings_page": {
     "message": "Estonian Keyboard Settings Page"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Enable completion"
   },
+  "enable_gesture_editing": {
+    "message": "Swipe from the edges of the keyboard to move the cursor, or from the backspace key to delete whole words."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Enable next word prediction"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Finnish Keyboard Settings Page"
   },
+  "footer_docking_button": {
+    "message": "dock virtual keyboard"
+  },
   "footer_emoji_button": {
     "message": "switch to emoji"
+  },
+  "footer_floating_button": {
+    "message": "make virtual keyboard movable"
   },
   "footer_handwriting_button": {
     "message": "switch to handwriting"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Lithuanian keyboard"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam keyboard (Phonetic)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Slovenian keyboard"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Sorani Kurdish Arabic-based keyboard"
+    "message": "Kurdish Arabic-based keyboard"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Sorani Kurdish English-based keyboard"
+    "message": "Kurdish English-based keyboard"
   },
   "keyboard_spanish": {
     "message": "Spanish keyboard"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "space"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "switch to "

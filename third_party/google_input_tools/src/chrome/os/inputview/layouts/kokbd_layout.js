@@ -11,7 +11,6 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-
 goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.layouts.RowsOf101');
 goog.require('i18n.input.chrome.inputview.layouts.util');
@@ -19,6 +18,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
 
 (function() {
   var ConditionName = i18n.input.chrome.inputview.ConditionName;
+  var RowsOf101 = i18n.input.chrome.inputview.layouts.RowsOf101;
   var util = i18n.input.chrome.inputview.layouts.util;
 
   util.setPrefix('kokbd-k-');
@@ -75,15 +75,15 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
       'widthInWeight': 1.08
     });
     var spaceKeyRow = util.createLinearLayout({
-          'id': 'spaceKeyrow',
-          'children': [globeKey, menuKey, ctrlKey, altKey, hangjaSwitcher,
-              spaceKey, enSwitcher, altGrKey, leftKey, rightKey,
-              hideKeyboardKey]
-        });
+      'id': 'spaceKeyrow',
+      'children': [ctrlKey, altKey, globeKey, menuKey, hangjaSwitcher,
+        spaceKey, enSwitcher, altGrKey, leftKey, rightKey,
+        hideKeyboardKey]
+    });
     return spaceKeyRow;
   };
 
-  var topFourRows = i18n.input.chrome.inputview.layouts.RowsOf101.create();
+  var topFourRows = RowsOf101.create();
   var spaceRow = createSpaceRow();
 
   // Keyboard view.
@@ -95,9 +95,9 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   });
 
   var keyboardContainer = util.createLinearLayout({
-        'id': 'keyboardContainer',
-        'children': [keyboardView]
-      });
+    'id': 'keyboardContainer',
+    'children': [keyboardView]
+  });
 
   var data = {
     'layoutID': 'kokbd',

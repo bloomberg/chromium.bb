@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "allanool"
   },
+  "drag_button": {
+    "message": "Lohistamine virtuaalse klaviatuuri teisaldamiseks"
+  },
   "ee_est_settings_page": {
     "message": "Eesti klaviatuuri seadete leht"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "Luba automaatne t\u00e4itmine"
   },
+  "enable_gesture_editing": {
+    "message": "Tervete s\u00f5nade kustutamiseks p\u00fchkige kursori liigutamiseks klaviatuuri servadest v\u00f5i tagasil\u00fckkeklahvilt."
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "Luba j\u00e4rgmise s\u00f5na ennustamine"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "Soome klaviatuuri seadete leht"
   },
+  "footer_docking_button": {
+    "message": "doki virtuaalne klaviatuur"
+  },
   "footer_emoji_button": {
     "message": "emotikonidele l\u00fclitumine"
+  },
+  "footer_floating_button": {
+    "message": "muutke virtuaalne klaviatuur teisaldatavaks"
   },
   "footer_handwriting_button": {
     "message": "k\u00e4sitsikirjale l\u00fclitumine"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "Leedu klaviatuur"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "Malajalami klaviatuur (foneetiline)"
   },
@@ -2900,10 +2918,10 @@
     "message": "Sloveenia klaviatuur"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Sorani kurdi araabia keele p\u00f5hine klaviatuur"
+    "message": "Kurdi araabia keele p\u00f5hine klaviatuur"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Sorani kurdi inglise keele p\u00f5hine klaviatuur"
+    "message": "Kurdi inglise keele p\u00f5hine klaviatuur"
   },
   "keyboard_spanish": {
     "message": "Hispaania klaviatuur"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "t\u00fchik"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "paigutusele l\u00fclitamine "

@@ -20,7 +20,6 @@ goog.require('goog.style');
 goog.require('goog.ui.Container');
 goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.BackspaceKey');
@@ -40,7 +39,6 @@ goog.require('i18n.input.chrome.inputview.elements.content.PageIndicator');
 goog.require('i18n.input.chrome.inputview.elements.content.SpaceKey');
 goog.require('i18n.input.chrome.inputview.elements.content.SwitcherKey');
 goog.require('i18n.input.chrome.inputview.elements.content.TabBarKey');
-goog.require('i18n.input.chrome.inputview.elements.content.material.SpaceKey');
 goog.require('i18n.input.chrome.inputview.elements.layout.ExtendedLayout');
 goog.require('i18n.input.chrome.inputview.elements.layout.HandwritingLayout');
 goog.require('i18n.input.chrome.inputview.elements.layout.LinearLayout');
@@ -233,7 +231,7 @@ KeysetView.prototype.canvasView;
 /**
  * The space key.
  *
- * @type {!content.SpaceKey | !content.material.SpaceKey}
+ * @type {!content.SpaceKey}
  */
 KeysetView.prototype.spaceKey;
 
@@ -311,6 +309,77 @@ KeysetView.prototype.createDom = function() {
 
 
 /**
+ * Returns an object describing the KeysetView and soft keys in the format
+ * necessary for gesture typing decoding. The returned object is only meaningful
+ * when this is called on a KeysetView for compact alphanumeric layouts.
+ *
+ * @return {?Object} A representation of this keyset for gesture typing
+ *     decoding, or null if there are no soft keys.
+ */
+KeysetView.prototype.getKeyboardLayoutForGesture = function() {
+  var softKeyViewMap = this.softKeyViewMap_;
+  // Filter down to the compact character soft keys.
+  var softKeyViews = [];
+  for (var key in softKeyViewMap) {
+    var skv = softKeyViewMap[key];
+    if (skv.softKey && skv.softKey.type == ElementType.COMPACT_KEY &&
+        this.isCharacter_(skv.softKey.text)) {
+      softKeyViews.push(skv);
+    }
+  }
+
+  if (softKeyViews.length == 0) {
+    return null;
+  }
+
+  // Find the common key width/height. We assume that all the keys have the same
+  // width and height, so use an arbitrary key to determine this.
+  // TODO: Update this code to actually calculate the common dimensions.
+  // Technically in QWERTY the A key is wider than other keys, though in most
+  // cases this should not matter since we provide explicit dimensions for
+  // every key.
+  // TODO: Define this keyboard layout as an actual data type.
+  var ret = {};
+  var softKeyView = softKeyViews[0];
+  var common_width = softKeyView.softKey.getElement().clientWidth;
+  var common_height = softKeyView.softKey.getElement().clientHeight;
+  ret['most_common_key_width'] = common_width;
+  ret['most_common_key_height'] = common_height;
+
+  // Determine the necessary attributes for each key and write it into the
+  // object as an array.
+  var keys = [];
+  for (var i = 0; i < softKeyViews.length; i++) {
+    softKeyView = softKeyViews[i];
+    var codepoint = softKeyView.softKey.text.toLowerCase().charCodeAt(0);
+    var width = softKeyView.softKey.getElement().clientWidth;
+    var height = softKeyView.softKey.getElement().clientHeight;
+    // Return the x, y positions relative to the viewport, as this is the same
+    // convention that gesture points follow.
+    var x = softKeyView.softKey.getElement().getBoundingClientRect().left;
+    var y = softKeyView.softKey.getElement().getBoundingClientRect().top;
+
+    keys.push({
+      'codepoint': codepoint,
+      'width': width,
+      'height': height,
+      'x': x,
+      'y': y
+    });
+  }
+  ret['keys'] = keys;
+
+  // Determine the remaining parameters specific to the keyboard. For the width,
+  // the KeysetView width is OK because it is known to span the document. For
+  // the height, the viewport height must be used in order to include the offset
+  // from the top of the viewport.
+  ret['keyboard_width'] = this.getElement().clientWidth;
+  ret['keyboard_height'] = window.innerHeight;
+  return ret;
+};
+
+
+/**
  * Updates the view.
  */
 KeysetView.prototype.update = function() {
@@ -349,7 +418,8 @@ KeysetView.prototype.resize = function(outerWidth, outerHeight, widthPercent,
     this.widthPercent_ = widthPercent;
     var elem = this.getElement();
     var margin = Math.round((outerWidth - outerWidth * widthPercent) / 2);
-    var w = outerWidth - 2 * margin;
+    // Keyset view has 1px border.
+    var w = outerWidth - 2 * margin - 2;
     elem.style.marginLeft = elem.style.marginRight = margin + 'px';
     goog.style.setSize(elem, w, outerHeight);
 
@@ -458,6 +528,18 @@ KeysetView.prototype.updateCondition = function(name, value) {
   this.applyConditions(this.conditions_);
   this.resize(this.outerWidth, this.outerHeight, this.widthPercent_, true);
   this.update();
+};
+
+
+/**
+ * Returns whether c is a character between a-z or A-Z.
+ *
+ * @param {string} c The character to test.
+ * @return {boolean} .
+ * @private
+ */
+KeysetView.prototype.isCharacter_ = function(c) {
+  return c.length === 1 && c.match(/^[a-z]$/i) != null;
 };
 
 
@@ -604,14 +686,9 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
           this.dataModel_.stateManager, supportSticky);
       break;
     case ElementType.SPACE_KEY:
-      if (this.adapter && this.adapter.isQPInputView) {
-        this.spaceKey = new content.material.SpaceKey(id,
-            this.dataModel_.stateManager, this.title_, characters,
-            undefined, iconCssClass);
-      } else {
-        this.spaceKey = new content.SpaceKey(id, this.dataModel_.stateManager,
-            this.title_, characters, undefined, iconCssClass);
-      }
+      this.spaceKey = new content.SpaceKey(id,
+          this.dataModel_.stateManager, this.title_, characters,
+          undefined, iconCssClass, toKeyset);
       elem = this.spaceKey;
       break;
     case ElementType.EN_SWITCHER:
@@ -643,7 +720,7 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
     case ElementType.EMOJI_KEY:
       var text = spec[SpecNodeName.TEXT];
       var isEmoticon = spec[SpecNodeName.IS_EMOTICON];
-      elem = new content.EmojiKey(id, type, text, iconCssClass, isEmoticon);
+      elem = new content.EmojiKey(id, type, text, isEmoticon);
       break;
     case ElementType.PAGE_INDICATOR:
       elem = new content.PageIndicator(id, type);
@@ -690,18 +767,13 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
       }
       var isLetterKey = i18n.input.chrome.inputview.util.isLetterKey(
           characters);
-      var enableShiftRendering = false;
-      var isQpInputView = !!this.adapter && this.adapter.isQPInputView;
-      if (isQpInputView) {
-        enableShiftRendering = !!spec[SpecNodeName.ENABLE_SHIFT_RENDERING];
-      }
+      var enableShiftRendering = !!spec[SpecNodeName.ENABLE_SHIFT_RENDERING];
       elem = new content.CharacterKey(id, keyCode || 0,
           characters, isLetterKey, hasAltGrCharacterInTheKeyset[isLetterKey],
           this.dataModel_.settings.alwaysRenderAltGrCharacter,
           this.dataModel_.stateManager,
           goog.i18n.bidi.isRtlLanguage(this.languageCode),
-          enableShiftRendering,
-          isQpInputView);
+          enableShiftRendering);
       break;
 
     case ElementType.BACK_BUTTON:
@@ -773,17 +845,6 @@ KeysetView.prototype.cleanStroke = function() {
  */
 KeysetView.prototype.isHandwriting = function() {
   return this.keyboardCode_ == 'hwt';
-};
-
-
-/**
- * True if the keyset is tab style.
- *
- * @return {boolean} .
- */
-KeysetView.prototype.isTabStyle = function() {
-  return !i18n.input.chrome.inputview.GlobalFlags.isQPInputView && (
-      this.keyboardCode_ == 'hwt' || this.keyboardCode_ == 'emoji');
 };
 
 

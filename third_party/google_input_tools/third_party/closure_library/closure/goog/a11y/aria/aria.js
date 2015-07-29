@@ -31,6 +31,7 @@ goog.require('goog.asserts');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.object');
+goog.require('goog.string');
 
 
 /**
@@ -75,6 +76,32 @@ goog.a11y.aria.TAGS_WITH_ASSUMED_ROLES_ = [
 
 
 /**
+ * A list of roles which are considered container roles.
+ * Container roles are ARIA roles which use the aria-activedescendant property
+ * to manage their active descendants or children. See
+ * {@link http://www.w3.org/TR/wai-aria/states_and_properties
+ * #aria-activedescendant} for more information.
+ * @private @const
+ */
+goog.a11y.aria.CONTAINER_ROLES_ = [
+  goog.a11y.aria.Role.COMBOBOX,
+  goog.a11y.aria.Role.GRID,
+  goog.a11y.aria.Role.GROUP,
+  goog.a11y.aria.Role.LISTBOX,
+  goog.a11y.aria.Role.MENU,
+  goog.a11y.aria.Role.MENUBAR,
+  goog.a11y.aria.Role.RADIOGROUP,
+  goog.a11y.aria.Role.ROW,
+  goog.a11y.aria.Role.ROWGROUP,
+  goog.a11y.aria.Role.TAB_LIST,
+  goog.a11y.aria.Role.TEXTBOX,
+  goog.a11y.aria.Role.TOOLBAR,
+  goog.a11y.aria.Role.TREE,
+  goog.a11y.aria.Role.TREEGRID
+];
+
+
+/**
  * Sets the role of an element. If the roleName is
  * empty string or null, the role for the element is removed.
  * We encourage clients to call the goog.a11y.aria.removeRole
@@ -103,7 +130,7 @@ goog.a11y.aria.setRole = function(element, roleName) {
 /**
  * Gets role of an element.
  * @param {!Element} element DOM element to get role of.
- * @return {!goog.a11y.aria.Role} ARIA Role name.
+ * @return {goog.a11y.aria.Role} ARIA Role name.
  */
 goog.a11y.aria.getRole = function(element) {
   var role = element.getAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_);
@@ -126,13 +153,12 @@ goog.a11y.aria.removeRole = function(element) {
  * @param {!(goog.a11y.aria.State|string)} stateName State attribute being set.
  *     Automatically adds prefix 'aria-' to the state name if the attribute is
  *     not an extra attribute.
- * @param {string|boolean|number|!goog.array.ArrayLike.<string>} value Value
+ * @param {string|boolean|number|!Array<string>} value Value
  * for the state attribute.
  */
 goog.a11y.aria.setState = function(element, stateName, value) {
-  if (goog.isArrayLike(value)) {
-    var array = /** @type {!goog.array.ArrayLike.<string>} */ (value);
-    value = array.join(' ');
+  if (goog.isArray(value)) {
+    value = value.join(' ');
   }
   var attrStateName = goog.a11y.aria.getAriaAttributeName_(stateName);
   if (value === '' || value == undefined) {
@@ -155,6 +181,28 @@ goog.a11y.aria.setState = function(element, stateName, value) {
   } else {
     element.setAttribute(attrStateName, value);
   }
+};
+
+
+/**
+ * Toggles the ARIA attribute of an element.
+ * Meant for attributes with a true/false value, but works with any attribute.
+ * If the attribute does not have a true/false value, the following rules apply:
+ * A not empty attribute will be removed.
+ * An empty attribute will be set to true.
+ * @param {!Element} el DOM node for which to set attribute.
+ * @param {!(goog.a11y.aria.State|string)} attr ARIA attribute being set.
+ *     Automatically adds prefix 'aria-' to the attribute name if the attribute
+ *     is not an extra attribute.
+ */
+goog.a11y.aria.toggleState = function(el, attr) {
+  var val = goog.a11y.aria.getState(el, attr);
+  if (!goog.string.isEmptyOrWhitespace(goog.string.makeSafe(val)) &&
+      !(val == 'true' || val == 'false')) {
+    goog.a11y.aria.removeState(el, /** @type {!goog.a11y.aria.State} */ (attr));
+    return;
+  }
+  goog.a11y.aria.setState(el, attr, val == 'true' ? 'false' : 'true');
 };
 
 
@@ -243,7 +291,7 @@ goog.a11y.aria.setLabel = function(element, label) {
  * semantics is well supported by most screen readers.
  * Only to be used internally by the ARIA library in goog.a11y.aria.*.
  * @param {!Element} element The element to assert an ARIA role set.
- * @param {!goog.array.ArrayLike.<string>} allowedRoles The child roles of
+ * @param {!goog.array.ArrayLike<string>} allowedRoles The child roles of
  * the roles.
  */
 goog.a11y.aria.assertRoleIsSetInternalUtil = function(element, allowedRoles) {
@@ -324,7 +372,7 @@ goog.a11y.aria.getStateString = function(element, stateName) {
  * Only to be used internally by the ARIA library in goog.a11y.aria.*.
  * @param {!Element} element DOM node to get state from.
  * @param {!goog.a11y.aria.State} stateName State name.
- * @return {!goog.array.ArrayLike.<string>} string Array
+ * @return {!goog.array.ArrayLike<string>} string Array
  *     value of the state attribute.
  */
 goog.a11y.aria.getStringArrayStateInternalUtil = function(element, stateName) {
@@ -335,9 +383,24 @@ goog.a11y.aria.getStringArrayStateInternalUtil = function(element, stateName) {
 
 
 /**
+ * Returns whether the element has a container ARIA role.
+ * Container roles are ARIA roles that use the aria-activedescendant property
+ * to manage their active descendants or children. See
+ * {@link http://www.w3.org/TR/wai-aria/states_and_properties
+ * #aria-activedescendant} for more information.
+ * @param {!Element} element
+ * @return {boolean}
+ */
+goog.a11y.aria.isContainerRole = function(element) {
+  var role = goog.a11y.aria.getRole(element);
+  return goog.array.contains(goog.a11y.aria.CONTAINER_ROLES_, role);
+};
+
+
+/**
  * Splits the input stringValue on whitespace.
  * @param {string} stringValue The value of the string to split.
- * @return {!goog.array.ArrayLike.<string>} string Array
+ * @return {!goog.array.ArrayLike<string>} string Array
  *     value as result of the split.
  * @private
  */

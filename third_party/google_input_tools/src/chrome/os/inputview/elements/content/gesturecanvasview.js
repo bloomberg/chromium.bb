@@ -12,6 +12,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.GestureCanvasView');
+goog.provide('i18n.input.chrome.inputview.elements.content.GestureCanvasView.GestureStroke');
 goog.provide('i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point');
 
 goog.require('goog.async.Delay');
@@ -101,6 +102,14 @@ i18n.input.chrome.inputview.elements.content.GestureCanvasView.GestureStroke =
    * @private {boolean}
    */
   this.isActive_ = false;
+
+  /**
+   * The time the first point was added to this stroke. Used to keep all points
+   * relative to the first point.
+   *
+   * @private {number}
+   */
+  this.firstTime_ = 0;
 };
 var GestureStroke =
     i18n.input.chrome.inputview.elements.content.GestureCanvasView
@@ -134,6 +143,30 @@ GestureStroke.ACTIVE_THRESHOLD = 40;
 
 
 /**
+ * Starting red value.
+ *
+ * @const {number}
+ */
+GestureStroke.STARTING_R_VALUE = 0;
+
+
+/**
+ * Starting green value.
+ *
+ * @const {number}
+ */
+GestureStroke.STARTING_G_VALUE = 180;
+
+
+/**
+ * Starting blue value.
+ *
+ * @const {number}
+ */
+GestureStroke.STARTING_B_VALUE = 204;
+
+
+/**
  * Calculates the color of the point based on the ttl.
  *
  * @param {number} ttl The time to live of the point.
@@ -141,11 +174,12 @@ GestureStroke.ACTIVE_THRESHOLD = 40;
  * @private
  */
 GestureStroke.calculateColor_ = function(ttl) {
-  var shade = GestureStroke.STARTING_TTL - ttl;
-  if (shade < 0) {
-    shade = 0;
-  }
-  return 'rgb(' + shade + ', ' + shade + ', ' + shade + ')';
+  // TODO(maxw): Use this percentage to fade the stroke color.
+  var remainingTtlPercentage = ttl / GestureStroke.STARTING_TTL;
+  var rValue = GestureStroke.STARTING_R_VALUE;
+  var gValue = GestureStroke.STARTING_G_VALUE;
+  var bValue = GestureStroke.STARTING_B_VALUE;
+  return 'rgb(' + rValue + ', ' + gValue + ', ' + bValue + ')';
 };
 
 
@@ -224,7 +258,6 @@ GestureStroke.prototype.draw = function(context) {
     context.beginPath();
     context.moveTo(first.x, first.y);
     context.lineTo(second.x, second.y);
-    // TODO(stevet): Use alpha and #00B4CC.
     context.strokeStyle = GestureStroke.calculateColor_(ttl);
     context.fillStyle = 'none';
     context.lineWidth = GestureStroke.calculateLineWidth_(ttl);
@@ -261,6 +294,22 @@ GestureStroke.prototype.isActive = function() {
 };
 
 
+/**
+ * Add a point to this stroke.
+ *
+ * @param {Point} p The point to add to this stroke.
+ */
+GestureStroke.prototype.pushPoint = function(p) {
+  if (this.points.length == 0) {
+    this.firstTime_ = p.time;
+  }
+  // Convert the timestamp so it is relative to the first point, including
+  // setting the first point to zero.
+  p.time -= this.firstTime_;
+  this.points.push(p);
+};
+
+
 
 /**
  * One point in the gesture stroke.
@@ -270,10 +319,11 @@ GestureStroke.prototype.isActive = function() {
  *
  * @param {number} x The x coordinate.
  * @param {number} y The y coordinate.
+ * @param {number} identifier The pointer event identifier.
  * @constructor
  */
 i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point =
-    function(x, y) {
+    function(x, y, identifier) {
   /**
    * The left offset relative to the canvas.
    *
@@ -289,15 +339,57 @@ i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point =
   this.y = y;
 
   /**
+   * The pointer ID.
+   *
+   * @type {number}
+   */
+  this.pointer = 0;
+
+  /**
    * The time-to-live value of the point, used to render the trail fading
    * effect.
    *
    * @type {number}
    */
   this.ttl = GestureStroke.STARTING_TTL;
+
+  /**
+   * The time this point was created, in ms since epoch.
+   *
+   * @type {number}
+   */
+  this.time = Date.now();
+
+  /**
+   * The action type of the point.
+   *
+   * @type {i18n.input.chrome.inputview.elements.content.GestureCanvasView.
+   *        Point.Action}
+   */
+  this.action = i18n.input.chrome.inputview.elements.content.GestureCanvasView.
+      Point.Action.ACTION_MOVE;
+
+  /**
+   * The pointer event identifier associated with this point.
+   *
+   * @type {number}
+   */
+  this.identifier = identifier;
 };
 var Point =
     i18n.input.chrome.inputview.elements.content.GestureCanvasView.Point;
+
+
+/**
+ * Enum describing the type of action for a given point.
+ *
+ * @enum {number}
+ */
+Point.Action = {
+  ACTION_DOWN: 0,
+  ACTION_UP: 1,
+  ACTION_MOVE: 2
+};
 
 
 /**
@@ -359,9 +451,15 @@ GestureCanvasView.prototype.addPoint = function(e) {
   if (this.strokeList_.length == 0) {
     this.strokeList_.push(new GestureStroke());
   }
-
-  this.strokeList_[this.strokeList_.length - 1].points.push(
-      this.createGesturePoint_(e));
+  var lastStroke = this.strokeList_[this.strokeList_.length - 1];
+  if (lastStroke.points.length > 0 &&
+      e.identifier != lastStroke.points[0].identifier) {
+    // Should only add new points with the same identifier. This ignores pointer
+    // events created by, say, a second finger interacting with the screen while
+    // an existing gesture is going on.
+    return;
+  }
+  lastStroke.pushPoint(this.createGesturePoint_(e));
 
   // If the new point |e| activated the last stroke, set gesturing to true.
   if (!was_active && this.latestStrokeActive_()) {
@@ -400,11 +498,23 @@ GestureCanvasView.prototype.latestStrokeActive_ = function() {
  *        draw.
  */
 GestureCanvasView.prototype.startStroke = function(e) {
+  // If there is currently a stroke and it does not match the identifier of this
+  // new point, then ignore this call. This is to prevent a second finger from
+  // interrupting an existing stroke.
+  if (this.strokeList_.length > 0 &&
+      e.identifier != this.strokeList_[this.strokeList_.length - 1].points[0]
+          .identifier) {
+    return;
+  }
   // Always start a new array to separate previous strokes from this new one.
   this.strokeList_.push(new GestureStroke());
-
-  this.strokeList_[this.strokeList_.length - 1].points.push(
-      this.createGesturePoint_(e));
+  var point = this.createGesturePoint_(e);
+  point.action = Point.Action.ACTION_DOWN;
+  // TODO: This line is a NOP since createGesturePoint_ already assigns the
+  // pointer value, but it must be called to prevent closure from optimizing out
+  // the pointer member. This needs to be fixed to use the true pointer ID of e.
+  point.pointer = 0;
+  this.strokeList_[this.strokeList_.length - 1].pushPoint(point);
 };
 
 
@@ -415,9 +525,33 @@ GestureCanvasView.prototype.startStroke = function(e) {
  *     event to handle.
  */
 GestureCanvasView.prototype.endStroke = function(e) {
-  // TODO(stevet): Ensure that this gets called even when the final touch event
+  // TODO: Ensure that this gets called even when the final touch event
   //     is not on the client.
+
+  // Ignore points that do not have the same identifier.
+  if (e.identifier !=
+      this.strokeList_[this.strokeList_.length - 1].points[0].identifier) {
+    return;
+  }
+
+  // Send the final event.
+  var point = this.createGesturePoint_(e);
+  point.action = Point.Action.ACTION_UP;
+  this.strokeList_[this.strokeList_.length - 1].pushPoint(point);
   this.isGesturing = false;
+};
+
+
+/**
+ * Returns the last stroke, or null if there are currently no strokes.
+ *
+ * @return {?GestureStroke}
+ */
+GestureCanvasView.prototype.getLastStroke = function() {
+  if (this.strokeList_.length == 0) {
+    return null;
+  }
+  return this.strokeList_[this.strokeList_.length - 1];
 };
 
 
@@ -448,7 +582,7 @@ GestureCanvasView.prototype.animateGestureTrail_ = function() {
  */
 GestureCanvasView.prototype.createGesturePoint_ = function(e) {
   var offset = goog.style.getPageOffset(this.drawingCanvas_);
-  return new Point(e.x - offset.x, e.y - offset.y);
+  return new Point(e.x - offset.x, e.y - offset.y, e.identifier);
 };
 
 

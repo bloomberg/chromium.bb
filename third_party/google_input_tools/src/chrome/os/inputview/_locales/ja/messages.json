@@ -2533,6 +2533,9 @@
   "down_arrow": {
     "message": "\u4e0b\u77e2\u5370"
   },
+  "drag_button": {
+    "message": "\u30c9\u30e9\u30c3\u30b0\u3057\u3066\u4eee\u60f3\u30ad\u30fc\u30dc\u30fc\u30c9\u3092\u79fb\u52d5"
+  },
   "ee_est_settings_page": {
     "message": "\u30a8\u30b9\u30c8\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
@@ -2566,6 +2569,12 @@
   "enable_completion": {
     "message": "\u30b3\u30f3\u30d7\u30ea\u30fc\u30c8\u3092\u6709\u52b9\u306b\u3059\u308b"
   },
+  "enable_gesture_editing": {
+    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\u306e\u7aef\u304b\u3089\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u30ab\u30fc\u30bd\u30eb\u3092\u79fb\u52d5\u3067\u304d\u3001Backspace \u30ad\u30fc\u304b\u3089\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u5358\u8a9e\u5168\u4f53\u3092\u524a\u9664\u3067\u304d\u307e\u3059\u3002"
+  },
+  "enable_gesture_typing": {
+    "message": "Enable gesture typing. Input a word by sliding through the letters."
+  },
   "enable_prediction": {
     "message": "\u5f8c\u7d9a\u8a9e\u4e88\u6e2c\u3092\u6709\u52b9\u306b\u3059\u308b"
   },
@@ -2587,8 +2596,14 @@
   "fi_fin_settings_page": {
     "message": "\u30d5\u30a3\u30f3\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
+  "footer_docking_button": {
+    "message": "\u4eee\u60f3\u30ad\u30fc\u30dc\u30fc\u30c9\u3092\u8868\u793a"
+  },
   "footer_emoji_button": {
     "message": "\u7d75\u6587\u5b57\u306b\u5207\u308a\u66ff\u3048"
+  },
+  "footer_floating_button": {
+    "message": "\u4eee\u60f3\u30ad\u30fc\u30dc\u30fc\u30c9\u3092\u79fb\u52d5\u53ef\u80fd\u306b\u3057\u307e\u3059"
   },
   "footer_handwriting_button": {
     "message": "\u624b\u66f8\u304d\u306b\u5207\u308a\u66ff\u3048"
@@ -2824,6 +2839,9 @@
   "keyboard_lithuanian": {
     "message": "\u30ea\u30c8\u30a2\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
+  "keyboard_macedonian": {
+    "message": "Macedonian keyboard"
+  },
   "keyboard_malayalam_phonetic": {
     "message": "\u30de\u30e9\u30e4\u30fc\u30e9\u30e0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
   },
@@ -2900,10 +2918,10 @@
     "message": "\u30b9\u30ed\u30d9\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "\u30bd\u30e9\u30cb\u30fc\u30af\u30eb\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30a2\u30e9\u30d3\u30a2\u8a9e\u30d9\u30fc\u30b9\uff09"
+    "message": "\u30af\u30eb\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30a2\u30e9\u30d3\u30a2\u8a9e\u30d9\u30fc\u30b9\uff09"
   },
   "keyboard_soranikurdish_en": {
-    "message": "\u30bd\u30e9\u30cb\u30fc\u30af\u30eb\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u82f1\u8a9e\u30d9\u30fc\u30b9\uff09"
+    "message": "\u30af\u30eb\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u82f1\u8a9e\u30d9\u30fc\u30b9\uff09"
   },
   "keyboard_spanish": {
     "message": "\u30b9\u30da\u30a4\u30f3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
@@ -3138,6 +3156,15 @@
   },
   "space": {
     "message": "\u30b9\u30da\u30fc\u30b9"
+  },
+  "swipe_deletion_tooltip": {
+    "message": "Swipe left to delete whole words."
+  },
+  "swipe_restoration_tooltip": {
+    "message": "Swipe right to restore words."
+  },
+  "swipe_selection_tooltip": {
+    "message": "Swipe left or right to move the cursor."
   },
   "switch_to": {
     "message": "\u6b21\u306b\u5207\u308a\u66ff\u3048\u307e\u3059: "

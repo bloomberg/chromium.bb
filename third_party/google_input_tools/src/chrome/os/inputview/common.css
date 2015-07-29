@@ -2,15 +2,33 @@
   position: relative;
   -webkit-user-select: none;
 }
+.inputview-view {
+  border-left: 1px solid rgba(55, 71, 79, 0.1);
+  border-right: 1px solid rgba(55, 71, 79, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+}
+.inputview-space-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  position: relative;
+  font-size: 18px;
+  color: rgba(55, 71, 79, 0.7);
+}
+.inputview-space-grey-bg {
+  background-color: rgba(55, 71, 79, 0.15);
+}
+.inputview-space-grey-bg.inputview-element-highlight {
+  background-color: rgba(55, 71, 79, 0.6);
+}
 .inputview-canvasview,
 .inputview-skv {
   display: inline-block;
   overflow: hidden;
 }
 .inputview-sk {
-  margin: 3px 4px 4px 3px;
+  margin: 6px;
   position: relative;
-  background-color: #ffffff;
 }
 .inputview-a11y .inputview-sk {
   margin: 2px 3px 3px 2px;
@@ -18,7 +36,13 @@
 #us-compact-symbol .inputview-sk,
 #us-compact-more .inputview-sk,
 #us-compact-qwerty .inputview-sk {
-  margin: 5px;
+  margin: 8px;
+}
+.inputview-small-keyboard .inputview-sk,
+.inputview-small-keyboard #us-compact-symbol .inputview-sk,
+.inputview-small-keyboard #us-compact-more .inputview-sk,
+.inputview-small-keyboard #us-compact-qwerty .inputview-sk {
+  margin: 1px;
 }
 #us-compact-qwerty #Globe {
   margin: 5px 0 5px 0;
@@ -26,15 +50,15 @@
 .inputview-character {
   position: absolute;
   text-align: center;
-  color: #999999;
-  font-size: 16px;
+  color: rgba(55, 71, 89, 0.6);
+  font-size: 12px;
   display: inline-block;
 }
 .inputview-a11y .inputview-character {
-  font-size: 13px;
+  font-size: 10px;
 }
 .inputview-ch {
-  color: #111111;
+  color: #37474f;
   font-size: 23px;
 }
 .inputview-digit-character.inputview-ch {
@@ -45,8 +69,13 @@
 .inputview-a11y .inputview-digit-character.inputview-ch {
   font-size: 17px;
 }
+.inputview-small-keyboard .inputview-font-small.inputview-special-key-name,
+.inputview-small-keyboard .inputview-font-small.inputview-compact-key,
+.inputview-small-keyboard .inputview-a11y .inputview-digit-character.inputview-ch {
+  font-size: 12px;
+}
 .inputview-a11y .inputview-ch {
-  font-size: 21px;
+  font-size: 17px;
 }
 .inputview-vertical {
   display: inline-block;
@@ -58,19 +87,12 @@
 .inputview-extended-transition {
   transition: margin-left 0.2s;
 }
-.inputview-linear-border {
-  display:inline-block;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: #dddddd;
-}
 .inputview-container {
   position: fixed;
   bottom: 0;
   left: 0;
-  -webkit-box-shadow: -5px 0 5px #ccc;
   border: 1px solid #eeeeee;
-  background-color: #EBEBEB;
+  background-color: #ECEFF1;
   -webkit-user-select: none;
   cursor: default;
 }
@@ -135,35 +157,42 @@
 .inputview-modifier {
   display: table-cell;
   vertical-align: middle;
+  color: rgba(55, 71, 89, 0.8);
   font-size: 16px;
   text-align: center;
   position: relative;
 }
 .inputview-a11y .inputview-modifier {
-  font-size: 10px;
+  font-size: 17px;
 }
 .inputview-menu-list-indicator {
   background-position: center;
   background-repeat: no-repeat;
   background-size: 25px;
-  width: 25%;
+  width: 20%;
 }
-.inputview-checked-menu-list .inputview-menu-list-name {
-  background-image: url('images/check.png');
-  background-position: right 25px center;
+.inputview-checked-menu-list {
+  background-image: url('images/check_in_menu.png');
+  background-position: 10px center;
   background-repeat: no-repeat;
+  background-size: 18px 15px;
   box-sizing: border-box;
   font-weight: bold;
-  padding-right: 50px;
+}
+.inputview-checked-menu-list .inputview-menu-list-name {
+  color: #37474f;
+  font-weight: bold;
+  font-size: 16px;
 }
 .inputview-menu-list-name {
   height: 100%;
-  width: 75%;
+  width: 80%;
+  font-size: 14px;
+  color: rgba(55, 71, 89, .6);
   overflow: hidden;
 }
 .inputview-menu-list-indicator-name {
-  font-weight: bold;
-  height: 100%;
+  height: 90%;
   text-align: center;
 }
 .inputview-menu-list-indicator-name,
@@ -178,11 +207,12 @@
   overflow-x: hidden;
 }
 .inputview-ime-list-container .inputview-menu-list-item {
-  border-bottom: solid 1px #cccccc;
+  border-bottom: solid 1px rgba(55, 71, 89, .2);
   box-sizing: border-box;
 }
 .inputview-menu-list-item {
   -webkit-box-orient: horizontal;
+  padding-left: 25px;
   display: -webkit-box;
   font-size: 16px;
   width: 100%;
@@ -201,22 +231,34 @@
 }
 .inputview-menu-footer-emoji-button {
   background: url('images/emoji.png') no-repeat center;
-  background-size: 25px;
+  background-size: 18px;
   height: 100%;
 }
 .inputview-menu-footer-handwriting-button {
-  background: url('images/pencil.png') no-repeat center;
-  background-size: 25px;
+  background: url('images/handwriting_access.png') no-repeat center;
+  background-size: 18px;
   height: 100%;
 }
 .inputview-menu-footer-setting-button {
   background: url('images/setting.png') no-repeat center;
-  background-size: 25px;
+  background-size: 18px;
+  height: 100%;
+}
+.inputview-menu-footer-floating-button {
+  /* TODO: replace floating.png with a proper image. */
+  background: url('images/floating.png') no-repeat center;
+  background-size: 18px;
+  height: 100%;
+}
+.inputview-menu-footer-docking-button {
+  /* TODO: replace docking.png with a proper image. */
+  background: url('images/docking.png') no-repeat center;
+  background-size: 18px;
   height: 100%;
 }
 .inputview-menu-footer {
   -webkit-box-orient: horizontal;
-  background: #f5f5f5;
+  background: rgba(55, 71, 89, .08);
   display: -webkit-box;
 }
 .inputview-gesture-canvas-view {
@@ -229,29 +271,42 @@
   z-index: 1;
   pointer-events: none;
 }
-.inputview-globe-icon {
-  background: transparent url('images/globe.png') 0 0 / 21px 21px no-repeat;
-  display: inline-block;
-  width: 21px;
-  height: 21px;
+.inputview-gesture-editing-finger-tracker {
+  background: url('images/gesture_handle_200.png') no-repeat center;
+  background-size: 64px;
+  position: fixed;
+  z-index: 1000;
 }
-.inputview-swipe-view,
+.inputview-gesture-ripple {
+  background: white;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  opacity: 0;
+  position: fixed;
+  z-index: 998;
+}
+.inputview-small-keyboard .inputview-globe-icon {
+  background-size: 10px 10px;
+  height: 10px;
+  width: 10px;
+}
+.inputview-globe-icon {
+  background: transparent url('images/globe.png') 0 0 / 20px 20px no-repeat;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
 .inputview-menu-view,
 .inputview-altdata-view {
-  position: fixed;
-  z-index: 999;
-  border: 1px solid #ccc;
-  background-color: white;
   -webkit-box-shadow: 0 0 6px rgba(204, 204, 204, 0.65),
                       0 0 2px rgba(136, 136, 136, 0.65),
                       0 0 6px rgba(204, 204, 204, 0.65),
                       0 0 6px rgba(204, 204, 204, 0.65);
+  background-color: white;
   cursor: default;
-}
-.inputview-swipe-separator {
-  background-color: #ebebeb;
-  position: relative;
-  display: inline-block;
+  position: fixed;
+  z-index: 999;
 }
 .inputview-altdata-separator {
   height: 20px;
@@ -259,14 +314,25 @@
   position: relative;
   display: inline-block;
 }
-.inputview-swipe-key {
-  background-color: #dddddd;
-  display: table-cell;
-  font-size: 23px;
-  color: black;
-  vertical-align: middle;
+.inputview-swipe-view {
+  background-color: rgba(0, 0, 0, 0);
+  display: inline-flex;
+  position: fixed;
+  z-index: 999;
+}
+.inputview-swipe-separator {
+  display: inline;
+  opacity: 0;
   position: relative;
-  text-align: center;
+}
+.inputview-small-keyboard .inputview-swipe-key {
+  font-size: 12px;
+}
+.inputview-swipe-key {
+  display: inline;
+  vertical-align: middle;
+  opacity: 0;
+  position: relative;
 }
 .inputview-altdata-key {
   display: table-cell;
@@ -274,6 +340,9 @@
   color: #111111;
   vertical-align: middle;
   text-align: center;
+}
+.inputview-small-keyboard .inputview-altdata-key {
+  font-size: 20px;
 }
 .inputview-a11y .inputview-altdata-key {
   font-size: 18px;
@@ -285,21 +354,15 @@
   font-weight: bold;
   color: #111111;
 }
+.inputview-candidate.inputview-candidate-number {
+  font-size: 25px;
+}
+.inputview-small-keyboard .inputview-candidate.inputview-candidate-number {
+  font-size: 20px;
+}
 .inputview-candidate-view {
-  display: table-cell;
   overflow: hidden;
-  position: relative;
-}
-.inputview-toolbar-button {
-  float: right;
-}
-.inputview-candidate-button {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-.inputview-toolbar-button.float-left {
-  float: left;
+  display: table-cell;
 }
 .inputview-candidate {
   display: table-cell;
@@ -322,6 +385,9 @@
   display: table-cell;
   vertical-align: middle;
   text-align: center;
+}
+.inputview-small-keyboard .inputview-title {
+  font-size: 10px;
 }
 .inputview-title {
   font-size: 16px;
@@ -346,6 +412,7 @@
   opacity: 0.9;
 }
 .inputview-track-cover,
+.inputview-floating-cover,
 .inputview-altdata-cover {
   position: fixed;
   bottom: 0;
@@ -355,6 +422,11 @@
   z-index: 1;
 }
 .inputview-track-cover {
+  background-color: #eceff1;
+  backface-visibility: hidden;
+  opacity: 0.9;
+  overflow: hidden;
+  top: 43px;
   z-index: 998;
 }
 .inputview-arrow-key {
@@ -369,102 +441,151 @@
   background: transparent url('images/down.png') 0 0/16px 13.5px no-repeat;
   width: 16px;
 }
-.inputview-drawing-canvas {
-  pointer-events: none;
-}
 .inputview-left-key {
-  background: transparent url('images/left.png') 0 0/9px 13.5px no-repeat;
+  background: transparent url('images/left.png') 0 0/8.5px 13.5px no-repeat;
   width: 9px;
 }
 .inputview-right-key {
   background: transparent url('images/right.png') 0 0/9px 13.5px no-repeat;
   width: 9px;
 }
-.inputview-special-key-bg {
-  background-color: #DDDDDD;
-}
 .inputview-page-up-icon {
-  background: transparent url('images/page_up.png') 0 0 no-repeat;
-  background-size: 10.5px 5.5px;
-  width: 10.5px;
-  height: 5.5px;
+  background: transparent url('images/arrow_up_active.png') 0 0 no-repeat;
+  background-size: 10px 6.5px;
+  width: 10px;
+  height: 6.5px;
   display: inline-block;
+}
+.inputview-page-navi-inactive .inputview-page-up-icon {
+  background: transparent url('images/arrow_up_inactive.png') 0 0 no-repeat;
+  background-size: 10px 6.5px;
 }
 .inputview-page-down-icon {
-  background: transparent url('images/page_down.png') 0 0 no-repeat;
-  background-size: 10.5px 5.5px;
-  width: 10.5px;
-  height: 5.5px;
+  background: transparent url('images/arrow_down_active.png') 0 0 no-repeat;
+  background-size: 10px 6.5px;
+  width: 10px;
+  height: 6.5px;
   display: inline-block;
 }
+.inputview-page-navi-inactive .inputview-page-down-icon {
+  background: transparent url('images/arrow_down_inactive.png') 0 0 no-repeat;
+  background-size: 10px 6.5px;
+}
+.inputview-small-keyboard .inputview-menu-icon {
+  background: transparent url('images/3dots.png') 0 0/2px 9px no-repeat;
+  width: 2px;
+  height: 9px;
+}
 .inputview-menu-icon {
-  background: transparent url('images/menu.png') 0 0/4px 17px no-repeat;
+  background: transparent url('images/3dots.png') 0 0/4px 17px no-repeat;
   display: inline-block;
   width: 4px;
   height: 17px;
 }
+.inputview-small-keyboard .inputview-hide-keyboard-icon {
+  background-size: 16px 16px;
+  height: 16px;
+  width: 16px;
+}
 .inputview-hide-keyboard-icon {
-  background: transparent url('images/hide.png') 0 0/20px 14.5px no-repeat;
+  background: transparent url('images/hidekeyboard.png') 0 0/32px 32px no-repeat;
   display: inline-block;
-  width: 20px;
-  height: 14.5px;
+  width: 32px;
+  height: 32px;
 }
 .inputview-candidate.inputview-candidate-highlight,
 .inputview-toolbar-button.inputview-candidate-highlight,
-.inputview-element-highlight {
+.inputview-element-highlight,
+.inputview-candidate.inputview-candidate-highlight {
   background-color: #dddddd;
 }
-.inputview-menu-footer-item.inputview-element-highlight,
-.inputview-view .inputview-special-key-highlight,
-.inputview-view .inputview-special-key-bg.inputview-special-key-highlight {
+.inputview-menu-footer-item.inputview-element-highlight {
   background-color: #cccccc;
 }
-.inputview-swipe-separator.inputview-element-highlight,
-.inputview-swipe-key.inputview-element-highlight {
-  background-color: #bbbbbb;
+.inputview-small-keyboard .inputview-backspace-icon,
+.inputview-small-keyboard .inputview-shift-icon {
+  background-size: 14px 14px;
+  height: 14px;
+  width: 14px;
 }
 .inputview-backspace-icon {
   background: transparent url('images/backspace.png');
-  background-size: 22.5px 13px;
+  background-size: 24px 24px;
   display: inline-block;
-  width: 22.5px;
-  height: 13px;
+  height: 24px;
+  width: 24px;
+}
+.inputview-small-keyboard .inputview-enter-icon {
+  background-size: 20px 20px;
+  height: 20px;
+  width: 20px;
 }
 .inputview-enter-icon {
   background: transparent url('images/enter.png');
-  background-size: 18px 13px;
+  background-size: 40px 40px;
   display: inline-block;
-  width: 18px;
-  height: 13px;
-  transition: '-webkit-filter 1s ease'
+  width: 40px;
+  height: 40px;
 }
-
+.inputview-special-key-highlight .inputview-enter-icon {
+  background: transparent url('images/enter_pressed.png');
+  background-size: 40px 40px;
+}
 .inputview-space-icon {
-  background: transparent url('images/space.png');
-  background-size: 22.5px 8px;
+  background: transparent url('images/space-key.png');
+  background-size: 30px 7.5px;
   display: inline-block;
-  width: 22.5px;
-  height: 8px;
+  width: 30px;
+  height: 7.5px;
 }
-
+.inputview-small-keyboard .inputview-shift-icon {
+  background-size: 14px 14px;
+  width: 14px;
+  height: 14px;
+}
 .inputview-shift-icon {
   background: transparent url('images/shift.png');
-  background-size: 18.5px 13px;
+  background-size: 25px 22px;
   display: inline-block;
-  width: 18.5px;
-  height: 13px;
+  width: 25px;
+  height: 22px;
+}
+.inputview-special-key-highlight,
+.inputview-special-key-highlight .inputview-compact-key,
+.inputview-element-highlight {
+  background-color: rgba(55, 71, 79, 0.15);
+}
+.inputview-element-highlight.inputview-container {
+  background-color: #ECEFF1;
+}
+.inputview-special-key-disable-bg-hl.inputview-special-key-highlight {
+  background-color: transparent;
+}
+.inputview-small-keyboard .inputview-special-key-highlight .inputview-shift-icon {
+  background-size: 12px 11px;
+}
+.inputview-special-key-highlight .inputview-shift-icon {
+  background: transparent url('images/shift-pressed.png');
+  background-size: 25px 22px;
+}
+.inputview-small-keyboard .inputview-functional-key-sticky .inputview-shift-icon {
+  background-size: 12px 11px;
+}
+.inputview-functional-key-sticky .inputview-shift-icon {
+  background: transparent url('images/shift-press-hold.png');
+  background-size: 25px 22px;
 }
 .inputview-tab-icon {
-  background: transparent url('images/tab.png');
-  background-size: 19px 18.5px;
+  background: transparent url('images/tab_in_fullsize.png');
+  background-size: 21px 12px;
   display: inline-block;
-  width: 19px;
-  height: 18.5px;
+  width: 21px;
+  height: 12px;
 }
 .inputview-capslock-dot {
   background-color: #ccc;
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
   position: absolute;
   top: 8px;
   right: 8px;
@@ -472,16 +593,27 @@
 .inputview-capslock-dot-highlight {
   background-color: #4285f4;
 }
+.inputview-small-keyboard .inputview-hint-text {
+  font-size: 8px;
+}
 .inputview-hint-text {
   font-size: 16px;
-  color: #999999;
+  color: rgba(55, 71, 89, 0.6);
 }
 .inputview-inline-div {
   display: inline-block;
 }
 .inputview-compact-key {
   font-size: 28px;
-  color: #111111;
+  color: #37474f;
+}
+.inputview-small-keyboard .inputview-compact-key {
+  font-size: 19px;
+}
+.inputview-small-keyboard .inputview-compact-switcher {
+  background-size: 10px 7px;
+  height: 7px;
+  width: 10px;
 }
 .inputview-compact-switcher {
   background: transparent url('images/compact.png');
@@ -497,10 +629,12 @@
   width: 19px;
   height: 14px;
 }
-
 #Space {
-  color: #bbbbbb;
+  color: rgba(55, 71, 89, 0.6);
   font-size: 18px;
+}
+.inputview-small-keyboard #Space {
+  font-size: 9px;
 }
 #Menu {
   font-weight: bold;
@@ -520,12 +654,6 @@
   right: 0;
   top: 25%;
   width: 1px;
-}
-.inputview-candidates-line {
-  border-bottom: 1px #cfcfcf solid;
-}
-.inputview-candidates-top-line {
-  border-top: 1px #cfcfcf solid;
 }
 .inputview-three-candidates {
   text-align: center;
@@ -605,7 +733,9 @@
  * The following css style is for handwriting panel,
  * please keep it in the end of the file
  */
-
+.inputview-small-keyboard .inputview-handwriting {
+  font-size: 8px;
+}
 .inputview-handwriting {
   font-size: 16px;
 }
@@ -614,18 +744,12 @@
   font-size: 16px;
 }
 
-.inputview-handwriting .inputview-wrapper{
-  background-color: #ffffff;
-  box-shadow: 1px -2px 7px 2px rgba(192, 192, 192, 0.65);
-  margin: 11px 0 11px 0;
-}
-
 .inputview-handwriting-switcher {
-  background: url('images/pencil.png');
-  background-size: 19px 19px;
+  background: url('images/handwriting-circle.png');
+  background-size: 12px 12px;
   display: inline-block;
-  width: 19px;
-  height: 19px;
+  width: 12px;
+  height: 12px;
 }
 
 .inputview-handwriting-back {
@@ -635,33 +759,17 @@
 }
 
 .inputview-canvas {
-  cursor: url('images/pencil.png') 8 42, auto;
+  cursor: url('images/handwriting-circle.png') 12 12, auto;
 }
-.inputview-handwriting .inputview-ch {
-  bottom: 15px !important;
+#candidateView {
+  background-color: #E4E7E9;
 }
-.inputview-handwriting .inputview-sk {
-  background-color: #E9E9E9;
-  margin: 0 0 10 0;
-}
-
-.inputview-handwriting .inputview-element-highlight {
-  background-color: #cccccc;
-}
-
-.inputview-handwriting .inputview-special-key-bg {
-  background-color: #E9E9E9;
-}
-
-.inputview-handwriting #candidateView {
-  background-color: #ffffff;
-  border-bottom: 1px #cfcfcf solid;
-}
-
 .inputview-handwriting-network-error {
   background: no-repeat url('images/error.png');
   padding: 0 0 0 50px;
   position: absolute;
+  width: 600px;
+  height: 100px;
 }
 
 .inputview-handwriting-privacy-cover {
@@ -672,15 +780,32 @@
   z-index: 1;
 }
 
+.inputview-voice-privacy-info,
 .inputview-handwriting-privacy-info {
   position: absolute;
   z-index: 2;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  background-color: white;
+  padding: 20px;
 }
 
+.inputview-voice-privacy-info > :first-child,
+.inputview-handwriting-privacy-info > :first-child {
+  color: #37474f;
+  font-size: 16px;
+  display: block;
+  margin-bottom: 15px;
+}
 
+.inputview-voice-got-it,
 .inputview-handwriting-got-it {
-  color: #3974df;
-  margin-left: 10px;
+  color: #ffffff;
+  background-color: #4285f4;
+  float: right;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor:pointer;
 }
 
 .inputview-handwriting-privacy-info-hidden {
@@ -694,34 +819,43 @@
   font-size: 12px;
   display: inline-block;
 }
-
+.inputview-small-keyboard .inputview-switcher-chinese,
+.inputview-small-keyboard .inputview-switcher-english {
+  background-size: 14px 7px;
+  height: 7px;
+  width: 14px;
+}
 .inputview-switcher-chinese {
   display: inline-block;
-  background: url('images/english.png') no-repeat center;
+  background: url('images/cn.png') no-repeat center;
   background-size: 50px 20px;
   height: 20px;
   width: 50px;
 }
 .inputview-switcher-english {
   display: inline-block;
-  background: url('images/chinese.png') no-repeat center;
+  background: url('images/en.png') no-repeat center;
   background-size: 50px 20px;
   height: 20px;
   width: 50px;
 }
 .inputview-pinyin .inputview-en-switcher-default {
   display: inline-block;
-  background: url('images/chinese_small.png') no-repeat center;
+  background: url('images/cn.png') no-repeat center;
   background-size: 40px 16px;
   height: 16px;
   width: 40px;
 }
 .inputview-pinyin .inputview-en-switcher-english {
   display: inline-block;
-  background: url('images/english_small.png') no-repeat center;
+  background: url('images/en.png') no-repeat center;
   background-size: 40px 16px;
   height: 16px;
   width: 40px;
+}
+.inputview-portrait .inputview-select-knob-left div,
+.inputview-portrait .inputview-select-knob-right div {
+  opacity: 0;
 }
 .inputview-select-knob-left,
 .inputview-select-knob-right {
@@ -729,13 +863,10 @@
   top: 0;
   margin: 0;
   padding: 0;
-  z-index: 100;
+  z-index: 1;
 }
 .inputview-select-knob-left {
   left: 0px;
-}
-.inputview-select-knob-right {
-
 }
 /* Anchor to the center of the column */
 .inputview-select-knob-right > div,
@@ -750,20 +881,19 @@
 .inputview-select-knob-left > div > div,
 .inputview-select-knob-right > div > div {
   width : 100%;
-  height: 50px;
-  background-color: #dddddd;
-  -webkit-transform: translateY(-25px);
-  line-height: 50px;
-  color: white;
-  text-align: center;
-  font-size: medium;
-  font-weight: bolder;
+  height: 75px;
+  background-position-y: center;
+  background-repeat: no-repeat;
+  background-size: 12px;
+  -webkit-transform: translateY(-37.5px);
 }
 .inputview-select-knob-left > div > div {
-  -webkit-border-radius: 0 30px 30px 0;
+  background-image: url(images/select_right.png);
+  background-position-x: 12px;
 }
 .inputview-select-knob-right > div > div {
-  -webkit-border-radius: 30px 0 0 30px;
+  background-image: url(images/select_left.png);
+  background-position-x: 14px;
 }
 
 .inputview-candidate-internal-wrapper {
@@ -772,6 +902,54 @@
   white-space: nowrap;
   display: inline-block;
 }
-.inputview-three-candidates .inputview-candidate {
-  padding: 6px;
+.inputview-candidate-tooltip .inputview-candidate-internal-wrapper {
+  font-size: 20px;
+  color: #4285f4;
 }
+.inputview-small-keyboard .inputview-switcher-key-name {
+  font-size: 10px;
+}
+.inputview-switcher-key-name {
+  font-size: 20px;
+  color: rgba(55, 71, 89, .8);
+}
+.inputview-small-keyboard .inputivew-switcher-key-name {
+  font-size: 8px;
+}
+.inputview-back-to-keyboard {
+  background: url('images/back_to_keyboard.png') no-repeat center;
+  background-size: 26px 15px;
+  width: 26px;
+  height: 15px;
+  display: inline-block;
+}
+#hwt {
+  border-left: 1.5px solid rgba(55, 71, 79, 0.1);
+  border-right: 1.5px solid rgba(55, 71, 79, 0.1);
+}
+.inputview-toolbar-button {
+  float: right;
+}
+.inputview-toolbar-button.float-left {
+  float: left;
+}
+.inputview-voice-btn {
+  float: right;
+}
+.inputview-ime-list-container::-webkit-scrollbar-thumb {
+  background-color: #c9ced1;
+}
+.inputview-ime-list-container::-webkit-scrollbar {
+  width: 12px;
+}
+.inputview-drag-button {
+  background: transparent url('images/draggable_area.png') 0 0/17px 16.5px no-repeat;
+  height: 17px;
+  width: 16.5px;
+}
+.inputview-resize-button {
+  background: transparent url('images/resize.png') 0 0/17px 16.5px no-repeat;
+  height: 17px;
+  width: 16.5px;
+}
+
