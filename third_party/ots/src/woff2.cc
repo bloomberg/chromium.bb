@@ -182,6 +182,9 @@ bool ReadBase128(ots::Buffer* buf, uint32_t* value) {
     if (!buf->ReadU8(&code)) {
       return OTS_FAILURE();
     }
+    if (i == 0 && code == 0x80) {
+      return OTS_FAILURE();
+    }
     // If any of the top seven bits are set then we're about to overflow.
     if (result & 0xfe000000U) {
       return OTS_FAILURE();
@@ -510,7 +513,7 @@ bool StoreLoca(const std::vector<uint32_t>& loca_values, int index_format,
 }
 
 // Reconstruct entire glyf table based on transformed original
-bool ReconstructGlyf(ots::OpenTypeFile* file,
+bool ReconstructGlyf(ots::Font *font,
     const uint8_t* data, size_t data_size,
     uint8_t* dst, size_t dst_size,
     uint8_t* loca_buf, size_t loca_size) {
@@ -560,6 +563,7 @@ bool ReconstructGlyf(ots::OpenTypeFile* file,
   std::vector<uint16_t> n_points_vec;
   std::vector<Point> points;
   uint32_t loca_offset = 0;
+  const uint8_t* bbox_bitmap = bbox_stream.buffer();
   for (unsigned int i = 0; i < num_glyphs; ++i) {
     size_t glyph_size = 0;
     uint16_t n_contours = 0;
@@ -570,6 +574,9 @@ bool ReconstructGlyf(ots::OpenTypeFile* file,
     size_t glyf_dst_size = dst_size - loca_offset;
     if (n_contours == 0xffff) {
       // composite glyph
+      if (!(bbox_bitmap[i >> 3] & (0x80 >> (i & 7)))) {
+        return OTS_FAILURE_MSG("Composite glyph %d without bbox", i);
+      }
       bool have_instructions = false;
       uint16_t instruction_size = 0;
       if (!ProcessComposite(&composite_stream, glyf_dst, glyf_dst_size,
@@ -697,7 +704,7 @@ const Table* FindTable(const std::vector<Table>& tables, uint32_t tag) {
   return NULL;
 }
 
-bool ReconstructTransformed(ots::OpenTypeFile* file,
+bool ReconstructTransformed(ots::Font *font,
     const std::vector<Table>& tables, uint32_t tag,
     const uint8_t* transformed_buf, size_t transformed_size,
     uint8_t* dst, size_t dst_length) {
@@ -715,7 +722,7 @@ bool ReconstructTransformed(ots::OpenTypeFile* file,
         dst_length) {
       return OTS_FAILURE();
     }
-    return ReconstructGlyf(file, transformed_buf, transformed_size,
+    return ReconstructGlyf(font, transformed_buf, transformed_size,
         dst + glyf_table->dst_offset, glyf_table->dst_length,
         dst + loca_table->dst_offset, loca_table->dst_length);
   } else if (tag == OTS_TAG('l','o','c','a')) {
@@ -768,7 +775,7 @@ bool FixChecksums(const std::vector<Table>& tables, uint8_t* dst) {
   return true;
 }
 
-bool ReadTableDirectory(ots::OpenTypeFile* file,
+bool ReadTableDirectory(ots::Font *font,
     ots::Buffer* buffer, std::vector<Table>* tables,
     size_t num_tables) {
   for (size_t i = 0; i < num_tables; ++i) {
@@ -837,7 +844,7 @@ size_t ComputeWOFF2FinalSize(const uint8_t* data, size_t length) {
   return total_length;
 }
 
-bool ConvertWOFF2ToSFNT(ots::OpenTypeFile* file,
+bool ConvertWOFF2ToSFNT(ots::Font *font,
                         uint8_t* result, size_t result_length,
                         const uint8_t* data, size_t length) {
   static const uint32_t kWoff2Signature = 0x774f4632;  // "wOF2"
@@ -850,7 +857,7 @@ bool ConvertWOFF2ToSFNT(ots::OpenTypeFile* file,
     return OTS_FAILURE_MSG("Failed to read 'signature' or 'flavor', or not WOFF2 signature");
   }
 
-  if (!IsValidVersionTag(ntohl(flavor))) {
+  if (!IsValidVersionTag(flavor)) {
     return OTS_FAILURE_MSG("Invalid 'flavor'");
   }
 
@@ -916,7 +923,7 @@ bool ConvertWOFF2ToSFNT(ots::OpenTypeFile* file,
   }
 
   std::vector<Table> tables(num_tables);
-  if (!ReadTableDirectory(file, &buffer, &tables, num_tables)) {
+  if (!ReadTableDirectory(font, &buffer, &tables, num_tables)) {
     return OTS_FAILURE_MSG("Failed to read table directory");
   }
   uint64_t compressed_offset = buffer.offset();
@@ -1037,7 +1044,7 @@ bool ConvertWOFF2ToSFNT(ots::OpenTypeFile* file,
       std::memcpy(result + table->dst_offset, transform_buf,
           transform_length);
     } else {
-      if (!ReconstructTransformed(file, tables, table->tag,
+      if (!ReconstructTransformed(font, tables, table->tag,
             transform_buf, transform_length, result, result_length)) {
         return OTS_FAILURE_MSG("Failed to reconstruct '%c%c%c%c' table", OTS_UNTAG(table->tag));
       }

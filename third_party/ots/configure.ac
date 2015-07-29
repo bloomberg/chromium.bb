@@ -1,5 +1,5 @@
 AC_INIT([OTS],
-        [0.0.1],
+        [4.0.1],
         [https://github.com/khaledhosny/ots/issues],
         [ots],
         [https://github.com/khaledhosny/ots])
@@ -14,6 +14,12 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG([0.20])
+
+have_zlib=false
+AX_CHECK_ZLIB(have_zlib=true, :)
+if ! $have_zlib; then
+	AC_MSG_ERROR([zlib is required but not found])
+fi
 
 have_freetype=false
 PKG_CHECK_MODULES(FREETYPE, freetype2, have_freetype=true, :)

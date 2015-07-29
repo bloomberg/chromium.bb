@@ -1,5 +1,7 @@
 NULL =
 
+ACLOCAL_AMFLAGS = -I m4
+
 bin_PROGRAMS = \
   ot-sanitise \
   $(NULL)
@@ -25,8 +27,11 @@ TESTS = \
   cff_type2_charstring_test \
   layout_common_table_test \
   table_dependencies_test \
-  tests/test_unmalicious_fonts.sh \
   $(NULL)
+
+if HAVE_FREETYPE
+TESTS += tests/test_unmalicious_fonts.sh
+endif
 
 check_PROGRAMS = \
   cff_type2_charstring_test \
@@ -120,9 +125,12 @@ libbrotli_a_SOURCES = \
   third_party/brotli/dec/dictionary.h \
   third_party/brotli/dec/huffman.c \
   third_party/brotli/dec/huffman.h \
+  third_party/brotli/dec/port.h \
   third_party/brotli/dec/prefix.h \
   third_party/brotli/dec/safe_malloc.c \
   third_party/brotli/dec/safe_malloc.h \
+  third_party/brotli/dec/state.c \
+  third_party/brotli/dec/state.h \
   third_party/brotli/dec/streams.c \
   third_party/brotli/dec/streams.h \
   third_party/brotli/dec/transform.h \
@@ -133,6 +141,7 @@ libbrotli_a_SOURCES = \
 ot_sanitise_SOURCES = \
   util/ot-sanitise.cc \
   util/file-stream.h \
+  util/test-context.h \
   $(NULL)
 
 
@@ -143,6 +152,7 @@ perf_SOURCES = \
 
 idempotent_SOURCES = \
   util/idempotent.cc \
+  util/test-context.h \
   $(NULL)
 
 
@@ -226,6 +236,15 @@ AM_TESTS_ENVIRONMENT = \
   export top_srcdir; \
   top_builddir="$(top_builddir)"; \
   export top_builddir; \
+  $(NULL)
+
+
+EXTRA_DIST = \
+  LICENSE \
+  tests/BLACKLIST.txt \
+  tests/test_unmalicious_fonts.sh \
+  third_party/brotli/LICENSE \
+  third_party/gtest \
   $(NULL)
 
 

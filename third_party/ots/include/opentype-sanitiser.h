@@ -89,7 +89,7 @@ class OTSStream {
   virtual bool Pad(size_t bytes) {
     static const uint32_t kZero = 0;
     while (bytes >= 4) {
-      if (!WriteTag(kZero)) return false;
+      if (!Write(&kZero, 4)) return false;
       bytes -= 4;
     }
     while (bytes) {
@@ -133,10 +133,6 @@ class OTSStream {
     return Write(&v, sizeof(v));
   }
 
-  bool WriteTag(uint32_t v) {
-    return Write(&v, sizeof(v));
-  }
-
   void ResetChecksum() {
     assert((Tell() & 3) == 0);
     chksum_ = 0;
@@ -174,7 +170,10 @@ class OTSContext {
     //     partial output may have been written.
     //   input: the OpenType file
     //   length: the size, in bytes, of |input|
-    bool Process(OTSStream *output, const uint8_t *input, size_t length);
+    //   index: if the input is a font collection and index is specified, then
+    //     the corresponding font will be returned, otherwise the whole
+    //     collection. Ignored for non-collection fonts.
+    bool Process(OTSStream *output, const uint8_t *input, size_t length, uint32_t index = -1);
 
     // This function will be called when OTS is reporting an error.
     //   level: the severity of the generated message:
