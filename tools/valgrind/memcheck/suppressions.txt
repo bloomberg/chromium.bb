@@ -3553,10 +3553,42 @@
    fun:_ZN4base8FilePathC1ENS_16BasicStringPieceISsEE
 }
 {
+   bug_514868
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base12_GLOBAL__N_112CreateThreadEmbPNS_14PlatformThread8DelegateEPNS_20PlatformThreadHandleENS_14ThreadPriorityE
+   fun:_ZN4base14PlatformThread18CreateWithPriorityEmPNS0_8DelegateEPNS_20PlatformThreadHandleENS_14ThreadPriorityE
+   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
+   fun:_ZN7content17BrowserThreadImpl16StartWithOptionsERKN4base6Thread7OptionsE
+   fun:_ZN7content17TestBrowserThread13StartIOThreadEv
+   fun:_ZN22BrowserProcessImplTest21StartSecondaryThreadsEv
+   fun:_ZN37BrowserProcessImplTest_LifeCycle_Test8TestBodyEv
+}
+{
    bug_514925
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16SkDashPathEffect6CreateEPKfif
    fun:_ZNK5blink29CanvasRenderingContext2DState14updateLineDashEv
    fun:_ZNK5blink29CanvasRenderingContext2DState8getPaintENS0_9PaintTypeENS_10ShadowModeENS0_9ImageTypeE
+}
+{
+   bug_515263
+   Memcheck:Uninitialized
+   fun:_ZNK5blink6MemberINS_15ResourceFetcherEE3getEv
+   fun:_ZN5blink13VisitorHelperINS_27InlinedGlobalMarkingVisitorEE5traceINS_15ResourceFetcherEEEvRKNS_6MemberIT_EE
+   fun:_ZN5blink14ResourceLoader9traceImplINS_27InlinedGlobalMarkingVisitorEEEvT_
+   fun:_ZN5blink14ResourceLoader5traceENS_27InlinedGlobalMarkingVisitorE
+   fun:_ZN5blink10TraceTraitINS_14ResourceLoaderEE5traceEPNS_7VisitorEPv
+   fun:_ZN5blink13CallbackStack4Item4callEPNS_7VisitorE
+}
+{
+   bug_515266
+   Memcheck:Uninitialized
+   fun:_ZN3WTF16VectorBufferBaseIN5blink6MemberINS1_11MessagePortEEELb1ENS1_13HeapAllocatorEE6bufferEv
+   fun:_ZN3WTF6VectorIN5blink6MemberINS1_11MessagePortEEELm1ENS1_13HeapAllocatorEE5traceINS1_27InlinedGlobalMarkingVisitorEEEvT_
+   fun:_ZN5blink10TraceTraitIN3WTF6VectorINS_6MemberINS_11MessagePortEEELm1ENS_13HeapAllocatorEEEE5traceEPNS_7VisitorEPv
+   fun:_ZN5blink13CallbackStack4Item4callEPNS_7VisitorE
+   fun:_ZN5blink4Heap25popAndInvokeTraceCallbackEPNS_7VisitorE
+   fun:_ZN5blink4Heap19processMarkingStackEPNS_7VisitorE
 }

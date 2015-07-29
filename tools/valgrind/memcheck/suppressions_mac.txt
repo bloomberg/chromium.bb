@@ -287,3 +287,22 @@
    fun:_ZN2v88internal18StackFrameIteratorC2EPNS0_7IsolateE
    fun:_ZN2v88internal18StackFrameIteratorC1EPNS0_7IsolateE
 }
+{
+   bug_515244_a
+   Memcheck:Unaddressable
+   fun:_ZN8remoting8protocol12_GLOBAL__N_110FakeSocket17AppendInputPacketERKSt6vectorIcSaIcEE
+}
+{
+   bug_515244_b
+   Memcheck:Unaddressable
+   ...
+   fun:_ZNSt5dequeISt6vectorIcSaIcEESaIS2_EE9push_backERKS2_
+   fun:_ZN8remoting8protocol12_GLOBAL__N_110FakeSocket17AppendInputPacketERKSt6vectorIcSaIcEE
+}
+{
+   bug_515244_c
+   Memcheck:Unaddressable
+   fun:_ZNK13scoped_refptrIN4base8internal13BindStateBaseEE3getEv
+   fun:_ZNK4base8internal12CallbackBase7is_nullEv
+   fun:_ZN8remoting8protocol12_GLOBAL__N_110FakeSocket17AppendInputPacketERKSt6vectorIcSaIcEE
+}
