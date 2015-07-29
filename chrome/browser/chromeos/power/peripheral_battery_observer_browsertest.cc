@@ -35,7 +35,10 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
   PeripheralBatteryObserverTest() {}
   ~PeripheralBatteryObserverTest() override {}
 
-  void SetUp() override { chromeos::DBusThreadManager::Initialize(); }
+  void SetUp() override {
+    InProcessBrowserTest::SetUp();
+    chromeos::DBusThreadManager::Initialize();
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
