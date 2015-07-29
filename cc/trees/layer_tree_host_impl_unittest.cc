@@ -170,6 +170,7 @@ class LayerTreeHostImplTest : public testing::Test,
         &task_graph_runner_, 0);
     bool init = host_impl_->InitializeRenderer(output_surface.Pass());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     // Set the BeginFrameArgs so that methods which use it are able to.
     host_impl_->WillBeginImplFrame(
         CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
@@ -1139,6 +1140,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
   settings.invert_viewport_scroll_order = true;
   CreateHostImpl(settings,
                  CreateOutputSurface());
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
 
   const gfx::Size content_size(1000, 1000);
   const gfx::Size viewport_size(500, 500);
@@ -1174,6 +1176,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomSnapsToScreenEdge) {
   settings.invert_viewport_scroll_order = true;
   CreateHostImpl(settings,
                  CreateOutputSurface());
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
 
   const gfx::Size content_size(1000, 1000);
   const gfx::Size viewport_size(500, 500);
@@ -1690,6 +1693,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
 
 TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(
       host_impl_->pending_tree(),
       gfx::Size(100, 100));
@@ -2706,6 +2710,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootIgnored) {
 
 TEST_F(LayerTreeHostImplTest, ClampingAfterActivation) {
   host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(),
                                 gfx::Size(100, 100));
   host_impl_->ActivateSyncTree();
@@ -2742,6 +2747,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     if (init) {
       host_impl_->active_tree()->set_top_controls_height(top_controls_height_);
       host_impl_->active_tree()->SetCurrentTopControlsShownRatio(1.f);
+      host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     }
     return init;
   }
@@ -2912,6 +2918,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       gfx::Size(100, 100), gfx::Size(100, 100), gfx::Size(100, 100));
   DrawFrame();
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
 
   float page_scale = 1.5f;
   LayerImpl* outer_viewport_scroll_layer =
@@ -2931,8 +2938,8 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
   EXPECT_FLOAT_EQ(top_controls_height_ - top_controls_scroll_delta.y(),
                   host_impl_->top_controls_manager()->ContentTopOffset());
-  EXPECT_VECTOR_EQ(top_controls_scroll_delta,
-                   outer_viewport_scroll_layer->FixedContainerSizeDelta());
+  EXPECT_FLOAT_EQ(top_controls_scroll_delta.y(),
+                  outer_viewport_scroll_layer->FixedContainerSizeDelta().y());
   host_impl_->ScrollEnd();
 
   // Scroll past the maximum extent. The delta shouldn't be greater than the
@@ -3213,6 +3220,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsViewportOffsetClamping) {
 TEST_F(LayerTreeHostImplTopControlsTest, TopControlsAspectRatio) {
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       gfx::Size(100, 100), gfx::Size(200, 200), gfx::Size(200, 400));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 2.f);
   DrawFrame();
 
   EXPECT_FLOAT_EQ(top_controls_height_,
@@ -3585,6 +3593,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
 }
 
 TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
   gfx::Size surface_size(10, 10);
   float default_page_scale = 1.f;
   gfx::Transform default_page_scale_matrix;
@@ -4271,8 +4280,8 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(gfx::SizeF(100, 100), scroll_delegate.scrollable_size());
   EXPECT_EQ(gfx::ScrollOffset(90, 80), scroll_delegate.max_scroll_offset());
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(0.f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(0.f, scroll_delegate.max_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_delegate.max_page_scale_factor());
 
   // Updating page scale immediately updates the delegate.
   host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 0.5f, 4.f);
@@ -4326,6 +4335,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   // sees the correct size of the new tree.
   gfx::Size new_size(42, 24);
   host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(), new_size);
   host_impl_->ActivateSyncTree();
   EXPECT_EQ(new_size, scroll_delegate.scrollable_size());
@@ -7001,14 +7011,13 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
 
 TEST_F(LayerTreeHostImplWithTopControlsTest, WheelUnhandledByTopControls) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
-  host_impl_->SetViewportSize(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 100));
+  host_impl_->active_tree()->set_top_controls_shrink_blink_size(true);
   host_impl_->top_controls_manager()->UpdateTopControlsState(BOTH, SHOWN,
                                                              false);
   DrawFrame();
 
-  LayerImpl* viewport_layer = host_impl_->OuterViewportScrollLayer()
-                                  ? host_impl_->OuterViewportScrollLayer()
-                                  : host_impl_->InnerViewportScrollLayer();
+  LayerImpl* viewport_layer = host_impl_->InnerViewportScrollLayer();
 
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));

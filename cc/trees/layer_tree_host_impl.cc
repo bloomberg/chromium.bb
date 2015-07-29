@@ -1783,54 +1783,36 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   if (!inner_container)
     return;
 
-  // TODO(bokan): This code is currently specific to top controls. It should be
-  // made general. crbug.com/464814.
-  if (!TopControlsHeight()) {
-    inner_container->SetBoundsDelta(gfx::Vector2dF());
-    active_tree_->InnerViewportScrollLayer()->SetBoundsDelta(gfx::Vector2dF());
-
-    if (outer_container) {
-      outer_container->SetBoundsDelta(gfx::Vector2dF());
-      ViewportAnchor anchor(InnerViewportScrollLayer(),
-                            OuterViewportScrollLayer());
-      anchor.ResetViewportToAnchoredPosition();
-    }
-
-    return;
-  }
-
   ViewportAnchor anchor(InnerViewportScrollLayer(),
                         OuterViewportScrollLayer());
 
-  // Adjust the inner viewport by shrinking/expanding the container to account
-  // for the change in top controls height since the last Resize from Blink.
   float top_controls_layout_height =
       active_tree_->top_controls_shrink_blink_size()
           ? active_tree_->top_controls_height()
           : 0.f;
-  inner_container->SetBoundsDelta(gfx::Vector2dF(
-      0,
-      top_controls_layout_height - top_controls_manager_->ContentTopOffset()));
+  float delta_from_top_controls =
+      top_controls_layout_height - top_controls_manager_->ContentTopOffset();
 
-  if (!outer_container || outer_container->BoundsForScrolling().IsEmpty())
-    return;
+  // Adjust the viewport layers by shrinking/expanding the container to account
+  // for changes in the size (e.g. top controls) since the last resize from
+  // Blink.
+  gfx::Vector2dF amount_to_expand(
+      0.f,
+      delta_from_top_controls);
+  inner_container->SetBoundsDelta(amount_to_expand);
 
-  // Adjust the outer viewport container as well, since adjusting only the
-  // inner may cause its bounds to exceed those of the outer, causing scroll
-  // clamping. We adjust it so it maintains the same aspect ratio as the
-  // inner viewport.
-  float aspect_ratio = inner_container->BoundsForScrolling().width() /
-      inner_container->BoundsForScrolling().height();
-  float target_height = outer_container->BoundsForScrolling().width() /
-      aspect_ratio;
-  float current_outer_height = outer_container->BoundsForScrolling().height() -
-      outer_container->bounds_delta().y();
-  gfx::Vector2dF delta(0, target_height - current_outer_height);
+  if (outer_container && !outer_container->BoundsForScrolling().IsEmpty()) {
+    // Adjust the outer viewport container as well, since adjusting only the
+    // inner may cause its bounds to exceed those of the outer, causing scroll
+    // clamping.
+    gfx::Vector2dF amount_to_expand_scaled = gfx::ScaleVector2d(
+        amount_to_expand, 1.f / active_tree_->min_page_scale_factor());
+    outer_container->SetBoundsDelta(amount_to_expand_scaled);
+    active_tree_->InnerViewportScrollLayer()->SetBoundsDelta(
+        amount_to_expand_scaled);
 
-  outer_container->SetBoundsDelta(delta);
-  active_tree_->InnerViewportScrollLayer()->SetBoundsDelta(delta);
-
-  anchor.ResetViewportToAnchoredPosition();
+    anchor.ResetViewportToAnchoredPosition();
+  }
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
