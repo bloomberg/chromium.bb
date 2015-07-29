@@ -159,6 +159,7 @@ test("extensions_unittests") {
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/keyed_service/content",
+    "//components/pref_registry:test_support",
     "//components/user_prefs",
     "//content/test:test_support",
     "//device/bluetooth:mocks",

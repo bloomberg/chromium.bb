@@ -18,6 +18,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:keyed_service_content',
+        '../components/components.gyp:pref_registry_test_support',
         '../components/components.gyp:user_prefs',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
