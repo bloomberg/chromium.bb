@@ -42,6 +42,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
+#include "sync/test/callback_counter.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -795,6 +796,17 @@ TEST_F(SyncBackendHostTest, DisableThenPurgeType) {
       ready_types.Equals(syncer::Difference(enabled_types_, error_types)));
   EXPECT_FALSE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       error_types).Empty());
+}
+
+// Test that a call to ClearServerData is forwarded to the underlying
+// SyncManager.
+TEST_F(SyncBackendHostTest, ClearServerDataCallsAreForwarded) {
+  InitializeBackend(true);
+  syncer::CallbackCounter callback_counter;
+  backend_->ClearServerData(base::Bind(&syncer::CallbackCounter::Callback,
+                                       base::Unretained(&callback_counter)));
+  fake_manager_->WaitForSyncThread();
+  EXPECT_EQ(1, callback_counter.times_called());
 }
 
 }  // namespace

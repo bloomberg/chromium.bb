@@ -135,6 +135,8 @@ class SyncBackendHostImpl
                           ScopedVector<base::ListValue>)> type) override;
   base::MessageLoop* GetSyncLoopForTesting() override;
   void RefreshTypesForTest(syncer::ModelTypeSet types) override;
+  void ClearServerData(
+      const syncer::SyncManager::ClearServerDataCallback& callback) override;
 
  protected:
   // The types and functions below are protected so that test
@@ -300,6 +302,9 @@ class SyncBackendHostImpl
   void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
+
+  void ClearServerDataDoneOnFrontendLoop(
+      const syncer::SyncManager::ClearServerDataCallback& frontend_callback);
 
   content::NotificationRegistrar notification_registrar_;
 

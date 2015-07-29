@@ -222,6 +222,10 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // Triggers sync cycle to update |types|.
   virtual void RefreshTypesForTest(syncer::ModelTypeSet types) = 0;
 
+  // See SyncManager::ClearServerData.
+  virtual void ClearServerData(
+      const syncer::SyncManager::ClearServerDataCallback& callback) = 0;
+
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };
 

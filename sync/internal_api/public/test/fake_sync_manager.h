@@ -115,6 +115,7 @@ class FakeSyncManager : public SyncManager {
   bool HasDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
+  void ClearServerData(const ClearServerDataCallback& callback) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;

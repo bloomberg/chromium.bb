@@ -872,6 +872,20 @@ void SyncBackendHostImpl::RefreshTypesForTest(syncer::ModelTypeSet types) {
       base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_.get(), types));
 }
 
+void SyncBackendHostImpl::ClearServerData(
+    const syncer::SyncManager::ClearServerDataCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  registrar_->sync_thread()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::DoClearServerData,
+                            core_.get(), callback));
+}
+
+void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(
+    const syncer::SyncManager::ClearServerDataCallback& frontend_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  frontend_callback.Run();
+}
+
 }  // namespace browser_sync
 
 #undef SDVLOG

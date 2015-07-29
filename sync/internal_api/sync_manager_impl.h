@@ -109,6 +109,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
   bool HasDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
+  void ClearServerData(const ClearServerDataCallback& callback) override;
 
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(

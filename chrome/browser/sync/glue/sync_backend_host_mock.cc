@@ -138,4 +138,9 @@ void SyncBackendHostMock::set_fail_initial_download(bool should_fail) {
   fail_initial_download_ = should_fail;
 }
 
+void SyncBackendHostMock::ClearServerData(
+    const syncer::SyncManager::ClearServerDataCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace browser_sync

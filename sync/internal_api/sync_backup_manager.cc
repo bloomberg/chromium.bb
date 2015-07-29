@@ -141,4 +141,7 @@ bool SyncBackupManager::HasDirectoryTypeDebugInfoObserver(
 
 void SyncBackupManager::RequestEmitDebugInfo() {}
 
+void SyncBackupManager::ClearServerData(
+    const ClearServerDataCallback& callback) {}
+
 }  // namespace syncer

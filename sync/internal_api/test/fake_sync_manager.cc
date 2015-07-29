@@ -257,4 +257,8 @@ void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
   // Do nothing.
 }
 
+void FakeSyncManager::ClearServerData(const ClearServerDataCallback& callback) {
+  callback.Run();
+}
+
 }  // namespace syncer

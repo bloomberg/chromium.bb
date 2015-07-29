@@ -743,4 +743,21 @@ void SyncBackendHostCore::SaveChanges() {
   sync_manager_->SaveChanges();
 }
 
+void SyncBackendHostCore::DoClearServerData(
+    const syncer::SyncManager::ClearServerDataCallback& frontend_callback) {
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+  const syncer::SyncManager::ClearServerDataCallback callback =
+      base::Bind(&SyncBackendHostCore::ClearServerDataDone,
+                 weak_ptr_factory_.GetWeakPtr(), frontend_callback);
+  sync_manager_->ClearServerData(callback);
+}
+
+void SyncBackendHostCore::ClearServerDataDone(
+    const base::Closure& frontend_callback) {
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+  host_.Call(FROM_HERE, &SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop,
+             frontend_callback);
+}
+
+
 }  // namespace browser_sync

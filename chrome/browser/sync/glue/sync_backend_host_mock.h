@@ -108,6 +108,9 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void RefreshTypesForTest(syncer::ModelTypeSet types) override;
 
+  void ClearServerData(
+      const syncer::SyncManager::ClearServerDataCallback& callback) override;
+
   void set_fail_initial_download(bool should_fail);
 
  private:

@@ -38,6 +38,7 @@ class SYNC_EXPORT_PRIVATE SyncBackupManager : public SyncRollbackManagerBase {
   bool HasDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
+  void ClearServerData(const ClearServerDataCallback& callback) override;
 
  private:
   // Replaces local IDs with server IDs and clear unsynced bit of modified

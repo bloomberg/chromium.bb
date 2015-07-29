@@ -1039,4 +1039,11 @@ void SyncManagerImpl::RequestEmitDebugInfo() {
   model_type_registry_->RequestEmitDebugInfo();
 }
 
+void SyncManagerImpl::ClearServerData(const ClearServerDataCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, base::Time());
+  ClearParams params(callback);
+  scheduler_->ScheduleClearServerData(params);
+}
+
 }  // namespace syncer

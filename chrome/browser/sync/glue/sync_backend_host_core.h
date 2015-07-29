@@ -242,6 +242,9 @@ class SyncBackendHostCore
   // application is backgrounded.
   void SaveChanges();
 
+  void DoClearServerData(
+      const syncer::SyncManager::ClearServerDataCallback& frontend_callback);
+
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
   friend class SyncBackendHostForProfileSyncTest;
@@ -253,6 +256,8 @@ class SyncBackendHostCore
   // This must be called from the thread on which SaveChanges is intended to
   // be run on; the host's |registrar_->sync_thread()|.
   void StartSavingChanges();
+
+  void ClearServerDataDone(const base::Closure& frontend_callback);
 
   // Name used for debugging.
   const std::string name_;

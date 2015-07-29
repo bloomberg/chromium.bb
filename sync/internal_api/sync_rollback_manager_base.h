@@ -70,6 +70,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   ScopedVector<ProtocolEvent> GetBufferedProtocolEvents() override;
   scoped_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) override;
+  void ClearServerData(const ClearServerDataCallback& callback) override;
 
   // DirectoryChangeDelegate implementation.
   void HandleTransactionCompleteChangeEvent(

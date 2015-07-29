@@ -278,6 +278,8 @@ class SYNC_EXPORT SyncManager {
     PassphraseTransitionClearDataOption clear_data_option;
   };
 
+  typedef base::Callback<void(void)> ClearServerDataCallback;
+
   SyncManager();
   virtual ~SyncManager();
 
@@ -400,6 +402,13 @@ class SYNC_EXPORT SyncManager {
   // Request that all current counter values be emitted as though they had just
   // been updated.  Useful for initializing new observers' state.
   virtual void RequestEmitDebugInfo() = 0;
+
+  // Clears server data and invokes |callback| when complete.
+  //
+  // This is an asynchronous operation that requires interaction with the sync
+  // server. The operation will automatically be retried with backoff until it
+  // completes successfully or sync is shutdown.
+  virtual void ClearServerData(const ClearServerDataCallback& callback) = 0;
 };
 
 }  // namespace syncer

@@ -324,4 +324,7 @@ bool SyncRollbackManagerBase::HasDirectoryTypeDebugInfoObserver(
 
 void SyncRollbackManagerBase::RequestEmitDebugInfo() {}
 
+void SyncRollbackManagerBase::ClearServerData(
+    const ClearServerDataCallback& callback) {}
+
 }  // namespace syncer
