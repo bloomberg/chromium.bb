@@ -112,7 +112,13 @@ def PrintTestOutput(test_name, json_file_name=None):
   logging.info('Output from:')
   logging.info(persisted_result['cmd'])
   logging.info('*' * 80)
-  print persisted_result['output']
+
+  output_formatted = ''
+  persisted_outputs = persisted_result['output']
+  for i in xrange(len(persisted_outputs)):
+    output_formatted += '\n\nOutput from run #%d:\n\n%s' % (
+        i, persisted_outputs[i])
+  print output_formatted
 
   if json_file_name:
     with file(json_file_name, 'w') as f:
@@ -195,23 +201,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._device_battery = battery_utils.BatteryUtils(self.device)
 
   @staticmethod
-  def _IsBetter(result):
-    if result['actual_exit_code'] == 0:
-      return True
-    pickled = os.path.join(constants.PERF_OUTPUT_DIR,
-                           result['name'])
-    if not os.path.exists(pickled):
-      return True
-    with file(pickled, 'r') as f:
-      previous = pickle.loads(f.read())
-    return result['actual_exit_code'] < previous['actual_exit_code']
-
-  @staticmethod
   def _SaveResult(result):
-    if TestRunner._IsBetter(result):
-      with file(os.path.join(constants.PERF_OUTPUT_DIR,
-                             result['name']), 'w') as f:
-        f.write(pickle.dumps(result))
+    pickled = os.path.join(constants.PERF_OUTPUT_DIR, result['name'])
+    if os.path.exists(pickled):
+      with file(pickled, 'r') as f:
+        previous = pickle.loads(f.read())
+        result['output'] = previous['output'] + result['output']
+
+    with file(pickled, 'w') as f:
+      f.write(pickle.dumps(result))
 
   def _CheckDeviceAffinity(self, test_name):
     """Returns True if test_name has affinity for this shard."""
@@ -343,7 +341,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     persisted_result = {
         'name': test_name,
-        'output': output,
+        'output': [output],
         'chartjson': json_output,
         'exit_code': exit_code,
         'actual_exit_code': actual_exit_code,
