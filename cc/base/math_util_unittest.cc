@@ -32,6 +32,32 @@ TEST(MathUtilTest, ProjectionOfPerpendicularPlane) {
   EXPECT_TRUE(projected_rect.IsEmpty());
 }
 
+TEST(MathUtilTest, ProjectionOfAlmostPerpendicularPlane) {
+  // In this case, the m33() element of the transform becomes almost zero, which
+  // could cause a divide-by-zero when projecting points/quads.
+
+  gfx::Transform transform;
+  // The transform is from an actual test page:
+  // [ +1.0000 +0.0000 -1.0000 +3144132.0000
+  //   +0.0000 +1.0000 +0.0000 +0.0000
+  //   +16331238407143424.0000 +0.0000 -0.0000 +51346917453137000267776.0000
+  //   +0.0000 +0.0000 +0.0000 +1.0000 ]
+  transform.MakeIdentity();
+  transform.matrix().set(0, 2, static_cast<SkMScalar>(-1));
+  transform.matrix().set(0, 3, static_cast<SkMScalar>(3144132.0));
+  transform.matrix().set(2, 0, static_cast<SkMScalar>(16331238407143424.0));
+  transform.matrix().set(2, 2, static_cast<SkMScalar>(-1e-33));
+  transform.matrix().set(2, 3,
+                         static_cast<SkMScalar>(51346917453137000267776.0));
+
+  gfx::RectF rect = gfx::RectF(0, 0, 1, 1);
+  gfx::RectF projected_rect = MathUtil::ProjectClippedRect(transform, rect);
+
+  EXPECT_EQ(0, projected_rect.x());
+  EXPECT_EQ(0, projected_rect.y());
+  EXPECT_TRUE(projected_rect.IsEmpty()) << projected_rect.ToString();
+}
+
 TEST(MathUtilTest, EnclosingClippedRectUsesCorrectInitialBounds) {
   HomogeneousCoordinate h1(-100, -100, 0, 1);
   HomogeneousCoordinate h2(-10, -10, 0, 1);

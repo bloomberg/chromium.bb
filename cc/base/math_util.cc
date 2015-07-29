@@ -26,18 +26,19 @@ const float MathUtil::kPiFloat = 3.14159265358979323846f;
 static HomogeneousCoordinate ProjectHomogeneousPoint(
     const gfx::Transform& transform,
     const gfx::PointF& p) {
+  SkMScalar z =
+      -(transform.matrix().get(2, 0) * p.x() +
+        transform.matrix().get(2, 1) * p.y() + transform.matrix().get(2, 3)) /
+      transform.matrix().get(2, 2);
+
   // In this case, the layer we are trying to project onto is perpendicular to
   // ray (point p and z-axis direction) that we are trying to project. This
   // happens when the layer is rotated so that it is infinitesimally thin, or
   // when it is co-planar with the camera origin -- i.e. when the layer is
   // invisible anyway.
-  if (!transform.matrix().get(2, 2))
+  if (!std::isfinite(z))
     return HomogeneousCoordinate(0.0, 0.0, 0.0, 1.0);
 
-  SkMScalar z = -(transform.matrix().get(2, 0) * p.x() +
-             transform.matrix().get(2, 1) * p.y() +
-             transform.matrix().get(2, 3)) /
-             transform.matrix().get(2, 2);
   HomogeneousCoordinate result(p.x(), p.y(), z, 1.0);
   transform.matrix().mapMScalars(result.vec, result.vec);
   return result;
