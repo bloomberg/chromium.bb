@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
+#include "chrome/common/instant_types.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -340,6 +341,9 @@ class OmniboxEditModel {
   // Called when the current match has changed in the OmniboxController.
   void OnCurrentMatchChanged();
 
+  // Sends the current SearchProvider suggestion to the Instant page if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
   // Name of the histogram tracking cut or copy omnibox commands.
   static const char kCutOrCopyAllTextHistogram[];
 
@@ -436,15 +440,13 @@ class OmniboxEditModel {
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
 
-  // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
-  // reference to the former.
-  scoped_ptr<OmniboxClient> client_;
-
   scoped_ptr<OmniboxController> omnibox_controller_;
 
   OmniboxView* view_;
 
   OmniboxEditController* controller_;
+
+  scoped_ptr<OmniboxClient> client_;
 
   OmniboxFocusState focus_state_;
 
