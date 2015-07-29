@@ -60,11 +60,9 @@ GalleryDataModel.prototype = {
  * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!Gallery.Item} item Original gallery item.
  * @param {!HTMLCanvasElement} canvas Canvas containing new image.
- * @param {boolean} overwrite Whether to overwrite the image to the item or not.
  * @return {!Promise} Promise to be fulfilled with when the operation completes.
  */
-GalleryDataModel.prototype.saveItem = function(
-    volumeManager, item, canvas, overwrite) {
+GalleryDataModel.prototype.saveItem = function(volumeManager, item, canvas) {
   var oldEntry = item.getEntry();
   var oldLocationInfo = item.getLocationInfo();
   return new Promise(function(fulfill, reject) {
@@ -72,7 +70,6 @@ GalleryDataModel.prototype.saveItem = function(
         volumeManager,
         this.metadataModel_,
         this.fallbackSaveDirectory,
-        overwrite,
         canvas,
         function(success) {
           if (!success) {

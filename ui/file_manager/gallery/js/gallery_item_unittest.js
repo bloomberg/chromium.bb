@@ -94,7 +94,6 @@ function testSaveToFile(callback) {
           },
           metadataModel,
           /* fallbackDir */ null,
-          /* overwrite */ true,
           document.createElement('canvas'))).then(function() {
             assertEquals(200, item.getMetadataItem().size);
             assertTrue(entryChanged);
@@ -140,7 +139,6 @@ function testSaveToFileWriteFailCase(callback) {
           },
           getMockMetadataModel(),
           /* fallbackDir */ null,
-          /* overwrite */ true,
           document.createElement('canvas'))).then(function(result) {
             assertFalse(result);
           }), callback);
@@ -193,7 +191,6 @@ function testSaveToFileGetBlobFailCase(callback) {
           },
           getMockMetadataModel(),
           /* fallbackDir */ null,
-          /* overwrite */ true,
           document.createElement('canvas'))).then(function(result) {
             assertFalse(result);
             assertFalse(writeOperationRun);
@@ -246,7 +243,6 @@ function testSaveToFileRaw(callback) {
           },
           metadataModel,
           /* fallbackDir */ null,
-          /* overwrite is true but ignored */ true,
           document.createElement('canvas'))).then(function(success) {
             assertTrue(success);
             assertEquals(200, item.getMetadataItem().size);

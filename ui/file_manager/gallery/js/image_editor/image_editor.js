@@ -96,6 +96,12 @@ function ImageEditor(
   this.redoButton_ = this.createToolButton_('redo', 'GALLERY_REDO',
       this.redo.bind(this));
   this.registerAction_('redo');
+
+  /**
+   * @private {!FilesToast}
+   */
+  this.filesToast_ = /** @type {!FilesToast}*/
+      (queryRequiredElement(document, 'files-toast'));
 }
 
 /**
@@ -179,7 +185,8 @@ ImageEditor.prototype.openSession = function(
             self.container_.ownerDocument, assert(self.imageView_.getCanvas()),
             saveFunction);
         self.commandQueue_.attachUI(
-            self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
+            self.getImageView(), self.getPrompt(), self.filesToast_,
+            self.updateUndoRedo.bind(self), self.lockUI.bind(self));
         self.updateUndoRedo();
         loadCallback(loadType, delay, error);
       });

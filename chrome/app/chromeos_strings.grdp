@@ -355,6 +355,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GALLERY_READONLY_WARNING" desc="In the Gallery, message informing that directory is readonly, and edited files will be saved to Downloads directory.">
     Cannot save to $1. Edited images will be saved in the Downloads folder.
   </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_NON_WRITABLE_FORMAT_WARNING" desc="In the Gallery, message informing that Gallery cannot overwrite to the original file and all edits will be saved to a copy.">
+    All edits will be saved to $1.
+  </message>
   <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_ERROR" desc="In the Gallery, message informing that the image failed to load.">
     This file could not be displayed.
   </message>

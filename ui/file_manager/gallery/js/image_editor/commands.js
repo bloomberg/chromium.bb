@@ -48,12 +48,18 @@ function CommandQueue(document, canvas, saveFunction) {
  *
  * @param {!ImageView} imageView The ImageView object to display the results.
  * @param {!ImageEditor.Prompt} prompt Prompt to use with this CommandQueue.
+ * @param {!FilesToast} toast Toast.
+ * @param {function()} updateUndoRedo Function to update undo and redo buttons
+ *     state.
  * @param {function(boolean)} lock Function to enable/disable buttons etc.
  */
-CommandQueue.prototype.attachUI = function(imageView, prompt, lock) {
+CommandQueue.prototype.attachUI = function(
+    imageView, prompt, toast, updateUndoRedo, lock) {
   this.UIContext_ = {
     imageView: imageView,
     prompt: prompt,
+    toast: toast,
+    updateUndoRedo: updateUndoRedo,
     lock: lock
   };
 };
@@ -112,12 +118,30 @@ CommandQueue.prototype.clearBusy_ = function() {
 
 /**
  * Commit the image change: save and unlock the UI.
+ * @param {boolean} showUndoAction True to show undo action in the toast.
  * @param {number=} opt_delay Delay in ms (to avoid disrupting the animation).
  * @private
  */
-CommandQueue.prototype.commit_ = function(opt_delay) {
-  setTimeout(this.saveFunction_.bind(null, this.clearBusy_.bind(this)),
-      opt_delay || 0);
+CommandQueue.prototype.commit_ = function(showUndoAction, opt_delay) {
+  setTimeout(this.saveFunction_.bind(null, function() {
+    this.clearBusy_();
+
+    // Show saved toast.
+    if (!this.UIContext_.toast)
+      return;
+
+    if (showUndoAction) {
+      this.UIContext_.toast.show(strf('GALLERY_SAVED'), {
+        text: 'UNDO',
+        callback: function() {
+          this.undo();
+          this.UIContext_.updateUndoRedo();
+        }.bind(this)});
+    } else {
+      this.UIContext_.toast.show(strf('GALLERY_SAVED'));
+    }
+
+  }.bind(this)), opt_delay || 0);
 };
 
 /**
@@ -166,7 +190,8 @@ CommandQueue.prototype.execute = function(command, opt_keep_redo) {
 
   this.undo_.push(command);
 
-  this.doExecute_(command, this.UIContext_, this.commit_.bind(this));
+  this.doExecute_(command, this.UIContext_,
+      this.commit_.bind(this, true /* Show undo action */));
 };
 
 /**
@@ -193,7 +218,7 @@ CommandQueue.prototype.undo = function() {
   function complete() {
     var delay = command.revertView(
         self.currentImage_, self.UIContext_.imageView);
-    self.commit_(delay);
+    self.commit_(false /* Do not show undo action */, delay);
   }
 
   if (this.previousImageAvailable_) {

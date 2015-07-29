@@ -28,50 +28,55 @@ function setUp() {
       },
       /* Mock EntryListWatcher */{});
   fileSystem = new MockFileSystem('volumeId');
-  item = new Gallery.Item(
+}
+
+function testSaveItemOverwrite(callback) {
+  var item = new Gallery.Item(
       new MockEntry(fileSystem, '/test.jpg'),
       null,
       /* metadataItem */ {},
       /* thumbnailMetadataItem */ {},
       /* original */ true);
-}
 
-function testSaveItemOverwrite(callback) {
   // Mocking the saveToFile method.
   item.saveToFile = function(
       volumeManager,
       metadataModel,
       fallbackDir,
-      overwrite,
       canvas,
       callback) {
-    assertTrue(overwrite);
     callback(true);
   };
   model.push(item);
   reportPromise(
-      model.saveItem({}, item, document.createElement('canvas'), true).
+      model.saveItem({}, item, document.createElement('canvas')).
           then(function() { assertEquals(1, model.length); }),
       callback);
 }
 
 function testSaveItemNewFile(callback) {
-  // Mocking the saveToFile method.
+  var item = new Gallery.Item(
+      new MockEntry(fileSystem, '/test.webp'),
+      null,
+      /* metadataItem */ {},
+      /* thumbnailMetadataItem */ {},
+      /* original */ true);
+
+  // Mocking the saveToFile method. In this case, Gallery saves to a new file
+  // since it cannot overwrite to webp image file.
   item.saveToFile = function(
       volumeManager,
       metadataModel,
       fallbackDir,
-      overwrite,
       canvas,
       callback) {
-    assertFalse(overwrite);
     // Gallery item track new file.
-    this.entry_ = new MockEntry(fileSystem, '/test (1).jpg');
+    this.entry_ = new MockEntry(fileSystem, '/test (1).png');
     callback(true);
   };
   model.push(item);
   reportPromise(
-      model.saveItem({}, item, document.createElement('canvas'), false).
+      model.saveItem({}, item, document.createElement('canvas')).
           then(function() { assertEquals(2, model.length); }),
       callback);
 }

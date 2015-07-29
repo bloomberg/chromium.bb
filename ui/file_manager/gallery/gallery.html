@@ -18,6 +18,7 @@
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+  <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toast.html">
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toggle_ripple.html">
 
   <script src="js/gallery_scripts.js"></script>
@@ -58,11 +59,6 @@
 
       <div class="edit-mode-toolbar">
         <div class="options">
-          <!-- TODO(yawano): Replace overwrite original checkbox with undo toast. -->
-          <div class="overwrite-original">
-            <input id="overwrite-checkbox" type="checkbox"></input>
-            <div class="label" for="overwrite-checkbox" i18n-content="GALLERY_OVERWRITE_ORIGINAL"></div>
-          </div>
           <div class="saved" i18n-content="GALLERY_SAVED"></div>
         </div>
         <div class="edit-bar-spacer"></div>
@@ -70,6 +66,9 @@
     </div>
     <div class="prompt-wrapper" pos="center">
       <div class="error-banner"></div>
+    </div>
+    <div class="toast-stage">
+      <files-toast></files-toast>
     </div>
   </div>
 </body>
