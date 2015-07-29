@@ -22,15 +22,14 @@ SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
 }
 
 bool SyncMessageFilter::Send(Message* message) {
-  {
-    base::AutoLock auto_lock(lock_);
-    if (!io_task_runner_.get()) {
-      delete message;
-      return false;
-    }
-  }
-
   if (!message->is_sync()) {
+    {
+      base::AutoLock auto_lock(lock_);
+      if (!io_task_runner_.get()) {
+        pending_messages_.push_back(message);
+        return true;
+      }
+    }
     io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncMessageFilter::SendOnIOThread, this, message));
@@ -52,10 +51,15 @@ bool SyncMessageFilter::Send(Message* message) {
       DCHECK(base::ThreadTaskRunnerHandle::Get() != io_task_runner_);
     }
     pending_sync_messages_.insert(&pending_message);
-  }
 
-  io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncMessageFilter::SendOnIOThread, this, message));
+    if (io_task_runner_.get()) {
+      io_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&SyncMessageFilter::SendOnIOThread, this, message));
+    } else {
+      pending_messages_.push_back(message);
+    }
+  }
 
   base::WaitableEvent* events[2] = { shutdown_event_, &done_event };
   base::WaitableEvent::WaitMany(events, 2);
@@ -71,8 +75,14 @@ bool SyncMessageFilter::Send(Message* message) {
 
 void SyncMessageFilter::OnFilterAdded(Sender* sender) {
   sender_ = sender;
-  base::AutoLock auto_lock(lock_);
-  io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  std::vector<Message*> pending_messages;
+  {
+    base::AutoLock auto_lock(lock_);
+    io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    pending_messages_.release(&pending_messages);
+  }
+  for (auto* msg : pending_messages)
+    SendOnIOThread(msg);
 }
 
 void SyncMessageFilter::OnChannelError() {

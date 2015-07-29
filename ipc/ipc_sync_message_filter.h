@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
@@ -58,6 +59,9 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
 
   typedef std::set<PendingSyncMsg*> PendingSyncMessages;
   PendingSyncMessages pending_sync_messages_;
+
+  // Messages waiting to be delivered after IO initialization.
+  ScopedVector<Message> pending_messages_;
 
   // Locks data members above.
   base::Lock lock_;
