@@ -59,6 +59,8 @@ MEDIA_EXPORT extern const char kRequireAudioHardwareForTesting[];
 
 MEDIA_EXPORT extern const char kVideoUnderflowThresholdMs[];
 
+MEDIA_EXPORT extern const char kEnableRTCSmoothnessAlgorithm[];
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

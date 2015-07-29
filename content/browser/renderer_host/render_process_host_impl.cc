@@ -1287,6 +1287,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePreferCompositingToLCDText,
     switches::kEnablePushMessagePayload,
     switches::kEnableRendererMojoChannel,
+    switches::kEnableRTCSmoothnessAlgorithm,
     switches::kEnableSeccompFilterSandbox,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSlimmingPaint,

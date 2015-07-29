@@ -119,4 +119,8 @@ const char kRequireAudioHardwareForTesting[] =
 // TODO(dalecurtis): Remove once experiments for http://crbug.com/470940 finish.
 const char kVideoUnderflowThresholdMs[] = "video-underflow-threshold-ms";
 
+// Use the new rendering algorithm for webrtc, which is designed to improve
+// smoothness.
+const char kEnableRTCSmoothnessAlgorithm[] = "enable-rtc-smoothness-algorithm";
+
 }  // namespace switches
