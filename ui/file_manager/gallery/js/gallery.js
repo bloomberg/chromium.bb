@@ -102,12 +102,12 @@ function Gallery(volumeManager) {
   this.errorBanner_ = new ErrorBanner(this.container_);
 
   var slideModeButton = queryRequiredElement(
-      this.topToolbar_, '.button.slide-mode');
+      this.topToolbar_, 'paper-button.slide-mode');
   slideModeButton.addEventListener(
       'click', this.onSlideModeButtonClicked_.bind(this));
 
   var thumbnailModeButton = queryRequiredElement(
-      this.topToolbar_, '.button.thumbnail-mode');
+      this.topToolbar_, 'paper-button.thumbnail-mode');
   thumbnailModeButton.addEventListener(
       'click', this.onThumbnailModeButtonClicked_.bind(this));
 
@@ -137,10 +137,12 @@ function Gallery(volumeManager) {
     cr.dispatchSimpleEvent(this, 'image-displayed');
   }.bind(this));
 
-  this.deleteButton_ = queryRequiredElement(this.topToolbar_, '.button.delete');
+  this.deleteButton_ = queryRequiredElement(
+      this.topToolbar_, 'paper-button.delete');
   this.deleteButton_.addEventListener('click', this.delete_.bind(this));
 
-  this.shareButton_ = queryRequiredElement(this.topToolbar_, '.button.share');
+  this.shareButton_ = queryRequiredElement(
+      this.topToolbar_, 'paper-button.share');
   this.shareButton_.addEventListener(
       'click', this.onShareButtonClick_.bind(this));
 

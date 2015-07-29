@@ -113,6 +113,7 @@
           '../../../../third_party/analytics/externs.js',
           '../../externs/chrome_test.js',
           '../../externs/exif_entry.js',
+          '../../externs/files_elements.js',
           '../../externs/gallery_foreground.js',
           '../../externs/paper_elements.js',
           '../../externs/platform.js',

@@ -338,7 +338,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   var slideShowButton = queryRequiredElement(this.topToolbar_,
-      '.button.slideshow');
+      'paper-button.slideshow');
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
 
@@ -359,15 +359,23 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.editButton_ = queryRequiredElement(this.topToolbar_, '.button.edit');
+  this.editButton_ = queryRequiredElement(this.topToolbar_, 'button.edit');
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
+
+  /**
+   * @private {!FilesToggleRipple}
+   * @const
+   */
+  this.editButtonToggleRipple_ = /** @type {!FilesToggleRipple} */
+      (assert(this.editButton_.querySelector('files-toggle-ripple')));
 
   /**
    * @type {!HTMLElement}
    * @private
    * @const
    */
-  this.printButton_ = queryRequiredElement(this.topToolbar_, '.button.print');
+  this.printButton_ = queryRequiredElement(
+      this.topToolbar_, 'paper-button.print');
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
   /**
@@ -1524,6 +1532,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   this.stopSlideshow_();
 
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing());
+  this.editButtonToggleRipple_.activated = this.isEditing();
 
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
     // Reset zoom.

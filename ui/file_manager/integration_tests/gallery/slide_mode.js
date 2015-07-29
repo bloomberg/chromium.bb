@@ -78,7 +78,7 @@ function deleteImage(testVolumeName, volumeType) {
     appId = args.appId;
     return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
-    return gallery.waitAndClickElement(appId, '.button.delete');
+    return gallery.waitAndClickElement(appId, 'paper-button.delete');
   }).then(function() {
     return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
   }).then(function() {

@@ -37,13 +37,18 @@
     <div id="top-toolbar" class="toolbar top tool dimmable">
       <div class="filename-spacer"></div>
       <div class="button-spacer">
-        <paper-button class="button edit" i18n-values="title:GALLERY_EDIT" disabled></paper-button>
-        <paper-button class="button print" i18n-values="title:GALLERY_PRINT" disabled></paper-button>
-        <paper-button class="button delete" i18n-values="title:GALLERY_DELETE"></paper-button>
-        <paper-button class="button slide-mode" i18n-values="title:GALLERY_SLIDE"></paper-button>
-        <paper-button class="button thumbnail-mode" i18n-values="title:GALLERY_THUMBNAIL"></paper-button>
-        <paper-button class="button slideshow" i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
-        <paper-button class="button share" i18n-values="title:GALLERY_SHARE"></paper-button>
+        <!-- Use button element for edit button to implement toggle button with
+          -- custom ripple effect. -->
+        <button class="edit" i18n-values="title:GALLERY_EDIT">
+          <div class="icon"></div>
+          <files-toggle-ripple></files-toggle-ripple>
+        </button>
+        <paper-button class="print" i18n-values="title:GALLERY_PRINT" disabled></paper-button>
+        <paper-button class="delete" i18n-values="title:GALLERY_DELETE"></paper-button>
+        <paper-button class="slide-mode" i18n-values="title:GALLERY_SLIDE"></paper-button>
+        <paper-button class="thumbnail-mode" i18n-values="title:GALLERY_THUMBNAIL"></paper-button>
+        <paper-button class="slideshow" i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
+        <paper-button class="share" i18n-values="title:GALLERY_SHARE"></paper-button>
       </div>
     </div>
     <div id="bottom-toolbar" class="toolbar bottom tool dimmable">
