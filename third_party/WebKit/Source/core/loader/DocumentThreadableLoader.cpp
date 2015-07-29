@@ -452,7 +452,17 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         return;
     }
 
-    ASSERT(!m_fallbackRequestForServiceWorker);
+    // Even if the request met the conditions to get handled by a Service Worker
+    // in the constructor of this class (and therefore
+    // |m_fallbackRequestForServiceWorker| is set), the Service Worker may skip
+    // processing the request. Only if the request is same origin, the skipped
+    // response may come here (wasFetchedViaServiceWorker() returns false) since
+    // such a request doesn't have to go through the CORS algorithm by calling
+    // loadFallbackRequestForServiceWorker().
+    // FIXME: We should use |m_sameOriginRequest| when we will support
+    // Suborigins (crbug.com/336894) for Service Worker.
+    ASSERT(!m_fallbackRequestForServiceWorker || securityOrigin()->canRequest(m_fallbackRequestForServiceWorker->url()));
+    m_fallbackRequestForServiceWorker = nullptr;
 
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
         String accessControlErrorDescription;
