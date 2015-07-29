@@ -492,6 +492,12 @@ public:
 
     ~ChromePluginPrintContext() override {}
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_plugin);
+        ChromePrintContext::trace(visitor);
+    }
+
     void begin(float width, float height) override
     {
     }
@@ -532,7 +538,7 @@ protected:
 
 private:
     // Set when printing.
-    WebPluginContainerImpl* m_plugin;
+    RawPtrWillBeMember<WebPluginContainerImpl> m_plugin;
     WebPrintParams m_printParams;
 };
 
