@@ -318,9 +318,9 @@ public class ProfileSyncService {
         nativeEnableEncryptEverything(mNativeProfileSyncServiceAndroid);
     }
 
-    public void setEncryptionPassphrase(String passphrase, boolean isGaia) {
+    public void setEncryptionPassphrase(String passphrase) {
         assert isSyncInitialized();
-        nativeSetEncryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase, isGaia);
+        nativeSetEncryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase);
     }
 
     public boolean isCryptographerReady() {
@@ -660,7 +660,7 @@ public class ProfileSyncService {
     private native boolean nativeSetDecryptionPassphrase(
             long nativeProfileSyncServiceAndroid, String passphrase);
     private native void nativeSetEncryptionPassphrase(
-            long nativeProfileSyncServiceAndroid, String passphrase, boolean isGaia);
+            long nativeProfileSyncServiceAndroid, String passphrase);
     private native boolean nativeIsCryptographerReady(long nativeProfileSyncServiceAndroid);
     private native int nativeGetPassphraseType(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasExplicitPassphraseTime(long nativeProfileSyncServiceAndroid);

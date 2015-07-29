@@ -363,7 +363,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private void configureEncryption(String passphrase) {
         if (mProfileSyncService.isSyncInitialized()) {
             mProfileSyncService.enableEncryptEverything();
-            mProfileSyncService.setEncryptionPassphrase(passphrase, false);
+            mProfileSyncService.setEncryptionPassphrase(passphrase);
             // Configure the current set of data types - this tells the sync engine to
             // apply our encryption configuration changes.
             configureSyncDataTypes();

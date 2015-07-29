@@ -95,13 +95,10 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
                                    jobject obj,
                                    jstring passphrase);
 
-  // Encrypts the user's data with the passed passphrase. If |is_gaia| == true
-  // then the passphrase is treated as a google (GAIA) passphrase, otherwise
-  // it's treated like an explicit/custom passphrase.
+  // Encrypts the user's data with the passed custom passphrase.
   void SetEncryptionPassphrase(JNIEnv* env,
                                jobject obj,
-                               jstring passphrase,
-                               jboolean is_gaia);
+                               jstring passphrase);
 
   // Returns whether the cryptographer is ready (i.e. encrypted types can be
   // handled).
