@@ -1,0 +1,43 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/mojo_application.gni")
+
+mojo_native_application("pdf_viewer") {
+  sources = [
+    "pdf_viewer.cc",
+  ]
+
+  defines = [ "GL_GLEXT_PROTOTYPES" ]
+
+  deps = [
+    "//base",
+    "//components/resource_provider/public/cpp",
+    "//components/resource_provider/public/interfaces",
+    "//components/view_manager/public/interfaces",
+    "//components/view_manager/public/cpp",
+    "//gpu",
+    "//mojo/application/public/cpp",
+    "//mojo/common",
+    "//mojo/common:common_base",
+    "//mojo/converters/input_events",
+    "//mojo/converters/surfaces",
+    "//mojo/platform_handle",
+    "//mojo/services/network/public/cpp",
+    "//mojo/services/network/public/interfaces",
+    "//third_party/mojo/src/mojo/public/c/gles2",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/pdfium",
+    "//ui/gfx/geometry",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/geometry:util",
+  ]
+
+  data_deps = [
+    "//components/clipboard",
+    "//components/resource_provider",
+    "//components/view_manager",
+    "//mojo/services/network:network",
+  ]
+}

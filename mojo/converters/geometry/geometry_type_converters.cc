@@ -102,4 +102,17 @@ gfx::Rect TypeConverter<gfx::Rect, Rect>::Convert(const Rect& input) {
   return gfx::Rect(input.x, input.y, input.width, input.height);
 }
 
+// static
+Size TypeConverter<Size, gfx::Size>::Convert(const gfx::Size& input) {
+  Size size;
+  size.width = input.width();
+  size.height = input.height();
+  return size;
+}
+
+// static
+gfx::Size TypeConverter<gfx::Size, Size>::Convert(const Size& input) {
+  return gfx::Size(input.width, input.height);
+}
+
 }  // namespace mojo

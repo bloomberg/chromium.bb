@@ -1,0 +1,13 @@
+include_rules = [
+  "+components/view_manager/public",
+  "+gpu/GLES2",
+  "+mojo/application/public",
+  "+mojo/common",
+  "+mojo/converters/geometry",
+  "+mojo/converters/surfaces",
+  "+mojo/public",
+  "+third_party/pdfium/public",
+  "+ui/gfx/geometry",
+  "+ui/mojo",
+  "+v8/include",
+]
