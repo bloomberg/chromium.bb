@@ -159,6 +159,17 @@ void PaintVectorIcon(Canvas* canvas,
         break;
       }
 
+      case CUBIC_TO: {
+        SkScalar x1 = path_elements[i++].arg;
+        SkScalar y1 = path_elements[i++].arg;
+        SkScalar x2 = path_elements[i++].arg;
+        SkScalar y2 = path_elements[i++].arg;
+        SkScalar x3 = path_elements[i++].arg;
+        SkScalar y3 = path_elements[i++].arg;
+        path.cubicTo(x1, y1, x2, y2, x3, y3);
+        break;
+      }
+
       case R_CUBIC_TO: {
         SkScalar x1 = path_elements[i++].arg;
         SkScalar y1 = path_elements[i++].arg;

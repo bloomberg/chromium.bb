@@ -28,6 +28,7 @@ enum CommandType {
   R_H_LINE_TO,
   V_LINE_TO,
   R_V_LINE_TO,
+  CUBIC_TO,
   R_CUBIC_TO,
   CIRCLE,
   CLOSE,

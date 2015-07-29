@@ -48,8 +48,8 @@ class TooltipIcon : public views::ImageView,
   }
 
  private:
-  // Changes this view's image to the resource indicated by |idr|.
-  void ChangeImageTo(int idr);
+  // Changes the color to reflect the hover state.
+  void SetDrawAsHovered(bool hovered);
 
   // Creates and shows |bubble_|. If |bubble_| already exists, just cancels a
   // potential close timer.

@@ -7,9 +7,9 @@
 #include "base/basictypes.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
-#include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public2.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/painter.h"
@@ -56,7 +56,7 @@ TooltipIcon::TooltipIcon(const base::string16& tooltip)
       bubble_(NULL),
       bubble_arrow_(views::BubbleBorder::TOP_RIGHT),
       observer_(this) {
-  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
+  SetDrawAsHovered(false);
 }
 
 TooltipIcon::~TooltipIcon() {
@@ -101,16 +101,18 @@ void TooltipIcon::MouseMovedOutOfHost() {
   HideBubble();
 }
 
-void TooltipIcon::ChangeImageTo(int idr) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SetImage(rb.GetImageNamed(idr).ToImageSkia());
+void TooltipIcon::SetDrawAsHovered(bool hovered) {
+  SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::HELP_OUTLINE, 18,
+                                 hovered
+                                     ? SkColorSetARGB(0xBD, 0, 0, 0)
+                                     : SkColorSetARGB(0xBD, 0x44, 0x44, 0x44)));
 }
 
 void TooltipIcon::ShowBubble() {
   if (bubble_)
     return;
 
-  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON_H);
+  SetDrawAsHovered(true);
 
   bubble_ = new TooltipBubble(this, tooltip_);
   bubble_->set_arrow(bubble_arrow_);
@@ -138,7 +140,7 @@ void TooltipIcon::HideBubble() {
 void TooltipIcon::OnWidgetDestroyed(views::Widget* widget) {
   observer_.Remove(widget);
 
-  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
+  SetDrawAsHovered(false);
   mouse_watcher_.reset();
   bubble_ = NULL;
 }
