@@ -62,43 +62,26 @@ SkData* DecodingImageGenerator::onRefEncodedData()
     return 0;
 }
 
-// TODO(fmalita): remove these temporary ifdefs as soon as we drop the flag from SkUserConfig.h
-#ifdef SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
-SkImageGenerator::Result DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
-    void* pixels, size_t rowBytes, const Options&, SkPMColor ctable[], int* ctableCount)
-#else
 bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes,
     SkPMColor ctable[], int* ctableCount)
-#endif
 {
     TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "index", static_cast<int>(m_frameIndex));
 
     // Implementation doesn't support scaling yet so make sure we're not given a different size.
-    if (info.width() != getInfo().width() || info.height() != getInfo().height()) {
-#ifdef SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
-        return kInvalidScale;
-#else
+    if (info.width() != getInfo().width() || info.height() != getInfo().height())
         return false;
-#endif
-    }
+
     if (info.colorType() != getInfo().colorType()) {
         // ImageFrame may have changed the owning SkBitmap to kOpaque_SkAlphaType after sniffing the encoded data, so if we see a request
         // for opaque, that is ok even if our initial alphatype was not opaque.
-#ifdef SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
-        return kInvalidConversion;
-#else
         return false;
-#endif
     }
 
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
     bool decoded = m_frameGenerator->decodeAndScale(getInfo(), m_frameIndex, pixels, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
-#ifdef SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
-    return decoded ? kSuccess : kInvalidInput;
-#else
+
     return decoded;
-#endif
 }
 
 bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace* colorSpace)
