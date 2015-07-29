@@ -35,7 +35,7 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD1(fsync, int(int));
   MOCK_METHOD2(futimens, int(int, const struct timespec[2]));
   MOCK_METHOD2(getcwd, char*(char*, size_t));
-  MOCK_METHOD3(getdents, int(int, void*, unsigned int));
+  MOCK_METHOD3(getdents, int(int, struct dirent*, unsigned int));
   MOCK_METHOD1(getwd, char*(char*));
   MOCK_METHOD3(ioctl, int(int, int, va_list));
   MOCK_METHOD1(isatty, int(int));

@@ -352,11 +352,10 @@ TEST_F(KernelWrapTest, getdents) {
   // It looks like the only way to exercise it is to call readdir(2).
   // There is an internal glibc function __getdents that will call the
   // IRT but that cannot be accessed from here as glibc does not export it.
-  int dummy_val;
-  void* void_ptr = &dummy_val;
-  EXPECT_CALL(mock, getdents(kDummyInt, void_ptr, kDummyInt2))
+  struct dirent dirent;
+  EXPECT_CALL(mock, getdents(kDummyInt, &dirent, kDummyInt2))
       .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, getdents(kDummyInt, void_ptr, kDummyInt2));
+  EXPECT_EQ(kDummyInt2, getdents(kDummyInt, &dirent, kDummyInt2));
 #endif
 }
 

@@ -194,7 +194,8 @@ int WRAP(getcwd)(char* buf, size_t size) {
   return 0;
 }
 
-int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t* nread) {
+int WRAP(getdents)(int fd, nacl_abi_dirent* nacl_buf, size_t nacl_count,
+                   size_t* nread) {
   int nacl_offset = 0;
   // "buf" contains dirent(s); "nacl_buf" contains nacl_abi_dirent(s).
   // nacl_abi_dirent(s) are smaller than dirent(s), so nacl_count bytes buffer
@@ -203,13 +204,12 @@ int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t* nread) {
   int offset = 0;
   int count;
 
-  count = ki_getdents(fd, buf, nacl_count);
+  count = ki_getdents(fd, (dirent*)buf, nacl_count);
   RTN_ERRNO_IF(count < 0);
 
   while (offset < count) {
     dirent* d = (dirent*)(buf + offset);
-    nacl_abi_dirent* nacl_d = static_cast<nacl_abi_dirent*>(
-        (char*)nacl_buf + nacl_offset);
+    nacl_abi_dirent* nacl_d = (nacl_abi_dirent*)((char*)nacl_buf + nacl_offset);
     nacl_d->nacl_abi_d_ino = d->d_ino;
     nacl_d->nacl_abi_d_off = d->d_off;
     nacl_d->nacl_abi_d_reclen = d->d_reclen - d_name_shift;
