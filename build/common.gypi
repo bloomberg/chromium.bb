@@ -1860,7 +1860,7 @@
       ['chromecast==1 and OS!="android"', {
         'ozone_platform_cast%': 1
       }],
-      ['OS=="linux" and target_arch!="mipsel"', {
+      ['OS=="linux"', {
         'clang%': 1,
       }],  # OS=="mac"
       ['OS=="mac"', {
@@ -2368,6 +2368,8 @@
       }],
       ['target_arch=="mipsel" and mips_arch_variant=="r2"', {
         'mips_fpu_mode%': 'fp32',
+      }, {
+        'mips_fpu_mode%': '',
       }],
 
       # Enable brlapi by default for chromeos.
