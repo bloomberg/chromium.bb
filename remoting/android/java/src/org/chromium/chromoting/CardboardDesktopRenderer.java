@@ -33,18 +33,20 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private static final int TEXTURE_COORDINATE_DATA_SIZE = 2;
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 100.0f;
-    private static final float INIT_DESKTOP_POSITION_X = 0.0f;
-    private static final float INIT_DESKTOP_POSITION_Y = 0.0f;
-    private static final float INIT_DESKTOP_POSITION_Z = -3.0f;
+    private static final float DESKTOP_POSITION_X = 0.0f;
+    private static final float DESKTOP_POSITION_Y = 0.0f;
+    private static final float DESKTOP_POSITION_Z = -2.0f;
+    private static final float HALF_DESKTOP_LENGTH = 1.0f;
 
+    // TODO(shichengfeng): Get the height and width from real desktop image.
     private static final FloatBuffer DESKTOP_COORDINATES = makeFloatBuffer(new float[] {
             // Desktop model coordinates.
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f
+            -HALF_DESKTOP_LENGTH, HALF_DESKTOP_LENGTH, 0.0f,
+            -HALF_DESKTOP_LENGTH, -HALF_DESKTOP_LENGTH, 0.0f,
+            HALF_DESKTOP_LENGTH, HALF_DESKTOP_LENGTH, 0.0f,
+            -HALF_DESKTOP_LENGTH, -HALF_DESKTOP_LENGTH, 0.0f,
+            HALF_DESKTOP_LENGTH, -HALF_DESKTOP_LENGTH, 0.0f,
+            HALF_DESKTOP_LENGTH, HALF_DESKTOP_LENGTH, 0.0f
     });
 
     private static final FloatBuffer DESKTOP_TEXTURE_COORDINATES = makeFloatBuffer(new float[] {
@@ -57,22 +59,36 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             1.0f, 0.0f
     });
 
-    private static final String VERTEX_SHADER =
+    private static final String DESKTOP_VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
             + "attribute vec4 a_Position;"
             + "attribute vec2 a_TexCoordinate;"
             + "varying vec2 v_TexCoordinate;"
             + "void main() {"
-            + "   v_TexCoordinate = a_TexCoordinate;"
-            + "   gl_Position = u_CombinedMatrix * a_Position;"
+            + "  v_TexCoordinate = a_TexCoordinate;"
+            + "  gl_Position = u_CombinedMatrix * a_Position;"
             + "}";
 
-    private static final String FRAGMENT_SHADER =
+    private static final String DESKTOP_FRAGMENT_SHADER =
             "precision mediump float;"
             + "uniform sampler2D u_Texture;"
             + "varying vec2 v_TexCoordinate;"
             + "void main() {"
-            + "   gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "}";
+
+    private static final String EYE_POINT_VERTEX_SHADER =
+            "uniform mat4 u_CombinedMatrix;"
+            + "attribute vec4 a_EyePosition;"
+            + "void main() {"
+            + "  gl_Position = u_CombinedMatrix * a_EyePosition;"
+            + "  gl_PointSize = 3.0;"
+            + "}";
+
+    private static final String EYE_POINT_FRAGMENT_SHADER =
+            "precision mediump float;"
+            + "void main() {"
+            + "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
             + "}";
 
     private final Context mActivityContext;
@@ -81,19 +97,34 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private boolean mReloadTexture;
 
     private float[] mCameraMatrix;
-    private float[] mModelMatrix;
     private float[] mViewMatrix;
     private float[] mProjectionMatrix;
-    private float[] mCombinedMatrix;
 
-    private int mCombinedMatrixHandle;
+    // Make matrix member variable to avoid unnecessary initialization.
+    private float[] mDesktopModelMatrix;
+    private float[] mDesktopCombinedMatrix;
+    private float[] mEyePointModelMatrix;
+    private float[] mEyePointCombinedMatrix;
+
+    // Direction that user is looking towards.
+    private float[] mForwardVector;
+
+    // Eye position in desktop.
+    private float[] mEyePositionVector;
+
+    private int mDesktopCombinedMatrixHandle;
     private int mPositionHandle;
     private int mTextureDataHandle;
     private int mTextureUniformHandle;
     private int mTextureCoordinateHandle;
     private int mProgramHandle;
-    private int mVertexShaderHandle;
-    private int mFragmentShaderHandle;
+    private int mDesktopVertexShaderHandle;
+    private int mDesktopFragmentShaderHandle;
+    private int mEyePointVertexShaderHandle;
+    private int mEyePointFragmentShaderHandle;
+    private int mEyePointProgramHandle;
+    private int mEyePointPositionHandle;
+    private int mEyePointCombinedMatrixHandle;
 
     /** Lock to allow multithreaded access to mReloadTexture. */
     private Object mReloadTextureLock = new Object();
@@ -103,10 +134,16 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mReloadTexture = false;
 
         mCameraMatrix = new float[16];
-        mModelMatrix = new float[16];
         mViewMatrix = new float[16];
         mProjectionMatrix = new float[16];
-        mCombinedMatrix = new float[16];
+
+        mDesktopModelMatrix = new float[16];
+        mDesktopCombinedMatrix = new float[16];
+        mEyePointModelMatrix = new float[16];
+        mEyePointCombinedMatrix = new float[16];
+
+        mForwardVector = new float[3];
+        mEyePositionVector = new float[3];
 
         // Provide the callback for JniInterface.
         JniInterface.provideRedrawCallback(new Runnable() {
@@ -131,17 +168,30 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
         // Set handles for desktop drawing.
-        mVertexShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER);
-        mFragmentShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
-        mProgramHandle = ShaderHelper.createAndLinkProgram(mVertexShaderHandle,
-                mFragmentShaderHandle, new String[] {"a_Position", "a_TexCoordinate"});
-        mCombinedMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_CombinedMatrix");
+        mDesktopVertexShaderHandle =
+                ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, DESKTOP_VERTEX_SHADER);
+        mDesktopFragmentShaderHandle =
+                ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, DESKTOP_FRAGMENT_SHADER);
+        mProgramHandle = ShaderHelper.createAndLinkProgram(mDesktopVertexShaderHandle,
+                mDesktopFragmentShaderHandle, new String[] {"a_Position", "a_TexCoordinate"});
+        mDesktopCombinedMatrixHandle =
+                GLES20.glGetUniformLocation(mProgramHandle, "u_CombinedMatrix");
         mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture");
         mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
         mTextureDataHandle = TextureHelper.createTextureHandle();
+
+        // Set handlers for eye point drawing.
+        mEyePointVertexShaderHandle =
+                ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, EYE_POINT_VERTEX_SHADER);
+        mEyePointFragmentShaderHandle =
+                ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, EYE_POINT_FRAGMENT_SHADER);
+        mEyePointProgramHandle = ShaderHelper.createAndLinkProgram(mEyePointVertexShaderHandle,
+                mEyePointFragmentShaderHandle, new String[] {"a_EyePosition", "u_CombinedMatrix"});
+        mEyePointPositionHandle =
+                GLES20.glGetAttribLocation(mEyePointProgramHandle, "a_EyePosition");
+        mEyePointCombinedMatrixHandle =
+                GLES20.glGetUniformLocation(mEyePointProgramHandle, "u_CombinedMatrix");
 
         // Position the eye at the origin.
         float eyeX = 0.0f;
@@ -169,6 +219,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
+        headTransform.getForwardVector(mForwardVector, 0);
+        getLookingPosition();
         maybeLoadTexture(mTextureDataHandle);
     }
 
@@ -181,22 +233,16 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
         mProjectionMatrix = eye.getPerspective(Z_NEAR, Z_FAR);
 
-        // Translate the desktop model
-        Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, INIT_DESKTOP_POSITION_X,
-                INIT_DESKTOP_POSITION_Y, INIT_DESKTOP_POSITION_Z);
-
-        // Pass in Model View Matrix and Model View Project Matrix
-        Matrix.multiplyMM(mCombinedMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-        Matrix.multiplyMM(mCombinedMatrix, 0, mProjectionMatrix, 0, mCombinedMatrix, 0);
-
         drawDesktop();
+        drawEyePoint();
     }
 
     @Override
     public void onRendererShutdown() {
-        GLES20.glDeleteShader(mVertexShaderHandle);
-        GLES20.glDeleteShader(mFragmentShaderHandle);
+        GLES20.glDeleteShader(mDesktopVertexShaderHandle);
+        GLES20.glDeleteShader(mDesktopFragmentShaderHandle);
+        GLES20.glDeleteShader(mEyePointVertexShaderHandle);
+        GLES20.glDeleteShader(mEyePointFragmentShaderHandle);
         GLES20.glDeleteTextures(1, new int[]{mTextureDataHandle}, 0);
     }
 
@@ -207,8 +253,20 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private void drawDesktop() {
         GLES20.glUseProgram(mProgramHandle);
 
+         // Translate the desktop model.
+        Matrix.setIdentityM(mDesktopModelMatrix, 0);
+        Matrix.translateM(mDesktopModelMatrix, 0, DESKTOP_POSITION_X,
+                DESKTOP_POSITION_Y, DESKTOP_POSITION_Z);
+
+        // Pass in Model View Matrix and Model View Project Matrix.
+        Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mViewMatrix, 0, mDesktopModelMatrix, 0);
+        Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mProjectionMatrix,
+                0, mDesktopCombinedMatrix, 0);
+
+
         // Pass in model view project matrix.
-        GLES20.glUniformMatrix4fv(mCombinedMatrixHandle, 1, false, mCombinedMatrix, 0);
+        GLES20.glUniformMatrix4fv(mDesktopCombinedMatrixHandle, 1, false,
+                mDesktopCombinedMatrix, 0);
 
         // Pass in texture data.
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -228,6 +286,58 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         // Draw the desktop.
         int totalPointNumber = 6;
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, totalPointNumber);
+    }
+
+    private void drawEyePoint() {
+        if (!isLookingAtDesktop()) {
+            return;
+        }
+
+        GLES20.glUseProgram(mEyePointProgramHandle);
+
+        // Set the eye point in front of desktop.
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
+
+        Matrix.setIdentityM(mEyePointModelMatrix, 0);
+        Matrix.translateM(mEyePointModelMatrix, 0, -mEyePositionVector[0], -mEyePositionVector[1],
+                DESKTOP_POSITION_Z);
+        Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mViewMatrix, 0, mEyePointModelMatrix, 0);
+        Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mProjectionMatrix,
+                0, mEyePointCombinedMatrix, 0);
+
+        GLES20.glUniformMatrix4fv(mEyePointCombinedMatrixHandle, 1, false,
+                mEyePointCombinedMatrix, 0);
+
+        GLES20.glVertexAttrib4f(mEyePointPositionHandle, 0.0f,
+                0.0f, 0.0f, 1.0f);
+
+        // Since we are not using a buffer object, disable vertex arrays for this attribute.
+        GLES20.glDisableVertexAttribArray(mEyePointPositionHandle);
+
+        int totalPointNumber = 1;
+        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, totalPointNumber);
+    }
+
+    /**
+     * Check whether user is looking at desktop or not.
+     */
+    private boolean isLookingAtDesktop() {
+        return Math.abs(mEyePositionVector[0]) <= HALF_DESKTOP_LENGTH
+                && Math.abs(mEyePositionVector[1]) <= HALF_DESKTOP_LENGTH;
+    }
+
+    /**
+     * Get position on desktop where user is looking at.
+     */
+    private void getLookingPosition() {
+        if (Math.abs(mForwardVector[2]) < 0.00001f) {
+            mEyePositionVector[0] = Math.signum(mForwardVector[0]) * Float.MAX_VALUE;
+            mEyePositionVector[1] = Math.signum(mForwardVector[1]) * Float.MAX_VALUE;
+        } else {
+            mEyePositionVector[0] = mForwardVector[0] * DESKTOP_POSITION_Z / mForwardVector[2];
+            mEyePositionVector[1] = mForwardVector[1] * DESKTOP_POSITION_Z / mForwardVector[2];
+        }
+        mEyePositionVector[2] = DESKTOP_POSITION_Z;
     }
 
     /**
