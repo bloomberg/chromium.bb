@@ -53,8 +53,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     std::string ready_state;
     if (status.IsError() || !result->GetString("result.value", &ready_state))
       return status;
-    if (ready_state == "complete")
-      loading_state_ = kNotLoading;
+    loading_state_ = ready_state == "complete" ? kNotLoading : kLoading;
   } else {
     if (loading_state_ == kUnknown) {
       scoped_ptr<base::DictionaryValue> result;
