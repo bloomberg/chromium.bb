@@ -38,7 +38,7 @@ int DownloadCommands::GetCommandIconId(Command command) const {
     case PAUSE:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE;
     case RESUME:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_RESUME;
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
     case SHOW_IN_FOLDER:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER;
     case KEEP:
@@ -46,10 +46,7 @@ int DownloadCommands::GetCommandIconId(Command command) const {
     case DISCARD:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
     case CANCEL:
-      // TODO(yoshiki): This is a temporary image for Download Notification
-      // feature behind the flag. We have to replace the image with proper one
-      // before the feature launch. http://crbug.com/468559
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL;
     case OPEN_WHEN_COMPLETE:
     case ALWAYS_OPEN_TYPE:
     case PLATFORM_OPEN:

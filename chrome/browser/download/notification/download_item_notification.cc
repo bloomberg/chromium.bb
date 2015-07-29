@@ -236,7 +236,7 @@ void DownloadItemNotification::UpdateNotificationData(
     notification_->set_message(GetWarningText());
 
     // Show icon.
-    SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_MALICIOUS);
+    SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD);
   } else {
     notification_->set_title(GetTitle());
     notification_->set_message(model.GetStatusText());
@@ -256,7 +256,6 @@ void DownloadItemNotification::UpdateNotificationData(
           notification_->set_progress(0);
         }
         if (is_off_the_record) {
-          // TODO(yoshiki): Replace the tentative image.
           SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
         } else {
           SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
@@ -280,7 +279,6 @@ void DownloadItemNotification::UpdateNotificationData(
         notification_->set_progress(100);
 
         if (is_off_the_record) {
-          // TODO(yoshiki): Replace the tentative image.
           SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
         } else {
           SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
@@ -306,7 +304,7 @@ void DownloadItemNotification::UpdateNotificationData(
         }
 
         notification_->set_progress(0);
-        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING);
+        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
