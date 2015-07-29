@@ -26,7 +26,9 @@ extern const char kOptInLink[];
 extern const char kPrivacyLinkHtml[];
 }
 
-class SecurityInterstitialMetricsHelper;
+namespace security_interstitials {
+class MetricsHelper;
+}
 
 class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
@@ -95,11 +97,12 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
 
   void OpenExtendedReportingPrivacyPolicy();
 
-  SecurityInterstitialMetricsHelper* metrics_helper();
-  void set_metrics_helper(SecurityInterstitialMetricsHelper* metrics_helper);
+  security_interstitials::MetricsHelper* metrics_helper() const;
+  void set_metrics_helper(
+      security_interstitials::MetricsHelper* metrics_helper);
 
  private:
-  scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
+  scoped_ptr<security_interstitials::MetricsHelper> metrics_helper_;
   // The WebContents with which this interstitial page is
   // associated. Not available in ~SecurityInterstitialPage, since it
   // can be destroyed before this class is destroyed.

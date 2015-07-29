@@ -11,11 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/security_interstitials/metrics_helper.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -36,15 +36,14 @@ CertReportHelper::CertReportHelper(
     const net::SSLInfo& ssl_info,
     CertificateErrorReport::InterstitialReason interstitial_reason,
     bool overridable,
-    SecurityInterstitialMetricsHelper* metrics_helper)
+    security_interstitials::MetricsHelper* metrics_helper)
     : ssl_cert_reporter_(ssl_cert_reporter.Pass()),
       web_contents_(web_contents),
       request_url_(request_url),
       ssl_info_(ssl_info),
       interstitial_reason_(interstitial_reason),
       overridable_(overridable),
-      metrics_helper_(metrics_helper) {
-}
+      metrics_helper_(metrics_helper) {}
 
 CertReportHelper::~CertReportHelper() {
 }
@@ -85,7 +84,7 @@ void CertReportHelper::FinishCertCollection(
 
   if (metrics_helper_) {
     metrics_helper_->RecordUserInteraction(
-        SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
+        security_interstitials::MetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
   }
 
   if (!ShouldReportCertificateError())

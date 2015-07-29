@@ -1,0 +1,111 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_METRICS_HELPER_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_METRICS_HELPER_H_
+
+#include <string>
+
+#include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
+#include "components/rappor/rappor_service.h"
+#include "url/gurl.h"
+
+namespace history {
+class HistoryService;
+}
+
+namespace security_interstitials {
+
+// MetricsHelper records user warning interactions in a
+// common way via METRICS histograms and, optionally, RAPPOR metrics. The
+// class will generate the following histograms:
+//   METRICS: interstitial.uma_prefix.decision
+//   METRICS: interstitial.uma_prefix.decision.repeat_visit
+//   METRICS: interstitial.uma_prefix.interaction
+//   METRICS: interstitial.uma_prefix.interaction.repeat_visit
+//   RAPPOR:  interstitial.rappor_prefix
+// wherein |uma_prefix| and |rappor_prefix| are specified via ReportDetails.
+class MetricsHelper {
+ public:
+  // These enums are used for histograms.  Don't reorder, delete, or insert
+  // elements. New elements should be added at the end (right before the max).
+  enum Decision {
+    SHOW,
+    PROCEED,
+    DONT_PROCEED,
+    PROCEEDING_DISABLED,
+    MAX_DECISION
+  };
+  enum Interaction {
+    TOTAL_VISITS,
+    SHOW_ADVANCED,
+    SHOW_PRIVACY_POLICY,
+    SHOW_DIAGNOSTIC,
+    SHOW_LEARN_MORE,
+    RELOAD,
+    OPEN_TIME_SETTINGS,
+    SET_EXTENDED_REPORTING_ENABLED,
+    SET_EXTENDED_REPORTING_DISABLED,
+    EXTENDED_REPORTING_IS_ENABLED,
+    REPORT_PHISHING_ERROR,
+    MAX_INTERACTION
+  };
+
+  // uma_prefix: Histogram prefix for UMA.
+  //             examples: "phishing", "ssl_overridable"
+  // rappor_prefix: Metric prefix for Rappor.
+  //                examples: "phishing", "ssl2"
+  // rappor_report_type: Used to differentiate UMA and Safe Browsing statistics.
+  // The rappor preferences can be left blank if rappor_service is not set.
+  struct ReportDetails {
+    ReportDetails() : rappor_report_type(rappor::NUM_RAPPOR_TYPES) {}
+    std::string metric_prefix;
+    std::string rappor_prefix;
+    rappor::RapporType rappor_report_type;
+  };
+
+  // Args:
+  //   url: URL of page that triggered the interstitial. Only origin is used.
+  //   history_service: Set this to record metrics based on whether the user
+  //                    has visited this hostname before.
+  //   rappor_service: If you want RAPPOR statistics, provide a service,
+  //                   settings.rappor_prefix, and settings.rappor_report_type.
+  //   settings: Specify reporting details (prefixes and report types).
+  //   sampling_event_name: Event name for Experience Sampling.
+  //                        e.g. "phishing_interstitial_"
+  MetricsHelper(const GURL& url,
+                const ReportDetails settings,
+                history::HistoryService* history_service,
+                rappor::RapporService* rappor_service);
+  virtual ~MetricsHelper() {}
+
+  // Records a user decision or interaction to the appropriate UMA histogram
+  // and potentially in a RAPPOR metric.
+  void RecordUserDecision(Decision decision);
+  void RecordUserInteraction(Interaction interaction);
+
+ protected:
+  // Subclasses should implement any embedder-specific recording logic in these
+  // methods. They'll be invoked from RecordUserDecision/Interaction.
+  virtual void RecordExtraUserDecisionMetrics(Decision decision) = 0;
+  virtual void RecordExtraUserInteractionMetrics(Interaction interaction) = 0;
+
+ private:
+  // Used to query the HistoryService to see if the URL is in history.
+  // It will only be invoked if the constructor received |history_service|.
+  void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
+
+  const GURL request_url_;
+  const ReportDetails settings_;
+  rappor::RapporService* rappor_service_;
+  int num_visits_;
+  base::CancelableTaskTracker request_tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(MetricsHelper);
+};
+
+}  // namespace security_interstitials
+
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_METRICS_HELPER_H_

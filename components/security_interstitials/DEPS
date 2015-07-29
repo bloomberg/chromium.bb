@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/history/core/browser",
+  "+components/metrics",
+  "+components/rappor",
+  "+net/base"
+]

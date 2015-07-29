@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -38,6 +39,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/security_interstitials/metrics_helper.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -522,6 +524,84 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithInsecureContent) {
   CheckAuthenticationBrokenState(tab,
                                  net::CERT_STATUS_DATE_INVALID,
                                  AuthState::DISPLAYED_INSECURE_CONTENT);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+  base::HistogramTester histograms;
+  const std::string decision_histogram =
+      "interstitial.ssl_overridable.decision";
+  const std::string interaction_histogram =
+      "interstitial.ssl_overridable.interaction";
+
+  // Histograms should start off empty.
+  histograms.ExpectTotalCount(decision_histogram, 0);
+  histograms.ExpectTotalCount(interaction_histogram, 0);
+
+  // After navigating to the page, the totals should be set.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  content::WaitForInterstitialAttach(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  histograms.ExpectTotalCount(decision_histogram, 1);
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+
+  // Decision should be recorded.
+  ProceedThroughInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  histograms.ExpectTotalCount(decision_histogram, 2);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::PROCEED, 1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+  base::HistogramTester histograms;
+  const std::string decision_histogram =
+      "interstitial.ssl_overridable.decision";
+  const std::string interaction_histogram =
+      "interstitial.ssl_overridable.interaction";
+
+  // Histograms should start off empty.
+  histograms.ExpectTotalCount(decision_histogram, 0);
+  histograms.ExpectTotalCount(interaction_histogram, 0);
+
+  // After navigating to the page, the totals should be set.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  content::WaitForInterstitialAttach(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  histograms.ExpectTotalCount(decision_histogram, 1);
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+
+  // Decision should be recorded.
+  InterstitialPage* interstitial_page = browser()
+                                            ->tab_strip_model()
+                                            ->GetActiveWebContents()
+                                            ->GetInterstitialPage();
+  interstitial_page->DontProceed();
+  histograms.ExpectTotalCount(decision_histogram, 2);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,
+      1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
 }
 
 // http://crbug.com/91745

@@ -20,7 +20,10 @@ namespace content {
 class WebContents;
 }
 
-class SecurityInterstitialMetricsHelper;
+namespace security_interstitials {
+class MetricsHelper;
+}
+
 class SSLCertReporter;
 
 // CertReportHelper helps SSL interstitials report invalid certificate
@@ -40,7 +43,7 @@ class CertReportHelper {
       const net::SSLInfo& ssl_info,
       CertificateErrorReport::InterstitialReason interstitial_reason,
       bool overridable,
-      SecurityInterstitialMetricsHelper* metrics_helper);
+      security_interstitials::MetricsHelper* metrics_helper);
 
   virtual ~CertReportHelper();
 
@@ -85,7 +88,7 @@ class CertReportHelper {
   // certificate chain error being reported.
   bool overridable_;
   // Helpful for recording metrics about cert reports.
-  SecurityInterstitialMetricsHelper* metrics_helper_;
+  security_interstitials::MetricsHelper* metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(CertReportHelper);
 };

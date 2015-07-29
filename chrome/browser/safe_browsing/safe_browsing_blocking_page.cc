@@ -167,17 +167,19 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     interstitial_reason_ = SB_REASON_PHISHING;
 
   // This must be done after calculating |interstitial_reason_| above.
-  // Use same prefix for UMA as for Rappor.
-  set_metrics_helper(new SecurityInterstitialMetricsHelper(
-      web_contents, request_url(), GetMetricPrefix(), GetRapporPrefix(),
-      SecurityInterstitialMetricsHelper::REPORT_RAPPOR_FOR_SAFE_BROWSING,
-      GetSamplingEventName()));
-  metrics_helper()->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = GetMetricPrefix();
+  reporting_info.rappor_prefix = GetRapporPrefix();
+  reporting_info.rappor_report_type = rappor::SAFEBROWSING_RAPPOR_TYPE;
+  set_metrics_helper(new ChromeMetricsHelper(
+      web_contents, request_url(), reporting_info, GetSamplingEventName()));
+  metrics_helper()->RecordUserDecision(
+      security_interstitials::MetricsHelper::SHOW);
   metrics_helper()->RecordUserInteraction(
-      SecurityInterstitialMetricsHelper::TOTAL_VISITS);
+      security_interstitials::MetricsHelper::TOTAL_VISITS);
   if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
     metrics_helper()->RecordUserDecision(
-        SecurityInterstitialMetricsHelper::PROCEEDING_DISABLED);
+        security_interstitials::MetricsHelper::PROCEEDING_DISABLED);
   }
 
   if (!is_main_frame_load_blocked_) {
@@ -234,7 +236,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     case CMD_OPEN_HELP_CENTER: {
       // User pressed "Learn more".
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
+          security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
       GURL learn_more_url(
           interstitial_reason_ == SB_REASON_PHISHING ?
           kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
@@ -257,7 +259,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       // User pressed on the button to proceed.
       if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
         metrics_helper()->RecordUserDecision(
-            SecurityInterstitialMetricsHelper::PROCEED);
+            security_interstitials::MetricsHelper::PROCEED);
         interstitial_page()->Proceed();
         // |this| has been deleted after Proceed() returns.
         break;
@@ -294,7 +296,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       const UnsafeResource& unsafe_resource = unsafe_resources_[0];
       std::string bad_url_spec = unsafe_resource.url.spec();
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_DIAGNOSTIC);
+          security_interstitials::MetricsHelper::SHOW_DIAGNOSTIC);
       std::string diagnostic =
           base::StringPrintf(kSbDiagnosticUrl,
               net::EscapeQueryParamValue(bad_url_spec, true).c_str());
@@ -314,13 +316,13 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     case CMD_SHOW_MORE_SECTION: {
       // User has opened up the hidden text.
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
+          security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
     }
     case CMD_REPORT_PHISHING_ERROR: {
       // User wants to report a phishing error.
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::REPORT_PHISHING_ERROR);
+          security_interstitials::MetricsHelper::REPORT_PHISHING_ERROR);
       GURL phishing_error_url(kReportPhishingErrorUrl);
       phishing_error_url = google_util::AppendGoogleLocaleParam(
           phishing_error_url, g_browser_process->GetApplicationLocale());
@@ -384,7 +386,7 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
 
   if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
     metrics_helper()->RecordUserDecision(
-        SecurityInterstitialMetricsHelper::DONT_PROCEED);
+        security_interstitials::MetricsHelper::DONT_PROCEED);
   }
 
   // Send the malware details, if we opted to.
@@ -429,7 +431,7 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
     return;
 
   metrics_helper()->RecordUserInteraction(
-      SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
+      security_interstitials::MetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
   // Finish the malware details collection, send it over.
   BrowserThread::PostDelayedTask(
       BrowserThread::IO, FROM_HERE,

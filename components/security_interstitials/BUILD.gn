@@ -1,0 +1,14 @@
+source_set("security_interstitials") {
+  sources = [
+    "metrics_helper.cc",
+    "metrics_helper.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/history/core/browser",
+    "//components/metrics",
+    "//components/rappor",
+    "//net",
+  ]
+}

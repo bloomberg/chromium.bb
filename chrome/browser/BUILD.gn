@@ -137,6 +137,7 @@ source_set("browser") {
     "//components/search",
     "//components/search_engines",
     "//components/search_provider_logos",
+    "//components/security_interstitials",
     "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",

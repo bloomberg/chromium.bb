@@ -24,7 +24,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
+#include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
@@ -256,18 +256,19 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       SSL_REASON_BAD_CLOCK : SSL_REASON_SSL;
 
   // We collapse the Rappor metric name to just "ssl" so we don't leak
-  // the "overridable" bit.  We skip Rappor altogether for bad clocks.
+  // the "overridable" bit. We skip Rappor altogether for bad clocks.
   // This must be done after calculating |interstitial_reason_| above.
-  set_metrics_helper(new SecurityInterstitialMetricsHelper(
-      web_contents, request_url, GetUmaHistogramPrefix(), kSSLRapporPrefix,
-      (interstitial_reason_ == SSL_REASON_BAD_CLOCK
-           ? SecurityInterstitialMetricsHelper::SKIP_RAPPOR
-           : SecurityInterstitialMetricsHelper::REPORT_RAPPOR),
-      GetSamplingEventName()));
-
-  metrics_helper()->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = GetUmaHistogramPrefix();
+  reporting_info.rappor_prefix = kSSLRapporPrefix;
+  if (interstitial_reason_ != SSL_REASON_BAD_CLOCK)
+    reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
+  set_metrics_helper(new ChromeMetricsHelper(
+      web_contents, request_url, reporting_info, GetSamplingEventName()));
+  metrics_helper()->RecordUserDecision(
+      security_interstitials::MetricsHelper::SHOW);
   metrics_helper()->RecordUserInteraction(
-      SecurityInterstitialMetricsHelper::TOTAL_VISITS);
+      security_interstitials::MetricsHelper::TOTAL_VISITS);
 
   cert_report_helper_.reset(new CertReportHelper(
       ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
@@ -303,7 +304,7 @@ SSLBlockingPage::~SSLBlockingPage() {
     // The page is closed without the user having chosen what to do, default to
     // deny.
     metrics_helper()->RecordUserDecision(
-        SecurityInterstitialMetricsHelper::DONT_PROCEED);
+        security_interstitials::MetricsHelper::DONT_PROCEED);
     RecordSSLExpirationPageEventState(
         expired_but_previously_allowed_, false, overridable_);
     NotifyDenyCertificate();
@@ -510,12 +511,12 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     }
     case CMD_SHOW_MORE_SECTION: {
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
+          security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
     }
     case CMD_OPEN_HELP_CENTER: {
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
+          security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
       content::NavigationController::LoadURLParams help_page_params(
           google_util::AppendGoogleLocaleParam(
               GURL(kHelpURL), g_browser_process->GetApplicationLocale()));
@@ -524,14 +525,14 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     }
     case CMD_RELOAD: {
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::RELOAD);
+          security_interstitials::MetricsHelper::RELOAD);
       // The interstitial can't refresh itself.
       web_contents()->GetController().Reload(true);
       break;
     }
     case CMD_OPEN_DATE_SETTINGS: {
       metrics_helper()->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::OPEN_TIME_SETTINGS);
+          security_interstitials::MetricsHelper::OPEN_TIME_SETTINGS);
       content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
                                        base::Bind(&LaunchDateAndTimeSettings));
       break;
@@ -555,7 +556,7 @@ void SSLBlockingPage::OverrideRendererPrefs(
 
 void SSLBlockingPage::OnProceed() {
   metrics_helper()->RecordUserDecision(
-      SecurityInterstitialMetricsHelper::PROCEED);
+      security_interstitials::MetricsHelper::PROCEED);
 
   // Finish collecting information about invalid certificates, if the
   // user opted in to.
@@ -570,7 +571,7 @@ void SSLBlockingPage::OnProceed() {
 
 void SSLBlockingPage::OnDontProceed() {
   metrics_helper()->RecordUserDecision(
-      SecurityInterstitialMetricsHelper::DONT_PROCEED);
+      security_interstitials::MetricsHelper::DONT_PROCEED);
 
   // Finish collecting information about invalid certificates, if the
   // user opted in to.

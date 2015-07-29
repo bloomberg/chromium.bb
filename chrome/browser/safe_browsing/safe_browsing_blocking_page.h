@@ -34,7 +34,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
+#include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"

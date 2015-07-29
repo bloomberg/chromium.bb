@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
@@ -33,6 +34,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/security_interstitials/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
@@ -613,8 +615,8 @@ class SafeBrowsingBlockingPageBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageBrowserTest);
 };
 
-// TODO(linux_aura) http://crbug.com/163931
-// TODO(win_aura) http://crbug.com/154081
+// TODO(linux_aura) https://crbug.com/163931
+// TODO(win_aura) https://crbug.com/154081
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
 #define MAYBE_RedirectInIFrameCanceled DISABLED_RedirectInIFrameCanceled
 #else
@@ -639,10 +641,11 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, RedirectCanceled) {
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, DontProceed) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  // Disable this test in Metro+Ash for now (https://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
+          switches::kAshBrowserTests)) {
     return;
+  }
 #endif
 
   SetupWarningAndNavigate();
@@ -673,10 +676,11 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, Proceed) {
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeDontProceed) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  // Disable this test in Metro+Ash for now (https://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
+          switches::kAshBrowserTests)) {
     return;
+  }
 #endif
 
   SetupThreatIframeWarningAndNavigate();
@@ -754,10 +758,11 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 // command anyway doesn't advance to the malware site.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ProceedDisabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  // Disable this test in Metro+Ash for now (https://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
+          switches::kAshBrowserTests)) {
     return;
+  }
 #endif
 
   // Simulate a policy disabling the "proceed anyway" link.
@@ -786,10 +791,11 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ProceedDisabled) {
 // good way to do that in the current design.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  // Disable this test in Metro+Ash for now (https://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
+          switches::kAshBrowserTests)) {
     return;
+  }
 #endif
 
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -804,10 +810,11 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        ReportingDisabledByPolicy) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  // Disable this test in Metro+Ash for now (https://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
+          switches::kAshBrowserTests)) {
     return;
+  }
 #endif
 
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -830,6 +837,99 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
           ? "/transparencyreport/safebrowsing/"
           : "/safebrowsing/diagnostic",
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL().path());
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       Histograms_DontProceed) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (https://crbug.com/262796).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests)) {
+    return;
+  }
+#endif
+
+  base::HistogramTester histograms;
+  std::string prefix;
+  if (GetParam() == SB_THREAT_TYPE_URL_MALWARE)
+    prefix = "malware";
+  else if (GetParam() == SB_THREAT_TYPE_URL_PHISHING)
+    prefix = "phishing";
+  else if (GetParam() == SB_THREAT_TYPE_URL_UNWANTED)
+    prefix = "harmful";
+  else
+    NOTREACHED();
+  const std::string decision_histogram = "interstitial." + prefix + ".decision";
+  const std::string interaction_histogram =
+      "interstitial." + prefix + ".interaction";
+
+  // Histograms should start off empty.
+  histograms.ExpectTotalCount(decision_histogram, 0);
+  histograms.ExpectTotalCount(interaction_histogram, 0);
+
+  // After navigating to the page, the totals should be set.
+  SetupWarningAndNavigate();
+  histograms.ExpectTotalCount(decision_histogram, 1);
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+
+  // Decision should be recorded.
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+  AssertNoInterstitial(false);  // Assert the interstitial is gone
+  histograms.ExpectTotalCount(decision_histogram, 2);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,
+      1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       Histograms_Proceed) {
+  base::HistogramTester histograms;
+  std::string prefix;
+  if (GetParam() == SB_THREAT_TYPE_URL_MALWARE)
+    prefix = "malware";
+  else if (GetParam() == SB_THREAT_TYPE_URL_PHISHING)
+    prefix = "phishing";
+  else if (GetParam() == SB_THREAT_TYPE_URL_UNWANTED)
+    prefix = "harmful";
+  else
+    NOTREACHED();
+  const std::string decision_histogram = "interstitial." + prefix + ".decision";
+  const std::string interaction_histogram =
+      "interstitial." + prefix + ".interaction";
+
+  // Histograms should start off empty.
+  histograms.ExpectTotalCount(decision_histogram, 0);
+  histograms.ExpectTotalCount(interaction_histogram, 0);
+
+  // After navigating to the page, the totals should be set.
+  GURL url = SetupWarningAndNavigate();
+  histograms.ExpectTotalCount(decision_histogram, 1);
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+
+  // Decision should be recorded.
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+  histograms.ExpectTotalCount(decision_histogram, 2);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::PROCEED, 1);
+  histograms.ExpectTotalCount(interaction_histogram, 1);
+  histograms.ExpectBucketCount(
+      interaction_histogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(SafeBrowsingBlockingPageBrowserTestWithThreatType,

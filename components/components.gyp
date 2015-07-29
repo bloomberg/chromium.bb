@@ -63,6 +63,7 @@
     'search_engines.gypi',
     'search_provider_logos.gypi',
     'secure_display.gypi',
+    'security_interstitials.gypi',
     'sessions.gypi',
     'signin.gypi',
     'startup_metric_utils.gypi',
