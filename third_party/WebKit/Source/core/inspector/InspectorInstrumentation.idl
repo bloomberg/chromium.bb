@@ -180,7 +180,7 @@ interface InspectorInstrumentation {
     void didPerformExecutionContextTask(ExecutionContext*);
 
     [Debugger, DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willEvaluateScript([Keep] LocalFrame*, const String& url, int lineNumber);
+    InspectorInstrumentationCookie willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
 
     [Debugger, Inline=FastReturn]
     void didEvaluateScript(const InspectorInstrumentationCookie&);

@@ -1414,7 +1414,7 @@ void InspectorDebuggerAgent::didCallFunction()
     changeJavaScriptRecursionLevel(-1);
 }
 
-void InspectorDebuggerAgent::willEvaluateScript(LocalFrame*, const String&, int)
+void InspectorDebuggerAgent::willEvaluateScript(const String&, int)
 {
     changeJavaScriptRecursionLevel(+1);
     schedulePauseOnNextStatementIfSteppingInto();

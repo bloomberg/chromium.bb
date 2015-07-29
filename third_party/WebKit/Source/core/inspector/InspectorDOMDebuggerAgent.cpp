@@ -600,7 +600,7 @@ void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* even
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
 }
 
-void InspectorDOMDebuggerAgent::willEvaluateScript(LocalFrame*, const String& url, int)
+void InspectorDOMDebuggerAgent::willEvaluateScript(const String& url, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(scriptFirstStatementEventName, 0), false);
 }

@@ -146,7 +146,7 @@ public:
     void scriptExecutionBlockedByCSP(const String& directiveText);
     void willCallFunction(ExecutionContext*, const DevToolsFunctionInfo&);
     void didCallFunction();
-    void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
+    void willEvaluateScript(const String& url, int lineNumber);
     void didEvaluateScript();
     bool getEditedScript(const String& url, String* content);
 

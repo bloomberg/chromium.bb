@@ -50,7 +50,6 @@ class InjectedScriptManager;
 class InspectorDebuggerAgent;
 class InspectorDOMAgent;
 class JSONObject;
-class LocalFrame;
 class Node;
 class RegisteredEventListener;
 
@@ -95,7 +94,7 @@ public:
     void didCancelAnimationFrame(ExecutionContext*, int callbackId);
     void willFireAnimationFrame(ExecutionContext*, int callbackId);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
-    void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
+    void willEvaluateScript(const String& url, int lineNumber);
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
