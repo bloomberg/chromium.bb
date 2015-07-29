@@ -28,11 +28,11 @@ crbug.com/356658 virtual/slimmingpaint/fast/dom/gc-dom-tree-lifetime.html [ Fail
 # This test is flaky in debug without oilpan, but fails much more with oilpan.
 crbug.com/354785 svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
-crbug.com/410145 [ Win ] virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ ImageOnlyFailure ]
-crbug.com/410145 [ Win ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ ImageOnlyFailure ]
-crbug.com/410145 [ Win ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure ]
-crbug.com/410145 [ Win ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure ]
-crbug.com/410145 [ Win ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/decorations-with-text-combine.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/international/text-combine-image-test.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/orientation-sideways.html [ ImageOnlyFailure ]
 crbug.com/410145 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure ]
 crbug.com/410145 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure ]
 
