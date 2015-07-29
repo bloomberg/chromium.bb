@@ -35,7 +35,7 @@ source_set("base") {
     "//third_party/widevine/cdm:version_h",
   ]
 
-  if (is_chromecast_chrome_branded) {
+  if (chromecast_branding != "public") {
     deps += [
       "${libcast_media_target}",
       # TODO(gyp): add dependency on internal/chromecast_internal:media_base_internal
