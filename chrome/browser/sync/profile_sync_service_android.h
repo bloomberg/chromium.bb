@@ -55,10 +55,9 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   void GetAllNodes(JNIEnv* env, jobject obj, jobject callback);
 
   // Called from Java early during startup to ensure we use the correct
-  // unique machine tag in session sync. Returns true if the machine tag was
-  // succesfully set.
+  // unique machine tag in session sync.
   // This must be called before the |SessionModelAssociator| is initialized.
-  jboolean SetSyncSessionsId(JNIEnv* env, jobject obj, jstring tag);
+  void SetSyncSessionsId(JNIEnv* env, jobject obj, jstring tag);
 
   // Returns true if the sync backend is initialized.
   jboolean IsSyncInitialized(JNIEnv* env, jobject obj);

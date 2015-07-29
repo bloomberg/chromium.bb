@@ -179,10 +179,7 @@ public class ProfileSyncService {
             return;
         }
         String sessionTag = SESSION_TAG_PREFIX + uniqueTag;
-        if (!nativeSetSyncSessionsId(mNativeProfileSyncServiceAndroid, sessionTag)) {
-            Log.e(TAG, "Unable to write session sync tag. "
-                    + "This may lead to unexpected tab sync behavior.");
-        }
+        nativeSetSyncSessionsId(mNativeProfileSyncServiceAndroid, sessionTag);
     }
 
     /**
@@ -647,8 +644,7 @@ public class ProfileSyncService {
     private native void nativeRequestStop(long nativeProfileSyncServiceAndroid);
     private native void nativeFlushDirectory(long nativeProfileSyncServiceAndroid);
     private native void nativeSignOutSync(long nativeProfileSyncServiceAndroid);
-    private native boolean nativeSetSyncSessionsId(
-            long nativeProfileSyncServiceAndroid, String tag);
+    private native void nativeSetSyncSessionsId(long nativeProfileSyncServiceAndroid, String tag);
     private native String nativeQuerySyncStatusSummary(long nativeProfileSyncServiceAndroid);
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncInitialized(long nativeProfileSyncServiceAndroid);
