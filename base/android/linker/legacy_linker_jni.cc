@@ -639,10 +639,6 @@ jboolean UseSharedRelro(JNIEnv* env,
   return true;
 }
 
-jboolean CanUseSharedRelro(JNIEnv* env, jclass clazz) {
-  return crazy_system_can_share_relro();
-}
-
 jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz, jlong bytes) {
 #if RESERVE_BREAKPAD_GUARD_REGION
   // Add a Breakpad guard region.  16Mb should be comfortably larger than
@@ -708,11 +704,6 @@ const JNINativeMethod kNativeMethods[] = {
      ")"
      "Z",
      reinterpret_cast<void*>(&UseSharedRelro)},
-    {"nativeCanUseSharedRelro",
-     "("
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&CanUseSharedRelro)},
     {"nativeGetRandomBaseLoadAddress",
      "("
      "J"

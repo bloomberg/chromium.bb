@@ -40,10 +40,6 @@ features compared to /system/bin/linker:
     it, but it is possible to use a single ashmem region to share the same
     data instead.
 
-    WARNING: This feature will not work on certain older kernels. See
-             the documentation for crazy_system_can_share_relro() for
-             more details.
-
 See include/crazy_linker.h for the API and its documentation.
 
 See LICENSE file for full licensing details (hint: BSD)

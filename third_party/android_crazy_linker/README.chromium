@@ -84,3 +84,5 @@ Local Modifications:
 
 - Add a Breakpad "guard region" to the start of reserved address space.
 
+- Remove CVE-2011-1149 detection machinery.
+

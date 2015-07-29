@@ -283,16 +283,6 @@ crazy_status_t crazy_library_get_info(crazy_library_t* library,
   return CRAZY_STATUS_SUCCESS;
 }
 
-crazy_status_t crazy_system_can_share_relro(void) {
-  crazy::AshmemRegion region;
-  if (!region.Allocate(PAGE_SIZE, NULL) ||
-      !region.SetProtectionFlags(PROT_READ) ||
-      !crazy::AshmemRegion::CheckFileDescriptorIsReadOnly(region.fd()))
-    return CRAZY_STATUS_FAILURE;
-
-  return CRAZY_STATUS_SUCCESS;
-}
-
 crazy_status_t crazy_library_create_shared_relro(crazy_library_t* library,
                                                  crazy_context_t* context,
                                                  size_t load_address,

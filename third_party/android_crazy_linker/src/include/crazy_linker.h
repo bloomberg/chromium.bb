@@ -267,14 +267,6 @@ crazy_status_t crazy_library_get_info(crazy_library_t* library,
                                       crazy_context_t* context,
                                       crazy_library_info_t* info);
 
-// Checks whether the system can support RELRO section sharing. This is
-// mainly due to the fact that old Android kernel images have a bug in their
-// implementation of Ashmem region mapping protection.
-// If this function returns CRAZY_STATUS_FAILURE, then calls to
-// crazy_library_enable_relro_sharing() will return a failure to prevent
-// the exploitation of this security issue in your code.
-crazy_status_t crazy_system_can_share_relro(void);
-
 // Create an ashmem region containing a copy of the RELRO section for a given
 // |library|. This can be used with crazy_library_use_shared_relro().
 // |load_address| can be specified as non-0 to ensure that the content of the

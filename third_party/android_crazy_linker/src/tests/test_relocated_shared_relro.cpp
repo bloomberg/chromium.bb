@@ -21,12 +21,6 @@
 typedef void (*FunctionPtr)();
 
 int main() {
-
-  if (!crazy_system_can_share_relro()) {
-    fprintf(stderr, "WARNING: Test ignored due to broken kernel!!\n");
-    return 0;
-  }
-
   crazy_context_t* context = crazy_context_create();
 
   RelroLibrary foo;

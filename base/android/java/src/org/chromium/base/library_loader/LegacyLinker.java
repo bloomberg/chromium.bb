@@ -41,9 +41,6 @@ class LegacyLinker extends Linker {
     // Becomes true after linker initialization.
     private boolean mInitialized = false;
 
-    // Set to true to indicate that the system supports safe sharing of RELRO sections.
-    private boolean mRelroSharingSupported = false;
-
     // Set to true if this runs in the browser process. Disabled by initServiceProcess().
     // TODO(petrcermak): This flag can be incorrectly set to false (even though this might run in
     // the browser process) on low-memory devices.
@@ -80,7 +77,6 @@ class LegacyLinker extends Linker {
             return;
         }
 
-        mRelroSharingSupported = false;
         if (NativeLibraries.sUseLinker) {
             if (DEBUG) {
                 Log.i(TAG, "Loading lib" + LINKER_JNI_LIBRARY + ".so");
@@ -92,14 +88,6 @@ class LegacyLinker extends Linker {
                 Log.w(TAG, "Couldn't load lib" + LINKER_JNI_LIBRARY + ".so, "
                         + "trying lib" + LINKER_JNI_LIBRARY + ".cr.so");
                 System.loadLibrary(LINKER_JNI_LIBRARY + ".cr");
-            }
-            mRelroSharingSupported = nativeCanUseSharedRelro();
-            if (!mRelroSharingSupported) {
-                Log.w(TAG, "This system cannot safely share RELRO sections");
-            } else {
-                if (DEBUG) {
-                    Log.i(TAG, "This system supports safe shared RELRO sections");
-                }
             }
 
             if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT) {
@@ -136,12 +124,6 @@ class LegacyLinker extends Linker {
             }
         }
 
-        if (!mRelroSharingSupported) {
-            // Sanity.
-            mBrowserUsesSharedRelro = false;
-            mWaitForSharedRelros = false;
-        }
-
         mInitialized = true;
     }
 
@@ -159,9 +141,7 @@ class LegacyLinker extends Linker {
 
         synchronized (mLock) {
             ensureInitializedLocked();
-            // At the moment, there is also no point in using this linker if the
-            // system does not support RELRO sharing safely.
-            return mRelroSharingSupported;
+            return true;
         }
     }
 
@@ -388,11 +368,9 @@ class LegacyLinker extends Linker {
             ensureInitializedLocked();
             mInBrowserProcess = false;
             mBrowserUsesSharedRelro = false;
-            if (mRelroSharingSupported) {
-                mWaitForSharedRelros = true;
-                mBaseLoadAddress = baseLoadAddress;
-                mCurrentLoadAddress = baseLoadAddress;
-            }
+            mWaitForSharedRelros = true;
+            mBaseLoadAddress = baseLoadAddress;
+            mCurrentLoadAddress = baseLoadAddress;
         }
     }
 
@@ -495,13 +473,6 @@ class LegacyLinker extends Linker {
         if (bundle == null) {
             if (DEBUG) {
                 Log.i(TAG, "null bundle!");
-            }
-            return;
-        }
-
-        if (!mRelroSharingSupported) {
-            if (DEBUG) {
-                Log.i(TAG, "System does not support RELRO sharing");
             }
             return;
         }
@@ -732,15 +703,6 @@ class LegacyLinker extends Linker {
      */
     private static native boolean nativeUseSharedRelro(String library,
                                                        LibInfo libInfo);
-
-    /**
-     * Checks that the system supports shared RELROs. Old Android kernels
-     * have a bug in the way they check Ashmem region protection flags, which
-     * makes using shared RELROs unsafe. This method performs a simple runtime
-     * check for this misfeature, even though nativeEnableSharedRelro() will
-     * always fail if this returns false.
-     */
-    private static native boolean nativeCanUseSharedRelro();
 
     /**
      * Return a random address that should be free to be mapped with the given size.
