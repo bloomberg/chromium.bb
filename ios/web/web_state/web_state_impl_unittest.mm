@@ -9,13 +9,21 @@
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+using testing::_;
+using testing::Assign;
+using testing::AtMost;
+using testing::DoAll;
+using testing::Return;
 
 namespace web {
 namespace {
@@ -72,6 +80,19 @@ class TestWebStateObserver : public WebStateObserver {
   bool url_hash_changed_called_;
   bool history_state_changed_called_;
   bool web_state_destroyed_called_;
+};
+
+// Test decider to check that the WebStatePolicyDecider methods are called as
+// expected.
+class MockWebStatePolicyDecider : public WebStatePolicyDecider {
+ public:
+  explicit MockWebStatePolicyDecider(WebState* web_state)
+      : WebStatePolicyDecider(web_state) {}
+  virtual ~MockWebStatePolicyDecider() {}
+
+  MOCK_METHOD1(ShouldAllowRequest, bool(NSURLRequest* request));
+  MOCK_METHOD1(ShouldAllowResponse, bool(NSURLResponse* response));
+  MOCK_METHOD0(WebStateDestroyed, void());
 };
 
 // Creates and returns an HttpResponseHeader using the string representation.
@@ -210,6 +231,59 @@ TEST_F(WebStateTest, ObserverTest) {
   EXPECT_TRUE(observer->web_state_destroyed_called());
 
   EXPECT_EQ(nullptr, observer->web_state());
+}
+
+// Verifies that policy deciders are correctly called by the web state.
+TEST_F(WebStateTest, PolicyDeciderTest) {
+  MockWebStatePolicyDecider decider(web_state_.get());
+  MockWebStatePolicyDecider decider2(web_state_.get());
+  EXPECT_EQ(web_state_.get(), decider.web_state());
+
+  // Test that ShouldAllowRequest() is called.
+  EXPECT_CALL(decider, ShouldAllowRequest(_)).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(decider2, ShouldAllowRequest(_)).Times(1).WillOnce(Return(true));
+  EXPECT_TRUE(web_state_->ShouldAllowRequest(nil));
+
+  // Test that ShouldAllowRequest() is stopping on negative answer. Only one
+  // one the decider should be called.
+  {
+    bool decider_called = false;
+    bool decider2_called = false;
+    EXPECT_CALL(decider, ShouldAllowRequest(_))
+        .Times(AtMost(1))
+        .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
+    EXPECT_CALL(decider2, ShouldAllowRequest(_))
+        .Times(AtMost(1))
+        .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
+    EXPECT_FALSE(web_state_->ShouldAllowRequest(nil));
+    EXPECT_FALSE(decider_called && decider2_called);
+  }
+
+  // Test that ShouldAllowResponse() is called.
+  EXPECT_CALL(decider, ShouldAllowResponse(_)).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(decider2, ShouldAllowResponse(_)).Times(1).WillOnce(Return(true));
+  EXPECT_TRUE(web_state_->ShouldAllowResponse(nil));
+
+  // Test that ShouldAllowResponse() is stopping on negative answer. Only one
+  // one the decider should be called.
+  {
+    bool decider_called = false;
+    bool decider2_called = false;
+    EXPECT_CALL(decider, ShouldAllowResponse(_))
+        .Times(AtMost(1))
+        .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
+    EXPECT_CALL(decider2, ShouldAllowResponse(_))
+        .Times(AtMost(1))
+        .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
+    EXPECT_FALSE(web_state_->ShouldAllowResponse(nil));
+    EXPECT_FALSE(decider_called && decider2_called);
+  }
+
+  // Test that WebStateDestroyed() is called.
+  EXPECT_CALL(decider, WebStateDestroyed()).Times(1);
+  EXPECT_CALL(decider2, WebStateDestroyed()).Times(1);
+  web_state_.reset();
+  EXPECT_EQ(nullptr, decider.web_state());
 }
 
 // Tests that script command callbacks are called correctly.

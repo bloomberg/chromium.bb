@@ -17,6 +17,7 @@
 #include "ios/web/public/web_state/credential.h"
 #include "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state/web_state_policy_decider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
@@ -46,6 +47,11 @@ WebStateImpl::~WebStateImpl() {
 
   FOR_EACH_OBSERVER(WebStateObserver, observers_, WebStateDestroyed());
   FOR_EACH_OBSERVER(WebStateObserver, observers_, ResetWebState());
+  for (WebStatePolicyDecider* policy_decider : policy_deciders_) {
+    policy_decider->WebStateDestroyed();
+    policy_decider->ResetWebState();
+  }
+  policy_deciders_.clear();
   DCHECK(script_command_callbacks_.empty());
   if (request_tracker_.get())
     CloseRequestTracker();
@@ -59,6 +65,16 @@ void WebStateImpl::AddObserver(WebStateObserver* observer) {
 void WebStateImpl::RemoveObserver(WebStateObserver* observer) {
   DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
+}
+
+void WebStateImpl::AddPolicyDecider(WebStatePolicyDecider* decider) {
+  DCHECK_EQ(0u, policy_deciders_.count(decider));
+  policy_deciders_.insert(decider);
+}
+
+void WebStateImpl::RemovePolicyDecider(WebStatePolicyDecider* decider) {
+  DCHECK_LT(0u, policy_deciders_.count(decider));
+  policy_deciders_.erase(decider);
 }
 
 bool WebStateImpl::Configured() const {
@@ -385,6 +401,22 @@ void WebStateImpl::ExecuteJavaScriptAsync(const base::string16& javascript) {
   DCHECK(Configured());
   [web_controller_ evaluateJavaScript:base::SysUTF16ToNSString(javascript)
                   stringResultHandler:nil];
+}
+
+bool WebStateImpl::ShouldAllowRequest(NSURLRequest* request) {
+  for (WebStatePolicyDecider* policy_decider : policy_deciders_) {
+    if (!policy_decider->ShouldAllowRequest(request))
+      return false;
+  }
+  return true;
+}
+
+bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response) {
+  for (WebStatePolicyDecider* policy_decider : policy_deciders_) {
+    if (!policy_decider->ShouldAllowResponse(response))
+      return false;
+  }
+  return true;
 }
 
 #pragma mark - RequestTracker management

@@ -6,6 +6,7 @@
 #define IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@
 @protocol CRWRequestTrackerDelegate;
 @class CRWWebController;
 @protocol CRWWebViewProxy;
+@class NSURLRequest;
+@class NSURLResponse;
 
 namespace net {
 class HttpResponseHeaders;
@@ -36,6 +39,7 @@ struct LoadCommittedDetails;
 class NavigationManager;
 class WebInterstitialImpl;
 class WebStateFacadeDelegate;
+class WebStatePolicyDecider;
 class WebUIIOS;
 
 // Implementation of WebState.
@@ -181,6 +185,13 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // upstream API.
   virtual void ExecuteJavaScriptAsync(const base::string16& script);
 
+  // Returns whether the navigation corresponding to |request| should be allowed
+  // to continue by asking its policy deciders. Defaults to true.
+  bool ShouldAllowRequest(NSURLRequest* request);
+  // Returns whether the navigation corresponding to |response| should be
+  // allowed to continue by asking its policy deciders. Defaults to true.
+  bool ShouldAllowResponse(NSURLResponse* response);
+
   // Request tracker management. For now, this exposes the RequestTracker for
   // embedders to use.
   // TODO(stuartmorgan): RequestTracker should become an internal detail of this
@@ -252,6 +263,15 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void RemoveObserver(WebStateObserver* observer) override;
 
  private:
+  friend class WebStatePolicyDecider;
+
+  // Adds and removes policy deciders for navigation actions. The order in which
+  // deciders are called is undefined, and will stop on the first decider that
+  // refuses a navigation. Clients must be sure to remove the deciders before
+  // they go away.
+  void AddPolicyDecider(WebStatePolicyDecider* decider);
+  void RemovePolicyDecider(WebStatePolicyDecider* decider);
+
   // Creates a WebUIIOS object for |url| that is owned by the caller. Returns
   // nullptr if |url| does not correspond to a WebUI page.
   WebUIIOS* CreateWebUIIOS(const GURL& url);
@@ -281,6 +301,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true> observers_;
+
+  // All the WebStatePolicyDeciders asked for navigation decision. Weak
+  // references.
+  std::set<WebStatePolicyDecider*> policy_deciders_;
 
   // Map of all the HTTP response headers received, for each URL.
   // This map is cleared after each page load, and only the headers of the main

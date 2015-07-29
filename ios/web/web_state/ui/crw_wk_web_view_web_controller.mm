@@ -1020,6 +1020,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   BOOL allowLoad = [self shouldAllowLoadWithRequest:request
                                         targetFrame:&targetFrame
                                         isLinkClick:isLinkClick];
+
+  allowLoad = allowLoad && self.webStateImpl->ShouldAllowRequest(request);
+
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
                             : WKNavigationActionPolicyCancel);
 }
@@ -1043,8 +1046,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
   if (navigationResponse.isForMainFrame)
     self.documentMIMEType = navigationResponse.response.MIMEType;
-  handler(navigationResponse.canShowMIMEType ? WKNavigationResponsePolicyAllow :
-              WKNavigationResponsePolicyCancel);
+
+  BOOL allowNavigation =
+      navigationResponse.canShowMIMEType &&
+      self.webStateImpl->ShouldAllowResponse(navigationResponse.response);
+
+  handler(allowNavigation ? WKNavigationResponsePolicyAllow
+                          : WKNavigationResponsePolicyCancel);
 }
 
 // TODO(stuartmorgan): Move all the guesswork around these states out of the
