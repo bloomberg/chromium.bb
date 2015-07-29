@@ -146,8 +146,6 @@ bool setStart(Range*, const VisiblePosition&);
 bool setEnd(Range*, const VisiblePosition&);
 VisiblePosition startVisiblePosition(const Range*, EAffinity);
 
-Element* enclosingBlockFlowElement(const VisiblePosition&);
-
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);

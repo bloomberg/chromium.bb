@@ -46,6 +46,13 @@ static inline bool isElementForFormatBlock(Node* node)
     return node->isElementNode() && isElementForFormatBlock(toElement(node)->tagQName());
 }
 
+static Element* enclosingBlockFlowElement(const VisiblePosition& visiblePosition)
+{
+    if (visiblePosition.isNull())
+        return nullptr;
+    return enclosingBlockFlowElement(*visiblePosition.deepEquivalent().anchorNode());
+}
+
 FormatBlockCommand::FormatBlockCommand(Document& document, const QualifiedName& tagName)
     : ApplyBlockElementCommand(document, tagName)
     , m_didApply(false)

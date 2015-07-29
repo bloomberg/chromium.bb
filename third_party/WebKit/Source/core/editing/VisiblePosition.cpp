@@ -771,14 +771,6 @@ bool setEnd(Range *r, const VisiblePosition &visiblePosition)
     return !exceptionState.hadException();
 }
 
-Element* enclosingBlockFlowElement(const VisiblePosition& visiblePosition)
-{
-    if (visiblePosition.isNull())
-        return 0;
-
-    return enclosingBlockFlowElement(*visiblePosition.deepEquivalent().anchorNode());
-}
-
 bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
 {
     if (visiblePosition.isNull())
