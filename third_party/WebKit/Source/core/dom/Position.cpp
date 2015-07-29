@@ -104,29 +104,20 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::createLegacyEditingPosi
     if (!anchorNode || anchorNode->isTextNode())
         return PositionAlgorithm<Strategy>(anchorNode, offset);
 
-    switch (anchorTypeForLegacyEditingPosition(anchorNode.get(), offset)) {
-    case PositionAnchorType::OffsetInAnchor:
+    if (!Strategy::editingIgnoresContent(anchorNode.get()))
         return PositionAlgorithm<Strategy>(anchorNode, offset);
-    case PositionAnchorType::BeforeAnchor:
-        ASSERT(!offset);
+
+    if (offset == 0)
         return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
-    case PositionAnchorType::AfterAnchor: {
-        PositionAlgorithm<Strategy> position(anchorNode, PositionAnchorType::AfterAnchor);
-        // TODO(yosin) This is the source of unexpected behavior of legacy
-        // editing position, we need to further analysis why we need to set
-        // offset.
-        ASSERT(offset > 0);
-        position.m_offset = offset;
-        position.m_isLegacyEditingPosition = true;
-        return position;
-    }
-    case PositionAnchorType::BeforeChildren:
-    case PositionAnchorType::AfterChildren:
-        ASSERT_NOT_REACHED();
-        return PositionAlgorithm<Strategy>();
-    }
-    ASSERT_NOT_REACHED();
-    return PositionAlgorithm<Strategy>();
+
+    PositionAlgorithm<Strategy> position(anchorNode, PositionAnchorType::AfterAnchor);
+    // TODO(yosin) This is the source of unexpected behavior of legacy
+    // editing position, we need to further analysis why we need to set
+    // offset.
+    ASSERT(offset > 0);
+    position.m_offset = offset;
+    position.m_isLegacyEditingPosition = true;
+    return position;
 }
 
 template <typename Strategy>
@@ -358,18 +349,6 @@ template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionAlgorithm<Strategy>& other) const
 {
     return Strategy::commonAncestor(*containerNode(), *other.containerNode());
-}
-
-template <typename Strategy>
-PositionAnchorType PositionAlgorithm<Strategy>::anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset)
-{
-    ASSERT(!anchorNode || !anchorNode->isTextNode());
-    if (anchorNode && Strategy::editingIgnoresContent(anchorNode)) {
-        if (offset == 0)
-            return PositionAnchorType::BeforeAnchor;
-        return PositionAnchorType::AfterAnchor;
-    }
-    return PositionAnchorType::OffsetInAnchor;
 }
 
 // FIXME: This method is confusing (does it return anchorNode() or containerNode()?) and should be renamed or removed

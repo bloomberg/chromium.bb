@@ -251,8 +251,6 @@ private:
 
     int renderedOffset() const;
 
-    static PositionAnchorType anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset);
-
     RefPtrWillBeMember<Node> m_anchorNode;
     // m_offset can be the offset inside m_anchorNode, or if editingIgnoresContent(m_anchorNode)
     // returns true, then other places in editing will treat m_offset == 0 as "before the anchor"
