@@ -295,8 +295,6 @@ int ChildProcessMain() {
         command_line.GetSwitchValuePath(switches::kChildProcess), cleanup);
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-    using sandbox::syscall_broker::BrokerFilePermission;
-    scoped_ptr<mandoline::LinuxSandbox> sandbox;
     if (command_line.HasSwitch(switches::kEnableSandbox)) {
       // Warm parts of base.
       base::RandUint64();
