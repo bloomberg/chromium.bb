@@ -1140,8 +1140,10 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     if (!styleResolver)
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
 
-    if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->handleAttributeChanged(name, this);
+    if (inDocument()) {
+        if (AXObjectCache* cache = document().existingAXObjectCache())
+            cache->handleAttributeChanged(name, this);
+    }
 }
 
 bool Element::hasLegalLinkAttribute(const QualifiedName&) const
