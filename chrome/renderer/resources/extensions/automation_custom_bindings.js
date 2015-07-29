@@ -147,7 +147,11 @@ automationInternal.onTreeChange.addListener(function(treeID,
     // browser process and set up a callback when it loads to attach that
     // tree as a child of this node and fire appropriate events.
     var childTreeID = GetIntAttribute(treeID, nodeID, 'childTreeId');
-    if (!AutomationRootNode.get(childTreeID)) {
+    if (!childTreeID)
+      return;
+
+    var subroot = AutomationRootNode.get(childTreeID);
+    if (!subroot) {
       automationUtil.storeTreeCallback(childTreeID, function(root) {
         privates(root).impl.setHostNode(node);
 
@@ -158,6 +162,8 @@ automationInternal.onTreeChange.addListener(function(treeID,
       });
 
       automationInternal.enableFrame(childTreeID);
+    } else {
+      privates(subroot).impl.setHostNode(node);
     }
   }
 
@@ -200,9 +206,8 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   // calling the callback.
   // TODO(dmazzoni): Don't send down placeholder (crbug.com/397553)
   if (id != DESKTOP_TREE_ID && !targetTree.url &&
-      targetTree.children.length == 0) {
+      targetTree.children.length == 0)
     return;
-  }
 
   // If the tree wasn't available when getTree() was called, the callback will
   // have been cached in idToCallback, so call and delete it now that we
