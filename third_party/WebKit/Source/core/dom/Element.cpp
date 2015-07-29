@@ -2279,7 +2279,7 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type)
     if (!isFocusable())
         return;
 
-    if (openShadowRoot() && openShadowRoot()->delegatesFocus()) {
+    if (authorShadowRoot() && authorShadowRoot()->delegatesFocus()) {
         if (containsIncludingShadowDOM(document().focusedElement()))
             return;
 
@@ -2355,7 +2355,7 @@ bool Element::supportsFocus() const
     // it won't be focusable. Furthermore, supportsFocus cannot just return true
     // always or else tabIndex() will change for all HTML elements.
     return hasElementFlag(TabIndexWasSetExplicitly) || (hasEditableStyle() && parentNode() && !parentNode()->hasEditableStyle())
-        || (isShadowHost(this) && openShadowRoot() && openShadowRoot()->delegatesFocus())
+        || (isShadowHost(this) && authorShadowRoot() && authorShadowRoot()->delegatesFocus())
         || supportsSpatialNavigationFocus();
 }
 

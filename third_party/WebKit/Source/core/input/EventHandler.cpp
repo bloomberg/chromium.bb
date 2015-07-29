@@ -1681,7 +1681,7 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
 
 bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
 {
-    if (element.openShadowRoot() && element.openShadowRoot()->delegatesFocus()) {
+    if (element.authorShadowRoot() && element.authorShadowRoot()->delegatesFocus()) {
         Document* doc = m_frame->document();
         if (element.containsIncludingShadowDOM(doc->focusedElement())) {
             // If the inner element is already focused, do nothing.
@@ -1691,7 +1691,7 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
         // If the host has a focusable inner element, focus it. Otherwise, the host takes focus.
         Page* page = m_frame->page();
         ASSERT(page);
-        Element* next = page->focusController().findFocusableElement(WebFocusTypeForward, *element.openShadowRoot());
+        Element* next = page->focusController().findFocusableElement(WebFocusTypeForward, *element.authorShadowRoot());
         if (next && element.containsIncludingShadowDOM(next)) {
             // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
             next->focus(false, WebFocusTypeForward);
