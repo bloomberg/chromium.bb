@@ -2837,8 +2837,6 @@ crbug.com/509855 webaudio/stereopannernode-no-glitch.html [ Pass Timeout ]
 
 crbug.com/512709 [ XP ] fast/text/emphasis.html [ Pass ImageOnlyFailure ]
 
-crbug.com/509538 compositing/squashing/add-remove-squashed-layers.html [ NeedsRebaseline ]
-
 crbug.com/513073 [ Win ] http/tests/inspector/network/long-script-content.html [ Pass Timeout ]
 crbug.com/513073 [ Win ] http/tests/inspector/network/network-disable-cache-memory.html [ Pass Timeout ]
 crbug.com/513073 [ Win ] http/tests/inspector/extensions-ignore-cache.html [ Pass Timeout ]
