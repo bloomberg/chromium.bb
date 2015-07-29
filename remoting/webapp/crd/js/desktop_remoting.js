@@ -21,6 +21,12 @@ var remoting = remoting || {};
 remoting.DesktopRemoting = function() {
   base.inherits(this, remoting.Application);
 
+  // Save recent errors for inclusion in user feedback.
+  remoting.ConsoleWrapper.getInstance().activate(
+      5,
+      remoting.ConsoleWrapper.LogType.ERROR,
+      remoting.ConsoleWrapper.LogType.ASSERT);
+
   /** @protected {remoting.DesktopRemoting.Mode} */
   this.connectionMode_ = remoting.DesktopRemoting.Mode.ME2ME;
 

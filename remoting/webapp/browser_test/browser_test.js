@@ -92,7 +92,7 @@ browserTest.expect = function(expr, opt_message) {
  */
 browserTest.fail = function(error) {
   var error_message = error;
-  var stack_trace = base.debug.callstack();
+  var stack_trace = new base.Callstack().toString();
 
   if (error instanceof Error) {
     error_message = error.toString();

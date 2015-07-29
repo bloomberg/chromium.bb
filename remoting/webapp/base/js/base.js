@@ -14,26 +14,9 @@
 /** @suppress {duplicate} */
 var base = base || {};
 
-base.debug = function() {};
-
 /**
- * @return {string} The callstack of the current method.
+ * @interface
  */
-base.debug.callstack = function() {
-  try {
-    throw new Error();
-  } catch (/** @type {Error} */ error) {
-    var callstack = error.stack
-      .replace(/^\s+(at eval )?at\s+/gm, '') // Remove 'at' and indentation.
-      .split('\n');
-    callstack.splice(0,2); // Remove the stack of the current function.
-  }
-  return callstack.join('\n');
-};
-
-/**
-  * @interface
-  */
 base.Disposable = function() {};
 base.Disposable.prototype.dispose = function() {};
 

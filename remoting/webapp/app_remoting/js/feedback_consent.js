@@ -23,6 +23,11 @@ var hostId = '@pending';
 var connectionStats = '';
 
 /**
+ * @type {string} JSON representation of recent console error messages.
+ */
+var consoleErrors = '';
+
+/**
  * @type {string} The most recent id for the session (unless the session is
  *     longer than 24hrs, this will be the only session id).
  */
@@ -259,6 +264,7 @@ function onWindowMessage(event) {
     }
     appId = /** @type {string} */ (event.data['appId']);
     connectionStats = /** @type {string} */ (event.data['connectionStats']);
+    consoleErrors =  /** @type {string} */ (event.data['consoleErrors']);
     sessionId = /** @type {string} */ (event.data['sessionId']);
   }
 };

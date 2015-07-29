@@ -110,7 +110,9 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
             appId: remoting.app.getApplicationId(),
             hostId: that.hostId_,
             connectionStats: JSON.stringify(that.stats_.mostRecent()),
-            sessionId: that.clientSession_.getLogger().getSessionId()
+            sessionId: that.clientSession_.getLogger().getSessionId(),
+            consoleErrors: JSON.stringify(
+                remoting.ConsoleWrapper.getInstance().getHistory())
           };
           consentWindow.contentWindow.postMessage(message, '*');
         };

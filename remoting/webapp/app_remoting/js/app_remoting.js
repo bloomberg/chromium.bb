@@ -41,6 +41,12 @@ remoting.AppRemoting = function(args) {
   base.inherits(this, remoting.Application);
   remoting.app = this;
 
+  // Save recent errors for inclusion in user feedback.
+  remoting.ConsoleWrapper.getInstance().activate(
+      5,
+      remoting.ConsoleWrapper.LogType.ERROR,
+      remoting.ConsoleWrapper.LogType.ASSERT);
+
   /** @private {remoting.Activity} */
   this.activity_ = null;
 

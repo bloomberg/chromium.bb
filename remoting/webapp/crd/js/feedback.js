@@ -60,7 +60,15 @@ function sendFeedback() {
     feedbackInfo: {
       description: '',
       systemInformation: [
-        { key: 'version', value: remoting.app.getExtensionInfo() }
+        {
+          key: 'version',
+          value: remoting.app.getExtensionInfo()
+        },
+        {
+          key: 'consoleErrors',
+          value: JSON.stringify(
+              remoting.ConsoleWrapper.getInstance().getHistory())
+        }
       ]
     }
   };
