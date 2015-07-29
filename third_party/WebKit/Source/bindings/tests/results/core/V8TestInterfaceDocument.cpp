@@ -9,9 +9,15 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
+#include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "core/animation/DocumentAnimation.h"
+#include "core/css/DocumentFontFaceSet.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentFullscreen.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/xml/DocumentXPathEvaluator.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -37,7 +43,46 @@ const WrapperTypeInfo& TestInterfaceDocument::s_wrapperTypeInfo = V8TestInterfac
 
 namespace TestInterfaceDocumentV8Internal {
 
+static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceDocument* impl = V8TestInterfaceDocument::toImpl(holder);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
+}
+
+static void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestInterfaceDocumentV8Internal::locationAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceDocument* proxyImpl = V8TestInterfaceDocument::toImpl(holder);
+    RefPtrWillBeRawPtr<Location> impl = WTF::getPtr(proxyImpl->location());
+    if (!impl)
+        return;
+    V8StringResource<> cppValue = v8Value;
+    if (!cppValue.prepare())
+        return;
+    impl->setHref(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+}
+
+static void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestInterfaceDocumentV8Internal::locationAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 } // namespace TestInterfaceDocumentV8Internal
+
+static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors[] = {
+    {"location", TestInterfaceDocumentV8Internal::locationAttributeGetterCallback, TestInterfaceDocumentV8Internal::locationAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+};
 
 static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
@@ -46,7 +91,7 @@ static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplat
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceDocument", V8Document::domTemplate(isolate), V8TestInterfaceDocument::internalFieldCount,
         0, 0,
-        0, 0,
+        V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors),
         0, 0);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);

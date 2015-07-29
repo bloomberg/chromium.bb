@@ -182,6 +182,26 @@ def load_interfaces_info_overall_pickle(info_dir):
         return pickle.load(interface_info_file)
 
 
+def merge_dict_recursively(target, diff):
+    """Merges two dicts into one.
+    |target| will be updated with |diff|.  Part of |diff| may be re-used in
+    |target|.
+    """
+    for key, value in diff.iteritems():
+        if key not in target:
+            target[key] = value
+        elif type(value) == dict:
+            merge_dict_recursively(target[key], value)
+        elif type(value) == list:
+            target[key].extend(value)
+        elif type(value) == set:
+            target[key].update(value)
+        else:
+            # Testing IDLs want to overwrite the values.  Production code
+            # doesn't need any overwriting.
+            target[key] = value
+
+
 def create_component_info_provider_core(info_dir):
     interfaces_info = load_interfaces_info_overall_pickle(info_dir)
     with open(os.path.join(info_dir, 'core', 'ComponentInfoCore.pickle')) as component_info_file:

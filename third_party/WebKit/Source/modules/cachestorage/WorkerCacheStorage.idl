@@ -7,11 +7,5 @@
     RuntimeEnabled=GlobalCacheStorage,
     ImplementedAs=GlobalCacheStorage,
 ] partial interface WorkerGlobalScope {
-    // Inheritance of [Unforgeable] attributes is not supported.  So we have to
-    // define the same unforgeable attributes in derived interfaces as well.
-    // See that {,Dedicated,Shared,Compositor,Service}WorkerGlobalScope redefine
-    // 'caches' attribute.
-    // Keep all the definitions consistent.
-    // TODO(yukishiino): Support inheritance of attributes defined on instance.
     [Unforgeable, MeasureAs=GlobalCacheStorage, RuntimeEnabled=GlobalCacheStorage, RaisesException] readonly attribute CacheStorage caches;
 };

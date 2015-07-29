@@ -124,7 +124,7 @@ def attribute_context(interface, attribute):
         'is_check_security_for_window': is_check_security_for_window,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         # TODO(yukishiino): Make all DOM attributes accessor-type properties.
-        'is_data_type_property': constructor_type or interface.name == 'Window' or interface.name == 'Location' or (interface.name == 'Event' and attribute.name == 'isTrusted'),
+        'is_data_type_property': constructor_type or interface.name == 'Window' or interface.name == 'Location',
         'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),

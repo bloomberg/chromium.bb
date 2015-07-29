@@ -86,7 +86,7 @@ import cPickle as pickle
 import optparse
 import sys
 
-from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file
+from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file, merge_dict_recursively
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
@@ -206,8 +206,7 @@ def compute_interfaces_info_overall(info_individuals):
     Information is stored in global interfaces_info.
     """
     for info in info_individuals:
-        # No overlap between interface names, so ok to use dict.update
-        interfaces_info.update(info['interfaces_info'])
+        merge_dict_recursively(interfaces_info, info['interfaces_info'])
         # Interfaces in one component may have partial interfaces in
         # another component. This is ok (not a layering violation), since
         # partial interfaces are used to *extend* interfaces.
@@ -313,7 +312,6 @@ def compute_interfaces_info_overall(info_individuals):
         del interface_info['extended_attributes']
         del interface_info['has_union_types']
         del interface_info['is_legacy_treat_as_partial_interface']
-        del interface_info['parent']
 
     # Compute global_type_info to interfaces_info so that idl_compiler does
     # not need to always calculate the info in __init__.
