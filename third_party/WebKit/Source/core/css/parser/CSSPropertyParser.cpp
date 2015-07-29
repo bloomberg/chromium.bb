@@ -1318,7 +1318,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitLineClamp:
         // When specifying number of lines, don't allow 0 as a valid value
         // When specifying either type of unit, require non-negative integers
-        validPrimitive = (!id && (value->unit() == CSSPrimitiveValue::UnitType::Percentage || value->fValue) && validUnit(value, FInteger | FPercent | FNonNeg));
+        validPrimitive = (!id && !isCalculation(value) && validUnit(value, FInteger | FPercent | FNonNeg) && (value->unit() == CSSPrimitiveValue::UnitType::Percentage || value->fValue));
         break;
 
     case CSSPropertyWebkitFontSizeDelta: // <length>
