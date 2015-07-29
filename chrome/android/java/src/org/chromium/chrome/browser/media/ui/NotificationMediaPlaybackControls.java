@@ -238,9 +238,9 @@ public class NotificationMediaPlaybackControls {
             mNotificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.audio_playing)
                 .setAutoCancel(false)
-                .setOngoing(true)
-                .setContentIntent(createContentIntent());
+                .setOngoing(true);
         }
+        mNotificationBuilder.setContentIntent(createContentIntent());
 
         RemoteViews contentView = createContentView();
 
