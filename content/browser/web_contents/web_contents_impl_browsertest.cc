@@ -18,6 +18,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -344,6 +345,31 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   EXPECT_EQ(new_size, actual_size);
   EXPECT_EQ(new_size, shell()->web_contents()->GetContainerBounds().size());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetTitleOnUnload) {
+  GURL url(
+      "data:text/html,"
+      "<title>A</title>"
+      "<body onunload=\"document.title = 'B'\"></body>");
+  NavigateToURL(shell(), url);
+  ASSERT_EQ(1, shell()->web_contents()->GetController().GetEntryCount());
+  NavigationEntryImpl* entry1 = NavigationEntryImpl::FromNavigationEntry(
+      shell()->web_contents()->GetController().GetLastCommittedEntry());
+  SiteInstance* site_instance1 = entry1->site_instance();
+  EXPECT_EQ(base::ASCIIToUTF16("A"), entry1->GetTitle());
+
+  // Force a process switch by going to a privileged page.
+  GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
+                   std::string(kChromeUIGpuHost));
+  NavigateToURL(shell(), web_ui_page);
+  NavigationEntryImpl* entry2 = NavigationEntryImpl::FromNavigationEntry(
+      shell()->web_contents()->GetController().GetLastCommittedEntry());
+  SiteInstance* site_instance2 = entry2->site_instance();
+  EXPECT_NE(site_instance1, site_instance2);
+
+  EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
+  EXPECT_EQ(base::ASCIIToUTF16("B"), entry1->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {

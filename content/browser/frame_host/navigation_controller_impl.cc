@@ -940,6 +940,13 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   NotifyNavigationEntryCommitted(details);
 
+  // Update the RenderViewHost of the top-level RenderFrameHost's notion of what
+  // entry it's showing for use later.
+  RenderFrameHostImpl* main_frame =
+      rfh->frame_tree_node()->frame_tree()->root()->current_frame_host();
+  static_cast<RenderViewHostImpl*>(main_frame->GetRenderViewHost())->
+      set_nav_entry_id(active_entry->GetUniqueID());
+
   return true;
 }
 

@@ -63,6 +63,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -3799,21 +3800,31 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   // Ensure that this state update comes from a RenderViewHost that belongs to
   // this WebContents.
   // TODO(nasko): This should go through RenderFrameHost.
-  // TODO(creis): We can't update state for cross-process subframes until we
-  // have FrameNavigationEntries.  Once we do, this should be a DCHECK.
   if (rvh->GetDelegate()->GetAsWebContents() != this)
     return;
 
-  // We must be prepared to handle state updates for any page, these occur
+  // We must be prepared to handle state updates for any page. They occur
   // when the user is scrolling and entering form data, as well as when we're
   // leaving a page, in which case our state may have already been moved to
   // the next page. The navigation controller will look up the appropriate
   // NavigationEntry and update it when it is notified via the delegate.
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(rvh);
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
-      rvh->GetSiteInstance(), page_id);
-
+      rvhi->GetSiteInstance(), page_id);
   if (!entry)
     return;
+
+  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
+      rvhi->nav_entry_id());
+
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // TODO(creis): We can't properly update state for cross-process subframes
+    // until PageState is decomposed into FrameStates. Until then, use the new
+    // method.
+    entry = new_entry;
+  } else {
+    DCHECK_EQ(entry, new_entry);
+  }
 
   if (page_state == entry->GetPageState())
     return;  // Nothing to update.
@@ -3979,21 +3990,25 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
                                   int32 page_id,
                                   const base::string16& title,
                                   base::i18n::TextDirection title_direction) {
-  RenderViewHost* rvh = render_frame_host->GetRenderViewHost();
-
   // If we have a title, that's a pretty good indication that we've started
   // getting useful data.
   SetNotWaitingForResponse();
 
   // Try to find the navigation entry, which might not be the current one.
-  // For example, it might be from a pending RVH for the pending entry.
+  // For example, it might be from a recently swapped out RFH.
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
-      rvh->GetSiteInstance(), page_id);
+      render_frame_host->GetSiteInstance(), page_id);
+
+  RenderViewHostImpl* rvhi =
+      static_cast<RenderViewHostImpl*>(render_frame_host->GetRenderViewHost());
+  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
+      rvhi->nav_entry_id());
+  DCHECK_EQ(entry, new_entry);
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
   // TODO(avi): Change to make decisions based on the RenderFrameHost.
-  if (!entry && rvh != GetRenderViewHost())
+  if (!entry && render_frame_host != GetMainFrame())
     return;
 
   // TODO(evan): make use of title_direction.
