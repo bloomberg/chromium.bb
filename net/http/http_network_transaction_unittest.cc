@@ -3844,8 +3844,12 @@ TEST_P(HttpNetworkTransactionTest,
   // CONNECT to mail.example.org:443 via SPDY.
   SpdyHeaderBlock connect2_block;
   connect2_block[spdy_util_.GetMethodKey()] = "CONNECT";
-  connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";
-  connect2_block[spdy_util_.GetHostKey()] = "mail.example.org";
+  if (GetParam() >= kProtoHTTP2MinimumVersion) {
+    connect2_block[spdy_util_.GetHostKey()] = "mail.example.org:443";
+  } else {
+    connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";
+    connect2_block[spdy_util_.GetHostKey()] = "mail.example.org";
+  }
   spdy_util_.MaybeAddVersionHeader(&connect2_block);
   scoped_ptr<SpdyFrame> connect2(
       spdy_util_.ConstructSpdySyn(3, connect2_block, LOWEST, false, false));

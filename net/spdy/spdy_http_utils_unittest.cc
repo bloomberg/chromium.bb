@@ -185,8 +185,9 @@ TEST(SpdyHttpUtilsTest, CreateSpdyHeadersFromHttpRequestConnectHTTP2) {
                                    kDirect, &headers);
   EXPECT_EQ("CONNECT", headers[":method"]);
   EXPECT_TRUE(headers.end() == headers.find(":scheme"));
-  EXPECT_EQ("www.google.com", headers[":authority"]);
-  EXPECT_EQ("www.google.com:443", headers[":path"]);
+  EXPECT_EQ("www.google.com:443", headers[":authority"]);
+  EXPECT_EQ(0u, headers.count(":path"));
+  EXPECT_EQ(0u, headers.count(":scheme"));
   EXPECT_TRUE(headers.end() == headers.find(":version"));
   EXPECT_EQ("Chrome/1.1", headers["user-agent"]);
 }

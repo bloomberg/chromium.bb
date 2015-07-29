@@ -976,10 +976,15 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     const HostPortPair& host_port_pair) const {
   SpdyHeaderBlock block;
   block[GetMethodKey()] = "CONNECT";
-  block[GetPathKey()] = host_port_pair.ToString();
-  block[GetHostKey()] = (host_port_pair.port() == 443)
-                            ? host_port_pair.host()
-                            : host_port_pair.ToString();
+  if (spdy_version() < HTTP2) {
+    block[GetPathKey()] = host_port_pair.ToString();
+    block[GetHostKey()] = (host_port_pair.port() == 443)
+                              ? host_port_pair.host()
+                              : host_port_pair.ToString();
+  } else {
+    block[GetHostKey()] = host_port_pair.ToString();
+  }
+
   MaybeAddVersionHeader(&block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(stream_id, block, priority, false, false);
