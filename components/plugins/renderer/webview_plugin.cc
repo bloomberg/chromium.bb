@@ -49,9 +49,7 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
       container_(NULL),
       web_view_(WebView::create(this)),
       finished_loading_(false),
-      focused_(false),
-      // At least one animation must run before any paint.
-      animationNeeded_(true) {
+      focused_(false) {
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
@@ -121,7 +119,7 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
     // scheduleAnimation may be invoked before this initialize call (which
     // comes through the widget update process). It doesn't hurt to mark
     // for layout again, and it does help us in the race-condition situation.
-    scheduleAnimation();
+    container_->setNeedsLayout();
 
     old_title_ = container_->element().getAttribute("title");
 
@@ -149,18 +147,10 @@ v8::Local<v8::Object> WebViewPlugin::v8ScriptableObject(v8::Isolate* isolate) {
 }
 
 void WebViewPlugin::layoutIfNeeded() {
-  animationNeeded_ = false;
   web_view_->layout();
 }
 
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
-  // Do not paint before the container is set (that is, before initialize() has
-  // been called). We will be asked to paint again thanks to the initialize()
-  // method calling setNeedsLayout on the container. Without this check we
-  // may attempt to paint before the WebView's frame has been laid-out.
-  if (animationNeeded_)
-    return;
-
   gfx::Rect paint_rect = gfx::IntersectRects(rect_, rect);
   if (paint_rect.IsEmpty())
     return;
@@ -275,12 +265,16 @@ void WebViewPlugin::didInvalidateRect(const WebRect& rect) {
     container_->invalidateRect(rect);
 }
 
+void WebViewPlugin::didUpdateLayoutSize(const WebSize&) {
+  if (container_)
+    container_->setNeedsLayout();
+}
+
 void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
   current_cursor_ = cursor;
 }
 
 void WebViewPlugin::scheduleAnimation() {
-  animationNeeded_ = true;
   if (container_)
     container_->setNeedsLayout();
 }
