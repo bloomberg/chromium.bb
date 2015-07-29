@@ -168,12 +168,11 @@ class BootstrapStage(PatchChangesStage):
   """
   option_name = 'bootstrap'
 
-  def __init__(self, builder_run, chromite_patch_pool,
-               manifest_patch_pool, **kwargs):
+  def __init__(self, builder_run, patch_pool, **kwargs):
     super(BootstrapStage, self).__init__(
         builder_run, trybot_patch_pool.TrybotPatchPool(), **kwargs)
-    self.chromite_patch_pool = chromite_patch_pool
-    self.manifest_patch_pool = manifest_patch_pool
+
+    self.patch_pool = patch_pool
     self.config_repo = self._run.options.config_repo
     self.returncode = None
     self.tempdir = None
@@ -239,6 +238,27 @@ class BootstrapStage(PatchChangesStage):
 
     return args
 
+  @classmethod
+  def BootstrapPatchesNeeded(cls, builder_run, patch_pool):
+    """See if bootstrapping is needed for any of the given patches.
+
+    Does NOT determine if they have already been applied.
+
+    Args:
+      builder_run: BuilderRun object for this build.
+      patch_pool: All patches to be applied this run.
+
+    Returns:
+      boolean True if bootstrapping is needed.
+    """
+    chromite_pool = patch_pool.Filter(project=constants.CHROMITE_PROJECT)
+    if builder_run.config.internal:
+      manifest_pool = patch_pool.FilterIntManifest()
+    else:
+      manifest_pool = patch_pool.FilterExtManifest()
+
+    return bool(chromite_pool or manifest_pool)
+
   def HandleApplyFailures(self, failures):
     """Handle the case where patches fail to apply."""
     if self._run.config.pre_cq:
@@ -262,6 +282,9 @@ class BootstrapStage(PatchChangesStage):
     if self._run.options.test_bootstrap:
       filter_branch = 'master'
 
+    # Filter all requested patches for the branch.
+    branch_pool = self.patch_pool.FilterBranch(filter_branch)
+
     # Checkout the new version of chromite, and patch it.
     chromite_dir = os.path.join(self.tempdir, 'chromite')
     reference_repo = os.path.join(constants.CHROMITE_DIR, '.git')
@@ -269,17 +292,11 @@ class BootstrapStage(PatchChangesStage):
                             reference=reference_repo)
     git.RunGit(chromite_dir, ['checkout', filter_branch])
 
-    def BranchAndChromiteFilter(patch):
-      return (trybot_patch_pool.BranchFilter(filter_branch, patch) and
-              trybot_patch_pool.ChromiteFilter(patch))
-
-    patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
-        chromite_dir, filter_branch,
-        deps_filter_fn=BranchAndChromiteFilter)
-
-    filtered_pool = self.chromite_patch_pool.FilterBranch(filter_branch)
-    if filtered_pool:
-      self._ApplyPatchSeries(patch_series, filtered_pool)
+    chromite_pool = branch_pool.Filter(project=constants.CHROMITE_PROJECT)
+    if chromite_pool:
+      patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+          chromite_dir, filter_branch)
+      self._ApplyPatchSeries(patch_series, chromite_pool)
 
     # Checkout the new version of site config (no patching logic, yet).
     if self.config_repo:
@@ -307,8 +324,13 @@ class BootstrapStage(PatchChangesStage):
       # bootstrapping for the next execution.  Also pass in the patched manifest
       # repository.
       extra_params.append('--nobootstrap')
-      if self.manifest_patch_pool:
-        manifest_dir = self._ApplyManifestPatches(self.manifest_patch_pool)
+      if self._run.config.internal:
+        manifest_pool = branch_pool.FilterIntManifest()
+      else:
+        manifest_pool = branch_pool.FilterExtManifest()
+
+      if manifest_pool:
+        manifest_dir = self._ApplyManifestPatches(manifest_pool)
         extra_params.extend(['--manifest-repo-url', manifest_dir])
 
     cmd += extra_params

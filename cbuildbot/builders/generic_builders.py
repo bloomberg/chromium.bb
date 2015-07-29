@@ -256,17 +256,16 @@ class Builder(object):
     --test-bootstrap wasn't passed in.
     """
     stage = None
-    chromite_pool = self.patch_pool.Filter(project=constants.CHROMITE_PROJECT)
-    if self._run.config.internal:
-      manifest_pool = self.patch_pool.FilterIntManifest()
-    else:
-      manifest_pool = self.patch_pool.FilterExtManifest()
+
+    patches_needed = sync_stages.BootstrapStage.BootstrapPatchesNeeded(
+        self._run, self.patch_pool)
+
     chromite_branch = git.GetChromiteTrackingBranch()
-    if (chromite_pool or manifest_pool or
+
+    if (patches_needed or
         self._run.options.test_bootstrap or
         chromite_branch != self._run.options.branch):
-      stage = sync_stages.BootstrapStage(self._run, chromite_pool,
-                                         manifest_pool)
+      stage = sync_stages.BootstrapStage(self._run, self.patch_pool)
     return stage
 
   def Run(self):

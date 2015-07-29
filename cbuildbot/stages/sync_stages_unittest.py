@@ -60,12 +60,8 @@ class BootstrapStageTest(
     self._Prepare()
 
   def ConstructStage(self):
-    chromite_pool = trybot_patch_pool.TrybotPatchPool()
-    manifest_pool = trybot_patch_pool.TrybotPatchPool()
-
-    return sync_stages.BootstrapStage(self._run,
-                                      chromite_pool,
-                                      manifest_pool)
+    patch_pool = trybot_patch_pool.TrybotPatchPool()
+    return sync_stages.BootstrapStage(self._run, patch_pool)
 
   def testSimpleBootstrap(self):
     """Verify Bootstrap behavior in a simple case (with a branch)."""
