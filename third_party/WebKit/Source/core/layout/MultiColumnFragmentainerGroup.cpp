@@ -207,12 +207,13 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     // Now we know we intersect at least one column. Let's figure out the logical top and logical
     // bottom of the area we're checking.
     LayoutUnit layerLogicalTop = isHorizontalWritingMode ? layerBoundsInFlowThread.y() : layerBoundsInFlowThread.x();
-    LayoutUnit layerLogicalBottom = (isHorizontalWritingMode ? layerBoundsInFlowThread.maxY() : layerBoundsInFlowThread.maxX()) - 1;
+    LayoutUnit layerLogicalBottom = (isHorizontalWritingMode ? layerBoundsInFlowThread.maxY() : layerBoundsInFlowThread.maxX());
 
     // Figure out the start and end columns for the layer and only check within that range so that
     // we don't walk the entire column row.
-    unsigned startColumn = columnIndexAtOffset(layerLogicalTop);
-    unsigned endColumn = columnIndexAtOffset(layerLogicalBottom);
+    unsigned startColumn;
+    unsigned endColumn;
+    columnIntervalForBlockRangeInFlowThread(layerLogicalTop, layerLogicalBottom, startColumn, endColumn);
 
     // Now intersect with the columns actually occupied by the dirty rect, to narrow it down even further.
     unsigned firstColumnInDirtyRect, lastColumnInDirtyRect;
@@ -511,6 +512,16 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoi
     if (index < 0)
         return 0;
     return std::min(unsigned(index), actualColumnCount() - 1);
+}
+
+void MultiColumnFragmentainerGroup::columnIntervalForBlockRangeInFlowThread(LayoutUnit logicalTopInFlowThread, LayoutUnit logicalBottomInFlowThread, unsigned& firstColumn, unsigned& lastColumn) const
+{
+    ASSERT(logicalTopInFlowThread <= logicalBottomInFlowThread);
+    firstColumn = columnIndexAtOffset(logicalTopInFlowThread);
+    lastColumn = columnIndexAtOffset(logicalBottomInFlowThread);
+    // logicalBottomInFlowThread is an exclusive endpoint, so some additional adjustments may be necessary.
+    if (lastColumn > firstColumn && logicalTopInFlowThreadAt(lastColumn) == logicalBottomInFlowThread)
+        lastColumn--;
 }
 
 void MultiColumnFragmentainerGroup::columnIntervalForVisualRect(const LayoutRect& rect, unsigned& firstColumn, unsigned& lastColumn) const

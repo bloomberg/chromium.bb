@@ -99,6 +99,10 @@ private:
     // not inside any of the columns.
     unsigned columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const;
 
+    // Get the first and the last column intersecting the specified block range.
+    // Note that |logicalBottomInFlowThread| is an exclusive endpoint.
+    void columnIntervalForBlockRangeInFlowThread(LayoutUnit logicalTopInFlowThread, LayoutUnit logicalBottomInFlowThread, unsigned& firstColumn, unsigned& lastColumn) const;
+
     // Get the first and the last column intersecting the specified visual rectangle.
     void columnIntervalForVisualRect(const LayoutRect&, unsigned& firstColumn, unsigned& lastColumn) const;
 
