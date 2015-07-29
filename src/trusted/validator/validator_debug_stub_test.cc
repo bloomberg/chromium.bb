@@ -398,6 +398,54 @@ static const uint32_t offset_pseudo_arm[kCodeSize/4] = {
   NACL_INSTR_ARM_NOP
 };
 
+// 2 Constant pools using both markers.
+static const uint32_t constant_pools_arm[kCodeSize/4] = {
+  NACL_INSTR_ARM_LITERAL_POOL_HEAD,
+  0xEF000000,  // SVC #0
+  0xEF000000,
+  0xEF000000,
+  NACL_INSTR_ARM_BREAKPOINT,
+  0xEF000000,
+  0xEF000000,
+  0xEF000000,
+};
+
+// Constant pool followed by a code bundle.
+static const uint32_t constant_pool_first_arm[kCodeSize/4] = {
+  NACL_INSTR_ARM_BREAKPOINT,
+  0xEF000000,  // SVC #0
+  0xEF000000,
+  0xEF000000,
+  NACL_INSTR_ARM_NOP,  // 10
+  NACL_INSTR_ARM_NOP,  // 14
+  NACL_INSTR_ARM_NOP,  // 18
+  NACL_INSTR_ARM_NOP,  // 1c
+};
+
+// Code bundle followed by a constant pool.
+static const uint32_t constant_pool_second_arm[kCodeSize/4] = {
+  NACL_INSTR_ARM_NOP,  // 00
+  NACL_INSTR_ARM_NOP,  // 04
+  NACL_INSTR_ARM_NOP,  // 08
+  NACL_INSTR_ARM_NOP,  // 0c
+  NACL_INSTR_ARM_BREAKPOINT,
+  0xEF000000,  // SVC #0
+  0xEF000000,
+  0xEF000000
+};
+
+// Valid code bundles with breakpoints.
+static const uint32_t breakpoints_arm[kCodeSize/4] = {
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_BREAKPOINT,
+  NACL_INSTR_ARM_BREAKPOINT,
+  NACL_INSTR_ARM_BREAKPOINT,
+  NACL_INSTR_ARM_NOP,
+  NACL_INSTR_ARM_BREAKPOINT,
+  NACL_INSTR_ARM_BREAKPOINT,
+  NACL_INSTR_ARM_BREAKPOINT
+};
+
 // NOPs.
 static const uint32_t nops[kCodeSize/4] = {
   NACL_INSTR_ARM_NOP,
@@ -464,7 +512,7 @@ TEST_F(ValidationDebugStubInterfaceTests, SPInstructions) {
   NaClValidationStatus status;
   uint32_t addr;
 
-  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr+=4) {
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr += 4) {
     status = validator->IsOnInstBoundary(
       kGuestAddr, addr, (uint8_t *)sp_insts_arm, kCodeSize, cpu_features);
     EXPECT_EQ(NaClValidationSucceeded, status);
@@ -476,7 +524,7 @@ TEST_F(ValidationDebugStubInterfaceTests, OffsetPseudoInstruction) {
   NaClValidationStatus status;
   uint32_t addr;
 
-  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr+=4) {
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr += 4) {
     status = validator->IsOnInstBoundary(
       kGuestAddr, addr, (uint8_t *)offset_pseudo_arm, kCodeSize, cpu_features);
 
@@ -485,6 +533,56 @@ TEST_F(ValidationDebugStubInterfaceTests, OffsetPseudoInstruction) {
       EXPECT_EQ(NaClValidationFailed, status);
     else
       EXPECT_EQ(NaClValidationSucceeded, status);
+  }
+}
+
+// Test constant pools.
+TEST_F(ValidationDebugStubInterfaceTests, ConstantPools) {
+  NaClValidationStatus status;
+  uint32_t addr;
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr++) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)constant_pools_arm, kCodeSize, cpu_features);
+
+    EXPECT_EQ(NaClValidationFailed, status);
+  }
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr++) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)constant_pool_first_arm,
+      kCodeSize, cpu_features);
+
+    // Second bundle is valid code.
+    if (addr == kGuestAddr + 0x10 ||
+        addr == kGuestAddr + 0x14 ||
+        addr == kGuestAddr + 0x18 ||
+        addr == kGuestAddr + 0x1C)
+      EXPECT_EQ(NaClValidationSucceeded, status);
+    else
+      EXPECT_EQ(NaClValidationFailed, status);
+  }
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr++) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)constant_pool_second_arm,
+      kCodeSize, cpu_features);
+
+    // First bundle is valid code.
+    if (addr == kGuestAddr + 0x00 ||
+        addr == kGuestAddr + 0x04 ||
+        addr == kGuestAddr + 0x08 ||
+        addr == kGuestAddr + 0x0C)
+      EXPECT_EQ(NaClValidationSucceeded, status);
+    else
+      EXPECT_EQ(NaClValidationFailed, status);
+  }
+
+  for (addr = kGuestAddr; addr < kGuestAddr + kCodeSize; addr += 4) {
+    status = validator->IsOnInstBoundary(
+      kGuestAddr, addr, (uint8_t *)breakpoints_arm, kCodeSize, cpu_features);
+
+    EXPECT_EQ(NaClValidationSucceeded, status);
   }
 }
 #else

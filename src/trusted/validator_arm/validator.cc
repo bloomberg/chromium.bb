@@ -418,10 +418,9 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
 
 bool SfiValidator::is_valid_inst_boundary(const CodeSegment& code,
                                           uint32_t addr) {
-  // Check addr is on an inst boundary
-  if ((addr & 0x3) != 0) {
+  // Check addr is on an inst boundary.
+  if ((addr & 0x3) != 0)
     return false;
-  }
 
   CHECK(!ConstructionFailed(NULL));
 
@@ -429,6 +428,15 @@ bool SfiValidator::is_valid_inst_boundary(const CodeSegment& code,
   uint32_t size = code.end_addr() - base;
   AddressSet branches(base, size);
   AddressSet critical(base, size);
+
+  uint32_t bundle_addr = addr & ~(bytes_per_bundle_ - 1);
+  uint32_t offset = bundle_addr - base;
+  uint32_t instr = reinterpret_cast<const uint32_t*>(
+      code.base() + offset)[0];
+
+  // Check if addr falls within a constant pool.
+  if (nacl_arm_dec::IsBreakPointAndConstantPoolHead(instr))
+    return false;
 
   nacl_arm_dec::ViolationSet violations =
         validate_fallthrough(code, NULL, &branches, &critical);
