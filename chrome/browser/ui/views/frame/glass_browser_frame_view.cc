@@ -292,8 +292,9 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
   if (sender == new_avatar_button()) {
     BrowserWindow::AvatarBubbleMode mode =
         BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
-    if (event.IsMouseEvent() &&
-        static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) {
+    if ((event.IsMouseEvent() &&
+         static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) ||
+        (event.type() == ui::ET_GESTURE_LONG_PRESS)) {
       mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
     }
     browser_view()->ShowAvatarBubbleFromAvatarButton(

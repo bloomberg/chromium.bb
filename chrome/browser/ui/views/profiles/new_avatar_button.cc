@@ -132,6 +132,17 @@ void NewAvatarButton::OnMouseReleased(const ui::MouseEvent& event) {
     LabelButton::OnMouseReleased(event);
 }
 
+void NewAvatarButton::OnGestureEvent(ui::GestureEvent* event) {
+  // TODO(wjmaclean): The check for ET_GESTURE_LONG_PRESS is done here since
+  // no other UI button based on CustomButton appears to handle mouse
+  // right-click. If other cases are identified, it may make sense to move this
+  // check to CustomButton.
+  if (event->type() == ui::ET_GESTURE_LONG_PRESS)
+    NotifyClick(*event);
+  else
+    LabelButton::OnGestureEvent(event);
+}
+
 void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
   Update();
 }

@@ -31,6 +31,9 @@ class NewAvatarButton : public views::LabelButton,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
 
+  // Views
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
  private:
   friend class ProfileChooserViewExtensionsTest;
 
