@@ -168,7 +168,7 @@ void RawResource::updateRequest(const ResourceRequest& request)
 
 void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    ResourcePtr<RawResource> protect(this);
+    InternalResourcePtr protect(this);
     Resource::responseReceived(response, nullptr);
     ResourceClientWalker<RawResourceClient> w(m_clients);
     ASSERT(count() <= 1 || !handle);
