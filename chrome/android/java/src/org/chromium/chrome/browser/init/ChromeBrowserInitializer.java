@@ -274,18 +274,28 @@ public class ChromeBrowserInitializer {
                 || "userdebug".equals(Build.TYPE)
                 || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
             StrictMode.enableDefaults();
-            StrictMode.ThreadPolicy.Builder policy =
+            StrictMode.ThreadPolicy.Builder threadPolicy =
                     new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy());
-            policy = policy.detectAll()
+            threadPolicy = threadPolicy.detectAll()
                     .penaltyFlashScreen()
                     .penaltyDeathOnNetwork();
+            /*
+             * Explicitly enable detection of all violations except file URI leaks, as that results
+             * in false positives when file URI intents are passed between Chrome activities in
+             * separate processes. See http://crbug.com/508282#c11.
+             */
+            StrictMode.VmPolicy.Builder vmPolicy = new StrictMode.VmPolicy.Builder();
+            vmPolicy = vmPolicy.detectActivityLeaks()
+                    .detectLeakedClosableObjects()
+                    .detectLeakedRegistrationObjects()
+                    .detectLeakedSqlLiteObjects()
+                    .penaltyLog();
             if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
-                policy = policy.penaltyDeath();
-                StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder(StrictMode.getVmPolicy())
-                        .penaltyDeath()
-                        .build());
+                threadPolicy = threadPolicy.penaltyDeath();
+                vmPolicy = vmPolicy.penaltyDeath();
             }
-            StrictMode.setThreadPolicy(policy.build());
+            StrictMode.setThreadPolicy(threadPolicy.build());
+            StrictMode.setVmPolicy(vmPolicy.build());
         }
     }
 
