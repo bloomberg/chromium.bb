@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# 'top'-like memory polling for Chrome on Android
+# 'top'-like memory/network polling for Android apps.
 
 import argparse
 import curses
@@ -20,8 +20,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              'build',
                              'android'))
 from pylib import android_commands
-from pylib.device import adb_wrapper
 from pylib.device import device_errors
+from pylib.device import device_utils
+
+class Utils(object):
+  """A helper class to hold various utility methods."""
+
+  @staticmethod
+  def FindLines(haystack, needle):
+    """A helper method to find lines in |haystack| that contain the string
+    |needle|."""
+    return [ hay for hay in haystack if needle in hay ]
 
 class Validator(object):
   """A helper class with validation methods for argparse."""
@@ -67,9 +76,30 @@ class DeviceHelper(object):
   """A helper class with various generic device interaction methods."""
 
   @staticmethod
+  def __GetUserIdForProcessName(adb, process_name):
+    """Returns the userId of the application associated by |pid| or None if
+    not found."""
+    try:
+      process_name = process_name.split(':')[0]
+      cmd = ['dumpsys', 'package', process_name]
+      user_id_lines = adb.RunShellCommand(' '.join(cmd), large_output=True)
+      user_id_lines = Utils.FindLines(user_id_lines, 'userId=')
+
+      if not user_id_lines:
+        return None
+
+      columns = re.split('\s+|=', user_id_lines[0].strip())
+
+      if len(columns) >= 2:
+        return columns[1]
+    except device_errors.AdbShellCommandFailedError:
+      pass
+    return None
+
+  @staticmethod
   def GetDeviceModel(adb):
     """Returns the model of the device with the |adb| connection."""
-    return adb.Shell(' '.join(['getprop', 'ro.product.model'])).strip()
+    return adb.GetProp('ro.product.model').strip()
 
   @staticmethod
   def GetDeviceToTrack(preset=None):
@@ -87,19 +117,20 @@ class DeviceHelper(object):
 
   @staticmethod
   def GetPidsToTrack(adb, default_pid=None, process_filter=None):
-    """Returns a list of pids based on the input arguments.  If |default_pid| is
-    specified it will return that pid if it exists.  If |process_filter| is
-    specified it will return the pids of processes with that string in the name.
-    If both are specified it will intersect the two."""
+    """Returns a list of tuples of (userid, pids, process name) based on the
+    input arguments.  If |default_pid| is specified it will return that pid if
+    it exists.  If |process_filter| is specified it will return the pids of
+    processes with that string in the name. If both are specified it will
+    intersect the two.  The returned result is sorted based on userid."""
     pids = []
     try:
       cmd = ['ps']
+      pid_lines = adb.RunShellCommand(' '.join(cmd), large_output=True)
       if default_pid:
-        cmd.extend(['|', 'grep', '-F', str(default_pid)])
+        pid_lines = Utils.FindLines(pid_lines, str(default_pid))
       if process_filter:
-        cmd.extend(['|', 'grep', '-F', process_filter])
-      pid_str = adb.Shell(' '.join(cmd))
-      for line in pid_str.splitlines():
+        pid_lines = Utils.FindLines(pid_lines, process_filter)
+      for line in pid_lines:
         data = re.split('\s+', line.strip())
         pid = data[1]
         name = data[-1]
@@ -109,10 +140,63 @@ class DeviceHelper(object):
         pid_matches = not default_pid or pid == str(default_pid)
         name_matches = not process_filter or name.find(process_filter) != -1
         if pid_matches and name_matches:
-          pids.append((pid, name))
+          userid = DeviceHelper.__GetUserIdForProcessName(adb, name)
+          pids.append((userid, pid, name))
     except device_errors.AdbShellCommandFailedError:
       pass
-    return pids
+    return sorted(pids, key=lambda tup: tup[0])
+
+class NetworkHelper(object):
+  """A helper class to query basic network usage of an application."""
+  @staticmethod
+  def QueryNetwork(adb, userid):
+    """Queries the device for network information about the application with a
+    user id of |userid|.  It will return a list of values:
+    [ Download Background, Upload Background, Download Foreground, Upload
+    Foreground ].  If the application is not found it will return
+    [ 0, 0, 0, 0 ]."""
+    results = [0, 0, 0, 0]
+
+    if not userid:
+      return results
+
+    try:
+      # Parsing indices for scanning a row from /proc/net/xt_qtaguid/stats.
+      # The application id
+      userid_idx = 3
+
+      # Whether or not the transmission happened with the application in the
+      # background (0) or foreground (1).
+      bg_or_fg_idx = 4
+
+      # The number of bytes received.
+      rx_idx = 5
+
+      # The number of bytes sent.
+      tx_idx = 7
+
+      cmd = ['cat', '/proc/net/xt_qtaguid/stats']
+      net_lines = adb.RunShellCommand(' '.join(cmd), large_output=True)
+      net_lines = Utils.FindLines(net_lines, userid)
+      for line in net_lines:
+        data = re.split('\s+', line.strip())
+        if data[userid_idx] != userid:
+          continue
+
+        dst_idx_offset = None
+        if data[bg_or_fg_idx] == '0':
+          dst_idx_offset = 0
+        elif data[bg_or_fg_idx] == '1':
+          dst_idx_offset = 2
+
+        if dst_idx_offset is None:
+          continue
+
+        results[dst_idx_offset] = round(float(data[rx_idx]) / 1000.0, 2)
+        results[dst_idx_offset + 1] = round(float(data[tx_idx]) / 1000.0, 2)
+    except device_errors.AdbShellCommandFailedError:
+      pass
+    return results
 
 class MemoryHelper(object):
   """A helper class to query basic memory usage of a process."""
@@ -125,8 +209,8 @@ class MemoryHelper(object):
     found it will return [ 0, 0, 0 ]."""
     results = [0, 0, 0]
 
-    memstr = adb.Shell(' '.join(['dumpsys', 'meminfo', pid]))
-    for line in memstr.splitlines():
+    mem_lines = adb.RunShellCommand(' '.join(['dumpsys', 'meminfo', pid]))
+    for line in mem_lines:
       match = re.split('\s+', line.strip())
 
       # Skip data after the 'App Summary' line.  This is to fix builds where
@@ -179,8 +263,8 @@ class GraphicsHelper(object):
     represents the graphics memory usage.  Will return this as a single entry
     array of [ Graphics ].  If not found, will return [ 0 ]."""
     try:
-      memstr = adb.Shell(' '.join(['showmap', '-t', pid]))
-      for line in memstr.splitlines():
+      mem_lines = adb.RunShellCommand(' '.join(['showmap', '-t', pid]))
+      for line in mem_lines:
         match = re.split('[ ]+', line.strip())
         if match[-1] in GraphicsHelper.__SHOWMAP_KEY_MATCHES:
           return [ round(float(match[2]) / 1000.0, 2) ]
@@ -194,8 +278,8 @@ class GraphicsHelper(object):
     file in |self.__NV_MAP_FILE_LOCATIONS| and see if one exists.  If so, it
     will return it."""
     for nv_file in GraphicsHelper.__NV_MAP_FILE_LOCATIONS:
-      exists = adb.shell(' '.join(['ls', nv_file]))
-      if exists == nv_file.split('/')[-1]:
+      exists = adb.RunShellCommand(' '.join(['ls', nv_file]))
+      if exists[0] == nv_file.split('/')[-1]:
         return nv_file
     return None
 
@@ -207,8 +291,8 @@ class GraphicsHelper(object):
     [ Graphics ].  If not found, will return [ 0 ]."""
     nv_file = GraphicsHelper.__NvMapPath(adb)
     if nv_file:
-      memstr = adb.Shell(' '.join(['cat', nv_file]))
-      for line in memstr.splitlines():
+      mem_lines = adb.RunShellCommand(' '.join(['cat', nv_file]))
+      for line in mem_lines:
         match = re.split(' +', line.strip())
         if match[2] == pid:
           return [ round(float(match[3]) / 1000000.0, 2) ]
@@ -233,29 +317,39 @@ class GraphicsHelper(object):
       return GraphicsHelper.__QueryShowmap(adb, pid)
     return [ 0 ]
 
-class MemorySnapshot(object):
-  """A class holding a snapshot of memory for various pids that are being
-  tracked.
+class DeviceSnapshot(object):
+  """A class holding a snapshot of memory and network usage for various pids
+  that are being tracked.  If |show_mem| is True, this will track memory usage.
+  If |show_net| is True, this will track network usage.
 
   Attributes:
-    pids:      A list of tuples (pid, process name) that should be tracked.
+    pids:      A list of tuples (userid, pid, process name) that should be
+              tracked.
     memory:    A map of entries of pid => memory consumption array.  Right now
                the indices are [ Native, Pss, Dalvik, Graphics ].
+    network:   A map of entries of userid => network consumption array.  Right
+               now the indices are [ Download Background, Upload Background,
+               Download Foreground, Upload Foreground ].
     timestamp: The amount of time (in seconds) between when this program started
                and this snapshot was taken.
   """
 
-  def __init__(self, adb, pids):
-    """Creates an instances of a MemorySnapshot with an |adb| device connection
+  def __init__(self, adb, pids, show_mem, show_net):
+    """Creates an instances of a DeviceSnapshot with an |adb| device connection
     and a list of (pid, process name) tuples."""
-    super(MemorySnapshot, self).__init__()
+    super(DeviceSnapshot, self).__init__()
 
     self.pids = pids
     self.memory = {}
+    self.network = {}
     self.timestamp = Timer.GetTimestamp()
 
-    for (pid, name) in pids:
-      self.memory[pid] = self.__QueryMemoryForPid(adb, pid)
+    for (userid, pid, name) in pids:
+      if show_mem:
+        self.memory[pid] = self.__QueryMemoryForPid(adb, pid)
+
+      if show_net and userid not in self.network:
+        self.network[userid] = NetworkHelper.QueryNetwork(adb, userid)
 
   @staticmethod
   def __QueryMemoryForPid(adb, pid):
@@ -268,30 +362,59 @@ class MemorySnapshot(object):
 
   def __GetProcessNames(self):
     """Returns a list of all of the process names tracked by this snapshot."""
-    return [tuple[1] for tuple in self.pids]
+    return [tuple[2] for tuple in self.pids]
 
   def HasResults(self):
     """Whether or not this snapshot was tracking any processes."""
     return self.pids
 
-  def GetPidAndNames(self):
-    """Returns a list of (pid, process name) tuples that are being tracked in
-    this snapshot."""
+  def GetPidInfo(self):
+    """Returns a list of (userid, pid, process name) tuples that are being
+    tracked in this snapshot."""
     return self.pids
 
   def GetNameForPid(self, search_pid):
     """Returns the process name of a tracked |search_pid|.  This only works if
     |search_pid| is tracked by this snapshot."""
-    for (pid, name) in self.pids:
+    for (userid, pid, name) in self.pids:
       if pid == search_pid:
         return name
     return None
 
-  def GetResults(self, pid):
+  def GetUserIdForPid(self, search_pid):
+    """Returns the application userId for an associated |pid|.  This only works
+    if |search_pid| is tracked by this snapshot and the application userId is
+    queryable."""
+    for (userid, pid, name) in self.pids:
+      if pid == search_pid:
+        return userid
+    return None
+
+  def IsFirstPidForUserId(self, search_pid):
+    """Returns whether or not |search_pid| is the first pid in the |pids| with
+    the associated application userId.  This is used to determine if network
+    statistics should be shown for this pid or if they have already been shown
+    for a pid associated with this application."""
+    prev_userid = None
+    for idx, (userid, pid, name) in enumerate(self.pids):
+      if pid == search_pid:
+        return prev_userid != userid
+      prev_userid = userid
+    return False
+
+  def GetMemoryResults(self, pid):
     """Returns a list of entries about the memory usage of the process specified
     by |pid|.  This will be of the format [ Native, Pss, Dalvik, Graphics ]."""
     if pid in self.memory:
       return self.memory[pid]
+    return None
+
+  def GetNetworkResults(self, userid):
+    """Returns a list of entries about the network usage of the application
+    specified by |userid|.  This will be of the format [ Download Background,
+    Upload Background, Download Foreground, Upload Foreground ]."""
+    if userid in self.network:
+      return self.network[userid]
     return None
 
   def GetLongestNameLength(self):
@@ -320,6 +443,11 @@ class OutputBeautifier(object):
                             'Dalvik',
                             'Graphics']
 
+  __NETWORK_COLUMN_TITLES = ['Bg Rx',
+                             'Bg Tx',
+                             'Fg Rx',
+                             'Fg Tx']
+
   __TERMINAL_COLORS = {'ENDC': 0,
                        'BOLD': 1,
                        'GREY30': 90,
@@ -341,8 +469,8 @@ class OutputBeautifier(object):
     """Find the set of unique pids across all every snapshot in |snapshots|."""
     pids = set()
     for snapshot in snapshots:
-      for (pid, name) in snapshot.GetPidAndNames():
-        pids.add((pid, name))
+      for (userid, pid, name) in snapshot.GetPidInfo():
+        pids.add((userid, pid, name))
     return pids
 
   @staticmethod
@@ -368,6 +496,12 @@ class OutputBeautifier(object):
       return 'GREEN'
     elif delta > 0:
       return 'RED'
+
+  @staticmethod
+  def __CleanRound(val, precision):
+    """Round |val| to |precision|.  If |precision| is 0, completely remove the
+    decimal point."""
+    return int(val) if precision == 0 else round(float(val), precision)
 
   def __ColorString(self, string, color):
     """Colors |string| based on |color|.  |color| must be in
@@ -413,70 +547,71 @@ class OutputBeautifier(object):
       sys.stdout.write(key_term_clear_eol)
     self.lines_printed = 0
 
-  def __PrintBasicStatsHeader(self):
-    """Returns a common header for the memory usage stats."""
-    titles = ''
-    for title in self.__MEMORY_COLUMN_TITLES:
-       titles += self.__PadString(title, 8, True) + ' '
-       titles += self.__PadString('', 8, True)
-    return self.__ColorString(titles, 'BOLD')
-
-  def __PrintLabeledStatsHeader(self, snapshot):
-    """Returns a header for the memory usage stats that includes sections for
-    the pid and the process name.  The available room given to the process name
-    is based on the length of the longest process name tracked by |snapshot|.
-    This header also puts the timestamp of the snapshot on the right."""
+  def __PrintPidLabelHeader(self, snapshot):
+    """Returns a header string with columns Pid and Name."""
     if not snapshot or not snapshot.HasResults():
       return
 
     name_length = max(8, snapshot.GetLongestNameLength())
 
-    titles = self.__PadString('Pid', 8, True) + ' '
-    titles += self.__PadString('Name', name_length, False) + ' '
-    titles += self.__PrintBasicStatsHeader()
-    titles += '(' + str(round(snapshot.GetTimestamp(), 2)) + 's)'
-    titles = self.__ColorString(titles, 'BOLD')
-    return titles
+    header = self.__PadString('Pid', 8, True) + ' '
+    header += self.__PadString('Name', name_length, False)
+    header = self.__ColorString(header, 'BOLD')
+    return header
 
-  def __PrintTimestampedBasicStatsHeader(self):
-    """Returns a header for the memory usage stats that includes a the
-    timestamp of the snapshot."""
-    titles = self.__PadString('Timestamp', 8, False) + ' '
-    titles = self.__ColorString(titles, 'BOLD')
-    titles += self.__PrintBasicStatsHeader()
-    return titles
+  def __PrintTimestampHeader(self):
+    """Returns a header string with a Timestamp column."""
+    header = self.__PadString('Timestamp', 8, False)
+    header = self.__ColorString(header, 'BOLD')
+    return header
 
-  def __PrintBasicSnapshotStats(self, pid, snapshot, prev_snapshot):
-    """Returns a string that contains the basic snapshot memory statistics.
-    This string should line up with the header returned by
-    |self.__PrintBasicStatsHeader|."""
+  def __PrintMemoryStatsHeader(self):
+    """Returns a header string for memory usage statistics."""
+    headers = ''
+    for header in self.__MEMORY_COLUMN_TITLES:
+       headers += self.__PadString(header, 8, True) + ' '
+       headers += self.__PadString('(mB)', 8, False)
+    return self.__ColorString(headers, 'BOLD')
+
+  def __PrintNetworkStatsHeader(self):
+    """Returns a header string for network usage statistics."""
+    headers = ''
+    for header in self.__NETWORK_COLUMN_TITLES:
+      headers += self.__PadString(header, 8, True) + ' '
+      headers += self.__PadString('(kB)', 8, False)
+    return self.__ColorString(headers, 'BOLD')
+
+  def __PrintTrailingHeader(self, snapshot):
+    """Returns a header string for the header trailer (includes timestamp)."""
     if not snapshot or not snapshot.HasResults():
       return
 
-    results = snapshot.GetResults(pid)
+    header = '(' + str(round(snapshot.GetTimestamp(), 2)) + 's)'
+    return self.__ColorString(header, 'BOLD')
+
+  def __PrintArrayWithDeltas(self, results, old_results, precision=2):
+    """Helper method to return a string of statistics with their deltas.  This
+    takes two arrays and prints out "current (current - old)" for all entries in
+    the arrays."""
     if not results:
       return
-
-    old_results = prev_snapshot.GetResults(pid) if prev_snapshot else None
-
-    # Build Delta List
-    deltas = [ 0, 0, 0, 0 ]
+    deltas = [0] * len(results)
     if old_results:
+      assert len(old_results) == len(results)
       deltas = map(sub, results, old_results)
-      assert len(deltas) == len(results)
-
     output = ''
-    for idx, mem in enumerate(results):
-      output += self.__PadString(mem, 8, True) + ' '
-      output += self.__PadAndColor('(' + str(round(deltas[idx], 2)) + ')',
-          8, False, self.__GetDiffColor(deltas[idx]))
+    for idx, val in enumerate(results):
+      round_val = self.__CleanRound(val, precision)
+      round_delta = self.__CleanRound(deltas[idx], precision)
+      output += self.__PadString(str(round_val), 8, True) + ' '
+      output += self.__PadAndColor('(' + str(round_delta) + ')', 8, False,
+          self.__GetDiffColor(deltas[idx]))
 
     return output
 
-  def __PrintLabeledSnapshotStats(self, pid, snapshot, prev_snapshot):
-    """Returns a string that contains memory usage stats along with the pid and
-    process name.  This string should line up with the header returned by
-    |self.__PrintLabeledStatsHeader|."""
+  def __PrintPidLabelStats(self, pid, snapshot):
+    """Returns a string that includes the columns pid and process name for
+    the specified |pid|.  This lines up with the associated header."""
     if not snapshot or not snapshot.HasResults():
       return
 
@@ -484,48 +619,172 @@ class OutputBeautifier(object):
     name = snapshot.GetNameForPid(pid)
 
     output = self.__PadAndColor(pid, 8, True, 'DARK_YELLOW') + ' '
-    output += self.__PadAndColor(name, name_length, False, None) + ' '
-    output += self.__PrintBasicSnapshotStats(pid, snapshot, prev_snapshot)
+    output += self.__PadAndColor(name, name_length, False, None)
     return output
 
-  def __PrintTimestampedBasicSnapshotStats(self, pid, snapshot, prev_snapshot):
-    """Returns a string that contains memory usage stats along with the
-    timestamp of the snapshot.  This string should line up with the header
-    returned by |self.__PrintTimestampedBasicStatsHeader|."""
+  def __PrintTimestampStats(self, snapshot):
+    """Returns a string that includes the timestamp of the |snapshot|.  This
+    lines up with the associated header."""
     if not snapshot or not snapshot.HasResults():
       return
 
     timestamp_length = max(8, len("Timestamp"))
     timestamp = round(snapshot.GetTimestamp(), 2)
 
-    output = self.__PadString(str(timestamp), timestamp_length, True) + ' '
-    output += self.__PrintBasicSnapshotStats(pid, snapshot, prev_snapshot)
+    output = self.__PadString(str(timestamp), timestamp_length, True)
     return output
 
-  def PrettyPrint(self, snapshot, prev_snapshot):
-    """Prints |snapshot| to the console.  This will show memory deltas between
-    |snapshot| and |prev_snapshot|.  This will also either color or overwrite
-    the previous entries based on |self.can_color| and |self.overwrite|."""
+  def __PrintMemoryStats(self, pid, snapshot, prev_snapshot):
+    """Returns a string that includes memory statistics of the |snapshot|.  This
+    lines up with the associated header."""
+    if not snapshot or not snapshot.HasResults():
+      return
+
+    results = snapshot.GetMemoryResults(pid)
+    if not results:
+      return
+
+    old_results = prev_snapshot.GetMemoryResults(pid) if prev_snapshot else None
+    return self.__PrintArrayWithDeltas(results, old_results, 2)
+
+  def __PrintNetworkStats(self, userid, snapshot, prev_snapshot):
+    """Returns a string that includes network statistics of the |snapshot|. This
+    lines up with the associated header."""
+    if not snapshot or not snapshot.HasResults():
+      return
+
+    results = snapshot.GetNetworkResults(userid)
+    if not results:
+      return
+
+    old_results = None
+    if prev_snapshot:
+      old_results = prev_snapshot.GetNetworkResults(userid)
+    return self.__PrintArrayWithDeltas(results, old_results, 0)
+
+  def __PrintNulledNetworkStats(self):
+    """Returns a string that includes empty network statistics.  This lines up
+    with the associated header.  This is used when showing statistics for pids
+    that share the same application userId.  Network statistics should only be
+    shown once for each application userId."""
+    stats = ''
+    for title in self.__NETWORK_COLUMN_TITLES:
+      stats += self.__PadString('-', 8, True) + ' '
+      stats += self.__PadString('', 8, True)
+    return stats
+
+  def __PrintHeaderHelper(self,
+                          snapshot,
+                          show_labels,
+                          show_timestamp,
+                          show_mem,
+                          show_net,
+                          show_trailer):
+    """Helper method to concat various header entries together into one header.
+    This will line up with a entry built by __PrintStatsHelper if the same
+    values are passed to it."""
+    titles = []
+    if show_labels:
+      titles.append(self.__PrintPidLabelHeader(snapshot))
+
+    if show_timestamp:
+      titles.append(self.__PrintTimestampHeader())
+
+    if show_mem:
+      titles.append(self.__PrintMemoryStatsHeader())
+
+    if show_net:
+      titles.append(self.__PrintNetworkStatsHeader())
+
+    if show_trailer:
+      titles.append(self.__PrintTrailingHeader(snapshot))
+
+    return ' '.join(titles)
+
+  def __PrintStatsHelper(self,
+                         pid,
+                         snapshot,
+                         prev_snapshot,
+                         show_labels,
+                         show_timestamp,
+                         show_mem,
+                         show_net):
+    """Helper method to concat various stats entries together into one line.
+    This will line up with a header built by __PrintHeaderHelper if the same
+    values are passed to it."""
+    stats = []
+    if show_labels:
+      stats.append(self.__PrintPidLabelStats(pid, snapshot))
+
+    if show_timestamp:
+      stats.append(self.__PrintTimestampStats(snapshot))
+
+    if show_mem:
+      stats.append(self.__PrintMemoryStats(pid, snapshot, prev_snapshot))
+
+    if show_net:
+      userid = snapshot.GetUserIdForPid(pid)
+      show_userid = snapshot.IsFirstPidForUserId(pid)
+      if userid and show_userid:
+        stats.append(self.__PrintNetworkStats(userid, snapshot, prev_snapshot))
+      else:
+        stats.append(self.__PrintNulledNetworkStats())
+
+    return ' '.join(stats)
+
+  def PrettyPrint(self, snapshot, prev_snapshot, show_mem=True, show_net=True):
+    """Prints |snapshot| to the console.  This will show memory and/or network
+    deltas between |snapshot| and |prev_snapshot|.  This will also either color
+    or overwrite the previous entries based on |self.can_color| and
+    |self.overwrite|.  If |show_mem| is True, this will attempt to show memory
+    statistics.  If |show_net| is True, this will attempt to show network
+    statistics."""
     self.__ClearScreen()
 
     if not snapshot or not snapshot.HasResults():
       self.__OutputLine("No results...")
       return
 
-    self.__OutputLine(self.__PrintLabeledStatsHeader(snapshot))
+    # Output Format
+    show_label = True
+    show_timestamp = False
+    show_trailer = True
 
-    for (pid, name) in snapshot.GetPidAndNames():
-      self.__OutputLine(self.__PrintLabeledSnapshotStats(pid,
-                                                         snapshot,
-                                                         prev_snapshot))
+    self.__OutputLine(self.__PrintHeaderHelper(snapshot,
+                                               show_label,
+                                               show_timestamp,
+                                               show_mem,
+                                               show_net,
+                                               show_trailer))
 
-  def PrettyFile(self, file_path, snapshots, diff_against_start):
-    """Writes |snapshots| (a list of MemorySnapshots) to |file_path|.
+    for (userid, pid, name) in snapshot.GetPidInfo():
+      self.__OutputLine(self.__PrintStatsHelper(pid,
+                                                snapshot,
+                                                prev_snapshot,
+                                                show_label,
+                                                show_timestamp,
+                                                show_mem,
+                                                show_net))
+
+  def PrettyFile(self,
+                 file_path,
+                 snapshots,
+                 diff_against_start,
+                 show_mem=True,
+                 show_net=True):
+    """Writes |snapshots| (a list of DeviceSnapshots) to |file_path|.
     |diff_against_start| determines whether or not the snapshot deltas are
     between the first entry and all entries or each previous entry.  This output
-    will not follow |self.can_color| or |self.overwrite|."""
+    will not follow |self.can_color| or |self.overwrite|.  If |show_mem| is
+    True, this will attempt to show memory statistics.  If |show_net| is True,
+    this will attempt to show network statistics."""
     if not file_path or not snapshots:
       return
+
+    # Output Format
+    show_label = False
+    show_timestamp = True
+    show_trailer = False
 
     pids = self.__FindPidsForSnapshotList(snapshots)
 
@@ -534,18 +793,29 @@ class OutputBeautifier(object):
     self.can_color = False
 
     with open(file_path, 'w') as out:
-      for (pid, name) in pids:
+      for (userid, pid, name) in pids:
         out.write(name + ' (' + str(pid) + '):\n')
-        out.write(self.__PrintTimestampedBasicStatsHeader())
+        out.write(self.__PrintHeaderHelper(None,
+                                           show_label,
+                                           show_timestamp,
+                                           show_mem,
+                                           show_net,
+                                           show_trailer))
         out.write('\n')
 
         prev_snapshot = None
         for snapshot in snapshots:
-          if not snapshot.GetResults(pid):
+          has_mem = show_mem and snapshot.GetMemoryResults(pid) is not None
+          has_net = show_net and snapshot.GetNetworkResults(userid) is not None
+          if not has_mem and not has_net:
             continue
-          out.write(self.__PrintTimestampedBasicSnapshotStats(pid,
-                                                              snapshot,
-                                                              prev_snapshot))
+          out.write(self.__PrintStatsHelper(pid,
+                                            snapshot,
+                                            prev_snapshot,
+                                            show_label,
+                                            show_timestamp,
+                                            show_mem,
+                                            show_net))
           out.write('\n')
           if not prev_snapshot or not diff_against_start:
             prev_snapshot = snapshot
@@ -555,8 +825,9 @@ class OutputBeautifier(object):
     self.can_color = can_color
 
   def PrettyGraph(self, file_path, snapshots):
-    """Creates a pdf graph of |snapshots| (a list of MemorySnapshots) at
-    |file_path|."""
+    """Creates a pdf graph of |snapshots| (a list of DeviceSnapshots) at
+    |file_path|.  This currently only shows memory stats and no network
+    stats."""
     # Import these here so the rest of the functionality doesn't rely on
     # matplotlib
     from matplotlib import pyplot
@@ -568,7 +839,7 @@ class OutputBeautifier(object):
     pids = self.__FindPidsForSnapshotList(snapshots)
 
     pp = PdfPages(file_path)
-    for (pid, name) in pids:
+    for (userid, pid, name) in pids:
       figure = pyplot.figure()
       ax = figure.add_subplot(1, 1, 1)
       ax.set_xlabel('Time (s)')
@@ -579,7 +850,7 @@ class OutputBeautifier(object):
       timestamps = []
 
       for snapshot in snapshots:
-        results = snapshot.GetResults(pid)
+        results = snapshot.GetMemoryResults(pid)
         if not results:
           continue
 
@@ -634,8 +905,8 @@ def main(argv):
                       dest='dull_output',
                       action='store_true',
                       help='Whether or not to dull down the output.')
-  parser.add_argument('-n',
-                      '--no-overwrite',
+  parser.add_argument('-k',
+                      '--keep-results',
                       dest='no_overwrite',
                       action='store_true',
                       help='Keeps printing the results in a list instead of'
@@ -650,12 +921,28 @@ def main(argv):
                       dest='text_file',
                       type=Validator.ValidatePath,
                       help='File to save memory tracking stats to.')
+  parser.add_argument('-m',
+                      '--memory',
+                      dest='show_mem',
+                      action='store_true',
+                      help='Whether or not to show memory stats. True by'
+                           ' default unless --n is specified.')
+  parser.add_argument('-n',
+                      '--net',
+                      dest='show_net',
+                      action='store_true',
+                      help='Whether or not to show network stats. False by'
+                           ' default.')
 
   args = parser.parse_args()
 
   # Add a basic filter to make sure we search for something.
   if not args.procname and not args.pid:
     args.procname = 'chrome'
+
+  # Make sure we show memory stats if nothing was specifically requested.
+  if not args.show_net and not args.show_mem:
+    args.show_mem = True
 
   curses.setupterm()
 
@@ -674,12 +961,13 @@ def main(argv):
       if not device:
         adb = None
       elif not adb or device != str(adb):
-        adb = adb_wrapper.AdbWrapper(device)
+        #adb = adb_wrapper.AdbWrapper(device)
+        adb = device_utils.DeviceUtils(device)
         old_snapshot = None
         snapshots = []
         try:
-          adb.Root()
-        except device_errors.AdbCommandFailedError:
+          adb.EnableRoot()
+        except device_errors.CommandFailedError:
           sys.stderr.write('Unable to run adb as root.\n')
           sys.exit(1)
 
@@ -687,12 +975,14 @@ def main(argv):
       snapshot = None
       if adb:
         pids = DeviceHelper.GetPidsToTrack(adb, args.pid, args.procname)
-        snapshot = MemorySnapshot(adb, pids) if pids else None
+        snapshot = None
+        if pids:
+          snapshot = DeviceSnapshot(adb, pids, args.show_mem, args.show_net)
 
       if snapshot and snapshot.HasResults():
         snapshots.append(snapshot)
 
-      printer.PrettyPrint(snapshot, old_snapshot)
+      printer.PrettyPrint(snapshot, old_snapshot, args.show_mem, args.show_net)
 
       # Transfer state for the next iteration and sleep
       delay = max(1, args.frequency)
@@ -710,7 +1000,11 @@ def main(argv):
     printer.PrettyGraph(args.graph_file, snapshots)
 
   if args.text_file:
-    printer.PrettyFile(args.text_file, snapshots, args.diff_against_start)
+    printer.PrettyFile(args.text_file,
+                       snapshots,
+                       args.diff_against_start,
+                       args.show_mem,
+                       args.show_net)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
