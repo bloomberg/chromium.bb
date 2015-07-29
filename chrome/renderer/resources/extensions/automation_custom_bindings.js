@@ -132,7 +132,7 @@ automation.registerCustomHook(function(bindingsAPI) {
 automationInternal.onTreeChange.addListener(function(treeID,
                                                      nodeID,
                                                      changeType) {
-  var tree = AutomationRootNode.get(treeID);
+  var tree = AutomationRootNode.getOrCreate(treeID);
   if (!tree)
     return;
 
