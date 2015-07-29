@@ -54,7 +54,15 @@ public:
 
 protected:
     SkData* onRefEncodedData() override;
-    Result onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes, const Options&, SkPMColor ctable[], int* ctableCount) override;
+
+#ifdef SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
+    Result onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes, const Options&,
+        SkPMColor ctable[], int* ctableCount) override;
+#else
+    bool onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes,
+        SkPMColor ctable[], int* ctableCount) override;
+#endif
+
     bool onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace*) override;
 
 private:
