@@ -13,14 +13,9 @@ class GLImage;
 
 namespace ui {
 
-class GpuMemoryBufferFactoryOzoneNativePixmap;
-
 class SurfacelessGlRenderer : public GlRenderer {
  public:
-  SurfacelessGlRenderer(
-      gfx::AcceleratedWidget widget,
-      const gfx::Size& size,
-      GpuMemoryBufferFactoryOzoneNativePixmap* buffer_factory);
+  SurfacelessGlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size);
   ~SurfacelessGlRenderer() override;
 
   // Renderer:
@@ -36,9 +31,7 @@ class SurfacelessGlRenderer : public GlRenderer {
     BufferWrapper();
     ~BufferWrapper();
 
-    bool Initialize(GpuMemoryBufferFactoryOzoneNativePixmap* buffer_factory,
-                    gfx::AcceleratedWidget widget,
-                    const gfx::Size& size);
+    bool Initialize(gfx::AcceleratedWidget widget, const gfx::Size& size);
     void BindFramebuffer();
     void SchedulePlane();
 
@@ -50,8 +43,6 @@ class SurfacelessGlRenderer : public GlRenderer {
     unsigned int gl_fb_ = 0;
     unsigned int gl_tex_ = 0;
   };
-
-  GpuMemoryBufferFactoryOzoneNativePixmap* buffer_factory_;
 
   BufferWrapper buffers_[2];
   int back_buffer_ = 0;

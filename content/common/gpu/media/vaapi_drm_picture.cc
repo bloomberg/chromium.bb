@@ -11,9 +11,8 @@
 #include "third_party/libva/va/va_drmcommon.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_linux_dma_buffer.h"
+#include "ui/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/gl/scoped_binders.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -128,12 +127,13 @@ bool VaapiDrmPicture::Initialize() {
 
   gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
                                           texture_id());
-  gl_image_ = ui::GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForPixmap(
-      pixmap_, size(), gfx::GpuMemoryBuffer::BGRA_8888, GL_BGRA_EXT);
-  if (!gl_image_) {
+  scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
+      new gfx::GLImageOzoneNativePixmap(size(), GL_BGRA_EXT));
+  if (!image->Initialize(pixmap_.get(), gfx::GpuMemoryBuffer::BGRA_8888)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }
+  gl_image_ = image;
   if (!gl_image_->BindTexImage(GL_TEXTURE_EXTERNAL_OES)) {
     LOG(ERROR) << "Failed to bind texture to GLImage";
     return false;

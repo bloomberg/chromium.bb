@@ -5,12 +5,11 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/containers/hash_tables.h"
+#include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
+#include "ui/ozone/public/native_pixmap.h"
 
 namespace gfx {
 class GLImage;
@@ -51,7 +50,11 @@ class GpuMemoryBufferFactoryOzoneNativePixmap : public GpuMemoryBufferFactory,
       int client_id) override;
 
  private:
-  ui::GpuMemoryBufferFactoryOzoneNativePixmap ozone_native_pixmap_factory_;
+  using NativePixmapMapKey = std::pair<int, int>;
+  using NativePixmapMap =
+      base::hash_map<NativePixmapMapKey, scoped_refptr<ui::NativePixmap>>;
+  NativePixmapMap native_pixmaps_;
+  base::Lock native_pixmaps_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryOzoneNativePixmap);
 };

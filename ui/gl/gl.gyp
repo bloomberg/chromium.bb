@@ -150,12 +150,6 @@
             'gl_implementation_osmesa.h',
           ],
         }],
-        ['OS=="linux"', {
-          'sources': [
-            'gl_image_linux_dma_buffer.cc',
-            'gl_image_linux_dma_buffer.h',
-          ],
-        }],
         ['use_x11 == 1', {
           'sources': [
             'gl_bindings_autogen_glx.cc',
@@ -264,6 +258,10 @@
           'sources/': [ ['exclude', '^android/'] ],
         }],
         ['use_ozone==1', {
+          'sources': [
+            'gl_image_ozone_native_pixmap.cc',
+            'gl_image_ozone_native_pixmap.h',
+          ],
           'dependencies': [
             '../ozone/ozone.gyp:ozone',
             '../ozone/ozone.gyp:ozone_base',

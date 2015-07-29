@@ -21,7 +21,6 @@
 #include "ui/ozone/demo/gl_renderer.h"
 #include "ui/ozone/demo/software_renderer.h"
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
-#include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -57,9 +56,6 @@ class RendererFactory {
 
   // Helper for applications that do GL on main thread.
   ui::OzoneGpuTestHelper gpu_helper_;
-
-  // Used by the surfaceless renderers to allocate buffers.
-  ui::GpuMemoryBufferFactoryOzoneNativePixmap buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFactory);
 };
@@ -208,8 +204,7 @@ scoped_ptr<ui::Renderer> RendererFactory::CreateRenderer(
     case GL:
       return make_scoped_ptr(new ui::GlRenderer(widget, size));
     case SURFACELESS_GL:
-      return make_scoped_ptr(
-          new ui::SurfacelessGlRenderer(widget, size, &buffer_factory_));
+      return make_scoped_ptr(new ui::SurfacelessGlRenderer(widget, size));
     case SOFTWARE:
       return make_scoped_ptr(new ui::SoftwareRenderer(widget, size));
   }
