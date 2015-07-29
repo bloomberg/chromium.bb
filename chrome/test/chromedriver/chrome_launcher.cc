@@ -59,7 +59,10 @@
 namespace {
 
 const char* const kCommonSwitches[] = {
-    "ignore-certificate-errors", "metrics-recording-only"};
+  "disable-popup-blocking",
+  "ignore-certificate-errors",
+  "metrics-recording-only",
+};
 
 #if defined(OS_LINUX)
 const char kEnableCrashReport[] = "enable-crash-reporter-for-testing";
