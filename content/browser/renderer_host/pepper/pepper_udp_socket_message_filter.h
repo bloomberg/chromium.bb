@@ -25,6 +25,11 @@
 
 struct PP_NetAddress_Private;
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/firewall_hole.h"
+#include "content/public/browser/browser_thread.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace net {
 class IOBuffer;
 class IOBufferWithSize;
@@ -104,6 +109,15 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
 
   void DoBind(const ppapi::host::ReplyMessageContext& context,
               const PP_NetAddress_Private& addr);
+  void OnBindComplete(scoped_ptr<net::UDPSocket> socket,
+                      const ppapi::host::ReplyMessageContext& context,
+                      const PP_NetAddress_Private& net_address);
+#if defined(OS_CHROMEOS)
+  void OpenFirewallHole(const net::IPEndPoint& local_address,
+                        base::Closure bind_complete);
+  void OnFirewallHoleOpened(base::Closure bind_complete,
+                            scoped_ptr<chromeos::FirewallHole> hole);
+#endif  // defined(OS_CHROMEOS)
   void DoRecvFrom();
   void DoSendTo(const ppapi::host::ReplyMessageContext& context,
                 const std::string& data,
@@ -149,6 +163,10 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
 
   scoped_ptr<net::UDPSocket> socket_;
   bool closed_;
+#if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::FirewallHole, content::BrowserThread::DeleteOnUIThread>
+      firewall_hole_;
+#endif  // defined(OS_CHROMEOS)
 
   scoped_refptr<net::IOBuffer> recvfrom_buffer_;
 

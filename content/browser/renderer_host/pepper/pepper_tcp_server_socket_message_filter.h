@@ -17,6 +17,11 @@
 
 struct PP_NetAddress_Private;
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/firewall_hole.h"
+#include "content/public/browser/browser_thread.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace ppapi {
 namespace host {
 class PpapiHost;
@@ -87,6 +92,14 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   void SendAcceptError(const ppapi::host::ReplyMessageContext& context,
                        int32_t pp_result);
 
+#if defined(OS_CHROMEOS)
+  void OpenFirewallHole(const ppapi::host::ReplyMessageContext& context,
+                        int net_result);
+  void OnFirewallHoleOpened(const ppapi::host::ReplyMessageContext& context,
+                            int32_t net_result,
+                            scoped_ptr<chromeos::FirewallHole> hole);
+#endif  // defined(OS_CHROMEOS)
+
   // Following fields are initialized and used only on the IO thread.
   // Non-owning ptr.
   ppapi::host::PpapiHost* ppapi_host_;
@@ -98,6 +111,11 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   scoped_ptr<net::TCPSocket> socket_;
   scoped_ptr<net::TCPSocket> accepted_socket_;
   net::IPEndPoint accepted_address_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::FirewallHole, content::BrowserThread::DeleteOnUIThread>
+      firewall_hole_;
+#endif  // defined(OS_CHROMEOS)
 
   // Following fields are initialized on the IO thread but used only
   // on the UI thread.

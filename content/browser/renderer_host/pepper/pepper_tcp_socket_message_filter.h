@@ -24,6 +24,11 @@
 #include "ppapi/host/resource_message_filter.h"
 #include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/firewall_hole.h"
+#include "content/public/browser/browser_thread.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace net {
 enum AddressFamily;
 class DrainableIOBuffer;
@@ -137,6 +142,16 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   void OnAcceptCompleted(const ppapi::host::ReplyMessageContext& context,
                          int net_result);
 
+  void OnListenCompleted(const ppapi::host::ReplyMessageContext& context,
+                         int32_t pp_result);
+#if defined(OS_CHROMEOS)
+  void OpenFirewallHole(const ppapi::host::ReplyMessageContext& context,
+                        int32_t pp_result);
+  void OnFirewallHoleOpened(const ppapi::host::ReplyMessageContext& context,
+                            int32_t result,
+                            scoped_ptr<chromeos::FirewallHole> hole);
+#endif  // defined(OS_CHROMEOS)
+
   void SendBindReply(const ppapi::host::ReplyMessageContext& context,
                      int32_t pp_result,
                      const PP_NetAddress_Private& local_addr);
@@ -194,6 +209,11 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   // bound address. For example, |bind_input_addr_| may have port set to 0.
   // It is used to check permission for listening.
   PP_NetAddress_Private bind_input_addr_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::FirewallHole, content::BrowserThread::DeleteOnUIThread>
+      firewall_hole_;
+#endif  // defined(OS_CHROMEOS)
 
   scoped_ptr<net::SingleRequestHostResolver> resolver_;
 

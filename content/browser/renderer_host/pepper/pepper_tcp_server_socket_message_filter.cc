@@ -26,6 +26,10 @@
 #include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/firewall_hole.h"
+#endif  // defined(OS_CHROMEOS)
+
 using ppapi::NetAddressPrivateImpl;
 using ppapi::host::NetErrorToPepperError;
 
@@ -153,6 +157,9 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgStopListening(
 
   state_ = STATE_CLOSED;
   socket_.reset();
+#if defined(OS_CHROMEOS)
+  firewall_hole_.reset();
+#endif  // defined(OS_CHROMEOS)
   return PP_OK;
 }
 
@@ -189,8 +196,13 @@ void PepperTCPServerSocketMessageFilter::DoListen(
     net_result = socket_->Listen(backlog);
   } while (false);
 
-  if (net_result != net::ERR_IO_PENDING)
+  if (net_result != net::ERR_IO_PENDING) {
+#if defined(OS_CHROMEOS)
+    OpenFirewallHole(context, net_result);
+#else
     OnListenCompleted(context, net_result);
+#endif
+  }
 }
 
 void PepperTCPServerSocketMessageFilter::OnListenCompleted(
@@ -229,6 +241,33 @@ void PepperTCPServerSocketMessageFilter::OnListenCompleted(
   SendListenReply(context, PP_OK, addr);
   state_ = STATE_LISTENING;
 }
+
+#if defined(OS_CHROMEOS)
+void PepperTCPServerSocketMessageFilter::OpenFirewallHole(
+    const ppapi::host::ReplyMessageContext& context,
+    int net_result) {
+  if (net_result != net::OK) {
+    return;
+  }
+  net::IPEndPoint local_addr;
+  socket_->GetLocalAddress(&local_addr);
+  pepper_socket_utils::FirewallHoleOpenCallback callback =
+      base::Bind(&PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened,
+                 this, context, net_result);
+  pepper_socket_utils::OpenTCPFirewallHole(local_addr, callback);
+}
+
+void PepperTCPServerSocketMessageFilter::OnFirewallHoleOpened(
+    const ppapi::host::ReplyMessageContext& context,
+    int32_t net_result,
+    scoped_ptr<chromeos::FirewallHole> hole) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  LOG_IF(WARNING, !hole.get()) << "Firewall hole could not be opened.";
+  firewall_hole_.reset(hole.release());
+  OnListenCompleted(context, net_result);
+}
+#endif  // defined(OS_CHROMEOS)
 
 void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     const ppapi::host::ReplyMessageContext& context,

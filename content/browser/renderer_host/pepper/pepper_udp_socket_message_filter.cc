@@ -33,6 +33,10 @@
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/firewall_hole.h"
+#endif  // defined(OS_CHROMEOS)
+
 using ppapi::NetAddressPrivateImpl;
 using ppapi::host::NetErrorToPepperError;
 using ppapi::proxy::UDPSocketFilter;
@@ -490,11 +494,50 @@ void PepperUDPSocketMessageFilter::DoBind(
     return;
   }
 
+#if defined(OS_CHROMEOS)
+  OpenFirewallHole(
+      bound_address,
+      base::Bind(&PepperUDPSocketMessageFilter::OnBindComplete, this,
+                 base::Passed(&socket), context, net_address));
+#else
+  OnBindComplete(socket.Pass(), context, net_address);
+#endif
+}
+
+void PepperUDPSocketMessageFilter::OnBindComplete(
+    scoped_ptr<net::UDPSocket> socket,
+    const ppapi::host::ReplyMessageContext& context,
+    const PP_NetAddress_Private& net_address) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   socket_.swap(socket);
   SendBindReply(context, PP_OK, net_address);
 
   DoRecvFrom();
 }
+
+#if defined(OS_CHROMEOS)
+void PepperUDPSocketMessageFilter::OpenFirewallHole(
+    const net::IPEndPoint& local_address,
+    base::Closure bind_complete) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  pepper_socket_utils::FirewallHoleOpenCallback callback = base::Bind(
+      &PepperUDPSocketMessageFilter::OnFirewallHoleOpened, this, bind_complete);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&pepper_socket_utils::OpenUDPFirewallHole,
+                                     local_address, callback));
+}
+
+void PepperUDPSocketMessageFilter::OnFirewallHoleOpened(
+    base::Closure bind_complete,
+    scoped_ptr<chromeos::FirewallHole> hole) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  LOG_IF(WARNING, !hole.get()) << "Firewall hole could not be opened.";
+  firewall_hole_.reset(hole.release());
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, bind_complete);
+}
+#endif  // defined(OS_CHROMEOS)
 
 void PepperUDPSocketMessageFilter::DoRecvFrom() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
