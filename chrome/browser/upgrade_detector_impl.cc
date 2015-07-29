@@ -90,6 +90,7 @@ int GetCheckForUpgradeEveryMs() {
   return kCheckForUpgradeMs;
 }
 
+#if !defined(OS_WIN)
 // Return true if the current build is one of the unstable channels.
 bool IsUnstableChannel() {
   // TODO(mad): Investigate whether we still need to be on the file thread for
@@ -102,7 +103,6 @@ bool IsUnstableChannel() {
          channel == chrome::VersionInfo::CHANNEL_CANARY;
 }
 
-#if !defined(OS_WIN)
 // This task identifies whether we are running an unstable version. And then it
 // unconditionally calls back the provided task.
 void CheckForUnstableChannel(const base::Closure& callback_task,

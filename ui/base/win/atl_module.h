@@ -26,11 +26,10 @@ namespace win {
 // This function must be implemented in this header file rather than a
 // source file so that it's inlined into the module where it's included,
 // rather than in the "ui" module.
-static void CreateATLModuleIfNeeded() {
+inline void CreateATLModuleIfNeeded() {
   if (_pAtlModule == NULL) {
     // This creates the module and automatically updates _pAtlModule.
-    CR_DEFINE_STATIC_LOCAL(CComModule, module, ());
-    ALLOW_UNUSED_LOCAL(module);
+    new CComModule;
   }
 }
 
