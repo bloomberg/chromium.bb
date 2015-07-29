@@ -29,8 +29,7 @@ using content::BrowserThread;
 namespace extensions {
 
 ShellExtensionSystem::ShellExtensionSystem(BrowserContext* browser_context)
-    : browser_context_(browser_context) {
-}
+    : browser_context_(browser_context), weak_factory_(this) {}
 
 ShellExtensionSystem::~ShellExtensionSystem() {
 }
@@ -59,7 +58,11 @@ const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
 
   ExtensionRegistry::Get(browser_context_)->AddEnabled(extension.get());
 
-  RegisterExtensionWithRequestContexts(extension.get());
+  RegisterExtensionWithRequestContexts(
+      extension.get(),
+      base::Bind(
+          &ShellExtensionSystem::OnExtensionRegisteredWithRequestContexts,
+          weak_factory_.GetWeakPtr(), extension));
 
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
@@ -134,15 +137,13 @@ QuotaService* ShellExtensionSystem::quota_service() {
 }
 
 void ShellExtensionSystem::RegisterExtensionWithRequestContexts(
-    const Extension* extension) {
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&InfoMap::AddExtension,
-                                     info_map(),
-                                     make_scoped_refptr(extension),
-                                     base::Time::Now(),
-                                     false,
-                                     false));
+    const Extension* extension,
+    const base::Closure& callback) {
+  BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                  base::Bind(&InfoMap::AddExtension, info_map(),
+                                             make_scoped_refptr(extension),
+                                             base::Time::Now(), false, false),
+                                  callback);
 }
 
 void ShellExtensionSystem::UnregisterExtensionWithRequestContexts(
@@ -161,6 +162,13 @@ ContentVerifier* ShellExtensionSystem::content_verifier() {
 scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
   return make_scoped_ptr(new ExtensionSet());
+}
+
+void ShellExtensionSystem::OnExtensionRegisteredWithRequestContexts(
+    scoped_refptr<Extension> extension) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  registry->AddReady(extension);
+  registry->TriggerOnReady(extension.get());
 }
 
 }  // namespace extensions

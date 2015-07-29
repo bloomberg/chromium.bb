@@ -128,6 +128,8 @@ class ExtensionHost : public DeferredStartRenderHost,
   bool IsNeverVisible(content::WebContents* web_contents) override;
 
   // ExtensionRegistryObserver:
+  void OnExtensionReady(content::BrowserContext* browser_context,
+                        const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
@@ -178,6 +180,9 @@ class ExtensionHost : public DeferredStartRenderHost,
   // this through the host_contents because we want to deal with the pending
   // host, so we can send messages to it before it finishes loading.
   content::RenderViewHost* render_view_host_;
+
+  // Whether CreateRenderViewNow was called before the extension was ready.
+  bool is_render_view_creation_pending_;
 
   // Whether the ExtensionHost has finished loading some content at least once.
   // There may be subsequent loads - such as reloads and navigations - and this

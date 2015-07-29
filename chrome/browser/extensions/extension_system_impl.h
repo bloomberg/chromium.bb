@@ -45,7 +45,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   QuotaService* quota_service() override;  // shared
 
   void RegisterExtensionWithRequestContexts(
-      const Extension* extension) override;
+      const Extension* extension,
+      const base::Closure& callback) override;
 
   void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,

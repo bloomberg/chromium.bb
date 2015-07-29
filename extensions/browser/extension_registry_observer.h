@@ -30,6 +30,11 @@ class ExtensionRegistryObserver {
       content::BrowserContext* browser_context,
       const Extension* extension) {}
 
+  // Called after an extension is loaded and all necessary browser state is
+  // initialized to support the start of the extension's child process.
+  virtual void OnExtensionReady(content::BrowserContext* browser_context,
+                                const Extension* extension) {}
+
   // Called after an extension is unloaded. The extension no longer exists in
   // the set |ExtensionRegistry::enabled_extensions()|, but it can still be a
   // member of one of the other sets, like disabled, blacklisted or terminated.

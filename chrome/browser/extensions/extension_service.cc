@@ -1034,7 +1034,10 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // that the request context doesn't yet know about. The profile is responsible
   // for ensuring its URLRequestContexts appropriately discover the loaded
   // extension.
-  system_->RegisterExtensionWithRequestContexts(extension);
+  system_->RegisterExtensionWithRequestContexts(
+      extension,
+      base::Bind(&ExtensionService::OnExtensionRegisteredWithRequestContexts,
+                 AsWeakPtr(), make_scoped_refptr(extension)));
 
   // Tell renderers about the new extension, unless it's a theme (renderers
   // don't need to know about themes).
@@ -1107,6 +1110,13 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_, false);
     content::URLDataSource::Add(profile_, thumbnail_source);
   }
+}
+
+void ExtensionService::OnExtensionRegisteredWithRequestContexts(
+    scoped_refptr<const extensions::Extension> extension) {
+  registry_->AddReady(extension);
+  if (registry_->enabled_extensions().Contains(extension->id()))
+    registry_->TriggerOnReady(extension.get());
 }
 
 void ExtensionService::NotifyExtensionUnloaded(

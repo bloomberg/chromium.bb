@@ -60,6 +60,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_id_(extension->id()),
       browser_context_(site_instance->GetBrowserContext()),
       render_view_host_(nullptr),
+      is_render_view_creation_pending_(false),
       has_loaded_once_(false),
       document_element_available_(false),
       initial_url_(url),
@@ -148,6 +149,13 @@ void ExtensionHost::CreateRenderViewNow() {
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "464206 ExtensionHost::CreateRenderViewNow1"));
+  if (!ExtensionRegistry::Get(browser_context_)
+           ->ready_extensions()
+           .Contains(extension_->id())) {
+    is_render_view_creation_pending_ = true;
+    return;
+  }
+  is_render_view_creation_pending_ = false;
   LoadInitialURL();
   if (IsBackgroundPage()) {
     // TODO(robliao): Remove ScopedTracker below once crbug.com/464206 is fixed.
@@ -231,6 +239,12 @@ void ExtensionHost::LoadInitialURL() {
 bool ExtensionHost::IsBackgroundPage() const {
   DCHECK_EQ(extension_host_type_, VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   return true;
+}
+
+void ExtensionHost::OnExtensionReady(content::BrowserContext* browser_context,
+                                     const Extension* extension) {
+  if (is_render_view_creation_pending_)
+    CreateRenderViewNow();
 }
 
 void ExtensionHost::OnExtensionUnloaded(

@@ -348,7 +348,8 @@ scoped_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
-    const Extension* extension) {
+    const Extension* extension,
+    const base::Closure& callback) {
   base::Time install_time;
   if (extension->location() != Manifest::COMPONENT) {
     install_time = ExtensionPrefs::Get(profile_)->
@@ -368,11 +369,12 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
       !notification_service->IsNotifierEnabled(notifier_id);
 #endif
 
-  BrowserThread::PostTask(
+  BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&InfoMap::AddExtension, info_map(),
-                 make_scoped_refptr(extension), install_time,
-                 incognito_enabled, notifications_disabled));
+                 make_scoped_refptr(extension), install_time, incognito_enabled,
+                 notifications_disabled),
+      callback);
 }
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(

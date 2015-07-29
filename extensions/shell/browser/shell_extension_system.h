@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -59,7 +60,8 @@ class ShellExtensionSystem : public ExtensionSystem {
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
   void RegisterExtensionWithRequestContexts(
-      const Extension* extension) override;
+      const Extension* extension,
+      const base::Closure& callback) override;
   void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
       const UnloadedExtensionInfo::Reason reason) override;
@@ -69,6 +71,8 @@ class ShellExtensionSystem : public ExtensionSystem {
       const Extension* extension) override;
 
  private:
+  void OnExtensionRegisteredWithRequestContexts(
+      scoped_refptr<Extension> extension);
   content::BrowserContext* browser_context_;  // Not owned.
 
   // Data to be accessed on the IO thread. Must outlive process_manager_.
@@ -79,6 +83,8 @@ class ShellExtensionSystem : public ExtensionSystem {
 
   // Signaled when the extension system has completed its startup tasks.
   OneShotEvent ready_;
+
+  base::WeakPtrFactory<ShellExtensionSystem> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionSystem);
 };

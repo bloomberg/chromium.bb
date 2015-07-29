@@ -540,6 +540,11 @@ class ExtensionService
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(const extensions::Extension* extension);
 
+  // Completes extension loading after URLRequestContexts have been updated
+  // on the IO thread.
+  void OnExtensionRegisteredWithRequestContexts(
+      scoped_refptr<const extensions::Extension> extension);
+
   // Handles sending notification that |extension| was unloaded.
   void NotifyExtensionUnloaded(
       const extensions::Extension* extension,

@@ -65,6 +65,7 @@ class ExtensionRegistry : public KeyedService {
     return blacklisted_extensions_;
   }
   const ExtensionSet& blocked_extensions() const { return blocked_extensions_; }
+  const ExtensionSet& ready_extensions() const { return ready_extensions_; }
 
   // Returns the set of all installed extensions, regardless of state (enabled,
   // disabled, etc). Equivalent to GenerateInstalledExtensionSet(EVERYTHING).
@@ -86,6 +87,11 @@ class ExtensionRegistry : public KeyedService {
   // Invokes the observer method OnExtensionLoaded(). The extension must be
   // enabled at the time of the call.
   void TriggerOnLoaded(const Extension* extension);
+
+  // Invokes the observer method OnExtensionReady(). This always follows
+  // an OnLoaded event, but is not called until it's safe to create the
+  // extension's child process.
+  void TriggerOnReady(const Extension* extension);
 
   // Invokes the observer method OnExtensionUnloaded(). The extension must not
   // be enabled at the time of the call.
@@ -156,6 +162,10 @@ class ExtensionRegistry : public KeyedService {
   bool AddBlocked(const scoped_refptr<const Extension>& extension);
   bool RemoveBlocked(const std::string& id);
 
+  // As above, but for the ready set.
+  bool AddReady(const scoped_refptr<const Extension>& extension);
+  bool RemoveReady(const std::string& id);
+
   // Removes all extensions from all sets.
   void ClearAll();
 
@@ -186,6 +196,10 @@ class ExtensionRegistry : public KeyedService {
 
   // Extensions that are installed and blocked. Will never be loaded.
   ExtensionSet blocked_extensions_;
+
+  // Extensions that are ready for execution. This set is a non-exclusive
+  // subset of |enabled_extensions_|.
+  ExtensionSet ready_extensions_;
 
   base::ObserverList<ExtensionRegistryObserver> observers_;
 
