@@ -103,13 +103,13 @@ static bool isOutermostSVGElement(const Element* e)
     return e && e->isSVGElement() && toSVGElement(*e).isOutermostSVGSVGElement();
 }
 
-// CSS requires text-decoration to be reset at each DOM element for tables,
+// CSS requires text-decoration to be reset at each DOM element for
 // inline blocks, inline tables, shadow DOM crossings, floating elements,
 // and absolute or relatively positioned elements. Outermost <svg> roots are
 // considered to be atomic inline-level.
 static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Element* e)
 {
-    return style.display() == TABLE || style.display() == INLINE_TABLE
+    return style.display() == INLINE_TABLE
         || style.display() == INLINE_BLOCK || style.display() == INLINE_BOX || isAtShadowBoundary(e)
         || style.isFloating() || style.hasOutOfFlowPosition() || isOutermostSVGElement(e);
 }
