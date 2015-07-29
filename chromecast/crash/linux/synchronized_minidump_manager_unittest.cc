@@ -22,7 +22,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "chromecast/base/serializers.h"
+#include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/synchronized_minidump_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,6 @@ namespace {
 
 const char kLockfileName[] = "lockfile";
 const char kMinidumpSubdir[] = "minidumps";
-const char kDumpsKey[] = "dumps";
 
 // A trivial implementation of SynchronizedMinidumpManager, which does no work
 // to the
@@ -72,45 +71,6 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   std::string lockfile_path_;
   scoped_ptr<DumpInfo> dump_info_;
 };
-
-bool FetchDumps(const std::string& lockfile_path,
-                ScopedVector<DumpInfo>* dumps) {
-  if (!dumps) {
-    return false;
-  }
-  dumps->clear();
-
-  base::FilePath path(lockfile_path);
-  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
-
-  base::DictionaryValue* dict;
-  base::ListValue* dump_list;
-  if (!contents || !contents->GetAsDictionary(&dict) ||
-      !dict->GetList(kDumpsKey, &dump_list) || !dump_list) {
-    return false;
-  }
-
-  for (base::Value* elem : *dump_list) {
-    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(elem));
-    if (!dump->valid()) {
-      return false;
-    }
-    dumps->push_back(dump.Pass());
-  }
-
-  return true;
-}
-
-bool CreateLockFile(const std::string& lockfile_path) {
-  scoped_ptr<base::DictionaryValue> output =
-      make_scoped_ptr(new base::DictionaryValue());
-  output->Set("dumps", make_scoped_ptr(new base::ListValue()));
-
-  base::FilePath path(lockfile_path);
-
-  const base::Value* val = output.get();
-  return SerializeJsonToFile(path, *val);
-}
 
 void DoWorkLockedTask(SynchronizedMinidumpManagerSimple* manager) {
   manager->DoWorkLocked();

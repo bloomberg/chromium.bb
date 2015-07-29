@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
-#include "chromecast/base/serializers.h"
+#include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/minidump_generator.h"
 #include "chromecast/crash/linux/minidump_writer.h"
@@ -22,7 +22,6 @@ namespace {
 const char kDumplogFile[] = "dumplog";
 const char kLockfileName[] = "lockfile";
 const char kMinidumpSubdir[] = "minidumps";
-const char kDumpsKey[] = "dumps";
 
 class FakeMinidumpGenerator : public MinidumpGenerator {
  public:
@@ -35,11 +34,6 @@ class FakeMinidumpGenerator : public MinidumpGenerator {
 
 int FakeDumpState(const std::string& minidump_path) {
   return 0;
-}
-
-scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
-  scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
-  return make_scoped_ptr(new DumpInfo(value.get()));
 }
 
 }  // namespace
@@ -66,24 +60,8 @@ class MinidumpWriterTest : public testing::Test {
     ASSERT_TRUE(lockfile.IsValid());
   }
 
-  int AppendLockFile(const DumpInfo& dump) {
-    scoped_ptr<base::Value> contents(DeserializeJsonFromFile(lockfile_path_));
-    if (!contents) {
-      base::DictionaryValue* dict = new base::DictionaryValue();
-      contents = make_scoped_ptr(dict);
-      dict->Set(kDumpsKey, make_scoped_ptr(new base::ListValue()));
-    }
-
-    base::DictionaryValue* dict;
-    base::ListValue* dump_list;
-    if (!contents || !contents->GetAsDictionary(&dict) ||
-        !dict->GetList(kDumpsKey, &dump_list) || !dump_list) {
-      return -1;
-    }
-
-    dump_list->Append(dump.GetAsValue());
-
-    return SerializeJsonToFile(lockfile_path_, *contents) ? 0 : -1;
+  bool AppendLockFile(const DumpInfo& dump) {
+    return chromecast::AppendLockFile(lockfile_path_.value(), dump);
   }
 
   FakeMinidumpGenerator fake_generator_;
@@ -159,7 +137,7 @@ TEST_F(MinidumpWriterTest, Write_FailsWhenTooManyDumpsPresent) {
         "\"logfile\": \"logfile.log\""
         "}"));
     ASSERT_TRUE(info->valid());
-    ASSERT_EQ(0, AppendLockFile(*info));
+    ASSERT_TRUE(AppendLockFile(*info));
   }
 
   ASSERT_EQ(-1, writer.Write());
@@ -176,7 +154,7 @@ TEST_F(MinidumpWriterTest, Write_FailsWhenTooManyRecentDumpsPresent) {
   for (size_t i = 0; i < too_many_recent_dumps; ++i) {
     MinidumpParams params;
     DumpInfo info("dump", "/dump/path", time(nullptr), params);
-    ASSERT_EQ(0, AppendLockFile(info));
+    ASSERT_TRUE(AppendLockFile(info));
   }
 
   ASSERT_EQ(-1, writer.Write());
@@ -201,7 +179,7 @@ TEST_F(MinidumpWriterTest, Write_SucceedsWhenDumpLimitsNotExceeded) {
       "\"logfile\": \"logfile.log\""
       "}"));
   ASSERT_TRUE(info->valid());
-  ASSERT_EQ(0, AppendLockFile(*info));
+  ASSERT_TRUE(AppendLockFile(*info));
   ASSERT_EQ(0, writer.Write());
 }
 

@@ -37,6 +37,18 @@ source_set("crash") {
   ]
 }
 
+source_set("test_support") {
+  sources = [
+    "linux/crash_testing_utils.cc",
+    "linux/crash_testing_utils.h",
+  ]
+
+  deps = [
+    ":crash",
+    "//base",
+  ]
+}
+
 test("cast_crash_unittests") {
   sources = [
     "cast_crashdump_uploader_unittest.cc",
@@ -48,6 +60,7 @@ test("cast_crash_unittests") {
 
   deps = [
     ":crash",
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",

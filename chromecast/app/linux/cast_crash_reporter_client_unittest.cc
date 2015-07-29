@@ -13,8 +13,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
-#include "chromecast/base/serializers.h"
 #include "chromecast/crash/app_state_tracker.h"
+#include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/crash_util.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,6 @@ namespace {
 
 const char kFakeDumpstateContents[] = "Dumpstate Contents\nDumpdumpdumpdump\n";
 const char kFakeMinidumpContents[] = "Minidump Contents\nLine1\nLine2\n";
-const char kDumpsKey[] = "dumps";
 
 int WriteFakeDumpStateFile(const std::string& path) {
   // Append the correct extension and write the data to file.
@@ -33,34 +32,6 @@ int WriteFakeDumpStateFile(const std::string& path) {
   dumpstate.Write(
       0, kFakeDumpstateContents, sizeof(kFakeDumpstateContents) - 1);
   return 0;
-}
-
-bool FetchDumps(const std::string& lockfile_path,
-                ScopedVector<DumpInfo>* dumps) {
-  if (!dumps) {
-    return false;
-  }
-  dumps->clear();
-
-  base::FilePath path(lockfile_path);
-  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
-
-  base::DictionaryValue* dict;
-  base::ListValue* dump_list;
-  if (!contents || !contents->GetAsDictionary(&dict) ||
-      !dict->GetList(kDumpsKey, &dump_list) || !dump_list) {
-    return false;
-  }
-
-  for (base::Value* elem : *dump_list) {
-    scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(elem));
-    if (!dump->valid()) {
-      return false;
-    }
-    dumps->push_back(dump.Pass());
-  }
-
-  return true;
 }
 
 }  // namespace

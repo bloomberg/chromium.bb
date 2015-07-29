@@ -5,20 +5,11 @@
 #include <time.h>
 
 #include "base/values.h"
-#include "chromecast/base/serializers.h"
+#include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
-
-namespace {
-
-scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
-  scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
-  return make_scoped_ptr(new DumpInfo(value.get()));
-}
-
-}  // namespace
 
 TEST(DumpInfoTest, EmptyStringIsNotValid) {
   scoped_ptr<DumpInfo> dump_info(CreateDumpInfo(""));
@@ -202,4 +193,4 @@ TEST(DumpInfoTest, TooManyFieldsIsNotValid) {
   ASSERT_FALSE(info->valid());
 }
 
-}  // chromecast
+}  // namespace chromecast

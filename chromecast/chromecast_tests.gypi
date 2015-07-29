@@ -30,9 +30,22 @@
       ],
     },  # end of cast_base_unittests
     {
+      'target_name': 'cast_crash_test_support',
+      'type': '<(component)',
+      'dependencies': [
+        'chromecast.gyp:cast_crash',
+        'cast_base',
+      ],
+      'sources': [
+        'crash/linux/crash_testing_utils.cc',
+        'crash/linux/crash_testing_utils.h',
+      ],
+    },  # end of target 'cast_crash_test_support'
+    {
       'target_name': 'cast_crash_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
+        'cast_crash_test_support',
         'chromecast.gyp:cast_crash',
         '../base/base.gyp:run_all_unittests',
         '../testing/gmock.gyp:gmock',
@@ -330,6 +343,7 @@
           'target_name': 'cast_shell_unittests',
           'type': '<(gtest_target_type)',
           'dependencies': [
+            'cast_crash_test_support',
             'chromecast.gyp:cast_crash_client',
             '../base/base.gyp:run_all_unittests',
             '../testing/gtest.gyp:gtest',

@@ -1,0 +1,35 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMECAST_CRASH_LINUX_CRASH_TESTING_UTILS_H_
+#define CHROMECAST_CRASH_LINUX_CRASH_TESTING_UTILS_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+
+namespace chromecast {
+
+class DumpInfo;
+
+// Creates a DumpInfo object corresponding to the deserialization of
+// |json_string|. Returned DumpInfo object maybe invalid if |json_string|
+// doesn't correspond to a valid DumpInfo object.
+scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string);
+
+// Populates |dumps| with all the DumpInfo entries serialized in the lockfile at
+// |lockfile_path|. Returns true on success, false on error.
+bool FetchDumps(const std::string& lockfile_path,
+                ScopedVector<DumpInfo>* dumps);
+
+// Creates an empty lockfile at |lockfile_path|. Returns true on success, false
+// on error.
+bool CreateLockFile(const std::string& lockfile_path);
+
+// Appends serialization of |dump| onto the lockfile at |lockfile_path|.
+// Returns true on success, false on error.
+bool AppendLockFile(const std::string& lockfile_path, const DumpInfo& dump);
+
+}  // namespace chromecast
+
+#endif  // CHROMECAST_CRASH_LINUX_CRASH_TESTING_UTILS_H_
