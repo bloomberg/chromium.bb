@@ -430,24 +430,30 @@ void StyleAdjuster::adjustOverflow(ComputedStyle& style)
 {
     ASSERT(style.overflowX() != OVISIBLE || style.overflowY() != OVISIBLE);
 
-    // If either overflow value is not visible, change to auto.
-    if (style.overflowX() == OVISIBLE && style.overflowY() != OVISIBLE) {
+    if (style.display() == TABLE || style.display() == INLINE_TABLE) {
+        // Tables only support overflow:hidden and overflow:visible and ignore anything else,
+        // see http://dev.w3.org/csswg/css2/visufx.html#overflow. As a table is not a block
+        // container box the rules for resolving conflicting x and y values in CSS Overflow Module
+        // Level 3 do not apply. Arguably overflow-x and overflow-y aren't allowed on tables but
+        // all UAs allow it.
+        if (style.overflowX() != OHIDDEN)
+            style.setOverflowX(OVISIBLE);
+        if (style.overflowY() != OHIDDEN)
+            style.setOverflowY(OVISIBLE);
+        // If we are left with conflicting overflow values for the x and y axes on a table then resolve
+        // both to OVISIBLE. This is interoperable behaviour but is not specced anywhere.
+        if (style.overflowX() == OVISIBLE)
+            style.setOverflowY(OVISIBLE);
+        else if (style.overflowY() == OVISIBLE)
+            style.setOverflowX(OVISIBLE);
+    } else if (style.overflowX() == OVISIBLE && style.overflowY() != OVISIBLE) {
+        // If either overflow value is not visible, change to auto.
         // FIXME: Once we implement pagination controls, overflow-x should default to hidden
         // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
         // default to auto so we can at least scroll through the pages.
         style.setOverflowX(OAUTO);
     } else if (style.overflowY() == OVISIBLE && style.overflowX() != OVISIBLE) {
         style.setOverflowY(OAUTO);
-    }
-
-    // Table rows, sections and the table itself will support overflow:hidden and will ignore scroll/auto.
-    // FIXME: Eventually table sections will support auto and scroll.
-    if (style.display() == TABLE || style.display() == INLINE_TABLE
-        || style.display() == TABLE_ROW_GROUP || style.display() == TABLE_ROW) {
-        if (style.overflowX() != OVISIBLE && style.overflowX() != OHIDDEN)
-            style.setOverflowX(OVISIBLE);
-        if (style.overflowY() != OVISIBLE && style.overflowY() != OHIDDEN)
-            style.setOverflowY(OVISIBLE);
     }
 
     // Menulists should have visible overflow
