@@ -144,6 +144,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'SessionHandlingTest.testGetSessions',
         # Android doesn't use the chrome://print dialog.
         'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
+        # https://code.google.com/p/chromedriver/issues/detail?id=1175
+        'ChromeDriverTest.testChromeDriverSendLargeData',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -169,8 +171,6 @@ _ANDROID_NEGATIVE_FILTER['chrome_shell'] = (
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome_shell'] + [
-        # https://code.google.com/p/chromedriver/issues/detail?id=913
-        'ChromeDriverTest.testChromeDriverSendLargeData',
         'PerformanceLoggerTest.testPerformanceLogger',
         'ChromeDriverTest.testShadowDom*',
         # WebView doesn't support emulating network conditions.
