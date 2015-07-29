@@ -121,13 +121,13 @@ class CONTENT_EXPORT VideoCaptureController {
   bool has_received_frames() const { return has_received_frames_; }
 
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
-  void DoIncomingCapturedVideoFrameOnIOThread(
+  virtual void DoIncomingCapturedVideoFrameOnIOThread(
       scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp);
-  void DoErrorOnIOThread();
-  void DoLogOnIOThread(const std::string& message);
-  void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);
+  virtual void DoErrorOnIOThread();
+  virtual void DoLogOnIOThread(const std::string& message);
+  virtual void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);
 
  private:
   struct ControllerClient;
