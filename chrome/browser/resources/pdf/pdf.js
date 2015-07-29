@@ -234,7 +234,8 @@ PDFViewer.prototype = {
     if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented)
       return;
 
-    this.toolbarManager_.hideToolbarsAfterTimeout(e);
+    if (this.isMaterial_)
+      this.toolbarManager_.hideToolbarsAfterTimeout(e);
 
     var pageUpHandler = function() {
       // Go to the previous page if we are fit-to-page.
