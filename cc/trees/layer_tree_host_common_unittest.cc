@@ -6565,11 +6565,13 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
 
   // Layers in the root render surface have their visible content rect clipped
   // by the viewport.
-  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), root->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2),
+            root->visible_rect_from_property_trees());
 
   // Layers drawing to a child render surface should still have their visible
   // content rect clipped by the viewport.
-  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), content->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2),
+            content->visible_rect_from_property_trees());
 }
 
 TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
