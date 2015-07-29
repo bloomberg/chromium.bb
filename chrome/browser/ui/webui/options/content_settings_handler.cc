@@ -95,7 +95,6 @@ const char kAppName[] = "appName";
 const char kAppId[] = "appId";
 const char kEmbeddingOrigin[] = "embeddingOrigin";
 const char kPreferencesSource[] = "preference";
-const char kVideoSetting[] = "video";
 const char kZoom[] = "zoom";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
@@ -249,21 +248,48 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
 
 namespace options {
 
-ContentSettingsHandler::MediaSettingsInfo::MediaSettingsInfo()
-    : flash_default_setting(CONTENT_SETTING_DEFAULT),
-      flash_settings_initialized(false),
-      last_flash_refresh_request_id(0),
-      show_flash_default_link(false),
-      show_flash_exceptions_link(false),
-      default_audio_setting(CONTENT_SETTING_DEFAULT),
-      default_video_setting(CONTENT_SETTING_DEFAULT),
-      policy_disable_audio(false),
-      policy_disable_video(false),
-      default_settings_initialized(false),
-      exceptions_initialized(false) {
+ContentSettingsHandler::MediaSettingsInfo::MediaSettingsInfo() {
 }
 
 ContentSettingsHandler::MediaSettingsInfo::~MediaSettingsInfo() {
+}
+
+ContentSettingsHandler::MediaSettingsInfo::ForFlash::ForFlash()
+    : default_setting(CONTENT_SETTING_DEFAULT),
+      initialized(false),
+      last_refresh_request_id(0) {
+}
+
+ContentSettingsHandler::MediaSettingsInfo::ForFlash::~ForFlash() {
+}
+
+ContentSettingsHandler::MediaSettingsInfo::ForFlash&
+    ContentSettingsHandler::MediaSettingsInfo::forFlash() {
+  return flash_settings_;
+}
+
+ContentSettingsHandler::MediaSettingsInfo::ForOneType&
+    ContentSettingsHandler::MediaSettingsInfo::forType(
+        ContentSettingsType type) {
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+    return mic_settings_;
+  else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
+    return camera_settings_;
+
+  NOTREACHED();
+  return mic_settings_;
+}
+
+ContentSettingsHandler::MediaSettingsInfo::ForOneType::ForOneType()
+    : show_flash_default_link(false),
+      show_flash_exceptions_link(false),
+      default_setting(CONTENT_SETTING_DEFAULT),
+      policy_disable(false),
+      default_setting_initialized(false),
+      exceptions_initialized(false) {
+}
+
+ContentSettingsHandler::MediaSettingsInfo::ForOneType::~ForOneType() {
 }
 
 ContentSettingsHandler::ContentSettingsHandler() : observer_(this) {
@@ -367,10 +393,14 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"mediaStreamCameraAsk", IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO},
     {"mediaStreamCameraBlock", IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO},
     // Flash media settings.
-    {"mediaPepperFlashDefaultDivergedLabel",
-     IDS_MEDIA_PEPPER_FLASH_DEFAULT_DIVERGED_LABEL},
-    {"mediaPepperFlashExceptionsDivergedLabel",
-     IDS_MEDIA_PEPPER_FLASH_EXCEPTIONS_DIVERGED_LABEL},
+    {"mediaPepperFlashMicDefaultDivergedLabel",
+     IDS_MEDIA_PEPPER_FLASH_MIC_DEFAULT_DIVERGED_LABEL},
+    {"mediaPepperFlashCameraDefaultDivergedLabel",
+     IDS_MEDIA_PEPPER_FLASH_CAMERA_DEFAULT_DIVERGED_LABEL},
+    {"mediaPepperFlashMicExceptionsDivergedLabel",
+     IDS_MEDIA_PEPPER_FLASH_MIC_EXCEPTIONS_DIVERGED_LABEL},
+    {"mediaPepperFlashCameraExceptionsDivergedLabel",
+     IDS_MEDIA_PEPPER_FLASH_CAMERA_EXCEPTIONS_DIVERGED_LABEL},
     {"mediaPepperFlashChangeLink", IDS_MEDIA_PEPPER_FLASH_CHANGE_LINK},
     {"mediaPepperFlashGlobalPrivacyURL", IDS_FLASH_GLOBAL_PRIVACY_URL},
     {"mediaPepperFlashWebsitePrivacyURL", IDS_FLASH_WEBSITE_PRIVACY_URL},
@@ -532,7 +562,7 @@ void ContentSettingsHandler::InitializeHandler() {
 }
 
 void ContentSettingsHandler::InitializePage() {
-  media_settings_ = MediaSettingsInfo();
+  media_settings_.reset(new MediaSettingsInfo());
   RefreshFlashMediaSettings();
 
   UpdateHandlersEnabledRadios();
@@ -591,17 +621,19 @@ void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
     bool success,
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {
-  if (success && request_id == media_settings_.last_flash_refresh_request_id) {
-    media_settings_.flash_settings_initialized = true;
-    media_settings_.flash_default_setting =
+  MediaSettingsInfo::ForFlash& settings = media_settings_->forFlash();
+  if (success && request_id == settings.last_refresh_request_id) {
+    settings.initialized = true;
+    settings.default_setting =
         PepperFlashContentSettingsUtils::FlashPermissionToContentSetting(
             default_permission);
     PepperFlashContentSettingsUtils::FlashSiteSettingsToMediaExceptions(
-        sites, &media_settings_.flash_exceptions);
+        sites, &settings.exceptions);
     PepperFlashContentSettingsUtils::SortMediaExceptions(
-        &media_settings_.flash_exceptions);
+        &settings.exceptions);
 
-    UpdateFlashMediaLinksVisibility();
+    UpdateFlashMediaLinksVisibility(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+    UpdateFlashMediaLinksVisibility(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   }
 }
 
@@ -617,17 +649,18 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
           type, default_setting);
 #endif
 
-  CompareMediaSettingsWithFlash();
-
   // Camera and microphone default content settings cannot be set by the policy.
   // However, the policy can disable them. Treat this case visually in the same
-  // way as if the policy set the default setting to BLOCK.
-  if ((type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
-       media_settings_.policy_disable_audio) ||
-      (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
-       media_settings_.policy_disable_video)) {
-    default_setting = CONTENT_SETTING_BLOCK;
-    provider_id = kPolicyProviderId;
+  // way as if the policy set the default setting to BLOCK. Furthermore, compare
+  // the settings with Flash settings and show links to the Flash settings site
+  // if they differ.
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+    UpdateMediaSettingsFromPrefs(type);
+    if (media_settings_->forType(type).policy_disable) {
+      default_setting = CONTENT_SETTING_BLOCK;
+      provider_id = kPolicyProviderId;
+    }
   }
 
   base::DictionaryValue filter_settings;
@@ -640,28 +673,21 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
-void ContentSettingsHandler::CompareMediaSettingsWithFlash() {
-  // TODO(msramek): Currently, we show the flash link if the combined
-  // camera and microphone content settings differ from the combined microphone
-  // and camera flash settings. Split this logic to only show the link for
-  // camera if camera settings differ, and analogously for microphone.
+void ContentSettingsHandler::UpdateMediaSettingsFromPrefs(
+    ContentSettingsType type) {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
-  bool audio_disabled = !prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
-      prefs->IsManagedPreference(prefs::kAudioCaptureAllowed);
-  bool video_disabled = !prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
-      prefs->IsManagedPreference(prefs::kVideoCaptureAllowed);
+  MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
+  std::string policy_pref = (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+      ? prefs::kAudioCaptureAllowed
+      : prefs::kVideoCaptureAllowed;
 
-  media_settings_.policy_disable_audio = audio_disabled;
-  media_settings_.policy_disable_video = video_disabled;
-  media_settings_.default_audio_setting =
-      GetContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, NULL);
-  media_settings_.default_video_setting =
-      GetContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, NULL);
-  media_settings_.default_settings_initialized = true;
+  settings.policy_disable = !prefs->GetBoolean(policy_pref) &&
+      prefs->IsManagedPreference(policy_pref);
+  settings.default_setting =
+      GetContentSettingsMap()->GetDefaultContentSetting(type, NULL);
+  settings.default_setting_initialized = true;
 
-  UpdateFlashMediaLinksVisibility();
+  UpdateFlashMediaLinksVisibility(type);
 }
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
@@ -705,7 +731,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      CompareMediaExceptionsWithFlash();
+      CompareMediaExceptionsWithFlash(type);
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
@@ -885,91 +911,38 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
-void ContentSettingsHandler::CompareMediaExceptionsWithFlash() {
-  // TODO(msramek): Split the combined microphone-camera exceptions
-  // in PepperFlashContentSettingsUtils. The complicated comparison in this
-  // method will then not be necessary.
+void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
+    ContentSettingsType type) {
+  MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
 
-  base::ListValue media_exceptions;
+  base::ListValue exceptions;
   GetExceptionsFromHostContentSettingsMap(
       GetContentSettingsMap(),
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-      &media_exceptions);
+      type,
+      &exceptions);
 
-  base::ListValue video_exceptions;
-  GetExceptionsFromHostContentSettingsMap(
-      GetContentSettingsMap(),
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-      &video_exceptions);
-
-  // Merge the |video_exceptions| list to |media_exceptions| list.
-  std::map<std::string, base::DictionaryValue*> entries_map;
-  for (base::ListValue::const_iterator media_entry(media_exceptions.begin());
-       media_entry != media_exceptions.end(); ++media_entry) {
-    base::DictionaryValue* media_dict = NULL;
-    if (!(*media_entry)->GetAsDictionary(&media_dict))
-      NOTREACHED();
-
-    media_dict->SetString(kVideoSetting,
-                          ContentSettingToString(CONTENT_SETTING_ASK));
-
-    std::string media_origin;
-    media_dict->GetString(kOrigin, &media_origin);
-    entries_map[media_origin] = media_dict;
-  }
-
-  for (base::ListValue::iterator video_entry = video_exceptions.begin();
-       video_entry != video_exceptions.end(); ++video_entry) {
-    base::DictionaryValue* video_dict = NULL;
-    if (!(*video_entry)->GetAsDictionary(&video_dict))
-      NOTREACHED();
-
-    std::string video_origin;
-    std::string video_setting;
-    video_dict->GetString(kOrigin, &video_origin);
-    video_dict->GetString(kSetting, &video_setting);
-
-    std::map<std::string, base::DictionaryValue*>::iterator iter =
-        entries_map.find(video_origin);
-    if (iter == entries_map.end()) {
-      base::DictionaryValue* exception = new base::DictionaryValue();
-      exception->SetString(kOrigin, video_origin);
-      exception->SetString(kSetting,
-                           ContentSettingToString(CONTENT_SETTING_ASK));
-      exception->SetString(kVideoSetting, video_setting);
-      exception->SetString(kSource, kPreferencesSource);
-
-      // Append the new entry to the list and map.
-      media_exceptions.Append(exception);
-      entries_map[video_origin] = exception;
-    } else {
-      // Modify the existing entry.
-      iter->second->SetString(kVideoSetting, video_setting);
-    }
-  }
-
-  media_settings_.exceptions.clear();
-  for (base::ListValue::const_iterator media_entry = media_exceptions.begin();
-       media_entry != media_exceptions.end(); ++media_entry) {
-    base::DictionaryValue* media_dict = NULL;
-    bool result = (*media_entry)->GetAsDictionary(&media_dict);
-    DCHECK(result);
+  settings.exceptions.clear();
+  for (base::ListValue::const_iterator entry = exceptions.begin();
+       entry != exceptions.end(); ++entry) {
+    base::DictionaryValue* dict = nullptr;
+    bool valid_dict = (*entry)->GetAsDictionary(&dict);
+    DCHECK(valid_dict);
 
     std::string origin;
-    std::string audio_setting;
-    std::string video_setting;
-    media_dict->GetString(kOrigin, &origin);
-    media_dict->GetString(kSetting, &audio_setting);
-    media_dict->GetString(kVideoSetting, &video_setting);
-    media_settings_.exceptions.push_back(MediaException(
+    std::string setting;
+    dict->GetString(kOrigin, &origin);
+    dict->GetString(kSetting, &setting);
+
+    settings.exceptions.push_back(MediaException(
         ContentSettingsPattern::FromString(origin),
-        ContentSettingFromString(audio_setting),
-        ContentSettingFromString(video_setting)));
+        ContentSettingFromString(setting)));
   }
+
   PepperFlashContentSettingsUtils::SortMediaExceptions(
-      &media_settings_.exceptions);
-  media_settings_.exceptions_initialized = true;
-  UpdateFlashMediaLinksVisibility();
+      &settings.exceptions);
+
+  settings.exceptions_initialized = true;
+  UpdateFlashMediaLinksVisibility(type);
 }
 
 void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
@@ -1477,22 +1450,29 @@ HostContentSettingsMap*
 }
 
 void ContentSettingsHandler::RefreshFlashMediaSettings() {
-  media_settings_.flash_settings_initialized = false;
+  MediaSettingsInfo::ForFlash& settings = media_settings_->forFlash();
+  settings.initialized = false;
 
-  media_settings_.last_flash_refresh_request_id =
+  settings.last_refresh_request_id =
       flash_settings_manager_->GetPermissionSettings(
           PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC);
 }
 
 void ContentSettingsHandler::OnPepperFlashPrefChanged() {
-  ShowFlashMediaLink(DEFAULT_SETTING, false);
-  ShowFlashMediaLink(EXCEPTIONS, false);
+  ShowFlashMediaLink(
+      DEFAULT_SETTING, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, false);
+  ShowFlashMediaLink(
+      DEFAULT_SETTING, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, false);
+  ShowFlashMediaLink(
+      EXCEPTIONS, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, false);
+  ShowFlashMediaLink(
+      EXCEPTIONS, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, false);
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   if (prefs->GetBoolean(prefs::kPepperFlashSettingsEnabled))
     RefreshFlashMediaSettings();
   else
-    media_settings_.flash_settings_initialized = false;
+    media_settings_->forFlash().initialized = false;
 }
 
 void ContentSettingsHandler::OnZoomLevelChanged(
@@ -1500,66 +1480,72 @@ void ContentSettingsHandler::OnZoomLevelChanged(
   UpdateZoomLevelsExceptionsView();
 }
 
-void ContentSettingsHandler::ShowFlashMediaLink(LinkType link_type, bool show) {
+void ContentSettingsHandler::ShowFlashMediaLink(
+    LinkType link_type, ContentSettingsType content_type, bool show) {
+  MediaSettingsInfo::ForOneType& settings =
+      media_settings_->forType(content_type);
+
   bool& show_link = link_type == DEFAULT_SETTING ?
-      media_settings_.show_flash_default_link :
-      media_settings_.show_flash_exceptions_link;
+      settings.show_flash_default_link :
+      settings.show_flash_exceptions_link;
+
   if (show_link != show) {
     web_ui()->CallJavascriptFunction(
-        link_type == DEFAULT_SETTING ?
-            "ContentSettings.showMediaPepperFlashDefaultLink" :
-            "ContentSettings.showMediaPepperFlashExceptionsLink",
+        "ContentSettings.showMediaPepperFlashLink",
+        base::StringValue(
+            link_type == DEFAULT_SETTING ? "default" : "exceptions"),
+        base::StringValue(
+            content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+                ? "mic"
+                : "camera"),
         base::FundamentalValue(show));
     show_link = show;
   }
 }
 
-void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
-  if (!media_settings_.flash_settings_initialized ||
-      !media_settings_.default_settings_initialized ||
-      !media_settings_.exceptions_initialized) {
-    return;
-  }
+void ContentSettingsHandler::UpdateFlashMediaLinksVisibility(
+    ContentSettingsType type) {
+  MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
+  MediaSettingsInfo::ForFlash& flash_settings = media_settings_->forFlash();
 
-  // Flash won't send us notifications when its settings get changed, which
+  if (!flash_settings.initialized)
+    return;
+
+  // We handle four cases - default settings and exceptions for microphone
+  // and camera. We use the following criteria to determine whether to show
+  // the links.
+  //
+  // 1. Flash won't send us notifications when its settings get changed, which
   // means the Flash settings in |media_settings_| may be out-dated, especially
   // after we show links to change Flash settings.
   // In order to avoid confusion, we won't hide the links once they are showed.
   // One exception is that we will hide them when Pepper Flash is disabled
   // (handled in OnPepperFlashPrefChanged()).
-  if (media_settings_.show_flash_default_link &&
-      media_settings_.show_flash_exceptions_link) {
+  //
+  // 2. If audio or video capture are disabled by policy, the respective link
+  // shouldn't be showed. Flash conforms to the policy in this case because
+  // it cannot open those devices.
+  //
+  // 3. Otherwise, we show the link if the corresponding setting is different
+  // in HostContentSettingsMap than it is in Flash.
+  if (settings.policy_disable)
     return;
+
+  if (settings.default_setting_initialized &&
+      !settings.show_flash_default_link &&
+      (flash_settings.default_setting !=
+       settings.default_setting)) {
+    ShowFlashMediaLink(DEFAULT_SETTING, type, true);
   }
 
-  if (!media_settings_.show_flash_default_link) {
-    // If both audio and video capture are disabled by policy, the link
-    // shouldn't be showed. Flash conforms to the policy in this case because
-    // it cannot open those devices. We don't have to look at the Flash
-    // settings.
-    if (!(media_settings_.policy_disable_audio &&
-          media_settings_.policy_disable_video) &&
-        ((media_settings_.flash_default_setting !=
-          media_settings_.default_audio_setting) ||
-         (media_settings_.flash_default_setting !=
-          media_settings_.default_video_setting))) {
-      ShowFlashMediaLink(DEFAULT_SETTING, true);
-    }
-  }
-  if (!media_settings_.show_flash_exceptions_link) {
-    // If audio or video capture is disabled by policy, we skip comparison of
-    // exceptions for audio or video capture, respectively.
-    if (!PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
-            media_settings_.default_audio_setting,
-            media_settings_.default_video_setting,
-            media_settings_.exceptions,
-            media_settings_.flash_default_setting,
-            media_settings_.flash_default_setting,
-            media_settings_.flash_exceptions,
-            media_settings_.policy_disable_audio,
-            media_settings_.policy_disable_video)) {
-      ShowFlashMediaLink(EXCEPTIONS, true);
-    }
+  if (settings.exceptions_initialized &&
+      !settings.show_flash_exceptions_link &&
+      !PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
+          settings.default_setting,
+          settings.exceptions,
+          flash_settings.default_setting,
+          flash_settings.exceptions)) {
+    ShowFlashMediaLink(EXCEPTIONS, type, true);
   }
 }
 

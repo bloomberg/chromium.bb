@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
@@ -16,15 +17,13 @@ namespace options {
 
 struct MediaException {
   MediaException(const ContentSettingsPattern& in_pattern,
-                 ContentSetting in_audio_setting,
-                 ContentSetting in_video_setting);
+                 ContentSetting in_setting);
   ~MediaException();
 
   bool operator==(const MediaException& other) const;
 
   ContentSettingsPattern pattern;
-  ContentSetting audio_setting;
-  ContentSetting video_setting;
+  ContentSetting setting;
 };
 
 typedef std::vector<MediaException> MediaExceptions;
@@ -48,19 +47,14 @@ class PepperFlashContentSettingsUtils {
   //
   // When an element of |exceptions_1| has a pattern that doesn't match any
   // element of |exceptions_2|, it would be compared with |default_setting_2|,
-  // and visa versa.
-  //
-  // |ignore_audio_setting| and |ignore_video_setting| specify whether to skip
-  // comparison of the |audio_setting| and |video_setting| field of
-  // MediaException, respectively.
-  static bool AreMediaExceptionsEqual(ContentSetting default_audio_setting_1,
-                                      ContentSetting default_video_setting_1,
+  // and vice versa.
+  static bool AreMediaExceptionsEqual(ContentSetting default_setting_1,
                                       const MediaExceptions& exceptions_1,
-                                      ContentSetting default_audio_setting_2,
-                                      ContentSetting default_video_setting_2,
-                                      const MediaExceptions& exceptions_2,
-                                      bool ignore_audio_setting,
-                                      bool ignore_video_setting);
+                                      ContentSetting default_setting_2,
+                                      const MediaExceptions& exceptions_2);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PepperFlashContentSettingsUtils);
 };
 
 }  // namespace options

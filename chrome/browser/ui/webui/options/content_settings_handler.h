@@ -63,28 +63,47 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
  private:
   // Used to determine whether we should show links to Flash camera and
   // microphone settings.
-  struct MediaSettingsInfo {
+  class MediaSettingsInfo {
+   public:
     MediaSettingsInfo();
     ~MediaSettingsInfo();
 
     // Cached Pepper Flash settings.
-    ContentSetting flash_default_setting;
-    MediaExceptions flash_exceptions;
-    bool flash_settings_initialized;
-    uint32_t last_flash_refresh_request_id;
+    struct ForFlash {
+      ForFlash();
+      ~ForFlash();
 
-    // Whether the links to Flash settings pages are showed.
-    bool show_flash_default_link;
-    bool show_flash_exceptions_link;
+      ContentSetting default_setting;
+      MediaExceptions exceptions;
+      bool initialized;
+      uint32_t last_refresh_request_id;
+    };
 
-    // Cached Chrome media settings.
-    ContentSetting default_audio_setting;
-    ContentSetting default_video_setting;
-    bool policy_disable_audio;
-    bool policy_disable_video;
-    bool default_settings_initialized;
-    MediaExceptions exceptions;
-    bool exceptions_initialized;
+    struct ForOneType {
+      ForOneType();
+      ~ForOneType();
+
+      // Whether the links to Flash settings pages are showed.
+      bool show_flash_default_link;
+      bool show_flash_exceptions_link;
+
+      // Cached Chrome media settings.
+      ContentSetting default_setting;
+      bool policy_disable;
+      bool default_setting_initialized;
+      MediaExceptions exceptions;
+      bool exceptions_initialized;
+    };
+
+    ForOneType& forType(ContentSettingsType type);
+    ForFlash& forFlash();
+
+   private:
+    ForOneType mic_settings_;
+    ForOneType camera_settings_;
+    ForFlash flash_settings_;
+
+    DISALLOW_COPY_AND_ASSIGN(MediaSettingsInfo);
   };
 
   // Used by ShowFlashMediaLink() to specify which link to show/hide.
@@ -98,9 +117,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Updates the page with the default settings (allow, ask, block, etc.)
   void UpdateSettingDefaultFromModel(ContentSettingsType type);
 
-  // Compares the media default settings with flash and updates the flash links'
-  // visibility accordingly.
-  void CompareMediaSettingsWithFlash();
+  // Compares the microphone or camera |type| default settings with Flash
+  // and updates the Flash links' visibility accordingly.
+  void UpdateMediaSettingsFromPrefs(ContentSettingsType type);
 
   // Clobbers and rebuilds the specific content setting type exceptions table.
   void UpdateExceptionsViewFromModel(ContentSettingsType type);
@@ -122,9 +141,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds just the desktop notification exception table.
   void UpdateNotificationExceptionsView();
 
-  // Compares the combined microphone and camera exceptions with Flash
-  // exceptions and updates the flash links' visibility accordingly.
-  void CompareMediaExceptionsWithFlash();
+  // Compares the exceptions of the camera or microphone |type| with its Flash
+  // counterparts and updates the Flash links' visibility accordingly.
+  void CompareMediaExceptionsWithFlash(ContentSettingsType type);
 
   // Clobbers and rebuilds just the MIDI SysEx exception table.
   void UpdateMIDISysExExceptionsView();
@@ -216,9 +235,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // content::HostZoomMap subscription.
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
-  void ShowFlashMediaLink(LinkType link_type, bool show);
+  void ShowFlashMediaLink(
+      LinkType link_type, ContentSettingsType content_type, bool show);
 
-  void UpdateFlashMediaLinksVisibility();
+  void UpdateFlashMediaLinksVisibility(ContentSettingsType type);
 
   void UpdateProtectedContentExceptionsButton();
 
@@ -227,7 +247,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
   scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
-  MediaSettingsInfo media_settings_;
+  scoped_ptr<MediaSettingsInfo> media_settings_;
   scoped_ptr<content::HostZoomMap::Subscription> host_zoom_map_subscription_;
   scoped_ptr<content::HostZoomMap::Subscription>
       signin_host_zoom_map_subscription_;

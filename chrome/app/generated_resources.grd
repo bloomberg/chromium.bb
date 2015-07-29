@@ -8272,11 +8272,17 @@ I don't think this site should be blocked!
       <message name="IDS_MEDIA_MENU_NO_DEVICE_TITLE" desc="The title of the media select menu if there is no microphone or camera available on the machine">
         None available
       </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for camera and microphone than the default media permission.">
-        Adobe Flash Player camera and microphone settings are different.
+      <message name="IDS_MEDIA_PEPPER_FLASH_MIC_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for microphone than the default media permission.">
+        Adobe Flash Player microphone settings are different.
       </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_EXCEPTIONS_DIVERGED_LABEL" desc="The label in the media device exception management page informing that Pepper Flash uses different exceptions than the ones listed on the page.">
-        Adobe Flash Player camera and microphone exceptions are different.
+      <message name="IDS_MEDIA_PEPPER_FLASH_CAMERA_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for camera than the default media permission.">
+        Adobe Flash Player camera settings are different.
+      </message>
+      <message name="IDS_MEDIA_PEPPER_FLASH_MIC_EXCEPTIONS_DIVERGED_LABEL" desc="The label in the media device exception management page informing that Pepper Flash uses different exceptions for microphone than the ones listed on the page.">
+        Adobe Flash Player microphone exceptions are different.
+      </message>
+      <message name="IDS_MEDIA_PEPPER_FLASH_CAMERA_EXCEPTIONS_DIVERGED_LABEL" desc="The label in the media device exception management page informing that Pepper Flash uses different exceptions for camera than the ones listed on the page.">
+        Adobe Flash Player camera exceptions are different.
       </message>
       <message name="IDS_MEDIA_PEPPER_FLASH_CHANGE_LINK" desc="The link to change Pepper Flash camera and microphone settings.">
         Change

@@ -91,8 +91,10 @@ cr.define('options', function() {
       $('content-settings-overlay-confirm').onclick =
           PageManager.closeOverlay.bind(PageManager);
 
-      $('media-pepper-flash-default').hidden = true;
-      $('media-pepper-flash-exceptions').hidden = true;
+      $('media-pepper-flash-default-mic').hidden = true;
+      $('media-pepper-flash-default-camera').hidden = true;
+      $('media-pepper-flash-exceptions-mic').hidden = true;
+      $('media-pepper-flash-exceptions-camera').hidden = true;
 
       $('media-select-mic').addEventListener('change',
           ContentSettings.setDefaultMicrophone_);
@@ -208,23 +210,19 @@ cr.define('options', function() {
   };
 
   /**
-   * Shows/hides the link to the Pepper Flash camera and microphone default
-   * settings.
+   * Shows/hides the link to the Pepper Flash camera or microphone,
+   * default or exceptions settings.
    * Please note that whether the link is actually showed or not is also
    * affected by the style class pepper-flash-settings.
+   * @param {string} linkType Can be 'default' or 'exceptions'.
+   * @param {string} contentType Can be 'mic' or 'camera'.
+   * @param {boolean} show Whether to show (or hide) the link.
    */
-  ContentSettings.showMediaPepperFlashDefaultLink = function(show) {
-    $('media-pepper-flash-default').hidden = !show;
-  };
-
-  /**
-   * Shows/hides the link to the Pepper Flash camera and microphone
-   * site-specific settings.
-   * Please note that whether the link is actually showed or not is also
-   * affected by the style class pepper-flash-settings.
-   */
-  ContentSettings.showMediaPepperFlashExceptionsLink = function(show) {
-    $('media-pepper-flash-exceptions').hidden = !show;
+  ContentSettings.showMediaPepperFlashLink =
+      function(linkType, contentType, show) {
+    assert(['default', 'exceptions'].indexOf(linkType) >= 0);
+    assert(['mic', 'camera'].indexOf(contentType) >= 0);
+    $('media-pepper-flash-' + linkType + '-' + contentType).hidden = !show;
   };
 
   /**

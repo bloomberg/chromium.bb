@@ -20,31 +20,19 @@ bool MediaExceptionSortFunc(const MediaException& i, const MediaException& j) {
   return CompareMediaException(i, j) < 0;
 }
 
-bool AreSettingsEqualOrIgnored(const MediaException& i,
-                               const MediaException& j,
-                               bool ignore_audio_setting,
-                               bool ignore_video_setting) {
-  return (ignore_audio_setting || i.audio_setting == j.audio_setting) &&
-         (ignore_video_setting || i.video_setting == j.video_setting);
-}
-
 }  // namespace
 
 MediaException::MediaException(const ContentSettingsPattern& in_pattern,
-                               ContentSetting in_audio_setting,
-                               ContentSetting in_video_setting)
+                               ContentSetting in_setting)
     : pattern(in_pattern),
-      audio_setting(in_audio_setting),
-      video_setting(in_video_setting) {
+      setting(in_setting) {
 }
 
 MediaException::~MediaException() {
 }
 
 bool MediaException::operator==(const MediaException& other) const {
-  return pattern == other.pattern &&
-         audio_setting == other.audio_setting &&
-         video_setting == other.video_setting;
+  return pattern == other.pattern && setting == other.setting;
 }
 
 // static
@@ -83,7 +71,7 @@ void PepperFlashContentSettingsUtils::FlashSiteSettingsToMediaExceptions(
 
     ContentSetting setting = FlashPermissionToContentSetting(iter->permission);
 
-    media_exceptions->push_back(MediaException(pattern, setting, setting));
+    media_exceptions->push_back(MediaException(pattern, setting));
   }
 }
 
@@ -96,64 +84,45 @@ void PepperFlashContentSettingsUtils::SortMediaExceptions(
 
 // static
 bool PepperFlashContentSettingsUtils::AreMediaExceptionsEqual(
-    ContentSetting default_audio_setting_1,
-    ContentSetting default_video_setting_1,
+    ContentSetting default_setting_1,
     const MediaExceptions& exceptions_1,
-    ContentSetting default_audio_setting_2,
-    ContentSetting default_video_setting_2,
-    const MediaExceptions& exceptions_2,
-    bool ignore_audio_setting,
-    bool ignore_video_setting) {
+    ContentSetting default_setting_2,
+    const MediaExceptions& exceptions_2) {
   MediaExceptions::const_iterator iter_1 = exceptions_1.begin();
   MediaExceptions::const_iterator iter_2 = exceptions_2.begin();
 
   MediaException default_exception_1(ContentSettingsPattern(),
-                                     default_audio_setting_1,
-                                     default_video_setting_1);
+                                     default_setting_1);
   MediaException default_exception_2(ContentSettingsPattern(),
-                                     default_audio_setting_2,
-                                     default_video_setting_2);
+                                     default_setting_2);
 
   while (iter_1 != exceptions_1.end() && iter_2 != exceptions_2.end()) {
     int compare_result = CompareMediaException(*iter_1, *iter_2);
     if (compare_result < 0) {
-      if (!AreSettingsEqualOrIgnored(*iter_1, default_exception_2,
-                                     ignore_audio_setting,
-                                     ignore_video_setting)) {
+      if (iter_1->setting != default_exception_2.setting)
         return false;
-      }
       ++iter_1;
     } else if (compare_result > 0) {
-      if (!AreSettingsEqualOrIgnored(*iter_2, default_exception_1,
-                                     ignore_audio_setting,
-                                     ignore_video_setting)) {
+      if (iter_2->setting != default_exception_1.setting) {
         return false;
       }
       ++iter_2;
     } else {
-      if (!AreSettingsEqualOrIgnored(*iter_1, *iter_2, ignore_audio_setting,
-                                     ignore_video_setting)) {
+      if (iter_1->setting != iter_2->setting)
         return false;
-      }
       ++iter_1;
       ++iter_2;
     }
   }
 
   while (iter_1 != exceptions_1.end()) {
-    if (!AreSettingsEqualOrIgnored(*iter_1, default_exception_2,
-                                   ignore_audio_setting,
-                                   ignore_video_setting)) {
+    if (iter_1->setting != default_exception_2.setting)
       return false;
-    }
     ++iter_1;
   }
   while (iter_2 != exceptions_2.end()) {
-    if (!AreSettingsEqualOrIgnored(*iter_2, default_exception_1,
-                                   ignore_audio_setting,
-                                   ignore_video_setting)) {
+    if (iter_2->setting != default_exception_1.setting)
       return false;
-    }
     ++iter_2;
   }
   return true;
