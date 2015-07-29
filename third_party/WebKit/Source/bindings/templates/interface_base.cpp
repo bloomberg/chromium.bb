@@ -215,7 +215,6 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 } // namespace {{cpp_class_or_partial}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
-{% block shadow_attributes %}{% endblock %}
 {##############################################################################}
 {% block install_attributes %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
@@ -227,14 +226,11 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
-    {# [Unforgeable] attributes in Window are defined as shadow_attributes, so
-       excluded here. #}
     {% for attribute in attributes
        if not (attribute.exposed_test or
                attribute.runtime_enabled_function) and
           attribute.is_data_type_property and
-          attribute.should_be_exposed_to_script and
-          not (interface_name == 'Window' and attribute.is_unforgeable) %}
+          attribute.should_be_exposed_to_script %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
@@ -251,14 +247,11 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% from 'attributes.cpp' import attribute_configuration with context %}
 {% if has_accessor_configuration %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
-    {# [Unforgeable] attributes in Window are defined as shadow_attributes, so
-       excluded here. #}
     {% for attribute in attributes
        if not (attribute.exposed_test or
                attribute.runtime_enabled_function) and
           not attribute.is_data_type_property and
-          attribute.should_be_exposed_to_script and
-          not (interface_name == 'Window' and attribute.is_unforgeable) %}
+          attribute.should_be_exposed_to_script %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
