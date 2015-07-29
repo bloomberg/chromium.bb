@@ -59,6 +59,7 @@
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_common.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -999,8 +1000,18 @@ void RenderViewContextMenu::AppendEditableItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
+#if defined(OS_MACOSX)
   if (use_spellcheck_and_search)
     AppendSpellcheckOptionsSubMenu();
+#else
+  if (chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
+                                    IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
+  } else if (use_spellcheck_and_search) {
+    AppendSpellcheckOptionsSubMenu();
+  }
+#endif  // defined(OS_MACOSX)
+
   AppendPlatformEditableItems();
 
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);

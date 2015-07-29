@@ -35,6 +35,7 @@ SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
       language_group_(group),
       num_selected_languages_(0) {
   DCHECK(proxy_);
+  DCHECK(!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
 }
 
 SpellCheckerSubMenuObserver::~SpellCheckerSubMenuObserver() {
@@ -53,19 +54,11 @@ void SpellCheckerSubMenuObserver::InitMenu(
          IDC_SPELLCHECK_LANGUAGES_LAST - IDC_SPELLCHECK_LANGUAGES_FIRST);
   const std::string app_locale = g_browser_process->GetApplicationLocale();
 
-  if (chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
-    for (size_t i = 0; i < languages_.size(); ++i) {
-      submenu_model_.AddCheckItem(
-          IDC_SPELLCHECK_LANGUAGES_FIRST + i,
-          l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true));
-    }
-  } else {
-    for (size_t i = 0; i < languages_.size(); ++i) {
-      submenu_model_.AddRadioItem(
-          IDC_SPELLCHECK_LANGUAGES_FIRST + i,
-          l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true),
-          language_group_);
-    }
+  for (size_t i = 0; i < languages_.size(); ++i) {
+    submenu_model_.AddRadioItem(
+        IDC_SPELLCHECK_LANGUAGES_FIRST + i,
+        l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true),
+        language_group_);
   }
 
   // Add an item that opens the 'fonts and languages options' page.
@@ -85,11 +78,9 @@ void SpellCheckerSubMenuObserver::InitMenu(
   // Add a check item "Ask Google for spelling suggestions" item. (This class
   // does not handle this item because the SpellingMenuObserver class handles it
   // on behalf of this class.)
-  if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
-    submenu_model_.AddCheckItem(
-        IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
-  }
+  submenu_model_.AddCheckItem(
+      IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 
   // Add a check item "Automatically correct spelling".
   const base::CommandLine* command_line =
@@ -181,24 +172,9 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
     StringListPrefMember dictionaries_pref;
     dictionaries_pref.Init(prefs::kSpellCheckDictionaries, profile->GetPrefs());
 
-    if (chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
-      std::vector<std::string> dictionary_languages =
-          dictionaries_pref.GetValue();
+    dictionaries_pref.SetValue(
+        std::vector<std::string>(1, languages_[language]));
 
-      auto found_language =
-          std::find(dictionary_languages.begin(), dictionary_languages.end(),
-                    languages_[language]);
-
-      if (found_language != dictionary_languages.end())
-        dictionary_languages.erase(found_language);
-      else
-        dictionary_languages.push_back(languages_[language]);
-
-      dictionaries_pref.SetValue(dictionary_languages);
-    } else {
-      dictionaries_pref.SetValue(
-          std::vector<std::string>(1, languages_[language]));
-    }
     return;
   }
 

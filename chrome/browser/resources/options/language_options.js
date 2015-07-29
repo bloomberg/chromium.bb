@@ -158,6 +158,15 @@ cr.define('options', function() {
      */
     enableTranslate_: false,
 
+    /**
+     * Returns true if the enable-multilingual-spellchecker flag is set.
+     * @return {boolean}
+     * @private
+     */
+    isMultilingualSpellcheckerEnabled_: function() {
+      return loadTimeData.getBoolean('enableMultilingualSpellChecker');
+    },
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -213,7 +222,7 @@ cr.define('options', function() {
 
       if (!cr.isMac) {
         // Set up the button for editing custom spelling dictionary.
-        $('edit-dictionary-button').onclick = function(e) {
+        $('edit-custom-dictionary-button').onclick = function(e) {
           PageManager.showPageByName('editDictionary');
         };
         $('dictionary-download-retry-button').onclick = function(e) {
@@ -231,15 +240,19 @@ cr.define('options', function() {
           $('auto-spell-correction-option').hidden = false;
       }
 
-      // Handle spell check enable/disable.
       if (!(cr.isMac || cr.isChromeOS)) {
-        Preferences.getInstance().addEventListener(
-            ENABLE_SPELL_CHECK_PREF, this.updateEnableSpellCheck_.bind(this));
+        // Handle spell check enable/disable.
+        if (!this.isMultilingualSpellcheckerEnabled_()) {
+          Preferences.getInstance().addEventListener(
+              ENABLE_SPELL_CHECK_PREF, this.updateEnableSpellCheck_.bind(this));
+        }
+        $('enable-spellcheck-container').hidden =
+            this.isMultilingualSpellcheckerEnabled_();
       }
 
       // Handle clicks on "Use this language for spell checking" button.
       if (!cr.isMac) {
-        if (loadTimeData.getBoolean('enableMultilingualSpellChecker')) {
+        if (this.isMultilingualSpellcheckerEnabled_()) {
           $('spellcheck-language-checkbox').addEventListener(
               'change',
               this.handleSpellCheckLanguageCheckboxClick_.bind(this));
@@ -646,7 +659,7 @@ cr.define('options', function() {
       var isLanguageDownloaded =
           !(languageCode in this.spellcheckDictionaryDownloadStatus_);
 
-      if (loadTimeData.getBoolean('enableMultilingualSpellChecker')) {
+      if (this.isMultilingualSpellcheckerEnabled_()) {
         spellCheckLanguageCheckbox.languageCode = languageCode;
         spellCheckLanguageCheckbox.checked = isUsedForSpellchecking;
         spellCheckLanguageCheckboxContainer.hidden = false;
@@ -677,9 +690,12 @@ cr.define('options', function() {
 
       var areNoLanguagesSelected =
           Object.keys(this.spellCheckLanguages_).length == 0;
-      $('edit-dictionary-button').hidden = areNoLanguagesSelected;
-      if ($('enable-spellcheck-container'))
-        $('enable-spellcheck-container').hidden = areNoLanguagesSelected;
+      var usesSystemSpellchecker = !$('enable-spellcheck-container');
+      var isSpellcheckingEnabled = usesSystemSpellchecker ||
+          this.isMultilingualSpellcheckerEnabled_() ||
+          $('enable-spellcheck').checked;
+      $('edit-custom-dictionary-button').hidden =
+          areNoLanguagesSelected || !isSpellcheckingEnabled;
     },
 
     /**
@@ -945,12 +961,11 @@ cr.define('options', function() {
      */
     updateEnableSpellCheck_: function(e) {
       var value = !$('enable-spellcheck').checked;
-      var languageControl =
-          loadTimeData.getBoolean('enableMultilingualSpellChecker') ?
-          $('spellcheck-language-checkbox') : $('spellcheck-language-button');
+      var languageControl = $(this.isMultilingualSpellcheckerEnabled_() ?
+          'spellcheck-language-checkbox' : 'spellcheck-language-button');
       languageControl.disabled = value;
       if (!cr.isMac)
-        $('edit-dictionary-button').hidden = value;
+        $('edit-custom-dictionary-button').hidden = value;
     },
 
     /**

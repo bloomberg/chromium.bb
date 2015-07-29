@@ -37,7 +37,21 @@ MultilanguageOptionsWebUIBrowserTest.prototype = {
     assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
     assertFalse(cr.isMac);
     expectTrue($('spellcheck-language-button').hidden);
+    expectFalse($('edit-custom-dictionary-button').hidden);
+    this.expectEnableSpellcheckCheckboxHidden();
     this.expectCurrentlySelected('fr');
+  },
+
+  /** @override */
+  tearDown: function() {
+    testing.Test.prototype.tearDown.call(this);
+    this.expectEnableSpellcheckCheckboxHidden();
+  },
+
+  /** Make sure the 'Enable spell checking' checkbox is not visible. */
+  expectEnableSpellcheckCheckboxHidden: function() {
+    if ($('enable-spellcheck-container'))
+      expectTrue($('enable-spellcheck-container').hidden);
   },
 };
 
@@ -45,14 +59,6 @@ MultilanguageOptionsWebUIBrowserTest.prototype = {
 TEST_F('MultilanguageOptionsWebUIBrowserTest', 'TestOpenLanguageOptions',
        function() {
   expectEquals('chrome://settings-frame/languages', document.location.href);
-});
-
-// Verify that the option to enable the spelling service is hidden when
-// multilingual spellchecking is enabled.
-TEST_F('MultilanguageOptionsWebUIBrowserTest', 'HideSpellingServiceCheckbox',
-       function() {
-  assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
-  expectTrue($('spelling-enabled-container').hidden);
 });
 
 // Test that only certain languages can be selected and used for spellchecking.
@@ -139,16 +145,19 @@ MultilanguagePreferenceWebUIBrowserTest.prototype = {
     assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
     assertFalse(cr.isMac);
     expectTrue($('spellcheck-language-button').hidden);
+    expectTrue($('edit-custom-dictionary-button').hidden);
+    this.expectEnableSpellcheckCheckboxHidden();
     this.expectCurrentlySelected('');
     this.expectRegisteredDictionariesPref('');
   },
 };
 
 // Make sure the case where no languages are selected is handled properly.
-TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'BlankSpellcheckLanguges',
+TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'SelectFromBlank',
        function() {
   expectTrue($('language-options-list').selectLanguageByCode('fr'));
   expectFalse($('spellcheck-language-checkbox').checked, 'fr');
+  expectTrue($('edit-custom-dictionary-button').hidden);
 
   // Add a preference change event listener which ensures that the preference is
   // updated correctly and that 'fr' is the only thing in the dictionary object.
@@ -156,56 +165,10 @@ TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'BlankSpellcheckLanguges',
     expectTrue($('spellcheck-language-checkbox').checked, 'fr');
     this.expectRegisteredDictionariesPref('fr');
     this.expectCurrentlySelected('fr');
+    expectFalse($('edit-custom-dictionary-button').hidden);
     testDone();
   }.bind(this));
-
-  // Click 'fr' and trigger the previously registered event listener.
-  $('spellcheck-language-checkbox').click();
-});
-
-// Make sure that when no languages are selected, the "Enable spell checking"
-// checkbox and "Edit custom spelling dictionary" link are not visible.
-TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'DeselectAllLanguages',
-       function() {
-  expectTrue($('language-options-list').selectLanguageByCode('fr'));
-  if ($('enable-spellcheck-container'))
-    expectTrue($('enable-spellcheck-container').hidden);
-  expectTrue($('edit-dictionary-button').hidden);
-
-  this.addPreferenceListener('spellcheck.dictionaries', function() {
-    expectTrue($('spellcheck-language-checkbox').checked, 'fr');
-    if ($('enable-spellcheck-container'))
-      expectFalse($('enable-spellcheck-container').hidden);
-    expectFalse($('edit-dictionary-button').hidden);
-    testDone();
-  });
 
   // Click 'fr' and trigger the preference listener.
   $('spellcheck-language-checkbox').click();
 });
-
-// ChromeOS never shows the "Enable spell checking" checkbox so don't run the
-// last test on ChromeOS.
-GEN('#if !defined(OS_CHROMEOS)');
-
-// Make sure that disabling spellchecking disables the language checkboxes.
-TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'DisableLanguageCheckboxes',
-       function() {
-  expectTrue($('language-options-list').selectLanguageByCode('fr'));
-  expectFalse($('spellcheck-language-checkbox').disabled);
-
-  this.addPreferenceListener('spellcheck.dictionaries', function() {
-    this.addPreferenceListener('browser.enable_spellchecking', function() {
-      expectTrue($('spellcheck-language-checkbox').disabled);
-      testDone();
-    });
-
-    // Click 'Enable spell checking' and trigger the preference listener.
-    $('enable-spellcheck').click();
-  }.bind(this));
-
-  // Click 'fr' to display the 'Enable spell checking' checkbox.
-  $('spellcheck-language-checkbox').click();
-});
-
-GEN('#endif  // OS_CHROMEOS');

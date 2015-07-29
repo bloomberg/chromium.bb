@@ -124,7 +124,7 @@ function load() {
   if (!cr.isMac) {
     PageManager.registerOverlay(EditDictionaryOverlay.getInstance(),
                                 LanguageOptions.getInstance(),
-                                [$('edit-dictionary-button')]);
+                                [$('edit-custom-dictionary-button')]);
   }
   PageManager.registerOverlay(FontSettings.getInstance(),
                               BrowserOptions.getInstance(),

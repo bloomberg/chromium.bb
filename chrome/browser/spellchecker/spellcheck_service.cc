@@ -64,6 +64,22 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
 
   single_dictionary_pref.SetValue("");
 
+  // If a user goes from single language to multi-language spellchecking with
+  // spellchecking disabled the dictionaries preference should be blanked.
+  if (!prefs->GetBoolean(prefs::kEnableContinuousSpellcheck) &&
+      chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
+    dictionaries_pref.SetValue(std::vector<std::string>());
+    prefs->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
+  }
+
+  // If a user goes back to single language spellchecking make sure there is
+  // only one language in the dictionaries preference.
+  if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled() &&
+      dictionaries_pref.GetValue().size() > 1) {
+    dictionaries_pref.SetValue(
+        std::vector<std::string>(1, first_of_dictionaries));
+  }
+
   std::string language_code;
   std::string country_code;
   chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(
@@ -81,12 +97,10 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       prefs::kSpellCheckDictionaries,
       base::Bind(&SpellcheckService::OnSpellCheckDictionariesChanged,
                  base::Unretained(this)));
-  if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
-    pref_change_registrar_.Add(
-        prefs::kSpellCheckUseSpellingService,
-        base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
-                   base::Unretained(this)));
-  }
+  pref_change_registrar_.Add(
+      prefs::kSpellCheckUseSpellingService,
+      base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
+                 base::Unretained(this)));
 
   pref_change_registrar_.Add(
       prefs::kEnableContinuousSpellcheck,

@@ -124,8 +124,7 @@ bool SpellingServiceClient::IsAvailable(
   // unavailable.
   if (!pref->GetBoolean(prefs::kEnableContinuousSpellcheck) ||
       !pref->GetBoolean(prefs::kSpellCheckUseSpellingService) ||
-      context->IsOffTheRecord() ||
-      chrome::spellcheck_common::IsMultilingualSpellcheckEnabled())
+      context->IsOffTheRecord())
     return false;
 
   // If the locale for spelling has not been set, the user has not decided to

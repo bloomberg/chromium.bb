@@ -7102,7 +7102,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Custom dictionary page -->
       <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_TITLE" desc="Title for the chrome://settings/editDictionary page, where a user can add and remove words in the dictionary used for spelling">
-        Custom spelling dictionary
+        Edit custom dictionary
       </message>
       <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_ADD_WORD_LABEL" desc="Label for adding a new word to the dictionary on the chrome://settings/editDictionary page">
         Add a new word

@@ -509,8 +509,6 @@ cr.define('options', function() {
           loadTimeData.getBoolean('showWakeOnWifi')) {
         $('wake-on-wifi').hidden = false;
       }
-      $('spelling-enabled-container').hidden =
-          loadTimeData.getBoolean('enableMultilingualSpellChecker');
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {
