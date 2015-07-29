@@ -1,5 +1,4 @@
 CONSOLE WARNING: Failed to decode downloaded font: FruityGirl.ttf
-CONSOLE WARNING: OTS parsing error: no supported glyph shapes table(s) present
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
