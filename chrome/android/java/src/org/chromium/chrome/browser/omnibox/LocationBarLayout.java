@@ -818,7 +818,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 });
 
         mWindowAndroid = windowAndroid;
-        mMicButton.setOnClickListener(this);
     }
 
     /**
@@ -840,6 +839,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mNavigationButton.setOnClickListener(this);
         updateMicButtonState();
         mDeleteButton.setOnClickListener(this);
+        mMicButton.setOnClickListener(this);
 
         mAutocomplete = new AutocompleteController(this);
 
