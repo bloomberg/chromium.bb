@@ -404,6 +404,17 @@ void PepperVideoRenderer3D::PaintIfNeeded() {
   gles2_if_->TexParameteri(graphics_3d, picture.texture_target,
                            GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+  // When view dimensions are a multiple of the frame size then use
+  // nearest-neighbor scaling to achieve crisper image. Linear filter is used in
+  // all other cases.
+  GLint mag_filter = GL_LINEAR;
+  if (view_size_.width() % picture.visible_rect.size.width == 0 &&
+      view_size_.height() % picture.visible_rect.size.height == 0) {
+    mag_filter = GL_NEAREST;
+  }
+  gles2_if_->TexParameteri(graphics_3d, picture.texture_target,
+                           GL_TEXTURE_MAG_FILTER, mag_filter);
+
   // Render texture by drawing a triangle strip with 4 vertices.
   gles2_if_->DrawArrays(graphics_3d, GL_TRIANGLE_STRIP, 0, 4);
 
