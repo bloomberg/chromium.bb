@@ -53,7 +53,7 @@ IPC_MESSAGE_ROUTED1(CredentialManagerHostMsg_RequireUserMediation,
                     int /* request_id */)
 
 // Requests a credential from the browser process in response to a page calling
-// 'navigator.credentials.request()'. The browser process will respond with a
+// 'navigator.credentials.get()'. The browser process will respond with a
 // CredentialManagerMsg_SendCredential message.
 IPC_MESSAGE_ROUTED3(CredentialManagerHostMsg_RequestCredential,
                     int /* request_id */,

@@ -42,7 +42,7 @@ CredentialManagerClient::~CredentialManagerClient() {
   ClearCallbacksMapWithErrors(&failed_sign_in_callbacks_);
   ClearCallbacksMapWithErrors(&store_callbacks_);
   ClearCallbacksMapWithErrors(&require_user_mediation_callbacks_);
-  ClearCallbacksMapWithErrors(&request_callbacks_);
+  ClearCallbacksMapWithErrors(&get_callbacks_);
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ void CredentialManagerClient::OnAcknowledgeRequireUserMediation(
 
 void CredentialManagerClient::OnSendCredential(int request_id,
                                                const CredentialInfo& info) {
-  RequestCallbacks* callbacks = request_callbacks_.Lookup(request_id);
+  RequestCallbacks* callbacks = get_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   scoped_ptr<blink::WebCredential> credential = nullptr;
   switch (info.type) {
@@ -91,18 +91,18 @@ void CredentialManagerClient::OnSendCredential(int request_id,
       break;
   }
   callbacks->onSuccess(credential.get());
-  request_callbacks_.Remove(request_id);
+  get_callbacks_.Remove(request_id);
 }
 
 void CredentialManagerClient::OnRejectCredentialRequest(
     int request_id,
     blink::WebCredentialManagerError::ErrorType error_type) {
-  RequestCallbacks* callbacks = request_callbacks_.Lookup(request_id);
+  RequestCallbacks* callbacks = get_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   scoped_ptr<blink::WebCredentialManagerError> error(
       new blink::WebCredentialManagerError(error_type));
   callbacks->onError(error.get());
-  request_callbacks_.Remove(request_id);
+  get_callbacks_.Remove(request_id);
 }
 
 // -----------------------------------------------------------------------------
@@ -123,11 +123,11 @@ void CredentialManagerClient::dispatchRequireUserMediation(
                                                          request_id));
 }
 
-void CredentialManagerClient::dispatchRequest(
+void CredentialManagerClient::dispatchGet(
     bool zeroClickOnly,
     const blink::WebVector<blink::WebURL>& federations,
     RequestCallbacks* callbacks) {
-  int request_id = request_callbacks_.Add(callbacks);
+  int request_id = get_callbacks_.Add(callbacks);
   std::vector<GURL> federation_vector;
   for (size_t i = 0; i < std::min(federations.size(), kMaxFederations); ++i)
     federation_vector.push_back(federations[i]);

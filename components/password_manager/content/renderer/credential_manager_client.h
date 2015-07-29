@@ -67,10 +67,9 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
       const blink::WebCredential& credential,
       WebCredentialManagerClient::NotificationCallbacks* callbacks);
   virtual void dispatchRequireUserMediation(NotificationCallbacks* callbacks);
-  virtual void dispatchRequest(
-      bool zero_click_only,
-      const blink::WebVector<blink::WebURL>& federations,
-      RequestCallbacks* callbacks);
+  virtual void dispatchGet(bool zero_click_only,
+                           const blink::WebVector<blink::WebURL>& federations,
+                           RequestCallbacks* callbacks);
 
  private:
   typedef IDMap<blink::WebCredentialManagerClient::RequestCallbacks,
@@ -86,7 +85,7 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   NotificationCallbacksMap failed_sign_in_callbacks_;
   NotificationCallbacksMap store_callbacks_;
   NotificationCallbacksMap require_user_mediation_callbacks_;
-  RequestCallbacksMap request_callbacks_;
+  RequestCallbacksMap get_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerClient);
 };

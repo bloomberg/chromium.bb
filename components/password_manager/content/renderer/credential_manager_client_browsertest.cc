@@ -179,7 +179,7 @@ TEST_F(CredentialManagerClientTest, SendRequestCredential) {
 
   scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
   std::vector<GURL> federations;
-  client_->dispatchRequest(false, federations, callbacks.release());
+  client_->dispatchGet(false, federations, callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                request_id));
@@ -198,7 +198,7 @@ TEST_F(CredentialManagerClientTest, SendRequestCredentialEmpty) {
 
   scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
   std::vector<GURL> federations;
-  client_->dispatchRequest(false, federations, callbacks.release());
+  client_->dispatchGet(false, federations, callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                request_id));
