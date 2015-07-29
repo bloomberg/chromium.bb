@@ -443,8 +443,7 @@ def on_prototype(interface, member):
     # These members must not be placed on prototype chains.
     if (is_constructor_attribute(member) or
             member.is_static or
-            is_unforgeable(interface, member) or
-            'OverrideBuiltins' in interface.extended_attributes):
+            is_unforgeable(interface, member)):
         return False
 
     # TODO(yukishiino): We should handle [Global] and [PrimaryGlobal] instead of
