@@ -4,7 +4,6 @@
 
 #include "chrome/browser/lifetime/browser_close_manager.h"
 
-#include "base/auto_reset.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -36,14 +35,10 @@ void ShowInProgressDownloads(Profile* profile) {
 
 }  // namespace
 
-BrowserCloseManager::BrowserCloseManager()
-    : current_browser_(nullptr),
-      iterating_over_browsers_during_shutdown_(false) {
-  BrowserList::AddObserver(this);
+BrowserCloseManager::BrowserCloseManager() : current_browser_(nullptr) {
 }
 
 BrowserCloseManager::~BrowserCloseManager() {
-  BrowserList::RemoveObserver(this);
 }
 
 void BrowserCloseManager::StartClosingBrowsers() {
@@ -56,14 +51,6 @@ void BrowserCloseManager::StartClosingBrowsers() {
     return;
   }
   TryToCloseBrowsers();
-}
-
-void BrowserCloseManager::OnBrowserAdded(Browser* browser) {
-  CHECK(!iterating_over_browsers_during_shutdown_);
-}
-
-void BrowserCloseManager::OnBrowserRemoved(Browser* browser) {
-  CHECK(!iterating_over_browsers_during_shutdown_);
 }
 
 void BrowserCloseManager::CancelBrowserClose() {
@@ -151,16 +138,6 @@ void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
 }
 
 void BrowserCloseManager::CloseBrowsers() {
-  // This method can be entered synchronously from
-  // application_lifetime.cc::CloseAllBrowsers, or asynchronously via
-  // OnBrowserReportClosable or OnReportDownloadsCancellable.
-  // In the async cases, the reference to BrowserCloseManager is held by the
-  // Browser or BrowserWindow, so closing a Browser can cause |this| to be
-  // destroyed. Hold a reference here so that |this| outlives CloseBrowsers.
-  // This is only needed to access |iterating_over_browser_during_shutdown_|,
-  // make this method file-local when it no longer needs |this|.
-  scoped_refptr<BrowserCloseManager> browser_close_manager(this);
-
 #if defined(ENABLE_SESSION_SERVICE)
   // Before we close the browsers shutdown all session services. That way an
   // exit can restore all browsers open before exiting.
@@ -173,8 +150,6 @@ void BrowserCloseManager::CloseBrowsers() {
       background_mode_manager->SuspendBackgroundMode();
   }
 
-  base::AutoReset<bool> is_iterating(&iterating_over_browsers_during_shutdown_,
-                                     true);
   bool session_ending =
       browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;
   for (scoped_ptr<chrome::BrowserIterator> it_ptr(
@@ -194,11 +169,7 @@ void BrowserCloseManager::CloseBrowsers() {
       // happen.
       while (browser->tab_strip_model()->count())
         delete browser->tab_strip_model()->GetWebContentsAt(0);
-      {
-        base::AutoReset<bool> not_iterating(
-            &iterating_over_browsers_during_shutdown_, false);
-        browser->window()->DestroyBrowser();
-      }
+      browser->window()->DestroyBrowser();
       it_ptr.reset(new chrome::BrowserIterator());
       if (!it_ptr->done() && browser == **it_ptr) {
         // Destroying the browser should have removed it from the browser list.
