@@ -39,7 +39,6 @@ public:
         , m_floatIndex(0)
         , m_endLineLogicalTop(0)
         , m_endLineMatched(false)
-        , m_checkForFloatsFromLastLine(false)
         , m_hasInlineChild(false)
         , m_isFullLayout(fullLayout)
         , m_paintInvalidationLogicalTop(paintInvalidationLogicalTop)
@@ -69,9 +68,6 @@ public:
 
     bool endLineMatched() const { return m_endLineMatched; }
     void setEndLineMatched(bool endLineMatched) { m_endLineMatched = endLineMatched; }
-
-    bool checkForFloatsFromLastLine() const { return m_checkForFloatsFromLastLine; }
-    void setCheckForFloatsFromLastLine(bool check) { m_checkForFloatsFromLastLine = check; }
 
     bool hasInlineChild() const { return m_hasInlineChild; }
     void setHasInlineChild(bool hasInlineChild) { m_hasInlineChild = hasInlineChild; }
@@ -107,7 +103,6 @@ private:
     unsigned m_floatIndex;
     LayoutUnit m_endLineLogicalTop;
     bool m_endLineMatched;
-    bool m_checkForFloatsFromLastLine;
     // Used as a performance optimization to avoid doing a full paint invalidation when our floats
     // change but we don't have any inline children.
     bool m_hasInlineChild;
