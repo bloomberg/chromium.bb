@@ -19,10 +19,7 @@ namespace extensions {
 
 scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  content::BrowserThread::ID id;
-  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
-  return ApiResourceManager<Socket>::CreateApiResourceManagerForTest(context,
-                                                                     id);
+  return make_scoped_ptr(new ApiResourceManager<Socket>(context));
 }
 
 class SocketUnitTest : public ExtensionApiUnittest {

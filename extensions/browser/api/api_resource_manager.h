@@ -49,27 +49,6 @@ struct NamedThreadTraits {
   }
 };
 
-template <typename T>
-struct TestThreadTraits {
-  static bool IsCalledOnValidThread() {
-    return content::BrowserThread::CurrentlyOn(thread_id_);
-  }
-
-  static bool IsMessageLoopValid() {
-    return content::BrowserThread::IsMessageLoopValid(thread_id_);
-  }
-
-  static scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
-    return content::BrowserThread::GetMessageLoopProxyForThread(thread_id_);
-  }
-
-  static content::BrowserThread::ID thread_id_;
-};
-
-template <typename T>
-content::BrowserThread::ID TestThreadTraits<T>::thread_id_ =
-    content::BrowserThread::IO;
-
 // An ApiResourceManager manages the lifetime of a set of resources that
 // that live on named threads (i.e. BrowserThread::IO) which ApiFunctions use.
 // Examples of such resources are sockets or USB connections.
@@ -119,14 +98,6 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
         process_manager_observer_(this) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(context));
     process_manager_observer_.Add(ProcessManager::Get(context));
-  }
-  // For Testing.
-  static scoped_ptr<ApiResourceManager<T, TestThreadTraits<T>>>
-  CreateApiResourceManagerForTest(content::BrowserContext* context,
-                                  content::BrowserThread::ID thread_id) {
-    TestThreadTraits<T>::thread_id_ = thread_id;
-    return make_scoped_ptr(
-        new ApiResourceManager<T, TestThreadTraits<T>>(context));
   }
 
   virtual ~ApiResourceManager() {

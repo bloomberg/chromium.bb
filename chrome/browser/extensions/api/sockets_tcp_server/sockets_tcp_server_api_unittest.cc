@@ -21,18 +21,13 @@ namespace api {
 
 static scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  content::BrowserThread::ID id;
-  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
-  return ApiResourceManager<
-      ResumableTCPSocket>::CreateApiResourceManagerForTest(context, id);
+  return make_scoped_ptr(new ApiResourceManager<ResumableTCPSocket>(context));
 }
 
 static scoped_ptr<KeyedService> ApiResourceManagerTestServerFactory(
     content::BrowserContext* context) {
-  content::BrowserThread::ID id;
-  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
-  return ApiResourceManager<
-      ResumableTCPServerSocket>::CreateApiResourceManagerForTest(context, id);
+  return make_scoped_ptr(
+      new ApiResourceManager<ResumableTCPServerSocket>(context));
 }
 
 class SocketsTcpServerUnitTest : public ExtensionApiUnittest {
