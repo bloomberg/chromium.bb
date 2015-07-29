@@ -25,7 +25,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> ShadowStyleInterpolation::lengthToInte
 {
     if (value)
         return LengthStyleInterpolation::toInterpolableValue(*value);
-    return LengthStyleInterpolation::toInterpolableValue(*CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
+    return LengthStyleInterpolation::toInterpolableValue(*CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> ShadowStyleInterpolation::toInterpolableValue(const CSSValue& value, NonInterpolableType& nonInterpolableData)

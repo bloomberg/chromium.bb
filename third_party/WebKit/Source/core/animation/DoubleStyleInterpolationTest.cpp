@@ -38,7 +38,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), toCSSPrimitiveValue(value.get())->primitiveType() == CSSPrimitiveValue::CSS_NUMBER, RangeAll);
+        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), toCSSPrimitiveValue(value.get())->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Number, RangeAll);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTripMotionRotation(PassRefPtrWillBeRawPtr<CSSValue> value, bool flag)
@@ -50,7 +50,7 @@ protected:
     {
         EXPECT_TRUE(value->isPrimitiveValue());
         EXPECT_EQ(doubleValue, toCSSPrimitiveValue(value.get())->getDoubleValue());
-        EXPECT_EQ(unitType, toCSSPrimitiveValue(value.get())->primitiveType());
+        EXPECT_EQ(unitType, toCSSPrimitiveValue(value.get())->typeWithCalcResolved());
     }
 
     static void testValueListMotionRotation(RefPtrWillBeRawPtr<CSSValue> value, double doubleValue, bool flag)
@@ -70,7 +70,7 @@ protected:
         }
         EXPECT_TRUE(item->isPrimitiveValue());
         EXPECT_EQ(doubleValue, toCSSPrimitiveValue(item)->getDoubleValue());
-        EXPECT_EQ(CSSPrimitiveValue::CSS_DEG, toCSSPrimitiveValue(item)->primitiveType());
+        EXPECT_EQ(CSSPrimitiveValue::UnitType::Degrees, toCSSPrimitiveValue(item)->typeWithCalcResolved());
     }
 
     static InterpolableValue* getCachedValue(Interpolation& interpolation)
@@ -81,29 +81,29 @@ protected:
 
 TEST_F(AnimationDoubleStyleInterpolationTest, ZeroValue)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_NUMBER));
-    testPrimitiveValue(value, 0, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Number));
+    testPrimitiveValue(value, 0, CSSPrimitiveValue::UnitType::Number);
 }
 
 TEST_F(AnimationDoubleStyleInterpolationTest, AngleValue)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_DEG));
-    testPrimitiveValue(value, 10, CSSPrimitiveValue::CSS_DEG);
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Degrees));
+    testPrimitiveValue(value, 10, CSSPrimitiveValue::UnitType::Degrees);
 
-    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_RAD));
-    testPrimitiveValue(value, rad2deg(10.0), CSSPrimitiveValue::CSS_DEG);
+    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Radians));
+    testPrimitiveValue(value, rad2deg(10.0), CSSPrimitiveValue::UnitType::Degrees);
 
-    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_GRAD));
-    testPrimitiveValue(value, grad2deg(10.0), CSSPrimitiveValue::CSS_DEG);
+    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Gradians));
+    testPrimitiveValue(value, grad2deg(10.0), CSSPrimitiveValue::UnitType::Degrees);
 }
 
 TEST_F(AnimationDoubleStyleInterpolationTest, Clamping)
 {
     RefPtrWillBeRawPtr<Interpolation> interpolableDouble = DoubleStyleInterpolation::create(
-        *CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_NUMBER),
-        *CSSPrimitiveValue::create(0.6, CSSPrimitiveValue::CSS_NUMBER),
+        *CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Number),
+        *CSSPrimitiveValue::create(0.6, CSSPrimitiveValue::UnitType::Number),
         CSSPropertyLineHeight,
-        CSSPrimitiveValue::CSS_NUMBER,
+        CSSPrimitiveValue::UnitType::Number,
         RangeAll);
     interpolableDouble->interpolate(0, 0.4);
     // progVal = start*(1-prog) + end*prog
@@ -113,7 +113,7 @@ TEST_F(AnimationDoubleStyleInterpolationTest, Clamping)
 TEST_F(AnimationDoubleStyleInterpolationTest, ZeroValueFixedMotionRotation)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    list->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_DEG));
+    list->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Degrees));
     RefPtrWillBeRawPtr<CSSValue> value = roundTripMotionRotation(list.release(), false);
     testValueListMotionRotation(value, 0, false);
 }
@@ -122,7 +122,7 @@ TEST_F(AnimationDoubleStyleInterpolationTest, ZeroValueAutoMotionRotation)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     list->append(CSSPrimitiveValue::createIdentifier(CSSValueAuto));
-    list->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_DEG));
+    list->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Degrees));
     RefPtrWillBeRawPtr<CSSValue> value = roundTripMotionRotation(list.release(), true);
     testValueListMotionRotation(value, 0, true);
 }
@@ -130,7 +130,7 @@ TEST_F(AnimationDoubleStyleInterpolationTest, ZeroValueAutoMotionRotation)
 TEST_F(AnimationDoubleStyleInterpolationTest, ValueFixedMotionRotation)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    list->append(CSSPrimitiveValue::create(90, CSSPrimitiveValue::CSS_DEG));
+    list->append(CSSPrimitiveValue::create(90, CSSPrimitiveValue::UnitType::Degrees));
     RefPtrWillBeRawPtr<CSSValue> value = roundTripMotionRotation(list.release(), false);
     testValueListMotionRotation(value, 90, false);
 }
@@ -139,7 +139,7 @@ TEST_F(AnimationDoubleStyleInterpolationTest, ValueAutoMotionRotation)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     list->append(CSSPrimitiveValue::createIdentifier(CSSValueAuto));
-    list->append(CSSPrimitiveValue::create(90, CSSPrimitiveValue::CSS_DEG));
+    list->append(CSSPrimitiveValue::create(90, CSSPrimitiveValue::UnitType::Degrees));
     RefPtrWillBeRawPtr<CSSValue> value = roundTripMotionRotation(list.release(), true);
     testValueListMotionRotation(value, 90, true);
 }

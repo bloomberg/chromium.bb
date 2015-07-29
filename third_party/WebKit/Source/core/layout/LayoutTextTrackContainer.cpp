@@ -51,7 +51,7 @@ void LayoutTextTrackContainer::layout()
     if (!mediaLayoutObject || !mediaLayoutObject->isVideo())
         return;
     if (updateSizes(toLayoutVideo(*mediaLayoutObject)))
-        toElement(node())->setInlineStyleProperty(CSSPropertyFontSize, m_fontSize, CSSPrimitiveValue::CSS_PX);
+        toElement(node())->setInlineStyleProperty(CSSPropertyFontSize, m_fontSize, CSSPrimitiveValue::UnitType::Pixels);
 }
 
 bool LayoutTextTrackContainer::updateSizes(const LayoutVideo& videoLayoutObject)

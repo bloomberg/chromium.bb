@@ -285,42 +285,42 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveV
     ASSERT(value);
 
     SVGLengthType svgType;
-    switch (value->primitiveType()) {
-    case CSSPrimitiveValue::CSS_NUMBER:
+    switch (value->typeWithCalcResolved()) {
+    case CSSPrimitiveValue::UnitType::Number:
         svgType = LengthTypeNumber;
         break;
-    case CSSPrimitiveValue::CSS_PERCENTAGE:
+    case CSSPrimitiveValue::UnitType::Percentage:
         svgType = LengthTypePercentage;
         break;
-    case CSSPrimitiveValue::CSS_EMS:
+    case CSSPrimitiveValue::UnitType::Ems:
         svgType = LengthTypeEMS;
         break;
-    case CSSPrimitiveValue::CSS_EXS:
+    case CSSPrimitiveValue::UnitType::Exs:
         svgType = LengthTypeEXS;
         break;
-    case CSSPrimitiveValue::CSS_PX:
+    case CSSPrimitiveValue::UnitType::Pixels:
         svgType = LengthTypePX;
         break;
-    case CSSPrimitiveValue::CSS_CM:
+    case CSSPrimitiveValue::UnitType::Centimeters:
         svgType = LengthTypeCM;
         break;
-    case CSSPrimitiveValue::CSS_MM:
+    case CSSPrimitiveValue::UnitType::Millimeters:
         svgType = LengthTypeMM;
         break;
-    case CSSPrimitiveValue::CSS_IN:
+    case CSSPrimitiveValue::UnitType::Inches:
         svgType = LengthTypeIN;
         break;
-    case CSSPrimitiveValue::CSS_PT:
+    case CSSPrimitiveValue::UnitType::Points:
         svgType = LengthTypePT;
         break;
-    case CSSPrimitiveValue::CSS_REMS:
+    case CSSPrimitiveValue::UnitType::Rems:
         svgType = LengthTypeREMS;
         break;
-    case CSSPrimitiveValue::CSS_CHS:
+    case CSSPrimitiveValue::UnitType::Chs:
         svgType = LengthTypeCHS;
         break;
     default:
-        ASSERT(value->primitiveType() == CSSPrimitiveValue::CSS_PC);
+        ASSERT(value->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Picas);
         svgType = LengthTypePC;
         break;
     };
@@ -334,45 +334,45 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRef
 {
     RefPtrWillBeRawPtr<SVGLength> length = passLength;
 
-    CSSPrimitiveValue::UnitType cssType = CSSPrimitiveValue::CSS_UNKNOWN;
+    CSSPrimitiveValue::UnitType cssType = CSSPrimitiveValue::UnitType::Unknown;
     switch (length->unitType()) {
     case LengthTypeUnknown:
         break;
     case LengthTypeNumber:
-        cssType = CSSPrimitiveValue::CSS_NUMBER;
+        cssType = CSSPrimitiveValue::UnitType::Number;
         break;
     case LengthTypePercentage:
-        cssType = CSSPrimitiveValue::CSS_PERCENTAGE;
+        cssType = CSSPrimitiveValue::UnitType::Percentage;
         break;
     case LengthTypeEMS:
-        cssType = CSSPrimitiveValue::CSS_EMS;
+        cssType = CSSPrimitiveValue::UnitType::Ems;
         break;
     case LengthTypeEXS:
-        cssType = CSSPrimitiveValue::CSS_EXS;
+        cssType = CSSPrimitiveValue::UnitType::Exs;
         break;
     case LengthTypePX:
-        cssType = CSSPrimitiveValue::CSS_PX;
+        cssType = CSSPrimitiveValue::UnitType::Pixels;
         break;
     case LengthTypeCM:
-        cssType = CSSPrimitiveValue::CSS_CM;
+        cssType = CSSPrimitiveValue::UnitType::Centimeters;
         break;
     case LengthTypeMM:
-        cssType = CSSPrimitiveValue::CSS_MM;
+        cssType = CSSPrimitiveValue::UnitType::Millimeters;
         break;
     case LengthTypeIN:
-        cssType = CSSPrimitiveValue::CSS_IN;
+        cssType = CSSPrimitiveValue::UnitType::Inches;
         break;
     case LengthTypePT:
-        cssType = CSSPrimitiveValue::CSS_PT;
+        cssType = CSSPrimitiveValue::UnitType::Points;
         break;
     case LengthTypePC:
-        cssType = CSSPrimitiveValue::CSS_PC;
+        cssType = CSSPrimitiveValue::UnitType::Picas;
         break;
     case LengthTypeREMS:
-        cssType = CSSPrimitiveValue::CSS_REMS;
+        cssType = CSSPrimitiveValue::UnitType::Rems;
         break;
     case LengthTypeCHS:
-        cssType = CSSPrimitiveValue::CSS_CHS;
+        cssType = CSSPrimitiveValue::UnitType::Chs;
         break;
     };
 

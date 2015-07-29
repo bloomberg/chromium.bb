@@ -379,7 +379,7 @@ void ImageDocument::windowSizeChanged(ScaleType type)
         // Don't shrink height to fit because we use width=device-width in viewport meta tag,
         // and expect a full-width reading mode for normal-width-huge-height images.
         int viewportWidth = frame()->host()->pinchViewport().size().width();
-        m_imageElement->setInlineStyleProperty(CSSPropertyMaxWidth, viewportWidth * 10, CSSPrimitiveValue::CSS_PX);
+        m_imageElement->setInlineStyleProperty(CSSPropertyMaxWidth, viewportWidth * 10, CSSPrimitiveValue::UnitType::Pixels);
         return;
     }
 

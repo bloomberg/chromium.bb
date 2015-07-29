@@ -54,12 +54,12 @@ public:
     CSSPrimitiveValue::UnitType cssUnitTypeQuirk() const
     {
         if (m_unitType == LengthTypeNumber)
-            return CSSPrimitiveValue::UnitType::CSS_PX;
+            return CSSPrimitiveValue::UnitType::Pixels;
 
         if (m_unitType == LengthTypeREMS)
-            return CSSPrimitiveValue::UnitType::CSS_REMS;
+            return CSSPrimitiveValue::UnitType::Rems;
         if (m_unitType == LengthTypeCHS)
-            return CSSPrimitiveValue::UnitType::CSS_CHS;
+            return CSSPrimitiveValue::UnitType::Chs;
 
         return static_cast<CSSPrimitiveValue::UnitType>(m_unitType);
     }

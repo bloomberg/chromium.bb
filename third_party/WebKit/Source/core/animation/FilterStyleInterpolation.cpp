@@ -33,19 +33,19 @@ PassRefPtrWillBeRawPtr<CSSValueList> extendFilterList(const CSSValueList& shortF
         case CSSValueGrayscale:
         case CSSValueInvert:
         case CSSValueSepia:
-            defaultFunction->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_NUMBER));
+            defaultFunction->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Number));
             break;
         case CSSValueBrightness:
         case CSSValueContrast:
         case CSSValueOpacity:
         case CSSValueSaturate:
-            defaultFunction->append(CSSPrimitiveValue::create(1, CSSPrimitiveValue::CSS_NUMBER));
+            defaultFunction->append(CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Number));
             break;
         case CSSValueHueRotate:
-            defaultFunction->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_DEG));
+            defaultFunction->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Degrees));
             break;
         case CSSValueBlur:
-            defaultFunction->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
+            defaultFunction->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
             break;
         case CSSValueDropShadow:
             // TODO(ericwilligers): Implement drop shadow interpolation.
@@ -141,15 +141,15 @@ PassRefPtrWillBeRawPtr<CSSFunctionValue> FilterStyleInterpolation::fromInterpola
         case CSSValueInvert:
         case CSSValueOpacity:
         case CSSValueSepia:
-            result->append(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(list.get(i))->value(), 0, 1), CSSPrimitiveValue::CSS_NUMBER));
+            result->append(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(list.get(i))->value(), 0, 1), CSSPrimitiveValue::UnitType::Number));
             break;
         case CSSValueBrightness:
         case CSSValueContrast:
         case CSSValueSaturate:
-            result->append(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(list.get(i))->value(), 0), CSSPrimitiveValue::CSS_NUMBER));
+            result->append(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(list.get(i))->value(), 0), CSSPrimitiveValue::UnitType::Number));
             break;
         case CSSValueHueRotate:
-            result->append(CSSPrimitiveValue::create(toInterpolableNumber(list.get(i))->value(), CSSPrimitiveValue::CSS_DEG));
+            result->append(CSSPrimitiveValue::create(toInterpolableNumber(list.get(i))->value(), CSSPrimitiveValue::UnitType::Degrees));
             break;
         case CSSValueBlur:
             result->append(LengthStyleInterpolation::fromInterpolableValue(*list.get(i), RangeNonNegative));

@@ -55,7 +55,7 @@ struct MediaQueryExpValue {
     MediaQueryExpValue()
         : id(CSSValueInvalid)
         , value(0)
-        , unit(CSSPrimitiveValue::CSS_UNKNOWN)
+        , unit(CSSPrimitiveValue::UnitType::Unknown)
         , numerator(0)
         , denominator(1)
         , isID(false)

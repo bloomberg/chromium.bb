@@ -57,7 +57,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
                 ASSERT(next.type() == StringToken);
                 value.id = CSSValueInvalid;
                 value.isInt = false;
-                value.unit = CSSPrimitiveValue::CSS_URI;
+                value.setUnit(CSSPrimitiveValue::UnitType::URI);
                 value.string = next.value();
                 break;
             }
@@ -69,7 +69,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
 
             value.id = CSSValueInvalid;
             value.isInt = false;
-            value.unit = CSSParserValue::Function;
+            value.m_unit = CSSParserValue::Function;
             value.function = function;
 
             stack.last()->addValue(value);
@@ -101,7 +101,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
                 }
                 CSSParserValueList* currentList = stack.last();
                 CSSParserValue* current = currentList->valueAt(currentList->size()-1);
-                if (current->unit == CSSParserValue::Function) {
+                if (current->m_unit == CSSParserValue::Function) {
                     CSSValueID id = current->function->id;
                     calcDepth -= (id == CSSValueCalc || id == CSSValueWebkitCalc);
                 }
@@ -115,7 +115,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
         case IdentToken: {
             value.id = cssValueKeywordID(token.value());
             value.isInt = false;
-            value.unit = CSSPrimitiveValue::CSS_IDENT;
+            value.setUnit(CSSPrimitiveValue::UnitType::Identifier);
             value.string = token.value();
             break;
         }
@@ -124,26 +124,26 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
                 destroyAndClear();
                 return;
             }
-            if (!token.unitType()) {
+            if (token.unitType() == CSSPrimitiveValue::UnitType::Unknown) {
                 // Unknown dimensions are handled as a list of two values
-                value.unit = CSSParserValue::DimensionList;
+                value.m_unit = CSSParserValue::DimensionList;
                 CSSParserValueList* list = new CSSParserValueList;
                 value.valueList = list;
                 value.id = CSSValueInvalid;
 
                 CSSParserValue number;
-                number.setFromNumber(token.numericValue());
+                number.setFromNumber(token.numericValue(), CSSPrimitiveValue::UnitType::Number);
                 number.isInt = (token.numericValueType() == IntegerValueType);
                 list->addValue(number);
 
                 CSSParserValue unit;
                 unit.string = token.value();
-                unit.unit = CSSPrimitiveValue::CSS_IDENT;
+                unit.setUnit(CSSPrimitiveValue::UnitType::Identifier);
                 list->addValue(unit);
 
                 break;
             }
-            if (token.unitType() == CSSPrimitiveValue::CSS_REMS)
+            if (token.unitType() == CSSPrimitiveValue::UnitType::Rems)
                 usesRemUnits = true;
             // fallthrough
         case NumberToken:
@@ -160,7 +160,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             value.isInt = false;
             value.m_unicodeRange.start = token.unicodeRangeStart();
             value.m_unicodeRange.end = token.unicodeRangeEnd();
-            value.unit = CSSParserValue::UnicodeRange;
+            value.m_unit = CSSParserValue::UnicodeRange;
             break;
         }
         case HashToken:
@@ -169,11 +169,11 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             value.id = CSSValueInvalid;
             value.isInt = false;
             if (token.type() == HashToken)
-                value.unit = CSSParserValue::HexColor;
+                value.m_unit = CSSParserValue::HexColor;
             else if (token.type() == StringToken)
-                value.unit = CSSPrimitiveValue::CSS_STRING;
+                value.setUnit(CSSPrimitiveValue::UnitType::String);
             else
-                value.unit = CSSPrimitiveValue::CSS_URI;
+                value.setUnit(CSSPrimitiveValue::UnitType::URI);
             value.string = token.value();
             break;
         }
@@ -240,10 +240,10 @@ static void destroy(Vector<CSSParserValue, 4>& values)
 {
     size_t numValues = values.size();
     for (size_t i = 0; i < numValues; i++) {
-        if (values[i].unit == CSSParserValue::Function)
+        if (values[i].m_unit == CSSParserValue::Function)
             delete values[i].function;
-        else if (values[i].unit == CSSParserValue::ValueList
-            || values[i].unit == CSSParserValue::DimensionList)
+        else if (values[i].m_unit == CSSParserValue::ValueList
+            || values[i].m_unit == CSSParserValue::DimensionList)
             delete values[i].valueList;
     }
 }

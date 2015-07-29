@@ -66,7 +66,7 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyI
 
         CSSPrimitiveValue::LengthUnitType type;
         // Only returns true if the type is a primitive length unit.
-        return CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.primitiveType(), type);
+        return CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.typeWithCalcResolved(), type);
     }
     return value.isCalcValue();
 }
@@ -294,7 +294,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::fromInterpol
     switch (unitTypeCount) {
     case 0:
         // TODO: this case should never be reached. This issue should be fixed once we have multiple interpolators.
-        return CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX);
+        return CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
     case 1:
         for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
             const InterpolableNumber *subValueType = toInterpolableNumber(listOfTypes->get(i));

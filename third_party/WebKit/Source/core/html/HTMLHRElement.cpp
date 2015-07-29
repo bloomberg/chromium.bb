@@ -51,11 +51,11 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
 {
     if (name == alignAttr) {
         if (equalIgnoringCase(value, "left")) {
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft, 0, CSSPrimitiveValue::CSS_PX);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft, 0, CSSPrimitiveValue::UnitType::Pixels);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight, CSSValueAuto);
         } else if (equalIgnoringCase(value, "right")) {
             addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft, CSSValueAuto);
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight, 0, CSSPrimitiveValue::CSS_PX);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight, 0, CSSPrimitiveValue::UnitType::Pixels);
         } else {
             addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft, CSSValueAuto);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight, CSSValueAuto);
@@ -64,7 +64,7 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
         bool ok;
         int v = value.toInt(&ok);
         if (ok && !v)
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, 1, CSSPrimitiveValue::CSS_PX);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, 1, CSSPrimitiveValue::UnitType::Pixels);
         else
             addHTMLLengthToStyle(style, CSSPropertyWidth, value);
     } else if (name == colorAttr) {
@@ -83,9 +83,9 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
         StringImpl* si = value.impl();
         int size = si->toInt();
         if (size <= 1)
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderBottomWidth, 0, CSSPrimitiveValue::CSS_PX);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderBottomWidth, 0, CSSPrimitiveValue::UnitType::Pixels);
         else
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, size - 2, CSSPrimitiveValue::CSS_PX);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, size - 2, CSSPrimitiveValue::UnitType::Pixels);
     } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
     }

@@ -25,22 +25,22 @@ struct TestCase {
 TEST(MediaValuesTest, Basic)
 {
     TestCase testCases[] = {
-        { 40.0, CSSPrimitiveValue::CSS_PX, 16, 300, 300, true, 40 },
-        { 40.0, CSSPrimitiveValue::CSS_EMS, 16, 300, 300, true, 640 },
-        { 40.0, CSSPrimitiveValue::CSS_REMS, 16, 300, 300, true, 640 },
-        { 40.0, CSSPrimitiveValue::CSS_EXS, 16, 300, 300, true, 320 },
-        { 40.0, CSSPrimitiveValue::CSS_CHS, 16, 300, 300, true, 320 },
-        { 43.0, CSSPrimitiveValue::CSS_VW, 16, 848, 976, true, 364 },
-        { 43.0, CSSPrimitiveValue::CSS_VH, 16, 848, 976, true, 419 },
-        { 43.0, CSSPrimitiveValue::CSS_VMIN, 16, 848, 976, true, 364 },
-        { 43.0, CSSPrimitiveValue::CSS_VMAX, 16, 848, 976, true, 419 },
-        { 1.3, CSSPrimitiveValue::CSS_CM, 16, 300, 300, true, 49 },
-        { 1.3, CSSPrimitiveValue::CSS_MM, 16, 300, 300, true, 4 },
-        { 1.3, CSSPrimitiveValue::CSS_IN, 16, 300, 300, true, 124 },
-        { 13, CSSPrimitiveValue::CSS_PT, 16, 300, 300, true, 17 },
-        { 1.3, CSSPrimitiveValue::CSS_PC, 16, 300, 300, true, 20 },
-        { 1.3, CSSPrimitiveValue::CSS_UNKNOWN, 16, 300, 300, false, 20 },
-        { 0.0, CSSPrimitiveValue::CSS_UNKNOWN, 0, 0, 0, false, 0.0 } // Do not remove the terminating line.
+        { 40.0, CSSPrimitiveValue::UnitType::Pixels, 16, 300, 300, true, 40 },
+        { 40.0, CSSPrimitiveValue::UnitType::Ems, 16, 300, 300, true, 640 },
+        { 40.0, CSSPrimitiveValue::UnitType::Rems, 16, 300, 300, true, 640 },
+        { 40.0, CSSPrimitiveValue::UnitType::Exs, 16, 300, 300, true, 320 },
+        { 40.0, CSSPrimitiveValue::UnitType::Chs, 16, 300, 300, true, 320 },
+        { 43.0, CSSPrimitiveValue::UnitType::ViewportWidth, 16, 848, 976, true, 364 },
+        { 43.0, CSSPrimitiveValue::UnitType::ViewportHeight, 16, 848, 976, true, 419 },
+        { 43.0, CSSPrimitiveValue::UnitType::ViewportMin, 16, 848, 976, true, 364 },
+        { 43.0, CSSPrimitiveValue::UnitType::ViewportMax, 16, 848, 976, true, 419 },
+        { 1.3, CSSPrimitiveValue::UnitType::Centimeters, 16, 300, 300, true, 49 },
+        { 1.3, CSSPrimitiveValue::UnitType::Millimeters, 16, 300, 300, true, 4 },
+        { 1.3, CSSPrimitiveValue::UnitType::Inches, 16, 300, 300, true, 124 },
+        { 13, CSSPrimitiveValue::UnitType::Points, 16, 300, 300, true, 17 },
+        { 1.3, CSSPrimitiveValue::UnitType::Picas, 16, 300, 300, true, 20 },
+        { 1.3, CSSPrimitiveValue::UnitType::Unknown, 16, 300, 300, false, 20 },
+        { 0.0, CSSPrimitiveValue::UnitType::Unknown, 0, 0, 0, false, 0.0 } // Do not remove the terminating line.
     };
 
 

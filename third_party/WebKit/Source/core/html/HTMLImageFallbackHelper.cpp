@@ -40,12 +40,12 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
     root.appendChild(container);
     container->setAttribute(idAttr, AtomicString("alttext-container", AtomicString::ConstructFromLiteral));
     container->setInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
-    container->setInlineStyleProperty(CSSPropertyBorderWidth, 1, CSSPrimitiveValue::CSS_PX);
+    container->setInlineStyleProperty(CSSPropertyBorderWidth, 1, CSSPrimitiveValue::UnitType::Pixels);
     container->setInlineStyleProperty(CSSPropertyBorderStyle, CSSValueSolid);
     container->setInlineStyleProperty(CSSPropertyBorderColor, CSSValueSilver);
     container->setInlineStyleProperty(CSSPropertyDisplay, CSSValueInlineBlock);
     container->setInlineStyleProperty(CSSPropertyBoxSizing, CSSValueBorderBox);
-    container->setInlineStyleProperty(CSSPropertyPadding, 1, CSSPrimitiveValue::CSS_PX);
+    container->setInlineStyleProperty(CSSPropertyPadding, 1, CSSPrimitiveValue::UnitType::Pixels);
 
     RefPtrWillBeRawPtr<HTMLImageElement> brokenImage = HTMLImageElement::create(element.document());
     container->appendChild(brokenImage);
@@ -54,7 +54,7 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
     brokenImage->setAttribute(widthAttr, AtomicString("16", AtomicString::ConstructFromLiteral));
     brokenImage->setAttribute(heightAttr, AtomicString("16", AtomicString::ConstructFromLiteral));
     brokenImage->setAttribute(alignAttr, AtomicString("left", AtomicString::ConstructFromLiteral));
-    brokenImage->setInlineStyleProperty(CSSPropertyMargin, 0, CSSPrimitiveValue::CSS_PX);
+    brokenImage->setInlineStyleProperty(CSSPropertyMargin, 0, CSSPrimitiveValue::UnitType::Pixels);
 
     RefPtrWillBeRawPtr<HTMLDivElement> altText = HTMLDivElement::create(element.document());
     container->appendChild(altText);
@@ -93,8 +93,8 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(Element
 
     // If the image has specified dimensions allow the alt-text container expand to fill them.
     if (newStyle->width().isSpecifiedOrIntrinsic() && newStyle->height().isSpecifiedOrIntrinsic()) {
-        placeHolder->setInlineStyleProperty(CSSPropertyWidth, 100, CSSPrimitiveValue::CSS_PERCENTAGE);
-        placeHolder->setInlineStyleProperty(CSSPropertyHeight, 100, CSSPrimitiveValue::CSS_PERCENTAGE);
+        placeHolder->setInlineStyleProperty(CSSPropertyWidth, 100, CSSPrimitiveValue::UnitType::Percentage);
+        placeHolder->setInlineStyleProperty(CSSPropertyHeight, 100, CSSPrimitiveValue::UnitType::Percentage);
     }
 
     // Make sure the broken image icon appears on the appropriate side of the image for the element's writing direction.

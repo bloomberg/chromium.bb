@@ -58,7 +58,7 @@ private:
 PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> compose(const InterpolableValue& value, const ImageSliceStyleInterpolation::Metadata& metadata)
 {
     const InterpolableList& interpolableList = toInterpolableList(value);
-    CSSPrimitiveValue::UnitType type = metadata.isPercentage ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER;
+    CSSPrimitiveValue::UnitType type = metadata.isPercentage ? CSSPrimitiveValue::UnitType::Percentage : CSSPrimitiveValue::UnitType::Number;
     RefPtrWillBeRawPtr<Quad> quad = Quad::create();
     quad->setTop(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(interpolableList.get(0))->value(), 0), type));
     quad->setRight(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(interpolableList.get(1))->value(), 0), type));

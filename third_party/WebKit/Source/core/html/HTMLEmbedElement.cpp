@@ -79,8 +79,8 @@ void HTMLEmbedElement::collectStyleForPresentationAttribute(const QualifiedName&
 {
     if (name == hiddenAttr) {
         if (equalIgnoringCase(value, "yes") || equalIgnoringCase(value, "true")) {
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, 0, CSSPrimitiveValue::CSS_PX);
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, 0, CSSPrimitiveValue::CSS_PX);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, 0, CSSPrimitiveValue::UnitType::Pixels);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, 0, CSSPrimitiveValue::UnitType::Pixels);
         }
     } else {
         HTMLPlugInElement::collectStyleForPresentationAttribute(name, value, style);

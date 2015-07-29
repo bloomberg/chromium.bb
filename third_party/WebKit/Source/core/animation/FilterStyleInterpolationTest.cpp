@@ -27,7 +27,7 @@ TEST_F(AnimationFilterStyleInterpolationTest, ZeroTest)
 {
     RefPtrWillBeRawPtr<CSSFunctionValue> filter;
     filter = CSSFunctionValue::create(CSSValueBlur);
-    filter->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
+    filter->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
     roundTrip(*filter);
 }
 
@@ -36,7 +36,7 @@ TEST_F(AnimationFilterStyleInterpolationTest, SimpleTest)
     RefPtrWillBeRawPtr<CSSFunctionValue> filter;
 
     filter = CSSFunctionValue::create(CSSValueOpacity);
-    filter->append(CSSPrimitiveValue::create(0.5, CSSPrimitiveValue::CSS_NUMBER));
+    filter->append(CSSPrimitiveValue::create(0.5, CSSPrimitiveValue::UnitType::Number));
     roundTrip(*filter);
 }
 

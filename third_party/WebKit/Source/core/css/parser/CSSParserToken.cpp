@@ -40,7 +40,7 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
     , m_blockType(NotBlock)
     , m_numericValueType(numericValueType)
     , m_numericSign(sign)
-    , m_unit(CSSPrimitiveValue::CSS_NUMBER)
+    , m_unit(static_cast<unsigned>(CSSPrimitiveValue::UnitType::Number))
     , m_numericValue(numericValue)
 {
     ASSERT(type == NumberToken);
@@ -68,14 +68,14 @@ void CSSParserToken::convertToDimensionWithUnit(CSSParserString unit)
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;
     initValueFromCSSParserString(unit);
-    m_unit = CSSPrimitiveValue::fromName(unit);
+    m_unit = static_cast<unsigned>(CSSPrimitiveValue::fromName(unit));
 }
 
 void CSSParserToken::convertToPercentage()
 {
     ASSERT(m_type == NumberToken);
     m_type = PercentageToken;
-    m_unit = CSSPrimitiveValue::CSS_PERCENTAGE;
+    m_unit = static_cast<unsigned>(CSSPrimitiveValue::UnitType::Percentage);
 }
 
 UChar CSSParserToken::delimiter() const

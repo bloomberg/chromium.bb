@@ -46,10 +46,10 @@ protected:
     static RefPtrWillBeRawPtr<CSSShadowValue> createShadowValue()
     {
         RefPtrWillBeRawPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(makeRGBA(112, 123, 175, 255));
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PX);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_PX);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Pixels);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::UnitType::Pixels);
 
         return CSSShadowValue::create(x, y, blur, spread, CSSPrimitiveValue::createIdentifier(CSSValueNone), color);
 
@@ -79,7 +79,7 @@ TEST_F(ListStyleInterpolationTest, LengthListMultipleValuesTest)
 {
     RefPtrWillBeRawPtr<CSSValueList> expectedList = CSSValueList::createCommaSeparated();
     for (size_t i = 0; i < 10; i++) {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> lengthValue = CSSPrimitiveValue::create(static_cast<double>(i), CSSPrimitiveValue::CSS_PX);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> lengthValue = CSSPrimitiveValue::create(static_cast<double>(i), CSSPrimitiveValue::UnitType::Pixels);
         expectedList->append(lengthValue);
     }
 

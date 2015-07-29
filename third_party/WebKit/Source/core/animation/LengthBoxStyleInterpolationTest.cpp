@@ -41,82 +41,82 @@ protected:
         EXPECT_EQ(rect->top()->getDoubleValue(), top);
         EXPECT_EQ(rect->bottom()->getDoubleValue(), bottom);
 
-        EXPECT_EQ(unitType, rect->left()->primitiveType());
-        EXPECT_EQ(unitType, rect->right()->primitiveType());
-        EXPECT_EQ(unitType, rect->top()->primitiveType());
-        EXPECT_EQ(unitType, rect->bottom()->primitiveType());
+        EXPECT_EQ(unitType, rect->left()->typeWithCalcResolved());
+        EXPECT_EQ(unitType, rect->right()->typeWithCalcResolved());
+        EXPECT_EQ(unitType, rect->top()->typeWithCalcResolved());
+        EXPECT_EQ(unitType, rect->bottom()->typeWithCalcResolved());
     }
 };
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroLengthBox)
 {
     RefPtrWillBeRawPtr<Rect> rectPx = Rect::create();
-    rectPx->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    rectPx->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    rectPx->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    rectPx->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
+    rectPx->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(rectPx.release()));
-    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::UnitType::Pixels);
 
     RefPtrWillBeRawPtr<Rect> rectEms = Rect::create();
-    rectEms->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    rectEms->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    rectEms->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    rectEms->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
+    rectEms->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Ems));
+    rectEms->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Ems));
+    rectEms->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Ems));
+    rectEms->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Ems));
 
     value = roundTrip(CSSPrimitiveValue::create(rectEms.release()));
-    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::CSS_EMS);
+    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::UnitType::Ems);
 }
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)
 {
     RefPtrWillBeRawPtr<Rect> rectPx = Rect::create();
-    rectPx->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
-    rectPx->setRight(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
-    rectPx->setTop(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
-    rectPx->setBottom(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
+    rectPx->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setRight(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setTop(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setBottom(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels));
 
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(rectPx.release()));
-    testPrimitiveValue(value, 10, 10, 10, 10, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value, 10, 10, 10, 10, CSSPrimitiveValue::UnitType::Pixels);
 
     RefPtrWillBeRawPtr<Rect> rectPer = Rect::create();
-    rectPer->setLeft(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    rectPer->setRight(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    rectPer->setTop(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    rectPer->setBottom(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
+    rectPer->setLeft(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
+    rectPer->setRight(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
+    rectPer->setTop(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
+    rectPer->setBottom(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
 
     value = roundTrip(CSSPrimitiveValue::create(rectPer.release()));
-    testPrimitiveValue(value, 30, 30, 30, 30, CSSPrimitiveValue::CSS_PERCENTAGE);
+    testPrimitiveValue(value, 30, 30, 30, 30, CSSPrimitiveValue::UnitType::Percentage);
 
     RefPtrWillBeRawPtr<Rect> rectEms = Rect::create();
-    rectEms->setLeft(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
-    rectEms->setRight(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
-    rectEms->setTop(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
-    rectEms->setBottom(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
+    rectEms->setLeft(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::UnitType::Ems));
+    rectEms->setRight(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::UnitType::Ems));
+    rectEms->setTop(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::UnitType::Ems));
+    rectEms->setBottom(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::UnitType::Ems));
 
     value = roundTrip(CSSPrimitiveValue::create(rectEms.release()));
-    testPrimitiveValue(value, -10, -10, -10, -10, CSSPrimitiveValue::CSS_EMS);
+    testPrimitiveValue(value, -10, -10, -10, -10, CSSPrimitiveValue::UnitType::Ems);
 }
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
 {
     RefPtrWillBeRawPtr<Rect> rectPx = Rect::create();
-    rectPx->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
-    rectPx->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    rectPx->setTop(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX));
-    rectPx->setBottom(CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_PX));
+    rectPx->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setTop(CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels));
+    rectPx->setBottom(CSSPrimitiveValue::create(40, CSSPrimitiveValue::UnitType::Pixels));
 
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(rectPx.release()));
-    testPrimitiveValue(value, 10, 0, 20, 40, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value, 10, 0, 20, 40, CSSPrimitiveValue::UnitType::Pixels);
 
     RefPtrWillBeRawPtr<Rect> rectPer = Rect::create();
-    rectPer->setLeft(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    rectPer->setRight(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    rectPer->setTop(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    rectPer->setBottom(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::CSS_PERCENTAGE));
+    rectPer->setLeft(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
+    rectPer->setRight(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::UnitType::Percentage));
+    rectPer->setTop(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
+    rectPer->setBottom(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::UnitType::Percentage));
 
     value = roundTrip(CSSPrimitiveValue::create(rectPer.release()));
-    testPrimitiveValue(value, 30, -30, 30, -30, CSSPrimitiveValue::CSS_PERCENTAGE);
+    testPrimitiveValue(value, 30, -30, 30, -30, CSSPrimitiveValue::UnitType::Percentage);
 }
 
 }

@@ -321,7 +321,7 @@ EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverSt
         return GO_0DEG;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_DEG)
+    if (primitiveValue->typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Degrees)
         return GO_0DEG;
 
     float angle = fabsf(fmodf(primitiveValue->getFloatValue(), 360.0f));
@@ -876,7 +876,7 @@ float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, C
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID()) {
         float multiplier = convertLineWidth<float>(state, value);
-        return CSSPrimitiveValue::create(multiplier / 48, CSSPrimitiveValue::CSS_EMS)->computeLength<float>(state.cssToLengthConversionData());
+        return CSSPrimitiveValue::create(multiplier / 48, CSSPrimitiveValue::UnitType::Ems)->computeLength<float>(state.cssToLengthConversionData());
     }
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }

@@ -423,7 +423,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
             currentFontSize = computedFontSize(node);
         }
         if (currentFontSize != desiredFontSize) {
-            inlineStyle->setProperty(CSSPropertyFontSize, cssValuePool().createValue(desiredFontSize, CSSPrimitiveValue::CSS_PX), false);
+            inlineStyle->setProperty(CSSPropertyFontSize, cssValuePool().createValue(desiredFontSize, CSSPrimitiveValue::UnitType::Pixels), false);
             setNodeAttribute(element.get(), styleAttr, AtomicString(inlineStyle->asText()));
         }
         if (inlineStyle->isEmpty()) {
@@ -1551,7 +1551,7 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     if (!value)
         return 0;
 
-    ASSERT(value->primitiveType() == CSSPrimitiveValue::CSS_PX);
+    ASSERT(value->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Pixels);
     return value->getFloatValue();
 }
 

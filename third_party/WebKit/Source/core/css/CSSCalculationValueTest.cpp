@@ -90,32 +90,32 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent)
     CSSToLengthConversionData conversionData(style.get(), style.get(), nullptr, style->effectiveZoom());
 
     testAccumulatePixelsAndPercent(conversionData,
-        CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true),
+        CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels), true),
         50, 0);
 
     testAccumulatePixelsAndPercent(conversionData,
         CSSCalcValue::createExpressionNode(
-            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true),
-            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX), true),
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels), true),
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels), true),
             CalcAdd),
         150, 0);
 
     testAccumulatePixelsAndPercent(conversionData,
         CSSCalcValue::createExpressionNode(
-            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(1, CSSPrimitiveValue::CSS_IN), true),
-            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(2, CSSPrimitiveValue::CSS_NUMBER), true),
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Inches), true),
+            CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(2, CSSPrimitiveValue::UnitType::Number), true),
             CalcMultiply),
         960, 0);
 
     testAccumulatePixelsAndPercent(conversionData,
         CSSCalcValue::createExpressionNode(
             CSSCalcValue::createExpressionNode(
-                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(50, CSSPrimitiveValue::CSS_PX), true),
-                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(0.25, CSSPrimitiveValue::CSS_NUMBER), false),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(50, CSSPrimitiveValue::UnitType::Pixels), true),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(0.25, CSSPrimitiveValue::UnitType::Number), false),
                 CalcMultiply),
             CSSCalcValue::createExpressionNode(
-                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX), true),
-                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_PERCENTAGE), false),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels), true),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(40, CSSPrimitiveValue::UnitType::Percentage), false),
                 CalcSubtract),
             CalcSubtract),
         -37.5, 40);

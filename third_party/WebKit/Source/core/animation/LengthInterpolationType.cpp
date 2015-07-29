@@ -133,7 +133,7 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvert
         if (!primitiveValue.isCalculated() && !primitiveValue.isCalculatedPercentageWithLength()) {
             CSSPrimitiveValue::LengthUnitType type;
             // Only returns true if the type is a primitive length unit.
-            if (!CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.primitiveType(), type))
+            if (!CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.typeWithCalcResolved(), type))
                 return nullptr;
         }
         primitiveValue.accumulateLengthArray(arrayOfValues, arrayOfTypes);

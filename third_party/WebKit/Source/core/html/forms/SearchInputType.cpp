@@ -167,7 +167,7 @@ void SearchInputType::updateCancelButtonVisibility()
     if (!button)
         return;
     if (element().value().isEmpty()) {
-        button->setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
+        button->setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::UnitType::Number);
         button->setInlineStyleProperty(CSSPropertyPointerEvents, CSSValueNone);
     } else {
         button->removeInlineStyleProperty(CSSPropertyOpacity);

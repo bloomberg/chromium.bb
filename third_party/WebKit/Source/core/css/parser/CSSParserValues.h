@@ -54,14 +54,16 @@ struct CSSParserValue {
         Function  = 0x100001,
         ValueList = 0x100002,
         HexColor = 0x100004,
-        // Represents a dimension by a list of two values, a CSS_NUMBER and an CSS_IDENT
+        // Represents a dimension by a list of two values, a UnitType::Number and a UnitType::Identifier
         DimensionList = 0x100006,
         // Represents a unicode range by a pair of UChar32 values
         UnicodeRange = 0x100007,
     };
-    int unit;
+    int m_unit;
+    CSSPrimitiveValue::UnitType unit() const { return static_cast<CSSPrimitiveValue::UnitType>(m_unit); }
+    void setUnit(CSSPrimitiveValue::UnitType unit) { m_unit = static_cast<int>(unit); }
 
-    inline void setFromNumber(double value, int unit = CSSPrimitiveValue::CSS_NUMBER);
+    inline void setFromNumber(double value, CSSPrimitiveValue::UnitType);
     inline void setFromOperator(UChar);
     inline void setFromFunction(CSSParserFunction*);
     inline void setFromValueList(PassOwnPtr<CSSParserValueList>);
@@ -170,18 +172,18 @@ inline bool CSSParserSelector::hasShadowPseudo() const
     return m_selector->relation() == CSSSelector::ShadowPseudo;
 }
 
-inline void CSSParserValue::setFromNumber(double value, int unit)
+inline void CSSParserValue::setFromNumber(double value, CSSPrimitiveValue::UnitType unit)
 {
     id = CSSValueInvalid;
     isInt = false;
     fValue = value;
-    this->unit = std::isfinite(value) ? unit : CSSPrimitiveValue::CSS_UNKNOWN;
+    this->setUnit(std::isfinite(value) ? unit : CSSPrimitiveValue::UnitType::Unknown);
 }
 
 inline void CSSParserValue::setFromOperator(UChar c)
 {
     id = CSSValueInvalid;
-    unit = Operator;
+    m_unit = Operator;
     iValue = c;
     isInt = false;
 }
@@ -190,7 +192,7 @@ inline void CSSParserValue::setFromFunction(CSSParserFunction* function)
 {
     id = CSSValueInvalid;
     this->function = function;
-    unit = Function;
+    m_unit = Function;
     isInt = false;
 }
 
@@ -198,7 +200,7 @@ inline void CSSParserValue::setFromValueList(PassOwnPtr<CSSParserValueList> valu
 {
     id = CSSValueInvalid;
     this->valueList = valueList.leakPtr();
-    unit = ValueList;
+    m_unit = ValueList;
     isInt = false;
 }
 

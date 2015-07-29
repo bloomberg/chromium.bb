@@ -173,18 +173,18 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
     const FloatPoint& position = displayParameters.position;
 
     // the 'top' property must be set to top,
-    setInlineStyleProperty(CSSPropertyTop, position.y(), CSSPrimitiveValue::CSS_PERCENTAGE);
+    setInlineStyleProperty(CSSPropertyTop, position.y(), CSSPrimitiveValue::UnitType::Percentage);
 
     // the 'left' property must be set to left
-    setInlineStyleProperty(CSSPropertyLeft, position.x(), CSSPrimitiveValue::CSS_PERCENTAGE);
+    setInlineStyleProperty(CSSPropertyLeft, position.x(), CSSPrimitiveValue::UnitType::Percentage);
 
     // the 'width' property must be set to width, and the 'height' property  must be set to height
     if (displayParameters.writingMode == CSSValueHorizontalTb) {
-        setInlineStyleProperty(CSSPropertyWidth, displayParameters.size, CSSPrimitiveValue::CSS_PERCENTAGE);
+        setInlineStyleProperty(CSSPropertyWidth, displayParameters.size, CSSPrimitiveValue::UnitType::Percentage);
         setInlineStyleProperty(CSSPropertyHeight, CSSValueAuto);
     } else {
         setInlineStyleProperty(CSSPropertyWidth, CSSValueAuto);
-        setInlineStyleProperty(CSSPropertyHeight, displayParameters.size,  CSSPrimitiveValue::CSS_PERCENTAGE);
+        setInlineStyleProperty(CSSPropertyHeight, displayParameters.size,  CSSPrimitiveValue::UnitType::Percentage);
     }
 
     // The 'text-align' property on the (root) List of WebVTT Node Objects must

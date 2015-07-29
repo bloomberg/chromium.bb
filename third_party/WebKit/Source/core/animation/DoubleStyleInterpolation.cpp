@@ -59,8 +59,8 @@ PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDo
     double doubleValue = clampToRange(toInterpolableNumber(value)->value(), clamp);
 
     if (isNumber)
-        return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::CSS_NUMBER);
-    return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::CSS_DEG);
+        return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::UnitType::Number);
+    return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::UnitType::Degrees);
 }
 
 void DoubleStyleInterpolation::apply(StyleResolverState& state) const
@@ -128,7 +128,7 @@ PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToMo
     if (flag)
         list->append(CSSPrimitiveValue::createIdentifier(CSSValueAuto));
     ASSERT(value->isNumber());
-    list->append(CSSPrimitiveValue::create(toInterpolableNumber(value)->value(), CSSPrimitiveValue::CSS_DEG));
+    list->append(CSSPrimitiveValue::create(toInterpolableNumber(value)->value(), CSSPrimitiveValue::UnitType::Degrees));
     return list.release();
 }
 

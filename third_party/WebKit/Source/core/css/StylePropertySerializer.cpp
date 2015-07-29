@@ -903,7 +903,7 @@ void StylePropertySerializer::appendBackgroundPropertyAsText(StringBuilder& resu
     // FIXME: This is a not-so-nice way to turn x/y positions into single background-position in output.
     // It is required because background-position-x/y are non-standard properties and WebKit generated output
     // would not work in Firefox (<rdar://problem/5143183>)
-    // It would be a better solution if background-position was CSS_PAIR.
+    // It would be a better solution if background-position was UnitType::Pair.
     if (shorthandHasOnlyInitialOrInheritedValue(backgroundPositionShorthand())) {
         const CSSValue* value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX);
         bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionX);

@@ -50,36 +50,36 @@ namespace blink {
 static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
 {
     switch (type) {
-    case CSSPrimitiveValue::CSS_NUMBER:
-    case CSSPrimitiveValue::CSS_INTEGER:
+    case CSSPrimitiveValue::UnitType::Number:
+    case CSSPrimitiveValue::UnitType::Integer:
         return CalcNumber;
-    case CSSPrimitiveValue::CSS_PERCENTAGE:
+    case CSSPrimitiveValue::UnitType::Percentage:
         return CalcPercent;
-    case CSSPrimitiveValue::CSS_EMS:
-    case CSSPrimitiveValue::CSS_EXS:
-    case CSSPrimitiveValue::CSS_PX:
-    case CSSPrimitiveValue::CSS_CM:
-    case CSSPrimitiveValue::CSS_MM:
-    case CSSPrimitiveValue::CSS_IN:
-    case CSSPrimitiveValue::CSS_PT:
-    case CSSPrimitiveValue::CSS_PC:
-    case CSSPrimitiveValue::CSS_REMS:
-    case CSSPrimitiveValue::CSS_CHS:
-    case CSSPrimitiveValue::CSS_VW:
-    case CSSPrimitiveValue::CSS_VH:
-    case CSSPrimitiveValue::CSS_VMIN:
-    case CSSPrimitiveValue::CSS_VMAX:
+    case CSSPrimitiveValue::UnitType::Ems:
+    case CSSPrimitiveValue::UnitType::Exs:
+    case CSSPrimitiveValue::UnitType::Pixels:
+    case CSSPrimitiveValue::UnitType::Centimeters:
+    case CSSPrimitiveValue::UnitType::Millimeters:
+    case CSSPrimitiveValue::UnitType::Inches:
+    case CSSPrimitiveValue::UnitType::Points:
+    case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::Rems:
+    case CSSPrimitiveValue::UnitType::Chs:
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+    case CSSPrimitiveValue::UnitType::ViewportMax:
         return CalcLength;
-    case CSSPrimitiveValue::CSS_DEG:
-    case CSSPrimitiveValue::CSS_GRAD:
-    case CSSPrimitiveValue::CSS_RAD:
-    case CSSPrimitiveValue::CSS_TURN:
+    case CSSPrimitiveValue::UnitType::Degrees:
+    case CSSPrimitiveValue::UnitType::Gradians:
+    case CSSPrimitiveValue::UnitType::Radians:
+    case CSSPrimitiveValue::UnitType::Turns:
         return CalcAngle;
-    case CSSPrimitiveValue::CSS_MS:
-    case CSSPrimitiveValue::CSS_S:
+    case CSSPrimitiveValue::UnitType::Milliseconds:
+    case CSSPrimitiveValue::UnitType::Seconds:
         return CalcTime;
-    case CSSPrimitiveValue::CSS_HZ:
-    case CSSPrimitiveValue::CSS_KHZ:
+    case CSSPrimitiveValue::UnitType::Hertz:
+    case CSSPrimitiveValue::UnitType::Kilohertz:
         return CalcFrequency;
     default:
         return CalcOther;
@@ -89,54 +89,54 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
 static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
 {
     switch (type) {
-    case CSSPrimitiveValue::CSS_NUMBER:
-    case CSSPrimitiveValue::CSS_PERCENTAGE:
-    case CSSPrimitiveValue::CSS_EMS:
-    case CSSPrimitiveValue::CSS_EXS:
-    case CSSPrimitiveValue::CSS_CHS:
-    case CSSPrimitiveValue::CSS_REMS:
-    case CSSPrimitiveValue::CSS_PX:
-    case CSSPrimitiveValue::CSS_CM:
-    case CSSPrimitiveValue::CSS_MM:
-    case CSSPrimitiveValue::CSS_IN:
-    case CSSPrimitiveValue::CSS_PT:
-    case CSSPrimitiveValue::CSS_PC:
-    case CSSPrimitiveValue::CSS_DEG:
-    case CSSPrimitiveValue::CSS_RAD:
-    case CSSPrimitiveValue::CSS_GRAD:
-    case CSSPrimitiveValue::CSS_TURN:
-    case CSSPrimitiveValue::CSS_MS:
-    case CSSPrimitiveValue::CSS_S:
-    case CSSPrimitiveValue::CSS_HZ:
-    case CSSPrimitiveValue::CSS_KHZ:
-    case CSSPrimitiveValue::CSS_VW:
-    case CSSPrimitiveValue::CSS_VH:
-    case CSSPrimitiveValue::CSS_VMIN:
-    case CSSPrimitiveValue::CSS_VMAX:
-    case CSSPrimitiveValue::CSS_DPPX:
-    case CSSPrimitiveValue::CSS_DPI:
-    case CSSPrimitiveValue::CSS_DPCM:
-    case CSSPrimitiveValue::CSS_FR:
-    case CSSPrimitiveValue::CSS_INTEGER:
+    case CSSPrimitiveValue::UnitType::Number:
+    case CSSPrimitiveValue::UnitType::Percentage:
+    case CSSPrimitiveValue::UnitType::Ems:
+    case CSSPrimitiveValue::UnitType::Exs:
+    case CSSPrimitiveValue::UnitType::Chs:
+    case CSSPrimitiveValue::UnitType::Rems:
+    case CSSPrimitiveValue::UnitType::Pixels:
+    case CSSPrimitiveValue::UnitType::Centimeters:
+    case CSSPrimitiveValue::UnitType::Millimeters:
+    case CSSPrimitiveValue::UnitType::Inches:
+    case CSSPrimitiveValue::UnitType::Points:
+    case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::Degrees:
+    case CSSPrimitiveValue::UnitType::Radians:
+    case CSSPrimitiveValue::UnitType::Gradians:
+    case CSSPrimitiveValue::UnitType::Turns:
+    case CSSPrimitiveValue::UnitType::Milliseconds:
+    case CSSPrimitiveValue::UnitType::Seconds:
+    case CSSPrimitiveValue::UnitType::Hertz:
+    case CSSPrimitiveValue::UnitType::Kilohertz:
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+    case CSSPrimitiveValue::UnitType::ViewportMax:
+    case CSSPrimitiveValue::UnitType::DotsPerPixel:
+    case CSSPrimitiveValue::UnitType::DotsPerInch:
+    case CSSPrimitiveValue::UnitType::DotsPerCentimeter:
+    case CSSPrimitiveValue::UnitType::Fraction:
+    case CSSPrimitiveValue::UnitType::Integer:
         return true;
-    case CSSPrimitiveValue::CSS_UNKNOWN:
-    case CSSPrimitiveValue::CSS_CUSTOM_IDENT:
-    case CSSPrimitiveValue::CSS_STRING:
-    case CSSPrimitiveValue::CSS_URI:
-    case CSSPrimitiveValue::CSS_IDENT:
-    case CSSPrimitiveValue::CSS_ATTR:
-    case CSSPrimitiveValue::CSS_COUNTER:
-    case CSSPrimitiveValue::CSS_RECT:
-    case CSSPrimitiveValue::CSS_RGBCOLOR:
-    case CSSPrimitiveValue::CSS_PAIR:
-    case CSSPrimitiveValue::CSS_SHAPE:
-    case CSSPrimitiveValue::CSS_QUAD:
-    case CSSPrimitiveValue::CSS_CALC:
-    case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_NUMBER:
-    case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_LENGTH:
-    case CSSPrimitiveValue::CSS_PROPERTY_ID:
-    case CSSPrimitiveValue::CSS_VALUE_ID:
-    case CSSPrimitiveValue::CSS_QEM:
+    case CSSPrimitiveValue::UnitType::Unknown:
+    case CSSPrimitiveValue::UnitType::CustomIdentifier:
+    case CSSPrimitiveValue::UnitType::String:
+    case CSSPrimitiveValue::UnitType::URI:
+    case CSSPrimitiveValue::UnitType::Identifier:
+    case CSSPrimitiveValue::UnitType::Attribute:
+    case CSSPrimitiveValue::UnitType::Counter:
+    case CSSPrimitiveValue::UnitType::Rect:
+    case CSSPrimitiveValue::UnitType::RGBColor:
+    case CSSPrimitiveValue::UnitType::Pair:
+    case CSSPrimitiveValue::UnitType::Shape:
+    case CSSPrimitiveValue::UnitType::Quad:
+    case CSSPrimitiveValue::UnitType::Calc:
+    case CSSPrimitiveValue::UnitType::CalcPercentageWithNumber:
+    case CSSPrimitiveValue::UnitType::CalcPercentageWithLength:
+    case CSSPrimitiveValue::UnitType::PropertyID:
+    case CSSPrimitiveValue::UnitType::ValueID:
+    case CSSPrimitiveValue::UnitType::QuirkyEms:
         return false;
     };
     ASSERT_NOT_REACHED();
@@ -226,7 +226,7 @@ public:
 
     double doubleValue() const override
     {
-        if (hasDoubleValue(primitiveType()))
+        if (hasDoubleValue(typeWithCalcResolved()))
             return m_value->getDoubleValue();
         ASSERT_NOT_REACHED();
         return 0;
@@ -268,9 +268,9 @@ public:
     }
 
     Type type() const override { return CssCalcPrimitiveValue; }
-    CSSPrimitiveValue::UnitType primitiveType() const override
+    CSSPrimitiveValue::UnitType typeWithCalcResolved() const override
     {
-        return m_value->primitiveType();
+        return m_value->typeWithCalcResolved();
     }
 
 
@@ -282,7 +282,7 @@ public:
 
 private:
     CSSCalcPrimitiveValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value, bool isInteger)
-        : CSSCalcExpressionNode(unitCategory(value->primitiveType()), isInteger)
+        : CSSCalcExpressionNode(unitCategory(value->typeWithCalcResolved()), isInteger)
         , m_value(value)
     {
     }
@@ -359,21 +359,21 @@ public:
 
         // Simplify numbers.
         if (leftCategory == CalcNumber && rightCategory == CalcNumber) {
-            return CSSCalcPrimitiveValue::create(evaluateOperator(leftSide->doubleValue(), rightSide->doubleValue(), op), CSSPrimitiveValue::CSS_NUMBER, isInteger);
+            return CSSCalcPrimitiveValue::create(evaluateOperator(leftSide->doubleValue(), rightSide->doubleValue(), op), CSSPrimitiveValue::UnitType::Number, isInteger);
         }
 
         // Simplify addition and subtraction between same types.
         if (op == CalcAdd || op == CalcSubtract) {
             if (leftCategory == rightSide->category()) {
-                CSSPrimitiveValue::UnitType leftType = leftSide->primitiveType();
+                CSSPrimitiveValue::UnitType leftType = leftSide->typeWithCalcResolved();
                 if (hasDoubleValue(leftType)) {
-                    CSSPrimitiveValue::UnitType rightType = rightSide->primitiveType();
+                    CSSPrimitiveValue::UnitType rightType = rightSide->typeWithCalcResolved();
                     if (leftType == rightType)
                         return CSSCalcPrimitiveValue::create(evaluateOperator(leftSide->doubleValue(), rightSide->doubleValue(), op), leftType, isInteger);
                     CSSPrimitiveValue::UnitCategory leftUnitCategory = CSSPrimitiveValue::unitCategory(leftType);
                     if (leftUnitCategory != CSSPrimitiveValue::UOther && leftUnitCategory == CSSPrimitiveValue::unitCategory(rightType)) {
                         CSSPrimitiveValue::UnitType canonicalType = CSSPrimitiveValue::canonicalUnitTypeForCategory(leftUnitCategory);
-                        if (canonicalType != CSSPrimitiveValue::CSS_UNKNOWN) {
+                        if (canonicalType != CSSPrimitiveValue::UnitType::Unknown) {
                             double leftValue = leftSide->doubleValue() * CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(leftType);
                             double rightValue = rightSide->doubleValue() * CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(rightType);
                             return CSSCalcPrimitiveValue::create(evaluateOperator(leftValue, rightValue, op), canonicalType, isInteger);
@@ -397,7 +397,7 @@ public:
             if (op == CalcDivide && !number)
                 return nullptr;
 
-            CSSPrimitiveValue::UnitType otherType = otherSide->primitiveType();
+            CSSPrimitiveValue::UnitType otherType = otherSide->typeWithCalcResolved();
             if (hasDoubleValue(otherType))
                 return CSSCalcPrimitiveValue::create(evaluateOperator(otherSide->doubleValue(), number, op), otherType, isInteger);
         }
@@ -508,36 +508,36 @@ public:
 
     Type type() const override { return CssCalcBinaryOperation; }
 
-    CSSPrimitiveValue::UnitType primitiveType() const override
+    CSSPrimitiveValue::UnitType typeWithCalcResolved() const override
     {
         switch (m_category) {
         case CalcNumber:
             ASSERT(m_leftSide->category() == CalcNumber && m_rightSide->category() == CalcNumber);
-            return CSSPrimitiveValue::CSS_NUMBER;
+            return CSSPrimitiveValue::UnitType::Number;
         case CalcLength:
         case CalcPercent: {
             if (m_leftSide->category() == CalcNumber)
-                return m_rightSide->primitiveType();
+                return m_rightSide->typeWithCalcResolved();
             if (m_rightSide->category() == CalcNumber)
-                return m_leftSide->primitiveType();
-            CSSPrimitiveValue::UnitType leftType = m_leftSide->primitiveType();
-            if (leftType == m_rightSide->primitiveType())
+                return m_leftSide->typeWithCalcResolved();
+            CSSPrimitiveValue::UnitType leftType = m_leftSide->typeWithCalcResolved();
+            if (leftType == m_rightSide->typeWithCalcResolved())
                 return leftType;
-            return CSSPrimitiveValue::CSS_UNKNOWN;
+            return CSSPrimitiveValue::UnitType::Unknown;
         }
         case CalcAngle:
-            return CSSPrimitiveValue::CSS_DEG;
+            return CSSPrimitiveValue::UnitType::Degrees;
         case CalcTime:
-            return CSSPrimitiveValue::CSS_MS;
+            return CSSPrimitiveValue::UnitType::Milliseconds;
         case CalcFrequency:
-            return CSSPrimitiveValue::CSS_HZ;
+            return CSSPrimitiveValue::UnitType::Hertz;
         case CalcPercentLength:
         case CalcPercentNumber:
         case CalcOther:
-            return CSSPrimitiveValue::CSS_UNKNOWN;
+            return CSSPrimitiveValue::UnitType::Unknown;
         }
         ASSERT_NOT_REACHED();
-        return CSSPrimitiveValue::CSS_UNKNOWN;
+        return CSSPrimitiveValue::UnitType::Unknown;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -628,7 +628,7 @@ private:
         if (index >= tokens->size())
             return 0;
         CSSParserValue* value = tokens->valueAt(index);
-        if (value->unit != CSSParserValue::Operator)
+        if (value->m_unit != CSSParserValue::Operator)
             return 0;
 
         return value->iValue;
@@ -637,10 +637,10 @@ private:
     bool parseValue(CSSParserValueList* tokens, unsigned* index, Value* result)
     {
         CSSParserValue* parserValue = tokens->valueAt(*index);
-        if (parserValue->unit >= CSSParserValue::Operator)
+        if (parserValue->m_unit >= CSSParserValue::Operator)
             return false;
 
-        CSSPrimitiveValue::UnitType type = static_cast<CSSPrimitiveValue::UnitType>(parserValue->unit);
+        CSSPrimitiveValue::UnitType type = parserValue->unit();
         if (unitCategory(type) == CalcOther)
             return false;
 
@@ -743,8 +743,8 @@ PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode
 PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(double pixels, double percent)
 {
     return createExpressionNode(
-        createExpressionNode(CSSPrimitiveValue::create(pixels, CSSPrimitiveValue::CSS_PX), pixels == trunc(pixels)),
-        createExpressionNode(CSSPrimitiveValue::create(percent, CSSPrimitiveValue::CSS_PERCENTAGE), percent == trunc(percent)),
+        createExpressionNode(CSSPrimitiveValue::create(pixels, CSSPrimitiveValue::UnitType::Pixels), pixels == trunc(pixels)),
+        createExpressionNode(CSSPrimitiveValue::create(percent, CSSPrimitiveValue::UnitType::Percentage), percent == trunc(percent)),
         CalcAdd);
 }
 

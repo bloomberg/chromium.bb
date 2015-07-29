@@ -1281,10 +1281,10 @@ void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
     }
 
     m_mutableStyle->setProperty(CSSPropertyPosition, CSSValueAbsolute);
-    m_mutableStyle->setProperty(CSSPropertyLeft, cssValuePool().createValue(x, CSSPrimitiveValue::CSS_PX));
-    m_mutableStyle->setProperty(CSSPropertyTop, cssValuePool().createValue(y, CSSPrimitiveValue::CSS_PX));
-    m_mutableStyle->setProperty(CSSPropertyWidth, cssValuePool().createValue(width, CSSPrimitiveValue::CSS_PX));
-    m_mutableStyle->setProperty(CSSPropertyHeight, cssValuePool().createValue(height, CSSPrimitiveValue::CSS_PX));
+    m_mutableStyle->setProperty(CSSPropertyLeft, cssValuePool().createValue(x, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyTop, cssValuePool().createValue(y, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyWidth, cssValuePool().createValue(width, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyHeight, cssValuePool().createValue(height, CSSPrimitiveValue::UnitType::Pixels));
 }
 
 void EditingStyle::forceInline()
@@ -1662,9 +1662,9 @@ CSSValueID getIdentifierValue(CSSStyleDeclaration* style, CSSPropertyID property
 int legacyFontSizeFromCSSValue(Document* document, CSSPrimitiveValue* value, bool isMonospaceFont, LegacyFontSizeMode mode)
 {
     CSSPrimitiveValue::LengthUnitType lengthType;
-    if (CSSPrimitiveValue::unitTypeToLengthUnitType(value->primitiveType(), lengthType)
+    if (CSSPrimitiveValue::unitTypeToLengthUnitType(value->typeWithCalcResolved(), lengthType)
         && lengthType == CSSPrimitiveValue::UnitTypePixels) {
-        double conversion = CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(value->primitiveType());
+        double conversion = CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(value->typeWithCalcResolved());
         int pixelFontSize = clampTo<int>(value->getDoubleValue() * conversion);
         int legacyFontSize = FontSize::legacyFontSize(document, pixelFontSize, isMonospaceFont);
         // Use legacy font size only if pixel value matches exactly to that of legacy font size.

@@ -72,54 +72,54 @@ template<> inline float roundForImpreciseConversion(double value)
 // to handle any kind of mutations.
 class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 public:
-    enum UnitType {
-        CSS_UNKNOWN = 0,
-        CSS_NUMBER = 1,
-        CSS_PERCENTAGE = 2,
-        CSS_EMS = 3,
-        CSS_EXS = 4,
-        CSS_PX = 5,
-        CSS_CM = 6,
-        CSS_MM = 7,
-        CSS_IN = 8,
-        CSS_PT = 9,
-        CSS_PC = 10,
-        CSS_DEG = 11,
-        CSS_RAD = 12,
-        CSS_GRAD = 13,
-        CSS_MS = 14,
-        CSS_S = 15,
-        CSS_HZ = 16,
-        CSS_KHZ = 17,
-        CSS_CUSTOM_IDENT = 19,
-        CSS_URI = 20,
-        CSS_IDENT = 21,
-        CSS_ATTR = 22,
-        CSS_COUNTER = 23,
-        CSS_RECT = 24,
-        CSS_RGBCOLOR = 25,
-        CSS_VW = 26,
-        CSS_VH = 27,
-        CSS_VMIN = 28,
-        CSS_VMAX = 29,
-        CSS_DPPX = 30,
-        CSS_DPI = 31,
-        CSS_DPCM = 32,
-        CSS_FR = 33,
-        CSS_INTEGER = 34,
-        CSS_PAIR = 100,
-        CSS_TURN = 107,
-        CSS_REMS = 108,
-        CSS_CHS = 109,
-        CSS_SHAPE = 111,
-        CSS_QUAD = 112,
-        CSS_CALC = 113,
-        CSS_CALC_PERCENTAGE_WITH_NUMBER = 114,
-        CSS_CALC_PERCENTAGE_WITH_LENGTH = 115,
-        CSS_STRING = 116,
-        CSS_PROPERTY_ID = 117,
-        CSS_VALUE_ID = 118,
-        CSS_QEM = 119
+    enum class UnitType {
+        Unknown,
+        Number,
+        Percentage,
+        Ems,
+        Exs,
+        Pixels,
+        Centimeters,
+        Millimeters,
+        Inches,
+        Points,
+        Picas,
+        Degrees,
+        Radians,
+        Gradians,
+        Turns,
+        Milliseconds,
+        Seconds,
+        Hertz,
+        Kilohertz,
+        CustomIdentifier,
+        URI,
+        Identifier,
+        Attribute,
+        Counter,
+        Rect,
+        RGBColor,
+        ViewportWidth,
+        ViewportHeight,
+        ViewportMin,
+        ViewportMax,
+        DotsPerPixel,
+        DotsPerInch,
+        DotsPerCentimeter,
+        Fraction,
+        Integer,
+        Pair,
+        Rems,
+        Chs,
+        Shape,
+        Quad,
+        Calc,
+        CalcPercentageWithNumber,
+        CalcPercentageWithLength,
+        String,
+        PropertyID,
+        ValueID,
+        QuirkyEms,
     };
 
     enum LengthUnitType {
@@ -163,46 +163,46 @@ public:
 
     bool isAngle() const
     {
-        return m_primitiveUnitType == CSS_DEG
-               || m_primitiveUnitType == CSS_RAD
-               || m_primitiveUnitType == CSS_GRAD
-               || m_primitiveUnitType == CSS_TURN;
+        return type() == UnitType::Degrees
+            || type() == UnitType::Radians
+            || type() == UnitType::Gradians
+            || type() == UnitType::Turns;
     }
-    bool isAttr() const { return m_primitiveUnitType == CSS_ATTR; }
-    bool isCounter() const { return m_primitiveUnitType == CSS_COUNTER; }
-    bool isCustomIdent() const { return m_primitiveUnitType == CSS_CUSTOM_IDENT; }
+    bool isAttr() const { return type() == UnitType::Attribute; }
+    bool isCounter() const { return type() == UnitType::Counter; }
+    bool isCustomIdent() const { return type() == UnitType::CustomIdentifier; }
     bool isFontRelativeLength() const
     {
-        return m_primitiveUnitType == CSS_EMS
-            || m_primitiveUnitType == CSS_EXS
-            || m_primitiveUnitType == CSS_REMS
-            || m_primitiveUnitType == CSS_CHS;
+        return type() == UnitType::Ems
+            || type() == UnitType::Exs
+            || type() == UnitType::Rems
+            || type() == UnitType::Chs;
     }
-    bool isViewportPercentageLength() const { return isViewportPercentageLength(static_cast<UnitType>(m_primitiveUnitType)); }
-    static bool isViewportPercentageLength(UnitType type) { return type >= CSS_VW && type <= CSS_VMAX; }
+    bool isViewportPercentageLength() const { return isViewportPercentageLength(type()); }
+    static bool isViewportPercentageLength(UnitType type) { return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax; }
     static bool isLength(UnitType type)
     {
-        return (type >= CSS_EMS && type <= CSS_PC) || type == CSS_REMS || type == CSS_CHS || isViewportPercentageLength(type);
+        return (type >= UnitType::Ems && type <= UnitType::Picas) || type == UnitType::Rems || type == UnitType::Chs || isViewportPercentageLength(type);
     }
-    bool isLength() const { return isLength(primitiveType()); }
-    bool isNumber() const { return primitiveType() == CSS_NUMBER || primitiveType() == CSS_INTEGER; }
-    bool isPercentage() const { return primitiveType() == CSS_PERCENTAGE; }
-    bool isPx() const { return primitiveType() == CSS_PX; }
-    bool isRect() const { return m_primitiveUnitType == CSS_RECT; }
-    bool isRGBColor() const { return m_primitiveUnitType == CSS_RGBCOLOR; }
-    bool isShape() const { return m_primitiveUnitType == CSS_SHAPE; }
-    bool isString() const { return m_primitiveUnitType == CSS_STRING; }
-    bool isTime() const { return m_primitiveUnitType == CSS_S || m_primitiveUnitType == CSS_MS; }
-    bool isURI() const { return m_primitiveUnitType == CSS_URI; }
-    bool isCalculated() const { return m_primitiveUnitType == CSS_CALC; }
-    bool isCalculatedPercentageWithNumber() const { return primitiveType() == CSS_CALC_PERCENTAGE_WITH_NUMBER; }
-    bool isCalculatedPercentageWithLength() const { return primitiveType() == CSS_CALC_PERCENTAGE_WITH_LENGTH; }
-    static bool isDotsPerInch(UnitType type) { return type == CSS_DPI; }
-    static bool isDotsPerPixel(UnitType type) { return type == CSS_DPPX; }
-    static bool isDotsPerCentimeter(UnitType type) { return type == CSS_DPCM; }
-    static bool isResolution(UnitType type) { return type >= CSS_DPPX && type <= CSS_DPCM; }
-    bool isFlex() const { return primitiveType() == CSS_FR; }
-    bool isValueID() const { return m_primitiveUnitType == CSS_VALUE_ID; }
+    bool isLength() const { return isLength(typeWithCalcResolved()); }
+    bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }
+    bool isPercentage() const { return typeWithCalcResolved() == UnitType::Percentage; }
+    bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
+    bool isRect() const { return type() == UnitType::Rect; }
+    bool isRGBColor() const { return type() == UnitType::RGBColor; }
+    bool isShape() const { return type() == UnitType::Shape; }
+    bool isString() const { return type() == UnitType::String; }
+    bool isTime() const { return type() == UnitType::Seconds || type() == UnitType::Milliseconds; }
+    bool isURI() const { return type() == UnitType::URI; }
+    bool isCalculated() const { return type() == UnitType::Calc; }
+    bool isCalculatedPercentageWithNumber() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithNumber; }
+    bool isCalculatedPercentageWithLength() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithLength; }
+    static bool isDotsPerInch(UnitType type) { return type == UnitType::DotsPerInch; }
+    static bool isDotsPerPixel(UnitType type) { return type == UnitType::DotsPerPixel; }
+    static bool isDotsPerCentimeter(UnitType type) { return type == UnitType::DotsPerCentimeter; }
+    static bool isResolution(UnitType type) { return type >= UnitType::DotsPerPixel && type <= UnitType::DotsPerCentimeter; }
+    bool isFlex() const { return typeWithCalcResolved() == UnitType::Fraction; }
+    bool isValueID() const { return type() == UnitType::ValueID; }
     bool colorIsDerivedFromElement() const;
 
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID)
@@ -253,7 +253,7 @@ public:
 
     void cleanup();
 
-    UnitType primitiveType() const;
+    UnitType typeWithCalcResolved() const;
 
     double computeDegrees() const;
     double computeSeconds();
@@ -271,22 +271,22 @@ public:
 
     String getStringValue() const;
 
-    Counter* getCounterValue() const { return m_primitiveUnitType != CSS_COUNTER ? 0 : m_value.counter; }
+    Counter* getCounterValue() const { return type() != UnitType::Counter ? 0 : m_value.counter; }
 
-    Rect* getRectValue() const { return m_primitiveUnitType != CSS_RECT ? 0 : m_value.rect; }
+    Rect* getRectValue() const { return type() != UnitType::Rect ? 0 : m_value.rect; }
 
-    Quad* getQuadValue() const { return m_primitiveUnitType != CSS_QUAD ? 0 : m_value.quad; }
+    Quad* getQuadValue() const { return type() != UnitType::Quad ? 0 : m_value.quad; }
 
-    RGBA32 getRGBA32Value() const { return m_primitiveUnitType != CSS_RGBCOLOR ? 0 : m_value.rgbcolor; }
+    RGBA32 getRGBA32Value() const { return type() != UnitType::RGBColor ? 0 : m_value.rgbcolor; }
 
-    Pair* getPairValue() const { return m_primitiveUnitType != CSS_PAIR ? 0 : m_value.pair; }
+    Pair* getPairValue() const { return type() != UnitType::Pair ? 0 : m_value.pair; }
 
-    CSSBasicShape* getShapeValue() const { return m_primitiveUnitType != CSS_SHAPE ? 0 : m_value.shape; }
+    CSSBasicShape* getShapeValue() const { return type() != UnitType::Shape ? 0 : m_value.shape; }
 
-    CSSCalcValue* cssCalcValue() const { return m_primitiveUnitType != CSS_CALC ? 0 : m_value.calc; }
+    CSSCalcValue* cssCalcValue() const { return type() != UnitType::Calc ? 0 : m_value.calc; }
 
-    CSSPropertyID getPropertyID() const { return m_primitiveUnitType == CSS_PROPERTY_ID ? m_value.propertyID : CSSPropertyInvalid; }
-    CSSValueID getValueID() const { return m_primitiveUnitType == CSS_VALUE_ID ? m_value.valueID : CSSValueInvalid; }
+    CSSPropertyID getPropertyID() const { return type() == UnitType::PropertyID ? m_value.propertyID : CSSPropertyInvalid; }
+    CSSValueID getValueID() const { return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid; }
 
     template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
 
@@ -332,6 +332,7 @@ private:
     static void create(unsigned); // compile-time guard
     template<typename T> operator T*(); // compile-time guard
 
+    void init(UnitType);
     void init(const Length&);
     void init(const LengthSize&, const ComputedStyle&);
     void init(PassRefPtrWillBeRawPtr<Counter>);
@@ -342,6 +343,8 @@ private:
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
 
     double computeLengthDouble(const CSSToLengthConversionData&);
+
+    inline UnitType type() const { return static_cast<UnitType>(m_primitiveUnitType); }
 
     union {
         CSSPropertyID propertyID;

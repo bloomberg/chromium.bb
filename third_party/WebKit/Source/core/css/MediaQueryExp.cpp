@@ -84,7 +84,7 @@ static inline bool featureWithValidPositiveLength(const String& mediaFeature, co
 
 static inline bool featureWithValidDensity(const String& mediaFeature, const CSSParserToken& token)
 {
-    if ((token.unitType() != CSSPrimitiveValue::CSS_DPPX && token.unitType() != CSSPrimitiveValue::CSS_DPI && token.unitType() != CSSPrimitiveValue::CSS_DPCM) || token.numericValue() <= 0)
+    if ((token.unitType() != CSSPrimitiveValue::UnitType::DotsPerPixel && token.unitType() != CSSPrimitiveValue::UnitType::DotsPerInch && token.unitType() != CSSPrimitiveValue::UnitType::DotsPerCentimeter) || token.numericValue() <= 0)
         return false;
 
     return mediaFeature == resolutionMediaFeature
@@ -209,7 +209,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
             if (!featureWithValidIdent(lowerMediaFeature, ident))
                 return nullptr;
             expValue.id = ident;
-            expValue.unit = CSSPrimitiveValue::CSS_VALUE_ID;
+            expValue.unit = CSSPrimitiveValue::UnitType::ValueID;
             expValue.isID = true;
         } else if (token.type() == NumberToken || token.type() == PercentageToken || token.type() == DimensionToken) {
             // Check for numeric token types since it is only safe for these types to call numericValue.
@@ -227,7 +227,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
                 // or media features that must have non-negative number value,
                 // or media features that must have (0|1) value.
                 expValue.value = token.numericValue();
-                expValue.unit = CSSPrimitiveValue::CSS_NUMBER;
+                expValue.unit = CSSPrimitiveValue::UnitType::Number;
                 expValue.isValue = true;
             } else {
                 return nullptr;

@@ -67,45 +67,46 @@ protected:
 #define TEST_PRIMITIVE_VALUE(ACTUAL_VALUE, EXPECTED_DOUBLE_VALUE, EXPECTED_UNIT_TYPE)                \
     EXPECT_TRUE((ACTUAL_VALUE)->isPrimitiveValue());                                                 \
     EXPECT_EQ((EXPECTED_DOUBLE_VALUE), toCSSPrimitiveValue((ACTUAL_VALUE).get())->getDoubleValue()); \
-    EXPECT_EQ((EXPECTED_UNIT_TYPE), toCSSPrimitiveValue((ACTUAL_VALUE).get())->primitiveType());
+    EXPECT_EQ((EXPECTED_UNIT_TYPE), toCSSPrimitiveValue((ACTUAL_VALUE).get())->typeWithCalcResolved());
 
-#define EXPECT_CSS_LENGTH_ARRAY_ELEMENTS_EQUAL(EXPECTED, ACTUAL)        \
-    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i) \
-    EXPECT_EQ((EXPECTED).at(i), (ACTUAL).at(i))
+#define EXPECT_CSS_LENGTH_ARRAY_ELEMENTS_EQUAL(EXPECTED, ACTUAL)          \
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i) { \
+        EXPECT_EQ((EXPECTED).at(i), (ACTUAL).at(i));                      \
+    }
 
 TEST_F(AnimationLengthStyleInterpolationTest, ZeroLength)
 {
-    RefPtrWillBeRawPtr<CSSValue> value1 = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    TEST_PRIMITIVE_VALUE(value1, 0, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSValue> value1 = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
+    TEST_PRIMITIVE_VALUE(value1, 0, CSSPrimitiveValue::UnitType::Pixels);
 
-    RefPtrWillBeRawPtr<CSSValue> value2 = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE));
-    TEST_PRIMITIVE_VALUE(value2, 0, CSSPrimitiveValue::CSS_PERCENTAGE);
+    RefPtrWillBeRawPtr<CSSValue> value2 = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Percentage));
+    TEST_PRIMITIVE_VALUE(value2, 0, CSSPrimitiveValue::UnitType::Percentage);
 
-    RefPtrWillBeRawPtr<CSSValue> value3 = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    TEST_PRIMITIVE_VALUE(value3, 0, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<CSSValue> value3 = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Ems));
+    TEST_PRIMITIVE_VALUE(value3, 0, CSSPrimitiveValue::UnitType::Ems);
 }
 
 TEST_F(AnimationLengthStyleInterpolationTest, SingleUnit)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
-    TEST_PRIMITIVE_VALUE(value, 10, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels));
+    TEST_PRIMITIVE_VALUE(value, 10, CSSPrimitiveValue::UnitType::Pixels);
 
-    value = roundTrip(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
-    TEST_PRIMITIVE_VALUE(value, 30, CSSPrimitiveValue::CSS_PERCENTAGE);
+    value = roundTrip(CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Percentage));
+    TEST_PRIMITIVE_VALUE(value, 30, CSSPrimitiveValue::UnitType::Percentage);
 
-    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS));
-    TEST_PRIMITIVE_VALUE(value, 10, CSSPrimitiveValue::CSS_EMS);
+    value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Ems));
+    TEST_PRIMITIVE_VALUE(value, 10, CSSPrimitiveValue::UnitType::Ems);
 }
 
 TEST_F(AnimationLengthStyleInterpolationTest, SingleClampedUnit)
 {
-    RefPtrWillBeRawPtr<CSSValue> value1 = CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PX);
+    RefPtrWillBeRawPtr<CSSValue> value1 = CSSPrimitiveValue::create(-10, CSSPrimitiveValue::UnitType::Pixels);
     value1 = interpolableValueToLength(lengthToInterpolableValue(*value1).get(), RangeNonNegative);
-    TEST_PRIMITIVE_VALUE(value1, 0, CSSPrimitiveValue::CSS_PX);
+    TEST_PRIMITIVE_VALUE(value1, 0, CSSPrimitiveValue::UnitType::Pixels);
 
-    RefPtrWillBeRawPtr<CSSValue> value2 = CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS);
+    RefPtrWillBeRawPtr<CSSValue> value2 = CSSPrimitiveValue::create(-10, CSSPrimitiveValue::UnitType::Ems);
     value2 = interpolableValueToLength(lengthToInterpolableValue(*value2).get(), RangeNonNegative);
-    TEST_PRIMITIVE_VALUE(value2, 0, CSSPrimitiveValue::CSS_EMS);
+    TEST_PRIMITIVE_VALUE(value2, 0, CSSPrimitiveValue::UnitType::Ems);
 }
 
 TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnits)

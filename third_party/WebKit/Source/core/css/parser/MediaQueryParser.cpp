@@ -153,7 +153,7 @@ void MediaQueryParser::readFeatureColon(CSSParserTokenType type, const CSSParser
 
 void MediaQueryParser::readFeatureValue(CSSParserTokenType type, const CSSParserToken& token)
 {
-    if (type == DimensionToken && token.unitType() == CSSPrimitiveValue::CSS_UNKNOWN) {
+    if (type == DimensionToken && token.unitType() == CSSPrimitiveValue::UnitType::Unknown) {
         m_state = SkipUntilComma;
     } else {
         if (m_mediaQueryData.tryAddParserToken(type, token))

@@ -104,15 +104,15 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value
         return CSSPrimitiveValue::create(value, type);
 
     switch (type) {
-    case CSSPrimitiveValue::CSS_PX:
+    case CSSPrimitiveValue::UnitType::Pixels:
         if (!m_pixelValueCache[intValue])
             m_pixelValueCache[intValue] = CSSPrimitiveValue::create(value, type);
         return m_pixelValueCache[intValue];
-    case CSSPrimitiveValue::CSS_PERCENTAGE:
+    case CSSPrimitiveValue::UnitType::Percentage:
         if (!m_percentValueCache[intValue])
             m_percentValueCache[intValue] = CSSPrimitiveValue::create(value, type);
         return m_percentValueCache[intValue];
-    case CSSPrimitiveValue::CSS_NUMBER:
+    case CSSPrimitiveValue::UnitType::Number:
         if (!m_numberValueCache[intValue])
             m_numberValueCache[intValue] = CSSPrimitiveValue::create(value, type);
         return m_numberValueCache[intValue];
@@ -130,7 +130,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(co
 {
     RefPtrWillBeMember<CSSPrimitiveValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
     if (!value)
-        value = CSSPrimitiveValue::create(familyName, CSSPrimitiveValue::CSS_CUSTOM_IDENT);
+        value = CSSPrimitiveValue::create(familyName, CSSPrimitiveValue::UnitType::CustomIdentifier);
     return value;
 }
 

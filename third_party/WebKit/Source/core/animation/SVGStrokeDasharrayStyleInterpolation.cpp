@@ -54,7 +54,7 @@ PassRefPtrWillBeRawPtr<SVGStrokeDasharrayStyleInterpolation> SVGStrokeDasharrayS
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSValueList> singleZero = CSSValueList::createCommaSeparated();
-    singleZero->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
+    singleZero->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels));
 
     const CSSValueList& valueListStart = start.isValueList() ? toCSSValueList(start) : *singleZero;
     const CSSValueList& valueListEnd = end.isValueList() ? toCSSValueList(end) : *singleZero;

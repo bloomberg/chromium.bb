@@ -63,7 +63,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor, CSSValueRed);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor, CSSValueLime);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
-    document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::CSS_PX);
+    document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::UnitType::Pixels);
     document().body()->setInlineStyleProperty(CSSPropertyTextShadow, "1px 2px 3px yellow");
     document().view()->updateAllLifecyclePhases();
 
@@ -86,7 +86,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor, CSSValueRed);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor, CSSValueLime);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
-    document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::CSS_PX);
+    document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::UnitType::Pixels);
     document().body()->setInlineStyleProperty(CSSPropertyTextShadow, "1px 2px 3px yellow");
     document().view()->updateAllLifecyclePhases();
 

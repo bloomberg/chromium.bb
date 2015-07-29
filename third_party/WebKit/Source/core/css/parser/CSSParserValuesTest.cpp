@@ -93,7 +93,7 @@ TEST(CSSParserValuesTest, CSSParserValuelistClear)
     CSSParserValueList list;
     for (int i = 0; i < 3; ++i) {
         CSSParserValue value;
-        value.setFromNumber(3);
+        value.setFromNumber(3, CSSPrimitiveValue::UnitType::Number);
         list.addValue(value);
     }
     list.clearAndLeakValues();
@@ -107,13 +107,13 @@ TEST(CSSParserValuesTest, CSSParserTokenUrlConversion)
     bool usesRemUnits;
     CSSParserValueList valueList(scope.tokenRange(), usesRemUnits);
     ASSERT_EQ(valueList.size(), 4u);
-    ASSERT_EQ(valueList.valueAt(0)->unit, CSSPrimitiveValue::CSS_URI);
+    ASSERT_EQ(valueList.valueAt(0)->unit(), CSSPrimitiveValue::UnitType::URI);
     EXPECT_EQ(String(valueList.valueAt(0)->string), "some");
-    ASSERT_EQ(valueList.valueAt(1)->unit, CSSPrimitiveValue::CSS_URI);
+    ASSERT_EQ(valueList.valueAt(1)->unit(), CSSPrimitiveValue::UnitType::URI);
     EXPECT_EQ(String(valueList.valueAt(1)->string), "test");
-    ASSERT_EQ(valueList.valueAt(2)->unit, CSSPrimitiveValue::CSS_URI);
+    ASSERT_EQ(valueList.valueAt(2)->unit(), CSSPrimitiveValue::UnitType::URI);
     EXPECT_EQ(String(valueList.valueAt(2)->string), "words");
-    ASSERT_EQ(valueList.valueAt(3)->unit, CSSPrimitiveValue::CSS_URI);
+    ASSERT_EQ(valueList.valueAt(3)->unit(), CSSPrimitiveValue::UnitType::URI);
     EXPECT_EQ(String(valueList.valueAt(3)->string), "/**/hi/**/");
 }
 
