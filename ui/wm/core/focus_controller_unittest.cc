@@ -465,6 +465,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void FocusChangeDuringDrag() {}
   virtual void ChangeFocusWhenNothingFocusedAndCaptured() {}
   virtual void DontPassDeletedWindow() {}
+  virtual void StackWindowAtTopOnActivation() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -834,6 +835,38 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
       EXPECT_EQ(to_delete, observer1.GetDeletedWindow());
       EXPECT_FALSE(observer2.was_notified_with_deleted_window());
     }
+  }
+
+  // Test that the activation of the current active window will bring the window
+  // to the top of the window stack.
+  void StackWindowAtTopOnActivation() override {
+    // Create a window, show it and then activate it.
+    scoped_ptr<aura::Window> window1 =
+        make_scoped_ptr(new aura::Window(nullptr));
+    window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window1->Init(ui::LAYER_TEXTURED);
+    root_window()->AddChild(window1.get());
+    window1->Show();
+    ActivateWindow(window1.get());
+    EXPECT_EQ(window1.get(), root_window()->children().back());
+    EXPECT_EQ(window1.get(), GetActiveWindow());
+
+    // Create another window, show it but don't activate it. The window is not
+    // the active window but is placed on top of window stack.
+    scoped_ptr<aura::Window> window2 =
+        make_scoped_ptr(new aura::Window(nullptr));
+    window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window2->Init(ui::LAYER_TEXTURED);
+    root_window()->AddChild(window2.get());
+    window2->Show();
+    EXPECT_EQ(window2.get(), root_window()->children().back());
+    EXPECT_EQ(window1.get(), GetActiveWindow());
+
+    // Try to reactivate the active window. It should bring the active window
+    // to the top of the window stack.
+    ActivateWindow(window1.get());
+    EXPECT_EQ(window1.get(), root_window()->children().back());
+    EXPECT_EQ(window1.get(), GetActiveWindow());
   }
 
  private:
@@ -1282,6 +1315,8 @@ FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
 
 // See description above DontPassDeletedWindow() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
+
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, StackWindowAtTopOnActivation);
 
 // See description above TransientChildWindowActivationTest() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerParentHideTest,

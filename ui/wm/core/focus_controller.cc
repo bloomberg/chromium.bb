@@ -188,6 +188,7 @@ void FocusController::FocusAndActivateWindow(
     aura::Window* window) {
   if (window &&
       (window->Contains(focused_window_) || window->Contains(active_window_))) {
+    StackActiveWindow();
     return;
   }
 
@@ -298,10 +299,8 @@ void FocusController::SetActiveWindow(
   active_window_ = window;
   if (active_window_ && !observer_manager_.IsObserving(active_window_))
     observer_manager_.Add(active_window_);
-  if (active_window_) {
-    StackTransientParentsBelowModalWindow(active_window_);
-    active_window_->parent()->StackChildAtTop(active_window_);
-  }
+  if (active_window_)
+    StackActiveWindow();
 
   aura::client::ActivationChangeObserver* observer = NULL;
   if (window_tracker.Contains(lost_activation)) {
@@ -320,6 +319,13 @@ void FocusController::SetActiveWindow(
       OnWindowActivated(
           reason, active_window_,
           window_tracker.Contains(lost_activation) ? lost_activation : NULL));
+}
+
+void FocusController::StackActiveWindow() {
+  if (active_window_) {
+    StackTransientParentsBelowModalWindow(active_window_);
+    active_window_->parent()->StackChildAtTop(active_window_);
+  }
 }
 
 void FocusController::WindowLostFocusFromDispositionChange(

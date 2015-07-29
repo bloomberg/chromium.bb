@@ -100,6 +100,10 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
       aura::Window* requested_window,
       aura::Window* activatable_window);
 
+  // Stack the |active_window_| on top of the window stack. This function is
+  // called when activating a window or re-activating the current active window.
+  void StackActiveWindow();
+
   // Called when a window's disposition changed such that it and its hierarchy
   // are no longer focusable/activatable. |next| is a valid window that is used
   // as a starting point for finding a window to focus next based on rules.
