@@ -173,7 +173,8 @@ declare_args() {
 # aix or one of the BSDs. If you need to check these, just check the
 # current_os value directly.
 
-if (current_os == "win") {
+if (current_os == "win" || current_os == "winrt_81" ||
+    current_os == "winrt_81_phone" || current_os == "winrt_10") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -393,6 +394,10 @@ if (is_win) {
     "//build/config/win:winver",
   ]
 }
+if (current_os == "winrt_81" || current_os == "winrt_81_phone" ||
+    current_os == "winrt_10") {
+  _native_compiler_configs += [ "//build/config/win:target_winrt" ]
+}
 if (is_posix) {
   _native_compiler_configs += [
     "//build/config/gcc:no_exceptions",
@@ -548,7 +553,14 @@ if (is_win) {
   } else {
     host_toolchain = "//build/toolchain/win:$current_cpu"
   }
-  set_default_toolchain("$host_toolchain")
+
+  if (current_os == "win") {
+    set_default_toolchain("$host_toolchain")
+  } else if (current_cpu == "x64") {  # WinRT x64
+    set_default_toolchain("//build/toolchain/win:winrt_x64")
+  } else if (current_cpu == "x86") {  # WinRT x86
+    set_default_toolchain("//build/toolchain/win:winrt_x86")
+  }
 } else if (is_android) {
   if (host_os == "linux") {
     # Use clang for the x86/64 Linux host builds.

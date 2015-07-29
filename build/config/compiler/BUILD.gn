@@ -622,8 +622,15 @@ config("runtime_library") {
       }
     }
   } else {
-    # Static CRT.
-    if (is_win) {
+    if (is_win && current_os != "win") {
+      # WindowsRT: use the dynamic CRT.
+      if (is_debug) {
+        cflags += [ "/MDd" ]
+      } else {
+        cflags += [ "/MD" ]
+      }
+    } else if (is_win) {
+      # Desktop Windows: static CRT.
       if (is_debug) {
         cflags += [ "/MTd" ]
       } else {

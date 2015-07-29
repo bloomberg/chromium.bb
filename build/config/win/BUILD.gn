@@ -180,3 +180,18 @@ config("lean_and_mean") {
 config("nominmax") {
   defines = [ "NOMINMAX" ]
 }
+
+# Target WinRT ----------------------------------------------------------------
+
+# When targeting Windows Runtime, certain compiler/linker flags are necessary.
+
+config("target_winrt") {
+  defines = [
+    "WINRT",
+    "WINAPI_FAMILY=WINAPI_FAMILY_PC_APP",
+  ]
+  cflags_cc = [
+    "/ZW",
+    "/EHsc",
+  ]
+}

@@ -50,6 +50,7 @@ concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 
 # Parameters:
 #  current_cpu: current_cpu to pass as a build arg
+#  current_os: current_os to pass as a build arg
 #  environment: File name of environment file.
 template("msvc_toolchain") {
   if (defined(invoker.concurrent_links)) {
@@ -206,6 +207,7 @@ template("msvc_toolchain") {
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
       }
+      current_os = invoker.current_os
     }
   }
 }
@@ -227,6 +229,7 @@ if (current_cpu == "x86") {
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
     cl = "${goma_prefix}$prefix/clang-cl.exe"
+    current_os = "win"
     is_clang = true
   }
 }
@@ -244,6 +247,26 @@ if (current_cpu == "x64") {
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
     cl = "${goma_prefix}$prefix/clang-cl.exe"
+    current_os = "win"
     is_clang = true
   }
+}
+
+# WinRT toolchains
+msvc_toolchain("winrt_x86") {
+  environment = "environment.winrt_x86"
+  cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+  is_clang = false
+
+  current_cpu = "x86"
+  current_os = current_os
+}
+
+msvc_toolchain("winrt_x64") {
+  environment = "environment.winrt_x64"
+  cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+  is_clang = false
+
+  current_cpu = "x64"
+  current_os = current_os
 }

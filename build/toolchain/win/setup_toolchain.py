@@ -146,6 +146,15 @@ def main():
     with open('environment.' + cpu, 'wb') as f:
       f.write(env_block)
 
+    # Create a store app version of the environment.
+    if 'LIB' in env:
+      env['LIB']     = env['LIB']    .replace(r'\VC\LIB', r'\VC\LIB\STORE')
+    if 'LIBPATH' in env:
+      env['LIBPATH'] = env['LIBPATH'].replace(r'\VC\LIB', r'\VC\LIB\STORE')
+    env_block = _FormatAsEnvironmentBlock(env)
+    with open('environment.winrt_' + cpu, 'wb') as f:
+        f.write(env_block)
+
   assert vc_bin_dir
   print 'vc_bin_dir = "%s"' % vc_bin_dir
 
