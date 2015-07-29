@@ -951,6 +951,13 @@ bool V4L2VideoEncodeAccelerator::SetFormats(
   crop.c.height = visible_size_.height();
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
 
+  // The width and height might be adjusted by driver.
+  // Need to read it back and set to visible_size_.
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_CROP, &crop);
+  visible_size_.SetSize(crop.c.width, crop.c.height);
+  DVLOG(3) << "After adjusted by driver, visible_size_="
+           << visible_size_.ToString();
+
   return true;
 }
 
