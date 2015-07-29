@@ -162,6 +162,9 @@ class WebsiteSettingsPopupView
   // The button to reset the Allow/Deny certificate errors decision for the
   // current host.
   views::LabelButton* reset_decisions_button_;
+  // The view that contains the contents of the "What Do These Mean?" section
+  // from the "Connection" tab.
+  views::View* help_center_content_;
 
   // The ID of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.

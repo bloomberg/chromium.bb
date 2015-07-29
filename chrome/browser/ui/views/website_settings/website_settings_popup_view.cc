@@ -313,6 +313,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       identity_info_content_(nullptr),
       certificate_dialog_link_(nullptr),
       reset_decisions_button_(nullptr),
+      help_center_content_(nullptr),
       cert_id_(0),
       help_center_link_(nullptr),
       connection_info_content_(nullptr),
@@ -637,6 +638,7 @@ views::View* WebsiteSettingsPopupView::CreateConnectionTab() {
   views::View* pane = new views::View();
   pane->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+
   // Add site identity section.
   identity_info_content_ = new views::View();
   pane->AddChildView(identity_info_content_);
@@ -646,19 +648,16 @@ views::View* WebsiteSettingsPopupView::CreateConnectionTab() {
   connection_info_content_ = new views::View();
   pane->AddChildView(connection_info_content_);
 
-  pane->AddChildView(new views::Separator(views::Separator::HORIZONTAL));
-
   // Add help center link.
+  pane->AddChildView(new views::Separator(views::Separator::HORIZONTAL));
   help_center_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK));
   help_center_link_->set_listener(this);
-  views::View* link_section = new views::View();
-  const int kLinkMarginTop = 4;
-  link_section->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal,
-                           kConnectionSectionPaddingLeft,
-                           kLinkMarginTop,
-                           0));
+  help_center_content_ = new views::View();
+  views::View* link_section =
+      CreateSection(base::string16(),
+                    help_center_content_,
+                    help_center_link_);
   link_section->AddChildView(help_center_link_);
   pane->AddChildView(link_section);
   return pane;
