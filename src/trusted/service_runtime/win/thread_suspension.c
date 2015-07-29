@@ -54,7 +54,8 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
 
     if (SuspendThread(thread_handle) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
-              "SuspendThread() call failed\n");
+              "SuspendThread() call failed, error %u\n",
+              GetLastError());
     }
 
     if (save_registers) {
@@ -87,7 +88,8 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
 
     if (!GetThreadContext(thread_handle, context)) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
-              "GetThreadContext() failed\n");
+              "GetThreadContext() failed, error %u\n",
+              GetLastError());
     }
   }
   /*
@@ -100,7 +102,8 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     if (ResumeThread(GetHostThreadHandle(natp)) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
-              "ResumeThread() call failed\n");
+              "ResumeThread() call failed, error %u\n",
+              GetLastError());
     }
   }
   NaClXMutexUnlock(&natp->suspend_mu);
@@ -117,7 +120,8 @@ void NaClAppThreadSetSuspendedRegistersInternal(
   if (!SetThreadContext(GetHostThreadHandle(natp),
                         &natp->suspended_registers->context)) {
     NaClLog(LOG_FATAL, "NaClAppThreadSetSuspendedRegistersInternal: "
-            "SetThreadContext() failed\n");
+            "SetThreadContext() failed, error %u\n",
+            GetLastError());
   }
 }
 
