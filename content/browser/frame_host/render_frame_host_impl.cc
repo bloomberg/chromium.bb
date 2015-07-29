@@ -1925,7 +1925,7 @@ bool RenderFrameHostImpl::IsFocused() {
 
 const image_downloader::ImageDownloaderPtr&
 RenderFrameHostImpl::GetMojoImageDownloader() {
-  if (!mojo_image_downloader_.get()) {
+  if (!mojo_image_downloader_.get() && GetServiceRegistry()) {
     GetServiceRegistry()->ConnectToRemoteService(
         mojo::GetProxy(&mojo_image_downloader_));
   }
