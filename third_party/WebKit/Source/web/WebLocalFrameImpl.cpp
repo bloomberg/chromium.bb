@@ -1126,10 +1126,10 @@ bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned l
     Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
     if (!editable)
         return false;
-    RefPtrWillBeRawPtr<Range> range = PlainTextRange(location, location + length).createRange(*editable);
-    if (!range)
+    const EphemeralRange range = PlainTextRange(location, location + length).createRange(*editable);
+    if (range.isNull())
         return false;
-    IntRect intRect = frame()->editor().firstRectForRange(range.get());
+    IntRect intRect = frame()->editor().firstRectForRange(range);
     rectInViewport = WebRect(intRect);
     rectInViewport = frame()->view()->contentsToViewport(rectInViewport);
     return true;

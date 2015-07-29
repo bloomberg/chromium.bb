@@ -50,7 +50,7 @@ public:
     bool isNotNull() const { return m_start != kNotFound; }
     size_t length() const { ASSERT(!isNull()); return m_end - m_start; }
 
-    PassRefPtrWillBeRawPtr<Range> createRange(const ContainerNode& scope) const;
+    EphemeralRange createRange(const ContainerNode& scope) const;
     EphemeralRange createRangeForSelection(const ContainerNode& scope) const;
 
     static PlainTextRange create(const ContainerNode& scope, const Range&);

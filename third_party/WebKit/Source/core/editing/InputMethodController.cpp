@@ -317,12 +317,12 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
             return;
 
         m_compositionNode = toText(baseNode);
-        RefPtrWillBeRawPtr<Range> range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
-        if (!range)
+        const EphemeralRange range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
+        if (range.isNull())
             return;
 
-        m_compositionStart = range->startOffset();
-        m_compositionEnd = range->endOffset();
+        m_compositionStart = range.startPosition().computeOffsetInContainerNode();
+        m_compositionEnd = range.endPosition().computeOffsetInContainerNode();
         m_customCompositionUnderlines = underlines;
         size_t numUnderlines = m_customCompositionUnderlines.size();
         for (size_t i = 0; i < numUnderlines; ++i) {
@@ -370,11 +370,11 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (!rootEditableElement)
         return false;
 
-    RefPtrWillBeRawPtr<Range> range = selectionOffsets.createRange(*rootEditableElement);
-    if (!range)
+    const EphemeralRange range = selectionOffsets.createRange(*rootEditableElement);
+    if (range.isNull())
         return false;
 
-    return frame().selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    return frame().selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
 }
 
 bool InputMethodController::setEditableSelectionOffsets(const PlainTextRange& selectionOffsets)

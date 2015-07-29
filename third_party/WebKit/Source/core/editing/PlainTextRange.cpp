@@ -58,14 +58,9 @@ PlainTextRange::PlainTextRange(int start, int end)
     ASSERT(start <= end);
 }
 
-// TODO(yosin) We should return |EphemeralRange| to avoid using temporary
-// |Range| object.
-PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRange(const ContainerNode& scope) const
+EphemeralRange PlainTextRange::createRange(const ContainerNode& scope) const
 {
-    EphemeralRange range = createRangeFor(scope, ForGeneric);
-    if (range.isNull())
-        return nullptr;
-    return Range::create(range.document(), range.startPosition(), range.endPosition());
+    return createRangeFor(scope, ForGeneric);
 }
 
 EphemeralRange PlainTextRange::createRangeForSelection(const ContainerNode& scope) const

@@ -158,10 +158,11 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebLocalFrame* 
     Element* editable = frame->selection().rootEditableElementOrDocumentElement();
     if (!editable)
         return nil;
-    RefPtrWillBeRawPtr<Range> range(PlainTextRange(location, location + length).createRange(*editable));
-    if (!range)
+    const EphemeralRange ephemeralRange(PlainTextRange(location, location + length).createRange(*editable));
+    if (ephemeralRange.isNull())
         return nil;
 
+    RefPtrWillBeRawPtr<Range> range = Range::create(ephemeralRange.document(), ephemeralRange.startPosition(), ephemeralRange.endPosition());
     return attributedSubstringFromRange(range.get());
 }
 
