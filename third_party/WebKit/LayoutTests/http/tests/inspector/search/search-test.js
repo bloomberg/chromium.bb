@@ -1,5 +1,9 @@
-var initialize_SearchTest = function() {
+// To ensure that no GC-able resources from other tests upset
+// expectations, perform an initial GC.
+if (window.GCController)
+    GCController.collect();
 
+var initialize_SearchTest = function() {
 InspectorTest.dumpSearchResults = function(searchResults)
 {
     function comparator(a, b)
