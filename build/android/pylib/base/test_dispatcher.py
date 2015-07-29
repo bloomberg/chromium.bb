@@ -188,11 +188,14 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   workers = reraiser_thread.ReraiserThreadGroup(threads)
   workers.StartAll()
 
-  # Catch DeviceUnreachableErrors and set a warning exit code
   try:
     workers.JoinAll(watcher)
-  except device_errors.DeviceUnreachableError as e:
-    logging.error(e)
+  except device_errors.CommandFailedError:
+    logging.exception('Command failed on device.')
+  except device_errors.CommandFailedError:
+    logging.exception('Command timed out on device.')
+  except device_errors.DeviceUnreachableError:
+    logging.exception('Device became unreachable.')
 
   if not all((len(tc) == 0 for tc in test_collections)):
     logging.error('Only ran %d tests (all devices are likely offline).' %
