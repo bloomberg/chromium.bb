@@ -27,8 +27,19 @@
 #include <stdbool.h>
 #include <time.h>
 
-/* The internal test sysconf() can only test and return these values. */
-#define SYSCONF_TEST_QUERY 1234
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
+
+/*
+ * The internal test sysconf() can only test and return these values.
+ * The value of SYSCONF_TEST_QUERY cannot be any arbitrary thing,
+ * because libc's sysconf() does not necessarily pass calls directly
+ * through to the IRT interface.  The glibc implementation only calls
+ * into the IRT sysconf interface for _SC_NPROCESSORS_ONLN; but the
+ * user API (libc) value of _SC_NPROCESSORS_ONLN is not the same as
+ * the IRT interface value (NACL_ABI__SC_NPROCESSORS_ONLN).
+ */
+#define SYSCONF_TEST_LIBC_QUERY _SC_NPROCESSORS_ONLN
+#define SYSCONF_TEST_IRT_QUERY NACL_ABI__SC_NPROCESSORS_ONLN
 #define SYSCONF_TEST_VALUE 4321
 
 /* Internal test exit code unit testing framework should exit with. */

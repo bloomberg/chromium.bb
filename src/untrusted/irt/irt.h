@@ -13,7 +13,6 @@
 
 struct timeval;
 struct timespec;
-struct stat;
 struct dirent;
 
 struct NaClExceptionContext;
@@ -21,6 +20,19 @@ struct NaClMemMappingInfo;
 
 typedef int64_t nacl_irt_off_t;
 typedef uint32_t nacl_irt_clockid_t;
+
+/*
+ * Under newlib, the 'struct stat' defined in <sys/stat.h> matches the
+ * layout of 'struct nacl_abi_stat', so the standard type 'struct stat'
+ * is used in IRT function signatures.  Under glibc, the 'struct stat'
+ * defined by the C library differs and translation between the C
+ * library format and the IRT format is required.
+ */
+#if defined(__native_client__) && defined(__GLIBC__)
+typedef struct nacl_abi_stat nacl_irt_stat_t;
+#else
+typedef struct stat nacl_irt_stat_t;
+#endif
 
 #if defined(__cplusplus)
 extern "C" {
@@ -115,7 +127,7 @@ struct nacl_irt_fdio {
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
   int (*seek)(int fd, nacl_irt_off_t offset, int whence,
               nacl_irt_off_t *new_offset);
-  int (*fstat)(int fd, struct stat *);
+  int (*fstat)(int fd, nacl_irt_stat_t *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
 };
 
@@ -132,7 +144,7 @@ struct nacl_irt_fdio {
 #define NACL_IRT_FILENAME_v0_1      "nacl-irt-filename-0.1"
 struct nacl_irt_filename {
   int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
-  int (*stat)(const char *pathname, struct stat *);
+  int (*stat)(const char *pathname, nacl_irt_stat_t *);
 };
 
 /*

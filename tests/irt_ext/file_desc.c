@@ -15,6 +15,13 @@
 #include "native_client/tests/irt_ext/error_report.h"
 #include "native_client/tests/irt_ext/file_desc.h"
 
+#ifdef __GLIBC__
+# include "native_client/src/trusted/service_runtime/include/bits/stat.h"
+# define STAT_MEMBER(st_foo) nacl_abi_##st_foo
+#else
+# define STAT_MEMBER(st_foo) st_foo
+#endif
+
 /* Non-POSIX flags for open() helps with link logic. */
 #ifndef O_NOFOLLOW
 # define O_NOFOLLOW 0x8000
@@ -195,19 +202,19 @@ static int my_seek(int fd, nacl_irt_off_t offset, int whence,
   return EBADF;
 }
 
-static int my_fstat(int fd, struct stat *buf) {
+static int my_fstat(int fd, nacl_irt_stat_t *buf) {
   if (g_activated_env &&
       fd >= 0 &&
       fd < NACL_ARRAY_SIZE(g_activated_env->file_descs) &&
       g_activated_env->file_descs[fd].valid &&
       g_activated_env->file_descs[fd].data != NULL) {
     struct inode_data *filedata = g_activated_env->file_descs[fd].data;
-    memset(buf, 0, sizeof(struct stat));
-    buf->st_mode = filedata->mode;
-    buf->st_size = filedata->size;
-    buf->st_atime = filedata->atime;
-    buf->st_mtime = filedata->mtime;
-    buf->st_ctime = filedata->ctime;
+    memset(buf, 0, sizeof(*buf));
+    buf->STAT_MEMBER(st_mode) = filedata->mode;
+    buf->STAT_MEMBER(st_size) = filedata->size;
+    buf->STAT_MEMBER(st_atime) = filedata->atime;
+    buf->STAT_MEMBER(st_mtime) = filedata->mtime;
+    buf->STAT_MEMBER(st_ctime) = filedata->ctime;
     return 0;
   }
 
@@ -447,7 +454,7 @@ static int my_open(const char *pathname, int oflag, mode_t cmode, int *newfd) {
   return ENOSYS;
 }
 
-static int my_stat(const char *pathname, struct stat *buf) {
+static int my_stat(const char *pathname, nacl_irt_stat_t *buf) {
   if (g_activated_env) {
     int fd = -1;
     int ret = 0;
@@ -611,7 +618,7 @@ static int my_truncate(const char *pathname, nacl_irt_off_t length) {
   return ENOSYS;
 }
 
-static int my_lstat(const char *pathname, struct stat *buf) {
+static int my_lstat(const char *pathname, nacl_irt_stat_t *buf) {
   if (g_activated_env) {
     int fd = -1;
     int ret = 0;
@@ -770,7 +777,7 @@ static int my_access(const char *path, int amode) {
     return EINVAL;
   }
 
-  struct stat path_stat;
+  nacl_irt_stat_t path_stat;
   int ret = my_stat(path, &path_stat);
   if (0 != ret) {
     return ret;
@@ -778,9 +785,12 @@ static int my_access(const char *path, int amode) {
     return 0;
   }
 
-  if (((amode & R_OK) && (S_IRUSR != (path_stat.st_mode & S_IRUSR))) ||
-      ((amode & W_OK) && (S_IWUSR != (path_stat.st_mode & S_IWUSR))) ||
-      ((amode & X_OK) && (S_IXUSR != (path_stat.st_mode & S_IXUSR)))) {
+  if (((amode & R_OK) &&
+       S_IRUSR != (path_stat.STAT_MEMBER(st_mode) & S_IRUSR)) ||
+      ((amode & W_OK) &&
+       S_IWUSR != (path_stat.STAT_MEMBER(st_mode) & S_IWUSR)) ||
+      ((amode & X_OK) &&
+       S_IXUSR != (path_stat.STAT_MEMBER(st_mode) & S_IXUSR))) {
     return EACCES;
   }
 

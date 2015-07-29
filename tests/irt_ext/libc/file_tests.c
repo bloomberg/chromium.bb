@@ -32,6 +32,7 @@ static const char TEST_TEXT[] = "test text";
 extern int utimes(const char *filename, const struct timeval times[2]);
 extern int fchdir(int dir_fd);
 
+#ifdef _NEWLIB_VERSION
 /*
  * TODO(dyen): Move the definition and declaration of this function to newlib.
  */
@@ -42,6 +43,7 @@ int dirfd(DIR *dir) {
   }
   return dir->dd_fd;
 }
+#endif
 
 typedef int (*TYPE_file_test)(struct file_desc_environment *file_desc_env);
 

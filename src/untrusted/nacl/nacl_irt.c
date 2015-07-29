@@ -34,7 +34,7 @@ static int stub_seek(int fd, off_t offset, int whence, off_t *new_offset) {
   return ENOSYS;
 }
 
-static int stub_fstat(int fd, struct stat *st) {
+static int stub_fstat(int fd, nacl_irt_stat_t *st) {
   return ENOSYS;
 }
 

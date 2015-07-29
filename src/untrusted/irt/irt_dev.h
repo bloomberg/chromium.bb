@@ -23,7 +23,6 @@
  */
 
 struct dirent;
-struct stat;
 struct timeval;
 
 struct NaClMemMappingInfo;
@@ -41,7 +40,7 @@ struct nacl_irt_dev_fdio_v0_2 {
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
   int (*seek)(int fd, nacl_irt_off_t offset, int whence,
               nacl_irt_off_t *new_offset);
-  int (*fstat)(int fd, struct stat *);
+  int (*fstat)(int fd, nacl_irt_stat_t *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
   int (*fchdir)(int fd);
   int (*fchmod)(int fd, mode_t mode);
@@ -59,7 +58,7 @@ struct nacl_irt_dev_fdio {
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
   int (*seek)(int fd, nacl_irt_off_t offset, int whence,
               nacl_irt_off_t *new_offset);
-  int (*fstat)(int fd, struct stat *);
+  int (*fstat)(int fd, nacl_irt_stat_t *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
   int (*fchdir)(int fd);
   int (*fchmod)(int fd, mode_t mode);
@@ -78,7 +77,7 @@ struct nacl_irt_dev_fdio {
 #define NACL_IRT_DEV_FILENAME_v0_2 "nacl-irt-dev-filename-0.2"
 struct nacl_irt_dev_filename_v0_2 {
   int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
-  int (*stat)(const char *pathname, struct stat *);
+  int (*stat)(const char *pathname, nacl_irt_stat_t *);
   int (*mkdir)(const char *pathname, mode_t mode);
   int (*rmdir)(const char *pathname);
   int (*chdir)(const char *pathname);
@@ -89,14 +88,14 @@ struct nacl_irt_dev_filename_v0_2 {
 #define NACL_IRT_DEV_FILENAME_v0_3 "nacl-irt-dev-filename-0.3"
 struct nacl_irt_dev_filename {
   int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
-  int (*stat)(const char *pathname, struct stat *);
+  int (*stat)(const char *pathname, nacl_irt_stat_t *);
   int (*mkdir)(const char *pathname, mode_t mode);
   int (*rmdir)(const char *pathname);
   int (*chdir)(const char *pathname);
   int (*getcwd)(char *pathname, size_t len);
   int (*unlink)(const char *pathname);
   int (*truncate)(const char *pathname, nacl_irt_off_t length);
-  int (*lstat)(const char *pathname, struct stat *);
+  int (*lstat)(const char *pathname, nacl_irt_stat_t *);
   int (*link)(const char *oldpath, const char *newpath);
   int (*rename)(const char *oldpath, const char *newpath);
   int (*symlink)(const char *oldpath, const char *newpath);

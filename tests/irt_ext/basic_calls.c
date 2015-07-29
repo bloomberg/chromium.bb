@@ -69,7 +69,7 @@ static int my_sched_yield(void) {
 }
 
 static int my_sysconf(int name, int *value) {
-  if (g_activated_env && name == SYSCONF_TEST_QUERY) {
+  if (g_activated_env && name == SYSCONF_TEST_IRT_QUERY) {
     *value = SYSCONF_TEST_VALUE;
     return 0;
   }

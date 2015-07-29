@@ -129,7 +129,7 @@ static int do_sched_yield_test(struct basic_calls_environment *basic_call_env) {
 }
 
 static int do_sysconf_test(struct basic_calls_environment *basic_call_env) {
-  long ret = sysconf(SYSCONF_TEST_QUERY);
+  long ret = sysconf(SYSCONF_TEST_LIBC_QUERY);
   if (ret == -1) {
     irt_ext_test_print("do_sysconf_test: sysconf failed - %s.\n",
                        strerror(errno));
