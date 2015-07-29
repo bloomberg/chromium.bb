@@ -36,8 +36,8 @@ class GsutilMock(object):
     self.history = []
     self.lock = threading.Lock()
 
-  def add_expected(self, return_code, out, err):
-    self.expected.append((return_code, out, err))
+  def add_expected(self, return_code, out, err, fn=None):
+    self.expected.append((return_code, out, err, fn))
 
   def append_history(self, method, args):
     self.history.append((method, args))
@@ -46,7 +46,10 @@ class GsutilMock(object):
     with self.lock:
       self.append_history('call', args)
       if self.expected:
-        return self.expected.pop(0)[0]
+        code, _out, _err, fn = self.expected.pop(0)
+        if fn:
+          fn()
+        return code
       else:
         return 0
 
@@ -54,7 +57,10 @@ class GsutilMock(object):
     with self.lock:
       self.append_history('check_call', args)
       if self.expected:
-        return self.expected.pop(0)
+        code, out, err, fn = self.expected.pop(0)
+        if fn:
+          fn()
+        return code, out, err
       else:
         return (0, '', '')
 
@@ -256,6 +262,32 @@ class DownloadTests(unittest.TestCase):
             'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     self.assertEqual(self.gsutil.history, expected_calls)
     self.assertEqual(code, 101)
+
+  def test_corrupt_download(self):
+    q = Queue.Queue()
+    out_q = Queue.Queue()
+    ret_codes = Queue.Queue()
+    tmp_dir = tempfile.mkdtemp()
+    sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
+    output_filename = os.path.join(tmp_dir, 'lorem_ipsum.txt')
+    q.put(('7871c8e24da15bad8b0be2c36edc9dc77e37727f', output_filename))
+    q.put((None, None))
+    def _write_bad_file():
+      with open(output_filename, 'w') as f:
+        f.write('foobar')
+    self.gsutil.add_expected(0, '', '')
+    self.gsutil.add_expected(0, '', '', _write_bad_file)
+    download_from_google_storage._downloader_worker_thread(
+        1, q, True, self.base_url, self.gsutil, out_q, ret_codes, True)
+    self.assertTrue(q.empty())
+    msg = ('1> ERROR remote sha1 (%s) does not match expected sha1 (%s).' %
+           ('8843d7f92416211de9ebb963ff4ce28125932878', sha1_hash))
+    self.assertEquals(out_q.get(), '1> Downloading %s...' % output_filename)
+    self.assertEquals(out_q.get(), msg)
+    self.assertEquals(ret_codes.get(), (20, msg))
+    self.assertTrue(out_q.empty())
+    self.assertTrue(ret_codes.empty())
+
 
   def test_download_directory_no_recursive_non_force(self):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'

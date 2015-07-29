@@ -227,6 +227,15 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     if code != 0:
       out_q.put('%d> %s' % (thread_num, err))
       ret_codes.put((code, err))
+      continue
+
+    remote_sha1 = get_sha1(output_filename)
+    if remote_sha1 != input_sha1_sum:
+      msg = ('%d> ERROR remote sha1 (%s) does not match expected sha1 (%s).' %
+             (thread_num, remote_sha1, input_sha1_sum))
+      out_q.put(msg)
+      ret_codes.put((20, msg))
+      continue
 
     # Set executable bit.
     if sys.platform == 'cygwin':
