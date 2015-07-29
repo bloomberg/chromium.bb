@@ -13,8 +13,8 @@ FirefoxProfileImporterTest.Firefox35Importer
 # https://github.com/DynamoRIO/drmemory/issues/980
 MetricsLogManagerTest.*
 
-# http://crbug.com/87887
-TaskManagerTest.Resources
+# http://crbug.com/514921
+TaskManagerTest.*
 
 ##################################################
 # Chromium bugs:
