@@ -891,7 +891,14 @@ def distinguishing_argument_index(entries):
     """
     # Only applicable “If there is more than one entry”
     assert len(entries) > 1
-    type_lists = [tuple(idl_type.name for idl_type in entry[1])
+
+    def typename_without_nullable(idl_type):
+        if idl_type.is_nullable:
+            return idl_type.inner_type.name
+        return idl_type.name
+
+    type_lists = [tuple(typename_without_nullable(idl_type)
+                        for idl_type in entry[1])
                   for entry in entries]
     type_list_length = len(type_lists[0])
     # Only applicable for entries that “[have] a given type list length”
