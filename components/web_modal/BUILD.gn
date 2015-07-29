@@ -18,7 +18,10 @@ static_library("web_modal") {
   deps = [
     "//base",
     "//content/public/browser",
+    "//net",
     "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -32,5 +35,8 @@ static_library("test_support") {
 
   deps = [
     ":web_modal",
+    "//base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }

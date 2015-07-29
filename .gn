@@ -48,7 +48,11 @@ check_targets = [
   "//components/user_prefs/*",
   "//components/variations/*",
   "//components/wallpaper/*",
+  "//components/web_cache/*",
   "//components/webcrypto/*",
+  "//components/web_modal/*",
+  "//components/webdata/*",
+  "//components/webdata_services/*",
 
   #"//content/*",  # A whole lot of errors.
   "//courgette/*",

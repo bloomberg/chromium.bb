@@ -10,6 +10,7 @@ static_library("renderer") {
   ]
 
   deps = [
+    "//base",
     "//components/web_cache/common",
     "//content/public/renderer",
     "//third_party/WebKit/public:blink",
