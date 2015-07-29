@@ -117,6 +117,11 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureInEachVideoFormatInSequence) {
         format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG) {
       continue;
     }
+#if !defined(OS_LINUX) && !defined(OS_WIN)
+    if (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB24){
+      continue;
+    }
+#endif
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         capture_resolution, 30, media::VideoCapturePixelFormat(format));

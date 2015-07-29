@@ -331,7 +331,17 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
     case media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB24:
+      // Linux RGB24 defines red at lowest byte address,
+      // see http://linuxtv.org/downloads/v4l-dvb-apis/packed-rgb.html.
+      // Windows RGB24 defines blue at lowest byte,
+      // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd407253
+#if defined(OS_LINUX)
+      origin_colorspace = libyuv::FOURCC_RAW;
+#elif defined(OS_WIN)
       origin_colorspace = libyuv::FOURCC_24BG;
+#else
+      NOTREACHED() << "RGB24 is only available in Linux and Windows platforms";
+#endif
 #if defined(OS_WIN)
       // TODO(wjia): Currently, for RGB24 on WIN, capture device always
       // passes in positive src_width and src_height. Remove this hardcoded
