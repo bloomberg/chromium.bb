@@ -65,27 +65,20 @@ Canvas log:
         method : "restore"
     }
     2 : {
-        method : "drawBitmapRectToRect"
+        method : "drawImageRect"
         params : {
-            bitmap : {
-                config : "ARGB8888"
-                data : {
-                    base64 : "iVBORw0KGgoAAAANSUhEUgAAABMAAAAVCAYAAACkCdXRAAAAKklEQVQ4T2P8////fwYqAcZRw0gOydEwIznIGEbDbDTMcITAaNIY4KQBAGDeU8KwDOsAAAAAAElFTkSuQmCC"
-                    mimeType : "image/png"
-                }
-                height : 21
-                immutable : true
-                opaque : false
-                volatile : false
-                width : 19
-            }
             dst : {
                 bottom : 71
                 left : 0
                 right : 19
                 top : 50
             }
-            flags : 0
+            image : {
+                height : 21
+                opaque : false
+                uniqueID : 1
+                width : 19
+            }
             paint : {
                 color : "#FF000000"
                 filterLevel : "High"

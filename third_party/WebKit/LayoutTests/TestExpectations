@@ -1263,8 +1263,6 @@ crbug.com/418091 [ SnowLeopard ] fast/text/splitText-dirty-lines.html [ Pass Fai
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 
-crbug.com/449197 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
-
 crbug.com/442512 svg/dom/viewspec-aspectparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/viewspec-transformparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/viewspec-viewboxparams.html [ Pass ImageOnlyFailure ]
