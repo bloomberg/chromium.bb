@@ -29,13 +29,12 @@
     'gn_debug_bot': ['gn', 'debug_bot'],
     'gn_debug_bot_x86': ['gn', 'debug_bot', 'x86'],
     'gn_debug_static_bot': ['gn', 'debug_static_bot'],
-    'gn_debug_static_bot_x86': ['gn', 'debug_static_bot', 'x86'],
     'gyp_release_bot': ['gyp', 'release_bot'],
     # clang/win doesn't work with goma yet, so this can't use debug_bot:
     'win_clang_debug_bot':
         ['gn', 'clang', 'debug', 'shared', 'minimal_symbols'],
   },
-  
+
   # This is a list of configs that do not actually exist on any bot
   # but are used so commonly by devs that we must support them.
   'common_dev_configs': [
@@ -44,7 +43,7 @@
     'dev_gyp_debug',
     'dev_gyp_release',
   ],
-  
+
   # This is a list of configs that some private (not publicly accessible)
   # bot somewhere uses and that we must support. Ideally we should actually
   # have a bot for each of these on the public waterfall. Each config should
@@ -58,7 +57,7 @@
   # contact to be on the hook for fixing the config.
   'unsupported_configs': [
   ],
-  
+
   # This is a dict mapping a given 'mixin' name to a dict of settings that
   # mb should use. See //tools/mb/docs/user_guide.md for more information.
   'mixins': {
@@ -198,7 +197,7 @@
       'Mac GN': 'gn_release_bot',
       'Mac GN (dbg)': 'gn_debug_static_bot',
       'Win GN': 'gn_release_bot_x86',
-      'Win GN (dbg)': 'gn_debug_static_bot_x86',
+      'Win GN (dbg)': 'gn_debug_bot_x86',
     },
     'client.v8.fyi': {
       'V8 Linux GN': 'gn_release_bot',
@@ -225,10 +224,10 @@
       'mac_chromium_gn_upload': 'gn_release_bot',
     },
     'tryserver.chromium.win': {
-      'win_chromium_gn_x64_dbg': 'gn_debug_static_bot',
+      'win_chromium_gn_x64_dbg': 'gn_debug_bot',
       'win_chromium_gn_x64_rel': 'gn_release_trybot',
       'win8_chromium_ng': 'gn_release_trybot_x86',
-      'win8_chromium_gn_dbg': 'gn_debug_static_bot_x86',
+      'win8_chromium_gn_dbg': 'gn_debug_bot_x86',
       'win8_chromium_gn_rel': 'gn_release_trybot_x86',
       'win8_chromium_gn_upload': 'gn_release_bot',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
