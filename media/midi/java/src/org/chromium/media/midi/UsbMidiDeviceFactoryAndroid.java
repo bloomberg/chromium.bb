@@ -127,7 +127,7 @@ class UsbMidiDeviceFactoryAndroid {
         for (UsbDevice device : devices.values()) {
             requestDevicePermissionIfNecessary(context, device);
         }
-        return true;
+        return !mRequestedDevices.isEmpty();
     }
 
     /**
