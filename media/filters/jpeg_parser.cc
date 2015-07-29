@@ -294,12 +294,6 @@ static bool ParseSOI(const char* buffer,
 
     uint16_t size;
     READ_U16_OR_RETURN_FALSE(&size);
-    if (reader.remaining() < size) {
-      DLOG(ERROR) << "Ill-formed JPEG. Remaining size (" << reader.remaining()
-                  << ") is smaller than header specified (" << size << ")";
-      return false;
-    }
-
     // The size includes the size field itself.
     if (size < sizeof(size)) {
       DLOG(ERROR) << "Ill-formed JPEG. Segment size (" << size
@@ -307,6 +301,12 @@ static bool ParseSOI(const char* buffer,
       return false;
     }
     size -= sizeof(size);
+
+    if (reader.remaining() < size) {
+      DLOG(ERROR) << "Ill-formed JPEG. Remaining size (" << reader.remaining()
+                  << ") is smaller than header specified (" << size << ")";
+      return false;
+    }
 
     switch (marker2) {
       case JPEG_SOF0:
