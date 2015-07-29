@@ -42,21 +42,11 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
 
     /**
-     * Extra int that specifies the style of the back button on the toolbar. Default is showing a
-     * cross icon.
+     * Extra bitmap that specifies the icon of the back button on the toolbar. If the client chooses
+     * not to customize it, a default close button will be used.
      */
-    public static final String EXTRA_CLOSE_BUTTON_STYLE =
-            "android.support.customtabs.extra.CLOSE_BUTTON_STYLE";
-
-    /**
-     * Uses 'X'-like cross icon for close button.
-     */
-    public static final int CLOSE_BUTTON_CROSS = 0;
-
-    /**
-     * Uses '<'-like chevron arrow icon for close button.
-     */
-    public static final int CLOSE_BUTTON_ARROW = 1;
+    public static final String EXTRA_CLOSE_BUTTON_ICON =
+            "android.support.customtabs.extra.CLOSE_BUTTON_ICON";
 
     /**
      * Extra int that specifies state for showing the page title. Default is showing only the domain
@@ -88,9 +78,9 @@ public class CustomTabIntentDataProvider {
     private final IBinder mSession;
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
-    private final int mCloseButtonResId;
     private int mToolbarColor;
-    private Drawable mIcon;
+    private Drawable mCustomButtonIcon;
+    private Drawable mCloseButtonIcon;
     private PendingIntent mActionButtonPendingIntent;
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
@@ -112,7 +102,7 @@ public class CustomTabIntentDataProvider {
         if (actionButtonBundle != null) {
             Bitmap bitmap = IntentUtils.safeGetParcelable(actionButtonBundle,
                     CustomTabsIntent.KEY_ICON);
-            if (bitmap != null && !checkBitmapSizeWithinBounds(context, bitmap)) {
+            if (bitmap != null && !checkCustomButtonIconWithinBounds(context, bitmap)) {
                 bitmap.recycle();
                 bitmap = null;
             } else if (bitmap != null) {
@@ -121,11 +111,24 @@ public class CustomTabIntentDataProvider {
                 boolean shouldTint = IntentUtils.safeGetBooleanExtra(intent,
                         EXTRA_TINT_ACTION_BUTTON, false);
                 if (shouldTint) {
-                    mIcon = TintedDrawable.constructTintedDrawable(context.getResources(), bitmap);
+                    mCustomButtonIcon = TintedDrawable
+                            .constructTintedDrawable(context.getResources(), bitmap);
                 } else {
-                    mIcon = new BitmapDrawable(context.getResources(), bitmap);
+                    mCustomButtonIcon = new BitmapDrawable(context.getResources(), bitmap);
                 }
             }
+        }
+
+        Bitmap bitmap = IntentUtils.safeGetParcelableExtra(intent, EXTRA_CLOSE_BUTTON_ICON);
+        if (bitmap != null && !checkCloseButtonSize(context, bitmap)) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+        if (bitmap == null) {
+            mCloseButtonIcon = TintedDrawable.constructTintedDrawable(context.getResources(),
+                    R.drawable.btn_close);
+        } else {
+            mCloseButtonIcon = new BitmapDrawable(context.getResources(), bitmap);
         }
 
         List<Bundle> menuItems =
@@ -143,18 +146,6 @@ public class CustomTabIntentDataProvider {
 
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
                 intent, CustomTabsIntent.EXTRA_EXIT_ANIMATION_BUNDLE);
-
-        int closeButtonStyle =
-                IntentUtils.safeGetIntExtra(intent, EXTRA_CLOSE_BUTTON_STYLE, CLOSE_BUTTON_CROSS);
-        switch(closeButtonStyle) {
-            case CustomTabIntentDataProvider.CLOSE_BUTTON_ARROW:
-                mCloseButtonResId = R.drawable.btn_chevron_left;
-                break;
-            case CustomTabIntentDataProvider.CLOSE_BUTTON_CROSS:
-            default:
-                mCloseButtonResId = R.drawable.btn_close;
-        }
-
         mTitleVisibilityState =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_TITLE_VISIBILITY_STATE, NO_TITLE);
     }
@@ -198,10 +189,12 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
-     * @return The resource id of the close button shown in the custom tab toolbar.
+     * @return The drawable of the icon of close button shown in the custom tab toolbar. If the
+     *         client app provides an icon in valid size, use this icon; else return the default
+     *         drawable.
      */
-    public int getCloseButtonIconResId() {
-        return mCloseButtonResId;
+    public Drawable getCloseButtonDrawable() {
+        return mCloseButtonIcon;
     }
 
     /**
@@ -217,14 +210,14 @@ public class CustomTabIntentDataProvider {
      *         action button.
      */
     public boolean shouldShowActionButton() {
-        return mIcon != null && mActionButtonPendingIntent != null;
+        return mCustomButtonIcon != null && mActionButtonPendingIntent != null;
     }
 
     /**
      * @return The icon used for the action button. Will be null if not set in the intent.
      */
     public Drawable getActionButtonIcon() {
-        return mIcon;
+        return mCustomButtonIcon;
     }
 
     /**
@@ -314,12 +307,18 @@ public class CustomTabIntentDataProvider {
         }
     }
 
-    private boolean checkBitmapSizeWithinBounds(Context context, Bitmap bitmap) {
+    private boolean checkCustomButtonIconWithinBounds(Context context, Bitmap bitmap) {
         int height = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
         if (bitmap.getHeight() < height) return false;
         int scaledWidth = bitmap.getWidth() / bitmap.getHeight() * height;
         if (scaledWidth > 2 * height) return false;
         return true;
+    }
+
+    private boolean checkCloseButtonSize(Context context, Bitmap bitmap) {
+        int size = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
+        if (bitmap.getHeight() == size && bitmap.getWidth() == size) return true;
+        return false;
     }
 
     /**

@@ -823,10 +823,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
-     * Sets the icon resource that the close button shows.
+     * Sets the drawable that the close button shows.
      */
-    public void setCloseButtonIcon(int iconRes) {
-        mToolbar.setCloseButtonImageResource(iconRes);
+    public void setCloseButtonDrawable(Drawable drawable) {
+        mToolbar.setCloseButtonImageResource(drawable);
     }
 
     /**

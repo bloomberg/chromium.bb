@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -62,7 +61,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private ImageButton mCustomActionButton;
     private int mSecurityIconType;
     private boolean mUseDarkColors;
-    private TintedImageButton mCloseButton;
+    private ImageButton mCloseButton;
 
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
     private boolean mBackgroundColorSet;
@@ -89,7 +88,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
-        mCloseButton = (TintedImageButton) findViewById(R.id.close_button);
+        mCloseButton = (ImageButton) findViewById(R.id.close_button);
         mCloseButton.setOnLongClickListener(this);
         mCustomActionButton.setOnLongClickListener(this);
         mAnimDelegate = new CustomTabToolbarAnimationDelegate(mSecurityButton, mTitleUrlContainer);
@@ -123,8 +122,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void setCloseButtonImageResource(int iconRes) {
-        mCloseButton.setImageResource(iconRes);
+    public void setCloseButtonImageResource(Drawable drawable) {
+        mCloseButton.setImageDrawable(drawable);
     }
 
     @Override
@@ -264,7 +263,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         ColorStateList colorStateList = resources.getColorStateList(mUseDarkColors
                 ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMenuButton.setTint(colorStateList);
-        mCloseButton.setTint(colorStateList);
+        if (mCloseButton.getDrawable() instanceof TintedDrawable) {
+            ((TintedDrawable) mCloseButton.getDrawable()).setTint(colorStateList);
+        }
         if (mCustomActionButton.getDrawable() instanceof TintedDrawable) {
             ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(colorStateList);
         }
