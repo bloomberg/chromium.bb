@@ -77,6 +77,11 @@ bool IsAddressInSharedRegion(mach_vm_address_t addr, cpu_type_t type) {
 
 }  // namespace
 
+SystemMemoryInfoKB::SystemMemoryInfoKB() {
+  total = 0;
+  free = 0;
+}
+
 // Getting a mach task from a pid for another process requires permissions in
 // general, so there doesn't really seem to be a way to do these (and spinning
 // up ps to fetch each stats seems dangerous to put in a base api for anyone to
@@ -356,6 +361,34 @@ size_t GetSystemCommitCharge() {
   }
 
   return (data.active_count * PAGE_SIZE) / 1024;
+}
+
+// On Mac, We only get total memory and free memory from the system.
+bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
+  struct host_basic_info hostinfo;
+  mach_msg_type_number_t count = HOST_BASIC_INFO_COUNT;
+  base::mac::ScopedMachSendRight host(mach_host_self());
+  int result = host_info(host, HOST_BASIC_INFO,
+                         reinterpret_cast<host_info_t>(&hostinfo), &count);
+  if (result != KERN_SUCCESS)
+    return false;
+
+  DCHECK_EQ(HOST_BASIC_INFO_COUNT, count);
+  meminfo->total = static_cast<int>(hostinfo.max_mem / 1024);
+
+  vm_statistics_data_t vm_info;
+  count = HOST_VM_INFO_COUNT;
+
+  if (host_statistics(host.get(), HOST_VM_INFO,
+                      reinterpret_cast<host_info_t>(&vm_info),
+                      &count) != KERN_SUCCESS) {
+    return false;
+  }
+
+  meminfo->free = static_cast<int>(
+      (vm_info.free_count - vm_info.speculative_count) * PAGE_SIZE / 1024);
+
+  return true;
 }
 
 }  // namespace base

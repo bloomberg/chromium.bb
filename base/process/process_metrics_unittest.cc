@@ -270,7 +270,8 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   base::SystemMemoryInfoKB info;
   EXPECT_TRUE(base::GetSystemMemoryInfo(&info));
@@ -278,21 +279,25 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   // Ensure each field received a value.
   EXPECT_GT(info.total, 0);
   EXPECT_GT(info.free, 0);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   EXPECT_GT(info.buffers, 0);
   EXPECT_GT(info.cached, 0);
   EXPECT_GT(info.active_anon, 0);
   EXPECT_GT(info.inactive_anon, 0);
   EXPECT_GT(info.active_file, 0);
   EXPECT_GT(info.inactive_file, 0);
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
   // All the values should be less than the total amount of memory.
   EXPECT_LT(info.free, info.total);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   EXPECT_LT(info.buffers, info.total);
   EXPECT_LT(info.cached, info.total);
   EXPECT_LT(info.active_anon, info.total);
   EXPECT_LT(info.inactive_anon, info.total);
   EXPECT_LT(info.active_file, info.total);
   EXPECT_LT(info.inactive_file, info.total);
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   // Chrome OS exposes shmem.
@@ -302,7 +307,8 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   // and gem_size cannot be tested here.
 #endif
 }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_WIN) || (defined(OS_MACOSX)  && !defined(OS_IOS)) ||
+        // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(ProcessMetricsTest, ParseProcStatCPU) {

@@ -242,6 +242,65 @@ BASE_EXPORT size_t GetMaxFds();
 BASE_EXPORT void SetFdLimit(unsigned int max_descriptors);
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
+// Data about system-wide memory consumption. Values are in KB. Available on
+// Windows, Mac, Linux, Android and Chrome OS.
+//
+// Total/free memory are available on all platforms. Total/free swap memory are
+// available on all platforms except on Mac. Buffers/cached/active_anon/
+// inactive_anon/active_file/inactive_file/dirty/pswpin/pswpout/pgmajfault are
+// available on Linux/Android/Chrome OS. Shmem/slab/gem_objects/gem_size are
+// Chrome OS specific.
+struct BASE_EXPORT SystemMemoryInfoKB {
+  SystemMemoryInfoKB();
+
+  // Serializes the platform specific fields to value.
+  scoped_ptr<Value> ToValue() const;
+
+  int total;
+  int free;
+
+#if !defined(OS_MACOSX)
+  int swap_total;
+  int swap_free;
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+  int buffers;
+  int cached;
+  int active_anon;
+  int inactive_anon;
+  int active_file;
+  int inactive_file;
+  int dirty;
+
+  // vmstats data.
+  int pswpin;
+  int pswpout;
+  int pgmajfault;
+#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS)
+  int shmem;
+  int slab;
+  // Gem data will be -1 if not supported.
+  int gem_objects;
+  long long gem_size;
+#endif  // defined(OS_CHROMEOS)
+};
+
+// On Linux/Android/Chrome OS, system-wide memory consumption data is parsed
+// from /proc/meminfo and /proc/vmstat. On Windows/Mac, it is obtained using
+// system API calls.
+//
+// Fills in the provided |meminfo| structure. Returns true on success.
+// Exposed for memory debugging widget.
+BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_ANDROID)
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 // Parse the data found in /proc/<pid>/stat and return the sum of the
 // CPU-related ticks.  Returns -1 on parse error.
@@ -257,40 +316,6 @@ BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
 // /proc/self/exe refers to the current executable.
 BASE_EXPORT extern const char kProcSelfExe[];
 
-// Data from /proc/meminfo about system-wide memory consumption.
-// Values are in KB.
-struct BASE_EXPORT SystemMemoryInfoKB {
-  SystemMemoryInfoKB();
-
-  // Serializes the platform specific fields to value.
-  scoped_ptr<Value> ToValue() const;
-
-  int total;
-  int free;
-  int buffers;
-  int cached;
-  int active_anon;
-  int inactive_anon;
-  int active_file;
-  int inactive_file;
-  int swap_total;
-  int swap_free;
-  int dirty;
-
-  // vmstats data.
-  int pswpin;
-  int pswpout;
-  int pgmajfault;
-
-#ifdef OS_CHROMEOS
-  int shmem;
-  int slab;
-  // Gem data will be -1 if not supported.
-  int gem_objects;
-  long long gem_size;
-#endif
-};
-
 // Parses a string containing the contents of /proc/meminfo
 // returns true on success or false for a parsing error
 BASE_EXPORT bool ParseProcMeminfo(const std::string& input,
@@ -300,12 +325,6 @@ BASE_EXPORT bool ParseProcMeminfo(const std::string& input,
 // returns true on success or false for a parsing error
 BASE_EXPORT bool ParseProcVmstat(const std::string& input,
                                  SystemMemoryInfoKB* meminfo);
-
-// Retrieves data from /proc/meminfo and /proc/vmstat
-// about system-wide memory consumption.
-// Fills in the provided |meminfo| structure. Returns true on success.
-// Exposed for memory debugging widget.
-BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
 
 // Data from /proc/diskstats about system-wide disk I/O.
 struct BASE_EXPORT SystemDiskInfo {
