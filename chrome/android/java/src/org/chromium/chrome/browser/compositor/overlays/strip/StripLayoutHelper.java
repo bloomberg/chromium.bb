@@ -630,7 +630,8 @@ public class StripLayoutHelper {
             mInteractingTab = null;
         }
 
-        if (fromMouse && !clickedClose) {
+        if (fromMouse && !clickedClose && clickedTab != null
+                && clickedTab.getVisiblePercentage() >= 1.f) {
             startReorderMode(time, x, x);
         }
     }
