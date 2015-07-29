@@ -12007,6 +12007,11 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RG32UI:
     case GL_RG32I:
       return GL_RG_INTEGER;
+    case GL_ATC_RGB_AMD:
+    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_ETC1_RGB8_OES:
     case GL_RGB8:
     case GL_R11F_G11F_B10F:
     case GL_RGB565:
@@ -12022,6 +12027,13 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RGB32UI:
     case GL_RGB32I:
       return GL_RGB_INTEGER;
+    case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
     case GL_RGBA8:
     case GL_SRGB8_ALPHA8:
     case GL_RGBA8_SNORM:
@@ -12879,12 +12891,22 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
   if (error == GL_NO_ERROR) {
     GLsizei level_width = width;
     GLsizei level_height = height;
+
+    GLenum cur_format = feature_info_->IsES3Enabled() ?
+                        internal_format : format;
     for (int ii = 0; ii < levels; ++ii) {
-      GLenum cur_format = feature_info_->IsES3Enabled() ?
-          internal_format : format;
-      texture_manager()->SetLevelInfo(texture_ref, target, ii, cur_format,
-                                      level_width, level_height, 1, 0, format,
-                                      type, gfx::Rect());
+      if (target == GL_TEXTURE_CUBE_MAP) {
+        for (int jj = 0; jj < 6; ++jj) {
+          GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + jj;
+          texture_manager()->SetLevelInfo(texture_ref, face, ii, cur_format,
+                                          level_width, level_height, 1, 0,
+                                          format, type, gfx::Rect());
+        }
+      } else {
+        texture_manager()->SetLevelInfo(texture_ref, target, ii, cur_format,
+                                        level_width, level_height, 1, 0,
+                                        format, type, gfx::Rect());
+      }
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
     }
