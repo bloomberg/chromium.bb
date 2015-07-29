@@ -37493,14 +37493,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Scheduling.ActivateDuration">
+<histogram name="Scheduling.ActivateDuration" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the compositor to activate the pending tree.
   </summary>
 </histogram>
 
-<histogram name="Scheduling.BeginMainFrameToCommitDuration">
+<histogram name="Scheduling.BeginMainFrameToCommitDuration"
+    units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the blink main thread to respond to the compositors
@@ -37508,7 +37509,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Scheduling.CommitToReadyToActivateDuration">
+<histogram name="Scheduling.CommitToReadyToActivateDuration"
+    units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes for the compositor to rasterize pending tree content after
@@ -37516,12 +37518,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Scheduling.DrawDuration">
+<histogram name="Scheduling.DrawDuration" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>How long it takes the compositor to draw a frame.</summary>
 </histogram>
 
-<histogram name="Scheduling.PrepareTilesDuration">
+<histogram name="Scheduling.PrepareTilesDuration" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
     How long it takes the compositor to PreapreTiles, which determines what
