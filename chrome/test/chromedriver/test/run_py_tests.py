@@ -249,6 +249,19 @@ class ChromeDriverBaseTest(unittest.TestCase):
       time.sleep(0.01)
     return None
 
+  def WaitForCondition(self, predicate, timeout=5, timestep=0.1):
+    """Wait for a condition to become true.
+
+    Args:
+      predicate: A function that returns a boolean value.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+      if predicate():
+        return True
+      time.sleep(timestep)
+    return False
+
 
 class ChromeDriverTest(ChromeDriverBaseTest):
   """End to end tests for ChromeDriver."""
@@ -852,7 +865,10 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     # must be 0.
     self._driver.SetNetworkConditions(0, 0, 0, offline=True)
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
-    self.assertIn('is not available', self._driver.GetTitle())
+    # The "X is not available" title is set after the page load event fires, so
+    # we have to explicitly wait for this to change. We can't rely on the
+    # navigation tracker to block the call to Load() above.
+    self.WaitForCondition(lambda: 'is not available' in self._driver.GetTitle())
 
   def testShadowDomFindElementWithSlashDeep(self):
     """Checks that chromedriver can find elements in a shadow DOM using /deep/
