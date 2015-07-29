@@ -36,6 +36,10 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   # A dict mapping BoardKeys to their associated compat ids.
   COMPAT_IDS = None
 
+  # Boards that don't have Chromium PFQs.
+  # TODO(davidjames): Empty this list.
+  BOARDS_WITHOUT_CHROMIUM_PFQS = ['rush_ryu', 'smaug']
+
   site_config = config_lib.LoadConfigFromFile()
 
   @classmethod
@@ -92,13 +96,21 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       assert expected == actual
       return 'no differences'
 
-  def AssertChromePrebuilts(self, pfq_configs, config):
+  def AssertChromePrebuilts(self, pfq_configs, config, skip_useflags=False):
     """Verify that the specified config has Chrome prebuilts.
 
     Args:
       pfq_configs: A PrebuiltMapping object.
       config: The config to check.
+      skip_useflags: Don't use extra useflags from the config.
     """
+    # Skip over useflags from the useflag if needed.
+    msg_prefix = ''
+    if skip_useflags:
+      config = config.deepcopy()
+      config.useflags = []
+      msg_prefix = 'When we take out extra useflags, '
+
     compat_id = self.GetCompatId(config)
     pfqs = pfq_configs.by_compat_id.get(compat_id, set())
     if not pfqs:
@@ -111,14 +123,15 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         # builders, but we need to clean up existing cases first.
         pfq_compat_id = self.COMPAT_IDS[key]
         err = self.GetCompatIdDiff(compat_id, pfq_compat_id)
-        msg = '%s uses mismatched Chrome prebuilts from %s -- %s'
-        self.Complain(msg % (config.name, key.board, err), fatal=False)
+        msg = '%s%s uses mismatched Chrome prebuilts from %s -- %s'
+        self.Complain(msg % (msg_prefix, config.name, key.board, err),
+                      fatal=False)
         pfqs.add(key)
 
     if not pfqs:
       pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)
-      msg = '%s cannot find Chrome prebuilts -- %s'
-      self.Complain(msg % (config.name, compat_id),
+      msg = '%s%s cannot find Chrome prebuilts -- %s'
+      self.Complain(msg % (msg_prefix, config.name, compat_id),
                     fatal=pre_cq or config.important)
 
   def GetCompatId(self, config, board=None):
@@ -171,6 +184,12 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       if ((config.usepkg_build_packages and not config.chrome_rev) and
           (config.active_waterfall or pre_cq)):
         self.AssertChromePrebuilts(pfq_configs, config)
+
+        # Check that we have a builder for the version w/o custom useflags as
+        # well.
+        if (config.useflags and
+            config.boards[0] not in self.BOARDS_WITHOUT_CHROMIUM_PFQS):
+          self.AssertChromePrebuilts(pfq_configs, config, skip_useflags=True)
 
   def testCurrentChromePrebuiltsEnough(self):
     """Verify Chrome prebuilts exist for all configs that build Chrome.
