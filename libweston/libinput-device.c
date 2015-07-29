@@ -86,6 +86,8 @@ handle_pointer_motion(struct libinput_device *libinput_device,
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
 	struct weston_pointer_motion_event event = { 0 };
+	uint64_t time_usec =
+		libinput_event_pointer_get_time_usec(pointer_event);
 	double dx_unaccel, dy_unaccel;
 
 	dx_unaccel = libinput_event_pointer_get_dx_unaccelerated(pointer_event);
@@ -94,6 +96,7 @@ handle_pointer_motion(struct libinput_device *libinput_device,
 	event = (struct weston_pointer_motion_event) {
 		.mask = WESTON_POINTER_MOTION_REL |
 			WESTON_POINTER_MOTION_REL_UNACCEL,
+		.time_usec = time_usec,
 		.dx = libinput_event_pointer_get_dx(pointer_event),
 		.dy = libinput_event_pointer_get_dy(pointer_event),
 		.dx_unaccel = dx_unaccel,

@@ -248,6 +248,7 @@ enum weston_pointer_motion_mask {
 
 struct weston_pointer_motion_event {
 	uint32_t mask;
+	uint64_t time_usec;
 	double x;
 	double y;
 	double dx;
