@@ -8227,11 +8227,17 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
         Block third-party cookies and site data
       </message>
-      <message name="IDS_MEDIA_STREAM_TAB_LABEL" desc="Label for media device tab on Content Settings dialog">
-        Media
+      <message name="IDS_MEDIA_STREAM_MIC_TAB_LABEL" desc="Label for the microphone tab on Content Settings dialog">
+        Microphone
       </message>
-      <message name="IDS_MEDIA_STREAM_HEADER" desc="Header for media device exception management page on Content Settings dialog">
-        Media exceptions
+      <message name="IDS_MEDIA_STREAM_CAMERA_TAB_LABEL" desc="Label for the camera tab on Content Settings dialog">
+        Camera
+      </message>
+      <message name="IDS_MEDIA_STREAM_MIC_HEADER" desc="Header for microphone exception management page on Content Settings dialog">
+        Microphone exceptions
+      </message>
+      <message name="IDS_MEDIA_STREAM_CAMERA_HEADER" desc="Header for camera exception management page on Content Settings dialog">
+        Camera exceptions
       </message>
       <message name="IDS_MEDIA_STREAM_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access any capture device.">
         Do not allow sites to access your camera and microphone
@@ -8274,12 +8280,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_MEDIA_PEPPER_FLASH_CHANGE_LINK" desc="The link to change Pepper Flash camera and microphone settings.">
         Change
-      </message>
-      <message name="IDS_MEDIA_AUDIO_EXCEPTION_HEADER" desc="A column header for the action column of the media audio exceptions dialog">
-        Audio
-      </message>
-      <message name="IDS_MEDIA_VIDEO_EXCEPTION_HEADER" desc="A column header for the action column of the media video exceptions dialog">
-        Video
       </message>
       <message name="IDS_CONTENT_SETTING_CHANGED_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload

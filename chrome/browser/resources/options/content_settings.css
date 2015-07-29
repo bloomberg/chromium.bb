@@ -79,19 +79,13 @@ div[role='listitem'][controlled-by] {
   -webkit-margin-start: 2em;
 }
 
-.media-device-control {
-  display: table-row;
-}
-
-.media-device-control > span {
-  display: table-cell;
-  min-width: 145px;
-}
-
-.media-device-control > select {
-  display: table-cell;
+select.media-device-control {
   margin: 5px 0;
   width: 12em;
+}
+
+select.media-device-control:empty {
+  display: none;
 }
 
 .exception-setting.media-audio-setting {

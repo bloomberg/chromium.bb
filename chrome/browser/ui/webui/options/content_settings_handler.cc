@@ -89,6 +89,7 @@ const char kExceptionsLearnMoreUrl[] =
 
 const char kSetting[] = "setting";
 const char kOrigin[] = "origin";
+const char kPolicyProviderId[] = "policy";
 const char kSource[] = "source";
 const char kAppName[] = "appName";
 const char kAppId[] = "appId";
@@ -109,12 +110,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
   {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
-  // The MEDIASTREAM content setting is deprecated, but the settings for
-  // microphone and camera still live in the part of UI labeled "media-stream".
-  // TODO(msramek): Clean this up once we have a new UI for media.
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream"},
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
   {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
   {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
   {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
@@ -359,19 +356,17 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"protectedContentEnable", IDS_PROTECTED_CONTENT_ENABLE},
     {"protectedContentHeader", IDS_PROTECTED_CONTENT_HEADER},
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
-    // Media stream capture device filter.
-    {"mediaStreamTabLabel", IDS_MEDIA_STREAM_TAB_LABEL},
-    {"mediaStreamHeader", IDS_MEDIA_STREAM_HEADER},
-    {"mediaStreamAsk", IDS_MEDIA_STREAM_ASK_RADIO},
-    {"mediaStreamBlock", IDS_MEDIA_STREAM_BLOCK_RADIO},
-    {"mediaStreamAudioAsk", IDS_MEDIA_STREAM_ASK_AUDIO_ONLY_RADIO},
-    {"mediaStreamAudioBlock", IDS_MEDIA_STREAM_BLOCK_AUDIO_ONLY_RADIO},
-    {"mediaStreamVideoAsk", IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO},
-    {"mediaStreamVideoBlock", IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO},
-    {"mediaStreamBubbleAudio", IDS_MEDIA_STREAM_AUDIO_MANAGED},
-    {"mediaStreamBubbleVideo", IDS_MEDIA_STREAM_VIDEO_MANAGED},
-    {"mediaAudioExceptionHeader", IDS_MEDIA_AUDIO_EXCEPTION_HEADER},
-    {"mediaVideoExceptionHeader", IDS_MEDIA_VIDEO_EXCEPTION_HEADER},
+    // Microphone filter.
+    {"mediaStreamMicTabLabel", IDS_MEDIA_STREAM_MIC_TAB_LABEL},
+    {"mediaStreamMicHeader", IDS_MEDIA_STREAM_MIC_HEADER},
+    {"mediaStreamMicAsk", IDS_MEDIA_STREAM_ASK_AUDIO_ONLY_RADIO},
+    {"mediaStreamMicBlock", IDS_MEDIA_STREAM_BLOCK_AUDIO_ONLY_RADIO},
+    // Camera filter.
+    {"mediaStreamCameraTabLabel", IDS_MEDIA_STREAM_CAMERA_TAB_LABEL},
+    {"mediaStreamCameraHeader", IDS_MEDIA_STREAM_CAMERA_HEADER},
+    {"mediaStreamCameraAsk", IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO},
+    {"mediaStreamCameraBlock", IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO},
+    // Flash media settings.
     {"mediaPepperFlashDefaultDivergedLabel",
      IDS_MEDIA_PEPPER_FLASH_DEFAULT_DIVERGED_LABEL},
     {"mediaPepperFlashExceptionsDivergedLabel",
@@ -448,8 +443,10 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "protectedContent",
                 IDS_PROTECTED_CONTENT_TAB_LABEL);
 #endif
-  RegisterTitle(localized_strings, "media-stream",
-                IDS_MEDIA_STREAM_TAB_LABEL);
+  RegisterTitle(localized_strings, "media-stream-mic",
+                IDS_MEDIA_STREAM_MIC_TAB_LABEL);
+  RegisterTitle(localized_strings, "media-stream-camera",
+                IDS_MEDIA_STREAM_CAMERA_TAB_LABEL);
   RegisterTitle(localized_strings, "ppapi-broker",
                 IDS_PPAPI_BROKER_TAB_LABEL);
   RegisterTitle(localized_strings, "multiple-automatic-downloads",
@@ -484,12 +481,14 @@ void ContentSettingsHandler::InitializeHandler() {
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kAudioCaptureAllowed,
-      base::Bind(&ContentSettingsHandler::UpdateMediaSettingsView,
-                 base::Unretained(this)));
+      base::Bind(&ContentSettingsHandler::UpdateSettingDefaultFromModel,
+                 base::Unretained(this),
+                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   pref_change_registrar_.Add(
       prefs::kVideoCaptureAllowed,
-      base::Bind(&ContentSettingsHandler::UpdateMediaSettingsView,
-                 base::Unretained(this)));
+      base::Bind(&ContentSettingsHandler::UpdateSettingDefaultFromModel,
+                 base::Unretained(this),
+                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
   pref_change_registrar_.Add(
       prefs::kEnableDRM,
       base::Bind(
@@ -618,6 +617,19 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
           type, default_setting);
 #endif
 
+  CompareMediaSettingsWithFlash();
+
+  // Camera and microphone default content settings cannot be set by the policy.
+  // However, the policy can disable them. Treat this case visually in the same
+  // way as if the policy set the default setting to BLOCK.
+  if ((type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+       media_settings_.policy_disable_audio) ||
+      (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
+       media_settings_.policy_disable_video)) {
+    default_setting = CONTENT_SETTING_BLOCK;
+    provider_id = kPolicyProviderId;
+  }
+
   base::DictionaryValue filter_settings;
   filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",
                             ContentSettingToString(default_setting));
@@ -628,7 +640,11 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
-void ContentSettingsHandler::UpdateMediaSettingsView() {
+void ContentSettingsHandler::CompareMediaSettingsWithFlash() {
+  // TODO(msramek): Currently, we show the flash link if the combined
+  // camera and microphone content settings differ from the combined microphone
+  // and camera flash settings. Split this logic to only show the link for
+  // camera if camera settings differ, and analogously for microphone.
   PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   bool audio_disabled = !prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
       prefs->IsManagedPreference(prefs::kAudioCaptureAllowed);
@@ -644,57 +660,8 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
       GetContentSettingsMap()->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, NULL);
   media_settings_.default_settings_initialized = true;
+
   UpdateFlashMediaLinksVisibility();
-
-  base::DictionaryValue media_ui_settings;
-  media_ui_settings.SetBoolean("cameraDisabled", video_disabled);
-  media_ui_settings.SetBoolean("micDisabled", audio_disabled);
-
-  // In case only video is enabled change the text appropriately.
-  if (audio_disabled && !video_disabled) {
-    media_ui_settings.SetString("askText", "mediaStreamVideoAsk");
-    media_ui_settings.SetString("blockText", "mediaStreamVideoBlock");
-    media_ui_settings.SetBoolean("showBubble", true);
-    media_ui_settings.SetString("bubbleText", "mediaStreamBubbleAudio");
-
-    web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
-                                     media_ui_settings);
-    return;
-  }
-
-  // In case only audio is enabled change the text appropriately.
-  if (video_disabled && !audio_disabled) {
-    base::DictionaryValue media_ui_settings;
-    media_ui_settings.SetString("askText", "mediaStreamAudioAsk");
-    media_ui_settings.SetString("blockText", "mediaStreamAudioBlock");
-    media_ui_settings.SetBoolean("showBubble", true);
-    media_ui_settings.SetString("bubbleText", "mediaStreamBubbleVideo");
-
-    web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
-                                     media_ui_settings);
-    return;
-  }
-
-  if (audio_disabled && video_disabled) {
-    // Fake policy controlled default because the user can not change anything
-    // until both audio and video are blocked.
-    base::DictionaryValue filter_settings;
-    std::string group_name =
-        ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
-    filter_settings.SetString(group_name + ".value",
-                              ContentSettingToString(CONTENT_SETTING_BLOCK));
-    filter_settings.SetString(group_name + ".managedBy", "policy");
-    web_ui()->CallJavascriptFunction(
-        "ContentSettings.setContentFilterSettingsValue", filter_settings);
-  }
-
-  media_ui_settings.SetString("askText", "mediaStreamAsk");
-  media_ui_settings.SetString("blockText", "mediaStreamBlock");
-  media_ui_settings.SetBoolean("showBubble", false);
-  media_ui_settings.SetString("bubbleText", std::string());
-
-  web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
-                                   media_ui_settings);
 }
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
@@ -738,8 +705,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      UpdateMediaSettingsView();
-      UpdateMediaExceptionsView();
+      CompareMediaExceptionsWithFlash();
+      UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
       // We don't yet support exceptions for mixed scripting.
@@ -918,7 +885,11 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
-void ContentSettingsHandler::UpdateMediaExceptionsView() {
+void ContentSettingsHandler::CompareMediaExceptionsWithFlash() {
+  // TODO(msramek): Split the combined microphone-camera exceptions
+  // in PepperFlashContentSettingsUtils. The complicated comparison in this
+  // method will then not be necessary.
+
   base::ListValue media_exceptions;
   GetExceptionsFromHostContentSettingsMap(
       GetContentSettingsMap(),
@@ -999,17 +970,6 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
       &media_settings_.exceptions);
   media_settings_.exceptions_initialized = true;
   UpdateFlashMediaLinksVisibility();
-
-  base::StringValue type_string(
-       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
-  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
-                                   type_string, media_exceptions);
-
-  // TODO(msramek): We currently don't have a UI to show separate default
-  // settings for microphone and camera. However, SetContentFilter always sets
-  // both defaults to the same value, so it doesn't matter which one we pick
-  // to show in the UI. Makes sure to update both when we have the new media UI.
-  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
 }
 
 void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
@@ -1246,32 +1206,6 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
   }
 }
 
-void ContentSettingsHandler::RemoveMediaException(const base::ListValue* args) {
-  std::string mode;
-  bool rv = args->GetString(1, &mode);
-  DCHECK(rv);
-
-  std::string pattern;
-  rv = args->GetString(2, &pattern);
-  DCHECK(rv);
-
-  HostContentSettingsMap* settings_map =
-      mode == "normal" ? GetContentSettingsMap() :
-                         GetOTRContentSettingsMap();
-  if (settings_map) {
-    settings_map->SetWebsiteSetting(ContentSettingsPattern::FromString(pattern),
-                                    ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                    std::string(),
-                                    NULL);
-    settings_map->SetWebsiteSetting(ContentSettingsPattern::FromString(pattern),
-                                    ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                                    std::string(),
-                                    NULL);
-  }
-}
-
 void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
     const base::ListValue* args,
     ContentSettingsType type) {
@@ -1453,10 +1387,7 @@ void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
   }
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
-    RemoveMediaException(args);
-  else
-    RemoveExceptionFromHostContentSettingsMap(args, type);
+  RemoveExceptionFromHostContentSettingsMap(args, type);
 
   WebSiteSettingsUmaUtil::LogPermissionChange(
       type, ContentSetting::CONTENT_SETTING_DEFAULT);

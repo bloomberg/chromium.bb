@@ -98,8 +98,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Updates the page with the default settings (allow, ask, block, etc.)
   void UpdateSettingDefaultFromModel(ContentSettingsType type);
 
-  // Updates the media radio buttons according to the enabled split prefs.
-  void UpdateMediaSettingsView();
+  // Compares the media default settings with flash and updates the flash links'
+  // visibility accordingly.
+  void CompareMediaSettingsWithFlash();
 
   // Clobbers and rebuilds the specific content setting type exceptions table.
   void UpdateExceptionsViewFromModel(ContentSettingsType type);
@@ -121,8 +122,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds just the desktop notification exception table.
   void UpdateNotificationExceptionsView();
 
-  // Clobbers and rebuilds just the Media device exception table.
-  void UpdateMediaExceptionsView();
+  // Compares the combined microphone and camera exceptions with Flash
+  // exceptions and updates the flash links' visibility accordingly.
+  void CompareMediaExceptionsWithFlash();
 
   // Clobbers and rebuilds just the MIDI SysEx exception table.
   void UpdateMIDISysExExceptionsView();
@@ -154,10 +156,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Removes one notification exception. |args| contains the parameters passed
   // to RemoveException().
   void RemoveNotificationException(const base::ListValue* args);
-
-  // Removes one media camera and microphone exception. |args| contains the
-  // parameters passed to RemoveException().
-  void RemoveMediaException(const base::ListValue* args);
 
   // Removes one exception of |type| from the host content settings map. |args|
   // contains the parameters passed to RemoveException().

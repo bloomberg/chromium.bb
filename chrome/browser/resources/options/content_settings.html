@@ -393,52 +393,77 @@
       </div>
     </section>
 </if>
-    <!-- Media Stream capture device filter -->
-    <section id="media-stream-settings">
-      <div class="section-header">
-        <h3 i18n-content="mediaStreamTabLabel"></h3>
-        <span id="media-indicator"
-            class="controlled-setting-indicator group-indicator"></span>
-      </div>
+    <!-- Microphone filter -->
+    <section>
+      <h3 i18n-content="mediaStreamMicTabLabel"></h3>
       <div>
-        <div class="media-device-control">
-          <span id="media-select-mic-label" i18n-content="mediaSelectMicLabel">
-          </span>
-          <select id="media-select-mic" class="weakrtl"
-                  aria-labelledby="media-select-mic-label"></select>
-        </div>
-        <div class="media-device-control">
-          <span id="media-select-camera-label"
-                i18n-content="mediaSelectCameraLabel"></span>
-          <select id="media-select-camera" class="weakrtl"
-                  aria-labelledby="media-select-camera-label"></select>
-        </div>
+        <span id="media-select-mic-label"
+            i18n-content="mediaSelectMicLabel" hidden></span>
+        <select id="media-select-mic" class="weakrtl media-device-control"
+            aria-labelledby="media-select-mic-label"></select>
         <div class="radio controlled-setting-with-label">
           <label>
-            <input type="radio" name="media-stream" value="ask">
+            <input type="radio" name="media-stream-mic" value="ask">
             <span>
-              <span id="media-stream-ask-label" i18n-content="mediaStreamAsk">
-              </span>
+              <span i18n-content="mediaStreamMicAsk"></span>
               <span class="controlled-setting-indicator"
-                  content-setting="media-stream" value="ask"></span>
+                  content-setting="media-stream-mic" value="ask"></span>
             </span>
           </label>
         </div>
         <div class="radio controlled-setting-with-label">
           <label>
-            <input id="media-stream-block" type="radio" name="media-stream"
-                value="block">
+            <input type="radio" name="media-stream-mic" value="block">
             <span>
-              <span id="media-stream-block-label"
-                 i18n-content="mediaStreamBlock"></span>
+              <span i18n-content="mediaStreamMicBlock"></span>
               <span class="controlled-setting-indicator"
-                  content-setting="media-stream" value="block"></span>
+                  content-setting="media-stream-mic" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="media-stream"
+          <button class="exceptions-list-button" contentType="media-stream-mic"
               i18n-content="manageExceptions"></button>
+        </div>
+        <div id="media-pepper-flash-default" class="pepper-flash-settings">
+          <span i18n-content="mediaPepperFlashDefaultDivergedLabel"></span>
+          <a target="_blank" i18n-content="mediaPepperFlashChangeLink"
+              i18n-values="href:mediaPepperFlashGlobalPrivacyURL"></a>
+        </div>
+      </div>
+    </section>
+    <!-- Camera filter -->
+    <section>
+      <h3 i18n-content="mediaStreamCameraTabLabel"></h3>
+      <div>
+        <span id="media-select-camera-label"
+            i18n-content="mediaSelectCameraLabel" hidden></span>
+        <select id="media-select-camera" class="weakrtl media-device-control"
+            aria-labelledby="media-select-camera-label"></select>
+        <div class="radio controlled-setting-with-label">
+          <label>
+            <input type="radio" name="media-stream-camera" value="ask">
+            <span>
+              <span i18n-content="mediaStreamCameraAsk"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="media-stream-camera" value="ask"></span>
+            </span>
+          </label>
+        </div>
+        <div class="radio controlled-setting-with-label">
+          <label>
+            <input type="radio" name="media-stream-camera" value="block">
+            <span>
+              <span i18n-content="mediaStreamCameraBlock"></span>
+              <span class="controlled-setting-indicator"
+                  content-setting="media-stream-camera" value="block"></span>
+            </span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <button class="exceptions-list-button"
+              contentType="media-stream-camera" i18n-content="manageExceptions">
+          </button>
         </div>
         <div id="media-pepper-flash-default" class="pepper-flash-settings">
           <span i18n-content="mediaPepperFlashDefaultDivergedLabel"></span>

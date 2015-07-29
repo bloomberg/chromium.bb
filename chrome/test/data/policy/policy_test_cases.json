@@ -1065,7 +1065,7 @@
     "test_policy": { "DefaultMediaStreamSetting": 2 },
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.media_stream",
-        "indicator_selector": "[content-setting=media-stream]",
+        "indicator_selector": "[content-setting=media-stream-mic],[content-setting=media-stream-camera]",
         "indicator_tests": [
           { "policy": { "DefaultMediaStreamSetting": 2 },
             "value": "block"
@@ -1079,15 +1079,65 @@
 
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
+  
+  "DefaultMediaStreamSetting.OverriddenByAudioCaptureAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultMediaStreamSetting": 3,
+                     "AudioCaptureAllowed": false },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.media_stream",
+        "indicator_selector": "[content-setting=media-stream-mic]",
+        "indicator_tests": [
+          { "policy": { "AudioCaptureAllowed": false },
+            "value": "block"
+          },
+          { "policy": { "AudioCaptureAllowed": true,
+                        "DefaultMediaStreamSetting": 2 },
+            "value": "block"
+          },
+          { "policy": { "AudioCaptureAllowed": true,
+                        "DefaultMediaStreamSetting": 3 },
+            "value": "ask"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "DefaultMediaStreamSetting.OverriddenByVideoCaptureAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultMediaStreamSetting": 3,
+                     "VideoCaptureAllowed": false },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.media_stream",
+        "indicator_selector": "[content-setting=media-stream-camera]",
+        "indicator_tests": [
+          { "policy": { "VideoCaptureAllowed": false },
+            "value": "block"
+          },
+          { "policy": { "VideoCaptureAllowed": true,
+                        "DefaultMediaStreamSetting": 2 },
+            "value": "block"
+          },
+          { "policy": { "VideoCaptureAllowed": true,
+                        "DefaultMediaStreamSetting": 3 },
+            "value": "ask"
+          }
+        ]
+      }
+    ]
+  },
 
   "AudioCaptureAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AudioCaptureAllowed": false },
     "pref_mappings": [
       { "pref": "hardware.audio_capture_enabled",
-        "indicator_selector": "#media-indicator",
+        "indicator_selector": "[content-setting=media-stream-mic][value=block]",
         "indicator_tests": [
-          { "policy": { "AudioCaptureAllowed": false } }
+          { "policy": { "AudioCaptureAllowed": false },
+            "value": "block"
+          }
         ]
       }
     ]
@@ -1108,9 +1158,11 @@
     "test_policy": { "VideoCaptureAllowed": false },
     "pref_mappings": [
       { "pref": "hardware.video_capture_enabled",
-        "indicator_selector": "#media-indicator",
+        "indicator_selector": "[content-setting=media-stream-camera][value=block]",
         "indicator_tests": [
-          { "policy": { "VideoCaptureAllowed": false } }
+          { "policy": { "VideoCaptureAllowed": false },
+            "value": "block"
+          }
         ]
       }
     ]

@@ -21,15 +21,16 @@ cr.define('options', function() {
 
   // Lookup table to generate the i18n strings.
   /** @const */ var permissionsLookup = {
-    'location': 'location',
-    'notifications': 'notifications',
-    'media-stream': 'mediaStream',
     'cookies': 'cookies',
-    'multiple-automatic-downloads': 'multipleAutomaticDownloads',
     'images': 'images',
+    'javascript': 'javascript',
+    'location': 'location',
+    'media-stream-camera': 'mediaStreamCamera',
+    'media-stream-mic': 'mediaStreamMic',
+    'multiple-automatic-downloads': 'multipleAutomaticDownloads',
+    'notifications': 'notifications',
     'plugins': 'plugins',
     'popups': 'popups',
-    'javascript': 'javascript'
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -147,49 +148,6 @@ cr.define('options', function() {
         indicators[i].handlePrefChange(event);
       }
     }
-  };
-
-  /**
-   * Updates the labels and indicators for the Media settings. Those require
-   * special handling because they are backed by multiple prefs and can change
-   * their scope based on the managed state of the backing prefs.
-   * @param {{askText: string, blockText: string, cameraDisabled: boolean,
-   *          micDisabled: boolean, showBubble: boolean, bubbleText: string}}
-   *     mediaSettings A dictionary containing the following fields:
-   *     askText The label for the ask radio button.
-   *     blockText The label for the block radio button.
-   *     cameraDisabled Whether to disable the camera dropdown.
-   *     micDisabled Whether to disable the microphone dropdown.
-   *     showBubble Wether to show the managed icon and bubble for the media
-   *                label.
-   *     bubbleText The text to use inside the bubble if it is shown.
-   */
-  ContentSettings.updateMediaUI = function(mediaSettings) {
-    $('media-stream-ask-label').innerHTML =
-        loadTimeData.getString(mediaSettings.askText);
-    $('media-stream-block-label').innerHTML =
-        loadTimeData.getString(mediaSettings.blockText);
-
-    if (mediaSettings.micDisabled)
-      $('media-select-mic').disabled = true;
-    if (mediaSettings.cameraDisabled)
-      $('media-select-camera').disabled = true;
-
-    PageManager.hideBubble();
-    // Create a synthetic pref change event decorated as
-    // CoreOptionsHandler::CreateValueForPref() does.
-    // TODO(arv): It was not clear what event type this should use?
-    var event = new Event('undefined');
-    event.value = {};
-
-    if (mediaSettings.showBubble) {
-      event.value = { controlledBy: 'policy' };
-      $('media-indicator').setAttribute(
-          'textpolicy', loadTimeData.getString(mediaSettings.bubbleText));
-      $('media-indicator').location = cr.ui.ArrowLocation.TOP_START;
-    }
-
-    $('media-indicator').handlePrefChange(event);
   };
 
   /**

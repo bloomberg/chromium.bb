@@ -89,14 +89,20 @@
         <list mode="otr"></list>
       </div>
     </div>
-    <div id="media-column-header" class="media-header">
-      <div id="exception-pattern-column"></div>
-      <div id="media-audio-column" i18n-content=mediaAudioExceptionHeader>
+    <div contentType="media-stream-mic">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otrExceptionsExplanation">
+        </span>
+        <list mode="otr"></list>
       </div>
-      <div id="media-video-column" i18n-content="mediaVideoExceptionHeader">
+      <div id="media-pepper-flash-exceptions" class="pepper-flash-settings">
+        <span i18n-content="mediaPepperFlashExceptionsDivergedLabel"></span>
+        <a target="_blank" i18n-content="mediaPepperFlashChangeLink"
+            i18n-values="href:mediaPepperFlashWebsitePrivacyURL"></a>
       </div>
     </div>
-    <div contentType="media-stream">
+    <div contentType="media-stream-camera">
       <list mode="normal"></list>
       <div>
         <span class="otr-explanation" i18n-content="otrExceptionsExplanation">
