@@ -44,6 +44,7 @@ void ProfileImportHandler::OnImportStart(
     const importer::SourceProfile& source_profile,
     uint16 items,
     const base::DictionaryValue& localized_strings) {
+  content::UtilityThread::Get()->EnsureBlinkInitialized();
   bridge_ = new ExternalProcessImporterBridge(
       localized_strings,
       content::UtilityThread::Get(),

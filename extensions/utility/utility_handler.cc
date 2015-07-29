@@ -99,6 +99,7 @@ void UtilityHandler::OnUnpackExtension(
   CHECK_GT(location, Manifest::INVALID_LOCATION);
   CHECK_LT(location, Manifest::NUM_LOCATIONS);
   DCHECK(ExtensionsClient::Get());
+  content::UtilityThread::Get()->EnsureBlinkInitialized();
   base::FilePath working_dir = extension_path.DirName();
   base::FilePath unzipped_dir = working_dir.AppendASCII(kTempExtensionName);
   base::string16 error;
