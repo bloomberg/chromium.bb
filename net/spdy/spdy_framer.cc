@@ -705,12 +705,8 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     return original_len - len;
   }
 
-  // Using a scoped_ptr here since we may need to create a new SpdyFrameReader
-  // when processing DATA frames below.
-  scoped_ptr<SpdyFrameReader> reader(
-      new SpdyFrameReader(current_frame_buffer_.get(),
-                          current_frame_buffer_length_));
-
+  SpdyFrameReader reader(current_frame_buffer_.get(),
+                         current_frame_buffer_length_);
   bool is_control_frame = false;
 
   int control_frame_type_field =
@@ -720,7 +716,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   current_frame_type_ = DATA;
   if (protocol_version() <= SPDY3) {
     uint16 version = 0;
-    bool successful_read = reader->ReadUInt16(&version);
+    bool successful_read = reader.ReadUInt16(&version);
     DCHECK(successful_read);
     is_control_frame = (version & kControlFlagMask) != 0;
     version &= ~kControlFlagMask;  // Only valid for control frames.
@@ -740,29 +736,29 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       // We check control_frame_type_field's validity in
       // ProcessControlFrameHeader().
       uint16 control_frame_type_field_uint16;
-      successful_read = reader->ReadUInt16(&control_frame_type_field_uint16);
+      successful_read = reader.ReadUInt16(&control_frame_type_field_uint16);
       control_frame_type_field = control_frame_type_field_uint16;
     } else {
-      reader->Rewind();
-      successful_read = reader->ReadUInt31(&current_frame_stream_id_);
+      reader.Rewind();
+      successful_read = reader.ReadUInt31(&current_frame_stream_id_);
     }
     DCHECK(successful_read);
 
-    successful_read = reader->ReadUInt8(&current_frame_flags_);
+    successful_read = reader.ReadUInt8(&current_frame_flags_);
     DCHECK(successful_read);
 
     uint32 length_field = 0;
-    successful_read = reader->ReadUInt24(&length_field);
+    successful_read = reader.ReadUInt24(&length_field);
     DCHECK(successful_read);
     remaining_data_length_ = length_field;
-    current_frame_length_ = remaining_data_length_ + reader->GetBytesConsumed();
+    current_frame_length_ = remaining_data_length_ + reader.GetBytesConsumed();
   } else {
     uint32 length_field = 0;
-    bool successful_read = reader->ReadUInt24(&length_field);
+    bool successful_read = reader.ReadUInt24(&length_field);
     DCHECK(successful_read);
 
     uint8 control_frame_type_field_uint8;
-    successful_read = reader->ReadUInt8(&control_frame_type_field_uint8);
+    successful_read = reader.ReadUInt8(&control_frame_type_field_uint8);
     DCHECK(successful_read);
     // We check control_frame_type_field's validity in
     // ProcessControlFrameHeader().
@@ -776,13 +772,13 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       current_frame_length_ = length_field + GetDataFrameMinimumSize();
     }
 
-    successful_read = reader->ReadUInt8(&current_frame_flags_);
+    successful_read = reader.ReadUInt8(&current_frame_flags_);
     DCHECK(successful_read);
 
-    successful_read = reader->ReadUInt31(&current_frame_stream_id_);
+    successful_read = reader.ReadUInt31(&current_frame_stream_id_);
     DCHECK(successful_read);
 
-    remaining_data_length_ = current_frame_length_ - reader->GetBytesConsumed();
+    remaining_data_length_ = current_frame_length_ - reader.GetBytesConsumed();
 
     // Before we accept a DATA frame, we need to make sure we're not in the
     // middle of processing a header block.
@@ -802,9 +798,9 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   }
   DCHECK_EQ(is_control_frame ? GetControlFrameHeaderSize()
                              : GetDataFrameMinimumSize(),
-            reader->GetBytesConsumed());
+            reader.GetBytesConsumed());
   DCHECK_EQ(current_frame_length_,
-            remaining_data_length_ + reader->GetBytesConsumed());
+            remaining_data_length_ + reader.GetBytesConsumed());
 
   // This is just a sanity check for help debugging early frame errors.
   if (remaining_data_length_ > 1000000u) {
