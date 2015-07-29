@@ -48,14 +48,14 @@ const float CentsPerRange = 1200 / kNumberOfOctaveBands;
 
 using namespace VectorMath;
 
-PeriodicWave* PeriodicWave::create(float sampleRate, DOMFloat32Array* real, DOMFloat32Array* imag)
+PeriodicWave* PeriodicWave::create(float sampleRate, DOMFloat32Array* real, DOMFloat32Array* imag, bool disableNormalization)
 {
     bool isGood = real && imag && real->length() == imag->length();
     ASSERT(isGood);
     if (isGood) {
         PeriodicWave* periodicWave = new PeriodicWave(sampleRate);
         size_t numberOfComponents = real->length();
-        periodicWave->createBandLimitedTables(real->data(), imag->data(), numberOfComponents);
+        periodicWave->createBandLimitedTables(real->data(), imag->data(), numberOfComponents, disableNormalization);
         return periodicWave;
     }
     return nullptr;
@@ -168,9 +168,10 @@ unsigned PeriodicWave::numberOfPartialsForRange(unsigned rangeIndex) const
 // Convert into time-domain wave buffers.
 // One table is created for each range for non-aliasing playback at different playback rates.
 // Thus, higher ranges have more high-frequency partials culled out.
-void PeriodicWave::createBandLimitedTables(const float* realData, const float* imagData, unsigned numberOfComponents)
+void PeriodicWave::createBandLimitedTables(const float* realData, const float* imagData, unsigned numberOfComponents, bool disableNormalization)
 {
-    float normalizationScale = 1;
+    // TODO(rtoy): Figure out why this needs to be 0.5 when normalization is disabled.
+    float normalizationScale = 0.5;
 
     unsigned fftSize = periodicWaveSize();
     unsigned halfSize = fftSize / 2;
@@ -180,18 +181,19 @@ void PeriodicWave::createBandLimitedTables(const float* realData, const float* i
 
     m_bandLimitedTables.reserveCapacity(numberOfRanges());
 
+    FFTFrame frame(fftSize);
     for (unsigned rangeIndex = 0; rangeIndex < numberOfRanges(); ++rangeIndex) {
         // This FFTFrame is used to cull partials (represented by frequency bins).
-        FFTFrame frame(fftSize);
         float* realP = frame.realData();
         float* imagP = frame.imagData();
 
         // Copy from loaded frequency data and generate the complex conjugate because of the way the
-        // inverse FFT is defined versus the values in the arrays.  Note also that although the IFFT
-        // does a scaling by 1/N, we take care of this when the normalization scaling is done.
-        float minusOne = -1;
-        memcpy(realP, realData, numberOfComponents * sizeof(*realP));
-        vsmul(imagData, 1, &minusOne, imagP, 1, numberOfComponents);
+        // inverse FFT is defined versus the values in the arrays.  Need to scale the data by
+        // fftSize to remove the scaling that the inverse IFFT would do.
+        float scale = fftSize;
+        vsmul(realData, 1, &scale, realP, 1, numberOfComponents);
+        scale = -scale;
+        vsmul(imagData, 1, &scale, imagP, 1, numberOfComponents);
 
         // Find the starting bin where we should start culling.  We need to clear out the highest
         // frequencies to band-limit the waveform.
@@ -217,12 +219,14 @@ void PeriodicWave::createBandLimitedTables(const float* realData, const float* i
         frame.doInverseFFT(data);
 
         // For the first range (which has the highest power), calculate its peak value then compute normalization scale.
-        if (!rangeIndex) {
-            float maxValue;
-            vmaxmgv(data, 1, &maxValue, fftSize);
+        if (!disableNormalization) {
+            if (!rangeIndex) {
+                float maxValue;
+                vmaxmgv(data, 1, &maxValue, fftSize);
 
-            if (maxValue)
-                normalizationScale = 1.0f / maxValue;
+                if (maxValue)
+                    normalizationScale = 1.0f / maxValue;
+            }
         }
 
         // Apply normalization scale.
@@ -308,7 +312,7 @@ void PeriodicWave::generateBasicWaveform(int shape)
         imagP[n] = b;
     }
 
-    createBandLimitedTables(realP, imagP, halfSize);
+    createBandLimitedTables(realP, imagP, halfSize, false);
 }
 
 } // namespace blink

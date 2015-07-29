@@ -46,7 +46,7 @@ public:
     static PeriodicWave* createTriangle(float sampleRate);
 
     // Creates an arbitrary periodic wave given the frequency components (Fourier coefficients).
-    static PeriodicWave* create(float sampleRate, DOMFloat32Array* real, DOMFloat32Array* imag);
+    static PeriodicWave* create(float sampleRate, DOMFloat32Array* real, DOMFloat32Array* imag, bool normalize);
 
     // Returns pointers to the lower and higher wave data for the pitch range containing
     // the given fundamental frequency. These two tables are in adjacent "pitch" ranges
@@ -89,7 +89,7 @@ private:
     unsigned numberOfPartialsForRange(unsigned rangeIndex) const;
 
     // Creates tables based on numberOfComponents Fourier coefficients.
-    void createBandLimitedTables(const float* real, const float* imag, unsigned numberOfComponents);
+    void createBandLimitedTables(const float* real, const float* imag, unsigned numberOfComponents, bool disableNormalization);
     Vector<OwnPtr<AudioFloatArray>> m_bandLimitedTables;
 };
 

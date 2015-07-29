@@ -56,6 +56,7 @@ class ChannelMergerNode;
 class ChannelSplitterNode;
 class ConvolverNode;
 class DelayNode;
+class Dictionary;
 class Document;
 class DynamicsCompressorNode;
 class ExceptionState;
@@ -156,6 +157,7 @@ public:
     ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
     OscillatorNode* createOscillator(ExceptionState&);
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
+    PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const Dictionary&, ExceptionState&);
 
     // Close
     virtual ScriptPromise closeContext(ScriptState*) = 0;

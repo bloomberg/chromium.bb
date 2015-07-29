@@ -26,6 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AbstractAudioContext.h"
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -556,6 +557,11 @@ OscillatorNode* AbstractAudioContext::createOscillator(ExceptionState& exception
 
 PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState& exceptionState)
 {
+    return PeriodicWave::create(sampleRate(), real, imag, false);
+}
+
+PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const Dictionary& options, ExceptionState& exceptionState)
+{
     ASSERT(isMainThread());
 
     if (isContextClosed()) {
@@ -586,7 +592,10 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
         return nullptr;
     }
 
-    return PeriodicWave::create(sampleRate(), real, imag);
+    bool isNormalizationDisabled = false;
+    DictionaryHelper::getWithUndefinedOrNullCheck(options, "disableNormalization", isNormalizationDisabled);
+
+    return PeriodicWave::create(sampleRate(), real, imag, isNormalizationDisabled);
 }
 
 String AbstractAudioContext::state() const

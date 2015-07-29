@@ -458,6 +458,28 @@ var Should = (function () {
             this._testFailed("(" + this.target + ") is not greater than or equal to " + value);
     }
 
+    // Check if |target| is close to |value| using the given relative error |threshold|.
+    // |value| should not be zero, but no check is made for that.
+    //
+    // Example:
+    // Should("One", 1.001).beCloseTo(1, .1);
+    // Should("One", 2).beCloseTo(1, .1);
+    // Result:
+    // "PASS One is 1 within a relative error of 0.1."
+    // "FAIL One is not 1 within a relative error of 0.1: 2"
+    ShouldModel.prototype.beCloseTo = function (value, relativeErrorThreshold) {
+        var type = typeof value;
+        this._assert(type === 'number', 'value should be number for');
+
+        var relativeError = Math.abs(this.target - value) / Math.abs(value);
+        if (relativeError <= relativeErrorThreshold) {
+            this._testPassed("is " + value + " within a relative error of " + relativeErrorThreshold);
+        } else {
+            this._testFailed("is not " + value + " within a relative error of " + relativeErrorThreshold
+                             + ": " + this.target);
+        }
+    }
+
     // Check if |func| throws an exception with a certain |errorType| correctly.
     // |errorType| is optional.
     //
