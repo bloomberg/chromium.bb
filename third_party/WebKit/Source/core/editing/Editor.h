@@ -210,7 +210,8 @@ public:
 
     void computeAndSetTypingStyle(StylePropertySet* , EditAction = EditActionUnspecified);
 
-    IntRect firstRectForRange(Range*) const;
+    IntRect firstRectForRange(const EphemeralRange&) const;
+    IntRect firstRectForRange(const Range*) const;
 
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
 

@@ -1080,17 +1080,16 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
         client().respondToChangedSelection(m_frame, frame().selection().selectionType());
 }
 
-IntRect Editor::firstRectForRange(Range* range) const
+IntRect Editor::firstRectForRange(const EphemeralRange& range) const
 {
     LayoutUnit extraWidthToEndOfLine = 0;
-    ASSERT(range->startContainer());
-    ASSERT(range->endContainer());
+    ASSERT(range.isNotNull());
 
-    IntRect startCaretRect = RenderedPosition(VisiblePosition(range->startPosition()).deepEquivalent(), DOWNSTREAM).absoluteRect(&extraWidthToEndOfLine);
+    IntRect startCaretRect = RenderedPosition(VisiblePosition(range.startPosition()).deepEquivalent(), DOWNSTREAM).absoluteRect(&extraWidthToEndOfLine);
     if (startCaretRect == LayoutRect())
         return IntRect();
 
-    IntRect endCaretRect = RenderedPosition(VisiblePosition(range->endPosition()).deepEquivalent(), UPSTREAM).absoluteRect();
+    IntRect endCaretRect = RenderedPosition(VisiblePosition(range.endPosition()).deepEquivalent(), UPSTREAM).absoluteRect();
     if (endCaretRect == LayoutRect())
         return IntRect();
 
@@ -1107,6 +1106,12 @@ IntRect Editor::firstRectForRange(Range* range) const
         startCaretRect.y(),
         startCaretRect.width() + extraWidthToEndOfLine,
         startCaretRect.height());
+}
+
+IntRect Editor::firstRectForRange(const Range* range) const
+{
+    ASSERT(range);
+    return firstRectForRange(EphemeralRange(range));
 }
 
 void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editingAction)

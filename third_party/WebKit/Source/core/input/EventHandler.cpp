@@ -2734,8 +2734,7 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
     PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
 
     if (!overrideTargetElement && start.anchorNode() && (selection.rootEditableElement() || selection.isRange())) {
-        RefPtrWillBeRawPtr<Range> selectionRange = selection.toNormalizedRange();
-        IntRect firstRect = m_frame->editor().firstRectForRange(selectionRange.get());
+        IntRect firstRect = m_frame->editor().firstRectForRange(selection.selection().toNormalizedEphemeralRange());
 
         int x = rightAligned ? firstRect.maxX() : firstRect.x();
         // In a multiline edit, firstRect.maxY() would endup on the next line, so -1.
