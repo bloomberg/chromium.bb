@@ -278,7 +278,7 @@ SpdyFramer::SpdyState BufferedSpdyFramer::state() const {
 }
 
 bool BufferedSpdyFramer::MessageFullyRead() {
-  return state() == SpdyFramer::SPDY_AUTO_RESET;
+  return state() == SpdyFramer::SPDY_FRAME_COMPLETE;
 }
 
 bool BufferedSpdyFramer::HasError() {

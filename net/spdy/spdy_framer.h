@@ -335,8 +335,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   //                and avoid exposing through the header.  (Needed for test)
   enum SpdyState {
     SPDY_ERROR,
-    SPDY_RESET,
-    SPDY_AUTO_RESET,
+    SPDY_READY_FOR_FRAME,  // Framer is ready for reading the next frame.
+    SPDY_FRAME_COMPLETE,  // Framer has finished reading a frame, need to reset.
     SPDY_READING_COMMON_HEADER,
     SPDY_CONTROL_FRAME_PAYLOAD,
     SPDY_READ_DATA_FRAME_PADDING_LENGTH,

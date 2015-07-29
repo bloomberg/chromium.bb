@@ -270,7 +270,8 @@ TEST_P(SpdySMProxyTest, OnRstStream) {
 }
 
 TEST_P(SpdySMProxyTest, ProcessReadInput) {
-  ASSERT_EQ(SpdyFramer::SPDY_RESET, interface_->spdy_framer()->state());
+  ASSERT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME,
+            interface_->spdy_framer()->state());
   interface_->ProcessReadInput("", 1);
   ASSERT_EQ(SpdyFramer::SPDY_READING_COMMON_HEADER,
             interface_->spdy_framer()->state());
@@ -293,7 +294,8 @@ TEST_P(SpdySMProxyTest, ResetForNewConnection) {
   interface_->AddToOutputOrder(mci);
   ASSERT_TRUE(HasStream(stream_id));
   interface_->ProcessReadInput(input, sizeof(input));
-  ASSERT_NE(SpdyFramer::SPDY_RESET, interface_->spdy_framer()->state());
+  ASSERT_NE(SpdyFramer::SPDY_READY_FOR_FRAME,
+            interface_->spdy_framer()->state());
 
   interface_->ResetForNewConnection();
   ASSERT_FALSE(HasStream(stream_id));

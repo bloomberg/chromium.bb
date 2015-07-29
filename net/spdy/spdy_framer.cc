@@ -206,8 +206,8 @@ SpdyFramer::~SpdyFramer() {
 }
 
 void SpdyFramer::Reset() {
-  state_ = SPDY_RESET;
-  previous_state_ = SPDY_RESET;
+  state_ = SPDY_READY_FOR_FRAME;
+  previous_state_ = SPDY_READY_FOR_FRAME;
   error_code_ = SPDY_NO_ERROR;
   remaining_data_length_ = 0;
   remaining_control_header_ = 0;
@@ -403,10 +403,10 @@ const char* SpdyFramer::StateToString(int state) {
   switch (state) {
     case SPDY_ERROR:
       return "ERROR";
-    case SPDY_AUTO_RESET:
-      return "AUTO_RESET";
-    case SPDY_RESET:
-      return "RESET";
+    case SPDY_FRAME_COMPLETE:
+      return "FRAME_COMPLETE";
+    case SPDY_READY_FOR_FRAME:
+      return "READY_FOR_FRAME";
     case SPDY_READING_COMMON_HEADER:
       return "READING_COMMON_HEADER";
     case SPDY_CONTROL_FRAME_PAYLOAD:
@@ -559,9 +559,14 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
       case SPDY_ERROR:
         goto bottom;
 
-      case SPDY_AUTO_RESET:
-      case SPDY_RESET:
+      case SPDY_FRAME_COMPLETE:
         Reset();
+        if (len > 0) {
+          CHANGE_STATE(SPDY_READING_COMMON_HEADER);
+        }
+        break;
+
+      case SPDY_READY_FOR_FRAME:
         if (len > 0) {
           CHANGE_STATE(SPDY_READING_COMMON_HEADER);
         }
@@ -679,7 +684,7 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
   if (current_frame_buffer_length_ == 0 &&
       remaining_data_length_ == 0 &&
       remaining_control_header_ == 0) {
-    DCHECK(state_ == SPDY_RESET || state_ == SPDY_ERROR)
+    DCHECK(state_ == SPDY_READY_FOR_FRAME || state_ == SPDY_ERROR)
         << "State: " << StateToString(state_);
   }
 
@@ -847,7 +852,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
           visitor_->OnStreamFrameData(
               current_frame_stream_id_, NULL, 0, true);
         }
-        CHANGE_STATE(SPDY_AUTO_RESET);
+        CHANGE_STATE(SPDY_FRAME_COMPLETE);
       }
     }
   } else {
@@ -1466,7 +1471,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         if (protocol_version() > SPDY3 &&
             current_frame_flags_ & SETTINGS_FLAG_ACK) {
           visitor_->OnSettingsAck();
-          CHANGE_STATE(SPDY_AUTO_RESET);
+          CHANGE_STATE(SPDY_FRAME_COMPLETE);
         } else {
           visitor_->OnSettings(current_frame_flags_ &
               SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
@@ -1746,7 +1751,7 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   remaining_data_length_ -= processed_bytes;
   if (remaining_data_length_ == 0) {
     visitor_->OnSettingsEnd();
-    CHANGE_STATE(SPDY_AUTO_RESET);
+    CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
 
   return processed_bytes;
@@ -1976,7 +1981,7 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
   } else if (remaining_data_length_ == 0) {
     // Signal that there is not more opaque data.
     visitor_->OnGoAwayFrameData(NULL, 0);
-    CHANGE_STATE(SPDY_AUTO_RESET);
+    CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
   return original_len;
 }
@@ -2042,7 +2047,7 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
   } else if (remaining_data_length_ == 0) {
     // Signal that there is not more opaque data.
     visitor_->OnRstStreamFrameData(NULL, 0);
-    CHANGE_STATE(SPDY_AUTO_RESET);
+    CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
   return original_len;
 }
@@ -2088,7 +2093,7 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
   }
 
   visitor_->OnAltSvc(current_frame_stream_id_, origin, altsvc_vector);
-  CHANGE_STATE(SPDY_AUTO_RESET);
+  CHANGE_STATE(SPDY_FRAME_COMPLETE);
   return len;
 }
 
@@ -2153,7 +2158,7 @@ size_t SpdyFramer::ProcessFramePadding(const char* data, size_t len) {
       end_stream_when_done_ = false;
       visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
     }
-    CHANGE_STATE(SPDY_AUTO_RESET);
+    CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
   return original_len - len;
 }
@@ -2191,7 +2196,7 @@ size_t SpdyFramer::ProcessIgnoredControlFramePayload(/*const char* data,*/
   }
 
   if (remaining_data_length_ == 0) {
-    CHANGE_STATE(SPDY_AUTO_RESET);
+    CHANGE_STATE(SPDY_FRAME_COMPLETE);
   }
   return original_len - len;
 }
