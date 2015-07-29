@@ -5,6 +5,7 @@
 #ifndef FetchEvent_h
 #define FetchEvent_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/Request.h"
@@ -32,7 +33,7 @@ public:
     Request* request() const;
     bool isReload() const;
 
-    void respondWith(ScriptState*, ScriptPromise&, ExceptionState&);
+    void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
     const AtomicString& interfaceName() const override;
 

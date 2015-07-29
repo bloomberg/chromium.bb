@@ -132,7 +132,7 @@ void RespondWithObserver::didDispatchEvent(bool defaultPrevented)
     m_state = Done;
 }
 
-void RespondWithObserver::respondWith(ScriptState* scriptState, ScriptPromise& scriptPromise, ExceptionState& exceptionState)
+void RespondWithObserver::respondWith(ScriptState* scriptState, ScriptPromise scriptPromise, ExceptionState& exceptionState)
 {
     if (m_state != Initial) {
         exceptionState.throwDOMException(InvalidStateError, "The fetch event has already been responded to.");

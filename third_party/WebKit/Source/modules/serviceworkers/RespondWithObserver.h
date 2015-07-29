@@ -32,7 +32,7 @@ public:
 
     // Observes the promise and delays calling didHandleFetchEvent() until the
     // given promise is resolved or rejected.
-    void respondWith(ScriptState*, ScriptPromise&, ExceptionState&);
+    void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
     void responseWasRejected(WebServiceWorkerResponseError);
     void responseWasFulfilled(const ScriptValue&);
