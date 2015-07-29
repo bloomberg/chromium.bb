@@ -20,7 +20,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "base/thread_task_runner_handle.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -31,6 +30,12 @@
 #include "mojo/runner/child_process.mojom.h"
 #include "mojo/runner/native_application_support.h"
 #include "mojo/runner/switches.h"
+
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#include "base/rand_util.h"
+#include "base/sys_info.h"
+#include "mojo/runner/linux_sandbox.h"
+#endif
 
 namespace mojo {
 namespace runner {
@@ -182,6 +187,7 @@ class ChildControllerImpl : public ChildController {
   // To be executed on the controller thread. Creates the |ChildController|,
   // etc.
   static void Init(AppContext* app_context,
+                   base::NativeLibrary app_library,
                    embedder::ScopedPlatformHandle platform_channel,
                    const Blocker::Unblocker& unblocker) {
     DCHECK(app_context);
@@ -190,7 +196,7 @@ class ChildControllerImpl : public ChildController {
     DCHECK(!app_context->controller());
 
     scoped_ptr<ChildControllerImpl> impl(
-        new ChildControllerImpl(app_context, unblocker));
+        new ChildControllerImpl(app_context, app_library, unblocker));
 
     ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
         platform_channel.Pass(),
@@ -213,20 +219,14 @@ class ChildControllerImpl : public ChildController {
   }
 
   // |ChildController| methods:
-  void StartApp(const String& app_path,
-                bool clean_app_path,
-                InterfaceRequest<Application> application_request,
+  void StartApp(InterfaceRequest<Application> application_request,
                 const StartAppCallback& on_app_complete) override {
-    DVLOG(2) << "ChildControllerImpl::StartApp(" << app_path << ", ...)";
     DCHECK(thread_checker_.CalledOnValidThread());
 
     on_app_complete_ = on_app_complete;
-    unblocker_.Unblock(base::Bind(
-        &ChildControllerImpl::StartAppOnMainThread,
-        base::FilePath::FromUTF8Unsafe(app_path),
-        clean_app_path ? shell::NativeApplicationCleanup::DELETE
-                       : shell::NativeApplicationCleanup::DONT_DELETE,
-        base::Passed(&application_request)));
+    unblocker_.Unblock(base::Bind(&ChildControllerImpl::StartAppOnMainThread,
+                                  base::Unretained(app_library_),
+                                  base::Passed(&application_request)));
   }
 
   void ExitNow(int32_t exit_code) override {
@@ -236,8 +236,10 @@ class ChildControllerImpl : public ChildController {
 
  private:
   ChildControllerImpl(AppContext* app_context,
+                      base::NativeLibrary app_library,
                       const Blocker::Unblocker& unblocker)
       : app_context_(app_context),
+        app_library_(app_library),
         unblocker_(unblocker),
         channel_info_(nullptr),
         binding_(this) {
@@ -252,21 +254,16 @@ class ChildControllerImpl : public ChildController {
   }
 
   static void StartAppOnMainThread(
-      const base::FilePath& app_path,
-      shell::NativeApplicationCleanup cleanup,
+      base::NativeLibrary app_library,
       InterfaceRequest<Application> application_request) {
-    // TODO(vtl): This is copied from in_process_native_runner.cc.
-    DVLOG(2) << "Loading/running Mojo app from " << app_path.value()
-             << " out of process";
-
-    // We intentionally don't unload the native library as its lifetime is the
-    // same as that of the process.
-    base::NativeLibrary app_library = LoadNativeApplication(app_path, cleanup);
-    RunNativeApplication(app_library, application_request.Pass());
+    if (!RunNativeApplication(app_library, application_request.Pass())) {
+      LOG(ERROR) << "Failure to RunNativeApplication()";
+    }
   }
 
   base::ThreadChecker thread_checker_;
   AppContext* const app_context_;
+  base::NativeLibrary app_library_;
   Blocker::Unblocker unblocker_;
   StartAppCallback on_app_complete_;
 
@@ -282,6 +279,49 @@ int ChildProcessMain() {
   DVLOG(2) << "ChildProcessMain()";
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  using sandbox::syscall_broker::BrokerFilePermission;
+  scoped_ptr<mandoline::LinuxSandbox> sandbox;
+#endif
+  base::NativeLibrary app_library = 0;
+  if (command_line.HasSwitch(switches::kChildProcess)) {
+    // Load the application library before we engage the sandbox.
+    mojo::shell::NativeApplicationCleanup cleanup =
+        command_line.HasSwitch(switches::kDeleteAfterLoad)
+            ? mojo::shell::NativeApplicationCleanup::DELETE
+            : mojo::shell::NativeApplicationCleanup::DONT_DELETE;
+    app_library = mojo::runner::LoadNativeApplication(
+        command_line.GetSwitchValuePath(switches::kChildProcess), cleanup);
+
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+    using sandbox::syscall_broker::BrokerFilePermission;
+    scoped_ptr<mandoline::LinuxSandbox> sandbox;
+    if (command_line.HasSwitch(switches::kEnableSandbox)) {
+      // Warm parts of base.
+      base::RandUint64();
+      base::SysInfo::AmountOfPhysicalMemory();
+      base::SysInfo::MaxSharedMemorySize();
+      base::SysInfo::NumberOfProcessors();
+
+      // Do whatever warming that the mojo application wants.
+      typedef void (*SandboxWarmFunction)();
+      SandboxWarmFunction sandbox_warm = reinterpret_cast<SandboxWarmFunction>(
+          base::GetFunctionPointerFromNativeLibrary(app_library,
+                                                    "MojoSandboxWarm"));
+      if (sandbox_warm)
+        sandbox_warm();
+
+      std::vector<BrokerFilePermission> permissions;
+      sandbox.reset(new mandoline::LinuxSandbox(permissions));
+      sandbox->Warmup();
+      sandbox->EngageNamespaceSandbox();
+      sandbox->EngageSeccompSandbox();
+      sandbox->Seal();
+    }
+#endif
+  }
+
   embedder::ScopedPlatformHandle platform_channel =
       embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
           command_line);
@@ -296,7 +336,8 @@ int ChildProcessMain() {
   app_context.controller_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ChildControllerImpl::Init, base::Unretained(&app_context),
-                 base::Passed(&platform_channel), blocker.GetUnblocker()));
+                 base::Unretained(app_library), base::Passed(&platform_channel),
+                 blocker.GetUnblocker()));
   // This will block, then run whatever the controller wants.
   blocker.Block();
 

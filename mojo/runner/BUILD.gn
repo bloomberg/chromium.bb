@@ -135,7 +135,15 @@ source_set("lib") {
   ]
 
   if (is_linux && !is_android) {
-    deps += [ "//sandbox/linux:sandbox_services" ]
+    sources += [
+      "linux_sandbox.cc",
+      "linux_sandbox.h",
+    ]
+
+    deps += [
+      "//sandbox/linux:sandbox",
+      "//sandbox/linux:sandbox_services",
+    ]
   }
 
   public_deps = [

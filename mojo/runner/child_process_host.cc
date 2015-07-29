@@ -82,7 +82,7 @@ void ChildProcessHost::StartApp(
 
   on_app_complete_ = on_app_complete;
   controller_->StartApp(
-      app_path_.AsUTF8Unsafe(), clean_app_path_, application_request.Pass(),
+      application_request.Pass(),
       base::Bind(&ChildProcessHost::AppCompleted, base::Unretained(this)));
 }
 
@@ -108,6 +108,9 @@ bool ChildProcessHost::DoLaunch() {
   base::CommandLine child_command_line(parent_command_line->GetProgram());
   child_command_line.AppendArguments(*parent_command_line, false);
   child_command_line.AppendSwitchPath(switches::kChildProcess, app_path_);
+
+  if (clean_app_path_)
+    child_command_line.AppendSwitch(switches::kDeleteAfterLoad);
 
   if (start_sandboxed_)
     child_command_line.AppendSwitch(switches::kEnableSandbox);

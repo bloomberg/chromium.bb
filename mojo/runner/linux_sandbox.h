@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_APP_DESKTOP_LINUX_SANDBOX_H_
-#define MANDOLINE_APP_DESKTOP_LINUX_SANDBOX_H_
+#ifndef MOJO_RUNNER_LINUX_SANDBOX_H_
+#define MOJO_RUNNER_LINUX_SANDBOX_H_
 
 #include "base/files/scoped_file.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -19,10 +19,6 @@ class LinuxSandbox {
       const std::vector<sandbox::syscall_broker::BrokerFilePermission>&
           permissions);
   ~LinuxSandbox();
-
-  // Returns a vector of file permissions needed to load libraries.
-  static std::vector<sandbox::syscall_broker::BrokerFilePermission>
-  GetPermissions();
 
   // Grabs a file descriptor to /proc.
   void Warmup();
@@ -49,4 +45,4 @@ class LinuxSandbox {
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_APP_DESKTOP_LINUX_SANDBOX_H_
+#endif  // MOJO_RUNNER_LINUX_SANDBOX_H_

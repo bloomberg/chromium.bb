@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/app/desktop/linux_sandbox.h"
+#include "mojo/runner/linux_sandbox.h"
 
 #include <fcntl.h>
 #include <sys/syscall.h>
@@ -20,6 +20,7 @@
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
+#include "sandbox/linux/services/thread_helpers.h"
 
 using sandbox::syscall_broker::BrokerFilePermission;
 
@@ -98,19 +99,14 @@ LinuxSandbox::LinuxSandbox(const std::vector<BrokerFilePermission>& permissions)
 
 LinuxSandbox::~LinuxSandbox() {}
 
-// static
-std::vector<BrokerFilePermission> LinuxSandbox::GetPermissions() {
-  std::vector<BrokerFilePermission> permissions;
-  permissions.push_back(BrokerFilePermission::ReadOnly("/dev/urandom"));
-  permissions.push_back(BrokerFilePermission::ReadOnly("/etc/ld.so.cache"));
-  permissions.push_back(BrokerFilePermission::ReadOnlyRecursive("/lib/"));
-  permissions.push_back(BrokerFilePermission::ReadOnlyRecursive("/usr/lib/"));
-  return permissions;
-}
-
 void LinuxSandbox::Warmup() {
   proc_fd_ = sandbox::ProcUtil::OpenProc();
   warmed_up_ = true;
+
+  // Verify that we haven't started threads or grabbed directory file
+  // descriptors.
+  sandbox::ThreadHelpers::AssertSingleThreaded(proc_fd_.get());
+  CHECK(!sandbox::ProcUtil::HasOpenDirectory(proc_fd_.get()));
 }
 
 void LinuxSandbox::EngageNamespaceSandbox() {
