@@ -1145,6 +1145,7 @@
             'components.gyp:cryptauth',
             'components.gyp:cryptauth_test_support',
             'components.gyp:feedback_component',
+            'components.gyp:pref_registry_test_support',
             'components.gyp:proximity_auth',
             'components.gyp:proximity_auth_test_support',
           ],

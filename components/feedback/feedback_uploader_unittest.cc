@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "components/feedback/feedback_uploader_chrome.h"
 #include "components/feedback/feedback_uploader_factory.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -45,7 +45,7 @@ class FeedbackUploaderTest : public testing::Test {
   FeedbackUploaderTest()
      : ui_thread_(content::BrowserThread::UI, &message_loop_),
        context_(new content::TestBrowserContext()),
-       prefs_(new TestingPrefServiceSimple()),
+       prefs_(new user_prefs::TestingPrefServiceSyncable()),
        dispatched_reports_count_(0),
        expected_reports_(0) {
     user_prefs::UserPrefs::Set(context_.get(), prefs_.get());
