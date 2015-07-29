@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -18,9 +17,9 @@ class AUtocompleteInput;
 struct AutocompleteMatch;
 class AutocompleteResult;
 class InstantController;
+class OmniboxClient;
 class OmniboxEditModel;
 class OmniboxPopupModel;
-class Profile;
 
 namespace gfx {
 class Rect;
@@ -37,7 +36,7 @@ class Rect;
 class OmniboxController : public AutocompleteControllerDelegate {
  public:
   OmniboxController(OmniboxEditModel* omnibox_edit_model,
-                    Profile* profile);
+                    OmniboxClient* client);
   ~OmniboxController() override;
 
   // The |current_url| field of input is only set for mobile ports.
@@ -71,18 +70,15 @@ class OmniboxController : public AutocompleteControllerDelegate {
     return autocomplete_controller_->result();
   }
 
-  // TODO(beaudoin): Make private once OmniboxEditModel no longer refers to it.
-  void DoPreconnect(const AutocompleteMatch& match);
-
+ private:
   // Stores the bitmap in the OmniboxPopupModel.
   void SetAnswerBitmap(const SkBitmap& bitmap);
 
- private:
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
   OmniboxEditModel* omnibox_edit_model_;
 
-  Profile* profile_;
+  OmniboxClient* client_;
 
   OmniboxPopupModel* popup_;
 
@@ -93,8 +89,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // but the ones specifically needed are unclear. We should therefore spend
   // some time to extract these fields and use a tighter structure here.
   AutocompleteMatch current_match_;
-
-  BitmapFetcherService::RequestId request_id_;
 
   base::WeakPtrFactory<OmniboxController> weak_ptr_factory_;
 

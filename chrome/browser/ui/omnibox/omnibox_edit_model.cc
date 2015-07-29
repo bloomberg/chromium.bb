@@ -20,7 +20,6 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -57,7 +56,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/common/constants.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
@@ -195,9 +193,9 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
                                    scoped_ptr<OmniboxClient> client,
                                    Profile* profile)
-    : view_(view),
+    : client_(client.Pass()),
+      view_(view),
       controller_(controller),
-      client_(client.Pass()),
       focus_state_(OMNIBOX_FOCUS_NONE),
       focus_source_(INVALID),
       user_input_in_progress_(false),
@@ -210,7 +208,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       profile_(profile),
       in_revert_(false),
       allow_exact_keyword_match_(false) {
-  omnibox_controller_.reset(new OmniboxController(this, profile));
+  omnibox_controller_.reset(new OmniboxController(this, client_.get()));
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
@@ -399,7 +397,7 @@ void OmniboxEditModel::OnChanged() {
         client_->DoPrerender(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_PRECONNECT:
-      omnibox_controller_->DoPreconnect(current_match);
+      client_->DoPreconnect(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_NONE:
       break;
@@ -1348,6 +1346,8 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
 
   const AutocompleteMatch& match = omnibox_controller_->current_match();
 
+  client_->OnCurrentMatchChanged(match);
+
   // We store |keyword| and |is_keyword_hint| in temporary variables since
   // OnPopupDataChanged use their previous state to detect changes.
   base::string16 keyword;
@@ -1362,11 +1362,6 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   // its value across the entire call.
   const base::string16 inline_autocompletion(match.inline_autocompletion);
   OnPopupDataChanged(inline_autocompletion, NULL, keyword, is_keyword_hint);
-}
-
-void OmniboxEditModel::SetSuggestionToPrefetch(
-    const InstantSuggestion& suggestion) {
-  client_->SetSuggestionToPrefetch(suggestion);
 }
 
 // static
