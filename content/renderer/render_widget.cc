@@ -990,7 +990,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
       SynchronousCompositorFactory::GetInstance()) {
-    return factory->CreateOutputSurface(routing_id(),
+    return factory->CreateOutputSurface(routing_id(), surface_id(),
                                         frame_swap_message_queue_);
   }
 #endif

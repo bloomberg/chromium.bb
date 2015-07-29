@@ -50,6 +50,7 @@ class SynchronousCompositorFactory {
   virtual bool RecordFullLayer() = 0;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
+      int surface_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue) = 0;
 
   // The factory maintains ownership of the returned interface.

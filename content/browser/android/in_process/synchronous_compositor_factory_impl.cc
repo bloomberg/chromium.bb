@@ -81,6 +81,7 @@ ContextHolder CreateContextHolder(
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D(
+    int surface_id,
     const blink::WebGraphicsContext3D::Attributes& attributes,
     const content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits&
         mem_limits) {
@@ -91,7 +92,6 @@ scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D(
       RenderThreadImpl::current()->EstablishGpuChannelSync(cause));
   CHECK(gpu_channel_host.get());
 
-  int surface_id = 0;
   bool lose_context_when_out_of_memory = true;
   return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
       surface_id, GURL(), gpu_channel_host.get(), attributes,
@@ -167,11 +167,12 @@ SynchronousCompositorFactoryImpl::RecordFullLayer() {
 scoped_ptr<cc::OutputSurface>
 SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
+    int surface_id,
     scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue) {
   scoped_refptr<cc::ContextProvider> onscreen_context =
-      CreateContextProviderForCompositor(RENDER_COMPOSITOR_CONTEXT);
+      CreateContextProviderForCompositor(surface_id, RENDER_COMPOSITOR_CONTEXT);
   scoped_refptr<cc::ContextProvider> worker_context =
-      CreateContextProviderForCompositor(RENDER_WORKER_CONTEXT);
+      CreateContextProviderForCompositor(0, RENDER_WORKER_CONTEXT);
 
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
       onscreen_context, worker_context, routing_id, frame_swap_message_queue));
@@ -207,6 +208,7 @@ SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
 
 scoped_refptr<cc::ContextProvider>
 SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
+    int surface_id,
     CommandBufferContextType type) {
   // This is half of what RenderWidget uses because synchronous compositor
   // pipeline is only one frame deep. But twice of half for low end here
@@ -219,7 +221,7 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
     WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits mem_limits;
     mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
-        CreateContext3D(GetDefaultAttribs(), mem_limits);
+        CreateContext3D(surface_id, GetDefaultAttribs(), mem_limits);
     return ContextProviderCommandBuffer::Create(context.Pass(), type);
   }
 

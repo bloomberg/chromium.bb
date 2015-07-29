@@ -40,6 +40,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   bool RecordFullLayer() override;
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
+      int surface_id,
       scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
       override;
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;
@@ -73,6 +74,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
  private:
   scoped_refptr<cc::ContextProvider> CreateContextProviderForCompositor(
+      int surface_id,
       CommandBufferContextType type);
   bool CanCreateMainThreadContext();
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
