@@ -30,49 +30,46 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
   // Separate header set into pseudo-headers and regular headers.
   Representations pseudo_headers;
   Representations regular_headers;
-  for (std::map<string, string>::const_iterator it = header_set.begin();
-       it != header_set.end(); ++it) {
-    if (it->first == "cookie") {
+  for (const auto& header : header_set) {
+    if (header.first == "cookie") {
       // Note that there can only be one "cookie" header, because header_set is
       // a map.
-      CookieToCrumbs(*it, &regular_headers);
-    } else if (it->first[0] == kPseudoHeaderPrefix) {
-      DecomposeRepresentation(*it, &pseudo_headers);
+      CookieToCrumbs(header, &regular_headers);
+    } else if (header.first[0] == kPseudoHeaderPrefix) {
+      DecomposeRepresentation(header, &pseudo_headers);
     } else {
-      DecomposeRepresentation(*it, &regular_headers);
+      DecomposeRepresentation(header, &regular_headers);
     }
   }
 
   // Encode pseudo-headers.
-  for (Representations::const_iterator it = pseudo_headers.begin();
-       it != pseudo_headers.end(); ++it) {
+  for (const auto& header : pseudo_headers) {
     const HpackEntry* entry =
-        header_table_.GetByNameAndValue(it->first, it->second);
+        header_table_.GetByNameAndValue(header.first, header.second);
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
-      if (it->first == ":authority") {
+      if (header.first == ":authority") {
         // :authority is always present and rarely changes, and has moderate
         // length, therefore it makes a lot of sense to index (insert in the
         // header table).
-        EmitIndexedLiteral(*it);
+        EmitIndexedLiteral(header);
       } else {
         // Most common pseudo-header fields are represented in the static table,
         // while uncommon ones are small, so do not index them.
-        EmitNonIndexedLiteral(*it);
+        EmitNonIndexedLiteral(header);
       }
     }
   }
 
   // Encode regular headers.
-  for (Representations::const_iterator it = regular_headers.begin();
-       it != regular_headers.end(); ++it) {
+  for (const auto& header : regular_headers) {
     const HpackEntry* entry =
-        header_table_.GetByNameAndValue(it->first, it->second);
+        header_table_.GetByNameAndValue(header.first, header.second);
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
-      EmitIndexedLiteral(*it);
+      EmitIndexedLiteral(header);
     }
   }
 
@@ -85,10 +82,9 @@ bool HpackEncoder::EncodeHeaderSetWithoutCompression(
     string* output) {
 
   allow_huffman_compression_ = false;
-  for (std::map<string, string>::const_iterator it = header_set.begin();
-       it != header_set.end(); ++it) {
+  for (const auto& header : header_set) {
     // Note that cookies are not crumbled in this case.
-    EmitNonIndexedLiteral(*it);
+    EmitNonIndexedLiteral(header);
   }
   allow_huffman_compression_ = true;
   output_stream_.TakeString(output);
