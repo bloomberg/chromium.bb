@@ -12,7 +12,7 @@ namespace ui {
 
 // Port of BitSet32 from Android
 // * platform/system/core/include/utils/BitSet.h
-// * Change-Id: I9bbf41f9d2d4a2593b0e6d7d8be7e283f985bade
+// * Change-Id: 02c9460a0a05f27e0501f9e64cdf24091e7d3579
 // * Please update the Change-Id as upstream Android changes are pulled.
 struct BitSet32 {
   uint32_t value;
@@ -100,12 +100,41 @@ struct BitSet32 {
   inline bool operator!=(const BitSet32& other) const {
     return value != other.value;
   }
+  inline BitSet32 operator&(const BitSet32& other) const {
+    return BitSet32(value & other.value);
+  }
+  inline BitSet32& operator&=(const BitSet32& other) {
+    value &= other.value;
+    return *this;
+  }
+  inline BitSet32 operator|(const BitSet32& other) const {
+    return BitSet32(value | other.value);
+  }
+  inline BitSet32& operator|=(const BitSet32& other) {
+    value |= other.value;
+    return *this;
+  }
 
  private:
 #if defined(COMPILER_GCC) || defined(__clang__)
-  static inline uint32_t popcnt(uint32_t v) { return __builtin_popcount(v); }
-  static inline uint32_t clz(uint32_t v) { return __builtin_clz(v); }
-  static inline uint32_t ctz(uint32_t v) { return __builtin_ctz(v); }
+  static inline uint32_t popcnt(uint32_t v) { return __builtin_popcountl(v); }
+  // We use these helpers as the signature of __builtin_c{l,t}z has
+  // "unsigned int" for the input, which is only guaranteed to be 16b, not 32.
+  // The compiler should optimize this away.
+  static inline uint32_t clz(uint32_t v) {
+    if (sizeof(unsigned int) == sizeof(uint32_t)) {
+      return __builtin_clz(v);
+    } else {
+      return __builtin_clzl(v);
+    }
+  }
+  static inline uint32_t ctz(uint32_t v) {
+    if (sizeof(unsigned int) == sizeof(uint32_t)) {
+      return __builtin_ctz(v);
+    } else {
+      return __builtin_ctzl(v);
+    }
+  }
 #else
   // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
   static inline uint32_t popcnt(uint32_t v) {
