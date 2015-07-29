@@ -746,11 +746,6 @@ PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition &start, const Visi
     return Range::create(s.containerNode()->document(), s.containerNode(), s.offsetInContainerNode(), e.containerNode(), e.offsetInContainerNode());
 }
 
-VisiblePosition startVisiblePosition(const Range *r, EAffinity affinity)
-{
-    return VisiblePosition(r->startPosition(), affinity);
-}
-
 bool setStart(Range *r, const VisiblePosition &visiblePosition)
 {
     if (!r)
