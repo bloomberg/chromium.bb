@@ -80,6 +80,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // possible.
   bool focus_event_on_root_needed_;
 
+  // A flag to keep track of if we're inside the OnWindowFocused call stack
+  // so we don't keep calling it recursively.
+  bool inside_on_window_focused_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
 

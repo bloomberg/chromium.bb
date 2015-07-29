@@ -36,7 +36,8 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
       tracked_scroll_object_(NULL),
-      focus_event_on_root_needed_(false) {
+      focus_event_on_root_needed_(false),
+      inside_on_window_focused_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
 }
@@ -136,6 +137,11 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
 }
 
 void BrowserAccessibilityManagerWin::OnWindowFocused() {
+  // Make sure we don't call this recursively.
+  if (inside_on_window_focused_)
+    return;
+  inside_on_window_focused_ = true;
+
   // This is called either when this web frame gets focused, or when
   // the root of the accessibility tree changes. In both cases, we need
   // to fire a focus event on the root and then on the focused element
@@ -145,14 +151,17 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
   // if they're not successful this time.
   focus_event_on_root_needed_ = true;
 
-  if (!delegate_ || !delegate_->AccessibilityViewHasFocus())
+  if (!delegate_ || !delegate_->AccessibilityViewHasFocus()) {
+    inside_on_window_focused_ = false;
     return;
+  }
 
   // Try to fire a focus event on the root first and then the focused node.
   // This will clear focus_event_on_root_needed_ if successful.
   if (focus_ != tree_->root() && GetRoot())
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetRoot());
   BrowserAccessibilityManager::OnWindowFocused();
+  inside_on_window_focused_ = false;
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
