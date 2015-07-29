@@ -72,7 +72,8 @@ INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyClientStreamTest,
 TEST_P(QuicSpdyClientStreamTest, TestFraming) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
-  EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
   if (GetParam() > QUIC_VERSION_24) {
     EXPECT_EQ("200", stream_->headers().find(":status")->second);
   } else {
@@ -85,7 +86,8 @@ TEST_P(QuicSpdyClientStreamTest, TestFraming) {
 TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
-  EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
   if (GetParam() > QUIC_VERSION_24) {
     EXPECT_EQ("200", stream_->headers().find(":status")->second);
   } else {
@@ -111,7 +113,8 @@ TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
 
   EXPECT_CALL(*connection_,
               SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD, 0));
-  stream_->ProcessData(large_body.c_str(), large_body.size());
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, large_body));
 
   EXPECT_NE(QUIC_STREAM_NO_ERROR, stream_->stream_error());
 }

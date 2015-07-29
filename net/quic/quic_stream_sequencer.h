@@ -57,6 +57,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Copies the data into the iov_len buffers provided.  Returns the number of
   // bytes read.  Any buffered data no longer in use will be released.
+  // TODO(rch): remove this method and instead implement it as a helper method
+  // based on GetReadableRegions and MarkConsumed.
   int Readv(const struct iovec* iov, size_t iov_len);
 
   // Consumes |num_bytes| data.  Used in conjunction with |GetReadableRegions|
@@ -69,11 +71,12 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Returns true if the sequencer has delivered the fin.
   bool IsClosed() const;
 
-  // Calls |ProcessRawData| on |stream_| for each buffered frame that may
-  // be processed.
-  void FlushBufferedFrames();
+  // Calls |OnDataAvailable| on |stream_| if there is buffered data that can
+  // be processed, and causes |OnDataAvailable| to be called as new data
+  // arrives.
+  void SetUnblocked();
 
-  // Blocks processing of frames until |FlushBufferedFrames| is called.
+  // Blocks processing of frames until |SetUnblocked| is called.
   void SetBlockedUntilFlush();
 
   size_t num_bytes_buffered() const { return num_bytes_buffered_; }

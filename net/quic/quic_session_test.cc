@@ -90,9 +90,7 @@ class TestStream : public QuicDataStream {
 
   using ReliableQuicStream::CloseWriteSide;
 
-  uint32 ProcessData(const char* data, uint32 data_len) override {
-    return data_len;
-  }
+  void OnDataAvailable() override {}
 
   void SendBody(const string& data, bool fin) {
     WriteOrBufferData(data, fin, nullptr);

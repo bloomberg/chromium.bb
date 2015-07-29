@@ -61,8 +61,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void SetPriority(RequestPriority priority) override;
 
   // QuicReliableClientStream::Delegate implementation
-  void OnHeadersAvailable(StringPiece headers) override;
-  int OnDataReceived(const char* data, int length) override;
+  void OnHeadersAvailable(const SpdyHeaderBlock& headers) override;
+  void OnDataAvailable() override;
   void OnClose(QuicErrorCode error) override;
   void OnError(int error) override;
   bool HasSendHeadersComplete() override;
@@ -99,9 +99,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   int DoReadResponseHeaders();
   int DoReadResponseHeadersComplete(int rv);
 
-  int ParseResponseHeaders(StringPiece headers);
+  int ProcessResponseHeaders(const SpdyHeaderBlock& headers);
 
-  void BufferResponseBody(const char* data, int length);
+  int ReadAvailableData(IOBuffer* buf, int buf_len);
 
   SpdyMajorVersion GetSpdyVersion();
 
@@ -140,10 +140,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   // Serialized HTTP request.
   std::string request_;
-
-  // We buffer the response body as it arrives asynchronously from the stream.
-  // TODO(rch): This is infinite buffering, which is bad.
-  std::list<scoped_refptr<IOBufferWithSize> > response_body_;
 
   // Number of bytes received when the stream was closed.
   int64 closed_stream_received_bytes_;

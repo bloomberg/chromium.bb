@@ -143,7 +143,8 @@ TEST_P(QuicSpdyServerStreamTest, TestFraming) {
       WillRepeatedly(Invoke(ConsumeAllData));
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
-  EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
   EXPECT_EQ("/", StreamHeadersValue(":path"));
   EXPECT_EQ("POST", StreamHeadersValue(":method"));
@@ -156,7 +157,8 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
 
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
-  EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
   EXPECT_EQ("/", StreamHeadersValue(":path"));
   EXPECT_EQ("POST", StreamHeadersValue(":method"));
@@ -172,10 +174,12 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
 
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
-  EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
   // Content length is still 11.  This will register as an error and we won't
   // accept the bytes.
-  stream_->ProcessData(large_body.c_str(), large_body.size());
+  stream_->OnStreamFrame(
+      QuicStreamFrame(stream_->id(), /*fin=*/false, body_.size(), large_body));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
   EXPECT_EQ("/", StreamHeadersValue(":path"));
   EXPECT_EQ("POST", StreamHeadersValue(":method"));

@@ -34,7 +34,7 @@ class QuicSpdyServerStream : public QuicDataStream {
 
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
-  uint32 ProcessData(const char* data, uint32 data_len) override;
+  void OnDataAvailable() override;
   void OnFinRead() override;
 
  protected:

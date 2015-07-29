@@ -204,9 +204,23 @@ size_t QuicHeadersStream::WriteHeaders(
   return frame->size();
 }
 
-uint32 QuicHeadersStream::ProcessRawData(const char* data,
-                                         uint32 data_len) {
-  return spdy_framer_.ProcessInput(data, data_len);
+void QuicHeadersStream::OnDataAvailable() {
+  char buffer[1024];
+  struct iovec iov;
+  while (true) {
+    iov.iov_base = buffer;
+    iov.iov_len = arraysize(buffer);
+    if (sequencer()->GetReadableRegions(&iov, 1) != 1) {
+      // No more data to read.
+      break;
+    }
+    if (spdy_framer_.ProcessInput(static_cast<char*>(iov.iov_base),
+                                  iov.iov_len) != iov.iov_len) {
+      // Error processing data.
+      return;
+    }
+    sequencer()->MarkConsumed(iov.iov_len);
+  }
 }
 
 QuicPriority QuicHeadersStream::EffectivePriority() const { return 0; }

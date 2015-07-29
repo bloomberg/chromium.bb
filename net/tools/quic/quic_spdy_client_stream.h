@@ -36,7 +36,7 @@ class QuicSpdyClientStream : public QuicDataStream {
 
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
-  uint32 ProcessData(const char* data, uint32 data_len) override;
+  void OnDataAvailable() override;
 
   // Serializes the headers and body, sends it to the server, and
   // returns the number of bytes sent.

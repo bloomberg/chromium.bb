@@ -42,13 +42,20 @@ void QuicCryptoStream::OnHandshakeMessage(
   session()->OnCryptoHandshakeMessageReceived(message);
 }
 
-uint32 QuicCryptoStream::ProcessRawData(const char* data,
-                                        uint32 data_len) {
-  if (!crypto_framer_.ProcessInput(StringPiece(data, data_len))) {
-    CloseConnection(crypto_framer_.error());
-    return 0;
+void QuicCryptoStream::OnDataAvailable() {
+  struct iovec iov;
+  while (true) {
+    if (sequencer()->GetReadableRegions(&iov, 1) != 1) {
+      // No more data to read.
+      break;
+    }
+    StringPiece data(static_cast<char*>(iov.iov_base), iov.iov_len);
+    if (!crypto_framer_.ProcessInput(data)) {
+      CloseConnection(crypto_framer_.error());
+      return;
+    }
+    sequencer()->MarkConsumed(iov.iov_len);
   }
-  return data_len;
 }
 
 QuicPriority QuicCryptoStream::EffectivePriority() const {

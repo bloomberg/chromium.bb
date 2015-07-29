@@ -81,7 +81,9 @@ TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
       QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
-  stream()->ProcessRawData(message_data_->data(), message_data_->length());
+  stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
+                                          /*offset=*/0,
+                                          message_data_->AsStringPiece()));
 }
 
 TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
@@ -92,7 +94,9 @@ TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
 
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
         QUIC_INVALID_CRYPTO_MESSAGE_TYPE, "Expected REJ"));
-  stream()->ProcessRawData(message_data_->data(), message_data_->length());
+  stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
+                                          /*offset=*/0,
+                                          message_data_->AsStringPiece()));
 }
 
 TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
@@ -177,7 +181,8 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
 
   scoped_ptr<QuicData> data(
       CryptoFramer::ConstructHandshakeMessage(server_config_update));
-  stream()->ProcessRawData(data->data(), data->length());
+  stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
+                                          /*offset=*/0, data->AsStringPiece()));
 
   // Make sure that the STK and SCFG are cached correctly.
   EXPECT_EQ("xstk", state->source_address_token());
@@ -195,7 +200,8 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
   server_config_update.set_tag(kSCUP);
   scoped_ptr<QuicData> data(
       CryptoFramer::ConstructHandshakeMessage(server_config_update));
-  stream()->ProcessRawData(data->data(), data->length());
+  stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
+                                          /*offset=*/0, data->AsStringPiece()));
 }
 
 class QuicCryptoClientStreamStatelessTest : public ::testing::Test {

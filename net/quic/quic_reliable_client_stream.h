@@ -28,11 +28,10 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
     Delegate() {}
 
     // Called when headers are available.
-    virtual void OnHeadersAvailable(StringPiece headers) = 0;
+    virtual void OnHeadersAvailable(const SpdyHeaderBlock& headers) = 0;
 
-    // Called when data is received.
-    // Returns network error code. OK when it successfully receives data.
-    virtual int OnDataReceived(const char* data, int length) = 0;
+    // Called when data is available to be read.
+    virtual void OnDataAvailable() = 0;
 
     // Called when the stream is closed by the peer.
     virtual void OnClose(QuicErrorCode error) = 0;
@@ -58,10 +57,13 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
 
   // QuicDataStream
   void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
-  uint32 ProcessData(const char* data, uint32 data_len) override;
+  void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
   QuicPriority EffectivePriority() const override;
+  void OnFinRead() override;
+
+  void DoneReading();
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
@@ -77,6 +79,9 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
   Delegate* GetDelegate() { return delegate_; }
   void OnError(int error);
 
+  // Reads at most |buf_len| bytes into |buf|. Returns the number of bytes read.
+  int Read(IOBuffer* buf, int buf_len);
+
   // Returns true if the stream can possible write data.  (The socket may
   // turn out to be write blocked, of course).  If the stream can not write,
   // this method returns false, and |callback| will be invoked when
@@ -88,10 +93,19 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
   using QuicDataStream::HasBufferedData;
 
  private:
+  void NotifyDelegateOfHeadersCompleteLater();
+  void NotifyDelegateOfHeadersComplete();
+  void NotifyDelegateOfDataAvailableLater();
+  void NotifyDelegateOfDataAvailable();
+
   BoundNetLog net_log_;
   Delegate* delegate_;
 
+  bool headers_delivered_;
+
   CompletionCallback callback_;
+
+  base::WeakPtrFactory<QuicReliableClientStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicReliableClientStream);
 };

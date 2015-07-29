@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
   // ReliableQuicStream implementation
-  uint32 ProcessRawData(const char* data, uint32 data_len) override;
+  void OnDataAvailable() override;
   QuicPriority EffectivePriority() const override;
 
   // Sends |message| to the peer.

@@ -355,8 +355,9 @@ TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
       SendConnectionClose(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
-  server_stream()->ProcessRawData(message_data_->data(),
-                                  message_data_->length());
+  server_stream()->OnStreamFrame(
+      QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0,
+                      message_data_->AsStringPiece()));
 }
 
 TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
@@ -364,8 +365,9 @@ TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
   ConstructHandshakeMessage();
   EXPECT_CALL(*server_connection_,
               SendConnectionClose(QUIC_INVALID_CRYPTO_MESSAGE_TYPE));
-  server_stream()->ProcessRawData(message_data_->data(),
-                                  message_data_->length());
+  server_stream()->OnStreamFrame(
+      QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0,
+                      message_data_->AsStringPiece()));
 }
 
 TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {

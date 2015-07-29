@@ -50,7 +50,9 @@ class TestStream : public ReliableQuicStream {
       : ReliableQuicStream(id, session),
         should_process_data_(should_process_data) {}
 
-  uint32 ProcessRawData(const char* data, uint32 data_len) override {
+  void OnDataAvailable() override {}
+
+  uint32 ProcessRawData(const char* data, uint32 data_len) {
     EXPECT_NE(0u, data_len);
     DVLOG(1) << "ProcessData data_len: " << data_len;
     data_ += string(data, data_len);

@@ -77,17 +77,10 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // incoming data.
   virtual void OnFinRead();
 
-  // Called by the sequencer to deliver to the subclass blocks of the stream's
-  // data in sequential order.
-  // ProcessRawData is called when the next sequential block of data becomes
-  // available, unless the subclass has left the next block of data in the
-  // sequencer.  In that case, the subclass must actively retrieve the data
-  // using the sequencer's Readv() or FlushBufferedFrames().
-  // Return value is the number of data bytes accepted by the callee, i.e.,
-  // the first (return value) bytes of data are removed from the sequencer,
-  // and the final data_len-(return value) bytes of data are retained by the
-  // sequencer.
-  virtual uint32 ProcessRawData(const char* data, uint32 data_len) = 0;
+  // Called when new data is available from the sequencer.  Subclasses must
+  // actively retrieve the data using the sequencer's Readv() or
+  // GetReadableRegions() method.
+  virtual void OnDataAvailable() = 0;
 
   // Called by the subclass or the sequencer to reset the stream from this
   // end.

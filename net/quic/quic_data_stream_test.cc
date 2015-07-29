@@ -37,11 +37,16 @@ class TestStream : public QuicDataStream {
       : QuicDataStream(id, session),
         should_process_data_(should_process_data) {}
 
-  uint32 ProcessData(const char* data, uint32 data_len) override {
-    EXPECT_NE(0u, data_len);
-    DVLOG(1) << "ProcessData data_len: " << data_len;
-    data_ += string(data, data_len);
-    return should_process_data_ ? data_len : 0;
+  void OnDataAvailable() override {
+    if (!should_process_data_) {
+      return;
+    }
+    char buffer[2048];
+    struct iovec vec;
+    vec.iov_base = buffer;
+    vec.iov_len = arraysize(buffer);
+    size_t bytes_read = Readv(&vec, 1);
+    data_ += string(buffer, bytes_read);
   }
 
   using ReliableQuicStream::WriteOrBufferData;

@@ -70,38 +70,19 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     ++num_early_frames_received_;
   }
 
-  // If the frame has arrived in-order then process it immediately, only
-  // buffering if the stream is unable to process it.
-  size_t bytes_consumed = 0;
-  if (!blocked_ && byte_offset == num_bytes_consumed_) {
-    DVLOG(1) << "Processing byte offset " << byte_offset;
-    bytes_consumed =
-        stream_->ProcessRawData(frame.data.data(), frame.data.length());
-    num_bytes_consumed_ += bytes_consumed;
-    stream_->AddBytesConsumed(bytes_consumed);
+  DVLOG(1) << "Buffering stream data at offset " << byte_offset;
+  // Inserting an empty string and then copying to avoid the extra copy.
+  insertion_point =
+      buffered_frames_.insert(insertion_point, FrameData(byte_offset, ""));
+  frame.data.CopyToString(&insertion_point->segment);
+  num_bytes_buffered_ += data_len;
 
-    if (MaybeCloseStream()) {
-      return;
-    }
-    if (bytes_consumed > data_len) {
-      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
-      return;
-    } else if (bytes_consumed == data_len) {
-      FlushBufferedFrames();
-      return;  // it's safe to ack this frame.
-    }
+  if (blocked_) {
+    return;
   }
 
-  // Buffer any remaining data to be consumed by the stream when ready.
-  if (bytes_consumed < data_len) {
-    DVLOG(1) << "Buffering stream data at offset " << byte_offset;
-    const size_t remaining_length = data_len - bytes_consumed;
-    // Inserting an empty string and then copying to avoid the extra copy.
-    insertion_point = buffered_frames_.insert(
-        insertion_point, FrameData(byte_offset + bytes_consumed, ""));
-    insertion_point->segment =
-        string(frame.data.data() + bytes_consumed, remaining_length);
-    num_bytes_buffered_ += remaining_length;
+  if (byte_offset == num_bytes_consumed_) {
+    stream_->OnDataAvailable();
   }
 }
 
@@ -299,31 +280,11 @@ void QuicStreamSequencer::SetBlockedUntilFlush() {
   blocked_ = true;
 }
 
-void QuicStreamSequencer::FlushBufferedFrames() {
+void QuicStreamSequencer::SetUnblocked() {
   blocked_ = false;
-  FrameList::iterator it = buffered_frames_.begin();
-  while (it != buffered_frames_.end() && it->offset == num_bytes_consumed_) {
-    DVLOG(1) << "Flushing buffered packet at offset " << it->offset;
-    const string* data = &it->segment;
-    size_t bytes_consumed = stream_->ProcessRawData(data->c_str(),
-                                                    data->size());
-    RecordBytesConsumed(bytes_consumed);
-    if (MaybeCloseStream()) {
-      return;
-    }
-    if (bytes_consumed > data->size()) {
-      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);  // Programming error
-      return;
-    }
-    if (bytes_consumed < data->size()) {
-      string new_data = data->substr(bytes_consumed);
-      buffered_frames_.erase(it);
-      buffered_frames_.push_front(FrameData(num_bytes_consumed_, new_data));
-      return;
-    }
-    buffered_frames_.erase(it++);
+  if (IsClosed() || HasBytesToRead()) {
+    stream_->OnDataAvailable();
   }
-  MaybeCloseStream();
 }
 
 void QuicStreamSequencer::RecordBytesConsumed(size_t bytes_consumed) {
