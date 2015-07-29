@@ -2847,4 +2847,4 @@ crbug.com/513073 [ Win ] http/tests/inspector/network/network-memory-cached-reso
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
 
-crbug.com/514967 inspector/layers/layer-canvas-log.html [ Pass Failure ]
+crbug.com/514967 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]

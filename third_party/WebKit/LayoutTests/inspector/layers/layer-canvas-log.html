@@ -14,7 +14,7 @@ function test()
     function onHistoryReceived(history)
     {
         InspectorTest.addResult("Canvas log:");
-        InspectorTest.addObject(history, {"genID": "skip"});
+        InspectorTest.addObject(history, {"uniqueID": "skip"});
         InspectorTest.completeTest();
     }
 
