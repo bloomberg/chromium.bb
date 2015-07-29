@@ -13,6 +13,7 @@
 #import <Cocoa/Cocoa.h>
 
 @class SadTabController;
+@class SadTabView;
 
 namespace chrome {
 
@@ -40,6 +41,7 @@ class SadTabCocoa : public SadTab {
 @interface SadTabController : NSViewController {
  @private
   content::WebContents* webContents_;  // Weak reference.
+  base::scoped_nsobject<SadTabView> sadTabView_;
 }
 
 // Designated initializer.

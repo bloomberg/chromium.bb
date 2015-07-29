@@ -51,11 +51,16 @@ void SadTabCocoa::Close() {
   return self;
 }
 
+- (void)dealloc {
+  [[sadTabView_ reloadButton] setTarget:nil];
+  [super dealloc];
+}
+
 - (void)loadView {
-  base::scoped_nsobject<SadTabView> sadView([[SadTabView alloc] init]);
-  [[sadView reloadButton] setTarget:self];
-  [[sadView reloadButton] setAction:@selector(reloadPage:)];
-  [self setView:sadView];
+  sadTabView_.reset([[SadTabView alloc] init]);
+  [[sadTabView_ reloadButton] setTarget:self];
+  [[sadTabView_ reloadButton] setAction:@selector(reloadPage:)];
+  [self setView:sadTabView_];
 }
 
 - (content::WebContents*)webContents {
