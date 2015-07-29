@@ -36,15 +36,15 @@
 
 namespace blink {
 
-class HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader>, public ResourcePreloader {
+class CORE_EXPORT HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader>, public ResourcePreloader {
     WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLResourcePreloader);
     friend class HTMLResourcePreloaderTest;
 public:
-    static CORE_EXPORT PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);
+    static PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);
     DECLARE_TRACE();
 
 protected:
-    CORE_EXPORT void preload(PassOwnPtr<PreloadRequest>, const NetworkHintsInterface&) override;
+    void preload(PassOwnPtr<PreloadRequest>, const NetworkHintsInterface&) override;
 
 private:
     explicit HTMLResourcePreloader(Document&);
