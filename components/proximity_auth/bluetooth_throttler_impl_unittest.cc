@@ -50,6 +50,14 @@ class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
     clock_->Advance(base::TimeDelta::FromSeconds(1));
   }
 
+  void PerformConnectionStateTransition(Connection::Status old_status,
+                                        Connection::Status new_status) {
+    StubConnection connection;
+    throttler_.OnConnection(&connection);
+    static_cast<ConnectionObserver*>(&throttler_)
+        ->OnConnectionStatusChanged(&connection, old_status, new_status);
+  }
+
  protected:
   // The clock is owned by the |throttler_|.
   base::SimpleTestTickClock* clock_;
@@ -64,11 +72,17 @@ TEST_F(ProximityAuthBluetoothThrottlerImplTest,
 TEST_F(ProximityAuthBluetoothThrottlerImplTest,
        GetDelay_ConnectionAfterDisconnectIsThrottled) {
   // Simulate a connection followed by a disconnection.
-  StubConnection connection;
-  throttler_.OnConnection(&connection);
-  static_cast<ConnectionObserver*>(&throttler_)
-      ->OnConnectionStatusChanged(&connection, Connection::CONNECTED,
-                                  Connection::DISCONNECTED);
+  PerformConnectionStateTransition(Connection::CONNECTED,
+                                   Connection::DISCONNECTED);
+  EXPECT_GT(throttler_.GetDelay(), base::TimeDelta());
+}
+
+TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+       GetDelay_ConnectionAfterIsProgressDisconnectIsThrottled) {
+  // Simulate an attempt to connect (in progress connection) followed by a
+  // disconnection.
+  PerformConnectionStateTransition(Connection::IN_PROGRESS,
+                                   Connection::DISCONNECTED);
   EXPECT_GT(throttler_.GetDelay(), base::TimeDelta());
 }
 
@@ -76,11 +90,18 @@ TEST_F(ProximityAuthBluetoothThrottlerImplTest,
        GetDelay_DelayedConnectionAfterDisconnectIsNotThrottled) {
   // Simulate a connection followed by a disconnection, then allow the cooldown
   // period to elapse.
-  StubConnection connection;
-  throttler_.OnConnection(&connection);
-  static_cast<ConnectionObserver*>(&throttler_)
-      ->OnConnectionStatusChanged(&connection, Connection::CONNECTED,
-                                  Connection::DISCONNECTED);
+  PerformConnectionStateTransition(Connection::CONNECTED,
+                                   Connection::DISCONNECTED);
+  clock_->Advance(throttler_.GetCooldownTimeDelta());
+  EXPECT_EQ(base::TimeDelta(), throttler_.GetDelay());
+}
+
+TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+       GetDelay_DelayedConnectionAfterInProgressDisconnectIsNotThrottled) {
+  // Simulate an attempt to connect (in progress connection) followed by a
+  // disconnection, then allow the cooldown period to elapse.
+  PerformConnectionStateTransition(Connection::IN_PROGRESS,
+                                   Connection::DISCONNECTED);
   clock_->Advance(throttler_.GetCooldownTimeDelta());
   EXPECT_EQ(base::TimeDelta(), throttler_.GetDelay());
 }

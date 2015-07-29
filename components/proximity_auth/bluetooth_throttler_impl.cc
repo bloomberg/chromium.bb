@@ -55,8 +55,7 @@ void BluetoothThrottlerImpl::OnConnectionStatusChanged(
     Connection::Status old_status,
     Connection::Status new_status) {
   DCHECK(ContainsKey(connections_, connection));
-  if (old_status == Connection::CONNECTED &&
-      new_status == Connection::DISCONNECTED) {
+  if (new_status == Connection::DISCONNECTED) {
     last_disconnect_time_ = clock_->NowTicks();
     connection->RemoveObserver(this);
     connections_.erase(connection);
