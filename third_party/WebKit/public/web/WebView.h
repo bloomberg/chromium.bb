@@ -176,6 +176,9 @@ public:
     // viewport space. Returns true if an animation was started.
     virtual bool scrollFocusedNodeIntoRect(const WebRect&) { return false; }
 
+    // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
+    virtual void smoothScroll(int targetX, int targetY, long durationMs) { }
+
     // Advance the focus of the WebView forward to the next element or to the
     // previous element in the tab sequence (if reverse is true).
     virtual void advanceFocus(bool reverse) { }

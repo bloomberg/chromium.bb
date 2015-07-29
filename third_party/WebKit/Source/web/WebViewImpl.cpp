@@ -2874,6 +2874,12 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
     return false;
 }
 
+void WebViewImpl::smoothScroll(int targetX, int targetY, long durationMs)
+{
+    IntPoint targetPosition(targetX, targetY);
+    startPageScaleAnimation(targetPosition, false, pageScaleFactor(), (double)durationMs / 1000);
+}
+
 void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zoomInToLegibleScale, float& newScale, IntPoint& newScroll, bool& needAnimation)
 {
     focusedNode->document().updateLayoutIgnorePendingStylesheets();
