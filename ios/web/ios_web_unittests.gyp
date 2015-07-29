@@ -70,6 +70,7 @@
         'web_state/ui/crw_wk_simple_web_view_controller_unittest.mm',
         'web_state/ui/crw_wk_web_view_crash_detector_unittest.mm',
         'web_state/ui/web_view_js_utils_unittest.mm',
+        'web_state/ui/wk_back_forward_list_item_holder_unittest.mm',
         'web_state/ui/wk_web_view_configuration_provider_unittest.mm',
         'web_state/web_state_impl_unittest.mm',
         'web_state/web_view_internal_creation_util_unittest.mm',

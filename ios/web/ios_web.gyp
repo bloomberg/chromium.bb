@@ -268,6 +268,8 @@
         'web_state/ui/crw_wk_web_view_web_controller.mm',
         'web_state/ui/web_view_js_utils.h',
         'web_state/ui/web_view_js_utils.mm',
+        'web_state/ui/wk_back_forward_list_item_holder.h',
+        'web_state/ui/wk_back_forward_list_item_holder.mm',
         'web_state/ui/wk_web_view_configuration_provider.h',
         'web_state/ui/wk_web_view_configuration_provider.mm',
         'web_state/web_controller_observer_bridge.h',
