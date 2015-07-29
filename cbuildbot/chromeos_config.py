@@ -639,9 +639,6 @@ _waterfall_config_map = {
         'smaug-release',
         'guado_moblab-release',
 
-        # Experimental PFQs.
-        'tricky-chrome-pfq',
-
         # Incremental Builders.
         'mario-incremental',
         'lakitu-incremental',
@@ -1120,7 +1117,6 @@ def GetConfig():
       chrome_pfq, 'tricky-chrome-pfq',
       _base_configs['tricky'],
       hw_tests=HWTestList.SharedPoolPFQ(),
-      important=False,
   )
 
   _telemetry_boards = frozenset([
