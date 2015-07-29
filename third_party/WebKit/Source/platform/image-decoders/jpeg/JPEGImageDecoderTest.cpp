@@ -55,7 +55,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     return Platform::current()->unitTestSupport()->readFromFile(filePath);
 }
 
-PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes)
+PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes = ImageDecoder::noDecodedImageByteLimit)
 {
     return adoptPtr(new JPEGImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, maxDecodedBytes));
 }
@@ -65,7 +65,7 @@ PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes)
 void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputHeight, const char* imageFilePath)
 {
     RefPtr<SharedBuffer> data = readFile(imageFilePath);
-    ASSERT_TRUE(data.get());
+    ASSERT_TRUE(data);
 
     OwnPtr<JPEGImageDecoder> decoder = createDecoder(maxDecodedBytes);
     decoder->setData(data.get(), true);
@@ -80,7 +80,7 @@ void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputH
 void readYUV(size_t maxDecodedBytes, unsigned* outputYWidth, unsigned* outputYHeight, unsigned* outputUVWidth, unsigned* outputUVHeight, const char* imageFilePath)
 {
     RefPtr<SharedBuffer> data = readFile(imageFilePath);
-    ASSERT_TRUE(data.get());
+    ASSERT_TRUE(data);
 
     OwnPtr<JPEGImageDecoder> decoder = createDecoder(maxDecodedBytes);
     decoder->setData(data.get(), true);
@@ -224,7 +224,7 @@ TEST(JPEGImageDecoderTest, yuv)
     // Make sure we revert to RGBA decoding when we're about to downscale,
     // which can occur on memory-constrained android devices.
     RefPtr<SharedBuffer> data = readFile(jpegFile);
-    ASSERT_TRUE(data.get());
+    ASSERT_TRUE(data);
 
     OwnPtr<JPEGImageDecoder> decoder = createDecoder(230 * 230 * 4);
     decoder->setData(data.get(), true);
@@ -233,6 +233,65 @@ TEST(JPEGImageDecoderTest, yuv)
     decoder->setImagePlanes(imagePlanes.release());
     ASSERT_TRUE(decoder->isSizeAvailable());
     ASSERT_FALSE(decoder->canDecodeToYUV());
+}
+
+// TODO (scroggo): These functions are similar to functions in other
+// ImageDecoderTests. Share code with them.
+unsigned hashSkBitmap(const SkBitmap& bitmap)
+{
+    return StringHasher::hashMemory(bitmap.getPixels(), bitmap.getSize());
+}
+
+void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes)
+{
+    OwnPtr<JPEGImageDecoder> decoder = createDecoder();
+    decoder->setData(data, true);
+    size_t frameCount = decoder->frameCount();
+    for (size_t i = 0; i < frameCount; ++i) {
+        ImageFrame* frame = decoder->frameBufferAtIndex(i);
+        baselineHashes->append(hashSkBitmap(frame->getSkBitmap()));
+    }
+}
+
+void testByteByByteDecode(const char* jpegFile)
+{
+    OwnPtr<JPEGImageDecoder> decoder = createDecoder();
+    RefPtr<SharedBuffer> data = readFile(jpegFile);
+    ASSERT_TRUE(data);
+
+    Vector<unsigned> baselineHashes;
+    createDecodingBaseline(data.get(), &baselineHashes);
+
+    // Pass data to decoder byte by byte.
+    for (size_t length = 1; length <= data->size(); ++length) {
+        RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
+        decoder->setData(tempData.get(), length == data->size());
+
+        if (decoder->isSizeAvailable()) {
+            // If we have decoded the size, attempt to decode the whole image.
+            decoder->frameBufferAtIndex(0);
+        }
+
+        if (decoder->failed())
+            break;
+    }
+
+    EXPECT_FALSE(decoder->failed());
+    EXPECT_EQ(1u, decoder->frameCount());
+
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    ASSERT_TRUE(frame);
+
+    EXPECT_EQ(baselineHashes[0], hashSkBitmap(frame->getSkBitmap()));
+}
+
+TEST(JPEGImageDecoderTest, byteByByte)
+{
+    testByteByByteDecode("/LayoutTests/fast/images/resources/lenna.jpg");
+    // Progressive image
+    testByteByByteDecode("/LayoutTests/fast/images/resources/flowchart.jpg");
+    // Image with restart markers
+    testByteByByteDecode("/LayoutTests/fast/images/resources/red-at-12-oclock-with-color-profile.jpg");
 }
 
 } // namespace blink

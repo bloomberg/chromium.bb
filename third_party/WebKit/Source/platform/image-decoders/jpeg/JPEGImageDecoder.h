@@ -45,6 +45,7 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "jpg"; }
+    void setData(SharedBuffer* data, bool allDataReceived) override;
     bool hasColorProfile() const override { return m_hasColorProfile; }
     IntSize decodedSize() const override { return m_decodedSize; }
     IntSize decodedYUVSize(int component, SizeType) const override;
