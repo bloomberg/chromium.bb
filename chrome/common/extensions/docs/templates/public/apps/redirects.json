@@ -6,6 +6,7 @@
   "pushMessaging": "https://developers.google.com/cloud-messaging/chrome/client",
   "gcm_tos": "https://developers.google.com/terms/",
   "gcm_server": "https://developers.google.com/cloud-messaging/server",
+  "google_wallet": "../webstore/payments-iap",
   "experimental_systemInfo_storage": "system_storage",
   "in_app_payments": "google_wallet",
   "index": "about_apps",
