@@ -429,7 +429,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
 
-bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth)
+bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth)
 {
     switch (target) {
     case GL_TEXTURE_3D:
@@ -444,6 +445,9 @@ bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName,
     if (!tex)
         return false;
 
+    if (!validateTexFuncLevel(functionName, target, level))
+        return false;
+
     if (width - xoffset > tex->getWidth(target, level)
         || height - yoffset > tex->getHeight(target, level)
         || depth - zoffset > tex->getDepth(target, level)) {
@@ -451,12 +455,16 @@ bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName,
         return false;
     }
 
+    GLenum internalformat = tex->getInternalFormat(target, level);
+    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
+        return false;
+
     return true;
 }
 
 void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
 {
-    if (!validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, image->width(), image->height(), 1))
+    if (!validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, image->width(), image->height(), 1))
         return;
 
     // All calling functions check isContextLost, so a duplicate check is not needed here.
@@ -489,7 +497,7 @@ void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, G
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, width, height, depth))
+    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, width, height, depth))
         return;
 
     // FIXME: Ensure pixels is large enough to contain the desired texture dimensions.
@@ -516,7 +524,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageData* pixels)
 {
-    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, pixels->width(), pixels->height(), 1))
+    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, pixels->width(), pixels->height(), 1))
         return;
 
     Vector<uint8_t> data;
@@ -540,7 +548,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !image || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, image->width(), image->height(), 1))
+    if (isContextLost() || !image || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, image->width(), image->height(), 1))
         return;
 
     if (isContextLost() || !validateHTMLImageElement("texSubImage3D", image, exceptionState))
