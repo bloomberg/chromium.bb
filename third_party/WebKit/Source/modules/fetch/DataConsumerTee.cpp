@@ -239,6 +239,7 @@ private:
 
     void detach()
     {
+        MutexLocker locker(m_mutex);
         ASSERT(!m_client);
         ASSERT(!m_readerThread);
         m_queue.clear();
