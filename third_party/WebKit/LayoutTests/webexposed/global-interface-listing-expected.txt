@@ -5113,10 +5113,12 @@ interface Screen
     getter availWidth
     getter colorDepth
     getter height
+    getter keepAwake
     getter orientation
     getter pixelDepth
     getter width
     method constructor
+    setter keepAwake
 interface ScreenOrientation
     getter angle
     getter onchange

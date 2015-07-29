@@ -178,3 +178,4 @@ SVG1DOM status=stable
 smil status=stable
 ScrollCustomization
 ScrollRestoration status=experimental
+WakeLock status=experimental

@@ -91,6 +91,7 @@ class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
 class WebVRClient;
+class WebWakeLockClient;
 class WebWorkerContentSettingsClientProxy;
 struct WebColorSuggestion;
 struct WebConsoleMessage;
@@ -513,6 +514,9 @@ public:
     // A WebSocket object is going to open a new WebSocket connection.
     virtual void willOpenWebSocket(WebSocketHandle*) { }
 
+    // Wake Lock -----------------------------------------------------
+
+    virtual WebWakeLockClient* wakeLockClient() { return 0; }
 
     // Geolocation ---------------------------------------------------------
 
