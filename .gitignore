@@ -34,6 +34,7 @@ cscope.out
 /depcomp
 /docs/developer
 /docs/tools
+/docs/doxygen/*.doxygen
 /install-sh
 /libtool
 /ltmain.sh
