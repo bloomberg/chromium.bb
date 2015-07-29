@@ -102,9 +102,9 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
     source->AddResourcePath("action_service.js",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_JS);
-    source->AddResourcePath("item_view.css", IDR_MD_DOWNLOADS_ITEM_VIEW_CSS);
-    source->AddResourcePath("item_view.html", IDR_MD_DOWNLOADS_ITEM_VIEW_HTML);
-    source->AddResourcePath("item_view.js", IDR_MD_DOWNLOADS_ITEM_VIEW_JS);
+    source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
+    source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
+    source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
     source->AddResourcePath("manager.css", IDR_MD_DOWNLOADS_MANAGER_CSS);
     source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
     source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);

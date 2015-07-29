@@ -134,9 +134,9 @@
         <include name="IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS" file="resources\downloads\throttled_icon_loader.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ITEM_VIEW_CSS" file="resources\md_downloads\item_view.css" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ITEM_VIEW_HTML" file="resources\md_downloads\item_view.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ITEM_VIEW_JS" file="resources\md_downloads\item_view.js" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_ITEM_CSS" file="resources\md_downloads\item.css" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_ITEM_HTML" file="resources\md_downloads\item.html" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_MANAGER_CSS" file="resources\md_downloads\manager.css" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_MANAGER_HTML" file="resources\md_downloads\manager.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_MANAGER_JS" file="resources\md_downloads\manager.js" type="BINDATA" />

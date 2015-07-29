@@ -13,7 +13,7 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'item_view',
+      'target_name': 'item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
@@ -33,7 +33,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         'action_service',
-        'item_view',
+        'item',
         'toolbar',
         '<(EXTERNS_GYP):chrome_send',
         '../downloads/compiled_resources2.gyp:externs',

@@ -17,7 +17,7 @@
           '../downloads/constants.js',
           '../downloads/throttled_icon_loader.js',
           'action_service.js',
-          'item_view.js',
+          'item.js',
           'toolbar.js',
         ],
         'externs': [

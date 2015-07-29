@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  var ItemView = Polymer({
-    is: 'downloads-item-view',
+  var Item = Polymer({
+    is: 'downloads-item',
 
     /**
      * @param {!downloads.ThrottledIconLoader} iconLoader
@@ -261,5 +261,5 @@ cr.define('downloads', function() {
     },
   });
 
-  return {ItemView: ItemView};
+  return {Item: Item};
 });

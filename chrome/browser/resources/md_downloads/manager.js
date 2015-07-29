@@ -98,10 +98,10 @@ cr.define('downloads', function() {
     updateAll_: function(list) {
       var oldIdMap = this.idMap_ || {};
 
-      /** @private {!Object<!downloads.ItemView>} */
+      /** @private {!Object<!downloads.Item>} */
       this.idMap_ = {};
 
-      /** @private {!Array<!downloads.ItemView>} */
+      /** @private {!Array<!downloads.Item>} */
       this.items_ = [];
 
       if (!this.iconLoader_) {
@@ -116,7 +116,7 @@ cr.define('downloads', function() {
 
         // Re-use old items when possible (saves work, preserves focus).
         var item = oldIdMap[id] ||
-            new downloads.ItemView(this.iconLoader_, this.actionService_);
+            new downloads.Item(this.iconLoader_, this.actionService_);
 
         this.idMap_[id] = item;  // Associated by ID for fast lookup.
         this.items_.push(item);  // Add to sorted list for order.
