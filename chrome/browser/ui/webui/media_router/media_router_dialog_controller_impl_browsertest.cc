@@ -45,7 +45,8 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(dialog_controller_);
 
     // Get the media router dialog for the initiator.
-    media_router_dialog_ = dialog_controller_->ShowMediaRouterDialog();
+    dialog_controller_->ShowMediaRouterDialog();
+    media_router_dialog_ = dialog_controller_->GetMediaRouterDialog();
     ASSERT_TRUE(media_router_dialog_);
   }
 

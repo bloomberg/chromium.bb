@@ -13,15 +13,12 @@
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 #include "url/gurl.h"
@@ -150,81 +147,13 @@ class MediaRouterDialogControllerImpl::DialogWebContentsObserver
   MediaRouterDialogControllerImpl* const dialog_controller_;
 };
 
-class MediaRouterDialogControllerImpl::InitiatorWebContentsObserver
-    : public content::WebContentsObserver {
- public:
-  InitiatorWebContentsObserver(
-      WebContents* web_contents,
-      MediaRouterDialogControllerImpl* dialog_controller)
-      : content::WebContentsObserver(web_contents),
-        dialog_controller_(dialog_controller) {
-  }
-
- private:
-  void WebContentsDestroyed() override {
-    // NOTE: |this| is deleted after CloseMediaRouterDialog() returns.
-    dialog_controller_->CloseMediaRouterDialog();
-  }
-
-  void NavigationEntryCommitted(const LoadCommittedDetails& load_details)
-      override {
-    // NOTE: |this| is deleted after CloseMediaRouterDialog() returns.
-    dialog_controller_->CloseMediaRouterDialog();
-  }
-
-  void RenderProcessGone(base::TerminationStatus status) override {
-    // NOTE: |this| is deleted after CloseMediaRouterDialog() returns.
-    dialog_controller_->CloseMediaRouterDialog();
-  }
-
-  MediaRouterDialogControllerImpl* const dialog_controller_;
-};
-
 MediaRouterDialogControllerImpl::MediaRouterDialogControllerImpl(
     WebContents* web_contents)
-    : initiator_(web_contents),
+    : MediaRouterDialogController(web_contents),
       media_router_dialog_pending_(false) {
-  DCHECK(initiator_);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 MediaRouterDialogControllerImpl::~MediaRouterDialogControllerImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-WebContents* MediaRouterDialogControllerImpl::ShowMediaRouterDialog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Get the media router dialog for |initiator|, or create a new dialog
-  // if not found.
-  WebContents* media_router_dialog = GetMediaRouterDialog();
-  if (!media_router_dialog) {
-    CreateMediaRouterDialog();
-    return GetMediaRouterDialog();
-  }
-
-  // Show the initiator holding the existing media router dialog.
-  initiator_->GetDelegate()->ActivateContents(initiator_);
-  return media_router_dialog;
-}
-
-bool MediaRouterDialogControllerImpl::ShowMediaRouterDialogForPresentation(
-    scoped_ptr<CreatePresentationSessionRequest> request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Get the media router dialog for |initiator|, or create a new dialog
-  // if not found.
-  WebContents* media_router_dialog = GetMediaRouterDialog();
-  if (!media_router_dialog) {
-    CreateMediaRouterDialog();
-    media_router_dialog = GetMediaRouterDialog();
-    presentation_request_ = request.Pass();
-    return true;
-  }
-
-  // Show the initiator holding the existing media router dialog.
-  initiator_->GetDelegate()->ActivateContents(initiator_);
-  return false;
 }
 
 WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
@@ -232,12 +161,14 @@ WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
   return dialog_observer_.get() ? dialog_observer_->web_contents() : nullptr;
 }
 
+bool MediaRouterDialogControllerImpl::IsShowingMediaRouterDialog() const {
+  return GetMediaRouterDialog() != nullptr;
+}
+
 void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(initiator_observer_.get());
   WebContents* media_router_dialog = GetMediaRouterDialog();
-  CHECK(media_router_dialog);
-  Reset();
+  if (!media_router_dialog)
+    return;
 
   content::WebUI* web_ui = media_router_dialog->GetWebUI();
   if (web_ui) {
@@ -249,11 +180,10 @@ void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
 }
 
 void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
-  DCHECK(!initiator_observer_.get());
   DCHECK(!dialog_observer_.get());
 
   Profile* profile =
-      Profile::FromBrowserContext(initiator_->GetBrowserContext());
+      Profile::FromBrowserContext(initiator()->GetBrowserContext());
   DCHECK(profile);
 
   WebDialogDelegate* web_dialog_delegate = new MediaRouterDialogDelegate;
@@ -263,7 +193,7 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   // TODO(apacible): Remove after autoresizing is implemented for OSX.
 #if defined(OS_MACOSX)
   ConstrainedWebDialogDelegate* constrained_delegate =
-      ShowConstrainedWebDialog(profile, web_dialog_delegate, initiator_);
+      ShowConstrainedWebDialog(profile, web_dialog_delegate, initiator());
 #else
   // TODO(apacible): Adjust min and max sizes based on new WebUI design.
   gfx::Size min_size = gfx::Size(kWidth, kMinHeight);
@@ -277,26 +207,20 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   // on the currently rendered contents.
   ConstrainedWebDialogDelegate* constrained_delegate =
       ShowConstrainedWebDialogWithAutoResize(
-          profile, web_dialog_delegate, initiator_, min_size, max_size);
+          profile, web_dialog_delegate, initiator(), min_size, max_size);
 #endif
 
   WebContents* media_router_dialog = constrained_delegate->GetWebContents();
 
   media_router_dialog_pending_ = true;
 
-  initiator_observer_.reset(new InitiatorWebContentsObserver(
-      initiator_, this));
   dialog_observer_.reset(new DialogWebContentsObserver(
       media_router_dialog, this));
 }
 
 void MediaRouterDialogControllerImpl::Reset() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(initiator_observer_.get());
-  DCHECK(dialog_observer_.get());
-  initiator_observer_.reset();
+  MediaRouterDialogController::Reset();
   dialog_observer_.reset();
-  presentation_request_.reset();
 }
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(
@@ -321,15 +245,9 @@ void MediaRouterDialogControllerImpl::OnDialogNavigated(
 
 void MediaRouterDialogControllerImpl::PopulateDialog(
     content::WebContents* media_router_dialog) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(media_router_dialog);
-  DCHECK(initiator_observer_);
-  if (!initiator_observer_) {
-    Reset();
-    return;
-  }
-  content::WebContents* initiator = initiator_observer_->web_contents();
-  DCHECK(initiator);
-  if (!initiator || !media_router_dialog->GetWebUI()) {
+  if (!initiator() || !media_router_dialog->GetWebUI()) {
     Reset();
     return;
   }
@@ -342,16 +260,18 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
     return;
   }
 
-  if (!presentation_request_.get()) {
+  scoped_ptr<CreatePresentationSessionRequest> presentation_request(
+      PassPresentationRequest());
+  if (!presentation_request.get()) {
     // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
     // exist (crbug.com/508695).
     base::WeakPtr<PresentationServiceDelegateImpl> delegate =
-        PresentationServiceDelegateImpl::GetOrCreateForWebContents(initiator)
+        PresentationServiceDelegateImpl::GetOrCreateForWebContents(initiator())
             ->GetWeakPtr();
     media_router_ui->InitWithDefaultMediaSource(delegate);
   } else {
     media_router_ui->InitWithPresentationSessionRequest(
-        initiator, presentation_request_.Pass());
+        initiator(), presentation_request.Pass());
   }
 }
 

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace media_router {
@@ -22,10 +21,6 @@ class MediaRouterDialogControllerAndroid
   static MediaRouterDialogControllerAndroid* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 
-  // MediaRouterDialogController implementation.
-  bool ShowMediaRouterDialogForPresentation(
-      scoped_ptr<CreatePresentationSessionRequest> request) override;
-
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerAndroid>;
 
@@ -34,7 +29,10 @@ class MediaRouterDialogControllerAndroid
   explicit MediaRouterDialogControllerAndroid(
       content::WebContents* web_contents);
 
-  base::ThreadChecker thread_checker_;
+  // MediaRouterDialogController:
+  void CreateMediaRouterDialog() override;
+  void CloseMediaRouterDialog() override;
+  bool IsShowingMediaRouterDialog() const override;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerAndroid);
 };

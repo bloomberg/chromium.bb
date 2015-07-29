@@ -26,17 +26,23 @@ MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
 }
 
 MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
-    WebContents* web_contents) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    WebContents* web_contents)
+    : MediaRouterDialogController(web_contents) {
 }
 
 MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
-  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool MediaRouterDialogControllerAndroid::ShowMediaRouterDialogForPresentation(
-    scoped_ptr<CreatePresentationSessionRequest> request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
+  NOTIMPLEMENTED();
+}
+
+void MediaRouterDialogControllerAndroid::CloseMediaRouterDialog() {
+  NOTIMPLEMENTED();
+}
+
+bool MediaRouterDialogControllerAndroid::IsShowingMediaRouterDialog() const {
+  NOTIMPLEMENTED();
   return false;
 }
 

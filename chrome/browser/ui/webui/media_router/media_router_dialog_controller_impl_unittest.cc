@@ -45,7 +45,8 @@ void MediaRouterDialogControllerImplTest::OpenMediaRouterDialog() {
   ASSERT_TRUE(dialog_controller_);
 
   // Get the media router dialog for the initiator.
-  media_router_dialog_ = dialog_controller_->ShowMediaRouterDialog();
+  dialog_controller_->ShowMediaRouterDialog();
+  media_router_dialog_ = dialog_controller_->GetMediaRouterDialog();
   ASSERT_TRUE(media_router_dialog_);
 
   // New media router dialog is a constrained window, so the number of
@@ -60,8 +61,9 @@ TEST_F(MediaRouterDialogControllerImplTest, ShowMediaRouterDialog) {
   OpenMediaRouterDialog();
 
   // Show media router dialog for the same initiator again.
+  dialog_controller_->ShowMediaRouterDialog();
   WebContents* same_media_router_dialog =
-      dialog_controller_->ShowMediaRouterDialog();
+      dialog_controller_->GetMediaRouterDialog();
 
   // Tab count remains the same.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -99,8 +101,10 @@ TEST_F(MediaRouterDialogControllerImplTest, MultipleMediaRouterDialogs) {
       MediaRouterDialogControllerImpl::FromWebContents(web_contents_1);
   ASSERT_TRUE(dialog_controller_1);
 
+  dialog_controller_1->ShowMediaRouterDialog();
   WebContents* media_router_dialog_1 =
-      dialog_controller_1->ShowMediaRouterDialog();
+      dialog_controller_1->GetMediaRouterDialog();
+
   ASSERT_TRUE(media_router_dialog_1);
 
   EXPECT_NE(web_contents_1, media_router_dialog_1);
@@ -112,8 +116,9 @@ TEST_F(MediaRouterDialogControllerImplTest, MultipleMediaRouterDialogs) {
       MediaRouterDialogControllerImpl::FromWebContents(web_contents_2);
   ASSERT_TRUE(dialog_controller_2);
 
+  dialog_controller_2->ShowMediaRouterDialog();
   WebContents* media_router_dialog_2 =
-      dialog_controller_2->ShowMediaRouterDialog();
+      dialog_controller_2->GetMediaRouterDialog();
   ASSERT_TRUE(media_router_dialog_2);
 
   EXPECT_NE(web_contents_2, media_router_dialog_2);
@@ -172,8 +177,9 @@ TEST_F(MediaRouterDialogControllerImplTest, CloseDialogFromWebUI) {
   EXPECT_FALSE(dialog_controller_->GetMediaRouterDialog());
 
   // Show the media router dialog again, creating a new one.
+  dialog_controller_->ShowMediaRouterDialog();
   WebContents* media_router_dialog_2 =
-      dialog_controller_->ShowMediaRouterDialog();
+      dialog_controller_->GetMediaRouterDialog();
 
   // Still 1 tab in the browser.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -187,7 +193,7 @@ TEST_F(MediaRouterDialogControllerImplTest, CloseDialogFromDialogController) {
   // Close the dialog.
   content::WebContentsDestroyedWatcher watcher(media_router_dialog_);
 
-  dialog_controller_->CloseMediaRouterDialog();
+  dialog_controller_->HideMediaRouterDialog();
 
   // Blocks until the media router dialog WebContents has been destroyed.
   watcher.Wait();
