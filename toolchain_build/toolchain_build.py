@@ -701,6 +701,13 @@ def HostTools(host, target):
                   ConfigureCommand('binutils') +
                   ConfigureHostTool(host) +
                   ConfigureTargetArgs(target) + [
+                      # Ensure that all the NaCl backends get included,
+                      # just for convenience of using the same tools for
+                      # whatever target machine.  The upstream default
+                      # includes all the 32-bit *-nacl targets when any
+                      # *-nacl target is selected (via --target), but only
+                      # includes 64-bit secondary targets for 64-bit hosts.
+                      '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl',
                       '--enable-deterministic-archives',
                       '--enable-gold',
                       ] + WindowsAlternate([], ['--enable-plugins']))
