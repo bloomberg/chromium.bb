@@ -90,7 +90,7 @@ int GetCheckForUpgradeEveryMs() {
   return kCheckForUpgradeMs;
 }
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
 // Return true if the current build is one of the unstable channels.
 bool IsUnstableChannel() {
   // TODO(mad): Investigate whether we still need to be on the file thread for
@@ -102,7 +102,9 @@ bool IsUnstableChannel() {
   return channel == chrome::VersionInfo::CHANNEL_DEV ||
          channel == chrome::VersionInfo::CHANNEL_CANARY;
 }
+#endif  // !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
 
+#if !defined(OS_WIN)
 // This task identifies whether we are running an unstable version. And then it
 // unconditionally calls back the provided task.
 void CheckForUnstableChannel(const base::Closure& callback_task,
