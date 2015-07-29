@@ -195,6 +195,10 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     *info = response_info_;
   }
 
+  // This always returns 200 because a URLRequestExtensionJob will only get
+  // created in MaybeCreateJob() if the file exists.
+  int GetResponseCode() const override { return 200; }
+
   void Start() override {
     request_timer_.reset(new base::ElapsedTimer());
     base::FilePath* read_file_path = new base::FilePath;

@@ -555,3 +555,8 @@ void ChromeContentClient::AddSecureSchemesAndOrigins(
   schemes->insert(extensions::kExtensionResourceScheme);
   GetSecureOriginWhitelist(origins);
 }
+
+void ChromeContentClient::AddServiceWorkerSchemes(
+    std::set<std::string>* schemes) {
+  schemes->insert(extensions::kExtensionScheme);
+}

@@ -52,10 +52,6 @@ bool AllOriginsMatch(const GURL& url_a, const GURL& url_b, const GURL& url_c) {
          url_a.GetOrigin() == url_c.GetOrigin();
 }
 
-bool OriginCanAccessServiceWorkers(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS() && IsOriginSecure(url);
-}
-
 bool CanRegisterServiceWorker(const GURL& document_url,
                               const GURL& pattern,
                               const GURL& script_url) {

@@ -1,8 +1,8 @@
 {
-  "name": "Register Service Worker",
+  "name": "Fetch Events for Service Worker",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Test for registering a service worker",
+  "description": "Test for using fetch events in the service worker",
   "permissions": ["tabs"],
   "background": {
     "scripts": ["test.js"]

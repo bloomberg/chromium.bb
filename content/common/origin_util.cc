@@ -14,25 +14,33 @@ namespace content {
 
 namespace {
 
-class SecureSchemeAndOriginSet {
+class SchemeAndOriginWhitelist {
  public:
-  SecureSchemeAndOriginSet() { Reset(); }
-  ~SecureSchemeAndOriginSet() {}
+  SchemeAndOriginWhitelist() { Reset(); }
+  ~SchemeAndOriginWhitelist() {}
 
   void Reset() {
-    GetContentClient()->AddSecureSchemesAndOrigins(&schemes_, &origins_);
+    GetContentClient()->AddSecureSchemesAndOrigins(&secure_schemes_,
+                                                   &secure_origins_);
+    GetContentClient()->AddServiceWorkerSchemes(&service_worker_schemes_);
   }
 
-  const std::set<std::string>& schemes() const { return schemes_; }
-  const std::set<GURL>& origins() const { return origins_; }
+  const std::set<std::string>& secure_schemes() const {
+    return secure_schemes_;
+  }
+  const std::set<GURL>& secure_origins() const { return secure_origins_; }
+  const std::set<std::string>& service_worker_schemes() const {
+    return service_worker_schemes_;
+  }
 
  private:
-  std::set<std::string> schemes_;
-  std::set<GURL> origins_;
-  DISALLOW_COPY_AND_ASSIGN(SecureSchemeAndOriginSet);
+  std::set<std::string> secure_schemes_;
+  std::set<GURL> secure_origins_;
+  std::set<std::string> service_worker_schemes_;
+  DISALLOW_COPY_AND_ASSIGN(SchemeAndOriginWhitelist);
 };
 
-base::LazyInstance<SecureSchemeAndOriginSet>::Leaky g_trustworthy_whitelist =
+base::LazyInstance<SchemeAndOriginWhitelist>::Leaky g_trustworthy_whitelist =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -50,16 +58,30 @@ bool IsOriginSecure(const GURL& url) {
   if (net::IsLocalhost(hostname))
     return true;
 
-  if (ContainsKey(g_trustworthy_whitelist.Get().schemes(), url.scheme()))
+  if (ContainsKey(g_trustworthy_whitelist.Get().secure_schemes(), url.scheme()))
     return true;
 
-  if (ContainsKey(g_trustworthy_whitelist.Get().origins(), url.GetOrigin()))
+  if (ContainsKey(g_trustworthy_whitelist.Get().secure_origins(),
+                  url.GetOrigin())) {
     return true;
+  }
 
   return false;
 }
 
-void ResetSecureSchemesAndOriginsForTesting() {
+bool OriginCanAccessServiceWorkers(const GURL& url) {
+  if (url.SchemeIsHTTPOrHTTPS() && IsOriginSecure(url))
+    return true;
+
+  if (ContainsKey(g_trustworthy_whitelist.Get().service_worker_schemes(),
+                  url.scheme())) {
+    return true;
+  }
+
+  return false;
+}
+
+void ResetSchemesAndOriginsWhitelistForTesting() {
   g_trustworthy_whitelist.Get().Reset();
 }
 

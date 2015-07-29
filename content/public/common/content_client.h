@@ -141,6 +141,11 @@ class CONTENT_EXPORT ContentClient {
   virtual void AddSecureSchemesAndOrigins(std::set<std::string>* schemes,
                                           std::set<GURL>* origins) {}
 
+  // Gives the embedder a chance to register additional schemes that
+  // should be allowed to register service workers. Only secure and
+  // trustworthy schemes should be added.
+  virtual void AddServiceWorkerSchemes(std::set<std::string>* schemes) {}
+
  private:
   friend class ContentClientInitializer;  // To set these pointers.
   friend class InternalTestInitializer;

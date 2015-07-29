@@ -15,6 +15,7 @@
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/origin_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -63,7 +64,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body) {
-  if (!request->url().SchemeIsHTTPOrHTTPS())
+  if (!OriginCanAccessServiceWorkers(request->url()))
     return;
 
   if (!context_wrapper || !context_wrapper->context() ||

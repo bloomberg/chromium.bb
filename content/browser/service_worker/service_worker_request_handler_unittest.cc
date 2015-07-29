@@ -118,23 +118,23 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
-  EXPECT_TRUE(InitializeHandlerCheck(
-      "http://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_TRUE(InitializeHandlerCheck(
-      "https://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
+  // Cannot initialize a handler for non-secure origins.
+  EXPECT_FALSE(InitializeHandlerCheck("http://host/scope/doc", "GET", false,
+                                      RESOURCE_TYPE_MAIN_FRAME));
   EXPECT_FALSE(InitializeHandlerCheck(
       "ftp://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
+  EXPECT_TRUE(InitializeHandlerCheck("https://host/scope/doc", "GET", false,
+                                     RESOURCE_TYPE_MAIN_FRAME));
 
-  EXPECT_TRUE(InitializeHandlerCheck(
-      "http://host/scope/doc", "OPTIONS", false, RESOURCE_TYPE_MAIN_FRAME));
+  // OPTIONS is also supported. See crbug.com/434660.
   EXPECT_TRUE(InitializeHandlerCheck(
       "https://host/scope/doc", "OPTIONS", false, RESOURCE_TYPE_MAIN_FRAME));
 
   provider_host_->SetDocumentUrl(GURL(""));
   EXPECT_FALSE(InitializeHandlerCheck(
       "http://host/scope/doc", "GET", true, RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_STREQ("http://host/scope/doc",
-               provider_host_->document_url().spec().c_str());
+  // Cannot initialize a handler for non-secure origins.
+  EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
   EXPECT_FALSE(InitializeHandlerCheck(
       "https://host/scope/doc", "GET", true, RESOURCE_TYPE_MAIN_FRAME));
   EXPECT_STREQ("https://host/scope/doc",
@@ -143,8 +143,8 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
   provider_host_->SetDocumentUrl(GURL(""));
   EXPECT_FALSE(InitializeHandlerCheck(
       "http://host/scope/doc", "GET", true, RESOURCE_TYPE_SUB_FRAME));
-  EXPECT_STREQ("http://host/scope/doc",
-               provider_host_->document_url().spec().c_str());
+  // Cannot initialize a handler for non-secure origins.
+  EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
   EXPECT_FALSE(InitializeHandlerCheck(
       "https://host/scope/doc", "GET", true, RESOURCE_TYPE_SUB_FRAME));
   EXPECT_STREQ("https://host/scope/doc",

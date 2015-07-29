@@ -75,6 +75,8 @@ class ChromeContentClient : public content::ContentClient {
 
   void AddSecureSchemesAndOrigins(std::set<std::string>* schemes,
                                   std::set<GURL>* origins) override;
+
+  void AddServiceWorkerSchemes(std::set<std::string>* schemes) override;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_

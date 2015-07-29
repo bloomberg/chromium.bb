@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace extensions {
@@ -22,14 +24,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterServiceWorkersOnTrunk) {
   ExtensionTestMessageListener listener(false);
-  // This should fail because there are changes to be made to
-  // successfully register a service worker.
-  ASSERT_FALSE(RunExtensionTest("service_worker/register")) << message_;
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  ASSERT_EQ(
-      "SecurityError: Failed to register a ServiceWorker: No URL is "
-      "associated with the caller's document.",
-      listener.message());
+  ASSERT_TRUE(RunExtensionTest("service_worker/register")) << message_;
 }
 
 // This feature is restricted to trunk, so on dev it should have existing
@@ -40,11 +35,33 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, CannotRegisterServiceWorkersOnDev) {
   ExtensionTestMessageListener listener(false);
   ASSERT_FALSE(RunExtensionTest("service_worker/register")) << message_;
   ASSERT_TRUE(listener.WaitUntilSatisfied());
-  ASSERT_EQ(
+  EXPECT_EQ(
       "SecurityError: Failed to register a ServiceWorker: The URL "
       "protocol of the current origin ('chrome-extension://" +
           GetSingleLoadedExtension()->id() + "') is not supported.",
       listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, ServiceWorkerFetchEvent) {
+  RunExtensionTest("service_worker/fetch");
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(contents);
+
+  std::string output;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("No Fetch Event yet.", output);
+
+  // Page must reload in order for the service worker to take control.
+  contents->GetController().Reload(true);
+  content::WaitForLoadStop(contents);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("Caught a fetch!", output);
 }
 
 }  // namespace extensions

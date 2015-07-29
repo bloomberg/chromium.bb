@@ -2,4 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-console.log("Hello from the service worker");
+var logForDebugging = false;
+function log(message) {
+  if (logForDebugging)
+    console.log(message);
+}
+
+log("Hello from the service worker");

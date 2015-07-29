@@ -26,7 +26,7 @@ TEST(SecureOriginWhiteList, UnsafelyTreatInsecureOriginAsSecure) {
       switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");
   command_line->AppendSwitch(switches::kUserDataDir);
-  content::ResetSecureSchemesAndOriginsForTesting();
+  content::ResetSchemesAndOriginsWhitelistForTesting();
 
   // They should be now white-listed.
   EXPECT_TRUE(content::IsOriginSecure(GURL("http://example.com/a.html")));
