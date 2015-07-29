@@ -10,11 +10,15 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "mojo/common/user_agent.h"
 #include "mojo/services/network/mojo_persistent_cookie_store.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/mapped_host_resolver.h"
 #include "net/log/net_log_util.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
@@ -25,8 +29,32 @@
 namespace mojo {
 
 namespace {
+// Applies the specified mapping rules when resolving hosts. Please see the
+// comment of net::MappedHostResolver::AddRulesFromString() for rule format.
+const char kHostResolverRules[] = "host-resolver-rules";
+
+// Ignores certificate-related errors.
+const char kIgnoreCertificateErrors[] = "ignore-certificate-errors";
+
 // Logs network information to the specified file.
 const char kLogNetLog[] = "log-net-log";
+
+// Allows for forcing socket connections to HTTP/HTTPS to use fixed ports.
+const char kTestingFixedHttpPort[] = "testing-fixed-http-port";
+const char kTestingFixedHttpsPort[] = "testing-fixed-https-port";
+
+uint16 GetPortNumber(const base::CommandLine& command_line,
+                     const base::StringPiece& switch_name) {
+  std::string port_str = command_line.GetSwitchValueASCII(switch_name);
+  unsigned port;
+  if (!base::StringToUint(port_str, &port) || port > 65535) {
+    LOG(ERROR) << "Invalid value for switch " << switch_name << ": '"
+               << port_str << "' is not a valid port number.";
+    return 0;
+  }
+  return static_cast<uint16>(port);
+}
+
 }  // namespace
 
 class NetworkContext::MojoNetLog : public net::NetLog {
@@ -118,6 +146,32 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     NetworkServiceDelegate* delegate) {
   net::URLRequestContextBuilder builder;
+  net::URLRequestContextBuilder::HttpNetworkSessionParams params;
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kIgnoreCertificateErrors))
+    params.ignore_certificate_errors = true;
+  if (command_line->HasSwitch(kTestingFixedHttpPort)) {
+    params.testing_fixed_http_port =
+        GetPortNumber(*command_line, kTestingFixedHttpPort);
+  }
+  if (command_line->HasSwitch(kTestingFixedHttpsPort)) {
+    params.testing_fixed_https_port =
+        GetPortNumber(*command_line, kTestingFixedHttpsPort);
+  }
+  builder.set_http_network_session_params(params);
+
+  if (command_line->HasSwitch(kHostResolverRules)) {
+    scoped_ptr<net::HostResolver> host_resolver(
+        net::HostResolver::CreateDefaultResolver(nullptr));
+    scoped_ptr<net::MappedHostResolver> remapped_host_resolver(
+        new net::MappedHostResolver(host_resolver.Pass()));
+    remapped_host_resolver->SetRulesFromString(
+        command_line->GetSwitchValueASCII(kHostResolverRules));
+    host_resolver.reset(remapped_host_resolver.release());
+    builder.set_host_resolver(host_resolver.release());
+  }
+
   builder.set_accept_language("en-us,en");
   builder.set_user_agent(mojo::common::GetUserAgent());
   builder.set_proxy_service(net::ProxyService::CreateDirect());
