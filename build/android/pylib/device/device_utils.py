@@ -740,13 +740,20 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    pids = list(itertools.chain(*self.GetPids(process_name).values()))
+    procs_pids = self.GetPids(process_name)
+    pids = list(itertools.chain(*procs_pids.values()))
     if not pids:
       if quiet:
         return 0
       else:
         raise device_errors.CommandFailedError(
             'No process "%s"' % process_name, str(self))
+
+    logging.info(
+        'KillAll(%s, ...) attempting to kill the following:', process_name)
+    for name, ids  in procs_pids.iteritems():
+      for i in ids:
+        logging.info('  %05s %s', str(i), name)
 
     cmd = ['kill', '-%d' % signum] + pids
     self.RunShellCommand(cmd, as_root=as_root, check_return=True)
