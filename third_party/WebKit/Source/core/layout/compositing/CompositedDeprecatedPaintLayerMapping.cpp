@@ -929,27 +929,27 @@ void CompositedDeprecatedPaintLayerMapping::updateScrollingLayerGeometry(const I
 
     ASSERT(m_scrollingContentsLayer);
     LayoutBox* layoutBox = toLayoutBox(layoutObject());
-    IntRect clientBox = enclosingIntRect(layoutBox->clientBoxRect());
+    IntRect overflowClipRect = enclosingIntRect(layoutBox->overflowClipRect(LayoutPoint()));
     DoubleSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
-    m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
-    m_scrollingLayer->setSize(clientBox.size());
+    m_scrollingLayer->setPosition(FloatPoint(overflowClipRect.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
+    m_scrollingLayer->setSize(overflowClipRect.size());
 
     IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromLayoutObject();
-    m_scrollingLayer->setOffsetFromLayoutObject(-toIntSize(clientBox.location()));
+    m_scrollingLayer->setOffsetFromLayoutObject(-toIntSize(overflowClipRect.location()));
 
     if (m_childClippingMaskLayer && !layoutObject()->style()->clipPath()) {
         m_childClippingMaskLayer->setPosition(m_scrollingLayer->position());
         m_childClippingMaskLayer->setSize(m_scrollingLayer->size());
-        m_childClippingMaskLayer->setOffsetFromLayoutObject(toIntSize(clientBox.location()));
+        m_childClippingMaskLayer->setOffsetFromLayoutObject(toIntSize(overflowClipRect.location()));
     }
 
-    bool clientBoxOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromLayoutObject();
+    bool overflowClipRectOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromLayoutObject();
 
     IntSize scrollSize(layoutBox->scrollWidth(), layoutBox->scrollHeight());
-    if (scrollSize != m_scrollingContentsLayer->size() || clientBoxOffsetChanged)
+    if (scrollSize != m_scrollingContentsLayer->size() || overflowClipRectOffsetChanged)
         m_scrollingContentsLayer->setNeedsDisplay();
 
-    DoubleSize scrollingContentsOffset(clientBox.location().x() - adjustedScrollOffset.width(), clientBox.location().y() - adjustedScrollOffset.height());
+    DoubleSize scrollingContentsOffset(overflowClipRect.location().x() - adjustedScrollOffset.width(), overflowClipRect.location().y() - adjustedScrollOffset.height());
     // The scroll offset change is compared using floating point so that fractional scroll offset
     // change can be propagated to compositor.
     if (scrollingContentsOffset != m_scrollingContentsLayer->offsetDoubleFromLayoutObject() || scrollSize != m_scrollingContentsLayer->size()) {

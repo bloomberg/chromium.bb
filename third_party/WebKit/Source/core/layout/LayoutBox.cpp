@@ -1434,15 +1434,16 @@ LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrol
     clipRect.setLocation(location + clipRect.location() + LayoutSize(borderLeft(), borderTop()));
     clipRect.setSize(clipRect.size() - LayoutSize(borderLeft() + borderRight(), borderTop() + borderBottom()));
 
-    if (!hasOverflowClip())
-        return clipRect;
-
-    // Subtract out scrollbars if we have them.
-    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        clipRect.move(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), 0);
-    clipRect.contract(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), layer()->scrollableArea()->horizontalScrollbarHeight(relevancy));
-
+    if (hasOverflowClip())
+        excludeScrollbars(clipRect, relevancy);
     return clipRect;
+}
+
+void LayoutBox::excludeScrollbars(LayoutRect& rect, OverlayScrollbarSizeRelevancy relevancy) const
+{
+    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        rect.move(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), 0);
+    rect.contract(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), layer()->scrollableArea()->horizontalScrollbarHeight(relevancy));
 }
 
 LayoutRect LayoutBox::clipRect(const LayoutPoint& location)

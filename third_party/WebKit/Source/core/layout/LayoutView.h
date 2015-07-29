@@ -125,6 +125,7 @@ public:
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
     LayoutRect viewRect() const override;
+    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const override;
 
     bool shouldDoFullPaintInvalidationForNextLayout() const;
     bool doingFullPaintInvalidation() const { return m_frameView->needsFullPaintInvalidation(); }

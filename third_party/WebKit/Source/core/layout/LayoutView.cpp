@@ -857,6 +857,19 @@ LayoutRect LayoutView::viewRect() const
     return LayoutRect();
 }
 
+LayoutRect LayoutView::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy) const
+{
+    LayoutRect rect = viewRect();
+    if (rect.isEmpty())
+        return LayoutBox::overflowClipRect(location, relevancy);
+
+    rect.setLocation(location);
+    if (hasOverflowClip())
+        excludeScrollbars(rect, relevancy);
+
+    return rect;
+}
+
 IntRect LayoutView::unscaledDocumentRect() const
 {
     LayoutRect overflowRect(layoutOverflowRect());

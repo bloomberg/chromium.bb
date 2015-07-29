@@ -256,7 +256,8 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
             if (shouldRespectOverflowClip(context))
                 backgroundRect.intersect(layerBoundsWithVisualOverflow);
         } else {
-            LayoutRect bounds = toLayoutBox(m_layoutObject).borderBoxRect();
+            // The LayoutView is special since its overflow clipping rect may be larger than its box rect (crbug.com/492871).
+            LayoutRect bounds = m_layoutObject.isLayoutView() ? toLayoutView(m_layoutObject).viewRect() : toLayoutBox(m_layoutObject).borderBoxRect();
             bounds.moveBy(offset);
             if (shouldRespectOverflowClip(context))
                 backgroundRect.intersect(bounds);

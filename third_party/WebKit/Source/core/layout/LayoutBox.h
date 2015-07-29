@@ -547,7 +547,7 @@ public:
     LayoutUnit availableWidth() const { return style()->isHorizontalWritingMode() ? availableLogicalWidth() : availableLogicalHeight(IncludeMarginBorderPadding); }
     LayoutUnit availableHeight() const { return style()->isHorizontalWritingMode() ? availableLogicalHeight(IncludeMarginBorderPadding) : availableLogicalWidth(); }
 
-    virtual int verticalScrollbarWidth() const;
+    int verticalScrollbarWidth() const;
     int horizontalScrollbarHeight() const;
     int intrinsicScrollbarLogicalWidth() const;
     int scrollbarLogicalWidth() const { return style()->isHorizontalWritingMode() ? verticalScrollbarWidth() : horizontalScrollbarHeight(); }
@@ -762,6 +762,7 @@ protected:
     PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
 
     bool hasNonCompositedScrollbars() const final;
+    void excludeScrollbars(LayoutRect&, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
 private:
     bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
