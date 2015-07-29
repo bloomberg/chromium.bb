@@ -411,7 +411,7 @@ class PinchromeCommand(command.CliCommand):
     git.RmPath(mask_file)
     git.Commit(overlay, self.CommitMessage('Chrome: Unpin chrome'))
     git.UploadCL(overlay, OVERLAY_URL, self.options.branch,
-                 dryrun=self.options.dryrun)
+                 skip=self.options.dryrun)
 
   def pin(self, work_dir):
     """Pin chrome."""
@@ -488,9 +488,9 @@ class PinchromeCommand(command.CliCommand):
 
     # Upload the CLs.
     git.UploadCL(overlay, OVERLAY_URL, self.options.branch,
-                 dryrun=self.options.dryrun)
+                 skip=self.options.dryrun)
     git.UploadCL(priv_overlay, PRIV_OVERLAY_URL, self.options.branch,
-                 dryrun=self.options.dryrun)
+                 skip=self.options.dryrun)
 
     print('\n** Both of the changes above need to be submitted for chrome '
           'to be pinned. **\n')
