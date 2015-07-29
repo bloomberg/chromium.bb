@@ -65,6 +65,7 @@ GalleryDataModel.prototype = {
 GalleryDataModel.prototype.saveItem = function(volumeManager, item, canvas) {
   var oldEntry = item.getEntry();
   var oldLocationInfo = item.getLocationInfo();
+  var oldIsOriginal = item.isOriginal();
   return new Promise(function(fulfill, reject) {
     item.saveToFile(
         volumeManager,
@@ -98,7 +99,7 @@ GalleryDataModel.prototype.saveItem = function(volumeManager, item, canvas) {
                   oldLocationInfo,
                   itemLists[0][0],
                   itemLists[1][0],
-                  item.isOriginal());
+                  oldIsOriginal);
               // The item must be added behind the existing item so that it does
               // not change the index of the existing item.
               // TODO(hirono): Update the item index of the selection model

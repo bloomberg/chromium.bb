@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 var model;
 var fileSystem;
 var item;
@@ -72,11 +71,18 @@ function testSaveItemNewFile(callback) {
       callback) {
     // Gallery item track new file.
     this.entry_ = new MockEntry(fileSystem, '/test (1).png');
+    this.original_ = false;
     callback(true);
   };
   model.push(item);
   reportPromise(
       model.saveItem({}, item, document.createElement('canvas')).
-          then(function() { assertEquals(2, model.length); }),
+          then(function() {
+            assertEquals(2, model.length);
+            assertEquals('test (1).png', model.item(0).getFileName());
+            assertFalse(model.item(0).isOriginal());
+            assertEquals('test.webp', model.item(1).getFileName());
+            assertTrue(model.item(1).isOriginal());
+          }),
       callback);
 }
