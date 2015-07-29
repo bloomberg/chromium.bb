@@ -250,7 +250,9 @@ AutomationUtil.isInSameTree = function(a, b) {
   if (!a || !b)
     return true;
 
-  return a.root === b.root;
+  // Given two non-desktop roots, consider them in the "same" tree.
+  return a.root === b.root ||
+      (a.root.role == b.root.role && a.root.role == 'rootWebArea');
 };
 
 /**
