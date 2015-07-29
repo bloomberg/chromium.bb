@@ -55,7 +55,6 @@
 #include <iostream>
 #include <limits>
 #include <map>
-#include <sstream>
 #include <vector>
 
 #include "processor/range_map-inl.h"
@@ -72,7 +71,6 @@ namespace google_breakpad {
 using std::istream;
 using std::ifstream;
 using std::numeric_limits;
-using std::stringstream;
 using std::vector;
 
 // Returns true iff |context_size| matches exactly one of the sizes of the
