@@ -707,7 +707,13 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityEm) {
+#if defined(OS_ANDROID)
+// Flaky failures: http://crbug.com/515053.
+#define MAYBE_AccessibilityEm DISABLED_AccessibilityEm
+#else
+#define MAYBE_AccessibilityEm AccessibilityEm
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilityEm) {
   RunHtmlTest(FILE_PATH_LITERAL("em.html"));
 }
 
