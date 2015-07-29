@@ -14,20 +14,24 @@ namespace sandbox {
 
 class SANDBOX_EXPORT ThreadHelpers {
  public:
-  // Check whether the current process is single threaded. |proc_fd|
+  // Checks whether the current process is single threaded. |proc_fd|
   // must be a file descriptor to /proc/ and remains owned by the
   // caller.
   static bool IsSingleThreaded(int proc_fd);
   static bool IsSingleThreaded();
 
-  // Crash if the current process is not single threaded. This will wait
+  // Crashes if the current process is not single threaded. This will wait
   // on /proc to be updated. In the case where this doesn't crash, this will
   // return promptly. In the case where this does crash, this will first wait
   // for a few ms in Debug mode, a few seconds in Release mode.
   static void AssertSingleThreaded(int proc_fd);
   static void AssertSingleThreaded();
 
-  // Stop |thread| and ensure that it does not have an entry in
+  // Starts |thread| and ensure that it has an entry in /proc/self/task/ from
+  // the point of view of the current thread.
+  static bool StartThreadAndWatchProcFS(int proc_fd, base::Thread* thread);
+
+  // Stops |thread| and ensure that it does not have an entry in
   // /proc/self/task/ from the point of view of the current thread. This is
   // the way to stop threads before calling IsSingleThreaded().
   static bool StopThreadAndWatchProcFS(int proc_fd, base::Thread* thread);

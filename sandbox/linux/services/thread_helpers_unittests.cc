@@ -59,7 +59,7 @@ TEST(ThreadHelpers, IsSingleThreadedBasic) {
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded());
 
   base::Thread thread("sandbox_tests");
-  ASSERT_TRUE(thread.Start());
+  ASSERT_TRUE(ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread));
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded());
   // Explicitly stop the thread here to not pollute the next test.
@@ -82,7 +82,8 @@ TEST(ThreadHelpers, IsSingleThreadedIterated) {
   // Iterate to check for race conditions.
   for (int i = 0; i < GetRaceTestIterations(); ++i) {
     base::Thread thread("sandbox_tests");
-    ASSERT_TRUE(thread.Start());
+    ASSERT_TRUE(
+        ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread));
     ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
     // Explicitly stop the thread here to not pollute the next test.
     ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.fd(), &thread));
@@ -97,7 +98,8 @@ TEST(ThreadHelpers, IsSingleThreadedStartAndStop) {
   // This is testing for a race condition, so iterate.
   // Manually, this has been tested with more that 1M iterations.
   for (int i = 0; i < GetRaceTestIterations(); ++i) {
-    ASSERT_TRUE(thread.Start());
+    ASSERT_TRUE(
+        ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread));
     ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
 
     ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(proc_fd.fd(), &thread));
@@ -107,14 +109,17 @@ TEST(ThreadHelpers, IsSingleThreadedStartAndStop) {
 }
 
 SANDBOX_TEST(ThreadHelpers, AssertSingleThreadedAfterThreadStopped) {
+  ScopedProc proc_fd;
   SANDBOX_ASSERT(ThreadHelpers::IsSingleThreaded());
 
   base::Thread thread1("sandbox_tests");
   base::Thread thread2("sandbox_tests");
 
   for (int i = 0; i < GetRaceTestIterations(); ++i) {
-    SANDBOX_ASSERT(thread1.Start());
-    SANDBOX_ASSERT(thread2.Start());
+    SANDBOX_ASSERT(
+        ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread1));
+    SANDBOX_ASSERT(
+        ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread2));
     SANDBOX_ASSERT(!ThreadHelpers::IsSingleThreaded());
 
     thread1.Stop();
