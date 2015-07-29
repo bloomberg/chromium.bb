@@ -129,10 +129,21 @@ void InitializeMetadataEvent(TraceEvent* trace_event,
   unsigned long long arg_value;
   ::trace_event_internal::SetTraceValue(value, &arg_type, &arg_value);
   trace_event->Initialize(
-      thread_id, TraceTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
-      &g_category_group_enabled[g_category_metadata], metadata_name,
-      trace_event_internal::kNoId, trace_event_internal::kNoId, num_args,
-      &arg_name, &arg_type, &arg_value, NULL, TRACE_EVENT_FLAG_NONE);
+      thread_id,
+      TraceTicks(),
+      ThreadTicks(),
+      TRACE_EVENT_PHASE_METADATA,
+      &g_category_group_enabled[g_category_metadata],
+      metadata_name,
+      trace_event_internal::kNoId,  // id
+      trace_event_internal::kNoId,  // context_id
+      trace_event_internal::kNoId,  // bind_id
+      num_args,
+      &arg_name,
+      &arg_type,
+      &arg_value,
+      nullptr,
+      TRACE_EVENT_FLAG_NONE);
 }
 
 class AutoThreadLocalBoolean {
@@ -319,12 +330,21 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
     TraceEvent* trace_event = AddTraceEvent(NULL);
     if (trace_event) {
       trace_event->Initialize(
-          static_cast<int>(PlatformThread::CurrentId()), event_timestamp,
-          event_thread_timestamp, TRACE_EVENT_PHASE_COMPLETE,
+          static_cast<int>(PlatformThread::CurrentId()),
+          event_timestamp,
+          event_thread_timestamp,
+          TRACE_EVENT_PHASE_COMPLETE,
           &g_category_group_enabled[g_category_trace_event_overhead],
-          "overhead", ::trace_event_internal::kNoId,
-          ::trace_event_internal::kNoId, ::trace_event_internal::kZeroNumArgs,
-          NULL, NULL, NULL, NULL, 0);
+          "overhead",
+          trace_event_internal::kNoId,  // id
+          trace_event_internal::kNoId,  // context_id
+          trace_event_internal::kNoId,  // bind_id
+          ::trace_event_internal::kZeroNumArgs,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          TRACE_EVENT_FLAG_NONE);
       trace_event->UpdateDuration(now, thread_now);
     }
   }
@@ -1099,9 +1119,20 @@ TraceEventHandle TraceLog::AddTraceEvent(
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(
-      phase, category_group_enabled, name, id, ::trace_event_internal::kNoId,
-      thread_id, now, num_args, arg_names, arg_types, arg_values,
-      convertable_values, flags);
+      phase,
+      category_group_enabled,
+      name,
+      id,
+      trace_event_internal::kNoId,  // context_id
+      trace_event_internal::kNoId,  // bind_id
+      thread_id,
+      now,
+      num_args,
+      arg_names,
+      arg_types,
+      arg_values,
+      convertable_values,
+      flags);
 }
 
 TraceEventHandle TraceLog::AddTraceEventWithContextId(
@@ -1119,9 +1150,53 @@ TraceEventHandle TraceLog::AddTraceEventWithContextId(
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(
-      phase, category_group_enabled, name, id, context_id, thread_id, now,
-      num_args, arg_names, arg_types, arg_values, convertable_values,
+      phase,
+      category_group_enabled,
+      name,
+      id,
+      context_id,
+      trace_event_internal::kNoId,  // bind_id
+      thread_id,
+      now,
+      num_args,
+      arg_names,
+      arg_types,
+      arg_values,
+      convertable_values,
       flags | TRACE_EVENT_FLAG_HAS_CONTEXT_ID);
+}
+
+// Handle legacy calls to AddTraceEventWithThreadIdAndTimestamp
+// with kNoId as bind_id
+TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    unsigned long long context_id,
+    int thread_id,
+    const TraceTicks& timestamp,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    unsigned int flags) {
+  return AddTraceEventWithThreadIdAndTimestamp(
+      phase,
+      category_group_enabled,
+      name,
+      id,
+      context_id,
+      trace_event_internal::kNoId,  // bind_id
+      thread_id,
+      timestamp,
+      num_args,
+      arg_names,
+      arg_types,
+      arg_values,
+      convertable_values,
+      flags);
 }
 
 TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
@@ -1130,6 +1205,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     unsigned long long context_id,
+    unsigned long long bind_id,
     int thread_id,
     const TraceTicks& timestamp,
     int num_args,
@@ -1153,8 +1229,12 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   DCHECK(name);
   DCHECK(!timestamp.is_null());
 
-  if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
+  if (flags & TRACE_EVENT_FLAG_MANGLE_ID) {
+    if ((flags & TRACE_EVENT_FLAG_FLOW_IN) ||
+        (flags & TRACE_EVENT_FLAG_FLOW_OUT))
+      bind_id = MangleEventId(bind_id);
     id = MangleEventId(id);
+  }
 
   TraceTicks offset_event_timestamp = OffsetTimestamp(timestamp);
   TraceTicks now = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP
@@ -1227,10 +1307,21 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
 
     if (trace_event) {
-      trace_event->Initialize(thread_id, offset_event_timestamp, thread_now,
-                              phase, category_group_enabled, name, id,
-                              context_id, num_args, arg_names, arg_types,
-                              arg_values, convertable_values, flags);
+      trace_event->Initialize(thread_id,
+                              offset_event_timestamp,
+                              thread_now,
+                              phase,
+                              category_group_enabled,
+                              name,
+                              id,
+                              context_id,
+                              bind_id,
+                              num_args,
+                              arg_names,
+                              arg_types,
+                              arg_values,
+                              convertable_values,
+                              flags);
 
 #if defined(OS_ANDROID)
       trace_event->SendToATrace();
@@ -1392,8 +1483,8 @@ void TraceLog::UpdateTraceEventDuration(
         subtle::NoBarrier_Load(&event_callback_));
     if (event_callback) {
       event_callback(now, TRACE_EVENT_PHASE_END, category_group_enabled, name,
-                     trace_event_internal::kNoId, trace_event_internal::kNoId,
-                     NULL, NULL, NULL, TRACE_EVENT_FLAG_NONE);
+                     trace_event_internal::kNoId, 0,
+                     nullptr, nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
     }
   }
 }
@@ -1625,9 +1716,18 @@ ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(
   if (*category_group_enabled_) {
     event_handle_ =
         TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-            TRACE_EVENT_PHASE_COMPLETE, category_group_enabled_, name, kNoId,
-            kNoId, static_cast<int>(base::PlatformThread::CurrentId()),
-            base::TraceTicks::Now(), 0, NULL, NULL, NULL, NULL,
+            TRACE_EVENT_PHASE_COMPLETE,
+            category_group_enabled_,
+            name,
+            trace_event_internal::kNoId,  // id
+            trace_event_internal::kNoId,  // context_id
+            static_cast<int>(base::PlatformThread::CurrentId()),  // thread_id
+            base::TraceTicks::Now(),
+            trace_event_internal::kZeroNumArgs,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
             TRACE_EVENT_FLAG_NONE);
   }
 }

@@ -82,6 +82,7 @@ void TraceEvent::Initialize(
     const char* name,
     unsigned long long id,
     unsigned long long context_id,
+    unsigned long long bind_id,
     int num_args,
     const char** arg_names,
     const unsigned char* arg_types,
@@ -98,6 +99,7 @@ void TraceEvent::Initialize(
   thread_id_ = thread_id;
   phase_ = phase;
   flags_ = flags;
+  bind_id_ = bind_id;
 
   // Clamp num_args since it may have been set by a third_party library.
   num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;
@@ -330,6 +332,16 @@ void TraceEvent::AppendAsJSON(
 
   if (flags_ & TRACE_EVENT_FLAG_BIND_TO_ENCLOSING)
     StringAppendF(out, ",\"bp\":\"e\"");
+
+  if ((flags_ & TRACE_EVENT_FLAG_FLOW_OUT) ||
+      (flags_ & TRACE_EVENT_FLAG_FLOW_IN)) {
+    StringAppendF(out, ",\"bind_id\":\"0x%" PRIx64 "\"",
+                  static_cast<uint64>(bind_id_));
+  }
+  if (flags_ & TRACE_EVENT_FLAG_FLOW_IN)
+    StringAppendF(out, ",\"flow_in\":true");
+  if (flags_ & TRACE_EVENT_FLAG_FLOW_OUT)
+    StringAppendF(out, ",\"flow_out\":true");
 
   // Similar to id_, print the context_id as hex if present.
   if (flags_ & TRACE_EVENT_FLAG_HAS_CONTEXT_ID)

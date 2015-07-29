@@ -225,6 +225,21 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
+  TraceEventHandle AddTraceEventWithThreadIdAndTimestamp(
+      char phase,
+      const unsigned char* category_group_enabled,
+      const char* name,
+      unsigned long long id,
+      unsigned long long context_id,
+      unsigned long long bind_id,
+      int thread_id,
+      const TraceTicks& timestamp,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      unsigned int flags);
   static void AddTraceEventEtw(char phase,
                                const char* category_group,
                                const void* id,

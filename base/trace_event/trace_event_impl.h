@@ -97,6 +97,7 @@ class BASE_EXPORT TraceEvent {
       const char* name,
       unsigned long long id,
       unsigned long long context_id,
+      unsigned long long bind_id,
       int num_args,
       const char** arg_names,
       const unsigned char* arg_types,
@@ -165,6 +166,7 @@ class BASE_EXPORT TraceEvent {
   int thread_id_;
   char phase_;
   unsigned int flags_;
+  unsigned int bind_id_;
   unsigned char arg_types_[kTraceMaxNumArgs];
 
   DISALLOW_COPY_AND_ASSIGN(TraceEvent);
