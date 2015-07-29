@@ -18,6 +18,9 @@ public:
         : button(ButtonNone)
         , id(0)
         , force(0.f)
+        , tiltX(0)
+        , tiltY(0)
+        , pointerType(PointerTypeUnknown)
     {
     }
 
@@ -28,10 +31,25 @@ public:
         ButtonRight
     };
 
+    enum PointerType {
+        PointerTypeUnknown,
+        PointerTypeMouse,
+        PointerTypePen,
+        PointerTypeTouch
+    };
+
     Button button;
 
     int id;
     float force;
+
+    // Tilt of a pen stylus from surface normal as plane angles in degrees,
+    // Values lie in [-90,90]. A positive tiltX is to the right and a positive
+    // tiltY is towards the user.
+    int tiltX;
+    int tiltY;
+
+    PointerType pointerType;
 };
 
 } // namespace blink
