@@ -3073,7 +3073,9 @@ void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLockin
     audioSourceProvider().setClient(nullptr);
 #endif
     if (m_webMediaPlayer) {
+#if ENABLE(WEB_AUDIO)
         m_audioSourceProvider.wrap(nullptr);
+#endif
         m_webMediaPlayer.clear();
     }
 }
@@ -3493,7 +3495,9 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource()
     closeMediaSource();
 
     if (m_webMediaPlayer) {
+#if ENABLE(WEB_AUDIO)
         m_audioSourceProvider.wrap(nullptr);
+#endif
         m_webMediaPlayer.clear();
     }
 
