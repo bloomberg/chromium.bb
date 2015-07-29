@@ -731,7 +731,8 @@ TEST_F(PredictorTest, HSTSRedirect) {
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
 
-  predictor.PreconnectUrl(kHttpUrl, GURL(), UrlInfo::OMNIBOX_MOTIVATED, 2);
+  predictor.PreconnectUrl(kHttpUrl, GURL(), UrlInfo::OMNIBOX_MOTIVATED, true,
+                          2);
   ASSERT_EQ(1u, observer.preconnected_urls_.size());
   EXPECT_EQ(kHttpsUrl, observer.preconnected_urls_[0]);
 

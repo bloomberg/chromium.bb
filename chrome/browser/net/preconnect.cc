@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
@@ -30,20 +31,18 @@ void PreconnectOnUIThread(
     net::URLRequestContextGetter* getter) {
   // Prewarm connection to Search URL.
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&PreconnectOnIOThread, url, first_party_for_cookies,
-                 motivation, count, make_scoped_refptr(getter)));
+                 motivation, count, make_scoped_refptr(getter), true));
   return;
 }
 
-
-void PreconnectOnIOThread(
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    UrlInfo::ResolutionMotivation motivation,
-    int count,
-    net::URLRequestContextGetter* getter) {
+void PreconnectOnIOThread(const GURL& url,
+                          const GURL& first_party_for_cookies,
+                          UrlInfo::ResolutionMotivation motivation,
+                          int count,
+                          net::URLRequestContextGetter* getter,
+                          bool allow_credentials) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     LOG(DFATAL) << "This must be run only on the IO thread.";
     return;
@@ -70,6 +69,16 @@ void PreconnectOnIOThread(
   net::NetworkDelegate* delegate = context->network_delegate();
   if (delegate->CanEnablePrivacyMode(url, first_party_for_cookies))
     request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
+
+  // TODO(yoav): Fix this layering violation, since when credentials are not
+  // allowed we should turn on a flag indicating that, rather then turn on
+  // private mode, even if lower layers would treat both the same.
+  if (!allow_credentials) {
+    request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
+    request_info.load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                              net::LOAD_DO_NOT_SAVE_COOKIES |
+                              net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
 
   // Translate the motivation from UrlRequest motivations to HttpRequest
   // motivations.

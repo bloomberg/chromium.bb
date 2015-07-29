@@ -242,12 +242,16 @@ class Predictor {
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
-  void PreconnectUrl(const GURL& url, const GURL& first_party_for_cookies,
-                     UrlInfo::ResolutionMotivation motivation, int count);
+  void PreconnectUrl(const GURL& url,
+                     const GURL& first_party_for_cookies,
+                     UrlInfo::ResolutionMotivation motivation,
+                     bool allow_credentials,
+                     int count);
 
   void PreconnectUrlOnIOThread(const GURL& url,
                                const GURL& first_party_for_cookies,
                                UrlInfo::ResolutionMotivation motivation,
+                               bool allow_credentials,
                                int count);
 
   // ------------- End IO thread methods.

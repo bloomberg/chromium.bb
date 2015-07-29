@@ -103,8 +103,16 @@ class ConnectionListener
  private:
   static uint16_t GetPort(
       const net::test_server::StreamListenSocket& connection) {
+    // Get the remote port of the peer, since the local port will always be the
+    // port the test server is listening on. This isn't strictly correct - it's
+    // possible for multiple peers to connect with the same remote port but
+    // different remote IPs - but the tests here assume that connections to the
+    // test server (running on localhost) will always come from localhost, and
+    // thus the peer port is all thats needed to distinguish two connections.
+    // This also would be problematic if the OS reused ports, but that's not
+    // something to worry about for these tests.
     net::IPEndPoint address;
-    EXPECT_EQ(net::OK, connection.GetLocalAddress(&address));
+    EXPECT_EQ(net::OK, connection.GetPeerAddress(&address));
     return address.port();
   }
 
@@ -350,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MAYBE_DnsPrefetch) {
 // Tests that preconnect warms up a socket connection to a test server.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, Preconnect) {
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectNonCORS) {
   GURL preconnect_url = embedded_test_server()->base_url();
   std::string preconnect_content =
       "<link rel=\"preconnect\" href=\"" + preconnect_url.spec() + "\">";
@@ -364,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, Preconnect) {
 // and that that socket is later used when fetching a resource.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectAndUse) {
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectAndFetchNonCORS) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content =
@@ -380,6 +388,77 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectAndUse) {
   NavigateToDataURLWithContent(img_content);
   connection_listener_->WaitUntilFirstConnectionRead();
   EXPECT_EQ(1u, connection_listener_->GetAcceptedSocketCount());
+  EXPECT_EQ(1u, connection_listener_->GetReadSocketCount());
+}
+
+// Tests that preconnect warms up a CORS connection to a test
+// server, and that socket is later used when fetching a CORS resource.
+// Note: This test uses a data URI to serve the preconnect hint, to make sure
+// that the network stack doesn't just re-use its connection to the test server.
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectAndFetchCORS) {
+  GURL preconnect_url = embedded_test_server()->base_url();
+  // First navigation to content with a preconnect hint.
+  std::string preconnect_content = "<link rel=\"preconnect\" href=\"" +
+                                   preconnect_url.spec() + "\" crossorigin>";
+  NavigateToDataURLWithContent(preconnect_content);
+  connection_listener_->WaitUntilFirstConnectionAccepted();
+  EXPECT_EQ(1u, connection_listener_->GetAcceptedSocketCount());
+  EXPECT_EQ(0u, connection_listener_->GetReadSocketCount());
+
+  // Second navigation to content with a font.
+  std::string font_content = "<script>var font = new FontFace('FontA', 'url(" +
+                             preconnect_url.spec() +
+                             "test.woff2)');font.load();</script>";
+  NavigateToDataURLWithContent(font_content);
+  connection_listener_->WaitUntilFirstConnectionRead();
+  EXPECT_EQ(1u, connection_listener_->GetAcceptedSocketCount());
+  EXPECT_EQ(1u, connection_listener_->GetReadSocketCount());
+}
+
+// Tests that preconnect warms up a non-CORS connection to a test
+// server, but that socket is not used when fetching a CORS resource.
+// Note: This test uses a data URI to serve the preconnect hint, to make sure
+// that the network stack doesn't just re-use its connection to the test server.
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectNonCORSAndFetchCORS) {
+  GURL preconnect_url = embedded_test_server()->base_url();
+  // First navigation to content with a preconnect hint.
+  std::string preconnect_content =
+      "<link rel=\"preconnect\" href=\"" + preconnect_url.spec() + "\">";
+  NavigateToDataURLWithContent(preconnect_content);
+  connection_listener_->WaitUntilFirstConnectionAccepted();
+  EXPECT_EQ(1u, connection_listener_->GetAcceptedSocketCount());
+  EXPECT_EQ(0u, connection_listener_->GetReadSocketCount());
+
+  // Second navigation to content with a font.
+  std::string font_content = "<script>var font = new FontFace('FontA', 'url(" +
+                             preconnect_url.spec() +
+                             "test.woff2)');font.load();</script>";
+  NavigateToDataURLWithContent(font_content);
+  connection_listener_->WaitUntilFirstConnectionRead();
+  EXPECT_EQ(2u, connection_listener_->GetAcceptedSocketCount());
+  EXPECT_EQ(1u, connection_listener_->GetReadSocketCount());
+}
+
+// Tests that preconnect warms up a CORS connection to a test server,
+// but that socket is not used when fetching a non-CORS resource.
+// Note: This test uses a data URI to serve the preconnect hint, to make sure
+// that the network stack doesn't just re-use its connection to the test server.
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PreconnectCORSAndFetchNonCORS) {
+  GURL preconnect_url = embedded_test_server()->base_url();
+  // First navigation to content with a preconnect hint.
+  std::string preconnect_content = "<link rel=\"preconnect\" href=\"" +
+                                   preconnect_url.spec() + "\" crossorigin>";
+  NavigateToDataURLWithContent(preconnect_content);
+  connection_listener_->WaitUntilFirstConnectionAccepted();
+  EXPECT_EQ(1u, connection_listener_->GetAcceptedSocketCount());
+  EXPECT_EQ(0u, connection_listener_->GetReadSocketCount());
+
+  // Second navigation to content with an img.
+  std::string img_content =
+      "<img src=\"" + preconnect_url.spec() + "test.gif\">";
+  NavigateToDataURLWithContent(img_content);
+  connection_listener_->WaitUntilFirstConnectionRead();
+  EXPECT_EQ(2u, connection_listener_->GetAcceptedSocketCount());
   EXPECT_EQ(1u, connection_listener_->GetReadSocketCount());
 }
 

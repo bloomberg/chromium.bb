@@ -42,7 +42,7 @@ IPC_MESSAGE_CONTROL1(NetworkHintsMsg_DNSPrefetch,
 
 
 // Request for preconnect to host providing resource specified by URL
-IPC_MESSAGE_CONTROL2(NetworkHintsMsg_Preconnect,
+IPC_MESSAGE_CONTROL3(NetworkHintsMsg_Preconnect,
                      GURL /* preconnect target url */,
-                     int  /* number of connections */)
-
+                     bool /* Does connection have its credentials flag set */,
+                     int /* number of connections */)

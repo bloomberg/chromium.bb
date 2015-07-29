@@ -25,8 +25,13 @@ void PrescientNetworkingDispatcher::prefetchDNS(
 }
 
 void PrescientNetworkingDispatcher::preconnect(const blink::WebURL& url) {
+  preconnect_.Preconnect(url, true);
+}
+
+void PrescientNetworkingDispatcher::preconnect(const blink::WebURL& url,
+                                               bool allow_credentials) {
   VLOG(2) << "Preconnect: " << url.string().utf8();
-  preconnect_.Preconnect(url);
+  preconnect_.Preconnect(url, allow_credentials);
 }
 
 }  // namespace network_hints

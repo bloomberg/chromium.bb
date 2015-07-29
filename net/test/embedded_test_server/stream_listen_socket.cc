@@ -103,7 +103,7 @@ int StreamListenSocket::GetLocalAddress(IPEndPoint* address) const {
   return OK;
 }
 
-int StreamListenSocket::GetPeerAddress(IPEndPoint* address) {
+int StreamListenSocket::GetPeerAddress(IPEndPoint* address) const {
   SockaddrStorage storage;
   if (getpeername(socket_, storage.addr, &storage.addr_len)) {
 #if defined(OS_WIN)

@@ -20,12 +20,12 @@ RendererPreconnect::RendererPreconnect() {
 RendererPreconnect::~RendererPreconnect() {
 }
 
-void RendererPreconnect::Preconnect(const GURL &url) {
+void RendererPreconnect::Preconnect(const GURL& url, bool allow_credentials) {
   if (!url.is_valid())
     return;
 
   RenderThread::Get()->Send(
-      new NetworkHintsMsg_Preconnect(url, 1));
+      new NetworkHintsMsg_Preconnect(url, allow_credentials, 1));
 }
 
 }  // namespace network_hints

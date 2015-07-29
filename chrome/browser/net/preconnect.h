@@ -34,7 +34,8 @@ void PreconnectOnIOThread(const GURL& url,
                           const GURL& first_party_for_cookies,
                           UrlInfo::ResolutionMotivation motivation,
                           int count,
-                          net::URLRequestContextGetter* getter);
+                          net::URLRequestContextGetter* getter,
+                          bool allow_credentials);
 
 }  // namespace chrome_browser_net
 
