@@ -52,7 +52,6 @@ class TestOmniboxClient : public OmniboxClient {
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override {}
   void DoPrerender(const AutocompleteMatch& match) override {}
   void DoPreconnect(const AutocompleteMatch& match) override {}
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) override {}
 
  private:
   content::WebContents* web_contents_;

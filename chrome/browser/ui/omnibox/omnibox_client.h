@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/instant_types.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
@@ -102,9 +101,6 @@ class OmniboxClient {
   // TODO(blundell): Remove from this interface once OmniboxEditModel no
   // longer refers to it.
   virtual void DoPreconnect(const AutocompleteMatch& match) = 0;
-
-  // Sends the current SearchProvider suggestion to the Instant page if any.
-  virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_

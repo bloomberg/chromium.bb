@@ -20,7 +20,6 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -57,7 +56,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/common/constants.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
@@ -1364,11 +1362,6 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   // its value across the entire call.
   const base::string16 inline_autocompletion(match.inline_autocompletion);
   OnPopupDataChanged(inline_autocompletion, NULL, keyword, is_keyword_hint);
-}
-
-void OmniboxEditModel::SetSuggestionToPrefetch(
-    const InstantSuggestion& suggestion) {
-  client_->SetSuggestionToPrefetch(suggestion);
 }
 
 // static

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_client.h"
+#include "chrome/common/instant_types.h"
 
 class OmniboxEditController;
 class Profile;
@@ -45,9 +46,10 @@ class ChromeOmniboxClient : public OmniboxClient {
   // TODO(blundell): Make private once OmniboxEditModel no longer refers to it.
   void DoPreconnect(const AutocompleteMatch& match) override;
 
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) override;
-
  private:
+  // Sends the current SearchProvider suggestion to the Instant page if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
   void OnBitmapFetched(const BitmapFetchedCallback& callback,
                        const SkBitmap& bitmap);
 
