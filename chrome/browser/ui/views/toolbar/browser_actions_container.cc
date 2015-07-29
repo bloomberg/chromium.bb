@@ -646,6 +646,12 @@ bool BrowserActionsContainer::CanStartDragForView(View* sender,
 }
 
 void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
+  // We don't allow resize while the toolbar is highlighting a subset of
+  // actions, since this is a temporary and entirely browser-driven sequence in
+  // order to warn the user about potentially dangerous items.
+  if (toolbar_actions_bar_->is_highlighting())
+    return;
+
   if (!done_resizing) {
     resize_amount_ = resize_amount;
     Redraw(false);

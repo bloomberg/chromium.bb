@@ -606,6 +606,8 @@ void ToolbarActionsBar::OnToolbarExtensionRemoved(
       ResizeDelegate(gfx::Tween::EASE_OUT, false);
     }
   }
+
+  SetOverflowedActionWantsToRun();
 }
 
 void ToolbarActionsBar::OnToolbarExtensionMoved(

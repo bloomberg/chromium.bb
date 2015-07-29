@@ -77,9 +77,10 @@ class BrowserActionsContainerViewSizeDelegate {
   // Whether the container is currently being resized by the user.
   BOOL userIsResizing_;
 
-  // Whether the user can resize this at all. Resizing is disabled in incognito
-  // mode since any changes done in incognito mode are not saved anyway, and
-  // also to avoid a crash. http://crbug.com/42848
+  // Whether the user can resize the container; this is disabled for overflow
+  // (where it would make no sense) and during highlighting, since this is a
+  // temporary and entirely browser-driven sequence in order to warn the user
+  // about potentially dangerous items.
   BOOL resizable_;
 
   // Whether or not the container is the overflow container, and is shown in the

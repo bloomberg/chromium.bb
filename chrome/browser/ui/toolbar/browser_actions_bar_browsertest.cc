@@ -333,6 +333,15 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
   EXPECT_TRUE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
   toolbar_model()->SetVisibleIconCount(4);
   EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
+
+  // Adjusting the visible count down should mean an overflowed action wants
+  // to run again. Removing the action that wants to run should result in
+  // no overflowed action wanting to run.
+  toolbar_model()->SetVisibleIconCount(3);
+  EXPECT_TRUE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
+  extension_service()->DisableExtension(page_action_extension->id(),
+                                        extensions::Extension::DISABLE_NONE);
+  EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
