@@ -147,9 +147,11 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION);
   html_source->AddLocalizedString("wakeOnWifi",
                                   IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION);
-  html_source->AddLocalizedString("siteSettingsLabel",
+  html_source->AddLocalizedString("manageCertificates",
+                                  IDS_SETTINGS_MANAGE_CERTIFICATES);
+  html_source->AddLocalizedString("siteSettings",
                                   IDS_SETTINGS_SITE_SETTINGS);
-  html_source->AddLocalizedString("clearBrowsingDataLabel",
+  html_source->AddLocalizedString("clearBrowsingData",
                                   IDS_SETTINGS_CLEAR_DATA);
 }
 
