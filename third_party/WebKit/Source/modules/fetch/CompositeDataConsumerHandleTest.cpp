@@ -231,6 +231,7 @@ public:
     {
         ThreadHolder holder(this);
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
+        m_updateEvent = adoptPtr(Platform::current()->createWaitableEvent());
 
         postTaskToUpdatingThreadAndWait(FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
         postTaskToReadingThreadAndWait(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
@@ -249,11 +250,14 @@ private:
     {
         m_reader = m_handle->obtainReader(&m_client);
         postTaskToUpdatingThread(FROM_HERE, new Task(threadSafeBind(&Self::update, this)));
+        // Stalls this thread while updating handles.
+        m_updateEvent->wait();
     }
     void update()
     {
         m_updater->update(DataConsumerHandle::create("handle2", m_context));
         m_updater->update(DataConsumerHandle::create("handle3", m_context));
+        m_updateEvent->signal();
         m_updater.clear();
         postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::resetReader, this)));
         postTaskToReadingThread(FROM_HERE, new Task(threadSafeBind(&Self::signalDone, this)));
@@ -261,6 +265,7 @@ private:
 
     OwnPtr<WebDataConsumerHandle> m_handle;
     CrossThreadPersistent<CompositeDataConsumerHandle::Updater> m_updater;
+    OwnPtr<WebWaitableEvent> m_updateEvent;
 };
 
 TEST(CompositeDataConsumerHandleTest, Read)
@@ -458,13 +463,7 @@ TEST(CompositeDataConsumerHandleTest, UpdateReaderWhileUpdating)
         test->result());
 }
 
-// Disabled on Android due to flakiness (https://crbug.com/506261).
-#if OS(ANDROID)
-#define MAYBE_UpdateTwiceAtOnce DISABLED_UpdateTwiceAtOnce
-#else
-#define MAYBE_UpdateTwiceAtOnce UpdateTwiceAtOnce
-#endif
-TEST(CompositeDataConsumerHandleTest, MAYBE_UpdateTwiceAtOnce)
+TEST(CompositeDataConsumerHandleTest, UpdateTwiceAtOnce)
 {
     RefPtr<ThreadingRegistrationUpdateTwiceAtOneTimeTest> test = ThreadingRegistrationUpdateTwiceAtOneTimeTest::create();
     test->run();
