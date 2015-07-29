@@ -4,13 +4,13 @@
 
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/bookmarks/managed/managed_bookmark_util.h"
+#include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
@@ -18,41 +18,6 @@
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/web/public/user_metrics.h"
-
-namespace {
-
-void RunCallbackWithImage(
-    const favicon_base::FaviconImageCallback& callback,
-    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  favicon_base::FaviconImageResult result;
-  if (bitmap_result.is_valid()) {
-    result.image = gfx::Image::CreateFrom1xPNGBytes(
-        bitmap_result.bitmap_data->front(), bitmap_result.bitmap_data->size());
-    result.icon_url = bitmap_result.icon_url;
-    callback.Run(result);
-    return;
-  }
-  callback.Run(result);
-}
-
-bool IsPermanentNode(
-    const bookmarks::BookmarkPermanentNode* node,
-    bookmarks::ManagedBookmarkService* managed_bookmark_service) {
-  bookmarks::BookmarkNode::Type type = node->type();
-  if (type == bookmarks::BookmarkNode::BOOKMARK_BAR ||
-      type == bookmarks::BookmarkNode::OTHER_NODE ||
-      type == bookmarks::BookmarkNode::MOBILE) {
-    return true;
-  }
-
-  if (!managed_bookmark_service)
-    return false;
-
-  return node == managed_bookmark_service->managed_node() ||
-         node == managed_bookmark_service->supervised_node();
-}
-
-}  // namespace
 
 BookmarkClientImpl::BookmarkClientImpl(
     ios::ChromeBrowserState* browser_state,
@@ -82,19 +47,10 @@ BookmarkClientImpl::GetFaviconImageForPageURL(
     favicon_base::IconType type,
     const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  favicon::FaviconService* favicon_service =
+  return favicon::GetFaviconImageForPageURL(
       ios::FaviconServiceFactory::GetForBrowserState(
-          browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!favicon_service)
-    return base::CancelableTaskTracker::kBadTaskId;
-  if (type == favicon_base::FAVICON) {
-    return favicon_service->GetFaviconImageForPageURL(page_url, callback,
-                                                      tracker);
-  } else {
-    return favicon_service->GetRawFaviconForPageURL(
-        page_url, type, 0, base::Bind(&RunCallbackWithImage, callback),
-        tracker);
-  }
+          browser_state_, ServiceAccessType::EXPLICIT_ACCESS),
+      page_url, type, callback, tracker);
 }
 
 bool BookmarkClientImpl::SupportsTypedCountForNodes() {
@@ -125,13 +81,9 @@ void BookmarkClientImpl::GetTypedCountForNodes(
 
 bool BookmarkClientImpl::IsPermanentNodeVisible(
     const bookmarks::BookmarkPermanentNode* node) {
-  DCHECK(IsPermanentNode(node, managed_bookmark_service_));
-  if (managed_bookmark_service_) {
-    if (node == managed_bookmark_service_->managed_node() ||
-        node == managed_bookmark_service_->supervised_node()) {
-      return false;
-    }
-  }
+  DCHECK(bookmarks::IsPermanentNode(node, managed_bookmark_service_));
+  if (bookmarks::IsManagedNode(node, managed_bookmark_service_))
+    return false;
   return node->type() == bookmarks::BookmarkNode::MOBILE;
 }
 

@@ -19,6 +19,8 @@ static_library("core") {
     "favicon_service.h",
     "favicon_url.cc",
     "favicon_url.h",
+    "favicon_util.cc",
+    "favicon_util.h",
     "large_icon_service.cc",
     "large_icon_service.h",
   ]

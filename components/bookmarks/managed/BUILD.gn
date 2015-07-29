@@ -6,6 +6,8 @@ source_set("managed") {
   sources = [
     "managed_bookmark_service.cc",
     "managed_bookmark_service.h",
+    "managed_bookmark_util.cc",
+    "managed_bookmark_util.h",
     "managed_bookmarks_tracker.cc",
     "managed_bookmarks_tracker.h",
   ]
