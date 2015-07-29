@@ -7,9 +7,9 @@ package org.chromium.chrome.test.util;
 import android.annotation.TargetApi;
 import android.os.Build;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;

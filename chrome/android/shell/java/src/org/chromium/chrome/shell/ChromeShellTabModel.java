@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.shell;
 
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.tabmodel.TabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModelOrderController;

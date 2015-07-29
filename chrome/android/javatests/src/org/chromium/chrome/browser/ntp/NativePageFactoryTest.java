@@ -11,9 +11,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
 import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NativePageFactory.NativePageType;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**

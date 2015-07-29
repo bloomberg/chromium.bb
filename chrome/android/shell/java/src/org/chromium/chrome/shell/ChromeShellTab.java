@@ -7,10 +7,10 @@ package org.chromium.chrome.shell;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content_public.browser.LoadUrlParams;

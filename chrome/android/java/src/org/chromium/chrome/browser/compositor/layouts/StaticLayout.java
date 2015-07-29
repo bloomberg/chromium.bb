@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.os.Handler;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModePanel;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel.ReaderModePanelLayoutDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.ChromeTab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.ui.resources.ResourceManager;

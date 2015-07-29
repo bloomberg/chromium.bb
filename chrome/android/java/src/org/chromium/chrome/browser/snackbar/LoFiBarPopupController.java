@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.snackbar;
 import android.content.Context;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Each time a tab loads with Lo-Fi this controller saves that tab id and title to the stack of

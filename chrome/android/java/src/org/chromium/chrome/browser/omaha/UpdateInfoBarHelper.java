@@ -10,7 +10,7 @@ import android.os.AsyncTask;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Shows an InfoBar indicating that a new version of Chrome is available.

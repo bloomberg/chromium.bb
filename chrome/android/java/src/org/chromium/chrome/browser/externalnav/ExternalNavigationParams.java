@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 
 /**

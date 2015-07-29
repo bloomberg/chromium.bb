@@ -12,8 +12,8 @@ import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.chrome.browser.DeferredStartupHandler;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;

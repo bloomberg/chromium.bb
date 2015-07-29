@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Defines the data that is exposed to properly render the Toolbar.

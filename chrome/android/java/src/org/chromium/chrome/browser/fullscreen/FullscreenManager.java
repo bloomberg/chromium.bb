@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.fullscreen;
 import android.view.View;
 import android.view.Window;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**

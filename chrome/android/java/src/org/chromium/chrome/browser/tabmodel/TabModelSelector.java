@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 

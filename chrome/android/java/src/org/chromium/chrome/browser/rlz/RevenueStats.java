@@ -11,7 +11,7 @@ import android.preference.PreferenceManager;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.concurrent.atomic.AtomicReference;
 

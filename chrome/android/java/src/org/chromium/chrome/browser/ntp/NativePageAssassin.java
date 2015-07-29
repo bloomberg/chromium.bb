@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.ntp;
 
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

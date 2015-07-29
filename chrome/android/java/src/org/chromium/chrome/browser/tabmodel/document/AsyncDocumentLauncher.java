@@ -10,10 +10,10 @@ import android.os.Looper;
 import android.os.SystemClock;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 
 import java.util.ArrayList;

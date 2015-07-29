@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Singleton class intended to stub out Tab model before it has been created.

@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.tabmodel.document;
 import android.content.Intent;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.IncognitoNotificationManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel;

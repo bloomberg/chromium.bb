@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.ArrayList;
 import java.util.List;

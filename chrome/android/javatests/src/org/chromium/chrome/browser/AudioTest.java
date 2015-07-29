@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.test.FlakyTest;
 
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;

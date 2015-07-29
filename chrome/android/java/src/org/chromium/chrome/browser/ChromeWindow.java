@@ -10,6 +10,7 @@ import android.app.Dialog;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import org.chromium.chrome.browser.infobar.MessageInfoBar;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**

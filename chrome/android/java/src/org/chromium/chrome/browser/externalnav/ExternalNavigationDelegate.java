@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.externalnav;
 import android.content.ComponentName;
 import android.content.Intent;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.List;
 

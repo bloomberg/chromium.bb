@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 
 import org.chromium.chrome.browser.document.DocumentMetricIds;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;

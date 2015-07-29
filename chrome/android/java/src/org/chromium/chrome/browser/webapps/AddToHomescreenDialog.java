@@ -18,7 +18,7 @@ import android.widget.ImageView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Helper class showing the UI regarding Add to Homescreen and delegate the

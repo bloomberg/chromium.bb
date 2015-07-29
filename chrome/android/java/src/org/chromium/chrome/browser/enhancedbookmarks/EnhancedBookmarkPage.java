@@ -11,9 +11,9 @@ import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDelegate.EnhancedBookmarkStateChangeListener;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 

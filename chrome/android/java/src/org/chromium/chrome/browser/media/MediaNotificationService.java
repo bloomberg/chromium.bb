@@ -20,7 +20,7 @@ import android.util.SparseIntArray;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 
 import java.net.MalformedURLException;
 import java.net.URL;

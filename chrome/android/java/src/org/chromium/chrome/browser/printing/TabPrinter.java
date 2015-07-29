@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.printing;
 
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.printing.Printable;
 
 import java.lang.ref.WeakReference;

@@ -10,7 +10,6 @@ import android.preference.PreferenceManager;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.Tab;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

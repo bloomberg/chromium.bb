@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.layouts;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * {@link LayoutRenderHost} is the minimal interface the layouts need to know about its host to

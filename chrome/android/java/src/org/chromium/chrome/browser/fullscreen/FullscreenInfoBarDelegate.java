@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.fullscreen;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Class for managing the fullscreen infobar.

@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Java bridge to handle conditional prerendering using autocomplete results * as the user types
