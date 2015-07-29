@@ -245,9 +245,16 @@ void DownloadItemNotification::UpdateNotificationData(
                              item_->GetBrowserContext()->IsOffTheRecord();
 
     switch (item_->GetState()) {
-      case content::DownloadItem::IN_PROGRESS:
-        notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-        notification_->set_progress(item_->PercentComplete());
+      case content::DownloadItem::IN_PROGRESS: {
+        int percent_complete = item_->PercentComplete();
+        if (percent_complete >= 0) {
+          notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+          notification_->set_progress(percent_complete);
+        } else {
+          notification_->set_type(
+              message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+          notification_->set_progress(0);
+        }
         if (is_off_the_record) {
           // TODO(yoshiki): Replace the tentative image.
           SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
@@ -255,6 +262,7 @@ void DownloadItemNotification::UpdateNotificationData(
           SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
         }
         break;
+      }
       case content::DownloadItem::COMPLETE:
         DCHECK(item_->IsDone());
 
