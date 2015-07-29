@@ -15,8 +15,14 @@ namespace base {
 
 class FilePath;
 
-// First value is test case name, second one is test name.
-typedef std::pair<std::string, std::string> SplitTestName;
+struct TestIdentifier {
+  TestIdentifier();
+
+  std::string test_case_name;
+  std::string test_name;
+  std::string file;
+  int line;
+};
 
 // Constructs a full test name given a test case name and a test name,
 // e.g. for test case "A" and test name "B" returns "A.B".
@@ -25,7 +31,7 @@ std::string FormatFullTestName(const std::string& test_case_name,
 
 // Returns a vector of gtest-based tests compiled into
 // current executable.
-std::vector<SplitTestName> GetCompiledInTests();
+std::vector<TestIdentifier> GetCompiledInTests();
 
 // Writes the list of gtest-based tests compiled into
 // current executable as a JSON file. Returns true on success.
@@ -35,7 +41,7 @@ bool WriteCompiledInTestsToFile(const FilePath& path) WARN_UNUSED_RESULT;
 // Returns true on success.
 bool ReadTestNamesFromFile(
     const FilePath& path,
-    std::vector<SplitTestName>* output) WARN_UNUSED_RESULT;
+    std::vector<TestIdentifier>* output) WARN_UNUSED_RESULT;
 
 }  // namespace base
 

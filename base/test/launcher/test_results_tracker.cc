@@ -25,26 +25,6 @@ namespace {
 const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
 
-// Utility function to print a list of test names. Uses iterator to be
-// compatible with different containers, like vector and set.
-template<typename InputIterator>
-void PrintTests(InputIterator first,
-                InputIterator last,
-                const std::string& description) {
-  size_t count = std::distance(first, last);
-  if (count == 0)
-    return;
-
-  fprintf(stdout,
-          "%" PRIuS " test%s %s:\n",
-          count,
-          count != 1 ? "s" : "",
-          description.c_str());
-  for (InputIterator i = first; i != last; ++i)
-    fprintf(stdout, "    %s\n", (*i).c_str());
-  fflush(stdout);
-}
-
 std::string TestNameWithoutDisabledPrefix(const std::string& test_name) {
   std::string test_name_no_disabled(test_name);
   ReplaceSubstringsAfterOffset(&test_name_no_disabled, 0, "DISABLED_", "");
@@ -159,10 +139,14 @@ void TestResultsTracker::OnTestIterationStarting() {
   per_iteration_data_.push_back(PerIterationData());
 }
 
-void TestResultsTracker::AddTest(const std::string& test_name) {
+void TestResultsTracker::AddTest(
+    const std::string& test_name, const std::string& file, int line) {
   // Record disabled test names without DISABLED_ prefix so that they are easy
   // to compare with regular test names, e.g. before or after disabling.
   all_tests_.insert(TestNameWithoutDisabledPrefix(test_name));
+
+  test_locations_.insert(std::make_pair(
+      TestNameWithoutDisabledPrefix(test_name), CodeLocation(file, line)));
 }
 
 void TestResultsTracker::AddDisabledTest(const std::string& test_name) {
@@ -337,6 +321,32 @@ void TestResultsTracker::GetTestStatusForIteration(
     (*map)[result.status].insert(result.full_name);
   }
 }
+
+// Utility function to print a list of test names. Uses iterator to be
+// compatible with different containers, like vector and set.
+template<typename InputIterator>
+void TestResultsTracker::PrintTests(InputIterator first,
+                                    InputIterator last,
+                                    const std::string& description) const {
+  size_t count = std::distance(first, last);
+  if (count == 0)
+    return;
+
+  fprintf(stdout,
+          "%" PRIuS " test%s %s:\n",
+          count,
+          count != 1 ? "s" : "",
+          description.c_str());
+  for (InputIterator i = first; i != last; ++i) {
+    fprintf(stdout,
+            "    %s (%s:%d)\n",
+            (*i).c_str(),
+            test_locations_.at(*i).file.c_str(),
+            test_locations_.at(*i).line);
+  }
+  fflush(stdout);
+}
+
 
 TestResultsTracker::AggregateTestResult::AggregateTestResult() {
 }

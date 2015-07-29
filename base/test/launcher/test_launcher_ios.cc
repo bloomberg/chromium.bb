@@ -88,7 +88,7 @@ class IOSUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
     return true;
   }
 
-  bool GetTests(std::vector<base::SplitTestName>* output) override {
+  bool GetTests(std::vector<base::TestIdentifier>* output) override {
     base::ScopedTempDir temp_dir;
     if (!temp_dir.CreateUniqueTempDirUnderPath(writable_path_))
       return false;

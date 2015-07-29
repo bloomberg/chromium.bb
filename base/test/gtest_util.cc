@@ -11,33 +11,43 @@
 
 namespace base {
 
+TestIdentifier::TestIdentifier() {
+}
+
 std::string FormatFullTestName(const std::string& test_case_name,
                                const std::string& test_name) {
   return test_case_name + "." + test_name;
 }
 
-std::vector<SplitTestName> GetCompiledInTests() {
+std::vector<TestIdentifier> GetCompiledInTests() {
   testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
 
-  std::vector<SplitTestName> tests;
+  std::vector<TestIdentifier> tests;
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
     for (int j = 0; j < test_case->total_test_count(); ++j) {
       const testing::TestInfo* test_info = test_case->GetTestInfo(j);
-      tests.push_back(std::make_pair(test_case->name(), test_info->name()));
+      TestIdentifier test_data;
+      test_data.test_case_name = test_case->name();
+      test_data.test_name = test_info->name();
+      test_data.file = test_info->file();
+      test_data.line = test_info->line();
+      tests.push_back(test_data);
     }
   }
   return tests;
 }
 
 bool WriteCompiledInTestsToFile(const FilePath& path) {
-  std::vector<SplitTestName> tests(GetCompiledInTests());
+  std::vector<TestIdentifier> tests(GetCompiledInTests());
 
   ListValue root;
   for (size_t i = 0; i < tests.size(); ++i) {
     DictionaryValue* test_info = new DictionaryValue;
-    test_info->SetString("test_case_name", tests[i].first);
-    test_info->SetString("test_name", tests[i].second);
+    test_info->SetString("test_case_name", tests[i].test_case_name);
+    test_info->SetString("test_name", tests[i].test_name);
+    test_info->SetString("file", tests[i].file);
+    test_info->SetInteger("line", tests[i].line);
     root.Append(test_info);
   }
 
@@ -46,7 +56,7 @@ bool WriteCompiledInTestsToFile(const FilePath& path) {
 }
 
 bool ReadTestNamesFromFile(const FilePath& path,
-                           std::vector<SplitTestName>* output) {
+                           std::vector<TestIdentifier>* output) {
   JSONFileValueDeserializer deserializer(path);
   int error_code = 0;
   std::string error_message;
@@ -59,21 +69,27 @@ bool ReadTestNamesFromFile(const FilePath& path,
   if (!value->GetAsList(&tests))
     return false;
 
-  std::vector<base::SplitTestName> result;
+  std::vector<base::TestIdentifier> result;
   for (base::ListValue::iterator i = tests->begin(); i != tests->end(); ++i) {
     base::DictionaryValue* test = nullptr;
     if (!(*i)->GetAsDictionary(&test))
       return false;
 
-    std::string test_case_name;
-    if (!test->GetStringASCII("test_case_name", &test_case_name))
+    TestIdentifier test_data;
+
+    if (!test->GetStringASCII("test_case_name", &test_data.test_case_name))
       return false;
 
-    std::string test_name;
-    if (!test->GetStringASCII("test_name", &test_name))
+    if (!test->GetStringASCII("test_name", &test_data.test_name))
       return false;
 
-    result.push_back(std::make_pair(test_case_name, test_name));
+    if (!test->GetStringASCII("file", &test_data.file))
+      return false;
+
+    if (!test->GetInteger("line", &test_data.line))
+      return false;
+
+    result.push_back(test_data);
   }
 
   output->swap(result);

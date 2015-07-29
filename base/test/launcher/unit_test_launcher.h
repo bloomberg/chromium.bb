@@ -38,7 +38,7 @@ class UnitTestPlatformDelegate {
  public:
   // Called to get names of tests available for running. The delegate
   // must put the result in |output| and return true on success.
-  virtual bool GetTests(std::vector<SplitTestName>* output) = 0;
+  virtual bool GetTests(std::vector<TestIdentifier>* output) = 0;
 
   // Called to create a temporary file. The delegate must put the resulting
   // path in |path| and return true on success.
@@ -86,7 +86,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
  private:
   // TestLauncherDelegate:
-  bool GetTests(std::vector<SplitTestName>* output) override;
+  bool GetTests(std::vector<TestIdentifier>* output) override;
   bool ShouldRunTest(const std::string& test_case_name,
                      const std::string& test_name) override;
   size_t RunTests(TestLauncher* test_launcher,

@@ -43,7 +43,7 @@ class TestLauncherDelegate {
  public:
   // Called to get names of tests available for running. The delegate
   // must put the result in |output| and return true on success.
-  virtual bool GetTests(std::vector<SplitTestName>* output) = 0;
+  virtual bool GetTests(std::vector<TestIdentifier>* output) = 0;
 
   // Called before a test is considered for running. If it returns false,
   // the test is not run. If it returns true, the test will be run provided
@@ -160,7 +160,7 @@ class TestLauncher {
   std::vector<std::string> negative_test_filter_;
 
   // Tests to use (cached result of TestLauncherDelegate::GetTests).
-  std::vector<SplitTestName> tests_;
+  std::vector<TestIdentifier> tests_;
 
   // Number of tests started in this iteration.
   size_t test_started_count_;

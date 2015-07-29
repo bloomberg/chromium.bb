@@ -95,7 +95,7 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
 
  private:
   // UnitTestPlatformDelegate:
-  bool GetTests(std::vector<SplitTestName>* output) override {
+  bool GetTests(std::vector<TestIdentifier>* output) override {
     *output = GetCompiledInTests();
     return true;
   }
@@ -537,7 +537,7 @@ UnitTestLauncherDelegate::~UnitTestLauncherDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool UnitTestLauncherDelegate::GetTests(std::vector<SplitTestName>* output) {
+bool UnitTestLauncherDelegate::GetTests(std::vector<TestIdentifier>* output) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return platform_delegate_->GetTests(output);
 }

@@ -897,9 +897,9 @@ void TestLauncher::RunTests() {
   std::vector<std::string> test_names;
   for (size_t i = 0; i < tests_.size(); i++) {
     std::string test_name = FormatFullTestName(
-        tests_[i].first, tests_[i].second);
+        tests_[i].test_case_name, tests_[i].test_name);
 
-    results_tracker_.AddTest(test_name);
+    results_tracker_.AddTest(test_name, tests_[i].file, tests_[i].line);
 
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (test_name.find("DISABLED") != std::string::npos) {
@@ -910,8 +910,10 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (!launcher_delegate_->ShouldRunTest(tests_[i].first, tests_[i].second))
+    if (!launcher_delegate_->ShouldRunTest(
+        tests_[i].test_case_name, tests_[i].test_name)) {
       continue;
+    }
 
     // Skip the test that doesn't match the filter (if given).
     if (!positive_test_filter_.empty()) {

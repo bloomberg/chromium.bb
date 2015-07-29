@@ -120,7 +120,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   }
 
   // base::TestLauncherDelegate:
-  bool GetTests(std::vector<base::SplitTestName>* output) override;
+  bool GetTests(std::vector<base::TestIdentifier>* output) override;
   bool ShouldRunTest(const std::string& test_case_name,
                      const std::string& test_name) override;
   size_t RunTests(base::TestLauncher* test_launcher,
@@ -173,7 +173,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 };
 
 bool WrapperTestLauncherDelegate::GetTests(
-    std::vector<base::SplitTestName>* output) {
+    std::vector<base::TestIdentifier>* output) {
   *output = base::GetCompiledInTests();
   return true;
 }
