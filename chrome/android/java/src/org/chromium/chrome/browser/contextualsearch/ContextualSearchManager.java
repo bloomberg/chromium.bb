@@ -1253,8 +1253,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
             StateChangeReason stateChangeReason = type == SelectionType.TAP
                     ? StateChangeReason.TEXT_SELECT_TAP : StateChangeReason.TEXT_SELECT_LONG_PRESS;
             ContextualSearchUma.logSelectionIsValid(isSelectionValid);
-
-            if (isSelectionValid) {
+            // Workaround to disable Contextual Search in HTML fullscreen mode. crbug.com/511977
+            boolean isInFullscreenMode =
+                    mActivity.getFullscreenManager().getPersistentFullscreenMode();
+            if (isSelectionValid && !isInFullscreenMode) {
                 mSearchPanelDelegate.updateBasePageSelectionYPx(y);
                 showContextualSearch(stateChangeReason);
             } else {
