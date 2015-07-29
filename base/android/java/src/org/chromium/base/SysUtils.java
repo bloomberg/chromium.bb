@@ -134,6 +134,6 @@ public class SysUtils {
             return false;
         }
 
-        return ramSizeMB < ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;
+        return ramSizeMB <= ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;
     }
 }
