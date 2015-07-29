@@ -1622,7 +1622,6 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     RootInlineBox* firstLineBoxWithBreakAndClearance = 0;
 
     // FIXME: This entire float-checking block needs to be broken into a new function.
-    bool dirtiedByFloat = false;
     if (!layoutState.isFullLayout()) {
         // Paginate all of the clean lines.
         bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
@@ -1647,7 +1646,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             if (!firstLineBoxWithBreakAndClearance && lineBoxHasBRWithClearance(curr))
                 firstLineBoxWithBreakAndClearance = curr;
 
-            if (dirtiedByFloat || layoutState.isFullLayout())
+            if (layoutState.isFullLayout())
                 break;
         }
     }
@@ -1669,7 +1668,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             // We have a dirty line.
             if (RootInlineBox* prevRootBox = curr->prevRootBox()) {
                 // We have a previous line.
-                if (!dirtiedByFloat && (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() || (prevRootBox->lineBreakObj()->isText() && prevRootBox->lineBreakPos() >= toLayoutText(prevRootBox->lineBreakObj())->textLength()))) {
+                if (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() || (prevRootBox->lineBreakObj()->isText() && prevRootBox->lineBreakPos() >= toLayoutText(prevRootBox->lineBreakObj())->textLength())) {
                     // The previous line didn't break cleanly or broke at a newline
                     // that has been deleted, so treat it as dirty too.
                     curr = prevRootBox;
