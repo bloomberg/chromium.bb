@@ -5466,6 +5466,12 @@
                 'xcode_settings': {
                   'DEPLOYMENT_POSTPROCESSING': 'YES',
                   'STRIP_INSTALLED_PRODUCT': 'YES',
+                  'conditions': [
+                    ['buildtype!="Official"', {
+                      # Remove dSYM to reduce build time.
+                      'DEBUG_INFORMATION_FORMAT': 'dwarf',
+                    }],
+                  ],
                 },
               },
               'Debug_Base': {
