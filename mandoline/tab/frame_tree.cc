@@ -42,18 +42,16 @@ Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
                                        scoped_ptr<FrameUserData> user_data) {
   DCHECK(frame && frame->HasAncestor(&root_));
 
-  Frame* parent = frame;
   if (frame->view() == view) {
+    // It's important we Swap() here rather than destroy as otherwise the
+    // clients see a destroy followed by a new frame, which confuses html
+    // viewer.
     DCHECK(frame != &root_);
-    // Rembed in existing frame.
-    parent = frame->parent();
-    delete frame;
-    frame = nullptr;
-  }  // else case is a view is becoming associated with a Frame, eg a new frame.
+    frame->Swap(frame_tree_client, user_data.Pass());
+    return frame;
+  }
 
-  DCHECK(parent);
-
-  return CreateAndAddFrame(view, parent, frame_tree_client, user_data.Pass());
+  return CreateAndAddFrame(view, frame, frame_tree_client, user_data.Pass());
 }
 
 void FrameTree::CreateSharedFrame(Frame* parent, uint32_t frame_id) {

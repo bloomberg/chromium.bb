@@ -88,7 +88,7 @@ class HTMLFrameTest : public ViewManagerTestBase {
   Frame* LoadEmptyPageAndCreateFrame() {
     View* embed_view = window_manager()->CreateView();
     FrameConnection* root_connection =
-        InitFrameTree(embed_view, "http://127.0.0.1:%u/files/empty_page.html");
+        InitFrameTree(embed_view, "http://127.0.0.1:%u/files/empty_page2.html");
     const std::string frame_text =
         GetFrameText(root_connection->application_connection());
     if (frame_text != "child") {
@@ -212,8 +212,10 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 
   // page_with_single_frame contains a child frame. The child frame should
   // create a new View and Frame.
-  if (frame_tree_->root()->children().empty())
+  if (frame_tree_->root()->children().empty() ||
+      !frame_tree_->root()->children().back()->user_data()) {
     ASSERT_TRUE(WaitForEmbedForDescendant());
+  }
 
   ASSERT_EQ(1u, embed_view->children().size());
   Frame* child_frame =
@@ -224,8 +226,6 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
             GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
                              ->application_connection()));
 }
-
-namespace {}  // namespace
 
 TEST_F(HTMLFrameTest, DynamicallyAddFrameAndVerifyParent) {
   if (!EnableOOPIFs())

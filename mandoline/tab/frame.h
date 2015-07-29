@@ -48,6 +48,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   void Init(Frame* parent);
 
+  // Deletes the children and initializes the new FrameTreeClient.
+  void Swap(FrameTreeClient* frame_tree_client,
+            scoped_ptr<FrameUserData> user_data);
+
   // Walks the View tree starting at |view| going up returning the first
   // Frame that is associated with |view|. For example, if |view|
   // has a Frame associated with it, then that is returned. Otherwise
@@ -87,6 +91,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
  private:
   friend class FrameTree;
+
+  // Initializes the client by sending it the state of the tree.
+  void InitClient();
 
   void SetView(mojo::View* view);
 

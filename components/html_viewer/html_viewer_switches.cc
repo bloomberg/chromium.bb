@@ -4,8 +4,13 @@
 
 #include "components/html_viewer/html_viewer_switches.h"
 
+namespace html_viewer {
 namespace switches {
 
 const char kOOPIF[] = "oopifs";
 
+const char kOOPIFAlwaysCreateNewFrameTree[] =
+    "oopif-always-create-new-frame-tree";
+
 }  // namespace switches
+}  // namespace html_viewer

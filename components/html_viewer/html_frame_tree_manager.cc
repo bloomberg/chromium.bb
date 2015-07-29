@@ -10,11 +10,12 @@
 #include "base/logging.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
+#include "components/html_viewer/document_resource_waiter.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_frame.h"
-#include "components/html_viewer/html_frame_tree_manager_delegate.h"
+#include "components/html_viewer/html_frame_delegate.h"
+#include "components/html_viewer/html_viewer_switches.h"
 #include "components/view_manager/public/cpp/view_manager.h"
-#include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
@@ -26,37 +27,122 @@
 namespace html_viewer {
 namespace {
 
-mandoline::NavigationTarget WebNavigationPolicyToNavigationTarget(
-    blink::WebNavigationPolicy policy) {
-  switch (policy) {
-    case blink::WebNavigationPolicyCurrentTab:
-      return mandoline::NAVIGATION_TARGET_SOURCE_NODE;
-    case blink::WebNavigationPolicyNewBackgroundTab:
-    case blink::WebNavigationPolicyNewForegroundTab:
-    case blink::WebNavigationPolicyNewWindow:
-    case blink::WebNavigationPolicyNewPopup:
-      return mandoline::NAVIGATION_TARGET_NEW_NODE;
-    default:
-      return mandoline::NAVIGATION_TARGET_DEFAULT;
+// Returns the index of the FrameData with the id of |frame_id| in |index|. On
+// success returns true, otherwise false.
+bool FindFrameDataIndex(const mojo::Array<mandoline::FrameDataPtr>& frame_data,
+                        uint32_t frame_id,
+                        size_t* index) {
+  for (size_t i = 0; i < frame_data.size(); ++i) {
+    if (frame_data[i]->frame_id == frame_id) {
+      *index = i;
+      return true;
+    }
   }
-}
-
-bool CanNavigateLocally(blink::WebFrame* frame,
-                        const blink::WebURLRequest& request) {
-  // If we have extraData() it means we already have the url response
-  // (presumably because we are being called via Navigate()). In that case we
-  // can go ahead and navigate locally.
-  if (request.extraData())
-    return true;
-
-  // Otherwise we don't know if we're the right app to handle this request. Ask
-  // host to do the navigation for us.
   return false;
 }
 
-// Creates a Frame per FrameData element in |frame_data|.
-HTMLFrame* BuildFrameTree(
-    HTMLFrameTreeManager* frame_tree_manager,
+}  // namespace
+
+// static
+HTMLFrameTreeManager::TreeMap* HTMLFrameTreeManager::instances_ = nullptr;
+
+// static
+HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
+    GlobalState* global_state,
+    mojo::ApplicationImpl* app,
+    mojo::View* view,
+    scoped_ptr<DocumentResourceWaiter> resource_waiter,
+    HTMLFrameDelegate* delegate) {
+  if (!instances_)
+    instances_ = new TreeMap;
+
+  mojo::InterfaceRequest<mandoline::FrameTreeClient> frame_tree_client_request;
+  mandoline::FrameTreeServerPtr frame_tree_server;
+  mojo::Array<mandoline::FrameDataPtr> frame_data;
+  resource_waiter->Release(&frame_tree_client_request, &frame_tree_server,
+                           &frame_data);
+  resource_waiter.reset();
+
+  HTMLFrameTreeManager* frame_tree = nullptr;
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOOPIFAlwaysCreateNewFrameTree)) {
+    if (instances_->count(frame_data[0]->frame_id))
+      frame_tree = (*instances_)[frame_data[0]->frame_id];
+  }
+
+  if (!frame_tree) {
+    frame_tree = new HTMLFrameTreeManager(global_state);
+    frame_tree->Init(delegate, view, frame_data);
+    if (frame_data[0]->frame_id == view->id())
+      (*instances_)[frame_data[0]->frame_id] = frame_tree;
+  } else {
+    // We're going to share a frame tree. There are two possibilities:
+    // . We already know about the frame, in which case we swap it to local.
+    // . We don't know about the frame (most likely because of timing issues),
+    //   but we better know about the parent. Create a new frame for it.
+    CHECK(view->id() != frame_data[0]->frame_id);
+    HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view->id());
+    size_t frame_data_index = 0u;
+    CHECK(FindFrameDataIndex(frame_data, view->id(), &frame_data_index));
+    const mandoline::FrameDataPtr& data = frame_data[frame_data_index];
+    if (existing_frame) {
+      CHECK(!existing_frame->IsLocal());
+      existing_frame->set_delegate(delegate);
+      existing_frame->SwapToLocal(view, data->name.To<blink::WebString>());
+    } else {
+      HTMLFrame* parent = frame_tree->root_->FindFrame(data->parent_id);
+      CHECK(parent);
+      HTMLFrame::CreateParams params(frame_tree, parent, view->id());
+      HTMLFrame* frame = new HTMLFrame(params);
+      frame->set_delegate(delegate);
+      frame->Init(view, data->name.To<blink::WebString>(),
+                  data->origin.To<blink::WebString>());
+    }
+  }
+
+  HTMLFrame* frame = frame_tree->root_->FindFrame(view->id());
+  DCHECK(frame);
+  frame->Bind(frame_tree_server.Pass(), frame_tree_client_request.Pass());
+  return frame;
+}
+
+blink::WebView* HTMLFrameTreeManager::GetWebView() {
+  return root_->web_view();
+}
+
+void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {
+  if (frame == root_)
+    root_ = nullptr;
+
+  if (frame == local_root_)
+    local_root_ = nullptr;
+
+  if (!local_root_ || !local_root_->HasLocalDescendant())
+    delete this;
+}
+
+HTMLFrameTreeManager::HTMLFrameTreeManager(GlobalState* global_state)
+    : global_state_(global_state), root_(nullptr), local_root_(nullptr) {}
+
+HTMLFrameTreeManager::~HTMLFrameTreeManager() {
+  DCHECK(!root_);
+  DCHECK(!local_root_);
+  RemoveFromInstances();
+}
+
+void HTMLFrameTreeManager::Init(
+    HTMLFrameDelegate* delegate,
+    mojo::View* local_view,
+    const mojo::Array<mandoline::FrameDataPtr>& frame_data) {
+  root_ = BuildFrameTree(delegate, frame_data, local_view->id(), local_view);
+  local_root_ = root_->FindFrame(local_view->id());
+  CHECK(local_root_);
+  local_root_->UpdateFocus();
+}
+
+HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
+    HTMLFrameDelegate* delegate,
     const mojo::Array<mandoline::FrameDataPtr>& frame_data,
     uint32_t local_frame_id,
     mojo::View* local_view) {
@@ -70,7 +156,7 @@ HTMLFrame* BuildFrameTree(
       while (parents.back()->id() != frame_data[i]->parent_id)
         parents.pop_back();
     }
-    HTMLFrame::CreateParams params(frame_tree_manager,
+    HTMLFrame::CreateParams params(this,
                                    !parents.empty() ? parents.back() : nullptr,
                                    frame_data[i]->frame_id);
     HTMLFrame* frame = new HTMLFrame(params);
@@ -80,124 +166,30 @@ HTMLFrame* BuildFrameTree(
       DCHECK(frame->parent());
     last_frame = frame;
 
+    if (frame_data[i]->frame_id == local_frame_id)
+      frame->set_delegate(delegate);
+
     frame->Init(local_view, frame_data[i]->name.To<blink::WebString>(),
                 frame_data[i]->origin.To<blink::WebString>());
   }
   return root;
 }
 
-}  // namespace
-
-HTMLFrameTreeManager::HTMLFrameTreeManager(
-    GlobalState* global_state,
-    mojo::ApplicationImpl* app,
-    mojo::ApplicationConnection* app_connection,
-    uint32_t local_frame_id,
-    mandoline::FrameTreeServerPtr server)
-    : global_state_(global_state),
-      app_(app),
-      delegate_(nullptr),
-      local_frame_id_(local_frame_id),
-      server_(server.Pass()),
-      root_(nullptr) {}
-
-HTMLFrameTreeManager::~HTMLFrameTreeManager() {
-  if (root_)
-    root_->Close();  // This should call back to OnFrameDestroyed().
-  DCHECK(!root_);
-}
-
-void HTMLFrameTreeManager::Init(
-    mojo::View* local_view,
-    mojo::Array<mandoline::FrameDataPtr> frame_data) {
-  root_ = BuildFrameTree(this, frame_data, local_frame_id_, local_view);
-  HTMLFrame* local_frame = root_->FindFrame(local_frame_id_);
-  CHECK(local_frame);
-  local_frame->UpdateFocus();
-}
-
-HTMLFrame* HTMLFrameTreeManager::GetLocalFrame() {
-  return root_->FindFrame(local_frame_id_);
-}
-
-blink::WebLocalFrame* HTMLFrameTreeManager::GetLocalWebFrame() {
-  return GetLocalFrame()->web_frame()->toWebLocalFrame();
-}
-
-blink::WebView* HTMLFrameTreeManager::GetWebView() {
-  return root_->web_view();
-}
-
-blink::WebNavigationPolicy HTMLFrameTreeManager::DecidePolicyForNavigation(
-    HTMLFrame* frame,
-    const blink::WebFrameClient::NavigationPolicyInfo& info) {
-  if (info.frame == frame->web_frame() && frame == root_ && delegate_ &&
-      delegate_->ShouldNavigateLocallyInMainFrame()) {
-    return info.defaultPolicy;
-  }
-
-  if (CanNavigateLocally(info.frame, info.urlRequest))
-    return info.defaultPolicy;
-
-  mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
-  server_->RequestNavigate(
-      frame->id(), WebNavigationPolicyToNavigationTarget(info.defaultPolicy),
-      url_request.Pass());
-
-  return blink::WebNavigationPolicyIgnore;
-}
-
-void HTMLFrameTreeManager::OnFrameDidFinishLoad(HTMLFrame* frame) {
-  if (delegate_)
-    delegate_->OnFrameDidFinishLoad(frame);
-}
-
-void HTMLFrameTreeManager::OnFrameDidNavigateLocally(HTMLFrame* frame,
-                                                     const std::string& url) {
-  server_->DidNavigateLocally(frame->id(), url);
-}
-
-void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {
-  if (frame == root_) {
-    root_ = nullptr;
-    // Shortly after this HTMLDocumentOOPIF should get ViewManagerDestroyed()
-    // and delete us.
+void HTMLFrameTreeManager::RemoveFromInstances() {
+  for (auto pair : *instances_) {
+    if (pair.second == this) {
+      instances_->erase(pair.first);
+      return;
+    }
   }
 }
 
-void HTMLFrameTreeManager::OnFrameDidChangeName(HTMLFrame* frame,
-                                                const blink::WebString& name) {
-  DCHECK(frame->IsLocal());
-  mojo::String mojo_name;
-  if (!name.isNull())
-    mojo_name = name.utf8();
-  server_->SetFrameName(frame->id(), mojo_name);
-}
+void HTMLFrameTreeManager::ProcessOnFrameAdded(
+    HTMLFrame* source,
+    mandoline::FrameDataPtr frame_data) {
+  if (source != local_root_)
+    return;
 
-void HTMLFrameTreeManager::OnConnect(
-    mandoline::FrameTreeServerPtr server,
-    mojo::Array<mandoline::FrameDataPtr> frame_data) {
-  // OnConnection() is only sent once, and has been received (by
-  // DocumentResourceWaiter) by the time we get here.
-  NOTREACHED();
-}
-
-void HTMLFrameTreeManager::LoadingStarted(HTMLFrame* frame) {
-  DCHECK(frame->IsLocal());
-  server_->LoadingStarted(frame->id());
-}
-
-void HTMLFrameTreeManager::LoadingStopped(HTMLFrame* frame) {
-  DCHECK(frame->IsLocal());
-  server_->LoadingStopped(frame->id());
-}
-
-void HTMLFrameTreeManager::ProgressChanged(HTMLFrame* frame, double progress) {
-  DCHECK(frame->IsLocal());
-  server_->ProgressChanged(frame->id(), progress);
-}
-
-void HTMLFrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
   HTMLFrame* parent = root_->FindFrame(frame_data->parent_id);
   if (!parent) {
     DVLOG(1) << "Received invalid parent in OnFrameAdded "
@@ -217,7 +209,11 @@ void HTMLFrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
               frame_data->origin.To<blink::WebString>());
 }
 
-void HTMLFrameTreeManager::OnFrameRemoved(uint32_t frame_id) {
+void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
+                                                 uint32_t frame_id) {
+  if (source != local_root_)
+    return;
+
   HTMLFrame* frame = root_->FindFrame(frame_id);
   if (!frame) {
     DVLOG(1) << "OnFrameRemoved with unknown frame " << frame_id;
@@ -230,16 +226,20 @@ void HTMLFrameTreeManager::OnFrameRemoved(uint32_t frame_id) {
     return;
   }
 
-  // Requests to remove the local frame are followed by the View being
-  // destroyed. We handle destruction there.
-  if (frame == GetLocalFrame())
+  // Requests to remove local frames are followed by the View being destroyed.
+  // We handle destruction there.
+  if (frame->IsLocal())
     return;
 
   frame->Close();
 }
 
-void HTMLFrameTreeManager::OnFrameNameChanged(uint32_t frame_id,
-                                              const mojo::String& name) {
+void HTMLFrameTreeManager::ProcessOnFrameNameChanged(HTMLFrame* source,
+                                                     uint32_t frame_id,
+                                                     const mojo::String& name) {
+  if (source != root_)
+    return;
+
   HTMLFrame* frame = root_->FindFrame(frame_id);
   if (frame)
     frame->SetRemoteFrameName(name);

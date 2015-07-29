@@ -30,6 +30,7 @@ class View;
 namespace html_viewer {
 
 class GeolocationClientImpl;
+class HTMLFrameDelegate;
 class HTMLFrameTreeManager;
 class TouchHandler;
 class WebLayerImpl;
@@ -39,9 +40,21 @@ class WebLayerTreeViewImpl;
 // frame is either local or remote. Each Frame is associated with a single
 // HTMLFrameTreeManager and can not be moved to another HTMLFrameTreeManager.
 // Local frames have a mojo::View, remote frames do not.
+//
+// HTMLFrame serves as the FrameTreeClient. It implements it by forwarding
+// the calls to HTMLFrameTreeManager so that HTMLFrameTreeManager can update
+// the frame tree as appropriate.
+//
+// Local frames may share the connection (and client implementation) with an
+// ancestor. This happens when a child frame is created. Once a navigate
+// happens the frame is swapped to a remote frame.
+//
+// Remote frames may become local again if the embed happens in the same
+// process. See HTMLFrameTreeManager for details.
 class HTMLFrame : public blink::WebFrameClient,
                   public blink::WebViewClient,
                   public blink::WebRemoteFrameClient,
+                  public mandoline::FrameTreeClient,
                   public mojo::ViewObserver {
  public:
   struct CreateParams {
@@ -89,16 +102,36 @@ class HTMLFrame : public blink::WebFrameClient,
   // locally.
   mojo::View* view() { return view_; }
 
+  HTMLFrameTreeManager* frame_tree_manager() { return frame_tree_manager_; }
+
+  // Returns true if this or one of the frames descendants is local.
+  bool HasLocalDescendant() const;
+
  private:
   friend class HTMLFrameTreeManager;
 
   virtual ~HTMLFrame();
+
+  void set_delegate(HTMLFrameDelegate* delegate) { delegate_ = delegate; }
+
+  // Binds this frame to the specified server. |this| serves as the
+  // FrameTreeClient for the server.
+  void Bind(mandoline::FrameTreeServerPtr frame_tree_server,
+            mojo::InterfaceRequest<mandoline::FrameTreeClient>
+                frame_tree_client_request);
 
   // Sets the name of the remote frame. Does nothing if this is a local frame.
   void SetRemoteFrameName(const mojo::String& name);
 
   // Returns true if the Frame is local, false if remote.
   bool IsLocal() const;
+
+  // The local root is the first ancestor (starting at this) that has its own
+  // connection.
+  HTMLFrame* GetLocalRoot();
+
+  // Returns the ApplicationImpl from the local root's delegate.
+  mojo::ApplicationImpl* GetLocalRootApp();
 
   void SetView(mojo::View* view);
 
@@ -118,6 +151,9 @@ class HTMLFrame : public blink::WebFrameClient,
   // See comment in SwapToRemote() for details on this.
   void FinishSwapToRemote();
 
+  // Swaps this frame from a remote frame to a local frame.
+  void SwapToLocal(mojo::View* view, const blink::WebString& name);
+
   GlobalState* global_state() { return frame_tree_manager_->global_state(); }
 
   // Returns the Frame associated with the specified WebFrame.
@@ -134,6 +170,13 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnViewInputEvent(mojo::View* view, const mojo::EventPtr& event) override;
   void OnViewFocusChanged(mojo::View* gained_focus,
                           mojo::View* lost_focus) override;
+
+  // mandoline::FrameTreeClient:
+  void OnConnect(mandoline::FrameTreeServerPtr server,
+                 mojo::Array<mandoline::FrameDataPtr> frame_data) override;
+  void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
+  void OnFrameRemoved(uint32_t frame_id) override;
+  void OnFrameNameChanged(uint32_t frame_id, const mojo::String& name) override;
 
   // WebViewClient methods:
   virtual void initializeLayerTreeView() override;
@@ -203,6 +246,11 @@ class HTMLFrame : public blink::WebFrameClient,
   blink::WebTreeScopeType scope_;
 
   scoped_ptr<WebLayerImpl> web_layer_;
+
+  HTMLFrameDelegate* delegate_;
+  scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>
+      frame_tree_client_binding_;
+  mandoline::FrameTreeServerPtr server_;
 
   base::WeakPtrFactory<HTMLFrame> weak_factory_;
 

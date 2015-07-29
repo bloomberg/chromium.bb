@@ -28,13 +28,15 @@ void DocumentResourceWaiter::Release(
     mojo::InterfaceRequest<mandoline::FrameTreeClient>*
         frame_tree_client_request,
     mandoline::FrameTreeServerPtr* frame_tree_server,
-    mojo::Array<mandoline::FrameDataPtr>* frame_data,
-    mojo::URLResponsePtr* response) {
+    mojo::Array<mandoline::FrameDataPtr>* frame_data) {
   DCHECK(IsReady());
   *frame_tree_client_request = frame_tree_client_request_.Pass();
   *frame_tree_server = server_.Pass();
   *frame_data = frame_data_.Pass();
-  *response = response_.Pass();
+}
+
+mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
+  return response_.Pass();
 }
 
 bool DocumentResourceWaiter::IsReady() const {

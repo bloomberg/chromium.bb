@@ -64,12 +64,13 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
                                      mojo::URLResponsePtr response,
                                      GlobalState* global_state,
                                      const DeleteCallback& delete_callback)
-    : app_refcount_(
-          html_document_app->app_lifetime_helper()->CreateAppRefCount()),
+    : app_refcount_(html_document_app->app_lifetime_helper()
+                        ->CreateAppRefCount()),
       html_document_app_(html_document_app),
       connection_(connection),
       view_manager_client_factory_(html_document_app->shell(), this),
       global_state_(global_state),
+      frame_(nullptr),
       delete_callback_(delete_callback) {
   // TODO(sky): nuke headless. We're not going to care about it anymore.
   DCHECK(!global_state_->is_headless());
@@ -99,13 +100,9 @@ void HTMLDocumentOOPIF::Destroy() {
       delete this;
     }
   } else {
-    DCHECK(frame_tree_manager_);
-    mojo::ViewManager* view_manager =
-        frame_tree_manager_->GetLocalFrame()->view()->view_manager();
-    frame_tree_manager_.reset();
-
-    // Delete the ViewManager, which will trigger deleting us.
-    delete view_manager;
+    // Closing the frame ends up destroying the ViewManager, which triggers
+    // deleting this (OnViewManagerDestroyed()).
+    frame_->Close();
   }
 }
 
@@ -116,7 +113,7 @@ HTMLDocumentOOPIF::~HTMLDocumentOOPIF() {
 }
 
 void HTMLDocumentOOPIF::LoadIfNecessary() {
-  if (!frame_tree_manager_ && resource_waiter_->IsReady())
+  if (!frame_ && resource_waiter_->IsReady())
     Load();
 }
 
@@ -128,39 +125,23 @@ void HTMLDocumentOOPIF::Load() {
       view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
       view->viewport_metrics().device_pixel_ratio);
 
-  mojo::InterfaceRequest<mandoline::FrameTreeClient> frame_tree_client_request;
-  mandoline::FrameTreeServerPtr frame_tree_server;
-  mojo::Array<mandoline::FrameDataPtr> frame_data;
-  mojo::URLResponsePtr response;
-  resource_waiter_->Release(&frame_tree_client_request, &frame_tree_server,
-                            &frame_data, &response);
-  resource_waiter_.reset();
-
   view->RemoveObserver(this);
 
-  frame_tree_manager_.reset(
-      new HTMLFrameTreeManager(global_state_, html_document_app_, connection_,
-                               view->id(), frame_tree_server.Pass()));
-  frame_tree_manager_->set_delegate(this);
-  frame_tree_manager_binding_.reset(
-      new mojo::Binding<mandoline::FrameTreeClient>(
-          frame_tree_manager_.get(), frame_tree_client_request.Pass()));
-  frame_tree_manager_->Init(view, frame_data.Pass());
+  WebURLRequestExtraData* extra_data = new WebURLRequestExtraData;
+  extra_data->synthetic_response =
+      resource_waiter_->ReleaseURLResponse().Pass();
+
+  frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
+      global_state_, html_document_app_, view, resource_waiter_.Pass(), this);
 
   // TODO(yzshen): http://crbug.com/498986 Creating DevToolsAgentImpl instances
   // causes html_viewer_apptests flakiness currently. Before we fix that we
   // cannot enable remote debugging (which is required by Telemetry tests) on
   // the bots.
-  if (EnableRemoteDebugging()) {
-    HTMLFrame* frame = frame_tree_manager_->GetLocalFrame();
-    if (!frame->parent()) {
-      devtools_agent_.reset(new DevToolsAgentImpl(
-          frame->web_frame()->toWebLocalFrame(), html_document_app_->shell()));
-    }
+  if (EnableRemoteDebugging() && !frame_->parent()) {
+    devtools_agent_.reset(new DevToolsAgentImpl(
+        frame_->web_frame()->toWebLocalFrame(), html_document_app_->shell()));
   }
-
-  WebURLRequestExtraData* extra_data = new WebURLRequestExtraData;
-  extra_data->synthetic_response = response.Pass();
 
   const GURL url(extra_data->synthetic_response->url);
 
@@ -169,7 +150,7 @@ void HTMLDocumentOOPIF::Load() {
   web_request.setURL(url);
   web_request.setExtraData(extra_data);
 
-  frame_tree_manager_->GetLocalWebFrame()->loadRequest(web_request);
+  frame_->web_frame()->toWebLocalFrame()->loadRequest(web_request);
 }
 
 HTMLDocumentOOPIF::BeforeLoadCache* HTMLDocumentOOPIF::GetBeforeLoadCache() {
@@ -208,13 +189,7 @@ bool HTMLDocumentOOPIF::ShouldNavigateLocallyInMainFrame() {
   return devtools_agent_ && devtools_agent_->handling_page_navigate_request();
 }
 
-void HTMLDocumentOOPIF::OnFrameDidFinishLoad(HTMLFrame* frame) {
-  // TODO(msw): Notify AxProvider clients of updates on child frame loads.
-  if (frame_tree_manager_ &&
-      frame != frame_tree_manager_->GetLocalFrame()) {
-    return;
-  }
-
+void HTMLDocumentOOPIF::OnFrameDidFinishLoad() {
   did_finish_local_frame_load_ = true;
   scoped_ptr<BeforeLoadCache> before_load_cache = before_load_cache_.Pass();
   if (!before_load_cache)
@@ -222,14 +197,18 @@ void HTMLDocumentOOPIF::OnFrameDidFinishLoad(HTMLFrame* frame) {
 
   // Bind any pending AxProvider and TestHTMLViewer interface requests.
   for (auto it : before_load_cache->ax_provider_requests) {
-    ax_providers_.insert(
-        new AxProviderImpl(frame_tree_manager_->GetWebView(), it->Pass()));
+    ax_providers_.insert(new AxProviderImpl(
+        frame_->frame_tree_manager()->GetWebView(), it->Pass()));
   }
   for (auto it : before_load_cache->test_interface_requests) {
     CHECK(IsTestInterfaceEnabled());
     test_html_viewers_.push_back(new TestHTMLViewerImpl(
-        frame_tree_manager_->GetLocalWebFrame(), it->Pass()));
+        frame_->web_frame()->toWebLocalFrame(), it->Pass()));
   }
+}
+
+mojo::ApplicationImpl* HTMLDocumentOOPIF::GetApp() {
+  return html_document_app_;
 }
 
 void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
@@ -240,8 +219,8 @@ void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
     *cached_request = request.Pass();
     GetBeforeLoadCache()->ax_provider_requests.insert(cached_request);
   } else {
-    ax_providers_.insert(new AxProviderImpl(
-        frame_tree_manager_->GetLocalFrame()->web_view(), request.Pass()));
+    ax_providers_.insert(
+        new AxProviderImpl(frame_->web_view(), request.Pass()));
   }
 }
 
@@ -254,14 +233,14 @@ void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
     GetBeforeLoadCache()->test_interface_requests.insert(cached_request);
   } else {
     test_html_viewers_.push_back(new TestHTMLViewerImpl(
-        frame_tree_manager_->GetLocalWebFrame(), request.Pass()));
+        frame_->web_frame()->toWebLocalFrame(), request.Pass()));
   }
 }
 
 void HTMLDocumentOOPIF::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mandoline::FrameTreeClient> request) {
-  if (frame_tree_manager_.get() || frame_tree_manager_binding_.get()) {
+  if (frame_) {
     DVLOG(1) << "Request for FrameTreeClient after one already vended.";
     return;
   }

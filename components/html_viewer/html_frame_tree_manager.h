@@ -5,111 +5,92 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_
 #define COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
-#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
 namespace blink {
-class WebFrame;
-class WebFrameClient;
-class WebLocalFrame;
-class WebRemoteFrameClient;
-class WebString;
 class WebView;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace mojo {
-class ApplicationConnection;
 class ApplicationImpl;
 class View;
 }
 
 namespace html_viewer {
 
-class HTMLFrame;
-class HTMLFrameTreeManagerDelegate;
+class DocumentResourceWaiter;
 class GlobalState;
+class HTMLFrame;
+class HTMLFrameDelegate;
 
 // HTMLFrameTreeManager is responsible for managing the frames that comprise a
 // document. Some of the frames may be remote. HTMLFrameTreeManager updates its
 // state in response to changes from the FrameTreeServer, as well as changes
 // from the underlying frames. The frame tree has at least one local frame
 // that is backed by a mojo::View.
-class HTMLFrameTreeManager : public mandoline::FrameTreeClient {
+class HTMLFrameTreeManager {
  public:
-  HTMLFrameTreeManager(GlobalState* global_state,
-                       mojo::ApplicationImpl* app,
-                       mojo::ApplicationConnection* app_connection,
-                       uint32_t local_frame_id,
-                       mandoline::FrameTreeServerPtr server);
-  ~HTMLFrameTreeManager() override;
-
-  void Init(mojo::View* local_view,
-            mojo::Array<mandoline::FrameDataPtr> frame_data);
-
-  void set_delegate(HTMLFrameTreeManagerDelegate* delegate) {
-    delegate_ = delegate;
-  }
+  // Creates a new HTMLFrame. The caller owns the return value and must call
+  // Close() when done.
+  static HTMLFrame* CreateFrameAndAttachToTree(
+      GlobalState* global_state,
+      mojo::ApplicationImpl* app,
+      mojo::View* view,
+      scoped_ptr<DocumentResourceWaiter> resource_waiter,
+      HTMLFrameDelegate* delegate);
 
   GlobalState* global_state() { return global_state_; }
-  mojo::ApplicationImpl* app() { return app_; }
-
-  // Returns the Frame/WebFrame that is rendering to the supplied view.
-  // TODO(sky): we need to support more than one local frame.
-  HTMLFrame* GetLocalFrame();
-  blink::WebLocalFrame* GetLocalWebFrame();
 
   blink::WebView* GetWebView();
 
-  void LoadingStarted(HTMLFrame* frame);
-  void LoadingStopped(HTMLFrame* frame);
-  void ProgressChanged(HTMLFrame* frame, double progress);
-
  private:
   friend class HTMLFrame;
+  using TreeMap = std::map<uint32_t, HTMLFrameTreeManager*>;
 
-  // Returns the navigation policy for the specified frame.
-  blink::WebNavigationPolicy DecidePolicyForNavigation(
-      HTMLFrame* frame,
-      const blink::WebFrameClient::NavigationPolicyInfo& info);
+  explicit HTMLFrameTreeManager(GlobalState* global_state);
+  ~HTMLFrameTreeManager();
 
-  // Invoked when a Frame finishes loading.
-  void OnFrameDidFinishLoad(HTMLFrame* frame);
+  void Init(HTMLFrameDelegate* delegate,
+            mojo::View* local_view,
+            const mojo::Array<mandoline::FrameDataPtr>& frame_data);
 
-  // Invoked when a Frame navigates.
-  void OnFrameDidNavigateLocally(HTMLFrame* frame, const std::string& url);
+  // Creates a Frame per FrameData element in |frame_data|. Returns the root.
+  HTMLFrame* BuildFrameTree(
+      HTMLFrameDelegate* delegate,
+      const mojo::Array<mandoline::FrameDataPtr>& frame_data,
+      uint32_t local_frame_id,
+      mojo::View* local_view);
 
-  // Invoked when a Frame is destroye.
+  // Returns this HTMLFrameTreeManager from |instances_|.
+  void RemoveFromInstances();
+
+  // Invoked when a Frame is destroyed.
   void OnFrameDestroyed(HTMLFrame* frame);
 
-  // Invoked when the name of a frame changes.
-  void OnFrameDidChangeName(HTMLFrame* frame, const blink::WebString& name);
+  // Each HTMLFrame delegates FrameTreeClient methods to the
+  // HTMLFrameTreeManager the frame is in. HTMLFrameTreeManager only responds
+  // to changes from the |local_root_| (this is because each FrameTreeClient
+  // sees the same change, and a change only need be processed once).
+  void ProcessOnFrameAdded(HTMLFrame* source,
+                           mandoline::FrameDataPtr frame_data);
+  void ProcessOnFrameRemoved(HTMLFrame* source, uint32_t frame_id);
+  void ProcessOnFrameNameChanged(HTMLFrame* source,
+                                 uint32_t frame_id,
+                                 const mojo::String& name);
 
-  // mandoline::FrameTreeClient:
-  void OnConnect(mandoline::FrameTreeServerPtr server,
-                 mojo::Array<mandoline::FrameDataPtr> frame_data) override;
-  void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
-  void OnFrameRemoved(uint32_t frame_id) override;
-  void OnFrameNameChanged(uint32_t frame_id, const mojo::String& name) override;
+  static TreeMap* instances_;
 
   GlobalState* global_state_;
 
-  mojo::ApplicationImpl* app_;
-
-  HTMLFrameTreeManagerDelegate* delegate_;
-
-  // Frame id of the frame we're rendering to.
-  const uint32_t local_frame_id_;
-
-  mandoline::FrameTreeServerPtr server_;
-
   HTMLFrame* root_;
+
+  // The |local_root_| is the HTMLFrame that is the highest frame that is
+  // local.
+  HTMLFrame* local_root_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLFrameTreeManager);
 };

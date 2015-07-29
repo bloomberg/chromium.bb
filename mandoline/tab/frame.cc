@@ -76,18 +76,19 @@ void Frame::Init(Frame* parent) {
   if (parent)
     parent->Add(this);
 
-  std::vector<const Frame*> frames;
-  tree_->root()->BuildFrameTree(&frames);
+  InitClient();
+}
 
-  mojo::Array<FrameDataPtr> array(frames.size());
-  for (size_t i = 0; i < frames.size(); ++i)
-    array[i] = FrameToFrameData(frames[i]).Pass();
+void Frame::Swap(FrameTreeClient* frame_tree_client,
+                 scoped_ptr<FrameUserData> user_data) {
+  while (!children_.empty())
+    delete children_[0];
 
-  // TODO(sky): error handling.
-  FrameTreeServerPtr frame_tree_server_ptr;
-  frame_tree_server_binding_.Bind(GetProxy(&frame_tree_server_ptr).Pass());
-  if (frame_tree_client_)
-    frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(), array.Pass());
+  user_data_ = user_data.Pass();
+  frame_tree_client_ = frame_tree_client;
+  frame_tree_server_binding_.Close();
+
+  InitClient();
 }
 
 // static
@@ -132,6 +133,21 @@ double Frame::GatherProgress(int* frame_count) const {
   for (const Frame* child : children_)
     progress += child->GatherProgress(frame_count);
   return progress_;
+}
+
+void Frame::InitClient() {
+  std::vector<const Frame*> frames;
+  tree_->root()->BuildFrameTree(&frames);
+
+  mojo::Array<FrameDataPtr> array(frames.size());
+  for (size_t i = 0; i < frames.size(); ++i)
+    array[i] = FrameToFrameData(frames[i]).Pass();
+
+  // TODO(sky): error handling.
+  FrameTreeServerPtr frame_tree_server_ptr;
+  frame_tree_server_binding_.Bind(GetProxy(&frame_tree_server_ptr).Pass());
+  if (frame_tree_client_)
+    frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(), array.Pass());
 }
 
 void Frame::SetView(mojo::View* view) {
@@ -334,7 +350,8 @@ void Frame::RequestNavigate(uint32_t frame_id,
     DVLOG(1) << "RequestNavigate for unknown frame " << frame_id;
     return;
   }
-  tree_->delegate_->RequestNavigate(frame, target, request.Pass());
+  if (tree_->delegate_)
+    tree_->delegate_->RequestNavigate(frame, target, request.Pass());
 }
 
 void Frame::DidNavigateLocally(uint32_t frame_id, const mojo::String& url) {
