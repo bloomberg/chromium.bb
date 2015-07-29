@@ -1,0 +1,11 @@
+Tests the Timeline UI API for network requests.
+
+Script resource loaded
+URL: timeline-network-resource.js
+Request Method: GET
+Mime Type: javascript
+URL: anImage.png
+Request Method: GET
+Mime Type: png
+Preview: 
+
