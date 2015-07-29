@@ -98,7 +98,7 @@ void Feedback::EraseFinalizedMisspellings(int renderer_process_id) {
     if (!misspelling.action.IsFinal())
       continue;
     renderer_hashes.erase(erasable_hash_it);
-    text_[misspelling.GetMisspelledString()].erase(misspelling.hash);
+    text_[GetMisspelledString(misspelling)].erase(misspelling.hash);
     misspellings_.erase(misspelling_it);
   }
   if (renderer_hashes.empty())
@@ -115,7 +115,7 @@ void Feedback::AddMisspelling(int renderer_process_id,
       misspellings_.find(misspelling.hash);
   if (misspelling_it != misspellings_.end()) {
     const Misspelling& existing_misspelling = misspelling_it->second;
-    text_[existing_misspelling.GetMisspelledString()].erase(misspelling.hash);
+    text_[GetMisspelledString(existing_misspelling)].erase(misspelling.hash);
     for (RendererHashesMap::iterator renderer_it = renderers_.begin();
          renderer_it != renderers_.end();) {
       HashCollection& renderer_hashes = renderer_it->second;
@@ -127,7 +127,7 @@ void Feedback::AddMisspelling(int renderer_process_id,
     }
   }
   misspellings_[misspelling.hash] = misspelling;
-  text_[misspelling.GetMisspelledString()].insert(misspelling.hash);
+  text_[GetMisspelledString(misspelling)].insert(misspelling.hash);
   renderers_[renderer_process_id].insert(misspelling.hash);
 }
 

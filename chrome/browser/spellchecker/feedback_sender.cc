@@ -99,7 +99,7 @@ base::ListValue* BuildSuggestionInfo(
            suggestions.begin();
        suggestion_it != suggestions.end();
        ++suggestion_it) {
-    base::DictionaryValue* suggestion = suggestion_it->Serialize();
+    base::DictionaryValue* suggestion = SerializeMisspelling(*suggestion_it);
     suggestion->SetBoolean("isFirstInSession", is_first_feedback_batch);
     suggestion->SetBoolean("isAutoCorrection", false);
     list->Append(suggestion);
@@ -201,7 +201,7 @@ void FeedbackSender::AddedToDictionary(uint32 hash) {
   misspelling->action.set_type(SpellcheckAction::TYPE_ADD_TO_DICT);
   misspelling->timestamp = base::Time::Now();
   const std::set<uint32>& hashes =
-      feedback_.FindMisspellings(misspelling->GetMisspelledString());
+      feedback_.FindMisspellings(GetMisspelledString(*misspelling));
   for (std::set<uint32>::const_iterator hash_it = hashes.begin();
        hash_it != hashes.end();
        ++hash_it) {

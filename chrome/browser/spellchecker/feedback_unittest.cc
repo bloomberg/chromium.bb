@@ -225,7 +225,7 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
     EXPECT_NE(static_cast<Misspelling*>(NULL), misspelling);
     EXPECT_TRUE(misspelling->hash >= kMisspellingHash &&
                 misspelling->hash <= hash);
-    EXPECT_EQ(kMisspelledWord, misspelling->GetMisspelledString());
+    EXPECT_EQ(kMisspelledWord, GetMisspelledString(*misspelling));
   }
 }
 

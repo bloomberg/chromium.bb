@@ -29,7 +29,8 @@ TEST(MisspellingTest, SerializeTest) {
       "\"suggestions\": [\"does it\"],"
       "\"userActions\": [{\"actionType\": \"PENDING\"}]}"));
 
-  scoped_ptr<base::DictionaryValue> serialized(misspelling.Serialize());
+  scoped_ptr<base::DictionaryValue> serialized(
+      SerializeMisspelling(misspelling));
   EXPECT_TRUE(serialized->Equals(expected.get()));
 }
 
@@ -38,15 +39,15 @@ TEST(MisspellingTest, GetMisspelledStringTest) {
   misspelling.context = base::ASCIIToUTF16("How doe sit know");
   misspelling.location = 4;
   misspelling.length = 7;
-  EXPECT_EQ(base::ASCIIToUTF16("doe sit"), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::ASCIIToUTF16("doe sit"), GetMisspelledString(misspelling));
 
   misspelling.length = 0;
-  EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::string16(), GetMisspelledString(misspelling));
 
   misspelling.location = misspelling.context.length();
   misspelling.length = 7;
-  EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::string16(), GetMisspelledString(misspelling));
 
   misspelling.location = misspelling.context.length() + 1;
-  EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::string16(), GetMisspelledString(misspelling));
 }

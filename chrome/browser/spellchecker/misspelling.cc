@@ -48,23 +48,24 @@ Misspelling::Misspelling(const base::string16& context,
 
 Misspelling::~Misspelling() {}
 
-base::DictionaryValue* Misspelling::Serialize() const {
+base::DictionaryValue* SerializeMisspelling(const Misspelling& misspelling) {
   base::DictionaryValue* result = new base::DictionaryValue;
-  result->SetString("timestamp", base::Int64ToString(
-                                     static_cast<long>(timestamp.ToJsTime())));
-  result->SetInteger("misspelledLength", length);
-  result->SetInteger("misspelledStart", location);
-  result->SetString("originalText", context);
-  result->SetString("suggestionId", base::UintToString(hash));
-  result->Set("suggestions", BuildSuggestionsValue(suggestions));
-  result->Set("userActions", BuildUserActionValue(action));
+  result->SetString(
+      "timestamp",
+      base::Int64ToString(static_cast<long>(misspelling.timestamp.ToJsTime())));
+  result->SetInteger("misspelledLength", misspelling.length);
+  result->SetInteger("misspelledStart", misspelling.location);
+  result->SetString("originalText", misspelling.context);
+  result->SetString("suggestionId", base::UintToString(misspelling.hash));
+  result->Set("suggestions", BuildSuggestionsValue(misspelling.suggestions));
+  result->Set("userActions", BuildUserActionValue(misspelling.action));
   return result;
 }
 
-base::string16 Misspelling::GetMisspelledString() const {
+base::string16 GetMisspelledString(const Misspelling& misspelling) {
   // Feedback sender does not create Misspelling objects for spellcheck results
   // that are out-of-bounds of checked text length.
-  if (location > context.length())
+  if (misspelling.location > misspelling.context.length())
     return base::string16();
-  return context.substr(location, length);
+  return misspelling.context.substr(misspelling.location, misspelling.length);
 }
