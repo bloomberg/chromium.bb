@@ -37,8 +37,6 @@ const char LoginPolicyTestBase::kAccountPassword[] = "letmein";
 const char LoginPolicyTestBase::kAccountId[] = "user@example.com";
 
 LoginPolicyTestBase::LoginPolicyTestBase() {
-  // TODO(nkostylev): Fix this test harness for webview. http://crbug.com/477402
-  set_use_webview(false);
   set_open_about_blank_on_browser_launch(false);
 }
 

@@ -163,9 +163,6 @@ IN_PROC_BROWSER_TEST_P(BootstrapTest, CleanUpFailedUser) {
   EXPECT_FALSE(user_manager::UserManager::Get()->IsKnownUser(kFakeUser));
 }
 
-// TODO(nkostylev): Fix this test for webview. http://crbug.com/477402
-INSTANTIATE_TEST_CASE_P(BootstrapTestSuite,
-                        BootstrapTest,
-                        testing::Values(false));
+INSTANTIATE_TEST_CASE_P(BootstrapTestSuite, BootstrapTest, testing::Bool());
 
 }  // namespace chromeos
