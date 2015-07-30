@@ -4379,11 +4379,17 @@ TEST_F(SyncerTest, EntryWithParentIdUpdatedWithEntryWithoutParentId) {
   }
 
   // Add a preference item with explicit parent ID.
-  mock_server_->AddUpdatePref(ids_.FromNumber(2).GetServerId(),
-                              ids_.FromNumber(1).GetServerId(), "tag", 1, 10);
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry entry(&trans, CREATE, PREFERENCES, pref_root_id, "tag");
+    ASSERT_TRUE(entry.good());
+    entry.PutIsDir(false);
+    entry.PutBaseVersion(1);
+    entry.PutUniqueClientTag("tag");
+    entry.PutId(ids_.FromNumber(2));
+  }
 
-  EXPECT_TRUE(SyncShareNudge());
-
+  // Verify the entry above.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry pref_entry(&trans, GET_BY_CLIENT_TAG, "tag");

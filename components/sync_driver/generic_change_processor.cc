@@ -494,22 +494,10 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
     syncer::AttachmentIdSet* new_attachments) {
   // TODO(sync): Handle other types of creation (custom parents, folders,
   // etc.).
-  syncer::ReadNode root_node(&trans);
   const syncer::SyncDataLocal sync_data_local(change.sync_data());
-  if (root_node.InitTypeRoot(sync_data_local.GetDataType()) !=
-      syncer::BaseNode::INIT_OK) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Failed to look up root node for type " + type_str,
-                            type_);
-    error_handler()->OnSingleDataTypeUnrecoverableError(error);
-    NOTREACHED();
-    LOG(ERROR) << "Create: no root node.";
-    return error;
-  }
   syncer::WriteNode::InitUniqueByCreationResult result =
-      sync_node->InitUniqueByCreation(
-          sync_data_local.GetDataType(), root_node, sync_data_local.GetTag());
+      sync_node->InitUniqueByCreation(sync_data_local.GetDataType(),
+                                      sync_data_local.GetTag());
   if (result != syncer::WriteNode::INIT_SUCCESS) {
     std::string error_prefix = "Failed to create " + type_str + " node: " +
                                change.location().ToString() + ", ";

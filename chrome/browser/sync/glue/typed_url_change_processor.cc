@@ -166,17 +166,6 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     // This URL has no TYPED visits, don't sync it.
     return false;
 
-  syncer::ReadNode typed_url_root(trans);
-  if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
-          syncer::BaseNode::INIT_OK) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "No top level folder",
-                            syncer::TYPED_URLS);
-    error_handler()->OnSingleDataTypeUnrecoverableError(error);
-    return false;
-  }
-
   if (model_associator_->ShouldIgnoreUrl(url.url()))
     return true;
 
@@ -197,8 +186,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   } else {
     syncer::WriteNode create_node(trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
-        create_node.InitUniqueByCreation(syncer::TYPED_URLS,
-                                         typed_url_root, tag);
+        create_node.InitUniqueByCreation(syncer::TYPED_URLS, tag);
     if (result != syncer::WriteNode::INIT_SUCCESS) {
 
       syncer::SyncError error(FROM_HERE,

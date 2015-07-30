@@ -310,8 +310,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels(
         // Sync has never seen this URL before.
         syncer::WriteNode node(&trans);
         syncer::WriteNode::InitUniqueByCreationResult result =
-            node.InitUniqueByCreation(syncer::TYPED_URLS,
-                                      typed_url_root, tag);
+            node.InitUniqueByCreation(syncer::TYPED_URLS, tag);
         if (result != syncer::WriteNode::INIT_SUCCESS) {
           return error_handler_->CreateAndUploadError(
               FROM_HERE,

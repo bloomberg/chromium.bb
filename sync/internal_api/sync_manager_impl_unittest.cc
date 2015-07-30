@@ -517,8 +517,6 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
   }
   {
     ReadTransaction trans(FROM_HERE, user_share());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
 
     ReadNode password_node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
@@ -555,8 +553,6 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
   }
   {
     ReadTransaction trans(FROM_HERE, user_share());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
 
     ReadNode bookmark_node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));
@@ -590,8 +586,6 @@ TEST_F(SyncApiTest, WriteEmptyBookmarkTitle) {
   }
   {
     ReadTransaction trans(FROM_HERE, user_share());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
 
     ReadNode bookmark_node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));

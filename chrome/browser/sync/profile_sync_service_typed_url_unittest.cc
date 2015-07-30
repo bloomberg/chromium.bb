@@ -209,14 +209,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    syncer::ReadNode typed_url_root(&trans);
-    ASSERT_EQ(syncer::BaseNode::INIT_OK,
-              typed_url_root.InitTypeRoot(syncer::TYPED_URLS));
 
     syncer::WriteNode node(&trans);
     std::string tag = url.url().spec();
     syncer::WriteNode::InitUniqueByCreationResult result =
-        node.InitUniqueByCreation(syncer::TYPED_URLS, typed_url_root, tag);
+        node.InitUniqueByCreation(syncer::TYPED_URLS, tag);
     ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
   }

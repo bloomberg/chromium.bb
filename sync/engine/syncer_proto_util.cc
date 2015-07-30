@@ -534,6 +534,14 @@ bool SyncerProtoUtil::ShouldMaintainPosition(
 }
 
 // static
+bool SyncerProtoUtil::ShouldMaintainHierarchy(
+    const sync_pb::SyncEntity& sync_entity) {
+  // Maintain hierarchy for bookmarks or top-level items.
+  return GetModelType(sync_entity) == BOOKMARKS ||
+         sync_entity.parent_id_string() == "0";
+}
+
+// static
 const std::string& SyncerProtoUtil::NameFromSyncEntity(
     const sync_pb::SyncEntity& entry) {
   if (entry.has_non_unique_name())

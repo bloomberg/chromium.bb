@@ -406,7 +406,11 @@ void UpdateServerFieldsFromUpdate(
 
   DCHECK_EQ(target->GetId(), SyncableIdFromProto(update.id_string()))
       << "ID Changing not supported here";
-  target->PutServerParentId(SyncableIdFromProto(update.parent_id_string()));
+  if (SyncerProtoUtil::ShouldMaintainHierarchy(update)) {
+    target->PutServerParentId(SyncableIdFromProto(update.parent_id_string()));
+  } else {
+    target->PutServerParentId(syncable::Id());
+  }
   target->PutServerNonUniqueName(name);
   target->PutServerVersion(update.version());
   target->PutServerCtime(ProtoTimeToTime(update.ctime()));

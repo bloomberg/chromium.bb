@@ -580,17 +580,12 @@ class ProfileSyncServiceAutofillTest
 
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    syncer::ReadNode autofill_root(&trans);
-    if (autofill_root.InitTypeRoot(syncer::AUTOFILL) != BaseNode::INIT_OK) {
-      return false;
-    }
-
     syncer::WriteNode node(&trans);
     std::string tag = AutocompleteSyncableService::KeyToTag(
         base::UTF16ToUTF8(entry.key().name()),
         base::UTF16ToUTF8(entry.key().value()));
     syncer::WriteNode::InitUniqueByCreationResult result =
-        node.InitUniqueByCreation(syncer::AUTOFILL, autofill_root, tag);
+        node.InitUniqueByCreation(syncer::AUTOFILL, tag);
     if (result != syncer::WriteNode::INIT_SUCCESS)
       return false;
 
@@ -602,15 +597,10 @@ class ProfileSyncServiceAutofillTest
 
   bool AddAutofillSyncNode(const AutofillProfile& profile) {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    syncer::ReadNode autofill_root(&trans);
-    if (autofill_root.InitTypeRoot(AUTOFILL_PROFILE) != BaseNode::INIT_OK) {
-      return false;
-    }
     syncer::WriteNode node(&trans);
     std::string tag = profile.guid();
     syncer::WriteNode::InitUniqueByCreationResult result =
-        node.InitUniqueByCreation(syncer::AUTOFILL_PROFILE,
-                                  autofill_root, tag);
+        node.InitUniqueByCreation(syncer::AUTOFILL_PROFILE, tag);
     if (result != syncer::WriteNode::INIT_SUCCESS)
       return false;
 

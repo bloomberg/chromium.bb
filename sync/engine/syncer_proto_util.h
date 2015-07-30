@@ -58,7 +58,13 @@ class SYNC_EXPORT_PRIVATE SyncerProtoUtil {
       sessions::SyncSession* session,
       ModelTypeSet* partial_failure_data_types);
 
+  // Specifies where entity's position should be updated from the data in
+  // GetUpdates message.
   static bool ShouldMaintainPosition(const sync_pb::SyncEntity& sync_entity);
+
+  // Specifies where entity's parent ID should be updated from the data in
+  // GetUpdates message.
+  static bool ShouldMaintainHierarchy(const sync_pb::SyncEntity& sync_entity);
 
   // Extract the name field from a sync entity.
   static const std::string& NameFromSyncEntity(
