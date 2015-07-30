@@ -16,7 +16,7 @@
           <div class="current">[[time2string_(time)]]</div>
         </div>
         <div class="progress media-control custom-slider">
-          <input name="timeInput" type="range" touch-action="manipulation"
+          <input id="timeInput" name="timeInput" type="range" touch-action="manipulation"
                  min="0" max="[[duration]]" value="{{time::input}}">
           <div class="bar">
             <div class="filled" style$="[[computeProgressBarStyle_(time, duration)]]"></div>

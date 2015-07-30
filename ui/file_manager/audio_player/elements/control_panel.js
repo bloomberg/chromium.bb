@@ -111,6 +111,18 @@
 
       this.$.volumeSlider.addEventListener('focusout', onFocusoutBound);
       this.$.volumeButton.addEventListener('focusout', onFocusoutBound);
+
+      // Prevent the time slider from being moved by arrow keys.
+      this.$.timeInput.addEventListener('keydown', function(event) {
+        switch (event.keyCode) {
+          case 37:  // Left arrow
+          case 38:  // Up arrow
+          case 39:  // Right arrow
+          case 40:  // Down arrow
+            event.preventDefault();
+            break;
+        };
+      });
     },
 
     /**
