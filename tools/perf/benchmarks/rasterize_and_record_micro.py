@@ -56,8 +56,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
     return 'rasterize_and_record_micro.top_25_smooth'
 
 
-@benchmark.Disabled('mac', 'win',
-                    'linux')       # crbug.com/515094
+@benchmark.Disabled('mac', 'win')
 class RasterizeAndRecordMicroKeyMobileSites(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the key mobile sites.
 
