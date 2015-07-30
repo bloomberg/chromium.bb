@@ -31,6 +31,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/xml/DocumentXSLT.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
@@ -76,13 +77,15 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
 
     if (frame) {
         RefPtrWillBeRawPtr<Document> oldDocument = frame->document();
-        oldDocument->detach();
-        result = frame->localDOMWindow()->installNewDocument(sourceMIMEType, init, forceXHTML);
-
         // Before parsing, we need to save & detach the old document and get the new document
-        // in place. We have to do this only if we're rendering the result document.
-        if (FrameView* view = frame->view())
-            view->clear();
+        // in place. Document::detach() tears down the FrameView, so remember whether or not
+        // there was one.
+        bool hasView = frame->view();
+        oldDocument->detach();
+        // Re-create the FrameView if needed.
+        if (hasView)
+            frame->loader().client()->transitionToCommittedForNewPage();
+        result = frame->localDOMWindow()->installNewDocument(sourceMIMEType, init, forceXHTML);
 
         if (oldDocument) {
             DocumentXSLT::from(*result).setTransformSourceDocument(oldDocument.get());
