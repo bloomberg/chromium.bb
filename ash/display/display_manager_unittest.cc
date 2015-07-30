@@ -4,6 +4,7 @@
 
 #include "ash/display/display_manager.h"
 
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
@@ -1132,28 +1133,31 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   DisplayInfo info = display_manager->GetDisplayInfo(unified_id);
   ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("400x200", info.display_modes()[0].size.ToString());
+  EXPECT_TRUE(info.display_modes()[0].native);
   EXPECT_EQ("800x400", info.display_modes()[1].size.ToString());
-  EXPECT_EQ("800x400",
+  EXPECT_FALSE(info.display_modes()[1].native);
+  EXPECT_EQ("400x200",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
   DisplayMode active_mode =
       display_manager->GetActiveModeForDisplayId(unified_id);
   EXPECT_EQ(1.0f, active_mode.ui_scale);
-  EXPECT_EQ("800x400", active_mode.size.ToString());
+  EXPECT_EQ("400x200", active_mode.size.ToString());
 
-  EXPECT_TRUE(test::SetDisplayResolution(unified_id, gfx::Size(400, 200)));
-  EXPECT_EQ("400x200",
+  EXPECT_TRUE(test::SetDisplayResolution(unified_id, gfx::Size(800, 400)));
+  EXPECT_EQ("800x400",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
 
   active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
   EXPECT_EQ(1.0f, active_mode.ui_scale);
-  EXPECT_EQ("400x200", active_mode.size.ToString());
+  EXPECT_EQ("800x400", active_mode.size.ToString());
 
   // resolution change will not persist in unified desktop mode.
-  UpdateDisplay("200x200, 600x600");
+  UpdateDisplay("600x600, 200x200");
   EXPECT_EQ("1200x600",
             Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
   active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
   EXPECT_EQ(1.0f, active_mode.ui_scale);
+  EXPECT_TRUE(active_mode.native);
   EXPECT_EQ("1200x600", active_mode.size.ToString());
 }
 
@@ -1520,17 +1524,17 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
-  UpdateDisplay("300x200,400x500");
+  UpdateDisplay("400x500,300x200");
 
   // Defaults to the unified desktop.
   gfx::Screen* screen =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
-  // The 1st display is scaled so that it has the same height as 2nd display.
+  // The 2nd display is scaled so that it has the same height as 1st display.
   // 300 * 500 / 200  + 400 = 1150.
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
 
   display_manager()->SetMirrorMode(true);
-  EXPECT_EQ("300x200", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("400x500", screen->GetPrimaryDisplay().size().ToString());
 
   display_manager()->SetMirrorMode(false);
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
@@ -1541,14 +1545,129 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
 
   // Switch to unified desktop.
   UpdateDisplay("500x300,400x500");
-  // 500 * 500 / 300 + 400 ~= 1233.
-  EXPECT_EQ("1233x500", screen->GetPrimaryDisplay().size().ToString());
+  // 400 * 300 / 500 + 500 ~= 739.
+  EXPECT_EQ("739x300", screen->GetPrimaryDisplay().size().ToString());
+
+  // The default should fit to the internal display.
+  std::vector<DisplayInfo> display_info_list;
+  display_info_list.push_back(CreateDisplayInfo(10, gfx::Rect(0, 0, 500, 300)));
+  display_info_list.push_back(
+      CreateDisplayInfo(11, gfx::Rect(500, 0, 400, 500)));
+  {
+    test::ScopedSetInternalDisplayId set_internal(11);
+    display_manager()->OnNativeDisplaysChanged(display_info_list);
+    // 500 * 500 / 300 + 400 ~= 1233.
+    EXPECT_EQ("1233x500", screen->GetPrimaryDisplay().size().ToString());
+  }
 
   // Switch back to extended desktop.
   display_manager()->SetDefaultMultiDisplayMode(DisplayManager::EXTENDED);
   display_manager()->ReconfigureDisplays();
   EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("400x500", ScreenUtil::GetSecondaryDisplay().size().ToString());
+}
+
+TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
+  if (!SupportsMultipleDisplays())
+    return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+
+  // 2nd display is 2x.
+  UpdateDisplay("400x500,1000x800*2");
+  DisplayInfo info =
+      display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(2u, info.display_modes().size());
+  EXPECT_EQ("1640x800", info.display_modes()[0].size.ToString());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor);
+  EXPECT_EQ("1025x500", info.display_modes()[1].size.ToString());
+  EXPECT_EQ(1.0f, info.display_modes()[1].device_scale_factor);
+
+  // For 1x, 400 + 500 / 800 * 100 = 1025.
+  EXPECT_EQ("1025x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1025x500",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  accelerators::ZoomInternalDisplay(false);
+  // (800 / 500 * 400 + 500) /2 = 820
+  EXPECT_EQ("820x400", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("820x400",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+
+  // 1st display is 2x.
+  UpdateDisplay("1200x800*2,1000x1000");
+  info = display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(2u, info.display_modes().size());
+  EXPECT_EQ("2000x800", info.display_modes()[0].size.ToString());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor);
+  EXPECT_EQ("2500x1000", info.display_modes()[1].size.ToString());
+  EXPECT_EQ(1.0f, info.display_modes()[1].device_scale_factor);
+
+  // For 2x, (800 / 1000 * 1000 + 1200) / 2 = 1000
+  EXPECT_EQ("1000x400", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1000x400",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  accelerators::ZoomInternalDisplay(true);
+  // 1000 / 800 * 1200 + 1000 = 2500
+  EXPECT_EQ("2500x1000", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("2500x1000",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+
+  // Both displays are 2x.
+  // 1st display is 2x.
+  UpdateDisplay("1200x800*2,1000x1000*2");
+  info = display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(2u, info.display_modes().size());
+  EXPECT_EQ("2000x800", info.display_modes()[0].size.ToString());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor);
+  EXPECT_EQ("2500x1000", info.display_modes()[1].size.ToString());
+  EXPECT_EQ(2.0f, info.display_modes()[1].device_scale_factor);
+
+  EXPECT_EQ("1000x400", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1000x400",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  accelerators::ZoomInternalDisplay(true);
+  EXPECT_EQ("1250x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1250x500",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+
+  // Both displays have the same physical height, with the first display
+  // being 2x.
+  UpdateDisplay("1000x800*2,300x800");
+  info = display_manager()->GetDisplayInfo(screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(2u, info.display_modes().size());
+  EXPECT_EQ("1300x800", info.display_modes()[0].size.ToString());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor);
+  EXPECT_EQ("1300x800", info.display_modes()[1].size.ToString());
+  EXPECT_EQ(1.0f, info.display_modes()[1].device_scale_factor);
+
+  EXPECT_EQ("650x400", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("650x400",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  accelerators::ZoomInternalDisplay(true);
+  EXPECT_EQ("1300x800", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1300x800",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+
+  // Both displays have the same physical height, with the second display
+  // being 2x.
+  UpdateDisplay("1000x800,300x800*2");
+  EXPECT_EQ(2u, info.display_modes().size());
+  EXPECT_EQ("1300x800", info.display_modes()[0].size.ToString());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor);
+  EXPECT_EQ("1300x800", info.display_modes()[1].size.ToString());
+  EXPECT_EQ(1.0f, info.display_modes()[1].device_scale_factor);
+
+  EXPECT_EQ("1300x800", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1300x800",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  accelerators::ZoomInternalDisplay(false);
+  EXPECT_EQ("650x400", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("650x400",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
 
 // Updating displays again in unified desktop mode should not crash.
@@ -1575,7 +1694,7 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
-  UpdateDisplay("300x200,400x500");
+  UpdateDisplay("400x500,300x200");
 
   gfx::Screen* screen =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
@@ -1588,8 +1707,8 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
                                         gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
 
-  UpdateDisplay("300x200");
-  EXPECT_EQ("300x200", screen->GetPrimaryDisplay().size().ToString());
+  UpdateDisplay("400x500");
+  EXPECT_EQ("400x500", screen->GetPrimaryDisplay().size().ToString());
 }
 
 // Makes sure the transition from unified to single won't crash
@@ -1602,7 +1721,7 @@ TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
-  UpdateDisplay("300x200,400x500");
+  UpdateDisplay("400x500,300x200");
 
   scoped_ptr<aura::Window> docked(
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 50, 50)));

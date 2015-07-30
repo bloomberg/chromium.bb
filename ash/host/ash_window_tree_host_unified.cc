@@ -28,8 +28,6 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
         ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
         located_event->ConvertLocationToTarget(
             static_cast<aura::Window*>(nullptr), dst_root_);
-        located_event->UpdateForRootTransform(
-            dst_root_->GetHost()->GetRootTransform());
       }
       ignore_result(
           dst_root_->GetHost()->event_processor()->OnEventFromSource(event));
@@ -122,8 +120,6 @@ gfx::Rect AshWindowTreeHostUnified::GetBounds() const {
 }
 
 void AshWindowTreeHostUnified::SetBounds(const gfx::Rect& bounds) {
-  if (bounds_.size() == bounds.size())
-    return;
   bounds_.set_size(bounds.size());
   OnHostResized(bounds_.size());
 }
@@ -162,8 +158,7 @@ void AshWindowTreeHostUnified::SetCursorNative(gfx::NativeCursor cursor) {
 }
 
 void AshWindowTreeHostUnified::MoveCursorToNative(const gfx::Point& location) {
-  // TODO(oshima): Find out if this is neceessary.
-  NOTIMPLEMENTED();
+  // No native cursor in offscreen surface.
 }
 
 void AshWindowTreeHostUnified::OnCursorVisibilityChangedNative(bool show) {

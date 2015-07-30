@@ -8,6 +8,7 @@
 #include <cmath>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -108,6 +109,15 @@ void MaybeInitInternalDisplay(DisplayInfo* info) {
     gfx::Display::SetInternalDisplayId(id);
     SetInternalDisplayModeList(info);
   }
+}
+
+gfx::Size GetMaxNativeSize(const DisplayInfo& info) {
+  gfx::Size size;
+  for (auto& mode : info.display_modes()) {
+    if (mode.size.GetArea() > size.GetArea())
+      size = mode.size;
+  }
+  return size;
 }
 
 }  // namespace
@@ -453,17 +463,13 @@ DisplayMode DisplayManager::GetActiveModeForDisplayId(int64 display_id) const {
   // restored mode to |display_mode_|, so it needs to look up the mode whose
   // UI-scale value matches. See the TODO in RegisterDisplayProperty().
   const DisplayInfo& info = GetDisplayInfo(display_id);
-  const std::vector<DisplayMode>& display_modes = info.display_modes();
 
-  if (GetDisplayIdForUIScaling() == display_id) {
-    for (size_t i = 0; i < display_modes.size(); ++i) {
-      if (info.configured_ui_scale() == display_modes[i].ui_scale)
-        return display_modes[i];
-    }
-  } else {
-    for (size_t i = 0; i < display_modes.size(); ++i) {
-      if (display_modes[i].native)
-        return display_modes[i];
+  for (auto& mode : info.display_modes()) {
+    if (GetDisplayIdForUIScaling() == display_id) {
+      if (info.configured_ui_scale() == mode.ui_scale)
+        return mode;
+    } else if (mode.native) {
+      return mode;
     }
   }
   return selected_mode;
@@ -1114,11 +1120,19 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
 
         // 1st Pass. Find the max size.
         int max_height = std::numeric_limits<int>::min();
-        for (auto& info : *display_info_list)
+
+        int default_height = 0;
+        float default_device_scale_factor = 1.0f;
+        for (auto& info : *display_info_list) {
           max_height = std::max(max_height, info.size_in_pixel().height());
+          if (!default_height || gfx::Display::IsInternalDisplayId(info.id())) {
+            default_height = info.size_in_pixel().height();
+            default_device_scale_factor = info.device_scale_factor();
+          }
+        }
 
         std::vector<DisplayMode> display_mode_list;
-        std::set<float> scales;
+        std::set<std::pair<float, float>> dsf_scale_list;
 
         // 2nd Pass. Compute the unified display size.
         for (auto& info : *display_info_list) {
@@ -1131,20 +1145,34 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
               info.id(), origin, 1.0f / scale);
           unified_bounds.Union(display.bounds());
 
-          scales.insert(scale);
+          dsf_scale_list.insert(
+              std::make_pair(info.device_scale_factor(), scale));
         }
 
         DisplayInfo info(kUnifiedDisplayId, "Unified Desktop", false);
-        info.SetBounds(unified_bounds);
 
         DisplayMode native_mode(unified_bounds.size(), 60.0f, false, true);
-        info.SetDisplayModes(CreateUnifiedDisplayModeList(native_mode, scales));
+        std::vector<DisplayMode> modes =
+            CreateUnifiedDisplayModeList(native_mode, dsf_scale_list);
+
+        // Find the default mode.
+        auto iter = std::find_if(
+            modes.begin(), modes.end(),
+            [default_height,
+             default_device_scale_factor](const DisplayMode& mode) {
+              return mode.size.height() == default_height &&
+                     mode.device_scale_factor == default_device_scale_factor;
+            });
+        iter->native = true;
+        info.SetDisplayModes(modes);
+        info.set_device_scale_factor(iter->device_scale_factor);
+        info.SetBounds(gfx::Rect(iter->size));
 
         // Forget the configured resolution if the original unified
         // desktop resolution has changed.
         if (display_info_.count(kUnifiedDisplayId) != 0 &&
-            display_info_[kUnifiedDisplayId].size_in_pixel() !=
-                info.size_in_pixel()) {
+            GetMaxNativeSize(display_info_[kUnifiedDisplayId]) !=
+                unified_bounds.size()) {
           display_modes_.erase(kUnifiedDisplayId);
         }
 
@@ -1153,7 +1181,7 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
         DisplayMode mode;
         if (GetSelectedModeForDisplayId(kUnifiedDisplayId, &mode) &&
             FindDisplayMode(info, mode) != info.display_modes().end()) {
-          // TODO(oshima): device scale factor.
+          info.set_device_scale_factor(mode.device_scale_factor);
           info.SetBounds(gfx::Rect(mode.size));
         } else {
           display_modes_.erase(kUnifiedDisplayId);

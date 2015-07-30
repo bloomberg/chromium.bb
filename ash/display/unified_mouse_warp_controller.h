@@ -35,7 +35,7 @@ class ASH_EXPORT UnifiedMouseWarpController : public MouseWarpController {
 
  private:
   friend class test::DisplayManagerTestApi;
-  FRIEND_TEST_ALL_PREFIXES(UnifiedMouseWarpControllerTest, BoundaryTest);
+  friend class UnifiedMouseWarpControllerTest;
 
   void ComputeBounds();
 

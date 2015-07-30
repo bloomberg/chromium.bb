@@ -40,6 +40,33 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
         event_filter()->mouse_warp_controller_for_test());
   }
 
+  void BoundaryTestBody(const std::string& displays_with_same_height,
+                        const std::string& displays_with_different_heights) {
+    UpdateDisplay(displays_with_same_height);
+    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    // Let the UnifiedMouseWarpController compute the bounds by
+    // generating a mouse move event.
+    GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
+    EXPECT_EQ("399,0 1x400",
+              mouse_warp_controller()->first_edge_bounds_in_native_.ToString());
+    EXPECT_EQ(
+        "0,450 1x400",
+        mouse_warp_controller()->second_edge_bounds_in_native_.ToString());
+
+    // Scaled.
+    UpdateDisplay(displays_with_different_heights);
+    root_windows = Shell::GetAllRootWindows();
+    // Let the UnifiedMouseWarpController compute the bounds by
+    // generating a mouse move event.
+    GetEventGenerator().MoveMouseTo(gfx::Point(1, 1));
+
+    EXPECT_EQ("399,0 1x400",
+              mouse_warp_controller()->first_edge_bounds_in_native_.ToString());
+    EXPECT_EQ(
+        "0,450 1x600",
+        mouse_warp_controller()->second_edge_bounds_in_native_.ToString());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UnifiedMouseWarpControllerTest);
 };
@@ -49,30 +76,22 @@ TEST_F(UnifiedMouseWarpControllerTest, BoundaryTest) {
   if (!SupportsMultipleDisplays())
     return;
 
-  UpdateDisplay("400x400,0+450-700x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  // Let the UnifiedMouseWarpController compute the bounds by
-  // generating a mouse move event.
-  GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
-
-  EXPECT_EQ("399,0 1x400",
-            mouse_warp_controller()->first_edge_bounds_in_native_.ToString());
-  EXPECT_EQ("0,450 1x400",
-            mouse_warp_controller()->second_edge_bounds_in_native_.ToString());
-
-  // Scaled.
-  UpdateDisplay("400x400,0+450-700x600");
-  root_windows = Shell::GetAllRootWindows();
-  // Let the UnifiedMouseWarpController compute the bounds by
-  // generating a mouse move event.
-  GetEventGenerator().MoveMouseTo(gfx::Point(1, 1));
-
-  EXPECT_EQ("399,0 1x400",
-            mouse_warp_controller()->first_edge_bounds_in_native_.ToString());
-  EXPECT_EQ("0,450 1x600",
-            mouse_warp_controller()->second_edge_bounds_in_native_.ToString());
-
-  // Shell::GetInstace()->display_manager()
+  {
+    SCOPED_TRACE("1x1");
+    BoundaryTestBody("400x400,0+450-700x400", "400x400,0+450-700x600");
+  }
+  {
+    SCOPED_TRACE("2x1");
+    BoundaryTestBody("400x400*2,0+450-700x400", "400x400*2,0+450-700x600");
+  }
+  {
+    SCOPED_TRACE("1x2");
+    BoundaryTestBody("400x400,0+450-700x400*2", "400x400,0+450-700x600*2");
+  }
+  {
+    SCOPED_TRACE("2x2");
+    BoundaryTestBody("400x400*2,0+450-700x400*2", "400x400*2,0+450-700x600*2");
+  }
 }
 
 // Verifies if the mouse pointer correctly moves to another display in

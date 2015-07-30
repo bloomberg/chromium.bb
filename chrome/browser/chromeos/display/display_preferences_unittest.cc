@@ -882,7 +882,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
-  UpdateDisplay("100x100,200x200");
+  UpdateDisplay("200x200,100x100");
   ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
   EXPECT_EQ(
       "400x200",

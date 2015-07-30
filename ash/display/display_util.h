@@ -6,6 +6,7 @@
 #define ASH_DISPLAY_DISPLAY_UTIL_H_
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -32,7 +33,7 @@ ASH_EXPORT std::vector<DisplayMode> CreateInternalDisplayModeList(
 // based on |native_mode| and |scales|.
 ASH_EXPORT std::vector<DisplayMode> CreateUnifiedDisplayModeList(
     const DisplayMode& native_mode,
-    const std::set<float>& scales);
+    const std::set<std::pair<float, float>>& dsf_scale_list);
 
 // Gets the display mode for |resolution|. Returns false if no display
 // mode matches the resolution, or the display is an internal display.

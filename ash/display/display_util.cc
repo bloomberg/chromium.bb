@@ -126,17 +126,24 @@ std::vector<DisplayMode> CreateInternalDisplayModeList(
 
 std::vector<DisplayMode> CreateUnifiedDisplayModeList(
     const DisplayMode& native_mode,
-    const std::set<float>& scales) {
+    const std::set<std::pair<float, float>>& dsf_scale_list) {
   std::vector<DisplayMode> display_mode_list;
 
-  for (float ui_scale : scales) {
+  for (auto& pair : dsf_scale_list) {
     DisplayMode mode = native_mode;
+    mode.device_scale_factor = pair.first;
     gfx::SizeF scaled_size(native_mode.size);
-    scaled_size.Scale(ui_scale);
+    scaled_size.Scale(pair.second);
     mode.size = gfx::ToFlooredSize(scaled_size);
-    mode.native = mode.size == native_mode.size;
+    mode.native = false;
     display_mode_list.push_back(mode);
   }
+  // Sort the mode by the size in DIP.
+  std::sort(display_mode_list.begin(), display_mode_list.end(),
+            [](const DisplayMode& a, const DisplayMode& b) {
+              return a.GetSizeInDIP(false).GetArea() <
+                     b.GetSizeInDIP(false).GetArea();
+            });
   return display_mode_list;
 }
 
@@ -181,10 +188,12 @@ bool GetDisplayModeForNextResolution(const DisplayInfo& info,
   if (gfx::Display::IsInternalDisplayId(info.id()))
     return false;
   const std::vector<DisplayMode>& modes = info.display_modes();
-  const gfx::Size& resolution = info.size_in_pixel();
+  DisplayMode tmp(info.size_in_pixel(), 0.0f, false, false);
+  tmp.device_scale_factor = info.device_scale_factor();
+  gfx::Size resolution = tmp.GetSizeInDIP(false);
   auto iter = std::find_if(modes.begin(), modes.end(),
                            [resolution](const DisplayMode& mode) {
-                             return mode.size == resolution;
+                             return mode.GetSizeInDIP(false) == resolution;
                            });
   FindNextMode(iter, modes, up, out);
   return true;
