@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   touch.ResetPoints();
 }
 
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#if defined(OS_CHROMEOS)
 // crbug.com/514456
 #define MAYBE_TouchHandlerNoConsume DISABLED_TouchHandlerNoConsume
 #else
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
   touch.ResetPoints();
 }
 
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#if defined(OS_CHROMEOS)
 // crbug.com/514456
 #define MAYBE_TouchHandlerConsume DISABLED_TouchHandlerConsume
 #else
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
   filter()->WaitForAck(WebInputEvent::TouchEnd);
 }
 
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#if defined(OS_CHROMEOS)
 // crbug.com/514456
 #define MAYBE_MultiPointTouchPress DISABLED_MultiPointTouchPress
 #elif defined(OS_MACOSX)
