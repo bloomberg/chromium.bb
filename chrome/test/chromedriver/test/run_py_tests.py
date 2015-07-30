@@ -534,11 +534,17 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.GoForward()
 
   def testDontGoBackOrGoForward(self):
-    self.assertEquals('data:,', self._driver.GetCurrentUrl())
+    # We need to run this test in a new tab so that it is isolated from previous
+    # test runs.
+    old_windows = self._driver.GetWindowHandles()
+    self._driver.ExecuteScript('window.open("about:blank")')
+    new_window = self.WaitForNewWindow(self._driver, old_windows)
+    self._driver.SwitchToWindow(new_window)
+    self.assertEquals('about:blank', self._driver.GetCurrentUrl())
     self._driver.GoBack()
-    self.assertEquals('data:,', self._driver.GetCurrentUrl())
+    self.assertEquals('about:blank', self._driver.GetCurrentUrl())
     self._driver.GoForward()
-    self.assertEquals('data:,', self._driver.GetCurrentUrl())
+    self.assertEquals('about:blank', self._driver.GetCurrentUrl())
 
   def testRefresh(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
