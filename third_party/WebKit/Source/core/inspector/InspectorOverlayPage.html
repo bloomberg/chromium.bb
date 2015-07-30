@@ -862,11 +862,15 @@ function _drawLabel(context, anchorX, anchorY, labelColor, textDescription, toLe
 
 function labelColorForProperty(propertyName)
 {
+    if (propertyName.startsWith("margin"))
+        return "rgb(246, 167, 35)";
     return "rgb(91, 181, 0)";
 }
 
 function anchorColorForProperty(propertyName)
 {
+    if (propertyName.startsWith("margin"))
+        return "rgb(246, 167, 35)";
     return "rgb(107, 213, 0)";
 }
 
