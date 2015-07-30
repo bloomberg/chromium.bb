@@ -105,7 +105,7 @@ cr.define('media_router_container', function() {
             'media_router_container.html');
       });
 
-      // Initialize an issue-banner before each test.
+      // Initialize a media-router-container before each test.
       setup(function(done) {
         PolymerTest.clearBody();
         container = document.createElement('media-router-container');
