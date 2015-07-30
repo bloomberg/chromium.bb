@@ -112,6 +112,11 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
 
+    // Oilpan: promptly clear listener wrapper.
+    EAGERLY_FINALIZE();
+#if ENABLE(OILPAN)
+    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+#endif
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         EventListener::trace(visitor);
