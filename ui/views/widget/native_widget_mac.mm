@@ -650,7 +650,8 @@ void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
 // static
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
-  NOTIMPLEMENTED();
+  // Not supported. See http://crbug.com/514920.
+  NOTREACHED();
 }
 
 // static
