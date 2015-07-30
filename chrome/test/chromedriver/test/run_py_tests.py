@@ -791,6 +791,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
                       self._driver.GetCurrentUrl)
 
   def testDoesntHangOnDebugger(self):
+    self._driver.Load('about:blank')
     self._driver.ExecuteScript('debugger;')
 
   def testMobileEmulationDisabledByDefault(self):
@@ -1101,6 +1102,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
       self.assertFalse(self._driver.capabilities['hasTouchScreen'])
 
   def testSwitchesToTopFrameAfterNavigation(self):
+    self._driver.Load('about:blank')
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
     frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
@@ -1109,6 +1111,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('Two', p.GetText())
 
   def testSwitchesToTopFrameAfterRefresh(self):
+    self._driver.Load('about:blank')
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
     frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
@@ -1117,6 +1120,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('Two', p.GetText())
 
   def testSwitchesToTopFrameAfterGoingBack(self):
+    self._driver.Load('about:blank')
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
     frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
