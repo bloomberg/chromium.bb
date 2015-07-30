@@ -64,11 +64,6 @@ private:
     ResolveType m_resolveType;
 };
 
-AcceptConnectionObserver* AcceptConnectionObserver::create(ExecutionContext* context, int eventID)
-{
-    return new AcceptConnectionObserver(context, eventID);
-}
-
 AcceptConnectionObserver* AcceptConnectionObserver::create(ServicePortCollection* collection, PassOwnPtr<WebServicePortConnectEventCallbacks> callbacks, WebServicePortID portID, const KURL& targetURL)
 {
     return new AcceptConnectionObserver(collection, callbacks, portID, targetURL);
@@ -86,19 +81,6 @@ void AcceptConnectionObserver::didDispatchEvent()
     if (m_state != Initial)
         return;
     responseWasRejected();
-}
-
-void AcceptConnectionObserver::acceptConnection(ScriptState* scriptState, ScriptPromise value, ExceptionState& exceptionState)
-{
-    if (m_state != Initial) {
-        exceptionState.throwDOMException(InvalidStateError, "acceptConnection was already called.");
-        return;
-    }
-
-    m_state = Pending;
-    value.then(
-        ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
-        ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
 }
 
 ScriptPromise AcceptConnectionObserver::respondWith(ScriptState* scriptState, ScriptPromise value, ExceptionState& exceptionState)
@@ -121,28 +103,13 @@ void AcceptConnectionObserver::responseWasRejected()
     ASSERT(executionContext());
     if (m_resolver)
         m_resolver->reject(DOMException::create(AbortError));
-    if (m_callbacks) {
-        m_callbacks->onError();
-    } else {
-        ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleCrossOriginConnectEvent(m_eventID, false);
-    }
+    m_callbacks->onError();
     m_state = Done;
 }
 
 void AcceptConnectionObserver::responseWasResolved(const ScriptValue& value)
 {
     ASSERT(executionContext());
-    if (!m_resolver) {
-        // TODO(mek): Get rid of this block when observer is only used for
-        // service port connect events.
-        if (!value.v8Value()->IsTrue()) {
-            responseWasRejected();
-            return;
-        }
-        ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleCrossOriginConnectEvent(m_eventID, true);
-        m_state = Done;
-        return;
-    }
 
     ScriptState* scriptState = m_resolver->scriptState();
     ExceptionState exceptionState(ExceptionState::UnknownContext, nullptr, nullptr, scriptState->context()->Global(), scriptState->isolate());
@@ -178,17 +145,8 @@ void AcceptConnectionObserver::responseWasResolved(const ScriptValue& value)
     m_state = Done;
 }
 
-AcceptConnectionObserver::AcceptConnectionObserver(ExecutionContext* context, int eventID)
-    : ContextLifecycleObserver(context)
-    , m_eventID(eventID)
-    , m_portID(-1)
-    , m_state(Initial)
-{
-}
-
 AcceptConnectionObserver::AcceptConnectionObserver(ServicePortCollection* collection, PassOwnPtr<WebServicePortConnectEventCallbacks> callbacks, WebServicePortID portID, const KURL& targetURL)
     : ContextLifecycleObserver(collection->executionContext())
-    , m_eventID(-1)
     , m_callbacks(callbacks)
     , m_collection(collection)
     , m_portID(portID)

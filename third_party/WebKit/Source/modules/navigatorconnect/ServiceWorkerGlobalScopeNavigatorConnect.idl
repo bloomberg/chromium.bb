@@ -7,6 +7,5 @@
 [
     RuntimeEnabled=NavigatorConnect,
 ] partial interface ServiceWorkerGlobalScope {
-    attribute EventHandler oncrossoriginconnect;
     attribute EventHandler oncrossoriginmessage;
 };

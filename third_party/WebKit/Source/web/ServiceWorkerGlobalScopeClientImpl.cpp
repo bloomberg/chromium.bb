@@ -108,11 +108,6 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID, Web
     m_client.didHandleSyncEvent(syncEventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect)
-{
-    m_client.didHandleCrossOriginConnectEvent(connectEventID, acceptConnect);
-}
-
 void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(const WebString& clientUUID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray> webChannels)
 {
     m_client.postMessageToClient(clientUUID, message, webChannels.leakPtr());

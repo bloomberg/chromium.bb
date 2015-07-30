@@ -80,10 +80,6 @@ interface CloseEvent
     getter reason
     getter wasClean
     method constructor
-interface CrossOriginConnectEvent
-    getter client
-    method acceptConnection
-    method constructor
 interface CrossOriginServiceWorkerClient
     getter origin
     getter targetUrl
@@ -866,7 +862,6 @@ interface ServicePortConnectEvent
 interface ServiceWorkerGlobalScope
     getter clients
     getter onactivate
-    getter oncrossoriginconnect
     getter oncrossoriginmessage
     getter onfetch
     getter ongeofenceenter
@@ -884,7 +879,6 @@ interface ServiceWorkerGlobalScope
     method fetch
     method skipWaiting
     setter onactivate
-    setter oncrossoriginconnect
     setter oncrossoriginmessage
     setter onfetch
     setter ongeofenceenter

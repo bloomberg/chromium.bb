@@ -20,13 +20,12 @@ class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 
-// This class observes the service worker's handling of a CrossOriginConnectEvent
-// and notified the client of the result. Created for each instance of
-// CrossOriginConnectEvent.
+// This class observes the service worker's handling of a ServicePortConnectEvent
+// and notifies the client of the result. Created for each instance of
+// ServicePortConnectEvent.
 class MODULES_EXPORT AcceptConnectionObserver final : public GarbageCollectedFinalized<AcceptConnectionObserver>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AcceptConnectionObserver);
 public:
-    static AcceptConnectionObserver* create(ExecutionContext*, int eventID);
     static AcceptConnectionObserver* create(ServicePortCollection*, PassOwnPtr<WebServicePortConnectEventCallbacks>, WebServicePortID, const KURL& targetURL);
 
     void contextDestroyed() override;
@@ -34,10 +33,6 @@ public:
     // Must be called after dispatching the event. Will cause the connection to
     // be rejected if no call to acceptConnection or respondWith was made.
     void didDispatchEvent();
-
-    // Observes the promise and delays calling didHandleCrossOriginConnectEvent()
-    // until the given promise is resolved or rejected.
-    void acceptConnection(ScriptState*, ScriptPromise, ExceptionState&);
 
     // Observes the promise and delays calling didHandleServicePortConnectEvent()
     // until the given promise is resolved or rejected. Returns a promise that
@@ -52,10 +47,8 @@ public:
 private:
     class ThenFunction;
 
-    AcceptConnectionObserver(ExecutionContext*, int eventID);
     AcceptConnectionObserver(ServicePortCollection*, PassOwnPtr<WebServicePortConnectEventCallbacks>, WebServicePortID, const KURL& targetURL);
 
-    int m_eventID;
     OwnPtr<WebServicePortConnectEventCallbacks> m_callbacks;
     Member<ServicePortCollection> m_collection;
     WebServicePortID m_portID;

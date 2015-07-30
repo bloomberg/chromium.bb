@@ -45,7 +45,6 @@
 #include "modules/geofencing/CircularGeofencingRegion.h"
 #include "modules/geofencing/GeofencingEvent.h"
 #include "modules/navigatorconnect/AcceptConnectionObserver.h"
-#include "modules/navigatorconnect/CrossOriginConnectEvent.h"
 #include "modules/navigatorconnect/CrossOriginServiceWorkerClient.h"
 #include "modules/navigatorconnect/ServicePortCollection.h"
 #include "modules/navigatorconnect/WorkerNavigatorServices.h"
@@ -169,15 +168,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSync
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Sync, eventID);
     RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, SyncRegistration::create(registration, m_workerGlobalScope->registration()), observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginConnectEvent(int eventID, const WebCrossOriginServiceWorkerClient& webClient)
-{
-    ASSERT(m_workerGlobalScope);
-    AcceptConnectionObserver* observer = AcceptConnectionObserver::create(m_workerGlobalScope, eventID);
-    CrossOriginServiceWorkerClient* client = CrossOriginServiceWorkerClient::create(webClient);
-    m_workerGlobalScope->dispatchEvent(CrossOriginConnectEvent::create(observer, client));
-    observer->didDispatchEvent();
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient& webClient, const WebString& message, const WebMessagePortChannelArray& webChannels)

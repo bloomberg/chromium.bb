@@ -71,7 +71,6 @@ public:
     // WebServiceWorkerContextProxy overrides:
     void setRegistration(WebServiceWorkerRegistration*) override;
     void dispatchActivateEvent(int) override;
-    void dispatchCrossOriginConnectEvent(int, const WebCrossOriginServiceWorkerClient&) override;
     void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;
     void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
     void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;

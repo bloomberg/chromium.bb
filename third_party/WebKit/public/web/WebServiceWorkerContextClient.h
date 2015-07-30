@@ -130,11 +130,6 @@ public:
     // context.
     virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult result) { }
 
-    // ServiceWorker specific method. Called after CrossOriginConnectEvent
-    // (dispatched via WebServiceWorkerContextProxy) is handled by the
-    // ServiceWorker's script context.
-    virtual void didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect) { }
-
     // Ownership of the returned object is transferred to the caller.
     // This is called on the main thread.
     virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(WebDataSource*) { return nullptr; }

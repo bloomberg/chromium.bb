@@ -65,8 +65,6 @@ public:
 
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
 
-    virtual void dispatchCrossOriginConnectEvent(int eventID, const WebCrossOriginServiceWorkerClient&) = 0;
-
     virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) = 0;
 
     // Passes ownership of the callbacks.

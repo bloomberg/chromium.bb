@@ -11,7 +11,6 @@ namespace blink {
 
 class ServiceWorkerGlobalScopeNavigatorConnect {
 public:
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(crossoriginconnect);
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(crossoriginmessage);
 };
 
