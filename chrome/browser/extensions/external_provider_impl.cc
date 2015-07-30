@@ -611,7 +611,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                 bundled_extension_creation_flags)));
 
     // Define a per-user source of external extensions.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(CHROMIUM_BUILD))
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(

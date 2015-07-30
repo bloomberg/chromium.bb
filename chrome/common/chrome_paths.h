@@ -50,11 +50,13 @@ enum {
   DIR_USER_APPLICATIONS,        // ~/Applications
   DIR_USER_LIBRARY,             // ~/Library
 #endif
-#if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(CHROMIUM_BUILD)) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
   DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions
-                                 // on Chrome Mac.  On Chrome OS, this path is
-                                 // used for OEM customization.
-                                 // Getting this path does not create it.
+                                 // on Chrome Mac and Chromium Linux.
+                                 // On Chrome OS, this path is used for OEM
+                                 // customization. Getting this path does not
+                                 // create it.
 #endif
 
 #if defined(OS_LINUX)
