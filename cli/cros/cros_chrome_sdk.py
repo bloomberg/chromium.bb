@@ -562,13 +562,15 @@ class ChromeSDKCommand(command.CliCommand):
       chroot: The path to the chroot, if set.
     """
     custom = '*' if chroot else ''
-    sdk_version = '(sdk %s %s%s)' % (board, custom, version)
-    label = '\\u@\\h: \\w'
-    window_caption = "\\[\\e]0;%(sdk_version)s %(label)s \\a\\]"
-    command_line = "%(sdk_version)s \\[\\e[1;33m\\]%(label)s \\$ \\[\\e[m\\]"
-    ps1 = window_caption + command_line
-    return (ps1 % {'sdk_version': sdk_version,
-                   'label': label})
+    current_ps1 = cros_build_lib.RunCommand(
+        ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False,
+        capture_output=True).output.splitlines()
+    if current_ps1:
+      current_ps1 = current_ps1[-1]
+    if not current_ps1:
+      # Something went wrong, so use a fallback value.
+      current_ps1 = r'\u@\h \w $ '
+    return '(sdk %s %s%s) %s' % (board, custom, version, current_ps1)
 
   def _FixGoldPath(self, var_contents, toolchain_path):
     """Point to the gold linker in the toolchain tarball.
