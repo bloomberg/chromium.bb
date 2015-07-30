@@ -10325,8 +10325,7 @@
         "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-release": {
         "_template": "release",

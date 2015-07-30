@@ -1852,6 +1852,13 @@ def GetConfig():
 
   # Add a pre-cq config for every board.
   _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
+  # Override 'lakitu-pre-cq' - it's in _brillo_boards, but should run vmtests.
+  site_config.AddConfig(
+      pre_cq, 'lakitu-pre-cq',
+      _base_configs['lakitu'],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+  )
+
   _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
   _CreateConfigsForBoards(
       compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
