@@ -185,4 +185,71 @@ TEST_F(MenuButtonTest, DontOpenOnRightClickWithoutSetRightClick) {
   EXPECT_FALSE([delegate isOpen]);
 }
 
+TEST_F(MenuButtonTest, OpenOnAccessibilityPerformAction) {
+  base::scoped_nsobject<NSMenu> menu(CreateMenu());
+  ASSERT_TRUE(menu.get());
+
+  base::scoped_nsobject<MenuButtonTestDelegate> delegate(
+      [[MenuButtonTestDelegate alloc] initWithMenu:menu.get()]);
+  ASSERT_TRUE(delegate.get());
+
+  [menu setDelegate:delegate.get()];
+  [button_ setAttachedMenu:menu];
+  NSCell* buttonCell = [button_ cell];
+
+  EXPECT_FALSE([delegate isOpen]);
+  EXPECT_FALSE([delegate didOpen]);
+
+  [button_ setOpenMenuOnClick:YES];
+
+  // NSAccessibilityShowMenuAction should not be available but
+  // NSAccessibilityPressAction should.
+  NSArray* actionNames = [buttonCell accessibilityActionNames];
+  EXPECT_FALSE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+  EXPECT_TRUE([actionNames containsObject:NSAccessibilityPressAction]);
+
+  [button_ setOpenMenuOnClick:NO];
+
+  // NSAccessibilityPressAction should not be the one used to open the menu now.
+  actionNames = [buttonCell accessibilityActionNames];
+  EXPECT_TRUE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+  EXPECT_TRUE([actionNames containsObject:NSAccessibilityPressAction]);
+
+  [buttonCell accessibilityPerformAction:NSAccessibilityShowMenuAction];
+  EXPECT_TRUE([delegate didOpen]);
+  EXPECT_FALSE([delegate isOpen]);
+}
+
+TEST_F(MenuButtonTest, OpenOnAccessibilityPerformActionWithSetRightClick) {
+  base::scoped_nsobject<NSMenu> menu(CreateMenu());
+  ASSERT_TRUE(menu.get());
+
+  base::scoped_nsobject<MenuButtonTestDelegate> delegate(
+      [[MenuButtonTestDelegate alloc] initWithMenu:menu.get()]);
+  ASSERT_TRUE(delegate.get());
+
+  [menu setDelegate:delegate.get()];
+  [button_ setAttachedMenu:menu];
+  NSCell* buttonCell = [button_ cell];
+
+  EXPECT_FALSE([delegate isOpen]);
+  EXPECT_FALSE([delegate didOpen]);
+
+  [button_ setOpenMenuOnClick:YES];
+
+  // Command to open the menu should not be available.
+  NSArray* actionNames = [buttonCell accessibilityActionNames];
+  EXPECT_FALSE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+
+  [button_ setOpenMenuOnRightClick:YES];
+
+  // Command to open the menu should now become available.
+  actionNames = [buttonCell accessibilityActionNames];
+  EXPECT_TRUE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+
+  [buttonCell accessibilityPerformAction:NSAccessibilityShowMenuAction];
+  EXPECT_TRUE([delegate didOpen]);
+  EXPECT_FALSE([delegate isOpen]);
+}
+
 }  // namespace

@@ -15,6 +15,7 @@
 @interface ClickHoldButtonCell : ImageButtonCell {
  @private
   BOOL enableClickHold_;
+  BOOL enableRightClick_;
   NSTimeInterval clickHoldTimeout_;
   id clickHoldTarget_;                  // Weak.
   SEL clickHoldAction_;
@@ -24,6 +25,9 @@
 
 // Enable click-hold? Default: NO.
 @property(assign, nonatomic) BOOL enableClickHold;
+
+// Enable right click? Default: NO. Needs to be set for accessibility.
+@property(assign, nonatomic) BOOL enableRightClick;
 
 // Timeout is in seconds (at least 0.0, at most 5; 0.0 means that the button
 // will always have its click-hold action activated immediately on press).

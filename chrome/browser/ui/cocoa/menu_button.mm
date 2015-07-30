@@ -90,6 +90,7 @@
 
 - (void)setOpenMenuOnRightClick:(BOOL)enabled {
   openMenuOnRightClick_ = enabled;
+  [[self cell] setEnableRightClick:enabled];
 }
 
 - (NSRect)menuRect {
