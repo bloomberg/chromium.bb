@@ -746,6 +746,10 @@ button.edit-toolbar > .button-content > .icon {
   width: 24px;
 }
 
+button.edit-toolbar > .button-content > .label {
+  -webkit-margin-end: 6px;
+}
+
 button.edit-toolbar > .ripples {
   height: 100%;
   left: 0;
@@ -847,7 +851,7 @@ button.edit-toolbar > .ripples {
   border: 0 none;
   border-image: none;
   box-sizing: border-box;
-  color: #fff;
+  color: white;
   min-width: 0;
   padding: 0;
   position: relative;
