@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/media/base/decrypt_context.h"
@@ -25,6 +24,7 @@
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/test/frame_segmenter_for_test.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
@@ -78,12 +78,11 @@ void MediaComponentDeviceFeederForTest::Feed() {
   DCHECK(!frames_.empty());
   scoped_refptr<DecoderBufferBase> buffer = frames_.front();
 
-  MediaComponentDevice::FrameStatus status =
-      media_component_device_->PushFrame(
-          scoped_refptr<DecryptContext>(),
-          buffer,
+  MediaComponentDevice::FrameStatus status = media_component_device_->PushFrame(
+      scoped_refptr<DecryptContext>(), buffer,
+      ::media::BindToCurrentLoop(
           base::Bind(&MediaComponentDeviceFeederForTest::OnFramePushed,
-                     base::Unretained(this)));
+                     base::Unretained(this))));
   EXPECT_NE(status, MediaComponentDevice::kFrameFailed);
   frames_.pop_front();
 
