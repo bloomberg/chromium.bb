@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * Simple object representing an offline page.
  */
@@ -21,21 +23,25 @@ public class OfflinePageItem {
     }
 
     /** @return URL of the offline page. */
+    @VisibleForTesting
     public String getUrl() {
         return mUrl;
     }
 
     /** @return Title of the offline page. */
+    @VisibleForTesting
     public String getTitle() {
         return mTitle;
     }
 
     /** @return Path to the offline copy of the page. */
+    @VisibleForTesting
     public String getOfflineUrl() {
         return mOfflineUrl;
     }
 
     /** @return Size of the offline copy of the page. */
+    @VisibleForTesting
     public long getFileSize() {
         return mFileSize;
     }

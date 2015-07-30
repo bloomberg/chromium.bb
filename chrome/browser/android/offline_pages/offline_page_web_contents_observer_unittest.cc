@@ -49,8 +49,7 @@ TestMHTMLArchiver::TestMHTMLArchiver(
     const GURL& url,
     const base::string16& title,
     const base::FilePath& archive_dir)
-    : OfflinePageMHTMLArchiver(
-          web_contents, archive_dir, base::ThreadTaskRunnerHandle::Get()),
+    : OfflinePageMHTMLArchiver(web_contents, archive_dir),
       url_(url),
       title_(title) {
 }
@@ -65,6 +64,7 @@ void TestMHTMLArchiver::DoGenerateMHTML() {
                  base::Unretained(this),
                  url_,
                  title_,
+                 base::FilePath(kTestFilePath),
                  kTestFileSize));
 }
 

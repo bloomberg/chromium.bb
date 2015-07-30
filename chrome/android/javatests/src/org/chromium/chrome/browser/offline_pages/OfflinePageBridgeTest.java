@@ -13,7 +13,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.offline_pages.LoadResult;
+import org.chromium.components.offline_pages.SavePageResult;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -38,9 +41,58 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         loadAllPages(LoadResult.SUCCESS, /* expected count */ 0);
     }
 
-    private void loadAllPages(final int expectedResult, final int expectedCount)
+    @MediumTest
+    public void testAddOfflinePageAndLoad() throws Exception {
+        loadUrl(TEST_PAGE);
+        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        List<OfflinePageItem> allPages = loadAllPages(0 /* LoadResult.SUCCESS */, 1);
+        assertEquals("Offline page item url incorrect.", TEST_PAGE, allPages.get(0).getUrl());
+        assertEquals("Offline page item title incorrect.", "About", allPages.get(0).getTitle());
+        assertTrue("Offline page item offline file url doesn't start properly.",
+                allPages.get(0).getOfflineUrl().startsWith("file:///"));
+        assertTrue("Offline page item offline file doesn't have the right name.",
+                allPages.get(0).getOfflineUrl().endsWith("About.mhtml"));
+        assertEquals("Offline page item size incorrect.", 627, allPages.get(0).getFileSize());
+    }
+
+    private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertNotNull("Tab is null", getActivity().getActivityTab());
+                assertEquals("URL does not match requested.", TEST_PAGE,
+                        getActivity().getActivityTab().getUrl());
+                assertNotNull("WebContents is null",
+                        getActivity().getActivityTab().getWebContents());
+
+                Profile profile = Profile.getLastUsedProfile();
+                final OfflinePageBridge offlinePageBridge = new OfflinePageBridge(profile);
+                offlinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
+                        new OfflinePageCallback() {
+                        @Override
+                        public void onLoadAllPagesDone(
+                                int loadResult, List<OfflinePageItem> offlinePages) {
+                            assertTrue("Should have received this callback", false);
+                        }
+
+                        @Override
+                        public void onSavePageDone(int savePageResult, String url) {
+                            assertEquals("Requested and returned URLs differ.", expectedUrl, url);
+                            assertEquals("Save result incorrect.", expectedResult, savePageResult);
+                            semaphore.release();
+                        }
+                    });
+            }
+        });
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private List<OfflinePageItem> loadAllPages(final int expectedResult, final int expectedCount)
+            throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -53,11 +105,23 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                         assertEquals("Save result incorrect.", expectedResult, loadResult);
                         assertEquals("Offline pages count incorrect.",
                                 expectedCount, offlinePages.size());
+
+                        // Ensuring the result collection has a proper size before copying.
+                        for (int i = 0; i < offlinePages.size(); i++) {
+                            result.add(null);
+                        }
+                        Collections.copy(result, offlinePages);
                         semaphore.release();
+                    }
+
+                    @Override
+                    public void onSavePageDone(int savePageResult, String url) {
+                        assertTrue("Should have received this callback", false);
                     }
                 });
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        return result;
     }
 }

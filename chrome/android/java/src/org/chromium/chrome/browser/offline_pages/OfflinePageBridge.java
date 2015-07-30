@@ -8,6 +8,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,17 @@ public final class OfflinePageBridge {
          */
         @CalledByNative("OfflinePageCallback")
         void onLoadAllPagesDone(int loadResult, List<OfflinePageItem> offlinePages);
+
+        /**
+         * Delivers result of saving a page.
+         *
+         * @param savePageResult Result of the saving. Uses
+         *     {@see org.chromium.components.offline_pages.SavePageResult} enum.
+         * @param url URL of the saved page.
+         * @see OfflinePageBridge#savePage()
+         */
+        @CalledByNative("OfflinePageCallback")
+        void onSavePageDone(int savePageResult, String url);
     }
 
     /**
@@ -66,6 +78,18 @@ public final class OfflinePageBridge {
         nativeLoadAllPages(mNativeOfflinePageBridge, callback, new ArrayList<OfflinePageItem>());
     }
 
+    /**
+     * Saves the web page loaded into web contents offline.
+     *
+     * @param webContents Contents of the page to save.
+     * @param callback Interface that contains a callback.
+     * @see OfflinePageCallback
+     */
+    @VisibleForTesting
+    public void savePage(WebContents webContents, OfflinePageCallback callback) {
+        nativeSavePage(mNativeOfflinePageBridge, callback, webContents);
+    }
+
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
             String url, String title, String offlineUrl, long fileSize) {
@@ -76,4 +100,6 @@ public final class OfflinePageBridge {
     private native void nativeDestroy(long nativeOfflinePageBridge);
     private native void nativeLoadAllPages(long nativeOfflinePageBridge,
             OfflinePageCallback callback, List<OfflinePageItem> offlinePages);
+    private native void nativeSavePage(
+            long nativeOfflinePageBridge, OfflinePageCallback callback, WebContents webContents);
 }

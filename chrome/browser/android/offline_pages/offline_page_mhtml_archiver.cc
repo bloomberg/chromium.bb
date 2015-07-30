@@ -8,30 +8,43 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/offline_pages/offline_page_web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/filename_util.h"
 
 namespace offline_pages {
+namespace {
+const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
+const base::FilePath::CharType kDefaultFileName[] =
+    FILE_PATH_LITERAL("offline_page");
+
+base::FilePath GenerateFileName(GURL url, base::string16 title) {
+  return net::GenerateFileName(url,
+                               std::string(),             // content disposition
+                               std::string(),             // charset
+                               base::UTF16ToUTF8(title),  // suggested name
+                               std::string(),             // mime-type
+                               kDefaultFileName)
+      .AddExtension(kMHTMLExtension);
+}
+
+}  // namespace
 
 OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
     content::WebContents* web_contents,
-    const base::FilePath& file_path,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : file_path_(file_path),
+    const base::FilePath& archive_dir)
+    : archive_dir_(archive_dir),
       web_contents_(web_contents),
-      task_runner_(task_runner),
       weak_ptr_factory_(this) {
   DCHECK(web_contents_);
 }
 
 OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
-    const base::FilePath& file_path,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : file_path_(file_path),
+    const base::FilePath& archive_dir)
+    : archive_dir_(archive_dir),
       web_contents_(nullptr),
-      task_runner_(task_runner),
       weak_ptr_factory_(this) {
 }
 
@@ -55,6 +68,12 @@ void OfflinePageMHTMLArchiver::CreateArchive(
 }
 
 void OfflinePageMHTMLArchiver::GenerateMHTML() {
+  if (archive_dir_.empty()) {
+    DVLOG(1) << "Archive path was empty. Can't create archive.";
+    ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
+    return;
+  }
+
   if (!web_contents_) {
     DVLOG(1) << "WebContents is missing. Can't create archive.";
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
@@ -84,41 +103,32 @@ void OfflinePageMHTMLArchiver::DoGenerateMHTML() {
   // TODO(fgorski): Figure out if the actual URL or title can be different at
   // the end of MHTML generation. Perhaps we should pull it out after the MHTML
   // is generated.
+  GURL url(web_contents_->GetLastCommittedURL());
+  base::string16 title(web_contents_->GetTitle());
+  base::FilePath file_path(archive_dir_.Append(GenerateFileName(url, title)));
+
   web_contents_->GenerateMHTML(
-      file_path_, base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             web_contents_->GetLastCommittedURL(),
-                             web_contents_->GetTitle()));
+      file_path,
+      base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
+                 weak_ptr_factory_.GetWeakPtr(), url, title, file_path));
 }
 
-void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(const GURL& url,
-                                                   const base::string16& title,
-                                                   int64 file_size) {
-  ArchiverResult result =
-      file_size < 0 ? ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED :
-                      ArchiverResult::SUCCESSFULLY_CREATED;
-  ReportResult(result, url, title, file_size);
+void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
+    const GURL& url,
+    const base::string16& title,
+    const base::FilePath& file_path,
+    int64 file_size) {
+  if (file_size < 0) {
+    ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
+  } else {
+    callback_.Run(this, ArchiverResult::SUCCESSFULLY_CREATED, url, title,
+                  file_path, file_size);
+  }
 }
 
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {
   DCHECK(result != ArchiverResult::SUCCESSFULLY_CREATED);
-  ReportResult(result, GURL(), base::string16(), 0);
-}
-
-void OfflinePageMHTMLArchiver::ReportResult(ArchiverResult result,
-                                            const GURL& url,
-                                            const base::string16& title,
-                                            int64 file_size) {
-  base::FilePath file_path;
-  if (result == ArchiverResult::SUCCESSFULLY_CREATED) {
-    // Pass an actual file path and report file size only upon success.
-    file_path = file_path_;
-  } else {
-    // Make sure both file path and file size are empty on failure.
-    file_size = 0;
-  }
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      callback_, this, result, url, title, file_path, file_size));
+  callback_.Run(this, result, GURL(), base::string16(), base::FilePath(), 0);
 }
 
 }  // namespace offline_pages

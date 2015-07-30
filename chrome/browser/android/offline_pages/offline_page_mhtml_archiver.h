@@ -33,16 +33,14 @@ namespace offline_pages {
 //     const GURL& url = web_contents->GetLastCommittedURL();
 //     scoped_ptr<OfflinePageMHTMLArchiver> archiver(
 //         new OfflinePageMHTMLArchiver(
-//             web_contents, archiver_dir, task_runner));
+//             web_contents, archive_dir));
 //     // Callback is of type OfflinePageModel::SavePageCallback.
 //     model->SavePage(url, archiver.Pass(), callback);
 //   }
 class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
  public:
-  OfflinePageMHTMLArchiver(
-      content::WebContents* web_contents,
-      const base::FilePath& file_path,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  OfflinePageMHTMLArchiver(content::WebContents* web_contents,
+                           const base::FilePath& archive_dir);
   ~OfflinePageMHTMLArchiver() override;
 
   // OfflinePageArchiver implementation:
@@ -50,9 +48,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
 
  protected:
   // Allows to overload the archiver for testing.
-  OfflinePageMHTMLArchiver(
-      const base::FilePath& file_path,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  explicit OfflinePageMHTMLArchiver(const base::FilePath& archive_dir);
 
   // Try to generate MHTML.
   // Might be overridden for testing purpose.
@@ -65,6 +61,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // Callback for Generating MHTML.
   void OnGenerateMHTMLDone(const GURL& url,
                            const base::string16& title,
+                           const base::FilePath& file_path,
                            int64 file_size);
 
   // Sends the result of archiving a page to the client that requested archive
@@ -72,21 +69,20 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   void ReportResult(ArchiverResult result,
                     const GURL& url,
                     const base::string16& title,
+                    const base::FilePath& file_path,
                     int64 file_size);
   void ReportFailure(ArchiverResult result);
 
  private:
-  // Path to the archive file.
-  const base::FilePath file_path_;
+  // Path to the archive directory. It the path is empty, creation of the
+  // archive will fail.
+  const base::FilePath archive_dir_;
   // Contents of the web page to be serialized. Not owned.
   // TODO(fgorski): Add WebContentsObserver to know when the page navigates away
   // or shuts down.
   content::WebContents* web_contents_;
 
   CreateArchiveCallback callback_;
-
-  // Task runner, which will be used to post the callback.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<OfflinePageMHTMLArchiver> weak_ptr_factory_;
 
