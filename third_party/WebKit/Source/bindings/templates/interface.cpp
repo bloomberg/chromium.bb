@@ -612,20 +612,6 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {% endblock %}
 
 
-{##############################################################################}
-{% block configure_shadow_object_template %}
-{% if interface_name == 'Window' %}
-static void configureShadowObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v8::Isolate* isolate)
-{
-    // Install a security handler with V8.
-    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
-    templ->SetInternalFieldCount(V8Window::internalFieldCount);
-}
-
-{% endif %}
-{% endblock %}
-
-
 {######################################}
 {% macro install_do_not_check_security_signature(method, world_suffix) %}
 {# Methods that are [DoNotCheckSecurity] are always readable, but if they are
@@ -865,38 +851,6 @@ V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeO
 ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Local<v8::Object> wrapper)
 {
     return toImpl(wrapper);
-}
-
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
-{% block get_shadow_object_template %}
-{% if interface_name == 'Window' %}
-v8::Local<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* isolate)
-{
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
-        if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
-            v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            configureShadowObjectTemplate(templ, isolate);
-            V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
-            return templ;
-        }
-        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForMainWorld);
-    } else {
-        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForNonMainWorld, ());
-        if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
-            v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            configureShadowObjectTemplate(templ, isolate);
-            V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
-            return templ;
-        }
-        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForNonMainWorld);
-    }
 }
 
 {% endif %}

@@ -262,6 +262,41 @@ bool WindowProxy::initialize()
     return true;
 }
 
+namespace {
+
+void configureInnerGlobalObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v8::Isolate* isolate)
+{
+    // Install a security handler with V8.
+    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
+    templ->SetInternalFieldCount(V8Window::internalFieldCount);
+}
+
+v8::Local<v8::ObjectTemplate> getInnerGlobalObjectTemplate(v8::Isolate* isolate)
+{
+    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowInnerGlobalObjectCacheForMainWorld, ());
+        if (V8WindowInnerGlobalObjectCacheForMainWorld.IsEmpty()) {
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
+            v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+            configureInnerGlobalObjectTemplate(templ, isolate);
+            V8WindowInnerGlobalObjectCacheForMainWorld.Reset(isolate, templ);
+            return templ;
+        }
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowInnerGlobalObjectCacheForMainWorld);
+    }
+    DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowInnerGlobalObjectCacheForNonMainWorld, ());
+    if (V8WindowInnerGlobalObjectCacheForNonMainWorld.IsEmpty()) {
+        TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
+        v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+        configureInnerGlobalObjectTemplate(templ, isolate);
+        V8WindowInnerGlobalObjectCacheForNonMainWorld.Reset(isolate, templ);
+        return templ;
+    }
+    return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowInnerGlobalObjectCacheForNonMainWorld);
+}
+
+} // namespace
+
 void WindowProxy::createContext()
 {
     // FIXME: This should be a null check of m_frame->client(), but there are still some edge cases
@@ -271,7 +306,7 @@ void WindowProxy::createContext()
 
     // Create a new environment using an empty template for the shadow
     // object. Reuse the global object if one has been created earlier.
-    v8::Local<v8::ObjectTemplate> globalTemplate = V8Window::getShadowObjectTemplate(m_isolate);
+    v8::Local<v8::ObjectTemplate> globalTemplate = getInnerGlobalObjectTemplate(m_isolate);
     if (globalTemplate.IsEmpty())
         return;
 

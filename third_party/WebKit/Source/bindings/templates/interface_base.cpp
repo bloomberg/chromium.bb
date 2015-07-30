@@ -278,7 +278,6 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {##############################################################################}
 {% block named_constructor %}{% endblock %}
 {% block constructor_callback %}{% endblock %}
-{% block configure_shadow_object_template %}{% endblock %}
 {##############################################################################}
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
@@ -490,7 +489,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
 {% block prepare_prototype_object %}{% endblock %}
 {##############################################################################}
 {% block to_active_dom_object %}{% endblock %}
-{% block get_shadow_object_template %}{% endblock %}
 {% block ref_object_and_deref_object %}{% endblock %}
 {% for method in methods if method.is_implemented_in_private_script and method.visible %}
 {{method_implemented_in_private_script(method)}}
