@@ -71,36 +71,23 @@ static FilterOperation::OperationType filterOperationForType(CSSValueID type)
     }
 }
 
-bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CSSToLengthConversionData& conversionData, FilterOperations& outOperations, StyleResolverState& state)
+void FilterOperationResolver::createFilterOperations(const CSSValue& inValue, const CSSToLengthConversionData& conversionData, FilterOperations& outOperations, StyleResolverState& state)
 {
     ASSERT(outOperations.isEmpty());
 
-    if (!inValue)
-        return false;
-
-    if (inValue->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(inValue);
-        if (primitiveValue->getValueID() == CSSValueNone)
-            return true;
+    if (inValue.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
+        return;
     }
 
-    if (!inValue->isValueList())
-        return false;
-
     FilterOperations operations;
-    for (auto& currValue : toCSSValueList(*inValue)) {
+    for (auto& currValue : toCSSValueList(inValue)) {
         CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->functionType());
+        ASSERT(filterValue->length() <= 1);
 
         if (operationType == FilterOperation::REFERENCE) {
-            if (filterValue->length() != 1)
-                continue;
-            CSSValue* argument = filterValue->item(0);
-
-            if (!argument->isSVGDocumentValue())
-                continue;
-
-            CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(argument);
+            CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(filterValue->item(0));
             KURL url = state.document().completeURL(svgDocumentValue->url());
 
             RefPtrWillBeRawPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), AtomicString(url.fragmentIdentifier()));
@@ -112,20 +99,6 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             }
             operations.operations().append(operation);
             continue;
-        }
-
-        // Check that all parameters are primitive values, with the
-        // exception of drop shadow which has a CSSShadowValue parameter.
-        if (operationType != FilterOperation::DROP_SHADOW) {
-            bool haveNonPrimitiveValue = false;
-            for (unsigned j = 0; j < filterValue->length(); ++j) {
-                if (!filterValue->item(j)->isPrimitiveValue()) {
-                    haveNonPrimitiveValue = true;
-                    break;
-                }
-            }
-            if (haveNonPrimitiveValue)
-                continue;
         }
 
         CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : 0;
@@ -173,14 +146,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             break;
         }
         case CSSValueDropShadow: {
-            if (filterValue->length() != 1)
-                return false;
-
-            CSSValue* cssValue = filterValue->item(0);
-            if (!cssValue->isShadowValue())
-                continue;
-
-            CSSShadowValue* item = toCSSShadowValue(cssValue);
+            CSSShadowValue* item = toCSSShadowValue(filterValue->item(0));
             IntPoint location(item->x->computeLength<int>(conversionData), item->y->computeLength<int>(conversionData));
             int blur = item->blur ? item->blur->computeLength<int>(conversionData) : 0;
             Color shadowColor = Color::black;
@@ -197,7 +163,6 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
     }
 
     outOperations = operations;
-    return true;
 }
 
 } // namespace blink

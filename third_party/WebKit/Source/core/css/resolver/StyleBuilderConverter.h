@@ -93,7 +93,7 @@ public:
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
     static TransformOrigin convertTransformOrigin(StyleResolverState&, CSSValue*);
 
-    static bool convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
+    static void convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
     static void createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap&, NamedGridLinesMap&, GridTrackSizingDirection);
     static void convertOrderedNamedGridLinesMapToNamedGridLinesMap(const OrderedNamedGridLines&, NamedGridLinesMap&);
 

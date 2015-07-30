@@ -582,9 +582,10 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState& state, CSSValue* value)
 {
+    // FIXME: We should just make this a converter
     FilterOperations operations;
-    if (FilterOperationResolver::createFilterOperations(value, state.cssToLengthConversionData(), operations, state))
-        state.style()->setFilter(operations);
+    FilterOperationResolver::createFilterOperations(*value, state.cssToLengthConversionData(), operations, state);
+    state.style()->setFilter(operations);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(StyleResolverState& state)

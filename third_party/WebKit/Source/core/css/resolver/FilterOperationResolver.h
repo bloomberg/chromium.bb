@@ -34,7 +34,7 @@ class CSSValue;
 class FilterOperationResolver {
     STATIC_ONLY(FilterOperationResolver);
 public:
-    static bool createFilterOperations(CSSValue* inValue, const CSSToLengthConversionData&, FilterOperations& outOperations, StyleResolverState&);
+    static void createFilterOperations(const CSSValue& inValue, const CSSToLengthConversionData&, FilterOperations& outOperations, StyleResolverState&);
 };
 
 } // namespace blink

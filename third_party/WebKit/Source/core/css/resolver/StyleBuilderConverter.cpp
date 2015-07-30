@@ -317,9 +317,6 @@ FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigat
 
 EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverState&, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return GO_0DEG;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Degrees)
         return GO_0DEG;
@@ -461,16 +458,12 @@ GridTrackSize StyleBuilderConverter::convertGridTrackSize(StyleResolverState& st
     return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
-bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, StyleResolverState& state)
+void StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, StyleResolverState& state)
 {
-    // Handle 'none'.
     if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        return primitiveValue->getValueID() == CSSValueNone;
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return;
     }
-
-    if (!value->isValueList())
-        return false;
 
     size_t currentNamedGridLine = 0;
     for (auto& currValue : *toCSSValueList(value)) {
@@ -492,7 +485,6 @@ bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
     // The parser should have rejected any <track-list> without any <track-size> as
     // this is not conformant to the syntax.
     ASSERT(!trackSizes.isEmpty());
-    return true;
 }
 
 void StyleBuilderConverter::convertOrderedNamedGridLinesMapToNamedGridLinesMap(const OrderedNamedGridLines& orderedNamedGridLines, NamedGridLinesMap& namedGridLines)
@@ -852,10 +844,6 @@ PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleReso
     RefPtr<SVGDashArray> array = SVGDashArray::create();
     size_t length = dashes->length();
     for (size_t i = 0; i < length; ++i) {
-        CSSValue* currValue = dashes->item(i);
-        if (!currValue->isPrimitiveValue())
-            continue;
-
         CSSPrimitiveValue* dash = toCSSPrimitiveValue(dashes->item(i));
         array->append(convertLength(state, dash));
     }
@@ -983,6 +971,5 @@ RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(Style
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     return primitiveValue->getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
-
 
 } // namespace blink

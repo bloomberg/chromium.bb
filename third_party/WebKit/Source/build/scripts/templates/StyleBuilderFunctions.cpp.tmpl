@@ -139,9 +139,6 @@ namespace blink {
 
 {{declare_value_function(property_id)}}
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == {{auto_identity}})
         state.style()->{{auto_setter}}();
@@ -351,13 +348,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     int length = list ? list->length() : 0;
     for (int i = 0; i < length; ++i) {
         CSSValue* currValue = list->item(i);
-        if (!currValue->isPrimitiveValue())
-            continue;
-
         Pair* pair = toCSSPrimitiveValue(currValue)->getPairValue();
-        if (!pair || !pair->first() || !pair->second())
-            continue;
-
         AtomicString identifier(pair->first()->getStringValue());
         int value = pair->second()->getIntValue();
         CounterDirectives& directives = map.add(identifier, CounterDirectives()).storedValue->value;
@@ -474,8 +465,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     Vector<GridTrackSize> trackSizes;
     NamedGridLinesMap namedGridLines;
     OrderedNamedGridLines orderedNamedGridLines;
-    if (!StyleBuilderConverter::convertGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
-        return;
+    StyleBuilderConverter::convertGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state);
     const NamedGridAreaMap& namedGridAreas = state.style()->namedGridArea();
     if (!namedGridAreas.isEmpty())
         StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(namedGridAreas, namedGridLines, For{{type}}s);
@@ -515,38 +505,29 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     String url;
     if (value->isValueList()) {
         CSSValueList* list = toCSSValueList(value);
-        ASSERT(list->length() > 1);
-
-        if (!list->item(0)->isPrimitiveValue())
-            return;
-
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
-        if (!primitiveValue->isURI())
-            return;
-
-        url = primitiveValue->getStringValue();
+        ASSERT(list->length() == 2);
+        url = toCSSPrimitiveValue(list->item(0))->getStringValue();
         value = list->item(1);
     }
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        Color color;
-        SVGPaintType paintType = SVG_PAINTTYPE_RGBCOLOR;
-        if (primitiveValue->getValueID() == CSSValueNone) {
-            paintType = url.isEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
-        } else if (primitiveValue->isURI()) {
-            paintType = SVG_PAINTTYPE_URI;
-            url = primitiveValue->getStringValue();
-        } else if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
-            color = state.style()->color();
-            paintType = url.isEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR : SVG_PAINTTYPE_URI_CURRENTCOLOR;
-        } else {
-            color = StyleBuilderConverter::convertColor(state, primitiveValue);
-            paintType = url.isEmpty() ? SVG_PAINTTYPE_RGBCOLOR : SVG_PAINTTYPE_URI_RGBCOLOR;
-        }
-        {{set_value(property)}}(paintType, color, url,
-            state.applyPropertyToRegularStyle(),
-            state.applyPropertyToVisitedLinkStyle());
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Color color;
+    SVGPaintType paintType = SVG_PAINTTYPE_RGBCOLOR;
+    if (primitiveValue->getValueID() == CSSValueNone) {
+        paintType = url.isEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
+    } else if (primitiveValue->isURI()) {
+        paintType = SVG_PAINTTYPE_URI;
+        url = primitiveValue->getStringValue();
+    } else if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
+        color = state.style()->color();
+        paintType = url.isEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR : SVG_PAINTTYPE_URI_CURRENTCOLOR;
+    } else {
+        color = StyleBuilderConverter::convertColor(state, primitiveValue);
+        paintType = url.isEmpty() ? SVG_PAINTTYPE_RGBCOLOR : SVG_PAINTTYPE_URI_RGBCOLOR;
     }
+    {{set_value(property)}}(paintType, color, url,
+        state.applyPropertyToRegularStyle(),
+        state.applyPropertyToVisitedLinkStyle());
 }
 {% endmacro %}
 {{apply_svg_paint('CSSPropertyFill', 'FillPaint')}}
