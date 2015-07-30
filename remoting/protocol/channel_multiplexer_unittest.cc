@@ -254,18 +254,15 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
 
   MockSocketCallback cb1;
   MockSocketCallback cb2;
+  EXPECT_CALL(cb1, OnDone(net::ERR_FAILED));
+  EXPECT_CALL(cb2, OnDone(net::ERR_FAILED));
 
-  EXPECT_CALL(cb1, OnDone(_))
-      .Times(0);
-  EXPECT_CALL(cb2, OnDone(_))
-      .Times(0);
-
-  EXPECT_EQ(net::ERR_FAILED,
+  EXPECT_EQ(net::ERR_IO_PENDING,
             host_socket1_->Write(buf.get(),
                                  buf->size(),
                                  base::Bind(&MockSocketCallback::OnDone,
                                             base::Unretained(&cb1))));
-  EXPECT_EQ(net::ERR_FAILED,
+  EXPECT_EQ(net::ERR_IO_PENDING,
             host_socket2_->Write(buf.get(),
                                  buf->size(),
                                  base::Bind(&MockSocketCallback::OnDone,

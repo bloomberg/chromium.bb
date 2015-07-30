@@ -84,7 +84,7 @@ class ChannelMultiplexer::MuxChannel {
 
   // Called by MuxSocket.
   void OnSocketDestroyed();
-  bool DoWrite(scoped_ptr<MultiplexPacket> packet,
+  void DoWrite(scoped_ptr<MultiplexPacket> packet,
                const base::Closure& done_task);
   int DoRead(const scoped_refptr<net::IOBuffer>& buffer, int buffer_len);
 
@@ -182,7 +182,7 @@ void ChannelMultiplexer::MuxChannel::OnSocketDestroyed() {
   socket_ = nullptr;
 }
 
-bool ChannelMultiplexer::MuxChannel::DoWrite(
+void ChannelMultiplexer::MuxChannel::DoWrite(
     scoped_ptr<MultiplexPacket> packet,
     const base::Closure& done_task) {
   packet->set_channel_id(send_id_);
@@ -190,7 +190,7 @@ bool ChannelMultiplexer::MuxChannel::DoWrite(
     packet->set_channel_name(name_);
     id_sent_ = true;
   }
-  return multiplexer_->DoWrite(packet.Pass(), done_task);
+  multiplexer_->DoWrite(packet.Pass(), done_task);
 }
 
 int ChannelMultiplexer::MuxChannel::DoRead(
@@ -256,13 +256,8 @@ int ChannelMultiplexer::MuxSocket::Write(
   packet->mutable_data()->assign(buffer->data(), size);
 
   write_pending_ = true;
-  bool result = channel_->DoWrite(packet.Pass(), base::Bind(
+  channel_->DoWrite(packet.Pass(), base::Bind(
       &ChannelMultiplexer::MuxSocket::OnWriteComplete, AsWeakPtr()));
-
-  if (!result) {
-    // Cannot complete the write, e.g. if the connection has been terminated.
-    return net::ERR_FAILED;
-  }
 
   // OnWriteComplete() might be called above synchronously.
   if (write_pending_) {
@@ -465,9 +460,9 @@ void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
   channel->OnIncomingPacket(packet.Pass(), done_task);
 }
 
-bool ChannelMultiplexer::DoWrite(scoped_ptr<MultiplexPacket> packet,
+void ChannelMultiplexer::DoWrite(scoped_ptr<MultiplexPacket> packet,
                                  const base::Closure& done_task) {
-  return writer_.Write(SerializeAndFrameMessage(*packet), done_task);
+  writer_.Write(SerializeAndFrameMessage(*packet), done_task);
 }
 
 }  // namespace protocol

@@ -42,9 +42,8 @@ class BufferedSocketWriter {
   void Init(const WriteCallback& write_callback,
             const WriteFailedCallback& write_failed_callback);
 
-  // Puts a new data chunk in the buffer. Returns false if writing has stopped
-  // because of an error.
-  bool Write(const scoped_refptr<net::IOBufferWithSize>& buffer,
+  // Puts a new data chunk in the buffer.
+  void Write(const scoped_refptr<net::IOBufferWithSize>& buffer,
              const base::Closure& done_task);
 
   // Returns true when there is data waiting to be written.

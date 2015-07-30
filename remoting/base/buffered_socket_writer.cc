@@ -57,7 +57,7 @@ void BufferedSocketWriter::Init(
   write_failed_callback_ = write_failed_callback;
 }
 
-bool BufferedSocketWriter::Write(
+void BufferedSocketWriter::Write(
     const scoped_refptr<net::IOBufferWithSize>& data,
     const base::Closure& done_task) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -65,14 +65,12 @@ bool BufferedSocketWriter::Write(
 
   // Don't write after error.
   if (is_closed())
-    return false;
+    return;
 
   queue_.push_back(new PendingPacket(
       new net::DrainableIOBuffer(data.get(), data->size()), done_task));
 
   DoWrite();
-
-  return !is_closed();
 }
 
 bool BufferedSocketWriter::is_closed() {

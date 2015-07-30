@@ -56,7 +56,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
                         const base::Closure& done_task);
 
   // Called by MuxChannel.
-  bool DoWrite(scoped_ptr<MultiplexPacket> packet,
+  void DoWrite(scoped_ptr<MultiplexPacket> packet,
                const base::Closure& done_task);
 
   // Factory used to create |base_channel_|. Set to nullptr once creation is
