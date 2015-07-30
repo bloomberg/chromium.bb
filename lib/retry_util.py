@@ -40,6 +40,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     backoff_factor: Optional keyword. If supplied and > 1, subsequent sleeps
                     will be of length (backoff_factor ^ (attempt - 1)) * sleep,
                     rather than the default behavior of attempt * sleep.
+    success_functor: Optional functor that accepts 1 argument. Will be called
+                     after successful call to |functor|, with the argument
+                     being the number of attempts (1 = |functor| succeeded on
+                     first try).
 
   Returns:
     Whatever functor(*args, **kwargs) returns.
@@ -59,6 +63,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     raise ValueError('backoff_factor must be 1 or greater: %s'
                      % backoff_factor)
 
+  success_functor = kwargs.pop('success_functor', lambda x: None)
+  ret, success = (None, False)
+  attempt = 0
+
   exc_info = None
   for attempt in xrange(max_retry + 1):
     if attempt and sleep:
@@ -68,7 +76,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
         sleep_time = sleep * attempt
       time.sleep(sleep_time)
     try:
-      return functor(*args, **kwargs)
+      ret = functor(*args, **kwargs)
+      success = True
+      break
     except Exception as e:
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.
@@ -78,6 +88,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       # throw the original failure if all retries fail.
       if exc_info is None:
         exc_info = sys.exc_info()
+
+  if success:
+    success_functor(attempt + 1)
+    return ret
 
   raise exc_info[0], exc_info[1], exc_info[2]
 

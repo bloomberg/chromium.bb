@@ -665,17 +665,40 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
   """Tests of GenericRetry and relatives."""
 
   def testGenericRetry(self):
-    source, source2 = iter(xrange(5)).next, iter(xrange(5)).next
+    """Test basic semantics of retry and success recording."""
+    source = iter(xrange(5)).next
+
     def f():
-      val = source2()
-      self.assertEqual(val, source())
+      val = source()
       if val < 4:
         raise ValueError()
       return val
+
+    s = []
+    def sf(attempt):
+      s.append(attempt)
+
     handler = lambda ex: isinstance(ex, ValueError)
-    self.assertRaises(ValueError, retry_util.GenericRetry, handler, 3, f)
-    self.assertEqual(4, retry_util.GenericRetry(handler, 1, f))
-    self.assertRaises(StopIteration, retry_util.GenericRetry, handler, 3, f)
+
+    self.assertRaises(ValueError, retry_util.GenericRetry, handler, 3, f,
+                      success_functor=sf)
+    self.assertEqual(s, [])
+
+    self.assertEqual(4, retry_util.GenericRetry(handler, 1, f,
+                                                success_functor=sf))
+    self.assertEqual(s, [1])
+
+    self.assertRaises(StopIteration, retry_util.GenericRetry, handler, 3, f,
+                      success_functor=sf)
+    self.assertEqual(s, [1])
+
+  def testSuccessFunctorException(self):
+    """Exceptions in |success_functor| should not be retried."""
+    def sf(_):
+      assert False
+
+    with self.assertRaises(AssertionError):
+      retry_util.GenericRetry(lambda: True, 1, lambda: None, success_functor=sf)
 
   def testRetryExceptionBadArgs(self):
     """Verify we reject non-classes or tuples of classes"""
