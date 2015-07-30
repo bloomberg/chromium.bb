@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/drive_metrics_provider.h"
+#include "components/metrics/drive_metrics_provider.h"
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -11,11 +11,17 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/task_runner_util.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_paths.h"
-#include "content/public/browser/browser_thread.h"
 
-DriveMetricsProvider::DriveMetricsProvider() : weak_ptr_factory_(this) {}
+namespace metrics {
+
+DriveMetricsProvider::DriveMetricsProvider(
+    scoped_refptr<base::SequencedTaskRunner> file_thread,
+    int local_state_path_key)
+    : file_thread_(file_thread),
+      local_state_path_key_(local_state_path_key),
+      weak_ptr_factory_(this) {}
 
 DriveMetricsProvider::~DriveMetricsProvider() {}
 
@@ -30,9 +36,10 @@ void DriveMetricsProvider::ProvideSystemProfileMetrics(
 void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done) {
   got_metrics_callback_ = done;
 
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DriveMetricsProvider::GetDriveMetricsOnFileThread),
+  base::PostTaskAndReplyWithResult(
+      file_thread_.get(), FROM_HERE,
+      base::Bind(&DriveMetricsProvider::GetDriveMetricsOnFileThread,
+                 local_state_path_key_),
       base::Bind(&DriveMetricsProvider::GotDriveMetrics,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -42,12 +49,10 @@ DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
 
 // static
 DriveMetricsProvider::DriveMetrics
-DriveMetricsProvider::GetDriveMetricsOnFileThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-
+DriveMetricsProvider::GetDriveMetricsOnFileThread(int local_state_path_key) {
   DriveMetricsProvider::DriveMetrics metrics;
   QuerySeekPenalty(base::FILE_EXE, &metrics.app_drive);
-  QuerySeekPenalty(chrome::FILE_LOCAL_STATE, &metrics.user_data_drive);
+  QuerySeekPenalty(local_state_path_key, &metrics.user_data_drive);
   return metrics;
 }
 
@@ -88,3 +93,5 @@ void DriveMetricsProvider::FillDriveMetrics(
   if (response.success)
     drive->set_has_seek_penalty(response.has_seek_penalty);
 }
+
+}  // namespace metrics

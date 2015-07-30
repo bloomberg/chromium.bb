@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_DRIVE_METRICS_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_DRIVE_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_METRICS_DRIVE_METRICS_PROVIDER_H_
+#define COMPONENTS_METRICS_DRIVE_METRICS_PROVIDER_H_
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
@@ -17,21 +19,24 @@ namespace base {
 class FilePath;
 }
 
+namespace metrics {
+
 // Provides metrics about the local drives on a user's computer. Currently only
 // checks to see if they incur a seek-time penalty (e.g. if they're SSDs).
 //
 // Defers gathering metrics until after "rush hour" (startup) so as to not bog
-// down the FILE thread.
+// down the file thread.
 class DriveMetricsProvider : public metrics::MetricsProvider {
  public:
-  DriveMetricsProvider();
+  DriveMetricsProvider(scoped_refptr<base::SequencedTaskRunner> file_thread,
+                       int local_state_path_key);
   ~DriveMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
-  // Called by ChromeMetricsServiceClient to start gathering metrics.
+  // Called to start gathering metrics.
   void GetDriveMetrics(const base::Closure& done);
 
  private:
@@ -55,8 +60,8 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   static bool HasSeekPenalty(const base::FilePath& path,
                              bool* has_seek_penalty);
 
-  // Gather metrics about various drives on the FILE thread.
-  static DriveMetrics GetDriveMetricsOnFileThread();
+  // Gather metrics about various drives on |file_thread_|.
+  static DriveMetrics GetDriveMetricsOnFileThread(int local_state_path_key);
 
   // Tries to determine whether there is a penalty for seeking on the drive that
   // hosts |path_service_key| (for example: the drive that holds "Local State").
@@ -67,9 +72,16 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   void GotDriveMetrics(const DriveMetrics& metrics);
 
   // Fills |drive| with information from successful |response|s.
-  void FillDriveMetrics(
-      const SeekPenaltyResponse& response,
-      metrics::SystemProfileProto::Hardware::Drive* drive);
+  void FillDriveMetrics(const SeekPenaltyResponse& response,
+                        metrics::SystemProfileProto::Hardware::Drive* drive);
+
+  // The thread on which file operations are performed (supplied by the
+  // embedder).
+  scoped_refptr<base::SequencedTaskRunner> file_thread_;
+
+  // The key to give to base::PathService to obtain the path to local state
+  // (supplied by the embedder).
+  int local_state_path_key_;
 
   // Information gathered about various important drives.
   DriveMetrics metrics_;
@@ -83,4 +95,6 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   DISALLOW_COPY_AND_ASSIGN(DriveMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_DRIVE_METRICS_PROVIDER_H_
+}  // namespace metrics
+
+#endif  // COMPONENTS_METRICS_DRIVE_METRICS_PROVIDER_H_

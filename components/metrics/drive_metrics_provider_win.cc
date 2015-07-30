@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/drive_metrics_provider.h"
+#include "components/metrics/drive_metrics_provider.h"
 
 #include <windows.h>
 #include <ntddscsi.h>
@@ -14,6 +14,8 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
+
+namespace metrics {
 
 namespace {
 
@@ -54,11 +56,9 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
 
     DEVICE_SEEK_PENALTY_DESCRIPTOR result;
     DWORD bytes_returned;
-    BOOL success = DeviceIoControl(volume.GetPlatformFile(),
-                                   IOCTL_STORAGE_QUERY_PROPERTY,
-                                   &query, sizeof(query),
-                                   &result, sizeof(result),
-                                   &bytes_returned, NULL);
+    BOOL success = DeviceIoControl(
+        volume.GetPlatformFile(), IOCTL_STORAGE_QUERY_PROPERTY, &query,
+        sizeof(query), &result, sizeof(result), &bytes_returned, NULL);
     if (success == FALSE || bytes_returned < sizeof(result))
       return false;
 
@@ -73,11 +73,9 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
     request.query.TimeOutValue = 10;
 
     DWORD bytes_returned;
-    BOOL success = DeviceIoControl(volume.GetPlatformFile(),
-                                   IOCTL_ATA_PASS_THROUGH,
-                                   &request, sizeof(request),
-                                   &request, sizeof(request),
-                                   &bytes_returned, NULL);
+    BOOL success = DeviceIoControl(
+        volume.GetPlatformFile(), IOCTL_ATA_PASS_THROUGH, &request,
+        sizeof(request), &request, sizeof(request), &bytes_returned, NULL);
     if (success == FALSE || bytes_returned < sizeof(request) ||
         request.query.CurrentTaskFile[0]) {
       return false;
@@ -88,3 +86,5 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
 
   return true;
 }
+
+}  // namespace metrics

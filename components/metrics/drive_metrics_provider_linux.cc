@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/drive_metrics_provider.h"
+#include "components/metrics/drive_metrics_provider.h"
 
 #include <linux/kdev_t.h>  // For MAJOR()/MINOR().
 #include <sys/stat.h>
@@ -16,6 +16,8 @@
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #endif
+
+namespace metrics {
 
 namespace {
 
@@ -58,3 +60,5 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
   *has_seek_penalty = rotates.substr(0, 1) == "1";
   return true;
 }
+
+}  // namespace metrics

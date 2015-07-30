@@ -306,6 +306,7 @@
       'metrics/call_stack_profile_metrics_provider_unittest.cc',
       'metrics/compression_utils_unittest.cc',
       'metrics/daily_event_unittest.cc',
+      'metrics/drive_metrics_provider_unittest.cc',
       'metrics/gpu/gpu_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',
       'metrics/machine_id_provider_win_unittest.cc',

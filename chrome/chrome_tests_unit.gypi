@@ -131,7 +131,6 @@
       'browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
-      'browser/metrics/drive_metrics_provider_unittest.cc',
       'browser/metrics/perf_provider_chromeos_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_chromeos_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_unittest.cc',

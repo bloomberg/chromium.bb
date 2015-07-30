@@ -20,7 +20,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ChromeOSMetricsProvider;
-class DriveMetricsProvider;
 class GoogleUpdateMetricsProviderWin;
 class PluginMetricsProvider;
 class PrefRegistrySimple;
@@ -36,6 +35,7 @@ class FilePath;
 }  // namespace base
 
 namespace metrics {
+class DriveMetricsProvider;
 class MetricsService;
 class MetricsStateManager;
 class ProfilerMetricsProvider;
@@ -174,7 +174,7 @@ class ChromeMetricsServiceClient
 
   // The DriveMetricsProvider instance that was registered with MetricsService.
   // Has the same lifetime as |metrics_service_|.
-  DriveMetricsProvider* drive_metrics_provider_;
+  metrics::DriveMetricsProvider* drive_metrics_provider_;
 
   // Callback that is called when initial metrics gathering is complete.
   base::Closure finished_gathering_initial_metrics_callback_;

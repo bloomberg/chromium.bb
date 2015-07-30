@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/drive_metrics_provider.h"
+#include "components/metrics/drive_metrics_provider.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <DiskArbitration/DiskArbitration.h>
@@ -17,6 +17,8 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
+
+namespace metrics {
 
 // static
 bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
@@ -37,17 +39,15 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
   if (!session)
     return false;
 
-  base::ScopedCFTypeRef<DADiskRef> disk(DADiskCreateFromBSDName(
-      kCFAllocatorDefault, session, bsd_name.c_str()));
+  base::ScopedCFTypeRef<DADiskRef> disk(
+      DADiskCreateFromBSDName(kCFAllocatorDefault, session, bsd_name.c_str()));
   if (!disk)
     return false;
 
   base::mac::ScopedIOObject<io_object_t> io_media(DADiskCopyIOMedia(disk));
   base::ScopedCFTypeRef<CFDictionaryRef> characteristics(
       static_cast<CFDictionaryRef>(IORegistryEntrySearchCFProperty(
-          io_media,
-          kIOServicePlane,
-          CFSTR(kIOPropertyDeviceCharacteristicsKey),
+          io_media, kIOServicePlane, CFSTR(kIOPropertyDeviceCharacteristicsKey),
           kCFAllocatorDefault,
           kIORegistryIterateRecursively | kIORegistryIterateParents)));
   if (!characteristics)
@@ -72,3 +72,5 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
   // type? Assume rotational?
   return false;
 }
+
+}  // namespace metrics
