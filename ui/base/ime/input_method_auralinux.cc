@@ -17,7 +17,8 @@ InputMethodAuraLinux::InputMethodAuraLinux(
     : text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
       composition_changed_(false),
-      suppress_next_result_(false) {
+      suppress_next_result_(false),
+      destroyed_ptr_(nullptr) {
   SetDelegate(delegate);
   context_ =
       LinuxInputMethodContextFactory::instance()->CreateInputMethodContext(
@@ -27,7 +28,10 @@ InputMethodAuraLinux::InputMethodAuraLinux(
           this, true);
 }
 
-InputMethodAuraLinux::~InputMethodAuraLinux() {}
+InputMethodAuraLinux::~InputMethodAuraLinux() {
+  if (destroyed_ptr_)
+    *destroyed_ptr_ = true;
+}
 
 LinuxInputMethodContext* InputMethodAuraLinux::GetContextForTesting(
     bool is_simple) {
@@ -65,12 +69,18 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
+  bool destroyed = false;
+  bool handled = false;
   if (event.type() == ui::ET_KEY_PRESSED && filtered) {
-    bool handled = false;
-    if (NeedInsertChar())
-      handled = DispatchKeyEventPostIME(event);
-    else if (HasInputMethodResult())
-      handled = SendFakeProcessKeyEvent(event.flags());
+    {
+      base::AutoReset<bool*> auto_reset(&destroyed_ptr_, &destroyed);
+      if (NeedInsertChar())
+        handled = DispatchKeyEventPostIME(event);
+      else if (HasInputMethodResult())
+        handled = SendFakeProcessKeyEvent(event.flags());
+      if (destroyed)
+        return true;
+    }
     // If the KEYDOWN is stopped propagation (e.g. triggered an accelerator),
     // don't InsertChar/InsertText to the input field.
     if (handled) {
@@ -117,7 +127,13 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
     composition_.Clear();
 
   if (!filtered) {
-    if (DispatchKeyEventPostIME(event)) {
+    {
+      base::AutoReset<bool*> auto_reset(&destroyed_ptr_, &destroyed);
+      handled = DispatchKeyEventPostIME(event);
+      if (destroyed)
+        return true;
+    }
+    if (handled) {
       ResetContext();
       return true;
     }

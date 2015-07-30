@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/input_method_win.h"
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/profiler/scoped_tracker.h"
 #include "ui/base/ime/text_input_client.h"
@@ -32,8 +33,14 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       enabled_(false),
       is_candidate_popup_open_(false),
       composing_window_handle_(NULL),
-      suppress_next_char_(false) {
+      suppress_next_char_(false),
+      destroyed_ptr_(nullptr) {
   SetDelegate(delegate);
+}
+
+InputMethodWin::~InputMethodWin() {
+  if (destroyed_ptr_)
+    *destroyed_ptr_ = true;
 }
 
 void InputMethodWin::OnFocus() {
@@ -131,8 +138,13 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  suppress_next_char_ = DispatchKeyEventPostIME(event);
-  return suppress_next_char_;
+  bool destroyed = false;
+  base::AutoReset<bool*> auto_reset(&destroyed_ptr_, &destroyed);
+  bool handled = DispatchKeyEventPostIME(event);
+  if (destroyed)
+    return true;
+  suppress_next_char_ = handled;
+  return handled;
 }
 
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {

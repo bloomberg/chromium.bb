@@ -80,6 +80,12 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
   // event will be discarded.
   bool suppress_next_result_;
 
+  // The pointer to a boolean value which indicates whether this InputMethod
+  // instance is destroyed. This is used in DispatchKeyEvent to detect whether
+  // DispatchKeyEventPostIME will cause destruction of this InputMethod
+  // instance. See crbug.com/513917.
+  bool* destroyed_ptr_;
+
   DISALLOW_COPY_AND_ASSIGN(InputMethodAuraLinux);
 };
 

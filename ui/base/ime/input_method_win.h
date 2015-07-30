@@ -21,6 +21,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
  public:
   InputMethodWin(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);
+  ~InputMethodWin() override;
 
   // Overridden from InputMethod:
   void OnFocus() override;
@@ -132,6 +133,12 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // Set to true to suppress the next WM_CHAR, when the WM_KEYDOWN gets stopped
   // propagation (e.g. triggered an accelerator).
   bool suppress_next_char_;
+
+  // The pointer to a boolean value which indicates whether this InputMethod
+  // instance is destroyed. This is used in DispatchKeyEvent to detect whether
+  // DispatchKeyEventPostIME will cause destruction of this InputMethod
+  // instance. See crbug.com/513917.
+  bool* destroyed_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };
