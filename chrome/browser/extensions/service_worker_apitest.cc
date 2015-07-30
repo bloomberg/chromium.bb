@@ -13,7 +13,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
  public:
   // Set the channel to "trunk" since service workers are restricted to trunk.
   ServiceWorkerTest()
-      : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+      : current_channel_(version_info::Channel::UNKNOWN) {}
 
   ~ServiceWorkerTest() override {}
 
@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterServiceWorkersOnTrunk) {
 // behavior - which is for it to fail.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, CannotRegisterServiceWorkersOnDev) {
   ScopedCurrentChannel current_channel_override(
-      chrome::VersionInfo::CHANNEL_DEV);
+      version_info::Channel::DEV);
   ExtensionTestMessageListener listener(false);
   ASSERT_FALSE(RunExtensionTest("service_worker/register")) << message_;
   ASSERT_TRUE(listener.WaitUntilSatisfied());

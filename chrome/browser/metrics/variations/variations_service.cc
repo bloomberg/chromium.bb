@@ -67,15 +67,15 @@ const int64 kServerTimeResolutionMs = 1000;
 // channel.
 variations::Study_Channel GetChannelForVariations() {
   switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return variations::Study_Channel_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return variations::Study_Channel_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return variations::Study_Channel_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return variations::Study_Channel_STABLE;
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       break;
   }
   const std::string forced_channel =

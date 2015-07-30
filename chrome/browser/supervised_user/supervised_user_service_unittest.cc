@@ -363,7 +363,7 @@ class SupervisedUserServiceExtensionTestBase
  public:
   explicit SupervisedUserServiceExtensionTestBase(bool is_supervised)
       : is_supervised_(is_supervised),
-        channel_(chrome::VersionInfo::CHANNEL_DEV) {}
+        channel_(version_info::Channel::DEV) {}
   ~SupervisedUserServiceExtensionTestBase() override {}
 
   void SetUp() override {

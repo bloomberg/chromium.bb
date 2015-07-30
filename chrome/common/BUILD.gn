@@ -4,6 +4,7 @@
 
 import("//tools/grit/grit_rule.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//chrome/version.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("../chrome_common.gypi") ],
@@ -51,7 +52,6 @@ static_library("common") {
     "//chrome/common/safe_browsing:proto",
   ]
   deps = [
-    ":version",
     "//base:base",
     "//base:i18n",
     "//base:prefs",
@@ -72,6 +72,7 @@ static_library("common") {
     "//components/policy:policy_component_common",
     "//components/translate/core/common",
     "//components/variations",
+    "//components/version_info",
     "//content/public/common",
     "//crypto",
     "//extensions/common:common_constants",
@@ -260,13 +261,6 @@ source_set("result_codes") {
   sources = [
     "chrome_result_codes.h",
   ]
-}
-
-import("//chrome/version.gni")
-process_version("version") {
-  visibility = [ ":common" ]
-  template_file = "chrome_version_info_values.h.version"
-  output = "$target_gen_dir/chrome_version_info_values.h"
 }
 
 process_version("make_chrome_version") {

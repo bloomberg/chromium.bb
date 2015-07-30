@@ -35,7 +35,7 @@ class SetIconAPITest : public ExtensionApiTest {
   SetIconAPITest()
       // Set the channel to "trunk" since declarativeContent is restricted
       // to trunk.
-      : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      : current_channel_(version_info::Channel::UNKNOWN) {
   }
   ~SetIconAPITest() override {}
 

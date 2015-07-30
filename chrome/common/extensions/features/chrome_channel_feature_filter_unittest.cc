@@ -32,7 +32,7 @@ SimpleFeature* CreateFeature() {
 
 Feature::AvailabilityResult IsAvailableInChannel(
     const std::string& channel,
-    VersionInfo::Channel channel_for_testing) {
+    version_info::Channel channel_for_testing) {
   ScopedCurrentChannel current_channel(channel_for_testing);
 
   SimpleFeature feature;
@@ -55,7 +55,7 @@ Feature::AvailabilityResult IsAvailableInChannel(
 class ChromeChannelFeatureFilterTest : public testing::Test {
  protected:
   ChromeChannelFeatureFilterTest()
-      : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {}
+      : current_channel_(version_info::Channel::UNKNOWN) {}
   ~ChromeChannelFeatureFilterTest() override {}
 
  private:
@@ -69,63 +69,63 @@ class ChromeChannelFeatureFilterTest : public testing::Test {
 TEST_F(ChromeChannelFeatureFilterTest, SupportedChannel) {
   // stable supported.
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("stable", VersionInfo::CHANNEL_UNKNOWN));
+            IsAvailableInChannel("stable", version_info::Channel::UNKNOWN));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("stable", VersionInfo::CHANNEL_CANARY));
+            IsAvailableInChannel("stable", version_info::Channel::CANARY));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("stable", VersionInfo::CHANNEL_DEV));
+            IsAvailableInChannel("stable", version_info::Channel::DEV));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("stable", VersionInfo::CHANNEL_BETA));
+            IsAvailableInChannel("stable", version_info::Channel::BETA));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("stable", VersionInfo::CHANNEL_STABLE));
+            IsAvailableInChannel("stable", version_info::Channel::STABLE));
 
   // beta supported.
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("beta", VersionInfo::CHANNEL_UNKNOWN));
+            IsAvailableInChannel("beta", version_info::Channel::UNKNOWN));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("beta", VersionInfo::CHANNEL_CANARY));
+            IsAvailableInChannel("beta", version_info::Channel::CANARY));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("beta", VersionInfo::CHANNEL_DEV));
+            IsAvailableInChannel("beta", version_info::Channel::DEV));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("beta", VersionInfo::CHANNEL_BETA));
+            IsAvailableInChannel("beta", version_info::Channel::BETA));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("beta", VersionInfo::CHANNEL_STABLE));
+            IsAvailableInChannel("beta", version_info::Channel::STABLE));
 
   // dev supported.
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("dev", VersionInfo::CHANNEL_UNKNOWN));
+            IsAvailableInChannel("dev", version_info::Channel::UNKNOWN));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("dev", VersionInfo::CHANNEL_CANARY));
+            IsAvailableInChannel("dev", version_info::Channel::CANARY));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("dev", VersionInfo::CHANNEL_DEV));
+            IsAvailableInChannel("dev", version_info::Channel::DEV));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("dev", VersionInfo::CHANNEL_BETA));
+            IsAvailableInChannel("dev", version_info::Channel::BETA));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("dev", VersionInfo::CHANNEL_STABLE));
+            IsAvailableInChannel("dev", version_info::Channel::STABLE));
 
   // canary supported.
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("canary", VersionInfo::CHANNEL_UNKNOWN));
+            IsAvailableInChannel("canary", version_info::Channel::UNKNOWN));
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("canary", VersionInfo::CHANNEL_CANARY));
+            IsAvailableInChannel("canary", version_info::Channel::CANARY));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("canary", VersionInfo::CHANNEL_DEV));
+            IsAvailableInChannel("canary", version_info::Channel::DEV));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("canary", VersionInfo::CHANNEL_BETA));
+            IsAvailableInChannel("canary", version_info::Channel::BETA));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("canary", VersionInfo::CHANNEL_STABLE));
+            IsAvailableInChannel("canary", version_info::Channel::STABLE));
 
   // trunk supported.
   EXPECT_EQ(Feature::IS_AVAILABLE,
-            IsAvailableInChannel("trunk", VersionInfo::CHANNEL_UNKNOWN));
+            IsAvailableInChannel("trunk", version_info::Channel::UNKNOWN));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("trunk", VersionInfo::CHANNEL_CANARY));
+            IsAvailableInChannel("trunk", version_info::Channel::CANARY));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("trunk", VersionInfo::CHANNEL_DEV));
+            IsAvailableInChannel("trunk", version_info::Channel::DEV));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("trunk", VersionInfo::CHANNEL_BETA));
+            IsAvailableInChannel("trunk", version_info::Channel::BETA));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            IsAvailableInChannel("trunk", VersionInfo::CHANNEL_STABLE));
+            IsAvailableInChannel("trunk", version_info::Channel::STABLE));
 }
 
 // Tests the validation of features with channel entries.
@@ -195,7 +195,7 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
 
   // Make sure both rules are applied correctly.
   {
-    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
+    ScopedCurrentChannel current_channel(version_info::Channel::BETA);
     EXPECT_EQ(
         Feature::IS_AVAILABLE,
         feature->IsAvailableToManifest("1",
@@ -210,7 +210,7 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
                                        Feature::UNSPECIFIED_PLATFORM).result());
   }
   {
-    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_STABLE);
+    ScopedCurrentChannel current_channel(version_info::Channel::STABLE);
     EXPECT_NE(
         Feature::IS_AVAILABLE,
         feature->IsAvailableToManifest("1",
@@ -255,7 +255,7 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
 
   // Test match 1st rule.
   {
-    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_UNKNOWN);
+    ScopedCurrentChannel current_channel(version_info::Channel::UNKNOWN);
     EXPECT_EQ(
         Feature::IS_AVAILABLE,
         feature->IsAvailableToManifest("1",
@@ -267,7 +267,7 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
 
   // Test match 2nd rule.
   {
-    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
+    ScopedCurrentChannel current_channel(version_info::Channel::BETA);
     EXPECT_EQ(
         Feature::IS_AVAILABLE,
         feature->IsAvailableToManifest("2",
@@ -279,7 +279,7 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
 
   // Test feature not available to extensions above channel unknown.
   {
-    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
+    ScopedCurrentChannel current_channel(version_info::Channel::BETA);
     EXPECT_NE(
         Feature::IS_AVAILABLE,
         feature->IsAvailableToManifest("1",

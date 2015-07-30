@@ -64,9 +64,9 @@ bool ChromeHistoryBackendClient::ShouldReportDatabaseError() {
   // TODO(shess): For now, don't report on beta or stable so as not to
   // overwhelm the crash server.  Once the big fish are fried,
   // consider reporting at a reduced rate on the bigger channels.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel != chrome::VersionInfo::CHANNEL_STABLE &&
-         channel != chrome::VersionInfo::CHANNEL_BETA;
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel != version_info::Channel::STABLE &&
+         channel != version_info::Channel::BETA;
 }
 
 #if defined(OS_ANDROID)

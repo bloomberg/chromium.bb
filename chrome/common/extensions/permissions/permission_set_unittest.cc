@@ -1222,7 +1222,7 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
 
   // Until Declarative Web Request is in stable, let's make sure it is enabled
   // on the current channel.
-  ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_CANARY);
+  ScopedCurrentChannel sc(version_info::Channel::CANARY);
 
   // First verify that declarativeWebRequest produces a message when host
   // permissions do not cover all hosts.
@@ -1260,7 +1260,7 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel channel(version_info::Channel::DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_any_host.json");
@@ -1273,7 +1273,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel channel(version_info::Channel::DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_one_domain_two_hostnames.json");
@@ -1295,7 +1295,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel channel(version_info::Channel::DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_two_domains_one_hostname.json");

@@ -7043,7 +7043,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable the new task manager.
         </message>
         <message name="IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_DESCRIPTION" desc="Description of the flag to enable the new implementation of the task manager.">
-          Enables the use of the new and optimized implementation of the chrome task manager. 
+          Enables the use of the new and optimized implementation of the chrome task manager.
         </message>
       </if>
 
@@ -7489,9 +7489,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ABOUT_VERSION_OFFICIAL" desc="official build on the about:version page">
         Official Build
-      </message>
-      <message name="IDS_ABOUT_VERSION_UNOFFICIAL" desc="unofficial build on the about:version page">
-        Developer Build
       </message>
       <message name="IDS_ABOUT_VERSION_32BIT" desc="32-bit on the chrome://version page">
         (32-bit)

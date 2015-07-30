@@ -241,7 +241,7 @@
     "messages": [30010],
   },
   "components/resources/components_resources.grd": {
-    "includes": [30260],
+    "includes": [30270],
   },
   "components/resources/components_scaled_resources.grd": {
     "structures": [30310],

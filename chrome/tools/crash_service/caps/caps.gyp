@@ -43,7 +43,7 @@
       'dependencies': [
         'caps_resources',
         '../../../../base/base.gyp:base',
-        '../../../../chrome/chrome.gyp:common_version',
+        '../../../../components/components.gyp:generate_version_info',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

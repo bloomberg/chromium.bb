@@ -7,8 +7,8 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_version_info_values.h"
 #include "chrome/tools/crash_service/caps/logger_win.h"
+#include "components/version_info/version_info_values.h"
 
 namespace {
 // Every message has this structure:

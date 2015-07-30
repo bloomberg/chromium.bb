@@ -319,10 +319,10 @@ base::FilePath GetLocalizableAppShortcutsSubdirName() {
   static const char kChromeCanaryAppDirName[] = "Chrome Canary Apps.localized";
 
   switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       return base::FilePath(kChromiumAppDirName);
 
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return base::FilePath(kChromeCanaryAppDirName);
 
     default:

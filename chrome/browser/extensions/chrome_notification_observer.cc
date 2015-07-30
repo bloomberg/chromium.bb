@@ -24,7 +24,8 @@ void ChromeNotificationObserver::OnRendererProcessCreated(
     content::RenderProcessHost* process) {
   // Extensions need to know the channel for API restrictions. Send the channel
   // to all renderers, as the non-extension renderers may have content scripts.
-  process->Send(new ExtensionMsg_SetChannel(GetCurrentChannel()));
+  process->Send(
+      new ExtensionMsg_SetChannel(static_cast<int>(GetCurrentChannel())));
 }
 
 void ChromeNotificationObserver::Observe(int type,

@@ -220,8 +220,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest,
 
 // Tests that the application cannot be loaded in stable.
 IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest, CannotLoadOtherThanDev) {
-  chrome::VersionInfo::Channel version_info[] = {
-      chrome::VersionInfo::CHANNEL_BETA, chrome::VersionInfo::CHANNEL_STABLE};
+  version_info::Channel version_info[] = {
+      version_info::Channel::BETA, version_info::Channel::STABLE};
   for (unsigned int index = 0; index < arraysize(version_info); index++) {
     extensions::ScopedCurrentChannel channel(version_info[index]);
     const extensions::Extension* extension = nullptr;
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest, CannotLoadOtherThanDev) {
     DVLOG(1) << "Finished loading extension";
 
     ASSERT_TRUE(extension == nullptr) << "Application loaded in"
-                                      << version_info[index]
+                                      << static_cast<int>(version_info[index])
                                       << " while permission does not exist";
   }
 }

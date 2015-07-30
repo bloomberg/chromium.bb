@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, DevLaunchApp) {
 // Test for crbug.com/410550. Wallpaper picker should be able to create
 // alpha enabled window successfully.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, StableLaunchApp) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  extensions::ScopedCurrentChannel channel(version_info::Channel::STABLE);
   VerifyWallpaperManagerLoaded();
 }
 

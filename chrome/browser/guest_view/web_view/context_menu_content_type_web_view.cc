@@ -48,7 +48,7 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
     case ITEM_GROUP_DEVELOPER:
       {
         if (chrome::VersionInfo::GetChannel() >=
-                chrome::VersionInfo::CHANNEL_DEV) {
+                version_info::Channel::DEV) {
           // Hide dev tools items in guests inside WebUI if we are not running
           // canary or tott.
           auto web_view_guest =

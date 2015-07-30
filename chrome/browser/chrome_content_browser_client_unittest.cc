@@ -103,7 +103,7 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
     from_command_line_.AppendSwitch(switches::kDisableWebRtcEncryption);
   }
 
-  void MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::Channel channel) {
+  void MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel channel) {
     ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
         &to_command_line_,
         from_command_line_,
@@ -117,22 +117,22 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
 };
 
 TEST_F(DisableWebRtcEncryptionFlagTest, UnknownChannel) {
-  MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::CHANNEL_UNKNOWN);
+  MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel::UNKNOWN);
   EXPECT_TRUE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 }
 
 TEST_F(DisableWebRtcEncryptionFlagTest, CanaryChannel) {
-  MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::CHANNEL_CANARY);
+  MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel::CANARY);
   EXPECT_TRUE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 }
 
 TEST_F(DisableWebRtcEncryptionFlagTest, DevChannel) {
-  MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::CHANNEL_DEV);
+  MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel::DEV);
   EXPECT_TRUE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 }
 
 TEST_F(DisableWebRtcEncryptionFlagTest, BetaChannel) {
-  MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::CHANNEL_BETA);
+  MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel::BETA);
 #if defined(OS_ANDROID)
   EXPECT_TRUE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 #else
@@ -141,7 +141,7 @@ TEST_F(DisableWebRtcEncryptionFlagTest, BetaChannel) {
 }
 
 TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
-  MaybeCopyDisableWebRtcEncryptionSwitch(VersionInfo::CHANNEL_STABLE);
+  MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel::STABLE);
   EXPECT_FALSE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 }
 

@@ -21,17 +21,16 @@ void CollectPlatformProcessData(
 namespace {
 
 ClientIncidentReport_EnvironmentData_Process_Channel MapChannelToProtobuf(
-    chrome::VersionInfo::Channel channel) {
-  typedef chrome::VersionInfo VersionInfo;
+    version_info::Channel channel) {
   typedef ClientIncidentReport_EnvironmentData_Process Process;
   switch (channel) {
-    case VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return Process::CHANNEL_CANARY;
-    case VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return Process::CHANNEL_DEV;
-    case VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return Process::CHANNEL_BETA;
-    case VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return Process::CHANNEL_STABLE;
     default:
       return Process::CHANNEL_UNKNOWN;

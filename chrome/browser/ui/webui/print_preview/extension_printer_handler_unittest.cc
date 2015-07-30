@@ -553,7 +553,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
 
   scoped_refptr<MockUsbDevice> device0 =
       new MockUsbDevice(0, 0, "Google", "USB Printer", "");

@@ -13,9 +13,9 @@ namespace browser_sync {
 
 void ChromeReportUnrecoverableError() {
   // Only upload on canary/dev builds to avoid overwhelming crash server.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel != chrome::VersionInfo::CHANNEL_CANARY &&
-      channel != chrome::VersionInfo::CHANNEL_DEV) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::DEV) {
     return;
   }
 

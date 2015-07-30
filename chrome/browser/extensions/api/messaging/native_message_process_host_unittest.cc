@@ -95,7 +95,7 @@ class NativeMessagingTest : public ::testing::Test,
                             public base::SupportsWeakPtr<NativeMessagingTest> {
  protected:
   NativeMessagingTest()
-      : current_channel_(chrome::VersionInfo::CHANNEL_DEV),
+      : current_channel_(version_info::Channel::DEV),
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         channel_closed_(false) {}
 

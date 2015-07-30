@@ -344,9 +344,9 @@ void CoreOobeHandler::UpdateA11yState() {
 void CoreOobeHandler::UpdateOobeUIVisibility() {
   // Don't show version label on the stable channel by default.
   bool should_show_version = true;
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::STABLE ||
+      channel == version_info::Channel::BETA) {
     should_show_version = false;
   }
   CallJS("showVersion", should_show_version);

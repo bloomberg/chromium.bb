@@ -33,7 +33,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
 #include "chrome/browser/crash_upload_list.h"
-#include "chrome/common/chrome_version_info_values.h"
+#include "components/version_info/version_info_values.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -322,7 +322,7 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   bool is_guest_session = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kGuestSession);
   bool is_stable_channel =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
+      chrome::VersionInfo::GetChannel() == version_info::Channel::STABLE;
 
   if (is_guest_session && is_stable_channel)
     return false;

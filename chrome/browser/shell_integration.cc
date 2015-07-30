@@ -112,7 +112,7 @@ void ShellIntegration::AppendProfileArgs(const base::FilePath& profile_path,
 #if !defined(OS_WIN)
 
 base::string16 ShellIntegration::GetAppShortcutsSubdirName() {
-  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_CANARY)
+  if (chrome::VersionInfo::GetChannel() == version_info::Channel::CANARY)
     return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY);
   return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
 }

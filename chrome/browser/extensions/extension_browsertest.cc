@@ -69,7 +69,7 @@ ExtensionBrowserTest::ExtensionBrowserTest()
 #endif
       // Default channel is STABLE but override with UNKNOWN so that unlaunched
       // or incomplete APIs can write tests.
-      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN),
+      current_channel_(version_info::Channel::UNKNOWN),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(),
           false),

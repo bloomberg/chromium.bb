@@ -449,10 +449,10 @@ void ThreadWatcherList::ParseCommandLine(
 
   // Increase the unresponsive_threshold on the Stable and Beta channels to
   // reduce the number of crashes due to ThreadWatcher.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::STABLE) {
     *unresponsive_threshold *= 4;
-  } else if (channel == chrome::VersionInfo::CHANNEL_BETA) {
+  } else if (channel == version_info::Channel::BETA) {
     *unresponsive_threshold *= 2;
   }
 
@@ -469,7 +469,7 @@ void ThreadWatcherList::ParseCommandLine(
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_thread_names =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
-  } else if (channel != chrome::VersionInfo::CHANNEL_STABLE) {
+  } else if (channel != version_info::Channel::STABLE) {
     // Default to crashing the browser if UI or IO or FILE threads are not
     // responsive except in stable channel.
     crash_on_hang_thread_names = base::StringPrintf(
@@ -542,9 +542,9 @@ void ThreadWatcherList::InitializeAndStartWatching(
   // stable channel, disable ThreadWatcher in stable and unknown channels. We
   // will also not collect histogram data in these channels until
   // http://crbug.com/426203 is fixed.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::STABLE ||
+      channel == version_info::Channel::UNKNOWN) {
     return;
   }
 
@@ -919,11 +919,11 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   DCHECK(!shutdown_watchdog_);
   base::TimeDelta actual_duration = duration;
 
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::STABLE) {
     actual_duration *= 20;
-  } else if (channel == chrome::VersionInfo::CHANNEL_BETA ||
-             channel == chrome::VersionInfo::CHANNEL_DEV) {
+  } else if (channel == version_info::Channel::BETA ||
+             channel == version_info::Channel::DEV) {
     actual_duration *= 10;
   }
 

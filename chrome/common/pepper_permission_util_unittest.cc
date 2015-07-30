@@ -43,7 +43,7 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
 }  // namespace
 
 TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
-  ScopedCurrentChannel current_channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  ScopedCurrentChannel current_channel(version_info::Channel::UNKNOWN);
   ExtensionSet extensions;
   std::string whitelisted_id =
       crx_file::id_util::GenerateId("whitelisted_extension");
@@ -79,7 +79,7 @@ TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
 }
 
 TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
-  ScopedCurrentChannel current_channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  ScopedCurrentChannel current_channel(version_info::Channel::UNKNOWN);
   ExtensionSet extensions;
   std::string whitelisted_id = crx_file::id_util::GenerateId("extension_id");
   std::string bad_id = crx_file::id_util::GenerateId("bad_id");

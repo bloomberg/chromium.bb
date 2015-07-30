@@ -55,8 +55,8 @@ class ErrorConsoleUnitTest : public testing::Test {
 TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
   // Start in Dev Channel, without the feature switch.
   scoped_ptr<ScopedCurrentChannel> channel_override(
-      new ScopedCurrentChannel(chrome::VersionInfo::CHANNEL_DEV));
-  ASSERT_EQ(chrome::VersionInfo::CHANNEL_DEV, GetCurrentChannel());
+      new ScopedCurrentChannel(version_info::Channel::DEV));
+  ASSERT_EQ(version_info::Channel::DEV, GetCurrentChannel());
   FeatureSwitch::error_console()->SetOverrideValue(
       FeatureSwitch::OVERRIDE_DISABLED);
 
@@ -76,7 +76,7 @@ TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
   // should be disabled.
   channel_override.reset();
   channel_override.reset(
-      new ScopedCurrentChannel(chrome::VersionInfo::CHANNEL_BETA));
+      new ScopedCurrentChannel(version_info::Channel::BETA));
   profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   EXPECT_FALSE(error_console_->enabled());
   EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());

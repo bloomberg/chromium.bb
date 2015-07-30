@@ -43,19 +43,19 @@ std::string ChromeUpdateQueryParamsDelegate::GetExtraParams() {
 // static
 const char* ChromeUpdateQueryParamsDelegate::GetChannelString() {
   switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return kStable;
       break;
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return kBeta;
       break;
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return kDev;
       break;
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return kCanary;
       break;
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       return kUnknown;
       break;
   }

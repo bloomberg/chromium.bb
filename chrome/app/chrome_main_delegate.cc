@@ -981,12 +981,12 @@ ChromeMainDelegate::CreateContentUtilityClient() {
 
 bool ChromeMainDelegate::ShouldEnableProfilerRecording() {
   switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::UNKNOWN:
+    case version_info::Channel::CANARY:
       return true;
-    case chrome::VersionInfo::CHANNEL_DEV:
-    case chrome::VersionInfo::CHANNEL_BETA:
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::DEV:
+    case version_info::Channel::BETA:
+    case version_info::Channel::STABLE:
     default:
       // Don't enable instrumentation.
       return false;

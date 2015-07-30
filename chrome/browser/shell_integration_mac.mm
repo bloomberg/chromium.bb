@@ -13,7 +13,7 @@
 ShellIntegration::DefaultWebClientSetPermission
     ShellIntegration::CanSetAsDefaultBrowser() {
   if (chrome::VersionInfo::GetChannel() !=
-          chrome::VersionInfo::CHANNEL_CANARY) {
+          version_info::Channel::CANARY) {
     return SET_DEFAULT_UNATTENDED;
   }
 

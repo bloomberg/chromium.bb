@@ -43,21 +43,21 @@ std::string VersionInfo::GetVersionStringModifier() {
 }
 
 // static
-VersionInfo::Channel VersionInfo::GetChannel() {
+version_info::Channel VersionInfo::GetChannel() {
 #if defined(GOOGLE_CHROME_BUILD)
   std::string channel = GetVersionStringModifier();
   if (channel.empty()) {
-    return CHANNEL_STABLE;
+    return version_info::Channel::STABLE;
   } else if (channel == "beta") {
-    return CHANNEL_BETA;
+    return version_info::Channel::BETA;
   } else if (channel == "dev") {
-    return CHANNEL_DEV;
+    return version_info::Channel::DEV;
   } else if (channel == "canary") {
-    return CHANNEL_CANARY;
+    return version_info::Channel::CANARY;
   }
 #endif
 
-  return CHANNEL_UNKNOWN;
+  return version_info::Channel::UNKNOWN;
 }
 
 }  // namespace chrome

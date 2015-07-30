@@ -140,7 +140,7 @@ bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              password_manager::switches::kEnableAutomaticPasswordSaving) &&
          chrome::VersionInfo::GetChannel() ==
-             chrome::VersionInfo::CHANNEL_UNKNOWN;
+             version_info::Channel::UNKNOWN;
 }
 
 bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()

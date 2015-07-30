@@ -122,9 +122,9 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   }
 #endif  // USE_X11 && !OS_CHROMEOS
 
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::STABLE ||
+      channel == version_info::Channel::BETA) {
     return base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kEnablePanels) ||
            extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd") ||

@@ -355,8 +355,8 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
   // diagnose inter-process deadlocks.
   // Only do that on the Canary channel, for 20% of pepper plugin hangs.
   if (base::RandInt(0, 100) < 20) {
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    version_info::Channel channel = chrome::VersionInfo::GetChannel();
+    if (channel == version_info::Channel::CANARY) {
       scoped_ptr<OwnedHandleVector> renderer_handles(new OwnedHandleVector);
       HANDLE current_process = ::GetCurrentProcess();
       content::RenderProcessHost::iterator renderer_iter =

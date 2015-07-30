@@ -232,7 +232,7 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
   // a webview or appview is created and only then set up the infrastructure.
   if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
       is_within_platform_app &&
-      extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
+      extensions::GetCurrentChannel() <= version_info::Channel::DEV &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           extensions::switches::kEnableAppWindowControls)) {
     module_system->Require("windowControls");
@@ -255,6 +255,5 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 }
 
 void ChromeExtensionsDispatcherDelegate::SetChannel(int channel) {
-  extensions::SetCurrentChannel(
-      static_cast<chrome::VersionInfo::Channel>(channel));
+  extensions::SetCurrentChannel(static_cast<version_info::Channel>(channel));
 }

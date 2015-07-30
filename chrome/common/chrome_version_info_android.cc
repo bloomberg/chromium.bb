@@ -13,32 +13,32 @@ namespace chrome {
 // static
 std::string VersionInfo::GetVersionStringModifier() {
   switch (GetChannel()) {
-    case CHANNEL_UNKNOWN: return "unknown";
-    case CHANNEL_CANARY: return "canary";
-    case CHANNEL_DEV: return "dev";
-    case CHANNEL_BETA: return "beta";
-    case CHANNEL_STABLE: return std::string();
+    case version_info::Channel::UNKNOWN: return "unknown";
+    case version_info::Channel::CANARY: return "canary";
+    case version_info::Channel::DEV: return "dev";
+    case version_info::Channel::BETA: return "beta";
+    case version_info::Channel::STABLE: return std::string();
   }
-  NOTREACHED() << "Unknown channel " << GetChannel();
+  NOTREACHED() << "Unknown channel " << static_cast<int>(GetChannel());
   return std::string();
 }
 
 // static
-VersionInfo::Channel VersionInfo::GetChannel() {
+version_info::Channel VersionInfo::GetChannel() {
   const base::android::BuildInfo* bi = base::android::BuildInfo::GetInstance();
   DCHECK(bi && bi->package_name());
 
   if (!strcmp(bi->package_name(), "com.android.chrome")
        || !strcmp(bi->package_name(), "com.chrome.work"))
-    return CHANNEL_STABLE;
+    return version_info::Channel::STABLE;
   if (!strcmp(bi->package_name(), "com.chrome.beta"))
-    return CHANNEL_BETA;
+    return version_info::Channel::BETA;
   if (!strcmp(bi->package_name(), "com.chrome.dev"))
-    return CHANNEL_DEV;
+    return version_info::Channel::DEV;
   if (!strcmp(bi->package_name(), "com.chrome.canary"))
-    return CHANNEL_CANARY;
+    return version_info::Channel::CANARY;
 
-  return CHANNEL_UNKNOWN;
+  return version_info::Channel::UNKNOWN;
 }
 
 }  // namespace chrome

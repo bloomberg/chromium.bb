@@ -23,7 +23,7 @@ namespace extensions {
 class StorageSchemaManifestHandlerTest : public testing::Test {
  public:
   StorageSchemaManifestHandlerTest()
-      : scoped_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
+      : scoped_channel_(version_info::Channel::DEV) {}
 
   ~StorageSchemaManifestHandlerTest() override {}
 

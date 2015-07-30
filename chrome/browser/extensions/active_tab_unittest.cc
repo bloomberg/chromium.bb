@@ -67,7 +67,7 @@ enum PermittedFeature {
 class ActiveTabTest : public ChromeRenderViewHostTestHarness {
  protected:
   ActiveTabTest()
-      : current_channel(chrome::VersionInfo::CHANNEL_DEV),
+      : current_channel(version_info::Channel::DEV),
         extension(CreateTestExtension("deadbeef", true, false)),
         another_extension(CreateTestExtension("feedbeef", true, false)),
         extension_without_active_tab(CreateTestExtension("badbeef",

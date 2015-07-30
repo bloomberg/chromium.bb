@@ -395,7 +395,7 @@ void ComponentLoader::AddGoogleNowExtension() {
 
   // Enable the feature on trybots and trunk builds.
   bool enabled_via_trunk_build =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN;
+      chrome::VersionInfo::GetChannel() == version_info::Channel::UNKNOWN;
 
   bool is_authenticated =
       SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();

@@ -17,7 +17,7 @@ namespace extensions {
 
 class AutomationManifestTest : public ChromeManifestTest {
  public:
-  AutomationManifestTest() : channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+  AutomationManifestTest() : channel_(version_info::Channel::UNKNOWN) {}
 
  protected:
   AutomationInfo* GetAutomationInfo(scoped_refptr<Extension> extension) {

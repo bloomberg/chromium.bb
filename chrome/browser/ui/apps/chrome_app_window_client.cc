@@ -69,5 +69,5 @@ void ChromeAppWindowClient::OpenDevToolsWindow(
 }
 
 bool ChromeAppWindowClient::IsCurrentChannelOlderThanDev() {
-  return extensions::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
+  return extensions::GetCurrentChannel() > version_info::Channel::DEV;
 }

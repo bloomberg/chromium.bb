@@ -114,6 +114,7 @@ group("all_components") {
     "//components/user_manager",
     "//components/user_prefs",
     "//components/variations",
+    "//components/version_info",
     "//components/visitedlink/browser",
     "//components/visitedlink/common",
     "//components/visitedlink/renderer",

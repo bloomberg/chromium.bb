@@ -322,7 +322,6 @@
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
         'common_net',
-        'common_version',
         'installer_util',
         'safe_browsing_proto',
         '<(DEPTH)/base/base.gyp:base',
@@ -345,6 +344,7 @@
         '<(DEPTH)/components/components.gyp:policy_component_common',
         '<(DEPTH)/components/components.gyp:translate_core_common',
         '<(DEPTH)/components/components.gyp:variations',
+        '<(DEPTH)/components/components.gyp:version_info',
         '<(DEPTH)/content/content.gyp:content_common',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net',
@@ -558,50 +558,6 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-      ],
-    },
-    {
-      # GN version: //chrome/common:version
-      'target_name': 'common_version',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)',
-        ],
-      },
-      # Because generate_version generates a header, we must set the
-      # hard_dependency flag.
-      'hard_dependency': 1,
-      'actions': [
-        {
-          'action_name': 'generate_version',
-          'variables': {
-            'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
-            'version_py_path': '<(DEPTH)/build/util/version.py',
-            'version_path': 'VERSION',
-            'template_input_path': 'common/chrome_version_info_values.h.version',
-            'branding_path': 'app/theme/<(branding_path_component)/BRANDING',
-          },
-          'inputs': [
-            '<(template_input_path)',
-            '<(version_path)',
-            '<(branding_path)',
-            '<(lastchange_path)',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version_info_values.h',
-          ],
-          'action': [
-            'python',
-            '<(version_py_path)',
-            '-f', '<(version_path)',
-            '-f', '<(branding_path)',
-            '-f', '<(lastchange_path)',
-            '<(template_input_path)',
-            '<@(_outputs)',
-          ],
-          'message': 'Generating version information',
-        },
       ],
     },
     {

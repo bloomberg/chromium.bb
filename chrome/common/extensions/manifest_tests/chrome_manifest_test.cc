@@ -11,7 +11,7 @@
 
 ChromeManifestTest::ChromeManifestTest()
     // CHANNEL_UNKNOWN == trunk.
-    : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+    : current_channel_(version_info::Channel::UNKNOWN) {}
 
 ChromeManifestTest::~ChromeManifestTest() {
 }

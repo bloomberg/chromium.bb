@@ -42,17 +42,17 @@ GCMClient::ChromePlatform GetPlatform() {
 }
 
 GCMClient::ChromeChannel GetChannel() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
   switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       return GCMClient::CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return GCMClient::CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return GCMClient::CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return GCMClient::CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return GCMClient::CHANNEL_STABLE;
     default:
       NOTREACHED();

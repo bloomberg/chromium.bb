@@ -28,7 +28,7 @@ class ChromeChannelFeatureFilter : public SimpleFeatureFilter {
 
  private:
   bool channel_has_been_set_;
-  chrome::VersionInfo::Channel channel_;
+  version_info::Channel channel_;
 };
 
 }  // namespace extensions

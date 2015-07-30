@@ -5,7 +5,7 @@
 #include "chrome/common/metrics/version_utils.h"
 
 #include "base/logging.h"
-#include "chrome/common/chrome_version_info_values.h"
+#include "components/version_info/version_info_values.h"
 
 namespace metrics {
 
@@ -20,17 +20,17 @@ std::string GetVersionString() {
 }
 
 SystemProfileProto::Channel AsProtobufChannel(
-    chrome::VersionInfo::Channel channel) {
+    version_info::Channel channel) {
   switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       return SystemProfileProto::CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return SystemProfileProto::CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return SystemProfileProto::CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return SystemProfileProto::CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return SystemProfileProto::CHANNEL_STABLE;
   }
   NOTREACHED();

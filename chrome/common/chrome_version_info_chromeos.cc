@@ -6,19 +6,19 @@
 
 namespace chrome {
 
-static VersionInfo::Channel chromeos_channel = VersionInfo::CHANNEL_UNKNOWN;
+static version_info::Channel chromeos_channel = version_info::Channel::UNKNOWN;
 
 // static
 std::string VersionInfo::GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   switch (chromeos_channel) {
-    case CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return "";
-    case CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return "beta";
-    case CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return "dev";
-    case CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return "canary";
     default:
       return "unknown";
@@ -28,7 +28,7 @@ std::string VersionInfo::GetVersionStringModifier() {
 }
 
 // static
-VersionInfo::Channel VersionInfo::GetChannel() {
+version_info::Channel VersionInfo::GetChannel() {
   return chromeos_channel;
 }
 
@@ -36,13 +36,13 @@ VersionInfo::Channel VersionInfo::GetChannel() {
 void VersionInfo::SetChannel(const std::string& channel) {
 #if defined(GOOGLE_CHROME_BUILD)
   if (channel == "stable-channel") {
-    chromeos_channel = CHANNEL_STABLE;
+    chromeos_channel = version_info::Channel::STABLE;
   } else if (channel == "beta-channel") {
-    chromeos_channel = CHANNEL_BETA;
+    chromeos_channel = version_info::Channel::BETA;
   } else if (channel == "dev-channel") {
-    chromeos_channel = CHANNEL_DEV;
+    chromeos_channel = version_info::Channel::DEV;
   } else if (channel == "canary-channel") {
-    chromeos_channel = CHANNEL_CANARY;
+    chromeos_channel = version_info::Channel::CANARY;
   }
 #endif
 }

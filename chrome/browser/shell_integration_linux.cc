@@ -586,12 +586,12 @@ std::string GetProgramClassName() {
 
 std::string GetDesktopName(base::Environment* env) {
 #if defined(GOOGLE_CHROME_BUILD)
-  chrome::VersionInfo::Channel product_channel(
+  version_info::Channel product_channel(
       chrome::VersionInfo::GetChannel());
   switch (product_channel) {
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return "google-chrome-unstable.desktop";
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return "google-chrome-beta.desktop";
     default:
       return "google-chrome.desktop";

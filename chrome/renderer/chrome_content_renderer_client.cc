@@ -1542,11 +1542,11 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
     return true;
   }
 
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
   // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
   // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
   // Chromium builds as well.
-  return channel <= chrome::VersionInfo::CHANNEL_DEV;
+  return channel <= version_info::Channel::DEV;
 #else
   return false;
 #endif
@@ -1575,8 +1575,8 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
   if (IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_))
     return true;
 
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel <= chrome::VersionInfo::CHANNEL_DEV;
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel <= version_info::Channel::DEV;
 #else
   return false;
 #endif

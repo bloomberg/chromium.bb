@@ -7,45 +7,41 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "components/version_info/version_info.h"
 
 namespace chrome {
 
 // An instance of chrome::VersionInfo has information about the
 // current running build of Chrome.
+// TODO(sdefresne): this class should be removed in favor of calling directly
+// version_info free functions and this file should just provide method to
+// compute version string modifier (system dependent) and channel (embedder
+// dependent). Tracked by http://crbug.com/514562.
 class VersionInfo {
  public:
-  // The possible channels for an installation, from most fun to most stable.
-  enum Channel {
-    CHANNEL_UNKNOWN = 0,  // Probably blue
-    CHANNEL_CANARY,       // Yellow
-    CHANNEL_DEV,          // Technicolor
-    CHANNEL_BETA,         // Rainbow
-    CHANNEL_STABLE        // Full-spectrum
-  };
-
   VersionInfo();
   ~VersionInfo();
 
   // E.g. "Chrome/a.b.c.d"
-  std::string ProductNameAndVersionForUserAgent() const;
+  static std::string ProductNameAndVersionForUserAgent();
 
   // E.g. "Chromium" or "Google Chrome".
-  std::string Name() const;
+  static std::string Name();
 
   // Version number, e.g. "6.0.490.1".
-  std::string Version() const;
+  static std::string Version();
 
   // The SVN revision of this release.  E.g. "55800".
-  std::string LastChange() const;
+  static std::string LastChange();
 
   // Whether this is an "official" release of the current Version():
   // whether knowing Version() is enough to completely determine what
   // LastChange() is.
-  bool IsOfficialBuild() const;
+  static bool IsOfficialBuild();
 
   // OS type. E.g. "Windows", "Linux", "FreeBSD", ...
-  std::string OSType() const;
+  static std::string OSType();
 
   // Returns a human-readable modifier for the version string. For a branded
   // build, this modifier is the channel ("canary", "dev", or "beta", but ""
@@ -63,7 +59,7 @@ class VersionInfo {
   // CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_DEV, or CHANNEL_CANARY. In unbranded
   // builds, or in branded builds when the channel cannot be determined, this
   // will be CHANNEL_UNKNOWN.
-  static Channel GetChannel();
+  static version_info::Channel GetChannel();
 
   // Returns a string equivalent of the channel, independent of whether it is a
   // branded build or not and without any additional modifiers.
@@ -75,7 +71,7 @@ class VersionInfo {
 #endif
 
   // Returns a version string to be displayed in "About Chromium" dialog.
-  std::string CreateVersionString() const;
+  static std::string CreateVersionString();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VersionInfo);

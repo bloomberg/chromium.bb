@@ -331,10 +331,10 @@ NSString* const kVersionKey = @"KSVersion";
     brandFileType_ = kBrandFileTypeNone;
 
     // Only the stable channel has a brand code.
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    version_info::Channel channel = chrome::VersionInfo::GetChannel();
 
-    if (channel == chrome::VersionInfo::CHANNEL_DEV ||
-        channel == chrome::VersionInfo::CHANNEL_BETA) {
+    if (channel == version_info::Channel::DEV ||
+        channel == version_info::Channel::BETA) {
 
       // If on the dev or beta channel, this installation may have replaced
       // an older system-level installation. Check for a user brand file and
@@ -349,7 +349,7 @@ NSString* const kVersionKey = @"KSVersion";
         [fm removeItemAtPath:userBrandFile error:NULL];
       }
 
-    } else if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
+    } else if (channel == version_info::Channel::STABLE) {
 
       // If there is a system brand file, use it.
       if ([fm fileExistsAtPath:systemBrandFile]) {

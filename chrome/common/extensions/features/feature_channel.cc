@@ -8,27 +8,27 @@ using chrome::VersionInfo;
 
 namespace {
 
-const VersionInfo::Channel kDefaultChannel = VersionInfo::CHANNEL_STABLE;
-VersionInfo::Channel g_current_channel = kDefaultChannel;
+const version_info::Channel kDefaultChannel = version_info::Channel::STABLE;
+version_info::Channel g_current_channel = kDefaultChannel;
 
 }  // namespace
 
 namespace extensions {
 
-VersionInfo::Channel GetCurrentChannel() {
+version_info::Channel GetCurrentChannel() {
   return g_current_channel;
 }
 
-void SetCurrentChannel(VersionInfo::Channel channel) {
+void SetCurrentChannel(version_info::Channel channel) {
   g_current_channel = channel;
 }
 
-VersionInfo::Channel GetDefaultChannel() {
+version_info::Channel GetDefaultChannel() {
   return kDefaultChannel;
 }
 
-ScopedCurrentChannel::ScopedCurrentChannel(VersionInfo::Channel channel)
-    : original_channel_(VersionInfo::CHANNEL_UNKNOWN) {
+ScopedCurrentChannel::ScopedCurrentChannel(version_info::Channel channel)
+    : original_channel_(version_info::Channel::UNKNOWN) {
   original_channel_ = GetCurrentChannel();
   SetCurrentChannel(channel);
 }

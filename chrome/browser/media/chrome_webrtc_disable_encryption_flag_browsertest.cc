@@ -72,14 +72,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
   WaitForVideoToPlay(right_tab);
 
   bool should_detect_encryption = true;
-  VersionInfo::Channel channel = VersionInfo::GetChannel();
-  if (channel == VersionInfo::CHANNEL_UNKNOWN ||
-      channel == VersionInfo::CHANNEL_CANARY ||
-      channel == VersionInfo::CHANNEL_DEV) {
+  version_info::Channel channel = VersionInfo::GetChannel();
+  if (channel == version_info::Channel::UNKNOWN ||
+      channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV) {
     should_detect_encryption = false;
   }
 #if defined(OS_ANDROID)
-  if (channel == VersionInfo::CHANNEL_BETA)
+  if (channel == version_info::Channel::BETA)
     should_detect_encryption = false;
 #endif
 

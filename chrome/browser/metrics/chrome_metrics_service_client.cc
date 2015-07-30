@@ -377,8 +377,8 @@ void ChromeMetricsServiceClient::Initialize() {
   // Report exit funnels for canary and dev only.
   bool report_exit_funnels = false;
   switch (chrome::VersionInfo::GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_CANARY:
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::CANARY:
+    case version_info::Channel::DEV:
       report_exit_funnels = true;
       break;
   }

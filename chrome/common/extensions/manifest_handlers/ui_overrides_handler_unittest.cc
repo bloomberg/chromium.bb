@@ -45,7 +45,7 @@ class UIOverrideTest : public testing::Test {
 
 
 TEST_F(UIOverrideTest, ParseManifest) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
   // This functionality requires a feature flag.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--enable-override-bookmarks-ui", "1");
@@ -73,7 +73,7 @@ TEST_F(UIOverrideTest, ParseManifest) {
 }
 
 TEST_F(UIOverrideTest, ParseBrokenManifest) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
   // This functionality requires a feature flag.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--enable-override-bookmarks-ui", "1");

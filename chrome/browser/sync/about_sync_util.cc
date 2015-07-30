@@ -150,7 +150,7 @@ std::string GetVersionString() {
       chrome::VersionInfo::GetVersionStringModifier();
   if (version_modifier.empty()) {
     if (chrome::VersionInfo::GetChannel() !=
-            chrome::VersionInfo::CHANNEL_STABLE) {
+            version_info::Channel::STABLE) {
       version_modifier = "-devel";
     }
   } else {

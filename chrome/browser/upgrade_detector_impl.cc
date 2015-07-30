@@ -98,9 +98,9 @@ bool IsUnstableChannel() {
   // but no anymore. But other platform may still need the file thread.
   // crbug.com/366647.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel == chrome::VersionInfo::CHANNEL_DEV ||
-         channel == chrome::VersionInfo::CHANNEL_CANARY;
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel == version_info::Channel::DEV ||
+         channel == version_info::Channel::CANARY;
 }
 #endif  // !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
 

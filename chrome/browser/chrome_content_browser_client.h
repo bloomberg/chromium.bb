@@ -287,7 +287,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static void MaybeCopyDisableWebRtcEncryptionSwitch(
       base::CommandLine* to_command_line,
       const base::CommandLine& from_command_line,
-      VersionInfo::Channel channel);
+      version_info::Channel channel);
 #endif
 
   void FileSystemAccessed(

@@ -52,7 +52,7 @@ class SharedModuleServiceUnitTest : public ExtensionServiceTestBase {
   SharedModuleServiceUnitTest() :
       // The "export" key is open for dev-channel only, but unit tests
       // run as stable channel on the official Windows build.
-      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+      current_channel_(version_info::Channel::UNKNOWN) {}
  protected:
   void SetUp() override;
 

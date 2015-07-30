@@ -9,7 +9,7 @@
 class ExtensionIdltestApiTest : public ExtensionApiTest {
  public:
   // Set the channel to "trunk" since idltest is restricted to trunk.
-  ExtensionIdltestApiTest() : trunk_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+  ExtensionIdltestApiTest() : trunk_(version_info::Channel::UNKNOWN) {}
   ~ExtensionIdltestApiTest() override {}
 
  private:

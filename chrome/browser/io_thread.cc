@@ -866,12 +866,10 @@ void IOThread::Init() {
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));
 
-  const chrome::VersionInfo::Channel channel =
-      chrome::VersionInfo::GetChannel();
-
-  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-      channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV) {
+  const version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::UNKNOWN ||
+      channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV) {
     globals_->url_request_backoff_manager.reset(
         new net::URLRequestBackoffManager());
   }

@@ -2358,12 +2358,12 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
   base::string16 sid;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  const chrome::VersionInfo::Channel channel =
+  const version_info::Channel channel =
       chrome::VersionInfo::GetChannel();
 
   // It's possible to have a SxS installation running at the same time as a
   // non-SxS so isolate them from each other.
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+  if (channel == version_info::Channel::CANARY) {
     sid.assign(
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
         L"924012150-");
@@ -2551,13 +2551,13 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
     base::CommandLine* to_command_line,
     const base::CommandLine& from_command_line,
-    VersionInfo::Channel channel) {
+    version_info::Channel channel) {
 #if defined(OS_ANDROID)
-  const VersionInfo::Channel kMaxDisableEncryptionChannel =
-      VersionInfo::CHANNEL_BETA;
+  const version_info::Channel kMaxDisableEncryptionChannel =
+      version_info::Channel::BETA;
 #else
-  const VersionInfo::Channel kMaxDisableEncryptionChannel =
-      VersionInfo::CHANNEL_DEV;
+  const version_info::Channel kMaxDisableEncryptionChannel =
+      version_info::Channel::DEV;
 #endif
   if (channel <= kMaxDisableEncryptionChannel) {
     static const char* const kWebRtcDevSwitchNames[] = {

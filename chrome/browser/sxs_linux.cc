@@ -26,10 +26,10 @@ const char kChannelsFileName[] = "Channels";
 
 std::string GetChannelMarkForThisExecutable() {
   std::string product_channel_name;
-  chrome::VersionInfo::Channel product_channel(
+  version_info::Channel product_channel(
       chrome::VersionInfo::GetChannel());
   switch (product_channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN: {
+    case version_info::Channel::UNKNOWN: {
       // Add the channel mark even for Chromium builds (which do not have
       // channel) to better handle possibility of users using Chromium builds
       // with their Google Chrome profiles. Include version string modifier
@@ -41,16 +41,16 @@ std::string GetChannelMarkForThisExecutable() {
       product_channel_name = "unknown (" + version_string_modifier + ")";
       break;
     }
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       product_channel_name = "canary";
       break;
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       product_channel_name = "dev";
       break;
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       product_channel_name = "beta";
       break;
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       product_channel_name = "stable";
       break;
     // Rely on -Wswitch compiler warning to detect unhandled enum values.

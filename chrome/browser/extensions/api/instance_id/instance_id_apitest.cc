@@ -48,7 +48,7 @@ class InstanceIDApiTest : public ExtensionApiTest {
 };
 
 InstanceIDApiTest::InstanceIDApiTest()
-    : current_channel_(chrome::VersionInfo::CHANNEL_DEV) {
+    : current_channel_(version_info::Channel::DEV) {
 }
 
 void InstanceIDApiTest::SetUpOnMainThread() {
@@ -101,13 +101,13 @@ IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, Incognito) {
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, BetaChannel) {
   extensions::ScopedCurrentChannel current_channel_override(
-      chrome::VersionInfo::CHANNEL_BETA);
+      version_info::Channel::BETA);
   ASSERT_TRUE(RunExtensionTest("instance_id/channel"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, StableChannel) {
   extensions::ScopedCurrentChannel current_channel_override(
-      chrome::VersionInfo::CHANNEL_STABLE);
+      version_info::Channel::STABLE);
   ASSERT_TRUE(RunExtensionTest("instance_id/channel"));
 }
 

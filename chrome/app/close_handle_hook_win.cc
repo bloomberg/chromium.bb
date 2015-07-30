@@ -184,10 +184,10 @@ bool UseHooks() {
 #if defined(ARCH_CPU_X86_64)
   return false;
 #elif defined(NDEBUG)
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV ||
-      channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV ||
+      channel == version_info::Channel::UNKNOWN) {
     return true;
   }
 

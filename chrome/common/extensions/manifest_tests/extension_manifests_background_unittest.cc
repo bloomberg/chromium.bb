@@ -88,7 +88,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundAllowNoJsAccess) {
 }
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
-  ScopedCurrentChannel current_channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel current_channel(version_info::Channel::DEV);
 
   std::string error;
   scoped_ptr<base::DictionaryValue> manifest(

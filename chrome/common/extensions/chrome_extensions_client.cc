@@ -82,20 +82,20 @@ enum ChromeChannelForHistogram {
 };
 
 ChromeChannelForHistogram GetChromeChannelForHistogram(
-    chrome::VersionInfo::Channel channel) {
+    version_info::Channel channel) {
   switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       return CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return CHANNEL_STABLE;
   }
-  NOTREACHED() << channel;
+  NOTREACHED() << static_cast<int>(channel);
   return CHANNEL_UNKNOWN;
 }
 
@@ -330,7 +330,7 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
   // Suppress fatal everywhere until the cause of bugs like http://crbug/471599
   // are fixed. This would typically be:
-  // return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
+  // return GetCurrentChannel() > version_info::Channel::DEV;
   return true;
 }
 

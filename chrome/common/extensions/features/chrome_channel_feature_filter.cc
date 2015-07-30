@@ -20,20 +20,20 @@ static const char kFeatureChannelKey[] = "channel";
 
 struct Mappings {
   Mappings() {
-    channels["trunk"] = chrome::VersionInfo::CHANNEL_UNKNOWN;
-    channels["canary"] = chrome::VersionInfo::CHANNEL_CANARY;
-    channels["dev"] = chrome::VersionInfo::CHANNEL_DEV;
-    channels["beta"] = chrome::VersionInfo::CHANNEL_BETA;
-    channels["stable"] = chrome::VersionInfo::CHANNEL_STABLE;
+    channels["trunk"] = version_info::Channel::UNKNOWN;
+    channels["canary"] = version_info::Channel::CANARY;
+    channels["dev"] = version_info::Channel::DEV;
+    channels["beta"] = version_info::Channel::BETA;
+    channels["stable"] = version_info::Channel::STABLE;
   }
 
-  std::map<std::string, chrome::VersionInfo::Channel> channels;
+  std::map<std::string, version_info::Channel> channels;
 };
 
 base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
 
-std::string GetChannelName(chrome::VersionInfo::Channel channel) {
-  typedef std::map<std::string, chrome::VersionInfo::Channel> ChannelsMap;
+std::string GetChannelName(version_info::Channel channel) {
+  typedef std::map<std::string, version_info::Channel> ChannelsMap;
   ChannelsMap channels = g_mappings.Get().channels;
   for (ChannelsMap::iterator i = channels.begin(); i != channels.end(); ++i) {
     if (i->second == channel)
@@ -43,8 +43,8 @@ std::string GetChannelName(chrome::VersionInfo::Channel channel) {
   return "unknown";
 }
 
-chrome::VersionInfo::Channel GetChannelValue(const std::string& name) {
-  typedef std::map<std::string, chrome::VersionInfo::Channel> ChannelsMap;
+version_info::Channel GetChannelValue(const std::string& name) {
+  typedef std::map<std::string, version_info::Channel> ChannelsMap;
   ChannelsMap channels = g_mappings.Get().channels;
   ChannelsMap::const_iterator iter = channels.find(name);
   CHECK(iter != channels.end());
@@ -56,8 +56,7 @@ chrome::VersionInfo::Channel GetChannelValue(const std::string& name) {
 ChromeChannelFeatureFilter::ChromeChannelFeatureFilter(SimpleFeature* feature)
     : SimpleFeatureFilter(feature),
       channel_has_been_set_(false),
-      channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
-}
+      channel_(version_info::Channel::UNKNOWN) {}
 
 ChromeChannelFeatureFilter::~ChromeChannelFeatureFilter() {}
 
@@ -68,7 +67,7 @@ std::string ChromeChannelFeatureFilter::Parse(
     channel_ = GetChannelValue(channel_name);
   }
 
-  // The "trunk" channel uses VersionInfo::CHANNEL_UNKNOWN, so we need to keep
+  // The "trunk" channel uses version_info::Channel::UNKNOWN, so we need to keep
   // track of whether the channel has been set or not separately.
   channel_has_been_set_ |= value->HasKey(kFeatureChannelKey);
 

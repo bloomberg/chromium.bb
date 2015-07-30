@@ -77,6 +77,7 @@
     'url_matcher.gypi',
     'user_prefs.gypi',
     'variations.gypi',
+    'version_info.gypi',
     'wallpaper.gypi',
     'web_resource.gypi',
     'webdata.gypi',

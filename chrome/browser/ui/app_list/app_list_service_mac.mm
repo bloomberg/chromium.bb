@@ -89,8 +89,8 @@ const CGFloat kDistanceMovedOnShow = 20;
 scoped_ptr<web_app::ShortcutInfo> GetAppListShortcutInfo(
     const base::FilePath& profile_path) {
   scoped_ptr<web_app::ShortcutInfo> shortcut_info(new web_app::ShortcutInfo);
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::CANARY) {
     shortcut_info->title =
         l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME_CANARY);
   } else {
@@ -112,8 +112,8 @@ void CreateAppListShim(const base::FilePath& profile_path) {
       GetAppListShortcutInfo(profile_path);
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::CANARY) {
 #if defined(GOOGLE_CHROME_BUILD)
     shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_16));

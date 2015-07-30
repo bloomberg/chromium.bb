@@ -75,7 +75,7 @@ bool EnableDevModeBubble() {
     return true;
 
 #if defined(OS_WIN)
-  if (chrome::VersionInfo::GetChannel() >= chrome::VersionInfo::CHANNEL_BETA)
+  if (chrome::VersionInfo::GetChannel() >= version_info::Channel::BETA)
     return true;
 #endif
 

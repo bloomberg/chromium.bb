@@ -206,10 +206,10 @@ TEST_F(RulesRegistryWithCacheTest, GetAllRules) {
   EXPECT_EQ(2u, gotten_rules.size());
   ASSERT_TRUE(gotten_rules[0]->id.get());
   ASSERT_TRUE(gotten_rules[1]->id.get());
-  EXPECT_TRUE( (kRuleId == *(gotten_rules[0]->id) &&
-                kRule2Id == *(gotten_rules[1]->id)) ||
-               (kRuleId == *(gotten_rules[1]->id) &&
-                kRule2Id == *(gotten_rules[0]->id)) );
+  EXPECT_TRUE((kRuleId == *(gotten_rules[0]->id) &&
+               kRule2Id == *(gotten_rules[1]->id)) ||
+              (kRuleId == *(gotten_rules[1]->id) &&
+               kRule2Id == *(gotten_rules[0]->id)) );
 }
 
 TEST_F(RulesRegistryWithCacheTest, OnExtensionUninstalled) {
@@ -328,7 +328,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
 
   // TODO(vabr): Once some API using declarative rules enters the stable
   // channel, make sure to use that API here, and remove |channel|.
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  ScopedCurrentChannel channel(version_info::Channel::UNKNOWN);
 
   ExtensionService* extension_service = env_.GetExtensionService();
 

@@ -86,16 +86,16 @@ const char* ChannelString() {
   // TODO(achuith): Move NotificationPromo::PromoServerURL to the blocking pool.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 #endif
-  const chrome::VersionInfo::Channel channel =
+  const version_info::Channel channel =
       chrome::VersionInfo::GetChannel();
   switch (channel) {
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return "canary";
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return "dev";
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return "beta";
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return "stable";
     default:
       return "none";

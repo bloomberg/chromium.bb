@@ -172,7 +172,7 @@ void ErrorConsole::RemoveObserver(Observer* observer) {
 bool ErrorConsole::IsEnabledForChromeExtensionsPage() const {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode))
     return false;  // Only enabled in developer mode.
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+  if (GetCurrentChannel() > version_info::Channel::DEV &&
       !FeatureSwitch::error_console()->IsEnabled())
     return false;  // Restricted to dev channel or opt-in.
 

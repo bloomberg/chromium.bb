@@ -12,18 +12,18 @@
 
 namespace {
 
-// Converts VersionInfo::Channel to string for user-agent string.
-std::string ChannelToString(chrome::VersionInfo::Channel channel) {
+// Converts version_info::Channel to string for user-agent string.
+std::string ChannelToString(version_info::Channel channel) {
   switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case version_info::Channel::UNKNOWN:
       return "unknown";
-    case chrome::VersionInfo::CHANNEL_CANARY:
+    case version_info::Channel::CANARY:
       return "canary";
-    case chrome::VersionInfo::CHANNEL_DEV:
+    case version_info::Channel::DEV:
       return "dev";
-    case chrome::VersionInfo::CHANNEL_BETA:
+    case version_info::Channel::BETA:
       return "beta";
-    case chrome::VersionInfo::CHANNEL_STABLE:
+    case version_info::Channel::STABLE:
       return "stable";
     default:
       NOTREACHED();
@@ -45,9 +45,9 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line) {
   // will go to the standard sync servers.
   GURL result(internal::kSyncDevServerUrl);
 
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::STABLE ||
+      channel == version_info::Channel::BETA) {
     result = GURL(internal::kSyncServerUrl);
   }
 

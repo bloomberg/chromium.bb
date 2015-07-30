@@ -31,8 +31,8 @@ namespace master_prefs {
 base::FilePath MasterPrefsPath() {
 #if defined(GOOGLE_CHROME_BUILD)
   // Don't load master preferences for the canary.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY)
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == version_info::Channel::CANARY)
     return base::FilePath();
 #endif  // GOOGLE_CHROME_BUILD
 

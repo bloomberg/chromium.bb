@@ -14,8 +14,8 @@ namespace {
 // Helper function to return both the channel enum and modifier string.
 // Implements both together to prevent their behavior from diverging, which has
 // happened multiple times in the past.
-VersionInfo::Channel GetChannelImpl(std::string* modifier_out) {
-  VersionInfo::Channel channel = VersionInfo::CHANNEL_UNKNOWN;
+version_info::Channel GetChannelImpl(std::string* modifier_out) {
+  version_info::Channel channel = version_info::Channel::UNKNOWN;
   std::string modifier;
 
   char* env = getenv("CHROME_VERSION_EXTRA");
@@ -27,12 +27,12 @@ VersionInfo::Channel GetChannelImpl(std::string* modifier_out) {
   if (modifier == "unstable")  // linux version of "dev"
     modifier = "dev";
   if (modifier == "stable") {
-    channel = VersionInfo::CHANNEL_STABLE;
+    channel = version_info::Channel::STABLE;
     modifier = "";
   } else if (modifier == "dev") {
-    channel = VersionInfo::CHANNEL_DEV;
+    channel = version_info::Channel::DEV;
   } else if (modifier == "beta") {
-    channel = VersionInfo::CHANNEL_BETA;
+    channel = version_info::Channel::BETA;
   } else {
     modifier = "unknown";
   }
@@ -54,7 +54,7 @@ std::string VersionInfo::GetVersionStringModifier() {
 }
 
 // static
-VersionInfo::Channel VersionInfo::GetChannel() {
+version_info::Channel VersionInfo::GetChannel() {
   return GetChannelImpl(NULL);
 }
 

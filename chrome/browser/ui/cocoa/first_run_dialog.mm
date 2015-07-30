@@ -127,7 +127,7 @@ bool ShowFirstRun(Profile* profile) {
 // the case when the canary is running.
 bool StatsCheckboxDefault() {
   return chrome::VersionInfo::GetChannel() ==
-      chrome::VersionInfo::CHANNEL_CANARY;
+      version_info::Channel::CANARY;
 }
 
 }  // namespace

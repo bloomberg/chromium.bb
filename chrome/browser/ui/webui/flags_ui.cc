@@ -186,11 +186,11 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(
                      access_ == about_flags::kGeneralAccessFlagsOnly);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::VersionInfo::GetChannel();
   results.SetBoolean("showBetaChannelPromotion",
-                     channel == chrome::VersionInfo::CHANNEL_STABLE);
+                     channel == version_info::Channel::STABLE);
   results.SetBoolean("showDevChannelPromotion",
-                     channel == chrome::VersionInfo::CHANNEL_BETA);
+                     channel == version_info::Channel::BETA);
 #else
   results.SetBoolean("showBetaChannelPromotion", false);
   results.SetBoolean("showDevChannelPromotion", false);
