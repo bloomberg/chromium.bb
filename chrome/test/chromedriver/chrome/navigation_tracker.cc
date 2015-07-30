@@ -32,15 +32,17 @@ NavigationTracker::~NavigationTracker() {}
 Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               bool* is_pending) {
   if (!IsExpectingFrameLoadingEvents()) {
-    base::DictionaryValue params;
-    params.SetString("expression", "document.readyState");
-    scoped_ptr<base::DictionaryValue> result;
-    Status status =
-        client_->SendCommandAndGetResult("Runtime.evaluate", params, &result);
-    std::string ready_state;
-    if (status.IsError() || !result->GetString("result.value", &ready_state))
-      return status;
-    loading_state_ = ready_state == "complete" ? kNotLoading : kLoading;
+    if (loading_state_ != kLoading) {
+      base::DictionaryValue params;
+      params.SetString("expression", "document.readyState");
+      scoped_ptr<base::DictionaryValue> result;
+      Status status =
+          client_->SendCommandAndGetResult("Runtime.evaluate", params, &result);
+      std::string ready_state;
+      if (status.IsError() || !result->GetString("result.value", &ready_state))
+        return status;
+      loading_state_ = ready_state == "complete" ? kNotLoading : kLoading;
+    }
   } else {
     if (loading_state_ == kUnknown) {
       scoped_ptr<base::DictionaryValue> result;
