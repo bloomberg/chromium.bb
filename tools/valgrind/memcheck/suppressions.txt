@@ -192,6 +192,13 @@
    fun:_mesa_CompileShaderARB
    fun:shared_dispatch_stub_529
 }
+{
+   bug_515618
+   Memcheck:Unaddressable
+   fun:do_lookup_x
+   obj:*
+   fun:_dl_lookup_symbol_x
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -3563,14 +3570,6 @@
    fun:_ZN7content17TestBrowserThread13StartIOThreadEv
    fun:_ZN22BrowserProcessImplTest21StartSecondaryThreadsEv
    fun:_ZN37BrowserProcessImplTest_LifeCycle_Test8TestBodyEv
-}
-{
-   bug_514925
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16SkDashPathEffect6CreateEPKfif
-   fun:_ZNK5blink29CanvasRenderingContext2DState14updateLineDashEv
-   fun:_ZNK5blink29CanvasRenderingContext2DState8getPaintENS0_9PaintTypeENS_10ShadowModeENS0_9ImageTypeE
 }
 {
    bug_515263
