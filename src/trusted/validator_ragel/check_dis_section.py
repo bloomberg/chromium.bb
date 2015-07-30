@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import os
 import subprocess
 import sys
@@ -34,7 +39,11 @@ class RdfaTestRunner(test_format.TestRunner):
            '--disassemble-all', '--disassemble-zeroes',
            '--insn-width=15',
            tmp.name],
-          stdout=subprocess.PIPE)
+          stdout=subprocess.PIPE,
+          # On Windows, builds of binutils based on Cygwin end lines with
+          # \n while builds of binutils based on MinGW end lines with \r\n.
+          # The 'universal_newlines' feature makes this work with either one.
+          universal_newlines=True)
 
       result = ''.join(objdump_parser.SkipHeader(objdump_proc.stdout))
       return_code = objdump_proc.wait()

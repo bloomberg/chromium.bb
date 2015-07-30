@@ -149,7 +149,7 @@ def ParseHex(hex_content):
 
 def AssertEquals(actual, expected):
   if actual != expected:
-    raise AssertionError('\nEXPECTED:\n"""\n%s"""\n\nACTUAL:\n"""\n%s"""'
+    raise AssertionError('\nEXPECTED:\n%r\n\nACTUAL:\n%r\n'
                          % (expected, actual))
 
 
