@@ -247,10 +247,6 @@ base::ProcessId ChannelWin::GetSenderPID() {
   return GetPeerPID();
 }
 
-bool ChannelWin::IsAttachmentBrokerEndpoint() {
-  return is_attachment_broker_endpoint();
-}
-
 bool ChannelWin::DidEmptyInputBuffers() {
   // We don't need to do anything here.
   return true;

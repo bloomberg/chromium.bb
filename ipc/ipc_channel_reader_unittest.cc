@@ -81,8 +81,6 @@ class MockChannelReader : public ChannelReader {
 
   base::ProcessId GetSenderPID() override { return base::kNullProcessId; }
 
-  bool IsAttachmentBrokerEndpoint() override { return false; }
-
   AttachmentBroker* GetAttachmentBroker() override { return broker_; }
 
   // This instance takes ownership of |m|.

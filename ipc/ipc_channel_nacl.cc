@@ -385,10 +385,6 @@ base::ProcessId ChannelNacl::GetSenderPID() {
   return base::kNullProcessId;
 }
 
-bool ChannelNacl::IsAttachmentBrokerEndpoint() {
-  return is_attachment_broker_endpoint();
-}
-
 // Channel's methods
 
 // static

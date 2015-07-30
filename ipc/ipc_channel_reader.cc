@@ -163,18 +163,9 @@ void ChannelReader::DispatchMessage(Message* m) {
                IPC_MESSAGE_ID_LINE(m->type()));
 #endif
   m->TraceMessageEnd();
-
-  bool handled = false;
-  if (IsInternalMessage(*m)) {
+  if (IsInternalMessage(*m))
     HandleInternalMessage(*m);
-    handled = true;
-  }
-#if USE_ATTACHMENT_BROKER
-  if (!handled && IsAttachmentBrokerEndpoint() && GetAttachmentBroker()) {
-    handled = GetAttachmentBroker()->OnMessageReceived(*m);
-  }
-#endif  // USE_ATTACHMENT_BROKER
-  if (!handled)
+  else
     listener_->OnMessageReceived(*m);
   if (m->dispatch_error())
     listener_->OnBadMessageReceived(*m);

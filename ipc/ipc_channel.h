@@ -165,7 +165,6 @@ class IPC_EXPORT Channel : public Sender {
       Listener* listener,
       AttachmentBroker* broker = nullptr);
 
-  Channel() : attachment_broker_endpoint_(false) {}
   ~Channel() override;
 
   // Connect the pipe.  On the server side, this will initiate
@@ -253,17 +252,6 @@ class IPC_EXPORT Channel : public Sender {
   static void NotifyProcessForkedForTesting();
 #endif
 
-  void set_attachment_broker_endpoint(bool is_endpoint) {
-    attachment_broker_endpoint_ = is_endpoint;
-  }
-
- protected:
-  bool is_attachment_broker_endpoint() { return attachment_broker_endpoint_; }
-
- private:
-  // Whether this channel is used as an endpoint for sending and receiving
-  // brokerable attachment messages to/from the broker process.
-  bool attachment_broker_endpoint_;
 };
 
 #if defined(OS_POSIX)

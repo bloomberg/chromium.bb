@@ -16,7 +16,6 @@ AttachmentBrokerPrivileged::~AttachmentBrokerPrivileged() {}
 
 void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
     Channel* channel) {
-  channel->set_attachment_broker_endpoint(true);
   auto it = std::find(channels_.begin(), channels_.end(), channel);
   DCHECK(channels_.end() == it);
   channels_.push_back(channel);
