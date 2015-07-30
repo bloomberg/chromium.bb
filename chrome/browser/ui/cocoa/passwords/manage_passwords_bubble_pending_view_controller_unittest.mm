@@ -18,22 +18,15 @@
 #include "testing/gtest_mac.h"
 
 @interface ManagePasswordsBubblePendingViewTestDelegate
-    : NSObject<ManagePasswordsBubblePendingViewDelegate> {
-  BOOL dismissed_;
+    : ContentViewDelegateMock<ManagePasswordsBubblePendingViewDelegate> {
   BOOL neverSave_;
 }
-@property(readonly) BOOL dismissed;
 @property(readonly) BOOL neverSave;
 @end
 
 @implementation ManagePasswordsBubblePendingViewTestDelegate
 
-@synthesize dismissed = dismissed_;
 @synthesize neverSave = neverSave_;
-
-- (void)viewShouldDismiss {
-  dismissed_ = YES;
-}
 
 - (void)passwordShouldNeverBeSavedOnSiteWithExistingPasswords {
   neverSave_ = YES;

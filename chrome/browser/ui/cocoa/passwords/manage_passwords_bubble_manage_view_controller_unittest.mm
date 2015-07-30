@@ -14,23 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
-@interface ManagePasswordsBubbleManageViewTestDelegate
-    : NSObject<ManagePasswordsBubbleContentViewDelegate> {
-  BOOL dismissed_;
-}
-@property(readonly) BOOL dismissed;
-@end
-
-@implementation ManagePasswordsBubbleManageViewTestDelegate
-
-@synthesize dismissed = dismissed_;
-
-- (void)viewShouldDismiss {
-  dismissed_ = YES;
-}
-
-@end
-
 namespace {
 
 class ManagePasswordsBubbleManageViewControllerTest
@@ -40,13 +23,10 @@ class ManagePasswordsBubbleManageViewControllerTest
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
-    delegate_.reset(
-        [[ManagePasswordsBubbleManageViewTestDelegate alloc] init]);
+    delegate_.reset([[ContentViewDelegateMock alloc] init]);
   }
 
-  ManagePasswordsBubbleManageViewTestDelegate* delegate() {
-    return delegate_.get();
-  }
+  ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
   ManagePasswordsBubbleManageViewController* controller() {
     if (!controller_) {
@@ -60,7 +40,7 @@ class ManagePasswordsBubbleManageViewControllerTest
 
  private:
   base::scoped_nsobject<ManagePasswordsBubbleManageViewController> controller_;
-  base::scoped_nsobject<ManagePasswordsBubbleManageViewTestDelegate> delegate_;
+  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleManageViewControllerTest);
 };
 

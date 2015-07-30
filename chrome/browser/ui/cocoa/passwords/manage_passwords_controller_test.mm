@@ -34,3 +34,13 @@ ManagePasswordsControllerTest::model() {
   }
   return model_.get();
 }
+
+@implementation ContentViewDelegateMock
+
+@synthesize dismissed = _dismissed;
+
+- (void)viewShouldDismiss {
+  _dismissed = YES;
+}
+
+@end

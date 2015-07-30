@@ -13,22 +13,15 @@
 // Helper delegate for testing the never save view of the password management
 // bubble.
 @interface ManagePasswordsBubbleNeverSaveViewTestDelegate
-    : NSObject<ManagePasswordsBubbleNeverSaveViewDelegate> {
-  BOOL dismissed_;
+    : ContentViewDelegateMock<ManagePasswordsBubbleNeverSaveViewDelegate> {
   BOOL cancelledNeverSave_;
 }
-@property(readonly) BOOL dismissed;
 @property(readonly) BOOL cancelledNeverSave;
 @end
 
 @implementation ManagePasswordsBubbleNeverSaveViewTestDelegate
 
-@synthesize dismissed = dismissed_;
 @synthesize cancelledNeverSave = cancelledNeverSave_;
-
-- (void)viewShouldDismiss {
-  dismissed_ = YES;
-}
 
 - (void)neverSavePasswordCancelled {
   cancelledNeverSave_ = YES;

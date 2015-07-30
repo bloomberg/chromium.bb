@@ -33,25 +33,6 @@
 @property(nonatomic, readonly) NSTextField* upperLabel;
 @end
 
-// Helper delegate for testing the account chooser view of the password
-// management bubble.
-@interface ManagePasswordsBubbleAccountChooserViewTestDelegate
-    : NSObject<ManagePasswordsBubbleContentViewDelegate> {
-  BOOL dismissed_;
-}
-@property(nonatomic, readonly) BOOL dismissed;
-@end
-
-@implementation ManagePasswordsBubbleAccountChooserViewTestDelegate
-
-@synthesize dismissed = dismissed_;
-
-- (void)viewShouldDismiss {
-  dismissed_ = YES;
-}
-
-@end
-
 @interface AccountAvatarFetcherTestManager : AccountAvatarFetcherManager {
   std::vector<GURL> fetchedAvatars_;
 }
@@ -87,14 +68,11 @@ class ManagePasswordsBubbleAccountChooserViewControllerTest
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
-    delegate_.reset(
-        [[ManagePasswordsBubbleAccountChooserViewTestDelegate alloc] init]);
+    delegate_.reset([[ContentViewDelegateMock alloc] init]);
     avatar_manager_.reset([[AccountAvatarFetcherTestManager alloc] init]);
   }
 
-  ManagePasswordsBubbleAccountChooserViewTestDelegate* delegate() {
-    return delegate_.get();
-  }
+  ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
   AccountAvatarFetcherTestManager* avatar_manager() {
     return avatar_manager_.get();
@@ -116,8 +94,7 @@ class ManagePasswordsBubbleAccountChooserViewControllerTest
   base::scoped_nsobject<AccountAvatarFetcherTestManager> avatar_manager_;
   base::scoped_nsobject<ManagePasswordsBubbleAccountChooserViewController>
       controller_;
-  base::scoped_nsobject<ManagePasswordsBubbleAccountChooserViewTestDelegate>
-      delegate_;
+  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
 TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 
 namespace content {
 class WebContents;
@@ -29,5 +30,14 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
   scoped_ptr<content::WebContents> test_web_contents_;
   scoped_ptr<ManagePasswordsBubbleModel> model_;
 };
+
+// Helper delegate for testing the views of the password management bubble.
+@interface ContentViewDelegateMock
+    : NSObject<ManagePasswordsBubbleContentViewDelegate> {
+ @private
+  BOOL _dismissed;
+}
+@property(readonly, nonatomic) BOOL dismissed;
+@end
 
 #endif // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_CONTROLLER_TEST_H_

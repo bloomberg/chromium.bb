@@ -12,25 +12,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 
-// Helper delegate for testing the blacklist view of the password management
-// bubble.
-@interface ManagePasswordsBubbleBlacklistViewTestDelegate
-    : NSObject<ManagePasswordsBubbleContentViewDelegate> {
-  BOOL dismissed_;
-}
-@property(readonly) BOOL dismissed;
-@end
-
-@implementation ManagePasswordsBubbleBlacklistViewTestDelegate
-
-@synthesize dismissed = dismissed_;
-
-- (void)viewShouldDismiss {
-  dismissed_ = YES;
-}
-
-@end
-
 namespace {
 
 // Tests for the blacklist view of the password management bubble.
@@ -41,13 +22,10 @@ class ManagePasswordsBubbleBlacklistViewControllerTest
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
-    delegate_.reset(
-        [[ManagePasswordsBubbleBlacklistViewTestDelegate alloc] init]);
+    delegate_.reset([[ContentViewDelegateMock alloc] init]);
   }
 
-  ManagePasswordsBubbleBlacklistViewTestDelegate* delegate() {
-    return delegate_.get();
-  }
+  ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
   ManagePasswordsBubbleBlacklistViewController* controller() {
     if (!controller_) {
@@ -62,8 +40,7 @@ class ManagePasswordsBubbleBlacklistViewControllerTest
  private:
   base::scoped_nsobject<ManagePasswordsBubbleBlacklistViewController>
       controller_;
-  base::scoped_nsobject<ManagePasswordsBubbleBlacklistViewTestDelegate>
-      delegate_;
+  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
 TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
