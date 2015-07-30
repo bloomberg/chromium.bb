@@ -68,7 +68,7 @@ class AppLifetimeHelper {
   void Release();
 
   friend ApplicationImpl;
-  void OnQuit();
+  void ApplicationTerminated();
 
   ApplicationImpl* app_;
   int ref_count_;

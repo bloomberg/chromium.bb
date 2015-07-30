@@ -68,7 +68,7 @@ bool ViewManagerApp::ConfigureIncomingConnection(
 }
 
 void ViewManagerApp::OnNoMoreRootConnections() {
-  app_impl_->Quit();
+  app_impl_->Terminate();
 }
 
 ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(

@@ -19,7 +19,6 @@
 
 namespace mojo {
 
-// TODO(beng): This comment is hilariously out of date.
 // Utility class for communicating with the Shell, and providing Services
 // to clients.
 //
@@ -60,8 +59,8 @@ class ApplicationImpl : public Application {
   ApplicationImpl(ApplicationDelegate* delegate,
                   InterfaceRequest<Application> request);
   // Constructs an ApplicationImpl with a custom termination closure. This
-  // closure is invoked on Quit() instead of the default behavior of quitting
-  // the current base::MessageLoop.
+  // closure is invoked on Terminate() instead of the default behavior of
+  // quitting the current MessageLoop.
   ApplicationImpl(ApplicationDelegate* delegate,
                   InterfaceRequest<Application> request,
                   const Closure& termination_closure);
@@ -114,9 +113,12 @@ class ApplicationImpl : public Application {
   void UnbindConnections(InterfaceRequest<Application>* application_request,
                          ShellPtr* shell);
 
-  // Initiate shutdown of this application. This may involve a round trip to the
-  // Shell to ensure there are no inbound service requests.
-  void Quit();
+  // Quits the main run loop for this application. It first checks with the
+  // shell to ensure there are no outstanding service requests.
+  void Terminate();
+
+  // Quits without waiting to check with the shell.
+  void QuitNow();
 
  private:
   // Application implementation.
@@ -130,10 +132,6 @@ class ApplicationImpl : public Application {
   void OnConnectionError();
 
   void ClearConnections();
-
-  // Called from Quit() when there is no Shell connection, or asynchronously
-  // from Quit() once the Shell has OK'ed shutdown.
-  void QuitNow();
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 

@@ -38,7 +38,7 @@ void TestMojoApp::Create(mojo::ApplicationConnection* connection,
 void TestMojoApp::DoSomething(const DoSomethingCallback& callback) {
   callback.Run();
   DCHECK(app_);
-  app_->Quit();
+  app_->Terminate();
 }
 
 void TestMojoApp::GetRequestorURL(const GetRequestorURLCallback& callback) {
