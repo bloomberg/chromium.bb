@@ -101,6 +101,14 @@ bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {
       }
     }
 
+    // If the child window is transparent, then it is not interested in
+    // receiving wheel events.
+    if (IsChild(window, window_under_wheel) &&
+        ::GetWindowLong(
+            window_under_wheel, GWL_EXSTYLE) & WS_EX_TRANSPARENT) {
+      return false;
+    }
+
     // window_under_wheel is a Chrome window.  If allowed, redirect.
     if (IsCompatibleWithMouseWheelRedirection(window_under_wheel)) {
       base::AutoReset<bool> auto_reset_recursion_break(&recursion_break, true);
