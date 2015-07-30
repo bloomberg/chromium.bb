@@ -8,10 +8,10 @@ import os
 import unittest
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import discover
 from telemetry.internal.browser import browser_options
 from telemetry.page import page_test
 from telemetry.testing import options_for_unittests
+from telemetry.util import classes_util
 from telemetry.web_perf import timeline_based_measurement
 
 
@@ -23,14 +23,14 @@ def _GetAllPossiblePageTestInstances():
 
   # Get all page test instances from measurement classes that are directly
   # constructable
-  all_measurement_classes = discover.DiscoverClasses(
+  all_measurement_classes = classes_util.DiscoverClasses(
       measurements_dir, top_level_dir, page_test.PageTest,
-      index_by_class_name=True, directly_constructable=True).values()
+      directly_constructable=True)
   for measurement_class in all_measurement_classes:
     page_test_instances.append(measurement_class())
 
-  all_benchmarks_classes = discover.DiscoverClasses(
-      benchmarks_dir, top_level_dir, benchmark_module.Benchmark).values()
+  all_benchmarks_classes = classes_util.DiscoverClasses(
+      benchmarks_dir, top_level_dir, benchmark_module.Benchmark)
 
   # Get all page test instances from defined benchmarks.
   # Note: since this depends on the command line options, there is no guaranteed
