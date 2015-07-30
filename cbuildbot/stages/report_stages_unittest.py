@@ -17,11 +17,8 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
-from chromite.cbuildbot.stages import sync_stages
-from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
@@ -157,8 +154,6 @@ class AbstractReportStageTestCase(
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
     retry_stats.SetupStats()
 
-    self.sync_stage = None
-
     # Set up a general purpose cidb mock. Tests with more specific
     # mock requirements can replace this with a separate call to
     # SetupMockCidb
@@ -170,17 +165,8 @@ class AbstractReportStageTestCase(
     self.PatchObject(report_stages.ReportStage, '_UpdateStreakCounter',
                      autospec=True, return_value=counter_value)
 
-  def _SetupCommitQueueSyncPool(self):
-    self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
-    pool = validation_pool.ValidationPool(
-        constants.BOTH_OVERLAYS,
-        self.build_root, build_number=3, builder_name=self._bot_id,
-        is_master=True, dryrun=True)
-    pool.changes = [sync_stages_unittest.MockPatch()]
-    self.sync_stage.pool = pool
-
   def ConstructStage(self):
-    return report_stages.ReportStage(self._run, self.sync_stage, None)
+    return report_stages.ReportStage(self._run, None)
 
 
 class ReportStageTest(AbstractReportStageTestCase):
@@ -217,12 +203,6 @@ class ReportStageTest(AbstractReportStageTestCase):
                        update_list=True, acl=mock.ANY)]
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
-  def testCommitQueueResults(self):
-    """Check that commit queue patches get serialized"""
-    self._SetupUpdateStreakCounter()
-    self._SetupCommitQueueSyncPool()
-    self.RunStage()
-
   def testAlertEmail(self):
     """Send out alerts when streak counter reaches the threshold."""
     self.PatchObject(cbuildbot_run._BuilderRunBase,
@@ -231,7 +211,6 @@ class ReportStageTest(AbstractReportStageTestCase):
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['foo@bar.org']})
     self._SetupUpdateStreakCounter(counter_value=-3)
-    self._SetupCommitQueueSyncPool()
     self.RunStage()
     # The mocking logic gets confused with SendEmail.
     # pylint: disable=no-member
@@ -246,7 +225,6 @@ class ReportStageTest(AbstractReportStageTestCase):
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['foo@bar.org']})
     self._SetupUpdateStreakCounter(counter_value=-5)
-    self._SetupCommitQueueSyncPool()
     self.RunStage()
     # The mocking logic gets confused with SendEmail.
     # pylint: disable=no-member

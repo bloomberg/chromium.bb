@@ -330,8 +330,7 @@ class Builder(object):
       if print_report:
         results_lib.WriteCheckpoint(self._run.options.buildroot)
         completion_instance = self.GetCompletionInstance()
-        self._RunStage(report_stages.ReportStage, sync_instance,
-                       completion_instance)
+        self._RunStage(report_stages.ReportStage, completion_instance)
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False

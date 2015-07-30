@@ -255,6 +255,53 @@ class MockPatch(mock.MagicMock):
   def GetDiffStatus(self, _):
     return self.mock_diff_status
 
+
+class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
+  """Tests the SyncStage."""
+
+  def setUp(self):
+    self._Prepare()
+
+  def ConstructStage(self):
+    return sync_stages.SyncStage(self._run)
+
+  def testWriteChangesToMetadata(self):
+    """Test whether WriteChangesToMetadata can handle duplicates properly."""
+    change_1 = cros_patch.GerritFetchOnlyPatch(
+        'https://host/chromite/tacos',
+        'chromite/tacos',
+        'refs/changes/11/12345/4',
+        'master',
+        'cros-internal',
+        '7181e4b5e182b6f7d68461b04253de095bad74f9',
+        'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+        '12345',
+        '4',
+        'foo@chromium.org',
+        1,
+        1,
+        3)
+    change_2 = cros_patch.GerritFetchOnlyPatch(
+        'https://host/chromite/foo',
+        'chromite/foo',
+        'refs/changes/11/12344/3',
+        'master',
+        'cros-internal',
+        'cf23df2207d99a74fbe169e3eba035e633b65d94',
+        'Iab9bf08b9b9bd4f72721cfc36e843ed302aca11a',
+        '12344',
+        '3',
+        'foo@chromium.org',
+        0,
+        0,
+        1)
+    stage = self.ConstructStage()
+    stage.WriteChangesToMetadata([change_1, change_1, change_2])
+    # Test whether the sort function works.
+    expected = [change_2.GetAttributeDict(), change_1.GetAttributeDict()]
+    result = self._run.attrs.metadata.GetValue('changes')
+    self.assertEqual(expected, result)
+
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""
   MANIFEST_CONTENTS = '<manifest/>'
@@ -266,6 +313,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     self.PatchObject(lkgm_manager.LKGMManager, 'SetInFlight')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value=self.MANIFEST_CONTENTS, autospec=True)
+    self.PatchObject(sync_stages.SyncStage, 'WriteChangesToMetadata')
     self.StartPatcher(git_unittest.ManifestMock())
     self.StartPatcher(git_unittest.ManifestCheckoutMock())
     version_file = os.path.join(self.build_root, constants.VERSION_FILE)

@@ -19,7 +19,6 @@ from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -316,13 +315,12 @@ class ReportStage(generic_stages.BuilderStage,
 <body>
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
-  def __init__(self, builder_run, sync_instance, completion_instance, **kwargs):
+  def __init__(self, builder_run, completion_instance, **kwargs):
     super(ReportStage, self).__init__(builder_run, **kwargs)
 
     # TODO(mtennant): All these should be retrieved from builder_run instead.
     # Or, more correctly, the info currently retrieved from these stages should
     # be stored and retrieved from builder_run instead.
-    self._sync_instance = sync_instance
     self._completion_instance = completion_instance
 
   def _UpdateRunStreak(self, builder_run, final_status):
@@ -416,7 +414,6 @@ class ReportStage(generic_stages.BuilderStage,
     """
     self._run.attrs.metadata.UpdateWithDict(
         self.GetReportMetadata(final_status=final_status,
-                               sync_instance=self._sync_instance,
                                completion_instance=self._completion_instance))
     self.UploadMetadata()
 
@@ -478,7 +475,7 @@ class ReportStage(generic_stages.BuilderStage,
       return dict((b, archive.download_url + '/index.html') for b in boards)
 
   def GetReportMetadata(self, config=None, stage=None, final_status=None,
-                        sync_instance=None, completion_instance=None):
+                        completion_instance=None):
     """Generate ReportStage metadata.
 
     Args:
@@ -486,9 +483,6 @@ class ReportStage(generic_stages.BuilderStage,
       stage: The stage name that this metadata file is being uploaded for.
       final_status: Whether the build passed or failed. If None, the build
         will be treated as still running.
-      sync_instance: The stage instance that was used for syncing the source
-        code. This should be a derivative of SyncStage. If None, the list of
-        commit queue patches will not be included in the metadata.
       completion_instance: The stage instance that was used to wait for slave
         completion. Used to add slave build information to master builder's
         metadata. If None, no such status information will be included. It not
@@ -499,12 +493,6 @@ class ReportStage(generic_stages.BuilderStage,
     """
     builder_run = self._run
     config = config or builder_run.config
-
-    commit_queue_stages = (sync_stages.CommitQueueSyncStage,
-                           sync_stages.PreCQSyncStage)
-    get_changes_from_pool = (sync_instance and
-                             isinstance(sync_instance, commit_queue_stages) and
-                             sync_instance.pool)
 
     get_statuses_from_slaves = (
         config['master'] and
@@ -519,9 +507,9 @@ class ReportStage(generic_stages.BuilderStage,
                                                                  final_status))
 
     return metadata_lib.CBuildbotMetadata.GetReportMetadataDict(
-        builder_run, get_changes_from_pool,
-        get_statuses_from_slaves, config, stage, final_status, sync_instance,
-        completion_instance, child_configs_list)
+        builder_run, get_statuses_from_slaves,
+        config, stage, final_status, completion_instance,
+        child_configs_list)
 
   def ArchiveResults(self, final_status):
     """Archive our build results.

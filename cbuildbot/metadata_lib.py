@@ -242,9 +242,8 @@ class CBuildbotMetadata(object):
     return self
 
   @staticmethod
-  def GetReportMetadataDict(builder_run, get_changes_from_pool,
-                            get_statuses_from_slaves, config=None, stage=None,
-                            final_status=None, sync_instance=None,
+  def GetReportMetadataDict(builder_run, get_statuses_from_slaves,
+                            config=None, stage=None, final_status=None,
                             completion_instance=None, child_configs_list=None):
     """Return a metadata dictionary summarizing a build.
 
@@ -256,18 +255,12 @@ class CBuildbotMetadata(object):
 
     Args:
       builder_run: BuilderRun instance for this run.
-      get_changes_from_pool: If True, information about patches in the
-                             sync_instance.pool will be recorded.
       get_statuses_from_slaves: If True, status information of slave
                                 builders will be recorded.
       config: The build config for this run.  Defaults to self._run.config.
       stage: The stage name that this metadata file is being uploaded for.
       final_status: Whether the build passed or failed. If None, the build
                     will be treated as still running.
-      sync_instance: The stage instance that was used for syncing the source
-                     code. This should be a derivative of SyncStage. If None,
-                     the list of commit queue patches will not be included
-                     in the metadata.
       completion_instance: The stage instance that was used to wait for slave
                            completion. Used to add slave build information to
                            master builder's metadata. If None, no such status
@@ -320,16 +313,6 @@ class CBuildbotMetadata(object):
 
     if child_configs_list:
       metadata['child-configs'] = child_configs_list
-
-    if get_changes_from_pool:
-      changes = []
-      pool = sync_instance.pool
-      for change in pool.changes:
-        details = {'gerrit_number': change.gerrit_number,
-                   'patch_number': change.patch_number,
-                   'internal': change.internal}
-        changes.append(details)
-      metadata['changes'] = changes
 
     # If we were a CQ master, then include a summary of the status of slave cq
     # builders in metadata

@@ -398,6 +398,20 @@ class SyncStage(generic_stages.BuilderStage):
 
     return True
 
+  def WriteChangesToMetadata(self, changes):
+    """Write the changes under test into the metadata.
+
+    Args:
+      changes: A list of GerritPatch instances.
+    """
+    changes_list = self._run.attrs.metadata.GetDict().get('changes', [])
+    changes_list = changes_list + [c.GetAttributeDict() for c in set(changes)]
+    changes_list = sorted(changes_list,
+                          key=lambda x: (x[cros_patch.ATTR_GERRIT_NUMBER],
+                                         x[cros_patch.ATTR_PATCH_NUMBER],
+                                         x[cros_patch.ATTR_REMOTE]))
+    self._run.attrs.metadata.UpdateWithDict({'changes': changes_list})
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
@@ -1003,6 +1017,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     else:
       ManifestVersionedSyncStage.PerformStage(self)
 
+    self.WriteChangesToMetadata(self.pool.changes)
+
 
 class PreCQSyncStage(SyncStage):
   """Sync and apply patches to test if they compile."""
@@ -1041,6 +1057,8 @@ class PreCQSyncStage(SyncStage):
     if len(self.pool.changes) == 0 and self.patches:
       cros_build_lib.Die('No changes have been applied.')
 
+    changes = self.pool.changes or self.patches
+    self.WriteChangesToMetadata(changes)
 
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
