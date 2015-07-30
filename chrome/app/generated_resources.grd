@@ -1995,6 +1995,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
          desc="Message shown to the user to validate the download when the download content is classified as uncommon by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is not commonly downloaded and could be dangerous.
       </message>
+      <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"
+               desc="In the download notification, a title of message shown for blocked download">
+        Malicious download blocked
+      </message>
       <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
                desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         Confirm Download
@@ -2103,6 +2107,10 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_LINK_SHOW_ALL_DOWNLOADS"
                desc="In the download notification, 'Show all downloads' button text.">
         Show all downloads
+      </message>
+      <message name="IDS_DOWNLOAD_LINK_LEARN_MORE_SCANNING"
+               desc="In the download notification, a label of the button to show information about download scanning">
+        Learn more
       </message>
       <message name="IDS_DOWNLOAD_TAB_CANCELLED"
                desc="Text that appears next to the downloaded files that have been canceled">

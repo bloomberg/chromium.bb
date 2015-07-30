@@ -47,10 +47,11 @@ int DownloadCommands::GetCommandIconId(Command command) const {
       return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
     case CANCEL:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL;
+    case LEARN_MORE_SCANNING:
+      return IDR_NOTIFICATION_WELCOME_LEARN_MORE;
     case OPEN_WHEN_COMPLETE:
     case ALWAYS_OPEN_TYPE:
     case PLATFORM_OPEN:
-    case LEARN_MORE_SCANNING:
     case LEARN_MORE_INTERRUPTED:
       return -1;
   }
