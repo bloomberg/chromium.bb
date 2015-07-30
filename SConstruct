@@ -263,7 +263,8 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'bitcode', default=False,
     desc='We are building bitcode')
 
-  BitFromArgument(env, 'nacl_clang', default=False,
+  BitFromArgument(env, 'nacl_clang', default=(not env.Bit('bitcode') and
+                                              not env.Bit('nacl_glibc')),
     desc='Use the native nacl-clang newlib compiler instead of nacl-gcc')
 
   BitFromArgument(env, 'translate_fast', default=False,
@@ -3196,7 +3197,6 @@ target_variant_map = [
     ('nacl_glibc', 'glibc'),
     ('pnacl_generate_pexe', 'pexe'),
     ('nonsfi_nacl', 'nonsfi'),
-    ('nacl_clang', 'clang'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):

@@ -158,13 +158,16 @@ ${NATIVE_PYTHON} ../build/package_version/package_version.py fillemptytars \
 
 cd ..
 if [[ ${PLATFORM} == win ]]; then
-  ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py \
+    --scons-args='no_gdb_tests=1 nacl_clang=0' \
     opt 64 newlib
 elif [[ ${PLATFORM} == mac ]]; then
-  ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py \
+    --scons-args='no_gdb_tests=1 nacl_clang=0' \
     opt 32 newlib
 elif [[ ${PLATFORM} == linux ]]; then
-  ${NATIVE_PYTHON} buildbot/buildbot_standard.py --scons-args='no_gdb_tests=1' \
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py \
+    --scons-args='no_gdb_tests=1 nacl_clang=0' \
     opt 32 newlib
 else
   echo "ERROR, bad platform."

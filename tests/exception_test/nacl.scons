@@ -25,7 +25,11 @@ exception_test = env.ComponentProgram(
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)
 env.AddNodeToTestSuite(
-    node, ['small_tests', 'exception_tests'], 'run_exception_test')
+    node, ['small_tests', 'exception_tests'], 'run_exception_test',
+    # TODO(mcgrathr): Broken under nacl-clang on Win32 only;
+    # see https://code.google.com/p/nativeclient/issues/detail?id=4255
+    is_broken=(env.Bit('nacl_clang') and
+               env.Bit('host_windows') and env.Bit('build_x86_32')))
 
 
 exception_crash_test = env.ComponentProgram(
