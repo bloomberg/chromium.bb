@@ -36,7 +36,6 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/StyleResourceLoader.h"
-#include "core/style/AuthorStyleInfo.h"
 #include "core/style/CachedUAStyle.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
@@ -191,8 +190,6 @@ private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
-    static AuthorStyleInfo authorStyleInfo(StyleResolverState&);
-
     void loadPendingResources(StyleResolverState&);
     void adjustComputedStyle(StyleResolverState&, Element*);
 
@@ -220,6 +217,8 @@ private:
     void applyAllProperty(StyleResolverState&, CSSValue*, bool inheritedOnly);
 
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const ComputedStyle* parentStyle, StyleResolverState&);
+    bool hasAuthorBackground(const StyleResolverState&);
+    bool hasAuthorBorder(const StyleResolverState&);
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
 

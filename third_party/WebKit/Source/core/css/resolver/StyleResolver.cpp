@@ -478,32 +478,10 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     return documentStyle.release();
 }
 
-AuthorStyleInfo StyleResolver::authorStyleInfo(StyleResolverState& state)
-{
-    const CachedUAStyle* cachedUAStyle = state.cachedUAStyle();
-
-    if (!cachedUAStyle)
-        return AuthorStyleInfo();
-
-    // Exclude background-repeat from comparison by resetting it.
-    FillLayer backgroundCopy = cachedUAStyle->backgroundLayers;
-    FillLayer backgroundLayersCopy = state.style()->backgroundLayers();
-    backgroundCopy.setRepeatX(NoRepeatFill);
-    backgroundCopy.setRepeatY(NoRepeatFill);
-    backgroundLayersCopy.setRepeatX(NoRepeatFill);
-    backgroundLayersCopy.setRepeatY(NoRepeatFill);
-
-    bool backgroundChanged = backgroundLayersCopy != backgroundCopy
-        || state.style()->backgroundColor() != cachedUAStyle->backgroundColor;
-    bool borderChanged = state.style()->border() != cachedUAStyle->border;
-
-    return AuthorStyleInfo(backgroundChanged, borderChanged);
-}
-
 void StyleResolver::adjustComputedStyle(StyleResolverState& state, Element* element)
 {
     StyleAdjuster adjuster(document().inQuirksMode());
-    adjuster.adjustComputedStyle(state.mutableStyleRef(), *state.parentStyle(), element, authorStyleInfo(state));
+    adjuster.adjustComputedStyle(state.mutableStyleRef(), *state.parentStyle(), element);
 }
 
 // Start loading resources referenced by this style.
@@ -1343,6 +1321,12 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.beginAuthor(), matchResult.endAuthor(), applyInheritedOnly);
     applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.beginUA(), matchResult.endUA(), applyInheritedOnly);
 
+    if (state.style()->hasAppearance()) {
+        // Populate if the cached UA border and background has been changed.
+        state.style()->setHasAuthorBackground(hasAuthorBackground(state));
+        state.style()->setHasAuthorBorder(hasAuthorBorder(state));
+    }
+
     loadPendingResources(state);
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
@@ -1351,6 +1335,29 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     }
 
     ASSERT(!state.fontBuilder().fontDirty());
+}
+
+bool StyleResolver::hasAuthorBackground(const StyleResolverState& state)
+{
+    const CachedUAStyle* cachedUAStyle = state.cachedUAStyle();
+    if (!cachedUAStyle)
+        return false;
+
+    FillLayer oldFill = cachedUAStyle->backgroundLayers;
+    FillLayer newFill = state.style()->backgroundLayers();
+    // Exclude background-repeat from comparison by resetting it.
+    oldFill.setRepeatX(NoRepeatFill);
+    oldFill.setRepeatY(NoRepeatFill);
+    newFill.setRepeatX(NoRepeatFill);
+    newFill.setRepeatY(NoRepeatFill);
+
+    return (oldFill != newFill || cachedUAStyle->backgroundColor != state.style()->backgroundColor());
+}
+
+bool StyleResolver::hasAuthorBorder(const StyleResolverState& state)
+{
+    const CachedUAStyle* cachedUAStyle = state.cachedUAStyle();
+    return cachedUAStyle && (cachedUAStyle->border != state.style()->border());
 }
 
 void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
