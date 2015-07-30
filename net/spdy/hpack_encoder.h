@@ -16,6 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/spdy/hpack_header_table.h"
 #include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/spdy_protocol.h"
 
 // An HpackEncoder encodes header sets as outlined in
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
@@ -39,15 +40,13 @@ class NET_EXPORT_PRIVATE HpackEncoder {
 
   // Encodes the given header set into the given string. Returns
   // whether or not the encoding was successful.
-  bool EncodeHeaderSet(const std::map<std::string, std::string>& header_set,
-                       std::string* output);
+  bool EncodeHeaderSet(const SpdyHeaderBlock& header_set, std::string* output);
 
   // Encodes the given header set into the given string. Only non-indexed
   // literal representations are emitted, bypassing the header table. Huffman
   // coding is also not used. Returns whether the encoding was successful.
-  bool EncodeHeaderSetWithoutCompression(
-      const std::map<std::string, std::string>& header_set,
-      std::string* output);
+  bool EncodeHeaderSetWithoutCompression(const SpdyHeaderBlock& header_set,
+                                         std::string* output);
 
   // Called upon a change to SETTINGS_HEADER_TABLE_SIZE. Specifically, this
   // is to be called after receiving (and sending an acknowledgement for) a

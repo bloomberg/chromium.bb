@@ -63,9 +63,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // TODO(jgraettinger): This was added to facilitate re-encoding the block in
   // SPDY3 format for delivery to the SpdyFramer visitor, and will be removed
   // with the migration to SpdyHeadersHandlerInterface.
-  const std::map<std::string, std::string>& decoded_block() {
-    return decoded_block_;
-  }
+  const SpdyHeaderBlock& decoded_block() { return decoded_block_; }
 
  private:
   // Adds the header representation to |decoded_block_|, applying the
@@ -96,7 +94,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // processed headers block. Both will be removed with the switch to
   // SpdyHeadersHandlerInterface.
   std::string headers_block_buffer_;
-  std::map<std::string, std::string> decoded_block_;
+  SpdyHeaderBlock decoded_block_;
 
   // Flag to keep track of having seen a regular header field.
   bool regular_header_seen_;

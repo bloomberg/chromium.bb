@@ -34,7 +34,7 @@ class HpackRoundTripTest : public ::testing::Test {
     decoder_.ApplyHeaderTableSizeSetting(256);
   }
 
-  bool RoundTrip(const map<string, string>& header_set) {
+  bool RoundTrip(const SpdyHeaderBlock& header_set) {
     string encoded;
     encoder_.EncodeHeaderSet(header_set, &encoded);
 
@@ -57,7 +57,7 @@ class HpackRoundTripTest : public ::testing::Test {
 
 TEST_F(HpackRoundTripTest, ResponseFixtures) {
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers[":status"] = "302";
     headers["cache-control"] = "private";
     headers["date"] = "Mon, 21 Oct 2013 20:13:21 GMT";
@@ -65,7 +65,7 @@ TEST_F(HpackRoundTripTest, ResponseFixtures) {
     EXPECT_TRUE(RoundTrip(headers));
   }
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers[":status"] = "200";
     headers["cache-control"] = "private";
     headers["date"] = "Mon, 21 Oct 2013 20:13:21 GMT";
@@ -73,7 +73,7 @@ TEST_F(HpackRoundTripTest, ResponseFixtures) {
     EXPECT_TRUE(RoundTrip(headers));
   }
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers[":status"] = "200";
     headers["cache-control"] = "private";
     headers["content-encoding"] = "gzip";
@@ -88,7 +88,7 @@ TEST_F(HpackRoundTripTest, ResponseFixtures) {
 
 TEST_F(HpackRoundTripTest, RequestFixtures) {
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers[":authority"] = "www.example.com";
     headers[":method"] = "GET";
     headers[":path"] = "/";
@@ -97,7 +97,7 @@ TEST_F(HpackRoundTripTest, RequestFixtures) {
     EXPECT_TRUE(RoundTrip(headers));
   }
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers[":authority"] = "www.example.com";
     headers[":method"] = "GET";
     headers[":path"] = "/";
@@ -107,7 +107,7 @@ TEST_F(HpackRoundTripTest, RequestFixtures) {
     EXPECT_TRUE(RoundTrip(headers));
   }
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers[":authority"] = "www.example.com";
     headers[":method"] = "GET";
     headers[":path"] = "/index.html";
@@ -144,7 +144,7 @@ TEST_F(HpackRoundTripTest, RandomizedExamples) {
   srand(seed);
 
   for (size_t i = 0; i != 2000; ++i) {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
 
     size_t header_count = 1 + SampleExponential(7, 50);
     for (size_t j = 0; j != header_count; ++j) {

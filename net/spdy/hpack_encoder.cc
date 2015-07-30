@@ -25,7 +25,7 @@ HpackEncoder::HpackEncoder(const HpackHuffmanTable& table)
 
 HpackEncoder::~HpackEncoder() {}
 
-bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
+bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
                                    string* output) {
   // Separate header set into pseudo-headers and regular headers.
   Representations pseudo_headers;
@@ -78,9 +78,8 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
 }
 
 bool HpackEncoder::EncodeHeaderSetWithoutCompression(
-    const std::map<string, string>& header_set,
+    const SpdyHeaderBlock& header_set,
     string* output) {
-
   allow_huffman_compression_ = false;
   for (const auto& header : header_set) {
     // Note that cookies are not crumbled in this case.

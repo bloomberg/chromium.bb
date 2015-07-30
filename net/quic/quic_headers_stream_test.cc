@@ -269,14 +269,14 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
         scoped_ptr<SpdySerializedFrame> frame;
         if (perspective() == Perspective::IS_SERVER) {
           SpdyHeadersIR headers_frame(stream_id);
-          headers_frame.set_name_value_block(headers_);
+          headers_frame.set_header_block(headers_);
           headers_frame.set_fin(fin);
           headers_frame.set_has_priority(true);
           frame.reset(framer_.SerializeFrame(headers_frame));
           EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0));
         } else {
           SpdyHeadersIR headers_frame(stream_id);
-          headers_frame.set_name_value_block(headers_);
+          headers_frame.set_header_block(headers_);
           headers_frame.set_fin(fin);
           frame.reset(framer_.SerializeFrame(headers_frame));
         }
@@ -311,14 +311,14 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
         scoped_ptr<SpdySerializedFrame> frame;
         if (perspective() == Perspective::IS_SERVER) {
           SpdyHeadersIR headers_frame(stream_id);
-          headers_frame.set_name_value_block(headers_);
+          headers_frame.set_header_block(headers_);
           headers_frame.set_fin(fin);
           headers_frame.set_has_priority(true);
           frame.reset(framer_.SerializeFrame(headers_frame));
           EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0));
         } else {
           SpdyHeadersIR headers_frame(stream_id);
-          headers_frame.set_name_value_block(headers_);
+          headers_frame.set_header_block(headers_);
           headers_frame.set_fin(fin);
           frame.reset(framer_.SerializeFrame(headers_frame));
         }

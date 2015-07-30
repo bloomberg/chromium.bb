@@ -1076,14 +1076,14 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
     syn_stream.set_priority(spdy_priority);
     syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
     syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
-    syn_stream.set_name_value_block(block);
+    syn_stream.set_header_block(block);
     syn_frame.reset(buffered_spdy_framer_->SerializeFrame(syn_stream));
   } else {
     SpdyHeadersIR headers(stream_id);
     headers.set_priority(spdy_priority);
     headers.set_has_priority(true);
     headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
-    headers.set_name_value_block(block);
+    headers.set_header_block(block);
     syn_frame.reset(buffered_spdy_framer_->SerializeFrame(headers));
   }
 

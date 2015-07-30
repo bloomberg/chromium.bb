@@ -4,6 +4,8 @@
 
 #include "net/spdy/hpack_decoder.h"
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/spdy/hpack_constants.h"
@@ -64,7 +66,7 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
 
 bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                               StringPiece value) {
-  typedef std::pair<std::map<string, string>::iterator, bool> InsertResult;
+  typedef std::pair<SpdyHeaderBlock::iterator, bool> InsertResult;
 
   // Fail if pseudo-header follows regular header.
   if (name.size() > 0) {

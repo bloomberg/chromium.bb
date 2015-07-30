@@ -72,9 +72,9 @@ void HpackFuzzUtil::InitializeGeneratorContext(GeneratorContext* context) {
 }
 
 // static
-map<string, string> HpackFuzzUtil::NextGeneratedHeaderSet(
+SpdyHeaderBlock HpackFuzzUtil::NextGeneratedHeaderSet(
     GeneratorContext* context) {
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
 
   size_t header_count = 1 + SampleExponential(kHeaderCountMean,
                                               kHeaderCountMax);

@@ -145,7 +145,7 @@ class HpackEncoderTest : public ::testing::Test {
     expected_.AppendUint32(value.size());
     expected_.AppendBytes(value);
   }
-  void CompareWithExpectedEncoding(const map<string, string>& header_set) {
+  void CompareWithExpectedEncoding(const SpdyHeaderBlock& header_set) {
     string expected_out, actual_out;
     expected_.TakeString(&expected_out);
     EXPECT_TRUE(encoder_.EncodeHeaderSet(header_set, &actual_out));
@@ -170,7 +170,7 @@ class HpackEncoderTest : public ::testing::Test {
 TEST_F(HpackEncoderTest, SingleDynamicIndex) {
   ExpectIndex(IndexOf(key_2_));
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers[key_2_->name()] = key_2_->value();
   CompareWithExpectedEncoding(headers);
 }
@@ -178,7 +178,7 @@ TEST_F(HpackEncoderTest, SingleDynamicIndex) {
 TEST_F(HpackEncoderTest, SingleStaticIndex) {
   ExpectIndex(IndexOf(static_));
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers[static_->name()] = static_->value();
   CompareWithExpectedEncoding(headers);
 }
@@ -187,7 +187,7 @@ TEST_F(HpackEncoderTest, SingleStaticIndexTooLarge) {
   peer_.table()->SetMaxSize(1);  // Also evicts all fixtures.
   ExpectIndex(IndexOf(static_));
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers[static_->name()] = static_->value();
   CompareWithExpectedEncoding(headers);
 
@@ -197,7 +197,7 @@ TEST_F(HpackEncoderTest, SingleStaticIndexTooLarge) {
 TEST_F(HpackEncoderTest, SingleLiteralWithIndexName) {
   ExpectIndexedLiteral(key_2_, "value3");
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers[key_2_->name()] = "value3";
   CompareWithExpectedEncoding(headers);
 
@@ -210,7 +210,7 @@ TEST_F(HpackEncoderTest, SingleLiteralWithIndexName) {
 TEST_F(HpackEncoderTest, SingleLiteralWithLiteralName) {
   ExpectIndexedLiteral("key3", "value3");
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers["key3"] = "value3";
   CompareWithExpectedEncoding(headers);
 
@@ -226,7 +226,7 @@ TEST_F(HpackEncoderTest, SingleLiteralTooLarge) {
 
   // A header overflowing the header table is still emitted.
   // The header table is empty.
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers["key3"] = "value3";
   CompareWithExpectedEncoding(headers);
 
@@ -239,7 +239,7 @@ TEST_F(HpackEncoderTest, EmitThanEvict) {
   ExpectIndex(IndexOf(key_1_));
   ExpectIndexedLiteral("key3", "value3");
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers[key_1_->name()] = key_1_->value();
   headers["key3"] = "value3";
   CompareWithExpectedEncoding(headers);
@@ -250,7 +250,7 @@ TEST_F(HpackEncoderTest, CookieHeaderIsCrumbled) {
   ExpectIndex(IndexOf(cookie_c_));
   ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers["cookie"] = "e=ff; a=bb; c=dd";
   CompareWithExpectedEncoding(headers);
 }
@@ -284,7 +284,7 @@ TEST_F(HpackEncoderTest, EncodingWithoutCompression) {
   ExpectNonIndexedLiteral("cookie", "foo=bar; baz=bing");
   ExpectNonIndexedLiteral("hello", "goodbye");
 
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   headers[":path"] = "/index.html";
   headers["cookie"] = "foo=bar; baz=bing";
   headers["hello"] = "goodbye";
@@ -298,7 +298,7 @@ TEST_F(HpackEncoderTest, EncodingWithoutCompression) {
 TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
   // Pass 1.
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers["key1"] = "value1";
     headers["cookie"] = "a=bb";
 
@@ -313,7 +313,7 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
   // 62: cookie: c=dd
   // Pass 2.
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers["key2"] = "value2";
     headers["cookie"] = "c=dd; e=ff";
 
@@ -332,7 +332,7 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
   // 62: cookie: e=ff
   // Pass 3.
   {
-    map<string, string> headers;
+    SpdyHeaderBlock headers;
     headers["key2"] = "value2";
     headers["cookie"] = "a=bb; b=cc; c=dd";
 
@@ -350,7 +350,7 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
 }
 
 TEST_F(HpackEncoderTest, PseudoHeadersFirst) {
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   // A pseudo-header to be indexed.
   headers[":authority"] = "www.example.com";
   // A pseudo-header that should not be indexed.
@@ -448,7 +448,7 @@ TEST_F(HpackEncoderTest, DecomposeRepresentation) {
 // Test that encoded headers do not have \0-delimited multiple values, as this
 // became disallowed in HTTP/2 draft-14.
 TEST_F(HpackEncoderTest, CrumbleNullByteDelimitedValue) {
-  map<string, string> headers;
+  SpdyHeaderBlock headers;
   // A header field to be crumbled: "spam: foo\0bar".
   headers["spam"] = string("foo\0bar", 7);
 

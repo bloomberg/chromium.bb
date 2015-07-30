@@ -191,7 +191,7 @@ size_t QuicHeadersStream::WriteHeaders(
     QuicPriority priority,
     QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
   SpdyHeadersIR headers_frame(stream_id);
-  headers_frame.set_name_value_block(headers);
+  headers_frame.set_header_block(headers);
   headers_frame.set_fin(fin);
   if (session()->perspective() == Perspective::IS_CLIENT) {
     headers_frame.set_has_priority(true);

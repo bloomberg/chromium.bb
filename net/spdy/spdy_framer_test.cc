@@ -719,8 +719,7 @@ TEST_P(SpdyFramerTest, HeaderBlockWithEmptyCookie) {
       frame->size());
 
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
-  EXPECT_FALSE(CompareHeaderBlocks(&headers.name_value_block(),
-                                  &visitor.headers_));
+  EXPECT_FALSE(CompareHeaderBlocks(&headers.header_block(), &visitor.headers_));
   EXPECT_EQ(1u, visitor.headers_.size());
   EXPECT_EQ("key=value; foo; bar=; k2=v2 ", visitor.headers_["cookie"]);
 }
@@ -746,8 +745,7 @@ TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
       frame->size());
 
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers.name_value_block(),
-                                  &visitor.headers_));
+  EXPECT_TRUE(CompareHeaderBlocks(&headers.header_block(), &visitor.headers_));
 }
 
 // Test that if there's not a full frame, we fail to parse it.
@@ -970,7 +968,7 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
     frame.WriteStringPiece16(value);
   } else if (spdy_version_ > SPDY3) {
     // TODO(jgraettinger): If this pattern appears again, move to test class.
-    std::map<string, string> header_set;
+    SpdyHeaderBlock header_set;
     header_set["name"] = value;
     string buffer;
     HpackEncoder encoder(ObtainHpackHuffmanTable());
@@ -1508,14 +1506,14 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   block[kHeader1] = kValue1;
   block[kHeader2] = kValue2;
   SpdySynStreamIR syn_ir_1(1);
-  syn_ir_1.set_name_value_block(block);
+  syn_ir_1.set_header_block(block);
   scoped_ptr<SpdyFrame> syn_frame_1(send_framer.SerializeFrame(syn_ir_1));
   EXPECT_TRUE(syn_frame_1.get() != NULL);
 
   // SYN_STREAM #2
   block[kHeader3] = kValue3;
   SpdySynStreamIR syn_stream(3);
-  syn_stream.set_name_value_block(block);
+  syn_stream.set_header_block(block);
   scoped_ptr<SpdyFrame> syn_frame_2(send_framer.SerializeSynStream(syn_stream));
   EXPECT_TRUE(syn_frame_2.get() != NULL);
 
@@ -3582,7 +3580,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   syn_stream.set_priority(1);
   syn_stream.SetHeader("aa", "vv");
   syn_stream.SetHeader("bb", "ww");
-  SpdyHeaderBlock headers = syn_stream.name_value_block();
+  SpdyHeaderBlock headers = syn_stream.header_block();
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSynStream(syn_stream));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3602,7 +3600,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
   SpdySynReplyIR syn_reply(1);
   syn_reply.SetHeader("alpha", "beta");
   syn_reply.SetHeader("gamma", "delta");
-  SpdyHeaderBlock headers = syn_reply.name_value_block();
+  SpdyHeaderBlock headers = syn_reply.header_block();
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSynReply(syn_reply));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3625,7 +3623,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   SpdyHeadersIR headers_ir(1);
   headers_ir.SetHeader("alpha", "beta");
   headers_ir.SetHeader("gamma", "delta");
-  SpdyHeaderBlock headers = headers_ir.name_value_block();
+  SpdyHeaderBlock headers = headers_ir.header_block();
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeHeaders(headers_ir));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3650,7 +3648,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   headers_ir.set_fin(true);
   headers_ir.SetHeader("alpha", "beta");
   headers_ir.SetHeader("gamma", "delta");
-  SpdyHeaderBlock headers = headers_ir.name_value_block();
+  SpdyHeaderBlock headers = headers_ir.header_block();
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeHeaders(headers_ir));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -4351,7 +4349,7 @@ TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
   SpdyPushPromiseIR push_promise(42, 57);
   push_promise.SetHeader("foo", "bar");
   push_promise.SetHeader("bar", "foofoo");
-  SpdyHeaderBlock headers = push_promise.name_value_block();
+  SpdyHeaderBlock headers = push_promise.header_block();
   scoped_ptr<SpdySerializedFrame> frame(
     framer.SerializePushPromise(push_promise));
   EXPECT_TRUE(frame.get() != NULL);
@@ -5593,7 +5591,7 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   SpdySynStreamIR syn_stream(1);
   syn_stream.set_priority(1);
   scoped_ptr<SpdyFrame> frame(framer.SerializeSynStream(syn_stream));
-  // Adjust size to remove the name/value block.
+  // Adjust size to remove the header block.
   SetFrameLength(
       frame.get(),
       framer.GetSynStreamMinimumSize() - framer.GetControlFrameHeaderSize(),

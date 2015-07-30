@@ -44,7 +44,7 @@ class HpackDecoderPeer {
   string cookie_value() {
     return decoder_->cookie_value_;
   }
-  const std::map<string, string>& decoded_block() const {
+  const SpdyHeaderBlock& decoded_block() const {
     return decoder_->decoded_block_;
   }
   const string& headers_block_buffer() const {
@@ -79,13 +79,13 @@ class HpackDecoderTest : public ::testing::Test {
         decoder_.HandleControlFrameHeadersComplete(0);
   }
 
-  const std::map<string, string>& decoded_block() const {
+  const SpdyHeaderBlock& decoded_block() const {
     // TODO(jgraettinger): HpackDecoderTest should implement
     // SpdyHeadersHandlerInterface, and collect headers for examination.
     return decoder_peer_.decoded_block();
   }
 
-  const std::map<string, string>& DecodeBlockExpectingSuccess(StringPiece str) {
+  const SpdyHeaderBlock& DecodeBlockExpectingSuccess(StringPiece str) {
     EXPECT_TRUE(DecodeHeaderBlock(str));
     return decoded_block();
   }
@@ -212,41 +212,38 @@ TEST_F(HpackDecoderTest, DecodeNextNameInvalidIndex) {
 // Decoding indexed static table field should work.
 TEST_F(HpackDecoderTest, IndexedHeaderStatic) {
   // Reference static table entries #2 and #5.
-  std::map<string, string> header_set1 =
-      DecodeBlockExpectingSuccess("\x82\x85");
-  std::map<string, string> expected_header_set1;
+  SpdyHeaderBlock header_set1 = DecodeBlockExpectingSuccess("\x82\x85");
+  SpdyHeaderBlock expected_header_set1;
   expected_header_set1[":method"] = "GET";
   expected_header_set1[":path"] = "/index.html";
   EXPECT_EQ(expected_header_set1, header_set1);
 
   // Reference static table entry #2.
-  std::map<string, string> header_set2 =
-      DecodeBlockExpectingSuccess("\x82");
-  std::map<string, string> expected_header_set2;
+  SpdyHeaderBlock header_set2 = DecodeBlockExpectingSuccess("\x82");
+  SpdyHeaderBlock expected_header_set2;
   expected_header_set2[":method"] = "GET";
   EXPECT_EQ(expected_header_set2, header_set2);
 }
 
 TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
   // First header block: add an entry to header table.
-  std::map<string, string> header_set1 =
+  SpdyHeaderBlock header_set1 =
       DecodeBlockExpectingSuccess("\x40\x03" "foo" "\x03" "bar");
-  std::map<string, string> expected_header_set1;
+  SpdyHeaderBlock expected_header_set1;
   expected_header_set1["foo"] = "bar";
   EXPECT_EQ(expected_header_set1, header_set1);
 
   // Second header block: add another entry to header table.
-  std::map<string, string> header_set2 =
+  SpdyHeaderBlock header_set2 =
       DecodeBlockExpectingSuccess("\xbe\x40\x04" "spam" "\x04" "eggs");
-  std::map<string, string> expected_header_set2;
+  SpdyHeaderBlock expected_header_set2;
   expected_header_set2["foo"] = "bar";
   expected_header_set2["spam"] = "eggs";
   EXPECT_EQ(expected_header_set2, header_set2);
 
   // Third header block: refer to most recently added entry.
-  std::map<string, string> header_set3 =
-      DecodeBlockExpectingSuccess("\xbe");
-  std::map<string, string> expected_header_set3;
+  SpdyHeaderBlock header_set3 = DecodeBlockExpectingSuccess("\xbe");
+  SpdyHeaderBlock expected_header_set3;
   expected_header_set3["spam"] = "eggs";
   EXPECT_EQ(expected_header_set3, header_set3);
 }
@@ -318,10 +315,10 @@ TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
   // First header with indexed name, second header with string literal
   // name.
   const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
-  std::map<string, string> header_set =
+  SpdyHeaderBlock header_set =
       DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
 
-  std::map<string, string> expected_header_set;
+  SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
   expected_header_set[":path2"] = "/sample/path/2";
   EXPECT_EQ(expected_header_set, header_set);
@@ -331,10 +328,10 @@ TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
 // indexing and string literal names should work.
 TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
   const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
-  std::map<string, string> header_set =
+  SpdyHeaderBlock header_set =
       DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
 
-  std::map<string, string> expected_header_set;
+  SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
   expected_header_set[":path2"] = "/sample/path/2";
   EXPECT_EQ(expected_header_set, header_set);
@@ -367,7 +364,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
 TEST_F(HpackDecoderTest, BasicE21) {
   HpackEncoder encoder(ObtainHpackHuffmanTable());
 
-  std::map<string, string> expected_header_set;
+  SpdyHeaderBlock expected_header_set;
   expected_header_set[":method"] = "GET";
   expected_header_set[":scheme"] = "http";
   expected_header_set[":path"] = "/";
@@ -382,7 +379,7 @@ TEST_F(HpackDecoderTest, BasicE21) {
 }
 
 TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
-  std::map<string, string> header_set;
+  SpdyHeaderBlock header_set;
 
   // 82                                      | == Indexed - Add ==
   //                                         |   idx = 2
@@ -493,7 +490,7 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
 }
 
 TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
-  std::map<string, string> header_set;
+  SpdyHeaderBlock header_set;
   decoder_.ApplyHeaderTableSizeSetting(256);
 
   // 48                                      | == Literal indexed ==

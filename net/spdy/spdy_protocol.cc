@@ -6,10 +6,10 @@
 
 namespace net {
 
-SpdyFrameWithNameValueBlockIR::SpdyFrameWithNameValueBlockIR(
-    SpdyStreamId stream_id) : SpdyFrameWithFinIR(stream_id) {}
+SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id)
+    : SpdyFrameWithFinIR(stream_id) {}
 
-SpdyFrameWithNameValueBlockIR::~SpdyFrameWithNameValueBlockIR() {}
+SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() {}
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data)
     : SpdyFrameWithFinIR(stream_id), padded_(false), padding_payload_len_(0) {
