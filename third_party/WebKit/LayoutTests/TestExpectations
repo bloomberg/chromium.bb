@@ -258,7 +258,13 @@ crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-
 crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/plugin-in-iframe-with-csp.html [ Skip ]
 crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html [ Skip ]
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
+
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
+crbug.com/507787 [ Mac ] plugins/keyboard-events.html [ Skip ]
+crbug.com/507787 [ Mac ] plugins/mouse-events-fixedpos.html [ Skip ]
+crbug.com/507787 [ Mac ] plugins/mouse-events.html [ Skip ]
+crbug.com/507787 [ Mac Win ] plugins/touch-events-synthesized.html [ Skip ]
+crbug.com/507787 [ Mac Win ] plugins/transformed-events.html [ Skip ]
 
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
