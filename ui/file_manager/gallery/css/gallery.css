@@ -628,13 +628,13 @@ files-toggle-ripple::shadow .ripple.activated {
       url(../images/200/delete.png) 2x);
 }
 
-.gallery > .toolbar paper-button.slide-mode {
+.gallery > .toolbar .icon.slide-mode {
   background-image: -webkit-image-set(
       url(../images/100/slide_view.png) 1x,
       url(../images/200/slide_view.png) 2x);
 }
 
-.gallery > .toolbar paper-button.thumbnail-mode {
+.gallery > .toolbar .icon.thumbnail-mode {
   background-image: -webkit-image-set(
       url(../images/100/mosaic_view.png) 1x,
       url(../images/200/mosaic_view.png) 2x);
@@ -657,9 +657,8 @@ files-toggle-ripple::shadow .ripple.activated {
   pointer-events: none;
 }
 
-.gallery:not([editing])[mode='slide'] > paper-button.slide-mode,
-.gallery:not([editing])[mode='thumbnail'] > paper-button.thumbnail-mode,
-.gallery[editing][mode='slide'] > paper-button.thumbnail-mode,
+.gallery[mode='slide'] .icon.slide-mode,
+.gallery[mode='thumbnail'] .icon.thumbnail-mode,
 paper-button[disabled],
 button[disabled] {
   display: none;

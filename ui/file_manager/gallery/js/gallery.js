@@ -101,15 +101,15 @@ function Gallery(volumeManager) {
 
   this.errorBanner_ = new ErrorBanner(this.container_);
 
-  var slideModeButton = queryRequiredElement(
-      this.topToolbar_, 'paper-button.slide-mode');
-  slideModeButton.addEventListener(
-      'click', this.onSlideModeButtonClicked_.bind(this));
+  var modeSwitchButton = queryRequiredElement(this.topToolbar_, 'button.mode');
+  modeSwitchButton.addEventListener('click',
+      this.onModeSwitchButtonClicked_.bind(this));
 
-  var thumbnailModeButton = queryRequiredElement(
-      this.topToolbar_, 'paper-button.thumbnail-mode');
-  thumbnailModeButton.addEventListener(
-      'click', this.onThumbnailModeButtonClicked_.bind(this));
+  /**
+   * @private {!PaperRipple}
+   */
+  this.modeSwitchButtonRipple_ = /** @type {!PaperRipple} */
+      (queryRequiredElement(modeSwitchButton, 'paper-ripple'));
 
   this.thumbnailMode_ = new ThumbnailMode(
       assertInstanceof(document.querySelector('.thumbnail-view'), HTMLElement),
@@ -400,25 +400,13 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
 };
 
 /**
- * Handles click event of SlideModeButton.
+ * Handles click event of mode switch button.
  * @param {!Event} event An event.
  * @private
  */
-Gallery.prototype.onSlideModeButtonClicked_ = function(event) {
-  // If it's in editing, leave edit mode.
-  if (this.slideMode_.isEditing())
-    this.slideMode_.toggleEditor();
-
-  this.changeCurrentMode_(this.slideMode_, event);
-};
-
-/**
- * Handles click event of ThumbnailModeButton.
- * @param {!Event} event An event.
- * @private
- */
-Gallery.prototype.onThumbnailModeButtonClicked_ = function(event) {
-  this.changeCurrentMode_(this.thumbnailMode_, event);
+Gallery.prototype.onModeSwitchButtonClicked_ = function(event) {
+  this.modeSwitchButtonRipple_.simulatedRipple();
+  this.toggleMode_(undefined /* callback */, event);
 };
 
 /**
@@ -488,6 +476,10 @@ Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
  * @private
  */
 Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
+  // If it's in editing, leave edit mode.
+  if (this.slideMode_.isEditing())
+    this.slideMode_.toggleEditor();
+
   var targetMode = this.currentMode_ === this.slideMode_ ?
       this.thumbnailMode_ : this.slideMode_;
 
@@ -642,8 +634,10 @@ Gallery.prototype.onKeyDown_ = function(event) {
     return;
 
   // Handle mode specific shortcut keys.
-  if (this.currentMode_.onKeyDown(event))
+  if (this.currentMode_.onKeyDown(event)) {
+    event.preventDefault();
     return;
+  }
 
   // Handle application wide shortcut keys.
   switch (keyString) {

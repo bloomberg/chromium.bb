@@ -1103,12 +1103,12 @@ SlideMode.prototype.onKeyDown = function(event) {
     case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
       if (!this.printButton_.disabled)
         this.print_();
-      break;
+      return true;
 
     case 'U+0045':  // 'e' toggles the editor.
       if (!this.editButton_.disabled)
         this.toggleEditor(event);
-      break;
+      return true;
 
     case 'U+001B':  // Escape
       if (this.isEditing()) {
@@ -1120,14 +1120,14 @@ SlideMode.prototype.onKeyDown = function(event) {
       } else {
         return false;  // Not handled.
       }
-      break;
+      return true;
 
     case 'Home':
       this.selectFirst();
-      break;
+      return true;
     case 'End':
       this.selectLast();
-      break;
+      return true;
     case 'Up':
     case 'Down':
     case 'Left':
@@ -1144,11 +1144,11 @@ SlideMode.prototype.onKeyDown = function(event) {
       } else {
         this.advanceWithKeyboard(keyID);
       }
-      break;
+      return true;
     case 'MediaNextTrack':
     case 'MediaPreviousTrack':
       this.advanceWithKeyboard(keyID);
-      break;
+      return true;
 
     case 'Ctrl-U+00BB':  // Ctrl+'=' zoom in.
       if (!this.isEditing()) {
@@ -1156,7 +1156,7 @@ SlideMode.prototype.onKeyDown = function(event) {
         this.touchHandlers_.stopOperation();
         this.imageView_.applyViewportChange();
       }
-      break;
+      return true;
 
     case 'Ctrl-U+00BD':  // Ctrl+'-' zoom out.
       if (!this.isEditing()) {
@@ -1164,7 +1164,7 @@ SlideMode.prototype.onKeyDown = function(event) {
         this.touchHandlers_.stopOperation();
         this.imageView_.applyViewportChange();
       }
-      break;
+      return true;
 
     case 'Ctrl-U+0030': // Ctrl+'0' zoom reset.
       if (!this.isEditing()) {
@@ -1172,10 +1172,10 @@ SlideMode.prototype.onKeyDown = function(event) {
         this.touchHandlers_.stopOperation();
         this.imageView_.applyViewportChange();
       }
-      break;
+      return true;
   }
 
-  return true;
+  return false;
 };
 
 /**

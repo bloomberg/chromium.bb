@@ -46,8 +46,12 @@
         </button>
         <paper-button class="print" i18n-values="title:GALLERY_PRINT" disabled></paper-button>
         <paper-button class="delete" i18n-values="title:GALLERY_DELETE"></paper-button>
-        <paper-button class="slide-mode" i18n-values="title:GALLERY_SLIDE"></paper-button>
-        <paper-button class="thumbnail-mode" i18n-values="title:GALLERY_THUMBNAIL"></paper-button>
+        <!-- Use button element for mode button to implement toggle switch button. -->
+        <button class="mode">
+          <div class="icon slide-mode" i18n-values="title:GALLERY_SLIDE"></div>
+          <div class="icon thumbnail-mode" i18n-values="title:GALLERY_THUMBNAIL"></div>
+          <paper-ripple></paper-ripple>
+        </button>
         <paper-button class="slideshow" i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
         <paper-button class="share" i18n-values="title:GALLERY_SHARE"></paper-button>
       </div>
