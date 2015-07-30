@@ -16,7 +16,6 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/profiles/profile.h"
-#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/panels/mouse_drag_controller.h"
 #import "chrome/browser/ui/cocoa/panels/panel_cocoa.h"
@@ -147,23 +146,6 @@ const double kWidthOfMouseResizeArea = 15.0;
 
   [super mouseMoved:event];
 }
-@end
-
-// ChromeEventProcessingWindow expects its controller to implement the
-// BrowserCommandExecutor protocol.
-@interface PanelWindowControllerCocoa (InternalAPI) <BrowserCommandExecutor>
-
-// BrowserCommandExecutor methods.
-- (void)executeCommand:(int)command;
-
-@end
-
-@implementation PanelWindowControllerCocoa (InternalAPI)
-
-// This gets called whenever a browser-specific keyboard shortcut is performed
-// in the Panel window. We simply swallow all those events.
-- (void)executeCommand:(int)command {}
-
 @end
 
 @implementation PanelWindowControllerCocoa

@@ -175,10 +175,6 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
   return proposedSize;
 }
 
-- (void)executeCommand:(int)command {
-  // No-op, swallow the event.
-}
-
 - (BOOL)handledByExtensionCommand:(NSEvent*)event
     priority:(ui::AcceleratorManager::HandlerPriority)priority {
   if (appWindow_)

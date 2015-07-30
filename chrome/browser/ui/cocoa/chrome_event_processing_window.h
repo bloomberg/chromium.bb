@@ -26,19 +26,10 @@
 // Returns |YES| if |event| has been handled.
 - (BOOL)redispatchKeyEvent:(NSEvent*)event;
 
-// See global_keyboard_shortcuts_mac.h for details on the next two functions.
-
-// Checks if |event| is a window keyboard shortcut. If so, dispatches it to the
-// window controller's |executeCommand:| and returns |YES|.
-- (BOOL)handleExtraWindowKeyboardShortcut:(NSEvent*)event;
-
-// Checks if |event| is a delayed window keyboard shortcut. If so, dispatches
-// it to the window controller's |executeCommand:| and returns |YES|.
-- (BOOL)handleDelayedWindowKeyboardShortcut:(NSEvent*)event;
-
-// Checks if |event| is a browser keyboard shortcut. If so, dispatches it to the
-// window controller's |executeCommand:| and returns |YES|.
-- (BOOL)handleExtraBrowserKeyboardShortcut:(NSEvent*)event;
+// Checks if |event| is a window, delayed window, or browser keyboard shortcut.
+// (See global_keyboard_shortcuts_mac.h for details). If so, execute the
+// associated command. Returns YES if the event was handled.
+- (BOOL)handleExtraKeyboardShortcut:(NSEvent*)event;
 
 // Override, so we can handle global keyboard events.
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent;

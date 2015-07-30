@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <AppKit/AppKit.h>
-#include <Carbon/Carbon.h>
-
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+
+#import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"

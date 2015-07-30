@@ -10,7 +10,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -26,9 +25,7 @@ class SkRegion;
 
 // A window controller for a minimal window to host a web app view. Passes
 // Objective-C notifications to the C++ bridge.
-@interface NativeAppWindowController : NSWindowController
-                                      <NSWindowDelegate,
-                                       BrowserCommandExecutor> {
+@interface NativeAppWindowController : NSWindowController<NSWindowDelegate> {
  @private
   NativeAppWindowCocoa* appWindow_;  // Weak; owns self.
   base::scoped_nsobject<NSView> titlebar_background_view_;

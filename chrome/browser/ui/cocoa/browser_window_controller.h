@@ -17,7 +17,6 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -61,7 +60,6 @@ class Command;
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
-                      BrowserCommandExecutor,
                       ViewResizer,
                       TabStripControllerDelegate> {
  @private
@@ -314,11 +312,6 @@ class Command;
 
 // The user changed the theme.
 - (void)userChangedTheme;
-
-// Executes the command in the context of the current browser.
-// |command| is an integer value containing one of the constants defined in the
-// "chrome/app/chrome_command_ids.h" file.
-- (void)executeCommand:(int)command;
 
 // Consults the Command Registry to see if this |event| needs to be handled as
 // an extension command and returns YES if so (NO otherwise).

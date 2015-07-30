@@ -45,13 +45,7 @@ using content::NativeWebKeyboardEvent;
     if ([[NSApp mainMenu] performKeyEquivalent:event])
       return true;
 
-    if ([event_window handleExtraBrowserKeyboardShortcut:event])
-      return true;
-
-    if ([event_window handleExtraWindowKeyboardShortcut:event])
-      return true;
-
-    if ([event_window handleDelayedWindowKeyboardShortcut:event])
+    if ([event_window handleExtraKeyboardShortcut:event])
       return true;
   }
 

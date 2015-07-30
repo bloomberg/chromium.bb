@@ -1263,12 +1263,6 @@ using content::WebContents;
           [NSApp currentEvent], modifierFlags));
 }
 
-// Called when another part of the internal codebase needs to execute a
-// command.
-- (void)executeCommand:(int)command {
-  chrome::ExecuteCommand(browser_.get(), command);
-}
-
 - (BOOL)handledByExtensionCommand:(NSEvent*)event
     priority:(ui::AcceleratorManager::HandlerPriority)priority {
   return extension_keybinding_registry_->ProcessKeyEvent(
