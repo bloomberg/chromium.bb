@@ -21,6 +21,8 @@ _SYSTRACE_OPTIONS = [
 # Interval in seconds for sampling systrace data.
 _SYSTRACE_INTERVAL = 15
 
+_TRACING_ON_PATH = '/sys/kernel/debug/tracing/tracing_on'
+
 
 class SystraceController(controllers.BaseController):
   def __init__(self, device, categories, ring_buffer):
@@ -55,15 +57,28 @@ class SystraceController(controllers.BaseController):
         out.write(self._trace_data)
       return output_name
 
-  def _RunATraceCommand(self, command):
+  def IsTracingOn(self):
+    result = self._RunAdbShellCommand(['cat', _TRACING_ON_PATH])
+    return result.strip() == '1'
+
+  def _RunAdbShellCommand(self, command):
     # We use a separate interface to adb because the one from AndroidCommands
     # isn't re-entrant.
     # TODO(jbudorick) Look at providing a way to unhandroll this once the
     #                 adb rewrite has fully landed.
     device_param = (['-s', str(self._device)] if str(self._device) else [])
-    cmd = ['adb'] + device_param + ['shell', 'atrace', '--%s' % command] + \
-        _SYSTRACE_OPTIONS + self._categories
+    cmd = ['adb'] + device_param + ['shell'] + command
     return cmd_helper.GetCmdOutput(cmd)
+
+  def _RunATraceCommand(self, command):
+    cmd = ['atrace', '--%s' % command] + _SYSTRACE_OPTIONS + self._categories
+    return self._RunAdbShellCommand(cmd)
+
+  def _ForceStopAtrace(self):
+    # atrace on pre-M Android devices cannot be stopped asynchronously
+    # correctly. Use synchronous mode to force stop.
+    cmd = ['atrace', '-t', '0']
+    return self._RunAdbShellCommand(cmd)
 
   def _CollectData(self):
     trace_data = []
@@ -77,6 +92,8 @@ class SystraceController(controllers.BaseController):
     finally:
       trace_data.append(
           self._DecodeTraceData(self._RunATraceCommand('async_stop')))
+      if self.IsTracingOn():
+        self._ForceStopAtrace()
     self._trace_data = ''.join([zlib.decompress(d) for d in trace_data])
 
   @staticmethod

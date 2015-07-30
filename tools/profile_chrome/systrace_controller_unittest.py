@@ -27,8 +27,9 @@ class SystraceControllerTest(controllers_unittest.BaseControllerTest):
       controller.StartTracing(interval)
     finally:
       controller.StopTracing()
-
     result = controller.PullTrace()
+
+    self.assertFalse(controller.IsTracingOn())
     try:
       with open(result) as f:
         self.assertTrue('CPU#' in f.read())
