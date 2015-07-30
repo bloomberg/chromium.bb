@@ -78,7 +78,14 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
 // memory is zeroed out when the memory is reused in Heap::allocateObject().
 // In production builds, memory is not zapped (for performance). The memory
 // is just zeroed out when it is added to the free list.
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if defined(MEMORY_SANITIZER)
+// TODO(kojii): We actually need __msan_poison/unpoison here, but it'll be
+// added later.
+#define SET_MEMORY_INACCESSIBLE(address, size) \
+    FreeList::zapFreedMemory(address, size);
+#define SET_MEMORY_ACCESSIBLE(address, size) \
+    memset((address), 0, (size))
+#elif ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define SET_MEMORY_INACCESSIBLE(address, size) \
     FreeList::zapFreedMemory(address, size);   \
     ASAN_POISON_MEMORY_REGION(address, size)
@@ -648,7 +655,7 @@ public:
     void getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& totalSize) const;
 #endif
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
     static void zapFreedMemory(Address, size_t);
 #endif
 
