@@ -955,6 +955,10 @@ base::ProcessId ChannelPosix::GetSenderPID() {
   return GetPeerPID();
 }
 
+bool ChannelPosix::IsAttachmentBrokerEndpoint() {
+  return is_attachment_broker_endpoint();
+}
+
 void ChannelPosix::Close() {
   // Close can be called multiple time, so we need to make sure we're
   // idempotent.

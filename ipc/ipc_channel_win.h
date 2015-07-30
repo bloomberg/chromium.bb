@@ -53,6 +53,7 @@ class ChannelWin : public Channel,
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
   base::ProcessId GetSenderPID() override;
+  bool IsAttachmentBrokerEndpoint() override;
 
   static const base::string16 PipeName(const std::string& channel_id,
                                        int32* secret);

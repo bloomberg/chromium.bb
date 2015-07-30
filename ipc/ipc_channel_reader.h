@@ -117,6 +117,9 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // Get the process ID for the sender of the message.
   virtual base::ProcessId GetSenderPID() = 0;
 
+  // Whether the channel is an endpoint of attachment brokering.
+  virtual bool IsAttachmentBrokerEndpoint() = 0;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentAlreadyBrokered);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentNotYetBrokered);

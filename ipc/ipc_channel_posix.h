@@ -84,6 +84,7 @@ class IPC_EXPORT ChannelPosix : public Channel,
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
   base::ProcessId GetSenderPID() override;
+  bool IsAttachmentBrokerEndpoint() override;
 
   // Finds the set of file descriptors in the given message.  On success,
   // appends the descriptors to the input_fds_ member and returns true
