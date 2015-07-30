@@ -54,7 +54,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
@@ -1412,8 +1411,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     // non-default search mode such as image search.
     match->type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
     match->provider = autocomplete_controller()->search_provider();
-    match->destination_url =
-        client_->GetNavigationController().GetVisibleEntry()->GetURL();
+    match->destination_url = client_->GetURL();
     match->transition = ui::PAGE_TRANSITION_RELOAD;
   } else if (query_in_progress() ||
              (popup_model() && popup_model()->IsOpen())) {
