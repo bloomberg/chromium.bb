@@ -2844,3 +2844,5 @@ crbug.com/513073 [ Win ] http/tests/inspector/network/network-memory-cached-reso
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
+
+crbug.com/499780 fast/css/rem-calc-dynamic-scaling.html [ NeedsRebaseline ]

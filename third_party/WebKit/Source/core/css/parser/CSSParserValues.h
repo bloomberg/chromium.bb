@@ -77,7 +77,7 @@ public:
         : m_current(0)
     {
     }
-    CSSParserValueList(CSSParserTokenRange, bool& usesRemUnits);
+    CSSParserValueList(CSSParserTokenRange);
     ~CSSParserValueList();
 
     void addValue(const CSSParserValue&);

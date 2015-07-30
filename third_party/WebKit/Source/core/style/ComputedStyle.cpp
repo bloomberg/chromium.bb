@@ -253,6 +253,7 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     noninherited_flags.pageBreakBefore = other.noninherited_flags.pageBreakBefore;
     noninherited_flags.pageBreakAfter = other.noninherited_flags.pageBreakAfter;
     noninherited_flags.pageBreakInside = other.noninherited_flags.pageBreakInside;
+    noninherited_flags.hasRemUnits = other.noninherited_flags.hasRemUnits;
 
     // Correctly set during selector matching:
     // noninherited_flags.styleType

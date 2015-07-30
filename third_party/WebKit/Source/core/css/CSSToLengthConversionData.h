@@ -81,7 +81,7 @@ public:
     float zoom() const { return m_zoom; }
 
     float emFontSize() const { return m_fontSizes.em(); }
-    float remFontSize() const { return m_fontSizes.rem(); }
+    float remFontSize() const;
     float exFontSize() const { return m_fontSizes.ex(); }
     float chFontSize() const { return m_fontSizes.ch(); }
 

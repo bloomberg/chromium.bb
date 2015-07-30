@@ -104,8 +104,7 @@ TEST(CSSParserValuesTest, CSSParserValuelistClear)
 TEST(CSSParserValuesTest, CSSParserTokenUrlConversion)
 {
     CSSTokenizer::Scope scope("url(some) uRL('test') UrL(  \"words\" /**/ ) URl( /**/hi/**/ )");
-    bool usesRemUnits;
-    CSSParserValueList valueList(scope.tokenRange(), usesRemUnits);
+    CSSParserValueList valueList(scope.tokenRange());
     ASSERT_EQ(valueList.size(), 4u);
     ASSERT_EQ(valueList.valueAt(0)->unit(), CSSPrimitiveValue::UnitType::URI);
     EXPECT_EQ(String(valueList.valueAt(0)->string), "some");

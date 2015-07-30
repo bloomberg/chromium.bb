@@ -1746,9 +1746,6 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
 
-    if (m_elemSheet && m_elemSheet->contents()->usesRemUnits())
-        styleEngine().setUsesRemUnit(true);
-
     updateStyle(change);
 
     notifyLayoutTreeOfSubtreeChanges();
@@ -2874,10 +2871,7 @@ void Document::updateBaseURL()
     if (m_elemSheet) {
         // Element sheet is silly. It never contains anything.
         ASSERT(!m_elemSheet->contents()->ruleCount());
-        bool usesRemUnits = m_elemSheet->contents()->usesRemUnits();
         m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
-        // FIXME: So we are not really the parser. The right fix is to eliminate the element sheet completely.
-        m_elemSheet->contents()->parserSetUsesRemUnits(usesRemUnits);
     }
 
     if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
