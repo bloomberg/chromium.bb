@@ -139,6 +139,8 @@ struct CONTENT_EXPORT WebPreferences {
   // features (like geolocation) that we haven't yet disabled for the web at
   // large.
   bool strict_powerful_feature_restrictions;
+  // Disallow user opt-in for blockable mixed content.
+  bool strictly_block_blockable_mixed_content;
   bool password_echo_enabled;
   bool should_print_backgrounds;
   bool should_clear_document_background;

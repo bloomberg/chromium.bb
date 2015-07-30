@@ -523,6 +523,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.strict_powerful_feature_restrictions = command_line.HasSwitch(
       switches::kEnableStrictPowerfulFeatureRestrictions);
 
+  const std::string blockable_mixed_content_group =
+      base::FieldTrialList::FindFullName("BlockableMixedContent");
+  prefs.strictly_block_blockable_mixed_content =
+      blockable_mixed_content_group == "StrictlyBlockBlockableMixedContent";
+
   prefs.v8_cache_options = GetV8CacheOptions();
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);

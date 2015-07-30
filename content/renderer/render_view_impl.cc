@@ -1064,6 +1064,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.allow_running_insecure_content);
   settings->setDisableReadingFromCanvas(prefs.disable_reading_from_canvas);
   settings->setStrictMixedContentChecking(prefs.strict_mixed_content_checking);
+
+  settings->setStrictlyBlockBlockableMixedContent(
+      prefs.strictly_block_blockable_mixed_content);
+
   settings->setStrictPowerfulFeatureRestrictions(
       prefs.strict_powerful_feature_restrictions);
   settings->setPasswordEchoEnabled(prefs.password_echo_enabled);
