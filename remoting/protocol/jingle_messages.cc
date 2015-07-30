@@ -22,9 +22,6 @@ namespace {
 const char kJabberNamespace[] = "jabber:client";
 const char kJingleNamespace[] = "urn:xmpp:jingle:1";
 
-// Namespace for transport messages for legacy GICE.
-const char kGiceTransportNamespace[] = "http://www.google.com/transport/p2p";
-
 // Namespace for transport messages when using standard ICE.
 const char kIceTransportNamespace[] = "google:remoting:ice";
 
@@ -294,13 +291,6 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
       *error = "Failed to parse content description";
       return false;
     }
-  }
-
-  const XmlElement* gice_transport_tag = content_tag->FirstNamed(
-      QName(kGiceTransportNamespace, "transport"));
-  if (gice_transport_tag) {
-    *error = "Legacy GICE transport information is received.";
-    return false;
   }
 
   const XmlElement* ice_transport_tag = content_tag->FirstNamed(
