@@ -41,7 +41,7 @@ class BluetoothLowEnergyConnectionFinder
       int max_number_of_tries);
   ~BluetoothLowEnergyConnectionFinder() override;
 
-  // Finds a connection to the remote device. Only the first one is functional.
+  // Finds a connection to the remote device.
   void Find(const ConnectionCallback& connection_callback) override;
 
   // proximity_auth::ConnectionObserver:
@@ -56,21 +56,12 @@ class BluetoothLowEnergyConnectionFinder
                    device::BluetoothDevice* device) override;
   void DeviceChanged(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
-  void DeviceRemoved(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override;
 
  protected:
-  // Closes the GATT connection. Virtual for testing.
-  virtual void CloseGattConnection(
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
-
-  // Creates a proximity_auth::Connection based on |gatt_connection|. Exposed
-  // for testing.
+  // Creates a proximity_auth::Connection with the device given by
+  // |device_address|. Exposed for testing.
   virtual scoped_ptr<Connection> CreateConnection(
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
-
-  // Sets |delay_after_gatt_connection_| for testing.
-  void SetDelayForTesting(base::TimeDelta delay);
+      const std::string& device_address);
 
  private:
   // Callback to be called when the Bluetooth adapter is initialized.
@@ -102,23 +93,6 @@ class BluetoothLowEnergyConnectionFinder
   // Checks if a service with |service_uuid| is offered by |remote_device|.
   bool HasService(device::BluetoothDevice* remote_device);
 
-  // Callback called when there is an error creating the connection.
-  void OnCreateGattConnectionError(
-      std::string device_address,
-      device::BluetoothDevice::ConnectErrorCode error_code);
-
-  // Callback called when a GATT connection is created.
-  void OnGattConnectionCreated(
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
-
-  // Creates a GATT connection with |remote_device|, |connection_callback_| will
-  // be called once the connection is established.
-  void CreateGattConnection(device::BluetoothDevice* remote_device);
-
-  // Creates a BluetoothLowEnergyconnection object and adds the necessary
-  // observers.
-  void CompleteConnection();
-
   // Restarts the discovery session after creating |connection_| fails.
   void RestartDiscoverySessionWhenReady();
 
@@ -144,16 +118,6 @@ class BluetoothLowEnergyConnectionFinder
   // The discovery session associated to this object.
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
-  // True if a connection was established with a paired remote device that has
-  // the service |remote_service_uuid_|.
-  bool connected_;
-
-  // The remote device |gatt_connection_| was created with.
-  RemoteDevice remote_device_;
-
-  // The GATT connection with |remote_device|.
-  scoped_ptr<device::BluetoothGattConnection> gatt_connection_;
-
   // The connection with |remote_device|.
   scoped_ptr<Connection> connection_;
 
@@ -161,15 +125,8 @@ class BluetoothLowEnergyConnectionFinder
   // device::BluetoothDevice::GattConnectionCallback connection_callback_;
   ConnectionCallback connection_callback_;
 
-  // The set of devices this connection finder has tried to connect to.
-  std::set<device::BluetoothDevice*> pending_connections_;
-
   // BluetoothLowEnergyConnection parameter.
   int max_number_of_tries_;
-
-  // Necessary delay after a GATT connection is created and before any
-  // read/write request is sent to the characteristics.
-  base::TimeDelta delay_after_gatt_connection_;
 
   base::WeakPtrFactory<BluetoothLowEnergyConnectionFinder> weak_ptr_factory_;
 

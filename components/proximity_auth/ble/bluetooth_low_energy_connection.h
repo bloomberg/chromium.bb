@@ -65,7 +65,6 @@ class BluetoothLowEnergyConnection : public Connection,
   enum class SubStatus {
     DISCONNECTED,
     WAITING_GATT_CONNECTION,
-    GATT_CONNECTION_ESTABLISHED,
     WAITING_CHARACTERISTICS,
     CHARACTERISTICS_FOUND,
     WAITING_NOTIFY_SESSION,
@@ -85,7 +84,6 @@ class BluetoothLowEnergyConnection : public Connection,
       const device::BluetoothUUID remote_service_uuid,
       const device::BluetoothUUID to_peripheral_char_uuid,
       const device::BluetoothUUID from_peripheral_char_uuid,
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection,
       int max_number_of_write_attempts);
 
   ~BluetoothLowEnergyConnection() override;
@@ -98,6 +96,9 @@ class BluetoothLowEnergyConnection : public Connection,
   // Exposed for testing.
   void SetSubStatus(SubStatus status);
   SubStatus sub_status() { return sub_status_; }
+
+  // Sets |delay_after_gatt_connection_| for testing.
+  void SetDelayForTesting(base::TimeDelta delay);
 
   // Virtual for testing.
   virtual BluetoothLowEnergyCharacteristicsFinder* CreateCharacteristicsFinder(
@@ -287,6 +288,12 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // Stores when the instace was created.
   base::TimeTicks start_time_;
+
+  // Delay imposed after a GATT connection is created and before any read/write
+  // request is sent to the characteristics. This delay is necessary as a
+  // workaroud for crbug.com/507325. Reading/writing characteristics
+  // immediatelly after the connection is complete fails with GATT_ERROR_FAILED.
+  base::TimeDelta delay_after_gatt_connection_;
 
   base::WeakPtrFactory<BluetoothLowEnergyConnection> weak_ptr_factory_;
 

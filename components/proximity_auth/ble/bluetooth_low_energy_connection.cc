@@ -5,8 +5,10 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
@@ -38,6 +40,11 @@ const int kFirstByteZero = 0;
 // request.
 const int kMaxChunkSize = 100;
 
+// This delay is necessary as a workaroud for crbug.com/507325. Reading/writing
+// characteristics immediatelly after the connection is complete fails with
+// GATT_ERROR_FAILED.
+const int kDelayAfterGattConnectionMilliseconds = 1000;
+
 }  // namespace
 
 BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
@@ -46,24 +53,23 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     const BluetoothUUID remote_service_uuid,
     const BluetoothUUID to_peripheral_char_uuid,
     const BluetoothUUID from_peripheral_char_uuid,
-    scoped_ptr<BluetoothGattConnection> gatt_connection,
     int max_number_of_write_attempts)
     : Connection(device),
       adapter_(adapter),
       remote_service_({remote_service_uuid, ""}),
       to_peripheral_char_({to_peripheral_char_uuid, ""}),
       from_peripheral_char_({from_peripheral_char_uuid, ""}),
-      gatt_connection_(gatt_connection.Pass()),
       sub_status_(SubStatus::DISCONNECTED),
       receiving_bytes_(false),
       write_remote_characteristic_pending_(false),
       max_number_of_write_attempts_(max_number_of_write_attempts),
       max_chunk_size_(kMaxChunkSize),
+      delay_after_gatt_connection_(base::TimeDelta::FromMilliseconds(
+          kDelayAfterGattConnectionMilliseconds)),
       weak_ptr_factory_(this) {
   DCHECK(adapter_);
   DCHECK(adapter_->IsInitialized());
 
-  start_time_ = base::TimeTicks::Now();
   adapter_->AddObserver(this);
 }
 
@@ -76,13 +82,13 @@ BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
 }
 
 void BluetoothLowEnergyConnection::Connect() {
-  if (gatt_connection_ && gatt_connection_->IsConnected()) {
-    OnGattConnectionCreated(gatt_connection_.Pass());
-    return;
-  }
+  DCHECK(sub_status() == SubStatus::DISCONNECTED);
 
+  start_time_ = base::TimeTicks::Now();
   BluetoothDevice* remote_device = GetRemoteDevice();
   if (remote_device) {
+    PA_LOG(INFO) << "Creating GATT connection with "
+                 << remote_device->GetAddress();
     SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
     remote_device->CreateGattConnection(
         base::Bind(&BluetoothLowEnergyConnection::OnGattConnectionCreated,
@@ -93,7 +99,7 @@ void BluetoothLowEnergyConnection::Connect() {
 }
 
 void BluetoothLowEnergyConnection::Disconnect() {
-  if (sub_status_ != SubStatus::DISCONNECTED) {
+  if (sub_status() != SubStatus::DISCONNECTED) {
     ClearWriteRequestsQueue();
     StopNotifySession();
     characteristic_finder_.reset();
@@ -123,6 +129,10 @@ void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
   } else {
     SetStatus(IN_PROGRESS);
   }
+}
+
+void BluetoothLowEnergyConnection::SetDelayForTesting(base::TimeDelta delay) {
+  delay_after_gatt_connection_ = delay;
 }
 
 void BluetoothLowEnergyConnection::SendMessageImpl(
@@ -161,13 +171,15 @@ void BluetoothLowEnergyConnection::SendMessageImpl(
 
 // Changes in the GATT connection with the remote device should be observed
 // here. If the GATT connection is dropped, we should call Disconnect() anyway,
-// so the object can notify its observers put itself in the right state.
+// so the object can notify its observers.
 void BluetoothLowEnergyConnection::DeviceChanged(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
-  if (sub_status_ == SubStatus::DISCONNECTED)
+  DCHECK(device);
+  if (sub_status() == SubStatus::DISCONNECTED ||
+      device->GetAddress() != GetRemoteDeviceAddress())
     return;
 
-  if (device && device->GetAddress() == GetRemoteDeviceAddress() &&
+  if (sub_status() != SubStatus::WAITING_GATT_CONNECTION &&
       !device->IsConnected()) {
     PA_LOG(INFO) << "GATT connection dropped " << GetRemoteDeviceAddress()
                  << "\ndevice connected: " << device->IsConnected()
@@ -180,23 +192,23 @@ void BluetoothLowEnergyConnection::DeviceChanged(BluetoothAdapter* adapter,
 
 void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
-  if (sub_status_ == SubStatus::DISCONNECTED)
+  DCHECK(device);
+  if (sub_status_ == SubStatus::DISCONNECTED ||
+      device->GetAddress() != GetRemoteDeviceAddress())
     return;
 
-  if (device && device->GetAddress() == GetRemoteDeviceAddress()) {
-    PA_LOG(INFO) << "Device removed " << GetRemoteDeviceAddress();
-    Disconnect();
-  }
+  PA_LOG(INFO) << "Device removed " << GetRemoteDeviceAddress();
+  Disconnect();
 }
 
 void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8>& value) {
-  if (sub_status_ == SubStatus::DISCONNECTED)
-    return;
-
   DCHECK_EQ(adapter, adapter_.get());
+  if (sub_status() != SubStatus::WAITING_RESPONSE_SIGNAL &&
+      sub_status() != SubStatus::CONNECTED)
+    return;
 
   PA_LOG(INFO) << "Characteristic value changed: "
                << characteristic->GetUUID().canonical_value();
@@ -270,6 +282,7 @@ void BluetoothLowEnergyConnection::CompleteConnection() {
 
 void BluetoothLowEnergyConnection::OnCreateGattConnectionError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
+  DCHECK(sub_status_ == SubStatus::WAITING_GATT_CONNECTION);
   PA_LOG(WARNING) << "Error creating GATT connection to "
                   << remote_device().bluetooth_address
                   << "error code: " << error_code;
@@ -278,6 +291,10 @@ void BluetoothLowEnergyConnection::OnCreateGattConnectionError(
 
 void BluetoothLowEnergyConnection::OnGattConnectionCreated(
     scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
+  DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
+  PA_LOG(INFO) << "GATT connection with " << gatt_connection->GetDeviceAddress()
+               << " created.";
+
   gatt_connection_ = gatt_connection.Pass();
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
   characteristic_finder_.reset(CreateCharacteristicsFinder(
@@ -302,6 +319,7 @@ void BluetoothLowEnergyConnection::OnCharacteristicsFound(
     const RemoteAttribute& service,
     const RemoteAttribute& to_peripheral_char,
     const RemoteAttribute& from_peripheral_char) {
+  DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
   remote_service_ = service;
   to_peripheral_char_ = to_peripheral_char;
   from_peripheral_char_ = from_peripheral_char;
@@ -313,6 +331,7 @@ void BluetoothLowEnergyConnection::OnCharacteristicsFound(
 void BluetoothLowEnergyConnection::OnCharacteristicsFinderError(
     const RemoteAttribute& to_peripheral_char,
     const RemoteAttribute& from_peripheral_char) {
+  DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
   PA_LOG(WARNING) << "Connection error, missing characteristics for SmartLock "
                      "service.\n"
                   << (to_peripheral_char.id.empty()
@@ -353,19 +372,20 @@ void BluetoothLowEnergyConnection::StartNotifySession() {
 
 void BluetoothLowEnergyConnection::OnNotifySessionError(
     BluetoothGattService::GattErrorCode error) {
+  DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(WARNING) << "Error starting notification session: " << error;
   Disconnect();
 }
 
 void BluetoothLowEnergyConnection::OnNotifySessionStarted(
     scoped_ptr<BluetoothGattNotifySession> notify_session) {
+  DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   PA_LOG(INFO) << "Notification session started "
                << notify_session->GetCharacteristicIdentifier();
 
   SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
   notify_session_ = notify_session.Pass();
 
-  // Sends an invite to connect signal if ready.
   SendInviteToConnectSignal();
 }
 
@@ -386,7 +406,14 @@ void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
             static_cast<uint32>(ControlSignal::kInviteToConnectSignal)),
         std::vector<uint8>(), false);
 
-    WriteRemoteCharacteristic(write_request);
+    // This is a workaround for crbug.com/498850. Currently, trying to
+    // write/read characteristics immediatelly after the GATT connection was
+    // established fails with GATT_ERROR_FAILED.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&BluetoothLowEnergyConnection::WriteRemoteCharacteristic,
+                   weak_ptr_factory_.GetWeakPtr(), write_request),
+        delay_after_gatt_connection_);
   }
 }
 
