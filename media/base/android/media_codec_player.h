@@ -155,6 +155,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   typedef base::Callback<void(const base::TimeDelta& current_timestamp)>
       SeekDoneCallback;
 
+  typedef base::Callback<void(int)> ErrorCallback;
+
   // Constructs a player with the given ID and demuxer. |manager| must outlive
   // the lifetime of this object.
   MediaCodecPlayer(int player_id,
@@ -195,14 +197,20 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
  private:
   // The state machine states.
   enum PlayerState {
-    STATE_PAUSED,
-    STATE_WAITING_FOR_CONFIG,
-    STATE_PREFETCHING,
-    STATE_PLAYING,
-    STATE_STOPPING,
-    STATE_WAITING_FOR_SURFACE,
-    STATE_WAITING_FOR_SEEK,
-    STATE_ERROR,
+    kStatePaused,
+    kStateWaitingForConfig,
+    kStatePrefetching,
+    kStatePlaying,
+    kStateStopping,
+    kStateWaitingForSurface,
+    kStateWaitingForSeek,
+    kStateError,
+  };
+
+  enum StartStatus {
+    kStartOk = 0,
+    kStartBrowserSeekRequired,
+    kStartFailed,
   };
 
   // Cached values for the manager.
@@ -244,8 +252,6 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // Operations called from the state machine.
   void SetState(PlayerState new_state);
-  void SetPendingSurface(gfx::ScopedJavaSurface surface);
-  bool HasPendingSurface() const;
   void SetPendingStart(bool need_to_start);
   bool HasPendingStart() const;
   void SetPendingSeek(base::TimeDelta timestamp);
@@ -254,7 +260,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   bool HasAudio() const;
   void SetDemuxerConfigs(const DemuxerConfigs& configs);
   void StartPrefetchDecoders();
-  void StartPlaybackDecoders();
+  void StartPlaybackOrBrowserSeek();
+  StartStatus StartPlaybackDecoders();
   void StopDecoders();
   void RequestToStopDecoders();
   void RequestDemuxerSeek(base::TimeDelta seek_time,
@@ -287,6 +294,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   TimeUpdateCallback time_update_cb_;
   base::Closure completion_cb_;
   SeekDoneCallback seek_done_cb_;
+  ErrorCallback error_cb_;
 
   // A callback that updates metadata cache and calls the manager.
   MetadataChangedCallback metadata_changed_cb_;
@@ -298,7 +306,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // Error callback is posted by decoders or by this class itself if we cannot
   // configure or start decoder.
-  base::Closure error_cb_;
+  base::Closure internal_error_cb_;
 
   // Total duration reported by demuxer.
   base::TimeDelta duration_;

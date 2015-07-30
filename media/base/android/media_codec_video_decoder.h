@@ -44,10 +44,10 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   void ReleaseDecoderResources() override;
 
   // Stores the video surface to use with upcoming Configure()
-  void SetPendingSurface(gfx::ScopedJavaSurface surface);
+  void SetVideoSurface(gfx::ScopedJavaSurface surface);
 
   // Returns true if there is a video surface to use.
-  bool HasPendingSurface() const;
+  bool HasVideoSurface() const;
 
  protected:
   bool IsCodecReconfigureNeeded(const DemuxerConfigs& curr,
@@ -62,7 +62,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
               bool eos_encountered) override;
 
   int NumDelayedRenderTasks() const override;
-  void ReleaseDelayedBuffers() override;
+  void ClearDelayedBuffers(bool release) override;
 
 #ifndef NDEBUG
   void VerifyUnitIsKeyFrame(const AccessUnit* unit) const override;

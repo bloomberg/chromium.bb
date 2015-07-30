@@ -58,7 +58,9 @@ bool AlmostEqual(base::TimeDelta a, base::TimeDelta b, double tolerance_ms) {
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
   MockMediaPlayerManager()
-      : playback_completed_(false), weak_ptr_factory_(this) {}
+      : playback_completed_(false),
+        num_seeks_completed_(0),
+        weak_ptr_factory_(this) {}
   ~MockMediaPlayerManager() override {}
 
   MediaResourceGetter* GetMediaResourceGetter() override { return nullptr; }
@@ -88,7 +90,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnMediaInterrupted(int player_id) override {}
   void OnBufferingUpdate(int player_id, int percentage) override {}
   void OnSeekComplete(int player_id,
-                      const base::TimeDelta& current_time) override {}
+                      const base::TimeDelta& current_time) override {
+    ++num_seeks_completed_;
+  }
   void OnError(int player_id, int error) override {}
   void OnVideoSizeChanged(int player_id, int width, int height) override {}
   void OnAudibleStateChanged(int player_id, bool is_audible_now) override {}
@@ -110,6 +114,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   bool IsPlaybackBeyondPosition(const base::TimeDelta& pts) const {
     return pts_stat_.max() > pts;
   }
+  bool IsSeekCompleted() const { return num_seeks_completed_ > 0; }
 
   struct MediaMetadata {
     base::TimeDelta duration;
@@ -124,6 +129,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 
  private:
   bool playback_completed_;
+  int num_seeks_completed_;
 
   base::WeakPtrFactory<MockMediaPlayerManager> weak_ptr_factory_;
 
@@ -175,12 +181,15 @@ class AudioFactory : public TestDataFactory {
 class VideoFactory : public TestDataFactory {
  public:
   VideoFactory(base::TimeDelta duration)
-      : TestDataFactory("h264-320x180-frame-%d", duration, kVideoFramePeriod) {}
+      : TestDataFactory("h264-320x180-frame-%d", duration, kVideoFramePeriod),
+        key_frame_requested_(true) {}
 
   DemuxerConfigs GetConfigs() const override {
     return TestDataFactory::CreateVideoConfigs(kCodecH264, duration_,
                                                gfx::Size(320, 180));
   }
+
+  void RequestKeyFrame() { key_frame_requested_ = true; }
 
  protected:
   void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override {
@@ -196,7 +205,8 @@ class VideoFactory : public TestDataFactory {
     // Swap pts for second and third frames. Make first frame a key frame.
     switch (index_in_chunk) {
       case 0:  // first frame
-        unit->is_key_frame = true;
+        unit->is_key_frame = key_frame_requested_;
+        key_frame_requested_ = false;
         break;
       case 1:  // second frame
         unit->timestamp += frame_period_;
@@ -211,13 +221,17 @@ class VideoFactory : public TestDataFactory {
         break;
     }
   }
+
+ private:
+  bool key_frame_requested_;
 };
 
 // Mock of DemuxerAndroid for testing purpose.
 
 class MockDemuxerAndroid : public DemuxerAndroid {
  public:
-  MockDemuxerAndroid() : client_(nullptr) {}
+  MockDemuxerAndroid()
+      : client_(nullptr), num_seeks_(0), num_browser_seeks_(0) {}
   ~MockDemuxerAndroid() override {}
 
   // DemuxerAndroid implementation
@@ -227,14 +241,17 @@ class MockDemuxerAndroid : public DemuxerAndroid {
                           bool is_browser_seek) override;
 
   // Sets the audio data factory.
-  void SetAudioFactory(scoped_ptr<TestDataFactory> factory) {
+  void SetAudioFactory(scoped_ptr<AudioFactory> factory) {
     audio_factory_ = factory.Pass();
   }
 
   // Sets the video data factory.
-  void SetVideoFactory(scoped_ptr<TestDataFactory> factory) {
+  void SetVideoFactory(scoped_ptr<VideoFactory> factory) {
     video_factory_ = factory.Pass();
   }
+
+  // Sets the delay in OnDemuxerSeekDone response.
+  void SetSeekDoneDelay(base::TimeDelta delay) { seek_done_delay_ = delay; }
 
   // Post DemuxerConfigs to the client (i.e. the player) on correct thread.
   void PostConfigs(const DemuxerConfigs& configs);
@@ -245,12 +262,17 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   // Conditions to wait for.
   bool IsInitialized() const { return client_; }
   bool HasPendingConfigs() const { return pending_configs_; }
+  bool ReceivedSeekRequest() const { return num_seeks_ > 0; }
+  bool ReceivedBrowserSeekRequest() const { return num_browser_seeks_ > 0; }
 
  private:
   DemuxerAndroidClient* client_;
   scoped_ptr<DemuxerConfigs> pending_configs_;
-  scoped_ptr<TestDataFactory> audio_factory_;
-  scoped_ptr<TestDataFactory> video_factory_;
+  scoped_ptr<AudioFactory> audio_factory_;
+  scoped_ptr<VideoFactory> video_factory_;
+  base::TimeDelta seek_done_delay_;
+  int num_seeks_;
+  int num_browser_seeks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDemuxerAndroid);
 };
@@ -292,16 +314,23 @@ void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
   // Tell data factories to start next chunk with the new timestamp.
   if (audio_factory_)
     audio_factory_->SeekTo(time_to_seek);
-  if (video_factory_)
+  if (video_factory_) {
     video_factory_->SeekTo(time_to_seek);
+    video_factory_->RequestKeyFrame();
+  }
+
+  ++num_seeks_;
+  if (is_browser_seek)
+    ++num_browser_seeks_;
 
   // Post OnDemuxerSeekDone() to the player.
   DCHECK(client_);
   base::TimeDelta reported_seek_time =
       is_browser_seek ? time_to_seek : kNoTimestamp();
-  GetMediaTaskRunner()->PostTask(
+  GetMediaTaskRunner()->PostDelayedTask(
       FROM_HERE, base::Bind(&DemuxerAndroidClient::OnDemuxerSeekDone,
-                            base::Unretained(client_), reported_seek_time));
+                            base::Unretained(client_), reported_seek_time),
+      seek_done_delay_);
 }
 
 void MockDemuxerAndroid::PostConfigs(const DemuxerConfigs& configs) {
@@ -347,6 +376,8 @@ class MediaCodecPlayerTest : public testing::Test {
 
   void CreatePlayer();
   void SetVideoSurface();
+  void SetVideoSurfaceB();
+  void RemoveVideoSurface();
 
   // Waits for condition to become true or for timeout to expire.
   // Returns true if the condition becomes true.
@@ -363,10 +394,15 @@ class MediaCodecPlayerTest : public testing::Test {
       const base::TimeDelta& pts,
       const base::TimeDelta& timeout = kDefaultTimeout);
 
+  // Helper method that starts video only stream. Waits till it actually
+  // started.
+  void StartVideoPlayback(base::TimeDelta duration);
+
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
   MockDemuxerAndroid* demuxer_;  // owned by player_
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_a_;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_b_;
   MediaCodecPlayer* player_;     // raw pointer due to DeleteOnCorrectThread()
 
  private:
@@ -400,11 +436,24 @@ void MediaCodecPlayerTest::CreatePlayer() {
 }
 
 void MediaCodecPlayerTest::SetVideoSurface() {
-  surface_texture_ = gfx::SurfaceTexture::Create(0);
-  gfx::ScopedJavaSurface surface(surface_texture_.get());
+  surface_texture_a_ = gfx::SurfaceTexture::Create(0);
+  gfx::ScopedJavaSurface surface(surface_texture_a_.get());
 
   ASSERT_NE(nullptr, player_);
   player_->SetVideoSurface(surface.Pass());
+}
+
+void MediaCodecPlayerTest::SetVideoSurfaceB() {
+  surface_texture_b_ = gfx::SurfaceTexture::Create(1);
+  gfx::ScopedJavaSurface surface(surface_texture_b_.get());
+
+  ASSERT_NE(nullptr, player_);
+  player_->SetVideoSurface(surface.Pass());
+}
+
+void MediaCodecPlayerTest::RemoveVideoSurface() {
+  player_->SetVideoSurface(gfx::ScopedJavaSurface());
+  surface_texture_a_ = NULL;
 }
 
 bool MediaCodecPlayerTest::WaitForCondition(const Predicate& condition,
@@ -442,6 +491,33 @@ bool MediaCodecPlayerTest::WaitForPlaybackBeyondPosition(
       base::Bind(&MockMediaPlayerManager::IsPlaybackBeyondPosition,
                  base::Unretained(&manager_), pts),
       timeout);
+}
+
+void MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration) {
+  const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Start the player.
+  EXPECT_FALSE(manager_.IsPlaybackStarted());
+  player_->Start();
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
 }
 
 TEST_F(MediaCodecPlayerTest, SetAudioConfigsBeforePlayerCreation) {
@@ -552,23 +628,9 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
 
-  demuxer_->SetVideoFactory(
-      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+  StartVideoPlayback(duration);
 
-  CreatePlayer();
-  SetVideoSurface();
-
-  // Wait till the player is initialized on media thread.
-  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
-                                          base::Unretained(demuxer_))));
-
-  // Post configuration after the player has been initialized.
-  demuxer_->PostInternalConfigs();
-
-  EXPECT_FALSE(manager_.IsPlaybackCompleted());
-
-  player_->Start();
-
+  // Wait till completion.
   EXPECT_TRUE(
       WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
                                   base::Unretained(&manager_)),
@@ -630,6 +692,10 @@ TEST_F(MediaCodecPlayerTest, AudioSeekAfterStop) {
 
   // Make sure we started from the beginninig
   EXPECT_GT(base::TimeDelta::FromMilliseconds(40), manager_.pts_stat_.min());
+
+  // The player should have reported the seek completion to the manager.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
 TEST_F(MediaCodecPlayerTest, AudioSeekThenPlay) {
@@ -660,6 +726,10 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlay) {
 
   // The playback should start at |seek_position|
   EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+
+  // The player should have reported the seek completion to the manager.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
 TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
@@ -695,6 +765,10 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
 
   // The playback should start at |seek_position|
   EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+
+  // The player should have reported the seek completion to the manager.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
 TEST_F(MediaCodecPlayerTest, AudioSeekWhilePlaying) {
@@ -740,6 +814,245 @@ TEST_F(MediaCodecPlayerTest, AudioSeekWhilePlaying) {
   // i.e. 200 ms.
   EXPECT_TRUE(WaitForPlaybackBeyondPosition(base::TimeDelta::FromSeconds(5)));
   EXPECT_TRUE(player_->IsPlaying());
+
+  // The player should have reported the seek completion to the manager.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
+}
+
+TEST_F(MediaCodecPlayerTest, VideoReplaceSurface) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
+
+  StartVideoPlayback(duration);
+
+  // Wait for some time and check statistics.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // Set new video surface without removing the old one.
+  SetVideoSurfaceB();
+
+  // We should receive a browser seek request.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MockDemuxerAndroid::ReceivedBrowserSeekRequest,
+                 base::Unretained(demuxer_))));
+
+  // Playback should continue with a new surface. Wait till completion.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_)),
+                       timeout));
+  EXPECT_LE(duration, manager_.pts_stat_.max());
+}
+
+TEST_F(MediaCodecPlayerTest, VideoRemoveAndSetSurface) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
+
+  StartVideoPlayback(duration);
+
+  // Wait for some time and check statistics.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // Remove video surface.
+  RemoveVideoSurface();
+
+  // We should be stuck waiting for the new surface.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+  EXPECT_FALSE(player_->IsPlaying());
+
+  // Save last PTS and clear statistics.
+  base::TimeDelta max_pts_before_removal = manager_.pts_stat_.max();
+  manager_.pts_stat_.Clear();
+
+  // After clearing statistics we are ready to wait for IsPlaybackStarted again.
+  EXPECT_FALSE(manager_.IsPlaybackStarted());
+
+  // Extra RemoveVideoSurface() should not change anything.
+  RemoveVideoSurface();
+
+  // Set another video surface.
+  SetVideoSurfaceB();
+
+  // We should receive a browser seek request.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MockDemuxerAndroid::ReceivedBrowserSeekRequest,
+                 base::Unretained(demuxer_))));
+
+  // Playback should continue with a new surface. Wait till it starts again.
+  base::TimeDelta reconfigure_timeout = base::TimeDelta::FromMilliseconds(800);
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       reconfigure_timeout));
+
+  // Timestamps should not go back.
+  EXPECT_LE(max_pts_before_removal, manager_.pts_stat_.max());
+}
+
+TEST_F(MediaCodecPlayerTest, VideoReleaseAndStart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
+
+  StartVideoPlayback(duration);
+
+  // Wait for some time and check statistics.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // When the user presses Tasks button Chrome calls Pause() and Release().
+  player_->Pause(true);
+  player_->Release();
+
+  // Make sure we are not playing any more.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+  EXPECT_FALSE(player_->IsPlaying());
+
+  // Save last PTS and clear statistics.
+  base::TimeDelta max_pts_before_backgrounding = manager_.pts_stat_.max();
+  manager_.pts_stat_.Clear();
+
+  // After clearing statistics we are ready to wait for IsPlaybackStarted again.
+  EXPECT_FALSE(manager_.IsPlaybackStarted());
+
+  // Restart.
+  SetVideoSurface();
+  player_->Start();
+
+  // We should receive a browser seek request.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MockDemuxerAndroid::ReceivedBrowserSeekRequest,
+                 base::Unretained(demuxer_))));
+
+  // Wait for playback to start again.
+  base::TimeDelta reconfigure_timeout = base::TimeDelta::FromMilliseconds(800);
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       reconfigure_timeout));
+
+  // Timestamps should not go back.
+  EXPECT_LE(max_pts_before_backgrounding, manager_.pts_stat_.max());
+}
+
+TEST_F(MediaCodecPlayerTest, VideoSeekAndRelease) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
+
+  StartVideoPlayback(duration);
+
+  // Wait for some time and check statistics.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // Issue SeekTo() immediately followed by Release().
+  player_->SeekTo(seek_position);
+  player_->Release();
+
+  // Make sure we are not playing any more.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(400));
+  EXPECT_FALSE(player_->IsPlaying());
+
+  // The Release() should not cancel the SeekTo() and we should have received
+  // the seek request by this time.
+  EXPECT_TRUE(demuxer_->ReceivedSeekRequest());
+
+  // The player should have reported the seek completion to the manager.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
+
+  // Clear statistics.
+  manager_.pts_stat_.Clear();
+
+  // After clearing statistics we are ready to wait for IsPlaybackStarted again.
+  EXPECT_FALSE(manager_.IsPlaybackStarted());
+
+  // Restart.
+  SetVideoSurface();
+  player_->Start();
+
+  // Wait for playback to start again.
+  base::TimeDelta reconfigure_timeout = base::TimeDelta::FromMilliseconds(800);
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       reconfigure_timeout));
+
+  // Timestamps should start at the new seek position
+  EXPECT_LE(seek_position, manager_.pts_stat_.min());
+}
+
+TEST_F(MediaCodecPlayerTest, VideoReleaseWhileWaitingForSeek) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
+
+  StartVideoPlayback(duration);
+
+  // Wait for some time and check statistics.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(200));
+
+  // Make sure we played at least 100 ms.
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(100), manager_.pts_stat_.max());
+
+  // Set artificial delay in the OnDemuxerSeekDone response so we can
+  // issue commands while the player is in the STATE_WAITING_FOR_SEEK.
+  demuxer_->SetSeekDoneDelay(base::TimeDelta::FromMilliseconds(100));
+
+  // Issue SeekTo().
+  player_->SeekTo(seek_position);
+
+  // Wait for the seek request to demuxer.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockDemuxerAndroid::ReceivedSeekRequest, base::Unretained(demuxer_))));
+
+  // The player is supposed to be in STATE_WAITING_FOR_SEEK. Issue Release().
+  player_->Release();
+
+  // Make sure we are not playing any more.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(400));
+  EXPECT_FALSE(player_->IsPlaying());
+
+  // Clear statistics.
+  manager_.pts_stat_.Clear();
+
+  // After clearing statistics we are ready to wait for IsPlaybackStarted again.
+  EXPECT_FALSE(manager_.IsPlaybackStarted());
+
+  // Restart.
+  SetVideoSurface();
+  player_->Start();
+
+  // Wait for playback to start again.
+  base::TimeDelta reconfigure_timeout = base::TimeDelta::FromMilliseconds(1000);
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       reconfigure_timeout));
+
+  // Timestamps should start at the new seek position
+  EXPECT_LE(seek_position, manager_.pts_stat_.min());
+
+  // The player should have reported the seek completion to the manager.
+  EXPECT_TRUE(WaitForCondition(base::Bind(
+      &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
 }  // namespace media

@@ -47,16 +47,26 @@ class MediaCodecBridge;
 //       | Configure and Start     |                   |
 //       v                         |                   | ReleaseDecoderResources
 //  [ Running ]                    |                   v
-//       |                         |              [ Stopped ]
-//       | RequestToStop           |
-//       v                         |
-//  [ Stopping ] -------------------
-//
+//       |                         |          [ InEmergencyStop ]
+//       | RequestToStop           |                   |
+//       v                         |                   |(decoder thread stopped)
+//  [ Stopping ] -------------------                   v
+//                                                [ Stopped ]
 //
 //  [ Stopped ] --------------------
 //       ^                         |
 //       |       Flush             |
 //       ---------------------------
+
+// (any state except Error)
+//       |
+//       |  SyncStop
+//       v
+//  [ InEmergencyStop ]
+//       |
+//       |(decoder thread stopped)
+//       v
+//  [ Stopped ]
 
 // Here is the workflow that is expected to be maintained by a caller, which is
 // MediaCodecPlayer currently.
@@ -106,9 +116,9 @@ class MediaCodecDecoder {
  public:
   // The result of MediaCodec configuration, used by MediaCodecPlayer.
   enum ConfigStatus {
-    CONFIG_FAILURE = 0,
-    CONFIG_OK,
-    CONFIG_KEY_FRAME_REQUIRED,
+    kConfigFailure = 0,
+    kConfigOk,
+    kConfigKeyFrameRequired,
   };
 
   // The decoder reports current playback time to the MediaCodecPlayer.
@@ -230,9 +240,9 @@ class MediaCodecDecoder {
   // Returns the number of delayed task (we might have them for video).
   virtual int NumDelayedRenderTasks() const;
 
-  // Releases output buffers that are dequeued and not released yet
-  // because their rendering is delayed (video).
-  virtual void ReleaseDelayedBuffers() {}
+  // Releases output buffers that are dequeued and not released yet (video)
+  // if the |release| parameter is set and then remove the references to them.
+  virtual void ClearDelayedBuffers(bool release) {}
 
 #ifndef NDEBUG
   // For video, checks that access unit is the key frame or stand-alone EOS.
@@ -259,6 +269,10 @@ class MediaCodecDecoder {
   // The queue of access units.
   AccessUnitQueue au_queue_;
 
+  // Flag forces reconfiguration even if |media_codec_bridge_| exists. Currently
+  // is set by video decoder when the video surface changes.
+  bool needs_reconfigure_;
+
  private:
   enum DecoderState {
     kStopped = 0,
@@ -266,6 +280,7 @@ class MediaCodecDecoder {
     kPrefetched,
     kRunning,
     kStopping,
+    kInEmergencyStop,
     kError,
   };
 
@@ -290,8 +305,9 @@ class MediaCodecDecoder {
 
   // Helper method for ProcessNextFrame.
   // Pulls all currently available output frames and renders them.
-  // Returns false if there was MediaCodec error.
-  bool DepleteOutputBufferQueue(bool* eos_encountered);
+  // Returns true if we need to continue decoding process, i.e post next
+  // ProcessNextFrame method, and false if we need to stop decoding.
+  bool DepleteOutputBufferQueue();
 
   DecoderState GetState() const;
   void SetState(DecoderState state);

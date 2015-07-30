@@ -107,9 +107,15 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
 
+  if (configs_.audio_codec == kUnknownAudioCodec) {
+    DVLOG(0) << class_name() << "::" << __FUNCTION__
+             << " configuration parameters are required";
+    return kConfigFailure;
+  }
+
   media_codec_bridge_.reset(AudioCodecBridge::Create(configs_.audio_codec));
   if (!media_codec_bridge_)
-    return CONFIG_FAILURE;
+    return kConfigFailure;
 
   if (!(static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
            ->Start(
@@ -125,7 +131,7 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
     DVLOG(1) << class_name() << "::" << __FUNCTION__ << " failed";
 
     media_codec_bridge_.reset();
-    return CONFIG_FAILURE;
+    return kConfigFailure;
   }
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " succeeded";
@@ -136,7 +142,7 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
   frame_count_ = 0;
   ResetTimestampHelper();
 
-  return CONFIG_OK;
+  return kConfigOk;
 }
 
 void MediaCodecAudioDecoder::OnOutputFormatChanged() {
