@@ -58,9 +58,6 @@
         {
             "group_name": "Enabled",
             "params": {
-              "disable_loading_server_info_for_new_servers": "true",
-              "load_server_info_time_to_srtt": "0.25",
-              "enable_truncated_connection_ids": "true",
               "alternate_protocol_probability_threshold": "0.01"
             }
         }
