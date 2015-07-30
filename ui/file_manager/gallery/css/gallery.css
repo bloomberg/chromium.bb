@@ -1418,9 +1418,16 @@ html[dir='rtl'] .thumbnail-view .thumbnail {
 
 .thumbnail-view .scrollbar {
   bottom: 4px;
+  opacity: 1;
   position: absolute;
   top: 52px; /* Toolbar height (48px) + Margin (4px) */
+  transition: opacity 1s;
   width: 8px;
+}
+
+.thumbnail-view .scrollbar.transparent {
+  opacity: 0;
+  pointer-events: none;
 }
 
 html[dir='ltr'] .thumbnail-view .scrollbar {

@@ -124,7 +124,6 @@ ThumbnailMode.prototype.getThumbnailRect = function(index) {
  * @struct
  *
  * TODO(yawano): Implement multi selection.
- * TODO(yawano): Fade out scrollbar when user is not scrolling.
  * TODO(yawano): Optimization. Remove DOMs outside of viewport, reuse them.
  * TODO(yawano): Extract ThumbnailView as a polymer element.
  */
@@ -165,6 +164,11 @@ function ThumbnailView(container, dataModel, selectionModel) {
    * @private {number}
    */
   this.initialScrollTop_ = 0;
+
+  /**
+   * @private {number}
+   */
+  this.scrollbarTimeoutId_ = 0;
 
   /**
    * @private {!HTMLElement}
@@ -229,6 +233,12 @@ ThumbnailView.ROW_HEIGHT = 160; // px
 ThumbnailView.MARGIN = 4; // px
 
 /**
+ * Timeout to fade out scrollbar.
+ * @const {number}
+ */
+ThumbnailView.SCROLLBAR_TIMEOUT = 1500; // ms
+
+/**
  * Shows thumbnail view.
  */
 ThumbnailView.prototype.show = function() {
@@ -265,6 +275,8 @@ ThumbnailView.prototype.onWindowMouseMove_ = function(event) {
         (diff * this.container_.scrollHeight / this.scrollbar_.clientHeight);
     this.container_.scrollTop = scrollTop;
   }
+
+  this.resetTimerOfScrollbar_();
 };
 
 /**
@@ -274,6 +286,7 @@ ThumbnailView.prototype.onWindowMouseMove_ = function(event) {
  */
 ThumbnailView.prototype.onWindowMouseUp_ = function(event) {
   this.scrolling_ = false;
+  this.resetTimerOfScrollbar_();
 };
 
 /**
@@ -337,12 +350,46 @@ ThumbnailView.prototype.updateScrollBar_ = function() {
   var scrollHeight = this.container_.scrollHeight;
   var clientHeight = this.container_.clientHeight;
 
+  // If viewport is not long enough to scroll, do not show scrollbar.
+  if (scrollHeight <= clientHeight) {
+    this.scrollbar_.hidden = true;
+    return;
+  }
+
+  this.scrollbar_.hidden = false;
+
   var thumbHeight =
       ~~(this.scrollbar_.clientHeight * clientHeight / scrollHeight);
   var thumbTop = ~~(scrollTop * this.scrollbar_.clientHeight / scrollHeight);
 
   this.scrollbarThumb_.style.height = thumbHeight + 'px';
   this.scrollbarThumb_.style.marginTop = thumbTop + 'px';
+
+  this.resetTimerOfScrollbar_();
+};
+
+/**
+ * Resets timer to fade out scrollbar. If scrollbar is already faded-out, this
+ * method makes it visible and set timeout. If user is scrolling, this method
+ * just clears existing timer.
+ * @private
+ */
+ThumbnailView.prototype.resetTimerOfScrollbar_ = function() {
+  this.scrollbar_.classList.toggle('transparent', false);
+
+  if (this.scrollbarTimeoutId_) {
+    clearTimeout(this.scrollbarTimeoutId_);
+    this.scrollbarTimeoutId_ = 0;
+  }
+
+  // If user is scrolling, do not set timeout.
+  if (this.scrolling_)
+    return;
+
+  this.scrollbarTimeoutId_ = setTimeout(function() {
+    this.scrollbarTimeoutId_ = 0;
+    this.scrollbar_.classList.toggle('transparent', true);
+  }.bind(this), ThumbnailView.SCROLLBAR_TIMEOUT);
 };
 
 /**
