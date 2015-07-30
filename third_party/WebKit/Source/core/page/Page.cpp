@@ -177,6 +177,9 @@ ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame)
         scrollingCoordinator->updateAfterCompositingChangeIfNeeded();
     }
 
+    if (!frame->view()->layerForScrolling())
+        return ClientRectList::create();
+
     // Now retain non-fast scrollable regions
     return ClientRectList::create(frame->view()->layerForScrolling()->platformLayer()->nonFastScrollableRegion());
 }
