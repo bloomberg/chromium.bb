@@ -131,8 +131,8 @@ public:
 #endif
 
 private:
-    template<typename PositionType>
-    void init(const PositionType&, EAffinity);
+    template<typename Strategy>
+    void init(const PositionAlgorithm<Strategy>&, EAffinity);
 
     Position leftVisuallyDistinctCandidate() const;
     Position rightVisuallyDistinctCandidate() const;

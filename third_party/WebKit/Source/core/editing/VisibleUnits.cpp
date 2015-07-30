@@ -711,13 +711,13 @@ VisiblePosition nextWordPosition(const VisiblePosition &c)
 // ---------
 
 enum LineEndpointComputationMode { UseLogicalOrdering, UseInlineBoxOrdering };
-template <typename PositionWithAffinityType>
-static PositionWithAffinityType startPositionForLine(const PositionWithAffinityType& c, LineEndpointComputationMode mode)
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> startPositionForLine(const PositionWithAffinityTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {
-    using PositionType = typename PositionWithAffinityType::PositionType;
+    using PositionType = PositionAlgorithm<Strategy>;
 
     if (c.isNull())
-        return PositionWithAffinityType();
+        return PositionWithAffinityTemplate<Strategy>();
 
     RootInlineBox* rootBox = RenderedPosition(c.position(), c.affinity()).rootBox();
     if (!rootBox) {
@@ -727,7 +727,7 @@ static PositionWithAffinityType startPositionForLine(const PositionWithAffinityT
         if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
 
-        return PositionWithAffinityType();
+        return PositionWithAffinityTemplate<Strategy>();
     }
 
     Node* startNode;
@@ -735,14 +735,14 @@ static PositionWithAffinityType startPositionForLine(const PositionWithAffinityT
     if (mode == UseLogicalOrdering) {
         startNode = rootBox->getLogicalStartBoxWithNode(startBox);
         if (!startNode)
-            return PositionWithAffinityType();
+            return PositionWithAffinityTemplate<Strategy>();
     } else {
         // Generated content (e.g. list markers and CSS :before and :after pseudoelements) have no corresponding DOM element,
         // and so cannot be represented by a VisiblePosition. Use whatever follows instead.
         startBox = rootBox->firstLeafChild();
         while (true) {
             if (!startBox)
-                return PositionWithAffinityType();
+                return PositionWithAffinityTemplate<Strategy>();
 
             startNode = startBox->layoutObject().nonPseudoNode();
             if (startNode)
@@ -752,21 +752,21 @@ static PositionWithAffinityType startPositionForLine(const PositionWithAffinityT
         }
     }
 
-    return PositionWithAffinityType(startNode->isTextNode() ? PositionType(toText(startNode), toInlineTextBox(startBox)->start()) : PositionType::beforeNode(startNode));
+    return PositionWithAffinityTemplate<Strategy>(startNode->isTextNode() ? PositionType(toText(startNode), toInlineTextBox(startBox)->start()) : PositionType::beforeNode(startNode));
 }
 
-template <typename PositionWithAffinityType>
-static PositionWithAffinityType startOfLine(const PositionWithAffinityType& c, LineEndpointComputationMode mode)
+template <typename Strategy>
+static PositionWithAffinityTemplate<Strategy> startOfLine(const PositionWithAffinityTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {
-    using PositionType = typename PositionWithAffinityType::PositionType;
+    using PositionType = PositionAlgorithm<Strategy>;
     // TODO: this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    PositionWithAffinityType visPos = startPositionForLine(c, mode);
+    PositionWithAffinityTemplate<Strategy> visPos = startPositionForLine(c, mode);
 
     if (mode == UseLogicalOrdering) {
         if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
             if (!editableRoot->contains(visPos.position().containerNode()))
-                return PositionWithAffinityType(PositionType::firstPositionInNode(editableRoot));
+                return PositionWithAffinityTemplate<Strategy>(PositionType::firstPositionInNode(editableRoot));
         }
     }
 
@@ -901,16 +901,16 @@ VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
     return endOfLine(currentPosition, UseLogicalOrdering);
 }
 
-template <typename PositionWithAffinityType>
-bool inSameLineAlgorithm(const PositionWithAffinityType& position1, const PositionWithAffinityType& position2)
+template <typename Strategy>
+bool inSameLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& position1, const PositionWithAffinityTemplate<Strategy>& position2)
 {
     if (position1.isNull() || position2.isNull())
         return false;
-    PositionWithAffinityType startOfLine1 = startOfLine(position1);
-    PositionWithAffinityType startOfLine2 = startOfLine(position2);
+    PositionWithAffinityTemplate<Strategy> startOfLine1 = startOfLine(position1);
+    PositionWithAffinityTemplate<Strategy> startOfLine2 = startOfLine(position2);
     if (startOfLine1 == startOfLine2)
         return true;
-    typename PositionWithAffinityType::PositionType canonicalized1 = canonicalPositionOf(startOfLine1.position());
+    PositionAlgorithm<Strategy> canonicalized1 = canonicalPositionOf(startOfLine1.position());
     if (canonicalized1 == startOfLine2.position())
         return true;
     return canonicalized1 == canonicalPositionOf(startOfLine2.position());
@@ -918,12 +918,12 @@ bool inSameLineAlgorithm(const PositionWithAffinityType& position1, const Positi
 
 bool inSameLine(const PositionWithAffinity& a, const PositionWithAffinity& b)
 {
-    return inSameLineAlgorithm(a, b);
+    return inSameLineAlgorithm<EditingStrategy>(a, b);
 }
 
 bool inSameLine(const PositionInComposedTreeWithAffinity& position1, const PositionInComposedTreeWithAffinity& position2)
 {
-    return inSameLineAlgorithm(position1, position2);
+    return inSameLineAlgorithm<EditingInComposedTreeStrategy>(position1, position2);
 }
 
 bool inSameLine(const VisiblePosition& position1, const VisiblePosition& position2)

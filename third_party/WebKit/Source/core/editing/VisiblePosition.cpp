@@ -432,8 +432,8 @@ VisiblePosition VisiblePosition::right() const
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
 }
 
-template <typename PositionWithAffinityType>
-PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionWithAffinityType& pos, const typename PositionWithAffinityType::PositionType& anchor)
+template <typename Strategy>
+PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBeforeAlgorithm(const PositionWithAffinityTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -442,7 +442,7 @@ PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionW
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
     if (highestRoot && !pos.position().anchorNode()->isDescendantOf(highestRoot))
-        return PositionWithAffinityType();
+        return PositionWithAffinityTemplate<Strategy>();
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable
     // FIXME: In the non-editable case, just because the new position is non-editable doesn't mean movement
@@ -453,7 +453,7 @@ PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionW
     // Return empty position if this position is non-editable, but pos is editable
     // FIXME: Move to the previous non-editable region.
     if (!highestRoot)
-        return PositionWithAffinityType();
+        return PositionWithAffinityTemplate<Strategy>();
 
     // Return the last position before pos that is in the same editable region as this position
     return lastEditablePositionBeforePositionInRoot(pos.position(), highestRoot);
@@ -635,12 +635,12 @@ PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& positio
     return canonicalPosition(position);
 }
 
-template<typename PositionType>
-void VisiblePosition::init(const PositionType& position, EAffinity affinity)
+template<typename Strategy>
+void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, EAffinity affinity)
 {
     m_affinity = affinity;
 
-    PositionType deepPosition = canonicalPosition(position);
+    PositionAlgorithm<Strategy> deepPosition = canonicalPosition(position);
     m_deepPosition = toPositionInDOMTree(deepPosition);
 
     if (m_affinity != UPSTREAM)
@@ -652,8 +652,7 @@ void VisiblePosition::init(const PositionType& position, EAffinity affinity)
     }
 
     // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
-    using PositionWithAffinityType = PositionWithAffinityTemplate<PositionType>;
-    if (!inSameLine(PositionWithAffinityType(deepPosition, DOWNSTREAM), PositionWithAffinityType(deepPosition, UPSTREAM)))
+    if (!inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition, DOWNSTREAM), PositionWithAffinityTemplate<Strategy>(deepPosition, UPSTREAM)))
         return;
     m_affinity = DOWNSTREAM;
 }

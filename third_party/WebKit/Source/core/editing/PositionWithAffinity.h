@@ -11,18 +11,16 @@
 
 namespace blink {
 
-template <typename Position>
+template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
     DISALLOW_ALLOCATION();
 public:
-    typedef Position PositionType;
-
-    PositionWithAffinityTemplate(const PositionType&, EAffinity = DOWNSTREAM);
+    PositionWithAffinityTemplate(const PositionAlgorithm<Strategy>&, EAffinity = DOWNSTREAM);
     PositionWithAffinityTemplate();
     ~PositionWithAffinityTemplate();
 
     EAffinity affinity() const { return m_affinity; }
-    const PositionType& position() const { return m_position; }
+    const PositionAlgorithm<Strategy>& position() const { return m_position; }
 
     // Returns true if both |this| and |other| is null or both |m_position|
     // and |m_affinity| equal.
@@ -38,15 +36,15 @@ public:
     }
 
 private:
-    PositionType m_position;
+    PositionAlgorithm<Strategy> m_position;
     EAffinity m_affinity;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<Position>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<PositionInComposedTree>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingInComposedTreeStrategy>;
 
-using PositionWithAffinity = PositionWithAffinityTemplate<Position>;
-using PositionInComposedTreeWithAffinity = PositionWithAffinityTemplate<PositionInComposedTree>;
+using PositionWithAffinity = PositionWithAffinityTemplate<EditingStrategy>;
+using PositionInComposedTreeWithAffinity = PositionWithAffinityTemplate<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 
