@@ -1723,6 +1723,7 @@
       'indexeddb/IDBKeyPathTest.cpp',
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',
+      'mediastream/RTCDataChannelTest.cpp',
       'serviceworkers/ServiceWorkerContainerTest.cpp',
       'webaudio/AudioBasicProcessorHandlerTest.cpp',
       'webaudio/ConvolverNodeTest.cpp',

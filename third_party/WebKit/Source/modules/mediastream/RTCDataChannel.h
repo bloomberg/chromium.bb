@@ -42,7 +42,7 @@ class WebRTCDataChannelHandler;
 class WebRTCPeerConnectionHandler;
 struct WebRTCDataChannelInit;
 
-class RTCDataChannel final
+class MODULES_EXPORT RTCDataChannel final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>
     , public WebRTCDataChannelHandlerClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDataChannel);
@@ -68,6 +68,9 @@ public:
     String readyState() const;
     unsigned bufferedAmount() const;
 
+    unsigned bufferedAmountLowThreshold() const;
+    void setBufferedAmountLowThreshold(unsigned);
+
     String binaryType() const;
     void setBinaryType(const String&, ExceptionState&);
 
@@ -79,6 +82,7 @@ public:
     void close();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(bufferedamountlow);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
@@ -97,6 +101,7 @@ public:
 
     // WebRTCDataChannelHandlerClient
     void didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;
+    void didDecreaseBufferedAmount(unsigned) override;
     void didReceiveStringData(const WebString&) override;
     void didReceiveRawData(const char*, size_t) override;
     void didDetectError() override;
@@ -125,6 +130,11 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
 
     WeakMember<RTCPeerConnection> m_connection;
+
+    unsigned m_bufferedAmountLowThreshold;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class RTCDataChannelTest_BufferedAmountLow_Test; // NOLINT
 };
 
 } // namespace blink

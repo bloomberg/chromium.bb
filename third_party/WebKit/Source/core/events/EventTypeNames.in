@@ -34,6 +34,7 @@ beforeunload
 beginEvent
 blocked
 blur
+bufferedamountlow
 boundary
 cached
 cancel

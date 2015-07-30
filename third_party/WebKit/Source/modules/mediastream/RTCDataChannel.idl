@@ -38,7 +38,9 @@
     readonly attribute unsigned short id;
     readonly attribute DOMString readyState;
     readonly attribute unsigned long bufferedAmount;
+             attribute unsigned long bufferedAmountLowThreshold;
              attribute EventHandler onopen;
+             attribute EventHandler onbufferedamountlow;
              attribute EventHandler onerror;
              attribute EventHandler onclose;
     void close();

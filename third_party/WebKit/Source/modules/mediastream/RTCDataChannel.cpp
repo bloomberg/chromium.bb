@@ -76,6 +76,7 @@ RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* con
     , m_binaryType(BinaryTypeArrayBuffer)
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)
     , m_connection(connection)
+    , m_bufferedAmountLowThreshold(0U)
 {
     m_handler->setClient(this);
 }
@@ -154,6 +155,16 @@ String RTCDataChannel::readyState() const
 unsigned RTCDataChannel::bufferedAmount() const
 {
     return m_handler->bufferedAmount();
+}
+
+unsigned RTCDataChannel::bufferedAmountLowThreshold() const
+{
+    return m_bufferedAmountLowThreshold;
+}
+
+void RTCDataChannel::setBufferedAmountLowThreshold(unsigned threshold)
+{
+    m_bufferedAmountLowThreshold = threshold;
 }
 
 String RTCDataChannel::binaryType() const
@@ -247,6 +258,14 @@ void RTCDataChannel::didChangeReadyState(WebRTCDataChannelHandlerClient::ReadySt
         break;
     default:
         break;
+    }
+}
+
+void RTCDataChannel::didDecreaseBufferedAmount(unsigned previousAmount)
+{
+    if (previousAmount > m_bufferedAmountLowThreshold
+        && bufferedAmount() <= m_bufferedAmountLowThreshold) {
+        scheduleDispatchEvent(Event::create(EventTypeNames::bufferedamountlow));
     }
 }
 

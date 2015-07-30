@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class WebRTCDataChannelHandlerClient {
+class BLINK_EXPORT WebRTCDataChannelHandlerClient {
 public:
     enum ReadyState {
         ReadyStateConnecting = 0,
@@ -43,6 +43,8 @@ public:
     virtual ~WebRTCDataChannelHandlerClient() { }
 
     virtual void didChangeReadyState(ReadyState) = 0;
+    // TODO(bemasc): Make this pure virtual once Chromium unit tests are updated
+    virtual void didDecreaseBufferedAmount(unsigned) { };
     virtual void didReceiveStringData(const WebString&) = 0;
     virtual void didReceiveRawData(const char*, size_t) = 0;
     virtual void didDetectError() = 0;
