@@ -74,7 +74,7 @@ Add:
 
 ```
 use_goma = true
-goma_dir = "~/foo/bar/goma" 
+goma_dir = "~/foo/bar/goma"
 ```
 
 If your goma is in the default location (`~/goma`) then you can omit the
@@ -105,9 +105,9 @@ executable("hello_world") {
 There should already be a `hello_world.cc` file in that directory,
 containing what you expect. That's it! Now we just need to tell the
 build about this file. Open the `BUILD.gn` file in the root directory
-and add the label of this target to the dependencies of the root group
-(a "group" target is a meta-target that is just a collection of other
-targets):
+and add the label of this target to the dependencies of one of the root
+groups (a "group" target is a meta-target that is just a collection of
+other targets):
 
 ```
 group("root") {
@@ -168,7 +168,7 @@ executable("say_hello") {
 }
 ```
 
-This executable includes one source file,and depends on the previous
+This executable includes one source file and depends on the previous
 static library. The static library is referenced by its label in the
 `deps`. You could have used the full label `//tools/gn/tutorial:hello`
 but if you're referencing a target in the same build file, you can use
@@ -183,7 +183,7 @@ ninja -C out/Default say_hello
 out/Default/say_hello
 ```
 
-Note that you **didn't** need to re-run GN.GN will automatically rebuild
+Note that you **didn't** need to re-run GN. GN will automatically rebuild
 the ninja files when any build file has changed. You know this happens
 when ninja prints `[1/1] Regenerating ninja files` at the beginning of
 execution.
@@ -275,7 +275,7 @@ ninja: Entering directory 'out/Default'
 [1/1] Regenerating ninja files
 [4/4] LINK say_hello
 > out/Default/say_hello
-Hello, Bill and Ted.
+Hello, Bill and Joy.
 ```
 
 ## Don't know what's going on?

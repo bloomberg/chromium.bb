@@ -6,9 +6,9 @@
 
 int main() {
 #if defined(TWO_PEOPLE)
-  Hello("Bill", "Ted");
+  Hello("Bill", "Joy");
 #else
-  Hello("you guys");
+  Hello("everyone");
 #endif
   return 0;
 }
