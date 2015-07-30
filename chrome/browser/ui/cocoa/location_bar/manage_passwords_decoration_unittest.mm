@@ -69,7 +69,7 @@ class ManagePasswordsDecorationTest : public CocoaTest {
 
 TEST_F(ManagePasswordsDecorationTest, ExecutesManagePasswordsCommandOnClick) {
   EXPECT_TRUE(decoration()->AcceptsMousePress());
-  EXPECT_FALSE(decoration()->OnMousePressed(NSRect(), NSPoint()));
+  EXPECT_TRUE(decoration()->OnMousePressed(NSRect(), NSPoint()));
   EXPECT_EQ(IDC_MANAGE_PASSWORDS_FOR_PAGE, commandDelegate()->id());
 }
 
