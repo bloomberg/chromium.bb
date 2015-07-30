@@ -38,7 +38,11 @@ import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
+import org.chromium.base.TraceEvent;
+import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.SelectActionMode;
 import org.chromium.content.browser.SelectActionModeCallback;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
@@ -53,6 +57,7 @@ import java.net.URISyntaxException;
  * This is a lightweight activity for tests that only require WebView functionality.
  */
 public class AwShellActivity extends Activity {
+    private static final String TAG = "cr.AwShellActivity";
     private static final String PREFERENCES_NAME = "AwShellPrefs";
     private static final String INITIAL_URL = "about:blank";
     private AwBrowserContext mBrowserContext;
@@ -72,6 +77,18 @@ public class AwShellActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AwShellResourceProvider.registerResources(this);
+
+        ContentApplication.initCommandLine(this);
+        waitForDebuggerIfNeeded();
+
+        AwBrowserProcess.loadLibrary(this);
+
+        if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
+            Log.e(TAG, "Enabling Android trace.");
+            TraceEvent.setATraceEnabled(true);
+        }
 
         setContentView(R.layout.testshell_activity);
 
@@ -275,5 +292,13 @@ public class AwShellActivity extends Activity {
         }
 
         return super.onKeyUp(keyCode, event);
+    }
+
+    private void waitForDebuggerIfNeeded() {
+        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
+            Log.e(TAG, "Waiting for Java debugger to connect...");
+            android.os.Debug.waitForDebugger();
+            Log.e(TAG, "Java debugger connected. Resuming execution.");
+        }
     }
 }

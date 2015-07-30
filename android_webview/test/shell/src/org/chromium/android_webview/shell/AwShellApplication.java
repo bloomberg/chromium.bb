@@ -4,14 +4,9 @@
 
 package org.chromium.android_webview.shell;
 
-import android.os.Debug;
-import android.util.Log;
-
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.R;
-import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.ui.base.ResourceBundle;
@@ -20,30 +15,9 @@ import org.chromium.ui.base.ResourceBundle;
  * The android_webview shell Application subclass.
  */
 public class AwShellApplication extends ContentApplication {
-
-    private static final String TAG = "AwShellApplication";
-
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     public void onCreate() {
         super.onCreate();
-
-        AwShellResourceProvider.registerResources(this);
-
-        CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
-
-        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
-            Log.e(TAG, "Waiting for Java debugger to connect...");
-            Debug.waitForDebugger();
-            Log.e(TAG, "Java debugger connected. Resuming execution.");
-        }
-
-        AwBrowserProcess.loadLibrary(this);
-
-        if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
-            Log.e(TAG, "Enabling Android trace.");
-            TraceEvent.setATraceEnabled(true);
-        }
     }
 
     @Override
@@ -51,8 +25,11 @@ public class AwShellApplication extends ContentApplication {
         ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
     }
 
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     public void initCommandLine() {
-        throw new UnsupportedOperationException();
+        if (!CommandLine.isInitialized()) {
+            CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
+        }
     }
 }
