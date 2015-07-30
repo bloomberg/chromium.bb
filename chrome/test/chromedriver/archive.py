@@ -10,9 +10,9 @@ import urllib
 
 import util
 
-CHROME_42_REVISION = '317499'
 CHROME_43_REVISION = '323865'
 CHROME_44_REVISION = '330231'
+CHROME_45_REVISION = '338390'
 
 _SITE = 'http://commondatastorage.googleapis.com'
 
