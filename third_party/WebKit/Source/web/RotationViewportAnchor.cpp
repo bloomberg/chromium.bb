@@ -101,7 +101,7 @@ void RotationViewportAnchor::setAnchor()
 {
     // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and PinchViewport
     //        respectively. This path should be rewritten without pixel snapping.
-    IntRect outerViewRect = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect();
+    IntRect outerViewRect = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect(IncludeScrollbars);
     IntRect innerViewRect = enclosedIntRect(m_rootFrameView->scrollableArea()->visibleContentRectDouble());
 
     m_oldPageScaleFactor = m_pinchViewport->scale();
