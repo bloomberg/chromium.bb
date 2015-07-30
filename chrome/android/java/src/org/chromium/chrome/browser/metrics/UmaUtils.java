@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Utilities to support startup metrics - Android version.

@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.mojo.shell.ShellMain;
 
 /**

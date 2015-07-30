@@ -10,6 +10,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import org.chromium.base.annotations.CalledByNative;
+
 /**
  * Utilities for testing operations on content URI.
  */

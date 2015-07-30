@@ -6,7 +6,7 @@ package org.chromium.content.app;
 
 import android.content.Context;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * This class is used to initialize all types of process. It corresponds to

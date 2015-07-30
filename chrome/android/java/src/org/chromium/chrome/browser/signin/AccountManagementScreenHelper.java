@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 

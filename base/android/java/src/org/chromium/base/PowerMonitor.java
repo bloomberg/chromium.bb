@@ -11,6 +11,9 @@ import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
 
 /**
  * Integrates native PowerMonitor with the java side.

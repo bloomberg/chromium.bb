@@ -9,7 +9,7 @@ import android.database.AbstractCursor;
 import android.database.CursorWindow;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 import java.sql.Types;
 

@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.invalidation;
 
 import android.content.Context;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.InvalidationService;
 

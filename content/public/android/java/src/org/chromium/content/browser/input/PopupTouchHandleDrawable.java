@@ -13,8 +13,8 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.PositionObserver;
 import org.chromium.ui.touch_selection.TouchHandleOrientation;
 

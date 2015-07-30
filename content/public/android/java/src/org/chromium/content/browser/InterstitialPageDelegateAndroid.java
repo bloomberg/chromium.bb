@@ -4,9 +4,9 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Allows the specification and handling of Interstitial pages in java.

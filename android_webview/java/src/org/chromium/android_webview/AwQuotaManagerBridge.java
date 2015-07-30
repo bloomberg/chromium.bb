@@ -7,9 +7,9 @@ package org.chromium.android_webview;
 import android.util.SparseArray;
 import android.webkit.ValueCallback;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Bridge between android.webview.WebStorage and native QuotaManager. This object is owned by Java

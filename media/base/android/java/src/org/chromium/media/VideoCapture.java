@@ -9,8 +9,8 @@ import android.graphics.ImageFormat;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Video Capture Device base class, defines a set of methods that native code

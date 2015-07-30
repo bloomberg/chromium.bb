@@ -7,10 +7,10 @@ package org.chromium.base.library_loader;
 import android.os.Bundle;
 import android.os.Parcel;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 
 import java.util.HashMap;
 import java.util.Locale;

@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.precache;
 
 import android.content.Context;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 import java.util.concurrent.Callable;

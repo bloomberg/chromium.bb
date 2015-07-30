@@ -10,8 +10,8 @@ import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.DropdownItem;

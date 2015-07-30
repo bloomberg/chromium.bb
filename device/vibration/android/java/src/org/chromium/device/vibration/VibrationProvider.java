@@ -10,8 +10,8 @@ import android.media.AudioManager;
 import android.os.Vibrator;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * This is the implementation of the C++ counterpart VibrationProvider.

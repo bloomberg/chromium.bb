@@ -11,8 +11,8 @@ import android.bluetooth.le.ScanSettings;
 import android.os.Build;
 import android.os.ParcelUuid;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -6,7 +6,7 @@ package org.chromium.components.navigation_interception;
 
 import android.text.TextUtils;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Navigation parameters container used to keep parameters for navigation interception.

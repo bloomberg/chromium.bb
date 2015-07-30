@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.profiles;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CalledByNative;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 
 /**

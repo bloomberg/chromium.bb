@@ -4,6 +4,8 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.JNINamespace;
+
 /**
  * This class provides an interface to the native class for writing
  * important data files without risking data loss.

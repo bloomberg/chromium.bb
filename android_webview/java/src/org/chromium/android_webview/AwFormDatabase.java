@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Exposes a subset of Chromium form database to Webview database for managing autocomplete

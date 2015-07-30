@@ -8,9 +8,9 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.SparseArray;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.ui.base.WindowAndroid;
 

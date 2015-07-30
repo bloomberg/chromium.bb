@@ -9,7 +9,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.tab.Tab;
 

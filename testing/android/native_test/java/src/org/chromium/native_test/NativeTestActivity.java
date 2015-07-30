@@ -13,8 +13,8 @@ import android.os.Handler;
 import android.os.Process;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.test.reporter.TestStatusReporter;
 
 import java.io.File;

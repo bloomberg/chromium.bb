@@ -4,7 +4,7 @@
 
 package org.chromium.net;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Wrapper class that contains utility methods to test network change notifier.

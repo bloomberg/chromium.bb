@@ -10,9 +10,9 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * This class implements a factory of Android Video Capture objects for Chrome.

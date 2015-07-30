@@ -6,8 +6,8 @@ package org.chromium.net;
 
 import android.os.ConditionVariable;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Class to watch for Sdch dictionary events. The native implementation

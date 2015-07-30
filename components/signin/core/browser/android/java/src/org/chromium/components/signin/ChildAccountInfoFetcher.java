@@ -12,8 +12,8 @@ import android.accounts.OperationCanceledException;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CalledByNative;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.IOException;

@@ -4,11 +4,9 @@
 
 package org.chromium.mojo.system.impl;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.mojo.system.RunLoop;
-
-import java.lang.Runnable;
 
 /**
  * Implementation of {@link RunLoop} suitable for the base:: message loop implementation.

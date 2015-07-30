@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 
 /**

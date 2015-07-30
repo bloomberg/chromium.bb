@@ -6,7 +6,7 @@ package org.chromium.mojo.shell;
 
 import android.content.Context;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.File;
 

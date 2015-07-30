@@ -10,8 +10,8 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.SparseArray;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.resources.ResourceLoader.ResourceLoaderCallback;
 import org.chromium.ui.resources.dynamics.DynamicResource;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;

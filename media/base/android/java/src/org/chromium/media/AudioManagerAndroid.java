@@ -25,9 +25,9 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.provider.Settings;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.util.ArrayList;

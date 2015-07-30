@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.omnibox;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;

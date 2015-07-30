@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.favicon;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**

@@ -9,6 +9,9 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
 /**
  * This class is an internal detail of the native counterpart.
  * It is instantiated and owned by the native object.

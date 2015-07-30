@@ -4,8 +4,8 @@
 
 package org.chromium.net;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Abstract private key that bundles the PrivateKey and AndroidKeyStore that it belongs to.

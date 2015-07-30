@@ -6,9 +6,9 @@ package org.chromium.resource_provider;
 
 import android.content.Context;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.PathUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * This class does setup for resource_provider.

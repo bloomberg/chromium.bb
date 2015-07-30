@@ -7,8 +7,8 @@ package org.chromium.android_webview;
 import android.content.res.Resources;
 import android.util.SparseArray;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

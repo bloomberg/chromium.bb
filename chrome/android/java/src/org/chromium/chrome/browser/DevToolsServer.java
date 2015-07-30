@@ -7,7 +7,7 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Controller for Remote Web Debugging (Developer Tools).

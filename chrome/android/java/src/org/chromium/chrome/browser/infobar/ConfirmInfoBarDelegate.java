@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Bitmap;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.base.WindowAndroid;
 

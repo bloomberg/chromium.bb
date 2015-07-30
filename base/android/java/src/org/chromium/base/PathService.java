@@ -4,6 +4,8 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.JNINamespace;
+
 /**
  * This class provides java side access to the native PathService.
  */

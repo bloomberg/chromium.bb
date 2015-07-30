@@ -7,8 +7,8 @@ package org.chromium.net;
 import android.content.Context;
 import android.os.ConditionVariable;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Wrapper class to start an in-process native test server, and get URLs

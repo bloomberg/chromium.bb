@@ -6,7 +6,7 @@ package org.chromium.net;
 
 import static junit.framework.Assert.assertTrue;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.net.test.FailurePhase;
 
 /**

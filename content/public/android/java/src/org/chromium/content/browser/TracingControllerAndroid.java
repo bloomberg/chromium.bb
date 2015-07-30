@@ -12,9 +12,9 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.R;
 
 import java.io.File;

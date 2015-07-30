@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.profiles;
 
 import android.graphics.Bitmap;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.

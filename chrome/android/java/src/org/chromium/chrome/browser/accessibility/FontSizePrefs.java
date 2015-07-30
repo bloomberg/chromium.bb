@@ -9,9 +9,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.NativeCall;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeCall;
 
 import java.util.HashMap;
 import java.util.Map;

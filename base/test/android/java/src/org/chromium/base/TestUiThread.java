@@ -6,6 +6,8 @@ package org.chromium.base;
 
 import android.os.Looper;
 
+import org.chromium.base.annotations.CalledByNative;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 

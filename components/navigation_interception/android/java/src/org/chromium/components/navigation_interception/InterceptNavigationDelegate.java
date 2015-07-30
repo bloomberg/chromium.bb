@@ -4,7 +4,7 @@
 
 package org.chromium.components.navigation_interception;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 public interface InterceptNavigationDelegate {
 

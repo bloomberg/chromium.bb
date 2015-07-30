@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Java representation of a scene layer.

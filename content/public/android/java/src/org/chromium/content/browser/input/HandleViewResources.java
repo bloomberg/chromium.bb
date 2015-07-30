@@ -13,8 +13,8 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Helper class for retrieving resources related to selection handles.

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
 
 /**

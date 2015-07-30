@@ -16,8 +16,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.SparseArray;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

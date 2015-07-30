@@ -6,8 +6,8 @@ package org.chromium.content_shell;
 
 import android.content.Context;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Utility methods used by content_shell for running Blink's layout tests on Android.

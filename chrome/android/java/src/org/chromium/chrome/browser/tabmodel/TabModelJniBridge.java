@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.os.SystemClock;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;

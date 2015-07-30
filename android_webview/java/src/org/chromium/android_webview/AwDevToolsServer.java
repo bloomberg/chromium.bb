@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Controller for Remote Web Debugging (Developer Tools).

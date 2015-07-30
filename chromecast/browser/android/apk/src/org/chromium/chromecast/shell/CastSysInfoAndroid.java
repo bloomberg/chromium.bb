@@ -6,8 +6,8 @@ package org.chromium.chromecast.shell;
 
 import android.os.Build;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Java implementation of CastSysInfoAndroid methods.

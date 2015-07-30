@@ -13,7 +13,7 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.CheckBox;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 

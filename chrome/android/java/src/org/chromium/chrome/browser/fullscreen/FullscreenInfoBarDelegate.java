@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.fullscreen;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
 import org.chromium.chrome.browser.tab.Tab;

@@ -6,9 +6,9 @@ package org.chromium.android_webview.permission;
 
 import android.net.Uri;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.common.CleanupReference;
 
 /**

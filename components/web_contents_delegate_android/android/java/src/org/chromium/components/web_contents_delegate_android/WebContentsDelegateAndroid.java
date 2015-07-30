@@ -6,8 +6,8 @@ package org.chromium.components.web_contents_delegate_android;
 
 import android.view.KeyEvent;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 
 /**

@@ -12,8 +12,8 @@ import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.view.accessibility.AccessibilityManager;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.PackageUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 
 import java.util.List;

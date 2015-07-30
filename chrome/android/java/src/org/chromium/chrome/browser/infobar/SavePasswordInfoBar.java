@@ -9,7 +9,7 @@ import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
 
 /**

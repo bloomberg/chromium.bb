@@ -7,8 +7,8 @@ package org.chromium.media;
 import android.content.Context;
 import android.media.MediaPlayer;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 // This class implements all the listener interface for android mediaplayer.
 // Callbacks will be sent to the native class for processing.

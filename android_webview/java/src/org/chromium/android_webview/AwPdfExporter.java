@@ -12,8 +12,8 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Export the android webview as a PDF.

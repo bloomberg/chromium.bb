@@ -9,8 +9,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

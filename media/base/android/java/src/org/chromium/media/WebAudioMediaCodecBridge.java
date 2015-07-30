@@ -11,9 +11,9 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.ParcelFileDescriptor;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.File;
 import java.nio.ByteBuffer;

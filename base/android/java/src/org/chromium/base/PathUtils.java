@@ -9,6 +9,8 @@ import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
 
+import org.chromium.base.annotations.CalledByNative;
+
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 

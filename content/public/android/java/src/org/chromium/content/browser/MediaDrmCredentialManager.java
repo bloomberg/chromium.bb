@@ -4,8 +4,8 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * A wrapper of the android MediaDrmCredentialManager

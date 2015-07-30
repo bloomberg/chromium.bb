@@ -10,8 +10,8 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.os.Build;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
 import java.util.List;

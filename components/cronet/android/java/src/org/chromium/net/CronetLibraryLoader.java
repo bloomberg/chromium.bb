@@ -8,7 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * CronetLibraryLoader loads and initializes native library on main thread.

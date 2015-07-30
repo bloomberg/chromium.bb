@@ -4,9 +4,9 @@
 
 package org.chromium.components.dom_distiller.core;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Wrapper for native dom_distiller::DomDistillerService.

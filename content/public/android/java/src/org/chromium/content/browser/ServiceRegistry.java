@@ -4,8 +4,8 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.mojo.bindings.Interface;
 import org.chromium.mojo.bindings.Interface.Proxy;
 import org.chromium.mojo.bindings.InterfaceRequest;

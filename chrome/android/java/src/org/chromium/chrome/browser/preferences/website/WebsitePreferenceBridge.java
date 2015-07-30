@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.util.ArrayList;

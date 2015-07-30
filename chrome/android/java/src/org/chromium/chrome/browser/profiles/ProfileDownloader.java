@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.profiles;
 
 import android.graphics.Bitmap;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Android wrapper of the ProfileDownloader which provides access from the Java layer.

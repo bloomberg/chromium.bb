@@ -7,10 +7,10 @@ package org.chromium.net;
 import android.util.Log;
 import android.util.Pair;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.base.NativeClassQualifiedName;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeClassQualifiedName;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

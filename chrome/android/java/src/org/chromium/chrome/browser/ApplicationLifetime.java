@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Watches for when Chrome is told to restart itself.

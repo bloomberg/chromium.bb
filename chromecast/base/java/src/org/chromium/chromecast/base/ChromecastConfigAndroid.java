@@ -6,8 +6,8 @@ package org.chromium.chromecast.base;
 
 import android.content.Context;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * JNI wrapper class for calls from ChromecastConfigAndroid.

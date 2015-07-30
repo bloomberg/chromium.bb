@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.view.InputDevice;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Simple proxy for querying input device properties from C++.

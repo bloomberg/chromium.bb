@@ -4,7 +4,7 @@
 
 package org.chromium.net;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Class to access the GURL library from java.

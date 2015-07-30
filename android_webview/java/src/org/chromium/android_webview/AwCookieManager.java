@@ -8,8 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.webkit.ValueCallback;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * AwCookieManager manages cookies according to RFC2109 spec.

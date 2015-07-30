@@ -6,8 +6,8 @@ package org.chromium.android_webview;
 
 import android.view.ViewGroup;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.autofill.AutofillPopup;

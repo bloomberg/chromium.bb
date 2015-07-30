@@ -11,7 +11,7 @@ import android.security.KeyChain;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 
 import java.net.NetworkInterface;

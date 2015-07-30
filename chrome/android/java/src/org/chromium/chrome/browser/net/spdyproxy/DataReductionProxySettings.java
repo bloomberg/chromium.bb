@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.net.spdyproxy;
 import android.content.Context;
 import android.preference.PreferenceManager;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 
 import java.text.NumberFormat;
 import java.util.Locale;

@@ -17,7 +17,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.StyleSpan;
 import android.view.View;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 
 import java.util.List;

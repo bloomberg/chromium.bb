@@ -7,9 +7,9 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.media.AudioManager;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * MediaSession is the Java counterpart of content::MediaSession.

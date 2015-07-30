@@ -14,9 +14,9 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.base.NativeClassQualifiedName;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeClassQualifiedName;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

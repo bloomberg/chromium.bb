@@ -4,6 +4,8 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.CalledByNative;
+
 /**
  * This class provides JNI-related methods to the native library.
  */

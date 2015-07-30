@@ -11,8 +11,8 @@ import android.content.res.Resources;
 import android.util.TypedValue;
 import android.view.ViewConfiguration;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.R;
 
 /**

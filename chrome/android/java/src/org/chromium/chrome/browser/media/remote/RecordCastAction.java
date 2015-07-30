@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 
 /**

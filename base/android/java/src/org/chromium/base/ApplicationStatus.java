@@ -10,6 +10,9 @@ import android.app.Application.ActivityLifecycleCallbacks;
 import android.content.Context;
 import android.os.Bundle;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;

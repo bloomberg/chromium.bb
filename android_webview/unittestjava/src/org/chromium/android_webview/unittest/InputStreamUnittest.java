@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.unittest;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 import java.io.IOException;
 import java.io.InputStream;

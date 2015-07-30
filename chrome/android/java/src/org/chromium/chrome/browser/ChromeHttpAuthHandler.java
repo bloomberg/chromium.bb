@@ -6,7 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

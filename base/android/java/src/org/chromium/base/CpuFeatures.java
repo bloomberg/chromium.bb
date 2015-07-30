@@ -4,6 +4,8 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.JNINamespace;
+
 // The only purpose of this class is to allow sending CPU properties
 // from the browser process to sandboxed renderer processes. This is
 // needed because sandboxed processes cannot, on ARM, query the kernel

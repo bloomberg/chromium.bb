@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 

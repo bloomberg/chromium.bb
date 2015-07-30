@@ -7,9 +7,9 @@ package org.chromium.printing;
 import android.print.PrintDocumentAdapter;
 import android.util.SparseArray;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * This class is responsible for communicating with its native counterpart through JNI to handle

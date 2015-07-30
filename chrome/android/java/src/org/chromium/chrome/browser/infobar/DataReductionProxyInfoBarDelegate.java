@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.content_public.browser.WebContents;
 

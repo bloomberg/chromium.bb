@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.prerender;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;

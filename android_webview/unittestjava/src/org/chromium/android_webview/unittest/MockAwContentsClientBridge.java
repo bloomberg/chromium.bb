@@ -6,7 +6,7 @@ package org.chromium.android_webview.unittest;
 
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.ClientCertLookupTable;
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.net.AndroidKeyStore;
 import org.chromium.net.AndroidPrivateKey;
 import org.chromium.net.DefaultAndroidKeyStore;

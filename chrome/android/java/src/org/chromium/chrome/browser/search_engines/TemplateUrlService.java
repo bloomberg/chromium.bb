@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.search_engines;
 
 import android.text.TextUtils;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;
 import java.util.List;

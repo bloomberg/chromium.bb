@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * Class for retrieving passwords and password exceptions (websites for which Chrome should not save

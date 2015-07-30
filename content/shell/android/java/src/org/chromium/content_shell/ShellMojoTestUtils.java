@@ -4,8 +4,8 @@
 
 package org.chromium.content_shell;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ServiceRegistry;
 import org.chromium.mojo.system.Pair;
 

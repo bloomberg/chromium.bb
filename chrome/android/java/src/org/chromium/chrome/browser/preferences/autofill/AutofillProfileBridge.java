@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.preferences.autofill;
 
 import android.util.Pair;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.text.Collator;
 import java.util.ArrayList;

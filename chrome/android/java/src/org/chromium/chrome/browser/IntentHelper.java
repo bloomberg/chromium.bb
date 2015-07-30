@@ -12,8 +12,8 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Patterns;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ContentUriUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.File;

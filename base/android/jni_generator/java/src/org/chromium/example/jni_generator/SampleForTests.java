@@ -6,11 +6,11 @@ package org.chromium.example.jni_generator;
 
 import android.graphics.Rect;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.base.NativeClassQualifiedName;
 import org.chromium.base.annotations.AccessedByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeClassQualifiedName;
 
 import java.util.ArrayList;
 import java.util.Iterator;

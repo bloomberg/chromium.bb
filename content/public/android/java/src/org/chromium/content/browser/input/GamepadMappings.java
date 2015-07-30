@@ -7,8 +7,8 @@ package org.chromium.content.browser.input;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Class to manage mapping information related to each supported gamepad controller device.

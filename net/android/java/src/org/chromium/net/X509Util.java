@@ -15,7 +15,7 @@ import android.security.KeyChain;
 import android.util.Log;
 import android.util.Pair;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.ByteArrayInputStream;

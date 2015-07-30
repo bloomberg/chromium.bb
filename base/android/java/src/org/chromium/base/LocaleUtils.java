@@ -4,6 +4,8 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.CalledByNative;
+
 import java.util.Locale;
 
 /**

@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

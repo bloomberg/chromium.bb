@@ -15,7 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 
@@ -134,8 +134,8 @@ class ValidationMessageBubble {
         final View root = mPopup.getContentView();
         final int width = root.getMeasuredWidth();
         final int arrowWidth = root.findViewById(R.id.arrow_image).getMeasuredWidth();
-        return ApiCompatibilityUtils.isLayoutRtl(root) ?
-                (width * 3 / 4 - arrowWidth / 2) : (width / 4 + arrowWidth / 2);
+        return ApiCompatibilityUtils.isLayoutRtl(root)
+                ? (width * 3 / 4 - arrowWidth / 2) : (width / 4 + arrowWidth / 2);
     }
 
     /**
@@ -144,8 +144,8 @@ class ValidationMessageBubble {
     private Point adjustWindowPosition(ContentViewCore contentViewCore, int x, int y) {
         final RenderCoordinates coordinates = contentViewCore.getRenderCoordinates();
         final int viewWidth = coordinates.getLastFrameViewportWidthPixInt();
-        final int viewBottom = (int) getWebViewOffsetYPixInScreen(contentViewCore) +
-                coordinates.getLastFrameViewportHeightPixInt();
+        final int viewBottom = (int) getWebViewOffsetYPixInScreen(contentViewCore)
+                + coordinates.getLastFrameViewportHeightPixInt();
         final int width = mPopup.getContentView().getMeasuredWidth();
         final int height = mPopup.getContentView().getMeasuredHeight();
         if (x < 0) {

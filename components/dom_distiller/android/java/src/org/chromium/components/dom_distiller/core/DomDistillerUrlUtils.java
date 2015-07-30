@@ -6,8 +6,8 @@ package org.chromium.components.dom_distiller.core;
 
 import android.text.TextUtils;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Wrapper for the dom_distiller::url_utils.

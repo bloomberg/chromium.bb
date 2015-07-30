@@ -14,6 +14,8 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.chromium.base.annotations.CalledByNative;
+
 /**
  * BuildInfo is a utility class providing easy access to {@link PackageInfo}
  * information. This is primarly of use for accessesing package information

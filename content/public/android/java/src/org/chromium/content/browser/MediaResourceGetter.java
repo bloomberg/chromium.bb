@@ -13,11 +13,11 @@ import android.net.NetworkInfo;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.File;
 import java.io.IOException;

@@ -9,6 +9,8 @@ import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.res.Configuration;
 
+import org.chromium.base.annotations.CalledByNative;
+
 
 /**
  * This is an internal implementation of the C++ counterpart.

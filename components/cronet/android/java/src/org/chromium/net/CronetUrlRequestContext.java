@@ -12,10 +12,10 @@ import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.base.NativeClassQualifiedName;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.UsedByReflection;
 
 import java.util.concurrent.Executor;

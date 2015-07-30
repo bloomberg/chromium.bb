@@ -9,9 +9,9 @@ import android.util.JsonToken;
 import android.util.JsonWriter;
 import android.util.MalformedJsonException;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.StreamUtil;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
 import java.io.StringReader;

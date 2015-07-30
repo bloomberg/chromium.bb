@@ -9,10 +9,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.common.ScreenOrientationConstants;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.gfx.DeviceDisplayInfo;

@@ -4,6 +4,9 @@
 
 package org.chromium.base;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
 /**
  * A simple interface to Android's EventLog to be used by native code.
  */

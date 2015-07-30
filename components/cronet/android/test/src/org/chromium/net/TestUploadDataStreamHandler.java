@@ -8,9 +8,9 @@ import android.os.ConditionVariable;
 
 import junit.framework.Assert;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.base.NativeClassQualifiedName;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeClassQualifiedName;
 
 /**
  * A wrapper class on top of the native net::UploadDataStream. This class is

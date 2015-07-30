@@ -10,8 +10,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.PopupWindow;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.R;
 import org.chromium.ui.base.ViewAndroidDelegate;

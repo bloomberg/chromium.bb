@@ -6,7 +6,7 @@ package org.chromium.chromium_linker_test_apk;
 
 import android.util.Log;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.Linker;
 
 /**
@@ -47,10 +47,11 @@ public class LinkerTests implements Linker.TestRunner {
             checkSharedRelro = true;
         }
 
-        if (checkSharedRelro)
+        if (checkSharedRelro) {
             return nativeCheckForSharedRelros(isBrowserProcess);
-        else
+        } else {
             return nativeCheckForNoSharedRelros(isBrowserProcess);
+        }
     }
 
     // Check that there are shared RELRO sections in the current process,

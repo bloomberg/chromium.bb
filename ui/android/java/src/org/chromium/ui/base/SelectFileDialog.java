@@ -19,10 +19,10 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 

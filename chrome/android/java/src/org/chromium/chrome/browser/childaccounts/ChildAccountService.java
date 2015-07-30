@@ -12,12 +12,12 @@ import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.Intent;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.signin.SigninManager;

@@ -4,8 +4,8 @@
 
 package org.chromium.base.metrics;
 
-import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Java API for recording UMA actions.

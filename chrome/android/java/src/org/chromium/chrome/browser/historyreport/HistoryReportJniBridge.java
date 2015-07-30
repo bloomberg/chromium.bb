@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.historyreport;
 
 import android.text.TextUtils;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -6,7 +6,7 @@ package org.chromium.ui.base;
 
 import android.content.Context;
 
-import org.chromium.base.CalledByNative;
+import org.chromium.base.annotations.CalledByNative;
 
 /**
  * UI utilities for accessing form factor information.

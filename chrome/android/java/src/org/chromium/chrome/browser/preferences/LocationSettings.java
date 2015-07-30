@@ -11,9 +11,9 @@ import android.location.LocationManager;
 import android.provider.Settings;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content.browser.ContentViewCore;

@@ -7,7 +7,7 @@ package org.chromium.android_webview;
 import android.graphics.Canvas;
 import android.graphics.Picture;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.common.CleanupReference;
 
 import java.io.OutputStream;

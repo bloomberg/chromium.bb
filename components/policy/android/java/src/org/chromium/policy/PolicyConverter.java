@@ -4,8 +4,8 @@
 
 package org.chromium.policy;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Allows converting Java policies, contained as key/value pairs in {@link android.os.Bundle}s to

@@ -4,7 +4,7 @@
 
 package org.chromium.chromecast.shell;
 
-import org.chromium.base.JNINamespace;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Wrapper of native CastMetricsHelper.

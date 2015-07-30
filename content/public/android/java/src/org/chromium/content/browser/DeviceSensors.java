@@ -12,12 +12,12 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 import java.util.HashSet;
 import java.util.List;
