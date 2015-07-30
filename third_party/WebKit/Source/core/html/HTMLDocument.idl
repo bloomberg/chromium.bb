@@ -26,12 +26,11 @@
 interface HTMLDocument : Document {
     // https://html.spec.whatwg.org/#Document-partial
 
-    // FIXME: *Color should have [TreatNullAs=EmptyString].
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString fgColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString linkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString vlinkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString alinkColor;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString bgColor;
+    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString fgColor;
+    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString linkColor;
+    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString vlinkColor;
+    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString alinkColor;
+    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString bgColor;
 
     [MeasureAs=DocumentClear] void clear();
     [MeasureAs=DocumentCaptureEvents] void captureEvents();
