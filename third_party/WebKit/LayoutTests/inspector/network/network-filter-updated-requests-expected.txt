@@ -1,6 +1,6 @@
 Tests that filter is reapplied when request is updated.
 
-Clicked 'xhr' button.
+Clicked 'XHR and Fetch' button.
 
 Request [foo] of type 'script' is hidden: true
 Request [bar] of type 'script' is hidden: true

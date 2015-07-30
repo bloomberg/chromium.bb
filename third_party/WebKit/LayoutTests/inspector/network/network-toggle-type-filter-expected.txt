@@ -2,44 +2,44 @@ Tests toggling type filter on network panel.
 
 
 Clicked 'all' button.
-Filter: xhr: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
+Filter: xhr: true, fetch: true, eventsource: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
 
-Clicked 'document' button.
-Filter: xhr: false, script: false, stylesheet: false, image: false, media: false, font: false, document: true, texttrack: false, websocket: false, other: false
+Clicked 'Documents' button.
+Filter: xhr: false, fetch: false, eventsource: false, script: false, stylesheet: false, image: false, media: false, font: false, document: true, texttrack: false, websocket: false, other: false
 
-Clicked 'document' button.
-Filter: xhr: false, script: false, stylesheet: false, image: false, media: false, font: false, document: true, texttrack: false, websocket: false, other: false
+Clicked 'Documents' button.
+Filter: xhr: false, fetch: false, eventsource: false, script: false, stylesheet: false, image: false, media: false, font: false, document: true, texttrack: false, websocket: false, other: false
 
-Clicked 'script' button.
-Filter: xhr: false, script: true, stylesheet: false, image: false, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
-
-Toggled 'all' button.
-Filter: xhr: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
+Clicked 'Scripts' button.
+Filter: xhr: false, fetch: false, eventsource: false, script: true, stylesheet: false, image: false, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
 
 Toggled 'all' button.
-Filter: xhr: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
+Filter: xhr: true, fetch: true, eventsource: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
 
-Toggled 'stylesheet' button.
-Filter: xhr: false, script: false, stylesheet: true, image: false, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
+Toggled 'all' button.
+Filter: xhr: true, fetch: true, eventsource: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
 
-Toggled 'image' button.
-Filter: xhr: false, script: false, stylesheet: true, image: true, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
+Toggled 'Stylesheets' button.
+Filter: xhr: false, fetch: false, eventsource: false, script: false, stylesheet: true, image: false, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
 
-Toggled 'stylesheet' button.
-Filter: xhr: false, script: false, stylesheet: false, image: true, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
+Toggled 'Images' button.
+Filter: xhr: false, fetch: false, eventsource: false, script: false, stylesheet: true, image: true, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
 
-Clicked 'xhr' button.
-Filter: xhr: true, script: false, stylesheet: false, image: false, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
+Toggled 'Stylesheets' button.
+Filter: xhr: false, fetch: false, eventsource: false, script: false, stylesheet: false, image: true, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
 
-Toggled 'font' button.
-Filter: xhr: true, script: false, stylesheet: false, image: false, media: false, font: true, document: false, texttrack: false, websocket: false, other: false
+Clicked 'XHR and Fetch' button.
+Filter: xhr: true, fetch: true, eventsource: true, script: false, stylesheet: false, image: false, media: false, font: false, document: false, texttrack: false, websocket: false, other: false
 
-Toggled 'websocket' button.
-Filter: xhr: true, script: false, stylesheet: false, image: false, media: false, font: true, document: false, texttrack: false, websocket: true, other: false
+Toggled 'Fonts' button.
+Filter: xhr: true, fetch: true, eventsource: true, script: false, stylesheet: false, image: false, media: false, font: true, document: false, texttrack: false, websocket: false, other: false
 
-Toggled 'media' button.
-Filter: xhr: true, script: false, stylesheet: false, image: false, media: true, font: true, document: false, texttrack: false, websocket: true, other: false
+Toggled 'WebSockets' button.
+Filter: xhr: true, fetch: true, eventsource: true, script: false, stylesheet: false, image: false, media: false, font: true, document: false, texttrack: false, websocket: true, other: false
+
+Toggled 'Media' button.
+Filter: xhr: true, fetch: true, eventsource: true, script: false, stylesheet: false, image: false, media: true, font: true, document: false, texttrack: false, websocket: true, other: false
 
 Clicked 'all' button.
-Filter: xhr: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
+Filter: xhr: true, fetch: true, eventsource: true, script: true, stylesheet: true, image: true, media: true, font: true, document: true, texttrack: true, websocket: true, other: true
 

@@ -12,12 +12,12 @@ function test() {
     {
         InspectorTest.addResult("");
         InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
-        target._resourceTypeFilterUI._toggleTypeFilter(buttonName, toggle);
+        target._resourceCategoryFilterUI._toggleTypeFilter(buttonName, toggle);
         var results = [];
         var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
         for (var typeId in types) {
             var type = WebInspector.resourceTypes[typeId];
-            results.push(type.name() + ": " + target._resourceTypeFilterUI.accept(type.name()));
+            results.push(type.name() + ": " + target._resourceCategoryFilterUI.accept(type.category().title));
         }
         InspectorTest.addResult("Filter: " + results.join(", "));
     }
@@ -25,20 +25,20 @@ function test() {
     var allTypes = "all";
 
     toggleAndDump(allTypes, false);
-    toggleAndDump(types.Document.name(), false);
-    toggleAndDump(types.Document.name(), false);
-    toggleAndDump(types.Script.name(), false);
+    toggleAndDump(types.Document.category().title, false);
+    toggleAndDump(types.Document.category().title, false);
+    toggleAndDump(types.Script.category().title, false);
 
     toggleAndDump(allTypes, true);
     toggleAndDump(allTypes, true);
-    toggleAndDump(types.Stylesheet.name(), true);
-    toggleAndDump(types.Image.name(), true);
-    toggleAndDump(types.Stylesheet.name(), true);
-    toggleAndDump(types.XHR.name(), false);
+    toggleAndDump(types.Stylesheet.category().title, true);
+    toggleAndDump(types.Image.category().title, true);
+    toggleAndDump(types.Stylesheet.category().title, true);
+    toggleAndDump(types.XHR.category().title, false);
 
-    toggleAndDump(types.Font.name(), true);
-    toggleAndDump(types.WebSocket.name(), true);
-    toggleAndDump(types.Media.name(), true);
+    toggleAndDump(types.Font.category().title, true);
+    toggleAndDump(types.WebSocket.category().title, true);
+    toggleAndDump(types.Media.category().title, true);
     toggleAndDump(allTypes, false);
 
     InspectorTest.completeTest();

@@ -7,8 +7,9 @@ function test() {
     var target = WebInspector.panels.network._networkLogView;
     var types = WebInspector.resourceTypes;
 
-    target._resourceTypeFilterUI._toggleTypeFilter(types.XHR.name(), false);
-    InspectorTest.addResult("Clicked '" + types.XHR.name() + "' button.");
+    var categoryName = types.XHR.category().title;
+    target._resourceCategoryFilterUI._toggleTypeFilter(categoryName, false);
+    InspectorTest.addResult("Clicked '" + categoryName + "' button.");
 
     var requestFoo = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
     requestFoo.setResourceType(types.Script);

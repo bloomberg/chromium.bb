@@ -5,7 +5,7 @@
 <script>
 function test() {
     var target = WebInspector.panels.network._networkLogView;
-    target._resourceTypeFilterUI._toggleTypeFilter(WebInspector.resourceTypes.XHR.name(), false);
+    target._resourceCategoryFilterUI._toggleTypeFilter(WebInspector.resourceTypes.XHR.category().title, false);
     InspectorTest.addResult("Clicked '" + WebInspector.resourceTypes.XHR.name() + "' button.");
     target.reset();
 
