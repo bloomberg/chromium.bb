@@ -166,19 +166,13 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Set shared preference to allow low end device ui.
-     */
-    public void setAllowLowEndDeviceUi() {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putBoolean(ALLOW_LOW_END_DEVICE_UI, true);
-        sharedPreferencesEditor.apply();
-    }
-
-    /**
-     * @return Whether low end device ui is allowed.
+     * This value may have been explicitly set to false when we used to keep existing low-end
+     * devices on the normal UI rather than the simplified UI. We want to keep the existing device
+     * settings. For all new low-end devices they should get the simplified UI by default.
+     * @return Whether low end device UI was allowed.
      */
     public boolean getAllowLowEndDeviceUi() {
-        return mSharedPreferences.getBoolean(ALLOW_LOW_END_DEVICE_UI, false);
+        return mSharedPreferences.getBoolean(ALLOW_LOW_END_DEVICE_UI, true);
     }
 
     /**

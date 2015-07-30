@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.Process;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
@@ -88,7 +87,6 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
-import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -260,19 +258,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mAssistStatusHandler.updateAssistState();
         }
 
-        // Low end device UI should be allowed only after a fresh install or when the data has
-        // been cleared. This must happen before anyone calls SysUtils.isLowEndDevice() or
-        // SysUtils.isLowEndDevice() will always return the wrong value.
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/473352
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            if (OmahaClient.isFreshInstallOrDataHasBeenCleared(this)) {
-                ChromePreferenceManager.getInstance(this).setAllowLowEndDeviceUi();
-            }
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
+        // If a user had ALLOW_LOW_END_DEVICE_UI explicitly set to false then we manually override
+        // SysUtils.isLowEndDevice() with a switch so that they continue to see the normal UI. This
+        // is only the case for grandfathered-in svelte users. We no longer do so for newer users.
         if (!ChromePreferenceManager.getInstance(this).getAllowLowEndDeviceUi()) {
             CommandLine.getInstance().appendSwitch(
                     BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
