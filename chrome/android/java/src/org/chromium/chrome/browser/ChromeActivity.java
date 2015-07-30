@@ -97,6 +97,7 @@ import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -210,6 +211,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private long mInflateInitialLayoutDurationMs;
 
     private OnPreDrawListener mFirstDrawListener;
+
+    protected int mThemeColor;
 
     private final Locale mCurrentLocale = Locale.getDefault();
 
@@ -498,11 +501,40 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void onCrash(Tab tab, boolean sadTabShown) {
                 postDeferredStartupIfNeeded();
             }
+
+            @Override
+            public void onDidChangeThemeColor(int color) {
+                checkThemeColorUpdate();
+            }
+
+            @Override
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                if (!didStartLoad) return;
+                checkThemeColorUpdate();
+            }
+
+            @Override
+            public void onSSLStateUpdated(Tab tab) {
+                checkThemeColorUpdate();
+            }
+
+            @Override
+            public void onDidAttachInterstitialPage(Tab tab) {
+                checkThemeColorUpdate();
+            }
         };
 
         if (mAssistStatusHandler != null) {
             mAssistStatusHandler.setTabModelSelector(tabModelSelector);
         }
+    }
+
+    private void checkThemeColorUpdate() {
+        if (getActivityTab() == null) return;
+        int themeColor = ChromeTab.fromTab(getActivityTab()).getThemeColor();
+        if (mThemeColor == themeColor) return;
+        mThemeColor = themeColor;
+        onThemeColorUpdate();
     }
 
     @Override
@@ -1450,4 +1482,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onSceneChange(Layout layout) { }
+
+    /**
+     * Gets called when the theme color corresponding to current tab changes.
+     */
+    protected void onThemeColorUpdate() {
+        if (mToolbarManager == null) return;
+        mToolbarManager.updatePrimaryColor(mThemeColor);
+        ControlContainer controlContainer =
+                (ControlContainer) findViewById(R.id.control_container);
+        controlContainer.getToolbarResourceAdapter().invalidate(null);
+    }
 }

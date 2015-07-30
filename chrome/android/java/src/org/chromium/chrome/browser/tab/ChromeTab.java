@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.Build;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -192,6 +194,8 @@ public class ChromeTab extends Tab {
 
     private boolean mShouldClearRedirectHistoryForTabClobbering;
 
+    private final int mDefaultThemeColor;
+
     /**
      * Basic constructor. This is hidden, so that explicitly named factory methods are used to
      * create tabs. initialize() needs to be called afterwards to complete the second level
@@ -229,6 +233,11 @@ public class ChromeTab extends Tab {
         if (mActivity != null && creationState != null) {
             setTabUma(new TabUma(
                     this, creationState, mActivity.getTabModelSelector().getModel(incognito)));
+            Resources resources = mActivity.getResources();
+            mDefaultThemeColor = incognito ? resources.getColor(R.color.incognito_primary_color)
+                            : resources.getColor(R.color.default_primary_color);
+        } else {
+            mDefaultThemeColor = 0;
         }
 
         if (incognito) {
@@ -256,6 +265,7 @@ public class ChromeTab extends Tab {
         super(id, incognito, null, null);
         mActivity = null;
         mTabRedirectHandler = new TabRedirectHandler(null);
+        mDefaultThemeColor = 0;
     }
 
     /**
@@ -1370,5 +1380,23 @@ public class ChromeTab extends Tab {
     @VisibleForTesting
     public OverrideUrlLoadingResult getLastOverrideUrlLoadingResultForTests() {
         return mLastOverrideUrlLoadingResult;
+    }
+
+    /**
+     * @return The theme color based on declared color and the security state.
+     */
+    public int getThemeColor() {
+        int securityLevel = getSecurityLevel();
+        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
+            return mDefaultThemeColor;
+        }
+        if (isShowingInterstitialPage()) return mDefaultThemeColor;
+        if (isIncognito()) return mDefaultThemeColor;
+
+        int color = getWebContents().getThemeColor(mDefaultThemeColor);
+        color |= 0xFF000000;
+        return color;
     }
 }
