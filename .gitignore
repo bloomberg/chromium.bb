@@ -394,7 +394,6 @@ v8.log
 /third_party/v8-i18n
 /third_party/valgrind
 /third_party/v4l2capture
-/third_party/web-animations-js
 /third_party/webdriver/pylib
 /third_party/webdriver/python/selenium
 /third_party/webgl
