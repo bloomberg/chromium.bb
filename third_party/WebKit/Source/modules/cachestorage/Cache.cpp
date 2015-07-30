@@ -138,107 +138,10 @@ private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
-// This class provides Promise.all() for ScriptPromise.
-// TODO(nhiroki): Move this somewhere else so that other components can reuse.
-// TODO(nhiroki): Unfortunately, we have to go through V8 to wait for the fetch
-// promise. It should be better to achieve this only within C++ world.
-class CacheStoragePromiseAll final : public GarbageCollectedFinalized<CacheStoragePromiseAll> {
-public:
-    CacheStoragePromiseAll(Vector<ScriptPromise> promises, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
-        : m_numberOfPendingPromises(promises.size())
-        , m_resolver(resolver)
-    {
-        m_values.resize(promises.size());
-        for (size_t i = 0; i < promises.size(); ++i)
-            promises[i].then(createFulfillFunction(i), createRejectFunction());
-    }
-
-    void onFulfilled(size_t index, const ScriptValue& value)
-    {
-        ASSERT(index < m_values.size());
-        if (m_isSettled)
-            return;
-        m_values[index] = value;
-        if (--m_numberOfPendingPromises > 0)
-            return;
-        m_isSettled = true;
-        m_resolver->resolve(m_values);
-    }
-
-    void onRejected(const ScriptValue& value)
-    {
-        if (m_isSettled)
-            return;
-        m_isSettled = true;
-        m_resolver->reject(value);
-    }
-
-    ScriptPromise promise() { return m_resolver->promise(); }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_resolver);
-    }
-
-private:
-    class AdapterFunction : public ScriptFunction {
-    public:
-        enum ResolveType {
-            Fulfilled,
-            Rejected,
-        };
-
-        static v8::Local<v8::Function> create(ScriptState* scriptState, ResolveType resolveType, size_t index, CacheStoragePromiseAll* promiseAll)
-        {
-            AdapterFunction* self = new AdapterFunction(scriptState, resolveType, index, promiseAll);
-            return self->bindToV8Function();
-        }
-
-        DEFINE_INLINE_VIRTUAL_TRACE()
-        {
-            visitor->trace(m_promiseAll);
-            ScriptFunction::trace(visitor);
-        }
-
-    private:
-        AdapterFunction(ScriptState* scriptState, ResolveType resolveType, size_t index, CacheStoragePromiseAll* promiseAll)
-            : ScriptFunction(scriptState)
-            , m_resolveType(resolveType)
-            , m_index(index)
-            , m_promiseAll(promiseAll) { }
-
-        ScriptValue call(ScriptValue value) override
-        {
-            if (m_resolveType == Fulfilled)
-                m_promiseAll->onFulfilled(m_index, value);
-            else
-                m_promiseAll->onRejected(value);
-            return ScriptValue(scriptState(), m_promiseAll->promise().v8Value());
-        }
-
-        const ResolveType m_resolveType;
-        const size_t m_index;
-        Member<CacheStoragePromiseAll> m_promiseAll;
-    };
-
-    v8::Local<v8::Function> createFulfillFunction(size_t index)
-    {
-        return AdapterFunction::create(m_resolver->scriptState(), AdapterFunction::Fulfilled, index, this);
-    }
-
-    v8::Local<v8::Function> createRejectFunction()
-    {
-        return AdapterFunction::create(m_resolver->scriptState(), AdapterFunction::Rejected, 0, this);
-    }
-
-    size_t m_numberOfPendingPromises;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
-    bool m_isSettled = false;
-    Vector<ScriptValue> m_values;
-};
-
 } // namespace
 
+// TODO(nhiroki): Unfortunately, we have to go through V8 to wait for the fetch
+// promise. It should be better to achieve this only within C++ world.
 class Cache::FetchResolvedForAdd final : public ScriptFunction {
 public:
     static v8::Local<v8::Function> create(ScriptState* scriptState, Cache* cache, const HeapVector<Member<Request>>& requests)
@@ -513,9 +416,7 @@ ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const HeapVector<Membe
         promises[i] = m_scopedFetcher->fetch(scriptState, requestInfos[i], Dictionary(), exceptionState);
     }
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    CacheStoragePromiseAll* promiseAll = new CacheStoragePromiseAll(promises, resolver.get());
-    return promiseAll->promise().then(FetchResolvedForAdd::create(scriptState, this, requests));
+    return ScriptPromise::all(scriptState, promises).then(FetchResolvedForAdd::create(scriptState, this, requests));
 }
 
 ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request, const CacheQueryOptions& options)

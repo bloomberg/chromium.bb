@@ -41,6 +41,126 @@
 
 namespace blink {
 
+namespace {
+
+class PromiseAllHandler final : public GarbageCollectedFinalized<PromiseAllHandler> {
+    WTF_MAKE_NONCOPYABLE(PromiseAllHandler);
+public:
+    static ScriptPromise all(ScriptState* scriptState, const Vector<ScriptPromise>& promises)
+    {
+        if (promises.isEmpty())
+            return ScriptPromise::cast(scriptState, v8::Array::New(scriptState->isolate()));
+        return (new PromiseAllHandler(scriptState, promises))->m_resolver.promise();
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+
+private:
+    class AdapterFunction : public ScriptFunction {
+    public:
+        enum ResolveType {
+            Fulfilled,
+            Rejected,
+        };
+
+        static v8::Local<v8::Function> create(ScriptState* scriptState, ResolveType resolveType, size_t index, PromiseAllHandler* handler)
+        {
+            AdapterFunction* self = new AdapterFunction(scriptState, resolveType, index, handler);
+            return self->bindToV8Function();
+        }
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            visitor->trace(m_handler);
+            ScriptFunction::trace(visitor);
+        }
+
+    private:
+        AdapterFunction(ScriptState* scriptState, ResolveType resolveType, size_t index, PromiseAllHandler* handler)
+            : ScriptFunction(scriptState)
+            , m_resolveType(resolveType)
+            , m_index(index)
+            , m_handler(handler) { }
+
+        ScriptValue call(ScriptValue value) override
+        {
+            if (m_resolveType == Fulfilled)
+                m_handler->onFulfilled(m_index, value);
+            else
+                m_handler->onRejected(value);
+            // This return value is never used.
+            return ScriptValue();
+        }
+
+        const ResolveType m_resolveType;
+        const size_t m_index;
+        Member<PromiseAllHandler> m_handler;
+    };
+
+    PromiseAllHandler(ScriptState* scriptState, Vector<ScriptPromise> promises)
+        : m_numberOfPendingPromises(promises.size())
+        , m_resolver(scriptState)
+    {
+        ASSERT(!promises.isEmpty());
+        m_values.resize(promises.size());
+        for (size_t i = 0; i < promises.size(); ++i)
+            promises[i].then(createFulfillFunction(scriptState, i), createRejectFunction(scriptState));
+    }
+
+    v8::Local<v8::Function> createFulfillFunction(ScriptState* scriptState, size_t index)
+    {
+        return AdapterFunction::create(scriptState, AdapterFunction::Fulfilled, index, this);
+    }
+
+    v8::Local<v8::Function> createRejectFunction(ScriptState* scriptState)
+    {
+        return AdapterFunction::create(scriptState, AdapterFunction::Rejected, 0, this);
+    }
+
+    void onFulfilled(size_t index, const ScriptValue& value)
+    {
+        if (m_isSettled)
+            return;
+
+        ASSERT(index < m_values.size());
+        m_values[index] = value;
+        if (--m_numberOfPendingPromises > 0)
+            return;
+
+        v8::Local<v8::Array> values = v8::Array::New(value.isolate(), m_values.size());
+        for (size_t i = 0; i < m_values.size(); ++i)
+            values->Set(i, m_values[i].v8Value());
+
+        markPromiseSettled();
+        m_resolver.resolve(values);
+    }
+
+    void onRejected(const ScriptValue& value)
+    {
+        if (m_isSettled)
+            return;
+        markPromiseSettled();
+        m_resolver.reject(value.v8Value());
+    }
+
+    void markPromiseSettled()
+    {
+        ASSERT(!m_isSettled);
+        m_isSettled = true;
+        m_values.clear();
+    }
+
+    size_t m_numberOfPendingPromises;
+    ScriptPromise::InternalResolver m_resolver;
+    bool m_isSettled = false;
+
+    // This is cleared when owners of this handler, that is, given promises are
+    // settled.
+    Vector<ScriptValue> m_values;
+};
+
+} // namespace
+
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
     : m_resolver(scriptState, v8::Promise::Resolver::New(scriptState->context())) { }
 
@@ -181,6 +301,11 @@ v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState, v8::Lo
     v8::Local<v8::Promise> promise = resolver->GetPromise();
     resolver->Reject(scriptState->context(), value);
     return promise;
+}
+
+ScriptPromise ScriptPromise::all(ScriptState* scriptState, const Vector<ScriptPromise>& promises)
+{
+    return PromiseAllHandler::all(scriptState, promises);
 }
 
 void ScriptPromise::increaseInstanceCount()

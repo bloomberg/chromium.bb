@@ -49,27 +49,27 @@ void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
 
 class Function : public ScriptFunction {
 public:
-    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, String* value)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, ScriptValue* output)
     {
-        Function* self = new Function(scriptState, value);
+        Function* self = new Function(scriptState, output);
         return self->bindToV8Function();
     }
 
 private:
-    Function(ScriptState* scriptState, String* value)
+    Function(ScriptState* scriptState, ScriptValue* output)
         : ScriptFunction(scriptState)
-        , m_value(value)
+        , m_output(output)
     {
     }
 
     ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
-        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
+        *m_output = value;
         return value;
     }
 
-    String* m_value;
+    ScriptValue* m_output;
 };
 
 class ScriptPromiseTest : public testing::Test {
@@ -86,6 +86,17 @@ public:
 
         // Execute all pending microtasks
         isolate()->RunMicrotasks();
+    }
+
+    String toString(const ScriptValue& value)
+    {
+        return toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
+    }
+
+    Vector<String> toStringArray(const ScriptValue& value)
+    {
+        NonThrowableExceptionState exceptionState;
+        return toImplArray<Vector<String>>(value.v8Value(), 0, scriptState()->isolate(), exceptionState);
     }
 
     ScriptState* scriptState() const { return m_scope.scriptState(); }
@@ -108,82 +119,82 @@ TEST_F(ScriptPromiseTest, thenResolve)
 {
     Resolver resolver(scriptState());
     ScriptPromise promise = resolver.promise();
-    String onFulfilled, onRejected;
+    ScriptValue onFulfilled, onRejected;
     promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
     resolver.resolve(v8String(isolate(), "hello"));
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ("hello", onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_EQ("hello", toString(onFulfilled));
+    EXPECT_TRUE(onRejected.isEmpty());
 }
 
 TEST_F(ScriptPromiseTest, resolveThen)
 {
     Resolver resolver(scriptState());
     ScriptPromise promise = resolver.promise();
-    String onFulfilled, onRejected;
+    ScriptValue onFulfilled, onRejected;
     resolver.resolve(v8String(isolate(), "hello"));
     promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ("hello", onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_EQ("hello", toString(onFulfilled));
+    EXPECT_TRUE(onRejected.isEmpty());
 }
 
 TEST_F(ScriptPromiseTest, thenReject)
 {
     Resolver resolver(scriptState());
     ScriptPromise promise = resolver.promise();
-    String onFulfilled, onRejected;
+    ScriptValue onFulfilled, onRejected;
     promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
     resolver.reject(v8String(isolate(), "hello"));
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ("hello", onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_EQ("hello", toString(onRejected));
 }
 
 TEST_F(ScriptPromiseTest, rejectThen)
 {
     Resolver resolver(scriptState());
     ScriptPromise promise = resolver.promise();
-    String onFulfilled, onRejected;
+    ScriptValue onFulfilled, onRejected;
     resolver.reject(v8String(isolate(), "hello"));
     promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ("hello", onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_EQ("hello", toString(onRejected));
 }
 
 TEST_F(ScriptPromiseTest, castPromise)
@@ -197,7 +208,7 @@ TEST_F(ScriptPromiseTest, castPromise)
 
 TEST_F(ScriptPromiseTest, castNonPromise)
 {
-    String onFulfilled1, onFulfilled2, onRejected1, onRejected2;
+    ScriptValue onFulfilled1, onFulfilled2, onRejected1, onRejected2;
 
     ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
     ScriptPromise promise1 = ScriptPromise::cast(scriptState(), ScriptValue(value));
@@ -212,22 +223,22 @@ TEST_F(ScriptPromiseTest, castNonPromise)
     ASSERT_TRUE(promise1.v8Value()->IsPromise());
     ASSERT_TRUE(promise2.v8Value()->IsPromise());
 
-    EXPECT_EQ(String(), onFulfilled1);
-    EXPECT_EQ(String(), onFulfilled2);
-    EXPECT_EQ(String(), onRejected1);
-    EXPECT_EQ(String(), onRejected2);
+    EXPECT_TRUE(onFulfilled1.isEmpty());
+    EXPECT_TRUE(onFulfilled2.isEmpty());
+    EXPECT_TRUE(onRejected1.isEmpty());
+    EXPECT_TRUE(onRejected2.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ("hello", onFulfilled1);
-    EXPECT_EQ("hello", onFulfilled2);
-    EXPECT_EQ(String(), onRejected1);
-    EXPECT_EQ(String(), onRejected2);
+    EXPECT_EQ("hello", toString(onFulfilled1));
+    EXPECT_EQ("hello", toString(onFulfilled2));
+    EXPECT_TRUE(onRejected1.isEmpty());
+    EXPECT_TRUE(onRejected2.isEmpty());
 }
 
 TEST_F(ScriptPromiseTest, reject)
 {
-    String onFulfilled, onRejected;
+    ScriptValue onFulfilled, onRejected;
 
     ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
     ScriptPromise promise = ScriptPromise::reject(scriptState(), ScriptValue(value));
@@ -236,29 +247,95 @@ TEST_F(ScriptPromiseTest, reject)
     ASSERT_FALSE(promise.isEmpty());
     ASSERT_TRUE(promise.v8Value()->IsPromise());
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ("hello", onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_EQ("hello", toString(onRejected));
 }
 
 TEST_F(ScriptPromiseTest, rejectWithExceptionState)
 {
-    String onFulfilled, onRejected;
+    ScriptValue onFulfilled, onRejected;
     ScriptPromise promise = ScriptPromise::rejectWithDOMException(scriptState(), DOMException::create(SyntaxError, "some syntax error"));
     promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ(String(), onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
 
     isolate()->RunMicrotasks();
 
-    EXPECT_EQ(String(), onFulfilled);
-    EXPECT_EQ("SyntaxError: some syntax error", onRejected);
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_EQ("SyntaxError: some syntax error", toString(onRejected));
+}
+
+TEST_F(ScriptPromiseTest, allWithEmptyPromises)
+{
+    ScriptValue onFulfilled, onRejected;
+
+    ScriptPromise promise = ScriptPromise::all(scriptState(), Vector<ScriptPromise>());
+    ASSERT_FALSE(promise.isEmpty());
+
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_FALSE(onFulfilled.isEmpty());
+    EXPECT_TRUE(toStringArray(onFulfilled).isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
+}
+
+TEST_F(ScriptPromiseTest, allWithResolvedPromises)
+{
+    ScriptValue onFulfilled, onRejected;
+
+    Vector<ScriptPromise> promises;
+    promises.append(ScriptPromise::cast(scriptState(), v8String(isolate(), "hello")));
+    promises.append(ScriptPromise::cast(scriptState(), v8String(isolate(), "world")));
+
+    ScriptPromise promise = ScriptPromise::all(scriptState(), promises);
+    ASSERT_FALSE(promise.isEmpty());
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_FALSE(onFulfilled.isEmpty());
+    Vector<String> values = toStringArray(onFulfilled);
+    EXPECT_EQ(2u, values.size());
+    EXPECT_EQ("hello", values[0]);
+    EXPECT_EQ("world", values[1]);
+    EXPECT_TRUE(onRejected.isEmpty());
+}
+
+TEST_F(ScriptPromiseTest, allWithRejectedPromise)
+{
+    ScriptValue onFulfilled, onRejected;
+
+    Vector<ScriptPromise> promises;
+    promises.append(ScriptPromise::cast(scriptState(), v8String(isolate(), "hello")));
+    promises.append(ScriptPromise::reject(scriptState(), v8String(isolate(), "world")));
+
+    ScriptPromise promise = ScriptPromise::all(scriptState(), promises);
+    ASSERT_FALSE(promise.isEmpty());
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_TRUE(onRejected.isEmpty());
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_TRUE(onFulfilled.isEmpty());
+    EXPECT_FALSE(onRejected.isEmpty());
+    EXPECT_EQ("world", toString(onRejected));
 }
 
 } // namespace

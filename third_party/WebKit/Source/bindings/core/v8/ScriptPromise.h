@@ -36,6 +36,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {
@@ -130,6 +131,11 @@ public:
     static ScriptPromise rejectWithDOMException(ScriptState*, DOMException*);
 
     static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Local<v8::Value>);
+
+    // Constructs and returns a ScriptPromise to be resolved when all |promises|
+    // are resolved. If one of |promises| is rejected, the returned
+    // ScriptPromise is rejected.
+    static ScriptPromise all(ScriptState*, const Vector<ScriptPromise>& promises);
 
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
