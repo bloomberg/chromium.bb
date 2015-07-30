@@ -4,8 +4,6 @@
 
 #ifndef WTF_AddressSanitizer_h
 #define WTF_AddressSanitizer_h
-// TODO(kojii): This file will need to be renamed, because it's no more
-// specific to AddressSanitizer.
 
 // TODO(sof): Add SyZyASan support?
 #if defined(ADDRESS_SANITIZER)
@@ -24,10 +22,6 @@
 #define __lsan_unregister_root_region(addr, size) ((void)(addr), (void)(size))
 #endif
 
-#if defined(MEMORY_SANITIZER)
-#include <sanitizer/msan_interface.h>
-#endif
-
 // TODO(sof): Have to handle (ADDRESS_SANITIZER && _WIN32) differently as it
 // uses both Clang (which supports the __attribute__ syntax) and CL (which doesn't)
 // as long as we use "clang-cl /fallback". This shouldn't be needed when Clang
@@ -42,12 +36,6 @@
 #else
 #define NO_SANITIZE_ADDRESS
 #define NO_LAZY_SWEEP_SANITIZE_ADDRESS
-#endif
-
-#if defined(MEMORY_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
-#define NO_SANITIZE_MEMORY __attribute__((no_sanitize_memory))
-#else
-#define NO_SANITIZE_MEMORY
 #endif
 
 #endif // WTF_AddressSanitizer_h
