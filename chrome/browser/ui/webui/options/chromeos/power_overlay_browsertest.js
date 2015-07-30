@@ -90,7 +90,7 @@ TEST_F('PowerOverlayWebUITest', 'testDedicatedCharger', function() {
   var fakeSources = [{
     id: 'source1',
     description: 'Left port',
-    type: loadTimeData.getInteger('powerSourceCharger'),
+    type: options.PowerStatusDeviceType.DEDICATED_CHARGER,
   }];
 
   this.setPowerSources(fakeSources, 'source1', false, false);
@@ -112,7 +112,7 @@ TEST_F('PowerOverlayWebUITest', 'testSingleSource', function() {
   var fakeSources = [{
     id: 'source1',
     description: 'Left port',
-    type: loadTimeData.getInteger('powerSourceDualRole'),
+    type: options.PowerStatusDeviceType.DUAL_ROLE_USB,
   }];
 
   this.setPowerSources(fakeSources, '', false, false);
@@ -133,19 +133,19 @@ TEST_F('PowerOverlayWebUITest', 'testMultipleSources', function() {
   var fakeSources = [{
     id: 'source1',
     description: 'Left port',
-    type: loadTimeData.getInteger('powerSourceDualRole'),
+    type: options.PowerStatusDeviceType.DUAL_ROLE_USB,
   }, {
     id: 'source2',
     description: 'Right port',
-    type: loadTimeData.getInteger('powerSourceDualRole'),
+    type: options.PowerStatusDeviceType.DUAL_ROLE_USB,
   }, {
     id: 'source3',
     description: 'Front port',
-    type: loadTimeData.getInteger('powerSourceDualRole'),
+    type: options.PowerStatusDeviceType.DUAL_ROLE_USB,
   }, {
     id: 'source4',
     description: 'Rear port',
-    type: loadTimeData.getInteger('powerSourceDualRole'),
+    type: options.PowerStatusDeviceType.DUAL_ROLE_USB,
   }];
 
   // Use a dual-role device.

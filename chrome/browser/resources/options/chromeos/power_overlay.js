@@ -2,23 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('options');
+
+/**
+ * Copied from ash/system/chromeos/power/power_status.h.
+ * @enum {number}
+ */
+options.PowerStatusDeviceType = {
+  DEDICATED_CHARGER: 0,
+  DUAL_ROLE_USB: 1,
+};
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   type: options.PowerStatusDeviceType,
+ *   description: string
+ * }}
+ */
+options.PowerSource;
+
 cr.define('options', function() {
   var Page = cr.ui.pageManager.Page;
   var PageManager = cr.ui.pageManager.PageManager;
-
-  /** @enum {number} */ var DeviceType = {
-    CHARGER: loadTimeData.getInteger('powerSourceCharger'),
-    DUAL_ROLE: loadTimeData.getInteger('powerSourceDualRole'),
-  };
-
-  /**
-   * @typedef {{
-   *   id: string,
-   *   type: DeviceType,
-   *   description: string
-   * }}
-   */
-  var PowerSource;
 
   /**
    * Encapsulated handling of the power overlay.
@@ -60,7 +66,7 @@ cr.define('options', function() {
     },
 
     /**
-     * @param {Array<PowerSource>} sources External power sources.
+     * @param {Array<options.PowerSource>} sources External power sources.
      * @param {string} selectedId The ID of the currently used power source.
      * @param {boolean} isUsbCharger Whether the currently used power source
      *     is a USB (low-powered) charger.
@@ -102,7 +108,8 @@ cr.define('options', function() {
       var usingDedicatedCharger = false;
       if (selectedId) {
         usingDedicatedCharger = sources.some(function(source) {
-          return source.id == selectedId && source.type == DeviceType.CHARGER;
+          return source.id == selectedId &&
+              source.type == options.PowerStatusDeviceType.DEDICATED_CHARGER;
         });
       }
 
@@ -120,7 +127,7 @@ cr.define('options', function() {
 
     /**
      * Populates and shows the dropdown of available power sources.
-     * @param {Array<PowerSource>} sources External power sources.
+     * @param {Array<options.PowerSource>} sources External power sources.
      * @param {string} selectedId The ID of the currently used power source.
      *     The empty string indicates no external power source is in use
      *     (running on battery).

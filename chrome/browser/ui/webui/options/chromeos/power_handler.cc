@@ -95,11 +95,6 @@ void PowerHandler::GetLocalizedValues(
   localized_strings->SetString(
       "calculatingPower",
       l10n_util::GetStringUTF16(IDS_OPTIONS_POWER_OVERLAY_CALCULATING));
-
-  localized_strings->SetInteger("powerSourceCharger",
-                                PowerStatus::DEDICATED_CHARGER);
-  localized_strings->SetInteger("powerSourceDualRole",
-                                PowerStatus::DUAL_ROLE_USB);
 }
 
 void PowerHandler::InitializePage() {
