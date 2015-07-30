@@ -72,6 +72,7 @@
         'serial/data_sink_unittest.cc',
         'serial/data_source_unittest.cc',
         'serial/serial_connection_unittest.cc',
+        "serial/serial_io_handler_posix_unittest.cc",
         'serial/serial_service_unittest.cc',
         'test/run_all_unittests.cc',
         'test/usb_test_gadget_impl.cc',

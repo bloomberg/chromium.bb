@@ -161,8 +161,8 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 
   // Set flags for 'raw' operation
   config.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
-  config.c_iflag &=
-      ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+  config.c_iflag &= ~(IGNBRK | BRKINT | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+  config.c_iflag |= PARMRK;
   config.c_oflag &= ~OPOST;
 
   // CLOCAL causes the system to disregard the DCD signal state.
@@ -223,6 +223,19 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     default:
       config.c_cflag &= ~(PARODD | PARENB);
       break;
+  }
+
+  error_detect_state_ = ErrorDetectState::NO_ERROR;
+  num_chars_stashed_ = 0;
+
+  if (config.c_cflag & PARENB) {
+    config.c_iflag &= ~IGNPAR;
+    config.c_iflag |= INPCK;
+    parity_check_enabled_ = true;
+  } else {
+    config.c_iflag |= IGNPAR;
+    config.c_iflag &= ~INPCK;
+    parity_check_enabled_ = false;
   }
 
   DCHECK(options().stop_bits != serial::STOP_BITS_NONE);
@@ -293,7 +306,19 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
     } else if (bytes_read == 0) {
       ReadCompleted(0, serial::RECEIVE_ERROR_DEVICE_LOST);
     } else {
-      ReadCompleted(bytes_read, serial::RECEIVE_ERROR_NONE);
+      bool break_detected = false;
+      bool parity_error_detected = false;
+      int new_bytes_read =
+          CheckReceiveError(pending_read_buffer(), pending_read_buffer_len(),
+                            bytes_read, break_detected, parity_error_detected);
+
+      if (break_detected) {
+        ReadCompleted(new_bytes_read, serial::RECEIVE_ERROR_BREAK);
+      } else if (parity_error_detected) {
+        ReadCompleted(new_bytes_read, serial::RECEIVE_ERROR_PARITY_ERROR);
+      } else {
+        ReadCompleted(new_bytes_read, serial::RECEIVE_ERROR_NONE);
+      }
     }
   } else {
     // Stop watching the fd if we get notifications with no pending
@@ -470,6 +495,122 @@ bool SerialIoHandlerPosix::ClearBreak() {
     return false;
   }
   return true;
+}
+
+// break sequence:
+// '\377'       -->        ErrorDetectState::MARK_377_SEEN
+// '\0'         -->          ErrorDetectState::MARK_0_SEEN
+// '\0'         -->                         break detected
+//
+// parity error sequence:
+// '\377'       -->        ErrorDetectState::MARK_377_SEEN
+// '\0'         -->          ErrorDetectState::MARK_0_SEEN
+// character with parity error  -->  parity error detected
+//
+// break/parity error sequences are removed from the byte stream
+// '\377' '\377' sequence is replaced with '\377'
+int SerialIoHandlerPosix::CheckReceiveError(char* buffer,
+                                            int buffer_len,
+                                            int bytes_read,
+                                            bool& break_detected,
+                                            bool& parity_error_detected) {
+  int new_bytes_read = num_chars_stashed_;
+  DCHECK_LE(new_bytes_read, 2);
+
+  for (int i = 0; i < bytes_read; ++i) {
+    char ch = buffer[i];
+    if (new_bytes_read == 0) {
+      chars_stashed_[0] = ch;
+    } else if (new_bytes_read == 1) {
+      chars_stashed_[1] = ch;
+    } else {
+      buffer[new_bytes_read - 2] = ch;
+    }
+    ++new_bytes_read;
+    switch (error_detect_state_) {
+      case ErrorDetectState::NO_ERROR:
+        if (ch == '\377') {
+          error_detect_state_ = ErrorDetectState::MARK_377_SEEN;
+        }
+        break;
+      case ErrorDetectState::MARK_377_SEEN:
+        DCHECK_GE(new_bytes_read, 2);
+        if (ch == '\0') {
+          error_detect_state_ = ErrorDetectState::MARK_0_SEEN;
+        } else {
+          if (ch == '\377') {
+            // receive two bytes '\377' '\377', since ISTRIP is not set and
+            // PARMRK is set, a valid byte '\377' is passed to the program as
+            // two bytes, '\377' '\377'. Replace these two bytes with one byte
+            // of '\377', and set error_detect_state_ back to
+            // ErrorDetectState::NO_ERROR.
+            --new_bytes_read;
+          }
+          error_detect_state_ = ErrorDetectState::NO_ERROR;
+        }
+        break;
+      case ErrorDetectState::MARK_0_SEEN:
+        DCHECK_GE(new_bytes_read, 3);
+        if (ch == '\0') {
+          break_detected = true;
+          new_bytes_read -= 3;
+          error_detect_state_ = ErrorDetectState::NO_ERROR;
+        } else {
+          if (parity_check_enabled_) {
+            parity_error_detected = true;
+            new_bytes_read -= 3;
+            error_detect_state_ = ErrorDetectState::NO_ERROR;
+          } else if (ch == '\377') {
+            error_detect_state_ = ErrorDetectState::MARK_377_SEEN;
+          } else {
+            error_detect_state_ = ErrorDetectState::NO_ERROR;
+          }
+        }
+        break;
+    }
+  }
+  // Now new_bytes_read bytes should be returned to the caller (including the
+  // previously stashed characters that were stored at chars_stashed_[]) and are
+  // now stored at: chars_stashed_[0], chars_stashed_[1], buffer[...].
+
+  // Stash up to 2 characters that are potentially part of a break/parity error
+  // sequence. The buffer may also not be large enough to store all the bytes.
+  // tmp[] stores the characters that need to be stashed for this read.
+  char tmp[2];
+  num_chars_stashed_ = 0;
+  if (error_detect_state_ == ErrorDetectState::MARK_0_SEEN ||
+      new_bytes_read - buffer_len == 2) {
+    // need to stash the last two characters
+    if (new_bytes_read == 2) {
+      memcpy(tmp, chars_stashed_, new_bytes_read);
+    } else {
+      if (new_bytes_read == 3) {
+        tmp[0] = chars_stashed_[1];
+      } else {
+        tmp[0] = buffer[new_bytes_read - 4];
+      }
+      tmp[1] = buffer[new_bytes_read - 3];
+    }
+    num_chars_stashed_ = 2;
+  } else if (error_detect_state_ == ErrorDetectState::MARK_377_SEEN ||
+             new_bytes_read - buffer_len == 1) {
+    // need to stash the last character
+    if (new_bytes_read <= 2) {
+      tmp[0] = chars_stashed_[new_bytes_read - 1];
+    } else {
+      tmp[0] = buffer[new_bytes_read - 3];
+    }
+    num_chars_stashed_ = 1;
+  }
+
+  new_bytes_read -= num_chars_stashed_;
+  if (new_bytes_read > 2) {
+    // right shift two bytes to store bytes from chars_stashed_[]
+    memmove(buffer + 2, buffer, new_bytes_read - 2);
+  }
+  memcpy(buffer, chars_stashed_, std::min(new_bytes_read, 2));
+  memcpy(chars_stashed_, tmp, num_chars_stashed_);
+  return new_bytes_read;
 }
 
 std::string SerialIoHandler::MaybeFixUpPortName(const std::string& port_name) {
