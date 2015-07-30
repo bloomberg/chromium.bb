@@ -7017,11 +7017,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_NAME" desc="Name of the flag to enable accelerated mjpeg decode for captured frame where available.">
-          Enable hardware-accelerated mjpeg decode for captured frame.
+        <message name="IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_NAME" desc="Name of the flag to disable accelerated mjpeg decode for captured frame where available.">
+          Disable hardware-accelerated mjpeg decode for captured frame.
         </message>
-        <message name="IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION" desc="Description for the flag to enable accelerated mjpeg decode for captured frame where available.">
-          Enable hardware-accelerated mjpeg decode for captured frame where available.
+        <message name="IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION" desc="Description for the flag to disable accelerated mjpeg decode for captured frame where available.">
+          Disable hardware-accelerated mjpeg decode for captured frame where available.
         </message>
       </if>
       <message name="IDS_FLAGS_RESTRICT_IFRAME_PERMISSIONS_NAME" desc="Name of the flag to enable the restricted iframe permissions model.">

@@ -61349,6 +61349,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1337185440" label="enable-webvr"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
+  <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>

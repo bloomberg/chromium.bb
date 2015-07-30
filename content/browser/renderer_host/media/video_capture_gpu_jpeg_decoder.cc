@@ -51,12 +51,13 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
 
   // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
   // gpu channel to introduce overhead.
-#if !defined(OS_CHROMEOS)
+  // TODO(henryhsu): enable on ARM platform after V4L2 JDA is ready.
+#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
   init_status_ = INIT_FAILED;
   return;
 #else
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAcceleratedMjpegDecode)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAcceleratedMjpegDecode)) {
     init_status_ = INIT_FAILED;
     return;
   }

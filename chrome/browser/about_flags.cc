@@ -2034,11 +2034,11 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
 #endif
 #if defined(OS_CHROMEOS)
-    {"enable-accelerated-mjpeg-decode",
-     IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_NAME,
-     IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION,
+    {"disable-accelerated-mjpeg-decode",
+     IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_NAME,
+     IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableAcceleratedMjpegDecode)},
+     SINGLE_VALUE_TYPE(switches::kDisableAcceleratedMjpegDecode)},
 #endif  // OS_CHROMEOS
     {"v8-cache-options",
      IDS_FLAGS_V8_CACHE_OPTIONS_NAME,
