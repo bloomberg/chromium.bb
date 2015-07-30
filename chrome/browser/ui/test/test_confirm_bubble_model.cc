@@ -6,8 +6,6 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 TestConfirmBubbleModel::TestConfirmBubbleModel(bool* model_deleted,
                                                bool* accept_clicked,
@@ -30,12 +28,6 @@ base::string16 TestConfirmBubbleModel::GetTitle() const {
 
 base::string16 TestConfirmBubbleModel::GetMessageText() const {
   return base::ASCIIToUTF16("Test Message");
-}
-
-gfx::Image* TestConfirmBubbleModel::GetIcon() const {
-  // Return an arbitrary non-empty image.
-  return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_PRODUCT_LOGO_16);
 }
 
 int TestConfirmBubbleModel::GetButtons() const {

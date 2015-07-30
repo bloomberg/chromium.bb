@@ -32,11 +32,6 @@ class ConfirmBubbleModel {
   virtual base::string16 GetTitle() const = 0;
   virtual base::string16 GetMessageText() const = 0;
 
-  // Returns an icon for the bubble. This image should be owned by the
-  // ResourceBundle and callers should not take ownership of it. Must not return
-  // NULL.
-  virtual gfx::Image* GetIcon() const = 0;
-
   // Return the buttons to be shown for this bubble menu. This function returns
   // a combination of BubbleButton values, e.g. when we show both an OK button
   // and a cancel button, it should return (BUTTON_OK | BUTTON_CANCEL). (This is

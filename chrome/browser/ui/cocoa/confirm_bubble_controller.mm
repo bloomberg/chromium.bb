@@ -69,11 +69,6 @@
   return (model_->GetButtons() & ConfirmBubbleModel::BUTTON_CANCEL) ? YES : NO;
 }
 
-- (NSImage*)icon {
-  gfx::Image* image = model_->GetIcon();
-  return !image ? nil : image->ToNSImage();
-}
-
 // Action handlers.
 - (void)accept {
   model_->Accept();

@@ -39,7 +39,6 @@ class ConfirmBubbleModel;
 - (NSString*)cancelButtonText;
 - (BOOL)hasOkButton;
 - (BOOL)hasCancelButton;
-- (NSImage*)icon;
 
 // Handle actions from the ConfirmBubbleCocoa objet.
 - (void)accept;
