@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
+import android.test.FlakyTest;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -110,10 +111,14 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
         verifyBookmark(bookmarkD, "kauri", "http://kauri.org/", false, folderA);
     }
 
+    /* Flaky: crbug.com/515489
+     *
+     * @UiThreadTest
+     * @SmallTest
+     * @Feature({"Bookmark"})
+     */
     @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
-    @UiThreadTest
-    @SmallTest
-    @Feature({"Bookmark"})
+    @FlakyTest
     public void testMoveBookmarks() {
         BookmarkId bookmarkA = mBookmarksModel.addBookmark(mDesktopNode, 0, "a", "http://a.com");
         BookmarkId bookmarkB = mBookmarksModel.addBookmark(mOtherNode, 0, "b", "http://b.com");
