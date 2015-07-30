@@ -36,32 +36,31 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       public base::NonThreadSafe,
       public base::SupportsWeakPtr<VideoCaptureGpuJpegDecoder> {
  public:
-  // Enumeration of Initialize status.
-  enum Status {
+  // Enumeration of decoder status. The enumeration is published for clients to
+  // decide the behavior according to STATUS.
+  enum STATUS {
     INIT_PENDING,  // Default value while waiting initialization finished.
-    INIT_FAILED,   // JPEG decode is not supported or initialization failed.
     INIT_PASSED,   // Initialization succeed.
+    FAILED,        // JPEG decode is not supported, initialization failed, or
+                   // decode error.
   };
 
   typedef base::Callback<void(
       scoped_ptr<media::VideoCaptureDevice::Client::Buffer>,
       const scoped_refptr<media::VideoFrame>&,
       const base::TimeTicks&)> DecodeDoneCB;
-  typedef base::Callback<void(const std::string&)> ErrorCB;
 
-  // |decode_done_cb| is called on the IO thread when decode succeed.
-  // |error_cb| is called when error. This can be on any thread.
-  // Both |decode_done_cb| and |error_cb| are never called after
+  // |decode_done_cb| is called on the IO thread when decode succeed. This can
+  // be on any thread. |decode_done_cb| is never called after
   // VideoCaptureGpuJpegDecoder is destroyed.
-  VideoCaptureGpuJpegDecoder(const DecodeDoneCB& decode_done_cb,
-                             const ErrorCB& error_cb);
+  VideoCaptureGpuJpegDecoder(const DecodeDoneCB& decode_done_cb);
   ~VideoCaptureGpuJpegDecoder() override;
 
   // Creates and intializes decoder asynchronously.
   void Initialize();
 
   // Returns initialization status.
-  Status GetStatus();
+  STATUS GetStatus() const;
 
   // Decodes a JPEG picture.
   void DecodeCapturedData(
@@ -87,10 +86,10 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this);
 
-  void InitializeDone(scoped_refptr<GpuChannelHost> gpu_channel_host);
+  void FinishInitialization(scoped_refptr<GpuChannelHost> gpu_channel_host);
 
   // Returns true if the decoding of last frame is not finished yet.
-  bool IsDecoding_Locked();
+  bool IsDecoding_Locked() const;
 
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
 
@@ -100,11 +99,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;
 
-  // Guards |decode_done_closure_| and |error_cb_|.
-  base::Lock lock_;
-
-  // The callback to run when an error occurs.
-  const ErrorCB error_cb_;
+  // Guards |decode_done_closure_| and |decoder_status_|.
+  mutable base::Lock lock_;
 
   // The closure of |decode_done_cb_| with bound parameters.
   base::Closure decode_done_closure_;
@@ -119,7 +115,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // backed by this.
   scoped_ptr<base::SharedMemory> in_shared_memory_;
 
-  Status init_status_;
+  STATUS decoder_status_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureGpuJpegDecoder);
 };

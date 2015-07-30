@@ -20,14 +20,11 @@
 namespace content {
 
 VideoCaptureGpuJpegDecoder::VideoCaptureGpuJpegDecoder(
-    const DecodeDoneCB& decode_done_cb,
-    const ErrorCB& error_cb)
+    const DecodeDoneCB& decode_done_cb)
     : decode_done_cb_(decode_done_cb),
-      error_cb_(error_cb),
       next_bitstream_buffer_id_(0),
       in_buffer_id_(media::JpegDecodeAccelerator::kInvalidBitstreamBufferId),
-      init_status_(INIT_PENDING) {
-}
+      decoder_status_(INIT_PENDING) {}
 
 VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
   DCHECK(CalledOnValidThread());
@@ -41,7 +38,7 @@ VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
   gpu_channel_host_ = nullptr;
 }
 
-bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() {
+bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() const {
   lock_.AssertAcquired();
   return !decode_done_closure_.is_null();
 }
@@ -49,16 +46,17 @@ bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() {
 void VideoCaptureGpuJpegDecoder::Initialize() {
   DCHECK(CalledOnValidThread());
 
-  // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
-  // gpu channel to introduce overhead.
+  base::AutoLock lock(lock_);
   // TODO(henryhsu): enable on ARM platform after V4L2 JDA is ready.
 #if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
-  init_status_ = INIT_FAILED;
+  // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
+  // gpu channel to avoid introducing overhead.
+  decoder_status_ = FAILED;
   return;
 #else
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedMjpegDecode)) {
-    init_status_ = INIT_FAILED;
+    decoder_status_ = FAILED;
     return;
   }
 
@@ -70,9 +68,11 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
 #endif
 }
 
-VideoCaptureGpuJpegDecoder::Status VideoCaptureGpuJpegDecoder::GetStatus() {
+VideoCaptureGpuJpegDecoder::STATUS VideoCaptureGpuJpegDecoder::GetStatus()
+    const {
   DCHECK(CalledOnValidThread());
-  return init_status_;
+  base::AutoLock lock(lock_);
+  return decoder_status_;
 }
 
 // static
@@ -96,17 +96,18 @@ void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
 
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->GetGpuChannel());
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&VideoCaptureGpuJpegDecoder::InitializeDone,
-                                   weak_this, base::Passed(&gpu_channel_host)));
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureGpuJpegDecoder::FinishInitialization,
+                            weak_this, base::Passed(&gpu_channel_host)));
 }
 
-void VideoCaptureGpuJpegDecoder::InitializeDone(
+void VideoCaptureGpuJpegDecoder::FinishInitialization(
     scoped_refptr<GpuChannelHost> gpu_channel_host) {
   DCHECK(CalledOnValidThread());
+  base::AutoLock lock(lock_);
   if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
-    init_status_ = INIT_FAILED;
+    decoder_status_ = FAILED;
     return;
   }
 
@@ -114,7 +115,7 @@ void VideoCaptureGpuJpegDecoder::InitializeDone(
     gpu_channel_host_ = gpu_channel_host.Pass();
     decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
   }
-  init_status_ = decoder_ ? INIT_PASSED : INIT_FAILED;
+  decoder_status_ = decoder_ ? INIT_PASSED : FAILED;
 }
 
 void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {
@@ -150,10 +151,7 @@ void VideoCaptureGpuJpegDecoder::NotifyError(
 
   base::AutoLock lock(lock_);
   decode_done_closure_.Reset();
-
-  error_cb_.Run(
-      base::StringPrintf("JPEG Decode error, bitstream_buffer_id=%d, error=%d",
-                         bitstream_buffer_id, error));
+  decoder_status_ = FAILED;
 }
 
 void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
@@ -187,8 +185,8 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     in_shared_memory_.reset(new base::SharedMemory);
     if (!in_shared_memory_->CreateAndMapAnonymous(reserved_size)) {
       base::AutoLock lock(lock_);
-      error_cb_.Run(base::StringPrintf("CreateAndMapAnonymous failed, size=%zd",
-                                       reserved_size));
+      decoder_status_ = FAILED;
+      LOG(WARNING) << "CreateAndMapAnonymous failed, size=" << reserved_size;
       return;
     }
   }
@@ -217,7 +215,8 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
           base::TimeDelta());                         // timestamp
   if (!out_frame) {
     base::AutoLock lock(lock_);
-    error_cb_.Run("DecodeCapturedData: WrapExternalSharedMemory");
+    decoder_status_ = FAILED;
+    LOG(ERROR) << "DecodeCapturedData: WrapExternalSharedMemory failed";
     return;
   }
   out_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
