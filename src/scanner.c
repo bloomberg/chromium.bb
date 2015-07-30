@@ -1,6 +1,7 @@
 /*
  * Copyright © 2008-2011 Kristian Høgsberg
  * Copyright © 2011 Intel Corporation
+ * Copyright © 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -315,6 +316,108 @@ is_nullable_type(struct arg *arg)
 	}
 }
 
+static struct message *
+create_message(struct location loc, const char *name)
+{
+	struct message *message;
+
+	message = xmalloc(sizeof *message);
+	message->loc = loc;
+	message->name = xstrdup(name);
+	message->uppercase_name = uppercase_dup(name);
+	wl_list_init(&message->arg_list);
+	message->arg_count = 0;
+	message->new_id_count = 0;
+	message->description = NULL;
+
+	return message;
+}
+
+static struct arg *
+create_arg(const char *name)
+{
+	struct arg *arg;
+
+	arg = xmalloc(sizeof *arg);
+	arg->name = xstrdup(name);
+	arg->summary = NULL;
+	arg->interface_name = NULL;
+
+	return arg;
+}
+
+static bool
+set_arg_type(struct arg *arg, const char *type)
+{
+	if (strcmp(type, "int") == 0)
+		arg->type = INT;
+	else if (strcmp(type, "uint") == 0)
+		arg->type = UNSIGNED;
+	else if (strcmp(type, "fixed") == 0)
+		arg->type = FIXED;
+	else if (strcmp(type, "string") == 0)
+		arg->type = STRING;
+	else if (strcmp(type, "array") == 0)
+		arg->type = ARRAY;
+	else if (strcmp(type, "fd") == 0)
+		arg->type = FD;
+	else if (strcmp(type, "new_id") == 0)
+		arg->type = NEW_ID;
+	else if (strcmp(type, "object") == 0)
+		arg->type = OBJECT;
+	else
+		return false;
+
+	return true;
+}
+
+static struct enumeration *
+create_enumeration(const char *name)
+{
+	struct enumeration *enumeration;
+
+	enumeration = xmalloc(sizeof *enumeration);
+	enumeration->name = xstrdup(name);
+	enumeration->uppercase_name = uppercase_dup(name);
+	enumeration->description = NULL;
+
+	wl_list_init(&enumeration->entry_list);
+
+	return enumeration;
+}
+
+static struct entry *
+create_entry(const char *name, const char *value)
+{
+	struct entry *entry;
+
+	entry = xmalloc(sizeof *entry);
+	entry->name = xstrdup(name);
+	entry->uppercase_name = uppercase_dup(name);
+	entry->value = xstrdup(value);
+
+	return entry;
+}
+
+static struct interface *
+create_interface(struct location loc, const char *name, int version)
+{
+	struct interface *interface;
+
+	interface = xmalloc(sizeof *interface);
+	interface->loc = loc;
+	interface->name = xstrdup(name);
+	interface->uppercase_name = uppercase_dup(name);
+	interface->version = version;
+	interface->description = NULL;
+	interface->since = 1;
+	wl_list_init(&interface->request_list);
+	wl_list_init(&interface->event_list);
+	wl_list_init(&interface->enumeration_list);
+
+	return interface;
+}
+
 static void
 start_element(void *data, const char *element_name, const char **atts)
 {
@@ -376,32 +479,16 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (version == 0)
 			fail(&ctx->loc, "no interface version given");
 
-		interface = xmalloc(sizeof *interface);
-		interface->loc = ctx->loc;
-		interface->name = xstrdup(name);
-		interface->uppercase_name = uppercase_dup(name);
-		interface->version = version;
-		interface->description = NULL;
-		interface->since = 1;
-		wl_list_init(&interface->request_list);
-		wl_list_init(&interface->event_list);
-		wl_list_init(&interface->enumeration_list);
+		interface = create_interface(ctx->loc, name, version);
+		ctx->interface = interface;
 		wl_list_insert(ctx->protocol->interface_list.prev,
 			       &interface->link);
-		ctx->interface = interface;
 	} else if (strcmp(element_name, "request") == 0 ||
 		   strcmp(element_name, "event") == 0) {
 		if (name == NULL)
 			fail(&ctx->loc, "no request name given");
 
-		message = xmalloc(sizeof *message);
-		message->loc = ctx->loc;
-		message->name = xstrdup(name);
-		message->uppercase_name = uppercase_dup(name);
-		wl_list_init(&message->arg_list);
-		message->arg_count = 0;
-		message->new_id_count = 0;
-		message->description = NULL;
+		message = create_message(ctx->loc, name);
 
 		if (strcmp(element_name, "request") == 0)
 			wl_list_insert(ctx->interface->request_list.prev,
@@ -440,28 +527,9 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no argument name given");
 
-		arg = xmalloc(sizeof *arg);
-		arg->name = xstrdup(name);
-
-		if (strcmp(type, "int") == 0)
-			arg->type = INT;
-		else if (strcmp(type, "uint") == 0)
-			arg->type = UNSIGNED;
-		else if (strcmp(type, "fixed") == 0)
-			arg->type = FIXED;
-		else if (strcmp(type, "string") == 0)
-			arg->type = STRING;
-		else if (strcmp(type, "array") == 0)
-			arg->type = ARRAY;
-		else if (strcmp(type, "fd") == 0)
-			arg->type = FD;
-		else if (strcmp(type, "new_id") == 0) {
-			arg->type = NEW_ID;
-		} else if (strcmp(type, "object") == 0) {
-			arg->type = OBJECT;
-		} else {
+		arg = create_arg(name);
+		if (!set_arg_type(arg, type))
 			fail(&ctx->loc, "unknown type (%s)", type);
-		}
 
 		switch (arg->type) {
 		case NEW_ID:
@@ -472,8 +540,6 @@ start_element(void *data, const char *element_name, const char **atts)
 		case OBJECT:
 			if (interface_name)
 				arg->interface_name = xstrdup(interface_name);
-			else
-				arg->interface_name = NULL;
 			break;
 		default:
 			if (interface_name != NULL)
@@ -491,7 +557,6 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (allow_null != NULL && !is_nullable_type(arg))
 			fail(&ctx->loc, "allow-null is only valid for objects, strings, and arrays");
 
-		arg->summary = NULL;
 		if (summary)
 			arg->summary = xstrdup(summary);
 
@@ -501,12 +566,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no enum name given");
 
-		enumeration = xmalloc(sizeof *enumeration);
-		enumeration->name = xstrdup(name);
-		enumeration->uppercase_name = uppercase_dup(name);
-		enumeration->description = NULL;
-		wl_list_init(&enumeration->entry_list);
-
+		enumeration = create_enumeration(name);
 		wl_list_insert(ctx->interface->enumeration_list.prev,
 			       &enumeration->link);
 
@@ -515,10 +575,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no entry name given");
 
-		entry = xmalloc(sizeof *entry);
-		entry->name = xstrdup(name);
-		entry->uppercase_name = uppercase_dup(name);
-		entry->value = xstrdup(value);
+		entry = create_entry(name, value);
+
 		if (summary)
 			entry->summary = xstrdup(summary);
 		else
