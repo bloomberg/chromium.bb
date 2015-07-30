@@ -26,7 +26,8 @@
 #ifndef WebScrollbarThemePainter_h
 #define WebScrollbarThemePainter_h
 
-#include "WebCanvas.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace blink {
 
@@ -39,7 +40,10 @@ class WebScrollbarThemePainter {
 public:
     WebScrollbarThemePainter() : m_theme(0) { }
     WebScrollbarThemePainter(const WebScrollbarThemePainter& painter) { assign(painter); }
-    virtual ~WebScrollbarThemePainter() { }
+    virtual ~WebScrollbarThemePainter()
+    {
+        reset();
+    }
     WebScrollbarThemePainter& operator=(const WebScrollbarThemePainter& painter)
     {
         assign(painter);
@@ -47,6 +51,7 @@ public:
     }
 
     BLINK_PLATFORM_EXPORT void assign(const WebScrollbarThemePainter&);
+    BLINK_PLATFORM_EXPORT void reset();
 
     BLINK_PLATFORM_EXPORT void paintScrollbarBackground(WebCanvas*, const WebRect&);
     BLINK_PLATFORM_EXPORT void paintTrackBackground(WebCanvas*, const WebRect&);
@@ -74,7 +79,7 @@ private:
     // for the lifetime of this scrollbar. The painter has to use the real
     // scrollbar (and not a WebScrollbar wrapper) due to static_casts for
     // LayoutScrollbar and pointer-based HashMap lookups for Lion scrollbars.
-    Scrollbar* m_scrollbar;
+    WebPrivatePtr<Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

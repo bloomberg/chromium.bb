@@ -43,6 +43,11 @@ void WebScrollbarThemePainter::assign(const WebScrollbarThemePainter& painter)
     m_scrollbar = painter.m_scrollbar;
 }
 
+void WebScrollbarThemePainter::reset()
+{
+    m_scrollbar = nullptr;
+}
+
 void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const WebRect& rect)
 {
     SkRect clip = SkRect::MakeXYWH(rect.x, rect.y, rect.width, rect.height);
@@ -50,7 +55,7 @@ void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const
 
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintScrollbarBackground(&pictureBuilder.context(), m_scrollbar);
+    m_theme->paintScrollbarBackground(&pictureBuilder.context(), m_scrollbar.get());
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -58,7 +63,7 @@ void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const Web
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintTrackBackground(&pictureBuilder.context(), m_scrollbar, intRect);
+    m_theme->paintTrackBackground(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -66,7 +71,7 @@ void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRe
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar, intRect, BackTrackPart);
+    m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar.get(), intRect, BackTrackPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -74,7 +79,7 @@ void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas, const We
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar, intRect, ForwardTrackPart);
+    m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar.get(), intRect, ForwardTrackPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -82,7 +87,7 @@ void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas, const Web
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, BackButtonStartPart);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, BackButtonStartPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -90,7 +95,7 @@ void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas, const WebRe
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, BackButtonEndPart);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, BackButtonEndPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -98,7 +103,7 @@ void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas, const 
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, ForwardButtonStartPart);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, ForwardButtonStartPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -106,7 +111,7 @@ void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas, const We
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, ForwardButtonEndPart);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar.get(), intRect, ForwardButtonEndPart);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -114,7 +119,7 @@ void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas, const WebRect& 
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintTickmarks(&pictureBuilder.context(), m_scrollbar, intRect);
+    m_theme->paintTickmarks(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
@@ -122,7 +127,7 @@ void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect
 {
     IntRect intRect(rect);
     SkPictureBuilder pictureBuilder(intRect);
-    m_theme->paintThumb(&pictureBuilder.context(), m_scrollbar, intRect);
+    m_theme->paintThumb(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
 }
 
