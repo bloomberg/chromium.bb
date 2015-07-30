@@ -487,10 +487,10 @@ bool ScrollableArea::hasLayerForScrollCorner() const
     return layerForScrollCorner();
 }
 
-void ScrollableArea::layerForScrollingDidChange()
+void ScrollableArea::layerForScrollingDidChange(WebCompositorAnimationTimeline* timeline)
 {
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
-        programmaticScrollAnimator->layerForCompositedScrollingDidChange();
+        programmaticScrollAnimator->layerForCompositedScrollingDidChange(timeline);
 }
 
 bool ScrollableArea::scheduleAnimation()

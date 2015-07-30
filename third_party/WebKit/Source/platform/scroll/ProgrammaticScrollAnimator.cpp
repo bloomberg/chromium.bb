@@ -5,11 +5,14 @@
 #include "config.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimation.h"
+#include "public/platform/WebCompositorAnimationPlayer.h"
+#include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebScrollOffsetAnimationCurve.h"
 
@@ -21,16 +24,27 @@ PassOwnPtr<ProgrammaticScrollAnimator> ProgrammaticScrollAnimator::create(Scroll
 }
 
 ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(ScrollableArea* scrollableArea)
-    : m_scrollableArea(scrollableArea)
+    : m_compositorAnimationAttachedToLayerId(0)
+    , m_scrollableArea(scrollableArea)
     , m_startTime(0.0)
     , m_runState(RunState::Idle)
     , m_compositorAnimationId(0)
     , m_compositorAnimationGroupId(0)
 {
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
+        ASSERT(Platform::current()->compositorSupport());
+        m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
+        ASSERT(m_compositorPlayer);
+        m_compositorPlayer->setAnimationDelegate(this);
+    }
 }
 
 ProgrammaticScrollAnimator::~ProgrammaticScrollAnimator()
 {
+    if (m_compositorPlayer) {
+        m_compositorPlayer->setAnimationDelegate(nullptr);
+        m_compositorPlayer.clear();
+    }
 }
 
 void ProgrammaticScrollAnimator::resetAnimationState()
@@ -136,8 +150,15 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
         // compositor animation that needs to be removed here before the new
         // animation is added below.
         ASSERT(m_runState == RunState::WaitingToCancelOnCompositor || m_runState == RunState::WaitingToSendToCompositor);
-        if (GraphicsLayer* layer = m_scrollableArea->layerForScrolling())
-            layer->removeAnimation(m_compositorAnimationId);
+
+        if (m_compositorPlayer) {
+            if (m_compositorPlayer->isLayerAttached())
+                m_compositorPlayer->removeAnimation(m_compositorAnimationId);
+        } else {
+            if (GraphicsLayer* layer = m_scrollableArea->layerForScrolling())
+                layer->removeAnimation(m_compositorAnimationId);
+        }
+
         m_compositorAnimationId = 0;
         m_compositorAnimationGroupId = 0;
         if (m_runState == RunState::WaitingToCancelOnCompositor) {
@@ -155,7 +176,18 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
 
                 int animationId = animation->id();
                 int animationGroupId = animation->group();
-                if (m_scrollableArea->layerForScrolling()->addAnimation(animation.release())) {
+
+                bool animationAdded = false;
+                if (m_compositorPlayer) {
+                    if (m_compositorPlayer->isLayerAttached()) {
+                        m_compositorPlayer->addAnimation(animation.leakPtr());
+                        animationAdded = true;
+                    }
+                } else {
+                    animationAdded = m_scrollableArea->layerForScrolling()->addAnimation(animation.release());
+                }
+
+                if (animationAdded) {
                     sentToCompositor = true;
                     m_runState = RunState::RunningOnCompositor;
                     m_compositorAnimationId = animationId;
@@ -174,8 +206,35 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
     }
 }
 
-void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange()
+void ProgrammaticScrollAnimator::reattachCompositorPlayerIfNeeded(WebCompositorAnimationTimeline* timeline)
 {
+    int compositorAnimationAttachedToLayerId = 0;
+    if (m_scrollableArea->layerForScrolling())
+        compositorAnimationAttachedToLayerId = m_scrollableArea->layerForScrolling()->platformLayer()->id();
+
+    if (compositorAnimationAttachedToLayerId != m_compositorAnimationAttachedToLayerId) {
+        if (m_compositorPlayer && timeline) {
+            // Detach from old layer (if any).
+            if (m_compositorAnimationAttachedToLayerId) {
+                ASSERT(m_compositorPlayer->isLayerAttached());
+                m_compositorPlayer->detachLayer();
+                timeline->playerDestroyed(*this);
+            }
+            // Attach to new layer (if any).
+            if (compositorAnimationAttachedToLayerId) {
+                ASSERT(m_scrollableArea->layerForScrolling());
+                timeline->playerAttached(*this);
+                m_compositorPlayer->attachLayer(m_scrollableArea->layerForScrolling()->platformLayer());
+            }
+            m_compositorAnimationAttachedToLayerId = compositorAnimationAttachedToLayerId;
+        }
+    }
+}
+
+void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline* timeline)
+{
+    reattachCompositorPlayerIfNeeded(timeline);
+
     // If the composited scrolling layer is lost during a composited animation,
     // continue the animation on the main thread.
     if (m_runState == RunState::RunningOnCompositor && !m_scrollableArea->layerForScrolling()) {
@@ -210,6 +269,20 @@ void ProgrammaticScrollAnimator::notifyCompositorAnimationFinished(int groupId)
     case RunState::WaitingToCancelOnCompositor:
         resetAnimationState();
     }
+}
+
+void ProgrammaticScrollAnimator::notifyAnimationStarted(double monotonicTime, int group)
+{
+}
+
+void ProgrammaticScrollAnimator::notifyAnimationFinished(double monotonicTime, int group)
+{
+    notifyCompositorAnimationFinished(group);
+}
+
+WebCompositorAnimationPlayer* ProgrammaticScrollAnimator::compositorPlayer() const
+{
+    return m_compositorPlayer.get();
 }
 
 } // namespace blink
