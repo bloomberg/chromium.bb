@@ -243,4 +243,10 @@ void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerI
     frontend()->workerCreated(id, url, autoconnectToWorkers);
 }
 
+DEFINE_TRACE(InspectorWorkerAgent)
+{
+    visitor->trace(m_consoleAgent);
+    InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>::trace(visitor);
+}
+
 } // namespace blink

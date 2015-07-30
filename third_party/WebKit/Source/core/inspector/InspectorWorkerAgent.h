@@ -48,6 +48,7 @@ class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<Inspect
 public:
     static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create(PageConsoleAgent*);
     ~InspectorWorkerAgent() override;
+    DECLARE_VIRTUAL_TRACE();
 
     void init() override;
     void disable(ErrorString*) override;
@@ -86,7 +87,7 @@ private:
     typedef HashMap<WorkerInspectorProxy*, WorkerInfo> WorkerInfos;
     WorkerInfos m_workerInfos;
     String m_tracingSessionId;
-    PageConsoleAgent* m_consoleAgent;
+    RawPtrWillBeMember<PageConsoleAgent> m_consoleAgent;
 };
 
 } // namespace blink
