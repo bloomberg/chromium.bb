@@ -13,11 +13,11 @@ import sys
 import tempfile
 
 from profile_creators import profile_extender
+from telemetry.core import discover
 from telemetry.core import util
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options
 from telemetry.internal import story_runner
-from telemetry.util import classes_util
 
 
 def _DiscoverProfileExtenderClasses():
@@ -25,7 +25,7 @@ def _DiscoverProfileExtenderClasses():
       os.pardir, 'perf', 'profile_creators'))
   base_dir = os.path.abspath(os.path.join(profile_extenders_dir, os.pardir))
 
-  profile_extenders_unfiltered = classes_util.DiscoverClassesByClassName(
+  profile_extenders_unfiltered = discover.DiscoverClasses(
       profile_extenders_dir, base_dir, profile_extender.ProfileExtender)
 
   # Remove 'extender' suffix from keys.
