@@ -2160,8 +2160,13 @@ public:
     {
         return nodeAsScriptValue(state, m_node);
     }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_node);
+        InspectableObject::trace(visitor);
+    }
 private:
-    Node* m_node;
+    RawPtrWillBeMember<Node> m_node;
 };
 
 void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
@@ -2169,7 +2174,7 @@ void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
+    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtrWillBeNoop(new InspectableNode(node)));
 }
 
 void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId, int* relayoutBoundaryNodeId)

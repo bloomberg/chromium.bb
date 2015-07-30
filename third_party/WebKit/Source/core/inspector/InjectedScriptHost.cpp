@@ -53,7 +53,7 @@ InjectedScriptHost::InjectedScriptHost()
     , m_inspectCallback(nullptr)
     , m_debugger(nullptr)
 {
-    m_defaultInspectableObject = adoptPtr(new InspectableObject());
+    m_defaultInspectableObject = adoptPtrWillBeNoop(new InspectableObject());
 }
 
 InjectedScriptHost::~InjectedScriptHost()
@@ -64,6 +64,8 @@ DEFINE_TRACE(InjectedScriptHost)
 {
     visitor->trace(m_consoleAgent);
     visitor->trace(m_debuggerAgent);
+    visitor->trace(m_inspectedObjects);
+    visitor->trace(m_defaultInspectableObject);
 }
 
 void InjectedScriptHost::disconnect()
@@ -100,7 +102,7 @@ ScriptValue InjectedScriptHost::InspectableObject::get(ScriptState*)
     return ScriptValue();
 };
 
-void InjectedScriptHost::addInspectedObject(PassOwnPtr<InjectedScriptHost::InspectableObject> object)
+void InjectedScriptHost::addInspectedObject(PassOwnPtrWillBeRawPtr<InjectedScriptHost::InspectableObject> object)
 {
     m_inspectedObjects.prepend(object);
     while (m_inspectedObjects.size() > 5)

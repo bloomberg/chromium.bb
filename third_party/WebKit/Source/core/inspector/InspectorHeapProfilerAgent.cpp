@@ -353,7 +353,7 @@ void InspectorHeapProfilerAgent::addInspectedHeapObject(ErrorString* errorString
         *errorString = "Invalid heap snapshot object id";
         return;
     }
-    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
+    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtrWillBeNoop(new InspectableHeapObject(id)));
 }
 
 void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const String& objectId, String* heapSnapshotObjectId)

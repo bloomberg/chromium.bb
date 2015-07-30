@@ -78,13 +78,14 @@ public:
 
     void disconnect();
 
-    class InspectableObject {
-        WTF_MAKE_FAST_ALLOCATED(InspectableObject);
+    class InspectableObject : public NoBaseWillBeGarbageCollectedFinalized<InspectableObject> {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectableObject);
     public:
         virtual ScriptValue get(ScriptState*);
         virtual ~InspectableObject() { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
-    void addInspectedObject(PassOwnPtr<InspectableObject>);
+    void addInspectedObject(PassOwnPtrWillBeRawPtr<InspectableObject>);
     void clearInspectedObjects();
     InspectableObject* inspectedObject(unsigned num);
 
@@ -111,8 +112,8 @@ private:
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
     V8Debugger* m_debugger;
-    Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
-    OwnPtr<InspectableObject> m_defaultInspectableObject;
+    WillBeHeapVector<OwnPtrWillBeMember<InspectableObject>> m_inspectedObjects;
+    OwnPtrWillBeMember<InspectableObject> m_defaultInspectableObject;
     OwnPtr<InjectedScriptHostClient> m_client;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
