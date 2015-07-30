@@ -10,6 +10,7 @@ import json
 import math
 import optparse
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -18,7 +19,7 @@ import threading
 import time
 import unittest
 import urllib2
-import shutil
+import uuid
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
@@ -529,7 +530,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
   def testGetCurrentUrl(self):
-    self.assertEquals('data:,', self._driver.GetCurrentUrl())
+    url = 'data:,%s' % uuid.uuid4()
+    self._driver.Load(url)
+    self.assertEquals(url, self._driver.GetCurrentUrl())
 
   def testGoBackAndGoForward(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
