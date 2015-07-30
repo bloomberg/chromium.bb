@@ -352,6 +352,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(None, self._driver.ExecuteScript(''))
 
   def testEvaluateScriptWithArgs(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     script = ('document.body.innerHTML = "<div>b</div><div>c</div>";'
               'return {stuff: document.querySelectorAll("div")};')
     stuff = self._driver.ExecuteScript(script)['stuff']
@@ -434,12 +435,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertTrue('Link to empty.html' in self._driver.GetPageSource())
 
   def testFindElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
     self.assertTrue(
         isinstance(self._driver.FindElement('tag name', 'div'), WebElement))
 
   def testNoSuchElementExceptionMessage(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
     self.assertRaisesRegexp(chromedriver.NoSuchElement,
@@ -450,6 +453,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
                             'tag name','divine')
 
   def testFindElements(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
     divs = self._driver.FindElements('tag name', 'div')
@@ -459,6 +463,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
       self.assertTrue(isinstance(div, WebElement))
 
   def testFindChildElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";')
     element = self._driver.FindElement('tag name', 'div')
@@ -466,6 +471,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         isinstance(element.FindElement('tag name', 'br'), WebElement))
 
   def testFindChildElements(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div><br><br></div><div><br></div>";')
     element = self._driver.FindElement('tag name', 'div')
@@ -476,6 +482,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
       self.assertTrue(isinstance(br, WebElement))
 
   def testHoverOverElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -487,6 +494,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testClickElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -505,6 +513,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.testClickElement()
 
   def testClearElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     text = self._driver.ExecuteScript(
         'document.body.innerHTML = \'<input type="text" value="abc">\';'
         'return document.getElementsByTagName("input")[0];')
@@ -515,6 +524,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('', value)
 
   def testSendKeysToElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     text = self._driver.ExecuteScript(
         'document.body.innerHTML = \'<input type="text">\';'
         'var input = document.getElementsByTagName("input")[0];'
@@ -553,6 +563,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Refresh()
 
   def testMouseMoveTo(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -594,6 +605,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertTrue(self._driver.GetCurrentUrl().endswith('#top'))
 
   def testMouseClick(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -609,6 +621,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testMouseButtonDownAndUp(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -629,6 +642,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'a')))
 
   def testMouseDoubleClick(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -1034,6 +1048,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     flickTouchEventsPerSecond = 30
     moveEvents = int(
         math.sqrt(dx * dx + dy * dy) * flickTouchEventsPerSecond / speed)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
