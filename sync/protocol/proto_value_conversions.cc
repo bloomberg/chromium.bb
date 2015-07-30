@@ -572,6 +572,7 @@ scoped_ptr<base::DictionaryValue> NigoriSpecificsToValue(
   SET_BOOL(encrypt_articles);
   SET_BOOL(encrypt_app_list);
   SET_BOOL(encrypt_everything);
+  SET_BOOL(server_only_was_missing_keystore_migration_time);
   SET_BOOL(sync_tab_favicons);
   SET_ENUM(passphrase_type, PassphraseTypeString);
   SET(keystore_decryptor_token, EncryptedDataToValue);

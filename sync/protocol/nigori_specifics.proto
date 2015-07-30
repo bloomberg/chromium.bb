@@ -132,5 +132,11 @@ message NigoriSpecifics {
   // Boolean corresponding to whether usage count and last use date of Wallet
   // data should be encrypted.
   optional bool encrypt_autofill_wallet_metadata = 39;
+
+  // Boolean indicating whether this node was originally missing a
+  // |keystore_migration_time| field value, and was fixed on the server by
+  // giving the field a value.
+  // THIS FIELD SHOULD ONLY BE SET BY THE SERVER.
+  optional bool server_only_was_missing_keystore_migration_time = 40;
 }
 
