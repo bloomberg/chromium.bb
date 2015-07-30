@@ -13,9 +13,10 @@ cr.define('downloads', function() {
     },
 
     properties: {
-      canClearAll: {
+      downloadsShowing: {
         type: Boolean,
         value: false,
+        observer: 'onDownloadsShowingChange_',
       },
 
       showingSearch_: {
@@ -26,12 +27,42 @@ cr.define('downloads', function() {
 
     /** @return {boolean} Whether removal can be undone. */
     canUndo: function() {
-      return this.$['search-term'] != document.activeElement;
+      return !this.$['search-term'].shadowRoot.activeElement;
+    },
+
+    /** @return {boolean} Whether "Clear all" should be allowed. */
+    canClearAll: function() {
+      return !this.$['search-term'].value && this.downloadsShowing;
+    },
+
+    ready: function() {
+      var term = this.$['search-term'];
+      term.addEventListener('input', this.onSearchTermInput_.bind(this));
+      term.addEventListener('keydown', this.onSearchTermKeydown_.bind(this));
     },
 
     /** @private */
     onClearAllClick_: function() {
+      assert(this.canClearAll());
       this.actionService_.clearAll();
+    },
+
+    /** @private */
+    onDownloadsShowingChange_: function() {
+      this.updateClearAll_();
+    },
+
+    /** @private */
+    onSearchTermInput_: function() {
+      this.actionService_.search(this.$['search-term'].value);
+      this.updateClearAll_();
+    },
+
+    /** @private */
+    onSearchTermKeydown_: function(e) {
+      assert(this.showingSearch_);
+      if (e.keyIdentifier == 'U+001B')  // Escape.
+        this.toggleShowingSearch_();
     },
 
     /** @private */
@@ -42,6 +73,18 @@ cr.define('downloads', function() {
     /** @private */
     toggleShowingSearch_: function() {
       this.showingSearch_ = !this.showingSearch_;
+
+      if (this.showingSearch_) {
+        this.$['search-term'].focus();
+      } else {
+        this.$['search-term'].value = '';
+        this.onSearchTermInput_();
+      }
+    },
+
+    /** @private */
+    updateClearAll_: function() {
+      this.$['clear-all'].hidden = !this.canClearAll();
     },
   });
 

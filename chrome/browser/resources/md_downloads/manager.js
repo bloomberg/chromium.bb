@@ -44,7 +44,7 @@ cr.define('downloads', function() {
           e.canExecute = this.$.toolbar.canUndo();
           break;
         case 'clear-all-command':
-          e.canExecute = true;
+          e.canExecute = this.$.toolbar.canClearAll();
           break;
       }
     },
@@ -157,7 +157,7 @@ cr.define('downloads', function() {
       this.hasDownloads_ = this.size_() > 0;
 
       if (loadTimeData.getBoolean('allowDeletingHistory'))
-        this.$.toolbar.canClearAll = this.hasDownloads_;
+        this.$.toolbar.downloadsShowing = this.hasDownloads_;
 
       this.onResize_();
     },

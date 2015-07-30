@@ -86,7 +86,7 @@ Polymer({
    * Focuses the 'input' element.
    */
   focus: function() {
-    this.$.input.focus();
+    this.$.input.inputElement.focus();
   },
 
   /** @override */

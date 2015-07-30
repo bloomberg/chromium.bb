@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 
 <dom-module id="downloads-toolbar">
@@ -12,8 +13,7 @@
     </div>
     <div id="actions">
       <cr-button id="clear-all" i18n-content="clearAll"
-          on-click="onClearAllClick_"
-          hidden$="[[!canClearAll]]"></cr-button>
+          on-click="onClearAllClick_"></cr-button>
       <cr-button id="open-downloads-folder" i18n-content="openDownloadsFolder"
           on-click="onOpenDownloadsFolderClick_"></cr-button>
     </div>
