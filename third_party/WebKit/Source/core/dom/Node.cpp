@@ -1269,28 +1269,51 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
     }
 }
 
+static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool& isNullString, StringBuilder& content)
+{
+    switch (node->nodeType()) {
+    case Node::TEXT_NODE:
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+        isNullString = false;
+        content.append(toCharacterData(node)->data());
+        break;
+
+    case Node::PROCESSING_INSTRUCTION_NODE:
+        isNullString = false;
+        content.append(toProcessingInstruction(node)->data());
+        break;
+
+    case Node::ELEMENT_NODE:
+        if (isHTMLBRElement(*node) && convertBRsToNewlines) {
+            isNullString = false;
+            content.append('\n');
+            break;
+        }
+    // Fall through.
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+        isNullString = false;
+        for (Node* child = toContainerNode(node)->firstChild(); child; child = child->nextSibling()) {
+            Node::NodeType childNodeType = child->nodeType();
+            if (childNodeType == Node::COMMENT_NODE || childNodeType == Node::PROCESSING_INSTRUCTION_NODE)
+                continue;
+            appendTextContent(child, convertBRsToNewlines, isNullString, content);
+        }
+        break;
+
+    case Node::DOCUMENT_NODE:
+    case Node::DOCUMENT_TYPE_NODE:
+        break;
+    }
+}
+
 String Node::textContent(bool convertBRsToNewlines) const
 {
-    // This covers ProcessingInstruction and Comment that should return their
-    // value when .textContent is accessed on them, but should be ignored when
-    // iterated over as a descendant of a ContainerNode.
-    if (isCharacterDataNode())
-        return toCharacterData(this)->data();
-
-    // Documents and non-container nodes (that are not CharacterData)
-    // have null textContent.
-    if (isDocumentNode() || !isContainerNode())
-        return String();
-
     StringBuilder content;
-    for (Node& node : NodeTraversal::inclusiveDescendantsOf(*this)) {
-        if (isHTMLBRElement(node) && convertBRsToNewlines) {
-            content.append('\n');
-        } else if (node.isTextNode()) {
-            content.append(toText(node).data());
-        }
-    }
-    return content.toString();
+    bool isNullString = true;
+    appendTextContent(this, convertBRsToNewlines, isNullString, content);
+    return isNullString ? String() : content.toString();
 }
 
 void Node::setTextContent(const String& text)
