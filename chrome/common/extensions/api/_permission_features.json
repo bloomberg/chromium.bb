@@ -658,6 +658,10 @@
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
+      "EF2AB692559EA97C3BBDEA018A8C45F92457BD4E",  // http://crbug.com/448569
+      "C17CD9E6868D7B9C67926E0EC612EA25C768418F",  // http://crbug.com/448569
+      "A45DABDB47A31CC812E5490AB748C7D05E2D32E9",  // http://crbug.com/448569
+      "BFEE2E3B80BE21A645E63E9346DFC383E7CB3BDA",  // http://crbug.com/448569
       "63ED55E43214C211F82122ED56407FF1A807F2A3"   // http://crbug.com/448569
     ]
   },
