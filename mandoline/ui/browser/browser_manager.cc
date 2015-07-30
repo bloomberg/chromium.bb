@@ -67,7 +67,7 @@ void BrowserManager::BrowserClosed(Browser* browser) {
   DCHECK_GT(browsers_.count(browser), 0u);
   browsers_.erase(browser);
   if (browsers_.empty())
-    app_->Terminate();
+    app_->Quit();
 }
 
 void BrowserManager::InitUIIfNecessary(Browser* browser, mojo::View* view) {

@@ -67,7 +67,7 @@ void FileSystemApp::OnDirectoryConnectionError(DirectoryImpl* directory) {
       if (in_shutdown_ && client_mapping_.empty()) {
         // We just cleared the last directory after our shell connection went
         // away. Time to shut ourselves down.
-        app_->QuitNow();
+        app_->Quit();
       }
 
       return;
