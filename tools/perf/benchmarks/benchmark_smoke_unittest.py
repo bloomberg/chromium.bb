@@ -29,6 +29,7 @@ from benchmarks import repaint
 from benchmarks import spaceport
 from benchmarks import speedometer
 from benchmarks import sunspider
+from benchmarks import text_selection
 
 
 def SmokeTestGenerator(benchmark):
@@ -84,6 +85,7 @@ _BLACK_LIST_TEST_MODULES = {
     spaceport,  # Takes 451 seconds.
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
+    text_selection, # Always fails on cq bot.
 }
 
 # Some smoke benchmark tests that run quickly on desktop platform can be very
