@@ -95,6 +95,7 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
       device_authenticated_(false),
       unlock_requested_(false),
       is_polling_screen_state_(false),
+      unlock_keys_requested_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
   screenlock_bridge_->AddObserver(this);
@@ -107,6 +108,7 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
       proximity_auth_client_(proximity_auth_client),
       unlock_requested_(false),
       is_polling_screen_state_(false),
+      unlock_keys_requested_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
   screenlock_bridge_->AddObserver(this);
@@ -154,6 +156,7 @@ void ProximityAuthBleSystem::OnGetMyDevicesError(const std::string& error) {
 // return an error.
 void ProximityAuthBleSystem::GetUnlockKeys() {
   PA_LOG(INFO) << "Fetching unlock keys.";
+  unlock_keys_requested_ = true;
   if (cryptauth_client_factory_) {
     cryptauth_client_ = cryptauth_client_factory_->CreateInstance();
     cryptauth::GetMyDevicesRequest request;
@@ -212,12 +215,6 @@ void ProximityAuthBleSystem::OnScreenDidUnlock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   PA_LOG(INFO) << "OnScreenDidUnlock: " << screen_type;
 
-  // Fetch the unlock keys when the user signs in.
-  // TODO(sacomoto): refetch the keys periodically, in case a new device was
-  // added.
-  if (screen_type == ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
-    GetUnlockKeys();
-
   if (connection_) {
     // Note: it's important to remove the observer before calling
     // |Disconnect()|, otherwise |OnConnectedStatusChanged()| will be called
@@ -262,6 +259,24 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
 
     } else {
       PA_LOG(INFO) << "Key not found. Authentication failed.";
+
+      // Fetch unlock keys from CryptAuth.
+      //
+      // This is necessary as fetching the keys before the user is logged in
+      // (e.g. on the constructor) doesn't work and detecting when it logs in
+      // (i.e. on |OnScreenDidUnlock()| when |screen_type ==
+      // ScreenlockBridge::LockHandler::SIGNIN_SCREEN|) also doesn't work in all
+      // cases. See crbug.com/515418.
+      //
+      // Note that keys are only fetched once for a given instance. So if
+      // CryptAuth unlock keys are updated after (e.g. adding a new unlock key)
+      // they won't be refetched until a new instance of ProximityAuthBleSystem
+      // is created. Moreover, if an unlock key XXX is removed from CryptAuth,
+      // it'll only be invalidated here (removed from the persistent
+      // |device_white_list_|) when some other key YYY is sent for
+      // authentication.
+      if (!unlock_keys_requested_)
+        GetUnlockKeys();
       connection_->Disconnect();
     }
     return;

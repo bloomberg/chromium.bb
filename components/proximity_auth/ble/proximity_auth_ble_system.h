@@ -146,6 +146,9 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   bool is_polling_screen_state_;
 
+  // True if a call to |GetUnlockKeys()| was already made.
+  bool unlock_keys_requested_;
+
   base::WeakPtrFactory<ProximityAuthBleSystem> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthBleSystem);
