@@ -980,6 +980,13 @@ namespace WTF {
         // IsPolymorphic will return false for a pair of two types, even if
         // one of the components is polymorphic.
         static_assert(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, "empty value cannot be zero for things with a vtable");
+
+#if ENABLE(OILPAN)
+        static_assert(Allocator::isGarbageCollected
+            || ((!IsAllowOnlyInlineAllocation<KeyType>::value || !NeedsTracing<KeyType>::value)
+            && (!IsAllowOnlyInlineAllocation<ValueType>::value || !NeedsTracing<ValueType>::value))
+            , "Cannot put ALLOW_ONLY_INLINE_ALLOCATION objects that have trace methods into an off-heap HashTable");
+#endif
         if (Traits::emptyValueIsZero) {
             result = Allocator::template allocateZeroedHashTableBacking<ValueType, HashTable>(allocSize);
         } else {
