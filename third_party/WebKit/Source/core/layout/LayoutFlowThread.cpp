@@ -148,13 +148,16 @@ void LayoutFlowThread::generateColumnSetIntervalTree()
         m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(columnSet->logicalTopInFlowThread(), columnSet->logicalBottomInFlowThread(), columnSet));
 }
 
-void LayoutFlowThread::collectLayerFragments(DeprecatedPaintLayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
+void LayoutFlowThread::collectLayerFragments(DeprecatedPaintLayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRectInFlowThread)
 {
     ASSERT(!m_columnSetsInvalidated);
 
+    LayoutRect dirtyRectInMulticolContainer(dirtyRectInFlowThread);
+    dirtyRectInMulticolContainer.moveBy(location());
+
     for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
         LayoutMultiColumnSet* columnSet = *iter;
-        columnSet->collectLayerFragments(layerFragments, layerBoundingBox, dirtyRect);
+        columnSet->collectLayerFragments(layerFragments, layerBoundingBox, dirtyRectInMulticolContainer);
     }
 }
 
