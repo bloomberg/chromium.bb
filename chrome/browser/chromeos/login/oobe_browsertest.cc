@@ -28,11 +28,9 @@ using namespace net::test_server;
 
 namespace chromeos {
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
-class OobeTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
+class OobeTest : public OobeBaseTest {
  public:
-  OobeTest() { set_use_webview(GetParam()); }
+  OobeTest() {}
   ~OobeTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -70,7 +68,7 @@ class OobeTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
   DISALLOW_COPY_AND_ASSIGN(OobeTest);
 };
 
-IN_PROC_BROWSER_TEST_P(OobeTest, NewUser) {
+IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
   WaitForGaiaPageLoad();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -83,7 +81,7 @@ IN_PROC_BROWSER_TEST_P(OobeTest, NewUser) {
   session_start_waiter.Wait();
 }
 
-IN_PROC_BROWSER_TEST_P(OobeTest, Accelerator) {
+IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
   WaitForGaiaPageLoad();
 
   gfx::NativeWindow login_window = GetLoginWindowWidget()->GetNativeWindow();
@@ -96,7 +94,5 @@ IN_PROC_BROWSER_TEST_P(OobeTest, Accelerator) {
                             false);  // command
   OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENROLLMENT).Wait();
 }
-
-INSTANTIATE_TEST_CASE_P(OobeSuite, OobeTest, testing::Bool());
 
 }  // namespace chromeos

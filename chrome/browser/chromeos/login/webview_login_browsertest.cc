@@ -13,7 +13,7 @@ namespace chromeos {
 
 class WebviewLoginTest : public OobeBaseTest {
  public:
-  WebviewLoginTest() { set_use_webview(true); }
+  WebviewLoginTest() {}
   ~WebviewLoginTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -78,7 +78,6 @@ struct BlockingLoginTestParam {
   const int steps;
   const char* username;
   const bool enroll_device;
-  const bool use_webview;
 };
 
 class BlockingLoginTest
@@ -87,7 +86,6 @@ class BlockingLoginTest
       public testing::WithParamInterface<BlockingLoginTestParam> {
  public:
   BlockingLoginTest() : profile_added_(NULL) {
-    set_use_webview(GetParam().use_webview);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -304,43 +302,24 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
 }
 
 const BlockingLoginTestParam kBlockinLoginTestCases[] = {
-    {0, kUsername, true, false},
-    {1, kUsername, true, false},
-    {2, kUsername, true, false},
-    {3, kUsername, true, false},
-    {4, kUsername, true, false},
-    {5, kUsername, true, false},
-    {0, kUsername, false, false},
-    {1, kUsername, false, false},
-    {2, kUsername, false, false},
-    {3, kUsername, false, false},
-    {4, kUsername, false, false},
-    {5, kUsername, false, false},
-    {0, kUsernameOtherDomain, true, false},
-    {1, kUsernameOtherDomain, true, false},
-    {2, kUsernameOtherDomain, true, false},
-    {3, kUsernameOtherDomain, true, false},
-    {4, kUsernameOtherDomain, true, false},
-    {5, kUsernameOtherDomain, true, false},
-
-    {0, kUsername, true, true},
-    {1, kUsername, true, true},
-    {2, kUsername, true, true},
-    {3, kUsername, true, true},
-    {4, kUsername, true, true},
-    {5, kUsername, true, true},
-    {0, kUsername, false, true},
-    {1, kUsername, false, true},
-    {2, kUsername, false, true},
-    {3, kUsername, false, true},
-    {4, kUsername, false, true},
-    {5, kUsername, false, true},
-    {0, kUsernameOtherDomain, true, true},
-    {1, kUsernameOtherDomain, true, true},
-    {2, kUsernameOtherDomain, true, true},
-    {3, kUsernameOtherDomain, true, true},
-    {4, kUsernameOtherDomain, true, true},
-    {5, kUsernameOtherDomain, true, true},
+    {0, kUsername, true},
+    {1, kUsername, true},
+    {2, kUsername, true},
+    {3, kUsername, true},
+    {4, kUsername, true},
+    {5, kUsername, true},
+    {0, kUsername, false},
+    {1, kUsername, false},
+    {2, kUsername, false},
+    {3, kUsername, false},
+    {4, kUsername, false},
+    {5, kUsername, false},
+    {0, kUsernameOtherDomain, true},
+    {1, kUsernameOtherDomain, true},
+    {2, kUsernameOtherDomain, true},
+    {3, kUsernameOtherDomain, true},
+    {4, kUsernameOtherDomain, true},
+    {5, kUsernameOtherDomain, true},
 };
 
 INSTANTIATE_TEST_CASE_P(BlockingLoginTestInstance,

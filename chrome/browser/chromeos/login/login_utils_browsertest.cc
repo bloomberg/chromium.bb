@@ -26,7 +26,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
@@ -46,10 +45,9 @@ void GetAccessPointRlzInBackgroundThread(rlz_lib::AccessPoint point,
 
 }  // namespace
 
-class LoginUtilsTest : public OobeBaseTest,
-                       public testing::WithParamInterface<bool> {
+class LoginUtilsTest : public OobeBaseTest {
  public:
-  LoginUtilsTest() { set_use_webview(GetParam()); }
+  LoginUtilsTest() {}
 
   void RunUntilIdle() {
     base::RunLoop().RunUntilIdle();
@@ -83,7 +81,7 @@ class LoginUtilsTest : public OobeBaseTest,
 };
 
 #if defined(ENABLE_RLZ)
-IN_PROC_BROWSER_TEST_P(LoginUtilsTest, RlzInitialized) {
+IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
   WaitForSigninScreen();
 
   // No RLZ brand code set initially.
@@ -116,9 +114,6 @@ IN_PROC_BROWSER_TEST_P(LoginUtilsTest, RlzInitialized) {
     EXPECT_EQ(base::string16(), rlz_string);
   }
 }
-
-INSTANTIATE_TEST_CASE_P(LoginUtilsTestSuite, LoginUtilsTest, testing::Bool());
-
 #endif
 
 }  // namespace chromeos

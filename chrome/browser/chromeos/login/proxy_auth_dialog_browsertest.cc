@@ -59,16 +59,13 @@ class ProxyAuthDialogWaiter : public content::WindowedNotificationObserver {
 
 // Boolean parameter is used to run this test for webview (true) and for
 // iframe (false) GAIA sign in.
-class ProxyAuthOnUserBoardScreenTest
-    : public LoginManagerTest,
-      public testing::WithParamInterface<bool> {
+class ProxyAuthOnUserBoardScreenTest : public LoginManagerTest {
  public:
   ProxyAuthOnUserBoardScreenTest()
       : LoginManagerTest(true /* should_launch_browser */),
         proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
                       net::SpawnedTestServer::kLocalhost,
                       base::FilePath()) {
-    set_use_webview(GetParam());
   }
 
   ~ProxyAuthOnUserBoardScreenTest() override {}
@@ -90,14 +87,21 @@ class ProxyAuthOnUserBoardScreenTest
   DISALLOW_COPY_AND_ASSIGN(ProxyAuthOnUserBoardScreenTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ProxyAuthOnUserBoardScreenTest,
+IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
                        PRE_ProxyAuthDialogOnUserBoardScreen) {
   RegisterUser("test-user@gmail.com");
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_P(ProxyAuthOnUserBoardScreenTest,
-                       ProxyAuthDialogOnUserBoardScreen) {
+// Times out under MSan, and is flaky for ASan: https://crbug.com/481651
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_ProxyAuthDialogOnUserBoardScreen \
+  DISABLED_ProxyAuthDialogOnUserBoardScreen
+#else
+#define MAYBE_ProxyAuthDialogOnUserBoardScreen ProxyAuthDialogOnUserBoardScreen
+#endif
+IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
+                       MAYBE_ProxyAuthDialogOnUserBoardScreen) {
   LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
   WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
   OobeUI* oobe_ui =
@@ -125,14 +129,5 @@ IN_PROC_BROWSER_TEST_P(ProxyAuthOnUserBoardScreenTest,
     ASSERT_TRUE(auth_dialog_waiter.login_handler());
   }
 }
-
-INSTANTIATE_TEST_CASE_P(ProxyAuthOnUserBoardScreenTestSuite,
-                        ProxyAuthOnUserBoardScreenTest,
-// Times out under MSan, and is flaky for ASan: https://crbug.com/481651
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-                        testing::Values(false));
-#else
-                        testing::Bool());
-#endif
 
 }  // namespace chromeos

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 
 #include "base/command_line.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -17,10 +16,8 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -51,7 +48,6 @@ OobeBaseTest::OobeBaseTest()
       network_portal_detector_(NULL),
       needs_background_networking_(false),
       gaia_frame_parent_("signin-frame"),
-      use_webview_(true),
       initialize_fake_merge_session_(true) {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
@@ -81,29 +77,6 @@ void OobeBaseTest::SetUp() {
   embedded_test_server()->StopThread();
 
   ExtensionApiTest::SetUp();
-}
-
-bool OobeBaseTest::SetUpUserDataDirectory() {
-  base::FilePath user_data_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  base::FilePath local_state_path =
-      user_data_dir.Append(chrome::kLocalStateFilename);
-
-  if (!use_webview()) {
-    // Set webview disabled flag only when local state file does not exist.
-    // Otherwise, we break PRE tests that leave state in it.
-    if (!base::PathExists(local_state_path)) {
-      base::DictionaryValue local_state_dict;
-
-      // TODO(nkostylev): Fix tests that fail with webview signin.
-      local_state_dict.SetBoolean(prefs::kWebviewSigninDisabled, true);
-
-      CHECK(JSONFileValueSerializer(local_state_path)
-                .Serialize(local_state_dict));
-    }
-  }
-
-  return ExtensionApiTest::SetUpUserDataDirectory();
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
@@ -168,7 +141,7 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
                                   gaia_url.spec());
 
   fake_gaia_->Initialize();
-  fake_gaia_->set_issue_oauth_code_cookie(use_webview());
+  fake_gaia_->set_issue_oauth_code_cookie(true);
 }
 
 void OobeBaseTest::InitHttpsForwarders() {
@@ -241,9 +214,6 @@ WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
   WaitForSigninScreen();
-
-  if (!use_webview())
-    return;
 
   JS().Evaluate(
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready',"

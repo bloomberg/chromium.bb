@@ -140,12 +140,9 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
 
 }  // namespace
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
-class OAuth2Test : public OobeBaseTest,
-                   public testing::WithParamInterface<bool> {
+class OAuth2Test : public OobeBaseTest {
  protected:
-  OAuth2Test() { set_use_webview(GetParam()); }
+  OAuth2Test() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
@@ -430,7 +427,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
 };
 
 // PRE_MergeSession is testing merge session for a new profile.
-IN_PROC_BROWSER_TEST_P(OAuth2Test, PRE_PRE_PRE_MergeSession) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
   StartNewUserSession(true);
   // Check for existance of refresh token.
   std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
@@ -451,7 +448,7 @@ IN_PROC_BROWSER_TEST_P(OAuth2Test, PRE_PRE_PRE_MergeSession) {
 // that was generated in PRE_PRE_PRE_MergeSession test. In this test, we
 // are not running /MergeSession process since the /ListAccounts call confirms
 // that the session is not stale.
-IN_PROC_BROWSER_TEST_P(OAuth2Test, PRE_PRE_MergeSession) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_MergeSession) {
   SetupGaiaServerForUnexpiredAccount();
   SimulateNetworkOnline();
   LoginAsExistingUser();
@@ -466,7 +463,7 @@ IN_PROC_BROWSER_TEST_P(OAuth2Test, PRE_PRE_MergeSession) {
 // MergeSession test is running merge session process for an existing profile
 // that was generated in PRE_PRE_MergeSession test.
 // Disabled due to flakiness: crbug.com/496832
-IN_PROC_BROWSER_TEST_P(OAuth2Test, DISABLED_PRE_MergeSession) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_PRE_MergeSession) {
   SetupGaiaServerForExpiredAccount();
   SimulateNetworkOnline();
   LoginAsExistingUser();
@@ -483,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(OAuth2Test, DISABLED_PRE_MergeSession) {
 // that was generated in PRE_PRE_MergeSession test. This attempt should fail
 // since FakeGaia instance isn't configured to return relevant tokens/cookies.
 // Disabled due to flakiness: crbug.com/496832
-IN_PROC_BROWSER_TEST_P(OAuth2Test, DISABLED_MergeSession) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_MergeSession) {
   SimulateNetworkOnline();
 
   content::WindowedNotificationObserver(
@@ -716,7 +713,7 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   return browser;
 }
 
-IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
+IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
   StartNewUserSession(false);
 
   // Try to open a page from google.com.
@@ -759,7 +756,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
   DVLOG(1) << "Loaded page at the end : " << title;
 }
 
-IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRThrottle) {
+IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
   StartNewUserSession(false);
 
   // Wait until we get send merge session request.
@@ -812,8 +809,5 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRThrottle) {
 
   EXPECT_TRUE(fake_google_.IsPageRequested());
 }
-
-INSTANTIATE_TEST_CASE_P(OAuth2Suite, OAuth2Test, testing::Bool());
-INSTANTIATE_TEST_CASE_P(MergeSessionSuite, MergeSessionTest, testing::Bool());
 
 }  // namespace chromeos

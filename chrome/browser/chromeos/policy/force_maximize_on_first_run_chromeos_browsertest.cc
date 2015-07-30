@@ -24,18 +24,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "policy/policy_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
-class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase,
-                                    public testing::WithParamInterface<bool> {
+class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
  protected:
-  ForceMaximizeOnFirstRunTest() : LoginPolicyTestBase() {
-    set_use_webview(GetParam());
-  }
+  ForceMaximizeOnFirstRunTest() {}
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     policy->SetBoolean(key::kForceMaximizeOnFirstRun, true);
@@ -63,7 +57,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase,
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizeOnFirstRunTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
+IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword);
@@ -87,7 +81,7 @@ IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   EXPECT_FALSE(browser1->window()->IsMaximized());
 }
 
-IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, TwoRuns) {
+IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
   SetUpResolution();
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -111,7 +105,7 @@ class ForceMaximizePolicyFalseTest : public ForceMaximizeOnFirstRunTest {
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizePolicyFalseTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ForceMaximizePolicyFalseTest, GeneralFirstRun) {
+IN_PROC_BROWSER_TEST_F(ForceMaximizePolicyFalseTest, GeneralFirstRun) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword);
@@ -124,11 +118,4 @@ IN_PROC_BROWSER_TEST_P(ForceMaximizePolicyFalseTest, GeneralFirstRun) {
   EXPECT_FALSE(browser->window()->IsMaximized());
 }
 
-INSTANTIATE_TEST_CASE_P(ForceMaximizeOnFirstRunTestSuite,
-                        ForceMaximizeOnFirstRunTest,
-                        testing::Bool());
-
-INSTANTIATE_TEST_CASE_P(ForceMaximizePolicyFalseTestSuite,
-                        ForceMaximizePolicyFalseTest,
-                        testing::Bool());
 }  // namespace policy

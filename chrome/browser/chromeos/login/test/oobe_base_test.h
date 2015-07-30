@@ -55,7 +55,6 @@ class OobeBaseTest : public ExtensionApiTest {
   // InProcessBrowserTest overrides.
   void SetUp() override;
   void SetUpInProcessBrowserTestFixture() override;
-  bool SetUpUserDataDirectory() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -75,9 +74,6 @@ class OobeBaseTest : public ExtensionApiTest {
   void JsExpect(const std::string& expression);
 
   test::JSChecker& JS() { return js_checker_; }
-
-  bool use_webview() { return use_webview_; }
-  void set_use_webview(bool use_webview) { use_webview_ = use_webview; }
 
   bool initialize_fake_merge_session() {
     return initialize_fake_merge_session_;
@@ -109,7 +105,6 @@ class OobeBaseTest : public ExtensionApiTest {
   scoped_ptr<extensions::ScopedCurrentChannel> scoped_channel_;
   HTTPSForwarder gaia_https_forwarder_;
   std::string gaia_frame_parent_;
-  bool use_webview_;
   bool initialize_fake_merge_session_;
   test::JSChecker js_checker_;
 

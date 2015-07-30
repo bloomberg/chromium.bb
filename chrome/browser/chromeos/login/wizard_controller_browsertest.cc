@@ -7,8 +7,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/json/json_file_value_serializer.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
@@ -51,8 +49,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -967,11 +963,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   ASSERT_EQ(1, fake_session_manager_client()->start_device_wipe_call_count());
 }
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
-class WizardControllerProxyAuthOnSigninTest
-    : public WizardControllerTest,
-      public testing::WithParamInterface<bool> {
+class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
  protected:
   WizardControllerProxyAuthOnSigninTest()
       : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
@@ -997,27 +989,6 @@ class WizardControllerProxyAuthOnSigninTest
                                     proxy_server_.host_port_pair().ToString());
   }
 
-  bool SetUpUserDataDirectory() override {
-    base::FilePath user_data_dir;
-    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-    base::FilePath local_state_path =
-        user_data_dir.Append(chrome::kLocalStateFilename);
-
-    // Set webview disabled flag only when local state file does not exist.
-    // Otherwise, we break PRE tests that leave state in it.
-    if (!base::PathExists(local_state_path)) {
-      base::DictionaryValue local_state_dict;
-
-      if (!GetParam())
-        local_state_dict.SetBoolean(prefs::kWebviewSigninDisabled, true);
-
-      CHECK(JSONFileValueSerializer(local_state_path)
-                .Serialize(local_state_dict));
-    }
-
-    return WizardControllerTest::SetUpUserDataDirectory();
-  }
-
   net::SpawnedTestServer& proxy_server() { return proxy_server_; }
 
  private:
@@ -1027,7 +998,7 @@ class WizardControllerProxyAuthOnSigninTest
 };
 
 // Disabled, see https://crbug.com/504928.
-IN_PROC_BROWSER_TEST_P(WizardControllerProxyAuthOnSigninTest,
+IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
                        DISABLED_ProxyAuthDialogOnSigninScreen) {
   content::WindowedNotificationObserver auth_needed_waiter(
       chrome::NOTIFICATION_AUTH_NEEDED,
@@ -1038,10 +1009,6 @@ IN_PROC_BROWSER_TEST_P(WizardControllerProxyAuthOnSigninTest,
   LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
   auth_needed_waiter.Wait();
 }
-
-INSTANTIATE_TEST_CASE_P(WizardControllerProxyAuthOnSigninSuite,
-                        WizardControllerProxyAuthOnSigninTest,
-                        testing::Bool());
 
 class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
  protected:

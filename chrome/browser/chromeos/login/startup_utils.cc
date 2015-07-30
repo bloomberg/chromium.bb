@@ -58,7 +58,6 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kDeviceRegistered, -1);
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
-  registry->RegisterBooleanPref(prefs::kWebviewSigninDisabled, false);
 }
 
 // static
@@ -178,8 +177,7 @@ std::string StartupUtils::GetInitialLocale() {
 
 // static
 bool StartupUtils::IsWebviewSigninEnabled() {
-  return !g_browser_process->local_state()->GetBoolean(
-      prefs::kWebviewSigninDisabled);
+  return true;
 }
 
 // static

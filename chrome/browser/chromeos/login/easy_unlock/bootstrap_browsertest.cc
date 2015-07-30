@@ -21,7 +21,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -57,12 +56,9 @@ ScopedCompleteCallbackForTesting::~ScopedCompleteCallbackForTesting() {
 
 }  // namespace
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
-class BootstrapTest : public OobeBaseTest,
-                      public testing::WithParamInterface<bool> {
+class BootstrapTest : public OobeBaseTest {
  public:
-  BootstrapTest() { set_use_webview(GetParam()); }
+  BootstrapTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
@@ -134,7 +130,7 @@ class BootstrapTest : public OobeBaseTest,
   }
 };
 
-IN_PROC_BROWSER_TEST_P(BootstrapTest, Basic) {
+IN_PROC_BROWSER_TEST_F(BootstrapTest, Basic) {
   ScopedCompleteCallbackForTesting scoped_bootstrap_initialized(base::Bind(
       &BootstrapTest::OnBootstrapInitialized, base::Unretained(this)));
 
@@ -147,7 +143,7 @@ IN_PROC_BROWSER_TEST_P(BootstrapTest, Basic) {
       content::NotificationService::AllSources()).Wait();
 }
 
-IN_PROC_BROWSER_TEST_P(BootstrapTest, PRE_CleanUpFailedUser) {
+IN_PROC_BROWSER_TEST_F(BootstrapTest, PRE_CleanUpFailedUser) {
   ScopedCompleteCallbackForTesting scoped_bootstrap_initialized(base::Bind(
       &BootstrapTest::OnBootstrapInitialized, base::Unretained(this)));
 
@@ -159,10 +155,8 @@ IN_PROC_BROWSER_TEST_P(BootstrapTest, PRE_CleanUpFailedUser) {
   content::RunMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_P(BootstrapTest, CleanUpFailedUser) {
+IN_PROC_BROWSER_TEST_F(BootstrapTest, CleanUpFailedUser) {
   EXPECT_FALSE(user_manager::UserManager::Get()->IsKnownUser(kFakeUser));
 }
-
-INSTANTIATE_TEST_CASE_P(BootstrapTestSuite, BootstrapTest, testing::Bool());
 
 }  // namespace chromeos
