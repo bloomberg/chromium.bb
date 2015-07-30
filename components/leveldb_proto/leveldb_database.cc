@@ -70,25 +70,22 @@ bool LevelDB::Init(const base::FilePath& database_dir) {
 bool LevelDB::Save(const base::StringPairs& entries_to_save,
                    const std::vector<std::string>& keys_to_remove) {
   DFAKE_SCOPED_LOCK(thread_checker_);
-  if (!db_) {
+  if (!db_)
     return false;
-  }
 
   leveldb::WriteBatch updates;
-  for (base::StringPairs::const_iterator it = entries_to_save.begin();
-       it != entries_to_save.end();
-       ++it) {
-    updates.Put(leveldb::Slice(it->first), leveldb::Slice(it->second));
-  }
-  for (std::vector<std::string>::const_iterator it = keys_to_remove.begin();
-       it != keys_to_remove.end(); ++it) {
-    updates.Delete(leveldb::Slice(*it));
-  }
+  for (const auto& pair : entries_to_save)
+    updates.Put(leveldb::Slice(pair.first), leveldb::Slice(pair.second));
+
+  for (const auto& key : keys_to_remove)
+    updates.Delete(leveldb::Slice(key));
 
   leveldb::WriteOptions options;
   options.sync = true;
+
   leveldb::Status status = db_->Write(options, &updates);
-  if (status.ok()) return true;
+  if (status.ok())
+    return true;
 
   DLOG(WARNING) << "Failed writing leveldb_proto entries: "
                 << status.ToString();
@@ -97,9 +94,8 @@ bool LevelDB::Save(const base::StringPairs& entries_to_save,
 
 bool LevelDB::Load(std::vector<std::string>* entries) {
   DFAKE_SCOPED_LOCK(thread_checker_);
-  if (!db_) {
+  if (!db_)
     return false;
-  }
 
   leveldb::ReadOptions options;
   scoped_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));

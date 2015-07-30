@@ -22,8 +22,8 @@
 
 namespace leveldb_proto {
 
-typedef base::StringPairs KeyValueVector;
-typedef std::vector<std::string> KeyVector;
+using KeyValueVector = base::StringPairs;
+using KeyVector = std::vector<std::string>;
 
 // When the ProtoDatabaseImpl instance is deleted, in-progress asynchronous
 // operations will be completed and the corresponding callbacks will be called.
@@ -33,7 +33,7 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
  public:
   // All blocking calls/disk access will happen on the provided |task_runner|.
   explicit ProtoDatabaseImpl(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   ~ProtoDatabaseImpl() override;
 
@@ -41,17 +41,19 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   // TODO(cjhopman): Perhaps Init() shouldn't be exposed to users and not just
   //     part of the constructor
   void Init(const base::FilePath& database_dir,
-            typename ProtoDatabase<T>::InitCallback callback) override;
+            const typename ProtoDatabase<T>::InitCallback& callback) override;
   void UpdateEntries(
       scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
       scoped_ptr<KeyVector> keys_to_remove,
-      typename ProtoDatabase<T>::UpdateCallback callback) override;
-  void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) override;
+      const typename ProtoDatabase<T>::UpdateCallback& callback) override;
+  void LoadEntries(
+      const typename ProtoDatabase<T>::LoadCallback& callback) override;
 
   // Allow callers to provide their own Database implementation.
-  void InitWithDatabase(scoped_ptr<LevelDB> database,
-                        const base::FilePath& database_dir,
-                        typename ProtoDatabase<T>::InitCallback callback);
+  void InitWithDatabase(
+      scoped_ptr<LevelDB> database,
+      const base::FilePath& database_dir,
+      const typename ProtoDatabase<T>::InitCallback& callback);
 
  private:
   base::ThreadChecker thread_checker_;
@@ -67,20 +69,22 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
 namespace {
 
 template <typename T>
-void RunInitCallback(typename ProtoDatabase<T>::InitCallback callback,
+void RunInitCallback(const typename ProtoDatabase<T>::InitCallback& callback,
                      const bool* success) {
   callback.Run(*success);
 }
 
 template <typename T>
-void RunUpdateCallback(typename ProtoDatabase<T>::UpdateCallback callback,
-                       const bool* success) {
+void RunUpdateCallback(
+    const typename ProtoDatabase<T>::UpdateCallback& callback,
+    const bool* success) {
   callback.Run(*success);
 }
 
 template <typename T>
-void RunLoadCallback(typename ProtoDatabase<T>::LoadCallback callback,
-                     const bool* success, scoped_ptr<std::vector<T> > entries) {
+void RunLoadCallback(const typename ProtoDatabase<T>::LoadCallback& callback,
+                     const bool* success,
+                     scoped_ptr<std::vector<T>> entries) {
   callback.Run(*success, entries.Pass());
 }
 
@@ -96,35 +100,39 @@ template <typename T>
 void UpdateEntriesFromTaskRunner(
     LevelDB* database,
     scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    scoped_ptr<KeyVector> keys_to_remove, bool* success) {
+    scoped_ptr<KeyVector> keys_to_remove,
+    bool* success) {
   DCHECK(success);
+
   // Serialize the values from Proto to string before passing on to database.
   KeyValueVector pairs_to_save;
-  for (typename ProtoDatabase<T>::KeyEntryVector::iterator it =
-           entries_to_save->begin();
-       it != entries_to_save->end(); ++it) {
+  for (const auto& pair : *entries_to_save) {
     pairs_to_save.push_back(
-        std::make_pair(it->first, it->second.SerializeAsString()));
+        std::make_pair(pair.first, pair.second.SerializeAsString()));
   }
+
   *success = database->Save(pairs_to_save, *keys_to_remove);
 }
 
 template <typename T>
-void LoadEntriesFromTaskRunner(LevelDB* database, std::vector<T>* entries,
+void LoadEntriesFromTaskRunner(LevelDB* database,
+                               std::vector<T>* entries,
                                bool* success) {
   DCHECK(success);
   DCHECK(entries);
 
   entries->clear();
+
   std::vector<std::string> loaded_entries;
   *success = database->Load(&loaded_entries);
-  for (std::vector<std::string>::iterator it = loaded_entries.begin();
-       it != loaded_entries.end(); ++it) {
+
+  for (const auto& serialized_entry : loaded_entries) {
     T entry;
-    if (!entry.ParseFromString(*it)) {
-      DLOG(WARNING) << "Unable to parse leveldb_proto entry " << *it;
+    if (!entry.ParseFromString(serialized_entry)) {
+      DLOG(WARNING) << "Unable to parse leveldb_proto entry";
       // TODO(cjhopman): Decide what to do about un-parseable entries.
     }
+
     entries->push_back(entry);
   }
 }
@@ -133,29 +141,29 @@ void LoadEntriesFromTaskRunner(LevelDB* database, std::vector<T>* entries,
 
 template <typename T>
 ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner) {}
 
 template <typename T>
 ProtoDatabaseImpl<T>::~ProtoDatabaseImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!task_runner_->DeleteSoon(FROM_HERE, db_.release())) {
-    DLOG(WARNING) << "DOM distiller database will not be deleted.";
-  }
+  if (!task_runner_->DeleteSoon(FROM_HERE, db_.release()))
+    DLOG(WARNING) << "Proto database will not be deleted.";
 }
 
 template <typename T>
 void ProtoDatabaseImpl<T>::Init(
     const base::FilePath& database_dir,
-    typename ProtoDatabase<T>::InitCallback callback) {
+    const typename ProtoDatabase<T>::InitCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  InitWithDatabase(scoped_ptr<LevelDB>(new LevelDB()), database_dir, callback);
+  InitWithDatabase(make_scoped_ptr(new LevelDB()), database_dir, callback);
 }
 
 template <typename T>
 void ProtoDatabaseImpl<T>::InitWithDatabase(
-    scoped_ptr<LevelDB> database, const base::FilePath& database_dir,
-    typename ProtoDatabase<T>::InitCallback callback) {
+    scoped_ptr<LevelDB> database,
+    const base::FilePath& database_dir,
+    const typename ProtoDatabase<T>::InitCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!db_);
   DCHECK(database);
@@ -171,7 +179,7 @@ template <typename T>
 void ProtoDatabaseImpl<T>::UpdateEntries(
     scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     scoped_ptr<KeyVector> keys_to_remove,
-    typename ProtoDatabase<T>::UpdateCallback callback) {
+    const typename ProtoDatabase<T>::UpdateCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
@@ -184,7 +192,7 @@ void ProtoDatabaseImpl<T>::UpdateEntries(
 
 template <typename T>
 void ProtoDatabaseImpl<T>::LoadEntries(
-    typename ProtoDatabase<T>::LoadCallback callback) {
+    const typename ProtoDatabase<T>::LoadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
 
