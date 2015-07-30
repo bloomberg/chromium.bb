@@ -24,6 +24,7 @@ Polymer({
     route: {
       type: Object,
       value: null,
+      observer: 'maybeLoadCustomController_',
     },
 
     /**
@@ -37,12 +38,32 @@ Polymer({
     },
 
     /**
+     * The ID of the media route provider extension.
+     * @type {string}
+     */
+    routeProviderExtensionId: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The text for the stop casting button.
      * @private {string}
      */
     stopCastingButtonText_: {
       type: String,
       value: loadTimeData.getString('stopCastingButton'),
+    },
+
+    /**
+     * Whether the custom controller should be hidden.
+     * A custom controller is shown iff |route| specifies customControllerPath
+     * and the view can be loaded.
+     * @private {boolean}
+     */
+    isCustomControllerHidden_: {
+      type: Boolean,
+      value: true,
     },
   },
 
@@ -63,6 +84,36 @@ Polymer({
    */
   closeRoute_: function() {
     this.fire('close-route-click', {route: this.route});
+  },
+
+  /**
+   * Loads the custom controller if |route.customControllerPath| exists.
+   * Falls back to the default route details view otherwise, or if load fails.
+   *
+   * @private
+   */
+  maybeLoadCustomController_: function() {
+    if (!this.route || !this.route.customControllerPath ||
+        !this.routeProviderExtensionId) {
+      this.isCustomControllerHidden_ = true;
+      return;
+    }
+
+    // Show custom controller
+    var fullUrl = 'chrome-extension://' + this.routeProviderExtensionId + '/' +
+        this.route.customControllerPath;
+    var extensionview = this.$['custom-controller'];
+    if (fullUrl == extensionview.src && !this.isCustomControllerHidden_) {
+      // Do nothing if the url is the same and the view is not hidden.
+      return;
+    }
+
+    this.isCustomControllerHidden_ = false;
+    var that = this;
+    extensionview.load(fullUrl).catch(function() {
+      // Fall back to default view.
+      that.isCustomControllerHidden_ = true;
+    });
   },
 
   /**

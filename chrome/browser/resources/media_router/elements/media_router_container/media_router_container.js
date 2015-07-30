@@ -128,6 +128,7 @@ Polymer({
     routeProviderExtensionId: {
       type: String,
       value: '',
+      observer: 'propogateExtensionId_',
     },
 
     /**
@@ -206,6 +207,16 @@ Polymer({
     // |sinkToRouteMap_| entry will be overwritten with that of the new route,
     // which results in the correct sink to route mapping.
     this.routeList.push(route);
+  },
+
+  /**
+   * Propagates extension ID to the child elements that need it.
+   *
+   * @private
+   */
+  propogateExtensionId_: function() {
+    this.$['route-details'].routeProviderExtensionId =
+        this.routeProviderExtensionId;
   },
 
   /**

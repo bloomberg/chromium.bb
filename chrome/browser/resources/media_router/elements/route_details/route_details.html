@@ -12,7 +12,7 @@
       </paper-icon-button>
       <span id="sink-name">[[sink.name]]</span>
     </paper-toolbar>
-    <div id="route-information">
+    <div id="route-information" hidden$="[[!isCustomControllerHidden_]]">
       <div id="route-title">
         <span>[[route.title]]</span>
       </div>
@@ -20,6 +20,8 @@
         <span>[[activityStatus_]]</span>
       </div>
     </div>
+    <extensionview id="custom-controller" hidden$="[[isCustomControllerHidden_]]">
+    </extensionview>
     <paper-button raised id="close-route-button" class="button"
         on-click="closeRoute_">
       <span>[[stopCastingButtonText_]]</span>

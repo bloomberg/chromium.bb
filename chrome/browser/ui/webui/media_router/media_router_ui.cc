@@ -119,6 +119,11 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
       MediaRouterFactory::GetApiForBrowserContext(wc->GetBrowserContext()));
   DCHECK(router_);
 
+  // Allows UI to load extensionview.
+  // TODO(haibinlu): limit object-src to current extension once crbug/514866
+  // is fixed.
+  html_source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
+
   AddLocalizedStrings(html_source.get());
   AddMediaRouterUIResources(html_source.get());
   // Ownership of |html_source| is transferred to the BrowserContext.

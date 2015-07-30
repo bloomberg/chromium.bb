@@ -8,6 +8,12 @@
   text-align: -webkit-right;
 }
 
+#custom-controller {
+  display: inline-block;
+  height: 160px;
+  width: 100%;
+}
+
 #route-details-header {
   background-color: rgb(33, 150, 243);
   font-size: 1.4em;

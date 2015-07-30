@@ -43,6 +43,18 @@ cr.define('route_details', function() {
             details.$[elementId].querySelector('span').innerText);
       };
 
+      // Checks the default route view is shown.
+      var checkDefaultViewIsShown = function() {
+        assertFalse(details.$['route-information'].hasAttribute('hidden'));
+        assertTrue(details.$['custom-controller'].hasAttribute('hidden'));
+      };
+
+      // Checks the custom controller is shown.
+      var checkCustomControllerIsShown = function() {
+        assertTrue(details.$['route-information'].hasAttribute('hidden'));
+        assertFalse(details.$['custom-controller'].hasAttribute('hidden'));
+      };
+
       // Checks whether |expected| and the text in the |elementId| element
       // are equal given an id.
       var checkElementTextWithId = function(expected, elementId) {
@@ -109,6 +121,7 @@ cr.define('route_details', function() {
         // |route| is null.
         assertEquals(null, details.route);
         checkSpanText('', 'route-title');
+        checkDefaultViewIsShown();
 
         // Set |route| to be non-null. 'route-title' text should be updated.
         details.route = fakeRouteOne;
@@ -116,12 +129,14 @@ cr.define('route_details', function() {
         checkSpanText(fakeRouteOne.title, 'route-title');
         checkSpanText('', 'route-status');
         assertEquals(null, details.sink);
+        checkDefaultViewIsShown();
 
         // Set |route| to a different route. 'route-title' text should
         // be updated.
         details.route = fakeRouteTwo;
         assertEquals(fakeRouteTwo, details.route);
         checkSpanText(fakeRouteTwo.title, 'route-title');
+        checkDefaultViewIsShown();
       });
 
       // Tests when |sink| exists but |route| is null.
@@ -166,6 +181,47 @@ cr.define('route_details', function() {
         assertEquals(null, details.sink);
         checkSpanText('', 'route-title');
         checkSpanText('', 'route-status');
+      });
+
+      // Tests when |route| and |sink| both exist and |route| has custom
+      // controller and it loads.
+      test('route has custom controller and loading succeeds', function(done) {
+        details.routeProviderExtensionId = '123';
+        fakeRouteOne.customControllerPath = 'custom_view.html';
+        var loadInvoked = false;
+        details.$['custom-controller'].load = function(url) {
+          loadInvoked = true;
+          assertEquals('chrome-extension://123/custom_view.html', url);
+          return Promise.resolve();
+        };
+
+        details.route = fakeRouteOne;
+        details.sink = fakeSinkOne;
+        setTimeout(function() {
+          assertTrue(loadInvoked);
+          checkCustomControllerIsShown();
+          done();
+        });
+      });
+
+      // Tests when |route| and |sink| both exist and |route| has custom
+      // controller but it fails to load.
+      test('route has custom controller but loading fails', function(done) {
+        details.routeProviderExtensionId = '123';
+        fakeRouteOne.customControllerPath = 'custom_view.html';
+        var loadInvoked = false;
+        details.$['custom-controller'].load = function(url) {
+          loadInvoked = true;
+          return Promise.reject();
+        };
+
+        details.route = fakeRouteOne;
+        details.sink = fakeSinkOne;
+        setTimeout(function() {
+          assertTrue(loadInvoked);
+          checkDefaultViewIsShown();
+          done();
+        });
       });
     });
   }
