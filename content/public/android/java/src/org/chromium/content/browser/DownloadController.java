@@ -108,7 +108,8 @@ public class DownloadController {
      */
     @CalledByNative
     public void onDownloadCompleted(Context context, String url, String mimeType,
-            String filename, String path, long contentLength, boolean successful, int downloadId) {
+            String filename, String path, long contentLength, boolean successful, int downloadId,
+            boolean hasUserGesture) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
                     .setUrl(url)
@@ -120,6 +121,7 @@ public class DownloadController {
                     .setDescription(filename)
                     .setDownloadId(downloadId)
                     .setHasDownloadId(true)
+                    .setHasUserGesture(hasUserGesture)
                     .build();
             sDownloadNotificationService.onDownloadCompleted(downloadInfo);
         }
@@ -132,7 +134,7 @@ public class DownloadController {
     @CalledByNative
     public void onDownloadUpdated(Context context, String url, String mimeType,
             String filename, String path, long contentLength, boolean successful, int downloadId,
-            int percentCompleted, long timeRemainingInMs) {
+            int percentCompleted, long timeRemainingInMs, boolean hasUserGesture) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
                     .setUrl(url)
@@ -146,6 +148,7 @@ public class DownloadController {
                     .setHasDownloadId(true)
                     .setPercentCompleted(percentCompleted)
                     .setTimeRemainingInMillis(timeRemainingInMs)
+                    .setHasUserGesture(hasUserGesture)
                     .build();
             sDownloadNotificationService.onDownloadUpdated(downloadInfo);
         }

@@ -4,13 +4,10 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
-import android.util.Log;
 
 import org.chromium.chrome.R;
 
@@ -25,12 +22,9 @@ import java.util.Locale;
  * service to create download notifications.
  */
 public class SystemDownloadNotifier implements DownloadNotifier {
-    private static final String UNKNOWN_MIME_TYPE = "application/unknown";
-    private static final String LOGTAG = "SystemDownloadNotifier";
     private static final String NOTIFICATION_NAMESPACE = "SystemDownloadNotifier";
 
     private final NotificationManager mNotificationManager;
-    private final DownloadManager mDownloadManager;
 
     private final Context mApplicationContext;
 
@@ -42,8 +36,6 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         mApplicationContext = context.getApplicationContext();
         mNotificationManager = (NotificationManager) mApplicationContext
                 .getSystemService(Context.NOTIFICATION_SERVICE);
-        mDownloadManager = (DownloadManager) mApplicationContext
-                .getSystemService(Context.DOWNLOAD_SERVICE);
     }
 
     /**
@@ -61,27 +53,8 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     @Override
-    public boolean notifyDownloadSuccessful(DownloadInfo downloadInfo) {
-        String mimeType = downloadInfo.getMimeType();
-        if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
-
-        try {
-            String description = downloadInfo.getDescription();
-            if (TextUtils.isEmpty(description)) description = downloadInfo.getFileName();
-            long downloadId = mDownloadManager.addCompletedDownload(
-                    downloadInfo.getFileName(), description, true, mimeType,
-                    downloadInfo.getFilePath(), downloadInfo.getContentLength(), true);
-            if (OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType)) {
-                DownloadManagerService.getDownloadManagerService(mApplicationContext)
-                        .getOMADownloadHandler().handleOMADownload(downloadInfo, downloadId);
-            }
-        } catch (IllegalArgumentException e) {
-            // TODO(qinmin): Properly handle the case that we fail to add a completed
-            // download item to DownloadManager
-            Log.w(LOGTAG, "Failed to add the download item to DownloadManager: " + e);
-            return false;
-        }
-        return true;
+    public void notifyDownloadSuccessful(DownloadInfo downloadInfo) {
+        // TODO(qinmin): figure out what needs to be done here.
     }
 
     @Override

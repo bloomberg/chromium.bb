@@ -18,10 +18,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.LongSparseArray;
 import android.widget.Toast;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -46,10 +46,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DownloadManagerService extends BroadcastReceiver implements
         DownloadController.DownloadNotificationService {
-    private static final String TAG = "DownloadNotificationService";
+    private static final String TAG = "cr.DownloadService";
     private static final String DOWNLOAD_NOTIFICATION_IDS = "DownloadNotificationIds";
     private static final String DOWNLOAD_DIRECTORY = "Download";
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
+    private static final String UNKNOWN_MIME_TYPE = "application/unknown";
     private static final long UPDATE_DELAY_MILLIS = 1000;
     // Set will be more expensive to initialize, so use an ArrayList here.
     private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
@@ -435,7 +436,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     case COMPLETE:
                         removeProgressNotificationForDownload(progress.mDownloadInfo
                                 .getDownloadId());
-                        ret = mDownloadNotifier.notifyDownloadSuccessful(progress.mDownloadInfo);
+                        ret = ret && addCompletedDownload(progress.mDownloadInfo);
+                        mDownloadNotifier.notifyDownloadSuccessful(progress.mDownloadInfo);
                         broadcastDownloadSuccessful(progress.mDownloadInfo);
                         break;
                     case FAILED:
@@ -451,6 +453,56 @@ public class DownloadManagerService extends BroadcastReceiver implements
             }
         }
         return ret;
+    }
+
+    /**
+     * Add a completed download into DownloadManager.
+     *
+     * @param downloadInfo Information of the downloaded file.
+     * @return true if the download is added to the DownloadManager, or false otherwise.
+     */
+    private boolean addCompletedDownload(DownloadInfo downloadInfo) {
+        String mimeType = downloadInfo.getMimeType();
+        if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
+        String description = downloadInfo.getDescription();
+        if (TextUtils.isEmpty(description)) description = downloadInfo.getFileName();
+        DownloadManager manager =
+                (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        try {
+            long downloadId = manager.addCompletedDownload(
+                    downloadInfo.getFileName(), description, true, mimeType,
+                    downloadInfo.getFilePath(), downloadInfo.getContentLength(), true);
+            if (shouldOpenAfterDownload(downloadInfo)) {
+                handleAutoOpenAfterDownload(downloadInfo, downloadId);
+            }
+        } catch (IllegalArgumentException e) {
+            // TODO(qinmin): Properly handle the case that we fail to add a completed
+            // download item to DownloadManager
+            Log.w(TAG, "Failed to add the download item to DownloadManager: " + e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Handle auto opennable files after download completes.
+     *
+     * @param info Information of the downloaded file.
+     * @param downloadId Download identifier issued by the android DownloadManager.
+     */
+    private void handleAutoOpenAfterDownload(DownloadInfo info, long downloadId) {
+        if (OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(info.getMimeType())) {
+            mOMADownloadHandler.handleOMADownload(info, downloadId);
+            return;
+        }
+        DownloadManager manager =
+                (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = manager.getUriForDownloadedFile(downloadId);
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW);
+        launchIntent.setDataAndType(uri, manager.getMimeTypeForDownloadedFile(downloadId));
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        openIntent(mContext, launchIntent, true);
     }
 
     /**
@@ -529,10 +581,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mOMADownloadHandler = omaDownloadHandler;
     }
 
-    protected OMADownloadHandler getOMADownloadHandler() {
-        return mOMADownloadHandler;
-    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -556,17 +604,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 switch (status) {
                     case DownloadManager.STATUS_SUCCESSFUL:
                         mPendingAutoOpenDownloads.remove(downloadId);
-                        if (OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(
-                                info.getMimeType())) {
-                            mOMADownloadHandler.handleOMADownload(info, downloadId);
-                            break;
-                        }
-                        Uri uri = manager.getUriForDownloadedFile(downloadId);
-                        Intent launchIntent = new Intent(Intent.ACTION_VIEW);
-                        launchIntent.setDataAndType(
-                                uri, manager.getMimeTypeForDownloadedFile(downloadId));
-                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        openIntent(mContext, launchIntent, true);
+                        handleAutoOpenAfterDownload(info, downloadId);
                         break;
                     case DownloadManager.STATUS_FAILED:
                         mPendingAutoOpenDownloads.remove(downloadId);

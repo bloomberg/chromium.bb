@@ -13,10 +13,8 @@ public interface DownloadNotifier {
     /**
      * Add a download successful notification.
      * @param downloadInfo info about the successful download.
-     * @return true if the download is successfully added to the android DownloadManager,
-     *         or false otherwise.
      */
-    boolean notifyDownloadSuccessful(DownloadInfo downloadInfo);
+    void notifyDownloadSuccessful(DownloadInfo downloadInfo);
 
     /**
      * Add a download failed notification.

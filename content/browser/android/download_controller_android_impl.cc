@@ -457,7 +457,8 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(),
           base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
           jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
-          item->GetId(), item->PercentComplete(), time_delta.InMilliseconds());
+          item->GetId(), item->PercentComplete(), time_delta.InMilliseconds(),
+          item->HasUserGesture());
       break;
     }
     case DownloadItem::COMPLETE:
@@ -470,7 +471,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(),
           base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
           jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
-          item->GetId());
+          item->GetId(), item->HasUserGesture());
       break;
     case DownloadItem::CANCELLED:
     // TODO(shashishekhar): An interrupted download can be resumed. Android
@@ -482,7 +483,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(),
           base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
           jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), false,
-          item->GetId());
+          item->GetId(), item->HasUserGesture());
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
