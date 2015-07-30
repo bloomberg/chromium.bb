@@ -22,7 +22,7 @@ class GestureHandlerLayoutDelegate implements GestureHandler {
     }
 
     @Override
-    public void onDown(float x, float y, boolean fromMouse) {
+    public void onDown(float x, float y, boolean fromMouse, int buttons) {
         if (mLayoutProvider.getActiveLayout() == null) return;
         mLayoutProvider.getActiveLayout().onDown(LayoutManager.time(), x, y);
     }
@@ -40,7 +40,7 @@ class GestureHandlerLayoutDelegate implements GestureHandler {
     }
 
     @Override
-    public void click(float x, float y) {
+    public void click(float x, float y, boolean fromMouse, int buttons) {
         if (mLayoutProvider.getActiveLayout() == null) return;
         mLayoutProvider.getActiveLayout().click(LayoutManager.time(), x, y);
     }

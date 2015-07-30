@@ -96,7 +96,7 @@ public class TabStripUtils {
         base.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                manager.click(0, x, y);
+                manager.click(0, x, y, false, 0);
             }
         });
     }

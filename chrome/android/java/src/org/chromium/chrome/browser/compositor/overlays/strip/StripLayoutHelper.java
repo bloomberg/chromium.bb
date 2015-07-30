@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.AdapterView;
@@ -598,8 +599,9 @@ public class StripLayoutHelper {
      * @param x         The x position of the event.
      * @param y         The y position of the event.
      * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that are pressed.
      */
-    public void onDown(long time, float x, float y, boolean fromMouse) {
+    public void onDown(long time, float x, float y, boolean fromMouse, int buttons) {
         resetResizeTimeout(false);
 
         if (mNewTabButton.onDown(x, y)) {
@@ -631,7 +633,8 @@ public class StripLayoutHelper {
         }
 
         if (fromMouse && !clickedClose && clickedTab != null
-                && clickedTab.getVisiblePercentage() >= 1.f) {
+                && clickedTab.getVisiblePercentage() >= 1.f
+                && (buttons & MotionEvent.BUTTON_TERTIARY) == 0) {
             startReorderMode(time, x, x);
         }
     }
@@ -656,11 +659,13 @@ public class StripLayoutHelper {
 
     /**
      * Called on click. This is called before the onUpOrCancel event.
-     * @param time The current time of the app in ms.
-     * @param x    The x coordinate of the position of the click.
-     * @param y    The y coordinate of the position of the click.
+     * @param time      The current time of the app in ms.
+     * @param x         The x coordinate of the position of the click.
+     * @param y         The y coordinate of the position of the click.
+     * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that were pressed when onDown was invoked.
      */
-    public void click(long time, float x, float y) {
+    public void click(long time, float x, float y, boolean fromMouse, int buttons) {
         resetResizeTimeout(false);
 
         if (mNewTabButton.click(x, y) && mModel != null) {
@@ -670,7 +675,8 @@ public class StripLayoutHelper {
 
         final StripLayoutTab clickedTab = getTabAtPosition(x);
         if (clickedTab == null || clickedTab.isDying()) return;
-        if (clickedTab.checkCloseHitTest(x, y)) {
+        if (clickedTab.checkCloseHitTest(x, y)
+                || (fromMouse && (buttons & MotionEvent.BUTTON_TERTIARY) != 0)) {
             // 1. Start the close animation.
             startAnimation(buildTabClosedAnimation(clickedTab), true);
 

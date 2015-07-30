@@ -208,8 +208,8 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
 
     private class TabStripEventHandler implements GestureHandler {
         @Override
-        public void onDown(float x, float y, boolean fromMouse) {
-            mTabStripLayoutHelperManager.onDown(time(), x, y, fromMouse);
+        public void onDown(float x, float y, boolean fromMouse, int buttons) {
+            mTabStripLayoutHelperManager.onDown(time(), x, y, fromMouse, buttons);
         }
 
         @Override
@@ -223,8 +223,8 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
         }
 
         @Override
-        public void click(float x, float y) {
-            mTabStripLayoutHelperManager.click(time(), x, y);
+        public void click(float x, float y, boolean fromMouse, int buttons) {
+            mTabStripLayoutHelperManager.click(time(), x, y, fromMouse, buttons);
         }
 
         @Override

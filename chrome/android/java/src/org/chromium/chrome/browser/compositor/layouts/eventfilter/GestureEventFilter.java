@@ -22,6 +22,7 @@ public class GestureEventFilter extends EventFilter {
     private boolean mSingleInput = true;
     private boolean mInLongPress;
     private boolean mSeenFirstScrollEvent;
+    private int mButtons = 0;
     private LongPressRunnable mLongPressRunnable = new LongPressRunnable();
     private Handler mLongPressHandler = new Handler();
 
@@ -130,7 +131,9 @@ public class GestureEventFilter extends EventFilter {
                  * long press has been detected.
                  */
                 if (mHandler != null && mSingleInput && !mInLongPress) {
-                    mHandler.click(e.getX() * mPxToDp, e.getY() * mPxToDp);
+                    mHandler.click(e.getX() * mPxToDp, e.getY() * mPxToDp,
+                                   e.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE,
+                                   mButtons);
                 }
                 return true;
             }
@@ -147,12 +150,14 @@ public class GestureEventFilter extends EventFilter {
 
             @Override
             public boolean onDown(MotionEvent e) {
+                mButtons = e.getButtonState();
                 mInLongPress = false;
                 mSeenFirstScrollEvent = false;
                 if (mHandler != null && mSingleInput) {
                     mHandler.onDown(e.getX() * mPxToDp,
                                     e.getY() * mPxToDp,
-                                    e.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE);
+                                    e.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE,
+                                    mButtons);
                 }
                 return true;
             }

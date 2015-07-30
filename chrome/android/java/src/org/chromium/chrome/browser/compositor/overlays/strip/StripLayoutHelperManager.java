@@ -316,10 +316,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * @param x         The x position of the event.
      * @param y         The y position of the event.
      * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that are pressed.
      */
-    public void onDown(long time, float x, float y, boolean fromMouse) {
+    public void onDown(long time, float x, float y, boolean fromMouse, int buttons) {
         if (mModelSelectorButton.onDown(x, y)) return;
-        getActiveStripLayoutHelper().onDown(time, x, y, fromMouse);
+        getActiveStripLayoutHelper().onDown(time, x, y, fromMouse, buttons);
     }
 
     /**
@@ -334,18 +335,20 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     /**
      * Called on click. This is called before the onUpOrCancel event.
-     * @param time The current time of the app in ms.
-     * @param x    The x coordinate of the position of the click.
-     * @param y    The y coordinate of the position of the click.
+     * @param time      The current time of the app in ms.
+     * @param x         The x coordinate of the position of the click.
+     * @param y         The y coordinate of the position of the click.
+     * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that were pressed when onDown was invoked.
      */
-    public void click(long time, float x, float y) {
+    public void click(long time, float x, float y, boolean fromMouse, int buttons) {
         if (mModelSelectorButton.click(x, y) && mTabModelSelector != null) {
             getActiveStripLayoutHelper().finishAnimation();
             if (!mModelSelectorButton.isVisible()) return;
             mTabModelSelector.selectModel(!mTabModelSelector.isIncognitoSelected());
             return;
         }
-        getActiveStripLayoutHelper().click(time, x, y);
+        getActiveStripLayoutHelper().click(time, x, y, fromMouse, buttons);
     }
 
     /**

@@ -417,7 +417,7 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     // --------------------------------------------------------------------------------------------
 
     @Override
-    public void onDown(float x, float y, boolean fromMouse) {}
+    public void onDown(float x, float y, boolean fromMouse, int buttons) {}
 
     @Override
     public void onUpOrCancel() {}
@@ -428,7 +428,7 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     }
 
     @Override
-    public void click(float x, float y) {
+    public void click(float x, float y, boolean fromMouse, int buttons) {
         mWasTapDetectedOnSearchPanel = true;
     }
 

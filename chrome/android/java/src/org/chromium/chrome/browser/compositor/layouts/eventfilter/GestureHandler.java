@@ -12,11 +12,12 @@ public interface GestureHandler {
     /**
      * Called on down touch event.
      *
-     * @param x The X position of the event in the host view space in dp.
-     * @param y The Y position of the event in the host view space in dp.
+     * @param x         The X position of the event in the host view space in dp.
+     * @param y         The Y position of the event in the host view space in dp.
      * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that are pressed.
      */
-    void onDown(float x, float y, boolean fromMouse);
+    void onDown(float x, float y, boolean fromMouse, int buttons);
 
     /**
     * Called on up or cancel touch event.
@@ -38,10 +39,12 @@ public interface GestureHandler {
     /**
      * Called on click touch event.
      *
-     * @param x The X position of the event in the host view space in dp.
-     * @param y The Y position of the event in the host view space in dp.
+     * @param x         The X position of the event in the host view space in dp.
+     * @param y         The Y position of the event in the host view space in dp.
+     * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that were pressed when onDown was invoked.
      */
-    void click(float x, float y);
+    void click(float x, float y, boolean fromMouse, int buttons);
 
     /**
      * Called on fling touch event.
