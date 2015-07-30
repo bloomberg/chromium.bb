@@ -387,6 +387,10 @@
               {
                 "title": "Enable Play Services in Your ARC App",
                 "href": "/apps/arc_playservices"
+              },
+              {
+                "title": "In-app Purchases for ARC Apps",
+                "href": "/apps/arc_in_app_payments"
               }
             ]
           },
