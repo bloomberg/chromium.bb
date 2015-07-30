@@ -108,8 +108,6 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
     private static final long OMNIBOX_FIND_SUGGESTION_TIMEOUT_MS = 10 * 1000;
 
-    private static final float FLOAT_EPSILON = 0.001f;
-
     public ChromeActivityTestCaseBase(Class<T> activityClass) {
         super(activityClass);
     }

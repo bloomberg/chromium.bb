@@ -3,27 +3,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5" />
 </head>
 <body>
-<img src="test_image.png" id="testImage" />
-<br />
-<img src="search_by_image.png" id="searchByImage" />
-<br />
-<a href="test_link.html" id="testLink">Test Link</a>
-<br />
-<a href="test_link.html" id="testImageLink"><img src="test_image.png"/></a>
-<br />
-<a href="mailto:someone@example.com" id="testEmail">EmailTest</a>
-<br />
-<a href="test_link.html">
-  <script type="text/javascript">
-  function myFunction()
-  {
-  return ("Hello world!");
-  }
-  </script>
-  This <b id="copyLinkTextComplex">is pretty</b>
-    <img src="test_image.png"/>
-  extreme <br/> (newline).
-</a>
-<br />
+
+  <img src="test_image.png" id="testImage" /><br />
+
+  <a href="test_link.html" id="testLink">Test Link</a><br />
+
+  <a href="test_link.html" id="testImageLink"><img src="test_image.png"/></a><br />
+
+  <a href="mailto:someone@example.com" id="testEmail">EmailTest</a><br />
+
+  <a href="test_link.html">
+    <script type="text/javascript">
+    function myFunction()
+    {
+    return ("Hello world!");
+    }
+    </script>
+    This <b id="copyLinkTextComplex">is pretty</b>
+      <img src="test_image.png"/>
+    extreme <br/> (newline).
+  </a><br />
+
+  <img src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
+/ge8WSLf/rhf/3kdbW1mxsbP//mf///yH5BAAAAAAALAAAAAAQAA4AAARe8L1Ekyky67QZ1hLnjM5UUde0ECwLJoExKcpp
+V0aCcGCmTIHEIUEqjgaORCMxIC6e0CcguWw6aFjsVMkkIr7g77ZKPJjPZqIyd7sJAgVGoEGv2xsBxqNgYPj/gAwXEQA7"
+width="16" height="14" alt="embedded folder icon" id="dataUrlIcon"><br />
+
+  <video id="videoDOMElement" controls>
+    <source src="../media/test.mp4" type="video/mp4">
+  </video><br />
+
 </body>
 </html>
