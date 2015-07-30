@@ -352,8 +352,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     if (!isValidForPosition(node))
         return;
 
-    // FIXME: Eliminate legacy editing positions
-    m_frame->selection().setExtent(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
+    m_frame->selection().setExtent(VisiblePosition(Position(node, offset), DOWNSTREAM));
 }
 
 PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
