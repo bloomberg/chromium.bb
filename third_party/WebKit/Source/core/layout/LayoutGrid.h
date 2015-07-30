@@ -94,7 +94,6 @@ public:
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
-    void computePreferredLogicalWidths() override;
 
     void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
     void removeChild(LayoutObject*) override;

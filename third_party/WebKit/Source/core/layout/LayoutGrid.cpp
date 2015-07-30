@@ -395,25 +395,6 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
     maxLogicalWidth += scrollbarWidth;
 }
 
-void LayoutGrid::computePreferredLogicalWidths()
-{
-    ASSERT(preferredLogicalWidthsDirty());
-
-    m_minPreferredLogicalWidth = 0;
-    m_maxPreferredLogicalWidth = 0;
-
-    // FIXME: We don't take our own logical width into account. Once we do, we need to make sure
-    // we apply (and test the interaction with) min-width / max-width.
-
-    computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
-
-    LayoutUnit borderAndPaddingInInlineDirection = borderAndPaddingLogicalWidth();
-    m_minPreferredLogicalWidth += borderAndPaddingInInlineDirection;
-    m_maxPreferredLogicalWidth += borderAndPaddingInInlineDirection;
-
-    clearPreferredLogicalWidthsDirty();
-}
-
 bool LayoutGrid::gridElementIsShrinkToFit()
 {
     return isFloatingOrOutOfFlowPositioned();
