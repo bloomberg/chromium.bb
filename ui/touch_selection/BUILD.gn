@@ -53,6 +53,19 @@ component("touch_selection") {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "touch_selection_controller_test_api.cc",
+    "touch_selection_controller_test_api.h",
+  ]
+
+  deps = [
+    ":touch_selection",
+  ]
+}
+
 # TODO(GYP): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("ui_touch_selection_unittests_run") {
@@ -70,6 +83,7 @@ test("ui_touch_selection_unittests") {
   ]
 
   deps = [
+    ":test_support",
     ":touch_selection",
     "//base/test:run_all_unittests",
     "//testing/gmock:gmock",

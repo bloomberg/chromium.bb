@@ -9,6 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
+#include "ui/touch_selection/touch_selection_controller_test_api.h"
 
 using testing::ElementsAre;
 using testing::IsEmpty;
@@ -42,21 +43,6 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
 };
 
 }  // namespace
-
-class TouchSelectionControllerTestApi {
- public:
-  explicit TouchSelectionControllerTestApi(TouchSelectionController* controller)
-      : controller_(controller) {}
-  ~TouchSelectionControllerTestApi() {}
-
-  bool GetStartVisible() const { return controller_->GetStartVisible(); }
-  bool GetEndVisible() const { return controller_->GetEndVisible(); }
-
- private:
-  TouchSelectionController* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerTestApi);
-};
 
 class TouchSelectionControllerTest : public testing::Test,
                                      public TouchSelectionControllerClient {

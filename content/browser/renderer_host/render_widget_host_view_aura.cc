@@ -30,6 +30,8 @@
 #include "content/browser/renderer_host/compositor_resize_lock_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
+#include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
+#include "content/browser/renderer_host/input/ui_touch_selection_helper.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -71,6 +73,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
@@ -78,6 +81,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
@@ -462,7 +466,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       showing_context_menu_(false),
 #endif
       has_snapped_to_boundary_(false),
-      touch_editing_client_(NULL),
       is_guest_view_hack_(is_guest_view_hack),
       begin_frame_observer_proxy_(this),
       weak_ptr_factory_(this) {
@@ -480,6 +483,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   bool overscroll_enabled = base::CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
   SetOverscrollControllerEnabled(overscroll_enabled);
+
+  selection_controller_client_.reset(
+      new TouchSelectionControllerClientAura(this));
+  CreateSelectionController();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -965,8 +972,6 @@ void RenderWidgetHostViewAura::TextInputTypeChanged(
     text_input_flags_ = flags;
     if (GetInputMethod())
       GetInputMethod()->OnTextInputTypeChanged(this);
-    if (touch_editing_client_)
-      touch_editing_client_->OnTextInputTypeChanged(text_input_type_);
   }
 }
 
@@ -1083,11 +1088,6 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
   selection_focus_ = focus_bound;
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
-
-  if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(
-        anchor_bound, focus_bound);
-  }
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
@@ -1178,6 +1178,10 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
         frame->metadata.device_scale_factor,
         frame->metadata.latency_info,
         &frame->metadata.satisfies_sequences);
+    SelectionUpdated(frame->metadata.selection.is_editable,
+                     frame->metadata.selection.is_empty_text_form_control,
+                     ConvertSelectionBound(frame->metadata.selection.start),
+                     ConvertSelectionBound(frame->metadata.selection.end));
     return;
   }
 
@@ -1190,8 +1194,7 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
 }
 
 void RenderWidgetHostViewAura::DidStopFlinging() {
-  if (touch_editing_client_)
-    touch_editing_client_->DidStopFlinging();
+  selection_controller_client_->OnScrollCompleted();
 }
 
 #if defined(OS_WIN)
@@ -1271,9 +1274,6 @@ void RenderWidgetHostViewAura::WheelEventAck(
 void RenderWidgetHostViewAura::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  if (touch_editing_client_)
-    touch_editing_client_->GestureEventAck(event.type);
-
   if (overscroll_controller_) {
     overscroll_controller_->ReceivedEventACK(
         event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
@@ -1675,9 +1675,8 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
-  gfx::Rect rect =
-      ui::RectBetweenSelectionBounds(selection_anchor_, selection_focus_);
-  return ConvertRectToScreen(rect);
+  return ConvertRectToScreen(
+      ui::RectBetweenSelectionBounds(selection_anchor_, selection_focus_));
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
@@ -1861,8 +1860,6 @@ bool RenderWidgetHostViewAura::CanFocus() {
 
 void RenderWidgetHostViewAura::OnCaptureLost() {
   host_->LostCapture();
-  if (touch_editing_client_)
-    touch_editing_client_->EndTouchEditing(false);
 }
 
 void RenderWidgetHostViewAura::OnPaint(const ui::PaintContext& context) {
@@ -1945,8 +1942,6 @@ void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 
 void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnKeyEvent");
-  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
-    return;
 
   if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab()) {
     popup_child_host_view_->OnKeyEvent(event);
@@ -1992,9 +1987,6 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
 
 void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnMouseEvent");
-
-  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
-    return;
 
   if (mouse_locked_) {
     aura::client::CursorClient* cursor_client =
@@ -2159,8 +2151,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnScrollEvent");
-  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
-    return;
 
   if (event->type() == ui::ET_SCROLL) {
 #if !defined(OS_WIN)
@@ -2189,8 +2179,8 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
 
 void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnTouchEvent");
-  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
-    return;
+
+  bool had_no_pointer = !pointer_state_.GetPointerCount();
 
   // Update the touch event first.
   if (!pointer_state_.OnTouch(*event)) {
@@ -2198,9 +2188,23 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
     return;
   }
 
-  blink::WebTouchEvent touch_event = ui::CreateWebTouchEventFromMotionEvent(
-      pointer_state_, event->may_cause_scrolling());
+  blink::WebTouchEvent touch_event;
+  bool handled = selection_controller_->WillHandleTouchEvent(pointer_state_);
+  if (handled) {
+    event->SetHandled();
+  } else {
+    touch_event = ui::CreateWebTouchEventFromMotionEvent(
+        pointer_state_, event->may_cause_scrolling());
+  }
   pointer_state_.CleanupRemovedTouchPoints(*event);
+
+  if (handled)
+    return;
+
+  if (had_no_pointer)
+    selection_controller_client_->OnTouchDown();
+  if (!pointer_state_.GetPointerCount())
+    selection_controller_client_->OnTouchUp();
 
   // It is important to always mark events as being handled asynchronously when
   // they are forwarded. This ensures that the current event does not get
@@ -2216,6 +2220,7 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnGestureEvent");
+
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
       event->type() == ui::ET_GESTURE_PINCH_UPDATE ||
       event->type() == ui::ET_GESTURE_PINCH_END) && !pinch_zoom_enabled_) {
@@ -2223,7 +2228,8 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
+  HandleGestureForTouchSelection(event);
+  if (event->handled())
     return;
 
   // Confirm existing composition text on TAP gesture, to make sure the input
@@ -2316,8 +2322,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 
     DetachFromInputMethod();
 
-    if (touch_editing_client_)
-      touch_editing_client_->EndTouchEditing(false);
+    selection_controller_->HideAndDisallowShowingAutomatically();
 
     if (overscroll_controller_)
       overscroll_controller_->Cancel();
@@ -2374,9 +2379,8 @@ void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
 // RenderWidgetHostViewAura, private:
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
-  if (touch_editing_client_)
-    touch_editing_client_->OnViewDestroyed();
-
+  selection_controller_.reset();
+  selection_controller_client_.reset();
   delegated_frame_host_.reset();
   window_observer_.reset();
   if (window_->GetHost())
@@ -2553,6 +2557,12 @@ void RenderWidgetHostViewAura::OnShowContextMenu() {
 #endif
 }
 
+void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
+    scoped_ptr<TouchSelectionControllerClientAura> client) {
+  selection_controller_client_.swap(client);
+  CreateSelectionController();
+}
+
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   SnapToPhysicalPixelBoundary();
   // Don't recursively call SetBounds if this bounds update is the result of
@@ -2561,10 +2571,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
     window_->SetBounds(rect);
   host_->WasResized();
   delegated_frame_host_->WasResized();
-  if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_,
-                                                      selection_focus_);
-  }
 #if defined(OS_WIN)
   // Create the legacy dummy window which corresponds to the bounds of the
   // webcontents. This will be passed as the container window for windowless
@@ -2705,6 +2711,51 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
 #endif
 
   host_->ForwardKeyboardEvent(event);
+}
+
+void RenderWidgetHostViewAura::SelectionUpdated(bool is_editable,
+                                                bool is_empty_text_form_control,
+                                                const ui::SelectionBound& start,
+                                                const ui::SelectionBound& end) {
+  selection_controller_->OnSelectionEditable(is_editable);
+  selection_controller_->OnSelectionEmpty(is_empty_text_form_control);
+  selection_controller_->OnSelectionBoundsChanged(start, end);
+}
+
+void RenderWidgetHostViewAura::CreateSelectionController() {
+  ui::TouchSelectionController::Config tsc_config;
+  tsc_config.tap_timeout = base::TimeDelta::FromMilliseconds(
+      ui::GestureConfiguration::GetInstance()->show_press_delay_in_ms());
+  tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
+                            ->max_touch_move_in_pixels_for_click();
+  tsc_config.show_on_tap_for_empty_editable = true;
+  tsc_config.enable_longpress_drag_selection = false;
+  selection_controller_.reset(new ui::TouchSelectionController(
+      selection_controller_client_.get(), tsc_config));
+}
+
+void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
+    ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_LONG_PRESS:
+      if (selection_controller_->WillHandleLongPressEvent(
+              base::TimeTicks() + event->time_stamp(), event->location_f())) {
+        event->SetHandled();
+      }
+      break;
+    case ui::ET_GESTURE_TAP:
+      if (selection_controller_->WillHandleTapEvent(event->location_f()))
+        event->SetHandled();
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      selection_controller_client_->OnScrollStarted();
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      selection_controller_client_->OnScrollCompleted();
+      break;
+    default:
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

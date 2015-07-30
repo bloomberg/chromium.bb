@@ -3,33 +3,27 @@
 <input id='textfield' type="text" value="Text in a textfield">
 <script>
 
-function select_all_text() {
-  var div = document.getElementById("textDiv");
-  var range = document.createRange();
-  range.selectNodeContents(div);
-  var sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
-
-function get_selection() {
-  return (window.getSelection() + "");
-}
-
 function focus_textfield() {
   document.getElementById("textfield").focus();
   // Focusing the textfiled selects its text. Collapse selection to a cursor.
   window.getSelection().collapseToStart();
 }
 
-function get_cursor_position() {
-  var div = document.getElementById("textfield");
-  var start = div.selectionStart;
-  var end = div.selectionEnd;
-  if (start == end)
-    return start;
-  else
-    return -1;
+function get_point_inside(element) {
+  var rect = element.getBoundingClientRect();
+  var point = {
+    x: rect.left + 8,
+    y: (rect.top + rect.bottom) / 2
+  };
+  window.domAutomationController.send(JSON.stringify(point));
+}
+
+function get_point_inside_text() {
+  get_point_inside(document.getElementById('textDiv'));
+}
+
+function get_point_inside_textfield() {
+  get_point_inside(document.getElementById('textfield'));
 }
 
 </script>
