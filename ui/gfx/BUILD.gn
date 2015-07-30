@@ -399,12 +399,14 @@ component("gfx") {
 action("aggregate_vector_icons") {
   script = "vector_icons/aggregate_vector_icons.py"
   sources = [
+    "vector_icons/account_child_invert.icon",
     "vector_icons/check_circle.icon",
     "vector_icons/extension.icon",
     "vector_icons/help_outline.icon",
     "vector_icons/location_on.icon",
     "vector_icons/notifications.icon",
     "vector_icons/photo_camera.icon",
+    "vector_icons/supervisor_account.icon",
   ]
   outputs = [
     vector_icons_cc_file,

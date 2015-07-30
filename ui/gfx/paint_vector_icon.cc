@@ -101,32 +101,32 @@ void PaintVectorIcon(Canvas* canvas,
     canvas->sk_canvas()->scale(scale, scale);
   }
 
-  for (size_t i = 0; path_elements[i].type != END;) {
-    switch (path_elements[i++].type) {
+  for (size_t i = 0; path_elements[i].type != END; i++) {
+    switch (path_elements[i].type) {
       case MOVE_TO: {
-        SkScalar x = path_elements[i++].arg;
-        SkScalar y = path_elements[i++].arg;
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
         path.moveTo(x, y);
         break;
       }
 
       case R_MOVE_TO: {
-        SkScalar x = path_elements[i++].arg;
-        SkScalar y = path_elements[i++].arg;
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
         path.rMoveTo(x, y);
         break;
       }
 
       case LINE_TO: {
-        SkScalar x = path_elements[i++].arg;
-        SkScalar y = path_elements[i++].arg;
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
         path.lineTo(x, y);
         break;
       }
 
       case R_LINE_TO: {
-        SkScalar x = path_elements[i++].arg;
-        SkScalar y = path_elements[i++].arg;
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
         path.rLineTo(x, y);
         break;
       }
@@ -134,13 +134,13 @@ void PaintVectorIcon(Canvas* canvas,
       case H_LINE_TO: {
         SkPoint last_point;
         path.getLastPt(&last_point);
-        SkScalar x = path_elements[i++].arg;
+        SkScalar x = path_elements[++i].arg;
         path.lineTo(x, last_point.fY);
         break;
       }
 
       case R_H_LINE_TO: {
-        SkScalar x = path_elements[i++].arg;
+        SkScalar x = path_elements[++i].arg;
         path.rLineTo(x, 0);
         break;
       }
@@ -148,49 +148,49 @@ void PaintVectorIcon(Canvas* canvas,
       case V_LINE_TO: {
         SkPoint last_point;
         path.getLastPt(&last_point);
-        SkScalar y = path_elements[i++].arg;
+        SkScalar y = path_elements[++i].arg;
         path.lineTo(last_point.fX, y);
         break;
       }
 
       case R_V_LINE_TO: {
-        SkScalar y = path_elements[i++].arg;
+        SkScalar y = path_elements[++i].arg;
         path.rLineTo(0, y);
         break;
       }
 
       case CUBIC_TO: {
-        SkScalar x1 = path_elements[i++].arg;
-        SkScalar y1 = path_elements[i++].arg;
-        SkScalar x2 = path_elements[i++].arg;
-        SkScalar y2 = path_elements[i++].arg;
-        SkScalar x3 = path_elements[i++].arg;
-        SkScalar y3 = path_elements[i++].arg;
+        SkScalar x1 = path_elements[++i].arg;
+        SkScalar y1 = path_elements[++i].arg;
+        SkScalar x2 = path_elements[++i].arg;
+        SkScalar y2 = path_elements[++i].arg;
+        SkScalar x3 = path_elements[++i].arg;
+        SkScalar y3 = path_elements[++i].arg;
         path.cubicTo(x1, y1, x2, y2, x3, y3);
         break;
       }
 
       case R_CUBIC_TO: {
-        SkScalar x1 = path_elements[i++].arg;
-        SkScalar y1 = path_elements[i++].arg;
-        SkScalar x2 = path_elements[i++].arg;
-        SkScalar y2 = path_elements[i++].arg;
-        SkScalar x3 = path_elements[i++].arg;
-        SkScalar y3 = path_elements[i++].arg;
+        SkScalar x1 = path_elements[++i].arg;
+        SkScalar y1 = path_elements[++i].arg;
+        SkScalar x2 = path_elements[++i].arg;
+        SkScalar y2 = path_elements[++i].arg;
+        SkScalar x3 = path_elements[++i].arg;
+        SkScalar y3 = path_elements[++i].arg;
         path.rCubicTo(x1, y1, x2, y2, x3, y3);
+        break;
+      }
+
+      case CIRCLE: {
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
+        SkScalar r = path_elements[++i].arg;
+        path.addCircle(x, y, r);
         break;
       }
 
       case CLOSE: {
         path.close();
-        break;
-      }
-
-      case CIRCLE: {
-        SkScalar x = path_elements[i++].arg;
-        SkScalar y = path_elements[i++].arg;
-        SkScalar r = path_elements[i++].arg;
-        path.addCircle(x, y, r);
         break;
       }
 

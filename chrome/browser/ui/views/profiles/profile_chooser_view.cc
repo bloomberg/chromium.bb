@@ -46,6 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -473,6 +474,57 @@ class TitleCard : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(TitleCard);
 };
+
+// ProfileBadge --------------------------------------------------------
+
+const size_t kProfileBadgeSize = 30;
+const size_t kProfileBadgeWhitePadding = 2;
+
+// Draws a white circle, then a light blue circle, then a dark blue icon.
+class ProfileBadge : public gfx::CanvasImageSource {
+ public:
+  ProfileBadge(gfx::VectorIconId id, size_t icon_size)
+      : CanvasImageSource(gfx::Size(kProfileBadgeSize, kProfileBadgeSize),
+                          false),
+        id_(id),
+        icon_size_(icon_size) {}
+
+  ~ProfileBadge() override {}
+
+  // CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override {
+    const SkISize size = canvas->sk_canvas()->getDeviceSize();
+    gfx::Rect bounds(0, 0, size.width(), size.height());
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setColor(SK_ColorWHITE);
+    canvas->DrawCircle(bounds.CenterPoint(), size.width() / 2, paint);
+
+    paint.setColor(SkColorSetRGB(0xAF, 0xD9, 0xFC));
+    canvas->DrawCircle(bounds.CenterPoint(),
+                       size.width() / 2 - kProfileBadgeWhitePadding, paint);
+
+    int offset = (kProfileBadgeSize - icon_size_) / 2;
+    canvas->Translate(gfx::Vector2d(offset, offset));
+    gfx::PaintVectorIcon(canvas, id_, icon_size_, SkColorSetRGB(0, 0x66, 0xff));
+  }
+
+ private:
+  const gfx::VectorIconId id_;
+  const size_t icon_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileBadge);
+};
+
+gfx::ImageSkia CreateBadgeForProfile(Profile* profile) {
+  ProfileBadge* badge =
+      profile->IsChild()
+          ? new ProfileBadge(gfx::VectorIconId::ACCOUNT_CHILD_INVERT, 26)
+          : new ProfileBadge(gfx::VectorIconId::SUPERVISOR_ACCOUNT, 20);
+
+  return gfx::ImageSkia(badge, badge->size());
+}
 
 // ProfileChooserView ---------------------------------------------------------
 
@@ -1183,10 +1235,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   if (browser_->profile()->IsSupervised()) {
     views::ImageView* supervised_icon = new views::ImageView();
-    int image_id = browser_->profile()->IsChild()
-        ? IDR_ICON_PROFILES_MENU_CHILD
-        : IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED;
-    supervised_icon->SetImage(rb->GetImageSkiaNamed(image_id));
+    supervised_icon->SetImage(CreateBadgeForProfile(browser_->profile()));
     gfx::Size preferred_size = supervised_icon->GetPreferredSize();
     gfx::Rect parent_bounds = current_profile_photo_->bounds();
     supervised_icon->SetBounds(
