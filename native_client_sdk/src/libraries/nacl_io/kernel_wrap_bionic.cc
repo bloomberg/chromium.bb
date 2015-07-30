@@ -178,7 +178,7 @@ int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t* nread) {
   int offset = 0;
   int count;
 
-  count = ki_getdents(fd, buf, nacl_count);
+  count = ki_getdents(fd, (dirent*)buf, nacl_count);
   RTN_ERRNO_IF(count < 0);
 
   while (offset < count) {
