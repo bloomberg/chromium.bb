@@ -3083,7 +3083,6 @@
     { "name": "tbarter.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "syso.name", "include_subdomains": true, "mode": "force-https" },
     { "name": "tonytan.io", "include_subdomains": true, "mode": "force-https" },
-    { "name": "uber.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "throwpass.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "travador.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "thom4s.info", "include_subdomains": true, "mode": "force-https" },
