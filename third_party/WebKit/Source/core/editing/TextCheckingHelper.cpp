@@ -101,15 +101,15 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
 
 void expandRangeToSentenceBoundary(Range& range)
 {
-    setStart(&range, startOfSentence(VisiblePosition(range.startPosition())));
-    setEnd(&range, endOfSentence(VisiblePosition(range.endPosition())));
+    range.setStart(startOfSentence(VisiblePosition(range.startPosition())).deepEquivalent());
+    range.setEnd(endOfSentence(VisiblePosition(range.endPosition())).deepEquivalent());
 }
 
 static PassRefPtrWillBeRawPtr<Range> expandToParagraphBoundary(PassRefPtrWillBeRawPtr<Range> range)
 {
     RefPtrWillBeRawPtr<Range> paragraphRange = range->cloneRange();
-    setStart(paragraphRange.get(), startOfParagraph(VisiblePosition(range->startPosition())));
-    setEnd(paragraphRange.get(), endOfParagraph(VisiblePosition(range->endPosition())));
+    paragraphRange->setStart(startOfParagraph(VisiblePosition(range->startPosition())).deepEquivalent());
+    paragraphRange->setEnd(endOfParagraph(VisiblePosition(range->endPosition())).deepEquivalent());
     return paragraphRange;
 }
 
@@ -137,7 +137,7 @@ TextCheckingParagraph::~TextCheckingParagraph()
 void TextCheckingParagraph::expandRangeToNextEnd()
 {
     ASSERT(m_checkingRange);
-    setEnd(paragraphRange().get(), endOfParagraph(startOfNextParagraph(VisiblePosition(paragraphRange()->startPosition()))));
+    paragraphRange()->setEnd(endOfParagraph(startOfNextParagraph(VisiblePosition(paragraphRange()->startPosition()))).deepEquivalent());
     invalidateParagraphRangeValues();
 }
 

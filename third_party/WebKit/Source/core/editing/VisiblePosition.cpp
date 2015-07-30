@@ -746,26 +746,6 @@ PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition &start, const Visi
     return Range::create(s.containerNode()->document(), s.containerNode(), s.offsetInContainerNode(), e.containerNode(), e.offsetInContainerNode());
 }
 
-bool setStart(Range *r, const VisiblePosition &visiblePosition)
-{
-    if (!r)
-        return false;
-    Position p = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
-    TrackExceptionState exceptionState;
-    r->setStart(p.containerNode(), p.offsetInContainerNode(), exceptionState);
-    return !exceptionState.hadException();
-}
-
-bool setEnd(Range *r, const VisiblePosition &visiblePosition)
-{
-    if (!r)
-        return false;
-    Position p = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
-    TrackExceptionState exceptionState;
-    r->setEnd(p.containerNode(), p.offsetInContainerNode(), exceptionState);
-    return !exceptionState.hadException();
-}
-
 DEFINE_TRACE(VisiblePosition)
 {
     visitor->trace(m_deepPosition);
