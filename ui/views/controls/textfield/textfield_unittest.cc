@@ -51,6 +51,10 @@
 #include "ui/events/event_utils.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+#include "ui/events/test/event_generator.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
@@ -431,6 +435,10 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     // don't want parallel tests to steal active status either, so fake it.
 #if defined(OS_MACOSX) && !defined(USE_AURA)
     fake_activation_ = test::WidgetTest::FakeWidgetIsActiveAlways();
+
+    // This is only used on Mac. See comment regarding |event_generator_| below.
+    event_generator_.reset(
+        new ui::test::EventGenerator(GetContext(), widget_->GetNativeWindow()));
 #endif
   }
 
@@ -467,10 +475,17 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
                 (command ? ui::EF_COMMAND_DOWN : 0) |
                 (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
 
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+    // The Mac EventGenerator hooks in before IME. It sends events first to an
+    // NSResponder, which is necessary to interpret keyboard events into
+    // appropriate editing commands.
+    event_generator_->PressKey(key_code, flags);
+#else
     // TODO(shuchen): making EventGenerator support input method and using
     // EventGenerator here. crbug.com/512315.
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
     input_method_->DispatchKeyEvent(event);
+#endif
   }
 
   void SendKeyEvent(ui::KeyboardCode key_code,
@@ -641,6 +656,10 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
  private:
   ui::ClipboardType copied_to_clipboard_;
   scoped_ptr<test::WidgetTest::FakeActivation> fake_activation_;
+
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+  scoped_ptr<ui::test::EventGenerator> event_generator_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };
