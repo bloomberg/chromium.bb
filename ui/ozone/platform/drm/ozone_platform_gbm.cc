@@ -80,7 +80,7 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     return GbmBuffer::CreateBuffer(gbm, SurfaceFactoryOzone::BGRA_8888, size,
-                                   true);
+                                   SurfaceFactoryOzone::SCANOUT);
   }
 
  protected:

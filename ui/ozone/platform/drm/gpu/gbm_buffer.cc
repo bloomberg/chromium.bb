@@ -49,19 +49,20 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     const scoped_refptr<GbmDevice>& gbm,
     SurfaceFactoryOzone::BufferFormat format,
     const gfx::Size& size,
-    bool scanout) {
+    SurfaceFactoryOzone::BufferUsage usage) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
                gbm->device_path().value(), "size", size.ToString());
+  bool use_scanout = (usage == ui::SurfaceFactoryOzone::SCANOUT);
   unsigned flags = GBM_BO_USE_RENDERING;
-  if (scanout)
+  if (use_scanout)
     flags |= GBM_BO_USE_SCANOUT;
   gbm_bo* bo = gbm_bo_create(gbm->device(), size.width(), size.height(),
                              GetGbmFormatFromBufferFormat(format), flags);
   if (!bo)
     return NULL;
 
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, scanout));
-  if (scanout && !buffer->GetFramebufferId())
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, use_scanout));
+  if (use_scanout && !buffer->GetFramebufferId())
     return NULL;
 
   return buffer;

@@ -25,7 +25,7 @@ class GbmBuffer : public GbmBufferBase {
       const scoped_refptr<GbmDevice>& gbm,
       SurfaceFactoryOzone::BufferFormat format,
       const gfx::Size& size,
-      bool scanout);
+      SurfaceFactoryOzone::BufferUsage usage);
 
  private:
   GbmBuffer(const scoped_refptr<GbmDevice>& gbm, gbm_bo* bo, bool scanout);

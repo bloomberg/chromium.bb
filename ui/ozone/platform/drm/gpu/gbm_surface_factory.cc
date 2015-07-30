@@ -109,14 +109,18 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     BufferFormat format,
     BufferUsage usage) {
-  if (usage == MAP)
+#if !defined(OS_CHROMEOS)
+  // Support for memory mapping accelerated buffers requires some
+  // CrOS-specific patches (using vgem).
+  if (usage != SCANOUT)
     return nullptr;
+#endif
 
   scoped_refptr<GbmDevice> gbm = GetGbmDevice(widget);
   DCHECK(gbm);
 
   scoped_refptr<GbmBuffer> buffer =
-      GbmBuffer::CreateBuffer(gbm, format, size, true);
+      GbmBuffer::CreateBuffer(gbm, format, size, usage);
   if (!buffer.get())
     return nullptr;
 
