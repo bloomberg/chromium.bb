@@ -2616,6 +2616,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.DecodedImageType" enum="DecodedImageType">
+  <summary>Image codec inferred during decode.</summary>
+</histogram>
+
 <histogram name="Blink.MediaElement.Autoplay" enum="MediaElementAutoPlay">
   <owner>oysteine@chromium.org</owner>
   <summary>
@@ -53331,6 +53335,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Arrived at settings menu by another path: entered on, exited off"/>
   <int value="8"
       label="Arrived at settings menu by another path: entered on, exited on"/>
+</enum>
+
+<enum name="DecodedImageType" type="int">
+  <int value="0" label="kImageUnknown"/>
+  <int value="1" label="kImageJPEG"/>
+  <int value="2" label="kImagePNG"/>
+  <int value="3" label="kImageGIF"/>
+  <int value="4" label="kImageWebP"/>
+  <int value="5" label="kImageICO"/>
+  <int value="6" label="kImageBMP"/>
 </enum>
 
 <enum name="DefaultBrowserState" type="int">
