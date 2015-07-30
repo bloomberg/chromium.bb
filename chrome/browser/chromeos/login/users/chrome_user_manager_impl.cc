@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer_factory.h"
-#include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
@@ -95,7 +94,6 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterListPref(kPublicAccounts);
   registry->RegisterStringPref(kPublicAccountPendingDataRemoval, std::string());
-
   SupervisedUserManager::RegisterPrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
   BootstrapManager::RegisterPrefs(registry);
@@ -1120,22 +1118,6 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
     g_browser_process->platform_part()->GetTimezoneResolver()->Start();
   } else {
     g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
-  }
-}
-
-void ChromeUserManagerImpl::SetUserAffiliation(
-    const std::string& user_email,
-    const AffiliationIDSet& user_affiliation_ids) {
-  std::string canonicalized_email =
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
-  user_manager::User* user = FindUserAndModify(canonicalized_email);
-
-  if (user) {
-    policy::BrowserPolicyConnectorChromeOS const* const connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    user->set_affiliation(chromeos::IsUserAffiliated(
-        user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
-        canonicalized_email, connector->GetEnterpriseDomain()));
   }
 }
 

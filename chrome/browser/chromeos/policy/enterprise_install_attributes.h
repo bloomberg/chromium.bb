@@ -75,14 +75,14 @@ class EnterpriseInstallAttributes {
                   const LockResultCallback& callback);
 
   // Checks whether this is an enterprise device.
-  bool IsEnterpriseDevice() const;
+  bool IsEnterpriseDevice();
 
   // Checks whether this is a consumer kiosk enabled device.
   bool IsConsumerKioskDeviceWithAutoLaunch();
 
   // Gets the domain this device belongs to or an empty string if the device is
   // not an enterprise device.
-  std::string GetDomain() const;
+  std::string GetDomain();
 
   // Gets the user that registered the device. Returns an empty string if the
   // device is not an enterprise device.

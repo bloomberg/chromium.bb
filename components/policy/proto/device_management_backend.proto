@@ -377,18 +377,6 @@ message PolicyData {
   // The unique directory api ID of the device which was generated on the
   // server-side.
   optional string directory_api_id = 22;
-  
-  // List of device affiliation IDs. If exists overlap between user
-  // affiliation IDs and device affiliation IDs, we consider that the user is
-  // affiliated on the device. Otherwise the user is not affiliated on the
-  // device. Should be fetched with device policy. Ignored if fetched with 
-  // other polices.
-  repeated string device_affiliation_ids = 23;
-  
-  // List of user affiliation IDs. The list is used to define if current user
-  // is affiliated on the device. See device_affiliation_ids for details. 
-  // Should be fetched with user policy. Ignored if fetched with other polices.
-  repeated string user_affiliation_ids = 24;
 }
 
 message PolicyFetchResponse {

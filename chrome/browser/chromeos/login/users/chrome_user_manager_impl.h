@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_manager.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
@@ -115,11 +114,6 @@ class ChromeUserManagerImpl
 
   // UserManagerBase implementation:
   bool AreEphemeralUsersEnabled() const override;
-
-  // ChromeUserManager implementation:
-  void SetUserAffiliation(
-      const std::string& user_email,
-      const AffiliationIDSet& user_affiliation_ids) override;
 
  protected:
   const std::string& GetApplicationLocale() const override;

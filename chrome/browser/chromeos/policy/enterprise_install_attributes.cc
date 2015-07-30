@@ -324,7 +324,7 @@ void EnterpriseInstallAttributes::OnReadImmutableAttributes(
   callback.Run(LOCK_SUCCESS);
 }
 
-bool EnterpriseInstallAttributes::IsEnterpriseDevice() const {
+bool EnterpriseInstallAttributes::IsEnterpriseDevice() {
   return device_locked_ && !registration_user_.empty();
 }
 
@@ -340,7 +340,7 @@ std::string EnterpriseInstallAttributes::GetRegistrationUser() {
   return registration_user_;
 }
 
-std::string EnterpriseInstallAttributes::GetDomain() const {
+std::string EnterpriseInstallAttributes::GetDomain() {
   if (!IsEnterpriseDevice())
     return std::string();
 

@@ -205,8 +205,7 @@ User::User(const std::string& email)
       can_lock_(false),
       is_logged_in_(false),
       is_active_(false),
-      profile_is_created_(false),
-      is_affiliated_(false){
+      profile_is_created_(false) {
 }
 
 User::~User() {
