@@ -1031,7 +1031,7 @@ void HTMLMediaElement::startPlayerLoad()
     }
 
     KURL kurl(ParsedURLString, requestURL);
-    m_webMediaPlayer = frame->loader().client()->createWebMediaPlayer(this, kurl);
+    m_webMediaPlayer = frame->loader().client()->createWebMediaPlayer(*this, kurl, this);
     if (!m_webMediaPlayer) {
         mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
         return;

@@ -66,8 +66,9 @@ namespace blink {
     class SubstituteData;
     class WebApplicationCacheHost;
     class WebApplicationCacheHostClient;
-    class WebMediaPlayer;
     class WebCookieJar;
+    class WebMediaPlayer;
+    class WebMediaPlayerClient;
     class WebRTCPeerConnectionHandler;
     class WebServiceWorkerProvider;
     class WebSocketHandle;
@@ -158,7 +159,7 @@ namespace blink {
 
         virtual PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;
 
-        virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement*, const WebURL&) = 0;
+        virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) = 0;
 
         virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 

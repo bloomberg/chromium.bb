@@ -780,19 +780,20 @@ PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
 }
 
 PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
-    HTMLMediaElement* htmlMediaElement,
-    const WebURL& url)
+    HTMLMediaElement& htmlMediaElement,
+    const WebURL& url,
+    WebMediaPlayerClient* client)
 {
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(
-        htmlMediaElement->document().frame());
+        htmlMediaElement.document().frame());
 
     if (!webFrame || !webFrame->client())
         return nullptr;
 
-    HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(*htmlMediaElement);
+    HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url,
-        htmlMediaElement,
-        &encryptedMedia, encryptedMedia.contentDecryptionModule()));
+        client, &encryptedMedia,
+        encryptedMedia.contentDecryptionModule()));
 }
 
 ObjectContentType FrameLoaderClientImpl::objectContentType(

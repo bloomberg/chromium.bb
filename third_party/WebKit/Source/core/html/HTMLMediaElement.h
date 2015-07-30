@@ -66,11 +66,7 @@ class TimeRanges;
 class URLRegistry;
 class VideoTrackList;
 
-// TODO(srirama.m): Make the WebMediaPlayerClient inheritance private by
-// adding a means for getting a WebMediaPlayerEncryptedMediaClient and
-// WebContentDecryptionModule from an HTMLMediaElement and calling
-// WebFrameClient::createMediaPlayer() directly.
-class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public WebMediaPlayerClient, public ActiveDOMObject {
+class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public ActiveDOMObject, private WebMediaPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
     WILL_BE_USING_PRE_FINALIZER(HTMLMediaElement, dispose);
