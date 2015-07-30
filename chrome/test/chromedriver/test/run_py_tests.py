@@ -184,6 +184,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testTouchPinch',
         # WebView shell doesn't support popups or popup blocking.
         'ChromeDriverTest.testPopups',
+        'ChromeDriverTest.testDontGoBackOrGoForward',
     ]
 )
 
