@@ -247,8 +247,7 @@ public:
 
     bool positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
 
-    LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit) const;
-    LayoutUnit nextFloatLogicalBottomBelowForBlock(LayoutUnit) const;
+    LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatMarginBoxOffset) const;
 
     FloatingObject* lastFloatFromPreviousLine() const
     {

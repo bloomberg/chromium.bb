@@ -131,9 +131,9 @@ public:
         return toBlockFlow()->positionNewFloatOnLine(newFloat, lastFloatFromPreviousLine, lineInfo, lineWidth);
     }
 
-    LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) const
+    LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode = ShapeOutsideFloatMarginBoxOffset) const
     {
-        return toBlockFlow()->nextFloatLogicalBottomBelow(logicalHeight);
+        return toBlockFlow()->nextFloatLogicalBottomBelow(logicalHeight, offsetMode);
     }
 
     FloatingObject* lastFloatFromPreviousLine() const
