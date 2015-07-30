@@ -204,7 +204,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefPtrWillBeMember<TrackBase>& value)
+bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Member<TrackBase>& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))

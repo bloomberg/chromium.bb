@@ -14,8 +14,8 @@
 namespace blink {
 
 template<class T>
-class TrackListBase : public EventTargetWithInlineData, public RefCountedWillBeNoBase<TrackListBase<T>> {
-    REFCOUNTED_EVENT_TARGET(TrackListBase);
+class TrackListBase : public RefCountedGarbageCollectedEventTargetWithInlineData<TrackListBase<T>> {
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(TrackListBase);
 public:
     explicit TrackListBase(HTMLMediaElement* mediaElement)
         : m_mediaElement(mediaElement)
@@ -68,13 +68,11 @@ public:
     }
 #endif
 
-    void add(PassRefPtrWillBeRawPtr<T> prpTrack)
+    void add(T* track)
     {
-        RefPtrWillBeRawPtr<T> track = prpTrack;
-
         track->setMediaElement(m_mediaElement);
         m_tracks.append(track);
-        scheduleTrackEvent(EventTypeNames::addtrack, track.release());
+        scheduleTrackEvent(EventTypeNames::addtrack, track);
     }
 
     void remove(WebMediaPlayer::TrackId trackId)
@@ -112,18 +110,18 @@ public:
     {
         visitor->trace(m_tracks);
         visitor->trace(m_mediaElement);
-        EventTargetWithInlineData::trace(visitor);
+        RefCountedGarbageCollectedEventTargetWithInlineData<TrackListBase<T>>::trace(visitor);
     }
 
 private:
-    void scheduleTrackEvent(const AtomicString& eventName, PassRefPtrWillBeRawPtr<T> track)
+    void scheduleTrackEvent(const AtomicString& eventName, T* track)
     {
         RefPtrWillBeRawPtr<Event> event = TrackEvent::create(eventName, track);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<T>> m_tracks;
+    HeapVector<Member<T>> m_tracks;
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 };
 

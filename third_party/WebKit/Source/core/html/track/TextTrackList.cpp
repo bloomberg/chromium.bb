@@ -51,10 +51,6 @@ TextTrackList::~TextTrackList()
     // together. So TextTrackList and m_asyncEventQueue are destructed in the
     // same GC. We don't need to close it explicitly in Oilpan.
     m_asyncEventQueue->close();
-
-    for (unsigned i = 0; i < length(); ++i) {
-        item(i)->setTrackList(0);
-    }
 #endif
 }
 
@@ -126,15 +122,15 @@ TextTrack* TextTrackList::item(unsigned index)
     // resource), in the order defined by the media resource's format specification.
 
     if (index < m_elementTracks.size())
-        return m_elementTracks[index].get();
+        return m_elementTracks[index];
 
     index -= m_elementTracks.size();
     if (index < m_addTrackTracks.size())
-        return m_addTrackTracks[index].get();
+        return m_addTrackTracks[index];
 
     index -= m_addTrackTracks.size();
     if (index < m_inbandTracks.size())
-        return m_inbandTracks[index].get();
+        return m_inbandTracks[index];
 
     return 0;
 }
@@ -157,7 +153,7 @@ TextTrack* TextTrackList::getTrackById(const AtomicString& id)
 
 void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track)
 {
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>>* tracks = 0;
+    HeapVector<Member<TextTrack>>* tracks = nullptr;
 
     if (track->trackType() == TextTrack::TrackElement) {
         tracks = &m_elementTracks;
@@ -183,15 +179,13 @@ void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track)
         tracks->at(index)->invalidateTrackIndex();
 }
 
-void TextTrackList::append(PassRefPtrWillBeRawPtr<TextTrack> prpTrack)
+void TextTrackList::append(TextTrack* track)
 {
-    RefPtrWillBeRawPtr<TextTrack> track = prpTrack;
-
     if (track->trackType() == TextTrack::AddTrack) {
         m_addTrackTracks.append(track);
     } else if (track->trackType() == TextTrack::TrackElement) {
         // Insert tracks added for <track> element in tree order.
-        size_t index = static_cast<LoadableTextTrack*>(track.get())->trackElementIndex();
+        size_t index = static_cast<LoadableTextTrack*>(track)->trackElementIndex();
         m_elementTracks.insert(index, track);
     } else if (track->trackType() == TextTrack::InBand) {
         m_inbandTracks.append(track);
@@ -199,17 +193,17 @@ void TextTrackList::append(PassRefPtrWillBeRawPtr<TextTrack> prpTrack)
         ASSERT_NOT_REACHED();
     }
 
-    invalidateTrackIndexesAfterTrack(track.get());
+    invalidateTrackIndexesAfterTrack(track);
 
     ASSERT(!track->trackList());
     track->setTrackList(this);
 
-    scheduleAddTrackEvent(track.release());
+    scheduleAddTrackEvent(track);
 }
 
 void TextTrackList::remove(TextTrack* track)
 {
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>>* tracks = 0;
+    HeapVector<Member<TextTrack>>* tracks = nullptr;
 
     if (track->trackType() == TextTrack::TrackElement) {
         tracks = &m_elementTracks;
@@ -245,7 +239,7 @@ void TextTrackList::removeAllInbandTracks()
 
 bool TextTrackList::contains(TextTrack* track) const
 {
-    const WillBeHeapVector<RefPtrWillBeMember<TextTrack>>* tracks = 0;
+    const HeapVector<Member<TextTrack>>* tracks = nullptr;
 
     if (track->trackType() == TextTrack::TrackElement)
         tracks = &m_elementTracks;
@@ -276,12 +270,12 @@ void TextTrackList::clearOwner()
 }
 #endif
 
-void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, PassRefPtrWillBeRawPtr<TextTrack> track)
+void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, TextTrack* track)
 {
     m_asyncEventQueue->enqueueEvent(TrackEvent::create(eventName, track));
 }
 
-void TextTrackList::scheduleAddTrackEvent(PassRefPtrWillBeRawPtr<TextTrack> track)
+void TextTrackList::scheduleAddTrackEvent(TextTrack* track)
 {
     // 4.8.10.12.3 Sourcing out-of-band text tracks
     // 4.8.10.12.4 Text track API
@@ -305,7 +299,7 @@ void TextTrackList::scheduleChangeEvent()
     m_asyncEventQueue->enqueueEvent(Event::create(EventTypeNames::change));
 }
 
-void TextTrackList::scheduleRemoveTrackEvent(PassRefPtrWillBeRawPtr<TextTrack> track)
+void TextTrackList::scheduleRemoveTrackEvent(TextTrack* track)
 {
     // 4.8.10.12.3 Sourcing out-of-band text tracks
     // When a track element's parent element changes and the old parent was a
@@ -340,5 +334,5 @@ DEFINE_TRACE(TextTrackList)
     visitor->trace(m_addTrackTracks);
     visitor->trace(m_elementTracks);
     visitor->trace(m_inbandTracks);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<TextTrackList>::trace(visitor);
 }

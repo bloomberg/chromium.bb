@@ -48,13 +48,10 @@ class HTMLDivElement;
 class VTTCueBox;
 class VTTScanner;
 
-class VTTRegion final : public RefCountedWillBeGarbageCollectedFinalized<VTTRegion>, public ScriptWrappable {
+class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<VTTRegion> create()
-    {
-        return adoptRefWillBeNoop(new VTTRegion());
-    }
+    static VTTRegion* create() { return new VTTRegion; }
 
     virtual ~VTTRegion();
 
@@ -143,7 +140,7 @@ private:
     // reference a destroyed TextTrack, as this member variable
     // is cleared in the TextTrack destructor and it is generally
     // set/reset within the addRegion and removeRegion methods.
-    RawPtrWillBeMember<TextTrack> m_track;
+    Member<TextTrack> m_track;
 
     // Keep track of the current numeric value of the css "top" property.
     double m_currentTop;

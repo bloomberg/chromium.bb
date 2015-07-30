@@ -26,6 +26,7 @@
 // https://html.spec.whatwg.org/#texttrackcue
 
 [
+    GarbageCollected,
     SetWrapperReferenceFrom=owner,
 ] interface TextTrackCue : EventTarget {
     readonly attribute TextTrack? track;

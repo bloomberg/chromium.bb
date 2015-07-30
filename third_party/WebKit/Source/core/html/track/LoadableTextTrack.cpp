@@ -70,7 +70,7 @@ void LoadableTextTrack::setMode(const AtomicString& mode)
         m_trackElement->scheduleLoad();
 }
 
-void LoadableTextTrack::addRegions(const WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& newRegions)
+void LoadableTextTrack::addRegions(const HeapVector<Member<VTTRegion>>& newRegions)
 {
     for (size_t i = 0; i < newRegions.size(); ++i) {
         newRegions[i]->setTrack(this);

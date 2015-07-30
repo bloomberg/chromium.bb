@@ -58,7 +58,6 @@ TrackBase::~TrackBase()
 #endif
 }
 
-
 Node* TrackBase::owner() const
 {
     return m_mediaElement;

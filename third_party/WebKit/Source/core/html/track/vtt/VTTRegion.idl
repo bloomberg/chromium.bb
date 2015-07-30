@@ -28,7 +28,7 @@
 [
     Constructor,
     RuntimeEnabled=WebVTTRegions,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface VTTRegion {
     [RaisesException=Setter] attribute double width;
     // TODO(philipj): height should be called lines.

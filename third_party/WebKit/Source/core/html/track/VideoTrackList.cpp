@@ -10,9 +10,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<VideoTrackList> VideoTrackList::create(HTMLMediaElement& mediaElement)
+VideoTrackList* VideoTrackList::create(HTMLMediaElement& mediaElement)
 {
-    return adoptRefWillBeNoop(new VideoTrackList(mediaElement));
+    return new VideoTrackList(mediaElement);
 }
 
 VideoTrackList::~VideoTrackList()

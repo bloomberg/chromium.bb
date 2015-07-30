@@ -5,6 +5,7 @@
 // https://html.spec.whatwg.org/#videotracklist
 
 [
+    GarbageCollected,
     RuntimeEnabled=AudioVideoTracks,
     SetWrapperReferenceFrom=owner,
 ] interface VideoTrackList : EventTarget {

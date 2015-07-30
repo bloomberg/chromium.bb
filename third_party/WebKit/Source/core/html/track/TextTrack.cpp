@@ -112,18 +112,6 @@ TextTrack::TextTrack(const AtomicString& kind, const AtomicString& label, const 
 
 TextTrack::~TextTrack()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_trackList);
-
-    if (m_cues) {
-        for (size_t i = 0; i < m_cues->length(); ++i)
-            m_cues->item(i)->setTrack(0);
-    }
-    if (m_regions) {
-        for (size_t i = 0; i < m_regions->length(); ++i)
-            m_regions->item(i)->setTrack(0);
-    }
-#endif
 }
 
 bool TextTrack::isValidKindKeyword(const String& value)
@@ -219,13 +207,13 @@ void TextTrack::removeAllCues()
     m_cues = nullptr;
 }
 
-void TextTrack::addListOfCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& listOfNewCues)
+void TextTrack::addListOfCues(HeapVector<Member<TextTrackCue>>& listOfNewCues)
 {
     TextTrackCueList* cues = ensureTextTrackCueList();
 
     for (auto& newCue : listOfNewCues) {
         newCue->setTrack(this);
-        cues->add(newCue.release());
+        cues->add(newCue);
     }
 
     if (cueTimeline() && mode() != disabledKeyword())
@@ -247,13 +235,12 @@ TextTrackCueList* TextTrack::activeCues()
         m_activeCues = TextTrackCueList::create();
 
     m_cues->collectActiveCues(*m_activeCues);
-    return m_activeCues.get();
+    return m_activeCues;
 }
 
-void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
+void TextTrack::addCue(TextTrackCue* cue)
 {
-    ASSERT(prpCue);
-    RefPtrWillBeRawPtr<TextTrackCue> cue = prpCue;
+    ASSERT(cue);
 
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()) || cue->startTime() < 0 || cue->endTime() < 0)
@@ -268,14 +255,14 @@ void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
     // 3. If the given cue is in a text track list of cues, then remove cue
     // from that text track list of cues.
     if (TextTrack* cueTrack = cue->track())
-        cueTrack->removeCue(cue.get(), ASSERT_NO_EXCEPTION);
+        cueTrack->removeCue(cue, ASSERT_NO_EXCEPTION);
 
     // 4. Add cue to the method's TextTrack object's text track's text track list of cues.
     cue->setTrack(this);
     ensureTextTrackCueList()->add(cue);
 
     if (cueTimeline() && m_mode != disabledKeyword())
-        cueTimeline()->addCue(this, cue.get());
+        cueTimeline()->addCue(this, cue);
 }
 
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
@@ -332,19 +319,18 @@ VTTRegionList* TextTrack::regions()
     return nullptr;
 }
 
-void TextTrack::addRegion(PassRefPtrWillBeRawPtr<VTTRegion> prpRegion)
+void TextTrack::addRegion(VTTRegion* region)
 {
-    if (!prpRegion)
+    if (!region)
         return;
 
-    RefPtrWillBeRawPtr<VTTRegion> region = prpRegion;
     VTTRegionList* regionList = ensureVTTRegionList();
 
     // 1. If the given region is in a text track list of regions, then remove
     // region from that text track list of regions.
     TextTrack* regionTrack = region->track();
     if (regionTrack && regionTrack != this)
-        regionTrack->removeRegion(region.get(), ASSERT_NO_EXCEPTION);
+        regionTrack->removeRegion(region, ASSERT_NO_EXCEPTION);
 
     // 2. If the method's TextTrack object's text track list of regions contains
     // a region with the same identifier as region replace the values of that
@@ -352,7 +338,7 @@ void TextTrack::addRegion(PassRefPtrWillBeRawPtr<VTTRegion> prpRegion)
     // attributes with those of region.
     VTTRegion* existingRegion = regionList->getRegionById(region->id());
     if (existingRegion) {
-        existingRegion->updateParametersFromRegion(region.get());
+        existingRegion->updateParametersFromRegion(region);
         return;
     }
 
@@ -491,7 +477,7 @@ DEFINE_TRACE(TextTrack)
     visitor->trace(m_regions);
     visitor->trace(m_trackList);
     TrackBase::trace(visitor);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<TextTrack>::trace(visitor);
 }
 
 } // namespace blink

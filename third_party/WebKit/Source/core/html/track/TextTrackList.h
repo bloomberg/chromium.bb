@@ -40,13 +40,13 @@ namespace blink {
 class GenericEventQueue;
 class TextTrack;
 
-class TextTrackList final : public EventTargetWithInlineData, public RefCountedWillBeNoBase<TextTrackList> {
+class TextTrackList final : public RefCountedGarbageCollectedEventTargetWithInlineData<TextTrackList> {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(TextTrackList);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(TextTrackList);
 public:
-    static PassRefPtrWillBeRawPtr<TextTrackList> create(HTMLMediaElement* owner)
+    static TextTrackList* create(HTMLMediaElement* owner)
     {
-        return adoptRefWillBeNoop(new TextTrackList(owner));
+        return new TextTrackList(owner);
     }
     ~TextTrackList() override;
 
@@ -57,7 +57,7 @@ public:
 
     TextTrack* item(unsigned index);
     TextTrack* getTrackById(const AtomicString& id);
-    void append(PassRefPtrWillBeRawPtr<TextTrack>);
+    void append(TextTrack*);
     void remove(TextTrack*);
 
     // EventTarget
@@ -83,10 +83,10 @@ public:
 private:
     explicit TextTrackList(HTMLMediaElement*);
 
-    void scheduleTrackEvent(const AtomicString& eventName, PassRefPtrWillBeRawPtr<TextTrack>);
+    void scheduleTrackEvent(const AtomicString& eventName, TextTrack*);
 
-    void scheduleAddTrackEvent(PassRefPtrWillBeRawPtr<TextTrack>);
-    void scheduleRemoveTrackEvent(PassRefPtrWillBeRawPtr<TextTrack>);
+    void scheduleAddTrackEvent(TextTrack*);
+    void scheduleRemoveTrackEvent(TextTrack*);
 
     void invalidateTrackIndexesAfterTrack(TextTrack*);
 
@@ -94,9 +94,9 @@ private:
 
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_addTrackTracks;
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_elementTracks;
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_inbandTracks;
+    HeapVector<Member<TextTrack>> m_addTrackTracks;
+    HeapVector<Member<TextTrack>> m_elementTracks;
+    HeapVector<Member<TextTrack>> m_inbandTracks;
 };
 
 } // namespace blink

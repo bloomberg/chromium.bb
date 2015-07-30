@@ -63,8 +63,8 @@ public:
     enum State { Idle, Loading, Finished, Failed };
     State loadState() { return m_state; }
 
-    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& outputCues);
-    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& outputRegions);
+    void getNewCues(HeapVector<Member<TextTrackCue>>& outputCues);
+    void getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions);
 
     DECLARE_TRACE();
 
@@ -86,7 +86,7 @@ private:
     Document& document() const { return *m_document; }
 
     TextTrackLoaderClient& m_client;
-    OwnPtrWillBeMember<VTTParser> m_cueParser;
+    PersistentWillBeMember<VTTParser> m_cueParser;
     // FIXME: Remove this pointer and get the Document from m_client.
     RawPtrWillBeMember<Document> m_document;
     Timer<TextTrackLoader> m_cueLoadTimer;

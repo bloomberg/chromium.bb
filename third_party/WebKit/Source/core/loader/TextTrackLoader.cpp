@@ -150,14 +150,14 @@ void TextTrackLoader::fileFailedToParse()
     cancelLoad();
 }
 
-void TextTrackLoader::getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& outputCues)
+void TextTrackLoader::getNewCues(HeapVector<Member<TextTrackCue>>& outputCues)
 {
     ASSERT(m_cueParser);
     if (m_cueParser)
         m_cueParser->getNewCues(outputCues);
 }
 
-void TextTrackLoader::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& outputRegions)
+void TextTrackLoader::getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions)
 {
     ASSERT(m_cueParser);
     if (m_cueParser)

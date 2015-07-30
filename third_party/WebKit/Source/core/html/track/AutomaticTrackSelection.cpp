@@ -29,9 +29,9 @@ public:
     {
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> tracks;
-    RefPtrWillBeMember<TextTrack> visibleTrack;
-    RefPtrWillBeMember<TextTrack> defaultTrack;
+    HeapVector<Member<TextTrack>> tracks;
+    Member<TextTrack> visibleTrack;
+    Member<TextTrack> defaultTrack;
     GroupKind kind;
     bool hasSrcLang;
 };
@@ -76,16 +76,15 @@ void AutomaticTrackSelection::performAutomaticTextTrackSelection(const TrackGrou
     ASSERT(group.tracks.size());
 
     // First, find the track in the group that should be enabled (if any).
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> currentlyEnabledTracks;
-    RefPtrWillBeRawPtr<TextTrack> trackToEnable = nullptr;
-    RefPtrWillBeRawPtr<TextTrack> defaultTrack = nullptr;
-    RefPtrWillBeRawPtr<TextTrack> preferredTrack = nullptr;
-    RefPtrWillBeRawPtr<TextTrack> fallbackTrack = nullptr;
-
+    HeapVector<Member<TextTrack>> currentlyEnabledTracks;
+    TextTrack* trackToEnable = nullptr;
+    TextTrack* defaultTrack = nullptr;
+    TextTrack* preferredTrack = nullptr;
+    TextTrack* fallbackTrack = nullptr;
     int highestTrackScore = 0;
 
     for (size_t i = 0; i < group.tracks.size(); ++i) {
-        RefPtrWillBeRawPtr<TextTrack> textTrack = group.tracks[i];
+        TextTrack* textTrack = group.tracks[i];
 
         if (m_configuration.disableCurrentlyEnabledTracks && textTrack->mode() == TextTrack::showingKeyword())
             currentlyEnabledTracks.append(textTrack);
@@ -132,7 +131,7 @@ void AutomaticTrackSelection::performAutomaticTextTrackSelection(const TrackGrou
 
     if (currentlyEnabledTracks.size()) {
         for (size_t i = 0; i < currentlyEnabledTracks.size(); ++i) {
-            RefPtrWillBeRawPtr<TextTrack> textTrack = currentlyEnabledTracks[i];
+            TextTrack* textTrack = currentlyEnabledTracks[i];
             if (textTrack != trackToEnable)
                 textTrack->setMode(TextTrack::disabledKeyword());
         }
@@ -169,7 +168,7 @@ void AutomaticTrackSelection::perform(TextTrackList& textTracks)
     TrackGroup metadataTracks(TrackGroup::Metadata);
 
     for (size_t i = 0; i < textTracks.length(); ++i) {
-        RefPtrWillBeRawPtr<TextTrack> textTrack = textTracks.item(i);
+        TextTrack* textTrack = textTracks.item(i);
         if (!textTrack)
             continue;
 

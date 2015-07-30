@@ -11,13 +11,13 @@
 
 namespace blink {
 
-class CORE_EXPORT VideoTrack final : public NoBaseWillBeGarbageCollectedFinalized<VideoTrack>, public TrackBase, public ScriptWrappable {
+class CORE_EXPORT VideoTrack final : public GarbageCollectedFinalized<VideoTrack>, public TrackBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(VideoTrack);
+    USING_GARBAGE_COLLECTED_MIXIN(VideoTrack);
 public:
-    static PassRefPtrWillBeRawPtr<VideoTrack> create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected)
+    static VideoTrack* create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected)
     {
-        return adoptRefWillBeNoop(new VideoTrack(id, kind, label, language, selected));
+        return new VideoTrack(id, kind, label, language, selected);
     }
 
     ~VideoTrack() override;

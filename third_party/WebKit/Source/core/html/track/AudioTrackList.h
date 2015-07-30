@@ -13,7 +13,7 @@ namespace blink {
 class AudioTrackList final : public TrackListBase<AudioTrack> {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<AudioTrackList> create(HTMLMediaElement&);
+    static AudioTrackList* create(HTMLMediaElement&);
 
     ~AudioTrackList() override;
 
@@ -21,6 +21,11 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override;
+
+    DEFINE_INLINE_TRACE()
+    {
+        TrackListBase<AudioTrack>::trace(visitor);
+    }
 
 private:
     explicit AudioTrackList(HTMLMediaElement&);

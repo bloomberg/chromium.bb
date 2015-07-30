@@ -177,7 +177,7 @@ public:
     VideoTrackList& videoTracks();
     void selectedVideoTrackChanged(WebMediaPlayer::TrackId*);
 
-    PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
+    TextTrack* addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
 
     TextTrackList* textTracks();
     CueTimeline& cueTimeline();
@@ -550,10 +550,10 @@ private:
     bool m_initialPlayWithoutUserGestures : 1;
     bool m_autoplayMediaCounted : 1;
 
-    RefPtrWillBeMember<AudioTrackList> m_audioTracks;
-    RefPtrWillBeMember<VideoTrackList> m_videoTracks;
-    RefPtrWillBeMember<TextTrackList> m_textTracks;
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_textTracksWhenResourceSelectionBegan;
+    PersistentWillBeMember<AudioTrackList> m_audioTracks;
+    PersistentWillBeMember<VideoTrackList> m_videoTracks;
+    PersistentWillBeMember<TextTrackList> m_textTracks;
+    PersistentHeapVectorWillBeHeapVector<Member<TextTrack>> m_textTracksWhenResourceSelectionBegan;
 
     OwnPtrWillBeMember<CueTimeline> m_cueTimeline;
 

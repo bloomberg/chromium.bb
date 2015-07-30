@@ -7,9 +7,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<AudioTrackList> AudioTrackList::create(HTMLMediaElement& mediaElement)
+AudioTrackList* AudioTrackList::create(HTMLMediaElement& mediaElement)
 {
-    return adoptRefWillBeNoop(new AudioTrackList(mediaElement));
+    return new AudioTrackList(mediaElement);
 }
 
 AudioTrackList::~AudioTrackList()

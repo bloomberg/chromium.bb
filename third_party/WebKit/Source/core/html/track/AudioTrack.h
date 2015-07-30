@@ -11,13 +11,13 @@
 
 namespace blink {
 
-class CORE_EXPORT AudioTrack final : public NoBaseWillBeGarbageCollectedFinalized<AudioTrack>, public TrackBase, public ScriptWrappable {
+class CORE_EXPORT AudioTrack final : public GarbageCollectedFinalized<AudioTrack>, public TrackBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioTrack);
+    USING_GARBAGE_COLLECTED_MIXIN(AudioTrack);
 public:
-    static PassRefPtrWillBeRawPtr<AudioTrack> create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled)
+    static AudioTrack* create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled)
     {
-        return adoptRefWillBeNoop(new AudioTrack(id, kind, label, language, enabled));
+        return new AudioTrack(id, kind, label, language, enabled);
     }
 
     ~AudioTrack() override;

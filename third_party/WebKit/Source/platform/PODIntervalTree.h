@@ -126,7 +126,7 @@ public:
     }
 
     // Helper to create interval objects.
-    static IntervalType createInterval(const T& low, const T& high, const UserData data = 0)
+    static IntervalType createInterval(const T& low, const T& high, const UserData data = nullptr)
     {
         return IntervalType(low, high, data);
     }

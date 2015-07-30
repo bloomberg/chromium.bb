@@ -39,9 +39,9 @@ using blink::WebString;
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InbandTextTrack> InbandTextTrack::create(WebInbandTextTrack* webTrack)
+InbandTextTrack* InbandTextTrack::create(WebInbandTextTrack* webTrack)
 {
-    return adoptRefWillBeNoop(new InbandTextTrack(webTrack));
+    return new InbandTextTrack(webTrack);
 }
 
 InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)
@@ -75,13 +75,8 @@ InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)
 
 InbandTextTrack::~InbandTextTrack()
 {
-#if ENABLE(OILPAN)
     if (m_webTrack)
-        m_webTrack->setClient(0);
-#else
-    // Make sure m_webTrack was cleared by trackRemoved() before destruction.
-    ASSERT(!m_webTrack);
-#endif
+        m_webTrack->setClient(nullptr);
 }
 
 void InbandTextTrack::setTrackList(TextTrackList* trackList)
@@ -91,15 +86,15 @@ void InbandTextTrack::setTrackList(TextTrackList* trackList)
         return;
 
     ASSERT(m_webTrack);
-    m_webTrack->setClient(0);
-    m_webTrack = 0;
+    m_webTrack->setClient(nullptr);
+    m_webTrack = nullptr;
 }
 
 void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id, const WebString& content, const WebString& settings)
 {
     HTMLMediaElement* owner = mediaElement();
     ASSERT(owner);
-    RefPtrWillBeRawPtr<VTTCue> cue = VTTCue::create(owner->document(), start, end, content);
+    VTTCue* cue = VTTCue::create(owner->document(), start, end, content);
     cue->setId(id);
     cue->parseSettings(settings);
     addCue(cue);

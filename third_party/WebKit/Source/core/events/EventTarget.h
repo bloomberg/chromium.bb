@@ -236,8 +236,8 @@ public:
 // FIXME: These macros should be split into separate DEFINE and DECLARE
 // macros to avoid causing so many header includes.
 #define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    EventListener* on##attribute() { return getAttributeEventListener(EventTypeNames::attribute); } \
-    void setOn##attribute(PassRefPtrWillBeRawPtr<EventListener> listener) { setAttributeEventListener(EventTypeNames::attribute, listener); } \
+    EventListener* on##attribute() { return this->getAttributeEventListener(EventTypeNames::attribute); } \
+    void setOn##attribute(PassRefPtrWillBeRawPtr<EventListener> listener) { this->setAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(attribute) \
     static EventListener* on##attribute(EventTarget& eventTarget) { return eventTarget.getAttributeEventListener(EventTypeNames::attribute); } \

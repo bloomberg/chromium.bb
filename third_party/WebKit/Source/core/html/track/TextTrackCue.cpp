@@ -154,7 +154,7 @@ const AtomicString& TextTrackCue::interfaceName() const
 DEFINE_TRACE(TextTrackCue)
 {
     visitor->trace(m_track);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<TextTrackCue>::trace(visitor);
 }
 
 } // namespace blink

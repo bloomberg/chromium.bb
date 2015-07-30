@@ -40,7 +40,7 @@ namespace blink {
 
 class InbandTextTrack final : public TextTrack, public WebInbandTextTrackClient {
 public:
-    static PassRefPtrWillBeRawPtr<InbandTextTrack> create(WebInbandTextTrack*);
+    static InbandTextTrack* create(WebInbandTextTrack*);
     ~InbandTextTrack() override;
 
     void setTrackList(TextTrackList*) override;

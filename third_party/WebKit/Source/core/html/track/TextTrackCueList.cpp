@@ -35,8 +35,6 @@ TextTrackCueList::TextTrackCueList()
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TextTrackCueList);
-
 unsigned long TextTrackCueList::length() const
 {
     return m_list.size();
@@ -67,17 +65,17 @@ void TextTrackCueList::collectActiveCues(TextTrackCueList& activeCues) const
     }
 }
 
-bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+bool TextTrackCueList::add(TextTrackCue* cue)
 {
     ASSERT(cue->startTime() >= 0);
     ASSERT(cue->endTime() >= 0);
 
     // Maintain text track cue order:
     // https://html.spec.whatwg.org/#text-track-cue-order
-    size_t index = findInsertionIndex(cue.get());
+    size_t index = findInsertionIndex(cue);
 
     // FIXME: The cue should not exist in the list in the first place.
-    if (!m_list.isEmpty() && (index > 0) && (m_list[index - 1].get() == cue.get()))
+    if (!m_list.isEmpty() && (index > 0) && (m_list[index - 1].get() == cue))
         return false;
 
     m_list.insert(index, cue);
@@ -85,7 +83,7 @@ bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
     return true;
 }
 
-static bool cueIsBefore(const TextTrackCue* cue, PassRefPtrWillBeRawPtr<TextTrackCue> otherCue)
+static bool cueIsBefore(const TextTrackCue* cue, TextTrackCue* otherCue)
 {
     if (cue->startTime() < otherCue->startTime())
         return true;

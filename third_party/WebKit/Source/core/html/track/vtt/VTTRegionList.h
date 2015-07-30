@@ -34,12 +34,12 @@
 
 namespace blink {
 
-class VTTRegionList final : public RefCountedWillBeGarbageCollected<VTTRegionList>, public ScriptWrappable {
+class VTTRegionList final : public GarbageCollected<VTTRegionList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<VTTRegionList> create()
+    static VTTRegionList* create()
     {
-        return adoptRefWillBeNoop(new VTTRegionList());
+        return new VTTRegionList;
     }
 
     unsigned long length() const;
@@ -47,7 +47,7 @@ public:
     VTTRegion* item(unsigned index) const;
     VTTRegion* getRegionById(const String&) const;
 
-    void add(PassRefPtrWillBeRawPtr<VTTRegion>);
+    void add(VTTRegion*);
     bool remove(VTTRegion*);
 
     DECLARE_TRACE();
@@ -55,7 +55,7 @@ public:
 private:
     VTTRegionList();
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> m_list;
+    HeapVector<Member<VTTRegion>> m_list;
 };
 
 } // namespace blink

@@ -58,7 +58,7 @@ VTTRegion* VTTRegionList::getRegionById(const String& id) const
     return nullptr;
 }
 
-void VTTRegionList::add(PassRefPtrWillBeRawPtr<VTTRegion> region)
+void VTTRegionList::add(VTTRegion* region)
 {
     m_list.append(region);
 }

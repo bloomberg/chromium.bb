@@ -56,7 +56,7 @@ public:
     virtual void fileFailedToParse() = 0;
 };
 
-class VTTParser final : public NoBaseWillBeGarbageCollectedFinalized<VTTParser> {
+class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
 public:
     enum ParseState {
         Initial,
@@ -67,9 +67,12 @@ public:
         BadCue
     };
 
-    static PassOwnPtrWillBeRawPtr<VTTParser> create(VTTParserClient* client, Document& document)
+    static VTTParser* create(VTTParserClient* client, Document& document)
     {
-        return adoptPtrWillBeNoop(new VTTParser(client, document));
+        return new VTTParser(client, document);
+    }
+    ~VTTParser()
+    {
     }
 
     static inline bool isRecognizedTag(const AtomicString& tagName)
@@ -105,8 +108,8 @@ public:
     void flush();
 
     // Transfers ownership of last parsed cues to caller.
-    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>&);
-    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>&);
+    void getNewCues(HeapVector<Member<TextTrackCue>>&);
+    void getNewRegions(HeapVector<Member<VTTRegion>>&);
 
     DECLARE_TRACE();
 
@@ -143,9 +146,9 @@ private:
 
     VTTParserClient* m_client;
 
-    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> m_cueList;
+    HeapVector<Member<TextTrackCue>> m_cueList;
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> m_regionList;
+    HeapVector<Member<VTTRegion>> m_regionList;
 };
 
 } // namespace blink

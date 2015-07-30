@@ -50,7 +50,7 @@ public:
     }
 
     template <typename T>
-    static PassRefPtrWillBeRawPtr<TrackEvent> create(const AtomicString& type, PassRefPtrWillBeRawPtr<T> track)
+    static PassRefPtrWillBeRawPtr<TrackEvent> create(const AtomicString& type, T* track)
     {
         return adoptRefWillBeNoop(new TrackEvent(type, track));
     }
@@ -65,13 +65,13 @@ private:
     TrackEvent();
     TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
     template <typename T>
-    TrackEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<T> track)
+    TrackEvent(const AtomicString& type, T* track)
         : Event(type, false, false)
         , m_track(track)
     {
     }
 
-    RefPtrWillBeMember<TrackBase> m_track;
+    PersistentWillBeMember<TrackBase> m_track;
 };
 
 } // namespace blink

@@ -89,7 +89,7 @@ private:
 
     LoadableTextTrack* ensureTrack();
 
-    RefPtrWillBeMember<LoadableTextTrack> m_track;
+    PersistentWillBeMember<LoadableTextTrack> m_track;
     OwnPtrWillBeMember<TextTrackLoader> m_loader;
     Timer<HTMLTrackElement> m_loadTimer;
     KURL m_url;

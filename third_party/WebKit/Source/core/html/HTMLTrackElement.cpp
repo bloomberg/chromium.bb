@@ -270,7 +270,7 @@ void HTMLTrackElement::newCuesAvailable(TextTrackLoader* loader)
     ASSERT_UNUSED(loader, m_loader == loader);
     ASSERT(m_track);
 
-    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> newCues;
+    HeapVector<Member<TextTrackCue>> newCues;
     m_loader->getNewCues(newCues);
 
     m_track->addListOfCues(newCues);
@@ -281,7 +281,7 @@ void HTMLTrackElement::newRegionsAvailable(TextTrackLoader* loader)
     ASSERT_UNUSED(loader, m_loader == loader);
     ASSERT(m_track);
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> newRegions;
+    HeapVector<Member<VTTRegion>> newRegions;
     m_loader->getNewRegions(newRegions);
 
     m_track->addRegions(newRegions);
