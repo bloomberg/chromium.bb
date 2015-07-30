@@ -279,6 +279,20 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
         result_dict.SetString("root.baseURL", "http://test");
       result->reset(result_dict.DeepCopy());
       return Status(kOk);
+    } else if (method == "Runtime.evaluate") {
+      std::string expression;
+      params.GetString("expression", &expression);
+      if (expression == "document.readyState") {
+        base::DictionaryValue result_dict;
+        if (is_loading_) {
+          result_dict.SetString("result.value", "loading");
+          is_loading_ = false;
+        } else {
+          result_dict.SetString("result.value", "complete");
+        }
+        result->reset(result_dict.DeepCopy());
+        return Status(kOk);
+      }
     }
 
     if (send_event_first_.length()) {
@@ -336,6 +350,9 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   DeterminingLoadStateDevToolsClient client(
       false, true, std::string(), &params);
   BrowserInfo browser_info;
+  std::string version_string = "{\"Browser\": \"Chrome/44.0.2403.125\","
+                               " \"WebKit-Version\": \"537.36 (@199461)\"}";
+  ASSERT_TRUE(ParseBrowserInfo(version_string, &browser_info).IsOk());
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
   base::DictionaryValue result;

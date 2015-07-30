@@ -31,20 +31,7 @@ NavigationTracker::~NavigationTracker() {}
 
 Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               bool* is_pending) {
-  // As of crrev.com/323900 (Chrome 44+) we no longer receive
-  // Page.frameStartedLoading and Page.frameStoppedLoading events immediately
-  // after clicking on an element. This can cause tests to fail if the click
-  // command results in a page navigation, such as in the case of
-  // PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick from
-  // the Selenium test suite.
-  // TODO(samuong): Remove this once we stop supporting M43.
-  bool expecting_frame_loading_events;
-  if (browser_info_->browser_name == "chrome")
-    expecting_frame_loading_events = browser_info_->build_no < 2358;
-  else
-    expecting_frame_loading_events = browser_info_->major_version < 44;
-
-  if (!expecting_frame_loading_events) {
+  if (!IsExpectingFrameLoadingEvents()) {
     base::DictionaryValue params;
     params.SetString("expression", "document.readyState");
     scoped_ptr<base::DictionaryValue> result;
@@ -200,9 +187,12 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Runtime.executionContextsCleared" ||
              method == "Runtime.executionContextDestroyed") {
-    ResetLoadingState(kLoading);
-  } else if (method == "Page.loadEventFired" ||
-             method == "Inspector.targetCrashed") {
+    if (!IsExpectingFrameLoadingEvents())
+      ResetLoadingState(kLoading);
+  } else if (method == "Page.loadEventFired") {
+    if (!IsExpectingFrameLoadingEvents())
+      ResetLoadingState(kNotLoading);
+  } else if (method == "Inspector.targetCrashed") {
     ResetLoadingState(kNotLoading);
   }
   return Status(kOk);
@@ -212,16 +202,18 @@ Status NavigationTracker::OnCommandSuccess(
     DevToolsClient* client,
     const std::string& method,
     const base::DictionaryValue& result) {
-  if (method == "Page.navigate" && loading_state_ == kLoading) {
-    // In all versions of Chrome that are supported by ChromeDriver, except for
-    // old versions of Android WebView, Page.navigate will return a frameId in
-    // the command response. We'll get a notification that the frame has loaded
-    // when we get the Page.frameStoppedLoading event, so keep track of the
-    // pending frame id here.
-    std::string pending_frame_id;
-    if (result.GetString("frameId", &pending_frame_id)) {
-      pending_frame_set_.insert(pending_frame_id);
-      return Status(kOk);
+  if (!IsExpectingFrameLoadingEvents()) {
+    if (method == "Page.navigate" && loading_state_ == kLoading) {
+      // In all versions of Chrome that are supported by ChromeDriver, except
+      // for old versions of Android WebView, Page.navigate will return a
+      // frameId in the command response. We'll get a notification that the
+      // frame has loaded when we get the Page.frameStoppedLoading event, so
+      // keep track of the pending frame id here.
+      std::string pending_frame_id;
+      if (result.GetString("frameId", &pending_frame_id)) {
+        pending_frame_set_.insert(pending_frame_id);
+        return Status(kOk);
+      }
     }
   }
 
@@ -271,4 +263,18 @@ void NavigationTracker::ResetLoadingState(LoadingState loading_state) {
   loading_state_ = loading_state;
   pending_frame_set_.clear();
   scheduled_frame_set_.clear();
+}
+
+bool NavigationTracker::IsExpectingFrameLoadingEvents() {
+  // As of crrev.com/323900 (Chrome 44+) we no longer receive
+  // Page.frameStartedLoading and Page.frameStoppedLoading events immediately
+  // after clicking on an element. This can cause tests to fail if the click
+  // command results in a page navigation, such as in the case of
+  // PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick from
+  // the Selenium test suite.
+  // TODO(samuong): Remove this once we stop supporting M43.
+  if (browser_info_->browser_name == "chrome")
+    return browser_info_->build_no < 2358;
+  else
+    return browser_info_->major_version < 44;
 }

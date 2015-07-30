@@ -60,6 +60,7 @@ class NavigationTracker : public DevToolsEventListener {
   std::set<std::string> scheduled_frame_set_;
 
   void ResetLoadingState(LoadingState loading_state);
+  bool IsExpectingFrameLoadingEvents();
 
   DISALLOW_COPY_AND_ASSIGN(NavigationTracker);
 };
