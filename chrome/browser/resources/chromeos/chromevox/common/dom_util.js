@@ -1390,7 +1390,7 @@ cvox.DomUtil.getStateMsgs = function(targetNode, primary) {
   } else if (targetNode.tagName == 'UL' ||
              targetNode.tagName == 'OL' ||
              role == 'list') {
-    info.push(['list_with_items',
+    info.push(['list_with_items_not_pluralized',
                cvox.ChromeVox.msgs.getNumber(
                    cvox.DomUtil.getListLength(targetNode))]);
   }

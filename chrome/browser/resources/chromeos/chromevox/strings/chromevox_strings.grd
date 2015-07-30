@@ -543,7 +543,7 @@
         checked
       </message>
       <message desc="The checked state for a checkbox in braille." name="IDS_CHROMEVOX_CHECKBOX_CHECKED_STATE_BRL">
-        x
+        (x)
       </message>
       <message desc="Describes a HTML checkbox named 'name' in the unchecked state." name="IDS_CHROMEVOX_DESCRIBE_CHECKBOX_UNCHECKED">
         <ph name="name">$1</ph>, checkbox not checked
@@ -552,7 +552,7 @@
         not checked
       </message>
       <message desc="The unchecked state for a checkbox in braille." name="IDS_CHROMEVOX_CHECKBOX_UNCHECKED_STATE_BRL">
-        ''' '''
+        ( )
       </message>
       <message desc="Describes a HTML radio button named 'name' in the selected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_SELECTED">
         <ph name="name">$1</ph>, radio button selected
@@ -561,7 +561,7 @@
         selected
       </message>
       <message desc="The selected state for a radio button in braille." name="IDS_CHROMEVOX_RADIO_SELECTED_STATE_BRL">
-        x
+        (x)
       </message>
       <message desc="Describes a HTML radio button named 'name' in the unselected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_UNSELECTED">
         <ph name="name">$1</ph>, radio button unselected
@@ -570,7 +570,7 @@
         unselected
       </message>
       <message desc="The unselected state for a radio button in braille." name="IDS_CHROMEVOX_RADIO_UNSELECTED_STATE_BRL">
-        ''' '''
+        ( )
       </message>
       <message desc="Describes a menu named 'name'." name="IDS_CHROMEVOX_DESCRIBE_MENU">
         <ph name="name">$1</ph>, menu
@@ -628,6 +628,9 @@
       </message>
       <message desc="Spoken through the a11y api after describing an element if it is part of a group." name="IDS_CHROMEVOX_DESCRIBE_INDEX">
         ''' <ph name="index">$1</ph> of <ph name="total">$2</ph> '''
+      </message>
+      <message desc="Braille for describing an index of an element in a group." name="IDS_CHROMEVOX_DESCRIBE_INDEX_BRL">
+        <ph name="index">$1</ph>/<ph name="total">$2</ph>
       </message>
       <message desc="Spoken through the a11y api when moving between treeitems of differing depth." name="IDS_CHROMEVOX_DESCRIBE_DEPTH">
         ''' level <ph name="depth">$1</ph> '''
@@ -1365,13 +1368,13 @@
         Not checked
       </message>
       <message desc="Braille of element with the ARIA attribute aria-checked=false." name="IDS_CHROMEVOX_ARIA_CHECKED_FALSE_BRL">
-        ''' '''
+        ( )
       </message>
       <message desc="Describes an element with the ARIA attribute aria-checked=mixed." name="IDS_CHROMEVOX_ARIA_CHECKED_MIXED">
         Partially checked
       </message>
       <message desc="Braille of element with the ARIA attribute aria-checked=mixed." name="IDS_CHROMEVOX_ARIA_CHECKED_MIXED_BRL">
-        -
+        (-)
       </message>
       <message desc="Describes an element with the ARIA attribute aria-disabled=true." name="IDS_CHROMEVOX_ARIA_DISABLED_TRUE">
         Disabled
@@ -1455,13 +1458,13 @@
         Selected
       </message>
       <message desc="Braille of element with the ARIA attribute aria-selected=true." name="IDS_CHROMEVOX_ARIA_SELECTED_TRUE_BRL">
-        x
+        (x)
       </message>
       <message desc="Describes an element with the ARIA attribute aria-selected=false." name="IDS_CHROMEVOX_ARIA_SELECTED_FALSE">
         Not selected
       </message>
       <message desc="Braille of element with the ARIA attribute aria-selected=false." name="IDS_CHROMEVOX_ARIA_SELECTED_FALSE_BRL">
-        ''' '''
+        ( )
       </message>
       <message desc="Spoken to describe an &lt;a&gt; tag." name="IDS_CHROMEVOX_TAG_LINK">
         Link
@@ -1763,8 +1766,11 @@
       <message desc="In an editable text box, describes a line with only whitespace." name="IDS_CHROMEVOX_TEXT_BOX_WHITESPACE">
         Space
       </message>
-      <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items. NOTE(deboer):  This is questionable, it may be better to include 'List' in this message." name="IDS_CHROMEVOX_LIST_WITH_ITEMS">
+      <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED">
         with <ph name="num">$1</ph> items
+      </message>
+      <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS">
+        with {COUNT, plural, =1 {# item}other {# items}}
       </message>
       <message desc="Further describes a list-like element with a number of items in braille." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_BRL">
         +<ph name="num">$1</ph>

@@ -18,6 +18,7 @@ goog.require('cvox.NavBraille');
 goog.require('cvox.Spannable');
 goog.require('cvox.ValueSelectionSpan');
 goog.require('cvox.ValueSpan');
+goog.require('goog.i18n.MessageFormat');
 
 goog.scope(function() {
 var Dir = AutomationUtil.Dir;
@@ -37,6 +38,12 @@ var Dir = AutomationUtil.Dir;
  * @ prefix: used to substitute a message. Note the ability to specify params to
  *     the message.  For example, '@tag_html' '@selected_index($text_sel_start,
  *     $text_sel_end').
+ * @@ prefix: similar to @, used to substitue a message, but also pulls the
+ *     localized string through goog.i18n.MessageFormat to support locale
+ *     aware plural handling.  The first argument should be a number which will
+ *     be passed as a COUNT named parameter to MessageFormat.
+ *     TODO(plundblad): Make subsequent arguments normal placeholder arguments
+ *     when needed.
  * = suffix: used to specify substitution only if not previously appended.
  *     For example, $name= would insert the name attribute only if no name
  * attribute had been inserted previously.
@@ -384,15 +391,15 @@ Output.RULES = {
       speak: '$value='
     },
     link: {
-      enter: '$name $visited $role',
-      stay: '$name= $visited $role',
-      speak: '$name= $visited $role'
+      enter: '$name $if($visited, @visited_link, $role)',
+      stay: '$name= $if($visited, @visited_link, $role)',
+      speak: '$name= $if($visited, @visited_link, $role)'
     },
     list: {
-      enter: '$role @list_with_items($countChildren(listItem))'
+      enter: '$role @@list_with_items($countChildren(listItem))'
     },
     listBox: {
-      enter: '$name $role @list_with_items($countChildren(listBoxOption))'
+      enter: '$name $role @@list_with_items($countChildren(listBoxOption))'
     },
     listBoxOption: {
       speak: '$name $role @describe_index($indexInParent, $parentChildCount)'
@@ -401,11 +408,10 @@ Output.RULES = {
       enter: '$role'
     },
     menu: {
-      enter: '$name $role @list_with_items($countChildren(menuItem))'
+      enter: '$name $role @@list_with_items($countChildren(menuItem))'
     },
     menuItem: {
-      speak: '$if($haspopup, @describe_menu_item_with_submenu($name), ' +
-          '@describe_menu_item($name)) ' +
+      speak: '$name $role $if($haspopup, @has_submenu) ' +
           '@describe_index($indexInParent, $parentChildCount)'
     },
     menuListOption: {
@@ -447,12 +453,12 @@ Output.RULES = {
       enter: '$name $role'
     },
     tree: {
-      enter: '$name $role @list_with_items($countChildren(treeItem))'
+      enter: '$name $role @@list_with_items($countChildren(treeItem))'
     },
     treeItem: {
-        enter: '$role $expanded $collapsed ' +
-            '@describe_index($indexInParent, $parentChildCount) ' +
-            '@describe_depth($hierarchicalLevel)'
+      enter: '$role $expanded $collapsed ' +
+          '@describe_index($indexInParent, $parentChildCount) ' +
+          '@describe_depth($hierarchicalLevel)'
     },
     window: {
       enter: '$name',
@@ -677,10 +683,8 @@ Output.prototype = {
           /** @type {number} */ (buff.getSpanEnd(selSpan));
       startIndex = valueStart + selSpan.startIndex;
       endIndex = valueStart + selSpan.endIndex;
-        buff.setSpan(new cvox.ValueSpan(0),
-                                  valueStart, valueEnd);
-      buff.setSpan(new cvox.ValueSelectionSpan(),
-                                  startIndex, endIndex);
+      buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
+      buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
     }
 
     var output = new cvox.NavBraille({
@@ -809,7 +813,7 @@ Output.prototype = {
         } else if (token == 'parentChildCount') {
           options.annotation.push(token);
           if (node.parent)
-          this.append_(buff, String(node.parent.children.length));
+            this.append_(buff, String(node.parent.children.length));
         } else if (token == 'state') {
           options.annotation.push(token);
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
@@ -916,6 +920,9 @@ Output.prototype = {
           }
         }
       } else if (prefix == '@') {
+        var isPluralized = (token[0] == '@');
+        if (isPluralized)
+          token = token.slice(1);
         // Tokens can have substitutions.
         var pieces = token.split('+');
         token = pieces.reduce(function(prev, cur) {
@@ -926,28 +933,47 @@ Output.prototype = {
         }.bind(this), '');
         var msgId = token;
         var msgArgs = [];
-        var curMsg = tree.firstChild;
-
-        while (curMsg) {
-          var arg = curMsg.value;
-          if (arg[0] != '$') {
-            console.error('Unexpected value: ' + arg);
-            return;
+        if (!isPluralized) {
+          var curArg = tree.firstChild;
+          while (curArg) {
+            if (curArg.value[0] != '$') {
+              console.error('Unexpected value: ' + curArg.value);
+              return;
+            }
+            var msgBuff = [];
+            this.format_(node, curArg, msgBuff);
+            msgArgs = msgArgs.concat(msgBuff);
+            curArg = curArg.nextSibling;
           }
-          var msgBuff = [];
-          this.format_(node, curMsg, msgBuff);
-          msgArgs = msgArgs.concat(msgBuff);
-          curMsg = curMsg.nextSibling;
         }
-          var msg = cvox.ChromeVox.msgs.getMsg(msgId, msgArgs);
+        var msg = cvox.ChromeVox.msgs.getMsg(msgId, msgArgs);
         try {
           if (this.formatOptions_.braille)
             msg = cvox.ChromeVox.msgs.getMsg(msgId + '_brl', msgArgs) || msg;
         } catch(e) {}
 
-        if (msg) {
-          this.append_(buff, msg, options);
+        if (!msg) {
+          console.log('Could not get message ' + msgId);
+          return;
         }
+
+        if (isPluralized) {
+          var arg = tree.firstChild;
+          if (!arg || arg.nextSibling) {
+            console.error('Pluralized messages take exactly one argument');
+            return;
+          }
+          if (arg.value[0] != '$') {
+            console.error('Unexpected value: ' + arg.value);
+            return;
+          }
+          var argBuff = [];
+          this.format_(node, arg, argBuff);
+          var namedArgs = {COUNT: Number(argBuff[0])};
+          msg = new goog.i18n.MessageFormat(msg).format(namedArgs);
+        }
+
+        this.append_(buff, msg, options);
       } else if (prefix == '!') {
         this.speechProperties_[token] = true;
       }
@@ -979,7 +1005,7 @@ Output.prototype = {
 
     while (cursor.getNode() != range.getEnd().getNode()) {
       var node = cursor.getNode();
-        rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
+      rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
       prevNode = node;
       cursor = cursor.move(cursors.Unit.NODE,
                            cursors.Movement.DIRECTIONAL,

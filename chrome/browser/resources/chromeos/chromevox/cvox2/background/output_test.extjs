@@ -327,9 +327,9 @@ TEST_F('OutputE2ETest', 'Menu', function() {
     var range = cursors.Range.fromNode(el);
     var o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON({string_:
-            '|Menu|with 1 items|a, menu item| 1 of 1 ', spans_: [
-        {value: 'name', start: 0, end: 0},
-        {value: 'role', start:1, end: 5}
+            '|Menu|with 1 item|a|Menu item| 1 of 1 ', spans_: [
+        {value: 'name', start: 18, end: 19},
+        {value: 'role', start:20, end: 29}
     ]}, o.toSpannableForTest());
   });
 });
