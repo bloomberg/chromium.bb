@@ -12,6 +12,12 @@ import android.accounts.AuthenticatorDescription;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordHistogram;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of {@link AccountManagerDelegate} which delegates all calls to the
@@ -32,7 +38,11 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
             return new Account[]{};
         }
-        return mAccountManager.getAccountsByType(type);
+        long now = SystemClock.elapsedRealtime();
+        Account[] accounts = mAccountManager.getAccountsByType(type);
+        long elapsed = SystemClock.elapsedRealtime() - now;
+        recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
+        return accounts;
     }
 
     @Override
@@ -56,5 +66,18 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     public AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
             AccountManagerCallback<Boolean> callback, Handler handler) {
         return mAccountManager.hasFeatures(account, features, callback, handler);
+    }
+
+    /**
+     * Records a histogram value for how long time an action has taken using
+     * {@link RecordHistogram#recordTimesHistogram(String, long, TimeUnit))} iff the browser
+     * process has been initialized.
+     *
+     * @param histogramName the name of the histogram.
+     * @param elapsedMs the elapsed time in milliseconds.
+     */
+    protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
+        if (!LibraryLoader.isInitialized()) return;
+        RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
     }
 }

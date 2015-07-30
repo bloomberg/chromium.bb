@@ -39315,6 +39315,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidGetAccountsTime" units="milliseconds">
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    The time it takes to retrieve the list of accounts from the system.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidSigninPromoAction"
     enum="AndroidSigninPromoAction">
   <owner>guohui@chromium.org</owner>
@@ -71331,6 +71338,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.StartToCommit_NormalLoad"/>
   <affected-histogram name="PLT.StartToFinish_LinkLoadNormal"/>
   <affected-histogram name="PLT.StartToFinish_NormalLoad"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AndroidGetAccountsTypes">
+  <suffix name="AccountManager" label="Using Android AccountManager API"/>
+  <suffix name="GoogleAuthUtil" label="Using GoogleAuthUtil API"/>
+  <affected-histogram name="Signin.AndroidGetAccountsTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AppListFirstPaintWarmStartFast" separator="">
