@@ -18,14 +18,18 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import tree_status
+from chromite.cbuildbot import triage_lib
+from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import graphite
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
@@ -642,3 +646,108 @@ class RefreshPackageStatusStage(generic_stages.BuilderStage):
     commands.RefreshPackageStatus(buildroot=self._build_root,
                                   boards=self._boards,
                                   debug=self._run.options.debug)
+
+
+class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
+  """Stage to detect irrelevant changes for slave per board base.
+
+  This stage will get the irrelevant changes for the current board of the build,
+  and record the irrelevant changes and the subsystem of the relevant changes
+  test to board_metadata.
+  """
+
+  def __init__(self, builder_run, board, changes, suffix=None, **kwargs):
+    super(DetectIrrelevantChangesStage, self).__init__(builder_run, board,
+                                                       suffix=suffix, **kwargs)
+    # changes is a list of GerritPatch instances.
+    self.changes = changes
+
+  def _GetIrrelevantChangesBoardBase(self, changes):
+    """Calculates irrelevant changes to the current board.
+
+    Returns:
+      A subset of |changes| which are irrelevant to current board.
+    """
+    manifest = git.ManifestCheckout.Cached(self._build_root)
+    packages = self._GetPackagesUnderTestForCurrentBoard()
+
+    irrelevant_changes = triage_lib.CategorizeChanges.GetIrrelevantChanges(
+        changes, self._run.config, self._build_root, manifest, packages)
+    return irrelevant_changes
+
+  def _GetPackagesUnderTestForCurrentBoard(self):
+    """Get a list of packages used in this build for current board.
+
+    Returns:
+      A set of packages used in this build. E.g.,
+      set(['chromeos-base/chromite-0.0.1-r1258']); returns None if
+      the information is missing for any board in the current config.
+    """
+    packages_under_test = set()
+
+    for run in [self._run] + self._run.GetChildren():
+      board_runattrs = run.GetBoardRunAttrs(self._current_board)
+      if not board_runattrs.HasParallel('packages_under_test'):
+        logging.warning('Packages under test were not recorded correctly')
+        return None
+      packages_under_test.update(
+          board_runattrs.GetParallel('packages_under_test'))
+
+    return packages_under_test
+
+  def GetSubsystemToTest(self, relevant_changes):
+    """Get subsystems from relevant cls for current board, write to BOARD_ATTRS.
+
+    Args:
+      relevant_changes: A set of changes that are relevant to current board.
+
+    Returns:
+      A set of the subsystems. An empty set indicates that all subsystems should
+      be tested.
+    """
+    # Go through all the relevant changes, collect subsystem info from them. If
+    # there exists a change without subsystem info, we assume it affects all
+    # subsystems. Then set the superset of all the subsystems to be empty, which
+    # means that need to test all subsystems.
+    subsystem_set = set()
+    for change in relevant_changes:
+      sys_lst = triage_lib.GetTestSubsystemForChange(self._build_root, change)
+      if sys_lst:
+        subsystem_set = subsystem_set.union(sys_lst)
+      else:
+        subsystem_set = set()
+        break
+
+    return subsystem_set
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    """Run DetectIrrelevantChangesStage."""
+    irrelevant_changes = None
+    if not self._run.config.master:
+      # Slave writes the irrelevant changes to current board to metadata.
+      irrelevant_changes = self._GetIrrelevantChangesBoardBase(self.changes)
+      change_dict_list = [c.GetAttributeDict() for c in irrelevant_changes]
+      change_dict_list = sorted(change_dict_list,
+                                key=lambda x: (x[cros_patch.ATTR_GERRIT_NUMBER],
+                                               x[cros_patch.ATTR_PATCH_NUMBER],
+                                               x[cros_patch.ATTR_REMOTE]))
+
+      self._run.attrs.metadata.UpdateBoardDictWithDict(
+          self._current_board, {'irrelevant_changes': change_dict_list})
+
+    if irrelevant_changes:
+      relevant_changes = list(set(self.changes) - irrelevant_changes)
+      logging.info('Below are the irrelevant changes for board: %s.',
+                   self._current_board)
+      (validation_pool.ValidationPool.
+       PrintLinksToChanges(list(irrelevant_changes)))
+    else:
+      relevant_changes = self.changes
+
+    subsystem_set = self.GetSubsystemToTest(relevant_changes)
+    logging.info('Subsystems need to be tested: %s. Empty set represents '
+                 'testing all subsystems.', subsystem_set)
+    # Record subsystems to metadata
+    self._run.attrs.metadata.UpdateBoardDictWithDict(
+        self._current_board, {'subsystems_to_test': list(subsystem_set)})

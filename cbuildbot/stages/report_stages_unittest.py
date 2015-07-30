@@ -17,6 +17,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
+from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
@@ -25,6 +26,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import fake_cidb
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
+from chromite.lib import patch_unittest
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 
@@ -267,3 +269,41 @@ class ReportStageNoSyncTest(AbstractReportStageTestCase):
     """Check that we can run with a RELEASE_TAG of None."""
     self._SetupUpdateStreakCounter()
     self.RunStage()
+
+
+class DetectIrrelevantChangesStageTest(
+    generic_stages_unittest.AbstractStageTestCase,
+    patch_unittest.MockPatchBase):
+  """Test the DetectIrrelevantChangesStage."""
+
+  def setUp(self):
+    self.changes = self.GetPatches(how_many=2)
+
+    self._Prepare()
+
+  def testGetSubsystemsWithoutEmptyEntry(self):
+    """Tests the logic of GetSubsystemTobeTested() under normal case."""
+    relevant_changes = self.changes
+    self.PatchObject(triage_lib, 'GetTestSubsystemForChange',
+                     side_effect=[['light'], ['light', 'power']])
+
+    expected = {'light', 'power'}
+    stage = self.ConstructStage()
+    results = stage.GetSubsystemToTest(relevant_changes)
+    self.assertEqual(results, expected)
+
+  def testGetSubsystemsWithEmptyEntry(self):
+    """Tests whether return empty set when have empty entry in subsystems."""
+    relevant_changes = self.changes
+    self.PatchObject(triage_lib, 'GetTestSubsystemForChange',
+                     side_effect=[['light'], []])
+
+    expected = set()
+    stage = self.ConstructStage()
+    results = stage.GetSubsystemToTest(relevant_changes)
+    self.assertEqual(results, expected)
+
+  def ConstructStage(self):
+    return report_stages.DetectIrrelevantChangesStage(self._run,
+                                                      self._current_board,
+                                                      self.changes)

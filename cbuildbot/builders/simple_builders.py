@@ -21,9 +21,11 @@ from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import release_stages
+from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cros_logging as logging
+from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
 
 
@@ -57,6 +59,22 @@ class SimpleBuilder(generic_builders.Builder):
   def GetVersionInfo(self):
     """Returns the CrOS version info from the chromiumos-overlay."""
     return manifest_version.VersionInfo.from_repo(self._run.buildroot)
+
+  def _GetChangesUnderTest(self):
+    """Returns the list of GerritPatch changes under test."""
+    changes = set()
+
+    changes_json_list = self._run.attrs.metadata.GetDict().get('changes', [])
+    for change_dict in changes_json_list:
+      change = cros_patch.GerritFetchOnlyPatch.FromAttrDict(change_dict)
+      changes.add(change)
+
+    # Also add the changes from PatchChangeStage, the PatchChangeStage doesn't
+    # write changes into metadata.
+    if self._run.ShouldPatchAfterSync():
+      changes.update(set(self.patch_pool.gerrit_patches))
+
+    return list(changes)
 
   def _RunHWTests(self, builder_run, board):
     """Run hwtest-related stages for the specified board.
@@ -145,7 +163,14 @@ class SimpleBuilder(generic_builders.Builder):
     # that make sense when read in order.  Also keep in mind that, since we
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
-    stage_list = [[chrome_stages.ChromeSDKStage, board]]
+
+    # Determine whether to run the DetectIrrelevantChangesStage
+    stage_list = []
+    changes = self._GetChangesUnderTest()
+    if changes:
+      stage_list += [[report_stages.DetectIrrelevantChangesStage, board,
+                      changes]]
+    stage_list += [[chrome_stages.ChromeSDKStage, board]]
 
     if config.vm_test_runs > 1:
       # Run the VMTests multiple times to see if they fail.

@@ -11,7 +11,6 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
@@ -20,6 +19,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 
 
@@ -753,43 +753,39 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     return not any([x in slave_statuses and slave_statuses[x].Failed() for
                     x in sanity_check_slaves])
 
-  def _RecordIrrelevantChanges(self):
-    """Calculates irrelevant changes and record them into cidb."""
-    manifest = git.ManifestCheckout.Cached(self._build_root)
-    changes = set(self.sync_stage.pool.changes)
-    packages = self._GetPackagesUnderTest()
+  def GetIrrelevantChanges(self, board_metadata):
+    """Calculates irrelevant changes.
 
-    irrelevant_changes = triage_lib.CategorizeChanges.GetIrrelevantChanges(
-        changes, self._run.config, self._build_root, manifest, packages)
-    self.sync_stage.pool.RecordIrrelevantChanges(irrelevant_changes)
-
-  def _GetPackagesUnderTest(self):
-    """Get a list of packages used in this build.
+    Args:
+      board_metadata: A dictionary of board specific metadata.
 
     Returns:
-      A set of packages used in this build. E.g.,
-      set(['chromeos-base/chromite-0.0.1-r1258']); returns None if
-      the information is missing for any  board in the current config.
+      A set of irrelevant changes to the build.
     """
-    packages_under_test = set()
+    if not board_metadata:
+      return set()
+    # changes irrelevant to all the boards are irrelevant to the build
+    changeset_per_board_list = list()
+    for v in board_metadata.values():
+      changes_dict_list = v.get('irrelevant_changes', None)
+      if changes_dict_list:
+        changes_set = set(cros_patch.GerritFetchOnlyPatch.FromAttrDict(d) for d
+                          in changes_dict_list)
+        changeset_per_board_list.append(changes_set)
+      else:
+        # If any board has no irrelevant change, the whole build not have also.
+        return set()
 
-    for run in [self._run] + self._run.GetChildren():
-      for board in run.config.boards:
-        board_runattrs = run.GetBoardRunAttrs(board)
-        if not board_runattrs.HasParallel('packages_under_test'):
-          logging.warning('Packages under test were not recorded correctly')
-          return None
-        packages_under_test.update(
-            board_runattrs.GetParallel('packages_under_test'))
-
-    return packages_under_test
+    return set.intersection(*changeset_per_board_list)
 
   def PerformStage(self):
     """Run CommitQueueCompletionStage."""
     if (not self._run.config.master and
         not self._run.config.do_not_apply_cq_patches):
       # Slave needs to record what change are irrelevant to this build.
-      self._RecordIrrelevantChanges()
+      board_metadata = self._run.attrs.metadata.GetDict().get('board-metadata')
+      irrelevant_changes = self.GetIrrelevantChanges(board_metadata)
+      self.sync_stage.pool.RecordIrrelevantChanges(irrelevant_changes)
 
     super(CommitQueueCompletionStage, self).PerformStage()
 
