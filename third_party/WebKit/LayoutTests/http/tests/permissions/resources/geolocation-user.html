@@ -11,14 +11,20 @@ function successCallback(position) {
         testRunner.notifyDone();
     }
 }
-function errorCallback(error) {
+
+navigator.geolocation.getCurrentPosition(successCallback, errorCallback1);
+
+function errorCallback1(error) {
+    console.warn(error.message);
+    navigator.geolocation.watchPosition(successCallback, errorCallback2);
+}
+
+function errorCallback2(error) {
     console.warn(error.message);
     if (testRunner) {
         testRunner.notifyDone();
     }
 }
-navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-navigator.geolocation.watchPosition(successCallback, errorCallback);
 </script>
 </body>
 </html>
