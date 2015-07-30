@@ -58,6 +58,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/input/InputDevice.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
@@ -960,7 +961,8 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     // the same behavior and it's more compatible with other browsers.
     selectionController().initializeSelectionState();
     HitTestResult hitTestResult = hitTestResultInFrame(m_frame, mouseEvent.position(), HitTestRequest::ReadOnly);
-    swallowEvent = swallowEvent || handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult));
+    InputDevice* sourceDevice = mouseEvent.syntheticEventType() == PlatformMouseEvent::FromTouch ? InputDevice::firesTouchEventsInputDevice() : InputDevice::doesntFireTouchEventsInputDevice();
+    swallowEvent = swallowEvent || handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult), sourceDevice);
     m_capturesDragging = !swallowEvent || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -1616,7 +1618,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
 }
 
 // The return value means 'swallow event' (was handled), as for other handle* functions.
-bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent)
+bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDevice* sourceDevice)
 {
     const PlatformMouseEvent& mouseEvent = targetedEvent.event();
 
@@ -1664,14 +1666,14 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
         if (element) {
             if (slideFocusOnShadowHostIfNecessary(*element))
                 return true;
-            if (!page->focusController().setFocusedElement(element, m_frame, WebFocusTypeMouse))
+            if (!page->focusController().setFocusedElement(element, m_frame, WebFocusTypeMouse, sourceDevice))
                 return true;
         } else {
             // We call setFocusedElement even with !element in order to blur
             // current focus element when a link is clicked; this is expected by
             // some sites that rely on onChange handlers running from form
             // fields before the button click is processed.
-            if (!page->focusController().setFocusedElement(0, m_frame))
+            if (!page->focusController().setFocusedElement(0, m_frame, WebFocusTypeNone, sourceDevice))
                 return true;
         }
     }
@@ -2022,7 +2024,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
     selectionController().initializeSelectionState();
     if (!swallowMouseDownEvent)
-        swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
+        swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest), InputDevice::firesTouchEventsInputDevice());
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
 
@@ -3394,7 +3396,7 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
     if (m_frame->document()->inDesignMode())
         return;
 
-    if (page->focusController().advanceFocus(focusType))
+    if (page->focusController().advanceFocus(focusType, InputDevice::doesntFireTouchEventsInputDevice()))
         event->setDefaultHandled();
 }
 

@@ -335,7 +335,7 @@ private:
     bool isEmptySuggestedValue() const final { return suggestedValue().isEmpty(); }
     void handleFocusEvent(Element* oldFocusedElement, WebFocusType) final;
     void handleBlurEvent() final;
-    void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType) final;
+    void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice) final;
     bool supportsAutocapitalize() const final;
     const AtomicString& defaultAutocapitalize() const final;
 

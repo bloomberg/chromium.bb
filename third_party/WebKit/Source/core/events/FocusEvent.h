@@ -40,9 +40,9 @@ public:
         return adoptRefWillBeNoop(new FocusEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail, EventTarget* relatedTarget)
+    static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail, EventTarget* relatedTarget, InputDevice* sourceDevice)
     {
-        return adoptRefWillBeNoop(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
+        return adoptRefWillBeNoop(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget, sourceDevice));
     }
 
     static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, const FocusEventInit& initializer)
@@ -62,7 +62,7 @@ public:
 
 private:
     FocusEvent();
-    FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int, EventTarget*);
+    FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int, EventTarget*, InputDevice*);
     FocusEvent(const AtomicString& type, const FocusEventInit&);
 
     RefPtrWillBeMember<EventTarget> m_relatedTarget;

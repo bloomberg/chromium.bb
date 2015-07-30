@@ -54,14 +54,14 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
     return Traversal<HTMLFormControlElement>::next(*fieldset, fieldset);
 }
 
-void HTMLLegendElement::focus(bool, WebFocusType type)
+void HTMLLegendElement::focus(bool, WebFocusType type, InputDevice* sourceDevice)
 {
     if (isFocusable())
-        Element::focus(true, type);
+        Element::focus(true, type, sourceDevice);
 
     // To match other browsers' behavior, never restore previous selection.
     if (HTMLFormControlElement* control = associatedControl())
-        control->focus(false, type);
+        control->focus(false, type, sourceDevice);
 }
 
 void HTMLLegendElement::accessKeyAction(bool sendMouseEvents)

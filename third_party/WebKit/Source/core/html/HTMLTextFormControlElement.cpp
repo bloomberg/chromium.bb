@@ -80,20 +80,20 @@ Node::InsertionNotificationRequest HTMLTextFormControlElement::insertedInto(Cont
     return InsertionDone;
 }
 
-void HTMLTextFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
+void HTMLTextFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
 {
     if (supportsPlaceholder())
         updatePlaceholderVisibility(false);
     handleFocusEvent(oldFocusedElement, type);
-    HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedElement, type);
+    HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedElement, type, sourceDevice);
 }
 
-void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
+void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDevice* sourceDevice)
 {
     if (supportsPlaceholder())
         updatePlaceholderVisibility(false);
     handleBlurEvent();
-    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type);
+    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type, sourceDevice);
 }
 
 void HTMLTextFormControlElement::defaultEventHandler(Event* event)

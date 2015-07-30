@@ -122,6 +122,7 @@ class HTMLImportsController;
 class HTMLLinkElement;
 class HTMLScriptElement;
 class HitTestRequest;
+class InputDevice;
 class LayoutPoint;
 class LiveNodeListBase;
 class Locale;
@@ -583,7 +584,7 @@ public:
     String selectedStylesheetSet() const;
     void setSelectedStylesheetSet(const String&);
 
-    bool setFocusedElement(PassRefPtrWillBeRawPtr<Element>, WebFocusType = WebFocusTypeNone);
+    bool setFocusedElement(PassRefPtrWillBeRawPtr<Element>, WebFocusType = WebFocusTypeNone, InputDevice* sourceDevice = nullptr);
     Element* focusedElement() const { return m_focusedElement.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }

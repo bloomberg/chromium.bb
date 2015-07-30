@@ -38,5 +38,14 @@
     keyboardevent = new KeyboardEvent("keydown", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
     shouldBeNonNull("keyboardevent.sourceDevice");
     shouldBeFalse("keyboardevent.sourceDevice.firesTouchEvents");
+    
+    // Creating FocusEvent.
+    var focusevent = new FocusEvent("focusevent");
+    shouldBeNonNull("focusevent");
+    shouldBeNull("focusevent.sourceDevice");
+
+    focusevent = new FocusEvent("focusevent", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
+    shouldBeNonNull("focusevent.sourceDevice");
+    shouldBeFalse("focusevent.sourceDevice.firesTouchEvents");
 
 </script>

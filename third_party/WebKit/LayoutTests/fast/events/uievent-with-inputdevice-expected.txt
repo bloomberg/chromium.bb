@@ -19,6 +19,10 @@ PASS keyboardevent is non-null.
 PASS keyboardevent.sourceDevice is null
 PASS keyboardevent.sourceDevice is non-null.
 PASS keyboardevent.sourceDevice.firesTouchEvents is false
+PASS focusevent is non-null.
+PASS focusevent.sourceDevice is null
+PASS focusevent.sourceDevice is non-null.
+PASS focusevent.sourceDevice.firesTouchEvents is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

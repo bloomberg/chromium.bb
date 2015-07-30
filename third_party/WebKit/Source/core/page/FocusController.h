@@ -39,6 +39,7 @@ namespace blink {
 struct FocusCandidate;
 class Element;
 class Frame;
+class InputDevice;
 class Node;
 class Page;
 
@@ -53,10 +54,10 @@ public:
     Frame* focusedOrMainFrame() const;
 
     bool setInitialFocus(WebFocusType);
-    bool advanceFocus(WebFocusType type) { return advanceFocus(type, false); }
+    bool advanceFocus(WebFocusType type, InputDevice* sourceDevice = nullptr) { return advanceFocus(type, false, sourceDevice); }
     Element* findFocusableElement(WebFocusType, Node&);
 
-    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone);
+    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone, InputDevice* sourceDevice = nullptr);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }
@@ -69,9 +70,9 @@ public:
 private:
     explicit FocusController(Page*);
 
-    bool advanceFocus(WebFocusType, bool initialFocus);
+    bool advanceFocus(WebFocusType, bool initialFocus, InputDevice* sourceDevice = nullptr);
     bool advanceFocusDirectionally(WebFocusType);
-    bool advanceFocusInDocumentOrder(WebFocusType, bool initialFocus);
+    bool advanceFocusInDocumentOrder(WebFocusType, bool initialFocus, InputDevice* sourceDevice);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);

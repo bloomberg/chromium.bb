@@ -385,11 +385,11 @@ void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, WebFocusType
     m_inputType->enableSecureTextInput();
 }
 
-void HTMLInputElement::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType type)
+void HTMLInputElement::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
 {
     if (eventType == EventTypeNames::DOMFocusIn)
         m_inputTypeView->handleFocusInEvent(oldFocusedElement, type);
-    HTMLFormControlElementWithState::dispatchFocusInEvent(eventType, oldFocusedElement, type);
+    HTMLFormControlElementWithState::dispatchFocusInEvent(eventType, oldFocusedElement, type, sourceDevice);
 }
 
 void HTMLInputElement::handleBlurEvent()

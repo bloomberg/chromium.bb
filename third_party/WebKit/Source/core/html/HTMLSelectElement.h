@@ -140,8 +140,8 @@ private:
 
     bool shouldShowFocusRingOnMouseFocus() const override;
 
-    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
-    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override;
+    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice) override;
+    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDevice* sourceDevice) override;
 
     bool canStartSelection() const override { return false; }
 

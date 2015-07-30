@@ -655,12 +655,12 @@ bool FocusController::setInitialFocus(WebFocusType type)
     return didAdvanceFocus;
 }
 
-bool FocusController::advanceFocus(WebFocusType type, bool initialFocus)
+bool FocusController::advanceFocus(WebFocusType type, bool initialFocus, InputDevice* sourceDevice)
 {
     switch (type) {
     case WebFocusTypeForward:
     case WebFocusTypeBackward:
-        return advanceFocusInDocumentOrder(type, initialFocus);
+        return advanceFocusInDocumentOrder(type, initialFocus, sourceDevice);
     case WebFocusTypeLeft:
     case WebFocusTypeRight:
     case WebFocusTypeUp:
@@ -673,7 +673,7 @@ bool FocusController::advanceFocus(WebFocusType type, bool initialFocus)
     return false;
 }
 
-bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initialFocus)
+bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initialFocus, InputDevice* sourceDevice)
 {
     // FIXME: Focus advancement won't work with externally rendered frames until after
     // inter-frame focus control is moved out of Blink.
@@ -749,7 +749,7 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
         frame->selection().setSelection(newSelection);
     }
 
-    element->focus(false, type);
+    element->focus(false, type, sourceDevice);
     return true;
 }
 
@@ -796,7 +796,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
     selection.clear();
 }
 
-bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, WebFocusType type)
+bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, WebFocusType type, InputDevice* sourceDevice)
 {
     RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = toLocalFrame(focusedFrame());
     RefPtrWillBeRawPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : nullptr;
@@ -835,7 +835,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr
     RefPtrWillBeRawPtr<Element> protect = element;
     ALLOW_UNUSED_LOCAL(protect);
     if (newDocument) {
-        bool successfullyFocused = newDocument->setFocusedElement(element, type);
+        bool successfullyFocused = newDocument->setFocusedElement(element, type, sourceDevice);
         if (!successfullyFocused)
             return false;
     }

@@ -166,18 +166,19 @@ bool SVGAElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || SVGGraphicsElement::supportsFocus();
 }
 
-void SVGAElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
+// TODO(lanwei): Will add the InputDevice when SVGAElement gets focus later, see https://crbug.com/476530.
+void SVGAElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = type == WebFocusTypeMouse;
-    SVGGraphicsElement::dispatchFocusEvent(oldFocusedElement, type);
+    SVGGraphicsElement::dispatchFocusEvent(oldFocusedElement, type, sourceDevice);
 }
 
-void SVGAElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
+void SVGAElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDevice* sourceDevice)
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = false;
-    SVGGraphicsElement::dispatchBlurEvent(newFocusedElement, type);
+    SVGGraphicsElement::dispatchBlurEvent(newFocusedElement, type, sourceDevice);
 }
 
 bool SVGAElement::isURLAttribute(const Attribute& attribute) const

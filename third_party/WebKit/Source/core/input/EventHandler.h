@@ -226,7 +226,7 @@ private:
 
     bool handleMouseMoveOrLeaveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = nullptr, bool onlyUpdateScrollbars = false, bool forceLeave = false);
     bool handleMousePressEvent(const MouseEventWithHitTestResults&);
-    bool handleMouseFocus(const MouseEventWithHitTestResults&);
+    bool handleMouseFocus(const MouseEventWithHitTestResults&, InputDevice* sourceDevice);
     bool handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 
