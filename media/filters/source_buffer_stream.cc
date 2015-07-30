@@ -89,6 +89,26 @@ std::string RangesToString(const SourceBufferStream::RangeList& ranges) {
   return ss.str();
 }
 
+std::string BufferQueueToLogString(
+    const SourceBufferStream::BufferQueue& buffers) {
+  std::stringstream result;
+  if (buffers.front()->GetDecodeTimestamp().InMicroseconds() ==
+      buffers.front()->timestamp().InMicroseconds() &&
+      buffers.back()->GetDecodeTimestamp().InMicroseconds() ==
+      buffers.back()->timestamp().InMicroseconds()) {
+    result << "dts/pts=[" << buffers.front()->timestamp().InSecondsF() << ";"
+           << buffers.back()->timestamp().InSecondsF() << "(last frame dur="
+           << buffers.back()->duration().InSecondsF() << ")]";
+  } else {
+    result << "dts=[" << buffers.front()->GetDecodeTimestamp().InSecondsF()
+           << ";" << buffers.back()->GetDecodeTimestamp().InSecondsF()
+           << "] pts=[" << buffers.front()->timestamp().InSecondsF() << ";"
+           << buffers.back()->timestamp().InSecondsF() << "(last frame dur="
+           << buffers.back()->duration().InSecondsF() << ")]";
+  }
+  return result.str();
+}
+
 SourceBufferRange::GapPolicy TypeToGapPolicy(SourceBufferStream::Type type) {
   switch (type) {
     case SourceBufferStream::kAudio:
@@ -229,12 +249,8 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   DCHECK(media_segment_start_time_ <= buffers.front()->GetDecodeTimestamp());
   DCHECK(!end_of_stream_);
 
-  DVLOG(1) << __FUNCTION__ << " " << GetStreamTypeName() << ": buffers dts=["
-           << buffers.front()->GetDecodeTimestamp().InSecondsF() << ";"
-           << buffers.back()->GetDecodeTimestamp().InSecondsF() << "] pts=["
-           << buffers.front()->timestamp().InSecondsF() << ";"
-           << buffers.back()->timestamp().InSecondsF() << "(last frame dur="
-           << buffers.back()->duration().InSecondsF() << ")]";
+  DVLOG(1) << __FUNCTION__ << " " << GetStreamTypeName()
+           << ": buffers " << BufferQueueToLogString(buffers);
 
   // New media segments must begin with a keyframe.
   // TODO(wolenetz): Relax this requirement. See http://crbug.com/229412.
