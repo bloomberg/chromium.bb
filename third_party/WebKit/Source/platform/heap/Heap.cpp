@@ -1168,8 +1168,9 @@ void FreeList::addToFreeList(Address address, size_t size)
         m_biggestFreeListIndex = index;
 }
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 NO_SANITIZE_ADDRESS
+NO_SANITIZE_MEMORY
 void NEVER_INLINE FreeList::zapFreedMemory(Address address, size_t size)
 {
     for (size_t i = 0; i < size; i++) {
