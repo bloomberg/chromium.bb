@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'chromecast_branding%': 'Chromium',
+    'chromecast_branding%': 'public',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chromecast_strings',
   },
   'targets': [
@@ -30,7 +30,7 @@
         'chromecast_settings',
       ],
       'conditions': [
-        ['chromecast_branding=="Chrome"', {
+        ['chromecast_branding!="public"', {
           'dependencies': [
             'internal/chromecast_locales.gyp:chromecast_app_strings',
           ],
