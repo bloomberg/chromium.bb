@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include <expat.h>
 #include <getopt.h>
+#include <limits.h>
 
 #include "wayland-util.h"
 
@@ -499,6 +500,29 @@ free_interface(struct interface *interface)
 	free(interface);
 }
 
+/* convert string to unsigned integer,
+ * in the case of error, return -1 */
+static int
+strtouint(const char *str)
+{
+	long int ret;
+	char *end;
+	int prev_errno = errno;
+
+	errno = 0;
+	ret = strtol(str, &end, 10);
+	if (errno != 0 || end == str || *end != '\0')
+		return -1;
+
+	/* check range */
+	if (ret < 0 || ret > INT_MAX) {
+		return -1;
+	}
+
+	errno = prev_errno;
+	return (int)ret;
+}
+
 static void
 start_element(void *data, const char *element_name, const char **atts)
 {
@@ -516,7 +540,6 @@ start_element(void *data, const char *element_name, const char **atts)
 	const char *summary = NULL;
 	const char *since = NULL;
 	const char *allow_null = NULL;
-	char *end;
 	int i, version = 0;
 
 	ctx->loc.line_number = XML_GetCurrentLineNumber(ctx->parser);
@@ -524,7 +547,9 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
 		if (strcmp(atts[i], "version") == 0)
-			version = atoi(atts[i + 1]);
+			version = strtouint(atts[i + 1]);
+			if (version == -1)
+				fail(&ctx->loc, "wrong version (%s)", atts[i + 1]);
 		if (strcmp(atts[i], "type") == 0)
 			type = atts[i + 1];
 		if (strcmp(atts[i], "value") == 0)
@@ -577,13 +602,9 @@ start_element(void *data, const char *element_name, const char **atts)
 			message->destructor = 1;
 
 		if (since != NULL) {
-			int prev_errno = errno;
-			errno = 0;
-			version = strtol(since, &end, 0);
-			if (errno != 0 || end == since || *end != '\0')
-				fail(&ctx->loc,
-				     "invalid integer (%s)\n", since);
-			errno = prev_errno;
+			version = strtouint(since);
+			if (version == -1)
+				fail(&ctx->loc, "invalid integer (%s)\n", since);
 		} else {
 			version = 1;
 		}
