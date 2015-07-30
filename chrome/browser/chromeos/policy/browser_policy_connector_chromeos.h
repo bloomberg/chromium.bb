@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_BROWSER_POLICY_CONNECTOR_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_BROWSER_POLICY_CONNECTOR_CHROMEOS_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -63,7 +65,7 @@ class BrowserPolicyConnectorChromeOS
   bool IsEnterpriseManaged();
 
   // Returns the enterprise domain if device is managed.
-  std::string GetEnterpriseDomain();
+  std::string GetEnterpriseDomain() const;
 
   // Returns the device asset ID if it is set.
   std::string GetDeviceAssetID();
@@ -143,6 +145,8 @@ class BrowserPolicyConnectorChromeOS
   // DeviceCloudPolicyManagerChromeOS::Observer:
   void OnDeviceCloudPolicyManagerConnected() override;
   void OnDeviceCloudPolicyManagerDisconnected() override;
+
+  chromeos::AffiliationIDSet GetDeviceAffiliationIDs() const;
 
  private:
   // Set the timezone as soon as the policies are available.
