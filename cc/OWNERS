@@ -6,8 +6,8 @@
 # ask for informal reviews.
 
 enne@chromium.org
-jamesr@chromium.org
-nduca@chromium.org
+danakj@chromium.org
+vmpstr@chromium.org
 
 # layers / quads / passes
 enne@chromium.org
@@ -17,8 +17,7 @@ danakj@chromium.org
 piman@chromium.org
 danakj@chromium.org
 
-# resource management / mac-specific
-# unofficial: epenner@chromium.org
+# mac-specific
 ccameron@chromium.org
 
 # input, gestures, scrolling
@@ -46,6 +45,10 @@ vollick@chromium.org
 # animation
 vollick@chromium.org
 ajuma@chromium.org
+
+# we miss you
+# jamesr@chromium.org
+# nduca@chromium.org
 
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
