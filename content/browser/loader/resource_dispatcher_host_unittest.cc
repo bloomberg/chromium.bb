@@ -31,15 +31,20 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/net_errors.h"
@@ -208,19 +213,24 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
   }
 }
 
-// This is used to emulate different sub-processes, since this filter will
-// have a different ID than the original.
-class TestFilter : public ResourceMessageFilter {
+// This is used to create a filter matching a specified child id.
+class TestFilterSpecifyingChild : public ResourceMessageFilter {
  public:
-  explicit TestFilter(ResourceContext* resource_context)
+  explicit TestFilterSpecifyingChild(ResourceContext* resource_context,
+                                     int process_id)
       : ResourceMessageFilter(
-            ChildProcessHostImpl::GenerateChildProcessUniqueId(),
-            PROCESS_TYPE_RENDERER, NULL, NULL, NULL, NULL, NULL,
-            base::Bind(&TestFilter::GetContexts, base::Unretained(this))),
+            process_id,
+            PROCESS_TYPE_RENDERER,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            base::Bind(&TestFilterSpecifyingChild::GetContexts,
+                       base::Unretained(this))),
         resource_context_(resource_context),
         canceled_(false),
         received_after_canceled_(0) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
     set_peer_process_for_testing(base::Process::Current());
   }
 
@@ -240,7 +250,7 @@ class TestFilter : public ResourceMessageFilter {
   ResourceContext* resource_context() { return resource_context_; }
 
  protected:
-  ~TestFilter() override {}
+  ~TestFilterSpecifyingChild() override {}
 
  private:
   void GetContexts(const ResourceHostMsg_Request& request,
@@ -254,9 +264,23 @@ class TestFilter : public ResourceMessageFilter {
   bool canceled_;
   int received_after_canceled_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestFilter);
+  DISALLOW_COPY_AND_ASSIGN(TestFilterSpecifyingChild);
 };
 
+class TestFilter : public TestFilterSpecifyingChild {
+ public:
+  explicit TestFilter(ResourceContext* resource_context)
+      : TestFilterSpecifyingChild(
+            resource_context,
+            ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
+  }
+
+ protected:
+  ~TestFilter() override {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(child_id());
+  }
+};
 
 // This class forwards the incoming messages to the ResourceDispatcherHostTest.
 // For the test, we want all the incoming messages to go to the same place,
@@ -760,6 +784,37 @@ class ShareableFileReleaseWaiter {
   DISALLOW_COPY_AND_ASSIGN(ShareableFileReleaseWaiter);
 };
 
+// For verifying notifications sent to the WebContents by the
+// ResourceDispatcherHostImpl.
+class TestWebContentsObserver : public WebContentsObserver {
+ public:
+  TestWebContentsObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        resource_request_redirect_count_(0),
+        resource_response_start_count_(0) {}
+
+  void DidGetRedirectForResourceRequest(
+      RenderFrameHost* render_frame_host,
+      const ResourceRedirectDetails& details) override {
+    ++resource_request_redirect_count_;
+  }
+
+  void DidGetResourceResponseStart(
+      const ResourceRequestDetails& details) override {
+    ++resource_response_start_count_;
+  }
+
+  int resource_response_start_count() { return resource_response_start_count_; }
+
+  int resource_request_redirect_count() {
+    return resource_request_redirect_count_;
+  }
+
+ private:
+  int resource_request_redirect_count_;
+  int resource_response_start_count_;
+};
+
 // Information used to create resource requests that use URLRequestLoadInfoJobs.
 // The child_id is just that of ResourceDispatcherHostTest::filter_.
 struct LoadInfoTestRequestInfo {
@@ -830,9 +885,22 @@ class ResourceDispatcherHostTest : public testing::Test,
   void SetUp() override {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(0);
     HandleScheme("test");
+    scoped_refptr<SiteInstance> site_instance =
+        SiteInstance::Create(browser_context_.get());
+    web_contents_.reset(
+        WebContents::Create(WebContents::CreateParams(browser_context_.get())));
+    web_contents_observer_.reset(
+        new TestWebContentsObserver(web_contents_.get()));
+    web_contents_filter_ = new TestFilterSpecifyingChild(
+        browser_context_->GetResourceContext(),
+        web_contents_->GetRenderProcessHost()->GetID());
+    child_ids_.insert(web_contents_->GetRenderProcessHost()->GetID());
   }
 
   void TearDown() override {
+    web_contents_observer_.reset();
+    web_contents_.reset();
+
     EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
     URLRequestTestDelayedStartJob::ClearQueue();
 
@@ -875,6 +943,8 @@ class ResourceDispatcherHostTest : public testing::Test,
                                        int request_id,
                                        const GURL& url,
                                        ResourceType type);
+
+  void MakeWebContentsAssociatedTestRequest(int request_id, const GURL& url);
 
   void CancelRequest(int request_id);
   void RendererCancelRequest(int request_id) {
@@ -952,7 +1022,10 @@ class ResourceDispatcherHostTest : public testing::Test,
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<TestURLRequestJobFactory> job_factory_;
+  scoped_ptr<WebContents> web_contents_;
+  scoped_ptr<TestWebContentsObserver> web_contents_observer_;
   scoped_refptr<ForwardingFilter> filter_;
+  scoped_refptr<TestFilterSpecifyingChild> web_contents_filter_;
   net::TestNetworkDelegate network_delegate_;
   ResourceDispatcherHostImpl host_;
   ResourceIPCAccumulator accum_;
@@ -963,6 +1036,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   bool send_data_received_acks_;
   std::set<int> child_ids_;
   scoped_ptr<base::RunLoop> wait_for_request_complete_loop_;
+  RenderViewHostTestEnabler render_view_host_test_enabler_;
 };
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
@@ -982,6 +1056,19 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
       CreateResourceRequest("GET", type, url);
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
   host_.OnMessageReceived(msg, filter);
+  KickOffRequest();
+}
+
+void ResourceDispatcherHostTest::MakeWebContentsAssociatedTestRequest(
+    int request_id,
+    const GURL& url) {
+  ResourceHostMsg_Request request =
+      CreateResourceRequest("GET", RESOURCE_TYPE_SUB_RESOURCE, url);
+  request.origin_pid = web_contents_->GetRenderProcessHost()->GetID();
+  request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
+  ResourceHostMsg_RequestResource msg(web_contents_->GetRoutingID(), request_id,
+                                      request);
+  host_.OnMessageReceived(msg, web_contents_filter_.get());
   KickOffRequest();
 }
 
@@ -3215,6 +3302,31 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
             (*load_info_map)[kId2].load_state.state);
   EXPECT_EQ(0u, (*load_info_map)[kId2].upload_position);
   EXPECT_EQ(0u, (*load_info_map)[kId2].upload_size);
+}
+
+// Confirm that resource response started notifications are correctly
+// transmitted to the WebContents.
+TEST_F(ResourceDispatcherHostTest, TransferResponseStarted) {
+  int initial_count = web_contents_observer_->resource_response_start_count();
+
+  MakeWebContentsAssociatedTestRequest(1, net::URLRequestTestJob::test_url_1());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(initial_count + 1,
+            web_contents_observer_->resource_response_start_count());
+}
+
+// Confirm that request redirected notifications are correctly
+// transmitted to the WebContents.
+TEST_F(ResourceDispatcherHostTest, TransferRequestRedirected) {
+  int initial_count = web_contents_observer_->resource_request_redirect_count();
+
+  MakeWebContentsAssociatedTestRequest(
+      1, net::URLRequestTestJob::test_url_redirect_to_url_2());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(initial_count + 1,
+            web_contents_observer_->resource_request_redirect_count());
 }
 
 net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
