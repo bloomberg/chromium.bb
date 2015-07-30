@@ -6,7 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -32,6 +35,8 @@ using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::Manifest;
+
+const char kFakeExtensionPrefix[] = "fakeextension";
 
 SyncExtensionHelper::ExtensionState::ExtensionState()
     : enabled_state(ENABLED), disable_reasons(0), incognito_enabled(false) {}
@@ -60,6 +65,7 @@ void SyncExtensionHelper::SetupIfNecessary(SyncTest* test) {
   if (setup_completed_)
     return;
 
+  extension_name_prefix_ = kFakeExtensionPrefix + base::GenerateGUID();
   for (int i = 0; i < test->num_clients(); ++i) {
     SetupProfile(test->GetProfile(i));
   }
@@ -281,6 +287,22 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
     }
     ++it1;
     ++it2;
+  }
+  return true;
+}
+
+std::string SyncExtensionHelper::CreateFakeExtensionName(int index) {
+  return extension_name_prefix_ + base::IntToString(index);
+}
+
+bool SyncExtensionHelper::ExtensionNameToIndex(const std::string& name,
+                                               int* index) {
+  if (!(base::StartsWith(name, extension_name_prefix_,
+                         base::CompareCase::SENSITIVE) &&
+        base::StringToInt(name.substr(extension_name_prefix_.size()), index))) {
+    LOG(WARNING) << "Unable to convert extension name \"" << name
+                 << "\" to index";
+    return false;
   }
   return true;
 }

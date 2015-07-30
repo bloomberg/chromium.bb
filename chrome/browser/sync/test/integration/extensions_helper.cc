@@ -4,16 +4,16 @@
 
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 
-#include <cstring>
-
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_installer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
@@ -22,7 +22,15 @@ using sync_datatype_helper::test;
 
 namespace extensions_helper {
 
-const char extension_name_prefix[] = "fakeextension";
+// Returns a unique extension name based in the integer |index|.
+std::string CreateFakeExtensionName(int index) {
+  return SyncExtensionHelper::GetInstance()->CreateFakeExtensionName(index);
+}
+
+bool HasSameExtensions(int index1, int index2) {
+  return SyncExtensionHelper::GetInstance()->ExtensionStatesMatch(
+      test()->GetProfile(index1), test()->GetProfile(index2));
+}
 
 bool HasSameExtensionsAsVerifier(int index) {
   return SyncExtensionHelper::GetInstance()->ExtensionStatesMatch(
@@ -78,7 +86,7 @@ std::vector<int> GetInstalledExtensions(Profile* profile) {
   for (std::vector<std::string>::const_iterator it = names.begin();
        it != names.end(); ++it) {
     int index;
-    if (ExtensionNameToIndex(*it, &index)) {
+    if (SyncExtensionHelper::GetInstance()->ExtensionNameToIndex(*it, &index)) {
       indices.push_back(index);
     }
   }
@@ -119,27 +127,17 @@ void InstallExtensionsPendingForSync(Profile* profile) {
   SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(profile);
 }
 
-std::string CreateFakeExtensionName(int index) {
-  return extension_name_prefix + base::IntToString(index);
-}
-
-bool ExtensionNameToIndex(const std::string& name, int* index) {
-  if (!base::StartsWith(name, extension_name_prefix,
-                        base::CompareCase::SENSITIVE) ||
-      !base::StringToInt(name.substr(strlen(extension_name_prefix)), index)) {
-    LOG(WARNING) << "Unable to convert extension name \"" << name
-                 << "\" to index";
-    return false;
-  }
-  return true;
-}
-
 namespace {
 
 // A helper class to implement waiting for a set of profiles to have matching
-// extensions lists.
+// extensions lists. It waits for calls on both interfaces:
+// ExtensionRegistryObserver and NotificationObserver. Observing
+// NOTIFICATION_EXTENSION_UPDATING_STARTED notification is needed for tests
+// against local server because in such tests extensions are not installed and
+// ExtensionRegistryObserver methods are not called.
 class ExtensionsMatchChecker : public StatusChangeChecker,
-                               public extensions::ExtensionRegistryObserver {
+                               public extensions::ExtensionRegistryObserver,
+                               public content::NotificationObserver {
  public:
   explicit ExtensionsMatchChecker(const std::vector<Profile*>& profiles);
   ~ExtensionsMatchChecker() override;
@@ -162,11 +160,17 @@ class ExtensionsMatchChecker : public StatusChangeChecker,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   void Wait();
 
  private:
   std::vector<Profile*> profiles_;
   ScopedVector<SyncedExtensionInstaller> synced_extension_installers_;
+  content::NotificationRegistrar registrar_;
   bool observing_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMatchChecker);
@@ -234,6 +238,14 @@ void ExtensionsMatchChecker::OnExtensionUninstalled(
   CheckExitCondition();
 }
 
+void ExtensionsMatchChecker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED, type);
+  CheckExitCondition();
+}
+
 void ExtensionsMatchChecker::Wait() {
   for (std::vector<Profile*>::iterator it = profiles_.begin();
        it != profiles_.end();
@@ -244,6 +256,8 @@ void ExtensionsMatchChecker::Wait() {
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(*it);
     registry->AddObserver(this);
+    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+                   content::Source<Profile>(*it));
   }
 
   observing_ = true;
@@ -259,9 +273,8 @@ void ExtensionsMatchChecker::Wait() {
 
 }  // namespace
 
-bool AwaitAllProfilesHaveSameExtensionsAsVerifier() {
+bool AwaitAllProfilesHaveSameExtensions() {
   std::vector<Profile*> profiles;
-  profiles.push_back(test()->verifier());
   for (int i = 0; i < test()->num_clients(); ++i) {
     profiles.push_back(test()->GetProfile(i));
   }

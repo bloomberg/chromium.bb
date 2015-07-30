@@ -74,6 +74,13 @@ class SyncExtensionHelper {
   // they are all in the same state.
   static bool ExtensionStatesMatch(Profile* profile1, Profile* profile2);
 
+  // Returns a unique extension name based in the integer |index|.
+  std::string CreateFakeExtensionName(int index);
+
+  // Converts a fake extension name back into the index used to generate it.
+  // Returns true if successful, false on failure.
+  bool ExtensionNameToIndex(const std::string& name, int* index);
+
  private:
   struct ExtensionState {
     enum EnabledState { DISABLED, PENDING, ENABLED };
@@ -113,6 +120,7 @@ class SyncExtensionHelper {
       Profile* profile, const std::string& name,
       extensions::Manifest::Type type) WARN_UNUSED_RESULT;
 
+  std::string extension_name_prefix_;
   ProfileExtensionNameMap profile_extensions_;
   StringMap id_to_name_;
   TypeMap id_to_type_;
