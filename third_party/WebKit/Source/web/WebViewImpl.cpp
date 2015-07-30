@@ -1931,7 +1931,7 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)
     ASSERT(!isAcceleratedCompositingActive());
 
     double paintStart = currentTime();
-    PageWidgetDelegate::paint(*m_page, pageOverlays(), canvas, rect, *m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::paint(*m_page, canvas, rect, *m_page->deprecatedLocalMainFrame());
     double paintEnd = currentTime();
     double pixelsPerSec = (rect.width * rect.height) / (paintEnd - paintStart);
     Platform::current()->histogramCustomCounts("Renderer4.SoftwarePaintDurationMS", (paintEnd - paintStart) * 1000, 0, 120, 30);
@@ -1946,7 +1946,7 @@ void WebViewImpl::paintCompositedDeprecated(WebCanvas* canvas, const WebRect& re
     //       the compositor.
     ASSERT(isAcceleratedCompositingActive());
 
-    PageWidgetDelegate::paintIgnoringCompositing(*m_page, pageOverlays(), canvas, rect, *m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::paintIgnoringCompositing(*m_page, canvas, rect, *m_page->deprecatedLocalMainFrame());
 }
 #endif
 

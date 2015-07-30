@@ -67,9 +67,6 @@ protected:
     WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
 
     template <typename OverlayType>
-    void runPageOverlayTestWithUnacceleratedCompositing();
-
-    template <typename OverlayType>
     void runPageOverlayTestWithAcceleratedCompositing();
 
 private:
@@ -134,46 +131,6 @@ public:
     MockCanvas(int width, int height) : SkCanvas(width, height) { }
     MOCK_METHOD2(onDrawRect, void(const SkRect&, const SkPaint&));
 };
-
-template <typename OverlayType>
-void PageOverlayTest::runPageOverlayTestWithUnacceleratedCompositing()
-{
-    initialize(UnacceleratedCompositing);
-
-    OverlayType overlay(SK_ColorYELLOW);
-    webViewImpl()->addPageOverlay(&overlay, 0 /* zOrder */);
-    EXPECT_TRUE(webViewImpl()->pageOverlays() && !webViewImpl()->pageOverlays()->empty());
-    webViewImpl()->layout();
-
-    MockCanvas canvas(viewportWidth, viewportHeight);
-    EXPECT_CALL(canvas, onDrawRect(_, _)).Times(AtLeast(1));
-    EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(viewportWidth, viewportHeight), Property(&SkPaint::getColor, SK_ColorYELLOW)));
-    webViewImpl()->paint(&canvas, WebRect(0, 0, viewportWidth, viewportHeight));
-}
-
-TEST_F(PageOverlayTest, SimpleCanvasOverlay_UnacceleratedCompositing_NoSlimmingPaint)
-{
-    SlimmingPaintScope slimmingPaintEnabled(false);
-    runPageOverlayTestWithUnacceleratedCompositing<SimpleCanvasOverlay>();
-}
-
-TEST_F(PageOverlayTest, SimpleCanvasOverlay_UnacceleratedCompositing_SlimmingPaint)
-{
-    SlimmingPaintScope slimmingPaintEnabled(true);
-    runPageOverlayTestWithUnacceleratedCompositing<SimpleCanvasOverlay>();
-}
-
-TEST_F(PageOverlayTest, PrivateGraphicsContextOverlay_UnacceleratedCompositing_NoSlimmingPaint)
-{
-    SlimmingPaintScope slimmingPaintEnabled(false);
-    runPageOverlayTestWithUnacceleratedCompositing<PrivateGraphicsContextOverlay>();
-}
-
-TEST_F(PageOverlayTest, PrivateGraphicsContextOverlay_UnacceleratedCompositing_SlimmingPaint)
-{
-    SlimmingPaintScope slimmingPaintEnabled(true);
-    runPageOverlayTestWithUnacceleratedCompositing<PrivateGraphicsContextOverlay>();
-}
 
 template <typename OverlayType>
 void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()

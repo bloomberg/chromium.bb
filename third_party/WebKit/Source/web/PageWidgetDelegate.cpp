@@ -46,7 +46,6 @@
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/web/WebInputEvent.h"
-#include "web/PageOverlayList.h"
 #include "web/WebInputEventConversion.h"
 #include "wtf/CurrentTime.h"
 
@@ -66,7 +65,7 @@ void PageWidgetDelegate::layout(Page& page, LocalFrame& root)
     page.animator().updateLayoutAndStyleForPainting(&root);
 }
 
-static void paintInternal(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+static void paintInternal(Page& page, WebCanvas* canvas,
     const WebRect& rect, LocalFrame& root, const GlobalPaintFlags globalPaintFlags)
 {
     if (rect.isEmpty())
@@ -92,8 +91,6 @@ static void paintInternal(Page& page, PageOverlayList* overlays, WebCanvas* canv
             ClipRecorder clipRecorder(paintContext, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
             view->paint(&paintContext, globalPaintFlags, dirtyRect);
-            if (overlays)
-                overlays->paintWebFrame(paintContext);
         } else if (!DrawingRecorder::useCachedDrawingIfPossible(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback)) {
             DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
             paintContext.fillRect(dirtyRect, Color::white);
@@ -102,16 +99,16 @@ static void paintInternal(Page& page, PageOverlayList* overlays, WebCanvas* canv
     pictureBuilder.endRecording()->playback(canvas);
 }
 
-void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+void PageWidgetDelegate::paint(Page& page, WebCanvas* canvas,
     const WebRect& rect, LocalFrame& root)
 {
-    paintInternal(page, overlays, canvas, rect, root, GlobalPaintNormalPhase);
+    paintInternal(page, canvas, rect, root, GlobalPaintNormalPhase);
 }
 
-void PageWidgetDelegate::paintIgnoringCompositing(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+void PageWidgetDelegate::paintIgnoringCompositing(Page& page, WebCanvas* canvas,
     const WebRect& rect, LocalFrame& root)
 {
-    paintInternal(page, overlays, canvas, rect, root, GlobalPaintFlattenCompositingLayers);
+    paintInternal(page, canvas, rect, root, GlobalPaintFlattenCompositingLayers);
 }
 
 bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
