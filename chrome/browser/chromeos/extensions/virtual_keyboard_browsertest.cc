@@ -156,7 +156,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, IsKeyboardLoaded) {
   ASSERT_TRUE(loaded);
 }
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, EndToEndTest) {
+// Disabled; http://crbug.com/515596
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_EndToEndTest) {
   // Get the virtual keyboard's render view host.
   content::RenderViewHost* keyboard_rvh =
       GetKeyboardRenderViewHost(kExtensionId);
