@@ -25,6 +25,7 @@
 #ifndef Font_h
 #define Font_h
 
+#include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"
@@ -193,9 +194,9 @@ inline float Font::tabWidth(const SimpleFontData& fontData, const TabSize& tabSi
         return fontDescription().letterSpacing();
     float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
 
-    // The smallest allowable tab space is letterSpacing(); if the distance
-    // to the next tab stop is less than that, advance an additional tab stop.
-    if (distanceToTabStop < fontDescription().letterSpacing())
+    // The smallest allowable tab space is letterSpacing() (but must be at least one layout unit).
+    // if the distance to the next tab stop is less than that, advance an additional tab stop.
+    if (distanceToTabStop < std::max(fontDescription().letterSpacing(), LayoutUnit::epsilon()))
         distanceToTabStop += baseTabWidth;
 
     return distanceToTabStop;
