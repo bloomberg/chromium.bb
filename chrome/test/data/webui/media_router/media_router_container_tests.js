@@ -119,8 +119,13 @@ cr.define('media_router_container', function() {
         ];
 
         fakeRouteList = [
-          new media_router.Route('id 1', 'sink id 1', 'Title 1', true),
-          new media_router.Route('id 2', 'sink id 2', 'Title 2', false),
+          new media_router.Route('id 1', 'sink id 1', 'Title 1', 0, true),
+          new media_router.Route('id 2', 'sink id 2', 'Title 2', 1, false),
+        ];
+
+        fakeRouteListWithLocalRoutesOnly = [
+          new media_router.Route('id 1', 'sink id 1', 'Title 1', 0, true),
+          new media_router.Route('id 2', 'sink id 2', 'Title 2', 1, true),
         ];
 
         fakeSinkList = [
@@ -185,6 +190,8 @@ cr.define('media_router_container', function() {
           var sinkList =
               container.$['sink-list'].querySelectorAll('paper-item');
 
+          // Start from the SINK_LIST view.
+          container.showSinkList_();
           checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
           MockInteractions.tap(sinkList[0]);
           checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
@@ -311,6 +318,33 @@ cr.define('media_router_container', function() {
           checkElementHidden(true, routeList[2]);
           done();
         });
+      });
+
+      // Tests the expected view when there is only one local active route and
+      // media_router_container is created for the first time.
+      test('initial view with one local route', function() {
+        container.sinkList = fakeSinkList;
+        container.routeList = fakeRouteList;
+
+        checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
+      });
+
+      // Tests the expected view when there are multiple local active routes
+      // and media_router_container is created for the first time.
+      test('initial view with multiple local routes', function() {
+        container.sinkList = fakeSinkList;
+        container.routeList = fakeRouteListWithLocalRoutesOnly;
+
+        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+      });
+
+      // Tests the expected view when there are no local active routes and
+      // media_router_container is created for the first time.
+      test('initial view with one local route', function() {
+        container.sinkList = fakeSinkList;
+        container.routeList = [];
+
+        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
       });
 
       // Tests for expected visible UI when the view is CAST_MODE_LIST.

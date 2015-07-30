@@ -103,6 +103,15 @@ Polymer({
     },
 
     /**
+     * The number of current local routes.
+     * @private {number}
+     */
+    localRouteCount_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
      * The list of current routes.
      * @type {!Array<!media_router.Route>}
      */
@@ -341,6 +350,20 @@ Polymer({
   },
 
   /**
+   * Updates |currentView_| if the dialog had just opened and there's
+   * only one local route.
+   *
+   * @param {?media_router.Route} route A local route.
+   * @private
+   */
+  maybeShowRouteDetailsOnOpen_: function(route) {
+    if (this.localRouteCount_ == 1 && this.justOpened_ && route) {
+      this.currentRoute_ = route;
+      this.currentView_ = this.CONTAINER_VIEW_.ROUTE_DETAILS;
+    }
+  },
+
+  /**
    * Creates a new route if |route| is null. Otherwise, shows the route
    * details.
    *
@@ -402,6 +425,13 @@ Polymer({
    */
   rebuildRouteMaps_: function() {
     this.routeMap_ = {};
+    this.localRouteCount_ = 0;
+
+    // Keeps track of the last local route we find in |routeList|. If
+    // |localRouteCount_| is eventually equal to one, |localRoute| would be the
+    // only current local route.
+    var localRoute = null;
+
     // Rebuild |sinkToRouteMap_| with a temporary map to avoid firing the
     // computed functions prematurely.
     var tempSinkToRouteMap = {};
@@ -409,9 +439,17 @@ Polymer({
     this.routeList.forEach(function(route) {
       this.routeMap_[route.id] = route;
       tempSinkToRouteMap[route.sinkId] = route;
+
+      if (route.isLocal) {
+        this.localRouteCount_++;
+        // It's OK if localRoute is updated multiple times; it is only used if
+        // |localRouteCount_| == 1, which implies it was only set once.
+        localRoute = route;
+      }
     }, this);
 
     this.sinkToRouteMap_ = tempSinkToRouteMap;
+    this.maybeShowRouteDetailsOnOpen_(localRoute);
   },
 
   /**
