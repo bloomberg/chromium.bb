@@ -282,6 +282,7 @@
         'touch/touch_device.cc',
         'touch/touch_device.h',
         'touch/touch_device_android.cc',
+        'touch/touch_device_ios.cc',
         'touch/touch_device_linux.cc',
         'touch/touch_device_win.cc',
         'touch/touch_editing_controller.cc',
