@@ -97,12 +97,7 @@ void DownloadItemNotification::OnNotificationClose() {
 
 void DownloadItemNotification::OnNotificationClick() {
   if (item_->IsDangerous()) {
-#if defined(FULL_SAFE_BROWSING)
-    DownloadCommands(item_).ExecuteCommand(
-        DownloadCommands::LEARN_MORE_SCANNING);
-#else
-    CloseNotificationByUser();
-#endif
+    // Do nothing.
     return;
   }
 
