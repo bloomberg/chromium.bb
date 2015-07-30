@@ -9,6 +9,7 @@
   border: 2px solid;
   margin-right: 20px;
   margin-bottom: 30px;
+  color: green;
 }
 .expected {
   margin-right: 40px;
@@ -51,10 +52,23 @@ assertInterpolation({
 }, [
   {at: -0.3, is: '24px 16px 0px 9px black'},
   {at: 0, is: '15px 10px 5px 6px black'},
-  {at: 0.3, is: '6px 4px 11px 3px rgb(0, 0, 0)'},
-  {at: 0.6, is: '-3px -2px 17px 0px rgb(0, 0, 0)'},
-  {at: 1, is: '-15px -10px 25px -4px rgb(0, 0, 0)'},
-  {at: 1.5, is: '-30px -20px 35px -9px rgb(0, 0, 0)'},
+  {at: 0.3, is: '6px 4px 11px 3px rgb(0, 38, 0)'},
+  {at: 0.6, is: '-3px -2px 17px 0px rgb(0, 77, 0)'},
+  {at: 1, is: '-15px -10px 25px -4px green'},
+  {at: 1.5, is: '-30px -20px 35px -9px rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: '10px 10px 10px 10px black',
+  to: '10px 10px 10px 10px currentColor',
+}, [
+  {at: -0.3, is: '10px 10px 10px 10px black'},
+  {at: 0, is: '10px 10px 10px 10px black'},
+  {at: 0.3, is: '10px 10px 10px 10px rgb(0, 38, 0)'},
+  {at: 0.6, is: '10px 10px 10px 10px rgb(0, 77, 0)'},
+  {at: 1, is: '10px 10px 10px 10px green'},
+  {at: 1.5, is: '10px 10px 10px 10px rgb(0, 192, 0)'},
 ]);
 
 // Test padding shorter lists

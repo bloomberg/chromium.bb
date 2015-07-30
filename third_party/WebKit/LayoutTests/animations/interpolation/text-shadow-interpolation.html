@@ -6,6 +6,7 @@
   font-size: 60pt;
   margin-right: 20px;
   margin-bottom: 30px;
+  color: green;
 }
 .expected {
   margin-right: 40px;
@@ -26,6 +27,19 @@ assertInterpolation({
   {at: 0.6, is: '-3px -2px 17px rgb(153, 99, 0)'},
   {at: 1, is: '-15px -10px 25px orange'},
   {at: 1.5, is: '-30px -20px 35px rgb(255, 248, 0)'},
+]);
+
+assertInterpolation({
+  property: 'text-shadow',
+  from: '10px 10px 10px black',
+  to: '10px 10px 10px currentColor'
+}, [
+  {at: -0.3, is: '10px 10px 10px black'},
+  {at: 0, is: '10px 10px 10px black'},
+  {at: 0.3, is: '10px 10px 10px rgb(0, 38, 0)'},
+  {at: 0.6, is: '10px 10px 10px rgb(0, 77, 0)'},
+  {at: 1, is: '10px 10px 10px green'},
+  {at: 1.5, is: '10px 10px 10px rgb(0, 192, 0)'},
 ]);
 </script>
 </body>
