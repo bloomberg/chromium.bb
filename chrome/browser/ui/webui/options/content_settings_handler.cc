@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -141,8 +143,7 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
 
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
-// Ownership of the pointer is passed to the caller.
-base::DictionaryValue* GetExceptionForPage(
+scoped_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
     const ContentSetting& setting,
@@ -155,13 +156,12 @@ base::DictionaryValue* GetExceptionForPage(
                            secondary_pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kSource, provider_name);
-  return exception;
+  return make_scoped_ptr(exception);
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
-// in the Geolocation exceptions table. Ownership of the pointer is passed to
-// the caller.
-base::DictionaryValue* GetGeolocationExceptionForPage(
+// in the Geolocation exceptions table.
+scoped_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
     const ContentSettingsPattern& origin,
     const ContentSettingsPattern& embedding_origin,
     ContentSetting setting) {
@@ -169,13 +169,12 @@ base::DictionaryValue* GetGeolocationExceptionForPage(
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kOrigin, origin.ToString());
   exception->SetString(kEmbeddingOrigin, embedding_origin.ToString());
-  return exception;
+  return make_scoped_ptr(exception);
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
-// in the desktop notifications exceptions table. Ownership of the pointer is
-// passed to the caller.
-base::DictionaryValue* GetNotificationExceptionForPage(
+// in the desktop notifications exceptions table.
+scoped_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSetting setting,
@@ -189,7 +188,7 @@ base::DictionaryValue* GetNotificationExceptionForPage(
   exception->SetString(kOrigin, primary_pattern.ToString());
   exception->SetString(kEmbeddingOrigin, embedding_origin);
   exception->SetString(kSource, provider_name);
-  return exception;
+  return make_scoped_ptr(exception);
 }
 
 // Returns true whenever the |extension| is hosted and has |permission|.
@@ -515,8 +514,18 @@ void ContentSettingsHandler::InitializeHandler() {
                  base::Unretained(this),
                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   pref_change_registrar_.Add(
+      prefs::kAudioCaptureAllowedUrls,
+      base::Bind(&ContentSettingsHandler::UpdateExceptionsViewFromModel,
+                 base::Unretained(this),
+                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+  pref_change_registrar_.Add(
       prefs::kVideoCaptureAllowed,
       base::Bind(&ContentSettingsHandler::UpdateSettingDefaultFromModel,
+                 base::Unretained(this),
+                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+  pref_change_registrar_.Add(
+      prefs::kVideoCaptureAllowedUrls,
+      base::Bind(&ContentSettingsHandler::UpdateExceptionsViewFromModel,
                  base::Unretained(this),
                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
   pref_change_registrar_.Add(
@@ -1091,6 +1100,46 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
                                    type_string, exceptions);
 }
 
+scoped_ptr<base::ListValue> ContentSettingsHandler::GetPolicyAllowedUrls(
+    ContentSettingsType type) {
+  DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+         type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  const base::ListValue* policy_urls = prefs->GetList(
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+          ? prefs::kAudioCaptureAllowedUrls
+          : prefs::kVideoCaptureAllowedUrls);
+
+  // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
+  std::vector<ContentSettingsPattern> patterns;
+  for (const base::Value* entry : *policy_urls) {
+    std::string url;
+    bool valid_string = entry->GetAsString(&url);
+    if (!valid_string)
+      continue;
+
+    ContentSettingsPattern pattern = ContentSettingsPattern::FromString(url);
+    if (!pattern.IsValid())
+      continue;
+
+    patterns.push_back(pattern);
+  }
+
+  std::sort(patterns.begin(), patterns.end());
+
+  scoped_ptr<base::ListValue> exceptions(new base::ListValue());
+  for (const ContentSettingsPattern& pattern : patterns) {
+    exceptions->Append(GetExceptionForPage(
+        pattern,
+        ContentSettingsPattern(),
+        CONTENT_SETTING_ALLOW,
+        kPolicyProviderId));
+  }
+
+  return exceptions.Pass();
+}
+
 void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
     const HostContentSettingsMap* map,
     ContentSettingsType type,
@@ -1120,15 +1169,13 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
 
   // Keep the exceptions sorted by provider so they will be displayed in
   // precedence order.
-  std::vector<std::vector<base::Value*> > all_provider_exceptions;
+  ScopedVector<base::ListValue> all_provider_exceptions;
   all_provider_exceptions.resize(HostContentSettingsMap::NUM_PROVIDER_TYPES);
+  for (auto& one_provider_exceptions : all_provider_exceptions)
+    one_provider_exceptions = new base::ListValue();
 
-  // The all_patterns_settings is sorted from the lowest precedence pattern to
-  // the highest (see operator< in ContentSettingsPattern), so traverse it in
-  // reverse to show the patterns with the highest precedence (the more specific
-  // ones) on the top.
-  for (AllPatternsSettings::reverse_iterator i = all_patterns_settings.rbegin();
-       i != all_patterns_settings.rend();
+  for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
+       i != all_patterns_settings.end();
        ++i) {
     const ContentSettingsPattern& primary_pattern = i->first.first;
     const OnePatternSettings& one_settings = i->second;
@@ -1142,19 +1189,19 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
       parent = one_settings.find(ContentSettingsPattern::Wildcard());
 
     const std::string& source = i->first.second;
-    std::vector<base::Value*>* this_provider_exceptions =
-        &all_provider_exceptions.at(
-            HostContentSettingsMap::GetProviderTypeFromSource(source));
+    base::ListValue* this_provider_exceptions =
+        all_provider_exceptions[
+            HostContentSettingsMap::GetProviderTypeFromSource(source)];
 
     // Add the "parent" entry for the non-embedded setting.
     ContentSetting parent_setting =
         parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
     const ContentSettingsPattern& secondary_pattern =
         parent == one_settings.end() ? primary_pattern : parent->first;
-    this_provider_exceptions->push_back(GetExceptionForPage(primary_pattern,
-                                                            secondary_pattern,
-                                                            parent_setting,
-                                                            source));
+    this_provider_exceptions->Append(GetExceptionForPage(primary_pattern,
+                                                         secondary_pattern,
+                                                         parent_setting,
+                                                         source));
 
     // Add the "children" for any embedded settings.
     for (OnePatternSettings::const_iterator j = one_settings.begin();
@@ -1164,7 +1211,7 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
         continue;
 
       ContentSetting content_setting = j->second;
-      this_provider_exceptions->push_back(GetExceptionForPage(
+      this_provider_exceptions->Append(GetExceptionForPage(
           primary_pattern,
           j->first,
           content_setting,
@@ -1172,9 +1219,24 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
     }
   }
 
-  for (size_t i = 0; i < all_provider_exceptions.size(); ++i) {
-    for (size_t j = 0; j < all_provider_exceptions[i].size(); ++j) {
-      exceptions->Append(all_provider_exceptions[i][j]);
+  // For camera and microphone, we do not have policy exceptions, but we do have
+  // the policy-set allowed URLs, which should be displayed in the same manner.
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+    base::ListValue* policy_exceptions = all_provider_exceptions[
+         HostContentSettingsMap::GetProviderTypeFromSource(kPolicyProviderId)];
+    DCHECK(policy_exceptions->empty());
+    policy_exceptions->Swap(GetPolicyAllowedUrls(type).get());
+  }
+
+  for (const auto& one_provider_exceptions : all_provider_exceptions) {
+    // Append the patterns in reverse order, so the ones with the highest
+    // precedence (the more specific ones) are on the top.
+    while (!one_provider_exceptions->empty()) {
+      scoped_ptr<base::Value> exception;
+      one_provider_exceptions->Remove(
+          one_provider_exceptions->GetSize() - 1, &exception);
+      exceptions->Append(exception.release());
     }
   }
 }

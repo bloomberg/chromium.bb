@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "base/values.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/options/pepper_flash_content_settings_utils.h"
@@ -223,6 +224,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
   void RefreshFlashMediaSettings();
+
+  // Returns exceptions constructed from the policy-set allowed URLs
+  // for the content settings |type| mic or camera.
+  scoped_ptr<base::ListValue> GetPolicyAllowedUrls(ContentSettingsType type);
 
   // Fills in |exceptions| with Values for the given |type| from |map|.
   void GetExceptionsFromHostContentSettingsMap(

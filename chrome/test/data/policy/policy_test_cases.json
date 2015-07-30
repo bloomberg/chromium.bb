@@ -1148,7 +1148,11 @@
     "test_policy": { "AudioCaptureAllowedUrls": ["[*.]google.com"] },
     "pref_mappings": [
       {
-        "pref": "hardware.audio_capture_allowed_urls"
+        "pref": "hardware.audio_capture_allowed_urls",
+        "indicator_selector": "[content-exception=media-stream-mic]",
+        "indicator_tests": [
+          { "policy": { "AudioCaptureAllowedUrls": ["[*.]google.com"] } }
+        ]
       }
     ]
   },
@@ -1173,7 +1177,11 @@
     "test_policy": { "VideoCaptureAllowedUrls": ["[*.]google.com"] },
     "pref_mappings": [
       {
-        "pref": "hardware.video_capture_allowed_urls"
+        "pref": "hardware.video_capture_allowed_urls",
+        "indicator_selector": "[content-exception=media-stream-camera]",
+        "indicator_tests": [
+          { "policy": { "VideoCaptureAllowedUrls": ["[*.]google.com"] } }
+        ]
       }
     ]
   },
