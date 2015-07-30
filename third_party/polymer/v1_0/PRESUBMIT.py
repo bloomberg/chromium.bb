@@ -14,7 +14,7 @@ import json
 def _CheckBowerDependencies(input_api, output_api):
   os_path = input_api.os_path
   cwd = input_api.PresubmitLocalPath()
-  components_dir = os_path.join(cwd, 'components')
+  components_dir = os_path.join(cwd, 'components-chromium')
   bower_json_path = os_path.join(cwd, 'bower.json')
 
   for f in input_api.AffectedFiles(include_dirs=True):
