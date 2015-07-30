@@ -184,7 +184,7 @@ bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitfl
             if ((unitflags & FPositiveInteger) && number <= 0) {
                 b = false;
             } else {
-                delete value->function;
+                delete value->calcFunction;
                 value->setUnit(CSSPrimitiveValue::UnitType::Number);
                 value->fValue = number;
                 value->isInt = m_parsedCalculation->isInt();
@@ -228,6 +228,11 @@ inline bool CSSPropertyParser::shouldAcceptUnitLessValues(CSSParserValue* value,
         && (!value->fValue // 0 can always be unitless.
             || isUnitLessLengthParsingEnabledForMode(cssParserMode) // HTML and SVG attribute values can always be unitless.
             || (cssParserMode == HTMLQuirksMode && (unitflags & FUnitlessQuirk)));
+}
+
+inline bool isCalculation(CSSParserValue* value)
+{
+    return value->m_unit == CSSParserValue::CalcFunction;
 }
 
 bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode, ReleaseParsedCalcValueCondition releaseCalc)
@@ -4961,14 +4966,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
     return values.release();
 }
 
-
-bool CSSPropertyParser::isCalculation(CSSParserValue* value)
-{
-    return (value->m_unit == CSSParserValue::Function)
-        && (value->function->id == CSSValueCalc
-            || value->function->id == CSSValueWebkitCalc);
-}
-
 inline int CSSPropertyParser::colorIntFromValue(CSSParserValue* v)
 {
     bool isPercent;
@@ -7442,9 +7439,7 @@ bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range
 {
     ASSERT(isCalculation(value));
 
-    CSSParserValueList* args = value->function->args.get();
-    if (!args || !args->size())
-        return false;
+    CSSParserTokenRange args = value->calcFunction->args;
 
     ASSERT(!m_parsedCalculation);
     m_parsedCalculation = CSSCalcValue::create(args, range);

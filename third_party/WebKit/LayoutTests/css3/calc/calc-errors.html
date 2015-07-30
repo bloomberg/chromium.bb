@@ -37,6 +37,24 @@ div {
 <div style="width: calc(70px- 40px);">70px- 40px no whitespace on left of -</div>
 <div style="width: calc(70px-+40px);">70px-+40px no whitespace around - </div>
 
+<div style="width: calc(70px+/**/40px);">70px+/**/40px no whitespace around + </div>
+<div style="width: calc(70px/**/+40px);">70px/**/+40px no whitespace around + </div>
+<div style="width: calc(70px/**/+/**/40px);">70px+/**/40px no whitespace around + </div>
+<div style="width: calc(70px +/**/40px);">70px +/**/40px no whitespace on right of +</div>
+<div style="width: calc(70px/**/+ 40px);">70px/**/+ 40px no whitespace on left of +</div>
+<div style="width: calc(70px/**/+-40px);">70px/**/+-40px no whitespace around + </div>
+<div style="width: calc(70px+/**/-40px);">70px+/**/-40px no whitespace around + </div>
+<div style="width: calc(70px/**/+/**/-40px);">70px/**/+/**/-40px no whitespace around + </div>
+
+<div style="width: calc(70px-/**/40px);">70px-/**/40px no whitespace around - </div>
+<div style="width: calc(70px/**/-40px);">70px/**/-40px no whitespace around - </div>
+<div style="width: calc(70px/**/-/**/40px);">70px/**/-/**/40px no whitespace around - </div>
+<div style="width: calc(70px -/**/40px);">70px -/**/40px no whitespace on right of -</div>
+<div style="width: calc(70px/**/- 40px);">70px/**/- 40px no whitespace on left of -</div>
+<div style="width: calc(70px/**/-+40px);">70px/**/-+40px no whitespace around - </div>
+<div style="width: calc(70px-/**/+40px);">70px-/**/+40px no whitespace around - </div>
+<div style="width: calc(70px/**/-/**/+40px);">70px/**/-/**/+40px no whitespace around - </div>
+
 <!-- too many nests should be rejected to avoid stack overflow -->
 <div style="width: calc(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((200px)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));">too many nests</div>
  

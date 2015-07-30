@@ -26,13 +26,14 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserString.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 
 namespace blink {
 
 class QualifiedName;
-class CSSParserTokenRange;
 
 struct CSSParserFunction;
+struct CSSParserCalcFunction;
 class CSSParserValueList;
 
 struct CSSParserValue {
@@ -43,6 +44,7 @@ struct CSSParserValue {
         int iValue;
         CSSParserString string;
         CSSParserFunction* function;
+        CSSParserCalcFunction* calcFunction;
         CSSParserValueList* valueList;
         struct {
             UChar32 start;
@@ -52,7 +54,8 @@ struct CSSParserValue {
     enum {
         Operator  = 0x100000,
         Function  = 0x100001,
-        ValueList = 0x100002,
+        CalcFunction  = 0x100002,
+        ValueList = 0x100003,
         HexColor = 0x100004,
         Identifier = 0x100005,
         // Represents a dimension by a list of two values, a UnitType::Number and an Identifier
@@ -66,7 +69,6 @@ struct CSSParserValue {
 
     inline void setFromNumber(double value, CSSPrimitiveValue::UnitType);
     inline void setFromOperator(UChar);
-    inline void setFromFunction(CSSParserFunction*);
     inline void setFromValueList(PassOwnPtr<CSSParserValueList>);
 };
 
@@ -115,6 +117,13 @@ struct CSSParserFunction {
 public:
     CSSValueID id;
     OwnPtr<CSSParserValueList> args;
+};
+
+struct CSSParserCalcFunction {
+    WTF_MAKE_FAST_ALLOCATED(CSSParserCalcFunction);
+public:
+    CSSParserCalcFunction(CSSParserTokenRange args_) : args(args_) {}
+    CSSParserTokenRange args;
 };
 
 class CSSParserSelector {
@@ -186,14 +195,6 @@ inline void CSSParserValue::setFromOperator(UChar c)
     id = CSSValueInvalid;
     m_unit = Operator;
     iValue = c;
-    isInt = false;
-}
-
-inline void CSSParserValue::setFromFunction(CSSParserFunction* function)
-{
-    id = CSSValueInvalid;
-    this->function = function;
-    m_unit = Function;
     isInt = false;
 }
 

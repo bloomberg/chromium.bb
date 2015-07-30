@@ -351,7 +351,6 @@ private:
 
     bool parseBorderImageQuad(Units, RefPtrWillBeRawPtr<CSSPrimitiveValue>&);
     int colorIntFromValue(CSSParserValue*);
-    bool isCalculation(CSSParserValue*);
 
     bool buildBorderImageParseContext(CSSPropertyID, BorderImageParseContext&);
 

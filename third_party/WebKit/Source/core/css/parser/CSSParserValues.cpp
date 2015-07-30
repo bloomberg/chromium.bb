@@ -39,15 +39,17 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
     Vector<int> bracketCounts;
     stack.append(this);
     bracketCounts.append(0);
-    unsigned calcDepth = 0;
     while (!range.atEnd()) {
         ASSERT(stack.size() == bracketCounts.size());
         ASSERT(!stack.isEmpty());
-        const CSSParserToken& token = range.consume();
+        const CSSParserToken& token = range.peek();
+        if (token.type() != FunctionToken)
+            range.consume();
         CSSParserValue value;
         switch (token.type()) {
         case FunctionToken: {
             if (token.valueEqualsIgnoringCase("url")) {
+                range.consume();
                 const CSSParserToken& next = range.consumeIncludingWhitespace();
                 if (next.type() == BadStringToken || range.consume().type() != RightParenthesisToken) {
                     destroyAndClear();
@@ -61,34 +63,36 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 break;
             }
 
+            value.id = CSSValueInvalid;
+            value.isInt = false;
+
+            CSSValueID id = cssValueKeywordID(token.value());
+            if (id == CSSValueCalc || id == CSSValueWebkitCalc) {
+                value.m_unit = CSSParserValue::CalcFunction;
+                value.calcFunction = new CSSParserCalcFunction(range.consumeBlock());
+                break;
+            }
+            range.consume();
+            value.m_unit = CSSParserValue::Function;
             CSSParserFunction* function = new CSSParserFunction;
-            function->id = cssValueKeywordID(token.value());
+            function->id = id;
             CSSParserValueList* list = new CSSParserValueList;
             function->args = adoptPtr(list);
 
-            value.id = CSSValueInvalid;
-            value.isInt = false;
-            value.m_unit = CSSParserValue::Function;
             value.function = function;
 
             stack.last()->addValue(value);
             stack.append(list);
             bracketCounts.append(0);
-            calcDepth += (function->id == CSSValueCalc || function->id == CSSValueWebkitCalc);
             continue;
         }
         case LeftParenthesisToken: {
-            if (calcDepth == 0) {
-                CSSParserValueList* list = new CSSParserValueList;
-                value.setFromValueList(adoptPtr(list));
-                stack.last()->addValue(value);
-                stack.append(list);
-                bracketCounts.append(0);
-                continue;
-            }
-            bracketCounts.last()++;
-            value.setFromOperator('(');
-            break;
+            CSSParserValueList* list = new CSSParserValueList;
+            value.setFromValueList(adoptPtr(list));
+            stack.last()->addValue(value);
+            stack.append(list);
+            bracketCounts.append(0);
+            continue;
         }
         case RightParenthesisToken: {
             if (bracketCounts.last() == 0) {
@@ -98,15 +102,8 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                     destroyAndClear();
                     return;
                 }
-                CSSParserValueList* currentList = stack.last();
-                CSSParserValue* current = currentList->valueAt(currentList->size()-1);
-                if (current->m_unit == CSSParserValue::Function) {
-                    CSSValueID id = current->function->id;
-                    calcDepth -= (id == CSSValueCalc || id == CSSValueWebkitCalc);
-                }
                 continue;
             }
-            ASSERT(calcDepth > 0);
             bracketCounts.last()--;
             value.setFromOperator(')');
             break;
@@ -176,11 +173,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
         }
         case DelimiterToken:
             value.setFromOperator(token.delimiter());
-            if (calcDepth && token.delimiter() == '+' && (&token - 1)->type() != WhitespaceToken) {
-                // calc(1px+ 2px) is invalid
-                destroyAndClear();
-                return;
-            }
             break;
         case CommaToken:
             value.setFromOperator(',');
@@ -239,6 +231,8 @@ static void destroy(Vector<CSSParserValue, 4>& values)
     for (size_t i = 0; i < numValues; i++) {
         if (values[i].m_unit == CSSParserValue::Function)
             delete values[i].function;
+        else if (values[i].m_unit == CSSParserValue::CalcFunction)
+            delete values[i].calcFunction;
         else if (values[i].m_unit == CSSParserValue::ValueList
             || values[i].m_unit == CSSParserValue::DimensionList)
             delete values[i].valueList;

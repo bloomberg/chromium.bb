@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "platform/CalculationValue.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,7 +43,6 @@
 
 namespace blink {
 
-class CSSParserValueList;
 class CalculationValue;
 
 enum CalcOperator {
@@ -103,7 +103,7 @@ protected:
 
 class CORE_EXPORT CSSCalcValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(CSSParserValueList*, ValueRange);
+    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(const CSSParserTokenRange&, ValueRange);
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
 
     static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, bool isInteger = false);
