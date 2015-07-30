@@ -283,7 +283,7 @@ bool IsForceGpuRasterizationEnabled() {
 
 bool UseSurfacesEnabled() {
 #if defined(OS_ANDROID)
-  return true;
+  return false;
 #endif
   bool enabled = false;
 #if defined(USE_AURA) || defined(OS_MACOSX)
