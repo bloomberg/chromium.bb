@@ -147,6 +147,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
         # https://code.google.com/p/chromedriver/issues/detail?id=1175
         'ChromeDriverTest.testChromeDriverSendLargeData',
+        # Chrome 44+ for Android doesn't dispatch the dblclick event
+        'ChromeDriverTest.testMouseDoubleClick',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
