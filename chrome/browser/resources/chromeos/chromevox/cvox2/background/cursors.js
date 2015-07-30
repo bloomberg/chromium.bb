@@ -89,14 +89,14 @@ cursors.Cursor.prototype = {
    * @return {boolean}
    */
   equals: function(rhs) {
-    return this.node_ === rhs.getNode() &&
+    return this.node_ === rhs.node &&
         this.index_ === rhs.getIndex();
   },
 
   /**
    * @return {!AutomationNode}
    */
-  getNode: function() {
+  get node() {
     return this.node_;
   },
 
@@ -284,16 +284,16 @@ cursors.Range.getDirection = function(rangeA, rangeB) {
     return Dir.FORWARD;
 
   // They are the same range.
-  if (rangeA.getStart().getNode() === rangeB.getStart().getNode() &&
-      rangeB.getEnd().getNode() === rangeA.getEnd().getNode())
+  if (rangeA.start.node === rangeB.start.node &&
+      rangeB.end.node === rangeA.end.node)
     return Dir.FORWARD;
 
   var testDirA =
       AutomationUtil.getDirection(
-          rangeA.getStart().getNode(), rangeB.getEnd().getNode());
+          rangeA.start.node, rangeB.end.node);
   var testDirB =
       AutomationUtil.getDirection(
-          rangeB.getStart().getNode(), rangeA.getEnd().getNode());
+          rangeB.start.node, rangeA.end.node);
 
   // The two ranges are either partly overlapping or non overlapping.
   if (testDirA == Dir.FORWARD && testDirB == Dir.BACKWARD)
@@ -311,8 +311,8 @@ cursors.Range.prototype = {
    * @return {boolean}
    */
   equals: function(rhs) {
-    return this.start_.equals(rhs.getStart()) &&
-        this.end_.equals(rhs.getEnd());
+    return this.start_.equals(rhs.start) &&
+        this.end_.equals(rhs.end);
   },
 
   /**
@@ -332,14 +332,14 @@ cursors.Range.prototype = {
   /**
    * @return {!cursors.Cursor}
    */
-  getStart: function() {
+  get start() {
     return this.start_;
   },
 
   /**
    * @return {!cursors.Cursor}
    */
-  getEnd: function() {
+  get end() {
     return this.end_;
   },
 
@@ -348,9 +348,9 @@ cursors.Range.prototype = {
    * @return {boolean}
    */
   isSubNode: function() {
-    return this.getStart().getNode() === this.getEnd().getNode() &&
-        this.getStart().getIndex() > -1 &&
-        this.getEnd().getIndex() > -1;
+    return this.start.node === this.end.node &&
+        this.start.getIndex() > -1 &&
+        this.end.getIndex() > -1;
   },
 
   /**
@@ -368,7 +368,7 @@ cursors.Range.prototype = {
         newStart = newStart.move(unit, Movement.BOUND, dir);
         newEnd = newStart.move(unit, Movement.BOUND, Dir.FORWARD);
         // Character crossed a node; collapses to the end of the node.
-        if (newStart.getNode() !== newEnd.getNode())
+        if (newStart.node !== newEnd.node)
           newEnd = newStart;
         break;
       case Unit.WORD:

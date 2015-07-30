@@ -989,10 +989,10 @@ Output.prototype = {
    */
   range_: function(range, prevRange, type, rangeBuff) {
     if (!prevRange)
-      prevRange = cursors.Range.fromNode(range.getStart().getNode().root);
+      prevRange = cursors.Range.fromNode(range.start.node.root);
 
-    var cursor = range.getStart();
-    var prevNode = prevRange.getStart().getNode();
+    var cursor = range.start;
+    var prevNode = prevRange.start.node;
 
     var formatNodeAndAncestors = function(node, prevNode) {
       var buff = [];
@@ -1003,8 +1003,8 @@ Output.prototype = {
       return buff;
     }.bind(this);
 
-    while (cursor.getNode() != range.getEnd().getNode()) {
-      var node = cursor.getNode();
+    while (cursor.node != range.end.node) {
+      var node = cursor.node;
       rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
       prevNode = node;
       cursor = cursor.move(cursors.Unit.NODE,
@@ -1012,10 +1012,10 @@ Output.prototype = {
                            Dir.FORWARD);
 
       // Reached a boundary.
-      if (cursor.getNode() == prevNode)
+      if (cursor.node == prevNode)
         break;
     }
-    var lastNode = range.getEnd().getNode();
+    var lastNode = range.end.node;
     rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(lastNode, prevNode));
   },
 
@@ -1117,16 +1117,16 @@ Output.prototype = {
     if (!prevRange)
       prevRange = range;
     var dir = cursors.Range.getDirection(prevRange, range);
-    var prevNode = prevRange.getBound(dir).getNode();
+    var prevNode = prevRange.getBound(dir).node;
     this.ancestry_(
-        range.getStart().getNode(), prevNode, type, buff,
+        range.start.node, prevNode, type, buff,
         {stay: true, name: true, value: true});
-    var startIndex = range.getStart().getIndex();
-    var endIndex = range.getEnd().getIndex();
+    var startIndex = range.start.getIndex();
+    var endIndex = range.end.getIndex();
     if (startIndex === endIndex)
       endIndex++;
     this.append_(
-        buff, range.getStart().getText().substring(startIndex, endIndex));
+        buff, range.start.getText().substring(startIndex, endIndex));
   },
 
   /**

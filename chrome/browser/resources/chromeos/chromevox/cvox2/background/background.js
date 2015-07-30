@@ -257,7 +257,7 @@ Background.prototype = {
         break;
       case 'goToBeginning':
       var node =
-          AutomationUtil.findNodePost(current.getStart().getNode().root,
+          AutomationUtil.findNodePost(current.start.node.root,
                                       Dir.FORWARD,
                                       AutomationPredicate.leaf);
         if (node)
@@ -265,7 +265,7 @@ Background.prototype = {
         break;
       case 'goToEnd':
         var node =
-            AutomationUtil.findNodePost(current.getStart().getNode().root,
+            AutomationUtil.findNodePost(current.start.node.root,
                                         Dir.BACKWARD,
                                         AutomationPredicate.leaf);
         if (node)
@@ -273,7 +273,7 @@ Background.prototype = {
         break;
       case 'doDefault':
         if (this.currentRange_) {
-          var actionNode = this.currentRange_.getStart().getNode();
+          var actionNode = this.currentRange_.start.node;
           if (actionNode.role == chrome.automation.RoleType.inlineTextBox)
             actionNode = actionNode.parent;
           actionNode.doDefault();
@@ -303,7 +303,7 @@ Background.prototype = {
         return;
       case 'showContextMenu':
         if (this.currentRange_) {
-          var actionNode = this.currentRange_.getStart().getNode();
+          var actionNode = this.currentRange_.start.node;
           if (actionNode.role == chrome.automation.RoleType.inlineTextBox)
             actionNode = actionNode.parent;
           actionNode.showContextMenu();
@@ -318,7 +318,7 @@ Background.prototype = {
 
     if (pred) {
       var node = AutomationUtil.findNextNode(
-          current.getBound(dir).getNode(), dir, pred);
+          current.getBound(dir).node, dir, pred);
 
       if (node) {
         current = cursors.Range.fromNode(node);
@@ -333,7 +333,7 @@ Background.prototype = {
 
     if (current) {
       // TODO(dtseng): Figure out what it means to focus a range.
-      var actionNode = current.getStart().getNode();
+      var actionNode = current.start.node;
       if (actionNode.role == chrome.automation.RoleType.inlineTextBox)
         actionNode = actionNode.parent;
       actionNode.focus();
@@ -399,7 +399,7 @@ Background.prototype = {
     // are not within web content.
     if (node.root.role == 'desktop' ||
         !prevRange ||
-        (prevRange.getStart().getNode().root != node.root &&
+        (prevRange.start.node.root != node.root &&
         node.state.focused))
       this.setupChromeVoxVariants_(node.root.docUrl || '');
 
@@ -503,7 +503,7 @@ Background.prototype = {
         evt.target.textSelEnd,
         true);  // triggered by user
     if (!this.editableTextHandler ||
-        evt.target != this.currentRange_.getStart().getNode()) {
+        evt.target != this.currentRange_.start.node) {
       this.editableTextHandler =
           new cvox.ChromeVoxEditableTextBase(
               textChangeEvent.value,
@@ -656,7 +656,7 @@ Background.prototype = {
       } else {
         // When in compat mode, if the focus is within the desktop tree proper,
         // then do not disable content scripts.
-        if (this.currentRange_.getStart().getNode().root.role == 'desktop')
+        if (this.currentRange_.start.node.root.role == 'desktop')
           return;
 
         this.disableClassicChromeVox_();
