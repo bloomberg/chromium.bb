@@ -152,16 +152,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        # The stable channel Chrome for Android does not yet support Synthetic
-        # Gesture DevTools commands.
-        # TODO(samuong): reenable when it does.
-        'ChromeDriverTest.testHasTouchScreen',
-        'ChromeDriverTest.testTouchScrollElement',
-        'ChromeDriverTest.testTouchDoubleTapElement',
-        'ChromeDriverTest.testTouchLongPressElement',
-        'ChromeDriverTest.testTouchPinch',
-    ])
+    _ANDROID_NEGATIVE_FILTER['chrome'])
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'])
 _ANDROID_NEGATIVE_FILTER['chrome_shell'] = (
@@ -1084,14 +1075,12 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertAlmostEqual(2.0, float(width_before_pinch) / width_after_pinch)
 
   def testBrowserDoesntSupportSyntheticGestures(self):
-    # The current stable channel Chrome for Android does not support synthetic
-    # gesture commands in DevTools, so touch action tests have been disabled for
-    # chrome_stable and chromedriver_webview_shell.
+    # WebView on KitKat does not support synthetic gesture commands in DevTools,
+    # so touch action tests have been disabled for chromedriver_webview_shell.
     # TODO(samuong): when this test starts failing, re-enable touch tests and
     # delete this test.
     if _ANDROID_PACKAGE_KEY:
-      packages = ['chrome_stable', 'chromedriver_webview_shell']
-      if _ANDROID_PACKAGE_KEY in packages:
+      if _ANDROID_PACKAGE_KEY == 'chromedriver_webview_shell':
         self.assertFalse(self._driver.capabilities['hasTouchScreen'])
 
   def testHasTouchScreen(self):
