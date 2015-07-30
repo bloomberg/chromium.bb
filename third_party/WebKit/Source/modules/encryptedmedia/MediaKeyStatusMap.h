@@ -29,15 +29,15 @@ private:
     // String) for each entry.
     class MapEntry;
 
-    // As the number of keys per session should be small, the key ids and
-    // their status are kept in a list rather than a proper map.
-    typedef HeapVector<Member<MapEntry>> MapType;
+    // The key ids and their status are kept in a list, as order is important.
+    // Note that order (or lack of it) is not specified in the EME spec.
+    using MediaKeyStatusMapType = HeapVector<Member<MapEntry>>;
 
 public:
     MediaKeyStatusMap() { }
 
     void clear();
-    void addEntry(WebData source, const String& status);
+    void addEntry(WebData keyId, const String& status);
     const MapEntry& at(size_t) const;
 
     // IDL attributes / methods
@@ -51,7 +51,7 @@ private:
 
     size_t indexOf(const DOMArrayPiece& key) const;
 
-    MapType m_entries;
+    MediaKeyStatusMapType m_entries;
 };
 
 } // namespace blink

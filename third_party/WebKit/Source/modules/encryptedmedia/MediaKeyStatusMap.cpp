@@ -10,6 +10,8 @@
 #include "public/platform/WebData.h"
 #include "wtf/text/WTFString.h"
 
+#include <algorithm>
+
 namespace blink {
 
 // Represents the key ID and associated status.
@@ -30,6 +32,30 @@ public:
     const String& status() const
     {
         return m_status;
+    }
+
+    static bool compareLessThan(MapEntry* a, MapEntry* b)
+    {
+        // Compare the keyIds of 2 different MapEntries. Assume that |a| and |b|
+        // are not null, but the keyId() may be. KeyIds are compared byte
+        // by byte.
+
+        // Handle null cases first (which shouldn't happen).
+        //    |aKeyId|    |bKeyId|     result
+        //      null        null         == (false)
+        //      null      not-null       <  (true)
+        //    not-null      null         >  (false)
+        if (!a->keyId() || !b->keyId())
+            return b->keyId();
+
+        // Compare the bytes.
+        int result = memcmp(a->keyId()->data(), b->keyId()->data(),
+            std::min(a->keyId()->byteLength(), b->keyId()->byteLength()));
+        if (result != 0)
+            return result < 0;
+
+        // KeyIds are equal to the shared length, so the shorter string is <.
+        return a->keyId()->byteLength() <= b->keyId()->byteLength();
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -90,6 +116,13 @@ void MediaKeyStatusMap::clear()
 void MediaKeyStatusMap::addEntry(WebData keyId, const String& status)
 {
     m_entries.append(MapEntry::create(keyId, status));
+
+    // No need to do any sorting for the first entry.
+    if (m_entries.size() == 1)
+        return;
+
+    // Sort the entries.
+    std::sort(m_entries.begin(), m_entries.end(), MapEntry::compareLessThan);
 }
 
 const MediaKeyStatusMap::MapEntry& MediaKeyStatusMap::at(size_t index) const
