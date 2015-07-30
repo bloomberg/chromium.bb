@@ -267,7 +267,6 @@ source_set("common") {
     deps += [
       "//ui/ozone:ozone",
       "//ui/ozone:ozone_base",
-      "//ui/ozone/gpu",
     ]
   } else {
     sources -= [
