@@ -137,7 +137,8 @@ extern int BrowserMain(const MainFunctionParams&);
 BrowserTestBase::BrowserTestBase()
     : expected_exit_code_(0),
       enable_pixel_output_(false),
-      use_software_compositing_(false) {
+      use_software_compositing_(false),
+      set_up_called_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
 #endif
@@ -167,9 +168,16 @@ BrowserTestBase::~BrowserTestBase() {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   test_server_.reset(NULL);
 #endif
+
+  CHECK(set_up_called_) << "SetUp was not called. This probably means that the "
+                           "developer has overridden the method and not called "
+                           "the superclass version. In this case, the test "
+                           "does not run and reports a false positive result.";
 }
 
 void BrowserTestBase::SetUp() {
+  set_up_called_ = true;
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Override the child process connection timeout since tests can exceed that

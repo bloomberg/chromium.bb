@@ -39,8 +39,6 @@ class ContentBrowserTest : public BrowserTestBase {
  private:
   Shell* shell_;
 
-  bool setup_called_;
-
 #if defined(OS_ANDROID)
   // For all other platforms, this is done automatically when calling into
   // ContentMain. For Android we set things up manually.

@@ -152,6 +152,11 @@ class BrowserTestBase : public testing::Test {
   // When true, do compositing with the software backend instead of using GL.
   bool use_software_compositing_;
 
+  // Whether SetUp was called. This value is checked in the destructor of this
+  // class to ensure that SetUp was called. If it's not called, the test will
+  // not run and report a false positive result.
+  bool set_up_called_;
+
 #if defined(OS_POSIX)
   bool handle_sigterm_;
 #endif

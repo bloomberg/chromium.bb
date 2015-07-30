@@ -35,8 +35,7 @@
 
 namespace content {
 
-ContentBrowserTest::ContentBrowserTest()
-    : setup_called_(false) {
+ContentBrowserTest::ContentBrowserTest() {
 #if defined(OS_MACOSX)
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
   base::FilePath content_shell_path;
@@ -56,8 +55,6 @@ ContentBrowserTest::ContentBrowserTest()
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
-  CHECK(setup_called_) << "Overridden SetUp() did not call parent "
-                          "implementation, so test not run.";
 }
 
 void ContentBrowserTest::SetUp() {
@@ -96,8 +93,6 @@ void ContentBrowserTest::SetUp() {
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
   ui::InitializeInputMethodForTesting();
 #endif
-
-  setup_called_ = true;
 
   BrowserTestBase::SetUp();
 }
