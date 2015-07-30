@@ -8,6 +8,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
+import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.WebContents;
 
