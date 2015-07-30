@@ -22,6 +22,7 @@ const char kRequestPowerInfo[] = "requestPowerInfo";
 // Define update functions that will update the power properties to the
 // variables defined in the web UI.
 const char kUpdateBatteryPercent[] = "updateBatteryPercent";
+const char kUpdateBatteryState[] = "updateBatteryState";
 const char kUpdateExternalPower[] = "updateExternalPower";
 const char kUpdateTimeToEmpty[] = "updateTimeToEmpty";
 const char kUpdateTimeToFull[] = "updateTimeToFull";
@@ -68,61 +69,77 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
 
 void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
     const base::ListValue* args) {
-  power_manager::PowerSupplyProperties props =
-      fake_power_manager_client_->props();
-
   int new_percent;
-  if (args->GetInteger(0, &new_percent))
+  if (args->GetInteger(0, &new_percent)) {
+    power_manager::PowerSupplyProperties props =
+        fake_power_manager_client_->props();
     props.set_battery_percent(new_percent);
+    fake_power_manager_client_->UpdatePowerProperties(props);
+  }
+}
 
-  fake_power_manager_client_->UpdatePowerProperties(props);
+void DeviceEmulatorMessageHandler::UpdateBatteryState(
+    const base::ListValue* args) {
+  int battery_state;
+  if (args->GetInteger(0, &battery_state)) {
+    power_manager::PowerSupplyProperties props =
+        fake_power_manager_client_->props();
+    props.set_battery_state(
+        static_cast<power_manager::PowerSupplyProperties_BatteryState>(
+            battery_state));
+    fake_power_manager_client_->UpdatePowerProperties(props);
+  }
 }
 
 void DeviceEmulatorMessageHandler::UpdateExternalPower(
     const base::ListValue* args) {
   int power_source;
-  args->GetInteger(0, &power_source);
-
-  power_manager::PowerSupplyProperties props =
-      fake_power_manager_client_->props();
-  props.set_external_power(
-      static_cast<power_manager::PowerSupplyProperties_ExternalPower>(
-          power_source));
-  fake_power_manager_client_->UpdatePowerProperties(props);
+  if (args->GetInteger(0, &power_source)) {
+    power_manager::PowerSupplyProperties props =
+        fake_power_manager_client_->props();
+    props.set_external_power(
+        static_cast<power_manager::PowerSupplyProperties_ExternalPower>(
+            power_source));
+    fake_power_manager_client_->UpdatePowerProperties(props);
+  }
 }
 
 void DeviceEmulatorMessageHandler::UpdateTimeToEmpty(
     const base::ListValue* args) {
-  power_manager::PowerSupplyProperties props =
-      fake_power_manager_client_->props();
-
   int new_time;
-  if (args->GetInteger(0, &new_time))
+  if (args->GetInteger(0, &new_time)) {
+    power_manager::PowerSupplyProperties props =
+        fake_power_manager_client_->props();
     props.set_battery_time_to_empty_sec(new_time);
-
-  fake_power_manager_client_->UpdatePowerProperties(props);
+    fake_power_manager_client_->UpdatePowerProperties(props);
+  }
 }
 
 void DeviceEmulatorMessageHandler::UpdateTimeToFull(
     const base::ListValue* args) {
-  power_manager::PowerSupplyProperties props =
-      fake_power_manager_client_->props();
   int new_time;
-  if (args->GetInteger(0, &new_time))
+  if (args->GetInteger(0, &new_time)) {
+    power_manager::PowerSupplyProperties props =
+        fake_power_manager_client_->props();
     props.set_battery_time_to_full_sec(new_time);
-  fake_power_manager_client_->UpdatePowerProperties(props);
+    fake_power_manager_client_->UpdatePowerProperties(props);
+  }
 }
 
 void DeviceEmulatorMessageHandler::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
-  web_ui()->CallJavascriptFunction(
-      kUpdatePowerPropertiesJSCallback,
-      base::FundamentalValue(proto.battery_percent()),
-      base::FundamentalValue(proto.external_power()),
-      base::FundamentalValue(
-          static_cast<int>(proto.battery_time_to_empty_sec())),
-      base::FundamentalValue(
-          static_cast<int>(proto.battery_time_to_full_sec())));
+  base::DictionaryValue power_properties;
+
+  power_properties.SetInteger("battery_percent", proto.battery_percent());
+  power_properties.SetInteger("battery_state", proto.battery_state());
+  power_properties.SetInteger("external_power", proto.external_power());
+  power_properties.SetInteger("battery_time_to_empty_sec",
+                              proto.battery_time_to_empty_sec());
+  power_properties.SetInteger("battery_time_to_full_sec",
+                              proto.battery_time_to_full_sec());
+
+  web_ui()->CallJavascriptFunction(kUpdatePowerPropertiesJSCallback,
+                                   power_properties);
 }
 
 void DeviceEmulatorMessageHandler::RegisterMessages() {
@@ -133,6 +150,10 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kUpdateBatteryPercent,
       base::Bind(&DeviceEmulatorMessageHandler::UpdateBatteryPercent,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kUpdateBatteryState,
+      base::Bind(&DeviceEmulatorMessageHandler::UpdateBatteryState,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdateExternalPower,

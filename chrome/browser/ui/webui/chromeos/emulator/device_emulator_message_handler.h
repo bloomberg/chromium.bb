@@ -40,6 +40,7 @@ class DeviceEmulatorMessageHandler
   // Callbacks for JS update methods. All these methods work
   // asynchronously.
   void UpdateBatteryPercent(const base::ListValue* args);
+  void UpdateBatteryState(const base::ListValue* args);
   void UpdateExternalPower(const base::ListValue* args);
   void UpdateTimeToEmpty(const base::ListValue* args);
   void UpdateTimeToFull(const base::ListValue* args);

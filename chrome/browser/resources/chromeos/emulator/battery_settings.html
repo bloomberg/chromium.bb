@@ -14,10 +14,10 @@
         <div>
           <p>
             <label>
-              <span class="form-label">Battery Present</span>
-              <paper-toggle-button checked="{{batteryPresent}}"
-                  id="battery-present-checkbox" type="checkbox">
-              </paper-toggle-button>
+              <span class="form-label">Battery Percentage</span>
+              <paper-input value="{{batteryPercent}}"
+                  id="battery-percent-text" type="number">
+              </paper-input>
             </label>
           </p>
         </div>
@@ -25,10 +25,14 @@
         <div>
           <p>
             <label>
-              <span class="form-label">Battery Percentage</span>
-              <paper-input value="{{batteryPercent}}"
-                  id="battery-percent-text" type="number" min="0" max="100">
-              </paper-input>
+              <span class="form-label">Battery State</span>
+              <paper-radio-group selected="{{batteryState}}"
+                  id="battery-state-radio-group">
+                <template is="dom-repeat" items="{{batteryStateOptions}}">
+                  <paper-radio-button
+                      name="{{item}}">{{item}}</paper-radio-button>
+                </template>
+              </paper-radio-group>
             </label>
           </p>
         </div>

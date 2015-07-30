@@ -11,22 +11,45 @@ var BatterySettings = Polymer({
      */
     batteryPercent: {
       type: Number,
+      observer: 'batteryPercentChanged',
     },
 
     /**
-     * A string representing the value of an
+     * A string representing a value in the
+     * PowerSupplyProperties_BatteryState enumeration.
+     */
+    batteryState: {
+      type: String,
+      observer: 'batteryStateChanged',
+    },
+
+    /**
+     * An array representing the battery state options.
+     * The names are ordered based on the
+     * PowerSupplyProperties_BatteryState enumeration. These values must be
+     * in sync.
+     */
+    batteryStateOptions: {
+      type: Array,
+      value: function() { return ['Full', 'Charging', 'Disharging',
+                                  'Not Present']; },
+    },
+
+    /**
+     * A string representing a value in the
      * PowerSupplyProperties_ExternalPower enumeration.
      */
     externalPower: {
       type: String,
+      observer: 'externalPowerChanged',
     },
 
     /**
-      * An array representing the external power options.
-      * The names are ordered based on the
-      * PowerSupplyProperties_ExternalPower enumeration. These values must be
-      * in sync.
-      */
+     * An array representing the external power options.
+     * The names are ordered based on the
+     * PowerSupplyProperties_ExternalPower enumeration. These values must be
+     * in sync.
+     */
     externalPowerOptions: {
       type: Array,
       value: function() { return ['AC', 'USB (Low Power)', 'Disconnected']; }
@@ -37,6 +60,7 @@ var BatterySettings = Polymer({
      */
     timeUntilEmpty: {
       type: String,
+      observer: 'timeUntilEmptyChanged',
     },
 
     /**
@@ -44,6 +68,7 @@ var BatterySettings = Polymer({
      */
     timeUntilFull: {
       type: String,
+      observer: 'timeUntilFullChanged',
     },
 
     /**
@@ -58,44 +83,42 @@ var BatterySettings = Polymer({
     this.title = 'Power Settings';
   },
 
-  observers: [
-    'batteryPercentChanged(batteryPercent)',
-    'externalPowerChanged(externalPower)',
-    'timeUntilEmptyChanged(timeUntilEmpty)',
-    'timeUntilFullChanged(timeUntilFull)',
-  ],
+  batteryPercentChanged: function(percent, oldPercent) {
+    if (oldPercent != undefined)
+      chrome.send('updateBatteryPercent', [parseInt(percent)]);
+  },
 
-  batteryPercentChanged: function(percent) {
-    chrome.send('updateBatteryPercent', [parseInt(percent)]);
+  batteryStateChanged: function(state) {
+    // Find the index of the selected battery state.
+    var index = this.batteryStateOptions.indexOf(state);
+    if (index >= 0)
+      chrome.send('updateBatteryState', [index]);
   },
 
   externalPowerChanged: function(source) {
-    var index = -1;
-
     // Find the index of the selected power source.
-    for (var i = 0; i < this.externalPowerOptions.length; i++) {
-      if (this.externalPowerOptions[i] == source) {
-        index = i;
-        break;
-      }
-    }
-
+    var index = this.externalPowerOptions.indexOf(source);
     if (index >= 0)
       chrome.send('updateExternalPower', [index]);
   },
 
-  timeUntilEmptyChanged: function(time) {
-    chrome.send('updateTimeToEmpty', [parseInt(time)]);
+  timeUntilEmptyChanged: function(time, oldTime) {
+    if (oldTime != undefined)
+      chrome.send('updateTimeToEmpty', [parseInt(time)]);
   },
 
-  timeUntilFullChanged: function(time) {
-    chrome.send('updateTimeToFull', [parseInt(time)]);
+  timeUntilFullChanged: function(time, oldTime) {
+    if (oldTime != undefined)
+      chrome.send('updateTimeToFull', [parseInt(time)]);
   },
 
-  updatePowerProperties: function(percent, external_power, empty, full) {
-    this.batteryPercent = percent;
-    this.externalPower = this.externalPowerOptions[external_power];
-    this.timeUntilEmpty = empty;
-    this.timeUntilFull = full;
+  updatePowerProperties: function(power_properties) {
+    this.batteryPercent = power_properties.battery_percent;
+    this.batteryState =
+        this.batteryStateOptions[power_properties.battery_state];
+    this.externalPower =
+        this.externalPowerOptions[power_properties.external_power];
+    this.timeUntilEmpty = power_properties.battery_time_to_empty_sec;
+    this.timeUntilFull = power_properties.battery_time_to_full_sec;
   }
 });
