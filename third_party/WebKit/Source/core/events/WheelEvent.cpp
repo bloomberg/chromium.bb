@@ -128,8 +128,6 @@ WheelEvent& WheelEventDispatchMediator::event() const
 
 bool WheelEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    if (!(event().deltaX() || event().deltaY()))
-        return true;
     return EventDispatchMediator::dispatchEvent(dispatcher) && !event().defaultHandled();
 }
 
