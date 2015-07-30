@@ -6279,4 +6279,23 @@ TEST(HeapTest, MixinConstructionNoGC)
     EXPECT_GT(mixin->traceCount(), 0);
 }
 
+class WeakPersistentHolder final {
+public:
+    explicit WeakPersistentHolder(IntWrapper* object) : m_object(object) { }
+    IntWrapper* object() const { return m_object; }
+private:
+    WeakPersistent<IntWrapper> m_object;
+};
+
+TEST(HeapTest, WeakPersistent)
+{
+    Persistent<IntWrapper> object = new IntWrapper(20);
+    OwnPtr<WeakPersistentHolder> holder = adoptPtr(new WeakPersistentHolder(object));
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_TRUE(holder->object());
+    object = nullptr;
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_FALSE(holder->object());
+}
+
 } // namespace blink

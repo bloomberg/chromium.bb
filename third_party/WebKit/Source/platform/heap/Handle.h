@@ -48,57 +48,34 @@
 
 namespace blink {
 
-template<typename T> class HeapTerminatedArray;
-
-// Persistent handles are used to store pointers into the
-// managed heap. As long as the Persistent handle is alive
-// the GC will keep the object pointed to alive. Persistent
-// handles can be stored in objects and they are not scoped.
-// Persistent handles must not be used to contain pointers
-// between objects that are in the managed heap. They are only
-// meant to point to managed heap objects from variables/members
-// outside the managed heap.
-//
-// A Persistent is always a GC root from the point of view of
-// the garbage collector.
-//
-// We have to construct and destruct Persistent in the same thread.
-template<typename T>
-class Persistent final {
+template<typename T, bool isWeakPersistent>
+class PersistentBase {
 public:
-    Persistent() : m_raw(nullptr)
+    PersistentBase() : m_raw(nullptr)
     {
         initialize();
     }
 
-    Persistent(std::nullptr_t) : m_raw(nullptr)
+    PersistentBase(std::nullptr_t) : m_raw(nullptr)
     {
         initialize();
     }
 
-    Persistent(T* raw) : m_raw(raw)
-    {
-        initialize();
-        checkPointer();
-        recordBacktrace();
-    }
-
-    Persistent(T& raw) : m_raw(&raw)
+    PersistentBase(T* raw) : m_raw(raw)
     {
         initialize();
         checkPointer();
         recordBacktrace();
     }
 
-    Persistent(const Persistent& other) : m_raw(other)
+    PersistentBase(T& raw) : m_raw(&raw)
     {
         initialize();
         checkPointer();
         recordBacktrace();
     }
 
-    template<typename U>
-    Persistent(const Persistent<U>& other) : m_raw(other)
+    PersistentBase(const PersistentBase& other) : m_raw(other)
     {
         initialize();
         checkPointer();
@@ -106,7 +83,7 @@ public:
     }
 
     template<typename U>
-    Persistent(const Member<U>& other) : m_raw(other)
+    PersistentBase(const PersistentBase<U, isWeakPersistent>& other) : m_raw(other)
     {
         initialize();
         checkPointer();
@@ -114,7 +91,15 @@ public:
     }
 
     template<typename U>
-    Persistent(const RawPtr<U>& other) : m_raw(other.get())
+    PersistentBase(const Member<U>& other) : m_raw(other)
+    {
+        initialize();
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    PersistentBase(const RawPtr<U>& other) : m_raw(other.get())
     {
         initialize();
         checkPointer();
@@ -123,7 +108,7 @@ public:
 
     void clear() { m_raw = nullptr; }
 
-    ~Persistent()
+    ~PersistentBase()
     {
         uninitialize();
         m_raw = nullptr;
@@ -134,7 +119,11 @@ public:
     {
         static_assert(sizeof(T), "T must be fully defined");
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-        visitor->mark(m_raw);
+        if (isWeakPersistent) {
+            visitor->registerWeakCell(&m_raw);
+        } else {
+            visitor->mark(m_raw);
+        }
     }
 
     RawPtr<T> release()
@@ -154,7 +143,7 @@ public:
     T* operator->() const { return *this; }
 
     template<typename U>
-    Persistent& operator=(U* other)
+    PersistentBase& operator=(U* other)
     {
         m_raw = other;
         checkPointer();
@@ -162,13 +151,13 @@ public:
         return *this;
     }
 
-    Persistent& operator=(std::nullptr_t)
+    PersistentBase& operator=(std::nullptr_t)
     {
         m_raw = nullptr;
         return *this;
     }
 
-    Persistent& operator=(const Persistent& other)
+    PersistentBase& operator=(const PersistentBase& other)
     {
         m_raw = other;
         checkPointer();
@@ -177,7 +166,7 @@ public:
     }
 
     template<typename U>
-    Persistent& operator=(const Persistent<U>& other)
+    PersistentBase& operator=(const PersistentBase<U, isWeakPersistent>& other)
     {
         m_raw = other;
         checkPointer();
@@ -186,7 +175,7 @@ public:
     }
 
     template<typename U>
-    Persistent& operator=(const Member<U>& other)
+    PersistentBase& operator=(const Member<U>& other)
     {
         m_raw = other;
         checkPointer();
@@ -195,7 +184,7 @@ public:
     }
 
     template<typename U>
-    Persistent& operator=(const RawPtr<U>& other)
+    PersistentBase& operator=(const RawPtr<U>& other)
     {
         m_raw = other;
         checkPointer();
@@ -211,7 +200,7 @@ private:
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->checkThread());
-        m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline);
+        m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentBase<T, isWeakPersistent>, &PersistentBase<T, isWeakPersistent>::trace>::trampoline);
         state->persistentAllocated();
 #if ENABLE(ASSERT)
         m_state = state;
@@ -263,6 +252,55 @@ private:
 #if ENABLE(ASSERT)
     ThreadState* m_state;
 #endif
+};
+
+// Persistent is a way to create a strong pointer from an on-heap object
+// to another on-heap object. As long as the Persistent handle is alive
+// the GC will keep the object pointed to alive. The Persistent handle is
+// always a GC root from the point of view of the GC.
+//
+// We have to construct and destruct Persistent in the same thread.
+template<typename T>
+class Persistent : public PersistentBase<T, false> {
+public:
+    Persistent() : PersistentBase<T, false>() { }
+    Persistent(std::nullptr_t) : PersistentBase<T, false>(nullptr) { }
+    Persistent(T* raw) : PersistentBase<T, false>(raw) { }
+    Persistent(T& raw) : PersistentBase<T, false>(raw) { }
+    Persistent(const Persistent& other) : PersistentBase<T, false>(other) { }
+    template<typename U>
+    Persistent(const Persistent<U>& other) : PersistentBase<T, false>(other) { }
+    template<typename U>
+    Persistent(const Member<U>& other) : PersistentBase<T, false>(other) { }
+    template<typename U>
+    Persistent(const RawPtr<U>& other) : PersistentBase<T, false>(other.get()) { }
+};
+
+// WeakPersistent is a way to create a weak pointer from an off-heap object
+// to an on-heap object. The m_raw is automatically cleared when the pointee
+// gets collected.
+//
+// We have to construct and destruct WeakPersistent in the same thread.
+//
+// Note that collections of WeakPersistents are not supported. Use a persistent
+// collection of WeakMembers instead.
+//
+//   HashSet<WeakPersistent<T>> m_set; // wrong
+//   PersistentHeapHashSet<WeakMember<T>> m_set; // correct
+template<typename T>
+class WeakPersistent : public PersistentBase<T, true> {
+public:
+    WeakPersistent() : PersistentBase<T, true>() { }
+    WeakPersistent(std::nullptr_t) : PersistentBase<T, true>(nullptr) { }
+    WeakPersistent(T* raw) : PersistentBase<T, true>(raw) { }
+    WeakPersistent(T& raw) : PersistentBase<T, true>(raw) { }
+    WeakPersistent(const WeakPersistent& other) : PersistentBase<T, true>(other) { }
+    template<typename U>
+    WeakPersistent(const WeakPersistent<U>& other) : PersistentBase<T, true>(other) { }
+    template<typename U>
+    WeakPersistent(const Member<U>& other) : PersistentBase<T, true>(other) { }
+    template<typename U>
+    WeakPersistent(const RawPtr<U>& other) : PersistentBase<T, true>(other.get()) { }
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread

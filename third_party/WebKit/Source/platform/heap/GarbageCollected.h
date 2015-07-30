@@ -26,7 +26,6 @@ template<typename T, typename Traits> class HeapVectorBacking;
 template<typename Table> class HeapHashTableBacking;
 template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 class InlinedGlobalMarkingVisitor;
-template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T> class Persistent;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
