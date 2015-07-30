@@ -169,9 +169,15 @@ fail_on_null(void *p)
 }
 
 static void *
-xmalloc(size_t s)
+zalloc(size_t s)
 {
-	return fail_on_null(malloc(s));
+	return calloc(s, 1);
+}
+
+static void *
+xzalloc(size_t s)
+{
+	return fail_on_null(zalloc(s));
 }
 
 static char *
@@ -321,14 +327,11 @@ create_message(struct location loc, const char *name)
 {
 	struct message *message;
 
-	message = xmalloc(sizeof *message);
+	message = xzalloc(sizeof *message);
 	message->loc = loc;
 	message->name = xstrdup(name);
 	message->uppercase_name = uppercase_dup(name);
 	wl_list_init(&message->arg_list);
-	message->arg_count = 0;
-	message->new_id_count = 0;
-	message->description = NULL;
 
 	return message;
 }
@@ -347,10 +350,8 @@ create_arg(const char *name)
 {
 	struct arg *arg;
 
-	arg = xmalloc(sizeof *arg);
+	arg = xzalloc(sizeof *arg);
 	arg->name = xstrdup(name);
-	arg->summary = NULL;
-	arg->interface_name = NULL;
 
 	return arg;
 }
@@ -412,10 +413,9 @@ create_enumeration(const char *name)
 {
 	struct enumeration *enumeration;
 
-	enumeration = xmalloc(sizeof *enumeration);
+	enumeration = xzalloc(sizeof *enumeration);
 	enumeration->name = xstrdup(name);
 	enumeration->uppercase_name = uppercase_dup(name);
-	enumeration->description = NULL;
 
 	wl_list_init(&enumeration->entry_list);
 
@@ -427,7 +427,7 @@ create_entry(const char *name, const char *value)
 {
 	struct entry *entry;
 
-	entry = xmalloc(sizeof *entry);
+	entry = xzalloc(sizeof *entry);
 	entry->name = xstrdup(name);
 	entry->uppercase_name = uppercase_dup(name);
 	entry->value = xstrdup(value);
@@ -466,12 +466,11 @@ create_interface(struct location loc, const char *name, int version)
 {
 	struct interface *interface;
 
-	interface = xmalloc(sizeof *interface);
+	interface = xzalloc(sizeof *interface);
 	interface->loc = loc;
 	interface->name = xstrdup(name);
 	interface->uppercase_name = uppercase_dup(name);
 	interface->version = version;
-	interface->description = NULL;
 	interface->since = 1;
 	wl_list_init(&interface->request_list);
 	wl_list_init(&interface->event_list);
@@ -509,22 +508,18 @@ start_element(void *data, const char *element_name, const char **atts)
 	struct arg *arg;
 	struct enumeration *enumeration;
 	struct entry *entry;
-	struct description *description;
-	const char *name, *type, *interface_name, *value, *summary, *since;
-	const char *allow_null;
+	struct description *description = NULL;
+	const char *name = NULL;
+	const char *type = NULL;
+	const char *interface_name = NULL;
+	const char *value = NULL;
+	const char *summary = NULL;
+	const char *since = NULL;
+	const char *allow_null = NULL;
 	char *end;
-	int i, version;
+	int i, version = 0;
 
 	ctx->loc.line_number = XML_GetCurrentLineNumber(ctx->parser);
-	name = NULL;
-	type = NULL;
-	version = 0;
-	interface_name = NULL;
-	value = NULL;
-	summary = NULL;
-	description = NULL;
-	since = NULL;
-	allow_null = NULL;
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
@@ -551,7 +546,6 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		ctx->protocol->name = xstrdup(name);
 		ctx->protocol->uppercase_name = uppercase_dup(name);
-		ctx->protocol->description = NULL;
 	} else if (strcmp(element_name, "copyright") == 0) {
 
 	} else if (strcmp(element_name, "interface") == 0) {
@@ -581,8 +575,6 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		if (type != NULL && strcmp(type, "destructor") == 0)
 			message->destructor = 1;
-		else
-			message->destructor = 0;
 
 		if (since != NULL) {
 			int prev_errno = errno;
@@ -629,15 +621,18 @@ start_element(void *data, const char *element_name, const char **atts)
 			break;
 		}
 
-		if (allow_null == NULL || strcmp(allow_null, "false") == 0)
-			arg->nullable = 0;
-		else if (strcmp(allow_null, "true") == 0)
-			arg->nullable = 1;
-		else
-			fail(&ctx->loc, "invalid value for allow-null attribute (%s)", allow_null);
+		if (allow_null) {
+			if (strcmp(allow_null, "true") == 0)
+				arg->nullable = 1;
+			else if (strcmp(allow_null, "false") != 0)
+				fail(&ctx->loc,
+				     "invalid value for allow-null attribute (%s)",
+				     allow_null);
 
-		if (allow_null != NULL && !is_nullable_type(arg))
-			fail(&ctx->loc, "allow-null is only valid for objects, strings, and arrays");
+			if (!is_nullable_type(arg))
+				fail(&ctx->loc,
+				     "allow-null is only valid for objects, strings, and arrays");
+		}
 
 		if (summary)
 			arg->summary = xstrdup(summary);
@@ -669,7 +664,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (summary == NULL)
 			fail(&ctx->loc, "description without summary");
 
-		description = xmalloc(sizeof *description);
+		description = xzalloc(sizeof *description);
 		description->summary = xstrdup(summary);
 
 		if (ctx->message)
@@ -1519,15 +1514,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* initialize protocol structure */
+	memset(&protocol, 0, sizeof protocol);
 	wl_list_init(&protocol.interface_list);
-	protocol.type_index = 0;
-	protocol.null_run_length = 0;
-	protocol.copyright = NULL;
 	protocol.core_headers = core_headers;
+
+	/* initialize context */
 	memset(&ctx, 0, sizeof ctx);
 	ctx.protocol = &protocol;
-
 	ctx.loc.filename = "<stdin>";
+
+	/* create XML parser */
 	ctx.parser = XML_ParserCreate(NULL);
 	XML_SetUserData(ctx.parser, &ctx);
 	if (ctx.parser == NULL) {
