@@ -1062,8 +1062,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
          */
         public void start() {
             mProgress = 0.0f;
-            mToolbar.setLoadProgress(mProgress);
             mToolbar.startLoadProgress();
+            mToolbar.setLoadProgress(mProgress);
             mHandler.sendEmptyMessage(MSG_ID_UPDATE_PROGRESS);
         }
 

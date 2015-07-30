@@ -223,7 +223,6 @@ public class CompositorViewHolder extends FrameLayout
             }
         });
 
-        if (!DeviceFormFactor.isTablet(getContext())) mProgressBarDrawingInfo = new DrawingInfo();
         mCompositorView = new CompositorView(getContext(), this);
         addView(mCompositorView,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -541,9 +540,14 @@ public class CompositorViewHolder extends FrameLayout
         TraceEvent.begin("CompositorViewHolder:layout");
         if (mLayoutManager != null) {
             mLayoutManager.onUpdate();
-            if (mProgressBarDrawingInfo != null) {
+
+            if (!DeviceFormFactor.isTablet(getContext()) && mControlContainer != null) {
+                if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
                 mControlContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
+            } else {
+                assert mProgressBarDrawingInfo == null;
             }
+
             mCompositorView.finalizeLayers(mLayoutManager, mSkipNextToolbarTextureUpdate,
                     mProgressBarDrawingInfo);
 
