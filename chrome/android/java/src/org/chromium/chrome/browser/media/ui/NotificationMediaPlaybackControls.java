@@ -8,11 +8,15 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.provider.Browser;
 import android.support.v4.app.NotificationCompat;
 import android.widget.RemoteViews;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 
@@ -151,6 +155,8 @@ public class NotificationMediaPlaybackControls {
 
     private NotificationCompat.Builder mNotificationBuilder;
 
+    private Bitmap mNotificationIconBitmap;
+
     private MediaNotificationInfo mMediaNotificationInfo;
 
     private NotificationMediaPlaybackControls(Context context) {
@@ -234,6 +240,14 @@ public class NotificationMediaPlaybackControls {
             return;
         }
 
+        // Android doesn't badge the icons for RemoteViews automatically when
+        // running the app under the Work profile.
+        if (mNotificationIconBitmap == null) {
+            Drawable notificationIconDrawable = ApiCompatibilityUtils.getUserBadgedIcon(
+                    mContext, R.drawable.audio_playing);
+            mNotificationIconBitmap = drawableToBitmap(notificationIconDrawable);
+        }
+
         if (mNotificationBuilder == null) {
             mNotificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.audio_playing)
@@ -246,7 +260,11 @@ public class NotificationMediaPlaybackControls {
 
         contentView.setTextViewText(R.id.title, getTitle());
         contentView.setTextViewText(R.id.status, getStatus());
-        contentView.setImageViewResource(R.id.icon, R.drawable.audio_playing);
+        if (mNotificationIconBitmap != null) {
+            contentView.setImageViewBitmap(R.id.icon, mNotificationIconBitmap);
+        } else {
+            contentView.setImageViewResource(R.id.icon, R.drawable.audio_playing);
+        }
 
         if (mMediaNotificationInfo.isPaused) {
             contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
@@ -266,5 +284,12 @@ public class NotificationMediaPlaybackControls {
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
 
         mService.startForeground(R.id.media_playback_notification, mNotificationBuilder.build());
+    }
+
+    private Bitmap drawableToBitmap(Drawable drawable) {
+        if (!(drawable instanceof BitmapDrawable)) return null;
+
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+        return bitmapDrawable.getBitmap();
     }
 }

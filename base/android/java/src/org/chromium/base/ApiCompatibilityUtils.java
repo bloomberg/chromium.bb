@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
@@ -19,6 +20,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.Process;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -414,5 +416,17 @@ public class ApiCompatibilityUtils {
         } else {
             activity.finish();
         }
+    }
+
+    /**
+     * @see android.content.pm.PackageManager#getUserBadgedIcon(Drawable, android.os.UserHandle).
+     */
+    public static Drawable getUserBadgedIcon(Context context, int id) {
+        Drawable drawable = getDrawable(context.getResources(), id);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            PackageManager packageManager = context.getPackageManager();
+            drawable = packageManager.getUserBadgedIcon(drawable, Process.myUserHandle());
+        }
+        return drawable;
     }
 }
