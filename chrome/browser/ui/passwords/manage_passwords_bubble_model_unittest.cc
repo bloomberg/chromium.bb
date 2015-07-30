@@ -98,10 +98,7 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutLogging) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      histogram_tester.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_FALSE(samples);
+  histogram_tester.ExpectTotalCount(kUIDismissalReasonMetric, 0);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
