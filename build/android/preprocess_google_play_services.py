@@ -17,22 +17,31 @@ drawables, etc.
 easily. This is necessary since debug and test apks get very close
 to the dex limit.
 
-The script is supposed to be used with the maven repository that can be obtained
-by downloading the "extra-google-m2repository" from the Android SDK Manager. It
-also supports importing from already extracted AAR files using the
---is-extracted-repo flag.
+The script is supposed to be used with the maven repository that can be
+obtained by downloading the "extra-google-m2repository" from the Android SDK
+Manager. It also supports importing from already extracted AAR files using the
+--is-extracted-repo flag. The expected directory structure in that case would
+look like:
+
+    REPOSITORY_DIR
+    +-- CLIENT_1
+    |   +-- <content of the first AAR file>
+    +-- CLIENT_2
+    +-- etc.
 
 The json config (see the -c argument) file should provide the following fields:
 
 - lib_version: String. Used when building from the maven repository. It should
-  be the package's version (e.g. "7.3.0")
+  be the package's version (e.g. "7.3.0"). Unused with extracted repositories.
 
 - clients: String array. List of clients to pick. For example, when building
   from the maven repository, it's the artifactId (e.g. "play-services-base") of
-  each client.
+  each client. With an extracted repository, it's the name of the
+  subdirectories.
 
-- client_filter: String array. Pattern of files to prune from the clients once
-  extracted. Metacharacters are allowed. (e.g. "res/drawable*")
+- locale_whitelist: String array. Locales that should be allowed in the final
+  resources. They are specified the same way they are appended to the `values`
+  directory in android resources (e.g. "us-GB", "it", "fil").
 
 The output is a directory with the following structure:
 
@@ -75,7 +84,8 @@ M2_PKG_PATH = os.path.join('com', 'google', 'android', 'gms')
 
 def main():
   parser = argparse.ArgumentParser(description=("Prepares the Google Play "
-      "services split client libraries before usage by Chrome's build system"))
+      "services split client libraries before usage by Chrome's build system. "
+      "See the script's documentation for more a detailed help."))
   parser.add_argument('-r',
                       '--repository',
                       help='The Google Play services repository location',
@@ -198,11 +208,21 @@ def _GenerateCombinedJar(tmp_paths):
 
 
 def _ProcessResources(config, tmp_paths):
-  # Prune unused resources
-  for res_filter in config['client_filter']:
-    glob_pattern = os.path.join(tmp_paths['imported_clients'], '*', res_filter)
-    for prune_target in glob.glob(glob_pattern):
-      shutil.rmtree(prune_target)
+  LOCALIZED_VALUES_BASE_NAME = 'values-'
+  locale_whitelist = set(config['locale_whitelist'])
+
+  glob_pattern = os.path.join(tmp_paths['imported_clients'], '*', 'res', '*')
+  for res_dir in glob.glob(glob_pattern):
+    dir_name = os.path.basename(res_dir)
+
+    if dir_name.startswith('drawable'):
+      shutil.rmtree(res_dir)
+      continue
+
+    if dir_name.startswith(LOCALIZED_VALUES_BASE_NAME):
+      dir_locale = dir_name[len(LOCALIZED_VALUES_BASE_NAME):]
+      if dir_locale not in locale_whitelist:
+        shutil.rmtree(res_dir)
 
 
 def _BuildOutput(config, tmp_paths, out_dir, git_friendly):
