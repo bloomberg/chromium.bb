@@ -48,6 +48,7 @@ static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
 class InspectorRuntimeAgent::InjectedScriptCallScope {
+    STACK_ALLOCATED();
 public:
     InjectedScriptCallScope(InspectorRuntimeAgent* agent, bool doNotPauseOnExceptionsAndMuteConsole)
         : m_agent(agent)
@@ -80,7 +81,7 @@ private:
         return presentState;
     }
 
-    InspectorRuntimeAgent* m_agent;
+    RawPtrWillBeMember<InspectorRuntimeAgent> m_agent;
     bool m_doNotPauseOnExceptionsAndMuteConsole;
     V8Debugger::PauseOnExceptionsState m_previousPauseOnExceptionsState;
 };
