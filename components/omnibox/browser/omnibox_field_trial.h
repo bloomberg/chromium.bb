@@ -324,6 +324,7 @@ class OmniboxFieldTrial {
   static const char kHQPAllowMatchInSchemeRule[];
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
+  static const char kSuggestVariantRule[];
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];

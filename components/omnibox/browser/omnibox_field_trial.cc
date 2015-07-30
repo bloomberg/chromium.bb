@@ -154,11 +154,10 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
   if (variations::GetVariationParamValue(
           kBundledExperimentFieldTrialName, kZeroSuggestRule) == "false")
     return false;
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
-  return true;
-#else
+#if defined(OS_IOS)
   return false;
+#else
+  return true;
 #endif
 }
 
@@ -170,15 +169,29 @@ bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
 }
 
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
-  return variations::GetVariationParamValue(
+  std::string variant(variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
-      kZeroSuggestVariantRule) == "MostVisitedWithoutSERP";
+      kZeroSuggestVariantRule));
+  if (variant == "MostVisitedWithoutSERP")
+    return true;
+#if defined(OS_ANDROID)
+  // Android defaults to MostVisitedWithoutSERP
+  return variant.empty();
+#else
+  return false;
+#endif
 }
 
 bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
-  return variations::GetVariationParamValue(
+  if (variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
-      kZeroSuggestVariantRule) == "AfterTyping";
+      kSuggestVariantRule) == "AfterTyping")
+    return true;
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
 }
 
 bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
@@ -398,6 +411,7 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
+const char OmniboxFieldTrial::kSuggestVariantRule[] = "SuggestVariant";
 const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
     "DisableResultsCaching";
 const char

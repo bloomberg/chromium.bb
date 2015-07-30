@@ -195,11 +195,10 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
 // group names.
 TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
   // Default ZeroSuggest setting depends on OS.
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
-  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-#else
+#if defined(OS_IOS)
   EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+#else
+  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
 #endif
 
   {
@@ -219,8 +218,16 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+#if defined(OS_ANDROID)
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+#else
     EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+#endif
+#if defined(OS_IOS) || defined(OS_ANDROID)
     EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+#else
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+#endif
 
     ResetFieldTrialList();
     params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
@@ -231,17 +238,26 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+#if defined(OS_IOS) || defined(OS_ANDROID)
     EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+#else
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+#endif
 
     ResetFieldTrialList();
-    params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
+    params.erase(std::string(OmniboxFieldTrial::kZeroSuggestVariantRule));
+    params[std::string(OmniboxFieldTrial::kSuggestVariantRule)] =
         "AfterTyping";
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
     ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+#if defined(OS_ANDROID)
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+#else
     EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+#endif
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
   }
 }
