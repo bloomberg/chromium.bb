@@ -1824,7 +1824,7 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
     if (!tex)
         return;
 
-    if (format != tex->getInternalFormat(target, level)) {
+    if (!isWebGL2OrHigher() && format != tex->getInternalFormat(target, level)) {
         synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage2D", "format does not match texture format");
         return;
     }
