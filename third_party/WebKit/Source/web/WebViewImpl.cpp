@@ -2262,9 +2262,9 @@ bool WebViewImpl::setComposition(
     // editable because JavaScript may delete a parent node of the composition
     // node. In this case, WebKit crashes while deleting texts from the parent
     // node, which doesn't exist any longer.
-    RefPtrWillBeRawPtr<Range> range = inputMethodController.compositionRange();
-    if (range) {
-        Node* node = range->startContainer();
+    const EphemeralRange range = inputMethodController.compositionEphemeralRange();
+    if (range.isNotNull()) {
+        Node* node = range.startPosition().containerNode();
         if (!node || !node->isContentEditable())
             return false;
     }

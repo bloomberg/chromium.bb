@@ -94,14 +94,14 @@ bool InputMethodController::insertTextForConfirmedComposition(const String& text
 
 void InputMethodController::selectComposition() const
 {
-    RefPtrWillBeRawPtr<Range> range = compositionRange();
-    if (!range)
+    const EphemeralRange range = compositionEphemeralRange();
+    if (range.isNull())
         return;
 
     // The composition can start inside a composed character sequence, so we have to override checks.
     // See <http://bugs.webkit.org/show_bug.cgi?id=15781>
     VisibleSelection selection;
-    selection.setWithoutValidation(range->startPosition(), range->endPosition());
+    selection.setWithoutValidation(range.startPosition(), range.endPosition());
     frame().selection().setSelection(selection, 0);
 }
 
@@ -340,16 +340,24 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     setComposition(frame().selectedText(), underlines, 0, 0);
 }
 
-PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
+EphemeralRange InputMethodController::compositionEphemeralRange() const
 {
     if (!hasComposition())
-        return nullptr;
+        return EphemeralRange();
     unsigned length = m_compositionNode->length();
     unsigned start = std::min(m_compositionStart, length);
     unsigned end = std::min(std::max(start, m_compositionEnd), length);
     if (start >= end)
+        return EphemeralRange();
+    return EphemeralRange(Position(m_compositionNode.get(), start), Position(m_compositionNode.get(), end));
+}
+
+PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
+{
+    const EphemeralRange range = compositionEphemeralRange();
+    if (range.isNull())
         return nullptr;
-    return Range::create(m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
+    return Range::create(range.document(), range.startPosition(), range.endPosition());
 }
 
 PlainTextRange InputMethodController::getSelectionOffsets() const

@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/CompositionUnderline.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PlainTextRange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -67,6 +68,7 @@ public:
     // Deletes the existing composition text.
     void cancelComposition();
     void cancelCompositionIfSelectionIsInvalid();
+    EphemeralRange compositionEphemeralRange() const;
     PassRefPtrWillBeRawPtr<Range> compositionRange() const;
 
     // getting international text input composition state (for use by InlineTextBox)
