@@ -207,7 +207,8 @@ void CanvasRenderingContext2DState::updateLineDash() const
     if (m_lineDash.size() == 0) {
         m_strokePaint.setPathEffect(0);
     } else {
-        m_strokePaint.setPathEffect(SkDashPathEffect::Create(m_lineDash.data(), m_lineDash.size(), m_lineDashOffset));
+        RefPtr<SkPathEffect> dashPathEffect = adoptRef(SkDashPathEffect::Create(m_lineDash.data(), m_lineDash.size(), m_lineDashOffset));
+        m_strokePaint.setPathEffect(dashPathEffect.get());
     }
 
     m_lineDashDirty = false;
