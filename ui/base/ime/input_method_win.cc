@@ -34,7 +34,6 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       composing_window_handle_(NULL),
       suppress_next_char_(false) {
   SetDelegate(delegate);
-  OnInputLocaleChanged();
 }
 
 void InputMethodWin::OnFocus() {
@@ -173,12 +172,12 @@ void InputMethodWin::CancelComposition(const TextInputClient* client) {
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
-  locale_ = imm32_manager_.GetInputLanguageName();
+  // Note: OnInputLocaleChanged() is for crbug.com/168971.
   OnInputMethodChanged();
 }
 
 std::string InputMethodWin::GetInputLocale() {
-  return locale_;
+  return imm32_manager_.GetInputLanguageName();
 }
 
 bool InputMethodWin::IsCandidatePopupOpen() const {
@@ -260,8 +259,18 @@ LRESULT InputMethodWin::OnImeSetContext(HWND window_handle,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "440919 InputMethodWin::OnImeSetContext"));
 
-  if (!!wparam)
+  if (!!wparam) {
     imm32_manager_.CreateImeWindow(window_handle);
+    if (system_toplevel_window_focused()) {
+      // Delay initialize the tsf to avoid perf regression.
+      // Loading tsf dll causes some time, so doing it in UpdateIMEState() will
+      // slow down the browser window creation.
+      // See crbug.com/509984.
+      tsf_inputscope::InitializeTsfForInputScopes();
+      tsf_inputscope::SetInputScopeForTsfUnawareWindow(
+          toplevel_window_handle_, GetTextInputType(), GetTextInputMode());
+    }
+  }
 
   OnInputMethodChanged();
   return imm32_manager_.SetImeWindowStyle(

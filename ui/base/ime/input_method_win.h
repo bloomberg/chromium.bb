@@ -108,9 +108,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // On non-Aura environment, this value is not used and always NULL.
   const HWND toplevel_window_handle_;
 
-  // Name of the current input locale.
-  std::string locale_;
-
   // The new text direction and layout alignment requested by the user by
   // pressing ctrl-shift. It'll be sent to the text input client when the key
   // is released.

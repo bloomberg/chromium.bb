@@ -115,27 +115,6 @@ typedef HRESULT (WINAPI *SetInputScopesFunc)(HWND window_handle,
 SetInputScopesFunc g_set_input_scopes = NULL;
 bool g_get_proc_done = false;
 
-SetInputScopesFunc GetSetInputScopes() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
-  // Thread safety is not required because this function is under UI thread.
-  if (!g_get_proc_done) {
-    g_get_proc_done = true;
-
-    // For stability reasons, we do not support Windows XP.
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return NULL;
-
-    HMODULE module = NULL;
-    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"msctf.dll",
-        &module)) {
-      return NULL;
-    }
-    g_set_input_scopes = reinterpret_cast<SetInputScopesFunc>(
-        GetProcAddress(module, "SetInputScopes"));
-  }
-  return g_set_input_scopes;
-}
-
 InputScope ConvertTextInputTypeToInputScope(TextInputType text_input_type) {
   // Following mapping is based in IE10 on Windows 8.
   switch (text_input_type) {
@@ -179,6 +158,25 @@ InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
 
 }  // namespace
 
+void InitializeTsfForInputScopes() {
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+  // Thread safety is not required because this function is under UI thread.
+  if (!g_get_proc_done) {
+    g_get_proc_done = true;
+
+    // For stability reasons, we do not support Windows XP.
+    if (base::win::GetVersion() < base::win::VERSION_VISTA)
+      return;
+
+    HMODULE module = NULL;
+    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"msctf.dll",
+        &module)) {
+      g_set_input_scopes = reinterpret_cast<SetInputScopesFunc>(
+          GetProcAddress(module, "SetInputScopes"));
+    }
+  }
+}
+
 std::vector<InputScope> GetInputScopes(TextInputType text_input_type,
                                        TextInputMode text_input_mode) {
   std::vector<InputScope> input_scopes;
@@ -199,18 +197,16 @@ ITfInputScope* CreateInputScope(TextInputType text_input_type,
   return new TSFInputScope(GetInputScopes(text_input_type, text_input_mode));
 }
 
-void SetInputScopeForTsfUnawareWindow(
-    HWND window_handle,
-    TextInputType text_input_type,
-    TextInputMode text_input_mode) {
-  SetInputScopesFunc set_input_scopes = GetSetInputScopes();
-  if (!set_input_scopes)
+void SetInputScopeForTsfUnawareWindow(HWND window_handle,
+                                      TextInputType text_input_type,
+                                      TextInputMode text_input_mode) {
+  if (!g_set_input_scopes)
     return;
 
   std::vector<InputScope> input_scopes = GetInputScopes(text_input_type,
                                                         text_input_mode);
-  set_input_scopes(window_handle, &input_scopes[0], input_scopes.size(), NULL,
-                   0, NULL, NULL);
+  g_set_input_scopes(window_handle, &input_scopes[0], input_scopes.size(),
+                     NULL, 0, NULL, NULL);
 }
 
 }  // namespace tsf_inputscope

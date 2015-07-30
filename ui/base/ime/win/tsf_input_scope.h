@@ -17,6 +17,10 @@
 namespace ui {
 namespace tsf_inputscope {
 
+// Initializes the TSF for input scopes. It loads the tsf dll and get the
+// function pointer for setting the input scopes in TSF.
+UI_BASE_IME_EXPORT void InitializeTsfForInputScopes();
+
 // Returns InputScope list corresoponding to ui::TextInputType and
 // ui::TextInputMode.
 // This function is only used from following functions but declared for test.
