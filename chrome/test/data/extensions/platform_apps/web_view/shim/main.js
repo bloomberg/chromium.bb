@@ -18,6 +18,8 @@ var request_to_comm_channel_2 = 'connect_request';
 var response_from_comm_channel_1 = 'connected';
 var response_from_comm_channel_2 = 'connected_response';
 
+var GUEST_REDIRECT_FILE_NAME = 'guest_redirect.html';
+
 embedder.setUp_ = function(config) {
   if (!config || !config.testServer) {
     return;
@@ -34,7 +36,7 @@ embedder.setUp_ = function(config) {
   embedder.detectUserAgentURL = embedder.baseGuestURL + '/detect-user-agent';
   embedder.redirectGuestURL = embedder.baseGuestURL + '/server-redirect';
   embedder.redirectGuestURLDest = embedder.baseGuestURL +
-      '/extensions/platform_apps/web_view/shim/guest_redirect.html';
+      '/extensions/platform_apps/web_view/shim/' + GUEST_REDIRECT_FILE_NAME;
   embedder.closeSocketURL = embedder.baseGuestURL + '/close-socket';
   embedder.testImageBaseURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/';
@@ -2759,6 +2761,50 @@ function testMailtoLink() {
   document.body.appendChild(webview);
 }
 
+// This test navigates an unattached guest to 'about:blank', then it makes a
+// renderer/ navigation to a URL that results in a server side redirect. In the
+// end we verify that the redirected URL loads in the guest properly.
+function testRendererNavigationRedirectWhileUnattached() {
+  var webview = document.createElement('webview');
+  // So that |webview| is unattached, but can navigate.
+  webview.style.display = 'none';
+
+  var seenRedirectURLCommit = false;
+  var seenRedirectLoadStop = false;
+
+  var checkTest = function() {
+    if (seenRedirectLoadStop && seenRedirectURLCommit) {
+      embedder.test.succeed();
+    }
+  };
+
+  webview.onloadstop = function(e) {
+
+    webview.onloadstop = function() {
+      webview.onloadstop = null;
+      seenRedirectLoadStop = true;
+      checkTest();
+    };
+    webview.executeScript({
+      code: 'window.location.href="' + embedder.redirectGuestURL + '"',
+    }, function(res) {
+      if (!res || !res.length) {
+        embedder.test.fail();
+        return;
+      }
+    });
+  };
+
+  webview.onloadcommit = function(e) {
+    if (e.url.indexOf(GUEST_REDIRECT_FILE_NAME) != -1) {
+      seenRedirectURLCommit = true;
+      checkTest();
+    }
+  };
+  document.body.appendChild(webview);
+  webview.src = 'about:blank';
+};
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2861,7 +2907,9 @@ embedder.test.testList = {
   'testCloseNewWindowCleanup': testCloseNewWindowCleanup,
   'testFocusWhileFocused': testFocusWhileFocused,
   'testPDFInWebview': testPDFInWebview,
-  'testMailtoLink': testMailtoLink
+  'testMailtoLink': testMailtoLink,
+  'testRendererNavigationRedirectWhileUnattached':
+       testRendererNavigationRedirectWhileUnattached
 };
 
 onload = function() {

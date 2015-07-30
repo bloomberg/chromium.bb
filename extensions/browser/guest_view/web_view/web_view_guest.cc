@@ -1229,21 +1229,24 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
         owner_web_contents(), params);
   }
 
-  // If the guest wishes to navigate away prior to attachment then we save the
-  // navigation to perform upon attachment. Navigation initializes a lot of
-  // state that assumes an embedder exists, such as RenderWidgetHostViewGuest.
-  // Navigation also resumes resource loading which we don't want to allow
-  // until attachment.
   if (!attached()) {
     WebViewGuest* opener = GetOpener();
-    auto it = opener->pending_new_windows_.find(this);
-    if (it == opener->pending_new_windows_.end())
+    // If the guest wishes to navigate away prior to attachment then we save the
+    // navigation to perform upon attachment. Navigation initializes a lot of
+    // state that assumes an embedder exists, such as RenderWidgetHostViewGuest.
+    // Navigation also resumes resource loading. If we were created using
+    // newwindow (i.e. we have an opener), we don't allow navigation until
+    // attachment.
+    if (opener) {
+      auto it = opener->pending_new_windows_.find(this);
+      if (it == opener->pending_new_windows_.end())
+        return nullptr;
+      const NewWindowInfo& info = it->second;
+      NewWindowInfo new_window_info(params.url, info.name);
+      new_window_info.changed = new_window_info.url != info.url;
+      it->second = new_window_info;
       return nullptr;
-    const NewWindowInfo& info = it->second;
-    NewWindowInfo new_window_info(params.url, info.name);
-    new_window_info.changed = new_window_info.url != info.url;
-    it->second = new_window_info;
-    return nullptr;
+    }
   }
 
   // This code path is taken if RenderFrameImpl::DecidePolicyForNavigation
