@@ -29,7 +29,13 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
 typedef GalleryBrowserTestBase<NOT_IN_GUEST_MODE> GalleryBrowserTest;
 typedef GalleryBrowserTestBase<IN_GUEST_MODE> GalleryBrowserTestInGuestMode;
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDownloads) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OpenSingleImageOnDownloads DISABLED_OpenSingleImageOnDownloads
+#else
+#define MAYBE_OpenSingleImageOnDownloads OpenSingleImageOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_OpenSingleImageOnDownloads) {
   set_test_case_name("openSingleImageOnDownloads");
   StartTest();
 }
@@ -66,7 +72,15 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDownloads) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TraverseSlideImagesOnDownloads \
+  DISABLED_TraverseSlideImagesOnDownloads
+#else
+#define MAYBE_TraverseSlideImagesOnDownloads TraverseSlideImagesOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_TraverseSlideImagesOnDownloads) {
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
 }
@@ -102,7 +116,13 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_RenameImageOnDrive) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDownloads) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DeleteImageOnDownloads DISABLED_DeleteImageOnDownloads
+#else
+#define MAYBE_DeleteImageOnDownloads DeleteImageOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_DeleteImageOnDownloads) {
   set_test_case_name("deleteImageOnDownloads");
   StartTest();
 }
@@ -112,7 +132,13 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, DeleteImageOnDownloads) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDrive) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DeleteImageOnDrive DISABLED_DeleteImageOnDrive
+#else
+#define MAYBE_DeleteImageOnDrive DeleteImageOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_DeleteImageOnDrive) {
   set_test_case_name("deleteImageOnDrive");
   StartTest();
 }
@@ -147,7 +173,13 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, CropImageOnDownloads) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDrive) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CropImageOnDrive DISABLED_CropImageOnDrive
+#else
+#define MAYBE_CropImageOnDrive CropImageOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_CropImageOnDrive) {
   set_test_case_name("cropImageOnDrive");
   StartTest();
 }
@@ -168,7 +200,12 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_ExposureImageOnDrive DISABLED_ExposureImageOnDrive
+#else
+#define MAYBE_ExposureImageOnDrive ExposureImageOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ExposureImageOnDrive) {
   set_test_case_name("exposureImageOnDrive");
   StartTest();
 }

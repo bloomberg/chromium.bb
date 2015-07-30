@@ -334,10 +334,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "sortColumns"),
                       TestParameter(IN_GUEST_MODE, "sortColumns")));
 
-INSTANTIATE_TEST_CASE_P(
-    TabIndex,
-    FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TabIndex DISABLED_TabIndex
+#else
+#define MAYBE_TabIndex TabIndex
+#endif
+INSTANTIATE_TEST_CASE_P(MAYBE_TabIndex,
+                        FileManagerBrowserTest,
+                        ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                                        "searchBoxFocus")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_TabindexFocus DISABLED_TabindexFocus
@@ -349,8 +355,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "tabindexFocus")));
 
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TabindexFocusDownloads DISABLED_TabindexFocusDownloads
+#else
+#define MAYBE_TabindexFocusDownloads TabindexFocusDownloads
+#endif
 INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDownloads,
+    MAYBE_TabindexFocusDownloads,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDownloads"),
@@ -371,6 +383,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // Fails on official cros trunk build. http://crbug.com/480491
 #if defined(OFFICIAL_BUILD)
 #define MAYBE_TabindexOpenDialog DISABLED_TabindexOpenDialog
+#elif defined(MEMORY_SANITIZER)
+// http://crbug.com/508949
+#define MAYBE_TabindexOpenDialog DISABLED_TabindexOpenDialog
 #else
 #define MAYBE_TabindexOpenDialog TabindexOpenDialog
 #endif
@@ -384,6 +399,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Fails on official build. http://crbug.com/482121.
 #if defined(OFFICIAL_BUILD)
+#define MAYBE_TabindexSaveFileDialog DISABLED_TabindexSaveFileDialog
+#elif defined(MEMORY_SANITIZER)
+// http://crbug.com/508949
 #define MAYBE_TabindexSaveFileDialog DISABLED_TabindexSaveFileDialog
 #else
 #define MAYBE_TabindexSaveFileDialog TabindexSaveFileDialog
@@ -446,8 +464,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "showGridViewDrive")));
 
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Providers DISABLED_Providers
+#else
+#define MAYBE_Providers Providers
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    Providers,
+    MAYBE_Providers,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "requestMount"),

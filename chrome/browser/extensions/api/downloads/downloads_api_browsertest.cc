@@ -1109,7 +1109,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |id| parameter for search().
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
+//
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadExtensionTest_SearchId DISABLED_DownloadExtensionTest_SearchId
+#else
+#define MAYBE_DownloadExtensionTest_SearchId DownloadExtensionTest_SearchId
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       MAYBE_DownloadExtensionTest_SearchId) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1129,8 +1137,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
 }
 
 // Test specifying both the |id| and |filename| parameters for search().
+//
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadExtensionTest_SearchIdAndFilename DISABLED_DownloadExtensionTest_SearchIdAndFilename
+#else
+#define MAYBE_DownloadExtensionTest_SearchIdAndFilename DownloadExtensionTest_SearchIdAndFilename
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_SearchIdAndFilename) {
+                       MAYBE_DownloadExtensionTest_SearchIdAndFilename) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1238,8 +1253,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |state| option for search().
+//
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadExtensionTest_SearchState DISABLED_DownloadExtensionTest_SearchState
+#else
+#define MAYBE_DownloadExtensionTest_SearchState DownloadExtensionTest_SearchState
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_SearchState) {
+                       MAYBE_DownloadExtensionTest_SearchState) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1255,8 +1277,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |limit| option for search().
+//
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadExtensionTest_SearchLimit DISABLED_DownloadExtensionTest_SearchLimit
+#else
+#define MAYBE_DownloadExtensionTest_SearchLimit DownloadExtensionTest_SearchLimit
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_SearchLimit) {
+                       MAYBE_DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -4153,4 +4182,4 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
 
 }  // namespace extensions
 
-#endif  // http://crbug.com/3061144
+#endif  // http://crbug.com/306144

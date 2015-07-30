@@ -42,18 +42,36 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDownloads) {
   StartTest();
 }
 
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OpenSingleVideoOnDownloads DISABLED_OpenSingleVideoOnDownloads
+#else
+#define MAYBE_OpenSingleVideoOnDownloads OpenSingleVideoOnDownloads
+#endif
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTestInGuestMode,
-                       OpenSingleVideoOnDownloads) {
+                       MAYBE_OpenSingleVideoOnDownloads) {
   set_test_case_name("openSingleVideoOnDownloads");
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDrive) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OpenSingleVideoOnDrive DISABLED_OpenSingleVideoOnDrive
+#else
+#define MAYBE_OpenSingleVideoOnDrive OpenSingleVideoOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_OpenSingleVideoOnDrive) {
   set_test_case_name("openSingleVideoOnDrive");
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, CheckInitialElements) {
+// http://crbug.com/508949
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CheckInitialElements DISABLED_CheckInitialElements
+#else
+#define MAYBE_CheckInitialElements CheckInitialElements
+#endif
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_CheckInitialElements) {
   set_test_case_name("checkInitialElements");
   StartTest();
 }
