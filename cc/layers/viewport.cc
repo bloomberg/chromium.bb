@@ -43,11 +43,9 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
-  if (OuterScrollLayer()) {
-    pending_content_delta -=
-        host_impl_->ScrollLayer(OuterScrollLayer(), pending_content_delta,
-                                viewport_point, is_direct_manipulation);
-  }
+  pending_content_delta -=
+      host_impl_->ScrollLayer(OuterScrollLayer(), pending_content_delta,
+                              viewport_point, is_direct_manipulation);
 
   ScrollResult result;
 

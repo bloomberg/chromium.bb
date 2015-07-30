@@ -1857,7 +1857,6 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
 class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
  protected:
   void SetupLayers(LayerTreeSettings settings) {
-    gfx::Size viewport_size(10, 10);
     gfx::Size content_size(100, 100);
 
     LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
@@ -1866,39 +1865,22 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
             &task_graph_runner_, &stats_instrumentation_);
     host_impl_ = make_scoped_ptr(host_impl_override_time);
     host_impl_->InitializeRenderer(CreateOutputSurface());
-    host_impl_->SetViewportSize(viewport_size);
 
-    scoped_ptr<LayerImpl> root =
-        LayerImpl::Create(host_impl_->active_tree(), 1);
-    root->SetBounds(viewport_size);
-
-    scoped_ptr<LayerImpl> scroll =
-        LayerImpl::Create(host_impl_->active_tree(), 2);
-    scroll->SetScrollClipLayer(root->id());
-    scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
-    root->SetBounds(viewport_size);
-    scroll->SetBounds(content_size);
-    scroll->SetIsContainerForFixedPositionLayers(true);
-
-    scoped_ptr<LayerImpl> contents =
-        LayerImpl::Create(host_impl_->active_tree(), 3);
-    contents->SetDrawsContent(true);
-    contents->SetBounds(content_size);
+    SetupScrollAndContentsLayers(content_size);
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
+    host_impl_->SetViewportSize(
+        gfx::Size(content_size.width() / 2, content_size.height() / 2));
 
     scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =
-        SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 4,
+        SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 400,
                                              VERTICAL, 10, 0, false, true);
     EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());
 
-    scroll->AddChild(contents.Pass());
-    root->AddChild(scroll.Pass());
-    root->SetHasRenderSurface(true);
-    scrollbar->SetScrollLayerAndClipLayerByIds(2, 1);
+    LayerImpl* scroll = host_impl_->InnerViewportScrollLayer();
+    LayerImpl* root = scroll->parent()->parent();
+    scrollbar->SetScrollLayerAndClipLayerByIds(scroll->id(), root->id());
     root->AddChild(scrollbar.Pass());
 
-    host_impl_->active_tree()->SetRootLayer(root.Pass());
-    host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2,
-                                                        Layer::INVALID_ID);
     host_impl_->active_tree()->DidBecomeActive();
     DrawFrame();
   }
@@ -3486,30 +3468,21 @@ TEST_F(LayerTreeHostImplTest, ScrollBlockedByContentLayer) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
-  gfx::Size surface_size(20, 20);
   gfx::Size viewport_size(10, 10);
   float page_scale = 2.f;
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
-  scoped_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
-  scoped_ptr<LayerImpl> root_scrolling =
-      CreateScrollableLayer(3, surface_size, root_clip.get());
-  EXPECT_EQ(viewport_size, root_clip->bounds());
-  root_scrolling->SetIsContainerForFixedPositionLayers(true);
-  root_clip->AddChild(root_scrolling.Pass());
-  root->AddChild(root_clip.Pass());
-  root->SetHasRenderSurface(true);
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
-  // The behaviour in this test assumes the page scale is applied at a layer
-  // above the clip layer.
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
-                                                      Layer::INVALID_ID);
-  host_impl_->active_tree()->DidBecomeActive();
-  host_impl_->SetViewportSize(viewport_size);
+
+  SetupScrollAndContentsLayers(viewport_size);
+
+  // Setup the layers so that the outer viewport is scrollable.
+  host_impl_->active_tree()->InnerViewportScrollLayer()->parent()->SetBounds(
+      viewport_size);
+  host_impl_->active_tree()->OuterViewportScrollLayer()->SetBounds(
+      gfx::Size(20, 20));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
   DrawFrame();
 
   LayerImpl* root_scroll =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
+      host_impl_->active_tree()->OuterViewportScrollLayer();
   EXPECT_EQ(viewport_size, root_scroll->scroll_clip_layer()->bounds());
 
   gfx::Vector2d scroll_delta(0, 10);
@@ -3521,8 +3494,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   host_impl_->ScrollEnd();
 
   // Set new page scale from main thread.
-  host_impl_->active_tree()->PushPageScaleFromMainThread(page_scale, page_scale,
-                                                         page_scale);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(page_scale, 1.f, 2.f);
 
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
   EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), root_scroll->id(),
@@ -3537,31 +3509,21 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
-  gfx::Size surface_size(20, 20);
   gfx::Size viewport_size(10, 10);
   float page_scale = 2.f;
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
-  scoped_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
-  scoped_ptr<LayerImpl> root_scrolling =
-      CreateScrollableLayer(3, surface_size, root_clip.get());
-  EXPECT_EQ(viewport_size, root_clip->bounds());
-  root_scrolling->SetIsContainerForFixedPositionLayers(true);
-  root_clip->AddChild(root_scrolling.Pass());
-  root->AddChild(root_clip.Pass());
-  root->SetHasRenderSurface(true);
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
-  // The behaviour in this test assumes the page scale is applied at a layer
-  // above the clip layer.
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
-                                                      Layer::INVALID_ID);
-  host_impl_->active_tree()->DidBecomeActive();
-  host_impl_->SetViewportSize(viewport_size);
-  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, page_scale);
+
+  SetupScrollAndContentsLayers(viewport_size);
+
+  // Setup the layers so that the outer viewport is scrollable.
+  host_impl_->active_tree()->InnerViewportScrollLayer()->parent()->SetBounds(
+      viewport_size);
+  host_impl_->active_tree()->OuterViewportScrollLayer()->SetBounds(
+      gfx::Size(20, 20));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
   DrawFrame();
 
   LayerImpl* root_scroll =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
+      host_impl_->active_tree()->OuterViewportScrollLayer();
   EXPECT_EQ(viewport_size, root_scroll->scroll_clip_layer()->bounds());
 
   gfx::Vector2d scroll_delta(0, 10);
@@ -4581,27 +4543,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildEventBubbling) {
   // should be applied to one of its ancestors if possible. Overscroll should
   // be reflected only when it has bubbled up to the root scrolling layer.
   InputHandlerScrollResult scroll_result;
-  gfx::Size surface_size(10, 10);
-  gfx::Size content_size(20, 20);
-  scoped_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 3);
-  root_clip->SetHasRenderSurface(true);
-
-  scoped_ptr<LayerImpl> root =
-      CreateScrollableLayer(1, content_size, root_clip.get());
-  root->SetIsContainerForFixedPositionLayers(true);
-  scoped_ptr<LayerImpl> child =
-      CreateScrollableLayer(2, content_size, root_clip.get());
-
-  child->SetScrollClipLayer(Layer::INVALID_ID);
-  root->AddChild(child.Pass());
-  root_clip->AddChild(root.Pass());
-
-  host_impl_->SetViewportSize(surface_size);
-  host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 1,
-                                                      Layer::INVALID_ID);
-  host_impl_->active_tree()->DidBecomeActive();
+  SetupScrollAndContentsLayers(gfx::Size(20, 20));
   DrawFrame();
   {
     gfx::Vector2d scroll_delta(0, 8);
@@ -4647,27 +4589,8 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
 
 TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
   InputHandlerScrollResult scroll_result;
-  gfx::Size surface_size(100, 100);
-  gfx::Size content_size(200, 200);
-  scoped_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 3);
-  root_clip->SetHasRenderSurface(true);
+  SetupScrollAndContentsLayers(gfx::Size(200, 200));
 
-  scoped_ptr<LayerImpl> root =
-      CreateScrollableLayer(1, content_size, root_clip.get());
-  root->SetIsContainerForFixedPositionLayers(true);
-  scoped_ptr<LayerImpl> child =
-      CreateScrollableLayer(2, content_size, root_clip.get());
-
-  child->SetScrollClipLayer(Layer::INVALID_ID);
-  root->AddChild(child.Pass());
-  root_clip->AddChild(root.Pass());
-
-  host_impl_->SetViewportSize(surface_size);
-  host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 1,
-                                                      Layer::INVALID_ID);
-  host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
     // Edge glow effect should be applicable only upon reaching Edges
