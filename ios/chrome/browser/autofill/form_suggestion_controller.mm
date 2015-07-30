@@ -289,15 +289,17 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   if (!_suggestionState)
     return;
 
-  // Send the suggestion to the provider and advance the cursor.
+  // Send the suggestion to the provider. Upon completion advance the cursor
+  // for single-field Autofill, or close the keyboard for full-form Autofill.
   base::WeakNSObject<FormSuggestionController> weakSelf(self);
   [_provider
       didSelectSuggestion:suggestion
                  forField:base::SysUTF8ToNSString(_suggestionState->field_name)
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
         completionHandler:^{
-          // Don't need to select next element if full form was filled at once.
-          if (!autofill::AutofillFieldTrialIOS::IsFullFormAutofillEnabled())
+          if (autofill::AutofillFieldTrialIOS::IsFullFormAutofillEnabled())
+            [[weakSelf accessoryViewDelegate] closeKeyboard];
+          else
             [[weakSelf accessoryViewDelegate] selectNextElement];
         }];
   _provider = nil;

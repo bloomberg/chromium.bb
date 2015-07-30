@@ -55,6 +55,15 @@
 - (void)fillFormForInstantBuy:(NSString*)dataString
             completionHandler:(ProceduralBlock)completionHandler;
 
+// Clear autofilled fields of the specified form. Fields that are not currently
+// autofilled are not modified. Field contents are cleared, and Autofill flag
+// and styling are removed. 'change' events are sent for fields whose contents
+// changed.
+// |completionHandler| is called after the forms are filled. |completionHandler|
+// cannot be nil.
+- (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
+                        completionHandler:(ProceduralBlock)completionHandler;
+
 // Dispatches the autocomplete event to the form element with the given
 // |formName|.
 - (void)dispatchAutocompleteEvent:(NSString*)formName;

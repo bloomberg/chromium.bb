@@ -14,7 +14,7 @@
 - (id)initWithValue:(NSString*)value
     displayDescription:(NSString*)displayDescription
                   icon:(NSString*)icon
-            identifier:(NSUInteger)identifier;
+            identifier:(NSInteger)identifier;
 
 @end
 
@@ -22,7 +22,7 @@
   NSString* _value;
   NSString* _displayDescription;
   NSString* _icon;
-  NSUInteger _identifier;
+  NSInteger _identifier;
   base::mac::ObjCPropertyReleaser _propertyReleaser_FormSuggestion;
 }
 
@@ -34,7 +34,7 @@
 - (id)initWithValue:(NSString*)value
     displayDescription:(NSString*)displayDescription
                   icon:(NSString*)icon
-            identifier:(NSUInteger)identifier {
+            identifier:(NSInteger)identifier {
   self = [super init];
   if (self) {
     _propertyReleaser_FormSuggestion.Init(self, [FormSuggestion class]);
@@ -49,7 +49,7 @@
 + (FormSuggestion*)suggestionWithValue:(NSString*)value
                     displayDescription:(NSString*)displayDescription
                                   icon:(NSString*)icon
-                            identifier:(NSUInteger)identifier {
+                            identifier:(NSInteger)identifier {
   return [[[FormSuggestion alloc] initWithValue:value
                              displayDescription:displayDescription
                                            icon:icon

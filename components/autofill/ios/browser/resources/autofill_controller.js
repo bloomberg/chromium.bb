@@ -564,6 +564,45 @@ __gCrWeb.autofill['fillFormForInstantBuy'] = function(data) {
 };
 
 /**
+ * Clear autofilled fields of the specified form. Fields that are not currently
+ * autofilled are not modified.
+ * Field contents are cleared, and Autofill flag and styling are removed.
+ * 'change' events are sent for fields whose contents changed.
+ * Based on FormCache::ClearFormWithElement().
+ *
+ * @param {string} formName Identifier for form element (from
+ *     getFormIdentifier).
+ */
+__gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
+  var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
+  var controlElements = __gCrWeb.common.getFormControlElements(form);
+  for (var i = 0; i < controlElements.length; ++i) {
+    var element = controlElements[i];
+    if (!element.isAutofilled || element.disabled)
+      continue;
+
+    if (__gCrWeb.autofill.isTextInput(element) ||
+        __gCrWeb.autofill.isTextAreaElement(element)) {
+      __gCrWeb.common.setInputElementValue('', element, true);
+    } else if (__gCrWeb.autofill.isSelectElement(element)) {
+      // Reset to the first index.
+      // TODO(bondd): Store initial values and reset to the correct one here.
+      if (element.selectedIndex != 0) {
+        element.selectedIndex = 0;
+        __gCrWeb.common.createAndDispatchHTMLEvent(element, 'change', true,
+            false);
+      }
+    } else if (__gCrWeb.autofill.isCheckableElement(element)) {
+      // TODO(bondd): Handle checkable elements. They aren't properly supported
+      // by iOS Autofill yet.
+    }
+
+    element.removeAttribute('chrome-autofilled');
+    element.isAutofilled = false;
+  }
+};
+
+/**
  * Dispatch an autocomplete event to the named form.
  *
  * @param {string} name Identifier for form element (from getFormIdentifier).

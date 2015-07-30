@@ -24,13 +24,13 @@
 
 // The integer identifier associated with the suggestion. Identifiers greater
 // than zero are profile or credit card identifiers.
-@property(assign, readonly, nonatomic) NSUInteger identifier;
+@property(assign, readonly, nonatomic) NSInteger identifier;
 
 // Returns FormSuggestion (immutable) with given values.
 + (FormSuggestion*)suggestionWithValue:(NSString*)value
                     displayDescription:(NSString*)displayDescription
                                   icon:(NSString*)icon
-                            identifier:(NSUInteger)identifier;
+                            identifier:(NSInteger)identifier;
 
 @end
 

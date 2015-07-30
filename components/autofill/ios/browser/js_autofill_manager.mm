@@ -85,6 +85,20 @@
   return [self evaluate:fillFormJS stringResultHandler:stringResultHandler];
 }
 
+- (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
+                        completionHandler:(ProceduralBlock)completionHandler {
+  DCHECK(completionHandler);
+  web::JavaScriptCompletion resultHandler = ^void(NSString*, NSError*) {
+    completionHandler();
+  };
+
+  NSString* js =
+      [NSString stringWithFormat:
+                    @"__gCrWeb.autofill.clearAutofilledFields(%s);",
+                    base::GetQuotedJSONString([formName UTF8String]).c_str()];
+  [self evaluate:js stringResultHandler:resultHandler];
+}
+
 - (void)dispatchAutocompleteEvent:(NSString*)formName {
   NSString* dispatchAutocompleteEventJS = [NSString
       stringWithFormat:@"__gCrWeb.autofill.dispatchAutocompleteEvent(%s);",

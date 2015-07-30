@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
-  <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
-    Clear form
-  </message>
+  <if expr="not is_ios">
+    <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
+      Clear form
+    </message>
+  </if>
+  <if expr="is_ios">
+    <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="iOS: The entry in the suggestions keyboard accessory that clears an auto-filled form.">
+      CLEAR FORM
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
     This webpage has disabled automatic filling for this form.
   </message>
