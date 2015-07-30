@@ -419,7 +419,7 @@ Runner.prototype = {
       this.tRex.update(0);
 
       // Outer container and distance meter.
-      if (this.activated || this.crashed) {
+      if (this.activated || this.crashed || this.paused) {
         this.containerEl.style.width = this.dimensions.WIDTH + 'px';
         this.containerEl.style.height = this.dimensions.HEIGHT + 'px';
         this.distanceMeter.update(0, Math.ceil(this.distanceRan));
@@ -480,7 +480,7 @@ Runner.prototype = {
     this.playCount++;
 
     // Handle tabbing off the page. Pause the current game.
-    window.addEventListener(Runner.events.VISIBILITY,
+    document.addEventListener(Runner.events.VISIBILITY,
           this.onVisibilityChange.bind(this));
 
     window.addEventListener(Runner.events.BLUR,

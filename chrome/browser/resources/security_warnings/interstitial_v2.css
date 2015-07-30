@@ -402,6 +402,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
     height: 0;
     opacity: 0;
     overflow: hidden;
+    transition: none;
   }
 
   #details-button {
@@ -448,7 +449,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
 }
 
 @media (min-height: 400px) and (orientation:portrait) {
-  body:not(.extended-reporting-has-checkbox) .interstitial-wrapper {
+  .interstitial-wrapper {
     margin-bottom: 145px;
   }
 }
@@ -484,7 +485,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
 }
 
 @media (min-height: 500px) and (max-width: 414px) and (orientation: portrait) {
-  :not(.extended-reporting-has-checkbox) .interstitial-wrapper {
+  .interstitial-wrapper {
     margin-top: 96px;
   }
 }
@@ -618,41 +619,6 @@ input[type=checkbox]:checked ~ .checkbox::before {
   .nav-wrapper {
     flex: 0 1 auto;
     margin-top: 8px;
-    order: 1;
-    padding-left: 0;
-    padding-right: 0;
-    position: relative;
-    width: 100%;
-  }
-}
-
-/* Extended reporting opt-in. No fixed nav. */
-@media (max-height: 736px) and (orientation: portrait),
-       (max-height: 360px) and (max-width: 680px) and (orientation: landscape) {
-  .extended-reporting-has-checkbox .interstitial-wrapper {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 0;
-  }
-
-  .extended-reporting-has-checkbox #details {
-    flex: 1 1 auto;
-    order: 0;
-  }
-
-  .extended-reporting-has-checkbox #main-content {
-    flex: 1 1 auto;
-    order: 0;
-    padding-bottom: 0;
-  }
-
-  .extended-reporting-has-checkbox #extended-reporting-opt-in {
-    margin-bottom: 8px;
-  }
-
-  body.extended-reporting-has-checkbox .nav-wrapper {
-    flex: 0 1 auto;
-    margin-top: 0;
     order: 1;
     padding-left: 0;
     padding-right: 0;
