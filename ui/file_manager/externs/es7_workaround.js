@@ -11,7 +11,25 @@
 
 /**
  * @param {!Object} obj
- * @param {function(string, !Object, string, *=)} callback
+ * @param {function(!Array<!Object>)} callback
  * @param {!Array<string>=} acceptList
  */
 Object.observe = function(obj, callback, acceptList) {};
+
+/**
+ * @param {!Object} obj
+ * @param {function(!Array<!Object>)} callback
+ */
+Object.unobserve = function(obj, callback) {};
+
+/**
+ * @param {!Array} arr
+ * @param {function(!Array<!Object>)} callback
+ */
+Array.observe = function(arr, callback) {};
+
+/**
+ * @param {!Array} arr
+ * @param {function(!Array<!Object>)} callback
+ */
+Array.unobserve = function(arr, callback) {};

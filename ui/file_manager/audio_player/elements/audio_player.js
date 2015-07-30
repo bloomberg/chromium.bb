@@ -2,13 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @extends {PolymerElement}
- */
-var AudioPlayerElement = function() {};
-
-AudioPlayerElement.prototype = {
+Polymer({
   is: 'audio-player',
 
   properties: {
@@ -119,7 +113,7 @@ AudioPlayerElement.prototype = {
 
   /**
    * Handles change event for audio volume.
-   * @param {boolean} volume
+   * @param {number} volume
    */
   volumeChanged: function(volume) {
     if (this.model)
@@ -351,7 +345,7 @@ AudioPlayerElement.prototype = {
           // We are advancing only if the next track is not known to be invalid.
           // This prevents an endless auto-advancing in the case when all tracks
           // are invalid (we will only visit each track once).
-          this.advance_(forward, repeat, true /* only if valid */);
+          this.advance_(forward, repeat);
         }.bind(this),
         3000);
 
@@ -375,7 +369,7 @@ AudioPlayerElement.prototype = {
    * When it changed, current operation including playback is stopped and
    * restarts playback with new tracks if necessary.
    *
-   * @type {Array<AudioPlayer.TrackInfo>}
+   * @type {Array<TrackInfo>}
    */
   get tracks() {
     return this.$.trackList ? this.$.trackList.tracks : null;
@@ -446,6 +440,4 @@ AudioPlayerElement.prototype = {
   computeAudioVolume_: function(volume) {
     return volume / 100;
   }
-};
-
-Polymer(AudioPlayerElement.prototype);
+});

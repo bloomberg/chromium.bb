@@ -25,13 +25,7 @@
     target.style.bottom = pos.bottom + 'px';
   }
 
-  /**
-   * @constructor
-   * @extends {PolymerElement}
-   */
-  var ControlPanelElement = function() {};
-
-  ControlPanelElement.prototype = {
+  Polymer({
     is: 'control-panel',
 
     properties: {
@@ -150,7 +144,7 @@
 
     /**
      * Invoked when the focus goes out of the volume elements.
-     * @param {!FocusEvent} event The focusout event.
+     * @param {!UIEvent} event The focusout event.
      * @private
      */
     onVolumeControllerFocusout_: function(event) {
@@ -202,7 +196,5 @@
     computeProgressBarStyle_: function(time, duration) {
       return 'width: ' + (time / duration * 100) + '%;';
     }
-  };
-
-  Polymer(ControlPanelElement.prototype);
+  });
 })();  // Anonymous closure

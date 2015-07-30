@@ -2,22 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {?{
+ *   url: string,
+ *   title: string,
+ *   artist: string,
+ *   artwork: Object,
+ *   active: boolean
+ * }}
+ */
+var TrackInfo;
+
 (function() {
   'use strict';
 
-  /**
-   * @constructor
-   * @extends {PolymerElement}
-   */
-  var TrackListElement = function() {};
-
-  TrackListElement.prototype = {
+  Polymer({
     is: 'track-list',
 
     properties: {
       /**
        * List of tracks.
-       * @type {Array<AudioPlayer.TrackInfo>}
        */
       tracks: {
         type: Array,
@@ -119,8 +123,8 @@
 
     /**
      * Invoked when 'tracks' property is changed.
-     * @param {Array<AudioPlayer.TrackInfo>} newValue New value.
-     * @param {Array<AudioPlayer.TrackInfo>} oldValue Old value.
+     * @param {Array<!TrackInfo>} newValue New value.
+     * @param {Array<!TrackInfo>} oldValue Old value.
      */
     tracksChanged: function(newValue, oldValue) {
       // Note: Sometimes both oldValue and newValue are null though the actual
@@ -244,7 +248,7 @@
 
     /**
      * Sets the current track.
-     * @param {AudioPlayer.TrackInfo} track TrackInfo to be set as the current
+     * @param {!TrackInfo} track TrackInfo to be set as the current
      *     track.
      */
     selectTrack: function(track) {
@@ -273,7 +277,7 @@
 
     /**
      * Returns the current track.
-     * @return {AudioPlayer.TrackInfo} track TrackInfo of the current track.
+     * @return {TrackInfo} track TrackInfo of the current track.
      */
     getCurrentTrack: function() {
       if (this.tracks.length === 0)
@@ -317,7 +321,5 @@
 
       return newTrackIndex;
     },
-  };  // TrackListElement.prototype for 'track-list'
-
-  Polymer(TrackListElement.prototype);
+  });
 })();  // Anonymous closure

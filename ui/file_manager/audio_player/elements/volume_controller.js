@@ -5,13 +5,7 @@
 (function() {
   'use strict';
 
-  /**
-   * @constructor
-   * @extends {PolymerElement}
-   */
-  var VolumeControllerElement = function() {};
-
-  VolumeControllerElement.prototype = {
+  Polymer({
     is: 'volume-controller',
 
     properties: {
@@ -126,7 +120,5 @@
     computeFilledStyle_: function(rawValue) {
       return 'height: ' + rawValue + '%;';
     }
-  };
-
-  Polymer(VolumeControllerElement.prototype);
+  });
 })();  // Anonymous closure
