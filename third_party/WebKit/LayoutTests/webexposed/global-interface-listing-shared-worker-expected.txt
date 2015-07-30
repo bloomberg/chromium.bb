@@ -18,6 +18,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method keys
 [Worker]     method match
+[Worker]     method matchAll
 [Worker]     method put
 [Worker] interface CacheStorage
 [Worker]     method constructor

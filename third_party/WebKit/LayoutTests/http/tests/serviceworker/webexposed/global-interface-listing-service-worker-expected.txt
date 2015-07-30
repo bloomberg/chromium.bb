@@ -49,6 +49,7 @@ interface Cache
     method delete
     method keys
     method match
+    method matchAll
     method put
 interface CacheStorage
     method constructor

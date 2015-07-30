@@ -10,11 +10,7 @@
     TypeChecking=Interface,
 ] interface Cache {
     [CallWith=ScriptState, RaisesException] Promise<Response> match(RequestInfo request, optional CacheQueryOptions options);
-
-    // FIXME: Implement matchAll(): http://crbug.com/428363
-    // FIXME: First argument of matchAll() should be optional: http://crbug.com/425459
-    // [CallWith=ScriptState, RaisesException] Promise<sequence<Response>> matchAll(RequestInfo request, optional CacheQueryOptions options);
-
+    [RuntimeEnabled=CacheStorageMatchAll, CallWith=ScriptState, RaisesException] Promise<sequence<Response>> matchAll(optional RequestInfo request, optional CacheQueryOptions options);
     [CallWith=ScriptState, RaisesException] Promise<void> add(RequestInfo request);
     [CallWith=ScriptState, RaisesException] Promise<void> addAll(sequence<RequestInfo> requests);
     [CallWith=ScriptState, RaisesException] Promise<void> put(RequestInfo request, Response response);

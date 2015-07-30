@@ -36,6 +36,7 @@ public:
 
     // From Cache.idl:
     ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
+    ScriptPromise matchAll(ScriptState*, ExceptionState&);
     ScriptPromise matchAll(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise add(ScriptState*, const RequestInfo&, ExceptionState&);
     ScriptPromise addAll(ScriptState*, const HeapVector<RequestInfo>&, ExceptionState&);
@@ -56,6 +57,7 @@ private:
     Cache(WeakPtr<GlobalFetch::ScopedFetcher>, WebServiceWorkerCache*);
 
     ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
+    ScriptPromise matchAllImpl(ScriptState*);
     ScriptPromise matchAllImpl(ScriptState*, const Request*, const CacheQueryOptions&);
     ScriptPromise addAllImpl(ScriptState*, const HeapVector<Member<Request>>&, ExceptionState&);
     ScriptPromise deleteImpl(ScriptState*, const Request*, const CacheQueryOptions&);

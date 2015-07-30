@@ -280,6 +280,11 @@ ScriptPromise Cache::match(ScriptState* scriptState, const RequestInfo& request,
     return matchImpl(scriptState, newRequest, options);
 }
 
+ScriptPromise Cache::matchAll(ScriptState* scriptState, ExceptionState& exceptionState)
+{
+    return matchAllImpl(scriptState);
+}
+
 ScriptPromise Cache::matchAll(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
     ASSERT(!request.isNull());
@@ -383,6 +388,14 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request,
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchMatch(new CacheMatchCallbacks(resolver), webRequest, toWebQueryParams(options));
+    return promise;
+}
+
+ScriptPromise Cache::matchAllImpl(ScriptState* scriptState)
+{
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    const ScriptPromise promise = resolver->promise();
+    m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver), WebServiceWorkerRequest(), WebServiceWorkerCache::QueryParams());
     return promise;
 }
 
