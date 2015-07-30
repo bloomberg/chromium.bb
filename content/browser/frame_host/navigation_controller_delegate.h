@@ -38,7 +38,6 @@ class NavigationControllerDelegate {
   virtual const std::string& GetContentsMimeType() const = 0;
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
   virtual void Stop() = 0;
-  virtual SiteInstance* GetPendingSiteInstance() const = 0;
   virtual int32 GetMaxPageID() = 0;
   virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
   virtual bool IsLoading() const = 0;
