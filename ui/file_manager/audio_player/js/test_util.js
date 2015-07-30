@@ -5,7 +5,7 @@
 /**
  * Opens the audio player and waits until it is ready.
  *
- * @param {Array<string>} urls URLs to be opened.
+ * @param {!Array<string>} urls URLs to be opened.
  *
  */
 test.util.async.openAudioPlayer = function(urls, callback) {
