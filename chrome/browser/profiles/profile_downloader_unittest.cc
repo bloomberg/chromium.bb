@@ -10,12 +10,13 @@
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service.h"
+#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -45,7 +46,7 @@ class ProfileDownloaderTest : public testing::Test,
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherService::BuildForTests);
+                              FakeAccountFetcherServiceBuilder::BuildForTests);
     builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
                               signin::BuildTestSigninClient);
 
@@ -73,6 +74,7 @@ class ProfileDownloaderTest : public testing::Test,
 
   void SimulateUserInfoSuccess() {
     account_fetcher_service_->FakeUserInfoFetchSuccess(
+      account_tracker_service_->PickAccountIdForAccount(kTestGaia, kTestEmail),
       kTestEmail,
       kTestGaia,
       kTestHostedDomain,

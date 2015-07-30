@@ -22,7 +22,7 @@
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service.h"
+#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -33,6 +33,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -116,7 +117,7 @@ class SigninManagerTest : public testing::Test {
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               SigninManagerBuild);
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherService::BuildForTests);
+                              FakeAccountFetcherServiceBuilder::BuildForTests);
     profile_ = builder.Build();
 
     TestSigninClient* client = static_cast<TestSigninClient*>(
@@ -273,8 +274,9 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
   std::string gaia_id = "12345";
   std::string email = "user@google.com";
 
-  AccountTrackerServiceFactory::GetForProfile(profile())->
-      SeedAccountInfo(gaia_id, email);
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(profile());
+  account_tracker_service->SeedAccountInfo(gaia_id, email);
   FakeAccountFetcherService* account_fetcher_service =
       static_cast<FakeAccountFetcherService*>(
           AccountFetcherServiceFactory::GetForProfile(profile()));
@@ -292,19 +294,15 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
   // PostSignedIn is not called until the AccountTrackerService returns.
   ASSERT_EQ("", signin_client()->get_signed_in_password());
 
-  account_fetcher_service->FakeUserInfoFetchSuccess(email,
-                                                    gaia_id,
-                                                    "google.com",
-                                                    "full_name",
-                                                    "given_name",
-                                                    "locale",
-                                                    "http://www.google.com");
+  account_fetcher_service->FakeUserInfoFetchSuccess(
+      account_tracker_service->PickAccountIdForAccount(gaia_id, email), email,
+      gaia_id, "google.com", "full_name", "given_name", "locale",
+      "http://www.google.com");
 
   // AccountTracker and SigninManager are both done and PostSignedIn was called.
   ASSERT_EQ("password", signin_client()->get_signed_in_password());
 
   ExpectSignInWithRefreshTokenSuccess();
-
 }
 
 TEST_F(SigninManagerTest, SignOut) {

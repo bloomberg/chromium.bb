@@ -18,7 +18,7 @@
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
-#include "chrome/browser/signin/fake_account_fetcher_service.h"
+#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -46,7 +47,7 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
                        BuildFakeProfileOAuth2TokenService));
     factories.push_back(
         std::make_pair(AccountFetcherServiceFactory::GetInstance(),
-                       FakeAccountFetcherService::BuildForTests));
+                       FakeAccountFetcherServiceBuilder::BuildForTests));
     AddTestingFactories(factories);
   }
 

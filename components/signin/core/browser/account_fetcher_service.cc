@@ -127,11 +127,15 @@ void AccountFetcherService::UpdateChildInfo() {
   DCHECK(CalledOnValidThread());
   std::vector<std::string> accounts = token_service_->GetAccounts();
   if (accounts.size() == 1) {
-    if (accounts[0] == child_request_account_id_)
+    const std::string& candidate = accounts[0];
+    if (candidate == child_request_account_id_)
       return;
     if (!child_request_account_id_.empty())
       ResetChildInfo();
-    StartFetchingChildInfo(accounts[0]);
+    if (!AccountSupportsUserInfo(candidate))
+      return;
+    child_request_account_id_ = candidate;
+    StartFetchingChildInfo(candidate);
   } else {
     ResetChildInfo();
   }
@@ -182,9 +186,6 @@ void AccountFetcherService::StartFetchingUserInfo(
 // Starts fetching whether this is a child account. Handles refresh internally.
 void AccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
-  if (!AccountSupportsUserInfo(account_id))
-    return;
-  child_request_account_id_ = account_id;
   child_info_request_.reset(ChildAccountInfoFetcher::CreateFrom(
       child_request_account_id_, this, token_service_,
       signin_client_->GetURLRequestContext(), invalidation_service_));

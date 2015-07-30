@@ -134,6 +134,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'signin/core/browser/fake_account_fetcher_service.cc',
+        'signin/core/browser/fake_account_fetcher_service.h',
         'signin/core/browser/fake_auth_status_provider.cc',
         'signin/core/browser/fake_auth_status_provider.h',
         'signin/core/browser/fake_profile_oauth2_token_service.cc',

@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -80,6 +81,15 @@ void CheckAccountDetails(const std::string account_id,
   EXPECT_EQ(AccountIdToFullName(account_id), info.full_name);
   EXPECT_EQ(AccountIdToGivenName(account_id), info.given_name);
   EXPECT_EQ(AccountIdToLocale(account_id), info.locale);
+}
+
+void FakeUserInfoFetchSuccess(FakeAccountFetcherService* fetcher,
+                              const std::string& account_id) {
+  fetcher->FakeUserInfoFetchSuccess(
+      account_id, AccountIdToEmail(account_id), AccountIdToGaiaId(account_id),
+      AccountTrackerService::kNoHostedDomainFound,
+      AccountIdToFullName(account_id), AccountIdToGivenName(account_id),
+      AccountIdToLocale(account_id), AccountIdToPictureURL(account_id));
 }
 
 class TrackingEvent {
@@ -621,13 +631,21 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     CheckAccountDetails("alpha", infos[0]);
     CheckAccountDetails("beta", infos[1]);
 
-    // Remove account.
+    FakeAccountFetcherService fetcher;
+    fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
+    fetcher.EnableNetworkFetches();
+    // Remove an account.
+    // This will allow testing removal as well as child accounts which is only
+    // allowed for a single account.
     SimulateTokenRevoked("alpha");
+    fetcher.FakeSetIsChildAccount("beta", true);
+
+    fetcher.Shutdown();
     tracker.Shutdown();
  }
 
   // Create a new tracker and make sure it loads the single account from
-  // persistence.
+ // persistence. Also verify it is a child account.
   {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
@@ -636,6 +654,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
         tracker.GetAccounts();
     ASSERT_EQ(1u, infos.size());
     CheckAccountDetails("beta", infos[0]);
+    ASSERT_TRUE(infos[0].is_child_account);
     tracker.Shutdown();
   }
 }
@@ -1026,4 +1045,148 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
     accounts = tracker.GetAccounts();
     ASSERT_EQ(2u, accounts.size());
   }
+}
+
+TEST_F(AccountTrackerServiceTest, ChildAccountBasic) {
+  AccountTrackerService tracker;
+  tracker.Initialize(signin_client());
+  FakeAccountFetcherService fetcher;
+  fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
+  fetcher.EnableNetworkFetches();
+  AccountTrackerObserver observer;
+  tracker.AddObserver(&observer);
+  std::string child_id("child");
+  {
+    // Responses are processed iff there is a single account with a valid token
+    // and the response is for that account.
+    fetcher.FakeSetIsChildAccount(child_id, true);
+    ASSERT_TRUE(observer.CheckEvents());
+  }
+  {
+    SimulateTokenAvailable(child_id);
+    IssueAccessToken(child_id);
+    fetcher.FakeSetIsChildAccount(child_id, true);
+    // Response was processed but observer is not notified as the account state
+    // is invalid.
+    ASSERT_TRUE(observer.CheckEvents());
+    AccountTrackerService::AccountInfo info = tracker.GetAccountInfo(child_id);
+    ASSERT_TRUE(info.is_child_account);
+    SimulateTokenRevoked(child_id);
+  }
+  tracker.RemoveObserver(&observer);
+  fetcher.Shutdown();
+  tracker.Shutdown();
+}
+
+TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevoked) {
+  AccountTrackerService tracker;
+  tracker.Initialize(signin_client());
+  FakeAccountFetcherService fetcher;
+  fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
+  fetcher.EnableNetworkFetches();
+  AccountTrackerObserver observer;
+  tracker.AddObserver(&observer);
+  std::string child_id("child");
+
+  SimulateTokenAvailable(child_id);
+  IssueAccessToken(child_id);
+  fetcher.FakeSetIsChildAccount(child_id, false);
+  FakeUserInfoFetchSuccess(&fetcher, child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+  AccountTrackerService::AccountInfo info = tracker.GetAccountInfo(child_id);
+  ASSERT_FALSE(info.is_child_account);
+  SimulateTokenRevoked(child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, child_id)));
+
+  tracker.RemoveObserver(&observer);
+  fetcher.Shutdown();
+  tracker.Shutdown();
+}
+
+TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevokedWithUpdate) {
+  AccountTrackerService tracker;
+  tracker.Initialize(signin_client());
+  FakeAccountFetcherService fetcher;
+  fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
+  fetcher.EnableNetworkFetches();
+  AccountTrackerObserver observer;
+  tracker.AddObserver(&observer);
+  std::string child_id("child");
+
+  SimulateTokenAvailable(child_id);
+  IssueAccessToken(child_id);
+  fetcher.FakeSetIsChildAccount(child_id, true);
+  FakeUserInfoFetchSuccess(&fetcher, child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+  AccountTrackerService::AccountInfo info = tracker.GetAccountInfo(child_id);
+  ASSERT_TRUE(info.is_child_account);
+  SimulateTokenRevoked(child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id),
+                                   TrackingEvent(REMOVED, child_id)));
+
+  tracker.RemoveObserver(&observer);
+  fetcher.Shutdown();
+  tracker.Shutdown();
+}
+
+TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedTwiceThenRevoked) {
+  AccountTrackerService tracker;
+  tracker.Initialize(signin_client());
+  FakeAccountFetcherService fetcher;
+  fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
+  fetcher.EnableNetworkFetches();
+  AccountTrackerObserver observer;
+  tracker.AddObserver(&observer);
+  std::string child_id("child");
+
+  SimulateTokenAvailable(child_id);
+  IssueAccessToken(child_id);
+  // Observers notified the first time.
+  FakeUserInfoFetchSuccess(&fetcher, child_id);
+  // Since the account state is already valid, this will notify the
+  // observers for the second time.
+  fetcher.FakeSetIsChildAccount(child_id, true);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id),
+                                   TrackingEvent(UPDATED, child_id)));
+  SimulateTokenRevoked(child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id),
+                                   TrackingEvent(REMOVED, child_id)));
+
+  tracker.RemoveObserver(&observer);
+  fetcher.Shutdown();
+  tracker.Shutdown();
+}
+
+TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
+  AccountTrackerService tracker;
+  tracker.Initialize(signin_client());
+  FakeAccountFetcherService fetcher;
+  fetcher.Initialize(signin_client(), token_service(), &tracker, nullptr);
+  fetcher.EnableNetworkFetches();
+  AccountTrackerObserver observer;
+  tracker.AddObserver(&observer);
+  std::string child_id("child");
+
+  SimulateTokenAvailable(child_id);
+  IssueAccessToken(child_id);
+
+  // Set and verify this is a child account.
+  fetcher.FakeSetIsChildAccount(child_id, true);
+  AccountTrackerService::AccountInfo info = tracker.GetAccountInfo(child_id);
+  ASSERT_TRUE(info.is_child_account);
+  FakeUserInfoFetchSuccess(&fetcher, child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+
+  // Now simulate child account graduation.
+  fetcher.FakeSetIsChildAccount(child_id, false);
+  info = tracker.GetAccountInfo(child_id);
+  ASSERT_FALSE(info.is_child_account);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, child_id)));
+
+  SimulateTokenRevoked(child_id);
+  ASSERT_TRUE(observer.CheckEvents(TrackingEvent(REMOVED, child_id)));
+
+  tracker.RemoveObserver(&observer);
+  fetcher.Shutdown();
+  tracker.Shutdown();
 }

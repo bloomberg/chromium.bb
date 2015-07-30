@@ -57,6 +57,9 @@ class AccountFetcherService : public KeyedService,
     return account_tracker_service_;
   }
 
+  // Called by ChildAccountInfoFetcher.
+  void SetIsChildAccount(const std::string& account_id, bool is_child_account);
+
  private:
   friend class AccountInfoFetcher;
   friend class ChildAccountInfoFetcherImpl;
@@ -92,9 +95,6 @@ class AccountFetcherService : public KeyedService,
   void OnUserInfoFetchSuccess(const std::string& account_id,
                               scoped_ptr<base::DictionaryValue> user_info);
   void OnUserInfoFetchFailure(const std::string& account_id);
-
-  // Called by ChildAccountInfoFetcher.
-  void SetIsChildAccount(const std::string& account_id, bool is_child_account);
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;

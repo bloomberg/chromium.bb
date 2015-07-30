@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
@@ -26,12 +26,18 @@ class FakeAccountFetcherService : public AccountFetcherService {
                                 const std::string& given_name,
                                 const std::string& locale,
                                 const std::string& picture_url);
-
-  static scoped_ptr<KeyedService> BuildForTests(
-      content::BrowserContext* context);
+  void FakeUserInfoFetchSuccess(const std::string& account_id,
+                                const std::string& email,
+                                const std::string& gaia,
+                                const std::string& hosted_domain,
+                                const std::string& full_name,
+                                const std::string& given_name,
+                                const std::string& locale,
+                                const std::string& picture_url);
+  void FakeSetIsChildAccount(const std::string& account_id,
+                             const bool& is_child_account);
 
   FakeAccountFetcherService();
-  ~FakeAccountFetcherService() override;
 
  private:
   void StartFetchingUserInfo(const std::string& account_id) override;
@@ -42,4 +48,4 @@ class FakeAccountFetcherService : public AccountFetcherService {
   DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
