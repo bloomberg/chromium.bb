@@ -27,11 +27,11 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/library_loader/library_loader_hooks.h"
-#include "third_party/skia/include/core/SkGraphics.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_MACOSX)
@@ -92,6 +92,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   }
 #endif
 
+  SkGraphics::Init();
 #if defined(OS_ANDROID)
   const int kMB = 1024 * 1024;
   size_t font_cache_limit =
