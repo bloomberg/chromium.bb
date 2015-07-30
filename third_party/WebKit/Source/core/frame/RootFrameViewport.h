@@ -24,9 +24,9 @@ class LayoutRect;
 class CORE_EXPORT RootFrameViewport final : public NoBaseWillBeGarbageCollectedFinalized<RootFrameViewport>, public ScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
 public:
-    static PassOwnPtrWillBeRawPtr<RootFrameViewport> create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
+    static PassOwnPtrWillBeRawPtr<RootFrameViewport> create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder = false)
     {
-        return adoptPtrWillBeNoop(new RootFrameViewport(visualViewport, layoutViewport));
+        return adoptPtrWillBeNoop(new RootFrameViewport(visualViewport, layoutViewport, invertScrollOrder));
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -74,7 +74,7 @@ public:
     ScrollResult handleWheel(const PlatformWheelEvent&) override;
 
 private:
-    RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport);
+    RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder);
 
     DoublePoint scrollOffsetFromScrollAnimators() const;
 
@@ -88,6 +88,10 @@ private:
 
     RawPtrWillBeMember<ScrollableArea> m_visualViewport;
     RawPtrWillBeMember<ScrollableArea> m_layoutViewport;
+
+    // Experimental flag. If the experiment is enabled, scroll the visual viewport first,
+    // the bubble scrolls to the layout viewport.
+    bool m_invertScrollOrder;
 };
 
 } // namespace blink

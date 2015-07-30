@@ -13,9 +13,10 @@
 
 namespace blink {
 
-RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
+RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder)
     : m_visualViewport(visualViewport)
     , m_layoutViewport(layoutViewport)
+    , m_invertScrollOrder(invertScrollOrder)
 {
 }
 
@@ -96,7 +97,10 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
 {
     updateScrollAnimator();
 
-    ScrollResult viewScrollResult = layoutViewport().handleWheel(event);
+    ScrollableArea& primary = !m_invertScrollOrder ? layoutViewport() : visualViewport();
+    ScrollableArea& secondary = !m_invertScrollOrder ? visualViewport() : layoutViewport();
+
+    ScrollResult viewScrollResult = primary.handleWheel(event);
 
     // The visual viewport will only accept pixel scrolls.
     if (!event.canScroll() || event.granularity() == ScrollByPageWheelEvent)
@@ -108,7 +112,7 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
     // there is WheelEvent({0, -10} and page scroll by 2px and unusedScrollDelta computed
     // is {0, -8}. Due to which we have to negate the unusedScrollDelta to obtain the expected
     // animation.Please address http://crbug.com/504389.
-    DoublePoint oldOffset = visualViewport().scrollPositionDouble();
+    DoublePoint oldOffset = secondary.scrollPositionDouble();
     DoublePoint locationDelta;
     if (viewScrollResult.didScroll()) {
         locationDelta = -DoublePoint(viewScrollResult.unusedScrollDeltaX, viewScrollResult.unusedScrollDeltaY);
@@ -119,11 +123,11 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
             locationDelta.setY(-event.deltaY());
     }
 
-    DoublePoint targetPosition = visualViewport().clampScrollPosition(
-        visualViewport().scrollPositionDouble() + toDoubleSize(locationDelta));
-    visualViewport().setScrollPosition(targetPosition, UserScroll);
+    DoublePoint targetPosition = secondary.clampScrollPosition(
+        secondary.scrollPositionDouble() + toDoubleSize(locationDelta));
+    secondary.setScrollPosition(targetPosition, UserScroll);
 
-    DoublePoint usedLocationDelta(visualViewport().scrollPositionDouble() - oldOffset);
+    DoublePoint usedLocationDelta(secondary.scrollPositionDouble() - oldOffset);
 
     bool didScrollX = viewScrollResult.didScrollX || usedLocationDelta.x();
     bool didScrollY = viewScrollResult.didScrollY || usedLocationDelta.y();
@@ -190,8 +194,11 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType sc
     if (delta.isZero())
         return;
 
-    DoublePoint targetPosition = layoutViewport().clampScrollPosition(layoutViewport().scrollAnimator()->currentPosition() + delta);
-    layoutViewport().setScrollPosition(targetPosition, scrollType);
+    ScrollableArea& primary = !m_invertScrollOrder ? layoutViewport() : visualViewport();
+    ScrollableArea& secondary = !m_invertScrollOrder ? visualViewport() : layoutViewport();
+
+    DoublePoint targetPosition = primary.clampScrollPosition(primary.scrollAnimator()->currentPosition() + delta);
+    primary.setScrollPosition(targetPosition, scrollType);
 
     DoubleSize applied = scrollOffsetFromScrollAnimators() - oldPosition;
     delta -= applied;
@@ -199,8 +206,8 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType sc
     if (delta.isZero())
         return;
 
-    targetPosition = visualViewport().clampScrollPosition(visualViewport().scrollAnimator()->currentPosition() + delta);
-    visualViewport().setScrollPosition(targetPosition, scrollType);
+    targetPosition = secondary.clampScrollPosition(secondary.scrollAnimator()->currentPosition() + delta);
+    secondary.setScrollPosition(targetPosition, scrollType);
 }
 
 IntPoint RootFrameViewport::scrollPosition() const

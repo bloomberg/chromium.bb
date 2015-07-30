@@ -514,4 +514,42 @@ TEST_F(RootFrameViewportTest, BasicWheelEvent)
     EXPECT_EQ(250, result.unusedScrollDeltaY);
 }
 
+// Tests that the invert scroll order experiment scrolls the visual viewport
+// before trying to scroll the layout viewport.
+TEST_F(RootFrameViewportTest, ViewportScrollOrder)
+{
+    IntSize viewportSize(100, 100);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+
+    bool invertScrollOrder = true;
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport =
+        RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get(), invertScrollOrder);
+
+    visualViewport->setScale(2);
+
+    PlatformWheelEvent wheelEvent(
+        IntPoint(10, 10), IntPoint(10, 10),
+        -25, -25,
+        0, 0,
+        ScrollByPixelWheelEvent,
+        false, false, false, false);
+
+    ScrollResult result = rootFrameViewport->handleWheel(wheelEvent);
+
+    EXPECT_TRUE(result.didScroll());
+    EXPECT_POINT_EQ(DoublePoint(25, 25), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_EQ(0, result.unusedScrollDeltaX);
+    EXPECT_EQ(0, result.unusedScrollDeltaY);
+
+    rootFrameViewport->setScrollPosition(DoublePoint(40, 40), UserScroll);
+    EXPECT_POINT_EQ(DoublePoint(40, 40), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+
+    rootFrameViewport->setScrollPosition(DoublePoint(60, 60), ProgrammaticScroll);
+    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(10, 10), layoutViewport->scrollPositionDouble());
+}
+
 } // namespace blink
