@@ -1,4 +1,5 @@
 per-file common_param_traits.cc=set noparent
+per-file common_param_traits.cc=palmer@chromium.org
 per-file common_param_traits.cc=tsepez@chromium.org
 
 per-file *param_traits*.h=set noparent
@@ -20,4 +21,5 @@ per-file dwrite_font_platform_win.h=scottmg@chromium.org
 # Changes to Mojo interfaces require a security review to avoid
 # introducing new sandbox escapes.
 per-file *.mojom=set noparent
+per-file *.mojom=palmer@chromium.org
 per-file *.mojom=tsepez@chromium.org
