@@ -69,7 +69,7 @@ def main():
                   is_debug=runner_args.debug,
                   apk_name='Mandoline.apk')
   shell = AndroidShell(config)
-  shell.InitShell(None, runner_args.device)
+  shell.InitShell(runner_args.device)
   p = shell.ShowLogs()
 
   temp_gdb_dir = None
