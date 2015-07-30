@@ -166,7 +166,7 @@ class BASE_EXPORT TraceEvent {
   int thread_id_;
   char phase_;
   unsigned int flags_;
-  unsigned int bind_id_;
+  unsigned long long bind_id_;
   unsigned char arg_types_[kTraceMaxNumArgs];
 
   DISALLOW_COPY_AND_ASSIGN(TraceEvent);
