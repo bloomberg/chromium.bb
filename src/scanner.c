@@ -333,6 +333,15 @@ create_message(struct location loc, const char *name)
 	return message;
 }
 
+static void
+free_arg(struct arg *arg)
+{
+	free(arg->name);
+	free(arg->interface_name);
+	free(arg->summary);
+	free(arg);
+}
+
 static struct arg *
 create_arg(const char *name)
 {
@@ -371,6 +380,33 @@ set_arg_type(struct arg *arg, const char *type)
 	return true;
 }
 
+static void
+free_description(struct description *desc)
+{
+	if (!desc)
+		return;
+
+	free(desc->summary);
+	free(desc->text);
+
+	free(desc);
+}
+
+static void
+free_message(struct message *message)
+{
+	struct arg *a, *a_next;
+
+	free(message->name);
+	free(message->uppercase_name);
+	free_description(message->description);
+
+	wl_list_for_each_safe(a, a_next, &message->arg_list, link)
+		free_arg(a);
+
+	free(message);
+}
+
 static struct enumeration *
 create_enumeration(const char *name)
 {
@@ -399,6 +435,32 @@ create_entry(const char *name, const char *value)
 	return entry;
 }
 
+static void
+free_entry(struct entry *entry)
+{
+	free(entry->name);
+	free(entry->uppercase_name);
+	free(entry->value);
+	free(entry->summary);
+
+	free(entry);
+}
+
+static void
+free_enumeration(struct enumeration *enumeration)
+{
+	struct entry *e, *e_next;
+
+	free(enumeration->name);
+	free(enumeration->uppercase_name);
+	free_description(enumeration->description);
+
+	wl_list_for_each_safe(e, e_next, &enumeration->entry_list, link)
+		free_entry(e);
+
+	free(enumeration);
+}
+
 static struct interface *
 create_interface(struct location loc, const char *name, int version)
 {
@@ -416,6 +478,26 @@ create_interface(struct location loc, const char *name, int version)
 	wl_list_init(&interface->enumeration_list);
 
 	return interface;
+}
+
+static void
+free_interface(struct interface *interface)
+{
+	struct message *m, *next_m;
+	struct enumeration *e, *next_e;
+
+	free(interface->name);
+	free(interface->uppercase_name);
+	free_description(interface->description);
+
+	wl_list_for_each_safe(m, next_m, &interface->request_list, link)
+		free_message(m);
+	wl_list_for_each_safe(m, next_m, &interface->event_list, link)
+		free_message(m);
+	wl_list_for_each_safe(e, next_e, &interface->enumeration_list, link)
+		free_enumeration(e);
+
+	free(interface);
 }
 
 static void
@@ -1107,7 +1189,7 @@ get_include_name(bool core, enum side side)
 static void
 emit_header(struct protocol *protocol, enum side side)
 {
-	struct interface *i;
+	struct interface *i, *i_next;
 	struct wl_array types;
 	const char *s = (side == SERVER) ? "SERVER" : "CLIENT";
 	char **p, *prev;
@@ -1160,7 +1242,7 @@ emit_header(struct protocol *protocol, enum side side)
 
 	printf("\n");
 
-	wl_list_for_each(i, &protocol->interface_list, link) {
+	wl_list_for_each_safe(i, i_next, &protocol->interface_list, link) {
 
 		emit_enumerations(i);
 
@@ -1174,6 +1256,8 @@ emit_header(struct protocol *protocol, enum side side)
 			emit_opcodes(&i->request_list, i);
 			emit_stubs(&i->request_list, i);
 		}
+
+		free_interface(i);
 	}
 
 	printf("#ifdef  __cplusplus\n"
@@ -1289,7 +1373,7 @@ emit_messages(struct wl_list *message_list,
 static void
 emit_code(struct protocol *protocol)
 {
-	struct interface *i;
+	struct interface *i, *next;
 	struct wl_array types;
 	char **p, *prev;
 
@@ -1324,7 +1408,7 @@ emit_code(struct protocol *protocol)
 	}
 	printf("};\n\n");
 
-	wl_list_for_each(i, &protocol->interface_list, link) {
+	wl_list_for_each_safe(i, next, &protocol->interface_list, link) {
 
 		emit_messages(&i->request_list, i, "requests");
 		emit_messages(&i->event_list, i, "events");
@@ -1347,7 +1431,19 @@ emit_code(struct protocol *protocol)
 			printf("\t0, NULL,\n");
 
 		printf("};\n\n");
+
+		/* we won't need it any further */
+		free_interface(i);
 	}
+}
+
+static void
+free_protocol(struct protocol *protocol)
+{
+	free(protocol->name);
+	free(protocol->uppercase_name);
+	free(protocol->copyright);
+	free_description(protocol->description);
 }
 
 int main(int argc, char *argv[])
@@ -1472,6 +1568,8 @@ int main(int argc, char *argv[])
 			emit_code(&protocol);
 			break;
 	}
+
+	free_protocol(&protocol);
 
 	return 0;
 }
