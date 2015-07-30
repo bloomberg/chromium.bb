@@ -92,6 +92,11 @@ void ToastContentsView::UpdateContents(const Notification& notification,
   DCHECK_GT(child_count(), 0);
   MessageView* message_view = static_cast<MessageView*>(child_at(0));
   message_view->UpdateWithNotification(notification);
+  gfx::Size new_size = GetToastSizeForView(message_view);
+  if (preferred_size_ != new_size) {
+    preferred_size_ = new_size;
+    Layout();
+  }
   if (a11y_feedback_for_updates)
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
 }
