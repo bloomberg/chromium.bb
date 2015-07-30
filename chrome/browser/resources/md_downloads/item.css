@@ -12,6 +12,13 @@
   margin-top: -16px;
 }
 
+/* Day separators. */
+:host(:not(:first-of-type):not([hide-date])) :-webkit-any(#content-wrapper,
+                                                          #since) {
+  border-top: 1px solid rgba(0, 0, 0, .2);  /* TODO(dbeam): real color. */
+  padding-top: 32px;
+}
+
 #date-container,
 #end-cap {
   flex: 1 0 var(--downloads-side-column-basis);
@@ -19,6 +26,9 @@
 
 #date-container > * {
   -webkit-margin-start: 24px;
+  color: #616161;
+  font-size: 107.69%;
+  font-weight: bold;
 }
 
 :host([hide-date]) #date-container {

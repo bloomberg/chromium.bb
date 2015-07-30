@@ -16,55 +16,59 @@
       <div id="date"></div>
     </div>
 
-    <paper-material id="content" on-dragstart="onDragStart_">
-      <div class="icon-wrapper">
-        <img id="icon" alt="">
-      </div>
-
-      <div id="details">
-        <div id="title-area"><!-- Can't have any line breaks.
-          --><a is="action-link" id="file-link" column-type="name"
-              on-click="onFileLinkClick_"></a><!-- Before #name.
-          --><span id="name"></span>
-          <span id="tag"></span>
+    <div id="content-wrapper">
+      <paper-material id="content" on-dragstart="onDragStart_">
+        <div class="icon-wrapper">
+          <img id="icon" alt="">
         </div>
 
-        <a id="url" target="_blank" column-type="url"></a>
+        <div id="details">
+          <div id="title-area"><!-- Can't have any line breaks.
+            --><a is="action-link" id="file-link" column-type="name"
+                on-click="onFileLinkClick_"></a><!-- Before #name.
+            --><span id="name"></span>
+            <span id="tag"></span>
+          </div>
 
-        <div id="description"></div>
+          <a id="url" target="_blank" column-type="url"></a>
 
-        <paper-progress id="progress"></paper-progress>
+          <div id="description"></div>
 
-        <div id="safe" class="controls" hidden$="[[isDangerous_]]">
-          <cr-button id="show" column-type="show" on-click="onShowClick_"
-              i18n-content="controlShowInFolder"></cr-button>
-          <cr-button id="retry" column-type="retry" on-click="onRetryClick_"
-              i18n-content="controlRetry"></cr-button>
-          <cr-button id="pause" column-type="pause" on-click="onPauseClick_"
-              i18n-content="controlPause"></cr-button>
-          <cr-button id="resume" column-type="resume" on-click="onResumeClick_"
-              i18n-content="controlResume"></cr-button>
-          <cr-button id="cancel" column-type="cancel" on-click="onCancelClick_"
-              i18n-content="controlCancel"></cr-button>
-          <span id="controlled-by"
-              i18n-values=".innerHTML:controlByExtension"></span>
+          <paper-progress id="progress"></paper-progress>
+
+          <div id="safe" class="controls" hidden$="[[isDangerous_]]">
+            <cr-button id="show" column-type="show" on-click="onShowClick_"
+                i18n-content="controlShowInFolder"></cr-button>
+            <cr-button id="retry" column-type="retry" on-click="onRetryClick_"
+                i18n-content="controlRetry"></cr-button>
+            <cr-button id="pause" column-type="pause" on-click="onPauseClick_"
+                i18n-content="controlPause"></cr-button>
+            <cr-button id="resume" column-type="resume"
+                on-click="onResumeClick_"
+                i18n-content="controlResume"></cr-button>
+            <cr-button id="cancel" column-type="cancel"
+                on-click="onCancelClick_"
+                i18n-content="controlCancel"></cr-button>
+            <span id="controlled-by"
+                i18n-values=".innerHTML:controlByExtension"></span>
+          </div>
+
+          <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
+            <cr-button column-type="save" i18n-content="dangerRestore"
+                on-click="onRestoreOrSaveClick_"
+                hidden$="[[!isMalware_]]"></cr-button>
+            <cr-button column-type="save" i18n-content="dangerSave"
+                on-click="onRestoreOrSaveClick_"
+                hidden$="[[isMalware_]]"></cr-button>
+          </div>
         </div>
 
-        <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
-          <cr-button column-type="save" i18n-content="dangerRestore"
-              on-click="onRestoreOrSaveClick_"
-              hidden$="[[!isMalware_]]"></cr-button>
-          <cr-button column-type="save" i18n-content="dangerSave"
-              on-click="onRestoreOrSaveClick_"
-              hidden$="[[isMalware_]]"></cr-button>
+        <div id="remove-wrapper" class="icon-wrapper">
+          <paper-icon-button id="remove" column-type="remove" icon="clear"
+              on-click="onRemoveClick_"></paper-icon-button>
         </div>
-      </div>
-
-      <div id="remove-wrapper" class="icon-wrapper">
-        <paper-icon-button id="remove" column-type="remove" icon="clear"
-            on-click="onRemoveClick_"></paper-icon-button>
-      </div>
-    </paper-material>
+      </paper-material>
+    </div>
 
     <div id="end-cap"></div>
 
