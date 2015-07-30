@@ -801,6 +801,12 @@ public:
         ClientHintsContentDPR = 906,
         ElementCreateShadowRootOpen = 907,
         ElementCreateShadowRootClosed = 908,
+        AudioParamSetValueAtTime = 909,
+        AudioParamLinearRampToValueAtTime = 910,
+        AudioParamExponentialRampToValueAtTime = 911,
+        AudioParamSetTargetAtTime = 912,
+        AudioParamSetValueCurveAtTime = 913,
+        AudioParamCancelScheduledValues = 914,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
