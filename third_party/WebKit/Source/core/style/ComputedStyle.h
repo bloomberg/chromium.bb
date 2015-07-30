@@ -1564,11 +1564,6 @@ public:
     bool borderObscuresBackground() const;
     void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
 
-    void setHasAuthorBackground(bool authorBackground) { SET_VAR(rareNonInheritedData, m_hasAuthorBackground, authorBackground); }
-    void setHasAuthorBorder(bool authorBorder) { SET_VAR(rareNonInheritedData, m_hasAuthorBorder, authorBorder); }
-    bool hasAuthorBackground() const { return rareNonInheritedData->m_hasAuthorBackground; };
-    bool hasAuthorBorder() const { return rareNonInheritedData->m_hasAuthorBorder; };
-
     // Initial values for all the properties
     static EBorderCollapse initialBorderCollapse() { return BSEPARATE; }
     static EBorderStyle initialBorderStyle() { return BNONE; }
