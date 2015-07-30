@@ -471,7 +471,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
 
   def CachePrivateHandler(self):
     """This request handler yields a page with the title set to the current
-    system time, and allows caching for 5 seconds."""
+    system time, and allows caching for 3 seconds."""
 
     if not self._ShouldHandleRequest("/cache/private"):
       return False
@@ -488,7 +488,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
 
   def CachePublicHandler(self):
     """This request handler yields a page with the title set to the current
-    system time, and allows caching for 5 seconds."""
+    system time, and allows caching for 3 seconds."""
 
     if not self._ShouldHandleRequest("/cache/public"):
       return False
