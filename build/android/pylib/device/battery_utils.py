@@ -454,7 +454,7 @@ class BatteryUtils(object):
 
     timeout_retry.WaitFor(device_charged, wait_period=wait_period)
 
-  def LetBatteryCoolToTemperature(self, target_temp, wait_period=60):
+  def LetBatteryCoolToTemperature(self, target_temp, wait_period=180):
     """Lets device sit to give battery time to cool down
     Args:
       temp: maximum temperature to allow in tenths of degrees c.
