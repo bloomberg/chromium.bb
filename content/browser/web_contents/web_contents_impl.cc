@@ -3839,7 +3839,7 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
     // method.
     entry = new_entry;
   } else {
-    CHECK_EQ(entry, new_entry);
+    DCHECK_EQ(entry, new_entry);
   }
 
   if (page_state == entry->GetPageState())
@@ -4019,7 +4019,7 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
       static_cast<RenderViewHostImpl*>(render_frame_host->GetRenderViewHost());
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
       rvhi->nav_entry_id());
-  CHECK_EQ(entry, new_entry);
+  DCHECK_EQ(entry, new_entry);
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
