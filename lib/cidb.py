@@ -75,6 +75,12 @@ def _IsRetryableException(e):
   return False
 
 
+def _RetrySuccessHandler(attempt):
+  """If a query succeeded after retry, log it."""
+  if attempt > 1:
+    logging.info('cidb query succeeded after %s retries', attempt - 1)
+
+
 class DBException(Exception):
   """General exception class for this module."""
 
@@ -514,6 +520,7 @@ class SchemaVersionedMySQLConnection(object):
         max_retry=self.query_retry_args.max_retry,
         sleep=self.query_retry_args.sleep,
         backoff_factor=self.query_retry_args.backoff_factor,
+        success_functor=_RetrySuccessHandler,
         functor=f)
 
   def _GetEngine(self):
