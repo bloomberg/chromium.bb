@@ -309,8 +309,12 @@ IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ZoomManager) {
   RunTestsInFile("zoom_manager_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ElementsTest) {
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Elements) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInFile("material_elements_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ToolbarManager) {
+  RunTestsInFile("toolbar_manager_test.js", "test.pdf");
 }

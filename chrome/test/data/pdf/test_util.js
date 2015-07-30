@@ -26,6 +26,14 @@ function MockWindow(width, height, sizer) {
     this.pageYOffset = Math.max(0, y);
     this.scrollCallback();
   };
+  this.setTimeout = function(callback, time) {
+    this.timerCallback = callback;
+    return "timerId";
+  };
+  this.runTimeout = function() {
+    if (this.timerCallback)
+      this.timerCallback();
+  }
   if (sizer) {
     sizer.resizeCallback_ = function() {
       this.scrollTo(this.pageXOffset, this.pageYOffset);
@@ -35,6 +43,7 @@ function MockWindow(width, height, sizer) {
   this.pageYOffset = 0;
   this.scrollCallback = null;
   this.resizeCallback = null;
+  this.timerCallback = null;
 }
 
 function MockSizer() {

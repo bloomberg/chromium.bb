@@ -169,7 +169,7 @@ function PDFViewer(browserApi) {
     this.zoomToolbar_.addEventListener('fit-to-width',
         this.viewport_.fitToWidth.bind(this.viewport_));
     this.zoomToolbar_.addEventListener('fit-to-page',
-        this.viewport_.fitToPage.bind(this.viewport_));
+        this.fitToPage_.bind(this));
     this.zoomToolbar_.addEventListener('zoom-in',
         this.viewport_.zoomIn.bind(this.viewport_));
     this.zoomToolbar_.addEventListener('zoom-out',
@@ -378,6 +378,11 @@ PDFViewer.prototype = {
     this.plugin_.postMessage({
       type: 'rotateCounterclockwise'
     });
+  },
+
+  fitToPage_: function() {
+    this.viewport_.fitToPage();
+    this.toolbarManager_.forceHideTopToolbar();
   },
 
   /**
