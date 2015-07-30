@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.ntp;
 
-import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSession;
+import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * This class allows Java code to read and modify preferences related to the NTP
  */
-public class NewTabPagePrefs {
+class NewTabPagePrefs {
     private long mNativeNewTabPagePrefs;
 
     /**
      * Initialize this class with the given profile.
      * @param profile Profile that will be used for syncing.
      */
-    public NewTabPagePrefs(Profile profile) {
+    NewTabPagePrefs(Profile profile) {
         mNativeNewTabPagePrefs = nativeInit(profile);
     }
 
     /**
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
-    public void destroy() {
+    void destroy() {
         assert mNativeNewTabPagePrefs != 0;
         nativeDestroy(mNativeNewTabPagePrefs);
         mNativeNewTabPagePrefs = 0;
@@ -35,7 +35,7 @@ public class NewTabPagePrefs {
      * page.
      * @param isCollapsed Whether we want the currently open tabs list to be collapsed.
      */
-    public void setCurrentlyOpenTabsCollapsed(boolean isCollapsed) {
+    void setCurrentlyOpenTabsCollapsed(boolean isCollapsed) {
         nativeSetCurrentlyOpenTabsCollapsed(mNativeNewTabPagePrefs, isCollapsed);
     }
 
@@ -44,7 +44,7 @@ public class NewTabPagePrefs {
      * @return Whether the list of currently open tabs is collapsed (vs expanded) on
      *         the Recent Tabs page.
      */
-    public boolean getCurrentlyOpenTabsCollapsed() {
+    boolean getCurrentlyOpenTabsCollapsed() {
         return nativeGetCurrentlyOpenTabsCollapsed(mNativeNewTabPagePrefs);
     }
 
@@ -53,7 +53,7 @@ public class NewTabPagePrefs {
      * page.
      * @param isCollapsed Whether we want the snapshot documents list to be collapsed.
      */
-    public void setSnapshotDocumentCollapsed(boolean isCollapsed) {
+    void setSnapshotDocumentCollapsed(boolean isCollapsed) {
         nativeSetSnapshotDocumentCollapsed(mNativeNewTabPagePrefs, isCollapsed);
     }
 
@@ -63,7 +63,7 @@ public class NewTabPagePrefs {
      * @return Whether the list of snapshot documents is collapsed (vs expanded) on
      *         the Recent Tabs page.
      */
-    public boolean getSnapshotDocumentCollapsed() {
+    boolean getSnapshotDocumentCollapsed() {
         return nativeGetSnapshotDocumentCollapsed(mNativeNewTabPagePrefs);
     }
 
@@ -72,7 +72,7 @@ public class NewTabPagePrefs {
      * page.
      * @param isCollapsed Whether we want the recently closed tabs list to be collapsed.
      */
-    public void setRecentlyClosedTabsCollapsed(boolean isCollapsed) {
+    void setRecentlyClosedTabsCollapsed(boolean isCollapsed) {
         nativeSetRecentlyClosedTabsCollapsed(mNativeNewTabPagePrefs, isCollapsed);
     }
 
@@ -82,7 +82,7 @@ public class NewTabPagePrefs {
      * @return Whether the list of recently closed tabs is collapsed (vs expanded) on
      *         the Recent Tabs page.
      */
-    public boolean getRecentlyClosedTabsCollapsed() {
+    boolean getRecentlyClosedTabsCollapsed() {
         return nativeGetRecentlyClosedTabsCollapsed(mNativeNewTabPagePrefs);
     }
 
@@ -90,7 +90,7 @@ public class NewTabPagePrefs {
      * Sets whether sync promo is collapsed (vs expanded) on the Recent Tabs page.
      * @param isCollapsed Whether we want the sync promo to be collapsed.
      */
-    public void setSyncPromoCollapsed(boolean isCollapsed) {
+    void setSyncPromoCollapsed(boolean isCollapsed) {
         nativeSetSyncPromoCollapsed(mNativeNewTabPagePrefs, isCollapsed);
     }
 
@@ -98,7 +98,7 @@ public class NewTabPagePrefs {
      * Gets whether sync promo is collapsed (vs expanded) on the Recent Tabs page.
      * @return Whether the sync promo is collapsed (vs expanded) on the Recent Tabs page.
      */
-    public boolean getSyncPromoCollapsed() {
+    boolean getSyncPromoCollapsed() {
         return nativeGetSyncPromoCollapsed(mNativeNewTabPagePrefs);
     }
 
@@ -107,7 +107,7 @@ public class NewTabPagePrefs {
      * @param session Session to set collapsed or expanded.
      * @param isCollapsed Whether we want the foreign session to be collapsed.
      */
-    public void setForeignSessionCollapsed(ForeignSession session, boolean isCollapsed) {
+    void setForeignSessionCollapsed(ForeignSession session, boolean isCollapsed) {
         nativeSetForeignSessionCollapsed(mNativeNewTabPagePrefs, session.tag, isCollapsed);
     }
 
@@ -116,7 +116,7 @@ public class NewTabPagePrefs {
      * @param  session Session to fetch collapsed state.
      * @return Whether the given foreign session is collapsed (vs expanded) on the Recent Tabs page.
      */
-    public boolean getForeignSessionCollapsed(ForeignSession session) {
+    boolean getForeignSessionCollapsed(ForeignSession session) {
         return nativeGetForeignSessionCollapsed(mNativeNewTabPagePrefs, session.tag);
     }
 

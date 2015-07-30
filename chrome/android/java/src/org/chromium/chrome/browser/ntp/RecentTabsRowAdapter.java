@@ -22,11 +22,11 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSession;
-import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSessionTab;
-import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSessionWindow;
-import org.chromium.chrome.browser.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
+import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
+import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
+import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.DeviceFormFactor;
 

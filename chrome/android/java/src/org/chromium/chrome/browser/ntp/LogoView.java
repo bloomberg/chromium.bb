@@ -19,7 +19,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.LogoBridge.Logo;
+import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 
 import java.lang.ref.WeakReference;

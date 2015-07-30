@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.ntp;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -17,13 +17,13 @@ import java.util.List;
  * This class exposes to Java information about sessions, windows, and tabs on the user's synced
  * devices.
  */
-public class ForeignSessionHelper {
+class ForeignSessionHelper {
     private long mNativeForeignSessionHelper;
 
     /**
      * Callback interface for getting notified when foreign session sync is updated.
      */
-    public interface ForeignSessionCallback {
+    interface ForeignSessionCallback {
         /**
          * This method will be called every time foreign session sync is updated.
          *
@@ -31,22 +31,22 @@ public class ForeignSessionHelper {
          * updated information.
          */
         @CalledByNative("ForeignSessionCallback")
-        public void onUpdated();
+        void onUpdated();
     }
 
     /**
      * Represents synced foreign session.
      */
-    public static class ForeignSession {
+    static class ForeignSession {
         // Please keep in sync with synced_session.h
-        public static final int DEVICE_TYPE_UNSET = 0;
-        public static final int DEVICE_TYPE_WIN = 1;
-        public static final int DEVICE_TYPE_MACOSX = 2;
-        public static final int DEVICE_TYPE_LINUX = 3;
-        public static final int DEVICE_TYPE_CHROMEOS = 4;
-        public static final int DEVICE_TYPE_OTHER = 5;
-        public static final int DEVICE_TYPE_PHONE = 6;
-        public static final int DEVICE_TYPE_TABLET = 7;
+        static final int DEVICE_TYPE_UNSET = 0;
+        static final int DEVICE_TYPE_WIN = 1;
+        static final int DEVICE_TYPE_MACOSX = 2;
+        static final int DEVICE_TYPE_LINUX = 3;
+        static final int DEVICE_TYPE_CHROMEOS = 4;
+        static final int DEVICE_TYPE_OTHER = 5;
+        static final int DEVICE_TYPE_PHONE = 6;
+        static final int DEVICE_TYPE_TABLET = 7;
 
         public final String tag;
         public final String name;
@@ -66,7 +66,7 @@ public class ForeignSessionHelper {
      * Represents synced foreign window. Note that desktop Chrome can have multiple windows in a
      * session.
      */
-    public static class ForeignSessionWindow {
+    static class ForeignSessionWindow {
         public final long timestamp;
         public final int sessionId;
         public final List<ForeignSessionTab> tabs = new ArrayList<ForeignSessionTab>();
@@ -80,7 +80,7 @@ public class ForeignSessionHelper {
     /**
      * Represents synced foreign tab.
      */
-    public static class ForeignSessionTab {
+    static class ForeignSessionTab {
         public final String url;
         public final String title;
         public final long timestamp;
@@ -122,14 +122,14 @@ public class ForeignSessionHelper {
      * Initialize this class with the given profile.
      * @param profile Profile that will be used for syncing.
      */
-    public ForeignSessionHelper(Profile profile) {
+    ForeignSessionHelper(Profile profile) {
         mNativeForeignSessionHelper = nativeInit(profile);
     }
 
     /**
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
-    public void destroy() {
+    void destroy() {
         assert mNativeForeignSessionHelper != 0;
         nativeDestroy(mNativeForeignSessionHelper);
         mNativeForeignSessionHelper = 0;
@@ -138,14 +138,14 @@ public class ForeignSessionHelper {
     /**
      * @return {@code True} iff Tab sync is enabled.
      */
-    public boolean isTabSyncEnabled() {
+    boolean isTabSyncEnabled() {
         return nativeIsTabSyncEnabled(mNativeForeignSessionHelper);
     }
 
     /**
      * Force a sync for sessions.
      */
-    public void triggerSessionSync() {
+    void triggerSessionSync() {
         nativeTriggerSessionSync(mNativeForeignSessionHelper);
     }
 
@@ -153,7 +153,7 @@ public class ForeignSessionHelper {
      * Sets callback instance that will be called on every foreign session sync update.
      * @param callback The callback to be invoked.
      */
-    public void setOnForeignSessionCallback(ForeignSessionCallback callback) {
+    void setOnForeignSessionCallback(ForeignSessionCallback callback) {
         nativeSetOnForeignSessionCallback(mNativeForeignSessionHelper, callback);
     }
 
@@ -161,7 +161,7 @@ public class ForeignSessionHelper {
      * @return The list of synced foreign sessions. {@code null} iff it fails to get them for some
      *         reason.
      */
-    public List<ForeignSession> getForeignSessions() {
+    List<ForeignSession> getForeignSessions() {
         List<ForeignSession> result = new ArrayList<ForeignSession>();
         boolean received = nativeGetForeignSessions(mNativeForeignSessionHelper, result);
         if (received) {
@@ -188,7 +188,7 @@ public class ForeignSessionHelper {
      * @param windowOpenDisposition The WindowOpenDisposition flag.
      * @return {@code True} iff the tab is successfully opened.
      */
-    public boolean openForeignSessionTab(Tab tab, ForeignSession session,
+    boolean openForeignSessionTab(Tab tab, ForeignSession session,
             ForeignSessionTab foreignTab, int windowOpenDisposition) {
         return nativeOpenForeignSessionTab(mNativeForeignSessionHelper, tab, session.tag,
                 foreignTab.id, windowOpenDisposition);
@@ -201,7 +201,7 @@ public class ForeignSessionHelper {
      * the future.
      * @param session Session to be deleted.
      */
-    public void deleteForeignSession(ForeignSession session) {
+    void deleteForeignSession(ForeignSession session) {
         nativeDeleteForeignSession(mNativeForeignSessionHelper, session.tag);
     }
 

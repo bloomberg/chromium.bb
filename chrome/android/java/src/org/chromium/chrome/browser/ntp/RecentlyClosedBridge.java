@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.ntp;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -14,13 +14,13 @@ import java.util.List;
 /**
  * This class allows Java code to get and clear the list of recently closed tabs.
  */
-public class RecentlyClosedBridge {
+class RecentlyClosedBridge {
     private long mNativeRecentlyClosedTabsBridge;
 
     /**
      * Callback interface for getting notified when the list of recently closed tabs is updated.
      */
-    public interface RecentlyClosedCallback {
+    interface RecentlyClosedCallback {
         /**
          * This method will be called every time the list of recently closed tabs is updated.
          *
@@ -34,7 +34,7 @@ public class RecentlyClosedBridge {
     /**
      * Represents a recently closed tab.
      */
-    public static class RecentlyClosedTab {
+    static class RecentlyClosedTab {
         public final int id;
         public final String title;
         public final String url;
@@ -57,14 +57,14 @@ public class RecentlyClosedBridge {
      * Initializes this class with the given profile.
      * @param profile The Profile whose recently closed tabs will be queried.
      */
-    public RecentlyClosedBridge(Profile profile) {
+    RecentlyClosedBridge(Profile profile) {
         mNativeRecentlyClosedTabsBridge = nativeInit(profile);
     }
 
     /**
      * Cleans up the C++ side of this class. This instance must not be used after calling destroy().
      */
-    public void destroy() {
+    void destroy() {
         assert mNativeRecentlyClosedTabsBridge != 0;
         nativeDestroy(mNativeRecentlyClosedTabsBridge);
         mNativeRecentlyClosedTabsBridge = 0;
@@ -74,7 +74,7 @@ public class RecentlyClosedBridge {
      * Sets the callback to be called whenever the list of recently closed tabs changes.
      * @param callback The RecentlyClosedCallback to be notified, or null.
      */
-    public void setRecentlyClosedCallback(RecentlyClosedCallback callback) {
+    void setRecentlyClosedCallback(RecentlyClosedCallback callback) {
         nativeSetRecentlyClosedCallback(mNativeRecentlyClosedTabsBridge, callback);
     }
 
@@ -82,7 +82,7 @@ public class RecentlyClosedBridge {
      * @param maxTabCount The maximum number of recently closed tabs to return.
      * @return The list of recently closed tabs, with up to maxTabCount elements.
      */
-    public List<RecentlyClosedTab> getRecentlyClosedTabs(int maxTabCount) {
+    List<RecentlyClosedTab> getRecentlyClosedTabs(int maxTabCount) {
         List<RecentlyClosedTab> tabs = new ArrayList<RecentlyClosedTab>();
         boolean received = nativeGetRecentlyClosedTabs(mNativeRecentlyClosedTabsBridge, tabs,
                 maxTabCount);
@@ -99,7 +99,7 @@ public class RecentlyClosedBridge {
      *         the current tab or a new tab.
      * @return Whether the tab was successfully opened.
      */
-    public boolean openRecentlyClosedTab(Tab tab, RecentlyClosedTab recentTab,
+    boolean openRecentlyClosedTab(Tab tab, RecentlyClosedTab recentTab,
             int windowOpenDisposition) {
         return nativeOpenRecentlyClosedTab(mNativeRecentlyClosedTabsBridge, tab, recentTab.id,
                 windowOpenDisposition);
@@ -108,7 +108,7 @@ public class RecentlyClosedBridge {
     /**
      * Clears all recently closed tabs.
      */
-    public void clearRecentlyClosedTabs() {
+    void clearRecentlyClosedTabs() {
         nativeClearRecentlyClosedTabs(mNativeRecentlyClosedTabsBridge);
     }
 

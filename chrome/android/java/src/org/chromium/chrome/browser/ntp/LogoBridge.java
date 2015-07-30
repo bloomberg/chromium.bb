@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.ntp;
 
 import android.graphics.Bitmap;
 
@@ -12,12 +12,12 @@ import org.chromium.chrome.browser.profiles.Profile;
 /**
  * Provides access to the search provider's logo via the C++ LogoService.
  */
-public class LogoBridge {
+class LogoBridge {
 
     /**
      * A logo for a search provider (e.g. the Yahoo! logo or Google doodle).
      */
-    public static class Logo {
+    static class Logo {
         /**
          * The logo image. Non-null.
          */
@@ -33,7 +33,7 @@ public class LogoBridge {
          */
         public final String altText;
 
-        public Logo(Bitmap image, String onClickUrl, String altText) {
+        Logo(Bitmap image, String onClickUrl, String altText) {
             this.image = image;
             this.onClickUrl = onClickUrl;
             this.altText = altText;
@@ -43,7 +43,7 @@ public class LogoBridge {
     /**
      * Observer for receiving the logo when it's available.
      */
-    public interface LogoObserver {
+    interface LogoObserver {
         /**
          * Called when the cached or fresh logo is available. This may be called up to two times,
          * once with the cached logo and once with a freshly downloaded logo.
@@ -52,7 +52,7 @@ public class LogoBridge {
          * @param fromCache Whether the logo was loaded from the cache.
          */
         @CalledByNative("LogoObserver")
-        public void onLogoAvailable(Logo logo, boolean fromCache);
+        void onLogoAvailable(Logo logo, boolean fromCache);
     }
 
     private long mNativeLogoBridge;
@@ -62,7 +62,7 @@ public class LogoBridge {
      *
      * @param profile Profile of the tab that will show the logo.
      */
-    public LogoBridge(Profile profile) {
+    LogoBridge(Profile profile) {
         mNativeLogoBridge = nativeInit(profile);
     }
 
@@ -70,7 +70,7 @@ public class LogoBridge {
      * Cleans up the C++ side of this class. After calling this, LogoObservers passed to
      * getCurrentLogo() will no longer receive updates.
      */
-    public void destroy() {
+    void destroy() {
         assert mNativeLogoBridge != 0;
         nativeDestroy(mNativeLogoBridge);
         mNativeLogoBridge = 0;
@@ -83,7 +83,7 @@ public class LogoBridge {
      *                     available. logoObserver.onLogoAvailable() may be called synchronously if
      *                     the cached logo is already available.
      */
-    public void getCurrentLogo(LogoObserver logoObserver) {
+    void getCurrentLogo(LogoObserver logoObserver) {
         nativeGetCurrentLogo(mNativeLogoBridge, logoObserver);
     }
 

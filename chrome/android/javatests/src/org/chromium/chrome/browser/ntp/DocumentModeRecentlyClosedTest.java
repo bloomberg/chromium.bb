@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.document;
+package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
 import android.os.Build;
@@ -12,9 +12,10 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.RecentlyClosedBridge.RecentlyClosedTab;
-import org.chromium.chrome.browser.ntp.CurrentlyOpenTab;
-import org.chromium.chrome.browser.ntp.DocumentRecentTabsManager;
+import org.chromium.chrome.browser.document.DocumentActivity;
+import org.chromium.chrome.browser.document.DocumentModeTestBase;
+import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
+import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
