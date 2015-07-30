@@ -105,9 +105,6 @@ KEYBOARD_EXPORT bool IsGestureTypingEnabled();
 // Returns true if gesture editing option is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureEditingEnabled();
 
-// Returns true if material design is enabled for the keyboard.
-KEYBOARD_EXPORT bool IsMaterialDesignEnabled();
-
 // Returns true if voice input is enabled for the keyboard.
 KEYBOARD_EXPORT bool IsVoiceInputEnabled();
 

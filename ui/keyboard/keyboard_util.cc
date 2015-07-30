@@ -183,11 +183,6 @@ bool IsSmartDeployEnabled() {
   return keyboard_switch != switches::kSmartVirtualKeyboardDisabled;
 }
 
-bool IsMaterialDesignEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNewMDInputView);
-}
-
 bool IsVoiceInputEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableVoiceInput);

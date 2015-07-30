@@ -14513,13 +14513,6 @@ After you create a new supervised user, you can manage their settings at any tim
           Enable IME extensions to supply custom views for user input such as  virtual keyboards.
         </message>
 
-        <message name="IDS_FLAGS_DISABLE_NEW_MD_INPUT_VIEW_NAME" desc="Name of about::flags option to disable material style of input view virtual keyboard.">
-          Disable input view keyboard in material design.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_NEW_MD_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to disable the material style of input view virtual keyboard.">
-          Disable input view keyboards in material design.
-        </message>
-
         <message name="IDS_FLAGS_DISABLE_NEW_KOREAN_IME_NAME" desc="Name of about::flags option to disable the new Korean IME">
           Disable new Korean IME.
         </message>

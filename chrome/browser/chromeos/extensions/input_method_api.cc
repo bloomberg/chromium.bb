@@ -44,10 +44,6 @@ ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
       "isPhysicalKeyboardAutocorrectEnabled",
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
-  // TODO(rsadam): Delete these two flags once callers have been updated.
-  output->SetBoolean("isVoiceInputEnabled", keyboard::IsVoiceInputEnabled());
-  output->SetBoolean("isNewMDInputViewEnabled",
-                     keyboard::IsMaterialDesignEnabled());
   return RespondNow(OneArgument(output));
 #endif
 }

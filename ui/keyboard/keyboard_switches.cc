@@ -12,7 +12,6 @@ const char kEnableInputView[] = "enable-input-view";
 const char kEnableExperimentalInputViewFeatures[] =
     "enable-experimental-input-view-features";
 const char kDisableVoiceInput[] = "disable-voice-input";
-const char kDisableNewMDInputView[] = "disable-new-md-input-view";
 
 const char kGestureTyping[] = "gesture-typing";
 const char kGestureTypingEnabled[] = "enabled";

@@ -65,8 +65,6 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
       GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
   features->AppendString(GenerateFeatureFlag(
       "gestureediting", keyboard::IsGestureEditingEnabled()));
-  features->AppendString(GenerateFeatureFlag(
-      "materialdesign", keyboard::IsMaterialDesignEnabled()));
   features->AppendString(
       GenerateFeatureFlag("voiceinput", keyboard::IsVoiceInputEnabled()));
   features->AppendString(GenerateFeatureFlag("experimental",

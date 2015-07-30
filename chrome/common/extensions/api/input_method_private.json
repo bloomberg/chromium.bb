@@ -23,9 +23,7 @@
                 "type": "object",
                 "description": "The input method config object.",
                 "properties": {
-                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"},
-                  "isNewMDInputViewEnabled": {"type": "boolean"},
-                  "isVoiceInputEnabled": {"type": "boolean"}
+                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"}
                 }
               }
             ]
