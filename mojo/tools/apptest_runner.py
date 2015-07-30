@@ -51,7 +51,7 @@ def main():
   if config.target_os == Config.OS_ANDROID:
     from mopy.android import AndroidShell
     shell = AndroidShell(config)
-    result = shell.InitShell(origin=None)
+    result = shell.InitShell()
     if result != 0:
       return result
 

@@ -24,8 +24,6 @@ def main():
                            dest='debug', action='store_false')
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
                       choices=['x64', 'x86', 'arm'], default='arm')
-  parser.add_argument('--origin', help='Origin for mojo: URLs.',
-                      default='localhost')
   parser.add_argument('--device', help='Serial number of the target device.')
   parser.add_argument('--verbose', default=False, action='store_true')
   parser.add_argument('--apk', help='Name of the APK to run.',
@@ -43,7 +41,7 @@ def main():
                   is_verbose=runner_args.verbose,
                   apk_name=runner_args.apk)
   shell = AndroidShell(config)
-  shell.InitShell(runner_args.origin, runner_args.device)
+  shell.InitShell(runner_args.device)
   p = shell.ShowLogs()
   shell.StartActivity('MojoShellActivity', args, sys.stdout, p.terminate)
   return 0

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import atexit
-import itertools
 import logging
 import os
 import signal
@@ -11,14 +10,12 @@ import subprocess
 import sys
 import threading
 import time
-import urlparse
 
 from .paths import Paths
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                              '..', '..', '..', 'build', 'android'))
 from pylib import constants
-from pylib.base import base_test_runner
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import base_error
@@ -95,51 +92,12 @@ class AndroidShell(object):
     thread = threading.Thread(target=Run, name='StdoutRedirector')
     thread.start()
 
-  def _StartHttpServerForDirectory(self, path):
-    test_server_helper = base_test_runner.BaseTestRunner(self.device, None)
-    ports = test_server_helper.LaunchTestHttpServer(path)
-    atexit.register(test_server_helper.ShutdownHelperToolsForTestSuite)
-    print 'Hosting %s at http://127.0.0.1:%d' % (path, ports[1])
-    return 'http://127.0.0.1:%d/' % ports[0]
 
-  def _StartHttpServerForOriginMapping(self, mapping):
+  def InitShell(self, device=None):
     '''
-    If |mapping| points at a local file starts an http server to serve files
-    from the directory and returns the new mapping. This is intended to be
-    called for every --map-origin value.
-    '''
-    parts = mapping.split('=')
-    if len(parts) != 2:
-      return mapping
-    dest = parts[1]
-    # If the destination is a URL, don't map it.
-    if urlparse.urlparse(dest)[0]:
-      return mapping
-    # Assume the destination is a local file. Start a local server that
-    # redirects to it.
-    localUrl = self._StartHttpServerForDirectory(dest)
-    return parts[0] + '=' + localUrl
-
-  def _StartHttpServerForOriginMappings(self, map_parameters):
-    '''Calls _StartHttpServerForOriginMapping for every --map-origin arg.'''
-    if not map_parameters:
-      return []
-
-    original_values = list(itertools.chain(
-        *map(lambda x: x[len(MAPPING_PREFIX):].split(','), map_parameters)))
-    sorted(original_values)
-    result = []
-    for value in original_values:
-      result.append(self._StartHttpServerForOriginMapping(value))
-    return [MAPPING_PREFIX + ','.join(result)]
-
-  def InitShell(self, origin='localhost', device=None):
-    '''
-    Runs adb as root, starts an origin server, and installs the apk as needed.
-    |origin| is the origin for mojo: URLs; if its value is 'localhost', a local
-    http server will be set up to serve files from the build directory.
-    |device| is the target device to run on, if multiple devices are connected.
-    Returns 0 on success or a non-zero exit code on a terminal failure.
+    Runs adb as root, and installs the apk as needed.  |device| is the target
+    device to run on, if multiple devices are connected. Returns 0 on success or
+    a non-zero exit code on a terminal failure.
     '''
     try:
       devices = device_utils.DeviceUtils.HealthyDevices()
@@ -164,10 +122,6 @@ class AndroidShell(object):
         return constants.INFRA_EXIT_CODE
       return constants.ERROR_EXIT_CODE
 
-    if origin is 'localhost':
-      origin = self._StartHttpServerForDirectory(self.paths.build_dir)
-    if origin:
-      self.shell_args.append('--origin=' + origin)
     return 0
 
   def _GetProcessId(self, process):
@@ -275,8 +229,6 @@ class AndroidShell(object):
 
     # Extract map-origin args and add the extras array with commas escaped.
     parameters = [a for a in arguments if not a.startswith(MAPPING_PREFIX)]
-    map_parameters = [a for a in arguments if a.startswith(MAPPING_PREFIX)]
-    parameters += self._StartHttpServerForOriginMappings(map_parameters)
     parameters = [p.replace(',', '\,') for p in parameters]
     cmd += ['--esa', '%s.extras' % self.target_package, ','.join(parameters)]
 

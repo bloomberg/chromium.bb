@@ -40,10 +40,6 @@ const char kHelp[] = "help";
 // Can be used multiple times.
 const char kMapOrigin[] = "map-origin";
 
-// Map mojo: URLs to a shared library of similar name at this origin. See
-// url_resolver.cc for details.
-const char kOrigin[] = "origin";
-
 // Starts tracing when the shell starts up, saving a trace file on disk after 5
 // seconds or when the shell exits.
 const char kTraceStartup[] = "trace-startup";

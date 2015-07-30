@@ -21,7 +21,6 @@ extern const char kEnableSandbox[];
 extern const char kForceInProcess[];
 extern const char kHelp[];
 extern const char kMapOrigin[];
-extern const char kOrigin[];
 extern const char kTraceStartup[];
 extern const char kURLMappings[];
 extern const char kUseTemporaryUserDataDir[];

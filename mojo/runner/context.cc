@@ -62,11 +62,9 @@ bool ConfigureURLMappings(const base::CommandLine& command_line,
 
   // Configure the resolution of unknown mojo: URLs.
   GURL base_url;
-  if (command_line.HasSwitch(switches::kOrigin)) {
-    base_url = GURL(command_line.GetSwitchValueASCII(switches::kOrigin));
-  } else if (!command_line.HasSwitch(switches::kUseUpdater)) {
+  if (!command_line.HasSwitch(switches::kUseUpdater)) {
     // Use the shell's file root if the base was not specified.
-    base_url = context->ResolveShellFileURL("");
+    base_url = context->ResolveShellFileURL(std::string());
   }
 
   if (base_url.is_valid())
