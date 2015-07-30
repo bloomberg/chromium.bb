@@ -7,6 +7,7 @@ package org.chromium.chrome.test;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import junit.framework.TestCase;
@@ -29,9 +30,11 @@ import org.apache.http.params.HttpParams;
 import org.chromium.base.test.BaseInstrumentationTestRunner;
 import org.chromium.base.test.BaseInstrumentationTestRunner.SkipCheck;
 import org.chromium.base.test.BaseInstrumentationTestRunner.SkippingTestResult;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.net.test.BaseHttpTestServer;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
 import java.io.IOException;
@@ -219,6 +222,22 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     protected void addSkipChecks(SkippingTestResult result) {
         super.addSkipChecks(result);
         result.addSkipCheck(new DisableInTabbedModeSkipCheck());
+        result.addSkipCheck(new ChromeRestrictionSkipCheck());
+    }
+
+    private class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
+        @Override
+        protected boolean restrictionApplies(String restriction) {
+            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_PHONE)
+                    && DeviceFormFactor.isTablet(getTargetContext())) {
+                return true;
+            }
+            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_TABLET)
+                    && !DeviceFormFactor.isTablet(getTargetContext())) {
+                return true;
+            }
+            return false;
+        }
     }
 
     /**

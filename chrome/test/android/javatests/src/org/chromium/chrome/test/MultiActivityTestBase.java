@@ -5,6 +5,7 @@
 package org.chromium.chrome.test;
 
 import android.content.Context;
+import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -24,7 +25,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE
         })
-public abstract class MultiActivityTestBase extends RestrictedInstrumentationTestCase {
+public abstract class MultiActivityTestBase extends InstrumentationTestCase {
     protected static final String URL_1 = createTestUrl(1);
     protected static final String URL_2 = createTestUrl(2);
     protected static final String URL_3 = createTestUrl(3);

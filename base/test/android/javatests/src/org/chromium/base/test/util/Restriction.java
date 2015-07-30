@@ -30,6 +30,9 @@ public @interface Restriction {
     /** Specifies the test is only valid on non-low end devices. */
     public static final String RESTRICTION_TYPE_NON_LOW_END_DEVICE = "Non_Low_End_Device";
 
+    /** Specifies the test is only valid on a device that can reach the internet. */
+    public static final String RESTRICTION_TYPE_INTERNET = "Internet";
+
     /**
      * @return A list of restrictions.
      */
