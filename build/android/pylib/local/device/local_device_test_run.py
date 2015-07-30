@@ -8,6 +8,7 @@ from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import test_run
 from pylib.base import test_collection
+from pylib.device import device_errors
 
 
 class LocalDeviceTestRun(test_run.TestRun):
@@ -32,6 +33,10 @@ class LocalDeviceTestRun(test_run.TestRun):
           else:
             raise Exception(
                 'Unexpected result type: %s' % type(result).__name__)
+        except:
+          if isinstance(tests, test_collection.TestCollection):
+            tests.add(test)
+          raise
         finally:
           if isinstance(tests, test_collection.TestCollection):
             tests.test_completed()
@@ -49,13 +54,20 @@ class LocalDeviceTestRun(test_run.TestRun):
       for t in tests:
         logging.debug('  %s', t)
 
-      if self._ShouldShard():
-        tc = test_collection.TestCollection(self._CreateShards(tests))
-        try_results = self._env.parallel_devices.pMap(
-            run_tests_on_device, tc).pGet(None)
-      else:
-        try_results = self._env.parallel_devices.pMap(
-            run_tests_on_device, tests).pGet(None)
+      try:
+        if self._ShouldShard():
+          tc = test_collection.TestCollection(self._CreateShards(tests))
+          try_results = self._env.parallel_devices.pMap(
+              run_tests_on_device, tc).pGet(None)
+        else:
+          try_results = self._env.parallel_devices.pMap(
+              run_tests_on_device, tests).pGet(None)
+      except device_errors.CommandFailedError:
+        logging.exception('Shard terminated: command failed')
+      except device_errors.CommandTimeoutError:
+        logging.exception('Shard terminated: command timed out')
+      except device_errors.DeviceUnreachableError:
+        logging.exception('Shard terminated: device became unreachable')
 
       for try_result in try_results:
         for result in try_result.GetAll():
