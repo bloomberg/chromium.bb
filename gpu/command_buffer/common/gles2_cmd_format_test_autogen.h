@@ -989,9 +989,13 @@ TEST_F(GLES2FormatTest, FenceSync) {
 
 TEST_F(GLES2FormatTest, Finish) {
   cmds::Finish& cmd = *GetBufferAs<cmds::Finish>();
-  void* next_cmd = cmd.Set(&cmd);
+  void* next_cmd = cmd.Set(&cmd, static_cast<uint32_t>(11),
+                           static_cast<uint32_t>(12), static_cast<GLuint>(13));
   EXPECT_EQ(static_cast<uint32_t>(cmds::Finish::kCmdId), cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<uint32_t>(11), cmd.sync_count_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.sync_count_shm_offset);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.finish_count);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

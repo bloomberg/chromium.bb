@@ -3120,19 +3120,39 @@ struct Finish {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() { SetHeader(); }
+  void Init(uint32_t _sync_count_shm_id,
+            uint32_t _sync_count_shm_offset,
+            GLuint _finish_count) {
+    SetHeader();
+    sync_count_shm_id = _sync_count_shm_id;
+    sync_count_shm_offset = _sync_count_shm_offset;
+    finish_count = _finish_count;
+  }
 
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
+  void* Set(void* cmd,
+            uint32_t _sync_count_shm_id,
+            uint32_t _sync_count_shm_offset,
+            GLuint _finish_count) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sync_count_shm_id, _sync_count_shm_offset, _finish_count);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32_t sync_count_shm_id;
+  uint32_t sync_count_shm_offset;
+  uint32_t finish_count;
 };
 
-static_assert(sizeof(Finish) == 4, "size of Finish should be 4");
+static_assert(sizeof(Finish) == 16, "size of Finish should be 16");
 static_assert(offsetof(Finish, header) == 0,
               "offset of Finish header should be 0");
+static_assert(offsetof(Finish, sync_count_shm_id) == 4,
+              "offset of Finish sync_count_shm_id should be 4");
+static_assert(offsetof(Finish, sync_count_shm_offset) == 8,
+              "offset of Finish sync_count_shm_offset should be 8");
+static_assert(offsetof(Finish, finish_count) == 12,
+              "offset of Finish finish_count should be 12");
 
 struct Flush {
   typedef Flush ValueType;

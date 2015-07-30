@@ -641,10 +641,12 @@ void FenceSync(uint32_t client_id) {
   }
 }
 
-void Finish() {
+void Finish(uint32_t sync_count_shm_id,
+            uint32_t sync_count_shm_offset,
+            GLuint finish_count) {
   gles2::cmds::Finish* c = GetCmdSpace<gles2::cmds::Finish>();
   if (c) {
-    c->Init();
+    c->Init(sync_count_shm_id, sync_count_shm_offset, finish_count);
   }
 }
 

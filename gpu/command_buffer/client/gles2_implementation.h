@@ -816,6 +816,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // whether it should aggressively free them.
   bool aggressively_free_resources_;
 
+  // TODO(dyen): Temporary shared memory to sanity check finish calls.
+  uint32_t local_finish_counter_;
+  base::subtle::Atomic32* shared_finish_counter_;
+  int32_t shared_finish_counter_shm_id_;
+  uint32_t shared_finish_counter_shm_offset_;
+
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
