@@ -2,10 +2,10 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
-test(function() {
-  assert_throws(null, function() { new BluetoothGATTRemoteServer(); },
-    'the constructor should not be callable with "new"');
-  assert_throws(null, function() { BluetoothGATTRemoteServer(); },
-    'the constructor should not be callable');
+test(() => {
+  assert_throws(null, () => new BluetoothGATTRemoteServer(),
+                'the constructor should not be callable with "new"');
+  assert_throws(null, () => BluetoothGATTRemoteServer(),
+                'the constructor should not be callable');
 }, 'BluetoothGATTRemoteServer IDL test');
 </script>

@@ -2,84 +2,80 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="bluetooth-helpers.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
 <script>
-test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
-     "window.testRunner is required for the following tests.");
+'use strict';
 
-sequential_promise_test(function() {
+test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return assert_promise_rejects(requestDeviceWithKeyDown(),
                                 new TypeError());
 }, 'Requires an argument.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return assert_promise_rejects(requestDeviceWithKeyDown({}),
                                 new TypeError());
 }, 'RequestDeviceOptions requires a |filters| member.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('FailStartDiscoveryAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
-    .then(() => assert_unreached("The adapter failed to start a discovery \
-                                 session. Promise should have rejected.."),
-          error => {
-            assert_equals(error.name, 'NotFoundError');
-            assert_equals(error.message, 'Couldn\'t start discovery session.');
-          });
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+    {name: 'NotFoundError', message: 'Couldn\'t start discovery session.'},
+    'The adapter failed to start a discovery session.');
 }, 'Discovery session fails to start.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return requestDeviceWithKeyDown({
-    filters: [{services: [generic_access.name]}]
-  }).then(function() {
-    assert_unreached('Expected no devices but one was returned.');
-  }, function(e) {
-    assert_equals(e.name, 'NotFoundError');
-    assert_equals(e.message, 'No Bluetooth devices in range.');
-  });
-}, 'Reject with NotFoundError.');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+    {name: 'NotFoundError', message: 'No Bluetooth devices in range.'},
+    'No Bluetooth devices in range.');
+}, 'Reject with NotFoundError if there are no devices around.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return Promise.all([
     requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
     requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
     requestDeviceWithKeyDown({filters: [{services: [generic_access.uuid]}]})
-  ]).then(function(devices) {
-    devices.forEach(function(device) {
-      assert_equals(device.constructor.name, "BluetoothDevice");
+  ]).then(devices => {
+    devices.forEach(device => {
+      assert_equals(device.constructor.name, 'BluetoothDevice');
     });
   });
 }, 'Mock will resolve.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return assert_promise_rejects(navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]}),
-                                'SecurityError');
+  return assert_promise_rejects(
+    navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]}),
+    'SecurityError');
 }, 'Requires a user gesture.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return callWithKeyDown(() => {
     var first = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
     var second = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
     return Promise.all([
-      first.then(device => assert_equals(device.constructor.name, "BluetoothDevice")),
+      first.then(device => assert_equals(device.constructor.name, 'BluetoothDevice')),
       assert_promise_rejects(second, 'SecurityError'),
     ]);
   });
 }, 'Consumes a user gesture.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return Promise.all([
     requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
     requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
     requestDeviceWithKeyDown({filters: [{services: [generic_access.uuid]}]})
-  ]).then(function(devices) {
+  ]).then(devices => {
     // requestDevice should return the same object if it was created
     // earlier. https://crbug.com/495270
     // TODO(ortuno): Change to assert_equals.
@@ -88,57 +84,49 @@ sequential_promise_test(function() {
   });
 }, 'Returned device should always be the same.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('ScanFilterCheckingAdapter');
   // The work of this test is done in the ScanFilterCheckingAdapter. It asserts
   // that this requestDevice() call tells the platform to scan for only devices
   // that include the Battery, Glucose, or Heart Rate services.
   return requestDeviceWithKeyDown({
     filters: [
-      {services: [battery_service.name]},
-      {services: [glucose.name, heart_rate.name]}
+      {services: ['battery_service']},
+      {services: ['glucose', 'heart_rate']}
     ],
     // The optionalServices shouldn't affect the platform's scan.
     optionalServices: [generic_access.name]
   });
 }, 'Filters restrict the platform\'s Bluetooth scan.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
-  return requestDeviceWithKeyDown({
-    filters: [{services: [glucose.name]}]
-  }).then(function(device) {
-    assert_equals(device.name, "Glucose Device");
-  });
+  return requestDeviceWithKeyDown({filters: [{services: ['glucose']}]})
+    .then(device => assert_equals(device.name, 'Glucose Device'));
 }, 'Simple filter selects matching device.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   return requestDeviceWithKeyDown({
-    filters: [{services: [generic_access.name, heart_rate.name]}]
-  }).then(function(device) {
-    assert_equals(device.name, "Heart Rate Device");
-  });
+    filters: [{services: ['generic_access', 'heart_rate']}]
+  }).then(device => assert_equals(device.name, 'Heart Rate Device'));
 }, 'Filter with 2 services returns a matching device.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   return requestDeviceWithKeyDown({
-    filters: [{services: [battery_service.name]},
-              {services: [heart_rate.name]}]
-  }).then(function(device) {
-    assert_equals(device.name, "Heart Rate Device");
-  });
+    filters: [{services: ['battery_service']},
+              {services: ['heart_rate']}]
+  }).then(device => assert_equals(device.name, 'Heart Rate Device'));
 }, 'An extra filter doesn\'t prevent matching.');
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   // Both devices support the Generic Access service, but things need to
   // support both services to pass the filter, and neither has a Battery
   // service.
   return assert_promise_rejects(requestDeviceWithKeyDown({
-    filters: [{services: [generic_access.name, battery_service.name]}]
+    filters: [{services: ['generic_access', 'battery_service']}]
   }), 'NotFoundError');
 }, 'Too-strict filters do prevent matching.');
-
 </script>

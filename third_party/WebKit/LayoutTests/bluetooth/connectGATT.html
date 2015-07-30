@@ -2,24 +2,24 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="bluetooth-helpers.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
 <script>
-test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
-     "window.testRunner is required for the following tests.");
+'use strict';
 
-sequential_promise_test(function() {
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({
-    filters: [{services: ['generic_access']}]
-  }).then(function(device) {
-    testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return device.connectGATT().then(function() {
-      assert_unreached('Should return error if device not in adapter.');
-    }, function(e) {
-      assert_equals(e.name, 'NetworkError');
-      assert_equals(e.message, 'Bluetooth Device is no longer in range.');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => {
+      testRunner.setBluetoothMockDataSet('EmptyAdapter');
+      return assert_promise_rejects_with_message(
+        device.connectGATT(),{
+          name: 'NetworkError',
+          message: 'Bluetooth Device is no longer in range.'
+        }, 'Device went out of range.');
     });
-  });
 }, 'Device goes out of range. Reject with NetworkError.');
 
 // The following tests make sure the Web Bluetooth implementation
@@ -33,57 +33,76 @@ sequential_promise_test(function() {
 [{
   testName: 'Unknown error when connnecting.',
   uuid: errorUUID(0x0),
-  message: 'Unknown error when connecting to the device.'
+  error: {
+    name: 'NetworkError',
+    message: 'Unknown error when connecting to the device.'
+  }
 }, {
   testName: 'Connection was already in progress.',
   uuid: errorUUID(0x1),
-  message: 'Connection already in progress.'
+  error: {
+    name: 'NetworkError',
+    message: 'Connection already in progress.'
+  }
 }, {
   testName: 'Connection failed.',
   uuid: errorUUID(0x2),
-  message: 'Connection failed for unknown reason.'
+  error: {
+    name: 'NetworkError',
+    message: 'Connection failed for unknown reason.'
+  }
 }, {
   testName: 'Authentication failed when connecting.',
   uuid: errorUUID(0x3),
-  message: 'Authentication failed.'
+  error: {
+    name: 'NetworkError',
+    message: 'Authentication failed.'
+  }
 }, {
   testName: 'Authentication canceled when connecting.',
   uuid: errorUUID(0x4),
-  message: 'Authentication canceled.'
+  error: {
+    name: 'NetworkError',
+    message: 'Authentication canceled.'
+  }
 }, {
   testName: 'Authentication rejected when connecting.',
   uuid: errorUUID(0x5),
-  message: 'Authentication rejected.'
+  error: {
+    name: 'NetworkError',
+    message: 'Authentication rejected.'
+  }
 }, {
   testName: 'Authentication timed out when connecting.',
   uuid: errorUUID(0x6),
-  message: 'Authentication timeout.'
+  error: {
+    name: 'NetworkError',
+    message: 'Authentication timeout.'
+  }
 }, {
   testName: 'Tried to connect to an unsupported device.',
   uuid: errorUUID(0x7),
-  message: 'Unsupported device.'
+  error: {
+    name: 'NetworkError',
+    message: 'Unsupported device.'
+  }
 }].forEach(testSpec => {
   sequential_promise_test(() => {
     testRunner.setBluetoothMockDataSet('FailingConnectionsAdapter');
     return requestDeviceWithKeyDown({filters: [{services: [testSpec.uuid]}]})
-      .then(device => device.connectGATT()).then(() => {
-        assert_unreached('Adapter fails to connect to device, therefore the \
-          the promise should reject.');
-      }, error => {
-        assert_equals(error.name, 'NetworkError');
-        assert_equals(error.message, testSpec.message);
+      .then(device => {
+        assert_promise_rejects_with_message(
+          device.connectGATT(),
+          testSpec.error,
+          'Adapter failed to connect to device.');
       });
   }, testSpec.testName);
 });
 
-sequential_promise_test(function() {
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
-  return requestDeviceWithKeyDown({
-    filters: [{services: ['generic_access']}]
-  }).then(function(device) {
-    return device.connectGATT();
-  }).then(function(gattConnection) {
-    assert_true(gattConnection.connected);
-  });
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => assert_true(gattServer.connected));
 }, 'Device will connect');
 </script>

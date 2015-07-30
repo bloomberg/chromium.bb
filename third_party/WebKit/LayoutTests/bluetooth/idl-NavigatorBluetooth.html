@@ -2,7 +2,9 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
-test(function() {
+'use strict';
+
+test(() => {
   assert_true('bluetooth' in navigator,
               'navigator.bluetooth exists.');
 }, 'navigator.bluetooth IDL test');

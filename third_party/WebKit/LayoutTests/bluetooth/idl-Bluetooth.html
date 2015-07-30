@@ -2,10 +2,12 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
-test(function() {
-  assert_throws(null, function() { new Bluetooth(); },
+'use strict';
+
+test(() => {
+  assert_throws(null, () => new Bluetooth(),
                 'the constructor should not be callable with "new"');
-  assert_throws(null, function() { Bluetooth(); },
+  assert_throws(null, () => Bluetooth(),
                 'the constructor should not be callable');
 
   // Bluetooth implements BluetoothDiscovery;

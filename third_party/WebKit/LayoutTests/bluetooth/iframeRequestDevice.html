@@ -2,9 +2,9 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="bluetooth-helpers.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
 <body>
-<script>
+  <script>
   "use strict";
 
   const numIframes = 5;
@@ -44,4 +44,5 @@
       document.body.appendChild(iframe);
     }
   }, 'Concurrent requestDevice calls in iframes work.');
-</script>
+  </script>
+</body>
