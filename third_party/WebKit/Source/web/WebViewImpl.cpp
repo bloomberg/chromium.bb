@@ -2329,13 +2329,13 @@ bool WebViewImpl::compositionRange(size_t* location, size_t* length)
     if (!focused || !m_imeAcceptEvents)
         return false;
 
-    RefPtrWillBeRawPtr<Range> range = focused->inputMethodController().compositionRange();
-    if (!range)
+    const EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
+    if (range.isNull())
         return false;
 
     Element* editable = focused->selection().rootEditableElementOrDocumentElement();
     ASSERT(editable);
-    PlainTextRange plainTextRange(PlainTextRange::create(*editable, *range.get()));
+    PlainTextRange plainTextRange(PlainTextRange::create(*editable, range));
     if (plainTextRange.isNull())
         return false;
     *location = plainTextRange.start();
@@ -2385,8 +2385,9 @@ WebTextInputInfo WebViewImpl::textInputInfo()
         }
     }
 
-    if (RefPtrWillBeRawPtr<Range> range = focused->inputMethodController().compositionRange()) {
-        PlainTextRange plainTextRange(PlainTextRange::create(*element, *range.get()));
+    EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
+    if (range.isNotNull()) {
+        PlainTextRange plainTextRange(PlainTextRange::create(*element, range));
         if (plainTextRange.isNotNull()) {
             info.compositionStart = plainTextRange.start();
             info.compositionEnd = plainTextRange.end();

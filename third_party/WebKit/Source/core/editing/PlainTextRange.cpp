@@ -158,9 +158,9 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
     return EphemeralRange(resultStart.toOffsetInAnchor(), resultEnd.toOffsetInAnchor());
 }
 
-PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& range)
+PlainTextRange PlainTextRange::create(const ContainerNode& scope, const EphemeralRange& range)
 {
-    if (!range.startContainer())
+    if (range.isNull())
         return PlainTextRange();
 
     // The critical assumption is that this only gets called with ranges that
@@ -168,20 +168,22 @@ PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& r
     // because of text fields and textareas. The DOM for those is not
     // directly in the document DOM, so ensure that the range does not cross a
     // boundary of one of those.
-    if (range.startContainer() != &scope && !range.startContainer()->isDescendantOf(&scope))
+    Node* startContainer = range.startPosition().containerNode();
+    if (startContainer != &scope && !startContainer->isDescendantOf(&scope))
         return PlainTextRange();
-    if (range.endContainer() != scope && !range.endContainer()->isDescendantOf(&scope))
+    Node* endContainer = range.endPosition().containerNode();
+    if (endContainer != scope && !endContainer->isDescendantOf(&scope))
         return PlainTextRange();
 
-    RefPtrWillBeRawPtr<Range> testRange = Range::create(scope.document(), const_cast<ContainerNode*>(&scope), 0, range.startContainer(), range.startOffset());
-    ASSERT(testRange->startContainer() == &scope);
-    size_t start = TextIterator::rangeLength(testRange->startPosition(), testRange->endPosition());
-
-    testRange->setEnd(range.endContainer(), range.endOffset(), IGNORE_EXCEPTION);
-    ASSERT(testRange->startContainer() == &scope);
-    size_t end = TextIterator::rangeLength(testRange->startPosition(), testRange->endPosition());
+    size_t start = TextIterator::rangeLength(Position(&const_cast<ContainerNode&>(scope), 0), range.startPosition());
+    size_t end = TextIterator::rangeLength(Position(&const_cast<ContainerNode&>(scope), 0), range.endPosition());
 
     return PlainTextRange(start, end);
+}
+
+PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& range)
+{
+    return create(scope, EphemeralRange(&range));
 }
 
 }

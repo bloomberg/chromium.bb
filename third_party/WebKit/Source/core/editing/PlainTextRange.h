@@ -53,6 +53,7 @@ public:
     EphemeralRange createRange(const ContainerNode& scope) const;
     EphemeralRange createRangeForSelection(const ContainerNode& scope) const;
 
+    static PlainTextRange create(const ContainerNode& scope, const EphemeralRange&);
     static PlainTextRange create(const ContainerNode& scope, const Range&);
 
 private:
