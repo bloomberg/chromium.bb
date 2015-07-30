@@ -131,15 +131,13 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                                 int client_id,
                                 int32 sync_point);
 
-  void OnRelinquishResources();
-  void OnResourcesRelinquished();
+  void OnFinalize();
 
   void OnUpdateValueState(int client_id,
                           unsigned int target,
                           const gpu::ValueState& state);
 
   void OnLoseAllContexts();
-  void CheckRelinquishGpuResources();
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   base::WaitableEvent* shutdown_event_;
@@ -162,7 +160,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   IPC::SyncChannel* channel_;
-  bool relinquish_resources_pending_;
   // Must outlive this instance of GpuChannelManager.
   IPC::AttachmentBroker* attachment_broker_;
 

@@ -99,10 +99,6 @@ bool GLSurface::Initialize() {
   return true;
 }
 
-void GLSurface::DestroyAndTerminateDisplay() {
-  Destroy();
-}
-
 bool GLSurface::Resize(const gfx::Size& size) {
   NOTIMPLEMENTED();
   return false;

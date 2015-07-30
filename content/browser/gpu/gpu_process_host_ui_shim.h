@@ -65,6 +65,9 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // Return NULL if none has been created.
   CONTENT_EXPORT static GpuProcessHostUIShim* GetOneInstance();
 
+  // Stops the GPU process.
+  void StopGpuProcess(const base::Closure& callback);
+
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
 
@@ -74,7 +77,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // actually received on the IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  CONTENT_EXPORT void RelinquishGpuResources(const base::Closure& callback);
   CONTENT_EXPORT void SimulateRemoveAllContext();
   CONTENT_EXPORT void SimulateCrash();
   CONTENT_EXPORT void SimulateHang();
@@ -98,13 +100,12 @@ class GpuProcessHostUIShim : public IPC::Listener,
 #endif
   void OnVideoMemoryUsageStatsReceived(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
-  void OnResourcesRelinquished();
   void OnAddSubscription(int32 process_id, unsigned int target);
   void OnRemoveSubscription(int32 process_id, unsigned int target);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
-  base::Closure relinquish_callback_;
+  base::Closure close_callback_;
 };
 
 }  // namespace content

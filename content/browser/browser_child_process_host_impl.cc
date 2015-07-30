@@ -306,6 +306,9 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
                                   PROCESS_TYPE_MAX);
         break;
       }
+#if defined(OS_ANDROID)
+      case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
 #if defined(OS_CHROMEOS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif

@@ -311,11 +311,6 @@ void DrmGpuPlatformSupport::OnSetGammaRamp(
   display_manager_->SetGammaRamp(id, lut);
 }
 
-void DrmGpuPlatformSupport::RelinquishGpuResources(
-    const base::Closure& callback) {
-  callback.Run();
-}
-
 void DrmGpuPlatformSupport::OnGetHDCPState(int64_t display_id) {
   HDCPState state = HDCP_STATE_UNDESIRED;
   bool success = display_manager_->GetHDCPState(display_id, &state);

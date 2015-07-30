@@ -52,7 +52,6 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
 
   // GpuPlatformSupport:
   void OnChannelEstablished(IPC::Sender* sender) override;
-  void RelinquishGpuResources(const base::Closure& callback) override;
   IPC::MessageFilter* GetMessageFilter() override;
 
   // IPC::Listener:

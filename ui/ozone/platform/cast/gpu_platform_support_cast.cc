@@ -12,11 +12,6 @@ bool GpuPlatformSupportCast::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void GpuPlatformSupportCast::RelinquishGpuResources(
-    const base::Closure& callback) {
-  parent_->SetToRelinquishDisplay(callback);
-}
-
 IPC::MessageFilter* GpuPlatformSupportCast::GetMessageFilter() {
   return nullptr;
 }

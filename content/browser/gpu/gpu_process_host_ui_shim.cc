@@ -60,6 +60,12 @@ void SendOnIOThreadTask(int host_id, IPC::Message* msg) {
     delete msg;
 }
 
+void StopGpuProcessOnIO(int host_id) {
+  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+  if (host)
+    host->StopGpuProcess();
+}
+
 class ScopedSendOnIOThread {
  public:
   ScopedSendOnIOThread(int host_id, IPC::Message* msg)
@@ -192,11 +198,11 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
-void GpuProcessHostUIShim::RelinquishGpuResources(
-    const base::Closure& callback) {
-  DCHECK(relinquish_callback_.is_null());
-  relinquish_callback_ = callback;
-  Send(new GpuMsg_RelinquishResources());
+void GpuProcessHostUIShim::StopGpuProcess(const base::Closure& callback) {
+  close_callback_ = callback;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(&StopGpuProcessOnIO, host_id_));
 }
 
 void GpuProcessHostUIShim::SimulateRemoveAllContext() {
@@ -213,6 +219,8 @@ void GpuProcessHostUIShim::SimulateHang() {
 
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
+  if (!close_callback_.is_null())
+    base::ResetAndReturn(&close_callback_).Run();
   g_hosts_by_id.Pointer()->Remove(host_id_);
 }
 
@@ -233,8 +241,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
                         OnVideoMemoryUsageStatsReceived);
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ResourcesRelinquished,
-                        OnResourcesRelinquished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AddSubscription, OnAddSubscription);
     IPC_MESSAGE_HANDLER(GpuHostMsg_RemoveSubscription, OnRemoveSubscription);
 
@@ -312,12 +318,6 @@ void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
     const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
       video_memory_usage_stats);
-}
-
-void GpuProcessHostUIShim::OnResourcesRelinquished() {
-  if (!relinquish_callback_.is_null()) {
-    base::ResetAndReturn(&relinquish_callback_).Run();
-  }
 }
 
 void GpuProcessHostUIShim::OnAddSubscription(

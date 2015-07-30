@@ -261,6 +261,9 @@ IPC_STRUCT_TRAITS_END()
 // exiting abruptly is predicated on having the IPC channel set up.
 IPC_MESSAGE_CONTROL0(GpuMsg_Initialize)
 
+// Tells the GPU process to shutdown itself.
+IPC_MESSAGE_CONTROL0(GpuMsg_Finalize)
+
 // Tells the GPU process to create a new channel for communication with a
 // given client.  The channel name is returned in a
 // GpuHostMsg_ChannelEstablished message.  The client ID is passed so that
@@ -335,11 +338,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_DisableWatchdog)
 
 // Tells the GPU process that the browser has seen a GPU switch.
 IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
-
-// Tells the GPU process to delete the default_offscreen surface. It will also
-// close the display and any other resources when the last GL surface is
-// deleted. GPU process will respond with GphHosMsg_ResourcesRelinquished.
-IPC_MESSAGE_CONTROL0(GpuMsg_RelinquishResources)
 
 // Sends an input event to the gpu service.
 IPC_MESSAGE_CONTROL3(GpuMsg_UpdateValueState,
@@ -444,9 +442,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext,
 // Tells the browser about GPU memory usage statistics for UMA logging.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
                      content::GPUMemoryUmaStats /* GPU memory UMA stats */)
-
-// Response to GpuMsg_RelinquishResources.
-IPC_MESSAGE_CONTROL0(GpuHostMsg_ResourcesRelinquished)
 
 // Tells the browser that a context has subscribed to a new target and
 // the browser should start sending the corresponding information

@@ -330,6 +330,10 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
   if (host->Init())
     return host;
 
+  // TODO(sievers): Revisit this behavior. It's not really a crash, but we also
+  // want the fallback-to-sw behavior if we cannot initialize the GPU.
+  host->RecordProcessCrash();
+
   delete host;
   return NULL;
 }
@@ -397,7 +401,6 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       kind_(kind),
       process_launched_(false),
       initialized_(false),
-      gpu_crash_recorded_(false),
       uma_memory_stats_received_(false) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
@@ -429,8 +432,6 @@ GpuProcessHost::~GpuProcessHost() {
   DCHECK(CalledOnValidThread());
 
   SendOutstandingReplies();
-
-  RecordProcessCrash();
 
   // In case we never started, clean up.
   while (!queued_messages_.empty()) {
@@ -878,6 +879,10 @@ void GpuProcessHost::OnProcessLaunched() {
                       base::TimeTicks::Now() - init_start_time_);
 }
 
+void GpuProcessHost::OnProcessLaunchFailed() {
+  RecordProcessCrash();
+}
+
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
   SendOutstandingReplies();
   RecordProcessCrash();
@@ -903,6 +908,10 @@ void GpuProcessHost::ForceShutdown() {
 #endif
 
   process_->ForceShutdown();
+}
+
+void GpuProcessHost::StopGpuProcess() {
+  Send(new GpuMsg_Finalize());
 }
 
 void GpuProcessHost::BeginFrameSubscription(
@@ -1028,10 +1037,6 @@ void GpuProcessHost::BlockLiveOffscreenContexts() {
 }
 
 void GpuProcessHost::RecordProcessCrash() {
-  // Skip if a GPU process crash was already counted.
-  if (gpu_crash_recorded_)
-    return;
-
   // Maximum number of times the GPU process is allowed to crash in a session.
   // Once this limit is reached, any request to launch the GPU process will
   // fail.
@@ -1047,7 +1052,6 @@ void GpuProcessHost::RecordProcessCrash() {
   // was intended for actual rendering (and not just checking caps or other
   // options).
   if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
-    gpu_crash_recorded_ = true;
     if (swiftshader_rendering_) {
       UMA_HISTOGRAM_ENUMERATION("GPU.SwiftShaderLifetimeEvents",
                                 DIED_FIRST_TIME + swiftshader_crash_count_,

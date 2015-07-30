@@ -142,7 +142,11 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
 
+  // Forcefully terminates the GPU process.
   void ForceShutdown();
+
+  // Asks the GPU process to stop by itself.
+  void StopGpuProcess();
 
   void BeginFrameSubscription(
       int surface_id,
@@ -165,6 +169,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32 peer_pid) override;
   void OnProcessLaunched() override;
+  void OnProcessLaunchFailed() override;
   void OnProcessCrashed(int exit_code) override;
 
   // Message handlers.
@@ -238,9 +243,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;
-
-  // Whether this host recorded a GPU crash or not.
-  bool gpu_crash_recorded_;
 
   // Master switch for enabling/disabling GPU acceleration for the current
   // browser session. It does not change the acceleration settings for
