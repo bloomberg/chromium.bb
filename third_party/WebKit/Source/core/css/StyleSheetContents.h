@@ -96,6 +96,7 @@ public:
 
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
     void parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase>);
+    void parserSetUsesRemUnits(bool b) { m_usesRemUnits = b; }
 
     void clearRules();
 
@@ -117,6 +118,8 @@ public:
 
     unsigned ruleCount() const;
     StyleRuleBase* ruleAt(unsigned index) const;
+
+    bool usesRemUnits() const { return m_usesRemUnits; }
 
     unsigned estimatedSizeInBytes() const;
 
@@ -177,6 +180,7 @@ private:
 
     bool m_hasSyntacticallyValidCSSHeader : 1;
     bool m_didLoadErrorOccur : 1;
+    bool m_usesRemUnits : 1;
     bool m_isMutable : 1;
     bool m_isInMemoryCache : 1;
     bool m_hasFontFaceRule : 1;

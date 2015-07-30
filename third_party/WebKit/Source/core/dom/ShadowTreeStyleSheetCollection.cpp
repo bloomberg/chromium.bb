@@ -93,6 +93,7 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine
         toShadowRoot(treeScope().rootNode()).host()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ActiveStylesheetsUpdate));
 
     collection.swap(*this);
+    updateUsesRemUnits();
 }
 
 }

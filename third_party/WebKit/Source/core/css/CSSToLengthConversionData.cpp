@@ -108,10 +108,4 @@ double CSSToLengthConversionData::viewportMaxPercent() const
     return std::max(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 
-float CSSToLengthConversionData::remFontSize() const
-{
-    m_style->setHasRemUnits();
-    return m_fontSizes.rem();
-}
-
 } // namespace blink

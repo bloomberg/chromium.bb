@@ -32,9 +32,10 @@ namespace blink {
 
 using namespace WTF;
 
-CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
+CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemUnits)
 : m_current(0)
 {
+    usesRemUnits = false;
     Vector<CSSParserValueList*> stack;
     Vector<int> bracketCounts;
     stack.append(this);
@@ -139,6 +140,8 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
 
                 break;
             }
+            if (token.unitType() == CSSPrimitiveValue::UnitType::Rems)
+                usesRemUnits = true;
             // fallthrough
         case NumberToken:
         case PercentageToken:
