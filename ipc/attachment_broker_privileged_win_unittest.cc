@@ -161,7 +161,7 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
     broker_->AddObserver(&observer_);
     set_attachment_broker(broker_.get());
     CreateChannel(&proxy_listener_);
-    broker_->set_sender(channel());
+    broker_->DesignateBrokerCommunicationChannel(channel());
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
   }
@@ -278,6 +278,9 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleToSelf) {
 
   set_broker(new MockBroker);
   CommonSetUp();
+  // Technically, the channel is an endpoint, but we need the proxy listener to
+  // receive the messages so that it can quit the message loop.
+  channel()->set_attachment_broker_endpoint(false);
   get_proxy_listener()->set_listener(get_broker());
 
   HANDLE h = CreateTempFile();

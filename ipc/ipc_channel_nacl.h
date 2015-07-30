@@ -70,6 +70,7 @@ class ChannelNacl : public Channel,
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
   base::ProcessId GetSenderPID() override;
+  bool IsAttachmentBrokerEndpoint() override;
 
   Mode mode_;
   bool waiting_connect_;
