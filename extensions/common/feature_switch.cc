@@ -36,6 +36,8 @@ class CommonSwitches {
                                      FeatureSwitch::DEFAULT_DISABLED),
         extension_action_redesign(switches::kExtensionActionRedesign,
                                   FeatureSwitch::DEFAULT_DISABLED),
+        extension_action_redesign_override(switches::kExtensionActionRedesign,
+                                           FeatureSwitch::DEFAULT_ENABLED),
         scripts_require_action(switches::kScriptsRequireAction,
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
@@ -59,6 +61,7 @@ class CommonSwitches {
   FeatureSwitch error_console;
   FeatureSwitch enable_override_bookmarks_ui;
   FeatureSwitch extension_action_redesign;
+  FeatureSwitch extension_action_redesign_override;
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch surface_worker;
@@ -86,6 +89,16 @@ FeatureSwitch* FeatureSwitch::enable_override_bookmarks_ui() {
   return &g_common_switches.Get().enable_override_bookmarks_ui;
 }
 FeatureSwitch* FeatureSwitch::extension_action_redesign() {
+#if defined(ENABLE_MEDIA_ROUTER)
+  // Force-enable the redesigned extension action toolbar when the Media Router
+  // is enabled. Should be removed when the toolbar redesign is used by default.
+  // See crbug.com/514694
+  // TODO(kmarshall): Remove this override.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "enable-media-router")) {
+    return &g_common_switches.Get().extension_action_redesign_override;
+  }
+#endif  // defined(ENABLE_MEDIA_ROUTER)
   return &g_common_switches.Get().extension_action_redesign;
 }
 FeatureSwitch* FeatureSwitch::scripts_require_action() {
