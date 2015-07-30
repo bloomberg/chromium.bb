@@ -120,7 +120,7 @@ class CoreDecoder(object):
     results = []
     for index in xrange(len(lines) / 2):
       func = lines[index * 2]
-      afilename, lineno = lines[index * 2 + 1].split(':', 1)
+      afilename, lineno = lines[index * 2 + 1].rsplit(':', 1)
       results.append({
           'function': func,
           'filename': afilename,
