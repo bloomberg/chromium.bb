@@ -7,6 +7,7 @@
             'AddressSpaceRandomization.cpp',
             'AddressSpaceRandomization.h',
             'Alignment.h',
+            'Allocator.h',
             'ArrayBuffer.cpp',
             'ArrayBuffer.h',
             'ArrayBufferBuilder.cpp',
