@@ -25,25 +25,21 @@
   visibility: hidden;
 }
 
-#safe,
-#dangerous {
+#content {
   background: white;
   border-radius: 2px;  /* TODO(dbeam): why does this differ from Polymer? */
+  display: flex;
   flex: none;
   width: var(--downloads-item-width);
 }
 
-#safe.no-file {
+#content.no-file {
   background: rgba(255, 255, 255, .5);
 }
 
-.no-file #safe-icon-wrapper,
+.no-file .icon-wrapper:not(#remove-wrapper),
 .no-file #details {
   opacity: .5;
-}
-
-#safe {
-  display: flex;
 }
 
 #details {
@@ -54,21 +50,21 @@
   padding: 16px 16px 12px 16px;
 }
 
-#title-area {
-  display: flex;
-}
-
-#safe-icon-wrapper {
+.icon-wrapper {
   align-self: center;
   flex: none;
   justify-content: center;
   margin: 0 32px;
 }
 
+#icon {
+  height: 32px;
+  width: 32px;
+}
+
 #name,
 #file-link,
-#src-url {
-  display: inline-block;
+#url {
   max-width: 100%;
 }
 
@@ -78,11 +74,22 @@
 }
 
 #name {
+  -webkit-margin-end: 12px;  /* Only really affects #tag. */
   color: #212121;
   font-weight: bold;
 }
 
-#src-url {
+.dangerous #name {
+  color: rgb(35, 114, 236);
+}
+
+#tag {
+  color: #6f6f6f;
+  font-size: 92.307%;
+  font-weight: bold;
+}
+
+#url {
   color: rgb(88, 152, 251);
   margin-top: 6px;
   overflow: hidden;
@@ -92,9 +99,17 @@
 }
 
 #progress,
-#status:not(:empty),
-#button-container {
+#description:not(:empty),
+.controls {
   margin-top: 16px;
+}
+
+#description {
+  color: #616161;
+}
+
+.dangerous #description {
+  color: rgb(217, 84, 61);
 }
 
 #progress {
@@ -109,12 +124,11 @@
 }
 
 #remove-wrapper {
-  align-self: top;
-  flex: none;
-  justify-content: center;
+  align-self: flex-start;
+  margin: 0;
 }
 
-#safe-remove {
+#remove {
   --paper-icon-button: {
     height: 16px;
     width: 16px;

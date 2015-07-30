@@ -42,49 +42,66 @@ cr.define('downloads', function() {
       assert(!this.id_ || data.id == this.id_);
       this.id_ = data.id;  // This is the only thing saved from |data|.
 
+      // Danger-independent UI and controls.
       this.ensureTextIs_(this.$.since, data.since_string);
       this.ensureTextIs_(this.$.date, data.date_string);
 
+      /** @const */ var noFile =
+          data.state == downloads.States.CANCELLED ||
+          data.state == downloads.States.INTERRUPTED ||
+          data.file_externally_removed;
+      this.$.content.classList.toggle('no-file', noFile);
+
+      this.ensureTextIs_(this.$.name, data.file_name);
+      this.ensureTextIs_(this.$.url, data.url);
+      this.$.url.href = data.url;
+
+      // Danger-dependent UI and controls.
       var dangerText = this.getDangerText_(data);
-      this.isDangerous = !!dangerText;
+      this.isDangerous_ = !!dangerText;
+      this.$.content.classList.toggle('dangerous', this.isDangerous_);
 
-      if (dangerText) {
-        this.ensureTextIs_(this.$.description, dangerText);
+      var description = dangerText || this.getStatusText_(data);
 
+      // Status goes in the "tag" (next to the file name) if there's no file.
+      this.ensureTextIs_(this.$.description, noFile ? '' : description);
+      this.ensureTextIs_(this.$.tag, noFile ? description : '');
+
+      /** @const */ var showProgress =
+          isFinite(data.percent) && !this.isDangerous_;
+      this.$.progress.hidden = !showProgress;
+
+      if (showProgress) {
+        this.$.progress.indeterminate = data.percent < 0;
+        this.$.progress.value = data.percent;
+      }
+
+      var iconUrl = 'chrome://';
+
+      if (this.isDangerous_) {
         var dangerType = data.danger_type;
-        var dangerousFile = dangerType == downloads.DangerType.DANGEROUS_FILE;
-        this.$.description.classList.toggle('malware', !dangerousFile);
-
-        var idr = dangerousFile ? 'IDR_WARNING' : 'IDR_SAFEBROWSING_WARNING';
-        var iconUrl = 'chrome://theme/' + idr;
-        this.iconLoader_.loadScaledIcon(this.$['dangerous-icon'], iconUrl);
 
         this.isMalware_ =
             dangerType == downloads.DangerType.DANGEROUS_CONTENT ||
             dangerType == downloads.DangerType.DANGEROUS_HOST ||
             dangerType == downloads.DangerType.DANGEROUS_URL ||
             dangerType == downloads.DangerType.POTENTIALLY_UNWANTED;
+
+        // TODO(dbeam): this icon sucks: it's a PNG we have to scale and looks
+        // nothing like the mocks. Find a prettier, more vectorized version.
+        var dangerousFile = dangerType == downloads.DangerType.DANGEROUS_FILE;
+        var idr = dangerousFile ? 'IDR_WARNING' : 'IDR_SAFEBROWSING_WARNING';
+        iconUrl += 'theme/' + idr;
       } else {
-        var iconUrl = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
-        this.iconLoader_.loadScaledIcon(this.$['safe-icon'], iconUrl);
-
-        /** @const */ var noFile =
-            data.state == downloads.States.CANCELLED ||
-            data.state == downloads.States.INTERRUPTED ||
-            data.file_externally_removed;
-        this.$.safe.classList.toggle('no-file', noFile);
-
         /** @const */ var completelyOnDisk =
             data.state == downloads.States.COMPLETE &&
             !data.file_externally_removed;
 
         this.$['file-link'].href = data.url;
         this.ensureTextIs_(this.$['file-link'], data.file_name);
+
         this.$['file-link'].hidden = !completelyOnDisk;
-
-        this.ensureTextIs_(this.$.name, data.file_name);
         this.$.name.hidden = completelyOnDisk;
-
         this.$.show.hidden = !completelyOnDisk;
 
         this.$.retry.hidden = !data.retry;
@@ -99,7 +116,7 @@ cr.define('downloads', function() {
         /** @const */ var showCancel = isPaused || isInProgress;
         this.$.cancel.hidden = !showCancel;
 
-        this.$['safe-remove'].hidden = showCancel ||
+        this.$.remove.disabled = showCancel ||
             !loadTimeData.getBoolean('allowDeletingHistory');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
@@ -112,20 +129,10 @@ cr.define('downloads', function() {
           link.textContent = data.by_ext_name;
         }
 
-        this.ensureTextIs_(this.$['src-url'], data.url);
-        this.$['src-url'].href = data.url;
-
-        // TODO(dbeam): "Cancelled" should show status next to the file name.
-        this.ensureTextIs_(this.$.status, this.getStatusText_(data));
-
-        /** @const */ var hasPercent = isFinite(data.percent);
-        this.$.progress.hidden = !hasPercent;
-
-        if (hasPercent) {
-          this.$.progress.indeterminate = data.percent < 0;
-          this.$.progress.value = data.percent;
-        }
+        iconUrl += 'fileicon/' + encodeURIComponent(data.file_path);
       }
+
+      this.iconLoader_.loadScaledIcon(this.$.icon, iconUrl);
     },
 
     /**
@@ -193,11 +200,6 @@ cr.define('downloads', function() {
       this.actionService_.cancel(this.id_);
     },
 
-    /** @private */
-    onDangerousRemoveOrDiscardClick_: function() {
-      this.actionService_.discardDangerous(this.id_);
-    },
-
     /**
      * @private
      * @param {Event} e
@@ -223,7 +225,12 @@ cr.define('downloads', function() {
 
     /** @private */
     onRemoveClick_: function() {
-      this.actionService_.remove(this.id_);
+      assert(!this.$.remove.disabled);
+
+      if (this.isDangerous_)
+        this.actionService_.discardDangerous(this.id_);
+      else
+        this.actionService_.remove(this.id_);
     },
 
     /** @private */
