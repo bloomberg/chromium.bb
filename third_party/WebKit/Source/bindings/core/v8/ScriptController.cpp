@@ -106,6 +106,7 @@ DEFINE_TRACE(ScriptController)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_windowProxyManager);
+    visitor->trace(m_pluginObjects);
 #endif
 }
 

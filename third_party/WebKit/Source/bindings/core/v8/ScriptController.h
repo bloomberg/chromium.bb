@@ -161,7 +161,7 @@ private:
 
     LocalFrame* frame() const { return toLocalFrame(m_windowProxyManager->frame()); }
 
-    typedef HashMap<Widget*, NPObject*> PluginObjectMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<Widget>, NPObject*> PluginObjectMap;
 
     v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy, double* compilationFinishTime = 0);
 
