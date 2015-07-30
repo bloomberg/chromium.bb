@@ -272,11 +272,14 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_TRUE(request->browser_initiated());
   EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE, request->state());
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
+  RenderFrameDeletedObserver rfh_deleted_observer(
+      GetSpeculativeRenderFrameHost(node));
 
   // Simulate a beforeUnload denial.
   main_test_rfh()->SendBeforeUnloadACK(false);
   EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
+  EXPECT_TRUE(rfh_deleted_observer.deleted());
 }
 
 // PlzNavigate: Test that a proper NavigationRequest is created by
@@ -869,6 +872,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
   int32 site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
+  RenderFrameDeletedObserver rfh_deleted_observer(speculative_rfh);
   EXPECT_NE(init_site_instance_id, site_instance_id);
   EXPECT_EQ(init_site_instance_id, main_test_rfh()->GetSiteInstance()->GetId());
   EXPECT_NE(speculative_rfh, main_test_rfh());
@@ -893,6 +897,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // this next check will be changed to verify that it actually happens.
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
   EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
+  EXPECT_FALSE(rfh_deleted_observer.deleted());
 
   // Commit the navigation with Navigator by simulating the call to
   // OnResponseStarted.
@@ -903,6 +908,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   ASSERT_TRUE(speculative_rfh);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));
   EXPECT_EQ(init_site_instance_id, main_test_rfh()->GetSiteInstance()->GetId());
+  EXPECT_TRUE(rfh_deleted_observer.deleted());
 
   // Once commit happens the speculative RenderFrameHost is updated to match the
   // known final SiteInstance.
