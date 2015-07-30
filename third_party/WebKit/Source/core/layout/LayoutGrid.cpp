@@ -1346,7 +1346,7 @@ void LayoutGrid::layoutGridItems()
 
     for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned()) {
-            child->containingBlock()->insertPositionedObject(child);
+            prepareChildForPositionedLayout(*child);
             continue;
         }
 
@@ -1397,6 +1397,16 @@ void LayoutGrid::layoutGridItems()
     setLogicalHeight(height);
 }
 
+void LayoutGrid::prepareChildForPositionedLayout(LayoutBox& child)
+{
+    ASSERT(child.isOutOfFlowPositioned());
+    child.containingBlock()->insertPositionedObject(&child);
+
+    DeprecatedPaintLayer* childLayer = child.layer();
+    childLayer->setStaticInlinePosition(borderAndPaddingStart());
+    childLayer->setStaticBlockPosition(borderAndPaddingBefore());
+}
+
 void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
 {
     TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
@@ -1427,15 +1437,12 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
         child->setExtraBlockOffset(rowOffset);
 
         if (child->parent() == this) {
-            // If column/row start is not auto the padding has been already computed in offsetAndBreadthForPositionedChild().
+            // If column/row start is "auto" the static position has been already set in prepareChildForPositionedLayout().
+            // If column/row start is not "auto" the padding has been already computed in offsetAndBreadthForPositionedChild().
             DeprecatedPaintLayer* childLayer = child->layer();
-            if (columnStartIsAuto)
-                childLayer->setStaticInlinePosition(borderAndPaddingStart());
-            else
+            if (!columnStartIsAuto)
                 childLayer->setStaticInlinePosition(borderStart() + columnOffset);
-            if (rowStartIsAuto)
-                childLayer->setStaticBlockPosition(borderAndPaddingBefore());
-            else
+            if (!rowStartIsAuto)
                 childLayer->setStaticBlockPosition(borderBefore() + rowOffset);
         }
     }
