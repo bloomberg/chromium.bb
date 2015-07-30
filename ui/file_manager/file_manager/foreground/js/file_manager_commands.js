@@ -92,6 +92,34 @@ CommandUtil.getCommandEntries = function(element) {
 };
 
 /**
+ * @param {EventTarget} element
+ * @param {!FileManager} fileManager
+ * @return {VolumeInfo}
+ */
+CommandUtil.getElementVolumeInfo = function(element, fileManager) {
+  if (element instanceof DirectoryTree && element.selectedItem)
+    return CommandUtil.getElementVolumeInfo(element.selectedItem, fileManager);
+  if (element instanceof VolumeItem)
+    return element.volumeInfo;
+  if (element instanceof ShortcutItem) {
+    return element.entry && fileManager.volumeManager.getVolumeInfo(
+        element.entry);
+  }
+  return null;
+};
+
+/**
+ * @param {!FileManager} fileManager
+ * @return {VolumeInfo}
+ * @private
+ */
+CommandUtil.getCurrentVolumeInfo = function(fileManager) {
+  var currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
+  return currentDirEntry ? fileManager.volumeManager.getVolumeInfo(
+      currentDirEntry) : null;
+};
+
+/**
  * Obtains an entry from the give navigation model item.
  * @param {!NavigationModelItem} item Navigation model item.
  * @return {Entry} Related entry.
@@ -369,21 +397,18 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var root = CommandUtil.getCommandEntry(event.target);
-    if (!root) {
-      console.warn('unmount command executed on an element which does not ' +
-                   'have corresponding entry.');
-      return;
-    }
     var errorCallback = function() {
       fileManager.ui.alertDialog.showHtml(
           '', str('UNMOUNT_FAILED'), null, null, null);
     };
-    var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
+
+    var volumeInfo = CommandUtil.getElementVolumeInfo(
+        event.target, fileManager);
     if (!volumeInfo) {
       errorCallback();
       return;
     }
+
     fileManager.volumeManager_.unmount(
         volumeInfo,
         function() {},
@@ -394,24 +419,27 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
    * @this {CommandHandler}
    */
   canExecute: function(event, fileManager) {
-    var root = CommandUtil.getCommandEntry(event.target);
-    if (!root)
+    var volumeInfo = CommandUtil.getElementVolumeInfo(
+        event.target, fileManager);
+    if (!volumeInfo) {
+      event.canExecute = false;
+      event.command.setHidden(true);
       return;
-    var locationInfo = fileManager.volumeManager.getLocationInfo(root);
-    var rootType =
-        locationInfo && locationInfo.isRootEntry && locationInfo.rootType;
+    }
 
-    event.canExecute = (rootType == VolumeManagerCommon.RootType.ARCHIVE ||
-                        rootType == VolumeManagerCommon.RootType.REMOVABLE ||
-                        rootType == VolumeManagerCommon.RootType.PROVIDED);
+    var volumeType = volumeInfo.volumeType;
+    event.canExecute = (
+        volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
+        volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
+        volumeType === VolumeManagerCommon.VolumeType.PROVIDED);
     event.command.setHidden(!event.canExecute);
 
-    switch (rootType) {
-      case VolumeManagerCommon.RootType.ARCHIVE:
-      case VolumeManagerCommon.RootType.PROVIDED:
+    switch (volumeType) {
+      case VolumeManagerCommon.VolumeType.ARCHIVE:
+      case VolumeManagerCommon.VolumeType.PROVIDED:
         event.command.label = str('CLOSE_VOLUME_BUTTON_LABEL');
         break;
-      case VolumeManagerCommon.RootType.REMOVABLE:
+      case VolumeManagerCommon.VolumeType.REMOVABLE:
         event.command.label = str('UNMOUNT_DEVICE_BUTTON_LABEL');
         break;
     }
@@ -1399,67 +1427,26 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
 /**
  * Configures the currently selected volume.
  */
-CommandHandler.COMMANDS_['configure'] = (function() {
+CommandHandler.COMMANDS_['configure'] = /** @type {Command} */ ({
   /**
-   * @constructor
-   * @implements {Command}
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
    */
-  var ConfigureCommand = function() {
-  };
-
-  ConfigureCommand.prototype = {
-    /**
-     * @param {EventTarget} element
-     * @param {!FileManager} fileManager
-     * @return {VolumeInfo}
-     * @private
-     */
-    getElementVolumeInfo_: function(element, fileManager) {
-      if (element instanceof VolumeItem)
-        return element.volumeInfo;
-      if (element instanceof ShortcutItem) {
-        return element.entry && fileManager.volumeManager.getVolumeInfo(
-            element.entry);
-      }
-    },
-
-    /**
-     * If the command is executed on the navigation list, then use it's volume
-     * info, otherwise use the currently opened volume.
-     *
-     * @param {!Event} event
-     * @param {!FileManager} fileManager
-     * @return {VolumeInfo}
-     * @private
-     */
-    getCommandVolumeInfo_: function(event, fileManager) {
-      var currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
-      return this.getElementVolumeInfo_(event.target, fileManager) ||
-          currentDirEntry && fileManager.volumeManager.getVolumeInfo(
-              currentDirEntry);
-    },
-
-    /**
-     * @override
-     */
-    execute: function(event, fileManager) {
-      var volumeInfo = this.getCommandVolumeInfo_(event, fileManager);
-      if (volumeInfo && volumeInfo.configurable)
-        fileManager.volumeManager.configure(volumeInfo);
-    },
-
-    /**
-     * @override
-     */
-    canExecute: function(event, fileManager) {
-      var volumeInfo = this.getCommandVolumeInfo_(event, fileManager);
-      event.canExecute = volumeInfo && volumeInfo.configurable;
-      event.command.setHidden(!event.canExecute);
-    }
-  };
-
-  return new ConfigureCommand();
-})();
+  execute: function(event, fileManager) {
+    var volumeInfo =
+        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
+        CommandUtil.getCurrentVolumeInfo(fileManager);
+    if (volumeInfo && volumeInfo.configurable)
+      fileManager.volumeManager.configure(volumeInfo);
+  },
+  canExecute: function(event, fileManager) {
+    var volumeInfo =
+        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
+        CommandUtil.getCurrentVolumeInfo(fileManager);
+    event.canExecute = volumeInfo && volumeInfo.configurable;
+    event.command.setHidden(!event.canExecute);
+  }
+});
 
 /**
  * Refreshes the currently selected directory.
