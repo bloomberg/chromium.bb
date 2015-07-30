@@ -6,6 +6,10 @@
 
 namespace media_router {
 
+MockIssuesObserver::MockIssuesObserver(MediaRouter* router)
+    : IssuesObserver(router) {}
+MockIssuesObserver::~MockIssuesObserver() {}
+
 MockMediaSinksObserver::MockMediaSinksObserver(MediaRouter* router,
                                                const MediaSource& source)
     : MediaSinksObserver(router, source) {

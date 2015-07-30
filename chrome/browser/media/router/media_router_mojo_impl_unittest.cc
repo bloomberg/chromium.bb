@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router_mojo_test.h"
+#include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -25,6 +27,7 @@
 using testing::_;
 using testing::Eq;
 using testing::Invoke;
+using testing::Mock;
 using testing::Pointee;
 using testing::Return;
 using testing::ReturnRef;
@@ -59,6 +62,20 @@ bool ArePresentationSessionMessagesEqual(
   }
   return expected->is_binary() ? *(expected->data) == *(actual->data)
                                : *(expected->message) == *(actual->message);
+}
+
+interfaces::IssuePtr CreateMojoIssue(const std::string& title) {
+  interfaces::IssuePtr mojoIssue = interfaces::Issue::New();
+  mojoIssue->title = title;
+  mojoIssue->message = "msg";
+  mojoIssue->route_id = "";
+  mojoIssue->default_action = interfaces::Issue::ActionType::ACTION_TYPE_OK;
+  mojoIssue->secondary_actions =
+      mojo::Array<interfaces::Issue::ActionType>::New(0);
+  mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
+  mojoIssue->is_blocking = false;
+  mojoIssue->help_url = "";
+  return mojoIssue.Pass();
 }
 
 }  // namespace
@@ -255,6 +272,35 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
 TEST_F(MediaRouterMojoImplTest, CloseRoute) {
   EXPECT_CALL(mock_media_route_provider_, CloseRoute(mojo::String(kRouteId)));
   router()->CloseRoute(kRouteId);
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, HandleIssue) {
+  MockIssuesObserver issue_observer1(router());
+  MockIssuesObserver issue_observer2(router());
+  interfaces::IssuePtr mojo_issue1 = CreateMojoIssue("title 1");
+  const Issue& expected_issue1 = mojo_issue1.To<Issue>();
+
+  const Issue* issue;
+  EXPECT_CALL(issue_observer1,
+              OnIssueUpdated(Pointee(EqualsIssue(expected_issue1))))
+      .WillOnce(SaveArg<0>(&issue));
+  EXPECT_CALL(issue_observer2,
+              OnIssueUpdated(Pointee(EqualsIssue(expected_issue1))));
+  media_router_proxy_->OnIssue(mojo_issue1.Pass());
+  ProcessEventLoop();
+
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
+
+  router()->ClearIssue(issue->id());
+  router()->UnregisterIssuesObserver(&issue_observer1);
+  interfaces::IssuePtr mojo_issue2 = CreateMojoIssue("title 2");
+  const Issue& expected_issue2 = mojo_issue2.To<Issue>();
+
+  EXPECT_CALL(issue_observer2,
+              OnIssueUpdated(Pointee(EqualsIssue(expected_issue2))));
+  media_router_proxy_->OnIssue(mojo_issue2.Pass());
   ProcessEventLoop();
 }
 

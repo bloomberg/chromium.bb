@@ -19,6 +19,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/issue.h"
+#include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
 
@@ -143,8 +144,6 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStartObservingMediaRoutes();
   void DoStopObservingMediaRoutes();
-  void DoStartObservingIssues();
-  void DoStopObservingIssues();
 
   // Invoked when the next batch of messages arrives.
   // |messages|: A list of messages received.
@@ -175,6 +174,8 @@ class MediaRouterMojoImpl : public MediaRouter,
       sinks_observers_;
 
   base::ObserverList<MediaRoutesObserver> routes_observers_;
+
+  IssueManager issue_manager_;
 
   // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
   scoped_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;

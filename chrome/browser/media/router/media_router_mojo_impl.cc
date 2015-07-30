@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -143,9 +144,10 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 }
 
 void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
-  // TODO(imcheng): Implement. (crbug.com/461815)
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  DVLOG_WITH_INSTANCE(1) << "OnIssue " << issue->title;
+  const Issue& issue_converted = issue.To<Issue>();
+  issue_manager_.AddIssue(issue_converted);
 }
 
 void MediaRouterMojoImpl::OnSinksReceived(
@@ -254,7 +256,7 @@ void MediaRouterMojoImpl::ListenForRouteMessages(
 
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
+  issue_manager_.ClearIssue(issue_id);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoClearIssue,
                         base::Unretained(this), issue_id));
 }
@@ -328,13 +330,13 @@ void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
 }
 
 void MediaRouterMojoImpl::RegisterIssuesObserver(IssuesObserver* observer) {
-  // TODO(imcheng): Implement. (crbug.com/461815)
-  NOTIMPLEMENTED();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  issue_manager_.RegisterObserver(observer);
 }
 
 void MediaRouterMojoImpl::UnregisterIssuesObserver(IssuesObserver* observer) {
-  // TODO(imcheng): Implement. (crbug.com/461815)
-  NOTIMPLEMENTED();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  issue_manager_.UnregisterObserver(observer);
 }
 
 void MediaRouterMojoImpl::DoCreateRoute(

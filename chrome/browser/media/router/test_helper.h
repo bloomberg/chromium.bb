@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -35,6 +36,48 @@ MATCHER_P(SequenceEquals, other, "") {
   }
   return true;
 }
+
+// Matcher for checking all fields in Issue objects except the ID.
+MATCHER_P(EqualsIssue, other, "") {
+  if (arg.title() != other.title())
+    return false;
+
+  if (arg.message() != other.message())
+    return false;
+
+  if (!arg.default_action().Equals(other.default_action()))
+    return false;
+
+  if (arg.secondary_actions().size() != other.secondary_actions().size())
+    return false;
+
+  for (size_t i = 0; i < arg.secondary_actions().size(); ++i) {
+    if (!arg.secondary_actions()[i].Equals(other.secondary_actions()[i]))
+      return false;
+  }
+
+  if (arg.route_id() != other.route_id())
+    return false;
+
+  if (arg.severity() != other.severity())
+    return false;
+
+  if (arg.is_blocking() != other.is_blocking())
+    return false;
+
+  if (arg.help_url() != other.help_url())
+    return false;
+
+  return true;
+}
+
+class MockIssuesObserver : public IssuesObserver {
+ public:
+  explicit MockIssuesObserver(MediaRouter* router);
+  ~MockIssuesObserver() override;
+
+  MOCK_METHOD1(OnIssueUpdated, void(const Issue* issue));
+};
 
 class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
  public:
