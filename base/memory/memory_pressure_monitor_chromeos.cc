@@ -11,6 +11,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
@@ -114,7 +115,9 @@ MemoryPressureMonitor::MemoryPressureMonitor(
       low_mem_file_(HANDLE_EINTR(::open(kLowMemFile, O_RDONLY))),
       weak_ptr_factory_(this) {
   StartObserving();
-  LOG_IF(ERROR, !low_mem_file_.is_valid()) << "Cannot open kernel listener";
+  LOG_IF(ERROR,
+         base::SysInfo::IsRunningOnChromeOS() && !low_mem_file_.is_valid())
+      << "Cannot open kernel listener";
 }
 
 MemoryPressureMonitor::~MemoryPressureMonitor() {

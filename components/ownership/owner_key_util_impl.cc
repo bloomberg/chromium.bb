@@ -4,12 +4,12 @@
 
 #include "components/ownership/owner_key_util_impl.h"
 
+#include <keythi.h>
 #include <limits>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-
-#include <keythi.h>
+#include "base/sys_info.h"
 #include "crypto/nss_key_util.h"
 
 namespace ownership {
@@ -26,7 +26,8 @@ bool OwnerKeyUtilImpl::ImportPublicKey(std::vector<uint8>* output) {
   int64 file_size;
   if (!base::GetFileSize(public_key_file_, &file_size)) {
 #if defined(OS_CHROMEOS)
-    LOG(ERROR) << "Could not get size of " << public_key_file_.value();
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Could not get size of " << public_key_file_.value();
 #endif  // defined(OS_CHROMEOS)
     return false;
   }

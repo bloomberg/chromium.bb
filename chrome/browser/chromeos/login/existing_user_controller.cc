@@ -367,8 +367,7 @@ void ExistingUserController::Login(const UserContext& user_context,
 void ExistingUserController::PerformLogin(
     const UserContext& user_context,
     LoginPerformer::AuthorizationMode auth_mode) {
-  // TODO(antrim): remove this output once crash reason is found.
-  LOG(ERROR) << "Setting flow from PerformLogin";
+  VLOG(1) << "Setting flow from PerformLogin";
   ChromeUserManager::Get()
       ->GetUserFlow(user_context.GetUserID())
       ->SetHost(host_);

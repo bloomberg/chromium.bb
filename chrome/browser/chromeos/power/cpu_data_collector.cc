@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/power/cpu_data_collector.h"
+
 #include <vector>
 
 #include "base/bind.h"
@@ -11,7 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/power/cpu_data_collector.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -212,7 +214,8 @@ void SampleCpuFreqData(
         // If the path to the 'time_in_state' for a single CPU is missing,
         // then 'time_in_state' for all CPUs is missing. This could happen
         // on a VM where the 'cpufreq_stats' kernel module is not loaded.
-        LOG(ERROR) << "CPU freq stats not available in sysfs.";
+        LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+            << "CPU freq stats not available in sysfs.";
         freq_samples->clear();
         return;
       }

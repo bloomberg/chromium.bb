@@ -104,10 +104,12 @@ void OnFilePathChecked(Profile* profile,
                        const std::string* manifest,
                        const base::FilePath* file_path,
                        bool result) {
-  if (result)
+  if (result) {
     DoLoadExtension(profile, *extension_id, *manifest, *file_path);
-  else
-    LOG(ERROR) << "IME extension file path not exists: " << file_path->value();
+  } else {
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "IME extension file path does not exist: " << file_path->value();
+  }
 }
 
 }  // namespace

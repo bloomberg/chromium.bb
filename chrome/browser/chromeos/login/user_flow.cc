@@ -23,8 +23,7 @@ UserFlow::UserFlow() : host_(NULL) {}
 UserFlow::~UserFlow() {}
 
 void UserFlow::SetHost(LoginDisplayHost* host) {
-  // TODO(antrim): remove this output once crash reason is found.
-  LOG(ERROR) << "Flow " << this << " got host " << host;
+  VLOG(1) << "Flow " << this << " got host " << host;
   host_ = host;
 }
 
