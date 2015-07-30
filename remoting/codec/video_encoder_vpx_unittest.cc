@@ -54,7 +54,7 @@ TEST(VideoEncoderVpxTest, Vp9) {
 TEST(VideoEncoderVpxTest, Vp9LossyEncodeSwitching) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP9());
 
-  webrtc::DesktopSize frame_size(1024, 768);
+  webrtc::DesktopSize frame_size(100, 100);
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
 
   // Lossy encode the first frame.
@@ -80,7 +80,7 @@ TEST(VideoEncoderVpxTest, Vp9LossyEncodeSwitching) {
 TEST(VideoEncoderVpxTest, Vp9LossyColorSwitching) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP9());
 
-  webrtc::DesktopSize frame_size(1024, 768);
+  webrtc::DesktopSize frame_size(100, 100);
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
 
   // Lossy encode the first frame.
@@ -100,7 +100,7 @@ TEST(VideoEncoderVpxTest, Vp9LossyColorSwitching) {
 TEST(VideoEncoderVpxTest, Vp8IgnoreLossy) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
 
-  webrtc::DesktopSize frame_size(1024, 768);
+  webrtc::DesktopSize frame_size(100, 100);
   scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
 
   // Encode a frame, to give the encoder a chance to crash if misconfigured.
@@ -113,7 +113,7 @@ TEST(VideoEncoderVpxTest, Vp8IgnoreLossy) {
 // Test that calling Encode with a larger frame size than the initial one
 // does not cause VP8 to crash.
 TEST(VideoEncoderVpxTest, Vp8SizeChangeNoCrash) {
-  webrtc::DesktopSize frame_size(1000, 1000);
+  webrtc::DesktopSize frame_size(100, 100);
 
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
 
@@ -132,7 +132,7 @@ TEST(VideoEncoderVpxTest, Vp8SizeChangeNoCrash) {
 // Test that calling Encode with a larger frame size than the initial one
 // does not cause VP9 to crash.
 TEST(VideoEncoderVpxTest, Vp9SizeChangeNoCrash) {
-  webrtc::DesktopSize frame_size(1000, 1000);
+  webrtc::DesktopSize frame_size(100, 100);
 
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP9());
 

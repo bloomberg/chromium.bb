@@ -27,25 +27,25 @@ namespace {
 const int kBytesPerPixel = 4;
 
 // Some sample rects for testing.
-std::vector<std::vector<DesktopRect> > MakeTestRectLists(DesktopSize size) {
-  std::vector<std::vector<DesktopRect> > rect_lists;
-  std::vector<DesktopRect> rects;
-  rects.push_back(DesktopRect::MakeXYWH(0, 0, size.width(), size.height()));
-  rect_lists.push_back(rects);
-  rects.clear();
-  rects.push_back(DesktopRect::MakeXYWH(
-      0, 0, size.width() / 2, size.height() / 2));
-  rect_lists.push_back(rects);
-  rects.clear();
-  rects.push_back(DesktopRect::MakeXYWH(
-      size.width() / 2, size.height() / 2,
-      size.width() / 2, size.height() / 2));
-  rect_lists.push_back(rects);
-  rects.clear();
-  rects.push_back(DesktopRect::MakeXYWH(16, 16, 16, 16));
-  rects.push_back(DesktopRect::MakeXYWH(128, 64, 32, 32));
-  rect_lists.push_back(rects);
-  return rect_lists;
+std::vector<DesktopRegion> MakeTestRegionLists(DesktopSize size) {
+  std::vector<DesktopRegion> region_lists;
+  DesktopRegion region;
+  region.AddRect(DesktopRect::MakeXYWH(0, 0, size.width(), size.height()));
+  region_lists.push_back(region);
+  region.Clear();
+  region.AddRect(
+      DesktopRect::MakeXYWH(0, 0, size.width() / 2, size.height() / 2));
+  region_lists.push_back(region);
+  region.Clear();
+  region.AddRect(DesktopRect::MakeXYWH(size.width() / 2, size.height() / 2,
+                                       size.width() / 2, size.height() / 2));
+  region_lists.push_back(region);
+  region.Clear();
+  region.AddRect(DesktopRect::MakeXYWH(16, 16, 16, 16));
+  region.AddRect(DesktopRect::MakeXYWH(32, 32, 32, 32));
+  region.IntersectWith(DesktopRect::MakeSize(size));
+  region_lists.push_back(region);
+  return region_lists;
 }
 
 }  // namespace
@@ -103,12 +103,6 @@ class VideoDecoderTester {
 
   void set_frame(DesktopFrame* frame) {
     frame_ = frame;
-  }
-
-  void AddRects(const DesktopRect* rects, int count) {
-    for (int i = 0; i < count; ++i) {
-      expected_region_.AddRect(rects[i]);
-    }
   }
 
   void AddRegion(const DesktopRegion& region) {
@@ -245,37 +239,28 @@ scoped_ptr<DesktopFrame> PrepareFrame(const DesktopSize& size) {
 static void TestEncodingRects(VideoEncoder* encoder,
                               VideoEncoderTester* tester,
                               DesktopFrame* frame,
-                              const DesktopRect* rects,
-                              int count) {
-  frame->mutable_updated_region()->Clear();
-  for (int i = 0; i < count; ++i) {
-    frame->mutable_updated_region()->AddRect(rects[i]);
-  }
-
+                              const DesktopRegion& region) {
+  *frame->mutable_updated_region() = region;
   scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
   tester->DataAvailable(packet.Pass());
 }
 
 void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
-  const int kSizes[] = {320, 319, 317, 150};
+  const int kSizes[] = {80, 79, 77, 54};
 
   VideoEncoderTester tester;
 
   for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
     for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
-      DesktopSize size = DesktopSize(kSizes[xi], kSizes[yi]);
+      DesktopSize size(kSizes[xi], kSizes[yi]);
       scoped_ptr<DesktopFrame> frame = PrepareFrame(size);
-      std::vector<std::vector<DesktopRect> > test_rect_lists =
-          MakeTestRectLists(size);
-      for (size_t i = 0; i < test_rect_lists.size(); ++i) {
-        const std::vector<DesktopRect>& test_rects = test_rect_lists[i];
-        TestEncodingRects(encoder, &tester, frame.get(),
-                          &test_rects[0], test_rects.size());
+      for (const DesktopRegion& region : MakeTestRegionLists(size)) {
+        TestEncodingRects(encoder, &tester, frame.get(), region);
       }
 
       // Pass some empty frames through the encoder.
-      for (int i = 0; i < 10; ++i) {
-        TestEncodingRects(encoder, &tester, frame.get(), nullptr, 0);
+      for (int i = 0; i < 5; ++i) {
+        TestEncodingRects(encoder, &tester, frame.get(), DesktopRegion());
       }
     }
   }
@@ -283,7 +268,7 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 
 void TestVideoEncoderEmptyFrames(VideoEncoder* encoder,
                                  int max_topoff_frames) {
-  const DesktopSize kSize(640, 480);
+  const DesktopSize kSize(100, 100);
   scoped_ptr<DesktopFrame> frame(PrepareFrame(kSize));
 
   frame->mutable_updated_region()->SetRect(
@@ -309,22 +294,17 @@ static void TestEncodeDecodeRects(VideoEncoder* encoder,
                                   VideoEncoderTester* encoder_tester,
                                   VideoDecoderTester* decoder_tester,
                                   DesktopFrame* frame,
-                                  const DesktopRect* rects, int count) {
-  frame->mutable_updated_region()->Clear();
-  for (int i = 0; i < count; ++i) {
-    frame->mutable_updated_region()->AddRect(rects[i]);
-  }
-  decoder_tester->AddRects(rects, count);
+                                  const DesktopRegion& region) {
+  *frame->mutable_updated_region() = region;
+  decoder_tester->AddRegion(region);
 
   // Generate random data for the updated region.
   srand(0);
-  for (int i = 0; i < count; ++i) {
-    const int row_size =
-        DesktopFrame::kBytesPerPixel * rects[i].width();
-    uint8* memory = frame->data() +
-      frame->stride() * rects[i].top() +
-      DesktopFrame::kBytesPerPixel * rects[i].left();
-    for (int y = 0; y < rects[i].height(); ++y) {
+  for (DesktopRegion::Iterator i(region); !i.IsAtEnd(); i.Advance()) {
+    const int row_size = DesktopFrame::kBytesPerPixel * i.rect().width();
+    uint8* memory = frame->data() + frame->stride() * i.rect().top() +
+                    DesktopFrame::kBytesPerPixel * i.rect().left();
+    for (int y = 0; y < i.rect().height(); ++y) {
       for (int x = 0; x < row_size; ++x)
         memory[x] = rand() % 256;
       memory += frame->stride();
@@ -337,9 +317,10 @@ static void TestEncodeDecodeRects(VideoEncoder* encoder,
   decoder_tester->Reset();
 }
 
-void TestVideoEncoderDecoder(
-    VideoEncoder* encoder, VideoDecoder* decoder, bool strict) {
-  DesktopSize kSize = DesktopSize(320, 240);
+void TestVideoEncoderDecoder(VideoEncoder* encoder,
+                             VideoDecoder* decoder,
+                             bool strict) {
+  DesktopSize kSize = DesktopSize(160, 120);
 
   VideoEncoderTester encoder_tester;
 
@@ -350,12 +331,9 @@ void TestVideoEncoderDecoder(
   decoder_tester.set_frame(frame.get());
   encoder_tester.set_decoder_tester(&decoder_tester);
 
-  std::vector<std::vector<DesktopRect> > test_rect_lists =
-      MakeTestRectLists(kSize);
-  for (size_t i = 0; i < test_rect_lists.size(); ++i) {
-    const std::vector<DesktopRect> test_rects = test_rect_lists[i];
+  for (const DesktopRegion& region : MakeTestRegionLists(kSize)) {
     TestEncodeDecodeRects(encoder, &encoder_tester, &decoder_tester,
-                          frame.get(), &test_rects[0], test_rects.size());
+                          frame.get(), region);
   }
 }
 
