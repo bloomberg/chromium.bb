@@ -41,7 +41,7 @@ def calc_output(locale):
 def calc_inputs(locale):
   """Determine the files that need processing for the given locale."""
   inputs = []
-  if CHROMECAST_BRANDING != 'public':
+  if CHROMECAST_BRANDING == 'Chrome':
     inputs.append(os.path.join(GRIT_DIR, 'app_strings_%s.pak' % locale))
   inputs.append(os.path.join(GRIT_DIR, 'chromecast_settings_%s.pak' % locale))
   return inputs
@@ -99,8 +99,7 @@ def DoMain(argv):
   parser.add_option("-x", action="store", dest="int_dir",
                     help="Intermediate build files output directory.")
   parser.add_option("-b", action="store", dest="chromecast_branding",
-                    help="Chromecast branding " +
-                         "('public', 'internal' or 'google').")
+                    help="Chromecast branding ('Chrome' or 'Chromium').")
   options, locales = parser.parse_args(argv)
 
   if not locales:
@@ -112,11 +111,8 @@ def DoMain(argv):
   INT_DIR = options.int_dir
   CHROMECAST_BRANDING = options.chromecast_branding
 
-  if (CHROMECAST_BRANDING != 'public' and
-      CHROMECAST_BRANDING != 'internal' and
-      CHROMECAST_BRANDING != 'google'):
-    parser.error('Chromecast branding (-b) must be ' +
-                 '"public", "internal" or "google".\n')
+  if CHROMECAST_BRANDING != "Chrome" and CHROMECAST_BRANDING != "Chromium":
+    parser.error('Chromecast branding (-b) must be "Chrome" or "Chromium".\n')
   if not (GRIT_DIR and INT_DIR):
     parser.error('Please specify all of "-g" and "-x".\n')
   if print_inputs and print_outputs:

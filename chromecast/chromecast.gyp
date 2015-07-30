@@ -11,7 +11,7 @@
     # Refers to enum CastProductType in components/metrics/proto/cast_logs.proto
     'cast_product_type%': 0,  # CAST_PRODUCT_TYPE_UNKNOWN
     'chromium_code': 1,
-    'chromecast_branding%': 'public',
+    'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
     'enable_default_cast_graphics%': 1,
     'ozone_platform_cast%': 0,
@@ -222,7 +222,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'conditions': [
-              ['chromecast_branding!="public" and use_chromecast_webui==1', {
+              ['chromecast_branding=="Chrome" and use_chromecast_webui==1', {
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/chromecast/app_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/chromecast/cast_webui_resources.pak',
@@ -235,7 +235,7 @@
         },
       ],
       'conditions': [
-        ['chromecast_branding!="public" and use_chromecast_webui==1', {
+        ['chromecast_branding=="Chrome" and use_chromecast_webui==1', {
           'dependencies': [
             'internal/chromecast_resources.gyp:chromecast_app_resources',
             'internal/chromecast_resources.gyp:chromecast_webui_resources',
@@ -353,7 +353,7 @@
         'renderer/media/capabilities_message_filter.h',
       ],
       'conditions': [
-        ['chromecast_branding!="public"', {
+        ['chromecast_branding=="Chrome"', {
           'dependencies': [
             'internal/chromecast_internal.gyp:cast_shell_internal',
           ],
@@ -421,7 +421,7 @@
             'cast_jni_headers',
           ],
         }],
-        ['chromecast_branding=="public" and OS!="android"', {
+        ['chromecast_branding!="Chrome" and OS!="android"', {
           'sources': [
             'base/cast_sys_info_util_simple.cc',
           ],
@@ -516,7 +516,7 @@
             'app/android/cast_jni_loader.cc',
           ],
           'conditions': [
-            ['chromecast_branding!="public"', {
+            ['chromecast_branding=="Chrome"', {
               'dependencies': [
                 'internal/chromecast_internal.gyp:cast_shell_android_internal'
               ],

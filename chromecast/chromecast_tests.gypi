@@ -76,7 +76,7 @@
         'cast_test_generator',
       ],
       'conditions': [
-        ['chromecast_branding!="public"', {
+        ['chromecast_branding=="Chrome"', {
           'dependencies': [
             'internal/chromecast_internal.gyp:cast_tests_internal',
           ],
@@ -230,7 +230,7 @@
           'type': 'none',
           'dependencies': ['cast_android_tests_generator'],
           'conditions': [
-            ['chromecast_branding!="public"', {
+            ['chromecast_branding=="Chrome"', {
               'dependencies': [
                 'internal/chromecast_internal.gyp:cast_android_tests_internal',
               ],

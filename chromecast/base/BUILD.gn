@@ -57,7 +57,7 @@ source_set("cast_sys_info") {
     "cast_sys_info_util.h",
   ]
 
-  if (chromecast_branding == "public" && !is_android) {
+  if (!is_chromecast_chrome_branded && !is_android) {
     sources += [ "cast_sys_info_util_simple.cc" ]
   }
 

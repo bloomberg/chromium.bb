@@ -5,7 +5,7 @@
 {
   'variables': {
     'chromium_code': 1,
-    'chromecast_branding%': 'public',
+    'chromecast_branding%': 'Chromium',
     'libcast_media_gyp%': '',
     'use_default_libcast_media%': 1,
   },
@@ -43,7 +43,7 @@
         'base/switching_media_renderer.h',
       ],
       'conditions': [
-        ['chromecast_branding!="public"', {
+        ['chromecast_branding=="Chrome"', {
           'dependencies': [
             '../internal/chromecast_internal.gyp:media_base_internal',
           ],
@@ -152,7 +152,7 @@
         'cma/backend/video_pipeline_device.h',
       ],
       'conditions': [
-        ['chromecast_branding!="public"', {
+        ['chromecast_branding=="Chrome"', {
           'dependencies': [
             '../internal/chromecast_internal.gyp:cma_backend_internal',
           ],
