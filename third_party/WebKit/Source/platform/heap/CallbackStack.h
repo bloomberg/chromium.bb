@@ -6,6 +6,7 @@
 #define CallbackStack_h
 
 #include "platform/heap/ThreadState.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -49,9 +50,9 @@ public:
     bool hasCallbackForObject(const void*);
 #endif
 
+private:
     static const size_t blockSize = 8192;
 
-private:
     class Block {
     public:
         explicit Block(Block* next)
@@ -86,13 +87,13 @@ private:
         {
             if (LIKELY(m_current < m_limit))
                 return m_current++;
-            return 0;
+            return nullptr;
         }
 
         Item* pop()
         {
             if (UNLIKELY(isEmptyBlock()))
-                return 0;
+                return nullptr;
             return --m_current;
         }
 
@@ -114,7 +115,6 @@ private:
     Item* allocateEntrySlow();
     void invokeOldestCallbacks(Block*, Block*, Visitor*);
     bool hasJustOneBlock() const;
-    void swap(CallbackStack* other);
 
     Block* m_first;
     Block* m_last;

@@ -5,14 +5,12 @@
 #include "config.h"
 #include "platform/heap/CallbackStack.h"
 
-#include "platform/heap/Heap.h"
-
 namespace blink {
 
 void CallbackStack::Block::clear()
 {
     m_current = &m_buffer[0];
-    m_next = 0;
+    m_next = nullptr;
     clearUnused();
 }
 
@@ -54,8 +52,8 @@ CallbackStack::~CallbackStack()
 {
     clear();
     delete m_first;
-    m_first = 0;
-    m_last = 0;
+    m_first = nullptr;
+    m_last = nullptr;
 }
 
 void CallbackStack::clear()
@@ -86,13 +84,13 @@ CallbackStack::Item* CallbackStack::popSlow()
     ASSERT(m_first->isEmptyBlock());
 
     for (;;) {
-        if (hasJustOneBlock()) {
+        Block* next = m_first->next();
+        if (!next) {
 #if ENABLE(ASSERT)
             m_first->clear();
 #endif
-            return 0;
+            return nullptr;
         }
-        Block* next = m_first->next();
         delete m_first;
         m_first = next;
         if (Item* item = m_first->pop())
@@ -109,8 +107,8 @@ void CallbackStack::invokeEphemeronCallbacks(Visitor* visitor)
     // has been prepended to the chain. This will be very rare, but we can
     // handle the situation by starting again and calling all the callbacks
     // on the prepended blocks.
-    Block* from = 0;
-    Block* upto = 0;
+    Block* from = nullptr;
+    Block* upto = nullptr;
     while (from != m_first) {
         upto = from;
         from = m_first;
@@ -131,16 +129,6 @@ void CallbackStack::invokeOldestCallbacks(Block* from, Block* upto, Visitor* vis
 bool CallbackStack::hasJustOneBlock() const
 {
     return !m_first->next();
-}
-
-void CallbackStack::swap(CallbackStack* other)
-{
-    Block* tmp = m_first;
-    m_first = other->m_first;
-    other->m_first = tmp;
-    tmp = m_last;
-    m_last = other->m_last;
-    other->m_last = tmp;
 }
 
 #if ENABLE(ASSERT)
