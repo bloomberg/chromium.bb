@@ -128,6 +128,14 @@ void MediaSession::OnResume(JNIEnv* env, jobject obj) {
 void MediaSession::Resume() {
   DCHECK(IsSuspended());
 
+  // Request audio focus again in case we lost it because another app started
+  // playing while the playback was paused.
+  audio_focus_state_ = RequestSystemAudioFocus(audio_focus_type_)
+                           ? State::ACTIVE
+                           : State::INACTIVE;
+  if (audio_focus_state_ != State::ACTIVE)
+    return;
+
   OnResumeInternal(SuspendType::UI);
 }
 
