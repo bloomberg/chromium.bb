@@ -16,6 +16,8 @@ namespace net {
 
 namespace {
 
+enum MaxAgeParsing { REQUIRE_MAX_AGE, DO_NOT_REQUIRE_MAX_AGE };
+
 static_assert(kMaxHSTSAgeSecs <= kuint32max, "kMaxHSTSAgeSecs too large");
 
 // MaxAgeToInt converts a string representation of a "whole number" of
@@ -115,6 +117,90 @@ bool ParseAndAppendPin(std::string::const_iterator begin,
 
   memcpy(hash.data(), decoded.data(), hash.size());
   hashes->push_back(hash);
+  return true;
+}
+
+bool ParseHPKPHeaderImpl(const std::string& value,
+                         MaxAgeParsing max_age_status,
+                         base::TimeDelta* max_age,
+                         bool* include_subdomains,
+                         HashValueVector* hashes,
+                         GURL* report_uri) {
+  bool parsed_max_age = false;
+  bool include_subdomains_candidate = false;
+  uint32 max_age_candidate = 0;
+  GURL parsed_report_uri;
+  HashValueVector pins;
+  bool require_max_age = max_age_status == REQUIRE_MAX_AGE;
+
+  HttpUtil::NameValuePairsIterator name_value_pairs(
+      value.begin(), value.end(), ';',
+      HttpUtil::NameValuePairsIterator::VALUES_OPTIONAL);
+
+  while (name_value_pairs.GetNext()) {
+    if (base::LowerCaseEqualsASCII(
+            base::StringPiece(name_value_pairs.name_begin(),
+                              name_value_pairs.name_end()),
+            "max-age")) {
+      if (!MaxAgeToInt(name_value_pairs.value_begin(),
+                       name_value_pairs.value_end(), &max_age_candidate)) {
+        return false;
+      }
+      parsed_max_age = true;
+    } else if (base::LowerCaseEqualsASCII(
+                   base::StringPiece(name_value_pairs.name_begin(),
+                                     name_value_pairs.name_end()),
+                   "pin-sha1")) {
+      // Pins are always quoted.
+      if (!name_value_pairs.value_is_quoted() ||
+          !ParseAndAppendPin(name_value_pairs.value_begin(),
+                             name_value_pairs.value_end(), HASH_VALUE_SHA1,
+                             &pins)) {
+        return false;
+      }
+    } else if (base::LowerCaseEqualsASCII(
+                   base::StringPiece(name_value_pairs.name_begin(),
+                                     name_value_pairs.name_end()),
+                   "pin-sha256")) {
+      // Pins are always quoted.
+      if (!name_value_pairs.value_is_quoted() ||
+          !ParseAndAppendPin(name_value_pairs.value_begin(),
+                             name_value_pairs.value_end(), HASH_VALUE_SHA256,
+                             &pins)) {
+        return false;
+      }
+    } else if (base::LowerCaseEqualsASCII(
+                   base::StringPiece(name_value_pairs.name_begin(),
+                                     name_value_pairs.name_end()),
+                   "includesubdomains")) {
+      include_subdomains_candidate = true;
+    } else if (base::LowerCaseEqualsASCII(
+                   base::StringPiece(name_value_pairs.name_begin(),
+                                     name_value_pairs.name_end()),
+                   "report-uri")) {
+      // report-uris are always quoted.
+      if (!name_value_pairs.value_is_quoted())
+        return false;
+
+      parsed_report_uri = GURL(name_value_pairs.value());
+      if (parsed_report_uri.is_empty() || !parsed_report_uri.is_valid())
+        return false;
+    } else {
+      // Silently ignore unknown directives for forward compatibility.
+    }
+  }
+
+  if (!name_value_pairs.valid())
+    return false;
+
+  if (!parsed_max_age && require_max_age)
+    return false;
+
+  *max_age = base::TimeDelta::FromSeconds(max_age_candidate);
+  *include_subdomains = include_subdomains_candidate;
+  hashes->swap(pins);
+  *report_uri = parsed_report_uri;
+
   return true;
 }
 
@@ -252,7 +338,7 @@ bool ParseHSTSHeader(const std::string& value,
   }
 }
 
-// "Public-Key-Pins[-Report-Only]" ":"
+// "Public-Key-Pins" ":"
 //     "max-age" "=" delta-seconds ";"
 //     "pin-" algo "=" base64 [ ";" ... ]
 //     [ ";" "includeSubdomains" ]
@@ -263,84 +349,40 @@ bool ParseHPKPHeader(const std::string& value,
                      bool* include_subdomains,
                      HashValueVector* hashes,
                      GURL* report_uri) {
-  bool parsed_max_age = false;
-  bool include_subdomains_candidate = false;
-  uint32 max_age_candidate = 0;
-  GURL parsed_report_uri;
-  HashValueVector pins;
+  base::TimeDelta candidate_max_age;
+  bool candidate_include_subdomains;
+  HashValueVector candidate_hashes;
+  GURL candidate_report_uri;
 
-  HttpUtil::NameValuePairsIterator name_value_pairs(
-      value.begin(), value.end(), ';',
-      HttpUtil::NameValuePairsIterator::VALUES_OPTIONAL);
-
-  while (name_value_pairs.GetNext()) {
-    if (base::LowerCaseEqualsASCII(
-            base::StringPiece(name_value_pairs.name_begin(),
-                              name_value_pairs.name_end()),
-            "max-age")) {
-      if (!MaxAgeToInt(name_value_pairs.value_begin(),
-                       name_value_pairs.value_end(), &max_age_candidate)) {
-        return false;
-      }
-      parsed_max_age = true;
-    } else if (base::LowerCaseEqualsASCII(
-                   base::StringPiece(name_value_pairs.name_begin(),
-                                     name_value_pairs.name_end()),
-                   "pin-sha1")) {
-      // Pins are always quoted.
-      if (!name_value_pairs.value_is_quoted() ||
-          !ParseAndAppendPin(name_value_pairs.value_begin(),
-                             name_value_pairs.value_end(), HASH_VALUE_SHA1,
-                             &pins)) {
-        return false;
-      }
-    } else if (base::LowerCaseEqualsASCII(
-                   base::StringPiece(name_value_pairs.name_begin(),
-                                     name_value_pairs.name_end()),
-                   "pin-sha256")) {
-      // Pins are always quoted.
-      if (!name_value_pairs.value_is_quoted() ||
-          !ParseAndAppendPin(name_value_pairs.value_begin(),
-                             name_value_pairs.value_end(), HASH_VALUE_SHA256,
-                             &pins)) {
-        return false;
-      }
-    } else if (base::LowerCaseEqualsASCII(
-                   base::StringPiece(name_value_pairs.name_begin(),
-                                     name_value_pairs.name_end()),
-                   "includesubdomains")) {
-      include_subdomains_candidate = true;
-    } else if (base::LowerCaseEqualsASCII(
-                   base::StringPiece(name_value_pairs.name_begin(),
-                                     name_value_pairs.name_end()),
-                   "report-uri")) {
-      // report-uris are always quoted.
-      if (!name_value_pairs.value_is_quoted())
-        return false;
-
-      parsed_report_uri = GURL(name_value_pairs.value());
-      if (parsed_report_uri.is_empty() || !parsed_report_uri.is_valid())
-        return false;
-    } else {
-      // Silently ignore unknown directives for forward compatibility.
-    }
+  if (!ParseHPKPHeaderImpl(value, REQUIRE_MAX_AGE, &candidate_max_age,
+                           &candidate_include_subdomains, &candidate_hashes,
+                           &candidate_report_uri)) {
+    return false;
   }
 
-  if (!name_value_pairs.valid())
+  if (!IsPinListValid(candidate_hashes, chain_hashes))
     return false;
 
-  if (!parsed_max_age)
-    return false;
-
-  if (!IsPinListValid(pins, chain_hashes))
-    return false;
-
-  *max_age = base::TimeDelta::FromSeconds(max_age_candidate);
-  *include_subdomains = include_subdomains_candidate;
-  hashes->swap(pins);
-  *report_uri = parsed_report_uri;
-
+  *max_age = candidate_max_age;
+  *include_subdomains = candidate_include_subdomains;
+  hashes->swap(candidate_hashes);
+  *report_uri = candidate_report_uri;
   return true;
+}
+
+// "Public-Key-Pins-Report-Only" ":"
+//     [ "max-age" "=" delta-seconds ";" ]
+//     "pin-" algo "=" base64 [ ";" ... ]
+//     [ ";" "includeSubdomains" ]
+//     [ ";" "report-uri" "=" uri-reference ]
+bool ParseHPKPReportOnlyHeader(const std::string& value,
+                               bool* include_subdomains,
+                               HashValueVector* hashes,
+                               GURL* report_uri) {
+  // max-age is irrelevant for Report-Only headers.
+  base::TimeDelta unused_max_age;
+  return ParseHPKPHeaderImpl(value, DO_NOT_REQUIRE_MAX_AGE, &unused_max_age,
+                             include_subdomains, hashes, report_uri);
 }
 
 }  // namespace net

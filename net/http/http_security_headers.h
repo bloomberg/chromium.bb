@@ -33,9 +33,9 @@ bool NET_EXPORT_PRIVATE ParseHSTSHeader(const std::string& value,
                                         bool* include_subdomains);
 
 // Parses |value| as a Public-Key-Pins header value. If successful, returns
-// true and populates the |*max_age|, |*include_subdomains|, and |*hashes|
-// values. Otherwise returns false and leaves the output parameters
-// unchanged.
+// true and populates the |*max_age|, |*include_subdomains|, |*hashes|, and
+// |*report_uri| values. Otherwise returns false and leaves the output
+// parameters unchanged.
 //
 // value is the right-hand side of:
 //
@@ -58,6 +58,23 @@ bool NET_EXPORT_PRIVATE ParseHPKPHeader(const std::string& value,
                                         HashValueVector* hashes,
                                         GURL* report_uri);
 
+// Parses |value| as a Public-Key-Pins-Report-Only header value. If
+// successful, returns true and populates the |*include_subdomains|,
+// |*hashes|, and |*report_uri| values. Otherwise returns false and
+// leaves the output parameters unchanged.
+//
+// value is the right-hand side of:
+//
+// "Public-Key-Pins-Report-Only" ":"
+//     [ "max-age" "=" delta-seconds ";" ]
+//     "pin-" algo "=" base64 [ ";" ... ]
+//     [ ";" "includeSubdomains" ]
+//     [ ";" "report-uri" "=" uri-reference ]
+//
+bool NET_EXPORT_PRIVATE ParseHPKPReportOnlyHeader(const std::string& value,
+                                                  bool* include_subdomains,
+                                                  HashValueVector* hashes,
+                                                  GURL* report_uri);
 }  // namespace net
 
 #endif  // NET_HTTP_HTTP_SECURITY_HEADERS_H_
