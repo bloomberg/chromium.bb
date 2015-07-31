@@ -473,7 +473,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     if (requiresContextForWordBoundary(c.characterBefore())) {
         RefPtrWillBeRawPtr<Range> forwardsScanRange(d.createRange());
         forwardsScanRange->setEndAfter(boundary, exceptionState);
-        forwardsScanRange->setStart(end.anchorNode(), end.deprecatedEditingOffset(), exceptionState);
+        forwardsScanRange->setStart(end.anchorNode(), end.offsetInContainerNode(), exceptionState);
         TextIterator forwardsIterator(forwardsScanRange->startPosition(), forwardsScanRange->endPosition());
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
