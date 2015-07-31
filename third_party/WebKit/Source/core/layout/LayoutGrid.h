@@ -157,7 +157,7 @@ private:
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&, LayoutUnit availableSpace);
 
     void paintChildren(const PaintInfo&, const LayoutPoint&) override;
-    bool allowedToStretchLogicalHeightForChild(const LayoutBox& child) const;
+
     bool needToStretchChildLogicalHeight(const LayoutBox&) const;
     LayoutUnit childIntrinsicHeight(const LayoutBox&) const;
     LayoutUnit childIntrinsicWidth(const LayoutBox&) const;
@@ -165,7 +165,7 @@ private:
     LayoutUnit marginLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit computeMarginLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox&) const;
-    void applyStretchAlignmentToChildIfNeeded(LayoutBox&, LayoutUnit gridAreaBreadthForChild);
+    void applyStretchAlignmentToChildIfNeeded(LayoutBox&);
 
 #if ENABLE(ASSERT)
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);
