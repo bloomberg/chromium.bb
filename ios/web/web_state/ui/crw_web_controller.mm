@@ -3697,8 +3697,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK_NE(requestStatus, NUM_EXTERNAL_URL_REQUEST_STATUS);
   UMA_HISTOGRAM_ENUMERATION("WebController.ExternalURLRequestBlocking",
                             requestStatus, NUM_EXTERNAL_URL_REQUEST_STATUS);
-  if (requestStatus == SUBFRAME_BLOCKED)
+  if (requestStatus == SUBFRAME_BLOCKED &&
+      web::GetWebClient()->IsExternalURLBlockingEnabled()) {
     return NO;
+  }
 
   GURL requestURL = net::GURLWithNSURL(request.URL);
   return [_delegate respondsToSelector:@selector(webController:

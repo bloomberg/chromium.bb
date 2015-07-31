@@ -110,6 +110,8 @@ class WebClient {
   // Gives the embedder a chance to provide the JavaScript to be injected into
   // the web view as early as possible. Result must not be nil.
   virtual NSString* GetEarlyPageScript(WebViewType web_view_type) const;
+
+  virtual bool IsExternalURLBlockingEnabled() const;
 };
 
 }  // namespace web

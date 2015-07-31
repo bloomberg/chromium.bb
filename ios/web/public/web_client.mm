@@ -75,4 +75,7 @@ NSString* WebClient::GetEarlyPageScript(WebViewType web_view_type) const {
   return @"";
 }
 
+bool WebClient::IsExternalURLBlockingEnabled() const {
+  return true;
+}
 }  // namespace web

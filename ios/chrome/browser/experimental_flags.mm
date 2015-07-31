@@ -34,6 +34,25 @@ bool IsAlertOnBackgroundUploadEnabled() {
       boolForKey:kEnableAlertOnBackgroundUpload];
 }
 
+bool IsExternalURLBlockingEnabled() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("IOSBlockUnpromptedExternalURLs");
+
+  // Check if the experimental flag is turned on.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          switches::kEnableIOSBlockUnpromptedExternalURLs)) {
+    return true;
+  } else if (command_line->HasSwitch(
+                 switches::kDisableIOSBlockUnpromptedExternalURLs)) {
+    return false;
+  }
+
+  // Check if the finch experiment is turned on.
+  return !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::INSENSITIVE_ASCII);
+}
+
 bool IsBookmarkCollectionEnabled() {
   return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
 }
