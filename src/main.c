@@ -319,7 +319,7 @@ usage(int error_code)
 		"Options for rdp-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of desktop\n"
 		"  --height=HEIGHT\tHeight of desktop\n"
-		"  --env-socket=SOCKET\tUse that socket as peer connection\n"
+		"  --env-socket\t\tUse socket defined in RDP_FD env variable as peer connection\n"
 		"  --address=ADDR\tThe address to bind\n"
 		"  --port=PORT\t\tThe port to listen on\n"
 		"  --no-clients-resize\tThe RDP peers will be forced to the size of the desktop\n"
