@@ -19,6 +19,7 @@ class MODULES_EXPORT USBController final
     , public WillBeHeapSupplement<LocalFrame>
     , public LocalFrameLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(USBController);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(USBController);
 public:
     virtual ~USBController();
 
