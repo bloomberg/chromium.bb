@@ -86,11 +86,7 @@ public:
 private:
     struct RunInfo;
 
-    ShapeResult(unsigned numCharacters, TextDirection direction)
-        : m_width(0)
-        , m_numCharacters(numCharacters)
-        , m_numGlyphs(0)
-        , m_direction(direction) { }
+    ShapeResult(unsigned numCharacters, TextDirection);
 
     template<TextDirection>
     float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
@@ -102,7 +98,7 @@ private:
 
     float m_width;
     FloatRect m_glyphBoundingBox;
-    Vector<RunInfo*> m_runs;
+    Vector<OwnPtr<RunInfo>> m_runs;
     HashSet<RefPtr<SimpleFontData>> m_fallbackFonts;
 
     unsigned m_numCharacters;

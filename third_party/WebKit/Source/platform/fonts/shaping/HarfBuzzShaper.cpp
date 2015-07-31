@@ -164,12 +164,16 @@ void ShapeResult::RunInfo::setGlyphAndPositions(unsigned index,
     data.offset = FloatSize(offsetX, offsetY);
 }
 
+ShapeResult::ShapeResult(unsigned numCharacters, TextDirection direction)
+    : m_width(0)
+    , m_numCharacters(numCharacters)
+    , m_numGlyphs(0)
+    , m_direction(direction)
+{
+}
+
 ShapeResult::~ShapeResult()
 {
-    for (unsigned i = 0; i < m_runs.size(); i++) {
-        if (m_runs[i])
-            delete m_runs[i];
-    }
 }
 
 static inline void addGlyphToBuffer(GlyphBuffer* glyphBuffer, float advance,
@@ -336,7 +340,7 @@ float ShapeResult::fillGlyphBuffer(Vector<RefPtr<ShapeResult>>& results,
             RefPtr<ShapeResult>& wordResult = results[resolvedIndex];
             for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
                 advance += wordResult->fillGlyphBufferForRun<RTL>(glyphBuffer,
-                    wordResult->m_runs[i], advance, from, to,
+                    wordResult->m_runs[i].get(), advance, from, to,
                     wordOffset - wordResult->numCharacters());
             }
             wordOffset -= wordResult->numCharacters();
@@ -347,7 +351,7 @@ float ShapeResult::fillGlyphBuffer(Vector<RefPtr<ShapeResult>>& results,
             RefPtr<ShapeResult>& wordResult = results[j];
             for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
                 advance += wordResult->fillGlyphBufferForRun<LTR>(glyphBuffer,
-                    wordResult->m_runs[i], advance, from, to, wordOffset);
+                    wordResult->m_runs[i].get(), advance, from, to, wordOffset);
             }
             wordOffset += wordResult->numCharacters();
         }
@@ -370,7 +374,7 @@ float ShapeResult::fillGlyphBufferForTextEmphasis(
             unsigned resolvedOffset = wordOffset -
                 (textRun.rtl() ? wordResult->numCharacters() : 0);
             advance += wordResult->fillGlyphBufferForTextEmphasisRun(
-                glyphBuffer, wordResult->m_runs[i], textRun, emphasisData,
+                glyphBuffer, wordResult->m_runs[i].get(), textRun, emphasisData,
                 advance, from, to, resolvedOffset);
         }
         wordOffset += wordResult->numCharacters() * (textRun.rtl() ? -1 : 1);
@@ -1037,11 +1041,9 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
         return;
     }
 
-    ShapeResult::RunInfo* run = new ShapeResult::RunInfo(currentRun->m_fontData,
+    OwnPtr<ShapeResult::RunInfo> run = adoptPtr(new ShapeResult::RunInfo(currentRun->m_fontData,
         currentRun->m_direction, currentRun->m_script, currentRun->m_startIndex,
-        numGlyphs, currentRun->m_numCharacters);
-    result->m_runs[index] = run;
-    result->m_numGlyphs += numGlyphs;
+        numGlyphs, currentRun->m_numCharacters));
 
     const SimpleFontData* currentFontData = currentRun->m_fontData;
     hb_glyph_info_t* glyphInfos = hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
@@ -1070,7 +1072,7 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
         run->m_glyphData[i].characterIndex = glyphInfos[i].cluster;
 
         if (isClusterEnd)
-            spacing += adjustSpacing(run, i, currentCharacterIndex, *directionOffset, totalAdvance);
+            spacing += adjustSpacing(run.get(), i, currentCharacterIndex, *directionOffset, totalAdvance);
 
         if (currentFontData->isZeroWidthSpaceGlyph(glyph)) {
             run->setGlyphAndPositions(i, glyph, 0, 0, 0);
@@ -1096,6 +1098,8 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
 
     run->m_width = totalAdvance > 0.0 ? totalAdvance : 0.0;
     result->m_width += run->m_width;
+    result->m_numGlyphs += numGlyphs;
+    result->m_runs[index] = run.release();
     for (auto& fallbackFont : *m_fallbackFonts)
         result->m_fallbackFonts.add(const_cast<SimpleFontData*>(fallbackFont));
 }
