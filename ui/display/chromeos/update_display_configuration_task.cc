@@ -196,12 +196,8 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
           return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
         // With either both displays on or both displays off, use one of the
         // dual modes.
-        std::vector<int64_t> display_ids;
-        for (size_t i = 0; i < cached_displays_.size(); ++i)
-          display_ids.push_back(cached_displays_[i]->display_id());
-
         return layout_manager_->GetStateController()->GetStateForDisplayIds(
-            display_ids);
+            cached_displays_);
       }
       NOTREACHED();
     }

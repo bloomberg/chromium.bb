@@ -668,9 +668,10 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   display_info_list.push_back(secondary_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
-  EXPECT_EQ(third_id, WindowTreeHostManager::GetPrimaryDisplayId());
+  // Secondary seconary_id becomes the primary as it has smaller output index.
+  EXPECT_EQ(secondary_id, WindowTreeHostManager::GetPrimaryDisplayId());
+  EXPECT_EQ(third_id, ScreenUtil::GetSecondaryDisplay().id());
   EXPECT_EQ("600x600", GetDisplayForId(third_id).size().ToString());
-  EXPECT_EQ(secondary_id, ScreenUtil::GetSecondaryDisplay().id());
 }
 
 #if defined(OS_WIN)

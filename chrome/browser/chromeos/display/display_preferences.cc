@@ -7,6 +7,7 @@
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
+#include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -394,7 +395,7 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
 void StoreDisplayLayoutPrefForTest(int64 id1,
                                    int64 id2,
                                    const ash::DisplayLayout& layout) {
-  StoreDisplayLayoutPref(std::make_pair(id1, id2), layout);
+  StoreDisplayLayoutPref(ash::CreateDisplayIdPair(id1, id2), layout);
 }
 
 // Stores the given |power_state|.

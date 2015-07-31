@@ -675,6 +675,15 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   // UI scale is eanbled only on internal display.
   int64 secondary_id = GetSecondaryDisplay().id();
   test::ScopedSetInternalDisplayId set_internal(secondary_id);
+  // Changing internal ID display changes the DisplayIdPair (it comes
+  // first), which also changes the primary display candidate.  Update
+  // the primary display manually to update the primary display to
+  // avoid getting the OnDisplayConfigurationChanged() call twice in
+  // SetDisplayUIScale. Note that this scenario will never happen on
+  // real devices.
+  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+      secondary_id);
+  EXPECT_EQ(1, observer.CountAndReset());
 
   SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(1, observer.CountAndReset());

@@ -98,7 +98,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
     // Called when displays are detected.
     virtual MultipleDisplayState GetStateForDisplayIds(
-        const std::vector<int64_t>& display_ids) const = 0;
+        const ui::DisplayConfigurator::DisplayStateList& outputs) const = 0;
 
     // Queries the resolution (|size|) in pixels to select display mode for the
     // given display id.

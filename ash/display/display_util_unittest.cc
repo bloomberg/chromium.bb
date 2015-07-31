@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 
 namespace ash {
 
@@ -88,6 +89,20 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
     EXPECT_EQ("10,99 1x300", rect0.ToString());
     EXPECT_EQ("600,20 1x300", rect1.ToString());
   }
+}
+
+TEST_F(DisplayUtilTest, CreateDisplayIdPair) {
+  DisplayIdPair pair = CreateDisplayIdPair(10, 1);
+  EXPECT_EQ(1, pair.first);
+  EXPECT_EQ(10, pair.second);
+  pair = CreateDisplayIdPair(10, 100);
+  EXPECT_EQ(10, pair.first);
+  EXPECT_EQ(100, pair.second);
+
+  test::ScopedSetInternalDisplayId set_internal(100);
+  pair = CreateDisplayIdPair(10, 100);
+  EXPECT_EQ(100, pair.first);
+  EXPECT_EQ(10, pair.second);
 }
 
 }  // namespace

@@ -230,8 +230,8 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
 
 DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
   if (IsInUnifiedMode()) {
-    return std::make_pair(software_mirroring_display_list_[0].id(),
-                          software_mirroring_display_list_[1].id());
+    return CreateDisplayIdPair(software_mirroring_display_list_[0].id(),
+                               software_mirroring_display_list_[1].id());
   } else if (IsInMirrorMode()) {
     if (software_mirroring_enabled()) {
       CHECK_EQ(2u, num_connected_displays());
@@ -239,16 +239,12 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
       // between two checks.
       CHECK_EQ(1u, active_display_list_.size());
     }
-    return std::make_pair(active_display_list_[0].id(), mirroring_display_id_);
+    return CreateDisplayIdPair(active_display_list_[0].id(),
+                               mirroring_display_id_);
   } else {
     CHECK_LE(2u, active_display_list_.size());
-    int64 id_at_zero = active_display_list_[0].id();
-    if (gfx::Display::IsInternalDisplayId(id_at_zero) ||
-        id_at_zero == first_display_id()) {
-      return std::make_pair(id_at_zero, active_display_list_[1].id());
-    } else {
-      return std::make_pair(active_display_list_[1].id(), id_at_zero);
-    }
+    return CreateDisplayIdPair(active_display_list_[0].id(),
+                               active_display_list_[1].id());
   }
 }
 
@@ -628,8 +624,8 @@ void DisplayManager::OnNativeDisplaysChanged(
   if (new_display_info_list.size() > 1) {
     std::sort(new_display_info_list.begin(), new_display_info_list.end(),
               DisplayInfoSortFunctor());
-    DisplayIdPair pair = std::make_pair(new_display_info_list[0].id(),
-                                        new_display_info_list[1].id());
+    DisplayIdPair pair = CreateDisplayIdPair(new_display_info_list[0].id(),
+                                             new_display_info_list[1].id());
     DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(pair);
     default_multi_display_mode_ =
         (layout.default_unified && switches::UnifiedDesktopEnabled())
@@ -1308,13 +1304,8 @@ bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
     return true;
   }
 
-  int64 id_at_zero = displays->at(0).id();
-  DisplayIdPair pair = (id_at_zero == first_display_id_ ||
-                        gfx::Display::IsInternalDisplayId(id_at_zero))
-                           ? std::make_pair(id_at_zero, displays->at(1).id())
-                           : std::make_pair(displays->at(1).id(), id_at_zero);
-  DisplayLayout layout =
-      layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
+  DisplayLayout layout = layout_store_->ComputeDisplayLayoutForDisplayIdPair(
+      CreateDisplayIdPair(displays->at(0).id(), displays->at(1).id()));
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.

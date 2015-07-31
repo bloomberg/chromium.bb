@@ -78,7 +78,7 @@ class TestStateController : public DisplayConfigurator::StateController {
 
   // DisplayConfigurator::StateController overrides:
   MultipleDisplayState GetStateForDisplayIds(
-      const std::vector<int64_t>& outputs) const override {
+      const DisplayConfigurator::DisplayStateList& outputs) const override {
     return state_;
   }
   bool GetResolutionForDisplayId(int64_t display_id,

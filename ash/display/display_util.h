@@ -87,6 +87,11 @@ ASH_EXPORT int FindDisplayIndexContainingPoint(
     const std::vector<gfx::Display>& displays,
     const gfx::Point& point_in_screen);
 
+// Creates the DisplayIdPair where ids are sorted in the following manner.
+// 1) ID for internal display comes first.
+// 2) If none of the ids are internal, sorted by the output index.
+ASH_EXPORT DisplayIdPair CreateDisplayIdPair(int64 id1, int64 id2);
+
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_DISPLAY_UTIL_H_

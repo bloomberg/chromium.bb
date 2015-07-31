@@ -60,6 +60,17 @@ const int kMinimumWidthFor4K = 3840;
 // available in extrenal large monitors.
 const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 
+void UpdateInternalDisplayId(
+    const ui::DisplayConfigurator::DisplayStateList& display_states) {
+  for (auto* state : display_states) {
+    if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      if (gfx::Display::HasInternalDisplay())
+        DCHECK_EQ(gfx::Display::InternalDisplayId(), state->display_id());
+      gfx::Display::SetInternalDisplayId(state->display_id());
+    }
+  }
+}
+
 }  // namespace
 
 // static
@@ -141,9 +152,12 @@ DisplayChangeObserver::~DisplayChangeObserver() {
 }
 
 ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
-    const std::vector<int64>& display_ids) const {
-  CHECK_EQ(2U, display_ids.size());
-  DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
+    const ui::DisplayConfigurator::DisplayStateList& display_states) const {
+  UpdateInternalDisplayId(display_states);
+  if (display_states.size() != 2)
+    return ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+  DisplayIdPair pair = CreateDisplayIdPair(display_states[0]->display_id(),
+                                           display_states[1]->display_id());
   DisplayLayout layout = Shell::GetInstance()->display_manager()->
       layout_store()->GetRegisteredDisplayLayout(pair);
   return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR :
@@ -163,22 +177,11 @@ bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
 
 void DisplayChangeObserver::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& display_states) {
+  UpdateInternalDisplayId(display_states);
+
   std::vector<DisplayInfo> displays;
   std::set<int64> ids;
   for (const ui::DisplaySnapshot* state : display_states) {
-    if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (!gfx::Display::HasInternalDisplay()) {
-        gfx::Display::SetInternalDisplayId(state->display_id());
-      } else {
-#if defined(USE_OZONE)
-        // TODO(dnicoara) Remove when Ozone can properly perform the initial
-        // display configuration.
-        gfx::Display::SetInternalDisplayId(state->display_id());
-#endif
-        DCHECK_EQ(gfx::Display::InternalDisplayId(), state->display_id());
-      }
-    }
-
     const ui::DisplayMode* mode_info = state->current_mode();
     if (!mode_info)
       continue;

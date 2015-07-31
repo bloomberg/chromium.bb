@@ -40,7 +40,7 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
 
   // ui::DisplayConfigurator::StateController overrides:
   ui::MultipleDisplayState GetStateForDisplayIds(
-      const std::vector<int64>& outputs) const override;
+      const ui::DisplayConfigurator::DisplayStateList& outputs) const override;
   bool GetResolutionForDisplayId(int64 display_id,
                                  gfx::Size* size) const override;
 
