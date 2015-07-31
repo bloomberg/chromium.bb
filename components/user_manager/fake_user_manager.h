@@ -21,8 +21,14 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   FakeUserManager();
   ~FakeUserManager() override;
 
-  // Create and add a new user.
+  // Create and add a new user. Created user is not affiliated with the domain,
+  // that owns the device.
   virtual const user_manager::User* AddUser(const std::string& email);
+
+  // The same as AddUser() but allows to specify user affiliation with the
+  // domain, that owns the device.
+  virtual const user_manager::User* AddUserWithAffiliation(
+      const std::string& email, bool is_affiliated);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
   void LoginUser(const std::string& email);
@@ -111,6 +117,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void KioskAppLoggedIn(const std::string& app_id) override {}
   void PublicAccountUserLoggedIn(user_manager::User* user) override {}
   void SupervisedUserLoggedIn(const std::string& user_id) override {}
+  void OnUserRemoved(const std::string& user_id) override {}
 
  protected:
   user_manager::User* primary_user_;

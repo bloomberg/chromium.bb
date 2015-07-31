@@ -29,6 +29,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -856,21 +857,18 @@ void DeviceStatusCollector::GetNetworkInterfaces(
 }
 
 void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   const user_manager::UserList& users =
-      user_manager::UserManager::Get()->GetUsers();
-  user_manager::UserList::const_iterator user;
-  for (user = users.begin(); user != users.end(); ++user) {
+      chromeos::ChromeUserManager::Get()->GetUsers();
+
+  for (const auto& user : users) {
     // Only users with gaia accounts (regular) are reported.
-    if (!(*user)->HasGaiaAccount())
+    if (!user->HasGaiaAccount())
       continue;
 
     em::DeviceUser* device_user = request->add_user();
-    const std::string& email = (*user)->email();
-    if (connector->GetUserAffiliation(email) == USER_AFFILIATION_MANAGED) {
+    if (chromeos::ChromeUserManager::Get()->ShouldReportUser(user->email())) {
       device_user->set_type(em::DeviceUser::USER_TYPE_MANAGED);
-      device_user->set_email(email);
+      device_user->set_email(user->email());
     } else {
       device_user->set_type(em::DeviceUser::USER_TYPE_UNMANAGED);
       // Do not report the email address of unmanaged users.

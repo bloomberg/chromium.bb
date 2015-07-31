@@ -772,12 +772,12 @@ TEST_F(DeviceStatusCollectorTest, Location) {
 
 TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   user_manager_->CreatePublicAccountUser("public@localhost");
-  user_manager_->AddUser("user0@managed.com");
-  user_manager_->AddUser("user1@managed.com");
-  user_manager_->AddUser("user2@managed.com");
-  user_manager_->AddUser("user3@unmanaged.com");
-  user_manager_->AddUser("user4@managed.com");
-  user_manager_->AddUser("user5@managed.com");
+  user_manager_->AddUserWithAffiliation("user0@managed.com", true);
+  user_manager_->AddUserWithAffiliation("user1@managed.com", true);
+  user_manager_->AddUserWithAffiliation("user2@managed.com", true);
+  user_manager_->AddUserWithAffiliation("user3@unmanaged.com", false);
+  user_manager_->AddUserWithAffiliation("user4@managed.com", true);
+  user_manager_->AddUserWithAffiliation("user5@managed.com", true);
 
   // Verify that users are reported by default.
   GetStatus();

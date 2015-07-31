@@ -37,6 +37,10 @@ class ChromeUserManager : public user_manager::UserManagerBase,
       const std::string& user_email,
       const AffiliationIDSet& user_affiliation_ids) = 0;
 
+  // Return whether the given user should be reported (see
+  // policy::DeviceStatusCollector).
+  virtual bool ShouldReportUser(const std::string& user_id) const = 0;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeUserManager);
 };
 

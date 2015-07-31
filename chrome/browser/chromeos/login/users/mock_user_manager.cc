@@ -121,7 +121,13 @@ user_manager::User* MockUserManager::CreateKioskAppUser(
 }
 
 void MockUserManager::AddUser(const std::string& email) {
+  AddUserWithAffiliation(email, false);
+}
+
+void MockUserManager::AddUserWithAffiliation(const std::string& email,
+                                             bool is_affiliated) {
   user_manager::User* user = user_manager::User::CreateRegularUser(email);
+  user->set_affiliation(is_affiliated);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
 }
@@ -132,6 +138,16 @@ void MockUserManager::ClearUserList() {
   for (user = user_list_.begin(); user != user_list_.end(); ++user)
     delete *user;
   user_list_.clear();
+}
+
+bool MockUserManager::ShouldReportUser(const std::string& user_id) const {
+  for (const auto& user : user_list_) {
+    if (user->GetUserID() == user_id) {
+      return user->is_affiliated();
+    }
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace chromeos

@@ -28,7 +28,14 @@ FakeChromeUserManager::~FakeChromeUserManager() {
 
 const user_manager::User* FakeChromeUserManager::AddUser(
     const std::string& email) {
+  return AddUserWithAffiliation(email, false);
+}
+
+const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
+    const std::string& email,
+    bool is_affiliated) {
   user_manager::User* user = user_manager::User::CreateRegularUser(email);
+  user->set_affiliation(is_affiliated);
   user->set_username_hash(
       ProfileHelper::GetUserIdHashByUserIdForTesting(email));
   user->SetStubImage(user_manager::UserImage(

@@ -76,6 +76,9 @@ const char kRegularUsers[] = "LoggedInUsers";
 // A vector pref of the public accounts defined on this device.
 const char kPublicAccounts[] = "PublicAccounts";
 
+// Key for list of users that should be reported.
+const char kReportingUsers[] = "reporting_users";
+
 // A string pref that gets set when a public account is removed but a user is
 // currently logged into that account, requiring the account's data to be
 // removed after logout.
@@ -87,6 +90,10 @@ bool FakeOwnership() {
       switches::kStubCrosSettings);
 }
 
+std::string FullyCanonicalize(const std::string& email) {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
+}
+
 }  // namespace
 
 // static
@@ -95,6 +102,7 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterListPref(kPublicAccounts);
   registry->RegisterStringPref(kPublicAccountPendingDataRemoval, std::string());
+  registry->RegisterListPref(kReportingUsers);
 
   SupervisedUserManager::RegisterPrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
@@ -492,6 +500,10 @@ bool ChromeUserManagerImpl::AreEphemeralUsersEnabled() const {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return GetEphemeralUsersEnabled() &&
          (connector->IsEnterpriseManaged() || !GetOwnerEmail().empty());
+}
+
+void ChromeUserManagerImpl::OnUserRemoved(const std::string& user_id) {
+  RemoveReportingUser(FullyCanonicalize(user_id));
 }
 
 const std::string& ChromeUserManagerImpl::GetApplicationLocale() const {
@@ -1126,17 +1138,43 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
 void ChromeUserManagerImpl::SetUserAffiliation(
     const std::string& user_email,
     const AffiliationIDSet& user_affiliation_ids) {
-  std::string canonicalized_email =
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
+  std::string canonicalized_email = FullyCanonicalize(user_email);
   user_manager::User* user = FindUserAndModify(canonicalized_email);
 
   if (user) {
     policy::BrowserPolicyConnectorChromeOS const* const connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    user->set_affiliation(chromeos::IsUserAffiliated(
+    const bool is_affiliated = chromeos::IsUserAffiliated(
         user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
-        canonicalized_email, connector->GetEnterpriseDomain()));
+        canonicalized_email, connector->GetEnterpriseDomain());
+    user->set_affiliation(is_affiliated);
+
+    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+      if (is_affiliated) {
+        AddReportingUser(canonicalized_email);
+      } else {
+        RemoveReportingUser(canonicalized_email);
+      }
+    }
   }
+}
+
+bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
+  const base::ListValue& reporting_users =
+      *(GetLocalState()->GetList(kReportingUsers));
+  base::StringValue user_id_value(FullyCanonicalize(user_id));
+  return !(reporting_users.Find(user_id_value) == reporting_users.end());
+}
+
+void ChromeUserManagerImpl::AddReportingUser(const std::string& user_id) {
+  ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
+  users_update->AppendIfNotPresent(
+      new base::StringValue(FullyCanonicalize(user_id)));
+}
+
+void ChromeUserManagerImpl::RemoveReportingUser(const std::string& user_id) {
+  ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
+  users_update->Remove(base::StringValue(FullyCanonicalize(user_id)), NULL);
 }
 
 }  // namespace chromeos

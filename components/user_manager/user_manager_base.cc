@@ -381,6 +381,7 @@ void UserManagerBase::RemoveUserFromList(const std::string& user_id) {
     // boostrapping user during user list loading.
     ListPrefUpdate users_update(GetLocalState(), kRegularUsers);
     users_update->Remove(base::StringValue(user_id), NULL);
+    OnUserRemoved(user_id);
   } else {
     NOTREACHED() << "Users are not loaded yet.";
     return;
@@ -1200,6 +1201,7 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
       ++it;
     }
   }
+  OnUserRemoved(user_id);
   return user;
 }
 

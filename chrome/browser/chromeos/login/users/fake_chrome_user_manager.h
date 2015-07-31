@@ -42,6 +42,8 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
 
   // user_manager::FakeUserManager override.
   const user_manager::User* AddUser(const std::string& email) override;
+  const user_manager::User* AddUserWithAffiliation(const std::string& email,
+                                                   bool is_affiliated) override;
 
   // UserManagerInterface implementation.
   BootstrapManager* GetBootstrapManager() override;

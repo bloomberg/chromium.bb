@@ -276,6 +276,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Indicates that a supervised user just logged in.
   virtual void SupervisedUserLoggedIn(const std::string& user_id) = 0;
 
+  // Should be called when regular user was removed.
+  virtual void OnUserRemoved(const std::string& user_id) = 0;
+
   // Getters/setters for private members.
 
   virtual void SetCurrentUserIsOwner(bool is_current_user_owner);
