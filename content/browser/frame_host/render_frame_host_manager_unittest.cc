@@ -251,11 +251,13 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::Terminate();
-#endif
     RenderViewHostImplTestHarness::TearDown();
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+#if !defined(OS_ANDROID)
+    // RenderWidgetHostView holds on to a reference to SurfaceManager, so it
+    // must be shut down before the ImageTransportFactory.
+    ImageTransportFactory::Terminate();
+#endif
   }
 
   void set_should_create_webui(bool should_create_webui) {

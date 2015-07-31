@@ -76,6 +76,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   SurfaceDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, surface_id_);
+  render_pass->referenced_surfaces.push_back(surface_id_);
 }
 
 void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,

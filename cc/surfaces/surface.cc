@@ -21,8 +21,8 @@ static const int kFrameIndexStart = 2;
 Surface::Surface(SurfaceId id, SurfaceFactory* factory)
     : surface_id_(id),
       factory_(factory->AsWeakPtr()),
-      frame_index_(kFrameIndexStart) {
-}
+      frame_index_(kFrameIndexStart),
+      destroyed_(false) {}
 
 Surface::~Surface() {
   ClearCopyRequests();
@@ -60,6 +60,16 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
       !current_frame_->delegated_frame_data->render_pass_list.empty())
     ++frame_index_;
 
+  std::vector<SurfaceId> new_referenced_surfaces;
+  if (current_frame_) {
+    for (auto& render_pass :
+         current_frame_->delegated_frame_data->render_pass_list) {
+      new_referenced_surfaces.insert(new_referenced_surfaces.end(),
+                                     render_pass->referenced_surfaces.begin(),
+                                     render_pass->referenced_surfaces.end());
+    }
+  }
+
   if (previous_frame) {
     ReturnedResourceArray previous_resources;
     TransferableResource::ReturnResources(
@@ -71,10 +81,18 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
   draw_callback_ = callback;
 
-  if (current_frame_) {
+  bool referenced_surfaces_changed =
+      (referenced_surfaces_ != new_referenced_surfaces);
+  referenced_surfaces_ = new_referenced_surfaces;
+  std::vector<uint32_t> satisfies_sequences;
+  if (current_frame_)
+    current_frame_->metadata.satisfies_sequences.swap(satisfies_sequences);
+  if (referenced_surfaces_changed || !satisfies_sequences.empty()) {
+    // Notify the manager that sequences were satisfied either if some new
+    // sequences were satisfied, or if the set of referenced surfaces changed
+    // to force a GC to happen.
     factory_->manager()->DidSatisfySequences(
-        SurfaceIdAllocator::NamespaceForId(surface_id_),
-        &current_frame_->metadata.satisfies_sequences);
+        SurfaceIdAllocator::NamespaceForId(surface_id_), &satisfies_sequences);
   }
 }
 

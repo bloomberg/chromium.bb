@@ -56,7 +56,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void InvalidateSurfaceIdNamespace(uint32_t id_namespace);
 
  private:
-  void SearchForSatisfaction();
+  void GarbageCollectSurfaces();
 
   typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
   SurfaceMap surface_map_;

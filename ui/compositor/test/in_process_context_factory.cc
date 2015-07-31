@@ -200,8 +200,11 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
 
 scoped_ptr<cc::SurfaceIdAllocator>
 InProcessContextFactory::CreateSurfaceIdAllocator() {
-  return make_scoped_ptr(
+  scoped_ptr<cc::SurfaceIdAllocator> allocator(
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+  if (surface_manager_)
+    allocator->RegisterSurfaceIdNamespace(surface_manager_);
+  return allocator;
 }
 
 void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,

@@ -458,5 +458,55 @@ TEST_F(SurfaceFactoryTest, InvalidIdNamespace) {
   EXPECT_FALSE(manager_.GetSurfaceForId(id));
 }
 
+TEST_F(SurfaceFactoryTest, DestroyCycle) {
+  SurfaceId id2(5);
+  factory_.Create(id2);
+
+  manager_.RegisterSurfaceIdNamespace(0);
+
+  manager_.GetSurfaceForId(id2)
+      ->AddDestructionDependency(SurfaceSequence(0, 4));
+
+  // Give id2 a frame that references surface_id_.
+  {
+    scoped_ptr<RenderPass> render_pass(RenderPass::Create());
+    render_pass->referenced_surfaces.push_back(surface_id_);
+    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    frame_data->render_pass_list.push_back(render_pass.Pass());
+    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = frame_data.Pass();
+    factory_.SubmitFrame(id2, frame.Pass(), SurfaceFactory::DrawCallback());
+  }
+  factory_.Destroy(id2);
+
+  // Give surface_id_ a frame that references id2.
+  {
+    scoped_ptr<RenderPass> render_pass(RenderPass::Create());
+    render_pass->referenced_surfaces.push_back(id2);
+    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    frame_data->render_pass_list.push_back(render_pass.Pass());
+    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = frame_data.Pass();
+    factory_.SubmitFrame(surface_id_, frame.Pass(),
+                         SurfaceFactory::DrawCallback());
+  }
+  factory_.Destroy(surface_id_);
+  EXPECT_TRUE(manager_.GetSurfaceForId(id2));
+  // surface_id_ should be retained by reference from id2.
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id_));
+
+  // Satisfy last destruction dependency for id2.
+  std::vector<uint32_t> to_satisfy;
+  to_satisfy.push_back(4);
+  manager_.DidSatisfySequences(0, &to_satisfy);
+
+  // id2 and surface_id_ are in a reference cycle that has no surface
+  // sequences holding on to it, so they should be destroyed.
+  EXPECT_TRUE(!manager_.GetSurfaceForId(id2));
+  EXPECT_TRUE(!manager_.GetSurfaceForId(surface_id_));
+
+  surface_id_ = SurfaceId();
+}
+
 }  // namespace
 }  // namespace cc

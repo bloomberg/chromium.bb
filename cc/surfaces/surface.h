@@ -73,6 +73,13 @@ class CC_SURFACES_EXPORT Surface {
     return destruction_dependencies_.size();
   }
 
+  const std::vector<SurfaceId>& referenced_surfaces() const {
+    return referenced_surfaces_;
+  }
+
+  bool destroyed() const { return destroyed_; }
+  void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
+
  private:
   void ClearCopyRequests();
 
@@ -81,7 +88,10 @@ class CC_SURFACES_EXPORT Surface {
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
   int frame_index_;
+  bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
+
+  std::vector<SurfaceId> referenced_surfaces_;
 
   DrawCallback draw_callback_;
 

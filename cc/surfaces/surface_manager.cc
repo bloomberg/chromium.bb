@@ -40,8 +40,9 @@ void SurfaceManager::DeregisterSurface(SurfaceId surface_id) {
 
 void SurfaceManager::Destroy(scoped_ptr<Surface> surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  surface->set_destroyed(true);
   surfaces_to_destroy_.push_back(surface.release());
-  SearchForSatisfaction();
+  GarbageCollectSurfaces();
 }
 
 void SurfaceManager::DidSatisfySequences(uint32_t id_namespace,
@@ -53,7 +54,7 @@ void SurfaceManager::DidSatisfySequences(uint32_t id_namespace,
     satisfied_sequences_.insert(SurfaceSequence(id_namespace, *it));
   }
   sequence->clear();
-  SearchForSatisfaction();
+  GarbageCollectSurfaces();
 }
 
 void SurfaceManager::RegisterSurfaceIdNamespace(uint32_t id_namespace) {
@@ -63,15 +64,50 @@ void SurfaceManager::RegisterSurfaceIdNamespace(uint32_t id_namespace) {
 
 void SurfaceManager::InvalidateSurfaceIdNamespace(uint32_t id_namespace) {
   valid_surface_id_namespaces_.erase(id_namespace);
-  SearchForSatisfaction();
+  GarbageCollectSurfaces();
 }
 
-void SurfaceManager::SearchForSatisfaction() {
+void SurfaceManager::GarbageCollectSurfaces() {
+  // Simple mark and sweep GC.
+  // TODO(jbauman): Reduce the amount of work when nothing needs to be
+  // destroyed.
+  std::vector<SurfaceId> live_surfaces;
+  std::set<SurfaceId> live_surfaces_set;
+
+  // GC roots are surfaces that have not been destroyed, or have not had all
+  // their destruction dependencies satisfied.
+  for (auto& map_entry : surface_map_) {
+    map_entry.second->SatisfyDestructionDependencies(
+        &satisfied_sequences_, &valid_surface_id_namespaces_);
+    if (!map_entry.second->destroyed() ||
+        map_entry.second->GetDestructionDependencyCount()) {
+      live_surfaces_set.insert(map_entry.first);
+      live_surfaces.push_back(map_entry.first);
+    }
+  }
+
+  // Mark all surfaces reachable from live surfaces by adding them to
+  // live_surfaces and live_surfaces_set.
+  for (size_t i = 0; i < live_surfaces.size(); i++) {
+    Surface* surf = surface_map_[live_surfaces[i]];
+    DCHECK(surf);
+
+    for (SurfaceId id : surf->referenced_surfaces()) {
+      if (live_surfaces_set.count(id))
+        continue;
+
+      Surface* surf2 = GetSurfaceForId(id);
+      if (surf2) {
+        live_surfaces.push_back(id);
+        live_surfaces_set.insert(id);
+      }
+    }
+  }
+
+  // Destroy all remaining unreachable surfaces.
   for (SurfaceDestroyList::iterator dest_it = surfaces_to_destroy_.begin();
        dest_it != surfaces_to_destroy_.end();) {
-    (*dest_it)->SatisfyDestructionDependencies(&satisfied_sequences_,
-                                               &valid_surface_id_namespaces_);
-    if (!(*dest_it)->GetDestructionDependencyCount()) {
+    if (!live_surfaces_set.count((*dest_it)->surface_id())) {
       scoped_ptr<Surface> surf(*dest_it);
       DeregisterSurface(surf->surface_id());
       dest_it = surfaces_to_destroy_.erase(dest_it);
