@@ -93,7 +93,7 @@ group("all_components") {
     "//components/search_engines",
     "//components/search_provider_logos",
     "//components/secure_display",
-    "//components/security_interstitials",
+    "//components/security_interstitials/core",
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/startup_metric_utils",

@@ -3181,7 +3181,7 @@
         '../components/components.gyp:search',
         '../components/components.gyp:search_engines',
         '../components/components.gyp:search_provider_logos',
-        '../components/components.gyp:security_interstitials',
+        '../components/components.gyp:security_interstitials_core',
         '../components/components.gyp:suggestions',
         '../components/components.gyp:signin_core_browser',
         '../components/components.gyp:startup_metric_utils',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/security_interstitials/metrics_helper.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 
 #include "base/metrics/histogram.h"
 #include "components/history/core/browser/history_service.h"

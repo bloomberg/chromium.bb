@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/security_interstitials/metrics_helper.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "url/gurl.h"
 
 namespace content {

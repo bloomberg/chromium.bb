@@ -5,7 +5,8 @@
 {
   'targets': [
     {
-      'target_name': 'security_interstitials',
+      # GN version: //components/security_interstitials/core
+      'target_name': 'security_interstitials_core',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -18,8 +19,9 @@
         '..',
       ],
       'sources': [
-        'security_interstitials/metrics_helper.cc',
-        'security_interstitials/metrics_helper.h',
+        # Note: sources list duplicated in GN build.
+        'security_interstitials/core/metrics_helper.cc',
+        'security_interstitials/core/metrics_helper.h',
       ]
     }
   ]
