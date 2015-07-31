@@ -1113,13 +1113,6 @@ def main(argv):
   bricks_wanted = (set(options.include_bricks.split(','))
                    if options.include_bricks else set())
 
-  # pylint: disable=global-statement
-  global TARGET_GO_ENABLED
-  if GetStablePackageVersion('sys-devel/crossdev', True) < '20150527':
-    # Crossdev --ex-pkg flag was added in version 20150527.
-    # Disable Go toolchain until the chroot gets a newer crossdev.
-    TARGET_GO_ENABLED = ()
-
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
