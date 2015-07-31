@@ -39,48 +39,76 @@ bool HasBookmarkAPIPermission(const Extension* extension) {
 
 namespace keys = declarative_content_constants;
 
-RendererContentMatchData::RendererContentMatchData() : is_bookmarked(false) {}
-RendererContentMatchData::~RendererContentMatchData() {}
-
-ContentCondition::ContentCondition(
-    scoped_refptr<const Extension> extension,
-    scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set,
-    const std::vector<std::string>& css_selectors,
-    BookmarkedStateMatch bookmarked_state)
-    : extension_(extension.Pass()),
-      url_matcher_condition_set_(url_matcher_condition_set),
-      css_selectors_(css_selectors),
-      bookmarked_state_(bookmarked_state) {
+DeclarativeContentPageUrlPredicate::DeclarativeContentPageUrlPredicate(
+    scoped_refptr<url_matcher::URLMatcherConditionSet>
+        url_matcher_condition_set)
+    : url_matcher_condition_set_(url_matcher_condition_set) {
+  DCHECK(url_matcher_condition_set);
 }
 
-ContentCondition::~ContentCondition() {}
+DeclarativeContentPageUrlPredicate::~DeclarativeContentPageUrlPredicate() {
+}
 
-bool ContentCondition::IsFulfilled(
-    const RendererContentMatchData& renderer_data) const {
-  if (url_matcher_condition_set_ &&
-      !ContainsKey(renderer_data.page_url_matches,
-                   url_matcher_condition_set_->id())) {
-    return false;
-  }
+bool DeclarativeContentPageUrlPredicate::Evaluate(
+    const std::set<url_matcher::URLMatcherConditionSet::ID>&
+        page_url_matches) const {
+  return ContainsKey(page_url_matches, url_matcher_condition_set_->id());
+}
 
+DeclarativeContentCssPredicate::DeclarativeContentCssPredicate(
+    const std::vector<std::string>& css_selectors)
+    : css_selectors_(css_selectors) {
+  DCHECK(!css_selectors.empty());
+}
+
+DeclarativeContentCssPredicate::~DeclarativeContentCssPredicate() {
+}
+
+bool DeclarativeContentCssPredicate::Evaluate(
+    const base::hash_set<std::string>& matched_css_selectors) const {
   // All attributes must be fulfilled for a fulfilled condition.
   for (const std::string& css_selector : css_selectors_) {
-    if (!ContainsKey(renderer_data.css_selectors, css_selector))
+    if (!ContainsKey(matched_css_selectors, css_selector))
       return false;
-  }
-
-  if (HasBookmarkAPIPermission(extension_.get())) {
-    if ((bookmarked_state_ == BOOKMARKED && !renderer_data.is_bookmarked) ||
-        (bookmarked_state_ == NOT_BOOKMARKED && renderer_data.is_bookmarked)) {
-      return false;
-    }
   }
 
   return true;
 }
 
-// static
-scoped_ptr<ContentCondition> ContentCondition::Create(
+DeclarativeContentIsBookmarkedPredicate::
+DeclarativeContentIsBookmarkedPredicate(
+    scoped_refptr<const Extension> extension,
+    bool is_bookmarked)
+    : extension_(extension),
+      is_bookmarked_(is_bookmarked) {
+}
+
+DeclarativeContentIsBookmarkedPredicate::
+~DeclarativeContentIsBookmarkedPredicate() {
+}
+
+bool DeclarativeContentIsBookmarkedPredicate::IsIgnored() const {
+  return !HasBookmarkAPIPermission(extension_.get());
+}
+
+bool DeclarativeContentIsBookmarkedPredicate::Evaluate(
+    bool url_is_bookmarked) const {
+  return url_is_bookmarked == is_bookmarked_;
+}
+
+ContentCondition::ContentCondition(
+    scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate,
+    scoped_ptr<DeclarativeContentCssPredicate> css_predicate,
+    scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+        is_bookmarked_predicate)
+    : page_url_predicate(page_url_predicate.Pass()),
+      css_predicate(css_predicate.Pass()),
+      is_bookmarked_predicate(is_bookmarked_predicate.Pass()) {
+}
+
+ContentCondition::~ContentCondition() {}
+
+scoped_ptr<ContentCondition> CreateContentCondition(
     scoped_refptr<const Extension> extension,
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     const base::Value& condition,
@@ -104,6 +132,8 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set;
   std::vector<std::string> css_rules;
+  // Possible states for matching bookmarked state.
+  enum BookmarkedStateMatch { NOT_BOOKMARKED, BOOKMARKED, DONT_CARE };
   BookmarkedStateMatch bookmarked_state = DONT_CARE;
 
   for (base::DictionaryValue::Iterator iter(*condition_dict);
@@ -157,9 +187,26 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
       return scoped_ptr<ContentCondition>();
   }
 
-  return make_scoped_ptr(
-      new ContentCondition(extension.Pass(), url_matcher_condition_set,
-                           css_rules, bookmarked_state));
+  scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate;
+  scoped_ptr<DeclarativeContentCssPredicate> css_predicate;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> is_bookmarked_predicate;
+
+  if (url_matcher_condition_set) {
+    page_url_predicate.reset(
+        new DeclarativeContentPageUrlPredicate(url_matcher_condition_set));
+  }
+  if (!css_rules.empty())
+    css_predicate.reset(new DeclarativeContentCssPredicate(css_rules));
+  if (bookmarked_state != DONT_CARE) {
+    is_bookmarked_predicate.reset(
+        new DeclarativeContentIsBookmarkedPredicate(
+            extension,
+            bookmarked_state == BOOKMARKED));
+  }
+
+  return make_scoped_ptr(new ContentCondition(page_url_predicate.Pass(),
+                                              css_predicate.Pass(),
+                                              is_bookmarked_predicate.Pass()));
 }
 
 }  // namespace extensions

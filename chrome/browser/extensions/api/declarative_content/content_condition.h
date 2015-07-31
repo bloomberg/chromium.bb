@@ -22,81 +22,98 @@ namespace extensions {
 
 class Extension;
 
-struct RendererContentMatchData {
-  RendererContentMatchData();
-  ~RendererContentMatchData();
-  // Match IDs for the URL of the top-level page the renderer is
-  // returning data for.
-  std::set<url_matcher::URLMatcherConditionSet::ID> page_url_matches;
-  // All watched CSS selectors that match on frames with the same
-  // origin as the page's main frame.
-  base::hash_set<std::string> css_selectors;
-  // True if the URL is bookmarked.
-  bool is_bookmarked;
-};
-
-// Representation of a condition in the Declarative Content API. A condition
-// consists of an optional URL and a list of CSS selectors. Each of these
-// attributes needs to be fulfilled in order for the condition to be fulfilled.
-//
-// We distinguish between two types of attributes:
-// - URL Matcher attributes are attributes that test the URL of a page.
-//   These are treated separately because we use a URLMatcher to efficiently
-//   test many of these attributes in parallel by using some advanced
-//   data structures. The URLMatcher tells us if all URL Matcher attributes
-//   are fulfilled for a ContentCondition.
-// - All other conditions are represented individually as fields in
-//   ContentCondition.  These conditions are probed linearly (only if the URL
-//   Matcher found a hit).
-//
-// TODO(battre) Consider making the URLMatcher an owner of the
-// URLMatcherConditionSet and only pass a pointer to URLMatcherConditionSet
-// in url_matcher_condition_set(). This saves some copying in
-// ContentConditionSet::GetURLMatcherConditionSets.
-class ContentCondition {
+// Tests the URL of a page against conditions specified with the
+// URLMatcherConditionSet.
+class DeclarativeContentPageUrlPredicate {
  public:
-  // Possible states for matching bookmarked state.
-  enum BookmarkedStateMatch { NOT_BOOKMARKED, BOOKMARKED, DONT_CARE };
-
-  ContentCondition(
-      scoped_refptr<const Extension> extension,
+  explicit DeclarativeContentPageUrlPredicate(
       scoped_refptr<url_matcher::URLMatcherConditionSet>
-          url_matcher_condition_set,
-      const std::vector<std::string>& css_selectors,
-      BookmarkedStateMatch bookmarked_state);
-  ~ContentCondition();
+          url_matcher_condition_set);
+  ~DeclarativeContentPageUrlPredicate();
 
-  // Factory method that instantiates a ContentCondition according to the
-  // description |condition| passed by the extension API.  |condition| should be
-  // an instance of declarativeContent.PageStateMatcher.
-  static scoped_ptr<ContentCondition> Create(
-      scoped_refptr<const Extension> extension,
-      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
-      const base::Value& condition,
-      std::string* error);
-
-  // Returns whether the request is a match, given that the URLMatcher found
-  // a match for |url_matcher_condition_set_|.
-  bool IsFulfilled(const RendererContentMatchData& renderer_data) const;
-
-  // Returns null if there are no URLMatcher conditions.
   url_matcher::URLMatcherConditionSet* url_matcher_condition_set() const {
     return url_matcher_condition_set_.get();
   }
 
-  // Returns the CSS selectors required to match by this condition.
+  // Evaluate for match IDs for the URL of the top-level page of the renderer.
+  bool Evaluate(
+      const std::set<url_matcher::URLMatcherConditionSet::ID>&
+          page_url_matches) const;
+
+ private:
+  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlPredicate);
+};
+
+// Tests whether all the specified CSS selectors match on the page.
+class DeclarativeContentCssPredicate {
+ public:
+  explicit DeclarativeContentCssPredicate(
+      const std::vector<std::string>& css_selectors);
+  ~DeclarativeContentCssPredicate();
+
   const std::vector<std::string>& css_selectors() const {
     return css_selectors_;
   }
 
- private:
-  const scoped_refptr<const Extension> extension_;
-  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set_;
-  std::vector<std::string> css_selectors_;
-  BookmarkedStateMatch bookmarked_state_;
+  // Evaluate for all watched CSS selectors that match on frames with the same
+  // origin as the page's main frame.
+  bool Evaluate(const base::hash_set<std::string>& matched_css_selectors) const;
 
+ private:
+  std::vector<std::string> css_selectors_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssPredicate);
+};
+
+// Tests the bookmarked state of the page.
+class DeclarativeContentIsBookmarkedPredicate {
+ public:
+  DeclarativeContentIsBookmarkedPredicate(
+      scoped_refptr<const Extension> extension,
+      bool is_bookmarked);
+  ~DeclarativeContentIsBookmarkedPredicate();
+
+  bool IsIgnored() const;
+  // Evaluate for URL bookmarked state.
+  bool Evaluate(bool url_is_bookmarked) const;
+
+ private:
+  scoped_refptr<const Extension> extension_;
+  bool is_bookmarked_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedPredicate);
+};
+
+// Representation of a condition in the Declarative Content API. A condition
+// consists of a set of predicates on the page state, all of which must be
+// satisified for the condition to be fulfilled.
+struct ContentCondition {
+ public:
+  ContentCondition(
+      scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate,
+      scoped_ptr<DeclarativeContentCssPredicate> css_predicate,
+      scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+          is_bookmarked_predicate);
+  ~ContentCondition();
+
+  scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate;
+  scoped_ptr<DeclarativeContentCssPredicate> css_predicate;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> is_bookmarked_predicate;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);
 };
+
+// Factory function that instantiates a ContentCondition according to the
+// description |condition| passed by the extension API.  |condition| should be
+// an instance of declarativeContent.PageStateMatcher.
+scoped_ptr<ContentCondition> CreateContentCondition(
+    scoped_refptr<const Extension> extension,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const base::Value& condition,
+    std::string* error);
 
 }  // namespace extensions
 

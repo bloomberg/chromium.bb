@@ -150,6 +150,7 @@ class ChromeContentRulesRegistry
   };
 
   class EvaluationScope;
+  struct RendererContentMatchData;
 
   // Creates a ContentRule for |extension| given a json definition.  The format
   // of each condition and action's json is up to the specific ContentCondition
@@ -169,6 +170,11 @@ class ChromeContentRulesRegistry
 
   // Updates the condition evaluator with the current watched CSS selectors.
   void UpdateCssSelectorsFromRules();
+
+  // Returns true if all predicates in |condition| evaluate to true.
+  bool IsConditionFulfilled(
+      const ContentCondition& condition,
+      const RendererContentMatchData& renderer_data) const;
 
   // Evaluates the conditions for |tab| based on the tab state and matching CSS
   // selectors.
