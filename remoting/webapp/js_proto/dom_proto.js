@@ -60,7 +60,6 @@ Element.prototype.classList;
 /** @type {boolean} */
 Element.prototype.checked;
 
-
 /** @type {Window} */
 HTMLIFrameElement.prototype.contentWindow;
 
@@ -140,3 +139,82 @@ Number.isInteger = function(value) {};
 // Chrome implements XMLHttpRequest.responseURL starting from Chrome 37.
 /** @type {string} */
 XMLHttpRequest.prototype.responseURL = "";
+
+
+/*******************************************************************************
+ * Webview and related declarations
+ ******************************************************************************/
+
+/**
+ * Like chrome.webRequest, but for webview tags.
+ *
+ * chrome.webRequest defined in chrome_extensions.js can't be
+ * used because it's not a type.
+ *
+ * @constructor
+ */
+function WebviewWebRequest() {}
+
+/** @type {WebRequestEvent} */
+WebviewWebRequest.prototype.onBeforeSendHeaders;
+
+/** @type {WebRequestEvent} */
+WebviewWebRequest.prototype.onCompleted;
+
+/** @type {WebRequestOnErrorOccurredEvent} */
+WebviewWebRequest.prototype.onErrorOccurred;
+
+/**
+ * Enable access to special APIs of webview DOM element.
+ *
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function Webview() {}
+
+/** @type {!WebviewWebRequest} */
+Webview.prototype.request;
+
+/** @type {function(InjectDetails, function(Object))} */
+Webview.prototype.executeScript;
+
+/** @type {Window} */
+Webview.prototype.contentWindow;
+
+/**
+ * See https://developer.chrome.com/apps/tags/webview#type-InjectDetails
+ *
+ * @typedef {{
+ *   file: (string|undefined),
+ *   code: (string|undefined)
+ * }}
+ */
+var InjectDetails;
+
+/*******************************************************************************
+ * ConsoleMessage event
+ ******************************************************************************/
+
+/**
+ * The consolemessage BrowserEvent contains these fields:
+ * e.level: int32, log severity level (for exception/info etc)
+ * e.line: int32, line number
+ * e.message: string, the console message
+ * e.sourceId: string, source identifier (the ones seen in devtools)
+ *
+ * @constructor
+ * @extends {Event}
+ */
+chrome.ConsoleMessageBrowserEvent = function() {};
+
+/** @type {number} */
+chrome.ConsoleMessageBrowserEvent.prototype.level;
+
+/** @type {number} */
+chrome.ConsoleMessageBrowserEvent.prototype.line;
+
+/** @type {string} */
+chrome.ConsoleMessageBrowserEvent.prototype.message;
+
+/** @type {string} */
+chrome.ConsoleMessageBrowserEvent.prototype.sourceId;

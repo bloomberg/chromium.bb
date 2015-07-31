@@ -29,7 +29,10 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
   /** @private */
   this.plugin_ = plugin;
 
-  /** private */
+  /** @private {!Array<HTMLElement>} */
+  this.focusableElements_ = [];
+
+  /** @private */
   this.cursor_ = new remoting.ConnectedView.Cursor(
       plugin, viewportElement, cursorElement);
 
@@ -39,7 +42,7 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
 
   var pluginElement = plugin.element();
 
-  /** private */
+  /** @private */
   this.disposables_ = new base.Disposables(
     this.cursor_,
     new base.DomEventHook(pluginElement, 'blur',
@@ -93,15 +96,52 @@ remoting.ConnectedView.prototype.onConnectionReady = function(ready) {
  * Callback function called when the plugin element loses focus.
  * @private
  */
-remoting.ConnectedView.prototype.onPluginLostFocus_ = function() {
+remoting.ConnectedView.prototype.onPluginLostFocus_ = function(event) {
   // Release all keys to prevent them becoming 'stuck down' on the host.
   this.plugin_.releaseAllKeys();
 
   // Focus should stay on the element, not (for example) the toolbar.
   // Due to crbug.com/246335, we can't restore the focus immediately,
   // otherwise the plugin gets confused about whether or not it has focus.
-  window.setTimeout(
-      this.plugin_.element().focus.bind(this.plugin_.element()), 0);
+  var that = this;
+  var delayedCallback = function() {
+    // When the 'blur' event handler is called document.activeElement has not
+    // been set to the correct target. We need to retrieve the target in this
+    // delayedCallback.
+    var target = /** @type {!HTMLElement} */ (document.activeElement);
+    if (!that.isElementFocusable_(target)) {
+      that.plugin_.element().focus();
+    }
+  };
+  window.setTimeout(delayedCallback, 0);
+};
+
+/**
+ * Return focus to the plugin.
+ */
+remoting.ConnectedView.prototype.returnFocusToPlugin = function() {
+  this.plugin_.element().focus();
+};
+
+/**
+ * Determines whether an element is allowed to grab focus from the plugin.
+ * @param {!HTMLElement} element
+ * @return {boolean}
+ * @private
+ */
+remoting.ConnectedView.prototype.isElementFocusable_ = function(element) {
+  return this.focusableElements_.indexOf(element) !== -1;
+};
+
+/**
+ * Allow the given element to grab focus from the plugin.
+ * @param {!HTMLElement} element
+ * @return {void}
+ */
+remoting.ConnectedView.prototype.allowFocus = function(element) {
+  if (this.focusableElements_.indexOf(element) < 0) {
+    this.focusableElements_.push(element);
+  }
 };
 
 /**

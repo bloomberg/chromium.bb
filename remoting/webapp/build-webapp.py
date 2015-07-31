@@ -441,14 +441,19 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'DIRECTORY_API_BASE_URL': directoryApiBaseUrl,
         'TELEMETRY_API_BASE_URL':telemetryApiBaseUrl ,
         'APP_REMOTING_API_BASE_URL': appRemotingApiBaseUrl,
+        'CLOUD_PRINT_URL': '',
         'OAUTH2_ACCOUNTS_HOST': oauth2AccountsHost,
         'GOOGLE_API_HOSTS': googleApiHosts,
         'APP_NAME': app_name,
         'APP_DESCRIPTION': app_description,
+        'OAUTH_CLOUD_PRINT_SCOPE': '',
         'OAUTH_GDRIVE_SCOPE': '',
         'USE_GCD': use_gcd,
         'XMPP_SERVER': xmppServer,
     }
+    if 'CLOUD_PRINT' in app_capabilities:
+      context['OAUTH_CLOUD_PRINT_SCOPE'] = ('"https://www.googleapis.com/auth/cloudprint",')
+      context['CLOUD_PRINT_URL'] = ('"https://www.google.com/cloudprint/*",')
     if 'GOOGLE_DRIVE' in app_capabilities:
       context['OAUTH_GDRIVE_SCOPE'] = ('"https://docs.google.com/feeds/", '
                                        '"https://www.googleapis.com/auth/drive",')

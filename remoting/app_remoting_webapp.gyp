@@ -35,7 +35,7 @@
       'app_client_id': 'sample_client_id',
       'app_name': 'App Remoting Client',
       'app_description': 'App Remoting client',
-      'app_capabilities': ['GOOGLE_DRIVE'],
+      'app_capabilities': ['GOOGLE_DRIVE', 'CLOUD_PRINT'],
       'manifest_key': 'remotingdevbuild',
     },
   ],  # end of targets

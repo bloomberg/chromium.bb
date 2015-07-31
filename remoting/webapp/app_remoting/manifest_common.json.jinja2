@@ -27,6 +27,7 @@
     "{{ OAUTH2_ACCOUNTS_HOST }}/*",
     "{{ OAUTH2_API_BASE_URL }}/*",
     "{{ TALK_GADGET_HOST }}/talkgadget/*",
+    {{ CLOUD_PRINT_URL }}
     "app.window.shape",
     "clipboardRead",
     "clipboardWrite",
@@ -46,7 +47,8 @@
         "resolve-host",
         "network-state"
       ]
-    }
+    },
+    "webview"
   ],
   "sockets": {
     "tcp": {
@@ -56,6 +58,7 @@
   "oauth2": {
     "client_id": "{{ REMOTING_IDENTITY_API_CLIENT_ID }}",
     "scopes": [
+      {{ OAUTH_CLOUD_PRINT_SCOPE }}
       {{ OAUTH_GDRIVE_SCOPE }}
       "https://www.googleapis.com/auth/appremoting.runapplication",
       "https://www.googleapis.com/auth/googletalk",

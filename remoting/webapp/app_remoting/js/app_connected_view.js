@@ -30,13 +30,14 @@ var DRIVE_ACCESS_TOKEN_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
  * @param {HTMLElement} containerElement
  * @param {remoting.WindowShape} windowShape
  * @param {remoting.ConnectionInfo} connectionInfo
+ * @param {base.WindowMessageDispatcher} windowMessageDispatcher
  *
  * @constructor
  * @implements {base.Disposable}
  * @implements {remoting.ProtocolExtension}
  */
 remoting.AppConnectedView = function(containerElement, windowShape,
-                                     connectionInfo) {
+                                     connectionInfo, windowMessageDispatcher) {
   /** @private */
   this.plugin_ = connectionInfo.plugin();
 
@@ -86,6 +87,13 @@ remoting.AppConnectedView = function(containerElement, windowShape,
 
   this.resizeHostToClientArea_();
   this.plugin_.extensions().register(this);
+
+  /** @private {remoting.CloudPrintDialogContainer} */
+  this.cloudPrintDialogContainer_ = new remoting.CloudPrintDialogContainer(
+      /** @type {!Webview} */ (document.getElementById('cloud-print-webview')),
+      windowShape, windowMessageDispatcher, baseView);
+
+  this.disposables_.add(this.cloudPrintDialogContainer_);
 };
 
 /**
@@ -177,13 +185,13 @@ remoting.AppConnectedView.prototype.startExtension = function(
 };
 
 /**
- * @param {string} type The message type.
+ * @param {string} command The message command.
  * @param {Object} message The parsed extension message data.
  * @override {remoting.ProtocolExtension}
  */
 remoting.AppConnectedView.prototype.onExtensionMessage =
-    function(type, message) {
-  switch (type) {
+    function(command, message) {
+  switch (command) {
     case 'openURL':
       // URL requests from the hosted app are untrusted, so disallow anything
       // other than HTTP or HTTPS.
@@ -222,6 +230,18 @@ remoting.AppConnectedView.prototype.onExtensionMessage =
       var then = base.getNumberAttr(message, 'timestamp');
       var now = new Date().getTime();
       this.contextMenu_.updateConnectionRTT(now - then);
+      return true;
+
+    case 'printDocument':
+      var title = base.getStringAttr(message, 'title');
+      var type = base.getStringAttr(message, 'type');
+      var data = base.getStringAttr(message, 'data');
+      if (type == '' || data == '') {
+        console.error('"type" and "data" cannot be empty.');
+        return true;
+      }
+
+      this.cloudPrintDialogContainer_.printDocument(title, type, data);
       return true;
   }
 

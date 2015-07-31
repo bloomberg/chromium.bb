@@ -194,8 +194,8 @@
       'webapp/base/js/plugin_settings.js',
       'webapp/base/js/suspend_detector.js',
       'webapp/base/js/typecheck.js',
-      'webapp/base/js/window_message_dispatcher.js',
       'webapp/base/js/xhr_event_writer.js',
+      'webapp/base/js/window_message_dispatcher.js',
       'webapp/base/js/xhr.js',
     ],
     # Host JavaScript files.

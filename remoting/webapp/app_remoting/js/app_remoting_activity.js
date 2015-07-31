@@ -29,12 +29,14 @@ remoting.AppHostResponse;
  * @param {remoting.Application} app
  * @param {remoting.WindowShape} windowShape
  * @param {string} subscriptionToken
+ * @param {base.WindowMessageDispatcher} windowMessageDispatcher
  *
  * @constructor
  * @implements {remoting.Activity}
  */
 remoting.AppRemotingActivity = function(appCapabilities, app, windowShape,
-                                        subscriptionToken) {
+                                        subscriptionToken,
+                                        windowMessageDispatcher) {
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
@@ -54,6 +56,9 @@ remoting.AppRemotingActivity = function(appCapabilities, app, windowShape,
 
   /** @private */
   this.subscriptionToken_ = subscriptionToken;
+
+  /** @private {base.WindowMessageDispatcher} */
+  this.windowMessageDispatcher_ = windowMessageDispatcher;
 };
 
 remoting.AppRemotingActivity.prototype.dispose = function() {
@@ -177,7 +182,7 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
 remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   var connectedView = new remoting.AppConnectedView(
       document.getElementById('client-container'),
-      this.windowShape_, connectionInfo);
+      this.windowShape_, connectionInfo, this.windowMessageDispatcher_);
 
   var idleDetector = new remoting.IdleDetector(
       document.getElementById('idle-dialog'),

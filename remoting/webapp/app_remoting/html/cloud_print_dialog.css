@@ -1,0 +1,14 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.cloud-print-webview-class {
+  position: fixed;
+  width: 660px;
+  height:500px;
+  background: white;
+  z-index: 50;
+  border-style: solid;
+  border-width: 5px;
+}

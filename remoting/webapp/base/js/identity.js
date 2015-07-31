@@ -185,7 +185,6 @@ remoting.Identity.prototype.getEmail = function() {
  */
 remoting.Identity.prototype.onAuthComplete_ = function(scopes, token) {
   var key = getScopesKey(scopes);
-  var authTokenDeferred = this.authTokensDeferred_[key];
 
   // Pass the token to the callback(s) if it was retrieved successfully.
   if (token) {

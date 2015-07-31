@@ -36,13 +36,13 @@ remoting.DesktopConnectedView = function(container, connectionInfo) {
   /** @private {remoting.DesktopViewport} */
   this.viewport_ = null;
 
-  /** private {remoting.ConnectedView} */
+  /** @private {remoting.ConnectedView} */
   this.view_ = null;
 
   /** @private {remoting.VideoFrameRecorder} */
   this.videoFrameRecorder_ = null;
 
-  /** private {base.Disposable} */
+  /** @private {base.Disposable} */
   this.eventHooks_ = null;
 
   /** @private */
