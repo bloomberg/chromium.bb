@@ -685,6 +685,7 @@ const char* const kChromeHostURLs[] = {
 const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 
 const char* const kChromeDebugURLs[] = {
+  content::kChromeUIBadCastCrashURL,
   content::kChromeUICrashURL,
   content::kChromeUIDumpURL,
   content::kChromeUIKillURL,

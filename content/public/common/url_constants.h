@@ -44,6 +44,7 @@ CONTENT_EXPORT extern const char kChromeUITracingHost[];
 CONTENT_EXPORT extern const char kChromeUIWebRTCInternalsHost[];
 
 // Full about URLs (including schemes).
+CONTENT_EXPORT extern const char kChromeUIBadCastCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIBrowserUIHang[];
 CONTENT_EXPORT extern const char kChromeUICrashURL[];

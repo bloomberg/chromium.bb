@@ -312,6 +312,19 @@ NOINLINE void CrashIntentionally() {
   *zero = 0;
 }
 
+NOINLINE void BadCastCrashIntentionally() {
+  class A {
+    virtual void f() {}
+  };
+
+  class B {
+    virtual void f() {}
+  };
+
+  A a;
+  (void)(B*)&a;
+}
+
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
@@ -351,7 +364,9 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
 void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(kChromeUIScheme))
     return;
-  if (url == GURL(kChromeUICrashURL)) {
+  if (url == GURL(kChromeUIBadCastCrashURL)) {
+    BadCastCrashIntentionally();
+  } else if (url == GURL(kChromeUICrashURL)) {
     CrashIntentionally();
   } else if (url == GURL(kChromeUIDumpURL)) {
     // This URL will only correctly create a crash dump file if content is
