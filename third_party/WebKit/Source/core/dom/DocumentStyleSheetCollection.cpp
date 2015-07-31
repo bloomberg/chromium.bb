@@ -118,8 +118,6 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, 
         document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ActiveStylesheetsUpdate));
 
     collection.swap(*this);
-
-    updateUsesRemUnits();
 }
 
 }

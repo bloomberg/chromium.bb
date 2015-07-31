@@ -335,7 +335,6 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     }
 
     InspectorInstrumentation::activeStyleSheetsUpdated(m_document);
-    m_usesRemUnits = documentStyleSheetCollection()->usesRemUnits();
 
     m_dirtyTreeScopes.clear();
     m_documentScopeDirty = false;

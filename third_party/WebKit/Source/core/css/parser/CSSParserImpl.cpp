@@ -708,12 +708,9 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
 
 void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID unresolvedProperty, bool important, StyleRule::Type ruleType)
 {
-    bool usesRemUnits;
-    CSSParserValueList valueList(range, usesRemUnits);
+    CSSParserValueList valueList(range);
     if (!valueList.size())
         return; // Parser error
-    if (usesRemUnits && m_styleSheet)
-        m_styleSheet->parserSetUsesRemUnits(true);
     CSSPropertyParser::parseValue(unresolvedProperty, important, &valueList, m_context, m_parsedProperties, ruleType);
 }
 

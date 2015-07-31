@@ -634,6 +634,9 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     if (state.style()->hasViewportUnits())
         document().setHasViewportUnits();
 
+    if (state.style()->hasRemUnits())
+        document().styleEngine().setUsesRemUnit(true);
+
     // Now return the style.
     return state.takeStyle();
 }

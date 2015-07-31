@@ -280,8 +280,10 @@ protected:
         unsigned affectedByDrag : 1;
 
         unsigned isLink : 1;
+
+        mutable unsigned hasRemUnits : 1;
         // If you add more style bits here, you will also need to update ComputedStyle::copyNonInheritedFromCached()
-        // 62 bits
+        // 63 bits
     } noninherited_flags;
 
 // !END SYNC!
@@ -331,6 +333,7 @@ protected:
         noninherited_flags.affectedByActive = false;
         noninherited_flags.affectedByDrag = false;
         noninherited_flags.isLink = false;
+        noninherited_flags.hasRemUnits = false;
     }
 
 private:
@@ -381,6 +384,9 @@ public:
 
     void setHasViewportUnits(bool hasViewportUnits = true) const { noninherited_flags.hasViewportUnits = hasViewportUnits; }
     bool hasViewportUnits() const { return noninherited_flags.hasViewportUnits; }
+
+    void setHasRemUnits() const { noninherited_flags.hasRemUnits = true; }
+    bool hasRemUnits() const { return noninherited_flags.hasRemUnits; }
 
     bool affectedByFocus() const { return noninherited_flags.affectedByFocus; }
     bool affectedByHover() const { return noninherited_flags.affectedByHover; }

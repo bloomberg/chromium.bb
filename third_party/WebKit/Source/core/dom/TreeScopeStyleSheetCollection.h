@@ -52,8 +52,6 @@ public:
     void removeStyleSheetCandidateNode(Node* node) { m_styleSheetCandidateNodes.remove(node); }
     bool hasStyleSheetCandidateNodes() const { return !m_styleSheetCandidateNodes.isEmpty(); }
 
-    bool usesRemUnits() const { return m_usesRemUnits; }
-
     void clearMediaQueryRuleSetStyleSheets();
 
     DECLARE_VIRTUAL_TRACE();
@@ -83,7 +81,6 @@ protected:
     };
 
     void analyzeStyleSheetChange(StyleResolverUpdateMode, const StyleSheetCollection&, StyleSheetChange&);
-    void updateUsesRemUnits();
 
 private:
     static StyleResolverUpdateType compareStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& oldStyleSheets, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& addedSheets);
@@ -94,7 +91,6 @@ private:
 protected:
     RawPtrWillBeMember<TreeScope> m_treeScope;
     bool m_hadActiveLoadingStylesheet;
-    bool m_usesRemUnits;
 
     DocumentOrderedList m_styleSheetCandidateNodes;
 };
