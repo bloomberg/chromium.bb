@@ -36,12 +36,10 @@ GCC_VERSION = '4.9.2'
 # to use in place of the package name when calling GitUrl (below).
 GIT_REVISIONS = {
     'binutils': {
-        'rev': '68b975af7ef47a9d28f21f4c93431f35777a5109',
+        'rev': 'cde986cc330c6d7ebd68e416ab66e0929abe4c8f',
         'upstream-branch': 'upstream/binutils-2_25-branch',
-        'upstream-name': 'binutils-2.25',
-        # This is tag binutils-2_25, but Gerrit won't let us push
-        # non-annotated tags, and the upstream tag is not annotated.
-        'upstream-base': '68b975af7ef47a9d28f21f4c93431f35777a5109',
+        'upstream-name': 'binutils-2.25.1',
+        'upstream-base': 'binutils-2_25_1',
         },
     'gcc': {
         'rev': '336bd0bc1724efd6f8b2a4d7228e389dc1bc48da',
@@ -51,19 +49,17 @@ GIT_REVISIONS = {
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
     'glibc': {
-        'rev': '6b183b833968010a95ba41ed307dd8bea7b2e641',
+        'rev': 'f4ddb3557e80a193c4169bbaf01a0e7f556098b9',
         'upstream-branch': 'upstream/master',
         'upstream-name': 'glibc-2.21',
-        # Upstream tag glibc-2.21:
-        'upstream-base': '4e42b5b8f89f0e288e68be7ad70f9525aebc2cff',
+        'upstream-base': 'glibc-2.21',
         },
     'gdb': {
         'rev': '4ad027945e8645f00b857488959fc2a3b5b16d05',
         'repo': 'binutils',
         'upstream-branch': 'upstream/gdb-7.9-branch',
         'upstream-name': 'gdb-7.9.1',
-        # Upstream tag gdb-7.9.1-release:
-        'upstream-base': 'aca9b649bfff6440734703d5d31f88b70ff57824',
+        'upstream-base': 'gdb-7.9.1-release',
         },
     }
 
