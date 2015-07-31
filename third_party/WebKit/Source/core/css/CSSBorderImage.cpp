@@ -41,8 +41,9 @@ PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtrWillBeRawP
             listSlash->append(outset);
 
         list->append(listSlash);
-    } else if (imageSlice)
+    } else if (imageSlice) {
         list->append(imageSlice);
+    }
     if (repeat)
         list->append(repeat);
     return list.release();

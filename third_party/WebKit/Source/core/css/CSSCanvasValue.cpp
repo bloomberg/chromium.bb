@@ -79,7 +79,7 @@ IntSize CSSCanvasValue::fixedSize(const LayoutObject* layoutObject)
 
 HTMLCanvasElement* CSSCanvasValue::element(Document* document)
 {
-     if (!m_element) {
+    if (!m_element) {
         m_element = &document->getCSSCanvasElement(m_name);
         m_element->addObserver(m_canvasObserver.get());
     }

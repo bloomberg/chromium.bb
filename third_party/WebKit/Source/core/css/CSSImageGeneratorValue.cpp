@@ -58,9 +58,9 @@ void CSSImageGeneratorValue::addClient(LayoutObject* layoutObject, const IntSize
         m_sizes.add(size);
 
     LayoutObjectSizeCountMap::iterator it = m_clients.find(layoutObject);
-    if (it == m_clients.end())
+    if (it == m_clients.end()) {
         m_clients.add(layoutObject, SizeAndCount(size, 1));
-    else {
+    } else {
         SizeAndCount& sizeCount = it->value;
         ++sizeCount.count;
     }
