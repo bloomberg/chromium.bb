@@ -163,7 +163,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('cancelFileTransfers', function(
         entries, callback) {
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.cancelFileTransfers(entry);
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.cancelFileTransfers(urls, callback);
   });
@@ -180,7 +180,7 @@ binding.registerCustomHook(function(bindingsAPI) {
         parentEntry, entries, destName, callback) {
     var parentUrl = fileBrowserHandlerNatives.GetEntryURL(parentEntry);
     var urls = entries.map(function(entry) {
-      return fileBrowserHandlerNatives.cancelFileTransfers(entry);
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
     });
     fileManagerPrivateInternal.zipSelection(
         parentUrl, urls, destName, callback);
