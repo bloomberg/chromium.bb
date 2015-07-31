@@ -94,8 +94,9 @@ static bool parseKeyTimes(const String& string, Vector<float>& result, bool veri
             if (!n) {
                 if (time)
                     goto fail;
-            } else if (time < result.last())
+            } else if (time < result.last()) {
                 goto fail;
+            }
         }
         result.append(time);
     }
@@ -594,17 +595,17 @@ void SVGAnimationElement::startedActiveInterval()
     if ((animationMode == FromToAnimation || animationMode == FromByAnimation || animationMode == ToAnimation || animationMode == ByAnimation)
         && (fastHasAttribute(SVGNames::keyPointsAttr) && fastHasAttribute(SVGNames::keyTimesAttr) && (m_keyTimes.size() < 2 || m_keyTimes.size() != m_keyPoints.size())))
         return;
-    if (animationMode == FromToAnimation)
+    if (animationMode == FromToAnimation) {
         m_animationValid = calculateFromAndToValues(from, to);
-    else if (animationMode == ToAnimation) {
+    } else if (animationMode == ToAnimation) {
         // For to-animations the from value is the current accumulated value from lower priority animations.
         // The value is not static and is determined during the animation.
         m_animationValid = calculateFromAndToValues(emptyString(), to);
-    } else if (animationMode == FromByAnimation)
+    } else if (animationMode == FromByAnimation) {
         m_animationValid = calculateFromAndByValues(from, by);
-    else if (animationMode == ByAnimation)
+    } else if (animationMode == ByAnimation) {
         m_animationValid = calculateFromAndByValues(emptyString(), by);
-    else if (animationMode == ValuesAnimation) {
+    } else if (animationMode == ValuesAnimation) {
         m_animationValid = m_values.size() >= 1
             && (calcMode == CalcModePaced || !fastHasAttribute(SVGNames::keyTimesAttr) || fastHasAttribute(SVGNames::keyPointsAttr) || (m_values.size() == m_keyTimes.size()))
             && (calcMode == CalcModeDiscrete || !m_keyTimes.size() || m_keyTimes.last() == 1)
@@ -614,8 +615,9 @@ void SVGAnimationElement::startedActiveInterval()
             m_animationValid = calculateToAtEndOfDurationValue(m_values.last());
         if (calcMode == CalcModePaced && m_animationValid)
             calculateKeyTimesForCalcModePaced();
-    } else if (animationMode == PathAnimation)
+    } else if (animationMode == PathAnimation) {
         m_animationValid = calcMode == CalcModePaced || !fastHasAttribute(SVGNames::keyPointsAttr) || (m_keyTimes.size() > 1 && m_keyTimes.size() == m_keyPoints.size());
+    }
 }
 
 void SVGAnimationElement::updateAnimation(float percent, unsigned repeatCount, SVGSMILElement* resultElement)

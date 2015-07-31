@@ -98,9 +98,9 @@ void SVGFEImageElement::buildPendingResource()
     AtomicString id;
     Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), treeScope(), &id);
     if (!target) {
-        if (id.isEmpty())
+        if (id.isEmpty()) {
             fetchImageResource();
-        else {
+        } else {
             document().accessSVGExtensions().addPendingResource(id, this);
             ASSERT(hasPendingResources());
         }
