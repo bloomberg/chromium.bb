@@ -578,8 +578,12 @@ bool WindowsCreateFunction::RunSync() {
           extension());
       AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
       app_window->Init(urls[0], ash_panel_contents, create_params);
-      SetResult(ash_panel_contents->GetWindowController()
-                    ->CreateWindowValueWithTabs(extension()));
+      WindowController* window_controller =
+          WindowControllerList::GetInstance()->FindWindowById(
+              app_window->session_id().id());
+      if (!window_controller)
+        return false;
+      SetResult(window_controller->CreateWindowValueWithTabs(extension()));
       return true;
     }
 #endif

@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "extensions/browser/app_window/app_window.h"
 
-class AshPanelWindowController;
 class GURL;
 
 namespace content {
@@ -56,7 +55,6 @@ class AshPanelContents
   extensions::AppWindow* host_;
   GURL url_;
   scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<AshPanelWindowController> window_controller_;
   scoped_ptr<LauncherFaviconLoader> launcher_favicon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPanelContents);
