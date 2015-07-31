@@ -216,6 +216,7 @@ typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
 typedef base::MRUCache<HostPortPair, ServerNetworkStats> ServerNetworkStatsMap;
 
 extern const char kAlternateProtocolHeader[];
+extern const char kAlternativeServiceHeader[];
 
 // The interface for setting/retrieving the HTTP server properties.
 // Currently, this class manages servers':

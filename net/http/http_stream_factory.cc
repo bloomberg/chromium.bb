@@ -13,6 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/port_util.h"
 #include "net/http/http_network_session.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -28,6 +29,44 @@ HttpStreamFactory::~HttpStreamFactory() {}
 // static
 void HttpStreamFactory::ResetStaticSettingsToInit() {
   spdy_enabled_ = true;
+}
+
+void HttpStreamFactory::ProcessAlternativeService(
+    const base::WeakPtr<HttpServerProperties>& http_server_properties,
+    base::StringPiece alternative_service_str,
+    const HostPortPair& http_host_port_pair,
+    const HttpNetworkSession& session) {
+  SpdyAltSvcWireFormat::AlternativeServiceVector alternative_service_vector;
+  if (!SpdyAltSvcWireFormat::ParseHeaderFieldValue(
+          alternative_service_str, &alternative_service_vector)) {
+    return;
+  }
+
+  // Convert SpdyAltSvcWireFormat::AlternativeService entries
+  // to net::AlternativeServiceInfo.
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  for (const SpdyAltSvcWireFormat::AlternativeService&
+           alternative_service_entry : alternative_service_vector) {
+    AlternateProtocol protocol =
+        AlternateProtocolFromString(alternative_service_entry.protocol_id);
+    if (!IsAlternateProtocolValid(protocol) ||
+        !session.IsProtocolEnabled(protocol) ||
+        !IsPortValid(alternative_service_entry.port)) {
+      continue;
+    }
+    AlternativeService alternative_service(protocol,
+                                           alternative_service_entry.host,
+                                           alternative_service_entry.port);
+    base::Time expiration =
+        base::Time::Now() +
+        base::TimeDelta::FromSeconds(alternative_service_entry.max_age);
+    AlternativeServiceInfo alternative_service_info(
+        alternative_service, alternative_service_entry.p, expiration);
+    alternative_service_info_vector.push_back(alternative_service_info);
+  }
+
+  http_server_properties->SetAlternativeServices(
+      RewriteHost(http_host_port_pair), alternative_service_info_vector);
 }
 
 void HttpStreamFactory::ProcessAlternateProtocol(
@@ -92,14 +131,10 @@ void HttpStreamFactory::ProcessAlternateProtocol(
     return;
   }
 
-  HostPortPair host_port(http_host_port_pair);
-  const HostMappingRules* mapping_rules = GetHostMappingRules();
-  if (mapping_rules)
-    mapping_rules->RewriteHost(&host_port);
-
   http_server_properties->SetAlternativeService(
-      host_port, AlternativeService(protocol, "", static_cast<uint16>(port)),
-      probability, base::Time::Now() + base::TimeDelta::FromDays(1));
+      RewriteHost(http_host_port_pair),
+      AlternativeService(protocol, "", static_cast<uint16>(port)), probability,
+      base::Time::Now() + base::TimeDelta::FromDays(1));
 }
 
 GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,
@@ -117,5 +152,12 @@ GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,
 }
 
 HttpStreamFactory::HttpStreamFactory() {}
+
+HostPortPair HttpStreamFactory::RewriteHost(HostPortPair host_port_pair) {
+  const HostMappingRules* mapping_rules = GetHostMappingRules();
+  if (mapping_rules)
+    mapping_rules->RewriteHost(&host_port_pair);
+  return host_port_pair;
+}
 
 }  // namespace net

@@ -67,10 +67,20 @@ namespace net {
 
 namespace {
 
-void ProcessAlternateProtocol(
-    HttpNetworkSession* session,
-    const HttpResponseHeaders& headers,
-    const HostPortPair& http_host_port_pair) {
+void ProcessAlternativeServices(HttpNetworkSession* session,
+                                const HttpResponseHeaders& headers,
+                                const HostPortPair& http_host_port_pair) {
+  if (headers.HasHeader(kAlternativeServiceHeader)) {
+    std::string alternative_service_str;
+    headers.GetNormalizedHeader(kAlternativeServiceHeader,
+                                &alternative_service_str);
+    session->http_stream_factory()->ProcessAlternativeService(
+        session->http_server_properties(), alternative_service_str,
+        http_host_port_pair, *session);
+    // If there is an "Alt-Svc" header, then ignore "Alternate-Protocol".
+    return;
+  }
+
   if (!headers.HasHeader(kAlternateProtocolHeader))
     return;
 
@@ -1071,8 +1081,8 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  ProcessAlternateProtocol(session_, *response_.headers.get(),
-                           HostPortPair::FromURL(request_->url));
+  ProcessAlternativeServices(session_, *response_.headers.get(),
+                             HostPortPair::FromURL(request_->url));
 
   int rv = HandleAuthChallenge();
   if (rv != OK)
