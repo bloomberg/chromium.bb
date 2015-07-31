@@ -16,6 +16,7 @@
       // handler attempts to change the page and the activateEvent
       // handler immediately changes it back
       activateEvent: {
+        type: String,
         value: null
       }
 

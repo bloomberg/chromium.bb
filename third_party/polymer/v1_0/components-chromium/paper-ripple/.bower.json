@@ -34,6 +34,6 @@
     "commit": "af19d904802437c305390bb03415c11661de3d0a"
   },
   "_source": "git://github.com/PolymerElements/paper-ripple.git",
-  "_target": "^1.0.0",
+  "_target": "~1.0.0",
   "_originalSource": "PolymerElements/paper-ripple"
 }

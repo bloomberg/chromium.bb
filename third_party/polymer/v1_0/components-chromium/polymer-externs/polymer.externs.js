@@ -635,7 +635,7 @@ Polymer.Templatizer = {
   /**
    * @param {?Element} template
    */
-  templatize: function(template) {},
+  templatize: function(template) {}
 };
 
 

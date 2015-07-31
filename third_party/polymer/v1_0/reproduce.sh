@@ -40,6 +40,10 @@ rm -rf components/promise-polyfill
 rm -rf components/iron-ajax
 rm -rf components/iron-form
 
+# Remove iron-image as it's only a developer dependency of iron-dropdown.
+# https://github.com/PolymerElements/iron-dropdown/pull/17
+rm -rf components/iron-image
+
 # Make checkperms.py happy.
 find components/*/hero.svg -type f -exec chmod -x {} \;
 find components/iron-selector -type f -exec chmod -x {} \;

@@ -71,4 +71,4 @@
         this.fire('iron-change');
       }
     })
-  
+  ;

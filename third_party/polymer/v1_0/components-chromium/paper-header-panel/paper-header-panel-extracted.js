@@ -11,12 +11,12 @@
     var MODE_CONFIGS = {
 
       outerScroll: {
-        scroll: true
+        'scroll': true
       },
 
       shadowMode: {
-        standard: SHADOW_ALWAYS,
-        waterfall: SHADOW_WHEN_SCROLLING,
+        'standard': SHADOW_ALWAYS,
+        'waterfall': SHADOW_WHEN_SCROLLING,
         'waterfall-tall': SHADOW_WHEN_SCROLLING
       },
 
@@ -157,7 +157,7 @@
        * @type Boolean
        */
       get visibleShadow() {
-        return this.header.classList.contains('has-shadow');
+        return this.$.dropShadow.classList.contains('has-shadow');
       },
 
       _computeDropShadowHidden: function(atTop, mode, shadow) {
@@ -165,16 +165,16 @@
         var shadowMode = MODE_CONFIGS.shadowMode[mode];
 
         if (this.shadow) {
-          this.toggleClass('has-shadow', true, this.header);
+          this.toggleClass('has-shadow', true, this.$.dropShadow);
 
         } else if (shadowMode === SHADOW_ALWAYS) {
-          this.toggleClass('has-shadow', true, this.header);
+          this.toggleClass('has-shadow', true, this.$.dropShadow);
 
         } else if (shadowMode === SHADOW_WHEN_SCROLLING && !atTop) {
-          this.toggleClass('has-shadow', true, this.header);
+          this.toggleClass('has-shadow', true, this.$.dropShadow);
 
         } else {
-          this.toggleClass('has-shadow', false, this.header);
+          this.toggleClass('has-shadow', false, this.$.dropShadow);
 
         }
       },
@@ -221,20 +221,20 @@
         this._keepScrollingState();
       },
 
-      _keepScrollingState: function () {
+      _keepScrollingState: function() {
         var main = this.scroller;
         var header = this.header;
 
         this._setAtTop(main.scrollTop === 0);
 
-        if (header && MODE_CONFIGS.tallMode[this.mode]) {
+        if (header && this.tallClass && MODE_CONFIGS.tallMode[this.mode]) {
           this.toggleClass(this.tallClass, this.atTop ||
               header.classList.contains(this.tallClass) &&
               main.scrollHeight < this.offsetHeight, header);
         }
       },
 
-      _scroll: function(e) {
+      _scroll: function() {
         this._keepScrollingState();
         this.fire('content-scroll', {target: this.scroller}, {bubbles: false});
       },

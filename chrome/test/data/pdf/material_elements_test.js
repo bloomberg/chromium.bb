@@ -102,40 +102,40 @@ var tests = [
       depth: 1
     });
 
-    // Wait for the <template>s to be properly initialized.
-    bookmarkContent.async(function() {
-      var rootBookmarks =
-          bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
-      chrome.test.assertEq(1, rootBookmarks.length, "one root bookmark");
-      var rootBookmark = rootBookmarks[0];
+    // Force templates to render.
+    Polymer.dom.flush();
 
-      var subBookmarks =
-          rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');
-      chrome.test.assertEq(2, subBookmarks.length, "two sub bookmarks");
-      chrome.test.assertEq(1, subBookmarks[1].depth,
-                             "sub bookmark depth correct");
+    var rootBookmarks =
+        bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
+    chrome.test.assertEq(1, rootBookmarks.length, "one root bookmark");
+    var rootBookmark = rootBookmarks[0];
 
-      var lastPageChange;
-      rootBookmark.addEventListener('change-page', function(e) {
-        lastPageChange = e.detail.page;
-      });
+    var subBookmarks =
+        rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');
+    chrome.test.assertEq(2, subBookmarks.length, "two sub bookmarks");
+    chrome.test.assertEq(1, subBookmarks[1].depth,
+                           "sub bookmark depth correct");
 
-      MockInteractions.tap(rootBookmark.$.item);
-      chrome.test.assertEq(1, lastPageChange);
-
-      MockInteractions.tap(subBookmarks[1].$.item);
-      chrome.test.assertEq(3, lastPageChange);
-
-      var subBookmarkDiv =
-          rootBookmark.shadowRoot.querySelector('.sub-bookmark');
-
-      chrome.test.assertTrue(subBookmarkDiv.hidden);
-      MockInteractions.tap(rootBookmark.$.expand);
-      chrome.test.assertFalse(subBookmarkDiv.hidden);
-      chrome.test.assertEq('hidden', subBookmarks[1].$.expand.style.visibility);
-
-      chrome.test.succeed();
+    var lastPageChange;
+    rootBookmark.addEventListener('change-page', function(e) {
+      lastPageChange = e.detail.page;
     });
+
+    MockInteractions.tap(rootBookmark.$.item);
+    chrome.test.assertEq(1, lastPageChange);
+
+    MockInteractions.tap(subBookmarks[1].$.item);
+    chrome.test.assertEq(3, lastPageChange);
+
+    var subBookmarkDiv =
+        rootBookmark.shadowRoot.querySelector('.sub-bookmark');
+
+    chrome.test.assertTrue(subBookmarkDiv.hidden);
+    MockInteractions.tap(rootBookmark.$.expand);
+    chrome.test.assertFalse(subBookmarkDiv.hidden);
+    chrome.test.assertEq('hidden', subBookmarks[1].$.expand.style.visibility);
+
+    chrome.test.succeed();
   }
 ];
 
