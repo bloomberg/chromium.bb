@@ -317,6 +317,11 @@ define('media_router_bindings', [
     this.sendRouteMessage = null;
 
     /**
+     * @type {function(string, Uint8Array): Promise}
+     */
+    this.sendRouteBinaryMessage = null;
+
+    /**
      * @type {function(Array.<string>): Promise.<Array.<RouteMessage>>}
      */
     this.listenForRouteMessages = null;
@@ -369,6 +374,7 @@ define('media_router_bindings', [
       'stopObservingMediaRoutes',
       'startObservingMediaRoutes',
       'sendRouteMessage',
+      'sendRouteBinaryMessage',
       'listenForRouteMessages',
       'closeRoute',
       'joinRoute',
@@ -472,6 +478,23 @@ define('media_router_bindings', [
   MediaRouteProvider.prototype.sendRouteMessage = function(
       routeId, message) {
     return this.handlers_.sendRouteMessage(routeId, message)
+        .then(function() {
+          return {'sent': true};
+        }, function() {
+          return {'sent': false};
+        });
+  };
+
+  /**
+   * Sends a binary message to the route designated by |routeId|.
+   * @param {!string} routeId
+   * @param {!Uint8Array} data
+   * @return {!Promise.<boolean>} Resolved with true if the data was sent,
+   *    or false on failure.
+   */
+  MediaRouteProvider.prototype.sendRouteBinaryMessage = function(
+      routeId, data) {
+    return this.handlers_.sendRouteBinaryMessage(routeId, data)
         .then(function() {
           return {'sent': true};
         }, function() {

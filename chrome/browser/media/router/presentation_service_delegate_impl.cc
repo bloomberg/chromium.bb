@@ -636,11 +636,6 @@ void PresentationServiceDelegateImpl::SendMessage(
     int render_frame_id,
     scoped_ptr<content::PresentationSessionMessage> message_request,
     const SendMessageCallback& send_message_cb) {
-  if (message_request->is_binary()) {
-    NOTIMPLEMENTED();
-    send_message_cb.Run(false);
-    return;
-  }
   const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
       RenderFrameHostId(render_process_id, render_frame_id),
       message_request->presentation_id);
@@ -649,8 +644,14 @@ void PresentationServiceDelegateImpl::SendMessage(
     send_message_cb.Run(false);
     return;
   }
-  router_->SendRouteMessage(route_id, *(message_request->message),
-                            send_message_cb);
+
+  if (message_request->is_binary()) {
+    router_->SendRouteBinaryMessage(route_id, message_request->data.Pass(),
+                                    send_message_cb);
+  } else {
+    router_->SendRouteMessage(route_id, *(message_request->message),
+                              send_message_cb);
+  }
 }
 
 void PresentationServiceDelegateImpl::ListenForSessionStateChange(

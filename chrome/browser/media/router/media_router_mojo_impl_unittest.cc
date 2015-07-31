@@ -51,6 +51,7 @@ const char kSinkName[] = "sinkName";
 const char kPresentationId[] = "presentationId";
 const char kOrigin[] = "http://origin/";
 const int kTabId = 123;
+const uint8 kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 
 bool ArePresentationSessionMessagesEqual(
     const content::PresentationSessionMessage* expected,
@@ -433,6 +434,29 @@ TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
   router()->SendRouteMessage(kRouteId, kMessage,
                              base::Bind(&SendMessageCallbackHandler::Invoke,
                                         base::Unretained(&handler)));
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
+  scoped_ptr<std::vector<uint8>> expected_binary_data(new std::vector<uint8>(
+      kBinaryMessage, kBinaryMessage + arraysize(kBinaryMessage)));
+
+  EXPECT_CALL(mock_media_route_provider_,
+              SendRouteBinaryMessageInternal(mojo::String(kRouteId), _, _))
+      .WillOnce(Invoke([](
+          const MediaRoute::Id& route_id, const std::vector<uint8>& data,
+          const interfaces::MediaRouteProvider::SendRouteMessageCallback& cb) {
+        EXPECT_EQ(
+            0, memcmp(kBinaryMessage, &(data[0]), arraysize(kBinaryMessage)));
+        cb.Run(true);
+      }));
+
+  SendMessageCallbackHandler handler;
+  EXPECT_CALL(handler, Invoke(true));
+  router()->SendRouteBinaryMessage(
+      kRouteId, expected_binary_data.Pass(),
+      base::Bind(&SendMessageCallbackHandler::Invoke,
+                 base::Unretained(&handler)));
   ProcessEventLoop();
 }
 

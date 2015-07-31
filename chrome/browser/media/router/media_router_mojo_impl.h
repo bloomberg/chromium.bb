@@ -73,6 +73,10 @@ class MediaRouterMojoImpl : public MediaRouter,
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
                         const SendRouteMessageCallback& callback) override;
+  void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      scoped_ptr<std::vector<uint8>> data,
+      const SendRouteMessageCallback& callback) override;
   void ListenForRouteMessages(
       const std::vector<MediaRoute::Id>& route_ids,
       const PresentationSessionMessageCallback& message_cb) override;
@@ -136,6 +140,9 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
                             const std::string& message,
                             const SendRouteMessageCallback& callback);
+  void DoSendSessionBinaryMessage(const MediaRoute::Id& route_id,
+                                  scoped_ptr<std::vector<uint8>> data,
+                                  const SendRouteMessageCallback& callback);
   void DoListenForRouteMessages(
       const std::vector<MediaRoute::Id>& route_ids,
       const PresentationSessionMessageCallback& message_cb);

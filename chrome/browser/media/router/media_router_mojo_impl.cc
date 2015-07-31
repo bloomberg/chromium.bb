@@ -246,6 +246,17 @@ void MediaRouterMojoImpl::SendRouteMessage(
                         base::Unretained(this), route_id, message, callback));
 }
 
+void MediaRouterMojoImpl::SendRouteBinaryMessage(
+    const MediaRoute::Id& route_id,
+    scoped_ptr<std::vector<uint8>> data,
+    const SendRouteMessageCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionBinaryMessage,
+                        base::Unretained(this), route_id,
+                        base::Passed(data.Pass()), callback));
+}
+
 void MediaRouterMojoImpl::ListenForRouteMessages(
     const std::vector<MediaRoute::Id>& route_ids,
     const PresentationSessionMessageCallback& message_cb) {
@@ -378,6 +389,17 @@ void MediaRouterMojoImpl::DoSendSessionMessage(
     const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteMessage " << route_id;
   media_route_provider_->SendRouteMessage(route_id, message, callback);
+}
+
+void MediaRouterMojoImpl::DoSendSessionBinaryMessage(
+    const MediaRoute::Id& route_id,
+    scoped_ptr<std::vector<uint8>> data,
+    const SendRouteMessageCallback& callback) {
+  DVLOG_WITH_INSTANCE(1) << "SendRouteBinaryMessage " << route_id;
+  mojo::Array<uint8> mojo_array;
+  mojo_array.Swap(data.get());
+  media_route_provider_->SendRouteBinaryMessage(route_id, mojo_array.Pass(),
+                                                callback);
 }
 
 void MediaRouterMojoImpl::DoListenForRouteMessages(

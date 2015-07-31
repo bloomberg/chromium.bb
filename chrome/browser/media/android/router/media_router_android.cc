@@ -39,6 +39,14 @@ void MediaRouterAndroid::SendRouteMessage(
     const SendRouteMessageCallback& callback) {
   NOTIMPLEMENTED();
 }
+
+void MediaRouterAndroid::SendRouteBinaryMessage(
+    const MediaRoute::Id& route_id,
+    scoped_ptr<std::vector<uint8>> data,
+    const SendRouteMessageCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void MediaRouterAndroid::ListenForRouteMessages(
     const std::vector<MediaRoute::Id>& route_ids,
     const PresentationSessionMessageCallback& message_cb) {

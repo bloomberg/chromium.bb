@@ -40,6 +40,16 @@ class MockMediaRouter : public MediaRouter {
                void(const MediaRoute::Id& route_id,
                     const std::string& message,
                     const SendRouteMessageCallback& callback));
+  void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      scoped_ptr<std::vector<uint8>> data,
+      const SendRouteMessageCallback& callback) override {
+    SendRouteBinaryMessageInternal(route_id, data.get(), callback);
+  }
+  MOCK_METHOD3(SendRouteBinaryMessageInternal,
+               void(const MediaRoute::Id& route_id,
+                    std::vector<uint8>* data,
+                    const SendRouteMessageCallback& callback));
   MOCK_METHOD2(ListenForRouteMessages,
                void(const std::vector<MediaRoute::Id>& route_ids,
                     const PresentationSessionMessageCallback& message_cb));

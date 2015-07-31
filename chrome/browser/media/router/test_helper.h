@@ -104,6 +104,16 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                void(const mojo::String& media_route_id,
                     const mojo::String& message,
                     const SendRouteMessageCallback& callback));
+  void SendRouteBinaryMessage(
+      const mojo::String& media_route_id,
+      mojo::Array<uint8> data,
+      const SendRouteMessageCallback& callback) override {
+    SendRouteBinaryMessageInternal(media_route_id, data.storage(), callback);
+  }
+  MOCK_METHOD3(SendRouteBinaryMessageInternal,
+               void(const mojo::String& media_route_id,
+                    const std::vector<uint8>& data,
+                    const SendRouteMessageCallback& callback));
   void ListenForRouteMessages(mojo::Array<mojo::String> route_ids,
                               const ListenForRouteMessagesCallback& callback) {
     ListenForRouteMessagesInteral(route_ids.storage(), callback);

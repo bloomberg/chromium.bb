@@ -82,11 +82,16 @@ class MediaRouter : public KeyedService {
   virtual void CloseRoute(const MediaRoute::Id& route_id) = 0;
 
   // Posts |message| to a MediaSink connected via MediaRoute with |route_id|.
-  // TODO(imcheng): Support additional data types: Blob, ArrayBuffer,
-  // ArrayBufferView.
   virtual void SendRouteMessage(const MediaRoute::Id& route_id,
                                 const std::string& message,
                                 const SendRouteMessageCallback& callback) = 0;
+
+  // Sends |data| to a MediaSink connected via MediaRoute with |route_id|.
+  // This is called for Blob / ArrayBuffer / ArrayBufferView types.
+  virtual void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      scoped_ptr<std::vector<uint8>> data,
+      const SendRouteMessageCallback& callback) = 0;
 
   // Gets the next batch of messages from one of the routes in |route_ids|.
   // |message_cb|: Invoked with a non-empty list of messages when there are

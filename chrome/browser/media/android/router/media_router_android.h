@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_H_
 #define CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/router/media_router.h"
 
 namespace content {
@@ -35,6 +36,10 @@ class MediaRouterAndroid : public MediaRouter {
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
                         const SendRouteMessageCallback& callback) override;
+  void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      scoped_ptr<std::vector<uint8>> data,
+      const SendRouteMessageCallback& callback) override;
   void ListenForRouteMessages(
       const std::vector<MediaRoute::Id>& route_ids,
       const PresentationSessionMessageCallback& message_cb) override;
