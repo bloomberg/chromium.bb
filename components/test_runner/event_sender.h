@@ -101,7 +101,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
-  void UpdateTouchPoint(unsigned index, float x, float y);
+  void UpdateTouchPoint(unsigned index, float x, float y, gin::Arguments* args);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
   void SetTouchCancelable(bool cancelable);
@@ -127,7 +127,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void BeginDragWithFiles(const std::vector<std::string>& files);
 
-  void AddTouchPoint(gin::Arguments* args);
+  void AddTouchPoint(float x, float y, gin::Arguments* args);
 
   void MouseDragBegin();
   void MouseDragEnd();
@@ -176,6 +176,10 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void InitMouseWheelEvent(gin::Arguments* args,
                            bool continuous,
                            blink::WebMouseWheelEvent* event);
+  void InitPointerProperties(gin::Arguments* args,
+                             blink::WebPointerProperties* e,
+                             float* radius_x,
+                             float* radius_y);
 
   void FinishDragAndDrop(const blink::WebMouseEvent&, blink::WebDragOperation);
 

@@ -349,6 +349,11 @@ bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
 const char* kSourceDeviceStringTouchpad = "touchpad";
 const char* kSourceDeviceStringTouchscreen = "touchscreen";
 
+const char* kPointerTypeStringUnknown = "";
+const char* kPointerTypeStringMouse = "mouse";
+const char* kPointerTypeStringPen = "pen";
+const char* kPointerTypeStringTouch = "touch";
+
 }  // namespace
 
 class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
@@ -378,7 +383,10 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void SetPageZoomFactor(double factor);
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
-  void UpdateTouchPoint(unsigned index, double x, double y);
+  void UpdateTouchPoint(unsigned index,
+                        double x,
+                        double y,
+                        gin::Arguments* args);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
   void SetTouchCancelable(bool cancelable);
@@ -397,7 +405,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void TouchEnd();
   void LeapForward(int milliseconds);
   void BeginDragWithFiles(const std::vector<std::string>& files);
-  void AddTouchPoint(gin::Arguments* args);
+  void AddTouchPoint(double x, double y, gin::Arguments* args);
   void MouseDragBegin();
   void MouseDragEnd();
   void GestureScrollBegin(gin::Arguments* args);
@@ -652,10 +660,13 @@ void EventSenderBindings::ReleaseTouchPoint(unsigned index) {
     sender_->ReleaseTouchPoint(index);
 }
 
-void EventSenderBindings::UpdateTouchPoint(unsigned index, double x, double y) {
+void EventSenderBindings::UpdateTouchPoint(unsigned index,
+                                           double x,
+                                           double y,
+                                           gin::Arguments* args) {
   if (sender_) {
     sender_->UpdateTouchPoint(index, static_cast<float>(x),
-                              static_cast<float>(y));
+                              static_cast<float>(y), args);
   }
 }
 
@@ -735,9 +746,11 @@ void EventSenderBindings::BeginDragWithFiles(
     sender_->BeginDragWithFiles(files);
 }
 
-void EventSenderBindings::AddTouchPoint(gin::Arguments* args) {
+void EventSenderBindings::AddTouchPoint(double x,
+                                        double y,
+                                        gin::Arguments* args) {
   if (sender_)
-    sender_->AddTouchPoint(args);
+    sender_->AddTouchPoint(static_cast<float>(x), static_cast<float>(y), args);
 }
 
 void EventSenderBindings::MouseDragBegin() {
@@ -1557,7 +1570,10 @@ void EventSender::ReleaseTouchPoint(unsigned index) {
   touch_point->state = WebTouchPoint::StateReleased;
 }
 
-void EventSender::UpdateTouchPoint(unsigned index, float x, float y) {
+void EventSender::UpdateTouchPoint(unsigned index,
+                                   float x,
+                                   float y,
+                                   gin::Arguments* args) {
   if (index >= touch_points_.size()) {
     ThrowTouchPointError();
     return;
@@ -1567,6 +1583,9 @@ void EventSender::UpdateTouchPoint(unsigned index, float x, float y) {
   touch_point->state = WebTouchPoint::StateMoved;
   touch_point->position = WebFloatPoint(x, y);
   touch_point->screenPosition = touch_point->position;
+
+  InitPointerProperties(args, touch_point, &touch_point->radiusX,
+                        &touch_point->radiusY);
 }
 
 void EventSender::CancelTouchPoint(unsigned index) {
@@ -1728,45 +1747,24 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   pressed_button_ = WebMouseEvent::ButtonLeft;
 }
 
-void EventSender::AddTouchPoint(gin::Arguments* args) {
-  double x;
-  double y;
-  if (!args->GetNext(&x) || !args->GetNext(&y)) {
-    args->ThrowError();
-    return;
-  }
-
+void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
   WebTouchPoint touch_point;
   touch_point.state = WebTouchPoint::StatePressed;
-  touch_point.position = WebFloatPoint(static_cast<float>(x),
-                                       static_cast<float>(y));
+  touch_point.position = WebFloatPoint(x, y);
   touch_point.screenPosition = touch_point.position;
 
-  if (!args->PeekNext().IsEmpty()) {
-    double radius_x;
-    if (!args->GetNext(&radius_x)) {
-      args->ThrowError();
-      return;
-    }
-
-    double radius_y = radius_x;
-    if (!args->PeekNext().IsEmpty()) {
-      if (!args->GetNext(&radius_y)) {
-        args->ThrowError();
-        return;
-      }
-    }
-
-    touch_point.radiusX = static_cast<float>(radius_x);
-    touch_point.radiusY = static_cast<float>(radius_y);
-  }
-
+  // TODO(e_hakkinen): Make this algorithm more robust so that it handles
+  // touch points which are not sorted by their ids, too.
   int lowest_id = 0;
   for (size_t i = 0; i < touch_points_.size(); i++) {
     if (touch_points_[i].id == lowest_id)
       lowest_id++;
   }
   touch_point.id = lowest_id;
+
+  InitPointerProperties(args, &touch_point, &touch_point.radiusX,
+                        &touch_point.radiusY);
+
   touch_points_.push_back(touch_point);
 }
 
@@ -2378,6 +2376,72 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   } else {
     event->deltaX *= kScrollbarPixelsPerTick;
     event->deltaY *= kScrollbarPixelsPerTick;
+  }
+}
+
+// Radius fields radius_x and radius_y should eventually be moved to
+// WebPointerProperties.
+// TODO(e_hakkinen): Drop radius_{x,y}_pointer parameters once that happens.
+void EventSender::InitPointerProperties(gin::Arguments* args,
+                                        blink::WebPointerProperties* e,
+                                        float* radius_x_pointer,
+                                        float* radius_y_pointer) {
+  if (!args->PeekNext().IsEmpty()) {
+    double radius_x;
+    if (!args->GetNext(&radius_x)) {
+      args->ThrowError();
+      return;
+    }
+
+    double radius_y = radius_x;
+    if (!args->PeekNext().IsEmpty()) {
+      if (!args->GetNext(&radius_y)) {
+        args->ThrowError();
+        return;
+      }
+    }
+
+    *radius_x_pointer = static_cast<float>(radius_x);
+    *radius_y_pointer = static_cast<float>(radius_y);
+  }
+
+  if (!args->PeekNext().IsEmpty()) {
+    double force;
+    if (!args->GetNext(&force)) {
+      args->ThrowError();
+      return;
+    }
+    e->force = static_cast<float>(force);
+  }
+
+  if (!args->PeekNext().IsEmpty()) {
+    int tiltX, tiltY;
+    if (!args->GetNext(&tiltX) || !args->GetNext(&tiltY)) {
+      args->ThrowError();
+      return;
+    }
+    e->tiltX = tiltX;
+    e->tiltY = tiltY;
+  }
+
+  if (!args->PeekNext().IsEmpty()) {
+    std::string pointer_type_string;
+    if (!args->GetNext(&pointer_type_string)) {
+      args->ThrowError();
+      return;
+    }
+    if (pointer_type_string == kPointerTypeStringUnknown) {
+      e->pointerType = WebMouseEvent::PointerTypeUnknown;
+    } else if (pointer_type_string == kPointerTypeStringMouse) {
+      e->pointerType = WebMouseEvent::PointerTypeMouse;
+    } else if (pointer_type_string == kPointerTypeStringPen) {
+      e->pointerType = WebMouseEvent::PointerTypePen;
+    } else if (pointer_type_string == kPointerTypeStringTouch) {
+      e->pointerType = WebMouseEvent::PointerTypeTouch;
+    } else {
+      args->ThrowError();
+      return;
+    }
   }
 }
 
