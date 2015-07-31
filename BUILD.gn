@@ -541,8 +541,12 @@ group("both_gn_and_gyp") {
       "//components:components_unittests",  # TODO(GYP)
       "//content/test:content_browsertests",  # TODO(GYP)
       "//content/test:content_perftests",  # TODO(GYP)
+      "//content/test:content_unittests",  # TODO(GYP)
+      "//device:device_unittests",  # TODO(GYP)
       "//extensions:extensions_browsertests",  # TODO(GYP)
       "//extensions:extensions_unittests",  # TODO(GYP)
+      "//mojo",  # TODO(GYP)
+      "//mojo/application/public/cpp",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
 
       # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
@@ -668,6 +672,7 @@ group("gn_only") {
       "//ui/shell_dialogs:shell_dialogs_unittests",
       "//ui/views/examples:views_examples_exe",
     ]
+
     if (target_cpu == "x86" || target_cpu == "x64") {
       deps += [ "//third_party/libjpeg_turbo:simd_asm" ]
     }
@@ -684,6 +689,10 @@ group("gn_only") {
     if (is_linux && current_toolchain == host_toolchain) {
       deps += [ "//v8:d8" ]
     }
+  }
+
+  if (is_mac) {
+    deps -= [ "//mandoline:all" ]  # TODO(GYP)
   }
 }
 
