@@ -30,6 +30,7 @@
       'copresence.idl',
       'copresence_private.idl',
       'cryptotoken_private.idl',
+      'dashboard_private.json',
       'data_reduction_proxy.json',
       'debugger.json',
       'desktop_capture.json',

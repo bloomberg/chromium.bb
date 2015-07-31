@@ -246,6 +246,17 @@
     "dependencies": ["permission:cryptotokenPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "dashboardPrivate": [{
+    "channel": "stable",
+    "contexts": ["blessed_web_page", "web_page"],
+    "matches": ["https://chrome.google.com/*"]
+  }, {
+    "channel": "stable",
+    "contexts": ["blessed_extension"],
+    "whitelist": [
+      "B44D08FD98F1523ED5837D78D0A606EA9D6206E5"  // Web Store
+    ]
+  }],
   "dataReductionProxy": {
     "dependencies": ["permission:dataReductionProxy"],
     "contexts": ["blessed_extension"]

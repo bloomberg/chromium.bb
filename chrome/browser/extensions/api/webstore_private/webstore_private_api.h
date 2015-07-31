@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/bundle_installer.h"
@@ -20,12 +21,15 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GPUFeatureChecker;
+class GURL;
 
 namespace chrome {
 class BitmapFetcher;
 }  // namespace chrome
 
 namespace extensions {
+
+class Extension;
 
 class WebstorePrivateApi {
  public:
@@ -40,51 +44,21 @@ class WebstorePrivateApi {
       Profile* profile, const std::string& extension_id);
 };
 
-// Base class for webstorePrivate functions that show a permission prompt.
-template<typename Params>
-class WebstorePrivateFunctionWithPermissionPrompt
+class WebstorePrivateBeginInstallWithManifest3Function
     : public UIThreadExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
-  WebstorePrivateFunctionWithPermissionPrompt();
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
+                             WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
 
- protected:
-  ~WebstorePrivateFunctionWithPermissionPrompt() override;
-
-  // May be implemented by subclasses to add their own code to the
-  // ExtensionFunction::Run implementation. Return a non-null ResponseValue to
-  // trigger an immediate response.
-  virtual ExtensionFunction::ResponseValue RunExtraForResponse();
-
-  // Must be implemented by subclasses to call one of the Confirm* methods on
-  // |install_prompt|.
-  virtual void ShowPrompt(ExtensionInstallPrompt* install_prompt) = 0;
-
-  // May be implemented by subclasses to add their own code to the
-  // ExtensionInstallPrompt::Delegate::InstallUIProceed and InstallUIAbort
-  // implementations.
-  virtual void InstallUIProceedHook() {}
-  virtual void InstallUIAbortHook(bool user_initiated) {}
-
-  // Must be implemented by subclasses to forward to their own Results::Create
-  // function.
-  virtual scoped_ptr<base::ListValue> CreateResults(
-      api::webstore_private::Result result) const = 0;
-
-  ExtensionFunction::ResponseValue BuildResponse(
-      api::webstore_private::Result result,
-      const std::string& error);
-
-  const typename Params::Details& details() const { return params_->details; }
-  const SkBitmap& icon() const { return icon_; }
-  const scoped_refptr<Extension>& dummy_extension() const {
-    return dummy_extension_;
-  }
-
-  scoped_ptr<base::DictionaryValue> PassParsedManifest();
+  WebstorePrivateBeginInstallWithManifest3Function();
 
  private:
+  using Params = api::webstore_private::BeginInstallWithManifest3::Params;
+
+  ~WebstorePrivateBeginInstallWithManifest3Function() override;
+
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 
@@ -100,10 +74,20 @@ class WebstorePrivateFunctionWithPermissionPrompt
   void InstallUIProceed() override;
   void InstallUIAbort(bool user_initiated) override;
 
-  // This stores the input parameters to the function.
+  ExtensionFunction::ResponseValue BuildResponse(
+      api::webstore_private::Result result,
+      const std::string& error);
+  scoped_ptr<base::ListValue> CreateResults(
+      api::webstore_private::Result result) const;
+
+  const Params::Details& details() const { return params_->details; }
+
+  ChromeExtensionFunctionDetails chrome_details_;
+
   scoped_ptr<Params> params_;
 
-  // The results of parsing manifest_ and icon_data_.
+  scoped_ptr<ScopedActiveInstall> scoped_active_install_;
+
   scoped_ptr<base::DictionaryValue> parsed_manifest_;
   SkBitmap icon_;
 
@@ -111,32 +95,7 @@ class WebstorePrivateFunctionWithPermissionPrompt
   // ExtensionInstallPrompt to prompt for confirmation of the install.
   scoped_refptr<Extension> dummy_extension_;
 
-  // The class that displays the install prompt.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
-};
-
-class WebstorePrivateBeginInstallWithManifest3Function
-    : public WebstorePrivateFunctionWithPermissionPrompt
-          <api::webstore_private::BeginInstallWithManifest3::Params> {
- public:
-  DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
-                             WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
-
-  WebstorePrivateBeginInstallWithManifest3Function();
-
- private:
-  ~WebstorePrivateBeginInstallWithManifest3Function() override;
-
-  ExtensionFunction::ResponseValue RunExtraForResponse() override;
-  void ShowPrompt(ExtensionInstallPrompt* install_prompt) override;
-  void InstallUIProceedHook() override;
-  void InstallUIAbortHook(bool user_initiated) override;
-  scoped_ptr<base::ListValue> CreateResults(
-      api::webstore_private::Result result) const override;
-
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  scoped_ptr<ScopedActiveInstall> scoped_active_install_;
 };
 
 class WebstorePrivateCompleteInstallFunction
@@ -169,77 +128,9 @@ class WebstorePrivateCompleteInstallFunction
   scoped_ptr<ScopedActiveInstall> scoped_active_install_;
 };
 
-class WebstorePrivateShowPermissionPromptForDelegatedInstallFunction
-    : public WebstorePrivateFunctionWithPermissionPrompt
-          <api::webstore_private::ShowPermissionPromptForDelegatedInstall::
-               Params> {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "webstorePrivate.showPermissionPromptForDelegatedInstall",
-      WEBSTOREPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDINSTALL)
-
-  WebstorePrivateShowPermissionPromptForDelegatedInstallFunction();
-
- private:
-  ~WebstorePrivateShowPermissionPromptForDelegatedInstallFunction() override;
-
-  void ShowPrompt(ExtensionInstallPrompt* install_prompt) override;
-  scoped_ptr<base::ListValue> CreateResults(
-      api::webstore_private::Result result) const override;
-};
-
-// Base class for webstorePrivate functions that deal with bundles.
-template<typename Params>
-class WebstorePrivateFunctionWithBundle
+class WebstorePrivateInstallBundleFunction
     : public UIThreadExtensionFunction,
       public chrome::BitmapFetcherDelegate {
- public:
-  WebstorePrivateFunctionWithBundle();
-
- protected:
-  ~WebstorePrivateFunctionWithBundle() override;
-
-  const typename Params::Details& details() const { return params_->details; }
-  extensions::BundleInstaller* bundle() { return bundle_.get(); }
-  ChromeExtensionFunctionDetails* chrome_details() { return &chrome_details_; }
-
-  void set_auth_user(const std::string& user) { auth_user_ = user; }
-  void set_delegated_user(const std::string& user) {
-    delegated_user_ = user;
-  }
-
-  // Called after |params_| has been created.
-  virtual void ProcessParams() = 0;
-  // Called for each bundle item before showing them in the dialog.
-  virtual bool ShouldSkipItem(const std::string& id) const = 0;
-  // Called after the user has confirmed the dialog.
-  virtual void OnInstallApprovalHook() = 0;
-
- private:
-  // ExtensionFunction:
-  ExtensionFunction::ResponseAction Run() override;
-
-  // chrome::BitmapFetcherDelegate:
-  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
-
-  void OnInstallApproval(BundleInstaller::ApprovalState state);
-
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  // This stores the input parameters to the function.
-  scoped_ptr<Params> params_;
-
-  std::string auth_user_;
-  std::string delegated_user_;
-
-  scoped_ptr<extensions::BundleInstaller> bundle_;
-
-  scoped_ptr<chrome::BitmapFetcher> icon_fetcher_;
-};
-
-class WebstorePrivateInstallBundleFunction
-    : public WebstorePrivateFunctionWithBundle
-          <api::webstore_private::InstallBundle::Params> {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
                              WEBSTOREPRIVATE_INSTALLBUNDLE)
@@ -247,35 +138,27 @@ class WebstorePrivateInstallBundleFunction
   WebstorePrivateInstallBundleFunction();
 
  private:
+  using Params = api::webstore_private::InstallBundle::Params;
+
   ~WebstorePrivateInstallBundleFunction() override;
 
-  // WebstorePrivateFunctionWithBundle:
-  void ProcessParams() override;
-  bool ShouldSkipItem(const std::string& id) const override;
-  void OnInstallApprovalHook() override;
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
 
+  // chrome::BitmapFetcherDelegate:
+  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
+
+  void OnInstallApproval(BundleInstaller::ApprovalState state);
   void OnInstallComplete();
-};
 
-class WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction
-    : public WebstorePrivateFunctionWithBundle
-          <api::webstore_private::
-               ShowPermissionPromptForDelegatedBundleInstall::Params> {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "webstorePrivate.showPermissionPromptForDelegatedBundleInstall",
-      WEBSTOREPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDBUNDLEINSTALL)
+  const Params::Details& details() const { return params_->details; }
 
-  WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction();
+  ChromeExtensionFunctionDetails chrome_details_;
 
- private:
-  ~WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction()
-      override;
+  scoped_ptr<Params> params_;
 
-  // WebstorePrivateFunctionWithBundle:
-  void ProcessParams() override;
-  bool ShouldSkipItem(const std::string& id) const override;
-  void OnInstallApprovalHook() override;
+  scoped_ptr<extensions::BundleInstaller> bundle_;
+  scoped_ptr<chrome::BitmapFetcher> icon_fetcher_;
 };
 
 class WebstorePrivateEnableAppLauncherFunction

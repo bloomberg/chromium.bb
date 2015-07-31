@@ -199,6 +199,8 @@
       'browser/extensions/api/copresence_private/copresence_private_api.h',
       'browser/extensions/api/cryptotoken_private/cryptotoken_private_api.cc',
       'browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h',
+      'browser/extensions/api/dashboard_private/dashboard_private_api.cc',
+      'browser/extensions/api/dashboard_private/dashboard_private_api.h',
       'browser/extensions/api/data_reduction_proxy/data_reduction_proxy_api.cc',
       'browser/extensions/api/data_reduction_proxy/data_reduction_proxy_api.h',
       'browser/extensions/api/debugger/debugger_api.cc',

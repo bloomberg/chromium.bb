@@ -1155,12 +1155,15 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
     case Feature::UNSPECIFIED_CONTEXT:
     case Feature::WEB_PAGE_CONTEXT:
     case Feature::BLESSED_WEB_PAGE_CONTEXT:
-      // Web page context; it's too expensive to run the full bindings code.
-      // Hard-code that the app and webstore APIs are available...
+      // Hard-code registration of any APIs that are exposed to webpage-like
+      // contexts, because it's too expensive to run the full bindings code.
+      // All of the same permission checks will still apply.
       if (context->GetAvailability("app").is_available())
         RegisterBinding("app", context);
       if (context->GetAvailability("webstore").is_available())
         RegisterBinding("webstore", context);
+      if (context->GetAvailability("dashboardPrivate").is_available())
+        RegisterBinding("dashboardPrivate", context);
       if (IsRuntimeAvailableToContext(context))
         RegisterBinding("runtime", context);
       UpdateContentCapabilities(context);
@@ -1176,10 +1179,7 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
           FeatureProvider::GetAPIFeatures();
       const std::vector<std::string>& apis =
           api_feature_provider->GetAllFeatureNames();
-      for (std::vector<std::string>::const_iterator it = apis.begin();
-           it != apis.end();
-           ++it) {
-        const std::string& api_name = *it;
+      for (const std::string& api_name : apis) {
         Feature* feature = api_feature_provider->GetFeature(api_name);
         DCHECK(feature);
 
