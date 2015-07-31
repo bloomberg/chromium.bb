@@ -124,10 +124,11 @@ void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
     if (start >= size) {
         start = 0;
         end = 0;
-    } else if (end < start)
+    } else if (end < start) {
         end = start;
-    else if (end > size)
+    } else if (end > size) {
         end = size;
+    }
 }
 
 Blob* Blob::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const

@@ -395,9 +395,9 @@ void FileReader::didReceiveData()
 {
     // Fire the progress event at least every 50ms.
     double now = currentTimeMS();
-    if (!m_lastProgressNotificationTimeMS)
+    if (!m_lastProgressNotificationTimeMS) {
         m_lastProgressNotificationTimeMS = now;
-    else if (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS) {
+    } else if (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS) {
         fireEvent(EventTypeNames::progress);
         m_lastProgressNotificationTimeMS = now;
     }

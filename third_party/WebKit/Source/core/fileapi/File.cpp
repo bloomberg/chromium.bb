@@ -43,9 +43,9 @@ static String getContentTypeFromFileName(const String& name, File::ContentTypeLo
     String type;
     int index = name.reverseFind('.');
     if (index != -1) {
-        if (policy == File::WellKnownContentTypes)
+        if (policy == File::WellKnownContentTypes) {
             type = MIMETypeRegistry::getWellKnownMIMETypeForExtension(name.substring(index + 1));
-        else {
+        } else {
             ASSERT(policy == File::AllContentTypes);
             type = MIMETypeRegistry::getMIMETypeForExtension(name.substring(index + 1));
         }
