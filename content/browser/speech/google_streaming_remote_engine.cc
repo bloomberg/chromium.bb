@@ -293,8 +293,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   DCHECK(!upstream_fetcher_.get());
   DCHECK(!downstream_fetcher_.get());
 
-  encoder_.reset(AudioEncoder::Create(config_.audio_sample_rate,
-                                      config_.audio_num_bits_per_sample));
+  encoder_.reset(new AudioEncoder(config_.audio_sample_rate,
+                                  config_.audio_num_bits_per_sample));
   DCHECK(encoder_.get());
   const std::string request_key = GenerateRequestKey();
 
@@ -304,7 +304,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                            !config_.auth_token.empty() &&
                            !config_.auth_scope.empty());
   if (use_framed_post_data_) {
-    preamble_encoder_.reset(AudioEncoder::Create(
+    preamble_encoder_.reset(new AudioEncoder(
         config_.preamble->sample_rate,
         config_.preamble->sample_depth * 8));
   }
@@ -362,8 +362,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   if (use_framed_post_data_) {
     std::string audio_format;
     if (preamble_encoder_)
-      audio_format = preamble_encoder_->mime_type() + ",";
-    audio_format += encoder_->mime_type();
+      audio_format = preamble_encoder_->GetMimeType() + ",";
+    audio_format += encoder_->GetMimeType();
     upstream_args.push_back(
         "audioFormat=" + net::EscapeQueryParamValue(audio_format, true));
   }
@@ -376,7 +376,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   if (use_framed_post_data_)
     upstream_fetcher_->SetChunkedUpload("application/octet-stream");
   else
-    upstream_fetcher_->SetChunkedUpload(encoder_->mime_type());
+    upstream_fetcher_->SetChunkedUpload(encoder_->GetMimeType());
   upstream_fetcher_->SetRequestContext(url_context_.get());
   upstream_fetcher_->SetReferrer(config_.origin_url);
   upstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -511,7 +511,7 @@ GoogleStreamingRemoteEngine::CloseUpstreamAndWaitForResults(
   size_t sample_count =
       config_.audio_sample_rate * kAudioPacketIntervalMs / 1000;
   scoped_refptr<AudioChunk> dummy_chunk = new AudioChunk(
-      sample_count * sizeof(int16), encoder_->bits_per_sample() / 8);
+      sample_count * sizeof(int16), encoder_->GetBitsPerSample() / 8);
   encoder_->Encode(*dummy_chunk.get());
   encoder_->Flush();
   scoped_refptr<AudioChunk> encoded_dummy_data =

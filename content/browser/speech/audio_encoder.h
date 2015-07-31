@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_SPEECH_AUDIO_ENCODER_H_
 #define CONTENT_BROWSER_SPEECH_AUDIO_ENCODER_H_
 
-#include <list>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/speech/audio_buffer.h"
+#include "third_party/flac/include/FLAC/stream_encoder.h"
 
 namespace content{
 class AudioChunk;
@@ -18,31 +18,28 @@ class AudioChunk;
 // Provides a simple interface to encode raw audio using FLAC codec.
 class AudioEncoder {
  public:
-  static AudioEncoder* Create(int sampling_rate, int bits_per_sample);
-
-  virtual ~AudioEncoder();
+  AudioEncoder(int sampling_rate, int bits_per_sample);
+  ~AudioEncoder();
 
   // Encodes |raw audio| to the internal buffer. Use
   // |GetEncodedDataAndClear| to read the result after this call or when
   // audio capture completes.
-  virtual void Encode(const AudioChunk& raw_audio) = 0;
+  void Encode(const AudioChunk& raw_audio);
 
   // Finish encoding and flush any pending encoded bits out.
-  virtual void Flush() = 0;
+  void Flush();
 
   // Merges, retrieves and clears all the accumulated encoded audio chunks.
   scoped_refptr<AudioChunk> GetEncodedDataAndClear();
 
-  const std::string& mime_type() { return mime_type_; }
-  int bits_per_sample() { return bits_per_sample_; }
-
- protected:
-  AudioEncoder(const std::string& mime_type, int bits_per_sample);
-  AudioBuffer encoded_audio_buffer_;
+  std::string GetMimeType();
+  int GetBitsPerSample();
 
  private:
-  std::string mime_type_;
-  int bits_per_sample_;
+  AudioBuffer encoded_audio_buffer_;
+
+  FLAC__StreamEncoder* encoder_;
+  bool is_encoder_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };
