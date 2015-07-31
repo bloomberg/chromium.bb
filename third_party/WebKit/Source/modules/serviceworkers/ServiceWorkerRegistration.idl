@@ -15,7 +15,7 @@
 
     readonly attribute USVString scope;
 
-    [CallWith=ScriptState] Promise<void> update();
+    [CallWith=ScriptState, RaisesException] void update();
     [CallWith=ScriptState] Promise<boolean> unregister();
 
     attribute EventHandler onupdatefound;

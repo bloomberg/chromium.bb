@@ -55,7 +55,7 @@ public:
 
     WebServiceWorkerRegistration* webRegistration() { return m_outerRegistration.get(); }
 
-    ScriptPromise update(ScriptState*);
+    void update(ScriptState*, ExceptionState&);
     ScriptPromise unregister(ScriptState*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound);
