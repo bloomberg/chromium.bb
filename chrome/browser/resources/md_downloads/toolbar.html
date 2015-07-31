@@ -1,5 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
@@ -12,9 +15,9 @@
       <h1 i18n-content="title"></h1>
     </div>
     <div id="actions">
-      <cr-button id="clear-all" i18n-content="clearAll"
+      <cr-button class="clear-all" i18n-content="clearAll"
           on-click="onClearAllClick_"></cr-button>
-      <cr-button id="open-downloads-folder" i18n-content="openDownloadsFolder"
+      <cr-button i18n-content="openDownloadsFolder"
           on-click="onOpenDownloadsFolderClick_"></cr-button>
     </div>
     <div id="search">
@@ -25,6 +28,16 @@
       <paper-icon-button icon="clear" id="clear-search"
           on-click="toggleShowingSearch_"
           hidden$="[[!showingSearch_]]"></paper-icon-button>
+      <paper-menu-button horizontal-align="right">
+        <paper-icon-button icon="more-vert"
+            class="dropdown-trigger"></paper-icon-button>
+        <paper-menu class="dropdown-content">
+          <paper-item class="clear-all" i18n-content="clearAll"
+              on-click="onClearAllClick_"></paper-item>
+          <paper-item i18n-content="openDownloadsFolder"
+              on-click="onOpenDownloadsFolderClick_"></paper-item>
+        </paper-menu>
+      </paper-menu-button>
     </div>
   </template>
   <link rel="import" type="css" href="chrome://downloads/shared_style.css">

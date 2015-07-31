@@ -84,9 +84,16 @@ cr.define('downloads', function() {
 
     /** @private */
     updateClearAll_: function() {
-      this.$['clear-all'].hidden = !this.canClearAll();
+      this.$$('#actions .clear-all').hidden = !this.canClearAll();
+      this.$$('paper-menu .clear-all').hidden = !this.canClearAll();
     },
   });
 
   return {Toolbar: Toolbar};
 });
+
+// TODO(dbeam): https://github.com/PolymerElements/iron-dropdown/pull/16/files
+/** @suppress {checkTypes} */
+(function() {
+Polymer.IronDropdownScrollManager.pushScrollLock = function() {};
+})();

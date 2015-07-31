@@ -39,13 +39,43 @@
 
 #search-term {
   --paper-input-container-color: rgba(255, 255, 255, .5);
+  --paper-input-container-focus-color: white;
   --paper-input-container-input: {
     font-size: 14px;
   };
   --paper-input-container-input-color: white;
-  --paper-input-container-focus-color: white;
   --paper-input-container-label: {
     font-size: 14px;
   };
   -webkit-margin-end: 8px;
+}
+
+paper-menu-button {
+  --paper-menu-button: {
+    padding: 0;
+  };
+}
+
+paper-item {
+  -webkit-user-select: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+paper-item:hover {
+  background: #eaeaea;  /* TODO(dbeam): real color? */
+}
+
+@media not all and (max-width: 1024px) {
+  /* Hide vertical dot menu when there's enough room for #actions. */
+  paper-menu-button {
+    display: none;
+  }
+}
+
+@media all and (max-width: 1024px) {
+  /* Hide #actions for narrow windows; they're shown in a vertical dot menu. */
+  #actions {
+    display: none;
+  }
 }

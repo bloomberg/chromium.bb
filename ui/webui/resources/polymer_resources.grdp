@@ -20,7 +20,7 @@
 -->
 <grit-part>
   <!-- Polymer 1.0 -->
-  <structure name="IDR_POLYMER_1_0_FONT_ROBOTO_FONT_ROBOTO_HTML"
+  <structure name="IDR_POLYMER_1_0_FONT_ROBOTO_ROBOTO_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/font-roboto/roboto.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_BEHAVIOR_IRON_A11Y_KEYS_BEHAVIOR_EXTRACTED_JS"
@@ -46,6 +46,18 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_COLLAPSE_IRON_COLLAPSE_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-collapse/iron-collapse.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_DROPDOWN_IRON_DROPDOWN_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-dropdown/iron-dropdown-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_DROPDOWN_IRON_DROPDOWN_SCROLL_MANAGER_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-dropdown/iron-dropdown-scroll-manager-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_DROPDOWN_IRON_DROPDOWN_SCROLL_MANAGER_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-dropdown/iron-dropdown-scroll-manager.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_DROPDOWN_IRON_DROPDOWN_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-dropdown/iron-dropdown.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_FIT_BEHAVIOR_IRON_FIT_BEHAVIOR_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-fit-behavior/iron-fit-behavior-extracted.js"
@@ -458,6 +470,9 @@
   <structure name="IDR_POLYMER_1_0_PAPER_HEADER_PANEL_PAPER_HEADER_PANEL_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-header-panel/paper-header-panel-extracted.js"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_HEADER_PANEL_PAPER_HEADER_PANEL_CSS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-header-panel/paper-header-panel.css"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_HEADER_PANEL_PAPER_HEADER_PANEL_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-header-panel/paper-header-panel.html"
              type="chrome_html" />
@@ -523,6 +538,18 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_MATERIAL_PAPER_MATERIAL_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-material/paper-material.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_MENU_BUTTON_PAPER_MENU_BUTTON_ANIMATIONS_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-menu-button/paper-menu-button-animations-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_MENU_BUTTON_PAPER_MENU_BUTTON_ANIMATIONS_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-menu-button/paper-menu-button-animations.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_MENU_BUTTON_PAPER_MENU_BUTTON_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-menu-button/paper-menu-button-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_MENU_BUTTON_PAPER_MENU_BUTTON_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-menu-button/paper-menu-button.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_MENU_PAPER_MENU_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-menu/paper-menu-extracted.js"
