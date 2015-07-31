@@ -25,8 +25,9 @@ setup_gitgit
 
   git config rietveld.server localhost:10000
 
+  # echo $($GIT_CL_STATUS)
   test_expect_success "git-cl status has no issue" \
-    "$GIT_CL_STATUS | grep -q 'no issue'"
+    "$GIT_CL_STATUS | grep -q 'No issue assigned'"
 
   # Prevent the editor from coming up when you upload.
   export GIT_EDITOR=$(which true)

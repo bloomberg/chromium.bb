@@ -795,7 +795,7 @@ or verify this branch is set up to track another (via the --track argument to
     if upstream_git_obj is None:
       if self.GetBranch() is None:
         print >> sys.stderr, (
-            'ERROR: unable to dertermine current branch (detached HEAD?)')
+            'ERROR: unable to determine current branch (detached HEAD?)')
       else:
         print >> sys.stderr, (
             'ERROR: no upstream branch')
@@ -1705,10 +1705,10 @@ def CMDstatus(parser, args):
   cl = Changelist(auth_config=auth_config)
   print
   print 'Current branch:',
-  if not cl.GetIssue():
-    print 'no issue assigned.'
-    return 0
   print cl.GetBranch()
+  if not cl.GetIssue():
+    print 'No issue assigned.'
+    return 0
   print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
   if not options.fast:
     print 'Issue description:'
