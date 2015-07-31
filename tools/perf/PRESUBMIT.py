@@ -44,8 +44,8 @@ def _CheckWprShaFiles(input_api, output_api):
     if not is_wpr_file_uploaded:
       wpr_filename = filename[:-5]
       results.append(output_api.PresubmitError(
-          'There is no URLs matched for wpr sha file %s.\n'
-          'You can upload your new wpr archive file with the command:\n'
+          'The file matching %s is not in Cloud Storage yet.\n'
+          'You can upload your new WPR archive file with the command:\n'
           'depot_tools/upload_to_google_storage.py --bucket '
           '<Your pageset\'s bucket> %s.\nFor more info: see '
           'http://www.chromium.org/developers/telemetry/'
