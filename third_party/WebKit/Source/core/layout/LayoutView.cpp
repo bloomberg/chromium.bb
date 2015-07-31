@@ -812,7 +812,7 @@ void LayoutView::commitPendingSelectionAlgorithm()
     if (!startLayoutObject || !endLayoutObject)
         return;
     ASSERT(startLayoutObject->view() == this && endLayoutObject->view() == this);
-    setSelection(startLayoutObject, startPos.deprecatedEditingOffset(), endLayoutObject, endPos.deprecatedEditingOffset());
+    setSelection(startLayoutObject, startPos.computeEditingOffset(), endLayoutObject, endPos.computeEditingOffset());
 }
 
 void LayoutView::commitPendingSelection()

@@ -129,6 +129,17 @@ public:
         return m_offset;
     }
 
+    // Returns an offset for editing based on anchor type for using with
+    // |anchorNode()| function:
+    //   - OffsetInAnchor  m_offset
+    //   - BeforeChildren  0
+    //   - BeforeAnchor    0
+    //   - AfterChildren   last editing offset in anchor node
+    //   - AfterAnchor     last editing offset in anchor node
+    // Editing operations will change in anchor node rather than nodes around
+    // anchor node.
+    int computeEditingOffset() const;
+
     // New code should not use this function.
     int deprecatedEditingOffset() const
     {

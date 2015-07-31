@@ -253,6 +253,20 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::toOffsetInAnchor() cons
 }
 
 template <typename Strategy>
+int PositionAlgorithm<Strategy>::computeEditingOffset() const
+{
+    if (m_isLegacyEditingPosition) {
+        int offset = Strategy::lastOffsetForEditing(m_anchorNode.get());
+        ASSERT(m_offset == offset);
+        return offset;
+    }
+
+    if (isAfterAnchorOrAfterChildren())
+        return Strategy::lastOffsetForEditing(m_anchorNode.get());
+    return m_offset;
+}
+
+template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::computeNodeBeforePosition() const
 {
     if (!m_anchorNode)
