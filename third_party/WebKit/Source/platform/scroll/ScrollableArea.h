@@ -46,7 +46,6 @@ class PlatformWheelEvent;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnimator;
-class WebCompositorAnimationTimeline;
 
 enum ScrollBehavior {
     ScrollBehaviorAuto,
@@ -269,7 +268,7 @@ public:
     bool hasLayerForVerticalScrollbar() const;
     bool hasLayerForScrollCorner() const;
 
-    void layerForScrollingDidChange(WebCompositorAnimationTimeline*);
+    void layerForScrollingDidChange();
 
     void cancelScrollAnimation();
     void cancelProgrammaticScrollAnimation();

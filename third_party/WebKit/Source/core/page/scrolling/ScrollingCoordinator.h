@@ -48,7 +48,6 @@ class GraphicsLayer;
 class Page;
 class Region;
 class ScrollableArea;
-class WebCompositorAnimationTimeline;
 
 class CORE_EXPORT ScrollingCoordinator final : public NoBaseWillBeGarbageCollectedFinalized<ScrollingCoordinator> {
     WTF_MAKE_NONCOPYABLE(ScrollingCoordinator);
@@ -151,8 +150,6 @@ private:
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
     bool frameViewIsDirty() const;
-
-    OwnPtr<WebCompositorAnimationTimeline> m_programmaticScrollAnimatorTimeline;
 
     using ScrollbarMap = WillBeHeapHashMap<RawPtrWillBeMember<ScrollableArea>, OwnPtr<WebScrollbarLayer>>;
     ScrollbarMap m_horizontalScrollbars;
