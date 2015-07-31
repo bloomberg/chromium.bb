@@ -287,7 +287,13 @@ TEST_F(FileProxyTest, WriteAndFlush) {
   }
 }
 
-TEST_F(FileProxyTest, SetTimes) {
+#if defined(OS_ANDROID)
+// Flaky on Android, see http://crbug.com/489602
+#define MAYBE_SetTimes DISABLED_SetTimes
+#else
+#define MAYBE_SetTimes SetTimes
+#endif
+TEST_F(FileProxyTest, MAYBE_SetTimes) {
   FileProxy proxy(file_task_runner());
   CreateProxy(
       File::FLAG_CREATE | File::FLAG_WRITE | File::FLAG_WRITE_ATTRIBUTES,
