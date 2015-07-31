@@ -28,6 +28,8 @@
         'cygprofile_unittest.cc',
       ],
       'cflags!': [ '-finstrument-functions' ],
+      # TODO(azarchs): Fix the underlying problem (crbug/485542)
+      'ldflags': [ '-Wl,--no-fatal-warnings' ],
       'dependencies': [
         'cygprofile',
         '../../base/base.gyp:base',
