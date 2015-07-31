@@ -331,7 +331,8 @@ def _MaybeUploadReleaseNotes(version):
     desc = issue[1]
     labels = issue[2].split(', ')
     labels.remove('ChromeDriver-%s' % version)
-    labels.remove('Hotlist-GoodFirstBug')
+    if 'Hotlist-GoodFirstBug' in labels:
+      labels.remove('Hotlist-GoodFirstBug')
     fixed_issues += ['Resolved issue %s: %s [%s]' % (issue_id, desc, labels)]
 
   old_notes = ''
