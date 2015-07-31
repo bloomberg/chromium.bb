@@ -51,6 +51,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -65,7 +66,6 @@
 #include "core/page/DragSession.h"
 #include "core/page/DragState.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
@@ -607,9 +607,9 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
     }
 
     operation = dataTransfer->destinationOperation();
-    if (dataTransfer->dropEffectIsUninitialized())
+    if (dataTransfer->dropEffectIsUninitialized()) {
         operation = defaultOperationForDrag(srcOpMask);
-    else if (!(srcOpMask & operation)) {
+    } else if (!(srcOpMask & operation)) {
         // The element picked an operation which is not supported by the source
         operation = DragOperationNone;
     }

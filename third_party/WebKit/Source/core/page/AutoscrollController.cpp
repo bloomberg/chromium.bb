@@ -289,12 +289,13 @@ void AutoscrollController::updatePanScrollState(FrameView* view, const IntPoint&
             view->setCursor(southWestPanningCursor());
         else
             view->setCursor(southPanningCursor());
-    } else if (east)
+    } else if (east) {
         view->setCursor(eastPanningCursor());
-    else if (west)
+    } else if (west) {
         view->setCursor(westPanningCursor());
-    else
+    } else {
         view->setCursor(middlePanningCursor());
+    }
 }
 #endif
 

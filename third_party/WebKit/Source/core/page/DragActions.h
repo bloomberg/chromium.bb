@@ -30,33 +30,33 @@
 
 namespace blink {
 
-    typedef enum {
-        DragDestinationActionNone    = 0,
-        DragDestinationActionDHTML   = 1,
-        DragDestinationActionEdit    = 2,
-        DragDestinationActionLoad    = 4,
-        DragDestinationActionAny     = UINT_MAX
-    } DragDestinationAction;
+typedef enum {
+    DragDestinationActionNone    = 0,
+    DragDestinationActionDHTML   = 1,
+    DragDestinationActionEdit    = 2,
+    DragDestinationActionLoad    = 4,
+    DragDestinationActionAny     = UINT_MAX
+} DragDestinationAction;
 
-    typedef enum {
-        DragSourceActionNone,
-        DragSourceActionDHTML,
-        DragSourceActionImage,
-        DragSourceActionLink,
-        DragSourceActionSelection,
-    } DragSourceAction;
+typedef enum {
+    DragSourceActionNone,
+    DragSourceActionDHTML,
+    DragSourceActionImage,
+    DragSourceActionLink,
+    DragSourceActionSelection,
+} DragSourceAction;
 
-    //matches NSDragOperation
-    typedef enum {
-        DragOperationNone    = 0,
-        DragOperationCopy    = 1,
-        DragOperationLink    = 2,
-        DragOperationGeneric = 4,
-        DragOperationPrivate = 8,
-        DragOperationMove    = 16,
-        DragOperationDelete  = 32,
-        DragOperationEvery   = UINT_MAX
-    } DragOperation;
+// matches NSDragOperation
+typedef enum {
+    DragOperationNone    = 0,
+    DragOperationCopy    = 1,
+    DragOperationLink    = 2,
+    DragOperationGeneric = 4,
+    DragOperationPrivate = 8,
+    DragOperationMove    = 16,
+    DragOperationDelete  = 32,
+    DragOperationEvery   = UINT_MAX
+} DragOperation;
 
 }
 
