@@ -129,6 +129,8 @@ void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsign
         return;
     if (response.httpStatusCode() < 400)
         return;
+    if (response.wasFallbackRequiredByServiceWorker())
+        return;
     String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().string());
     consoleMessage->setRequestIdentifier(requestIdentifier);
