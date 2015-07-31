@@ -58,6 +58,7 @@
     },
     {
       'FILES': [
+        'gtest.h',
         'gtest-port.h',
         'gtest-printers.h',
       ],
