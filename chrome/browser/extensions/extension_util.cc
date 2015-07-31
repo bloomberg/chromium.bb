@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
@@ -36,6 +37,9 @@ namespace extensions {
 namespace util {
 
 namespace {
+
+const char kSupervisedUserExtensionPermissionIncreaseFieldTrialName[] =
+    "SupervisedUserExtensionPermissionIncrease";
 
 // The entry into the ExtensionPrefs for allowing an extension to script on
 // all urls without explicit permission.
@@ -364,6 +368,12 @@ bool IsNewBookmarkAppsEnabled() {
 
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
   return extension->was_installed_by_custodian() && profile->IsSupervised();
+}
+
+bool NeedCustodianApprovalForPermissionIncrease() {
+  const std::string group_name = base::FieldTrialList::FindFullName(
+      kSupervisedUserExtensionPermissionIncreaseFieldTrialName);
+  return group_name == "NeedCustodianApproval";
 }
 
 }  // namespace util

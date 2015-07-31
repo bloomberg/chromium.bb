@@ -19,6 +19,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -27,6 +28,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -6990,7 +6992,7 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   DISALLOW_COPY_AND_ASSIGN(MockPermissionRequestCreator);
 };
 
-TEST_F(ExtensionServiceTest, SupervisedUser_InstallOnlyAllowedByCustodian) {
+TEST_F(ExtensionServiceTest, SupervisedUserInstallOnlyAllowedByCustodian) {
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.profile_is_supervised = true;
   InitializeExtensionService(params);
@@ -7014,7 +7016,7 @@ TEST_F(ExtensionServiceTest, SupervisedUser_InstallOnlyAllowedByCustodian) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extensions[1]->id()));
 }
 
-TEST_F(ExtensionServiceTest, SupervisedUser_PreinstalledExtension) {
+TEST_F(ExtensionServiceTest, SupervisedUserPreinstalledExtension) {
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   // Do *not* set the profile to supervised here!
   InitializeExtensionService(params);
@@ -7037,7 +7039,7 @@ TEST_F(ExtensionServiceTest, SupervisedUser_PreinstalledExtension) {
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
 }
 
-TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithoutPermissionIncrease) {
+TEST_F(ExtensionServiceTest, SupervisedUserUpdateWithoutPermissionIncrease) {
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.profile_is_supervised = true;
   InitializeExtensionService(params);
@@ -7074,7 +7076,19 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithoutPermissionIncrease) {
   EXPECT_NE(extension->VersionString(), old_version);
 }
 
-TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
+// Helper class that allows us to parameterize the UpdateWithPermissionIncrease
+// test over |bool need_custodian_approval|.
+class ExtensionServiceTestSupervisedUserPermissionIncrease :
+    public ExtensionServiceTest, public testing::WithParamInterface<bool> {};
+
+TEST_P(ExtensionServiceTestSupervisedUserPermissionIncrease,
+       UpdateWithPermissionIncrease) {
+  bool need_custodian_approval = GetParam();
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial(
+      "SupervisedUserExtensionPermissionIncrease",
+      need_custodian_approval ? "NeedCustodianApproval" : "");
+
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.profile_is_supervised = true;
   InitializeExtensionService(params);
@@ -7104,8 +7118,8 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
   std::string old_version = extension->VersionString();
 
   // Update to a new version with increased permissions.
-  EXPECT_CALL(*creator,
-              CreateExtensionUpdateRequest(id + ":2", testing::_));
+  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(id + ":2", testing::_))
+      .Times(need_custodian_approval ? 1 : 0);
   path = base_path.AppendASCII("v2");
   PackCRXAndUpdateExtension(id, path, pem_path, DISABLED);
 
@@ -7116,9 +7130,12 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
   // The version should have changed.
   EXPECT_NE(extension->VersionString(), old_version);
 }
+INSTANTIATE_TEST_CASE_P(NeedCustodianApproval,
+                        ExtensionServiceTestSupervisedUserPermissionIncrease,
+                        testing::Bool());
 
 TEST_F(ExtensionServiceTest,
-       SupervisedUser_SyncUninstallByCustodianSkipsPolicy) {
+       SupervisedUserSyncUninstallByCustodianSkipsPolicy) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
