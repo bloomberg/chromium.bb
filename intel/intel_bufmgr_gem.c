@@ -61,7 +61,6 @@
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "intel_chipset.h"
-#include "intel_aub.h"
 #include "string.h"
 
 #include "i915_drm.h"
@@ -138,9 +137,6 @@ typedef struct _drm_intel_bufmgr_gem {
 		uint32_t handle;
 	} userptr_active;
 
-	char *aub_filename;
-	FILE *aub_file;
-	uint32_t aub_offset;
 } drm_intel_bufmgr_gem;
 
 #define DRM_INTEL_RELOC_FENCE (1<<0)
@@ -256,11 +252,6 @@ struct _drm_intel_bo_gem {
 
 	/** Flags that we may need to do the SW_FINSIH ioctl on unmap. */
 	bool mapped_cpu_write;
-
-	uint32_t aub_offset;
-
-	drm_intel_aub_annotation *aub_annotations;
-	unsigned aub_annotation_count;
 };
 
 static unsigned int
@@ -789,8 +780,6 @@ retry:
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = true;
-	bo_gem->aub_annotations = NULL;
-	bo_gem->aub_annotation_count = 0;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, alignment);
 
@@ -1143,7 +1132,6 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 		DBG("DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
 		    bo_gem->gem_handle, bo_gem->name, strerror(errno));
 	}
-	free(bo_gem->aub_annotations);
 	free(bo);
 }
 
@@ -1822,7 +1810,6 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 	free(bufmgr_gem->exec2_objects);
 	free(bufmgr_gem->exec_objects);
 	free(bufmgr_gem->exec_bos);
-	free(bufmgr_gem->aub_filename);
 
 	pthread_mutex_destroy(&bufmgr_gem->lock);
 
@@ -2116,297 +2103,12 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 	}
 }
 
-static void
-aub_out(drm_intel_bufmgr_gem *bufmgr_gem, uint32_t data)
-{
-	fwrite(&data, 1, 4, bufmgr_gem->aub_file);
-}
-
-static void
-aub_out_data(drm_intel_bufmgr_gem *bufmgr_gem, void *data, size_t size)
-{
-	fwrite(data, 1, size, bufmgr_gem->aub_file);
-}
-
-static void
-aub_write_bo_data(drm_intel_bo *bo, uint32_t offset, uint32_t size)
-{
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	uint32_t *data;
-	unsigned int i;
-
-	data = malloc(bo->size);
-	drm_intel_bo_get_subdata(bo, offset, size, data);
-
-	/* Easy mode: write out bo with no relocations */
-	if (!bo_gem->reloc_count) {
-		aub_out_data(bufmgr_gem, data, size);
-		free(data);
-		return;
-	}
-
-	/* Otherwise, handle the relocations while writing. */
-	for (i = 0; i < size / 4; i++) {
-		int r;
-		for (r = 0; r < bo_gem->reloc_count; r++) {
-			struct drm_i915_gem_relocation_entry *reloc;
-			drm_intel_reloc_target *info;
-
-			reloc = &bo_gem->relocs[r];
-			info = &bo_gem->reloc_target_info[r];
-
-			if (reloc->offset == offset + i * 4) {
-				drm_intel_bo_gem *target_gem;
-				uint32_t val;
-
-				target_gem = (drm_intel_bo_gem *)info->bo;
-
-				val = reloc->delta;
-				val += target_gem->aub_offset;
-
-				aub_out(bufmgr_gem, val);
-				data[i] = val;
-				break;
-			}
-		}
-		if (r == bo_gem->reloc_count) {
-			/* no relocation, just the data */
-			aub_out(bufmgr_gem, data[i]);
-		}
-	}
-
-	free(data);
-}
-
-static void
-aub_bo_get_address(drm_intel_bo *bo)
-{
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-
-	/* Give the object a graphics address in the AUB file.  We
-	 * don't just use the GEM object address because we do AUB
-	 * dumping before execution -- we want to successfully log
-	 * when the hardware might hang, and we might even want to aub
-	 * capture for a driver trying to execute on a different
-	 * generation of hardware by disabling the actual kernel exec
-	 * call.
-	 */
-	bo_gem->aub_offset = bufmgr_gem->aub_offset;
-	bufmgr_gem->aub_offset += bo->size;
-	/* XXX: Handle aperture overflow. */
-	assert(bufmgr_gem->aub_offset < 256 * 1024 * 1024);
-}
-
-static void
-aub_write_trace_block(drm_intel_bo *bo, uint32_t type, uint32_t subtype,
-		      uint32_t offset, uint32_t size)
-{
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-
-	aub_out(bufmgr_gem,
-		CMD_AUB_TRACE_HEADER_BLOCK |
-		((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
-	aub_out(bufmgr_gem,
-		AUB_TRACE_MEMTYPE_GTT | type | AUB_TRACE_OP_DATA_WRITE);
-	aub_out(bufmgr_gem, subtype);
-	aub_out(bufmgr_gem, bo_gem->aub_offset + offset);
-	aub_out(bufmgr_gem, size);
-	if (bufmgr_gem->gen >= 8)
-		aub_out(bufmgr_gem, 0);
-	aub_write_bo_data(bo, offset, size);
-}
-
-/**
- * Break up large objects into multiple writes.  Otherwise a 128kb VBO
- * would overflow the 16 bits of size field in the packet header and
- * everything goes badly after that.
- */
-static void
-aub_write_large_trace_block(drm_intel_bo *bo, uint32_t type, uint32_t subtype,
-			    uint32_t offset, uint32_t size)
-{
-	uint32_t block_size;
-	uint32_t sub_offset;
-
-	for (sub_offset = 0; sub_offset < size; sub_offset += block_size) {
-		block_size = size - sub_offset;
-
-		if (block_size > 8 * 4096)
-			block_size = 8 * 4096;
-
-		aub_write_trace_block(bo, type, subtype, offset + sub_offset,
-				      block_size);
-	}
-}
-
-static void
-aub_write_bo(drm_intel_bo *bo)
-{
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	uint32_t offset = 0;
-	unsigned i;
-
-	aub_bo_get_address(bo);
-
-	/* Write out each annotated section separately. */
-	for (i = 0; i < bo_gem->aub_annotation_count; ++i) {
-		drm_intel_aub_annotation *annotation =
-			&bo_gem->aub_annotations[i];
-		uint32_t ending_offset = annotation->ending_offset;
-		if (ending_offset > bo->size)
-			ending_offset = bo->size;
-		if (ending_offset > offset) {
-			aub_write_large_trace_block(bo, annotation->type,
-						    annotation->subtype,
-						    offset,
-						    ending_offset - offset);
-			offset = ending_offset;
-		}
-	}
-
-	/* Write out any remaining unannotated data */
-	if (offset < bo->size) {
-		aub_write_large_trace_block(bo, AUB_TRACE_TYPE_NOTYPE, 0,
-					    offset, bo->size - offset);
-	}
-}
-
-/*
- * Make a ringbuffer on fly and dump it
- */
-static void
-aub_build_dump_ringbuffer(drm_intel_bufmgr_gem *bufmgr_gem,
-			  uint32_t batch_buffer, int ring_flag)
-{
-	uint32_t ringbuffer[4096];
-	int ring = AUB_TRACE_TYPE_RING_PRB0; /* The default ring */
-	int ring_count = 0;
-
-	if (ring_flag == I915_EXEC_BSD)
-		ring = AUB_TRACE_TYPE_RING_PRB1;
-	else if (ring_flag == I915_EXEC_BLT)
-		ring = AUB_TRACE_TYPE_RING_PRB2;
-
-	/* Make a ring buffer to execute our batchbuffer. */
-	memset(ringbuffer, 0, sizeof(ringbuffer));
-	if (bufmgr_gem->gen >= 8) {
-		ringbuffer[ring_count++] = AUB_MI_BATCH_BUFFER_START | (3 - 2);
-		ringbuffer[ring_count++] = batch_buffer;
-		ringbuffer[ring_count++] = 0;
-	} else {
-		ringbuffer[ring_count++] = AUB_MI_BATCH_BUFFER_START;
-		ringbuffer[ring_count++] = batch_buffer;
-	}
-
-	/* Write out the ring.  This appears to trigger execution of
-	 * the ring in the simulator.
-	 */
-	aub_out(bufmgr_gem,
-		CMD_AUB_TRACE_HEADER_BLOCK |
-		((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
-	aub_out(bufmgr_gem,
-		AUB_TRACE_MEMTYPE_GTT | ring | AUB_TRACE_OP_COMMAND_WRITE);
-	aub_out(bufmgr_gem, 0); /* general/surface subtype */
-	aub_out(bufmgr_gem, bufmgr_gem->aub_offset);
-	aub_out(bufmgr_gem, ring_count * 4);
-	if (bufmgr_gem->gen >= 8)
-		aub_out(bufmgr_gem, 0);
-
-	/* FIXME: Need some flush operations here? */
-	aub_out_data(bufmgr_gem, ringbuffer, ring_count * 4);
-
-	/* Update offset pointer */
-	bufmgr_gem->aub_offset += 4096;
-}
-
 void
 drm_intel_gem_bo_aub_dump_bmp(drm_intel_bo *bo,
 			      int x1, int y1, int width, int height,
 			      enum aub_dump_bmp_format format,
 			      int pitch, int offset)
 {
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-	uint32_t cpp;
-
-	switch (format) {
-	case AUB_DUMP_BMP_FORMAT_8BIT:
-		cpp = 1;
-		break;
-	case AUB_DUMP_BMP_FORMAT_ARGB_4444:
-		cpp = 2;
-		break;
-	case AUB_DUMP_BMP_FORMAT_ARGB_0888:
-	case AUB_DUMP_BMP_FORMAT_ARGB_8888:
-		cpp = 4;
-		break;
-	default:
-		printf("Unknown AUB dump format %d\n", format);
-		return;
-	}
-
-	if (!bufmgr_gem->aub_file)
-		return;
-
-	aub_out(bufmgr_gem, CMD_AUB_DUMP_BMP | 4);
-	aub_out(bufmgr_gem, (y1 << 16) | x1);
-	aub_out(bufmgr_gem,
-		(format << 24) |
-		(cpp << 19) |
-		pitch / 4);
-	aub_out(bufmgr_gem, (height << 16) | width);
-	aub_out(bufmgr_gem, bo_gem->aub_offset + offset);
-	aub_out(bufmgr_gem,
-		((bo_gem->tiling_mode != I915_TILING_NONE) ? (1 << 2) : 0) |
-		((bo_gem->tiling_mode == I915_TILING_Y) ? (1 << 3) : 0));
-}
-
-static void
-aub_exec(drm_intel_bo *bo, int ring_flag, int used)
-{
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	int i;
-	bool batch_buffer_needs_annotations;
-
-	if (!bufmgr_gem->aub_file)
-		return;
-
-	/* If batch buffer is not annotated, annotate it the best we
-	 * can.
-	 */
-	batch_buffer_needs_annotations = bo_gem->aub_annotation_count == 0;
-	if (batch_buffer_needs_annotations) {
-		drm_intel_aub_annotation annotations[2] = {
-			{ AUB_TRACE_TYPE_BATCH, 0, used },
-			{ AUB_TRACE_TYPE_NOTYPE, 0, bo->size }
-		};
-		drm_intel_bufmgr_gem_set_aub_annotations(bo, annotations, 2);
-	}
-
-	/* Write out all buffers to AUB memory */
-	for (i = 0; i < bufmgr_gem->exec_count; i++) {
-		aub_write_bo(bufmgr_gem->exec_bos[i]);
-	}
-
-	/* Remove any annotations we added */
-	if (batch_buffer_needs_annotations)
-		drm_intel_bufmgr_gem_set_aub_annotations(bo, NULL, 0);
-
-	/* Dump ring buffer */
-	aub_build_dump_ringbuffer(bufmgr_gem, bo_gem->aub_offset, ring_flag);
-
-	fflush(bufmgr_gem->aub_file);
-
-	/*
-	 * One frame has been dumped. So reset the aub_offset for the next frame.
-	 *
-	 * FIXME: Can we do this?
-	 */
-	bufmgr_gem->aub_offset = 0x10000;
 }
 
 static int
@@ -2532,8 +2234,6 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	else
 		i915_execbuffer2_set_context_id(execbuf, ctx->ctx_id);
 	execbuf.rsvd2 = 0;
-
-	aub_exec(bo, flags, used);
 
 	if (bufmgr_gem->no_exec)
 		goto skip_execution;
@@ -3210,11 +2910,6 @@ void
 drm_intel_bufmgr_gem_set_aub_filename(drm_intel_bufmgr *bufmgr,
 				      const char *filename)
 {
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
-
-	free(bufmgr_gem->aub_filename);
-	if (filename)
-		bufmgr_gem->aub_filename = strdup(filename);
 }
 
 /**
@@ -3228,58 +2923,11 @@ drm_intel_bufmgr_gem_set_aub_filename(drm_intel_bufmgr *bufmgr,
 void
 drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 {
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
-	int entry = 0x200003;
-	int i;
-	int gtt_size = 0x10000;
-	const char *filename;
-
-	if (!enable) {
-		if (bufmgr_gem->aub_file) {
-			fclose(bufmgr_gem->aub_file);
-			bufmgr_gem->aub_file = NULL;
-		}
-		return;
-	}
-
-	if (geteuid() != getuid())
-		return;
-
-	if (bufmgr_gem->aub_filename)
-		filename = bufmgr_gem->aub_filename;
-	else
-		filename = "intel.aub";
-	bufmgr_gem->aub_file = fopen(filename, "w+");
-	if (!bufmgr_gem->aub_file)
-		return;
-
-	/* Start allocating objects from just after the GTT. */
-	bufmgr_gem->aub_offset = gtt_size;
-
-	/* Start with a (required) version packet. */
-	aub_out(bufmgr_gem, CMD_AUB_HEADER | (13 - 2));
-	aub_out(bufmgr_gem,
-		(4 << AUB_HEADER_MAJOR_SHIFT) |
-		(0 << AUB_HEADER_MINOR_SHIFT));
-	for (i = 0; i < 8; i++) {
-		aub_out(bufmgr_gem, 0); /* app name */
-	}
-	aub_out(bufmgr_gem, 0); /* timestamp */
-	aub_out(bufmgr_gem, 0); /* timestamp */
-	aub_out(bufmgr_gem, 0); /* comment len */
-
-	/* Set up the GTT. The max we can handle is 256M */
-	aub_out(bufmgr_gem, CMD_AUB_TRACE_HEADER_BLOCK | ((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
-	/* Need to use GTT_ENTRY type for recent emulator */
-	aub_out(bufmgr_gem, AUB_TRACE_MEMTYPE_GTT_ENTRY | 0 | AUB_TRACE_OP_DATA_WRITE);
-	aub_out(bufmgr_gem, 0); /* subtype */
-	aub_out(bufmgr_gem, 0); /* offset */
-	aub_out(bufmgr_gem, gtt_size); /* size */
-	if (bufmgr_gem->gen >= 8)
-		aub_out(bufmgr_gem, 0);
-	for (i = 0x000; i < gtt_size; i += 4, entry += 0x1000) {
-		aub_out(bufmgr_gem, entry);
-	}
+	fprintf(stderr, "libdrm aub dumping is deprecated.\n\n"
+		"Use intel_aubdump from intel-gpu-tools instead.  Install intel-gpu-tools,\n"
+		"then run (for example)\n\n"
+		"\t$ intel_aubdump --output=trace.aub glxgears -geometry 500x500\n\n"
+		"See the intel_aubdump man page for more details.\n");
 }
 
 drm_intel_context *
@@ -3442,19 +3090,6 @@ drm_intel_bufmgr_gem_set_aub_annotations(drm_intel_bo *bo,
 					 drm_intel_aub_annotation *annotations,
 					 unsigned count)
 {
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	unsigned size = sizeof(*annotations) * count;
-	drm_intel_aub_annotation *new_annotations =
-		count > 0 ? realloc(bo_gem->aub_annotations, size) : NULL;
-	if (new_annotations == NULL) {
-		free(bo_gem->aub_annotations);
-		bo_gem->aub_annotations = NULL;
-		bo_gem->aub_annotation_count = 0;
-		return;
-	}
-	memcpy(new_annotations, annotations, size);
-	bo_gem->aub_annotations = new_annotations;
-	bo_gem->aub_annotation_count = count;
 }
 
 static pthread_mutex_t bufmgr_list_mutex = PTHREAD_MUTEX_INITIALIZER;
