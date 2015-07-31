@@ -36,7 +36,7 @@ public class UrlUtilities {
      * URI schemes that Chrome can download.
      */
     private static final HashSet<String> DOWNLOADABLE_SCHEMES = CollectionUtil.newHashSet(
-            "data", "filesystem", "http", "https", "blob");
+            "data", "filesystem", "http", "https", "blob", "file");
 
     /**
      * URI schemes that are internal to Chrome.
