@@ -254,8 +254,14 @@ TEST(LayerAnimationControllerTest, SyncPause) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::OPACITY));
 
-  int animation_id =
-      AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
+  // Two steps, three ranges: [0-1) -> 0.2, [1-2) -> 0.3, [2-3] -> 0.4.
+  const double duration = 3.0;
+  const int animation_id =
+      AddOpacityStepsToController(controller.get(), duration, 0.2f, 0.4f, 2);
+
+  // Set start offset to be at the beginning of the second range.
+  controller->GetAnimationById(animation_id)
+      ->set_time_offset(TimeDelta::FromSecondsD(1.01));
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
@@ -264,29 +270,52 @@ TEST(LayerAnimationControllerTest, SyncPause) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
+  TimeTicks time = kInitialTickTime;
+
   // Start the animations on each controller.
   AnimationEventsVector events;
-  controller_impl->Animate(kInitialTickTime);
+  controller_impl->Animate(time);
   controller_impl->UpdateState(true, &events);
-  controller->Animate(kInitialTickTime);
+  EXPECT_EQ(1u, events.size());
+
+  controller->Animate(time);
   controller->UpdateState(true, nullptr);
+  controller->NotifyAnimationStarted(events[0]);
+
   EXPECT_EQ(Animation::RUNNING,
             controller_impl->GetAnimationById(animation_id)->run_state());
   EXPECT_EQ(Animation::RUNNING,
             controller->GetAnimationById(animation_id)->run_state());
 
-  // Pause the main-thread animation.
-  controller->PauseAnimation(
-      animation_id,
-      TimeDelta::FromMilliseconds(1000) + TimeDelta::FromMilliseconds(1000));
+  EXPECT_EQ(0.3f, dummy.opacity());
+  EXPECT_EQ(0.3f, dummy_impl.opacity());
+
+  EXPECT_EQ(kInitialTickTime,
+            controller->GetAnimationById(animation_id)->start_time());
+  EXPECT_EQ(kInitialTickTime,
+            controller_impl->GetAnimationById(animation_id)->start_time());
+
+  // Pause the animation at the middle of the second range so the offset
+  // delays animation until the middle of the third range.
+  controller->PauseAnimation(animation_id, TimeDelta::FromSecondsD(1.5));
   EXPECT_EQ(Animation::PAUSED,
             controller->GetAnimationById(animation_id)->run_state());
 
   // The pause run state change should make it to the impl thread controller.
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
+
+  // Advance time so it stays within the first range.
+  time += TimeDelta::FromMilliseconds(10);
+  controller->Animate(time);
+  controller_impl->Animate(time);
+
   EXPECT_EQ(Animation::PAUSED,
             controller_impl->GetAnimationById(animation_id)->run_state());
+
+  // Opacity value doesn't depend on time if paused at specified time offset.
+  EXPECT_EQ(0.4f, dummy.opacity());
+  EXPECT_EQ(0.4f, dummy_impl.opacity());
 }
 
 TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {

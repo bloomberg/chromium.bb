@@ -46,7 +46,8 @@ void LayerAnimationController::PauseAnimation(int animation_id,
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->id() == animation_id) {
       animations_[i]->SetRunState(Animation::PAUSED,
-                                  time_offset + animations_[i]->start_time());
+                                  time_offset + animations_[i]->start_time() +
+                                      animations_[i]->time_offset());
     }
   }
 }

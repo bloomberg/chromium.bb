@@ -196,6 +196,12 @@ int AddAnimatedFilterToPlayer(AnimationPlayer* player,
                               float start_brightness,
                               float end_brightness);
 
+int AddOpacityStepsToController(LayerAnimationController* target,
+                                double duration,
+                                float start_opacity,
+                                float end_opacity,
+                                int num_steps);
+
 }  // namespace cc
 
 #endif  // CC_TEST_ANIMATION_TEST_COMMON_H_
