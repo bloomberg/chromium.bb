@@ -524,6 +524,15 @@ if (is_ios) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("media_unittests_run") {
+  testonly = true
+  deps = [
+    ":media_unittests",
+  ]
+}
+
 test("media_unittests") {
   sources = [
     "blink/skcanvas_video_renderer_unittest.cc",
@@ -574,6 +583,10 @@ test("media_unittests") {
     "renderers/renderer_impl_unittest.cc",
     "renderers/video_renderer_impl_unittest.cc",
     "video/h264_poc_unittest.cc",
+  ]
+
+  data = [
+    "test/data/",
   ]
 
   # TODO(wolenetz): Fix size_t to int trunctaion in win64.

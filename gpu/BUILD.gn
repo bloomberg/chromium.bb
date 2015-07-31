@@ -130,6 +130,15 @@ test("gl_tests") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gpu_unittests_run") {
+  testonly = true
+  deps = [
+    ":gpu_unittests",
+  ]
+}
+
 test("gpu_unittests") {
   sources = [
     "command_buffer/client/buffer_tracker_unittest.cc",

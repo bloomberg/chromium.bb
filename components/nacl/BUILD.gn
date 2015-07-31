@@ -151,6 +151,15 @@ if (enable_nacl) {
     ]
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("nacl_loader_unittests_run") {
+    testonly = true
+    deps = [
+      ":nacl_loader_unittests",
+    ]
+  }
+
   test("nacl_loader_unittests") {
     sources = [
       "loader/nacl_ipc_adapter_unittest.cc",

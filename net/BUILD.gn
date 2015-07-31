@@ -1313,6 +1313,15 @@ executable("quic_server") {
 
 # TODO(GYP) bug 513775: Make this work on Mac.
 if (!is_mac) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("net_unittests_run") {
+    testonly = true
+    deps = [
+      ":net_unittests",
+    ]
+  }
+
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
@@ -1351,13 +1360,25 @@ if (!is_mac) {
     data = [
       "data/",
     ]
+
     if (is_linux || is_mac || is_win) {
       deps += [
         "//third_party/pyftpdlib/",
         "//third_party/pywebsocket/",
         "//third_party/tlslite/",
       ]
-      data += [ "tools/testserver/" ]
+      data_deps = [
+        "//third_party/pyftpdlib/",
+        "//third_party/pywebsocket/",
+        "//third_party/tlslite/",
+      ]
+      data += [
+        "tools/testserver/",
+        "//third_party/pyftpdlib/",
+        "//third_party/pywebsocket/",
+        "//third_party/tlslite/",
+        "$root_out_dir/pyproto/google/",
+      ]
     }
 
     if (is_desktop_linux) {

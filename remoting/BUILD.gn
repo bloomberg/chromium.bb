@@ -101,12 +101,27 @@ source_set("test_support") {
 
 # TODO(GYP) remoting_unittests on Mac. Needs to be tested.
 if (!is_mac) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("remoting_unittests_run") {
+    testonly = true
+    deps = [
+      ":remoting_unittests",
+    ]
+  }
+
   test("remoting_unittests") {
     configs += [
       ":version",
 
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       "//build/config/compiler:no_size_t_to_int_warning",
+    ]
+
+    data = [
+      "//net/data/ssl/certificates/ok_cert.pem",
+      "//net/data/ssl/certificates/unittest.key.bin",
+      "//net/data/ssl/certificates/unittest.selfsigned.der",
     ]
 
     deps = [

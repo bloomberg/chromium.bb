@@ -153,23 +153,24 @@
   },
   "events_unittests": {
     "label": "//ui/events:events_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "extensions_browsertests": {
     "label": "//extensions:extensions_browsertests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "extensions_unittests": {
     "label": "//extensions:extensions_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "gcm_unit_tests": {
     "label": "//google_apis/gcm:gcm_unit_tests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "gfx_unittests": {
     "label": "//ui/gfx:gfx_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "gl_unittests": {
     "label": "//ui/gl:gl_unittests",
@@ -187,7 +188,7 @@
   },
   "gpu_unittests": {
     "label": "//gpu:gpu_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "html_viewer_unittests": {
     "label": "//components/html_viewer:html_viewer_unittests",
@@ -199,7 +200,7 @@
   },
   "interactive_ui_tests": {
     "label": "//chrome/test:interactive_ui_tests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "ipc_mojo_unittests": {
     "label": "//ipc/mojo:ipc_mojo_unittests",
@@ -211,7 +212,7 @@
   },
   "jingle_unittests": {
     "label": "//jingle:jingle_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "keyboard_unittests": {
     "label": "//ui/keyboard:keyboard_unittests",
@@ -219,7 +220,7 @@
   },
   "media_unittests": {
     "label": "//media:media_unittests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "midi_unittests": {
     "label": "//media:midi_unittests",
@@ -227,7 +228,7 @@
   },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "mojo_public_application_unittests": {
     "label": "//third_party/mojo/src/mojo/edk/test:mojo_public_applicaiton_unittests",
@@ -235,11 +236,11 @@
   },
   "mojo_public_bindings_unittests": {
     "label": "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "mojo_public_environment_unittests": {
     "label": "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "mojo_public_system_unittests": {
     "label": "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",
@@ -275,11 +276,12 @@
   },
   "nacl_loader_unittests": {
     "label": "//components/nacl:nacl_loader_unittests",
-    "type": "unknown",
+    "type": "raw",
+    "args": [],
   },
   "net_unittests": {
     "label": "//net:net_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "ozone_unittests": {
     "label": "//ui/ozone:ozone_unittests",
@@ -291,11 +293,11 @@
   },
   "printing_unittests": {
     "label": "//printing:printing_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "remoting_unittests": {
     "label": "//remoting:remoting_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "resource_provider_unittests": {
     "label": "//components/resource_provider:resource_provider_unittests",
@@ -335,12 +337,12 @@
     "type": "console_test_launcher",
   },
   "sync_integration_tests": {
-    "label": "//sync:sync_integration_tests",
-    "type": "unknown",
+    "label": "//chrome/test:sync_integration_tests",
+    "type": "windowed_test_launcher",
   },
   "sync_unit_tests": {
     "label": "//sync:sync_unit_tests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "ui_base_unittests": {
     "label": "//ui/base:ui_base_unittests",
@@ -356,7 +358,7 @@
   },
   "unit_tests": {
     "label": "//chrome/test:unit_tests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "url_unittests": {
     "label": "//url:url_unittests",

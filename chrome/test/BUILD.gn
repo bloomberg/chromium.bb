@@ -224,6 +224,15 @@ if (!is_android) {
     ]
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("interactive_ui_tests_run") {
+    testonly = true
+    deps = [
+      ":interactive_ui_tests",
+    ]
+  }
+
   test("interactive_ui_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.chrome_interactive_ui_test_sources,
@@ -231,6 +240,40 @@ if (!is_android) {
                     "//chrome")
 
     configs += [ "//build/config:precompiled_headers" ]
+
+    data = [
+      "//net/data/ssl/certificates/",
+      "//net/tools/testserver/",
+      "//ppapi/tests/test_case.html",
+      "//ppapi/tests/test_case.html.mock-http-headers",
+      "//ppapi/tests/test_page.css",
+      "//ppapi/tests/test_page.css.mock-http-headers",
+      "//third_party/pyftpdlib/",
+      "//third_party/pywebsocket/",
+      "//third_party/tlslite/",
+      "//third_party/zlib/google/test/data/",
+      "//tools/metrics/histograms/histograms.xml",
+      "$root_out_dir/pyproto/google/",
+      "$root_out_dir/resources.pak",
+      "$root_out_dir/ui_test.pak",
+    ]
+    if (is_android || is_linux || is_win) {
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+      ]
+    }
+    if (is_linux) {
+      data += [ "$root_out_dir/libppapi_tests.so" ]
+    }
+    if (is_linux || is_win) {
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+        "$root_out_dir/locales/fr.pak",
+      ]
+    }
+
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
     ldflags = []
 
@@ -270,7 +313,7 @@ if (!is_android) {
     deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
 
     # Runtime dependencies
-    datadeps = [
+    data_deps = [
       "//ppapi:ppapi_tests",
       "//third_party/mesa:osmesa",
     ]
@@ -398,7 +441,7 @@ if (!is_android) {
     }
 
     if (is_mac) {
-      datadeps += [ "//chrome" ]
+      data_deps += [ "//chrome" ]
 
       # TODO(mark): We really want this for all non-static library targets, but
       # when we tried to pull it up to the common.gypi level, it broke other
@@ -414,7 +457,7 @@ if (!is_android) {
 
     if (use_x11) {
       configs += [ "//build/config/linux:xtst" ]
-      datadeps += [ "//tools/xdisplaycheck" ]
+      data_deps += [ "//tools/xdisplaycheck" ]
     }
 
     if (enable_app_list) {
@@ -977,11 +1020,38 @@ if (!is_android) {
     }
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("sync_integration_tests_run") {
+    testonly = true
+    deps = [
+      ":sync_integration_tests",
+    ]
+  }
+
   test("sync_integration_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.sync_integration_tests_sources,
                     ".",
                     "//chrome")
+
+    data = [
+      "//chrome/test/data/sync/",
+      "//net/tools/testserver/",
+      "//sync/tools/testserver/",
+      "//third_party/pyftpdlib/",
+      "//third_party/pywebsocket/",
+      "//third_party/tlslite/",
+      "$root_out_dir/pyproto/",
+      "$root_out_dir/resources.pak",
+    ]
+
+    if (is_linux || is_win) {
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+      ]
+    }
 
     # TODO(phajdan.jr): Only temporary, to make transition easier.
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -1004,6 +1074,8 @@ if (!is_android) {
       "//third_party/leveldatabase",
       "//third_party/WebKit/public:blink",
     ]
+
+    data_deps = [ "//third_party/mesa:osmesa" ]
 
     if (cld_version == 0 || cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
@@ -1152,6 +1224,15 @@ if (!is_android) {
     }
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("unit_tests_run") {
+    testonly = true
+    deps = [
+      ":unit_tests",
+    ]
+  }
+
   test("unit_tests") {
     sources =
         rebase_path(chrome_tests_unit_gypi_values.chrome_unit_tests_sources,
@@ -1159,6 +1240,37 @@ if (!is_android) {
                     "//chrome")
 
     configs += [ "//build/config:precompiled_headers" ]
+
+    data = [
+      "data/",
+      "//base/test/data/",
+      "//chrome/third_party/mock4js/",
+      "//components/test/data/",
+      "//extensions/test/data/",
+      "//google_apis/test/data/",
+      "//net/data/",
+      "//net/tools/testserver/",
+      "//third_party/accessibility-audit/axs_testing.js",
+      "//third_party/hunspell_dictionaries/",
+      "//third_party/pyftpdlib/",
+      "//third_party/pywebsocket/",
+      "//third_party/tlslite/",
+      "//third_party/zlib/google/test/data/",
+      "//tools/metrics/histograms/histograms.xml",
+      "$root_out_dir/pyproto/google/",
+      "$root_out_dir/test_data/chrome/browser/resources/google_now/",
+      "$root_out_dir/test_data/chrome/browser/resources/print_preview/",
+      "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
+      "$root_out_dir/test_data/ui/webui/",
+      "$root_out_dir/resources.pak",
+    ]
+    if (is_android || is_linux || is_win) {
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+      ]
+    }
+
     defines = []
 
     deps = [

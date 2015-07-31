@@ -463,6 +463,15 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gfx_unittests_run") {
+  testonly = true
+  deps = [
+    ":gfx_unittests",
+  ]
+}
+
 test("gfx_unittests") {
   sources = [
     "font_render_params_linux_unittest.cc",
@@ -476,6 +485,11 @@ test("gfx_unittests") {
     "test/run_all_unittests.cc",
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
+  ]
+
+  data = [
+    "test/data/",
+    "$root_out_dir/ui_test.pak",
   ]
 
   if (!is_ios) {
@@ -549,6 +563,8 @@ test("gfx_unittests") {
     "//ui/gfx/geometry",
     "//ui/resources:ui_test_pak",
   ]
+
+  data_deps = [ "//ui/resources:ui_test_pak" ]
 
   if (!is_mac && !is_ios) {
     sources += [

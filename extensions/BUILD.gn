@@ -137,6 +137,15 @@ repack("shell_and_test_pak") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("extensions_unittests_run") {
+  testonly = true
+  deps = [
+    ":extensions_unittests",
+  ]
+}
+
 test("extensions_unittests") {
   sources =
       rebase_path(extensions_tests_gypi_values.extensions_unittests_sources,
@@ -150,6 +159,12 @@ test("extensions_unittests") {
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
+
+  data = [
+    "test/data/",
+    "//chrome/test/data/extensions/",
+    "$root_out_dir/extensions_shell_and_test.pak",
+  ]
 
   deps = [
     ":extensions_resources",
@@ -180,6 +195,8 @@ test("extensions_unittests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
+  data_deps = [ "//third_party/mesa:osmesa" ]
+
   if (is_win) {
     deps += [ "//base/allocator" ]
   }
@@ -195,11 +212,30 @@ test("extensions_unittests") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("extensions_browsertests_run") {
+  testonly = true
+  deps = [
+    ":extensions_browsertests",
+  ]
+}
+
 test("extensions_browsertests") {
   sources =
       rebase_path(extensions_tests_gypi_values.extensions_browsertests_sources,
                   ".",
                   "//extensions")
+
+  data = [
+    "test/data/",
+    "//net/data/",
+    "//net/tools/testserver/",
+    "//third_party/pyftpdlib/",
+    "//third_party/pywebsocket/",
+    "//third_party/tlslite/",
+    "$root_out_dir/extensions_shell_and_test.pak",
+  ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -223,8 +259,16 @@ test("extensions_browsertests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
+  data_deps = [ "//third_party/mesa:osmesa" ]
+
   if (is_win) {
     deps += [ "//base/allocator" ]
+
+    if (target_cpu == "x86") {
+      data_deps += [
+        # "$root_out_dir/wow_helper.exe"  # TODO(GYP)
+      ]
+    }
   }
 
   if (is_mac) {

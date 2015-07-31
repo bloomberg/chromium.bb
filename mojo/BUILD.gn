@@ -23,6 +23,24 @@ group("mojo") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("mojo_public_bindings_unittests_run") {
+  testonly = true
+  deps = [
+    "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
+  ]
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("mojo_public_environment_unittests_run") {
+  testonly = true
+  deps = [
+    "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
+  ]
+}
+
 group("tests") {
   testonly = true
   deps = [
