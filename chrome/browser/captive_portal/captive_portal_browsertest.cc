@@ -2075,6 +2075,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   broken_tab_contents->Stop();
   test_navigation_observer.WaitForNavigations(1);
 
+  // Make sure that the |ssl_error_handler| is deleted if page load is stopped.
+  EXPECT_TRUE(nullptr == SSLErrorHandler::FromWebContents(broken_tab_contents));
+
   EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(0, portal_observer1.num_results_received());
@@ -2129,6 +2132,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   MultiNavigationObserver test_navigation_observer;
   chrome::Reload(browser(), CURRENT_TAB);
   test_navigation_observer.WaitForNavigations(2);
+
+  // Make sure that the |ssl_error_handler| is deleted.
+  EXPECT_TRUE(nullptr == SSLErrorHandler::FromWebContents(broken_tab_contents));
 
   EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
   EXPECT_FALSE(broken_tab_contents->IsLoading());
@@ -2194,6 +2200,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Expect two navigations: First one for stopping the hanging page, second one
   // for completing the load of the above navigation.
   test_navigation_observer.WaitForNavigations(2);
+
+  // Make sure that the |ssl_error_handler| is deleted.
+  EXPECT_TRUE(nullptr == SSLErrorHandler::FromWebContents(broken_tab_contents));
 
   EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
   EXPECT_FALSE(broken_tab_contents->IsLoading());

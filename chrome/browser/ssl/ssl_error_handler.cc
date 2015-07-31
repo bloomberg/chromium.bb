@@ -235,12 +235,21 @@ void SSLErrorHandler::Observe(
 #endif
 }
 
+void SSLErrorHandler::DidStartNavigationToPendingEntry(
+    const GURL& /* url */,
+    content::NavigationController::ReloadType /* reload_type */) {
 // Destroy the error handler on all new navigations. This ensures that the
 // handler is properly recreated when a hanging page is navigated to an SSL
 // error, even when the tab's WebContents doesn't change.
-void SSLErrorHandler::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+  DeleteSSLErrorHandler();
+}
+
+void SSLErrorHandler::NavigationStopped() {
+// Destroy the error handler when the page load is stopped.
+  DeleteSSLErrorHandler();
+}
+
+void SSLErrorHandler::DeleteSSLErrorHandler() {
   // Need to explicity deny the certificate via the callback, otherwise memory
   // is leaked.
   if (!callback_.is_null()) {

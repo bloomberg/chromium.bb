@@ -101,6 +101,13 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
 
+  // content::WebContentsObserver:
+  void NavigationStopped() override;
+
+  // Deletes the SSLErrorHandler. This method is called when the page
+  // load stops or when there is a new navigation.
+  void DeleteSSLErrorHandler();
+
   content::WebContents* web_contents_;
   const int cert_error_;
   const net::SSLInfo ssl_info_;
