@@ -41,106 +41,106 @@
 
 namespace blink {
 
-    class ResourceRequest;
-    class ExecutionContext;
-    class ThreadableLoaderClient;
+class ResourceRequest;
+class ExecutionContext;
+class ThreadableLoaderClient;
 
-    enum CrossOriginRequestPolicy {
-        DenyCrossOriginRequests,
-        UseAccessControl,
-        AllowCrossOriginRequests
-    };
+enum CrossOriginRequestPolicy {
+    DenyCrossOriginRequests,
+    UseAccessControl,
+    AllowCrossOriginRequests
+};
 
-    enum PreflightPolicy {
-        ConsiderPreflight,
-        ForcePreflight,
-        PreventPreflight
-    };
+enum PreflightPolicy {
+    ConsiderPreflight,
+    ForcePreflight,
+    PreventPreflight
+};
 
-    enum ContentSecurityPolicyEnforcement {
-        EnforceConnectSrcDirective,
-        DoNotEnforceContentSecurityPolicy,
-    };
+enum ContentSecurityPolicyEnforcement {
+    EnforceConnectSrcDirective,
+    DoNotEnforceContentSecurityPolicy,
+};
 
-    struct ThreadableLoaderOptions {
-        ThreadableLoaderOptions()
-            : preflightPolicy(ConsiderPreflight)
-            , crossOriginRequestPolicy(DenyCrossOriginRequests)
-            , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective)
-            , timeoutMilliseconds(0) { }
+struct ThreadableLoaderOptions {
+    ThreadableLoaderOptions()
+        : preflightPolicy(ConsiderPreflight)
+        , crossOriginRequestPolicy(DenyCrossOriginRequests)
+        , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective)
+        , timeoutMilliseconds(0) { }
 
-        // When adding members, CrossThreadThreadableLoaderOptionsData should
-        // be updated.
-        PreflightPolicy preflightPolicy; // If AccessControl is used, how to determine if a preflight is needed.
-        CrossOriginRequestPolicy crossOriginRequestPolicy;
-        AtomicString initiator;
-        ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
-        unsigned long timeoutMilliseconds;
-    };
+    // When adding members, CrossThreadThreadableLoaderOptionsData should
+    // be updated.
+    PreflightPolicy preflightPolicy; // If AccessControl is used, how to determine if a preflight is needed.
+    CrossOriginRequestPolicy crossOriginRequestPolicy;
+    AtomicString initiator;
+    ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
+    unsigned long timeoutMilliseconds;
+};
 
-    // Encode AtomicString as String to cross threads.
-    struct CrossThreadThreadableLoaderOptionsData {
-        explicit CrossThreadThreadableLoaderOptionsData(const ThreadableLoaderOptions& options)
-            : preflightPolicy(options.preflightPolicy)
-            , crossOriginRequestPolicy(options.crossOriginRequestPolicy)
-            , initiator(options.initiator.string().isolatedCopy())
-            , contentSecurityPolicyEnforcement(options.contentSecurityPolicyEnforcement)
-            , timeoutMilliseconds(options.timeoutMilliseconds) { }
+// Encode AtomicString as String to cross threads.
+struct CrossThreadThreadableLoaderOptionsData {
+    explicit CrossThreadThreadableLoaderOptionsData(const ThreadableLoaderOptions& options)
+        : preflightPolicy(options.preflightPolicy)
+        , crossOriginRequestPolicy(options.crossOriginRequestPolicy)
+        , initiator(options.initiator.string().isolatedCopy())
+        , contentSecurityPolicyEnforcement(options.contentSecurityPolicyEnforcement)
+        , timeoutMilliseconds(options.timeoutMilliseconds) { }
 
-        operator ThreadableLoaderOptions() const
-        {
-            ThreadableLoaderOptions options;
-            options.preflightPolicy = preflightPolicy;
-            options.crossOriginRequestPolicy = crossOriginRequestPolicy;
-            options.initiator = AtomicString(initiator);
-            options.contentSecurityPolicyEnforcement = contentSecurityPolicyEnforcement;
-            options.timeoutMilliseconds = timeoutMilliseconds;
-            return options;
-        }
+    operator ThreadableLoaderOptions() const
+    {
+        ThreadableLoaderOptions options;
+        options.preflightPolicy = preflightPolicy;
+        options.crossOriginRequestPolicy = crossOriginRequestPolicy;
+        options.initiator = AtomicString(initiator);
+        options.contentSecurityPolicyEnforcement = contentSecurityPolicyEnforcement;
+        options.timeoutMilliseconds = timeoutMilliseconds;
+        return options;
+    }
 
-        PreflightPolicy preflightPolicy;
-        CrossOriginRequestPolicy crossOriginRequestPolicy;
-        String initiator;
-        ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
-        unsigned long timeoutMilliseconds;
-    };
+    PreflightPolicy preflightPolicy;
+    CrossOriginRequestPolicy crossOriginRequestPolicy;
+    String initiator;
+    ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
+    unsigned long timeoutMilliseconds;
+};
 
-    template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOptions> {
-        typedef CrossThreadThreadableLoaderOptionsData Type;
-        static Type copy(const ThreadableLoaderOptions& options)
-        {
-            return CrossThreadThreadableLoaderOptionsData(options);
-        }
-    };
+template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOptions> {
+    typedef CrossThreadThreadableLoaderOptionsData Type;
+    static Type copy(const ThreadableLoaderOptions& options)
+    {
+        return CrossThreadThreadableLoaderOptionsData(options);
+    }
+};
 
-    // Useful for doing loader operations from any thread (not threadsafe,
-    // just able to run on threads other than the main thread).
-    class CORE_EXPORT ThreadableLoader : public RefCounted<ThreadableLoader> {
-        WTF_MAKE_NONCOPYABLE(ThreadableLoader);
-    public:
-        // ThreadableLoaderOptions argument configures this ThreadableLoader's
-        // behavior.
-        //
-        // ResourceLoaderOptions argument will be passed to the FetchRequest
-        // that this ThreadableLoader creates. It can be altered e.g. when
-        // redirect happens.
-        static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+// Useful for doing loader operations from any thread (not threadsafe,
+// just able to run on threads other than the main thread).
+class CORE_EXPORT ThreadableLoader : public RefCounted<ThreadableLoader> {
+    WTF_MAKE_NONCOPYABLE(ThreadableLoader);
+public:
+    // ThreadableLoaderOptions argument configures this ThreadableLoader's
+    // behavior.
+    //
+    // ResourceLoaderOptions argument will be passed to the FetchRequest
+    // that this ThreadableLoader creates. It can be altered e.g. when
+    // redirect happens.
+    static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
-        // A ThreadableLoader may have a timeout specified. It is possible, in some cases, for
-        // the timeout to be overridden after the request is sent (for example, XMLHttpRequests
-        // may override their timeout setting after sending).
-        //
-        // Set a new timeout relative to the time the request started, in milliseconds.
-        virtual void overrideTimeout(unsigned long timeoutMilliseconds) = 0;
+    // A ThreadableLoader may have a timeout specified. It is possible, in some cases, for
+    // the timeout to be overridden after the request is sent (for example, XMLHttpRequests
+    // may override their timeout setting after sending).
+    //
+    // Set a new timeout relative to the time the request started, in milliseconds.
+    virtual void overrideTimeout(unsigned long timeoutMilliseconds) = 0;
 
-        virtual void cancel() = 0;
+    virtual void cancel() = 0;
 
-        virtual ~ThreadableLoader() { }
+    virtual ~ThreadableLoader() { }
 
-    protected:
-        ThreadableLoader() { }
-    };
+protected:
+    ThreadableLoader() { }
+};
 
 } // namespace blink
 
