@@ -58250,6 +58250,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="896" label="MixedContentBlockableAllowed"/>
   <int value="897" label="PseudoBeforeAfterForInputElement"/>
   <int value="898" label="V8Permissions_Revoke_Method"/>
+  <int value="899" label="LinkRelDnsPrefetch"/>
+  <int value="900" label="LinkRelPreconnect"/>
+  <int value="901" label="LinkRelPreload"/>
+  <int value="902" label="LinkHeaderDnsPrefetch"/>
+  <int value="903" label="LinkHeaderPreconnect"/>
+  <int value="904" label="ClientHintsMetaAcceptCH"/>
+  <int value="905" label="HTMLElementDeprecatedWidth"/>
+  <int value="906" label="ClientHintsContentDPR"/>
+  <int value="907" label="ElementCreateShadowRootOpen"/>
+  <int value="908" label="ElementCreateShadowRootClosed"/>
+  <int value="909" label="AudioParamSetValueAtTime"/>
+  <int value="910" label="AudioParamLinearRampToValueAtTime"/>
+  <int value="911" label="AudioParamExponentialRampToValueAtTime"/>
+  <int value="912" label="AudioParamSetTargetAtTime"/>
+  <int value="913" label="AudioParamSetValueCurveAtTime"/>
+  <int value="914" label="AudioParamCancelScheduledValues"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
