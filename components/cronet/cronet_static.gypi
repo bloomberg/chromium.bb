@@ -4,7 +4,6 @@
 
 {
   # This target is included into both 'cronet_static' and 'cronet_static_small'.
-  'type': 'static_library',
   'dependencies': [
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -66,8 +65,7 @@
   ],
   'conditions': [
     # If Data Reduction Proxy support is enabled, add the following
-    # defines and sources. Dependencies are target-specific and are
-    # not included here.
+    # defines, sources and dependencies.
     ['enable_data_reduction_proxy_support==1',
       {
         'defines' : [
@@ -76,6 +74,9 @@
         'sources': [
           'android/cronet_data_reduction_proxy.cc',
           'android/cronet_data_reduction_proxy.h',
+        ],
+        'dependencies': [
+          '../components/components.gyp:data_reduction_proxy_core_browser',
         ],
        }
      ],

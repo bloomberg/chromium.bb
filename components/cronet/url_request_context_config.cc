@@ -79,6 +79,11 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   context_builder->set_quic_connection_options(
       net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
   context_builder->set_sdch_enabled(enable_sdch);
+#if defined(CRONET_TEST)
+  // Enable insecure quic only if Cronet is built for testing.
+  // TODO(xunjieli): Remove once crbug.com/514629 is fixed.
+  context_builder->set_enable_insecure_quic(true);
+#endif
   // TODO(mef): Use |config| to set cookies.
 }
 

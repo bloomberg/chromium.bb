@@ -180,8 +180,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       testing_fixed_https_port(0),
       next_protos(NextProtosDefaults()),
       use_alternate_protocols(true),
-      enable_quic(false) {
-}
+      enable_quic(false),
+      enable_insecure_quic(false) {}
 
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
@@ -378,6 +378,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
       http_network_session_params_.trusted_spdy_proxy;
   network_session_params.next_protos = http_network_session_params_.next_protos;
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
+  network_session_params.enable_insecure_quic =
+      http_network_session_params_.enable_insecure_quic;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
 
