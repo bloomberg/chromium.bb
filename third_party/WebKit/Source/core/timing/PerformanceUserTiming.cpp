@@ -84,9 +84,9 @@ UserTiming::UserTiming(PerformanceBase* performance)
 static void insertPerformanceEntry(PerformanceEntryMap& performanceEntryMap, PerformanceEntry* entry)
 {
     PerformanceEntryMap::iterator it = performanceEntryMap.find(entry->name());
-    if (it != performanceEntryMap.end())
+    if (it != performanceEntryMap.end()) {
         it->value.append(entry);
-    else {
+    } else {
         PerformanceEntryVector vector(1);
         vector[0] = entry;
         performanceEntryMap.set(entry->name(), vector);
@@ -145,9 +145,9 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
     double startTime = 0.0;
     double endTime = 0.0;
 
-    if (startMark.isNull())
+    if (startMark.isNull()) {
         endTime = m_performance->now();
-    else if (endMark.isNull()) {
+    } else if (endMark.isNull()) {
         endTime = m_performance->now();
         startTime = findExistingMarkStartTime(startMark, exceptionState);
         if (exceptionState.hadException())
