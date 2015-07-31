@@ -19,6 +19,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
@@ -410,7 +411,14 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
       cross_site_transferring_request_->request_id() ==
           entry.transferred_global_request_id()) {
     cross_site_transferring_request_->ReleaseRequest();
+
+    // The navigating RenderFrameHost should take ownership of the
+    // NavigationHandle that came from the transferring RenderFrameHost.
+    DCHECK(transfer_navigation_handle_);
+    dest_render_frame_host->SetNavigationHandle(
+        transfer_navigation_handle_.Pass());
   }
+  DCHECK(!transfer_navigation_handle_);
 
   return dest_render_frame_host;
 }
@@ -556,14 +564,20 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // navigation matches.
   cross_site_transferring_request_ = cross_site_transferring_request.Pass();
 
+  // Store the NavigationHandle to give it to the appropriate RenderFrameHost
+  // after it started navigating.
+  transfer_navigation_handle_ =
+      pending_render_frame_host->PassNavigationHandleOwnership();
+  DCHECK(transfer_navigation_handle_);
+
   // Sanity check that the params are for the correct frame and process.
   // These should match the RenderFrameHost that made the request.
   // If it started as a cross-process navigation via OpenURL, this is the
-  // pending one.  If it wasn't cross-process until the transfer, this is the
-  // current one.
-  int render_frame_id = pending_render_frame_host_ ?
-      pending_render_frame_host_->GetRoutingID() :
-      render_frame_host_->GetRoutingID();
+  // pending one.  If it wasn't cross-process until the transfer, this is
+  // the current one.
+  int render_frame_id = pending_render_frame_host_
+                            ? pending_render_frame_host_->GetRoutingID()
+                            : render_frame_host_->GetRoutingID();
   DCHECK_EQ(render_frame_id, pending_render_frame_host->GetRoutingID());
   int process_id = pending_render_frame_host_ ?
       pending_render_frame_host_->GetProcess()->GetID() :
@@ -588,6 +602,10 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // The transferring request was only needed during the RequestTransferURL
   // call, so it is safe to clear at this point.
   cross_site_transferring_request_.reset();
+
+  // If the navigation continued, the NavigationHandle should have been
+  // transfered to a RenderFrameHost. In the other cases, it should be cleared.
+  transfer_navigation_handle_.reset();
 }
 
 void RenderFrameHostManager::DidNavigateFrame(

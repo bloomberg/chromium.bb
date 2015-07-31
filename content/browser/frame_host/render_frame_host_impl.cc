@@ -22,6 +22,7 @@
 #include "content/browser/frame_host/frame_mojo_shell.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
@@ -799,6 +800,12 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(const GURL& url) {
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
+      navigation_handle_) {
+    navigation_handle_->set_net_error_code(
+        static_cast<net::Error>(params.error_code));
+  }
   frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(this, params);
 }
 
@@ -914,6 +921,24 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     return;
   }
 
+  // If the URL does not match what the NavigationHandle expects, treat the
+  // commit as a new navigation. This can happen if an ongoing slow
+  // same-process navigation is interrupted by a synchronous renderer-initiated
+  // navigation.
+  if (navigation_handle_ &&
+      navigation_handle_->GetURL() != validated_params.url) {
+    navigation_handle_.reset();
+  }
+
+  // Synchronous renderer-initiated navigations will send a
+  // DidCommitProvisionalLoad IPC without a prior DidStartProvisionalLoad
+  // message.
+  if (!navigation_handle_) {
+    navigation_handle_ = NavigationHandleImpl::Create(
+        validated_params.url, frame_tree_node_->IsMainFrame(),
+        frame_tree_node_->navigator()->GetDelegate());
+  }
+
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
 
@@ -930,6 +955,7 @@ void RenderFrameHostImpl::OnDidDropNavigation() {
   // If it turns out that the renderer dropped the navigation, the spinner needs
   // to be turned off.
   frame_tree_node_->DidStopLoading();
+  navigation_handle_.reset();
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
@@ -958,6 +984,19 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
 
 int RenderFrameHostImpl::GetEnabledBindings() {
   return render_view_host_->GetEnabledBindings();
+}
+
+void RenderFrameHostImpl::SetNavigationHandle(
+    scoped_ptr<NavigationHandleImpl> navigation_handle) {
+  navigation_handle_ = navigation_handle.Pass();
+}
+
+scoped_ptr<NavigationHandleImpl>
+RenderFrameHostImpl::PassNavigationHandleOwnership() {
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  navigation_handle_->set_is_transferring(true);
+  return navigation_handle_.Pass();
 }
 
 void RenderFrameHostImpl::OnCrossSiteResponse(
@@ -1543,6 +1582,7 @@ void RenderFrameHostImpl::OnDidStopLoading() {
 
   is_loading_ = false;
   frame_tree_node_->DidStopLoading();
+  navigation_handle_.reset();
 }
 
 void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {

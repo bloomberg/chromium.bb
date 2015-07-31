@@ -20,6 +20,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }
 
@@ -36,21 +37,19 @@ class CaptivePortalTabReloader;
 // in to, and taking any correcting actions.
 //
 // It acts as a WebContentsObserver for its CaptivePortalLoginDetector and
-// CaptivePortalTabReloader.  It filters out non-main-frame resource loads, and
-// treats the commit of an error page as a single event, rather than as 3
-// (ProvisionalLoadFail, DidStartProvisionalLoad, DidCommit), which simplifies
-// the CaptivePortalTabReloader.  It is also needed by CaptivePortalTabReloaders
-// to inform the tab's CaptivePortalLoginDetector when the tab is at a captive
-// portal's login page.
+// CaptivePortalTabReloader. It filters out non-main-frame navigations. It is
+// also needed by CaptivePortalTabReloaders to inform the tab's
+// CaptivePortalLoginDetector when the tab is at a captive portal's login page.
 //
-// The TabHelper assumes that a WebContents can only have one RenderViewHost
-// with a provisional load at a time, and tracks only that navigation.  This
-// assumption can be violated in rare cases, for example, a same-site
-// navigation interrupted by a cross-process navigation started from the
-// omnibox, may commit before it can be cancelled.  In these cases, this class
-// may pass incorrect messages to the TabReloader, which will, at worst, result
-// in not opening up a login tab until a second load fails or not automatically
-// reloading a tab after logging in.
+// The TabHelper assumes that a WebContents can only have one main frame
+// navigation at a time. This assumption can be violated in rare cases, for
+// example, a same-site navigation interrupted by a cross-process navigation
+// started from the omnibox, may commit before it can be cancelled.  In these
+// cases, this class may pass incorrect messages to the TabReloader, which
+// will, at worst, result in not opening up a login tab until a second load
+// fails or not automatically reloading a tab after logging in.
+// TODO(clamy): See if this class can be made to handle these edge-cases
+// following the refactor of navigation signaling to WebContentsObservers.
 //
 // For the design doc, see:
 // https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
@@ -63,26 +62,14 @@ class CaptivePortalTabHelper
   ~CaptivePortalTabHelper() override;
 
   // content::WebContentsObserver:
-  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
-
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
-
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
-
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
-
-  void DidStopLoading() override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidRedirectNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -108,16 +95,9 @@ class CaptivePortalTabHelper
   explicit CaptivePortalTabHelper(content::WebContents* web_contents);
 
   // Called by Observe in response to the corresponding event.
-  void OnRedirect(int child_id,
-                  content::ResourceType resource_type,
-                  const GURL& new_url);
-
-  // Called by Observe in response to the corresponding event.
   void OnCaptivePortalResults(
       captive_portal::CaptivePortalResult previous_result,
       captive_portal::CaptivePortalResult result);
-
-  void OnLoadAborted();
 
   // Called to indicate a tab is at, or is navigating to, the captive portal
   // login page.
@@ -126,28 +106,18 @@ class CaptivePortalTabHelper
   // |this| takes ownership of |tab_reloader|.
   void SetTabReloaderForTest(CaptivePortalTabReloader* tab_reloader);
 
-  const content::RenderViewHost* provisional_render_view_host() const {
-    return provisional_render_view_host_;
-  }
-
   CaptivePortalTabReloader* GetTabReloaderForTest();
 
   Profile* profile_;
 
+  // The current main frame navigation happening for the WebContents, or
+  // nullptr if there is none. If there are two main frame navigations
+  // happening at once, it's the one that started most recently.
+  content::NavigationHandle* navigation_handle_;
+
   // Neither of these will ever be NULL.
   scoped_ptr<CaptivePortalTabReloader> tab_reloader_;
   scoped_ptr<CaptivePortalLoginDetector> login_detector_;
-
-  // If a provisional load has failed, and the tab is loading an error page, the
-  // error code associated with the error page we're loading.
-  // net::OK, otherwise.
-  int pending_error_code_;
-
-  // The RenderViewHost with a provisional load, if any.  Can either be
-  // the currently displayed RenderViewHost or a pending RenderViewHost for
-  // cross-process navitations.  NULL when there's currently no provisional
-  // load.
-  content::RenderViewHost* provisional_render_view_host_;
 
   content::NotificationRegistrar registrar_;
 

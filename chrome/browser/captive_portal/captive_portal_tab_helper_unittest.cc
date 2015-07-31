@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,9 +34,6 @@ const char* const kHttpsUrl = "https://whatever.com/";
 // Used for cross-process navigations.  Shouldn't actually matter whether this
 // is different from kHttpsUrl, but best to keep things consistent.
 const char* const kHttpsUrl2 = "https://cross_process.com/";
-
-// Error pages use a "data:" URL.  Shouldn't actually matter what this is.
-const char* const kErrorPageUrl = "data:blah";
 
 // Some navigations behave differently depending on if they're cross-process
 // or not.
@@ -67,94 +65,75 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
 class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   CaptivePortalTabHelperTest()
-      : tab_helper_(NULL),
-        mock_reloader_(new testing::StrictMock<MockCaptivePortalTabReloader>) {
-    tab_helper_.SetTabReloaderForTest(mock_reloader_);
-  }
+      : mock_reloader_(new testing::StrictMock<MockCaptivePortalTabReloader>) {}
   ~CaptivePortalTabHelperTest() override {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    web_contents1_.reset(CreateTestWebContents());
-    web_contents2_.reset(CreateTestWebContents());
 
-    // This will simulate the initialization of the RenderFrame in the renderer
-    // process. This is needed because WebContents does not initialize a
-    // RenderFrame on construction, and the tests expect one to exist.
-    content::RenderFrameHostTester::For(main_render_frame1())
-        ->InitializeRenderFrameIfNeeded();
-    content::RenderFrameHostTester::For(main_render_frame2())
-        ->InitializeRenderFrameIfNeeded();
-  }
+    // Load kHttpUrl. This ensures that any subsequent navigation to kHttpsUrl2
+    // will be properly registered as cross-process.
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents());
+    web_contents_tester->NavigateAndCommit(GURL(kHttpUrl));
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(main_rfh());
+    rfh_tester->SimulateNavigationStop();
 
-  void TearDown() override {
-    web_contents2_.reset(NULL);
-    web_contents1_.reset(NULL);
-    ChromeRenderViewHostTestHarness::TearDown();
+    tab_helper_.reset(new CaptivePortalTabHelper(web_contents()));
+    tab_helper_->profile_ = nullptr;
+    tab_helper_->SetTabReloaderForTest(mock_reloader_);
   }
 
   // Simulates a successful load of |url|.
-  void SimulateSuccess(const GURL& url,
-                       content::RenderViewHost* render_view_host) {
+  void SimulateSuccess(const GURL& url) {
     EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
         .Times(1);
-    tab_helper().DidStartProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(), url, false, false);
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents());
+    web_contents_tester->StartNavigation(url);
 
     EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
-    tab_helper().DidCommitProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(),
-        url,
-        ui::PAGE_TRANSITION_LINK);
+    content::RenderFrameHost* rfh =
+        pending_main_rfh() ? pending_main_rfh() : main_rfh();
+    content::RenderFrameHostTester::For(rfh)->SimulateNavigationCommit(url);
   }
 
   // Simulates a connection timeout while requesting |url|.
-  void SimulateTimeout(const GURL& url,
-                       content::RenderViewHost* render_view_host) {
+  void SimulateTimeout(const GURL& url) {
     EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
         .Times(1);
-    tab_helper().DidStartProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(), url, false, false);
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents());
+    web_contents_tester->StartNavigation(url);
+    content::RenderFrameHost* rfh =
+        pending_main_rfh() ? pending_main_rfh() : main_rfh();
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(rfh);
 
-    tab_helper().DidFailProvisionalLoad(render_view_host->GetMainFrame(),
-                                        url,
-                                        net::ERR_TIMED_OUT,
-                                        base::string16(),
-                                        false);
-
-    // Provisional load starts for the error page.
-    tab_helper().DidStartProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(), GURL(kErrorPageUrl), true, false);
+    rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
 
     EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT)).Times(1);
-    tab_helper().DidCommitProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(),
-        GURL(kErrorPageUrl),
-        ui::PAGE_TRANSITION_LINK);
+    rfh_tester->SimulateNavigationErrorPageCommit();
   }
 
   // Simulates an abort while requesting |url|.
   void SimulateAbort(const GURL& url,
-                     content::RenderViewHost* render_view_host,
                      NavigationType navigation_type) {
     EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
         .Times(1);
-    tab_helper().DidStartProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(), url, false, false);
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents());
+    web_contents_tester->StartNavigation(url);
+    DCHECK_IMPLIES(navigation_type == kSameProcess, !pending_main_rfh());
 
     EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
-    if (navigation_type == kSameProcess) {
-      tab_helper().DidFailProvisionalLoad(render_view_host->GetMainFrame(),
-                                          url,
-                                          net::ERR_ABORTED,
-                                          base::string16(),
-                                          false);
-    } else {
-      // For interrupted provisional cross-process navigations, the
-      // RenderViewHost is destroyed without sending a DidFailProvisionalLoad
-      // notification.
-      tab_helper().RenderViewDeleted(render_view_host);
-    }
+    content::RenderFrameHost* rfh =
+        navigation_type == kSameProcess ? main_rfh() : pending_main_rfh();
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(rfh);
+    rfh_tester->SimulateNavigationError(url, net::ERR_ABORTED);
+    rfh_tester->SimulateNavigationStop();
 
     // Make sure that above call resulted in abort, for tests that continue
     // after the abort.
@@ -163,45 +142,28 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   // Simulates an abort while loading an error page.
   void SimulateAbortTimeout(const GURL& url,
-                            content::RenderViewHost* render_view_host,
                             NavigationType navigation_type) {
     EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
         .Times(1);
-    tab_helper().DidStartProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(), url, false, false);
-
-    tab_helper().DidFailProvisionalLoad(render_view_host->GetMainFrame(),
-                                        url,
-                                        net::ERR_TIMED_OUT,
-                                        base::string16(),
-                                        false);
-
-    // Start event for the error page.
-    tab_helper().DidStartProvisionalLoadForFrame(
-        render_view_host->GetMainFrame(), url, true, false);
+    content::WebContentsTester* web_contents_tester =
+        content::WebContentsTester::For(web_contents());
+    web_contents_tester->StartNavigation(url);
+    DCHECK_IMPLIES(navigation_type == kSameProcess, !pending_main_rfh());
 
     EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
-    if (navigation_type == kSameProcess) {
-      tab_helper().DidFailProvisionalLoad(render_view_host->GetMainFrame(),
-                                          url,
-                                          net::ERR_ABORTED,
-                                          base::string16(),
-                                          false);
-    } else {
-      // For interrupted provisional cross-process navigations, the
-      // RenderViewHost is destroyed without sending a DidFailProvisionalLoad
-      // notification.
-      tab_helper().RenderViewDeleted(render_view_host);
-    }
+    content::RenderFrameHost* rfh =
+        navigation_type == kSameProcess ? main_rfh() : pending_main_rfh();
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(rfh);
+    rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
+    rfh_tester->SimulateNavigationStop();
 
     // Make sure that above call resulted in abort, for tests that continue
     // after the abort.
     EXPECT_CALL(mock_reloader(), OnAbort()).Times(0);
   }
 
-  CaptivePortalTabHelper& tab_helper() {
-    return tab_helper_;
-  }
+  CaptivePortalTabHelper* tab_helper() { return tab_helper_.get(); }
 
   // Simulates a captive portal redirect by calling the Observe method.
   void ObservePortalResult(CaptivePortalResult previous_result,
@@ -215,44 +177,16 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
 
     EXPECT_CALL(mock_reloader(), OnCaptivePortalResults(previous_result,
                                                         result)).Times(1);
-    tab_helper().Observe(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                         source_profile,
-                         details_results);
-  }
-
-  // Simulates a redirect.  Uses OnRedirect rather than Observe, for simplicity.
-  void OnRedirect(ResourceType type, const GURL& new_url, int child_id) {
-    tab_helper().OnRedirect(child_id, type, new_url);
+    tab_helper()->Observe(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
+                          source_profile, details_results);
   }
 
   MockCaptivePortalTabReloader& mock_reloader() { return *mock_reloader_; }
 
-  void SetIsLoginTab() {
-    tab_helper().SetIsLoginTab();
-  }
-
-  content::RenderViewHost* render_view_host1() {
-    return web_contents1_->GetRenderViewHost();
-  }
-
-  content::RenderViewHost* render_view_host2() {
-    return web_contents2_->GetRenderViewHost();
-  }
-
-  content::RenderFrameHost* main_render_frame1() {
-    return web_contents1_->GetMainFrame();
-  }
-
-  content::RenderFrameHost* main_render_frame2() {
-    return web_contents2_->GetMainFrame();
-  }
+  void SetIsLoginTab() { tab_helper()->SetIsLoginTab(); }
 
  private:
-  // Only the RenderViewHosts are used.
-  scoped_ptr<content::WebContents> web_contents1_;
-  scoped_ptr<content::WebContents> web_contents2_;
-
-  CaptivePortalTabHelper tab_helper_;
+  scoped_ptr<CaptivePortalTabHelper> tab_helper_;
 
   // Owned by |tab_helper_|.
   testing::StrictMock<MockCaptivePortalTabReloader>* mock_reloader_;
@@ -261,86 +195,70 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(CaptivePortalTabHelperTest, HttpSuccess) {
-  SimulateSuccess(GURL(kHttpUrl), render_view_host1());
-  tab_helper().DidStopLoading();
+  SimulateSuccess(GURL(kHttpUrl));
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpTimeout) {
-  SimulateTimeout(GURL(kHttpUrl), render_view_host1());
-  tab_helper().DidStopLoading();
-}
-
-// Same as above, but simulates what happens when the Link Doctor is enabled,
-// which adds another provisional load/commit for the error page, after the
-// first two.
-TEST_F(CaptivePortalTabHelperTest, HttpTimeoutLinkDoctor) {
-  SimulateTimeout(GURL(kHttpUrl), render_view_host1());
-
-  EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
-  // Provisional load starts for the error page.
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), GURL(kErrorPageUrl), true, false);
-
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(main_render_frame1(),
-                                                GURL(kErrorPageUrl),
-                                                ui::PAGE_TRANSITION_LINK);
-  tab_helper().DidStopLoading();
+  SimulateTimeout(GURL(kHttpUrl));
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpsSuccess) {
-  SimulateSuccess(GURL(kHttpsUrl), render_view_host1());
-  tab_helper().DidStopLoading();
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpsUrl));
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpsTimeout) {
-  SimulateTimeout(GURL(kHttpsUrl), render_view_host1());
+  SimulateTimeout(GURL(kHttpsUrl));
   // Make sure no state was carried over from the timeout.
-  SimulateSuccess(GURL(kHttpsUrl), render_view_host1());
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpsUrl));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpsAbort) {
-  SimulateAbort(GURL(kHttpsUrl), render_view_host1(), kSameProcess);
+  SimulateAbort(GURL(kHttpsUrl), kCrossProcess);
   // Make sure no state was carried over from the abort.
-  SimulateSuccess(GURL(kHttpsUrl), render_view_host1());
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpsUrl));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 // A cross-process navigation is aborted by a same-site navigation.
 TEST_F(CaptivePortalTabHelperTest, AbortCrossProcess) {
-  SimulateAbort(GURL(kHttpsUrl2), render_view_host2(), kCrossProcess);
+  SimulateAbort(GURL(kHttpsUrl2), kCrossProcess);
   // Make sure no state was carried over from the abort.
-  SimulateSuccess(GURL(kHttpUrl), render_view_host1());
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpUrl));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 // Abort while there's a provisional timeout error page loading.
 TEST_F(CaptivePortalTabHelperTest, HttpsAbortTimeout) {
-  SimulateAbortTimeout(GURL(kHttpsUrl), render_view_host1(), kSameProcess);
+  SimulateAbortTimeout(GURL(kHttpsUrl), kCrossProcess);
   // Make sure no state was carried over from the timeout or the abort.
-  SimulateSuccess(GURL(kHttpsUrl), render_view_host1());
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpsUrl));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 // Abort a cross-process navigation while there's a provisional timeout error
 // page loading.
 TEST_F(CaptivePortalTabHelperTest, AbortTimeoutCrossProcess) {
-  SimulateAbortTimeout(GURL(kHttpsUrl2), render_view_host2(),
-                       kCrossProcess);
+  SimulateAbortTimeout(GURL(kHttpsUrl2), kCrossProcess);
   // Make sure no state was carried over from the timeout or the abort.
-  SimulateSuccess(GURL(kHttpsUrl), render_view_host1());
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpsUrl));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 // Opposite case from above - a same-process error page is aborted in favor of
 // a cross-process one.
 TEST_F(CaptivePortalTabHelperTest, HttpsAbortTimeoutForCrossProcess) {
-  SimulateAbortTimeout(GURL(kHttpsUrl), render_view_host1(), kSameProcess);
+  SimulateSuccess(GURL(kHttpsUrl));
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
+
+  SimulateAbortTimeout(GURL(kHttpsUrl), kSameProcess);
   // Make sure no state was carried over from the timeout or the abort.
-  SimulateSuccess(GURL(kHttpsUrl2), render_view_host2());
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  SimulateSuccess(GURL(kHttpsUrl2));
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 // A provisional same-site navigation is interrupted by a cross-process
@@ -352,41 +270,29 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
   // A same-site load for the original RenderViewHost starts.
   EXPECT_CALL(mock_reloader(),
               OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), same_site_url, false, false);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(same_site_url);
 
   // It's unexpectedly interrupted by a cross-process navigation, which starts
-  // navigating before the old navigation cancels.  We generate an abort message
-  // for the old navigation.
+  // navigating before the old navigation cancels.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
               OnLoadStart(cross_process_url.SchemeIsCryptographic())).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame2(), cross_process_url, false, false);
+  content::WebContentsTester::For(web_contents())
+      ->StartNavigation(cross_process_url);
 
   // The cross-process navigation fails.
-  tab_helper().DidFailProvisionalLoad(main_render_frame2(),
-                                      cross_process_url,
-                                      net::ERR_FAILED,
-                                      base::string16(),
-                                      false);
+  content::RenderFrameHostTester* pending_rfh_tester =
+      content::RenderFrameHostTester::For(pending_main_rfh());
+  pending_rfh_tester->SimulateNavigationError(cross_process_url,
+                                              net::ERR_FAILED);
 
   // The same-site navigation finally is aborted.
-  tab_helper().DidFailProvisionalLoad(main_render_frame1(),
-                                      same_site_url,
-                                      net::ERR_ABORTED,
-                                      base::string16(),
-                                      false);
-
-  // The provisional load starts for the error page for the cross-process
-  // navigation.
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame2(), GURL(kErrorPageUrl), true, false);
+  rfh_tester->SimulateNavigationStop();
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_FAILED)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(main_render_frame2(),
-                                                GURL(kErrorPageUrl),
-                                                ui::PAGE_TRANSITION_TYPED);
+  pending_rfh_tester->SimulateNavigationErrorPageCommit();
 }
 
 // Similar to the above test, except the original RenderViewHost manages to
@@ -398,32 +304,29 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
   // A same-site load for the original RenderViewHost starts.
   EXPECT_CALL(mock_reloader(),
               OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), same_site_url, false, false);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(same_site_url);
 
   // It's unexpectedly interrupted by a cross-process navigation, which starts
-  // navigating before the old navigation cancels.  We generate an abort message
-  // for the old navigation.
+  // navigating before the old navigation cancels.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
               OnLoadStart(cross_process_url.SchemeIsCryptographic())).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame2(), cross_process_url, false, false);
+  content::WebContentsTester::For(web_contents())
+      ->StartNavigation(cross_process_url);
 
   // The cross-process navigation fails.
-  tab_helper().DidFailProvisionalLoad(main_render_frame2(),
-                                      cross_process_url,
-                                      net::ERR_FAILED,
-                                      base::string16(),
-                                      false);
+  content::RenderFrameHostTester::For(pending_main_rfh())
+      ->SimulateNavigationError(cross_process_url, net::ERR_FAILED);
 
   // The same-site navigation succeeds.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
-              OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
+              OnLoadStart(same_site_url.SchemeIsCryptographic()))
+      .Times(1);
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      main_render_frame1(), same_site_url, ui::PAGE_TRANSITION_LINK);
+  rfh_tester->SimulateNavigationCommit(same_site_url);
 }
 
 // Simulates navigations for a number of subframes, and makes sure no
@@ -431,32 +334,32 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
 TEST_F(CaptivePortalTabHelperTest, HttpsSubframe) {
   GURL url = GURL(kHttpsUrl);
 
-  content::RenderFrameHostTester* render_frame_host_tester =
-      content::RenderFrameHostTester::For(main_render_frame1());
-  content::RenderFrameHost* subframe1 =
-      render_frame_host_tester->AppendChild("subframe1");
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe1 = rfh_tester->AppendChild("subframe1");
 
   // Normal load.
-  tab_helper().DidStartProvisionalLoadForFrame(subframe1, url, false, false);
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      subframe1, url, ui::PAGE_TRANSITION_LINK);
+  content::RenderFrameHostTester* subframe_tester1 =
+      content::RenderFrameHostTester::For(subframe1);
+  subframe_tester1->SimulateNavigationStart(url);
+  subframe_tester1->SimulateNavigationCommit(url);
+  subframe_tester1->SimulateNavigationStop();
 
   // Timeout.
-  content::RenderFrameHost* subframe2 =
-      render_frame_host_tester->AppendChild("subframe2");
-  tab_helper().DidStartProvisionalLoadForFrame(subframe2, url, false, false);
-  tab_helper().DidFailProvisionalLoad(
-      subframe2, url, net::ERR_TIMED_OUT, base::string16(), false);
-  tab_helper().DidStartProvisionalLoadForFrame(subframe2, url, true, false);
-  tab_helper().DidFailProvisionalLoad(
-      subframe2, url, net::ERR_ABORTED, base::string16(), false);
+  content::RenderFrameHost* subframe2 = rfh_tester->AppendChild("subframe2");
+  content::RenderFrameHostTester* subframe_tester2 =
+      content::RenderFrameHostTester::For(subframe2);
+  subframe_tester2->SimulateNavigationStart(url);
+  subframe_tester2->SimulateNavigationError(url, net::ERR_TIMED_OUT);
+  subframe_tester2->SimulateNavigationStop();
 
   // Abort.
-  content::RenderFrameHost* subframe3 =
-      render_frame_host_tester->AppendChild("subframe3");
-  tab_helper().DidStartProvisionalLoadForFrame(subframe3, url, false, false);
-  tab_helper().DidFailProvisionalLoad(
-      subframe3, url, net::ERR_ABORTED, base::string16(), false);
+  content::RenderFrameHost* subframe3 = rfh_tester->AppendChild("subframe3");
+  content::RenderFrameHostTester* subframe_tester3 =
+      content::RenderFrameHostTester::For(subframe3);
+  subframe_tester3->SimulateNavigationStart(url);
+  subframe_tester3->SimulateNavigationError(url, net::ERR_ABORTED);
+  subframe_tester3->SimulateNavigationStop();
 }
 
 // Simulates a subframe erroring out at the same time as a provisional load,
@@ -465,63 +368,44 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframe) {
 TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
   // URL used by both frames.
   GURL url = GURL(kHttpsUrl);
-  content::RenderFrameHost* subframe =
-      content::RenderFrameHostTester::For(main_render_frame1())
-          ->AppendChild("subframe");
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
 
   // Loads start.
   EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
       .Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), url, false, false);
-  tab_helper().DidStartProvisionalLoadForFrame(subframe, url, false, false);
+  rfh_tester->SimulateNavigationStart(url);
+  subframe_tester->SimulateNavigationStart(url);
 
   // Loads return errors.
-  tab_helper().DidFailProvisionalLoad(
-      main_render_frame1(), url, net::ERR_UNEXPECTED, base::string16(), false);
-  tab_helper().DidFailProvisionalLoad(
-      subframe, url, net::ERR_TIMED_OUT, base::string16(), false);
-
-  // Provisional load starts for the error pages.
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), url, true, false);
-  tab_helper().DidStartProvisionalLoadForFrame(subframe, url, true, false);
+  rfh_tester->SimulateNavigationError(url, net::ERR_UNEXPECTED);
+  subframe_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
 
   // Error page load finishes.
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      subframe, url, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  subframe_tester->SimulateNavigationErrorPageCommit();
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_UNEXPECTED)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      main_render_frame1(), url, ui::PAGE_TRANSITION_LINK);
+  rfh_tester->SimulateNavigationErrorPageCommit();
 }
 
 // Simulates an HTTP to HTTPS redirect, which then times out.
 TEST_F(CaptivePortalTabHelperTest, HttpToHttpsRedirectTimeout) {
   GURL http_url(kHttpUrl);
   EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), http_url, false, false);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(http_url);
 
   GURL https_url(kHttpsUrl);
   EXPECT_CALL(mock_reloader(), OnRedirect(true)).Times(1);
-  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME,
-             https_url,
-             render_view_host1()->GetProcess()->GetID());
+  rfh_tester->SimulateRedirect(https_url);
 
-  tab_helper().DidFailProvisionalLoad(main_render_frame1(),
-                                      https_url,
-                                      net::ERR_TIMED_OUT,
-                                      base::string16(),
-                                      false);
-
-  // Provisional load starts for the error page.
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), GURL(kErrorPageUrl), true, false);
+  rfh_tester->SimulateNavigationError(https_url, net::ERR_TIMED_OUT);
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(main_render_frame1(),
-                                                GURL(kErrorPageUrl),
-                                                ui::PAGE_TRANSITION_LINK);
+  rfh_tester->SimulateNavigationErrorPageCommit();
 }
 
 // Simulates an HTTPS to HTTP redirect.
@@ -529,138 +413,109 @@ TEST_F(CaptivePortalTabHelperTest, HttpsToHttpRedirect) {
   GURL https_url(kHttpsUrl);
   EXPECT_CALL(mock_reloader(), OnLoadStart(https_url.SchemeIsCryptographic()))
       .Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), https_url, false, false);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(https_url);
 
   GURL http_url(kHttpUrl);
   EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeIsCryptographic()))
       .Times(1);
-  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME, http_url,
-             render_view_host1()->GetProcess()->GetID());
+  rfh_tester->SimulateRedirect(http_url);
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      main_render_frame1(), http_url, ui::PAGE_TRANSITION_LINK);
+  rfh_tester->SimulateNavigationCommit(http_url);
 }
 
-// Simulates an HTTPS to HTTPS redirect.
+// Simulates an HTTP to HTTP redirect.
 TEST_F(CaptivePortalTabHelperTest, HttpToHttpRedirect) {
   GURL http_url(kHttpUrl);
   EXPECT_CALL(mock_reloader(), OnLoadStart(http_url.SchemeIsCryptographic()))
       .Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), http_url, false, false);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(http_url);
 
   EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeIsCryptographic()))
       .Times(1);
-  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME, http_url,
-             render_view_host1()->GetProcess()->GetID());
+  rfh_tester->SimulateRedirect(http_url);
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      main_render_frame1(), http_url, ui::PAGE_TRANSITION_LINK);
+  rfh_tester->SimulateNavigationCommit(http_url);
 }
 
 // Tests that a subframe redirect doesn't reset the timer to kick off a captive
 // portal probe for the main frame if the main frame request is taking too long.
 TEST_F(CaptivePortalTabHelperTest, SubframeRedirect) {
   GURL http_url(kHttpUrl);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+
   EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), http_url, false, false);
+  rfh_tester->SimulateNavigationStart(http_url);
+  subframe_tester->SimulateNavigationStart(http_url);
 
   GURL https_url(kHttpsUrl);
-  OnRedirect(content::RESOURCE_TYPE_SUB_FRAME,
-             https_url,
-             render_view_host1()->GetProcess()->GetID());
+  subframe_tester->SimulateRedirect(https_url);
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(
-      main_render_frame1(), GURL(kErrorPageUrl), ui::PAGE_TRANSITION_LINK);
-}
-
-// Simulates a redirect, for another RenderViewHost.
-TEST_F(CaptivePortalTabHelperTest, OtherRenderViewHostRedirect) {
-  GURL http_url(kHttpUrl);
-  EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), http_url, false, false);
-
-  // Another RenderViewHost sees a redirect.  None of the reloader's functions
-  // should be called.
-  GURL https_url(kHttpsUrl);
-  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME,
-             https_url,
-             render_view_host2()->GetProcess()->GetID());
-
-  tab_helper().DidFailProvisionalLoad(main_render_frame1(),
-                                      https_url,
-                                      net::ERR_TIMED_OUT,
-                                      base::string16(),
-                                      false);
-
-  // Provisional load starts for the error page.
-  tab_helper().DidStartProvisionalLoadForFrame(
-      main_render_frame1(), GURL(kErrorPageUrl), true, false);
-
-  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT)).Times(1);
-  tab_helper().DidCommitProvisionalLoadForFrame(main_render_frame1(),
-                                                GURL(kErrorPageUrl),
-                                                ui::PAGE_TRANSITION_LINK);
+  rfh_tester->SimulateNavigationCommit(http_url);
 }
 
 TEST_F(CaptivePortalTabHelperTest, LoginTabLogin) {
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
   SetIsLoginTab();
-  EXPECT_TRUE(tab_helper().IsLoginTab());
+  EXPECT_TRUE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
                       captive_portal::RESULT_INTERNET_CONNECTED);
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, LoginTabError) {
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 
   SetIsLoginTab();
-  EXPECT_TRUE(tab_helper().IsLoginTab());
+  EXPECT_TRUE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
                       captive_portal::RESULT_NO_RESPONSE);
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, LoginTabMultipleResultsBeforeLogin) {
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 
   SetIsLoginTab();
-  EXPECT_TRUE(tab_helper().IsLoginTab());
+  EXPECT_TRUE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
                       captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
-  EXPECT_TRUE(tab_helper().IsLoginTab());
+  EXPECT_TRUE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
                       captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
-  EXPECT_TRUE(tab_helper().IsLoginTab());
+  EXPECT_TRUE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_NO_RESPONSE,
                       captive_portal::RESULT_INTERNET_CONNECTED);
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, NoLoginTab) {
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
                       captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
                       captive_portal::RESULT_NO_RESPONSE);
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 
   ObservePortalResult(captive_portal::RESULT_NO_RESPONSE,
                       captive_portal::RESULT_INTERNET_CONNECTED);
-  EXPECT_FALSE(tab_helper().IsLoginTab());
+  EXPECT_FALSE(tab_helper()->IsLoginTab());
 }

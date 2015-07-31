@@ -1472,6 +1472,7 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
     EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
     contents()->TestDidNavigate(orig_rfh, i + 1, entry_id, false, url,
                                 ui::PAGE_TRANSITION_FORWARD_BACK);
+    orig_rfh->SimulateNavigationStop();
 
     // Confirm fullscreen has exited.
     EXPECT_FALSE(orig_rvh->IsFullscreenGranted());

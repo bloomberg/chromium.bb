@@ -58,6 +58,7 @@ class CrossSiteTransferringRequest;
 class FrameMojoShell;
 class FrameTree;
 class FrameTreeNode;
+class NavigationHandleImpl;
 class PermissionServiceContext;
 class RenderFrameHostDelegate;
 class RenderFrameProxyHost;
@@ -253,6 +254,22 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHostImpl's RenderView. See BindingsPolicy for details.
   // TODO(creis): Make bindings frame-specific, to support cases like <webview>.
   int GetEnabledBindings();
+
+  NavigationHandleImpl* navigation_handle() const {
+    return navigation_handle_.get();
+  }
+
+  // Called when a new navigation starts in this RenderFrameHost. Ownership of
+  // |navigation_handle| is transferred.
+  // PlzNavigate: called when a navigation is ready to commit in this
+  // RenderFrameHost.
+  void SetNavigationHandle(scoped_ptr<NavigationHandleImpl> navigation_handle);
+
+  // Gives the ownership of |navigation_handle_| to the caller.
+  // This happens during transfer navigations, where it should be transferred
+  // from the RenderFrameHost that issued the initial request to the new
+  // RenderFrameHost that will issue the transferring request.
+  scoped_ptr<NavigationHandleImpl> PassNavigationHandleOwnership();
 
   // Called on the pending RenderFrameHost when the network response is ready to
   // commit.  We should ensure that the old RenderFrameHost runs its unload
@@ -751,6 +768,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Holder of Mojo connection with ImageDownloader service in RenderFrame.
   image_downloader::ImageDownloaderPtr mojo_image_downloader_;
+
+  // Tracks a navigation happening in this frame. Note that while there can be
+  // two navigations in the same FrameTreeNode, there can only be one
+  // navigation per RenderFrameHost.
+  // PlzNavigate: before the navigation is ready to be committed, the
+  // NavigationHandle for it is owned by the NavigationRequest.
+  scoped_ptr<NavigationHandleImpl> navigation_handle_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

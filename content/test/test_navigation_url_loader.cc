@@ -33,6 +33,10 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   CallOnRequestRedirected(redirect_info, response);
 }
 
+void TestNavigationURLLoader::SimulateError(int error_code) {
+  delegate_->OnRequestFailed(false, error_code);
+}
+
 void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {

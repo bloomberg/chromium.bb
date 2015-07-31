@@ -53,6 +53,12 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // RenderFrameHostTester implementation.
   void InitializeRenderFrameIfNeeded() override;
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
+  void SimulateNavigationStart(const GURL& url) override;
+  void SimulateRedirect(const GURL& new_url) override;
+  void SimulateNavigationCommit(const GURL& url) override;
+  void SimulateNavigationError(const GURL& url, int error_code) override;
+  void SimulateNavigationErrorPageCommit() override;
+  void SimulateNavigationStop() override;
   void SendNavigate(int page_id,
                     int nav_entry_id,
                     bool did_create_new_entry,
@@ -127,6 +133,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   ui::PageTransition transition,
                                   int response_code,
                                   const ModificationCallback& callback);
+
+  // Computes the page ID for a pending navigation in this RenderFrameHost;
+  int32 ComputeNextPageID();
 
   TestRenderFrameHostCreationObserver child_creation_observer_;
 

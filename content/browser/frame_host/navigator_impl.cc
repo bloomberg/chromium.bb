@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -118,24 +119,48 @@ NavigationController* NavigatorImpl::GetController() {
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url) {
+  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
   GURL validated_url(url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
 
-  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  if (is_main_frame && !is_error_page)
+  if (is_main_frame && !is_error_page) {
     DidStartMainFrameNavigation(validated_url,
                                 render_frame_host->GetSiteInstance());
+  }
 
   if (delegate_) {
     // Notify the observer about the start of the provisional load.
-    delegate_->DidStartProvisionalLoad(
-        render_frame_host, validated_url, is_error_page, is_iframe_srcdoc);
+    delegate_->DidStartProvisionalLoad(render_frame_host, validated_url,
+                                       is_error_page, is_iframe_srcdoc);
   }
-}
 
+  if (is_error_page ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    return;
+  }
+
+  if (render_frame_host->navigation_handle()) {
+    if (render_frame_host->navigation_handle()->is_transferring()) {
+      // If the navigation is completing a transfer, this
+      // DidStartProvisionalLoad should not correspond to a new navigation.
+      DCHECK_EQ(url, render_frame_host->navigation_handle()->GetURL());
+      render_frame_host->navigation_handle()->set_is_transferring(false);
+      return;
+    }
+
+    // This ensures that notifications about the end of the previous
+    // navigation are sent before notifications about the start of the
+    // new navigation.
+    render_frame_host->SetNavigationHandle(scoped_ptr<NavigationHandleImpl>());
+  }
+
+  render_frame_host->SetNavigationHandle(
+      NavigationHandleImpl::Create(url, is_main_frame, delegate_));
+}
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
@@ -461,6 +486,7 @@ void NavigatorImpl::DidNavigate(
     delegate_->DidCommitProvisionalLoad(render_frame_host,
                                         params.url,
                                         transition_type);
+    render_frame_host->navigation_handle()->DidCommitNavigation();
   }
 
   if (!did_navigate)
@@ -652,6 +678,7 @@ void NavigatorImpl::OnBeginNavigation(
           controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount()));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
+  navigation_request->CreateNavigationHandle(delegate_);
 
   if (frame_tree_node->IsMainFrame()) {
     // Renderer-initiated main-frame navigations that need to swap processes
@@ -711,6 +738,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   CheckWebUIRendererDoesNotDisplayNormalURL(
       render_frame_host, navigation_request->common_params().url);
 
+  navigation_request->TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
                                       navigation_request->request_params());
@@ -740,6 +768,7 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
   CheckWebUIRendererDoesNotDisplayNormalURL(
       render_frame_host, navigation_request->common_params().url);
 
+  navigation_request->TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->FailedNavigation(navigation_request->common_params(),
                                       navigation_request->request_params(),
                                       has_stale_copy_in_cache, error_code);
@@ -818,6 +847,7 @@ void NavigatorImpl::RequestNavigation(
           navigation_type, is_same_document_history_load, navigation_start,
           controller_));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
+  navigation_request->CreateNavigationHandle(delegate_);
 
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed (when beforeunload dispatch is not needed or this navigation

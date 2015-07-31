@@ -20,6 +20,7 @@
 namespace content {
 
 class NavigationEntry;
+class NavigationHandle;
 class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
@@ -115,6 +116,39 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // down.
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) {}
+
+  // Navigation related events ------------------------------------------------
+
+  // Called when a navigation started in the WebContents. |navigation_handle|
+  // is unique to a specific navigation. The same |navigation_handle| will be
+  // provided on subsequent calls to DidRedirect/Commit/FinishNavigation
+  // related to this navigation.
+  //
+  // Note that this is fired by navigations in any frame of the WebContents,
+  // not just the main frame.
+  //
+  // Note that more than one navigation can be ongoing in the same frame at the
+  // same time (including the main frame). Each will get its own
+  // NavigationHandle.
+  //
+  // Note that there is no guarantee that DidFinishNavigation will be called
+  // for any particular navigation before DidStartNavigation is called on the
+  // next.
+  virtual void DidStartNavigation(NavigationHandle* navigation_handle) {}
+
+  // Called when a navigation encountered a server redirect.
+  virtual void DidRedirectNavigation(NavigationHandle* navigation_handle) {}
+
+  // Called when a navigation was committed.
+  virtual void DidCommitNavigation(NavigationHandle* navigation_handle) {}
+
+  // Called when a navigation stopped in the WebContents. This happens when a
+  // navigation is either aborted, replaced by a new one, or the document load
+  // finishes. Note that |navigation_handle| will be destroyed at the end of
+  // this call, so do not keep a reference to it afterward.
+  virtual void DidFinishNavigation(NavigationHandle* navigation_handle) {}
+
+  // ---------------------------------------------------------------------------
 
   // This method is invoked after the WebContents decides which RenderFrameHost
   // to use for the next browser-initiated navigation, but before the navigation

@@ -1250,8 +1250,9 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(kUrl2);
 
-  contents()->GetFrameTree()->root()->navigator()->DidNavigate(evil_rfh,
-                                                               params);
+  evil_rfh->SimulateNavigationStart(kUrl2);
+  evil_rfh->SendNavigateWithParams(&params);
+  evil_rfh->SimulateNavigationStop();
 
   // That should NOT have cancelled the pending RFH, because the reload did
   // not have a user gesture. Thus, the pending back navigation will still
@@ -1273,8 +1274,9 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
 
   // Now do the same but as a user gesture.
   params.gesture = NavigationGestureUser;
-  contents()->GetFrameTree()->root()->navigator()->DidNavigate(evil_rfh,
-                                                               params);
+  evil_rfh->SimulateNavigationStart(kUrl2);
+  evil_rfh->SendNavigateWithParams(&params);
+  evil_rfh->SimulateNavigationStop();
 
   // User navigation should have cancelled the pending RFH.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->

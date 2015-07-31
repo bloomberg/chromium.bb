@@ -6,13 +6,16 @@
 
 #include "base/command_line.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
@@ -86,6 +89,113 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
       child_creation_observer_.last_created_frame());
 }
 
+void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    SendRendererInitiatedNavigationRequest(url, false);
+    return;
+  }
+
+  OnDidStartLoading(true);
+  OnDidStartProvisionalLoadForFrame(url);
+}
+
+void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    NavigationRequest* request = frame_tree_node_->navigation_request();
+    TestNavigationURLLoader* url_loader =
+        static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
+    CHECK(url_loader);
+    url_loader->SimulateServerRedirect(new_url);
+    return;
+  }
+
+  // Note that this does not simulate
+  // WebContentsImpl::DidGetRedirectForResourceRequest due to the difficulty in
+  // creating fake ResourceRequestDetails on the UI thread.
+  navigation_handle()->DidRedirectNavigation(new_url);
+}
+
+void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
+  if (frame_tree_node()->navigation_request())
+    PrepareForCommit();
+
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = ComputeNextPageID();
+  params.nav_entry_id = 0;
+  params.url = url;
+  params.transition = GetParent() ? ui::PAGE_TRANSITION_MANUAL_SUBFRAME
+                                  : ui::PAGE_TRANSITION_LINK;
+  params.should_update_history = true;
+  params.did_create_new_entry = true;
+  params.gesture = NavigationGestureUser;
+  params.contents_mime_type = contents_mime_type_;
+  params.is_post = false;
+  params.http_status_code = 200;
+  params.socket_address.set_host("2001:db8::1");
+  params.socket_address.set_port(80);
+  params.history_list_was_cleared = simulate_history_list_was_cleared_;
+  params.original_request_url = url;
+
+  url::Replacements<char> replacements;
+  replacements.ClearRef();
+  params.was_within_same_page =
+      url.ReplaceComponents(replacements) ==
+      GetLastCommittedURL().ReplaceComponents(replacements);
+
+  params.page_state = PageState::CreateForTesting(url, false, nullptr, nullptr);
+
+  SendNavigateWithParams(&params);
+}
+
+void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
+                                                  int error_code) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    NavigationRequest* request = frame_tree_node_->navigation_request();
+    TestNavigationURLLoader* url_loader =
+        static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
+    CHECK(url_loader);
+    url_loader->SimulateError(error_code);
+    return;
+  }
+
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params error_params;
+  error_params.error_code = error_code;
+  error_params.url = url;
+  OnDidFailProvisionalLoadWithError(error_params);
+}
+
+void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
+  CHECK(navigation_handle());
+  GURL error_url = GURL(kUnreachableWebDataURL);
+  OnDidStartProvisionalLoadForFrame(error_url);
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = ComputeNextPageID();
+  params.nav_entry_id = 0;
+  params.did_create_new_entry = true;
+  params.url = navigation_handle()->GetURL();
+  params.transition = GetParent() ? ui::PAGE_TRANSITION_MANUAL_SUBFRAME
+                                  : ui::PAGE_TRANSITION_LINK;
+  params.was_within_same_page = false;
+  params.url_is_unreachable = true;
+  params.page_state = PageState::CreateForTesting(navigation_handle()->GetURL(),
+                                                  false, nullptr, nullptr);
+  SendNavigateWithParams(&params);
+}
+
+void TestRenderFrameHost::SimulateNavigationStop() {
+  if (is_loading()) {
+    OnDidStopLoading();
+  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableBrowserSideNavigation)) {
+    // Even if the RenderFrameHost is not loading, there may still be an
+    // ongoing navigation in the FrameTreeNode. Cancel this one as well.
+    frame_tree_node()->ResetNavigationRequest(false);
+  }
+}
+
 void TestRenderFrameHost::SetContentsMimeType(const std::string& mime_type) {
   contents_mime_type_ = mime_type;
 }
@@ -148,6 +258,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use below.
   GURL url_copy(url);
+  OnDidStartLoading(true);
   OnDidStartProvisionalLoadForFrame(url_copy);
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
@@ -270,6 +381,21 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, MakeEmptyStream());
+}
+
+int32 TestRenderFrameHost::ComputeNextPageID() {
+  const NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
+      frame_tree_node()->navigator()->GetController()->GetPendingEntry());
+  DCHECK_IMPLIES(entry && entry->site_instance(),
+                 entry->site_instance() == GetSiteInstance());
+  // Entry can be null when committing an error page (the pending entry was
+  // cleared during DidFailProvisionalLoad).
+  int page_id = entry ? entry->GetPageID() : -1;
+  if (page_id == -1) {
+    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(delegate());
+    page_id = web_contents->GetMaxPageIDForSiteInstance(GetSiteInstance()) + 1;
+  }
+  return page_id;
 }
 
 }  // namespace content

@@ -7,11 +7,13 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 
@@ -119,6 +121,61 @@ void WebContentsObserverSanityChecker::FrameDeleted(
   CHECK(!web_contents_destroyed_);
 }
 
+void WebContentsObserverSanityChecker::DidStartNavigation(
+    NavigationHandle* navigation_handle) {
+  CHECK(!NavigationIsOngoing(navigation_handle));
+  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
+
+  CHECK(navigation_handle->GetNetErrorCode() == net::OK);
+  CHECK(!navigation_handle->HasCommittedDocument());
+  CHECK(!navigation_handle->HasCommittedErrorPage());
+
+  ongoing_navigations_.insert(navigation_handle);
+}
+
+void WebContentsObserverSanityChecker::DidRedirectNavigation(
+    NavigationHandle* navigation_handle) {
+  CHECK(NavigationIsOngoing(navigation_handle));
+  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
+
+  CHECK(navigation_handle->GetNetErrorCode() == net::OK);
+  CHECK(!navigation_handle->HasCommittedDocument());
+  CHECK(!navigation_handle->HasCommittedErrorPage());
+}
+
+void WebContentsObserverSanityChecker::DidCommitNavigation(
+    NavigationHandle* navigation_handle) {
+  CHECK(NavigationIsOngoing(navigation_handle));
+  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
+
+  CHECK_NE(navigation_handle->HasCommittedDocument(),
+           navigation_handle->HasCommittedErrorPage());
+  CHECK_IMPLIES(navigation_handle->HasCommittedDocument(),
+                navigation_handle->GetNetErrorCode() == net::OK);
+  CHECK_IMPLIES(navigation_handle->HasCommittedErrorPage(),
+                navigation_handle->GetNetErrorCode() != net::OK);
+
+  ongoing_committed_navigations_.insert(navigation_handle);
+}
+
+void WebContentsObserverSanityChecker::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  CHECK(NavigationIsOngoing(navigation_handle));
+
+  CHECK_IMPLIES(NavigationIsOngoingAndCommitted(navigation_handle),
+                navigation_handle->HasCommittedDocument() !=
+                    navigation_handle->HasCommittedErrorPage());
+  CHECK_IMPLIES(navigation_handle->HasCommittedDocument(),
+                navigation_handle->GetNetErrorCode() == net::OK);
+  CHECK_IMPLIES(navigation_handle->HasCommittedErrorPage(),
+                navigation_handle->GetNetErrorCode() != net::OK);
+
+  if (NavigationIsOngoingAndCommitted(navigation_handle))
+    ongoing_committed_navigations_.erase(navigation_handle);
+
+  ongoing_navigations_.erase(navigation_handle);
+}
+
 void WebContentsObserverSanityChecker::DidStartProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
@@ -220,6 +277,8 @@ bool WebContentsObserverSanityChecker::OnMessageReceived(
 void WebContentsObserverSanityChecker::WebContentsDestroyed() {
   CHECK(!web_contents_destroyed_);
   web_contents_destroyed_ = true;
+  CHECK(ongoing_navigations_.empty());
+  CHECK(ongoing_committed_navigations_.empty());
 }
 
 WebContentsObserverSanityChecker::WebContentsObserverSanityChecker(
@@ -264,6 +323,18 @@ std::string WebContentsObserverSanityChecker::Format(
       "(%d, %d -> %s)", render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID(),
       render_frame_host->GetSiteInstance()->GetSiteURL().spec().c_str());
+}
+
+bool WebContentsObserverSanityChecker::NavigationIsOngoing(
+    NavigationHandle* navigation_handle) {
+  auto it = ongoing_navigations_.find(navigation_handle);
+  return it != ongoing_navigations_.end();
+}
+
+bool WebContentsObserverSanityChecker::NavigationIsOngoingAndCommitted(
+    NavigationHandle* navigation_handle) {
+  auto it = ongoing_committed_navigations_.find(navigation_handle);
+  return it != ongoing_committed_navigations_.end();
 }
 
 }  // namespace content

@@ -38,6 +38,8 @@ class TestNavigationURLLoader
 
   void SimulateServerRedirect(const GURL& redirect_url);
 
+  void SimulateError(int error_code);
+
   void CallOnRequestRedirected(const net::RedirectInfo& redirect_info,
                                const scoped_refptr<ResourceResponse>& response);
   void CallOnResponseStarted(const scoped_refptr<ResourceResponse>& response,

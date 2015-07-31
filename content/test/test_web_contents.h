@@ -45,6 +45,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // WebContentsTester implementation.
   void CommitPendingNavigation() override;
   TestRenderFrameHost* GetPendingMainFrame() const override;
+  void StartNavigation(const GURL& url) override;
   void NavigateAndCommit(const GURL& url) override;
   void TestSetIsLoading(bool value) override;
   void ProceedWithCrossSiteNavigation() override;

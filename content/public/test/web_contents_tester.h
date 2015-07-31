@@ -67,6 +67,20 @@ class WebContentsTester {
   // speculative RenderFrameHost for the main frame if one exists.
   virtual RenderFrameHost* GetPendingMainFrame() const = 0;
 
+  // Creates a pending navigation to |url|. Also simulates the
+  // DidStartProvisionalLoad received from the renderer.  To commit the
+  // navigation, callers should use
+  // RenderFrameHostTester::SimulateNavigationCommit. Callers can then use
+  // RenderFrameHostTester::SimulateNavigationStop to simulate the navigation
+  // stop.
+  // Note that this function is meant for callers that want to control the
+  // timing of navigation events precisely. Other callers should use
+  // NavigateAndCommit.
+  // PlzNavigate: this does not simulate the DidStartProvisionalLoad from the
+  // renderer, as it only should be received after the navigation is ready to
+  // commit.
+  virtual void StartNavigation(const GURL& url) = 0;
+
   // Creates a pending navigation to the given URL with the default parameters
   // and then commits the load with a page ID one larger than any seen. This
   // emulates what happens on a new navigation.

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -34,122 +35,80 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(CaptivePortalTabHelper);
 CaptivePortalTabHelper::CaptivePortalTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      // web_contents is NULL in unit tests.
-      profile_(web_contents ? Profile::FromBrowserContext(
-                                  web_contents->GetBrowserContext())
-                            : NULL),
-      tab_reloader_(
-          new CaptivePortalTabReloader(
-              profile_,
-              web_contents,
-              base::Bind(&CaptivePortalTabHelper::OpenLoginTabForWebContents,
-                         web_contents, false))),
-      login_detector_(new CaptivePortalLoginDetector(profile_)),
-      pending_error_code_(net::OK),
-      provisional_render_view_host_(NULL) {
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      navigation_handle_(nullptr),
+      tab_reloader_(new CaptivePortalTabReloader(
+          profile_,
+          web_contents,
+          base::Bind(&CaptivePortalTabHelper::OpenLoginTabForWebContents,
+                     web_contents,
+                     false))),
+      login_detector_(new CaptivePortalLoginDetector(profile_)) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-                 content::Source<content::WebContents>(web_contents));
 }
 
 CaptivePortalTabHelper::~CaptivePortalTabHelper() {
 }
 
-void CaptivePortalTabHelper::RenderViewDeleted(
-    content::RenderViewHost* render_view_host) {
-  // This can happen when a cross-process navigation is aborted, either by
-  // pressing stop or by starting a new cross-process navigation that can't
-  // re-use |provisional_render_view_host_|.  May also happen on a crash.
-  if (render_view_host == provisional_render_view_host_)
-    OnLoadAborted();
-}
-
-void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
+void CaptivePortalTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
   DCHECK(CalledOnValidThread());
-
-  // Ignore subframes.
-  if (render_frame_host->GetParent())
+  if (!navigation_handle->IsInMainFrame())
     return;
 
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
-  if (provisional_render_view_host_) {
-    // If loading an error page for a previous failure, treat this as part of
-    // the previous load.  Link Doctor pages act like two error page loads in a
-    // row.  The second time, provisional_render_view_host_ will be NULL.
-    if (is_error_page && provisional_render_view_host_ == render_view_host)
-      return;
-    // Otherwise, abort the old load.
-    OnLoadAborted();
+  // Always track the latest navigation. If a navigation was already tracked,
+  // and it committed (either the navigation proper or an error page), it is
+  // safe to start tracking the new navigation. Otherwise simulate an abort
+  // before reporting the start of the new navigation.
+  if (navigation_handle_ && !navigation_handle_->HasCommittedDocument() &&
+      !navigation_handle_->HasCommittedErrorPage()) {
+    tab_reloader_->OnAbort();
   }
 
-  provisional_render_view_host_ = render_view_host;
-  pending_error_code_ = net::OK;
-
-  tab_reloader_->OnLoadStart(validated_url.SchemeIsCryptographic());
+  navigation_handle_ = navigation_handle;
+  tab_reloader_->OnLoadStart(
+      navigation_handle->GetURL().SchemeIsCryptographic());
 }
 
-void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
+void CaptivePortalTabHelper::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
   DCHECK(CalledOnValidThread());
+  if (navigation_handle != navigation_handle_)
+    return;
+  DCHECK(navigation_handle->IsInMainFrame());
+  tab_reloader_->OnRedirect(
+      navigation_handle->GetURL().SchemeIsCryptographic());
+}
 
-  // Ignore subframes.
-  if (render_frame_host->GetParent())
+void CaptivePortalTabHelper::DidCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(CalledOnValidThread());
+  if (!navigation_handle->IsInMainFrame())
     return;
 
-  if (provisional_render_view_host_ == render_frame_host->GetRenderViewHost()) {
-    tab_reloader_->OnLoadCommitted(pending_error_code_);
-  } else {
-    // This may happen if the active RenderView commits a page before a cross
-    // process navigation cancels the old load.  In this case, the commit of the
-    // old navigation will cancel the newer one.
-    OnLoadAborted();
+  if (navigation_handle_ != navigation_handle)
+    DidStartNavigation(navigation_handle);
 
-    // Send information about the new load.
-    tab_reloader_->OnLoadStart(url.SchemeIsCryptographic());
-    tab_reloader_->OnLoadCommitted(net::OK);
+  tab_reloader_->OnLoadCommitted(navigation_handle->GetNetErrorCode());
+}
+
+void CaptivePortalTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(CalledOnValidThread());
+  if (navigation_handle != navigation_handle_)
+    return;
+  DCHECK(navigation_handle->IsInMainFrame());
+
+  if (!navigation_handle->HasCommittedDocument() &&
+      !navigation_handle->HasCommittedErrorPage()) {
+    tab_reloader_->OnAbort();
   }
-
-  provisional_render_view_host_ = NULL;
-  pending_error_code_ = net::OK;
-}
-
-void CaptivePortalTabHelper::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  DCHECK(CalledOnValidThread());
-
-  // Ignore subframes and unexpected RenderViewHosts.
-  if (render_frame_host->GetParent() ||
-      render_frame_host->GetRenderViewHost() != provisional_render_view_host_)
-    return;
-
-  // Aborts generally aren't followed by loading an error page, so go ahead and
-  // reset the state now, to prevent any captive portal checks from triggering.
-  if (error_code == net::ERR_ABORTED) {
-    OnLoadAborted();
-    return;
-  }
-
-  pending_error_code_ = error_code;
-}
-
-void CaptivePortalTabHelper::DidStopLoading() {
-  DCHECK(CalledOnValidThread());
 
   login_detector_->OnStoppedLoading();
+
+  navigation_handle_ = nullptr;
 }
 
 void CaptivePortalTabHelper::Observe(
@@ -157,31 +116,13 @@ void CaptivePortalTabHelper::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(CalledOnValidThread());
-  switch (type) {
-    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-      DCHECK_EQ(web_contents(),
-                content::Source<content::WebContents>(source).ptr());
+  DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
+  DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
 
-      const content::ResourceRedirectDetails* redirect_details =
-          content::Details<content::ResourceRedirectDetails>(details).ptr();
+  const CaptivePortalService::Results* results =
+      content::Details<CaptivePortalService::Results>(details).ptr();
 
-      OnRedirect(redirect_details->origin_child_id,
-                 redirect_details->resource_type,
-                 redirect_details->new_url);
-      break;
-    }
-    case chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT: {
-      DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
-
-      const CaptivePortalService::Results* results =
-          content::Details<CaptivePortalService::Results>(details).ptr();
-
-      OnCaptivePortalResults(results->previous_result, results->result);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  OnCaptivePortalResults(results->previous_result, results->result);
 }
 
 void CaptivePortalTabHelper::OnSSLCertError(const net::SSLInfo& ssl_info) {
@@ -230,33 +171,11 @@ void CaptivePortalTabHelper::OpenLoginTabForWebContents(
   captive_portal_tab_helper->SetIsLoginTab();
 }
 
-void CaptivePortalTabHelper::OnRedirect(int child_id,
-                                        ResourceType resource_type,
-                                        const GURL& new_url) {
-  // Only main frame redirects for the provisional RenderViewHost matter.
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME ||
-      !provisional_render_view_host_ ||
-      provisional_render_view_host_->GetProcess()->GetID() != child_id) {
-    return;
-  }
-
-  tab_reloader_->OnRedirect(new_url.SchemeIsCryptographic());
-}
-
 void CaptivePortalTabHelper::OnCaptivePortalResults(
     CaptivePortalResult previous_result,
     CaptivePortalResult result) {
   tab_reloader_->OnCaptivePortalResults(previous_result, result);
   login_detector_->OnCaptivePortalResults(previous_result, result);
-}
-
-void CaptivePortalTabHelper::OnLoadAborted() {
-  // No further messages for the cancelled navigation will occur.
-  provisional_render_view_host_ = NULL;
-  // May have been aborting the load of an error page.
-  pending_error_code_ = net::OK;
-
-  tab_reloader_->OnAbort();
 }
 
 void CaptivePortalTabHelper::SetIsLoginTab() {

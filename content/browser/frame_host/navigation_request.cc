@@ -7,6 +7,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -195,6 +196,16 @@ bool NavigationRequest::BeginNavigation() {
   // DidStartProvisionalLoadForFrame for the navigation.
 }
 
+void NavigationRequest::CreateNavigationHandle(NavigatorDelegate* delegate) {
+  navigation_handle_ = NavigationHandleImpl::Create(
+      common_params_.url, frame_tree_node_->IsMainFrame(), delegate);
+}
+
+void NavigationRequest::TransferNavigationHandleOwnership(
+    RenderFrameHostImpl* render_frame_host) {
+  render_frame_host->SetNavigationHandle(navigation_handle_.Pass());
+}
+
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {
@@ -205,6 +216,8 @@ void NavigationRequest::OnRequestRedirected(
   // TODO(davidben): This where prerender and navigation_interceptor should be
   // integrated. For now, just always follow all redirects.
   loader_->FollowRedirect();
+
+  navigation_handle_->DidRedirectNavigation(redirect_info.new_url);
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -220,6 +233,7 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
                                         int net_error) {
   DCHECK(state_ == STARTED);
   state_ = FAILED;
+  navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
   frame_tree_node_->navigator()->FailedNavigation(
       frame_tree_node_, has_stale_copy_in_cache, net_error);
 }

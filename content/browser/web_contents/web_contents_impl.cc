@@ -36,6 +36,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
@@ -453,12 +454,32 @@ WebContentsImpl::~WebContentsImpl() {
   frame_tree_.root()->ResetForNewProcess();
   GetRenderManager()->ResetProxyHosts();
 
-  // Manually call the observer methods for the root frame tree node.
+  // Manually call the observer methods for the root frame tree node. It is
+  // necessary to manually delete all objects tracking navigations
+  // (NavigationHandle, NavigationRequest) for observers to be properly
+  // notified of these navigations stopping before the WebContents is
+  // destroyed.
   RenderFrameHostManager* root = GetRenderManager();
 
-  if (root->pending_frame_host())
+  if (root->pending_frame_host()) {
     root->pending_frame_host()->SetRenderFrameCreated(false);
+    root->pending_frame_host()->SetNavigationHandle(
+        scoped_ptr<NavigationHandleImpl>());
+  }
   root->current_frame_host()->SetRenderFrameCreated(false);
+  root->current_frame_host()->SetNavigationHandle(
+      scoped_ptr<NavigationHandleImpl>());
+
+  // PlzNavigate: clear up state specific to browser-side navigation.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    frame_tree_.root()->ResetNavigationRequest(false);
+    if (root->speculative_frame_host()) {
+      root->speculative_frame_host()->SetRenderFrameCreated(false);
+      root->speculative_frame_host()->SetNavigationHandle(
+          scoped_ptr<NavigationHandleImpl>());
+    }
+  }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     FrameDeleted(root->current_frame_host()));
@@ -2531,6 +2552,14 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
       NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       Source<WebContents>(this),
       Details<const ResourceRedirectDetails>(&details));
+
+  if (IsResourceTypeFrame(details.resource_type)) {
+    NavigationHandleImpl* navigation_handle =
+        static_cast<RenderFrameHostImpl*>(render_frame_host)
+            ->navigation_handle();
+    if (navigation_handle)
+      navigation_handle->DidRedirectNavigation(details.new_url);
+  }
 }
 
 void WebContentsImpl::NotifyWebContentsFocused() {
@@ -2746,6 +2775,27 @@ bool WebContentsImpl::FocusLocationBarByDefault() {
 void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
   if (delegate_)
     delegate_->SetFocusToLocationBar(select_all);
+}
+
+void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidStartNavigation(navigation_handle));
+}
+
+void WebContentsImpl::DidRedirectNavigation(
+    NavigationHandle* navigation_handle) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidRedirectNavigation(navigation_handle));
+}
+
+void WebContentsImpl::DidCommitNavigation(NavigationHandle* navigation_handle) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidCommitNavigation(navigation_handle));
+}
+
+void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidFinishNavigation(navigation_handle));
 }
 
 void WebContentsImpl::DidStartProvisionalLoad(

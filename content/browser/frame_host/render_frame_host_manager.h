@@ -30,6 +30,7 @@ class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
+class NavigationHandleImpl;
 class NavigationRequest;
 class NavigatorTestWithBrowserSideNavigation;
 class RenderFrameHost;
@@ -746,6 +747,14 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // owns the request until it's transferred to the new process, so it will be
   // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
   scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request_;
+
+  // This is used to temporarily store the NavigationHandle during
+  // transferring navigations. The handle needs to be stored because the old
+  // RenderFrameHost may be discarded before a new RenderFrameHost is created
+  // for the navigation.
+  // PlzNavigate: this will never be set since there are no transferring
+  // navigations in PlzNavigate.
+  scoped_ptr<NavigationHandleImpl> transfer_navigation_handle_;
 
   // If either of these is non-NULL, the pending navigation is to a chrome:
   // page. The scoped_ptr is used if pending_web_ui_ != web_ui_, the WeakPtr is

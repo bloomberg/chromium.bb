@@ -172,6 +172,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->GetMainFrame()->PrepareForCommit();
   contents()->TestDidNavigate(contents()->GetMainFrame(), 1, pending_id, true,
                               url, ui::PAGE_TRANSITION_TYPED);
+  contents()->GetMainFrame()->SimulateNavigationStop();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
   TestDevToolsClientHost client_host;

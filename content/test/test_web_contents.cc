@@ -64,6 +64,26 @@ TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
       GetRenderManager()->pending_frame_host());
 }
 
+void TestWebContents::StartNavigation(const GURL& url) {
+  GetController().LoadURL(url, Referrer(), ui::PAGE_TRANSITION_LINK,
+                          std::string());
+  GURL loaded_url(url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
+      &loaded_url, GetBrowserContext(), &reverse_on_redirect);
+
+  // This will simulate receiving the DidStartProvisionalLoad IPC from the
+  // renderer.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    if (GetMainFrame()->is_waiting_for_beforeunload_ack())
+      GetMainFrame()->SendBeforeUnloadACK(true);
+    TestRenderFrameHost* rfh =
+        GetPendingMainFrame() ? GetPendingMainFrame() : GetMainFrame();
+    rfh->SimulateNavigationStart(url);
+  }
+}
+
 int TestWebContents::DownloadImage(const GURL& url,
                                    bool is_favicon,
                                    uint32_t max_bitmap_size,
@@ -96,6 +116,13 @@ void TestWebContents::TestDidNavigateWithReferrer(
     const GURL& url,
     const Referrer& referrer,
     ui::PageTransition transition) {
+  TestRenderFrameHost* rfh =
+      static_cast<TestRenderFrameHost*>(render_frame_host);
+  rfh->InitializeRenderFrameIfNeeded();
+
+  if (!rfh->is_loading())
+    rfh->SimulateNavigationStart(url);
+
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
   params.page_id = page_id;
@@ -114,10 +141,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url);
 
-  TestRenderFrameHost* rfh =
-      static_cast<TestRenderFrameHost*>(render_frame_host);
-  rfh->InitializeRenderFrameIfNeeded();
-  rfh->frame_tree_node()->navigator()->DidNavigate(rfh, params);
+  rfh->SendNavigateWithParams(&params);
 }
 
 const std::string& TestWebContents::GetSaveFrameHeaders() {
@@ -157,13 +181,12 @@ WebContents* TestWebContents::Clone() {
 }
 
 void TestWebContents::NavigateAndCommit(const GURL& url) {
-  GetController().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  GetController().LoadURL(url, Referrer(), ui::PAGE_TRANSITION_LINK,
+                          std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, GetBrowserContext(), &reverse_on_redirect);
-
   // LoadURL created a navigation entry, now simulate the RenderView sending
   // a notification that it actually navigated.
   CommitPendingNavigation();
