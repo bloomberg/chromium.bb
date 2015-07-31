@@ -235,20 +235,20 @@ usage(int error_code)
 #if defined(BUILD_FBDEV_COMPOSITOR)
 			"\t\t\t\tfbdev-backend.so\n"
 #endif
-#if defined(BUILD_X11_COMPOSITOR)
-			"\t\t\t\tx11-backend.so\n"
-#endif
-#if defined(BUILD_WAYLAND_COMPOSITOR)
-			"\t\t\t\twayland-backend.so\n"
+#if defined(BUILD_HEADLESS_COMPOSITOR)
+			"\t\t\t\theadless-backend.so\n"
 #endif
 #if defined(BUILD_RDP_COMPOSITOR)
 			"\t\t\t\trdp-backend.so\n"
 #endif
-#if defined(BUILD_HEADLESS_COMPOSITOR)
-			"\t\t\t\theadless-backend.so\n"
-#endif
 #if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
 			"\t\t\t\trpi-backend.so\n"
+#endif
+#if defined(BUILD_WAYLAND_COMPOSITOR)
+			"\t\t\t\twayland-backend.so\n"
+#endif
+#if defined(BUILD_X11_COMPOSITOR)
+			"\t\t\t\tx11-backend.so\n"
 #endif
 		"  --shell=MODULE\tShell module, defaults to desktop-shell.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
@@ -277,41 +277,14 @@ usage(int error_code)
 		"  --use-gl\t\tUse the GL renderer\n\n");
 #endif
 
-#if defined(BUILD_X11_COMPOSITOR)
+#if defined(BUILD_HEADLESS_COMPOSITOR)
 	fprintf(stderr,
-		"Options for x11-backend.so:\n\n"
-		"  --width=WIDTH\t\tWidth of X window\n"
-		"  --height=HEIGHT\tHeight of X window\n"
-		"  --scale=SCALE\t\tScale factor of output\n"
-		"  --fullscreen\t\tRun in fullscreen mode\n"
-		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
-		"  --output-count=COUNT\tCreate multiple outputs\n"
-		"  --no-input\t\tDont create input devices\n\n");
-#endif
-
-#if defined(BUILD_WAYLAND_COMPOSITOR)
-	fprintf(stderr,
-		"Options for wayland-backend.so:\n\n"
-		"  --width=WIDTH\t\tWidth of Wayland surface\n"
-		"  --height=HEIGHT\tHeight of Wayland surface\n"
-		"  --scale=SCALE\t\tScale factor of output\n"
-		"  --fullscreen\t\tRun in fullscreen mode\n"
-		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
-		"  --output-count=COUNT\tCreate multiple outputs\n"
-		"  --sprawl\t\tCreate one fullscreen output for every parent output\n"
-		"  --display=DISPLAY\tWayland display to connect to\n\n");
-#endif
-
-#if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
-	fprintf(stderr,
-		"Options for rpi-backend.so:\n\n"
-		"  --tty=TTY\t\tThe tty to use\n"
-		"  --single-buffer\tUse single-buffered Dispmanx elements.\n"
+		"Options for headless-backend.so:\n\n"
+		"  --width=WIDTH\t\tWidth of memory surface\n"
+		"  --height=HEIGHT\tHeight of memory surface\n"
 		"  --transform=TR\tThe output transformation, TR is one of:\n"
 		"\tnormal 90 180 270 flipped flipped-90 flipped-180 flipped-270\n"
-		"  --opaque-regions\tEnable support for opaque regions, can be "
-		"very slow without support in the GPU firmware.\n"
-		"\n");
+		"  --use-pixman\t\tUse the pixman (CPU) renderer (default: no rendering)\n\n");
 #endif
 
 #if defined(BUILD_RDP_COMPOSITOR)
@@ -329,14 +302,41 @@ usage(int error_code)
 		"\n");
 #endif
 
-#if defined(BUILD_HEADLESS_COMPOSITOR)
+#if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
 	fprintf(stderr,
-		"Options for headless-backend.so:\n\n"
-		"  --width=WIDTH\t\tWidth of memory surface\n"
-		"  --height=HEIGHT\tHeight of memory surface\n"
+		"Options for rpi-backend.so:\n\n"
+		"  --tty=TTY\t\tThe tty to use\n"
+		"  --single-buffer\tUse single-buffered Dispmanx elements.\n"
 		"  --transform=TR\tThe output transformation, TR is one of:\n"
 		"\tnormal 90 180 270 flipped flipped-90 flipped-180 flipped-270\n"
-		"  --use-pixman\t\tUse the pixman (CPU) renderer (default: no rendering)\n\n");
+		"  --opaque-regions\tEnable support for opaque regions, can be "
+		"very slow without support in the GPU firmware.\n"
+		"\n");
+#endif
+
+#if defined(BUILD_WAYLAND_COMPOSITOR)
+	fprintf(stderr,
+		"Options for wayland-backend.so:\n\n"
+		"  --width=WIDTH\t\tWidth of Wayland surface\n"
+		"  --height=HEIGHT\tHeight of Wayland surface\n"
+		"  --scale=SCALE\t\tScale factor of output\n"
+		"  --fullscreen\t\tRun in fullscreen mode\n"
+		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
+		"  --output-count=COUNT\tCreate multiple outputs\n"
+		"  --sprawl\t\tCreate one fullscreen output for every parent output\n"
+		"  --display=DISPLAY\tWayland display to connect to\n\n");
+#endif
+
+#if defined(BUILD_X11_COMPOSITOR)
+	fprintf(stderr,
+		"Options for x11-backend.so:\n\n"
+		"  --width=WIDTH\t\tWidth of X window\n"
+		"  --height=HEIGHT\tHeight of X window\n"
+		"  --scale=SCALE\t\tScale factor of output\n"
+		"  --fullscreen\t\tRun in fullscreen mode\n"
+		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
+		"  --output-count=COUNT\tCreate multiple outputs\n"
+		"  --no-input\t\tDont create input devices\n\n");
 #endif
 
 	exit(error_code);
