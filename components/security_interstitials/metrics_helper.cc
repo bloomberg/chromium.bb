@@ -31,8 +31,8 @@ MetricsHelper::MetricsHelper(const GURL& request_url,
       num_visits_(-1) {
   DCHECK(!settings_.metric_prefix.empty());
   if (settings_.rappor_report_type == rappor::NUM_RAPPOR_TYPES)  // Default.
-    rappor_service = nullptr;
-  DCHECK(!rappor_service || !settings_.rappor_prefix.empty());
+    rappor_service_ = nullptr;
+  DCHECK(!rappor_service_ || !settings_.rappor_prefix.empty());
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         request_url_,
