@@ -38659,6 +38659,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SessionRestore.ForegroundTabFirstPaint" units="milliseconds">
+  <obsolete>
+    Deprecated 2015-03-13 in favor of SessionRestore.ForegroundTabFirstPaint2
+    and ultimately SessionRestore.ForegroundTabFirstPaint3.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
