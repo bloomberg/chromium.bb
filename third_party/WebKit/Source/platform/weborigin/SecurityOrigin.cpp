@@ -510,7 +510,8 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol, const 
     if (port < 0 || port > MaxAllowedPort)
         return createUnique();
     String decodedHost = decodeURLEscapeSequences(host);
-    return create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port) + "/"));
+    String portPart = port ? ":" + String::number(port) : String();
+    return create(KURL(KURL(), protocol + "://" + host + portPart + "/"));
 }
 
 bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const

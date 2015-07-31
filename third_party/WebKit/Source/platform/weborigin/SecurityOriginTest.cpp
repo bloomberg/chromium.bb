@@ -362,4 +362,27 @@ TEST_F(SecurityOriginTest, EffectivePort)
     }
 }
 
+TEST_F(SecurityOriginTest, CreateFromTuple)
+{
+    struct TestCase {
+        const char* scheme;
+        const char* host;
+        unsigned short port;
+        const char* origin;
+    } cases[] = {
+        {"http", "example.com", 80, "http://example.com"},
+        {"http", "example.com", 81, "http://example.com:81"},
+        {"https", "example.com", 443, "https://example.com"},
+        {"https", "example.com", 444, "https://example.com:444"},
+        {"file", "", 0, "file://"},
+        {"file", "example.com", 0, "file://"},
+    };
+
+    for (const auto& test : cases) {
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::create(test.scheme, test.host, test.port);
+        EXPECT_EQ(test.origin, origin->toString()) << test.origin;
+    }
+
+}
+
 } // namespace blink
