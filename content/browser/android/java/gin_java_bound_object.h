@@ -40,11 +40,11 @@ class GinJavaBoundObject
   void AddName() { ++names_count_; }
   void RemoveName() { --names_count_; }
 
+  // The following methods are called on the background thread.
   bool HasHolders() { return !holders_.empty(); }
   void AddHolder(int32 holder) { holders_.insert(holder); }
   void RemoveHolder(int32 holder) { holders_.erase(holder); }
 
-  // The following methods are called on the background thread.
   std::set<std::string> GetMethodNames();
   bool HasMethod(const std::string& method_name);
   const JavaMethod* FindMethod(const std::string& method_name,
