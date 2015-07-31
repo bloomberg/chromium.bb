@@ -10,9 +10,11 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search/search.h"
+#include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/search_provider.h"
 #include "ios/web/public/web_thread.h"
@@ -127,9 +129,15 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
 
 std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()
-      ->GetSearchProvider()
-      ->GoogleImageSearchSource();
+  std::string version(version_info::GetProductName() + " " +
+                      version_info::GetVersionNumber());
+  if (version_info::IsOfficialBuild())
+    version += " (Official)";
+  version += " " + version_info::GetOSType();
+  std::string modifier(GetChannelString());
+  if (!modifier.empty())
+    version += " " + modifier;
+  return version;
 }
 
 }  // namespace ios

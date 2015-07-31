@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/metrics/previous_session_info.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -40,8 +40,8 @@ TEST(PreviousSessionInfoTest, InitializationWithSameVersionNoMemoryWarning) {
   [defaults removeObjectForKey:kLastRanVersion];
 
   // Set the current version as the last ran version.
-  NSString* currentVersion = base::SysUTF8ToNSString(
-      ios::GetChromeBrowserProvider()->GetVersionNumber());
+  NSString* currentVersion =
+      base::SysUTF8ToNSString(version_info::GetVersionNumber());
   [defaults setObject:currentVersion forKey:kLastRanVersion];
 
   // Instantiate the PreviousSessionInfo sharedInstance.
@@ -59,8 +59,8 @@ TEST(PreviousSessionInfoTest, InitializationWithSameVersionMemoryWarning) {
   [defaults removeObjectForKey:kLastRanVersion];
 
   // Set the current version as the last ran version.
-  NSString* currentVersion = base::SysUTF8ToNSString(
-      ios::GetChromeBrowserProvider()->GetVersionNumber());
+  NSString* currentVersion =
+      base::SysUTF8ToNSString(version_info::GetVersionNumber());
   [defaults setObject:currentVersion forKey:kLastRanVersion];
 
   // Set the memory warning flag as a previous session would have.
@@ -123,8 +123,7 @@ TEST(PreviousSessionInfoTest, BeginRecordingCurrentSession) {
   [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
 
   // Check that the version has been updated.
-  EXPECT_NSEQ(base::SysUTF8ToNSString(
-                  ios::GetChromeBrowserProvider()->GetVersionNumber()),
+  EXPECT_NSEQ(base::SysUTF8ToNSString(version_info::GetVersionNumber()),
               [defaults stringForKey:kLastRanVersion]);
 
   // Check that the memory warning flag has been reset.

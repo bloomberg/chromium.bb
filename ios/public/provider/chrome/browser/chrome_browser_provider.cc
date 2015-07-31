@@ -96,20 +96,6 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
-std::string ChromeBrowserProvider::GetProductVersionWithPrefix(
-    const std::string& prefix) {
-  NOTREACHED();
-  return std::string();
-}
-
-std::string ChromeBrowserProvider::GetVersionString() {
-  return std::string();
-}
-
-std::string ChromeBrowserProvider::GetVersionNumber() {
-  return std::string();
-}
-
 rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
   return nullptr;
 }

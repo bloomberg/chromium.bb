@@ -28,8 +28,4 @@ int FakeSearchProvider::OmniboxStartMargin() {
   return 0;
 }
 
-std::string FakeSearchProvider::GoogleImageSearchSource() {
-  return std::string();
-}
-
 }  // namespace ios

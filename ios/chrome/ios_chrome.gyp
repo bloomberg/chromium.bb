@@ -75,6 +75,7 @@
         '../../components/components.gyp:translate_core_browser',
         '../../components/components.gyp:translate_ios_browser',
         '../../components/components.gyp:undo_component',
+        '../../components/components.gyp:version_info',
         '../../components/components.gyp:web_resource',
         '../../components/components.gyp:webdata_services',
         '../../components/components.gyp:webp_transcode',
@@ -419,6 +420,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../components/components.gyp:version_info',
       ],
       'link_settings': {
         'libraries': [
@@ -427,6 +429,8 @@
         ],
       },
       'sources': [
+        'common/channel_info.h',
+        'common/channel_info.mm',
         'common/string_util.h',
         'common/string_util.mm',
       ]

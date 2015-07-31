@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -102,7 +103,7 @@ bool SigninClientImpl::ShouldMergeSigninCredentialsIntoCookieJar() {
 }
 
 std::string SigninClientImpl::GetProductVersion() {
-  return ios::GetChromeBrowserProvider()->GetVersionString();
+  return GetVersionString();
 }
 
 bool SigninClientImpl::IsFirstRun() const {

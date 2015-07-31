@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "components/version_info/version_info.h"
 
 namespace {
 
@@ -51,8 +51,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
     gSharedInstance.didSeeMemoryWarningShortlyBeforeTerminating =
         [defaults boolForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
     NSString* lastRanVersion = [defaults stringForKey:kLastRanVersion];
-    NSString* currentVersion = base::SysUTF8ToNSString(
-        ios::GetChromeBrowserProvider()->GetVersionNumber());
+    NSString* currentVersion =
+        base::SysUTF8ToNSString(version_info::GetVersionNumber());
     gSharedInstance.isFirstSessionAfterUpgrade =
         ![lastRanVersion isEqualToString:currentVersion];
   }
@@ -72,8 +72,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
 
   // Set the new version.
-  NSString* currentVersion = base::SysUTF8ToNSString(
-      ios::GetChromeBrowserProvider()->GetVersionNumber());
+  NSString* currentVersion =
+      base::SysUTF8ToNSString(version_info::GetVersionNumber());
   [defaults setObject:currentVersion forKey:kLastRanVersion];
 
   // Clear the memory warning flag.

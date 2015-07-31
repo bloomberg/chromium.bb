@@ -41,10 +41,6 @@ class SearchProvider {
   // Returns the start-edge margin of the omnibox in pixels.
   virtual int OmniboxStartMargin() = 0;
 
-  // Returns the value to use for replacements of type
-  // GOOGLE_IMAGE_SEARCH_SOURCE.
-  virtual std::string GoogleImageSearchSource() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

@@ -20,7 +20,6 @@ class FakeSearchProvider : public ios::SearchProvider {
   std::string InstantExtendedEnabledParam(bool for_search) override;
   std::string ForceInstantResultsParam(bool for_prerender) override;
   int OmniboxStartMargin() override;
-  std::string GoogleImageSearchSource() override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSearchProvider);
 };
