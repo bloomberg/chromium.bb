@@ -14,17 +14,6 @@ namespace device {
 const std::string BluetoothTestBase::kTestAdapterName = "FakeBluetoothAdapter";
 const std::string BluetoothTestBase::kTestAdapterAddress = "A1:B2:C3:D4:E5:F6";
 
-const std::string BluetoothTestBase::kTestDeviceName = "FakeBluetoothDevice";
-const std::string BluetoothTestBase::kTestDeviceNameEmpty = "";
-
-const std::string BluetoothTestBase::kTestDeviceAddress1 = "01:00:00:90:1E:BE";
-const std::string BluetoothTestBase::kTestDeviceAddress2 = "02:00:00:8B:74:63";
-
-const std::string BluetoothTestBase::kTestUUIDGenericAccess = "1800";
-const std::string BluetoothTestBase::kTestUUIDGenericAttribute = "1801";
-const std::string BluetoothTestBase::kTestUUIDImmediateAlert = "1802";
-const std::string BluetoothTestBase::kTestUUIDLinkLoss = "1803";
-
 BluetoothTestBase::BluetoothTestBase() {
 }
 

@@ -15,9 +15,6 @@ class BluetoothAdapterMac;
 // Mac implementation of BluetoothTestBase.
 class BluetoothTestMac : public BluetoothTestBase {
  public:
-  static const std::string kTestPeripheralUUID1;
-  static const std::string kTestPeripheralUUID2;
-
   BluetoothTestMac();
   ~BluetoothTestMac() override;
 
@@ -25,16 +22,11 @@ class BluetoothTestMac : public BluetoothTestBase {
   void SetUp() override;
 
   // BluetoothTestBase overrides:
-  bool PlatformSupportsLowEnergy() override;
   void InitWithDefaultAdapter() override;
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
-  void DiscoverLowEnergyDevice(int device_ordinal) override;
 
  protected:
-  // Utility function for finding CBUUIDs with relatively nice SHA256 hashes.
-  std::string FindCBUUIDForHashTarget();
-
   BluetoothAdapterMac* adapter_mac_ = NULL;
 };
 

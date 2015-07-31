@@ -25,22 +25,8 @@ class BluetoothTestBase : public testing::Test {
   static const std::string kTestAdapterName;
   static const std::string kTestAdapterAddress;
 
-  static const std::string kTestDeviceName;
-  static const std::string kTestDeviceNameEmpty;
-
-  static const std::string kTestDeviceAddress1;
-  static const std::string kTestDeviceAddress2;
-
-  static const std::string kTestUUIDGenericAccess;
-  static const std::string kTestUUIDGenericAttribute;
-  static const std::string kTestUUIDImmediateAlert;
-  static const std::string kTestUUIDLinkLoss;
-
   BluetoothTestBase();
   ~BluetoothTestBase() override;
-
-  // Check if Low Energy is available. On Mac, we require OS X >= 10.10.
-  virtual bool PlatformSupportsLowEnergy() = 0;
 
   // Initializes the BluetoothAdapter |adapter_| with the system adapter.
   virtual void InitWithDefaultAdapter(){};
@@ -55,15 +41,11 @@ class BluetoothTestBase : public testing::Test {
   virtual void InitWithFakeAdapter(){};
 
   // Create a fake Low Energy device and discover it.
-  // |device_ordinal| selects between multiple fake device data sets to produce:
-  //   1: kTestDeviceName with advertised UUIDs kTestUUIDGenericAccess,
-  //      kTestUUIDGenericAttribute and address kTestDeviceAddress1.
-  //   2: kTestDeviceName with advertised UUIDs kTestUUIDImmediateAlert,
-  //      kTestUUIDLinkLoss and address kTestDeviceAddress1.
-  //   3: kTestDeviceNameEmpty with no advertised UUIDs and address
-  //      kTestDeviceAddress1.
-  //   4: kTestDeviceNameEmpty with no advertised UUIDs and address
-  //      kTestDeviceAddress2.
+  // |device_ordinal| selects between multiple fake device data sets to produce.
+  //   1: AA:00:00:00:00:01 with simple default values.
+  //   2: AA:00:00:00:00:01 with different advertised Service UUIDs vs 1.
+  //   3: AA:00:00:00:00:01 with empty name, empty UUIDs.
+  //   4: BB:00:00:00:00:02 with empty name, empty UUIDs.
   virtual void DiscoverLowEnergyDevice(int device_ordinal){};
 
   // Callbacks that increment |callback_count_|, |error_callback_count_|:

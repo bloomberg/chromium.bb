@@ -24,7 +24,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
     : public BluetoothDeviceMac {
  public:
   BluetoothLowEnergyDeviceMac(CBPeripheral* peripheral,
-                              NSDictionary* advertisement_data,
+                              NSDictionary* advertisementData,
                               int rssi);
   ~BluetoothLowEnergyDeviceMac() override;
 
@@ -81,7 +81,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
 
   // Updates information about the device.
   virtual void Update(CBPeripheral* peripheral,
-                      NSDictionary* advertisement_data,
+                      NSDictionary* advertisementData,
                       int rssi);
 
   static std::string GetPeripheralIdentifier(CBPeripheral* peripheral);
@@ -117,9 +117,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
 
   // Stores the time of the most recent call to Update().
   base::scoped_nsobject<NSDate> last_update_time_;
-
-  // The services (identified by UUIDs) that this device provides.
-  UUIDList advertised_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyDeviceMac);
 };
