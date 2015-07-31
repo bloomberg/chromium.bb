@@ -1100,6 +1100,13 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   // http://crbug.com/384134 or http://crbug.com/310763
   frame->delegated_frame_data->device_scale_factor = 1.0f;
 
+  base::Closure ack_callback =
+      base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 output_surface_id);
+
+  ack_callbacks_.push(ack_callback);
+
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
@@ -1112,12 +1119,6 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     layer_->SetBounds(content_size_in_layer_);
   }
 
-  base::Closure ack_callback =
-      base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 output_surface_id);
-
-  ack_callbacks_.push(ack_callback);
   if (host_->is_hidden())
     RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
 }
