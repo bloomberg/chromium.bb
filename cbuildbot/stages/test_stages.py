@@ -15,7 +15,6 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cgroups
@@ -267,14 +266,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         return self._HandleExceptionAsWarning(exc_info)
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
-
-  @failures_lib.SetFailureType(failures_lib.TestLabFailure)
-  def _CheckLabStatus(self):
-    """Checks whether lab is down or the boards has been disabled.
-
-    If tests cannot be run, raise an exception based on the reason.
-    """
-    lab_status.CheckLabStatus(self._current_board)
 
   def PerformStage(self):
     # Wait for UploadHWTestArtifacts to generate the payloads.
