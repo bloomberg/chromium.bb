@@ -51,6 +51,18 @@ namespace {
     EXPECT_NE(x, active_layer_->expression);  \
   } while (false)
 
+#define EXPECT_BOTH_TRUE(expression)         \
+  do {                                       \
+    EXPECT_TRUE(pending_layer_->expression); \
+    EXPECT_TRUE(active_layer_->expression);  \
+  } while (false)
+
+#define EXPECT_BOTH_FALSE(expression)         \
+  do {                                        \
+    EXPECT_FALSE(pending_layer_->expression); \
+    EXPECT_FALSE(active_layer_->expression);  \
+  } while (false)
+
 class MockCanvas : public SkCanvas {
  public:
   explicit MockCanvas(int w, int h) : SkCanvas(w, h) {}
@@ -2667,6 +2679,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
+  EXPECT_BOTH_TRUE(GetRasterSource()->ShouldAttemptToUseDistanceFieldText());
 
   // Further changes to scale during the animation should not cause a new
   // high-res tiling to get created.
@@ -2801,6 +2814,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
+  EXPECT_BOTH_FALSE(GetRasterSource()->ShouldAttemptToUseDistanceFieldText());
 
   // Since we're GPU-rasterizing, starting an animation should cause tiling
   // resolution to get set to the current contents scale.
@@ -2812,6 +2826,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
+  EXPECT_BOTH_TRUE(GetRasterSource()->ShouldAttemptToUseDistanceFieldText());
 
   // Further changes to scale during the animation should cause a new high-res
   // tiling to get created.

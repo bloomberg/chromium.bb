@@ -387,9 +387,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   SkXfermode::Mode draw_blend_mode() const {
     return draw_properties_.blend_mode;
   }
-  bool draw_transform_is_animating() const {
-    return draw_properties_.target_space_transform_is_animating;
-  }
   bool screen_space_transform_is_animating() const {
     return draw_properties_.screen_space_transform_is_animating;
   }

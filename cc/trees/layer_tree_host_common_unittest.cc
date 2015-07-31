@@ -1970,17 +1970,6 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   EXPECT_EQ(render_surface2, child_of_rs2->render_target());
   EXPECT_EQ(render_surface2, grand_child_of_rs2->render_target());
 
-  // Verify draw_transform_is_animating values
-  EXPECT_FALSE(parent->draw_transform_is_animating());
-  EXPECT_FALSE(child_of_root->draw_transform_is_animating());
-  EXPECT_TRUE(grand_child_of_root->draw_transform_is_animating());
-  EXPECT_FALSE(render_surface1->draw_transform_is_animating());
-  EXPECT_FALSE(child_of_rs1->draw_transform_is_animating());
-  EXPECT_FALSE(grand_child_of_rs1->draw_transform_is_animating());
-  EXPECT_FALSE(render_surface2->draw_transform_is_animating());
-  EXPECT_FALSE(child_of_rs2->draw_transform_is_animating());
-  EXPECT_TRUE(grand_child_of_rs2->draw_transform_is_animating());
-
   // Verify screen_space_transform_is_animating values
   EXPECT_FALSE(parent->screen_space_transform_is_animating());
   EXPECT_FALSE(child_of_root->screen_space_transform_is_animating());
@@ -5878,6 +5867,63 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_VECTOR_EQ(
       scroll_layer->draw_properties().screen_space_transform.To2dTranslation(),
       container_offset - rounded_effective_scroll_offset);
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       ScrollSnappingWithAnimatedScreenSpaceTransform) {
+  // This test verifies that a scrolling layer whose screen space transform is
+  // animating doesn't get snapped to integer coordinates.
+  //
+  // + root
+  //   + animated layer
+  //     + surface
+  //       + container
+  //         + scroller
+  //
+  LayerImpl* root = root_layer();
+  LayerImpl* animated_layer = AddChildToRoot<FakePictureLayerImpl>();
+  LayerImpl* surface = AddChild<LayerImpl>(animated_layer);
+  LayerImpl* container = AddChild<LayerImpl>(surface);
+  LayerImpl* scroller = AddChild<LayerImpl>(container);
+  scroller->SetScrollClipLayer(container->id());
+  scroller->SetDrawsContent(true);
+
+  gfx::Transform identity_transform;
+  gfx::Transform start_scale;
+  start_scale.Scale(1.5f, 1.5f);
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(animated_layer, start_scale, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+  SetLayerPropertiesForTesting(surface, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(container, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+  SetLayerPropertiesForTesting(scroller, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+
+  gfx::Transform end_scale;
+  end_scale.Scale(2.f, 2.f);
+  TransformOperations start_operations;
+  start_operations.AppendMatrix(start_scale);
+  TransformOperations end_operations;
+  end_operations.AppendMatrix(end_scale);
+  AddAnimatedTransformToLayer(animated_layer, 1.0, start_operations,
+                              end_operations);
+
+  gfx::Vector2dF scroll_delta(5.f, 9.f);
+  scroller->SetScrollDelta(scroll_delta);
+
+  ExecuteCalculateDrawProperties(root);
+
+  gfx::Vector2dF expected_draw_transform_translation(-7.5f, -13.5f);
+  EXPECT_VECTOR2DF_EQ(expected_draw_transform_translation,
+                      scroller->draw_transform().To2dTranslation());
 }
 
 class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {

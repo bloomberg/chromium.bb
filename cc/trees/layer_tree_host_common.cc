@@ -1649,12 +1649,9 @@ static void CalculateDrawPropertiesInternal(
   if (layer->parent())
     accumulated_draw_opacity *= layer->parent()->draw_opacity();
 
-  bool animating_transform_to_target =
+  bool animating_transform_to_screen =
       layer->HasPotentiallyRunningTransformAnimation();
-  bool animating_transform_to_screen = animating_transform_to_target;
   if (layer->parent()) {
-    animating_transform_to_target |=
-        layer->parent()->draw_transform_is_animating();
     animating_transform_to_screen |=
         layer->parent()->screen_space_transform_is_animating();
   }
@@ -1679,7 +1676,7 @@ static void CalculateDrawPropertiesInternal(
   }
 
   gfx::Vector2dF effective_scroll_delta = GetEffectiveScrollDelta(layer);
-  if (!animating_transform_to_target && layer->scrollable() &&
+  if (!animating_transform_to_screen && layer->scrollable() &&
       combined_transform.IsScaleOrTranslation()) {
     // Align the scrollable layer's position to screen space pixels to avoid
     // blurriness.  To avoid side-effects, do this only if the transform is
@@ -1859,9 +1856,6 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.opacity = 1.f;
     layer_draw_properties.blend_mode = SkXfermode::kSrcOver_Mode;
 
-    animating_transform_to_target = false;
-    layer_draw_properties.target_space_transform_is_animating =
-        animating_transform_to_target;
     layer_draw_properties.screen_space_transform_is_animating =
         animating_transform_to_screen;
 
@@ -1983,8 +1977,6 @@ static void CalculateDrawPropertiesInternal(
 
     // Note: layer_draw_properties.target_space_transform is computed above,
     // before this if-else statement.
-    layer_draw_properties.target_space_transform_is_animating =
-        animating_transform_to_target;
     layer_draw_properties.screen_space_transform_is_animating =
         animating_transform_to_screen;
     layer_draw_properties.opacity = accumulated_draw_opacity;
