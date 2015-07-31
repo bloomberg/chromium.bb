@@ -38,6 +38,8 @@ void SetDefaultsToLayoutTestValues(void) {
                forKey:@"AppleLanguages"];
   [defaults setBool:NO
              forKey:@"AppleScrollAnimationEnabled"];
+  [defaults setBool:NO
+             forKey:@"NSScrollAnimationEnabled"];
   [defaults setObject:@"Always"
                forKey:@"AppleShowScrollBars"];
 }

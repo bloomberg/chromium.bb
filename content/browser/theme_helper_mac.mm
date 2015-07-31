@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -14,6 +15,36 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+
+namespace {
+bool GetScrollAnimationEnabled() {
+  bool enabled = false;
+  id value = nil;
+  if (base::mac::IsOSMountainLionOrLater()) {
+    value = [[NSUserDefaults standardUserDefaults]
+        objectForKey:@"NSScrollAnimationEnabled"];
+  } else {
+    value = [[NSUserDefaults standardUserDefaults]
+        objectForKey:@"AppleScrollAnimationEnabled"];
+  }
+  if (value)
+    enabled = [value boolValue];
+  return enabled;
+}
+
+blink::ScrollbarButtonsPlacement GetButtonPlacement() {
+  NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults]
+      objectForKey:@"AppleScrollBarVariant"];
+  if ([scrollbar_variant isEqualToString:@"Single"])
+    return blink::ScrollbarButtonsPlacementSingle;
+  else if ([scrollbar_variant isEqualToString:@"DoubleMin"])
+    return blink::ScrollbarButtonsPlacementDoubleStart;
+  else if ([scrollbar_variant isEqualToString:@"DoubleBoth"])
+    return blink::ScrollbarButtonsPlacementDoubleBoth;
+  else
+    return blink::ScrollbarButtonsPlacementDoubleEnd;
+}
+} // namespace
 
 @interface ScrollbarPrefsObserver : NSObject
 
@@ -40,6 +71,30 @@ suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
              name:@"AppleNoRedisplayAppearancePreferenceChanged"
            object:nil
 suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
+
+  if (base::mac::IsOSMountainLionOrLater()) {
+    [[NSDistributedNotificationCenter defaultCenter]
+               addObserver:self
+                  selector:@selector(behaviorPrefsChanged:)
+                      name:@"NSScrollAnimationEnabled"
+                    object:nil
+        suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
+  } else {
+    // Register for < 10.8
+    [[NSDistributedNotificationCenter defaultCenter]
+               addObserver:self
+                  selector:@selector(behaviorPrefsChanged:)
+                      name:@"AppleScrollAnimationEnabled"
+                    object:nil
+        suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
+  }
+
+  [[NSDistributedNotificationCenter defaultCenter]
+             addObserver:self
+                selector:@selector(appearancePrefsChanged:)
+                    name:@"AppleScrollBarVariant"
+                  object:nil
+      suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
 
   // In single-process mode, renderers will catch these notifications
   // themselves and listening for them here may trigger the DCHECK in Observe().
@@ -71,8 +126,8 @@ suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
       [defaults floatForKey:@"NSScrollerButtonDelay"],
       [defaults floatForKey:@"NSScrollerButtonPeriod"],
       [defaults boolForKey:@"AppleScrollerPagingBehavior"],
-      content::ThemeHelperMac::GetPreferredScrollerStyle(),
-      redraw);
+      content::ThemeHelperMac::GetPreferredScrollerStyle(), redraw,
+      GetScrollAnimationEnabled(), GetButtonPlacement());
 }
 
 @end
@@ -98,13 +153,17 @@ void ThemeHelperMac::SendThemeChangeToAllRenderers(
     float autoscroll_button_delay,
     bool jump_on_track_click,
     blink::ScrollerStyle preferred_scroller_style,
-    bool redraw) {
+    bool redraw,
+    bool scroll_animation_enabled,
+    blink::ScrollbarButtonsPlacement button_placement) {
   ViewMsg_UpdateScrollbarTheme_Params params;
   params.initial_button_delay = initial_button_delay;
   params.autoscroll_button_delay = autoscroll_button_delay;
   params.jump_on_track_click = jump_on_track_click;
   params.preferred_scroller_style = preferred_scroller_style;
   params.redraw = redraw;
+  params.scroll_animation_enabled = scroll_animation_enabled;
+  params.button_placement = button_placement;
 
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
@@ -142,6 +201,8 @@ void ThemeHelperMac::Observe(int type,
       [defaults boolForKey:@"AppleScrollerPagingBehavior"];
   params.preferred_scroller_style = GetPreferredScrollerStyle();
   params.redraw = false;
+  params.scroll_animation_enabled = GetScrollAnimationEnabled();
+  params.button_placement = GetButtonPlacement();
 
   rph->Send(new ViewMsg_UpdateScrollbarTheme(params));
 }
