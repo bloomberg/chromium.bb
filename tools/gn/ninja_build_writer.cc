@@ -76,7 +76,6 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   return cmdline.GetCommandLineString();
 #endif
 }
-
 }  // namespace
 
 NinjaBuildWriter::NinjaBuildWriter(
@@ -143,10 +142,23 @@ bool NinjaBuildWriter::RunAndWriteFile(
 void NinjaBuildWriter::WriteNinjaRules() {
   out_ << "rule gn\n";
   out_ << "  command = " << GetSelfInvocationCommand(build_settings_) << "\n";
-  out_ << "  description = Regenerating ninja files\n\n";
+  out_ << "  description = Regenerating ninja files\n";
+  out_ << "  restat = 1\n\n";
 
-  // This rule will regenerate the ninja files when any input file has changed.
-  out_ << "build build.ninja: gn\n"
+  // This rule will regenerate the ninja files when any input file has changed,
+  // or is missing.
+  out_ << "build build.ninja";
+
+  // Other files read by the build.
+  EscapeOptions path_escaping;
+  path_escaping.mode = ESCAPE_NINJA_COMMAND;
+  std::vector<SourceFile> written_files = g_scheduler->GetWrittenFiles();
+  for (const auto& written_file : written_files)
+    out_ << " " <<
+        EscapeString(FilePathToUTF8(build_settings_->GetFullPath(written_file)),
+                     path_escaping, nullptr);
+
+  out_ << ": gn\n"
        << "  generator = 1\n"
        << "  depfile = build.ninja.d\n";
 
