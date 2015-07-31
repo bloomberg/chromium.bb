@@ -52,10 +52,9 @@ class Smoothness(page_test.PageTest):
     tracing_controller = tab.browser.platform.tracing_controller
     self._tbm.MeasureForPageTest(tracing_controller, results)
 
-  def CleanUpAfterPage(self, _, tab):
-    tracing_controller = tab.browser.platform.tracing_controller
-    self._tbm.DidRunStoryForPageTest(tracing_controller)
-    tab.ExecuteJavaScript('window.gc();')
+  def DidRunPage(self, platform):
+    if self._tbm:
+      self._tbm.DidRunStoryForPageTest(platform.tracing_controller)
 
 
 class Repaint(Smoothness):
