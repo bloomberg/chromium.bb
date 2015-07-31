@@ -28,7 +28,6 @@
 #include "core/css/CSSValue.h"
 
 #include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCrossfadeValue.h"
@@ -142,8 +141,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSValueList>(*this, other);
         case LineBoxContainClass:
             return compareCSSValues<CSSLineBoxContainValue>(*this, other);
-        case CalculationClass:
-            return compareCSSValues<CSSCalcValue>(*this, other);
         case ImageSetClass:
             return compareCSSValues<CSSImageSetValue>(*this, other);
         case CSSSVGDocumentClass:
@@ -209,8 +206,6 @@ String CSSValue::cssText() const
         return toCSSValueList(this)->customCSSText();
     case LineBoxContainClass:
         return toCSSLineBoxContainValue(this)->customCSSText();
-    case CalculationClass:
-        return toCSSCalcValue(this)->customCSSText();
     case ImageSetClass:
         return toCSSImageSetValue(this)->customCSSText();
     case CSSSVGDocumentClass:
@@ -296,9 +291,6 @@ void CSSValue::destroy()
         return;
     case LineBoxContainClass:
         delete toCSSLineBoxContainValue(this);
-        return;
-    case CalculationClass:
-        delete toCSSCalcValue(this);
         return;
     case ImageSetClass:
         delete toCSSImageSetValue(this);
@@ -388,9 +380,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case LineBoxContainClass:
         toCSSLineBoxContainValue(this)->~CSSLineBoxContainValue();
         return;
-    case CalculationClass:
-        toCSSCalcValue(this)->~CSSCalcValue();
-        return;
     case ImageSetClass:
         toCSSImageSetValue(this)->~CSSImageSetValue();
         return;
@@ -478,9 +467,6 @@ DEFINE_TRACE(CSSValue)
         return;
     case LineBoxContainClass:
         toCSSLineBoxContainValue(this)->traceAfterDispatch(visitor);
-        return;
-    case CalculationClass:
-        toCSSCalcValue(this)->traceAfterDispatch(visitor);
         return;
     case ImageSetClass:
         toCSSImageSetValue(this)->traceAfterDispatch(visitor);

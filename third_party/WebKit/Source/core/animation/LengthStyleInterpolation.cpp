@@ -53,20 +53,20 @@ bool pixelsForKeyword(CSSPropertyID property, CSSValueID valueID, double& result
 
 bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyID property)
 {
-    if (value.isPrimitiveValue()) {
-        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue.isCalculated())
-            return true;
+    if (!value.isPrimitiveValue())
+        return false;
 
-        if (primitiveValue.isValueID()) {
-            CSSValueID valueID = primitiveValue.getValueID();
-            double pixels;
-            return pixelsForKeyword(property, valueID, pixels);
-        }
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.isCalculated())
+        return true;
 
-        return primitiveValue.isLength() || primitiveValue.isPercentage() || primitiveValue.isCalculatedPercentageWithLength();
+    if (primitiveValue.isValueID()) {
+        CSSValueID valueID = primitiveValue.getValueID();
+        double pixels;
+        return pixelsForKeyword(property, valueID, pixels);
     }
-    return value.isCalcValue();
+
+    return primitiveValue.isLength() || primitiveValue.isPercentage() || primitiveValue.isCalculatedPercentageWithLength();
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSPropertyID id)

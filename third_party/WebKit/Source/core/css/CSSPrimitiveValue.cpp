@@ -1043,7 +1043,7 @@ String CSSPrimitiveValue::customCSSText() const
         text = getPairValue()->cssText();
         break;
     case UnitType::Calc:
-        text = m_value.calc->cssText();
+        text = m_value.calc->customCSSText();
         break;
     case UnitType::Shape:
         text = m_value.shape->cssText();

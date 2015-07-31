@@ -87,7 +87,6 @@ public:
     bool isCubicBezierTimingFunctionValue() const { return m_classType == CubicBezierTimingFunctionClass; }
     bool isStepsTimingFunctionValue() const { return m_classType == StepsTimingFunctionClass; }
     bool isLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
-    bool isCalcValue() const {return m_classType == CalculationClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
     bool isContentDistributionValue() const { return m_classType == CSSContentDistributionClass; }
@@ -141,7 +140,6 @@ protected:
         ShadowClass,
         UnicodeRangeClass,
         LineBoxContainClass,
-        CalculationClass,
         GridTemplateAreasClass,
         PathClass,
 

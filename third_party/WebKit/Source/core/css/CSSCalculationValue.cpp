@@ -752,10 +752,4 @@ PassRefPtrWillBeRawPtr<CSSCalcValue> CSSCalcValue::create(PassRefPtrWillBeRawPtr
     return adoptRefWillBeNoop(new CSSCalcValue(expression, range));
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSCalcValue)
-{
-    visitor->trace(m_expression);
-    CSSValue::traceAfterDispatch(visitor);
-}
-
 } // namespace blink
