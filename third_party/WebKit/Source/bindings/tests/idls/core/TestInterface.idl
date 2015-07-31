@@ -60,8 +60,13 @@
     attribute unrestricted float unrestrictedFloatAttribute;
     attribute TestEnum testEnumAttribute;
     attribute DOMStringOrDouble stringOrDoubleAttribute;
+    [RuntimeEnabled=FeatureName] attribute long conditionalLongAttribute;
+    [RuntimeEnabled=FeatureName] readonly attribute long conditionalReadOnlyLongAttribute;
     static attribute DOMString staticStringAttribute;
     static attribute TestInterface staticReturnDOMWrapperAttribute;
+    static readonly attribute DOMString staticReadOnlyStringAttribute;
+    static readonly attribute TestInterface staticReadOnlyReturnDOMWrapperAttribute;
+    [RuntimeEnabled=FeatureName] static readonly attribute long staticConditionalReadOnlyLongAttribute;
     [LegacyInterfaceTypeChecking] attribute TestInterfaceEmpty legacyInterfaceTypeCheckingAttribute;
 
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);

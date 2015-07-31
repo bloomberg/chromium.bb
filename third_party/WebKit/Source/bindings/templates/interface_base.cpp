@@ -344,8 +344,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endif %}
     {% for attribute in attributes
        if attribute.runtime_enabled_function and
-          not attribute.exposed_test and
-          not attribute.is_static %}
+          not attribute.exposed_test %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
         {% if attribute.is_data_type_property %}
