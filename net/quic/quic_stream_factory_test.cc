@@ -226,6 +226,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),
                  cert_verifier_.get(),
+                 nullptr,
                  channel_id_service_.get(),
                  &transport_security_state_,
                  &crypto_client_stream_factory_,

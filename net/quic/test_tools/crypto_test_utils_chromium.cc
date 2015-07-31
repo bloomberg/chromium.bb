@@ -26,7 +26,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
   TestProofVerifierChromium(CertVerifier* cert_verifier,
                             TransportSecurityState* transport_security_state,
                             const std::string& cert_file)
-      : ProofVerifierChromium(cert_verifier, transport_security_state),
+      : ProofVerifierChromium(cert_verifier, nullptr, transport_security_state),
         cert_verifier_(cert_verifier),
         transport_security_state_(transport_security_state) {
     // Load and install the root for the validated chain.

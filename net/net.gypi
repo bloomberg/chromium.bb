@@ -1555,6 +1555,7 @@
       'quic/crypto/null_encrypter_test.cc',
       'quic/crypto/p256_key_exchange_test.cc',
       'quic/crypto/proof_test.cc',
+      'quic/crypto/proof_verifier_chromium_test.cc',
       'quic/crypto/quic_crypto_client_config_test.cc',
       'quic/crypto/quic_crypto_server_config_test.cc',
       'quic/crypto/quic_random_test.cc',

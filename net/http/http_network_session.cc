@@ -140,6 +140,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
               : ClientSocketFactory::GetDefaultFactory(),
           params.http_server_properties,
           params.cert_verifier,
+          params.cert_policy_enforcer,
           params.channel_id_service,
           params.transport_security_state,
           params.quic_crypto_client_stream_factory,

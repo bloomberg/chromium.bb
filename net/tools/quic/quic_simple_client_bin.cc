@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
     cert_verifier.reset(CertVerifier::CreateDefault());
     transport_security_state.reset(new TransportSecurityState);
     client.SetProofVerifier(new ProofVerifierChromium(
-        cert_verifier.get(), transport_security_state.get()));
+        cert_verifier.get(), nullptr, transport_security_state.get()));
   }
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
