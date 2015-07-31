@@ -147,8 +147,8 @@ void BreakBlockquoteCommand::doApply()
         } else if (textOffset > 0) {
             splitTextNode(textNode, textOffset);
         }
-    } else if (pos.deprecatedEditingOffset() > 0) {
-        Node* childAtOffset = NodeTraversal::childAt(*startNode, pos.deprecatedEditingOffset());
+    } else if (pos.computeEditingOffset() > 0) {
+        Node* childAtOffset = NodeTraversal::childAt(*startNode, pos.computeEditingOffset());
         startNode = childAtOffset ? childAtOffset : NodeTraversal::next(*startNode);
         ASSERT(startNode);
     }
