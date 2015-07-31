@@ -66,7 +66,7 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
   page_set = page_sets.BlankPageSetWithLargeProfile
-  options = {'pageset_repeat': 1}
+  options = {'pageset_repeat': 3}
 
   def __init__(self, max_failures=None):
     super(StartupLargeProfileColdBlankPage, self).__init__(max_failures)
@@ -85,7 +85,7 @@ class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'
   page_set = page_sets.BlankPageSetWithLargeProfile
-  options = {'pageset_repeat': 1}
+  options = {'pageset_repeat': 4}
 
   def __init__(self, max_failures=None):
     super(StartupLargeProfileWarmBlankPage, self).__init__(max_failures)
