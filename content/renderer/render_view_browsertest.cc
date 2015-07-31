@@ -994,15 +994,17 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view()->UpdateTextInputType();
+    view()->UpdateTextInputState(
+        RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-    ViewHostMsg_TextInputTypeChanged::Param params;
-    ViewHostMsg_TextInputTypeChanged::Read(msg, &params);
-    ui::TextInputType type = base::get<0>(params);
-    ui::TextInputMode input_mode = base::get<1>(params);
-    bool can_compose_inline = base::get<2>(params);
+    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    ViewHostMsg_TextInputStateChanged::Param params;
+    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    ViewHostMsg_TextInputState_Params p = base::get<0>(params);
+    ui::TextInputType type = p.type;
+    ui::TextInputMode input_mode = p.mode;
+    bool can_compose_inline = p.can_compose_inline;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, type);
     EXPECT_EQ(true, can_compose_inline);
 
@@ -1014,13 +1016,15 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view()->UpdateTextInputType();
+    view()->UpdateTextInputState(
+          RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-    ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
-    type = base::get<0>(params);
-    input_mode = base::get<1>(params);
+    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    p = base::get<0>(params);
+    type = p.type;
+    input_mode = p.mode;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
     for (size_t i = 0; i < arraysize(kInputModeTestCases); i++) {
@@ -1036,13 +1040,15 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
       // Update the IME status and verify if our IME backend sends an IPC
       // message to activate IMEs.
-      view()->UpdateTextInputType();
+      view()->UpdateTextInputState(
+          RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != NULL);
-      EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-      ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
-      type = base::get<0>(params);
-      input_mode = base::get<1>(params);
+      EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+      ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+      p = base::get<0>(params);
+      type = p.type;
+      input_mode = p.mode;
       EXPECT_EQ(test_case->expected_mode, input_mode);
     }
   }
@@ -1169,7 +1175,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view()->UpdateTextInputType();
+    view()->UpdateTextInputState(
+        RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
     ProcessPendingMessages();
     render_thread_->sink().ClearMessages();
 
@@ -1976,7 +1983,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
   for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
     const uint32 type = render_thread_->sink().GetMessageAt(i)->type();
-    if (type == ViewHostMsg_TextInputTypeChanged::ID) {
+    if (type == ViewHostMsg_TextInputStateChanged::ID) {
       is_input_type_called = true;
       last_input_type = i;
     } else if (type == ViewHostMsg_SelectionChanged::ID) {

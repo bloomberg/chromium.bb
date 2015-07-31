@@ -34,6 +34,7 @@ class SkBitmap;
 
 struct AccessibilityHostMsg_EventParams;
 struct ViewHostMsg_SelectionBounds_Params;
+struct ViewHostMsg_TextInputState_Params;
 
 namespace media {
 class VideoFrame;
@@ -207,11 +208,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
 
-  // Updates the type of the input method attached to the view.
-  virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    ui::TextInputMode mode,
-                                    bool can_compose_inline,
-                                    int flags) = 0;
+  // Updates the state of the input method attached to the view.
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;

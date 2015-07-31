@@ -297,10 +297,6 @@ class CONTENT_EXPORT RenderWidget
   void OnSwapBuffersComplete();
   void OnSwapBuffersAborted();
 
-  // Checks if the text input state and compose inline mode have been changed.
-  // If they are changed, the new value will be sent to the browser process.
-  void UpdateTextInputType();
-
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
@@ -309,7 +305,6 @@ class CONTENT_EXPORT RenderWidget
 
   void OnShowHostContextMenu(ContextMenuParams* params);
 
-#if defined(OS_ANDROID) || defined(USE_AURA)
   enum ShowIme {
     SHOW_IME_IF_NEEDED,
     NO_SHOW_IME,
@@ -327,7 +322,6 @@ class CONTENT_EXPORT RenderWidget
   // IME events. This is when the text change did not originate from the IME in
   // the browser side, such as changes by JavaScript or autofill.
   void UpdateTextInputState(ShowIme show_ime, ChangeSource change_source);
-#endif
 
   // Called when animations due to focus change have completed (if any). Can be
   // called from the renderer, browser, or compositor.

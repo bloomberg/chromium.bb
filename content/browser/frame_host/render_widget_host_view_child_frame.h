@@ -22,6 +22,8 @@ class SurfaceFactory;
 enum class SurfaceDrawStatus;
 }
 
+struct ViewHostMsg_TextInputState_Params;
+
 namespace content {
 class CrossProcessFrameConnector;
 class RenderWidgetHost;
@@ -75,10 +77,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputTypeChanged(ui::TextInputType type,
-                            ui::TextInputMode input_mode,
-                            bool can_compose_inline,
-                            int flags) override;
+  void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,

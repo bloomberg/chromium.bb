@@ -29,6 +29,7 @@
 // To use, derive your test base class from RenderViewHostImplTestHarness.
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+struct ViewHostMsg_TextInputState_Params;
 
 namespace gfx {
 class Rect;
@@ -99,10 +100,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}
-  void TextInputTypeChanged(ui::TextInputType type,
-                            ui::TextInputMode input_mode,
-                            bool can_compose_inline,
-                            int flags) override {}
+  void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) override {}
   void ImeCancelComposition() override {}
   void ImeCompositionRangeChanged(
       const gfx::Range& range,

@@ -38,6 +38,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/activation_delegate.h"
 
+struct ViewHostMsg_TextInputState_Params;
+
 namespace aura {
 class WindowTracker;
 namespace client {
@@ -169,10 +171,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputTypeChanged(ui::TextInputType type,
-                            ui::TextInputMode input_mode,
-                            bool can_compose_inline,
-                            int flags) override;
+  void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -309,8 +309,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Overridden from aura::WindowTreeHostObserver:
   void OnHostMoved(const aura::WindowTreeHost* host,
                    const gfx::Point& new_origin) override;
-
-  void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
 
 #if defined(OS_WIN)
   // Sets the cutout rects from constrained windows. These are rectangles that

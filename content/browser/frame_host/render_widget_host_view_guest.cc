@@ -355,11 +355,8 @@ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
   platform_view_->SetIsLoading(is_loading);
 }
 
-void RenderWidgetHostViewGuest::TextInputTypeChanged(
-    ui::TextInputType type,
-    ui::TextInputMode input_mode,
-    bool can_compose_inline,
-    int flags) {
+void RenderWidgetHostViewGuest::TextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
   if (!guest_)
     return;
 
@@ -367,7 +364,7 @@ void RenderWidgetHostViewGuest::TextInputTypeChanged(
   if (!rwhv)
     return;
   // Forward the information to embedding RWHV.
-  rwhv->TextInputTypeChanged(type, input_mode, can_compose_inline, flags);
+  rwhv->TextInputStateChanged(params);
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {

@@ -44,6 +44,7 @@ struct BrowserPluginHostMsg_Attach_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
+struct ViewHostMsg_TextInputState_Params;
 
 #if defined(OS_MACOSX)
 struct FrameHostMsg_ShowPopup_Params;
@@ -334,10 +335,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);
 
-  void OnTextInputTypeChanged(ui::TextInputType type,
-                              ui::TextInputMode input_mode,
-                              bool can_compose_inline,
-                              int flags);
+  void OnTextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params);
   void OnImeSetComposition(
       int instance_id,
       const std::string& text,

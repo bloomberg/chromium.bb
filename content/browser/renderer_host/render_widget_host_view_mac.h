@@ -35,6 +35,8 @@
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/gfx/display_observer.h"
 
+struct ViewHostMsg_TextInputState_Params;
+
 namespace content {
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
@@ -290,10 +292,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputTypeChanged(ui::TextInputType type,
-                            ui::TextInputMode input_mode,
-                            bool can_compose_inline,
-                            int flags) override;
+  void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,

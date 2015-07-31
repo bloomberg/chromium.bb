@@ -489,11 +489,6 @@ bool RenderWidgetHostViewAura::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAura, message)
-    // TODO(kevers): Move to RenderWidgetHostViewImpl and consolidate IPC
-    // messages for TextInput<State|Type>Changed. Corresponding code in
-    // RenderWidgetHostViewAndroid should also be moved at the same time.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
-                        OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
                         OnSetNeedsBeginFrames)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -950,29 +945,21 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::TextInputTypeChanged(
-    ui::TextInputType type,
-    ui::TextInputMode input_mode,
-    bool can_compose_inline,
-    int flags) {
-  if (text_input_type_ != type ||
-      text_input_mode_ != input_mode ||
-      can_compose_inline_ != can_compose_inline ||
-      text_input_flags_ != flags) {
-    text_input_type_ = type;
-    text_input_mode_ = input_mode;
-    can_compose_inline_ = can_compose_inline;
-    text_input_flags_ = flags;
+void RenderWidgetHostViewAura::TextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
+  if (text_input_type_ != params.type ||
+      text_input_mode_ != params.mode ||
+      can_compose_inline_ != params.can_compose_inline ||
+      text_input_flags_ != params.flags) {
+    text_input_type_ = params.type;
+    text_input_mode_ = params.mode;
+    can_compose_inline_ = params.can_compose_inline;
+    text_input_flags_ = params.flags;
     if (GetInputMethod())
       GetInputMethod()->OnTextInputTypeChanged(this);
     if (touch_editing_client_)
       touch_editing_client_->OnTextInputTypeChanged(text_input_type_);
   }
-}
-
-void RenderWidgetHostViewAura::OnTextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
-  text_input_flags_ = params.flags;
   if (params.show_ime_if_needed && params.type != ui::TEXT_INPUT_TYPE_NONE) {
     if (GetInputMethod())
       GetInputMethod()->ShowImeIfNeeded();
