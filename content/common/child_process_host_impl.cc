@@ -149,12 +149,12 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
 }
 
 // static
-IPC::AttachmentBroker* ChildProcessHost::GetAttachmentBroker() {
-#if defined(OS_WIN)
+IPC::AttachmentBrokerPrivileged* ChildProcessHost::GetAttachmentBroker() {
+#if USE_ATTACHMENT_BROKER
   return &g_attachment_broker.Get();
 #else
   return nullptr;
-#endif  // defined(OS_WIN)
+#endif  // USE_ATTACHMENT_BROKER
 }
 
 ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
@@ -166,6 +166,9 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
+#if USE_ATTACHMENT_BROKER
+  g_attachment_broker.Get().DeregisterCommunicationChannel(channel_.get());
+#endif
   for (size_t i = 0; i < filters_.size(); ++i) {
     filters_[i]->OnChannelClosing();
     filters_[i]->OnFilterRemoved();
@@ -189,6 +192,9 @@ std::string ChildProcessHostImpl::CreateChannel() {
       IPC::Channel::CreateServer(channel_id_, this, GetAttachmentBroker());
   if (!channel_->Connect())
     return std::string();
+#if USE_ATTACHMENT_BROKER
+  g_attachment_broker.Get().RegisterCommunicationChannel(channel_.get());
+#endif
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());

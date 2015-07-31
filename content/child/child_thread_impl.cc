@@ -53,7 +53,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/public/common/content_switches.h"
-#include "ipc/attachment_broker.h"
+#include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
@@ -436,6 +436,8 @@ void ChildThreadImpl::Init(const Options& options) {
   }
 
   ConnectChannel(options.use_mojo_channel);
+  if (attachment_broker_)
+    attachment_broker_->DesignateBrokerCommunicationChannel(channel_.get());
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
@@ -591,8 +593,6 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   if (websocket_dispatcher_->OnMessageReceived(msg))
     return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
-    return true;
-  if (attachment_broker_ && attachment_broker_->OnMessageReceived(msg))
     return true;
 
   bool handled = true;

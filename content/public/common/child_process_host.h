@@ -8,6 +8,7 @@
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel_proxy.h"
 
 namespace base {
@@ -15,7 +16,6 @@ class FilePath;
 }
 
 namespace IPC {
-class AttachmentBroker;
 class MessageFilter;
 }
 
@@ -91,7 +91,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
   // Returns an AttachmentBroker used to broker attachments of IPC messages to
   // child processes.
-  static IPC::AttachmentBroker* GetAttachmentBroker();
+  static IPC::AttachmentBrokerPrivileged* GetAttachmentBroker();
 
   // Send the shutdown message to the child process.
   // Does not check with the delegate's CanShutdown.
