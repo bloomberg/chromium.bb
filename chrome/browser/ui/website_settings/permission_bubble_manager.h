@@ -109,7 +109,6 @@ class PermissionBubbleManager
   friend class DownloadRequestLimiterTest;
   friend class GeolocationBrowserTest;
   friend class GeolocationPermissionContextTests;
-  friend class GeolocationPermissionContextParamTests;
   friend class MockPermissionBubbleView;
   friend class PermissionBubbleManagerTest;
   friend class PermissionContextBaseTests;
