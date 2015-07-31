@@ -1030,13 +1030,13 @@ void Editor::transpose()
     previous = previous.previous();
     if (!inSameParagraph(next, previous))
         return;
-    RefPtrWillBeRawPtr<Range> range = makeRange(previous, next);
-    if (!range)
+    const EphemeralRange range = makeRange(previous, next);
+    if (range.isNull())
         return;
-    VisibleSelection newSelection(range.get(), DOWNSTREAM);
+    VisibleSelection newSelection(range, DOWNSTREAM);
 
     // Transpose the two characters.
-    String text = plainText(EphemeralRange(range.get()));
+    String text = plainText(range);
     if (text.length() != 2)
         return;
     String transposed = text.right(1) + text.left(1);

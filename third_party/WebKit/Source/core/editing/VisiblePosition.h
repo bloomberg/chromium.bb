@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
@@ -141,7 +142,7 @@ private:
     EAffinity m_affinity;
 };
 
-PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition&, const VisiblePosition&);
+EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);

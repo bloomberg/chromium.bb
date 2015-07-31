@@ -700,17 +700,18 @@ EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint)
 
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
-        RefPtrWillBeRawPtr<Range> previousCharacterRange = makeRange(previous, position);
-        IntRect rect = editor().firstRectForRange(previousCharacterRange.get());
+        const EphemeralRange previousCharacterRange = makeRange(previous, position);
+        IntRect rect = editor().firstRectForRange(previousCharacterRange);
         if (rect.contains(framePoint))
-            return EphemeralRange(previousCharacterRange.get());
+            return EphemeralRange(previousCharacterRange);
     }
 
     VisiblePosition next = position.next();
-    if (RefPtrWillBeRawPtr<Range> nextCharacterRange = makeRange(position, next)) {
-        IntRect rect = editor().firstRectForRange(nextCharacterRange.get());
+    const EphemeralRange nextCharacterRange = makeRange(position, next);
+    if (nextCharacterRange.isNotNull()) {
+        IntRect rect = editor().firstRectForRange(nextCharacterRange);
         if (rect.contains(framePoint))
-            return EphemeralRange(nextCharacterRange.get());
+            return EphemeralRange(nextCharacterRange);
     }
 
     return EphemeralRange();

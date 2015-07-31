@@ -732,17 +732,17 @@ void VisiblePosition::showTreeForThis() const
 
 #endif
 
-PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition &start, const VisiblePosition &end)
+EphemeralRange makeRange(const VisiblePosition &start, const VisiblePosition &end)
 {
     if (start.isNull() || end.isNull())
-        return nullptr;
+        return EphemeralRange();
 
     Position s = start.deepEquivalent().parentAnchoredEquivalent();
     Position e = end.deepEquivalent().parentAnchoredEquivalent();
     if (s.isNull() || e.isNull())
-        return nullptr;
+        return EphemeralRange();
 
-    return Range::create(s.containerNode()->document(), s.containerNode(), s.offsetInContainerNode(), e.containerNode(), e.offsetInContainerNode());
+    return EphemeralRange(s, e);
 }
 
 DEFINE_TRACE(VisiblePosition)
