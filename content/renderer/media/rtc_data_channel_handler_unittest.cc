@@ -17,6 +17,7 @@ class MockDataChannelHandlerClient :
   MockDataChannelHandlerClient() : state_(ReadyStateConnecting) {}
 
   void didChangeReadyState(ReadyState state) override { state_ = state; }
+  void didDecreaseBufferedAmount(unsigned previous_amount) override {}
   void didReceiveStringData(const blink::WebString& s) override {}
   void didReceiveRawData(const char* data, size_t size) override {}
   void didDetectError() override {}

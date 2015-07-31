@@ -60,6 +60,7 @@ class CONTENT_EXPORT RtcDataChannelHandler
 
  private:
   void OnStateChange(webrtc::DataChannelInterface::DataState state);
+  void OnBufferedAmountDecrease(unsigned previous_amount);
   void OnMessage(scoped_ptr<webrtc::DataBuffer> buffer);
   void RecordMessageSent(size_t num_bytes);
 
@@ -86,9 +87,11 @@ class CONTENT_EXPORT RtcDataChannelHandler
 
     // webrtc::DataChannelObserver implementation.
     void OnStateChange() override;
+    void OnBufferedAmountChange(uint64 previous_amount) override;
     void OnMessage(const webrtc::DataBuffer& buffer) override;
 
     void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
+    void OnBufferedAmountDecreaseImpl(unsigned previous_amount);
     void OnMessageImpl(scoped_ptr<webrtc::DataBuffer> buffer);
 
     RtcDataChannelHandler* handler_;
