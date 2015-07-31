@@ -32,7 +32,7 @@ void MockCredentialManagerClient::dispatchRequireUserMediation(
   delete callbacks;
 }
 
-void MockCredentialManagerClient::dispatchRequest(
+void MockCredentialManagerClient::dispatchGet(
     bool zeroClickOnly,
     const blink::WebVector<blink::WebURL>& federations,
     RequestCallbacks* callbacks) {
