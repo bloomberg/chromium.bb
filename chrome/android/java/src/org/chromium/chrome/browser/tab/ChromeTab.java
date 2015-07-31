@@ -925,13 +925,9 @@ public class ChromeTab extends Tab {
     protected void didFinishPageLoad() {
         super.didFinishPageLoad();
 
-        // Handle the case where we were pre-renderered and the enable fullscreen message was
-        // never enqueued.
-        if (mIsFullscreenWaitingForLoad
-                && !mHandler.hasMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD)) {
-            mHandler.sendEmptyMessageDelayed(
-                    MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
-        }
+        // Handle the case where a commit or prerender swap notification failed to arrive and the
+        // enable fullscreen message was never enqueued.
+        scheduleEnableFullscreenLoadDelayIfNecessary();
 
         maybeSetDataReductionProxyUsed();
     }
@@ -941,6 +937,14 @@ public class ChromeTab extends Tab {
         cancelEnableFullscreenLoadDelay();
         super.didFailPageLoad(errorCode);
         updateFullscreenEnabledState();
+    }
+
+    private void scheduleEnableFullscreenLoadDelayIfNecessary() {
+        if (mIsFullscreenWaitingForLoad
+                && !mHandler.hasMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD)) {
+            mHandler.sendEmptyMessageDelayed(
+                    MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
+        }
     }
 
     private void cancelEnableFullscreenLoadDelay() {
@@ -1360,6 +1364,11 @@ public class ChromeTab extends Tab {
             String url = tab.getUrl();
             // Simulate the PAGE_LOAD_STARTED notification that we did not get.
             didStartPageLoad(url, false);
+
+            // As we may have missed the main frame commit notification for the
+            // swapped web contents, schedule the enabling of fullscreen now.
+            scheduleEnableFullscreenLoadDelayIfNecessary();
+
             if (didFinishLoad) {
                 // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
                 didFinishPageLoad();
