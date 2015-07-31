@@ -77,8 +77,6 @@ void CredentialManagerClient::dispatchGet(bool zeroClickOnly, const WebVector<We
     if (!m_client)
         return;
     m_client->dispatchGet(zeroClickOnly, federations, callbacks);
-    // TODO(dvadym): Drop this once the Chromium side is updated. https://crbug.com/494880
-    m_client->dispatchRequest(zeroClickOnly, federations, callbacks);
 }
 
 } // namespace blink
