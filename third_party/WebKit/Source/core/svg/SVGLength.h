@@ -106,8 +106,6 @@ public:
         return !m_valueInSpecifiedUnits;
     }
 
-    static PassRefPtrWillBeRawPtr<SVGLength> fromCSSPrimitiveValue(CSSPrimitiveValue*);
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toCSSPrimitiveValue(PassRefPtrWillBeRawPtr<SVGLength>);
     static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
 
     PassRefPtrWillBeRawPtr<SVGLength> blend(PassRefPtrWillBeRawPtr<SVGLength> from, float progress) const;
