@@ -75940,8 +75940,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="inbox" label="Custom histogram for Inbox"/>
   <suffix name="plus" label="Custom histogram for Google+"/>
   <affected-histogram name="V8.MemoryExternalFragmentationTotal"/>
+  <affected-histogram name="V8.MemoryHeapCommitted"/>
   <affected-histogram name="V8.MemoryHeapSampleTotalCommitted"/>
   <affected-histogram name="V8.MemoryHeapSampleTotalUsed"/>
+  <affected-histogram name="V8.MemoryHeapUsed"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebFontFamily">
