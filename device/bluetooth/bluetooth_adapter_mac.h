@@ -112,6 +112,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Energy) before a discovered device is considered to be no longer available.
   const static NSTimeInterval kDiscoveryTimeoutSec;
 
+  friend class BluetoothTestMac;
   friend class BluetoothAdapterMacTest;
   friend class BluetoothLowEnergyCentralManagerBridge;
 
