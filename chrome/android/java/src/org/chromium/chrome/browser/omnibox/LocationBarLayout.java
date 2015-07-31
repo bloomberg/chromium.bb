@@ -1510,11 +1510,19 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * @return The background for the omnibox suggestions popup.
      */
     protected Drawable getSuggestionPopupBackground() {
-        if (mToolbarDataProvider.isIncognito()) {
-            return new ColorDrawable(OMNIBOX_INCOGNITO_RESULTS_BG_COLOR);
-        } else {
-            return new ColorDrawable(OMNIBOX_RESULTS_BG_COLOR);
+        int color = mToolbarDataProvider.isIncognito() ? OMNIBOX_INCOGNITO_RESULTS_BG_COLOR
+                : OMNIBOX_RESULTS_BG_COLOR;
+        if (!isHardwareAccelerated()) {
+            // When HW acceleration is disabled, changing mSuggestionList' items somehow erases
+            // mOmniboxResultsContainer' background from the area not covered by mSuggestionList.
+            // To make sure mOmniboxResultsContainer is always redrawn, we make list background
+            // color slightly transparent. This makes mSuggestionList.isOpaque() to return false,
+            // and forces redraw of the parent view (mOmniboxResultsContainer).
+            if (Color.alpha(color) == 255) {
+                color = Color.argb(254, Color.red(color), Color.green(color), Color.blue(color));
+            }
         }
+        return new ColorDrawable(color);
     }
 
     /**
