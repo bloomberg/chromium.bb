@@ -49,6 +49,63 @@ NetworkChangeNotifier::ConnectionType GetNetworkInterfaceType(DWORD ifType) {
   return type;
 }
 
+// Returns scoped_ptr to WLAN_CONNECTION_ATTRIBUTES. The scoped_ptr may hold a
+// NULL pointer if WLAN_CONNECTION_ATTRIBUTES is unavailable.
+scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>
+GetConnectionAttributes() {
+  const internal::WlanApi& wlanapi = internal::WlanApi::GetInstance();
+  if (!wlanapi.initialized)
+    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+
+  internal::WlanHandle client;
+  DWORD cur_version = 0;
+  const DWORD kMaxClientVersion = 2;
+  {
+    // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 OpenHandle()"));
+    DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
+    if (result != ERROR_SUCCESS)
+      return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+  }
+
+  WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
+  DWORD result =
+      wlanapi.enum_interfaces_func(client.Get(), NULL, &interface_list_ptr);
+  if (result != ERROR_SUCCESS)
+    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+  scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
+      interface_list_ptr);
+
+  // Assume at most one connected wifi interface.
+  WLAN_INTERFACE_INFO* info = NULL;
+  for (unsigned i = 0; i < interface_list->dwNumberOfItems; ++i) {
+    if (interface_list->InterfaceInfo[i].isState ==
+        wlan_interface_state_connected) {
+      info = &interface_list->InterfaceInfo[i];
+      break;
+    }
+  }
+
+  if (info == NULL)
+    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+
+  WLAN_CONNECTION_ATTRIBUTES* conn_info_ptr = nullptr;
+  DWORD conn_info_size = 0;
+  WLAN_OPCODE_VALUE_TYPE op_code;
+  result = wlanapi.query_interface_func(
+      client.Get(), &info->InterfaceGuid, wlan_intf_opcode_current_connection,
+      NULL, &conn_info_size, reinterpret_cast<VOID**>(&conn_info_ptr),
+      &op_code);
+  if (result != ERROR_SUCCESS)
+    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+
+  DCHECK(conn_info_ptr);
+  return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>(
+      conn_info_ptr);
+}
+
 }  // namespace
 
 namespace internal {
@@ -201,55 +258,10 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 }
 
 WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
-  const internal::WlanApi& wlanapi = internal::WlanApi::GetInstance();
-  if (!wlanapi.initialized)
+  auto conn_info = GetConnectionAttributes();
+
+  if (!conn_info.get())
     return WIFI_PHY_LAYER_PROTOCOL_NONE;
-
-  internal::WlanHandle client;
-  DWORD cur_version = 0;
-  const DWORD kMaxClientVersion = 2;
-  {
-    // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 OpenHandle()"));
-    DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
-    if (result != ERROR_SUCCESS)
-      return WIFI_PHY_LAYER_PROTOCOL_NONE;
-  }
-
-  WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
-  DWORD result =
-      wlanapi.enum_interfaces_func(client.Get(), NULL, &interface_list_ptr);
-  if (result != ERROR_SUCCESS)
-    return WIFI_PHY_LAYER_PROTOCOL_NONE;
-  scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
-      interface_list_ptr);
-
-  // Assume at most one connected wifi interface.
-  WLAN_INTERFACE_INFO* info = NULL;
-  for (unsigned i = 0; i < interface_list->dwNumberOfItems; ++i) {
-    if (interface_list->InterfaceInfo[i].isState ==
-        wlan_interface_state_connected) {
-      info = &interface_list->InterfaceInfo[i];
-      break;
-    }
-  }
-
-  if (info == NULL)
-    return WIFI_PHY_LAYER_PROTOCOL_NONE;
-
-  WLAN_CONNECTION_ATTRIBUTES* conn_info_ptr;
-  DWORD conn_info_size = 0;
-  WLAN_OPCODE_VALUE_TYPE op_code;
-  result = wlanapi.query_interface_func(
-      client.Get(), &info->InterfaceGuid, wlan_intf_opcode_current_connection,
-      NULL, &conn_info_size, reinterpret_cast<VOID**>(&conn_info_ptr),
-      &op_code);
-  if (result != ERROR_SUCCESS)
-    return WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
-  scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter> conn_info(
-      conn_info_ptr);
 
   switch (conn_info->wlanAssociationAttributes.dot11PhyType) {
     case dot11_phy_type_fhss:
@@ -328,8 +340,14 @@ scoped_ptr<ScopedWifiOptions> SetWifiOptions(int options) {
 }
 
 std::string GetWifiSSID() {
-  NOTIMPLEMENTED();
-  return "";
+  auto conn_info = GetConnectionAttributes();
+
+  if (!conn_info.get())
+    return "";
+
+  const DOT11_SSID dot11_ssid = conn_info->wlanAssociationAttributes.dot11Ssid;
+  return std::string(reinterpret_cast<const char*>(dot11_ssid.ucSSID),
+                     dot11_ssid.uSSIDLength);
 }
 
 }  // namespace net
