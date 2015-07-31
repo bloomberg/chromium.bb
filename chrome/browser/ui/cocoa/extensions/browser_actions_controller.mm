@@ -600,7 +600,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     if ([button isBeingDragged])
       continue;
 
-    [self moveButton:[buttons_ objectAtIndex:i] toIndex:i - minIndex];
+    [self moveButton:[buttons_ objectAtIndex:i] toIndex:i];
 
     if (i >= minIndex && i < maxIndex) {
       // Make sure the button is within the visible container.
@@ -865,9 +865,24 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (NSRect)frameForIndex:(NSUInteger)index {
   const ToolbarActionsBar::PlatformSettings& platformSettings =
       toolbarActionsBar_->platform_settings();
+  int startIndex = isOverflow_ ?
+      [buttons_ count] - toolbarActionsBar_->GetIconCount() : 0;
+  int relativeIndex = index - startIndex;
+
+  int iconWidth = ToolbarActionsBar::IconWidth(false);
+  int iconHeight = ToolbarActionsBar::IconHeight();
+
+  // If the index is for an action that is before range we show (i.e., is for
+  // a button that's on the main bar, and this is the overflow), the frame is
+  // set outside the bounds of the view.
+  if (relativeIndex < 0)
+    return NSMakeRect(-iconWidth - 1, 0, iconWidth, iconHeight);
+
   int icons_per_overflow_row = platformSettings.icons_per_overflow_menu_row;
-  NSUInteger rowIndex = isOverflow_ ? index / icons_per_overflow_row : 0;
-  NSUInteger indexInRow = isOverflow_ ? index % icons_per_overflow_row : index;
+  NSUInteger rowIndex = isOverflow_ ?
+      relativeIndex / icons_per_overflow_row : 0;
+  NSUInteger indexInRow = isOverflow_ ?
+      relativeIndex % icons_per_overflow_row : relativeIndex;
 
   CGFloat xOffset = platformSettings.left_padding +
       (indexInRow * ToolbarActionsBar::IconWidth(true));

@@ -57,6 +57,7 @@ using base::UserMetricsAction;
 - (RecentTabsSubMenuModel*)recentTabsMenuModel;
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex;
+- (void)containerSuperviewFrameChanged:(NSNotification*)notification;
 @end
 
 namespace WrenchMenuControllerInternal {
@@ -258,8 +259,12 @@ class ZoomLevelObserver {
       [buttonViewController_ overflowActionsContainerView];
 
   // Find the preferred container size for the menu width.
-  int maxContainerWidth =
-      [[self menu] size].width - kLeftPadding - kRightPadding;
+  int menuWidth = [[self menu] size].width;
+  int maxContainerWidth = menuWidth - kLeftPadding - kRightPadding;
+  // Don't let the menu change sizes on us. (We lift this restriction every time
+  // the menu updates, so if something changes, this won't leave us with an
+  // awkward size.)
+  [[self menu] setMinimumWidth:menuWidth];
   gfx::Size preferredContainerSize =
       [browserActionsController_ sizeForOverflowWidth:maxContainerWidth];
 
@@ -269,8 +274,7 @@ class ZoomLevelObserver {
   // and size of each for it display properly.
   // The parent views each have a size of the full width of the menu, so we can
   // properly position the container.
-  NSSize parentSize =
-      NSMakeSize([[self menu] size].width, preferredContainerSize.height());
+  NSSize parentSize = NSMakeSize(menuWidth, preferredContainerSize.height());
   [view setFrameSize:parentSize];
   [[containerView superview] setFrameSize:parentSize];
 
@@ -303,6 +307,7 @@ class ZoomLevelObserver {
   // First empty out the menu and create a new model.
   [self removeAllItems:menu];
   [self createModel];
+  [menu setMinimumWidth:0];
 
   // Create a new menu, which cannot be swapped because the tracking is about to
   // start, so simply copy the items.
@@ -381,6 +386,16 @@ class ZoomLevelObserver {
   buttonViewController_.reset(
       [[WrenchMenuButtonViewController alloc] initWithController:self]);
   [buttonViewController_ view];
+
+  // See comment in containerSuperviewFrameChanged:.
+  NSView* containerSuperview =
+      [[buttonViewController_ overflowActionsContainerView] superview];
+  [containerSuperview setPostsFrameChangedNotifications:YES];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(containerSuperviewFrameChanged:)
+             name:NSViewFrameDidChangeNotification
+           object:containerSuperview];
 }
 
 // Fit the localized strings into the Cut/Copy/Paste control, then resize the
@@ -481,6 +496,21 @@ class ZoomLevelObserver {
     return recentTabsMenuModel->GetMaxWidthForItemAtIndex(modelIndex);
   }
   return -1;
+}
+
+- (void)containerSuperviewFrameChanged:(NSNotification*)notification {
+  // AppKit menus were probably never designed with a view like the browser
+  // actions container in mind, and, as a result, we come across a few oddities.
+  // One of these is that the container's superview will, on some versions of
+  // OSX, change frame position sometime after the the menu begins tracking
+  // (and thus, after all our ability to adjust it normally). Throw in the
+  // towel, and simply don't let the frame move from where it's supposed to be.
+  // TODO(devlin): Yet another Cocoa hack. It'd be good to find a workaround,
+  // but unlikely unless we replace the Cocoa menu implementation.
+  NSView* containerSuperview =
+      [[buttonViewController_ overflowActionsContainerView] superview];
+  if (NSMinX([containerSuperview frame]) != 0)
+    [containerSuperview setFrameOrigin:NSZeroPoint];
 }
 
 @end  // @implementation WrenchMenuController
