@@ -50,6 +50,15 @@
       ],
       'DEST': 'include/gmock/internal',
     },
+    {
+      'FILES': [
+        'gmock.h',
+        'gmock-generated-actions.h',
+        'gmock-matchers.h',
+        'gmock-port.h',
+      ],
+      'DEST': 'include/gmock/internal/custom',
+    },
   ],
   'DEST': 'src',
   'NAME': 'gmock',
