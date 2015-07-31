@@ -118,8 +118,8 @@ by a child template that "extends" this file.
             android:resource="@xml/app_restrictions"/>
         {% endif %}
 
-        <!-- Note: Set android:hardwareAccelerated to "false" in the ".Main"
-             activity below to go into software, browser tiling mode.
+        <!-- Note: All activities directly or indirectly derived from ChromeActivity
+             must specify android:hardwareAccelerated="false".
 
              Since this activity (shown in the launcher) and the application
              (shown in Android's Settings/Apps list) share the same label, we
@@ -206,7 +206,7 @@ by a child template that "extends" this file.
             android:persistableMode="persistAcrossReboots"
             android:autoRemoveFromRecents="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
-            android:hardwareAccelerated="true">
+            android:hardwareAccelerated="false">
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.document.DocumentActivity"
             android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"
@@ -220,7 +220,7 @@ by a child template that "extends" this file.
             android:persistableMode="persistNever"
             android:autoRemoveFromRecents="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
-            android:hardwareAccelerated="true">
+            android:hardwareAccelerated="false">
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
             android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
@@ -230,7 +230,7 @@ by a child template that "extends" this file.
             android:exported="false"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
-            android:hardwareAccelerated="true">
+            android:hardwareAccelerated="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
              android:theme="@style/MainTheme"
@@ -239,7 +239,7 @@ by a child template that "extends" this file.
              android:windowSoftInputMode="adjustResize"
              android:launchMode="singleTask"
              android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
-             android:hardwareAccelerated="true">
+             android:hardwareAccelerated="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
             android:theme="@style/MainTheme"
@@ -247,7 +247,7 @@ by a child template that "extends" this file.
             android:windowBackground="@drawable/window_background"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
-            android:hardwareAccelerated="true">
+            android:hardwareAccelerated="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
             android:theme="@style/MainTheme"
@@ -286,7 +286,7 @@ by a child template that "extends" this file.
         </activity>
         <activity android:name="org.chromium.chrome.browser.EmbedContentViewActivity"
             android:theme="@style/ThemeWithActionBar"
-            android:hardwareAccelerated="true"
+            android:hardwareAccelerated="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc">
         </activity>
         <activity android:name="org.chromium.chrome.browser.prerender.PrerenderAPITestActivity"
@@ -338,7 +338,7 @@ by a child template that "extends" this file.
             android:documentLaunchMode="intoExisting"
             android:windowSoftInputMode="adjustResize"
             android:persistableMode="persistNever"
-            android:hardwareAccelerated="true"
+            android:hardwareAccelerated="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc">
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity"
@@ -353,7 +353,7 @@ by a child template that "extends" this file.
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:persistableMode="persistNever"
-            android:hardwareAccelerated="true"
+            android:hardwareAccelerated="false"
             android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc">
         </activity>
@@ -380,10 +380,13 @@ by a child template that "extends" this file.
             android:excludeFromRecents="true">
         </activity>
 
+        <!-- This activity is started along with IncognitoDocumentActivity, so it also must
+             disable hardware acceleration. Besides, it doesn't have any UI. -->
         <activity android:name="org.chromium.chrome.browser.document.CipherKeyActivity"
             android:launchMode="singleInstance"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:excludeFromRecents="true">
+            android:excludeFromRecents="true"
+            android:hardwareAccelerated="false">
         </activity>
 
         <!-- Providers for chrome data. -->

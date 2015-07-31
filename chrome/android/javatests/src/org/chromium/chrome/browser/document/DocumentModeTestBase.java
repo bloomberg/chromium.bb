@@ -16,6 +16,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -302,5 +303,26 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                         == ActivityState.RESUMED;
             }
         }));
+    }
+
+    /**
+     * Starts ChromeTabbedActivity via intent with the specified URL but
+     * doesn't wait for the URL to load.
+     * @return The started activity.
+     */
+    protected ChromeTabbedActivity startTabbedActivity(final String url) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setClassName(mContext, ChromeTabbedActivity.class.getName());
+                intent.setData(Uri.parse(url));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                mContext.startActivity(intent);
+            }
+        };
+        return ActivityUtils.waitForActivity(getInstrumentation(), ChromeTabbedActivity.class,
+                runnable);
     }
 }

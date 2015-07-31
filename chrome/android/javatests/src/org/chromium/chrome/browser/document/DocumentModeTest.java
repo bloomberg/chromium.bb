@@ -56,18 +56,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         launchThreeTabs();
 
         // Try launching a ChromeTabbedActivity.
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setClassName(mContext, ChromeTabbedActivity.class.getName());
-                intent.setData(Uri.parse(URL_1));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                mContext.startActivity(intent);
-            }
-        };
-        ActivityUtils.waitForActivity(getInstrumentation(), ChromeTabbedActivity.class, runnable);
+        startTabbedActivity(URL_1);
 
         // ApplicationStatus should note that the ChromeTabbedActivity isn't running anymore.
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
