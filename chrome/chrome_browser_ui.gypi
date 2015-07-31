@@ -2712,6 +2712,8 @@
     'chrome_browser_ui_toolbar_model_sources': [
       'browser/ui/android/toolbar/toolbar_model_android.cc',
       'browser/ui/android/toolbar/toolbar_model_android.h',
+      'browser/ui/toolbar/chrome_toolbar_model.cc',
+      'browser/ui/toolbar/chrome_toolbar_model.h',
       'browser/ui/toolbar/toolbar_model.cc',
       'browser/ui/toolbar/toolbar_model.h',
       'browser/ui/toolbar/toolbar_model_delegate.h',

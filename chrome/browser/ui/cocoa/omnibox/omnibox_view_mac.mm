@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -539,11 +539,13 @@ void OmniboxViewMac::ApplyTextAttributes(
     }
   }
 
+  ChromeToolbarModel* chrome_toolbar_model =
+      static_cast<ChromeToolbarModel*>(controller()->GetToolbarModel());
   // TODO(shess): GTK has this as a member var, figure out why.
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
   const connection_security::SecurityLevel security_level =
-      controller()->GetToolbarModel()->GetSecurityLevel(false);
+      chrome_toolbar_model->GetSecurityLevel(false);
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&

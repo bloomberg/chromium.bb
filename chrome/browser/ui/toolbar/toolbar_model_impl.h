@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -28,7 +28,7 @@ class X509Certificate;
 // This class is the model used by the toolbar, location bar and autocomplete
 // edit.  It populates its states from the current navigation entry retrieved
 // from the navigation controller returned by GetNavigationController().
-class ToolbarModelImpl : public ToolbarModel {
+class ToolbarModelImpl : public ChromeToolbarModel {
  public:
   explicit ToolbarModelImpl(ToolbarModelDelegate* delegate);
   ~ToolbarModelImpl() override;
@@ -43,10 +43,12 @@ class ToolbarModelImpl : public ToolbarModel {
   connection_security::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
-  int GetIconForSecurityLevel(
-      connection_security::SecurityLevel level) const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
+
+  // As |GetIcon()|, but returns the icon only taking into account the security
+  // level| given, ignoring search term replacement state.
+  int GetIconForSecurityLevel(connection_security::SecurityLevel level) const;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved.

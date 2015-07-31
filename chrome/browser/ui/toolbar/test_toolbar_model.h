@@ -7,12 +7,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 
 // A ToolbarModel that is backed by instance variables, which are initialized
 // with some basic values that can be changed with the provided setters. This
 // should be used only for testing.
-class TestToolbarModel : public ToolbarModel {
+class TestToolbarModel : public ChromeToolbarModel {
  public:
   TestToolbarModel();
   ~TestToolbarModel() override;
@@ -24,8 +24,6 @@ class TestToolbarModel : public ToolbarModel {
   connection_security::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
-  int GetIconForSecurityLevel(
-      connection_security::SecurityLevel level) const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
 

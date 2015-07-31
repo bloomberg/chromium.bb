@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -121,6 +121,9 @@ class OmniboxViewViews
   // using an accessibility API (typically automation software, screen readers
   // don't normally use this). Sets the value and clears the selection.
   void AccessibilitySetValue(const base::string16& new_value);
+
+  // Updates |security_level_| based on the toolbar model's current value.
+  void UpdateSecurityLevel();
 
   // OmniboxView:
   void SetWindowTextAndCaretPos(const base::string16& text,

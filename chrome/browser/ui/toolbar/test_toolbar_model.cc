@@ -7,12 +7,11 @@
 #include "grit/theme_resources.h"
 
 TestToolbarModel::TestToolbarModel()
-    : ToolbarModel(),
+    : ChromeToolbarModel(),
       perform_search_term_replacement_(false),
       security_level_(connection_security::NONE),
       icon_(IDR_LOCATION_BAR_HTTP),
-      should_display_url_(true) {
-}
+      should_display_url_(true) {}
 
 TestToolbarModel::~TestToolbarModel() {}
 
@@ -43,11 +42,6 @@ connection_security::SecurityLevel TestToolbarModel::GetSecurityLevel(
 }
 
 int TestToolbarModel::GetIcon() const {
-  return icon_;
-}
-
-int TestToolbarModel::GetIconForSecurityLevel(
-    connection_security::SecurityLevel level) const {
   return icon_;
 }
 

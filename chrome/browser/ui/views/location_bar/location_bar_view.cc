@@ -1063,7 +1063,9 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowEVBubble() const {
-  return (GetToolbarModel()->GetSecurityLevel(false) ==
+  const ChromeToolbarModel* chrome_toolbar_model =
+      static_cast<const ChromeToolbarModel*>(GetToolbarModel());
+  return (chrome_toolbar_model->GetSecurityLevel(false) ==
           connection_security::EV_SECURE);
 }
 

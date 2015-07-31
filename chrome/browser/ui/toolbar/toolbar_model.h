@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ssl/connection_security.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -59,23 +58,11 @@ class ToolbarModel {
   // URL because of search term replacement.
   bool WouldReplaceURL() const;
 
-  // Returns the security level that the toolbar should display.  If
-  // |ignore_editing| is true, the result reflects the underlying state of the
-  // page without regard to any user edits that may be in progress in the
-  // omnibox.
-  virtual connection_security::SecurityLevel GetSecurityLevel(
-      bool ignore_editing) const = 0;
-
   // Returns the resource_id of the icon to show to the left of the address,
   // based on the current URL.  When search term replacement is active, this
   // returns a search icon.  This doesn't cover specialized icons while the
   // user is editing; see OmniboxView::GetIcon().
   virtual int GetIcon() const = 0;
-
-  // As |GetIcon()|, but returns the icon only taking into account the security
-  // |level| given, ignoring search term replacement state.
-  virtual int GetIconForSecurityLevel(
-      connection_security::SecurityLevel level) const = 0;
 
   // Returns the name of the EV cert holder.  This returns an empty string if
   // the security level is not EV_SECURE.

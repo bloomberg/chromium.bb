@@ -52,7 +52,7 @@
 #import "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/search_engines/template_url.h"
@@ -427,13 +427,15 @@ void LocationBarViewMac::Layout() {
   }
 
   const bool is_keyword_hint = omnibox_view_->model()->is_keyword_hint();
+  ChromeToolbarModel* chrome_toolbar_model =
+      static_cast<ChromeToolbarModel*>(GetToolbarModel());
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
     location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
-  } else if (GetToolbarModel()->GetSecurityLevel(false) ==
+  } else if (chrome_toolbar_model->GetSecurityLevel(false) ==
              connection_security::EV_SECURE) {
     // Switch from location icon to show the EV bubble instead.
     location_icon_decoration_->SetVisible(false);
