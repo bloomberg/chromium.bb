@@ -240,11 +240,11 @@ source_set("ffmpeg_internal") {
       # Export all symbols when building as component.
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
     }
-# TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
-#      if (is_openbsd) {
-#       # OpenBSD's gcc (4.2.1) does not support this flag
-#       cflags -= [ "-fno-signed-zeros" ]
-#      }
+    # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
+    #      if (is_openbsd) {
+    #       # OpenBSD's gcc (4.2.1) does not support this flag
+    #       cflags -= [ "-fno-signed-zeros" ]
+    #      }
   }
   if (is_mac) {
     if (is_component_ffmpeg) {
@@ -254,14 +254,14 @@ source_set("ffmpeg_internal") {
 
     defines += [ "_DARWIN_C_SOURCE" ]
 
-# TODO(ajwong): What does this do in mac? There isn't anything in ffmpeg.gyp that
-# uses mac_real_dsym
-#                ['mac_breakpad == 1', {
-#                  'variables': {
-#                    # A real .dSYM is needed for dump_syms to operate on.
-#                    'mac_real_dsym': 1,
-#                  },
-#              }],
+    # TODO(ajwong): What does this do in mac? There isn't anything in ffmpeg.gyp that
+    # uses mac_real_dsym
+    #                ['mac_breakpad == 1', {
+    #                  'variables': {
+    #                    # A real .dSYM is needed for dump_syms to operate on.
+    #                    'mac_real_dsym': 1,
+    #                  },
+    #              }],
     if (current_cpu != "x64") {
       # This is needed because even though FFmpeg now builds
       # with -fPIC, it's not quite a complete PIC build, only
@@ -269,7 +269,7 @@ source_set("ffmpeg_internal") {
       # relocations for read-only segments for this target to be
       # able to generated the shared library on Mac.
       #
-#TODO(ajwong): Check if this can be current_cpu == "x86"
+      #TODO(ajwong): Check if this can be current_cpu == "x86"
       # Note -read_only_relocs cannot be used in x86_64
       #
       # This makes Mark sad, but he's okay with it since it is
@@ -283,15 +283,14 @@ source_set("ffmpeg_internal") {
         "-Wl,-read_only_relocs,suppress",
       ]
     }
-# TODO(ajwong): How to handle SDKROOT?
-#                'libraries': [
-#                  '$(SDKROOT)/usr/lib/libz.dylib',
-#                ],
-# TODO(ajwong): How to handle @loader_path?
-#              'xcode_settings': {
-#                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
-#              }
-    lib_dirs = [ target_gen_dir ]
+    # TODO(ajwong): How to handle SDKROOT?
+    #                'libraries': [
+    #                  '$(SDKROOT)/usr/lib/libz.dylib',
+    #                ],
+    # TODO(ajwong): How to handle @loader_path?
+    #              'xcode_settings': {
+    #                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+    #              }
   } else if (is_win) {
     defines += [
       "inline=__inline",
