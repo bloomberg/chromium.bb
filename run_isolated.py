@@ -263,7 +263,7 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     finally:
       try:
         if os.path.isdir(out_dir) and not file_path.rmtree(out_dir):
-          logging.error('Failed to remove out_dir %s', out_dir)
+          logging.error('Had difficulties removing out_dir %s', out_dir)
           result = result or 1
       except OSError as exc:
         # Only report on non-Windows or on Windows when the process had
