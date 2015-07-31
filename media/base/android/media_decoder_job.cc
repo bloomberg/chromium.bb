@@ -429,6 +429,10 @@ void MediaDecoderJob::DecodeInternal(
     input_status = QueueInputBuffer(unit);
     if (input_status == MEDIA_CODEC_INPUT_END_OF_STREAM) {
       input_eos_encountered_ = true;
+    } else if (input_status == MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER) {
+      // In some cases, all buffers must be released to codec before format
+      // change can be resolved. Context: b/21786703
+      DVLOG(1) << "dequeueInputBuffer gave AGAIN_LATER, dequeue output buffers";
     } else if (input_status != MEDIA_CODEC_OK) {
       callback.Run(input_status, kNoTimestamp(), kNoTimestamp());
       return;
