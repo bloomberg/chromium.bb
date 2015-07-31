@@ -1,0 +1,19 @@
+Test that pointer properties propagates from touches to PointerEvents
+
+This is a testharness.js-based test.
+PASS Pointer property propagation from touches to PointerEvents 
+PASS Pointer event properties for pointer 0 on pointerdown 
+PASS Pointer event properties for pointer 1 on pointerdown 
+PASS Pointer event properties for pointer 2 on pointerdown 
+PASS Pointer event properties for pointer 3 on pointerdown 
+PASS Pointer event properties for pointer 0 on pointermove 
+PASS Pointer event properties for pointer 1 on pointermove 
+PASS Pointer event properties for pointer 2 on pointermove 
+PASS Pointer event properties for pointer 3 on pointermove 
+PASS Pointer event properties for pointer 0 on pointerup 
+PASS Pointer event properties for pointer 1 on pointerup 
+PASS Pointer event properties for pointer 2 on pointerup 
+PASS Pointer event properties for pointer 3 on pointerup 
+PASS Received pointer events 
+Harness: the test ran to completion.
+

@@ -3534,6 +3534,8 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
         pointerEventInit.setWidth(touchInfo.adjustedRadius.width());
         pointerEventInit.setHeight(touchInfo.adjustedRadius.height());
         pointerEventInit.setPressure(point.force());
+        pointerEventInit.setTiltX(point.pointerProperties().tiltX);
+        pointerEventInit.setTiltY(point.pointerProperties().tiltY);
         pointerEventInit.setPointerType(PointerTypeStrForTouch);
         pointerEventInit.setIsPrimary(m_pointerIdManager.isPrimary(PointerIdManager::PointerTypeTouch, pointerId));
         pointerEventInit.setScreenX(point.screenPos().x());

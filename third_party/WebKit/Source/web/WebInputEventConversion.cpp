@@ -418,7 +418,7 @@ inline WebTouchPoint::State toWebTouchPointState(const AtomicString& type)
 
 PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTouchPoint& point)
 {
-    m_id = point.id;
+    m_pointerProperties = point;
     m_state = toPlatformTouchPointState(point.state);
 
     // This assumes convertFromContainingWindow does only translations, not scales.
@@ -429,7 +429,6 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTo
     m_screenPos = FloatPoint(point.screenPosition.x, point.screenPosition.y);
     m_radius = scaleSizeToWindow(widget, FloatSize(point.radiusX, point.radiusY));
     m_rotationAngle = point.rotationAngle;
-    m_force = point.force;
 }
 
 PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTouchEvent& event)

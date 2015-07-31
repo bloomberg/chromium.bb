@@ -52,13 +52,13 @@ class SyntheticInspectorTouchPoint : public blink::PlatformTouchPoint {
 public:
     SyntheticInspectorTouchPoint(int id, State state, const blink::IntPoint& screenPos, const blink::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
     {
-        m_id = id;
+        m_pointerProperties.id = id;
         m_screenPos = screenPos;
         m_pos = pos;
         m_state = state;
         m_radius = blink::FloatSize(radiusX, radiusY);
         m_rotationAngle = rotationAngle;
-        m_force = force;
+        m_pointerProperties.force = force;
     }
 };
 
