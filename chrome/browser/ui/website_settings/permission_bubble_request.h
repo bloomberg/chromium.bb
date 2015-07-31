@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
 
 #include "base/strings/string16.h"
-#include "ui/gfx/vector_icons_public2.h"
 #include "url/gurl.h"
+
+namespace gfx {
+enum class VectorIconId;
+}
 
 // Describes the interface a feature utilizing permission bubbles should
 // implement. A class of this type is registered with the permission bubble
