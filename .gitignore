@@ -32,9 +32,9 @@ cscope.out
 /config.sub
 /configure
 /depcomp
+/doc/doxygen/*.doxygen
 /docs/developer
 /docs/tools
-/docs/doxygen/*.doxygen
 /install-sh
 /libtool
 /ltmain.sh
