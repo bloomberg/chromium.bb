@@ -14,7 +14,6 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import lab_status
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -155,7 +154,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   RELEASE_TAG = ''
 
   def setUp(self):
-    self.lab_status_mock = self.PatchObject(lab_status, 'CheckLabStatus')
     self.run_suite_mock = self.PatchObject(commands, 'RunHWTestSuite')
     self.warning_mock = self.PatchObject(
         logging, 'PrintBuildbotStepWarnings')
@@ -198,7 +196,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # We choose to define these mocks in setUp() because they are
     # useful for tests that do not call this method. However, this
     # means we have to reset the mocks before each run.
-    self.lab_status_mock.reset_mock()
     self.run_suite_mock.reset_mock()
     self.warning_mock.reset_mock()
     self.failure_mock.reset_mock()
@@ -226,8 +223,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
       self.assertRaises(failures_lib.StepFailure, self.RunStage)
     else:
       self.RunStage()
-
-    self.lab_status_mock.assert_called_once()
 
     self.run_suite_mock.assert_called_once()
     self.assertEqual(self.run_suite_mock.call_args[1].get('debug'), debug)
@@ -338,13 +333,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare('falco-chrome-pfq')
     self._RunHWTestSuite(fails=True, cmd_fail_mode='timeout')
 
-  def testHandleLabDownAsFatal(self):
-    """Test that the stage fails when lab is down."""
-    self._Prepare('lumpy-paladin')
-    self.lab_status_mock.side_effect = lab_status.LabIsDownException(
-        'Lab is not up.')
-    self.assertRaises(failures_lib.StepFailure, self.RunStage)
-
   def testPayloadsNotGenerated(self):
     """Test that we exit early if payloads are not generated."""
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
@@ -382,7 +370,6 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def setUp(self):
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
-    self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
 
     self.archive_stage = None
     self.suite_config = None

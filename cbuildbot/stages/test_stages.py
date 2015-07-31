@@ -301,7 +301,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     else:
       debug = self._run.options.debug
 
-    self._CheckLabStatus()
     commands.RunHWTestSuite(
         build, self.suite_config.suite, self._current_board,
         pool=self.suite_config.pool, num=self.suite_config.num,
