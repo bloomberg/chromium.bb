@@ -2018,14 +2018,12 @@ wayland_backend_create(struct weston_compositor *compositor, int use_pixman,
 		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
 				     wayland_backend_handle_event, b);
 	if (b->parent.wl_source == NULL)
-		goto err_renderer;
+		goto err_display;
 
 	wl_event_source_check(b->parent.wl_source);
 
 	compositor->backend = &b->base;
 	return b;
-err_renderer:
-	compositor->renderer->destroy(compositor);
 err_display:
 	wl_display_disconnect(b->parent.wl_display);
 err_compositor:
@@ -2037,12 +2035,6 @@ err_compositor:
 static void
 wayland_backend_destroy(struct wayland_backend *b)
 {
-	struct weston_output *output, *next;
-
-	wl_list_for_each_safe(output, next, &b->compositor->output_list, link)
-		wayland_output_destroy(output);
-
-	b->compositor->renderer->destroy(b->compositor);
 	wl_display_disconnect(b->parent.wl_display);
 
 	if (b->theme)

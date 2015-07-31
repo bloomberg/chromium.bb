@@ -3165,7 +3165,6 @@ err_drm_source:
 err_udev_input:
 	udev_input_destroy(&b->input);
 err_sprite:
-	compositor->renderer->destroy(compositor);
 	gbm_device_destroy(b->gbm);
 	destroy_sprites(b);
 err_udev_dev:

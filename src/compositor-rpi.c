@@ -522,19 +522,16 @@ rpi_backend_create(struct weston_compositor *compositor,
 		goto out_launcher;
 
 	if (rpi_output_create(backend, param->output_transform) < 0)
-		goto out_renderer;
+		goto out_launcher;
 
 	if (udev_input_init(&backend->input,
 			    compositor,
 			    backend->udev, "seat0") != 0) {
 		weston_log("Failed to initialize udev input.\n");
-		goto out_renderer;
+		goto out_launcher;
 	}
 
 	return backend;
-
-out_renderer:
-	compositor->renderer->destroy(compositor);
 
 out_launcher:
 	weston_launcher_destroy(compositor->launcher);

@@ -881,15 +881,12 @@ fbdev_backend_create(struct weston_compositor *compositor, int *argc, char *argv
 	}
 
 	if (fbdev_output_create(backend, param->device) < 0)
-		goto out_pixman;
+		goto out_launcher;
 
 	udev_input_init(&backend->input, compositor, backend->udev, seat_id);
 
 	compositor->backend = &backend->base;
 	return backend;
-
-out_pixman:
-	compositor->renderer->destroy(compositor);
 
 out_launcher:
 	weston_launcher_destroy(compositor->launcher);
