@@ -10,10 +10,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
@@ -215,13 +215,14 @@ NotificationProviderNotifyOnPermissionLevelChangedFunction::Run() {
         (params->level == api::notification_provider::NotifierPermissionLevel::
                               NOTIFIER_PERMISSION_LEVEL_GRANTED);
 
-    DesktopNotificationService* desktop_notification_service =
-        DesktopNotificationServiceFactory::GetForProfile(GetProfile());
+    NotifierStateTracker* notifier_state_tracker =
+        NotifierStateTrackerFactory::GetForProfile(GetProfile());
+
     message_center::NotifierId notifier_id(
         message_center::NotifierId::NotifierType::APPLICATION,
         params->notifier_id);
 
-    desktop_notification_service->SetNotifierEnabled(notifier_id, enabled);
+    notifier_state_tracker->SetNotifierEnabled(notifier_id, enabled);
   }
 
   return RespondNow(

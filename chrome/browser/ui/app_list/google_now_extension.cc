@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/app_list/google_now_extension.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/variations/variations_associated_data.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace {
 const char kGoogleNowExtensionFieldTrialName[] = "GoogleNowExtension";
@@ -39,9 +40,9 @@ void MigrateGoogleNowPrefs(Profile* profile) {
   if (!enabled_pref->IsDefaultValue())
     return;
 
-  DesktopNotificationService* const notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  bool notifier_enabled = notification_service->IsNotifierEnabled(
+  NotifierStateTracker* const notifier_state_tracker =
+      NotifierStateTrackerFactory::GetForProfile(profile);
+  bool notifier_enabled = notifier_state_tracker->IsNotifierEnabled(
       message_center::NotifierId(
           message_center::NotifierId::APPLICATION, kNowNotifierId));
   prefs->SetBoolean(prefs::kGoogleNowLauncherEnabled, notifier_enabled);

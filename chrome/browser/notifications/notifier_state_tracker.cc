@@ -1,54 +1,38 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
+#include "base/values.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_object_proxy.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
-#include "ui/base/webui/web_ui_util.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/notifications/notifications_api.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/extensions/api/notifications.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/browser/suggest_permission_util.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #endif
 
-using content::BrowserThread;
 using message_center::NotifierId;
 
-// DesktopNotificationService -------------------------------------------------
-
 // static
-void DesktopNotificationService::RegisterProfilePrefs(
+void NotifierStateTracker::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds);
   registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds);
 }
 
-DesktopNotificationService::DesktopNotificationService(Profile* profile)
+NotifierStateTracker::NotifierStateTracker(Profile* profile)
     : profile_(profile)
 #if defined(ENABLE_EXTENSIONS)
       ,
@@ -60,32 +44,35 @@ DesktopNotificationService::DesktopNotificationService(Profile* profile)
   OnStringListPrefChanged(
       prefs::kMessageCenterDisabledSystemComponentIds,
       &disabled_system_component_ids_);
+
   disabled_extension_id_pref_.Init(
       prefs::kMessageCenterDisabledExtensionIds,
       profile_->GetPrefs(),
       base::Bind(
-          &DesktopNotificationService::OnStringListPrefChanged,
+          &NotifierStateTracker::OnStringListPrefChanged,
           base::Unretained(this),
           base::Unretained(prefs::kMessageCenterDisabledExtensionIds),
           base::Unretained(&disabled_extension_ids_)));
+
   disabled_system_component_id_pref_.Init(
       prefs::kMessageCenterDisabledSystemComponentIds,
       profile_->GetPrefs(),
       base::Bind(
-          &DesktopNotificationService::OnStringListPrefChanged,
+          &NotifierStateTracker::OnStringListPrefChanged,
           base::Unretained(this),
           base::Unretained(prefs::kMessageCenterDisabledSystemComponentIds),
           base::Unretained(&disabled_system_component_ids_)));
+
 #if defined(ENABLE_EXTENSIONS)
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
 #endif
 }
 
-DesktopNotificationService::~DesktopNotificationService() {
+NotifierStateTracker::~NotifierStateTracker() {
 }
 
-bool DesktopNotificationService::IsNotifierEnabled(
+bool NotifierStateTracker::IsNotifierEnabled(
     const NotifierId& notifier_id) const {
   switch (notifier_id.type) {
     case NotifierId::APPLICATION:
@@ -108,7 +95,7 @@ bool DesktopNotificationService::IsNotifierEnabled(
   return false;
 }
 
-void DesktopNotificationService::SetNotifierEnabled(
+void NotifierStateTracker::SetNotifierEnabled(
     const NotifierId& notifier_id,
     bool enabled) {
   DCHECK_NE(NotifierId::WEB_PAGE, notifier_id.type);
@@ -121,7 +108,9 @@ void DesktopNotificationService::SetNotifierEnabled(
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
       add_new_item = !enabled;
       id.reset(new base::StringValue(notifier_id.id));
+#if defined(ENABLE_EXTENSIONS)
       FirePermissionLevelChangedEvent(notifier_id, enabled);
+#endif
       break;
     case NotifierId::SYSTEM_COMPONENT:
 #if defined(OS_CHROMEOS)
@@ -148,7 +137,7 @@ void DesktopNotificationService::SetNotifierEnabled(
   }
 }
 
-void DesktopNotificationService::OnStringListPrefChanged(
+void NotifierStateTracker::OnStringListPrefChanged(
     const char* pref_name, std::set<std::string>* ids_field) {
   ids_field->clear();
   // Separate GetPrefs()->GetList() to analyze the crash. See crbug.com/322320
@@ -165,7 +154,7 @@ void DesktopNotificationService::OnStringListPrefChanged(
 }
 
 #if defined(ENABLE_EXTENSIONS)
-void DesktopNotificationService::OnExtensionUninstalled(
+void NotifierStateTracker::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
@@ -179,11 +168,9 @@ void DesktopNotificationService::OnExtensionUninstalled(
 
   SetNotifierEnabled(notifier_id, true);
 }
-#endif
 
-void DesktopNotificationService::FirePermissionLevelChangedEvent(
+void NotifierStateTracker::FirePermissionLevelChangedEvent(
     const NotifierId& notifier_id, bool enabled) {
-#if defined(ENABLE_EXTENSIONS)
   DCHECK_EQ(NotifierId::APPLICATION, notifier_id.type);
   extensions::api::notifications::PermissionLevel permission =
       enabled ? extensions::api::notifications::PERMISSION_LEVEL_GRANTED
@@ -202,9 +189,9 @@ void DesktopNotificationService::FirePermissionLevelChangedEvent(
   // has changed.
   extensions::InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile_)->info_map();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&extensions::InfoMap::SetNotificationsDisabled,
                  extension_info_map, notifier_id.id, !enabled));
-#endif
 }
+#endif

@@ -23,7 +23,9 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/extension_welcome_notification_factory.h"
+#include "chrome/browser/notifications/notification_permission_context_factory.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -201,8 +203,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CrossDevicePromoFactory::GetInstance();
 #endif
 #if defined(ENABLE_NOTIFICATIONS)
-  DesktopNotificationServiceFactory::GetInstance();
+#if defined(ENABLE_EXTENSIONS)
+  ExtensionWelcomeNotificationFactory::GetInstance();
 #endif
+  NotificationPermissionContextFactory::GetInstance();
+  NotifierStateTrackerFactory::GetInstance();
+#endif  // defined(ENABLE_NOTIFICATIONS)
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   domain_reliability::DomainReliabilityServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();

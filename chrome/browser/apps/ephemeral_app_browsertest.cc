@@ -18,8 +18,8 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -697,15 +697,15 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, StickyNotificationSettings) {
   ASSERT_TRUE(app);
 
   // Disable notifications for this app.
-  DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile());
-  ASSERT_TRUE(notification_service);
+  NotifierStateTracker* notifier_state_tracker =
+      NotifierStateTrackerFactory::GetForProfile(profile());
+  ASSERT_TRUE(notifier_state_tracker);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, app->id());
-  EXPECT_TRUE(notification_service->IsNotifierEnabled(notifier_id));
-  notification_service->SetNotifierEnabled(notifier_id, false);
-  EXPECT_FALSE(notification_service->IsNotifierEnabled(notifier_id));
+  EXPECT_TRUE(notifier_state_tracker->IsNotifierEnabled(notifier_id));
+  notifier_state_tracker->SetNotifierEnabled(notifier_id, false);
+  EXPECT_FALSE(notifier_state_tracker->IsNotifierEnabled(notifier_id));
 
   // Remove the app.
   CloseAppWaitForUnload(app->id());
@@ -716,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, StickyNotificationSettings) {
   ASSERT_TRUE(app);
   message_center::NotifierId reinstalled_notifier_id(
       message_center::NotifierId::APPLICATION, app->id());
-  EXPECT_FALSE(notification_service->IsNotifierEnabled(
+  EXPECT_FALSE(notifier_state_tracker->IsNotifierEnabled(
       reinstalled_notifier_id));
 }
 

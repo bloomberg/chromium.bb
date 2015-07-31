@@ -11,11 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_conversion_helper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
@@ -506,10 +506,12 @@ bool NotificationsApiFunction::UpdateNotification(
 }
 
 bool NotificationsApiFunction::AreExtensionNotificationsAllowed() const {
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(GetProfile());
-  return service->IsNotifierEnabled(message_center::NotifierId(
-             message_center::NotifierId::APPLICATION, extension_->id()));
+  NotifierStateTracker* notifier_state_tracker =
+      NotifierStateTrackerFactory::GetForProfile(GetProfile());
+
+  return notifier_state_tracker->IsNotifierEnabled(
+      message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                 extension_->id()));
 }
 
 bool NotificationsApiFunction::IsNotificationsApiEnabled() const {

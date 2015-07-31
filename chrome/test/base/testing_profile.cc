@@ -29,8 +29,6 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -179,14 +177,6 @@ class TestExtensionURLRequestContextGetter
  private:
   scoped_ptr<net::URLRequestContext> context_;
 };
-
-#if defined(ENABLE_NOTIFICATIONS)
-scoped_ptr<KeyedService> CreateTestDesktopNotificationService(
-    content::BrowserContext* profile) {
-  return make_scoped_ptr(
-      new DesktopNotificationService(static_cast<Profile*>(profile)));
-}
-#endif
 
 scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -460,12 +450,6 @@ void TestingProfile::Init() {
 
   browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
       this);
-
-#if defined(ENABLE_NOTIFICATIONS)
-  // Install profile keyed service factory hooks for dummy/test services
-  DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
-      this, CreateTestDesktopNotificationService);
-#endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
   if (!IsOffTheRecord()) {

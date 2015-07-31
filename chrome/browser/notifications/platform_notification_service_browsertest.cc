@@ -10,8 +10,8 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -307,13 +307,19 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   // This case should succeed because a normal page URL is used.
   std::string script_result;
-  DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_TRUE(notification_service);
-  message_center::NotifierId web_notifier(TestPageUrl());
-  EXPECT_FALSE(notification_service->IsNotifierEnabled(web_notifier));
+
+  NotificationPermissionContext* permission_context =
+      NotificationPermissionContextFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(permission_context);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            permission_context->GetPermissionStatus(TestPageUrl(),
+                                                    TestPageUrl()));
+
   RequestAndAcceptPermission();
-  EXPECT_TRUE(notification_service->IsNotifierEnabled(web_notifier));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            permission_context->GetPermissionStatus(TestPageUrl(),
+                                                    TestPageUrl()));
 
   // This case should fail because a file URL is used.
   base::FilePath dir_source_root;
@@ -321,11 +327,15 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   base::FilePath full_file_path =
       dir_source_root.Append(server_root()).AppendASCII(kTestFileName);
   GURL file_url(net::FilePathToFileURL(full_file_path));
+
   ui_test_utils::NavigateToURL(browser(), file_url);
-  message_center::NotifierId file_notifier(file_url);
-  EXPECT_FALSE(notification_service->IsNotifierEnabled(file_notifier));
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            permission_context->GetPermissionStatus(file_url, file_url));
+
   RequestAndAcceptPermission();
-  EXPECT_FALSE(notification_service->IsNotifierEnabled(file_notifier))
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            permission_context->GetPermissionStatus(file_url, file_url))
       << "If this test fails, you may have fixed a bug preventing file origins "
       << "from sending their origin from Blink; if so you need to update the "
       << "display function for notification origins to show the file path.";

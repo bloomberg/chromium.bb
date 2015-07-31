@@ -4,8 +4,8 @@
 
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -30,7 +30,7 @@ ExtensionWelcomeNotificationFactory::ExtensionWelcomeNotificationFactory()
     : BrowserContextKeyedServiceFactory(
         "ExtensionWelcomeNotification",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(DesktopNotificationServiceFactory::GetInstance());
+  DependsOn(NotifierStateTrackerFactory::GetInstance());
 }
 
 ExtensionWelcomeNotificationFactory::~ExtensionWelcomeNotificationFactory() {}

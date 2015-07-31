@@ -36,8 +36,8 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chromeos/login/login_state.h"
 #endif
 
@@ -379,9 +379,9 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     return;
 
   // TODO(sschmitz): make this work for Windows.
-  DesktopNotificationService* const service =
-      DesktopNotificationServiceFactory::GetForProfile(GetProfile());
-  if (service->IsNotifierEnabled(message_center::NotifierId(
+  NotifierStateTracker* const notifier_state_tracker =
+      NotifierStateTrackerFactory::GetForProfile(GetProfile());
+  if (notifier_state_tracker->IsNotifierEnabled(message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
           ash::system_notifier::kNotifierScreenshot))) {
     scoped_ptr<Notification> notification(

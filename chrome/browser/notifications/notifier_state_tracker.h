@@ -1,56 +1,50 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_SERVICE_H_
-#define CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_SERVICE_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_STATE_TRACKER_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_STATE_TRACKER_H_
 
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/macros.h"
 #include "base/prefs/pref_member.h"
-#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/message_center/notifier_settings.h"
 
 #if defined(ENABLE_EXTENSIONS)
+#include "base/scoped_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
 class Profile;
 
-#if defined(ENABLE_EXTENSIONS)
-namespace extensions {
-class ExtensionRegistry;
+namespace message_center {
+struct NotifierId;
 }
-#endif
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// The DesktopNotificationService is an object, owned by the Profile,
-// which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public KeyedService
+// Tracks whether a given NotifierId can send notifications.
+class NotifierStateTracker : public KeyedService
 #if defined(ENABLE_EXTENSIONS)
-                                 , public extensions::ExtensionRegistryObserver
+                           , public extensions::ExtensionRegistryObserver
 #endif
-                                   {
+                               {
  public:
   // Register profile-specific prefs of notifications.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
-  explicit DesktopNotificationService(Profile* profile);
-  ~DesktopNotificationService() override;
+  explicit NotifierStateTracker(Profile* profile);
+  ~NotifierStateTracker() override;
 
-  // Returns true if the notifier with |notifier_id| is allowed to send
-  // notifications.
+  // Returns whether the notifier with |notifier_id| may send notifications.
   bool IsNotifierEnabled(const message_center::NotifierId& notifier_id) const;
 
-  // Updates the availability of the notifier.
+  // Updates whether the notifier with |notifier_id| may send notifications.
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled);
 
@@ -59,14 +53,13 @@ class DesktopNotificationService : public KeyedService
   void OnStringListPrefChanged(
       const char* pref_name, std::set<std::string>* ids_field);
 
-  // Called when the disabled_extension_id pref has been changed.
-  void OnDisabledExtensionIdsChanged();
-
+#if defined(ENABLE_EXTENSIONS)
+  // Fires a permission-level change event when an extension notifier has had
+  // their notification permission changed.
   void FirePermissionLevelChangedEvent(
       const message_center::NotifierId& notifier_id,
       bool enabled);
 
-#if defined(ENABLE_EXTENSIONS)
   // extensions::ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
@@ -95,7 +88,7 @@ class DesktopNotificationService : public KeyedService
       extension_registry_observer_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
+  DISALLOW_COPY_AND_ASSIGN(NotifierStateTracker);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_SERVICE_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_STATE_TRACKER_H_

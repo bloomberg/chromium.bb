@@ -28,8 +28,8 @@
 #include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -142,12 +142,12 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
         extension->permissions_data()->HasAPIPermission(
             extensions::APIPermission::kNotifications) &&
         process_map->Contains(extension->id(), render_process_id)) {
-      DesktopNotificationService* desktop_notification_service =
-          DesktopNotificationServiceFactory::GetForProfile(profile);
-      DCHECK(desktop_notification_service);
+      NotifierStateTracker* notifier_state_tracker =
+          NotifierStateTrackerFactory::GetForProfile(profile);
+      DCHECK(notifier_state_tracker);
 
       NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
-      if (desktop_notification_service->IsNotifierEnabled(notifier_id))
+      if (notifier_state_tracker->IsNotifierEnabled(notifier_id))
         return blink::WebNotificationPermissionAllowed;
     }
   }
