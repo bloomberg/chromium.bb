@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
 import android.text.TextUtils;
@@ -18,6 +19,7 @@ import junit.framework.TestResult;
 
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.test.reporter.TestStatusListener;
@@ -32,6 +34,9 @@ import java.util.List;
  */
 public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     private static final String TAG = "cr.base.test";
+
+    private static final int SLEEP_INTERVAL = 50; // milliseconds
+    private static final int WAIT_DURATION = 5000; // milliseconds
 
     /**
      * An interface for classes that check whether a test case should be skipped.
@@ -49,14 +54,14 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     /**
      * A test result that can skip tests.
      */
-    public class SkippingTestResult extends TestResult {
+    public class BaseTestResult extends TestResult {
 
         private final List<SkipCheck> mSkipChecks;
 
         /**
-         * Creates an instance of SkippingTestResult.
+         * Creates an instance of BaseTestResult.
          */
-        public SkippingTestResult() {
+        public BaseTestResult() {
             mSkipChecks = new ArrayList<SkipCheck>();
         }
 
@@ -89,6 +94,13 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
 
                 endTest(test);
             } else {
+                try {
+                    CommandLineFlags.setUp(
+                            BaseInstrumentationTestRunner.this.getTargetContext(),
+                            test.getClass().getMethod(test.getName()));
+                } catch (NoSuchMethodException e) {
+                    Log.e(TAG, "Unable to set up CommandLineFlags", e);
+                }
                 super.run(test);
             }
         }
@@ -99,7 +111,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
         AndroidTestRunner runner = new AndroidTestRunner() {
             @Override
             protected TestResult createTestResult() {
-                SkippingTestResult r = new SkippingTestResult();
+                BaseTestResult r = new BaseTestResult();
                 addSkipChecks(r);
                 return r;
             }
@@ -111,7 +123,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     /**
      * Adds the desired SkipChecks to result. Subclasses can add additional SkipChecks.
      */
-    protected void addSkipChecks(SkippingTestResult result) {
+    protected void addSkipChecks(BaseTestResult result) {
         result.addSkipCheck(new MinAndroidSdkLevelSkipCheck());
         result.addSkipCheck(new RestrictionSkipCheck());
     }
@@ -190,5 +202,30 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
             }
             return false;
         }
+    }
+
+    /**
+     * Gets the target context.
+     *
+     * On older versions of Android, getTargetContext() may initially return null, so we have to
+     * wait for it to become available.
+     *
+     * @return The target {@link android.content.Context} if available; null otherwise.
+     */
+    @Override
+    public Context getTargetContext() {
+        Context targetContext = super.getTargetContext();
+        try {
+            long startTime = SystemClock.uptimeMillis();
+            // TODO(jbudorick): Convert this to CriteriaHelper once that moves to base/.
+            while (targetContext == null
+                    && SystemClock.uptimeMillis() - startTime < WAIT_DURATION) {
+                Thread.sleep(SLEEP_INTERVAL);
+                targetContext = super.getTargetContext();
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Interrupted while attempting to initialize the command line.");
+        }
+        return targetContext;
     }
 }

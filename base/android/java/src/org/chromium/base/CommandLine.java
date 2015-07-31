@@ -16,7 +16,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -26,15 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * ContentShellApplication.COMMAND_LINE_FILE or ChromeShellApplication.COMMAND_LINE_FILE.
 **/
 public abstract class CommandLine {
-    /**
-     * Allows classes who cache command line flags to be notified when those arguments are updated
-     * at runtime. This happens in tests.
-     */
-    public interface ResetListener {
-        /** Called when the command line arguments are reset. */
-        void onCommandLineReset();
-    }
-
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**
@@ -97,7 +87,6 @@ public abstract class CommandLine {
         return false;
     }
 
-    private static final List<ResetListener> sResetListeners = new ArrayList<>();
     private static final AtomicReference<CommandLine> sCommandLine =
             new AtomicReference<CommandLine>();
 
@@ -143,20 +132,6 @@ public abstract class CommandLine {
     @VisibleForTesting
     public static void reset() {
         setInstance(null);
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (ResetListener listener : sResetListeners) listener.onCommandLineReset();
-            }
-        });
-    }
-
-    public static void addResetListener(ResetListener listener) {
-        sResetListeners.add(listener);
-    }
-
-    public static void removeResetListener(ResetListener listener) {
-        sResetListeners.remove(listener);
     }
 
     /**

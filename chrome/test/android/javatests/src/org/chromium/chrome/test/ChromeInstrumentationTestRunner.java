@@ -28,8 +28,8 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpParams;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
+import org.chromium.base.test.BaseInstrumentationTestRunner.BaseTestResult;
 import org.chromium.base.test.BaseInstrumentationTestRunner.SkipCheck;
-import org.chromium.base.test.BaseInstrumentationTestRunner.SkippingTestResult;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
@@ -219,7 +219,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     }
 
     @Override
-    protected void addSkipChecks(SkippingTestResult result) {
+    protected void addSkipChecks(BaseTestResult result) {
         super.addSkipChecks(result);
         result.addSkipCheck(new DisableInTabbedModeSkipCheck());
         result.addSkipCheck(new ChromeRestrictionSkipCheck());

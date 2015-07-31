@@ -34,8 +34,6 @@ public class FeatureUtilities {
     private static Boolean sHasRecognitionIntentHandler;
     private static Boolean sDocumentModeDisabled;
     private static Boolean sCustomTabVisible;
-    /** Used to track if cached command line flags should be refreshed. */
-    private static CommandLine.ResetListener sResetListener = null;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -100,7 +98,6 @@ public class FeatureUtilities {
      */
     public static boolean isDocumentMode(Context context) {
         if (sDocumentModeDisabled == null && CommandLine.isInitialized()) {
-            initResetListener();
             sDocumentModeDisabled = CommandLine.getInstance().hasSwitch(
                     ChromeSwitches.DISABLE_DOCUMENT_MODE);
         }
@@ -145,18 +142,6 @@ public class FeatureUtilities {
             sCustomTabVisible = nativeGetCustomTabVisible();
         }
         return sCustomTabVisible;
-    }
-
-    private static void initResetListener() {
-        if (sResetListener != null) return;
-
-        sResetListener = new CommandLine.ResetListener() {
-            @Override
-            public void onCommandLineReset() {
-                sDocumentModeDisabled = null;
-            }
-        };
-        CommandLine.addResetListener(sResetListener);
     }
 
     private static native void nativeSetDocumentModeEnabled(boolean enabled);
