@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class defines tests that implementations of SequencedTaskRunner should
-// pass in order to be conformant. See task_runner_test_template.h for a
-// description of how to use the constructs in this file; these work the same.
+// SequencedTaskRunnerTest defines tests that implementations of
+// SequencedTaskRunner should pass in order to be conformant.
+// See task_runner_test_template.h for a description of how to use the
+// constructs in this file; these work the same.
 
 #ifndef BASE_TEST_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_
 #define BASE_TEST_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_
@@ -226,28 +227,6 @@ TYPED_TEST_P(SequencedTaskRunnerTest, NonNestablePostFromNonNestableTask) {
       kParentCount * (kChildrenPerParent + 1)));
 }
 
-// This test posts a delayed task, and checks that the task is run later than
-// the specified time.
-TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskBasic) {
-  const int kTaskCount = 1;
-  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
-
-  this->delegate_.StartTaskRunner();
-  const scoped_refptr<SequencedTaskRunner> task_runner =
-      this->delegate_.GetTaskRunner();
-
-  Time time_before_run = Time::Now();
-  this->task_tracker_->PostWrappedDelayedNonNestableTask(
-      task_runner, Closure(), kDelay);
-  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
-  this->delegate_.StopTaskRunner();
-  Time time_after_run = Time::Now();
-
-  EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
-                                         kTaskCount));
-  EXPECT_LE(kDelay, time_after_run - time_before_run);
-}
-
 // This test posts two tasks with the same delay, and checks that the tasks are
 // run in the order in which they were posted.
 //
@@ -326,15 +305,49 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterManyLongTasks) {
 // whether the implementation supports nested tasks.
 //
 
+// The SequencedTaskRunnerTest test case verifies behaviour that is expected
+// from a sequenced task runner in order to be conformant.
 REGISTER_TYPED_TEST_CASE_P(SequencedTaskRunnerTest,
                            SequentialNonNestable,
                            SequentialNestable,
                            SequentialDelayedNonNestable,
                            NonNestablePostFromNonNestableTask,
-                           DelayedTaskBasic,
                            DelayedTasksSameDelay,
                            DelayedTaskAfterLongTask,
                            DelayedTaskAfterManyLongTasks);
+
+template <typename TaskRunnerTestDelegate>
+class SequencedTaskRunnerDelayedTest
+    : public SequencedTaskRunnerTest<TaskRunnerTestDelegate> {};
+
+TYPED_TEST_CASE_P(SequencedTaskRunnerDelayedTest);
+
+// This test posts a delayed task, and checks that the task is run later than
+// the specified time.
+TYPED_TEST_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic) {
+  const int kTaskCount = 1;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
+
+  this->delegate_.StartTaskRunner();
+  const scoped_refptr<SequencedTaskRunner> task_runner =
+      this->delegate_.GetTaskRunner();
+
+  Time time_before_run = Time::Now();
+  this->task_tracker_->PostWrappedDelayedNonNestableTask(task_runner, Closure(),
+                                                         kDelay);
+  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
+  this->delegate_.StopTaskRunner();
+  Time time_after_run = Time::Now();
+
+  EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
+                                         kTaskCount));
+  EXPECT_LE(kDelay, time_after_run - time_before_run);
+}
+
+// SequencedTaskRunnerDelayedTest tests that the |delay| parameter of
+// is used to actually wait for |delay| ms before executing the task.
+// This is not mandatory for a SequencedTaskRunner to be compliant.
+REGISTER_TYPED_TEST_CASE_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic);
 
 }  // namespace base
 

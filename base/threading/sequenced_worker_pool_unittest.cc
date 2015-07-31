@@ -1034,6 +1034,10 @@ INSTANTIATE_TYPED_TEST_CASE_P(
 INSTANTIATE_TYPED_TEST_CASE_P(
     SequencedWorkerPoolSequencedTaskRunner, SequencedTaskRunnerTest,
     SequencedWorkerPoolSequencedTaskRunnerTestDelegate);
+INSTANTIATE_TYPED_TEST_CASE_P(
+    SequencedWorkerPoolSequencedTaskRunner,
+    SequencedTaskRunnerDelayedTest,
+    SequencedWorkerPoolSequencedTaskRunnerTestDelegate);
 
 }  // namespace
 
