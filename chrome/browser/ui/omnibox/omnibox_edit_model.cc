@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
@@ -54,7 +55,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
@@ -515,7 +515,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   user_input_in_progress_ = in_progress;
   if (user_input_in_progress_) {
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
-    content::RecordAction(base::UserMetricsAction("OmniboxInputInProgress"));
+    base::RecordAction(base::UserMetricsAction("OmniboxInputInProgress"));
     autocomplete_controller()->ResetSession();
   }
 
@@ -829,7 +829,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         return;
       }
 
-      content::RecordAction(base::UserMetricsAction("AcceptedKeyword"));
+      base::RecordAction(base::UserMetricsAction("AcceptedKeyword"));
       TemplateURLServiceFactory::GetForProfile(profile_)->IncrementUsageCount(
           template_url);
     } else {
@@ -863,7 +863,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // using the default search provider.
   if (TemplateURLServiceFactory::GetForProfile(profile_)->
       IsSearchResultsPageFromDefaultSearchProvider(match.destination_url)) {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
   }
 
@@ -927,7 +927,7 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
                                        false, true);
   }
 
-  content::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
+  base::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
   UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram, entered_method,
                             ENTERED_KEYWORD_MODE_NUM_ITEMS);
 
