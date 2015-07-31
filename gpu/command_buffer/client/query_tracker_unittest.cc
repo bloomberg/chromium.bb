@@ -148,25 +148,25 @@ TEST_F(QueryTrackerTest, Query) {
   // Create a Query.
   QueryTracker::Query* query = query_tracker_->CreateQuery(
       kId1, GL_ANY_SAMPLES_PASSED_EXT);
+  const int32 start_submit_count = query->submit_count();
   ASSERT_TRUE(query != NULL);
   EXPECT_TRUE(query->NeverUsed());
   EXPECT_FALSE(query->Pending());
   EXPECT_EQ(0, query->token());
-  EXPECT_EQ(0, query->submit_count());
 
   // Check MarkAsActive.
   query->MarkAsActive();
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_FALSE(query->Pending());
   EXPECT_EQ(0, query->token());
-  EXPECT_EQ(1, query->submit_count());
+  EXPECT_EQ(start_submit_count + 1, query->submit_count());
 
   // Check MarkAsPending.
   query->MarkAsPending(kToken);
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_TRUE(query->Pending());
   EXPECT_EQ(kToken, query->token());
-  EXPECT_EQ(1, query->submit_count());
+  EXPECT_EQ(start_submit_count + 1, query->submit_count());
 
   // Flush only once if no more flushes happened between a call to
   // EndQuery command and CheckResultsAvailable

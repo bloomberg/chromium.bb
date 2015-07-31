@@ -69,6 +69,7 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
  private:
   MappedMemoryManager* mapped_memory_;
   std::deque<Bucket*> buckets_;
+  size_t alloc_index_;
 
   DISALLOW_COPY_AND_ASSIGN(QuerySyncManager);
 };

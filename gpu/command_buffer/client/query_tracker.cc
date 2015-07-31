@@ -31,7 +31,8 @@ QuerySyncManager::Bucket::Bucket(QuerySync* sync_mem,
 QuerySyncManager::Bucket::~Bucket() = default;
 
 QuerySyncManager::QuerySyncManager(MappedMemoryManager* manager)
-    : mapped_memory_(manager) {
+    : mapped_memory_(manager),
+      alloc_index_(0) {
   DCHECK(manager);
 }
 
@@ -69,8 +70,10 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
 
   unsigned short index_in_bucket = 0;
   for (size_t i = 0; i < kSyncsPerBucket; i++) {
-    if (!bucket->in_use_queries[i]) {
-      index_in_bucket = i;
+    size_t try_index = (i + alloc_index_) % kSyncsPerBucket;
+    if (!bucket->in_use_queries[try_index]) {
+      index_in_bucket = try_index;
+      alloc_index_ = try_index + 1;
       break;
     }
   }
@@ -112,7 +115,7 @@ QueryTracker::Query::Query(GLuint id, GLenum target,
       target_(target),
       info_(info),
       state_(kUninitialized),
-      submit_count_(0),
+      submit_count_(456),
       token_(0),
       flush_count_(0),
       client_begin_time_us_(0),
@@ -235,6 +238,7 @@ QueryTracker::Query* QueryTracker::CreateQuery(GLuint id, GLenum target) {
   if (!query_sync_manager_.Alloc(&info)) {
     return nullptr;
   }
+  info.sync->process_count = 123;
   Query* query = new Query(id, target, info);
   std::pair<QueryIdMap::iterator, bool> result =
       queries_.insert(std::make_pair(id, query));
