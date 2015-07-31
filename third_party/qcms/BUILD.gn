@@ -39,8 +39,8 @@ source_set("qcms") {
   }
 }
 
-executable("qcms_test") {
-  if (current_cpu == "x86" || current_cpu == "x64") {
+if (current_cpu == "x86" || current_cpu == "x64") {
+  executable("qcms_test") {
     defines = [ "SSE2_ENABLE" ]
     sources = [
       "src/tests/qcms_test_tetra_clut_rgba.c",
