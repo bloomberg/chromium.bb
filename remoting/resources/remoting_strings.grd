@@ -571,6 +571,9 @@
       </message>
 
       <if expr="is_android or is_ios">
+        <message desc="Pressing this button switches the view of the remote desktop to a Virtual Reality representation which is compatible with Google Cardboard." name="IDS_SHOW_CARDBOARD" formatter_data="android_java">
+          Show Cardboard view.
+        </message>
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
           Show/hide keyboard.
         </message>

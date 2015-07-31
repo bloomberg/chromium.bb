@@ -26,16 +26,6 @@ public interface TouchInputHandler {
     boolean onTouchEvent(MotionEvent event);
 
     /**
-     * Called when the screen configuration is changed, such as when the screen is rotated or an
-     * external display is plugged in. This is not called if the client display area changes as a
-     * result of showing/hiding UI elements such as a keyboard. For example, an implementation
-     * could set a flag to reset the zoom level when the screen is rotated, but not when the
-     * software keyboard appears. After this is called, the onClientSizeChanged() method will
-     * shortly be called with the dimensions of the new client display area.
-     */
-    void onScreenConfigurationChanged();
-
-    /**
      * Called whenever the client display area changes size. The caller will handle repainting
      * after this method returns.
      */

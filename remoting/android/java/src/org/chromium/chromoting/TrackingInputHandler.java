@@ -278,10 +278,6 @@ public class TrackingInputHandler implements TouchInputHandler {
     }
 
     @Override
-    public void onScreenConfigurationChanged() {
-    }
-
-    @Override
     public void onClientSizeChanged(int width, int height) {
         repositionImageWithZoom();
     }

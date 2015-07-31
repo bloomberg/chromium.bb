@@ -63,6 +63,12 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     private static final String HOST_SETUP_URL =
             "https://support.google.com/chrome/answer/1649523";
 
+    /** Result code used for starting {@link DesktopActivity}. */
+    public static final int DESKTOP_ACTIVITY = 0;
+
+    /** Result code used for starting {@link CardboardDesktopActivity}. */
+    public static final int CARDBOARD_DESKTOP_ACTIVITY = 1;
+
     /** User's account details. */
     private Account mAccount;
 
@@ -518,14 +524,14 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
             case CONNECTED:
                 dismissProgress = true;
                 // Display the remote desktop.
-                startActivityForResult(new Intent(this, Desktop.class), 0);
+                startActivityForResult(new Intent(this, Desktop.class), DESKTOP_ACTIVITY);
                 break;
 
             case FAILED:
                 dismissProgress = true;
                 Toast.makeText(this, getString(error.message()), Toast.LENGTH_LONG).show();
                 // Close the Desktop view, if it is currently running.
-                finishActivity(0);
+                finishActivity(DESKTOP_ACTIVITY);
                 break;
 
             case CLOSED:
@@ -533,7 +539,7 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
                 // because of an error, which will trigger toast already. Or the disconnection will
                 // have been initiated by the user.
                 dismissProgress = true;
-                finishActivity(0);
+                finishActivity(DESKTOP_ACTIVITY);
                 break;
 
             default:

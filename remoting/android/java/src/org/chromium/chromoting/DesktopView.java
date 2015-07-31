@@ -148,11 +148,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         JniInterface.redrawGraphics();
     }
 
-    /** Called whenever the screen configuration is changed. */
-    public void onScreenConfigurationChanged() {
-        mInputHandler.onScreenConfigurationChanged();
-    }
-
     /**
      * Redraws the canvas. This should be done on a non-UI thread or it could
      * cause the UI to lag. Specifically, it is currently invoked on the native
@@ -266,14 +261,18 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             mRenderData.screenHeight = height;
         }
 
+        attachRedrawCallback();
+        mInputHandler.onClientSizeChanged(width, height);
+        requestRepaint();
+    }
+
+    public void attachRedrawCallback() {
         JniInterface.provideRedrawCallback(new Runnable() {
             @Override
             public void run() {
                 paint();
             }
         });
-        mInputHandler.onClientSizeChanged(width, height);
-        requestRepaint();
     }
 
     /** Called when the canvas is first created. */
@@ -290,9 +289,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // Stop this canvas from being redrawn.
-        JniInterface.provideRedrawCallback(null);
-
         synchronized (mRenderData) {
             mSurfaceCreated = false;
         }

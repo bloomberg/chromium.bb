@@ -145,7 +145,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mForwardVector = new float[3];
         mEyePositionVector = new float[3];
 
-        // Provide the callback for JniInterface.
+        attachRedrawCallback();
+    }
+
+    public void attachRedrawCallback() {
         JniInterface.provideRedrawCallback(new Runnable() {
             @Override
             public void run() {
