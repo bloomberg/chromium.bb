@@ -10,9 +10,11 @@ import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.view.Surface;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -110,6 +112,12 @@ public class ChildProcessLauncher {
                     Log.d(TAG, "Allocator freed a connection, sandbox: %b, slot: %d", mInSandbox,
                             slot);
                 }
+            }
+        }
+
+        public boolean isFreeConnectionAvailable() {
+            synchronized (mConnectionLock) {
+                return !mFreeConnectionIndices.isEmpty();
             }
         }
 
@@ -214,6 +222,9 @@ public class ChildProcessLauncher {
             "org.chromium.content.browser.NUM_SANDBOXED_SERVICES";
     private static final String NUM_PRIVILEGED_SERVICES_KEY =
             "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
+    // Overrides the number of available sandboxed services.
+    @VisibleForTesting
+    public static final String SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING = "num-sandboxed-services";
 
     private static int getNumberOfServices(Context context, boolean inSandbox) {
         try {
@@ -222,6 +233,20 @@ public class ChildProcessLauncher {
                     PackageManager.GET_META_DATA);
             int numServices = appInfo.metaData.getInt(inSandbox ? NUM_SANDBOXED_SERVICES_KEY
                     : NUM_PRIVILEGED_SERVICES_KEY);
+            if (inSandbox
+                    && CommandLine.getInstance().hasSwitch(
+                               SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING)) {
+                String value = CommandLine.getInstance().getSwitchValue(
+                        SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING);
+                if (!TextUtils.isEmpty(value)) {
+                    try {
+                        numServices = Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        Log.w(TAG, "The value of --num-sandboxed-services is formatted wrongly: "
+                                        + value);
+                    }
+                }
+            }
             if (numServices <= 0) {
                 throw new RuntimeException("Illegal meta data value for number of child services");
             }
@@ -298,6 +323,13 @@ public class ChildProcessLauncher {
                 allocateConnection(context, inSandbox, chromiumLinkerParams, alwaysInForeground);
         if (connection != null) {
             connection.start(commandLine);
+
+            if (inSandbox && !sSandboxedChildConnectionAllocator.isFreeConnectionAvailable()) {
+                // Proactively releases all the moderate bindings once all the sandboxed services
+                // are allocated, which will be very likely to have some of them killed by OOM
+                // killer.
+                sBindingManager.releaseAllModerateBindings();
+            }
         }
         return connection;
     }

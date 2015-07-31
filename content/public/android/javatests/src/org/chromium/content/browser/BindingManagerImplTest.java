@@ -601,4 +601,36 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             }
         }
     }
+
+    /**
+     * Verifies that BindingManager.releaseAllModerateBindings() drops all the moderate bindings.
+     */
+    @SmallTest
+    @Feature({"ProcessManagement"})
+    public void testModerateBindingDropOnReleaseAllModerateBindings() {
+        // This test applies only to the moderate-binding manager.
+        final BindingManagerImpl manager = mModerateBindingManager;
+
+        MockChildProcessConnection[] connections = new MockChildProcessConnection[4];
+        for (int i = 0; i < connections.length; i++) {
+            connections[i] = new MockChildProcessConnection(i + 1);
+            manager.addNewConnection(connections[i].getPid(), connections[i]);
+        }
+
+        // Verify that each connection has a moderate binding after binding and releasing a strong
+        // binding.
+        for (MockChildProcessConnection connection : connections) {
+            manager.setInForeground(connection.getPid(), true);
+            manager.setInForeground(connection.getPid(), false);
+            getInstrumentation().waitForIdleSync();
+            assertTrue(connection.isModerateBindingBound());
+        }
+
+        // Call BindingManager.releaseAllModerateBindings() and verify that all the moderate
+        // bindings drop.
+        manager.releaseAllModerateBindings();
+        for (MockChildProcessConnection connection : connections) {
+            assertFalse(connection.isModerateBindingBound());
+        }
+    }
 }

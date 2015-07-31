@@ -89,4 +89,9 @@ public interface BindingManager {
      */
     void startModerateBindingManagement(
             Context context, int maxSize, float lowReduceRatio, float highReduceRatio);
+
+    /**
+     * Releases all moderate bindings.
+     */
+    void releaseAllModerateBindings();
 }

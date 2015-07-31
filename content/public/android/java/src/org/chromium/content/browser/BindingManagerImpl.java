@@ -162,6 +162,7 @@ class BindingManagerImpl implements BindingManager {
         }
     }
 
+    private final Object mModerateBindingPoolLock = new Object();
     private ModerateBindingPool mModerateBindingPool;
 
     /**
@@ -197,9 +198,11 @@ class BindingManagerImpl implements BindingManager {
             if (connection == null) return;
 
             connection.addStrongBinding();
-            if (mModerateBindingPool != null) {
-                mModerateBindingPool.removeConnection(this);
+            ModerateBindingPool moderateBindingPool;
+            synchronized (mModerateBindingPoolLock) {
+                moderateBindingPool = mModerateBindingPool;
             }
+            if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
         }
 
         /** Removes a strong service binding. */
@@ -216,9 +219,13 @@ class BindingManagerImpl implements BindingManager {
                 public void run() {
                     if (connection.isStrongBindingBound()) {
                         connection.removeStrongBinding();
-                        if (mModerateBindingPool != null && !connection.isStrongBindingBound()
+                        ModerateBindingPool moderateBindingPool;
+                        synchronized (mModerateBindingPoolLock) {
+                            moderateBindingPool = mModerateBindingPool;
+                        }
+                        if (moderateBindingPool != null && !connection.isStrongBindingBound()
                                 && keepsAsModerate) {
-                            mModerateBindingPool.addConnection(ManagedConnection.this);
+                            moderateBindingPool.addConnection(ManagedConnection.this);
                         }
                     }
                 }
@@ -305,9 +312,11 @@ class BindingManagerImpl implements BindingManager {
 
         void clearConnection() {
             mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
-            if (mModerateBindingPool != null) {
-                mModerateBindingPool.removeConnection(this);
+            ModerateBindingPool moderateBindingPool;
+            synchronized (mModerateBindingPoolLock) {
+                moderateBindingPool = mModerateBindingPool;
             }
+            if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
             mConnection = null;
         }
 
@@ -422,7 +431,11 @@ class BindingManagerImpl implements BindingManager {
                 mBoundForBackgroundPeriod = mLastInForeground;
             }
         }
-        if (mModerateBindingPool != null) mModerateBindingPool.onSentToBackground(mOnTesting);
+        ModerateBindingPool moderateBindingPool;
+        synchronized (mModerateBindingPoolLock) {
+            moderateBindingPool = mModerateBindingPool;
+        }
+        if (moderateBindingPool != null) moderateBindingPool.onSentToBackground(mOnTesting);
     }
 
     @Override
@@ -431,7 +444,11 @@ class BindingManagerImpl implements BindingManager {
             mBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
             mBoundForBackgroundPeriod = null;
         }
-        if (mModerateBindingPool != null) mModerateBindingPool.onBroughtToForeground();
+        ModerateBindingPool moderateBindingPool;
+        synchronized (mModerateBindingPoolLock) {
+            moderateBindingPool = mModerateBindingPool;
+        }
+        if (moderateBindingPool != null) moderateBindingPool.onBroughtToForeground();
     }
 
     @Override
@@ -466,11 +483,26 @@ class BindingManagerImpl implements BindingManager {
     @Override
     public void startModerateBindingManagement(
             Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {
-        if (mIsLowMemoryDevice || mModerateBindingPool != null) return;
+        synchronized (mModerateBindingPoolLock) {
+            if (mIsLowMemoryDevice || mModerateBindingPool != null) return;
 
-        Log.i(TAG, "Moderate binding enabled: maxSize=%d lowReduceRatio=%f highReduceRatio=%f",
-                        maxSize, lowReduceRatio, highReduceRatio);
-        mModerateBindingPool = new ModerateBindingPool(maxSize, lowReduceRatio, highReduceRatio);
-        if (context != null) context.registerComponentCallbacks(mModerateBindingPool);
+            Log.i(TAG, "Moderate binding enabled: maxSize=%d lowReduceRatio=%f highReduceRatio=%f",
+                    maxSize, lowReduceRatio, highReduceRatio);
+            mModerateBindingPool =
+                    new ModerateBindingPool(maxSize, lowReduceRatio, highReduceRatio);
+            if (context != null) context.registerComponentCallbacks(mModerateBindingPool);
+        }
+    }
+
+    @Override
+    public void releaseAllModerateBindings() {
+        ModerateBindingPool moderateBindingPool;
+        synchronized (mModerateBindingPoolLock) {
+            moderateBindingPool = mModerateBindingPool;
+        }
+        if (moderateBindingPool != null) {
+            Log.i(TAG, "Release all moderate bindings: %d", moderateBindingPool.size());
+            moderateBindingPool.evictAll();
+        }
     }
 }

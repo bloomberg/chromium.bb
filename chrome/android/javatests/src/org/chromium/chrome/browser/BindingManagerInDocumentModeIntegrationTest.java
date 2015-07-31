@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -38,6 +39,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         private final SparseBooleanArray mProcessInForegroundMap = new SparseBooleanArray();
         // Maps pid to a string recording calls to setInForeground() and visibilityDetermined().
         private final SparseArray<String> mVisibilityCallsMap = new SparseArray<String>();
+        private boolean mIsReleaseAllModerateBindingsCalled;
 
         boolean isInForeground(int pid) {
             return mProcessInForegroundMap.get(pid);
@@ -53,6 +55,10 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         String getVisibilityCalls(int pid) {
             return mVisibilityCallsMap.get(pid);
+        }
+
+        boolean isReleaseAllModerateBindingsCalled() {
+            return mIsReleaseAllModerateBindingsCalled;
         }
 
         @Override
@@ -93,6 +99,11 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         @Override
         public void startModerateBindingManagement(
                 Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {}
+
+        @Override
+        public void releaseAllModerateBindings() {
+            mIsReleaseAllModerateBindingsCalled = true;
+        }
     }
 
     private MockBindingManager mBindingManager;
@@ -254,6 +265,25 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         //  - BG - setInForeground(false) - when tab is created in the background
         //  - DETERMINED - visibilityDetermined() - after the navigation is committed
         assertEquals("BG;DETERMINED;", mBindingManager.getVisibilityCalls(bgNavigationPid));
+    }
+
+    /**
+     * Verifies that BindingManager.releaseAllModerateBindings() is called once all the sandboxed
+     * services are allocated.
+     */
+    @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
+    @LargeTest
+    @Feature({"ProcessManagement"})
+    public void testReleaseAllModerateBindings() throws Exception {
+        launchViaViewIntent(false, URL_1, "Page 1");
+        launchViaViewIntent(false, URL_1, "Page 1");
+        launchViaViewIntent(false, URL_1, "Page 1");
+        // At this point 3 sanboxed services are allocated.
+        assertFalse(mBindingManager.isReleaseAllModerateBindingsCalled());
+
+        launchViaViewIntent(false, URL_1, "Page 1");
+        // At this point all the sanboxed services are allocated.
+        assertTrue(mBindingManager.isReleaseAllModerateBindingsCalled());
     }
 
     @Override

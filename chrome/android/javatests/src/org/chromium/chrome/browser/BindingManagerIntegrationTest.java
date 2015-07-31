@@ -44,6 +44,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         private final SparseBooleanArray mProcessInForegroundMap = new SparseBooleanArray();
         // Maps pid to a string recording calls to setInForeground() and visibilityDetermined().
         private final SparseArray<String> mVisibilityCallsMap = new SparseArray<String>();
+        private boolean mIsReleaseAllModerateBindingsCalled;
 
         boolean isInForeground(int pid) {
             return mProcessInForegroundMap.get(pid);
@@ -59,6 +60,10 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         String getVisibilityCalls(int pid) {
             return mVisibilityCallsMap.get(pid);
+        }
+
+        boolean isReleaseAllModerateBindingsCalled() {
+            return mIsReleaseAllModerateBindingsCalled;
         }
 
         @Override
@@ -99,6 +104,11 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         @Override
         public void startModerateBindingManagement(
                 Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {}
+
+        @Override
+        public void releaseAllModerateBindings() {
+            mIsReleaseAllModerateBindingsCalled = true;
+        }
     }
 
     private MockBindingManager mBindingManager;
@@ -427,6 +437,45 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         //  - BG - setInForeground(false) - when tab is created in the background
         //  - DETERMINED - visibilityDetermined() - after the navigation is committed
         assertEquals("BG;DETERMINED;", mBindingManager.getVisibilityCalls(bgNavigationPid));
+    }
+
+    /**
+     * Verifies that BindingManager.releaseAllModerateBindings() is called once all the sandboxed
+     * services are allocated.
+     */
+    @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
+    @LargeTest
+    @Feature({"ProcessManagement"})
+    public void testReleaseAllModerateBindings() throws InterruptedException {
+        final TabCreator tabCreator = getActivity().getCurrentTabCreator();
+        final Tab[] tabs = new Tab[3];
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // Foreground tab.
+                tabs[0] = tabCreator.createNewTab(
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_KEYBOARD, null);
+                // Background tab.
+                tabs[1] = tabCreator.createNewTab(
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_KEYBOARD, null);
+            }
+        });
+        ChromeTabUtils.waitForTabPageLoaded(tabs[0], "about:blank");
+        ChromeTabUtils.waitForTabPageLoaded(tabs[1], "about:blank");
+        // At this point 3 sanboxed services are allocated; the initial one + 2 new tabs.
+        assertFalse(mBindingManager.isReleaseAllModerateBindingsCalled());
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // Foreground tab.
+                tabs[2] = tabCreator.createNewTab(
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_KEYBOARD, null);
+            }
+        });
+        ChromeTabUtils.waitForTabPageLoaded(tabs[2], "about:blank");
+        // At this point all the sanboxed services are allocated.
+        assertTrue(mBindingManager.isReleaseAllModerateBindingsCalled());
     }
 
     @Override
