@@ -45,6 +45,22 @@ def clean_and_extract(dir_name, package_name, zip_file):
     z.extractall(path=SDK_EXTRAS_PATH)
 
 
+def download_package_if_needed(remote_file, local_file):
+  """Download a file from GCS.
+
+  Returns:
+    success (bool): True if the download succeeded, False otherwise.
+  """
+  if not os.path.exists(local_file):
+    try:
+      subprocess.check_call(['python', GSUTIL_PATH, '--force-version', '4.7',
+                             'cp', remote_file, local_file])
+    except subprocess.CalledProcessError:
+      print ('WARNING: Failed to download SDK packages. If this bot compiles '
+             'for Android, it may have errors.')
+      return False
+  return True
+
 def main():
   if not os.environ.get('CHROME_HEADLESS'):
     # This is not a buildbot checkout.
@@ -54,17 +70,30 @@ def main():
     packages = json.load(json_file)
   for package in packages:
     local_zip = '%s/%s' % (SDK_EXTRAS_PATH, package['zip'])
-    if not os.path.exists(local_zip):
-      package_zip = '%s/%s' % (SDK_EXTRAS_BUCKET, package['zip'])
-      try:
-        subprocess.check_call(['python', GSUTIL_PATH, '--force-version', '4.7',
-                               'cp', package_zip, local_zip])
-      except subprocess.CalledProcessError:
-        print ('WARNING: Failed to download SDK packages. If this bot compiles '
-               'for Android, it may have errors.')
+    package_zip = '%s/%s' % (SDK_EXTRAS_BUCKET, package['zip'])
+    for attempt in xrange(2):
+      print '(%d) Downloading package %s' % (attempt + 1, package['zip'])
+      if not download_package_if_needed(package_zip, local_zip):
+        # Ignore errors when download failed to keep the corresponding build
+        # step green. The error we're ignoring here is essentially
+        # 'permission denied', because we're using the presence or absence of
+        # credentials on a build machine as the way to mark android builders.
+        # See crbug.com/460463 for more context.
         return 0
-    # Always clean dir and extract zip to ensure correct contents.
-    clean_and_extract(package['dir_name'], package['package'], package['zip'])
+      try:
+        # Always clean dir and extract zip to ensure correct contents.
+        clean_and_extract(package['dir_name'],
+                          package['package'],
+                          package['zip'])
+        break
+      except zipfile.BadZipfile:
+        print 'Failed unpacking zip file. Deleting and retrying...'
+        os.remove(local_zip)
+
+    else:
+      print ('WARNING: Failed to unpack SDK packages. If this bot compiles '
+             'for Android, it may have errors.')
+      return 1
 
 
 if __name__ == '__main__':
