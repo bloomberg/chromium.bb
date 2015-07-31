@@ -225,7 +225,6 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'])
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'])
-)
 _OS_NEGATIVE_FILTER['android:chrome_shell'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
         # https://code.google.com/p/chromedriver/issues/detail?id=1171
