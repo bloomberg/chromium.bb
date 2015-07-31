@@ -3450,6 +3450,14 @@ std::string GLES2Util::GetStringBufferParameter(uint32_t value) {
       {GL_BUFFER_USAGE, "GL_BUFFER_USAGE"},
       {GL_BUFFER_ACCESS_FLAGS, "GL_BUFFER_ACCESS_FLAGS"},
       {GL_BUFFER_MAPPED, "GL_BUFFER_MAPPED"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringBufferParameter64(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_BUFFER_SIZE, "GL_BUFFER_SIZE"},
       {GL_BUFFER_MAP_LENGTH, "GL_BUFFER_MAP_LENGTH"},
       {GL_BUFFER_MAP_OFFSET, "GL_BUFFER_MAP_OFFSET"},
   };

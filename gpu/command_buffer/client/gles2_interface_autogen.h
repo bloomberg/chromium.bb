@@ -235,6 +235,9 @@ virtual void GetAttachedShaders(GLuint program,
                                 GLuint* shaders) = 0;
 virtual GLint GetAttribLocation(GLuint program, const char* name) = 0;
 virtual void GetBooleanv(GLenum pname, GLboolean* params) = 0;
+virtual void GetBufferParameteri64v(GLenum target,
+                                    GLenum pname,
+                                    GLint64* params) = 0;
 virtual void GetBufferParameteriv(GLenum target,
                                   GLenum pname,
                                   GLint* params) = 0;

@@ -12,6 +12,30 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, GetProgramInfoLogValidArgs) {
+  const char* kInfo = "hello";
+  const uint32_t kBucketId = 123;
+  SpecializedSetup<cmds::GetProgramInfoLog, 0>(true);
+
+  cmds::GetProgramInfoLog cmd;
+  cmd.Init(client_program_id_, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(strlen(kInfo) + 1, bucket->size());
+  EXPECT_EQ(0,
+            memcmp(bucket->GetData(0, bucket->size()), kInfo, bucket->size()));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetProgramInfoLogInvalidArgs) {
+  const uint32_t kBucketId = 123;
+  cmds::GetProgramInfoLog cmd;
+  cmd.Init(kInvalidClientId, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivValidArgs) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1622,24 +1646,6 @@ TEST_P(GLES2DecoderTest2, UniformMatrix2x3fvImmediateValidArgs) {
                                                   ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix2x3fvImmediate, 0>(true);
   GLfloat temp[6 * 2] = {
-      0,
-  };
-  cmd.Init(1, 2, &temp[0]);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
-}
-
-TEST_P(GLES2DecoderTest2, UniformMatrix2x4fvImmediateValidArgs) {
-  cmds::UniformMatrix2x4fvImmediate& cmd =
-      *GetImmediateAs<cmds::UniformMatrix2x4fvImmediate>();
-  EXPECT_CALL(*gl_,
-              UniformMatrix2x4fv(1, 2, false, reinterpret_cast<GLfloat*>(
-                                                  ImmediateDataAddress(&cmd))));
-  SpecializedSetup<cmds::UniformMatrix2x4fvImmediate, 0>(true);
-  GLfloat temp[8 * 2] = {
       0,
   };
   cmd.Init(1, 2, &temp[0]);

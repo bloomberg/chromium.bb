@@ -36,8 +36,11 @@ static const GLenum valid_buffer_parameter_table[] = {
 };
 
 static const GLenum valid_buffer_parameter_table_es3[] = {
-    GL_BUFFER_ACCESS_FLAGS, GL_BUFFER_MAPPED, GL_BUFFER_MAP_LENGTH,
-    GL_BUFFER_MAP_OFFSET,
+    GL_BUFFER_ACCESS_FLAGS, GL_BUFFER_MAPPED,
+};
+
+static const GLenum valid_buffer_parameter_64_table[] = {
+    GL_BUFFER_SIZE, GL_BUFFER_MAP_LENGTH, GL_BUFFER_MAP_OFFSET,
 };
 
 static const GLenum valid_buffer_target_table[] = {
@@ -942,6 +945,8 @@ Validators::Validators()
       buffer_mode(valid_buffer_mode_table, arraysize(valid_buffer_mode_table)),
       buffer_parameter(valid_buffer_parameter_table,
                        arraysize(valid_buffer_parameter_table)),
+      buffer_parameter_64(valid_buffer_parameter_64_table,
+                          arraysize(valid_buffer_parameter_64_table)),
       buffer_target(valid_buffer_target_table,
                     arraysize(valid_buffer_target_table)),
       buffer_usage(valid_buffer_usage_table,

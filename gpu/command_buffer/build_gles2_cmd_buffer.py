@@ -1135,6 +1135,15 @@ _NAMED_TYPE_INFO = {
     'valid_es3': [
       'GL_BUFFER_ACCESS_FLAGS',
       'GL_BUFFER_MAPPED',
+    ],
+    'invalid': [
+      'GL_PIXEL_PACK_BUFFER',
+    ],
+  },
+  'BufferParameter64': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_BUFFER_SIZE',
       'GL_BUFFER_MAP_LENGTH',
       'GL_BUFFER_MAP_OFFSET',
     ],
@@ -2747,6 +2756,14 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLboolean>'],
     'decoder_func': 'DoGetBooleanv',
     'gl_test_func': 'glGetBooleanv',
+  },
+  'GetBufferParameteri64v': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLint64>'],
+    'decoder_func': 'DoGetBufferParameteri64v',
+    'expectation': False,
+    'shadowed': True,
+    'unsafe': True,
   },
   'GetBufferParameteriv': {
     'type': 'GETn',

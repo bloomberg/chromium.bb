@@ -312,6 +312,10 @@ GLint GetAttribLocation(GLuint program, const char* name) override;
 
 void GetBooleanv(GLenum pname, GLboolean* params) override;
 
+void GetBufferParameteri64v(GLenum target,
+                            GLenum pname,
+                            GLint64* params) override;
+
 void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) override;
 
 GLenum GetError() override;

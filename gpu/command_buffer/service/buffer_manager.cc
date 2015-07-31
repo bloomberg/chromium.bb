@@ -386,6 +386,36 @@ void BufferManager::DoBufferSubData(
   }
 }
 
+void BufferManager::ValidateAndDoGetBufferParameteri64v(
+    ContextState* context_state, GLenum target, GLenum pname, GLint64* params) {
+  Buffer* buffer = GetBufferInfoForTarget(context_state, target);
+  if (!buffer) {
+    ERRORSTATE_SET_GL_ERROR(
+        context_state->GetErrorState(), GL_INVALID_OPERATION,
+        "glGetBufferParameteri64v", "no buffer bound for target");
+    return;
+  }
+  switch (pname) {
+    case GL_BUFFER_SIZE:
+      *params = buffer->size();
+      break;
+    case GL_BUFFER_MAP_LENGTH:
+      {
+        const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
+        *params = mapped_range ? mapped_range->size : 0;
+        break;
+      }
+    case GL_BUFFER_MAP_OFFSET:
+      {
+        const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
+        *params = mapped_range ? mapped_range->offset : 0;
+        break;
+      }
+    default:
+      NOTREACHED();
+  }
+}
+
 void BufferManager::ValidateAndDoGetBufferParameteriv(
     ContextState* context_state, GLenum target, GLenum pname, GLint* params) {
   Buffer* buffer = GetBufferInfoForTarget(context_state, target);
@@ -401,6 +431,15 @@ void BufferManager::ValidateAndDoGetBufferParameteriv(
       break;
     case GL_BUFFER_USAGE:
       *params = buffer->usage();
+      break;
+    case GL_BUFFER_ACCESS_FLAGS:
+      {
+        const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
+        *params = mapped_range ? mapped_range->access : 0;
+        break;
+      }
+    case GL_BUFFER_MAPPED:
+      *params = buffer->GetMappedRange() == nullptr ? false : true;
       break;
     default:
       NOTREACHED();

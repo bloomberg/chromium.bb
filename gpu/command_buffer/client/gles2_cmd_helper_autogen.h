@@ -854,6 +854,17 @@ void GetBooleanv(GLenum pname,
   }
 }
 
+void GetBufferParameteri64v(GLenum target,
+                            GLenum pname,
+                            uint32_t params_shm_id,
+                            uint32_t params_shm_offset) {
+  gles2::cmds::GetBufferParameteri64v* c =
+      GetCmdSpace<gles2::cmds::GetBufferParameteri64v>();
+  if (c) {
+    c->Init(target, pname, params_shm_id, params_shm_offset);
+  }
+}
+
 void GetBufferParameteriv(GLenum target,
                           GLenum pname,
                           uint32_t params_shm_id,

@@ -592,6 +592,13 @@ void GLES2TraceImplementation::GetBooleanv(GLenum pname, GLboolean* params) {
   gl_->GetBooleanv(pname, params);
 }
 
+void GLES2TraceImplementation::GetBufferParameteri64v(GLenum target,
+                                                      GLenum pname,
+                                                      GLint64* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetBufferParameteri64v");
+  gl_->GetBufferParameteri64v(target, pname, params);
+}
+
 void GLES2TraceImplementation::GetBufferParameteriv(GLenum target,
                                                     GLenum pname,
                                                     GLint* params) {

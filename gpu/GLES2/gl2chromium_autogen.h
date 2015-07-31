@@ -96,6 +96,7 @@
 #define glGetAttachedShaders GLES2_GET_FUN(GetAttachedShaders)
 #define glGetAttribLocation GLES2_GET_FUN(GetAttribLocation)
 #define glGetBooleanv GLES2_GET_FUN(GetBooleanv)
+#define glGetBufferParameteri64v GLES2_GET_FUN(GetBufferParameteri64v)
 #define glGetBufferParameteriv GLES2_GET_FUN(GetBufferParameteriv)
 #define glGetError GLES2_GET_FUN(GetError)
 #define glGetFloatv GLES2_GET_FUN(GetFloatv)

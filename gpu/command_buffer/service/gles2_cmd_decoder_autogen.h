@@ -1375,6 +1375,33 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetBufferParameteri64v& c =
+      *static_cast<const gles2::cmds::GetBufferParameteri64v*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  typedef cmds::GetBufferParameteri64v::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint64* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  DoGetBufferParameteri64v(target, pname, params);
+  result->SetNumResults(num_values);
+  return error::kNoError;
+}
 error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
     uint32_t immediate_data_size,
     const void* cmd_data) {

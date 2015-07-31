@@ -907,6 +907,35 @@ void GLES2Implementation::GetBooleanv(GLenum pname, GLboolean* params) {
   });
   CheckGLError();
 }
+void GLES2Implementation::GetBufferParameteri64v(GLenum target,
+                                                 GLenum pname,
+                                                 GLint64* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetBufferParameteri64v("
+                     << GLES2Util::GetStringBufferTarget(target) << ", "
+                     << GLES2Util::GetStringBufferParameter64(pname) << ", "
+                     << static_cast<const void*>(params) << ")");
+  TRACE_EVENT0("gpu", "GLES2Implementation::GetBufferParameteri64v");
+  if (GetBufferParameteri64vHelper(target, pname, params)) {
+    return;
+  }
+  typedef cmds::GetBufferParameteri64v::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
+  result->SetNumResults(0);
+  helper_->GetBufferParameteri64v(target, pname, GetResultShmId(),
+                                  GetResultShmOffset());
+  WaitForCmd();
+  result->CopyResult(params);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (int32_t i = 0; i < result->GetNumResults(); ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
+    }
+  });
+  CheckGLError();
+}
 void GLES2Implementation::GetBufferParameteriv(GLenum target,
                                                GLenum pname,
                                                GLint* params) {

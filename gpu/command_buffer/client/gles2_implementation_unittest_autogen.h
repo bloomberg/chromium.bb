@@ -779,6 +779,24 @@ TEST_F(GLES2ImplementationTest, GetBooleanv) {
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
+TEST_F(GLES2ImplementationTest, GetBufferParameteri64v) {
+  struct Cmds {
+    cmds::GetBufferParameteri64v cmd;
+  };
+  typedef cmds::GetBufferParameteri64v::Result::Type ResultType;
+  ResultType result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
+  expected.cmd.Init(123, GL_BUFFER_SIZE, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
+      .RetiresOnSaturation();
+  gl_->GetBufferParameteri64v(123, GL_BUFFER_SIZE, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<ResultType>(1), result);
+}
+
 TEST_F(GLES2ImplementationTest, GetBufferParameteriv) {
   struct Cmds {
     cmds::GetBufferParameteriv cmd;

@@ -16,6 +16,7 @@ ValueValidator<GLenum> backbuffer_attachment;
 ValueValidator<GLenum> blit_filter;
 ValueValidator<GLenum> buffer_mode;
 ValueValidator<GLenum> buffer_parameter;
+ValueValidator<GLenum> buffer_parameter_64;
 ValueValidator<GLenum> buffer_target;
 ValueValidator<GLenum> buffer_usage;
 ValueValidator<GLenum> bufferfi;

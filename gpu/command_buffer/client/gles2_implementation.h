@@ -567,6 +567,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetHelper(GLenum pname, GLint* params);
   GLuint GetBoundBufferHelper(GLenum target);
   bool GetBooleanvHelper(GLenum pname, GLboolean* params);
+  bool GetBufferParameteri64vHelper(
+      GLenum target, GLenum pname, GLint64* params);
   bool GetBufferParameterivHelper(GLenum target, GLenum pname, GLint* params);
   bool GetFloatvHelper(GLenum pname, GLfloat* params);
   bool GetFramebufferAttachmentParameterivHelper(
@@ -826,6 +828,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };
+
+inline bool GLES2Implementation::GetBufferParameteri64vHelper(
+    GLenum /* target */, GLenum /* pname */, GLint64* /* params */) {
+  return false;
+}
 
 inline bool GLES2Implementation::GetBufferParameterivHelper(
     GLenum /* target */, GLenum /* pname */, GLint* /* params */) {

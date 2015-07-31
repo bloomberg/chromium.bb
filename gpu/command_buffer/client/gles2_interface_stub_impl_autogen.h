@@ -274,6 +274,9 @@ GLint GLES2InterfaceStub::GetAttribLocation(GLuint /* program */,
 }
 void GLES2InterfaceStub::GetBooleanv(GLenum /* pname */,
                                      GLboolean* /* params */) {}
+void GLES2InterfaceStub::GetBufferParameteri64v(GLenum /* target */,
+                                                GLenum /* pname */,
+                                                GLint64* /* params */) {}
 void GLES2InterfaceStub::GetBufferParameteriv(GLenum /* target */,
                                               GLenum /* pname */,
                                               GLint* /* params */) {}

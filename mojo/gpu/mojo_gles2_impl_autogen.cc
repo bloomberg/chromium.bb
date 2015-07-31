@@ -477,6 +477,11 @@ void MojoGLES2Impl::GetBooleanv(GLenum pname, GLboolean* params) {
   MojoGLES2MakeCurrent(context_);
   glGetBooleanv(pname, params);
 }
+void MojoGLES2Impl::GetBufferParameteri64v(GLenum target,
+                                           GLenum pname,
+                                           GLint64* params) {
+  NOTREACHED() << "Unimplemented GetBufferParameteri64v.";
+}
 void MojoGLES2Impl::GetBufferParameteriv(GLenum target,
                                          GLenum pname,
                                          GLint* params) {

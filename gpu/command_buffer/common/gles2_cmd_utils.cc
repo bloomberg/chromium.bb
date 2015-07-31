@@ -235,6 +235,16 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_BUFFER_USAGE:
       return 1;
 
+    // ES3
+    case GL_BUFFER_MAPPED:
+      return 1;
+    case GL_BUFFER_ACCESS_FLAGS:
+      return 1;
+    case GL_BUFFER_MAP_LENGTH:
+      return 1;
+    case GL_BUFFER_MAP_OFFSET:
+      return 1;
+
     // -- glGetFramebufferAttachmentParameteriv
     case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
       return 1;

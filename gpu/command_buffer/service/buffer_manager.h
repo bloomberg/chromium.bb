@@ -234,6 +234,11 @@ class GPU_EXPORT BufferManager {
     ContextState* context_state, GLenum target, GLsizeiptr size,
     const GLvoid * data, GLenum usage);
 
+  // Validates a glGetBufferParameteri64v, and then calls GetBufferParameteri64v
+  // if validation was successful.
+  void ValidateAndDoGetBufferParameteri64v(
+    ContextState* context_state, GLenum target, GLenum pname, GLint64* params);
+
   // Validates a glGetBufferParameteriv, and then calls GetBufferParameteriv if
   // validation was successful.
   void ValidateAndDoGetBufferParameteriv(

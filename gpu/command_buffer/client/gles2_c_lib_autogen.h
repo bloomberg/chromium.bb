@@ -412,6 +412,9 @@ GLint GLES2GetAttribLocation(GLuint program, const char* name) {
 void GLES2GetBooleanv(GLenum pname, GLboolean* params) {
   gles2::GetGLContext()->GetBooleanv(pname, params);
 }
+void GLES2GetBufferParameteri64v(GLenum target, GLenum pname, GLint64* params) {
+  gles2::GetGLContext()->GetBufferParameteri64v(target, pname, params);
+}
 void GLES2GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetBufferParameteriv(target, pname, params);
 }
@@ -1784,6 +1787,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     },
     {
         "glGetBooleanv", reinterpret_cast<GLES2FunctionPointer>(glGetBooleanv),
+    },
+    {
+        "glGetBufferParameteri64v",
+        reinterpret_cast<GLES2FunctionPointer>(glGetBufferParameteri64v),
     },
     {
         "glGetBufferParameteriv",
