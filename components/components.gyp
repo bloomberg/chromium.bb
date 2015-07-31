@@ -69,6 +69,7 @@
     'startup_metric_utils.gypi',
     'suggestions.gypi',
     'sync_driver.gypi',
+    'toolbar.gypi',
     'translate.gypi',
     'ui_zoom.gypi',
     'undo.gypi',

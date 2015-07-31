@@ -15,9 +15,9 @@
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/sessions/session_id.h"
+#include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

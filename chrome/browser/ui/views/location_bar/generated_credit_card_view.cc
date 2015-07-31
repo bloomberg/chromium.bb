@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/generated_credit_card_view.h"
 
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "components/toolbar/toolbar_model.h"
 #include "ui/gfx/image/image.h"
 
 GeneratedCreditCardView::GeneratedCreditCardView(

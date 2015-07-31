@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
-
-#include "chrome/browser/search/search.h"
+#include "components/toolbar/toolbar_model.h"
 
 ToolbarModel::ToolbarModel()
     : input_in_progress_(false),

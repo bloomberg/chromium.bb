@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "components/toolbar/toolbar_model.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -13,10 +13,10 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/google/core/browser/google_switches.h"
+#include "components/toolbar/toolbar_model.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/ssl_status.h"

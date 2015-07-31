@@ -3,6 +3,7 @@ include_rules = [
   "+components/devtools_discovery",
   "+components/devtools_http_handler",
   "+components/service_tab_launcher",
+  "+components/toolbar",
   "+components/web_contents_delegate_android",
   "+cc/layers/layer.h",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",

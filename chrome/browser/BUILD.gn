@@ -659,6 +659,7 @@ source_set("browser") {
       "//components/precache/core",
       "//components/resources:components_resources",
       "//components/service_tab_launcher",
+      "//components/toolbar",
       "//components/web_contents_delegate_android",
       "//third_party/android_opengl/etc1",
       "//third_party/android_tools:cpu_features",

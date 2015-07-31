@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_H_
 
 #include "chrome/browser/ssl/connection_security.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "components/toolbar/toolbar_model.h"
 
 // This class is a //chrome-specific extension of the ToolbarModel interface.
 // TODO(blundell): If connection_security::SecurityLevel gets componentized,

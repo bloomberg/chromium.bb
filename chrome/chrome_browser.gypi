@@ -3677,6 +3677,7 @@
             '../components/components.gyp:precache_content',
             '../components/components.gyp:precache_core',
             '../components/components.gyp:service_tab_launcher',
+            '../components/components.gyp:toolbar',
             '../components/components.gyp:web_contents_delegate_android',
             '../components/components_resources.gyp:components_resources',
             '../third_party/android_opengl/etc1/etc1.gyp:etc1',
