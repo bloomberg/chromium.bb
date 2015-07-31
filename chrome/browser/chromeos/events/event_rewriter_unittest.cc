@@ -2567,8 +2567,6 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
-  const base::CommandLine original_cl(*base::CommandLine::ForCurrentProcess());
-
   // Remap Search to Control.
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
@@ -2579,9 +2577,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   EventRewriter rewriter(NULL);
   rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      chromeos::switches::kHasChromeOSKeyboard, "");
 
   KeyTestCase tests[] = {
       // Alt+Search+Down -> End
@@ -2606,8 +2601,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   for (const auto& test : tests) {
     CheckKeyTestCase(&rewriter, test);
   }
-
-  *base::CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
