@@ -192,7 +192,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
   }
 
   void SetupCellular() {
-    // Add a Cellular Device and set a couple of properties.
+    // Add a Cellular GSM Device.
     device_test_->AddDevice(kCellularDevicePath, shill::kTypeCellular,
                             "stub_cellular_device1");
     device_test_->SetDeviceProperty(kCellularDevicePath,
@@ -203,9 +203,14 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     home_provider.SetString("country", "us");
     device_test_->SetDeviceProperty(
         kCellularDevicePath, shill::kHomeProviderProperty, home_provider);
+    device_test_->SetDeviceProperty(
+        kCellularDevicePath, shill::kTechnologyFamilyProperty,
+        base::StringValue(shill::kNetworkTechnologyGsm));
+    device_test_->SetSimLocked(kCellularDevicePath, false);
+
+    // Add the Cellular Service.
     AddService(kCellular1ServicePath, "cellular1", shill::kTypeCellular,
                shill::kStateIdle);
-    // Note: These properties will show up in a "Cellular" object in ONC.
     service_test_->SetServiceProperty(kCellular1ServicePath,
                                       shill::kAutoConnectProperty,
                                       base::FundamentalValue(true));
@@ -218,6 +223,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(
         kCellular1ServicePath, shill::kRoamingStateProperty,
         base::StringValue(shill::kRoamingStateHome));
+
     profile_test_->AddService(kUser1ProfilePath, kCellular1ServicePath);
     content::RunAllPendingInMessageLoop();
   }
@@ -636,6 +642,25 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
       base::Bind(&NetworkPortalDetectorTestImpl::NotifyObserversForTesting,
                  base::Unretained(detector())));
   EXPECT_TRUE(RunNetworkingSubtest("captivePortalNotification")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, UnlockCellularSim) {
+  SetupCellular();
+  // Lock the SIM
+  device_test_->SetSimLocked(kCellularDevicePath, true);
+  EXPECT_TRUE(RunNetworkingSubtest("unlockCellularSim")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, SetCellularSimState) {
+  SetupCellular();
+  EXPECT_TRUE(RunNetworkingSubtest("setCellularSimState")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CellularSimPuk) {
+  SetupCellular();
+  // Lock the SIM
+  device_test_->SetSimLocked(kCellularDevicePath, true);
+  EXPECT_TRUE(RunNetworkingSubtest("cellularSimPuk")) << message_;
 }
 
 }  // namespace

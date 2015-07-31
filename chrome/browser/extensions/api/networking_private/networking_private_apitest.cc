@@ -137,6 +137,23 @@ class TestDelegate : public NetworkingPrivateDelegate {
     StringResult(success_callback, failure_callback);
   }
 
+  void UnlockCellularSim(const std::string& guid,
+                         const std::string& pin,
+                         const std::string& puk,
+                         const VoidCallback& success_callback,
+                         const FailureCallback& failure_callback) override {
+    VoidResult(success_callback, failure_callback);
+  }
+
+  void SetCellularSimState(const std::string& guid,
+                           bool require_pin,
+                           const std::string& current_pin,
+                           const std::string& new_pin,
+                           const VoidCallback& success_callback,
+                           const FailureCallback& failure_callback) override {
+    VoidResult(success_callback, failure_callback);
+  }
+
   // Synchronous methods
   scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override {
     scoped_ptr<base::ListValue> result;
@@ -431,6 +448,14 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetCaptivePortalStatus) {
   EXPECT_TRUE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, UnlockCellularSim) {
+  EXPECT_TRUE(RunNetworkingSubtest("unlockCellularSim")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, SetCellularSimState) {
+  EXPECT_TRUE(RunNetworkingSubtest("setCellularSimState")) << message_;
+}
+
 // Test failure case
 
 class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
@@ -521,6 +546,14 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetWifiTDLSStatus) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetCaptivePortalStatus) {
   EXPECT_FALSE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, UnlockCellularSim) {
+  EXPECT_FALSE(RunNetworkingSubtest("unlockCellularSim")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, SetCellularSimState) {
+  EXPECT_FALSE(RunNetworkingSubtest("setCellularSimState")) << message_;
 }
 
 #endif // defined(OS_WIN)

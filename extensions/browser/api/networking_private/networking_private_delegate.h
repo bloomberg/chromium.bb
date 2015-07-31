@@ -136,6 +136,18 @@ class NetworkingPrivateDelegate : public KeyedService {
       const std::string& guid,
       const StringCallback& success_callback,
       const FailureCallback& failure_callback) = 0;
+  virtual void UnlockCellularSim(const std::string& guid,
+                                 const std::string& pin,
+                                 const std::string& puk,
+                                 const VoidCallback& success_callback,
+                                 const FailureCallback& failure_callback) = 0;
+
+  virtual void SetCellularSimState(const std::string& guid,
+                                   bool require_pin,
+                                   const std::string& current_pin,
+                                   const std::string& new_pin,
+                                   const VoidCallback& success_callback,
+                                   const FailureCallback& failure_callback) = 0;
 
   // Synchronous methods
 

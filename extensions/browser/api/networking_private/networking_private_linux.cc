@@ -555,6 +555,25 @@ void NetworkingPrivateLinux::GetCaptivePortalStatus(
   ReportNotSupported("GetCaptivePortalStatus", failure_callback);
 }
 
+void NetworkingPrivateLinux::UnlockCellularSim(
+    const std::string& guid,
+    const std::string& pin,
+    const std::string& puk,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  ReportNotSupported("UnlockCellularSim", failure_callback);
+}
+
+void NetworkingPrivateLinux::SetCellularSimState(
+    const std::string& guid,
+    bool require_pin,
+    const std::string& current_pin,
+    const std::string& new_pin,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  ReportNotSupported("SetCellularSimState", failure_callback);
+}
+
 scoped_ptr<base::ListValue> NetworkingPrivateLinux::GetEnabledNetworkTypes() {
   scoped_ptr<base::ListValue> network_list(new base::ListValue);
   network_list->AppendString(::onc::network_type::kWiFi);

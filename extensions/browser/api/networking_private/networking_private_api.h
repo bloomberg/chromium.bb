@@ -17,10 +17,12 @@ namespace extensions {
 namespace networking_private {
 
 extern const char kErrorInvalidNetworkGuid[];
+extern const char kErrorInvalidNetworkOperation[];
 extern const char kErrorNetworkUnavailable[];
 extern const char kErrorEncryptionError[];
 extern const char kErrorNotReady[];
 extern const char kErrorNotSupported[];
+extern const char kErrorSimLocked[];
 
 }  // namespace networking_private
 
@@ -459,6 +461,46 @@ class NetworkingPrivateGetCaptivePortalStatusFunction
   void Failure(const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetCaptivePortalStatusFunction);
+};
+
+class NetworkingPrivateUnlockCellularSimFunction
+    : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateUnlockCellularSimFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.unlockCellularSim",
+                             NETWORKINGPRIVATE_UNLOCKCELLULARSIM);
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ protected:
+  ~NetworkingPrivateUnlockCellularSimFunction() override;
+
+ private:
+  void Success();
+  void Failure(const std::string& error);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateUnlockCellularSimFunction);
+};
+
+class NetworkingPrivateSetCellularSimStateFunction
+    : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateSetCellularSimStateFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.setCellularSimState",
+                             NETWORKINGPRIVATE_SETCELLULARSIMSTATE);
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ protected:
+  ~NetworkingPrivateSetCellularSimStateFunction() override;
+
+ private:
+  void Success();
+  void Failure(const std::string& error);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetCellularSimStateFunction);
 };
 
 }  // namespace extensions

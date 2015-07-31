@@ -118,6 +118,15 @@ var availableTests = [
     chrome.networkingPrivate.getWifiTDLSStatus(
         kGuid, callbackPass(callbackResult));
   },
+  function unlockCellularSim() {
+    chrome.networkingPrivate.unlockCellularSim(
+        kGuid, '1111', callbackPass(callbackResult));
+  },
+  function setCellularSimState() {
+    var simState = { requirePin: true, currentPin: '1111', newPin: '1234' };
+    chrome.networkingPrivate.setCellularSimState(
+        kGuid, simState, callbackPass(callbackResult));
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

@@ -15,6 +15,10 @@ var ActivationStateType = chrome.networkingPrivate.ActivationStateType;
 var ConnectionStateType = chrome.networkingPrivate.ConnectionStateType;
 var NetworkType = chrome.networkingPrivate.NetworkType;
 
+var kCellularGuid = 'stub_cellular1_guid';
+var kDefaultPin = '1111';
+var kDefaultPuk = '12345678';
+
 // Test properties for the verification API.
 var verificationProperties = {
   certificate: 'certificate',
@@ -80,26 +84,40 @@ var privateHelpers = {
   }
 };
 
+var kFailure = 'Failure';
+
+function networkCallbackPass() {
+  var callbackCompleted = chrome.test.callbackAdded();
+  return function(result) {
+    chrome.test.assertNoLastError();
+    if (result === false || result === kFailure)
+      chrome.test.fail('Failed: ' + result);
+    callbackCompleted();
+  };
+}
+
 var availableTests = [
   function startConnect() {
-    chrome.networkingPrivate.startConnect('stub_wifi2_guid', callbackPass());
+    chrome.networkingPrivate.startConnect('stub_wifi2_guid',
+                                          networkCallbackPass());
   },
   function startDisconnect() {
     // Must connect to a network before we can disconnect from it.
     chrome.networkingPrivate.startConnect(
-        'stub_wifi2_guid', callbackPass(function() {
-          chrome.networkingPrivate.startDisconnect('stub_wifi2_guid',
-                                                   callbackPass());
+        'stub_wifi2_guid',
+        callbackPass(function() {
+          chrome.networkingPrivate.startDisconnect(
+              'stub_wifi2_guid', networkCallbackPass());
         }));
   },
   function startActivate() {
     // Must connect to a network before we can activate it.
     chrome.networkingPrivate.startConnect(
-        'stub_cellular1_guid', callbackPass(function() {
+        kCellularGuid, callbackPass(function() {
           chrome.networkingPrivate.startActivate(
-              'stub_cellular1_guid', callbackPass(function() {
+              kCellularGuid, callbackPass(function() {
                 chrome.networkingPrivate.getState(
-                    'stub_cellular1_guid', callbackPass(function(state) {
+                    kCellularGuid, callbackPass(function(state) {
                       assertEq(ActivationStateType.ACTIVATED,
                                state.Cellular.ActivationState);
                     }));
@@ -344,22 +362,26 @@ var availableTests = [
     // Note: We call getEnabledNetworkTypes twice after each enable/dsiable
     // to ensure that Chrome has processed the command (since enable/disable
     // are 'synchronous' even though the action of enabling/disabling is not).
-    chrome.networkingPrivate.getEnabledNetworkTypes(function(types) {
-      assertTrue(types.indexOf('WiFi') >= 0);
-      chrome.networkingPrivate.disableNetworkType('WiFi');
-      chrome.networkingPrivate.getEnabledNetworkTypes(function(types) {
-        chrome.networkingPrivate.getEnabledNetworkTypes(function(types) {
-          assertFalse(types.indexOf('WiFi') >= 0);
-          chrome.networkingPrivate.enableNetworkType('WiFi');
-          chrome.networkingPrivate.getEnabledNetworkTypes(function(types) {
-            chrome.networkingPrivate.getEnabledNetworkTypes(
+    chrome.networkingPrivate.getEnabledNetworkTypes(
+        callbackPass(function(types) {
+          assertTrue(types.indexOf('WiFi') >= 0);
+          chrome.networkingPrivate.disableNetworkType('WiFi');
+          chrome.networkingPrivate.getEnabledNetworkTypes(
               callbackPass(function(types) {
-                assertTrue(types.indexOf('WiFi') >= 0);
+                chrome.networkingPrivate.getEnabledNetworkTypes(
+                    callbackPass(function(types) {
+                      assertFalse(types.indexOf('WiFi') >= 0);
+                      chrome.networkingPrivate.enableNetworkType('WiFi');
+                      chrome.networkingPrivate.getEnabledNetworkTypes(
+                          callbackPass(function(types) {
+                            chrome.networkingPrivate.getEnabledNetworkTypes(
+                                callbackPass(function(types) {
+                                  assertTrue(types.indexOf('WiFi') >= 0);
+                                }));
+                          }));
+                    }));
               }));
-          });
-        });
-      });
-    });
+        }));
   },
   function getDeviceStates() {
     chrome.networkingPrivate.getDeviceStates(callbackPass(function(result) {
@@ -421,7 +443,7 @@ var availableTests = [
   },
   function getPropertiesCellular() {
     chrome.networkingPrivate.getProperties(
-      'stub_cellular1_guid',
+      kCellularGuid,
       callbackPass(function(result) {
         assertEq({
           Cellular: {
@@ -429,15 +451,17 @@ var availableTests = [
             AllowRoaming: false,
             AutoConnect: true,
             Carrier: 'Cellular1_Carrier',
+            Family: 'GSM',
             HomeProvider: {
               Country: 'us',
               Name: 'Cellular1_Provider'
             },
             NetworkTechnology: 'GSM',
-            RoamingState: 'Home'
+            RoamingState: 'Home',
+            SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3}
           },
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
-          GUID: 'stub_cellular1_guid',
+          GUID: kCellularGuid,
           Name: 'cellular1',
           Type: NetworkType.CELLULAR,
         }, result);
@@ -494,7 +518,7 @@ var availableTests = [
       }));
   },
   function setCellularProperties() {
-    var network_guid = 'stub_cellular1_guid';
+    var network_guid = kCellularGuid;
     // Make sure we test Cellular.Carrier since it requires a special call
     // to Shill.Device.SetCarrier.
     var newCarrier = 'new_carrier';
@@ -619,15 +643,13 @@ var availableTests = [
   function getErrorState() {
     // Both getState and getProperties should have ErrorState set.
     chrome.networkingPrivate.getState(
-      'stub_wifi1_guid',
-      function(result) {
-        assertEq('TestErrorState', result.ErrorState);
-        chrome.networkingPrivate.getProperties(
-          'stub_wifi1_guid',
-          callbackPass(function(result2) {
-            assertEq('TestErrorState', result2.ErrorState);
-          }));
-      });
+        'stub_wifi1_guid', callbackPass(function(result) {
+          assertEq('TestErrorState', result.ErrorState);
+          chrome.networkingPrivate.getProperties(
+              'stub_wifi1_guid', callbackPass(function(result2) {
+                assertEq('TestErrorState', result2.ErrorState);
+              }));
+        }));
   },
   function onNetworksChangedEventConnect() {
     var network = 'stub_wifi2_guid';
@@ -635,7 +657,8 @@ var availableTests = [
     var expectedStates = [ConnectionStateType.CONNECTED];
     var listener =
         new privateHelpers.watchForStateChanges(network, expectedStates, done);
-    chrome.networkingPrivate.startConnect(network, callbackPass());
+    chrome.networkingPrivate.startConnect(network,
+                                          networkCallbackPass());
   },
   function onNetworksChangedEventDisconnect() {
     var network = 'stub_wifi1_guid';
@@ -643,7 +666,8 @@ var availableTests = [
     var expectedStates = [ConnectionStateType.NOT_CONNECTED];
     var listener =
         new privateHelpers.watchForStateChanges(network, expectedStates, done);
-    chrome.networkingPrivate.startDisconnect(network, callbackPass());
+    chrome.networkingPrivate.startDisconnect(network,
+                                             networkCallbackPass());
   },
   function onNetworkListChangedEvent() {
     // Connecting to wifi2 should set wifi1 to offline. Connected or Connecting
@@ -659,7 +683,8 @@ var availableTests = [
     chrome.networkingPrivate.onNetworkListChanged.addListener(
       listener.listenForChanges);
     var network = 'stub_wifi2_guid';
-    chrome.networkingPrivate.startConnect(network, callbackPass());
+    chrome.networkingPrivate.startConnect(network,
+                                          networkCallbackPass());
   },
   function onDeviceStateListChangedEvent() {
     var listener = callbackPass(function() {
@@ -728,6 +753,76 @@ var availableTests = [
             'wifi_guid', 'Online', done);
     chrome.test.sendMessage('notifyPortalDetectorObservers');
   },
+  function unlockCellularSim() {
+    var incorrectPin = '2222';
+    // Try with incorrect PIN, expect failure.
+    chrome.networkingPrivate.unlockCellularSim(
+        kCellularGuid, incorrectPin, '',
+        callbackFail('incorrect-pin', function() {
+          // Try with correct PIN, expect success.
+          chrome.networkingPrivate.unlockCellularSim(
+              kCellularGuid, kDefaultPin, '', networkCallbackPass());
+        }));
+  },
+  function setCellularSimState() {
+    var newPin = '6666';
+    var simState = {requirePin: true, currentPin: kDefaultPin, newPin: newPin};
+    // Test setting 'requirePin' and 'newPin'.
+    chrome.networkingPrivate.getProperties(
+        kCellularGuid, callbackPass(function(result) {
+          // Ensure the SIM is initially unlocked.
+          assertTrue(result.Cellular.SIMLockStatus == undefined ||
+                     result.Cellular.SIMLockStatus.LockType == '');
+          chrome.networkingPrivate.setCellularSimState(
+              kCellularGuid, simState, callbackPass(function() {
+                chrome.networkingPrivate.getProperties(
+                    kCellularGuid, callbackPass(function(result) {
+                      // The SIM should still be unlocked.
+                      assertEq('', result.Cellular.SIMLockStatus.LockType);
+                      // Ensure SIM locking is enabled.
+                      assertTrue(result.Cellular.SIMLockStatus.LockEnabled);
+                      // Ensure the new pin is set by using the new PIN
+                      // to change the PIN back.
+                      simState.currentPin = newPin;
+                      simState.newPin = kDefaultPin;
+                      chrome.networkingPrivate.setCellularSimState(
+                          kCellularGuid, simState, networkCallbackPass());
+                    }));
+              }));
+        }));
+  },
+  function cellularSimPuk() {
+    var newPin = '6666';
+    var incorrectPin = '2222';
+    var incorrectPuk = '22222222';
+    var unlockFailFunc = function(nextFunc) {
+      chrome.networkingPrivate.unlockCellularSim(
+          kCellularGuid, incorrectPin, '',
+          callbackFail('incorrect-pin', nextFunc));
+    };
+    // Try with incorrect PIN three times, SIM should become PUK locked.
+    unlockFailFunc(unlockFailFunc(unlockFailFunc(function() {
+      // Ensure the SIM is PUK locked.
+      chrome.networkingPrivate.getProperties(
+          kCellularGuid, callbackPass(function(result) {
+            assertEq('sim-puk', result.Cellular.SIMLockStatus.LockType);
+            // Try to unlock with an incorrect PUK, expect failure.
+            chrome.networkingPrivate.unlockCellularSim(
+                kCellularGuid, newPin, incorrectPuk,
+                callbackFail('incorrect-pin', function() {
+                  // Try with the correct PUK, expect success.
+                  chrome.networkingPrivate.unlockCellularSim(
+                      kCellularGuid, newPin, kDefaultPuk,
+                      callbackPass(function() {
+                        // Set state with the new PIN, expect success.
+                        var simState = {requirePin: true, currentPin: newPin};
+                        chrome.networkingPrivate.setCellularSimState(
+                            kCellularGuid, simState, networkCallbackPass());
+                      }));
+                }));
+          }));
+    })));
+  }
 ];
 
 var testToRun = window.location.search.substring(1);

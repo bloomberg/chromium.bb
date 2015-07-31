@@ -374,26 +374,24 @@ TEST_F(NetworkDeviceHandlerTest, UnblockPin) {
 }
 
 TEST_F(NetworkDeviceHandlerTest, ChangePin) {
-  const char kOldPin[] = "4321";
   const char kNewPin[] = "1234";
+  const char kIncorrectPin[] = "9999";
+
+  fake_device_client_->SetSimLocked(kDefaultCellularDevicePath, true);
 
   // Test that the success callback gets called.
-  network_device_handler_->ChangePin(kDefaultCellularDevicePath,
-                                     kOldPin,
-                                     kNewPin,
-                                     success_callback_,
-                                     error_callback_);
+  network_device_handler_->ChangePin(
+      kDefaultCellularDevicePath, FakeShillDeviceClient::kDefaultSimPin,
+      kNewPin, success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
   // Test that the shill error propagates to the error callback.
-  network_device_handler_->ChangePin(kUnknownCellularDevicePath,
-                                     kOldPin,
-                                     kNewPin,
-                                     success_callback_,
+  network_device_handler_->ChangePin(kDefaultCellularDevicePath, kIncorrectPin,
+                                     kNewPin, success_callback_,
                                      error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorIncorrectPin, result_);
 }
 
 }  // namespace chromeos

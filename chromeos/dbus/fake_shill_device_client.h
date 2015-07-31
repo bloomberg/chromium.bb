@@ -111,11 +111,24 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   std::string GetDevicePathForType(const std::string& type) override;
   void SetTDLSBusyCount(int count) override;
   void SetTDLSState(const std::string& state) override;
+  void SetSimLocked(const std::string& device_path, bool locked) override;
+
+  static const char kDefaultSimPin[];
+  static const int kSimPinRetryCount;
 
  private:
+  struct SimLockStatus {
+    std::string type = "";
+    int retries_left = 0;
+    bool lock_enabled = true;
+  };
   typedef base::ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
 
-  void SetDefaultProperties();
+  SimLockStatus GetSimLockStatus(const std::string& device_path);
+  void SetSimLockStatus(const std::string& device_path,
+                        const SimLockStatus& status);
+  bool SimTryPin(const std::string& device_path, const std::string& pin);
+  bool SimTryPuk(const std::string& device_path, const std::string& pin);
   void PassStubDeviceProperties(const dbus::ObjectPath& device_path,
                                 const DictionaryValueCallback& callback) const;
 
@@ -152,6 +165,9 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   // Wake on packet connections for each device.
   std::map<dbus::ObjectPath, std::set<net::IPEndPoint> >
       wake_on_packet_connections_;
+
+  // Current SIM PIN per device path.
+  std::map<std::string, std::string> sim_pin_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

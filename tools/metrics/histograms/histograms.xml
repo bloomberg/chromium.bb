@@ -56758,6 +56758,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1069" label="LANGUAGESETTINGSPRIVATE_ADDINPUTMETHOD"/>
   <int value="1070" label="LANGUAGESETTINGSPRIVATE_REMOVEINPUTMETHOD"/>
   <int value="1071" label="FILEMANAGERPRIVATE_CANCELALLFILETRANSFERS"/>
+  <int value="1072" label="NETWORKINGPRIVATE_UNLOCKCELLULARSIM"/>
+  <int value="1073" label="NETWORKINGPRIVATE_SETCELLULARSIMSTATE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

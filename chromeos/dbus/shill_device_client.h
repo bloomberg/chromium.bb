@@ -61,6 +61,10 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
     virtual std::string GetDevicePathForType(const std::string& type) = 0;
     virtual void SetTDLSBusyCount(int count) = 0;
     virtual void SetTDLSState(const std::string& state) = 0;
+    // If |lock_type| is true, sets Cellular.SIMLockStatus.LockType to sim-pin,
+    // otherwise clears LockType. (This will unblock a PUK locked SIM).
+    // Sets RetriesLeft to the PIN retry default. LockEnabled is unaffected.
+    virtual void SetSimLocked(const std::string& device_path, bool enabled) = 0;
 
    protected:
     virtual ~TestInterface() {}

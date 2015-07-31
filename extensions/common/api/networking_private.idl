@@ -82,6 +82,17 @@ namespace networkingPrivate {
     DOMString? Carrier;
   };
 
+  dictionary CellularSimState {
+    // Whether or not a PIN should be required.
+    boolean requirePin;
+
+    // The current PIN (required for any change, even when the SIM is unlocked).
+    DOMString currentPin;
+
+    // If provided, change the PIN to |newPin|. |requirePin| must be true.
+    DOMString? newPin;
+  };
+
   dictionary CellularStateProperties {
     ActivationStateType? ActivationState;
     DOMString? NetworkTechnology;
@@ -462,6 +473,35 @@ namespace networkingPrivate {
     //     network captive portal status.
     static void getCaptivePortalStatus(DOMString networkGuid,
                                        CaptivePortalStatusCallback callback);
+
+    // Unlocks a Cellular SIM card.
+    // * If the SIM is PIN locked, |pin| will be used to unlock the SIM and
+    //   the |puk| argument will be ignored if provided.
+    // * If the SIM is PUK locked, |puk| and |pin| must be provided. If the
+    //   operation succeds (|puk| is valid), the PIN will be set to |pin|.
+    //   (If |pin| is empty or invalid the operation will fail).
+    // |networkGuid|: The GUID of the cellular network to unlock.
+    // |pin|: The current SIM PIN, or the new PIN if PUK is provided.
+    // |puk|: The operator provided PUK for unblocking a blocked SIM.
+    // |callback|: Called when the operation has completed.
+    static void unlockCellularSim(DOMString networkGuid,
+                                  DOMString pin,
+                                  optional DOMString puk,
+                                  optional VoidCallback callback);
+
+    // Sets whether or not SIM locking is enabled (i.e a PIN will be required
+    // when the device is powered) and changes the PIN if a new PIN is
+    // specified. If the new PIN is provided but not valid (e.g. too short)
+    // the operation will fail. This will not lock the SIM; that is handled
+    // automatically by the device. NOTE: If the SIM is locked, it must first be
+    // unlocked with unlockCellularSim() before this can be called (otherwise it
+    // will fail and chrome.runtime.lastError will be set to Error.SimLocked).
+    // |networkGuid|: The GUID of the cellular network to set the SIM state of.
+    // |simState|: The SIM state to set.
+    // |callback|: Called when the operation has completed.
+    static void setCellularSimState(DOMString networkGuid,
+                                    CellularSimState simState,
+                                    optional VoidCallback callback);
   };
 
   interface Events {

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -767,7 +768,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     bool activated = false;
     if (state == kNetworkActivated) {
       activated = true;
-      state = shill::kStateIdle;
+      state = shill::kStateOnline;
     }
     AddTechnology(shill::kTypeCellular, enabled);
     devices->AddDevice(
@@ -788,6 +789,12 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       devices->SetDeviceProperty("/device/cellular1",
                                  shill::kProviderRequiresRoamingProperty,
                                  base::FundamentalValue(true));
+    }
+    if (cellular_technology_ == shill::kNetworkTechnologyGsm) {
+      devices->SetDeviceProperty("/device/cellular1",
+                                 shill::kSIMPresentProperty,
+                                 base::FundamentalValue(true));
+      devices->SetSimLocked("/device/cellular1", false);
     }
 
     services->AddService(kCellularServicePath,
@@ -1073,19 +1080,26 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
     interactive_delay_ = seconds;
     return true;
   } else if (arg0 == "sim_lock") {
-    bool locked = (arg1 == "1") ? true : false;
+    bool locked = (arg1 == "1");
     base::DictionaryValue* simlock_dict = new base::DictionaryValue;
-    simlock_dict->Set(shill::kSIMLockEnabledProperty,
-                      new base::FundamentalValue(locked));
-    std::string lock_type = shill::kSIMLockPin;
+    simlock_dict->SetBoolean(shill::kSIMLockEnabledProperty, true);
+    std::string lock_type = locked ? shill::kSIMLockPin : "";
     simlock_dict->SetString(shill::kSIMLockTypeProperty, lock_type);
-    simlock_dict->SetInteger(shill::kSIMLockRetriesLeftProperty, 5);
-
+    if (locked) {
+      simlock_dict->SetInteger(shill::kSIMLockRetriesLeftProperty,
+                               FakeShillDeviceClient::kSimPinRetryCount);
+    }
     shill_device_property_map_[shill::kTypeCellular]
                               [shill::kSIMLockStatusProperty] = simlock_dict;
     shill_device_property_map_
         [shill::kTypeCellular][shill::kTechnologyFamilyProperty] =
             new base::StringValue(shill::kNetworkTechnologyGsm);
+    return true;
+  } else if (arg0 == "sim_present") {
+    bool present = (arg1 == "1");
+    base::FundamentalValue* sim_present = new base::FundamentalValue(present);
+    shill_device_property_map_[shill::kTypeCellular]
+                              [shill::kSIMPresentProperty] = sim_present;
     return true;
   } else if (arg0 == "tdls_busy") {
     if (!arg1.empty())
@@ -1176,24 +1190,30 @@ bool FakeShillManagerClient::SetInitialNetworkState(std::string type_arg,
 std::string FakeShillManagerClient::GetInitialStateForType(
     const std::string& type,
     bool* enabled) {
+  std::string result;
   std::map<std::string, std::string>::const_iterator iter =
       shill_initial_state_map_.find(type);
   if (iter == shill_initial_state_map_.end()) {
     *enabled = false;
-    return kTechnologyUnavailable;
+    result = kTechnologyUnavailable;
+  } else {
+    std::string state = iter->second;
+    if (state == kNetworkDisabled) {
+      *enabled = false;
+      result = shill::kStateIdle;
+    } else {
+      *enabled = true;
+      result = state;
+    }
+    if ((state == shill::kStatePortal && type != shill::kTypeWifi) ||
+        (state == kNetworkActivated && type != shill::kTypeCellular)) {
+      LOG(WARNING) << "Invalid state: " << state << " for " << type;
+      result = shill::kStateIdle;
+    }
   }
-  std::string state = iter->second;
-  if (state == kNetworkDisabled) {
-    *enabled = false;
-    return shill::kStateIdle;
-  }
-  *enabled = true;
-  if ((state == shill::kStatePortal && type != shill::kTypeWifi) ||
-      (state == kNetworkActivated && type != shill::kTypeCellular)) {
-    LOG(WARNING) << "Invalid state: " << state << " for " << type;
-    return shill::kStateIdle;
-  }
-  return state;
+  VLOG(1) << "Initial state for: " << type << " = " << result
+          << " Enabled: " << *enabled;
+  return result;
 }
 
 }  // namespace chromeos

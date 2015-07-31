@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::DeviceState;
 using chromeos::NetworkHandler;
@@ -135,6 +136,24 @@ void NetworkHandlerFailureCallback(
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
   callback.Run(error_name);
+}
+
+void RequirePinSuccess(
+    const std::string& device_path,
+    const std::string& current_pin,
+    const std::string& new_pin,
+    const extensions::NetworkingPrivateChromeOS::VoidCallback& success_callback,
+    const extensions::NetworkingPrivateChromeOS::FailureCallback&
+        failure_callback) {
+  // After RequirePin succeeds, call ChangePIN iff a different new_pin is
+  // provided.
+  if (new_pin.empty() || new_pin == current_pin) {
+    success_callback.Run();
+    return;
+  }
+  NetworkHandler::Get()->network_device_handler()->ChangePin(
+      device_path, current_pin, new_pin, success_callback,
+      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
 }  // namespace
@@ -358,6 +377,77 @@ void NetworkingPrivateChromeOS::GetCaptivePortalStatus(
       chromeos::NetworkPortalDetector::Get()->GetCaptivePortalState(guid);
   success_callback.Run(
       chromeos::NetworkPortalDetector::CaptivePortalStatusString(state.status));
+}
+
+void NetworkingPrivateChromeOS::UnlockCellularSim(
+    const std::string& guid,
+    const std::string& pin,
+    const std::string& puk,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  const chromeos::NetworkState* network_state =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+  if (!network_state) {
+    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
+    return;
+  }
+  const chromeos::DeviceState* device_state =
+      GetStateHandler()->GetDeviceState(network_state->device_path());
+  if (!device_state) {
+    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
+    return;
+  }
+  std::string lock_type = device_state->sim_lock_type();
+  if (lock_type.empty()) {
+    // Sim is already unlocked.
+    failure_callback.Run(networking_private::kErrorInvalidNetworkOperation);
+    return;
+  }
+
+  // Unblock or unlock the SIM.
+  if (lock_type == shill::kSIMLockPuk) {
+    NetworkHandler::Get()->network_device_handler()->UnblockPin(
+        device_state->path(), puk, pin, success_callback,
+        base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+  } else {
+    NetworkHandler::Get()->network_device_handler()->EnterPin(
+        device_state->path(), pin, success_callback,
+        base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+  }
+}
+
+void NetworkingPrivateChromeOS::SetCellularSimState(
+    const std::string& guid,
+    bool require_pin,
+    const std::string& current_pin,
+    const std::string& new_pin,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  const chromeos::NetworkState* network_state =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+  if (!network_state) {
+    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
+    return;
+  }
+  const chromeos::DeviceState* device_state =
+      GetStateHandler()->GetDeviceState(network_state->device_path());
+  if (!device_state) {
+    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
+    return;
+  }
+  if (!device_state->sim_lock_type().empty()) {
+    // The SIM needs to be unlocked before the state can be changed.
+    failure_callback.Run(networking_private::kErrorSimLocked);
+    return;
+  }
+
+  // Only set a new pin if require_pin is true.
+  std::string set_new_pin = require_pin ? new_pin : "";
+  NetworkHandler::Get()->network_device_handler()->RequirePin(
+      device_state->path(), require_pin, current_pin,
+      base::Bind(&RequirePinSuccess, device_state->path(), current_pin,
+                 set_new_pin, success_callback, failure_callback),
+      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
 scoped_ptr<base::ListValue>

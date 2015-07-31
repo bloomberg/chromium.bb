@@ -311,6 +311,25 @@ void NetworkingPrivateServiceClient::GetCaptivePortalStatus(
   failure_callback.Run(networking_private::kErrorNotSupported);
 }
 
+void NetworkingPrivateServiceClient::UnlockCellularSim(
+    const std::string& guid,
+    const std::string& pin,
+    const std::string& puk,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
+void NetworkingPrivateServiceClient::SetCellularSimState(
+    const std::string& guid,
+    bool require_pin,
+    const std::string& current_pin,
+    const std::string& new_pin,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
 scoped_ptr<base::ListValue>
 NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
   scoped_ptr<base::ListValue> network_list;
