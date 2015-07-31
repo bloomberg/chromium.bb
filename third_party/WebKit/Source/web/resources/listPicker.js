@@ -297,25 +297,25 @@ ListPicker.prototype._updateChildren = function(parent, config) {
         // is called.
         this._delayedChildrenConfig = config.children;
         this._delayedChildrenConfigIndex = i;
-        requestAnimationFrame(this._updateChildrenLater.bind(this));
+        // Needs some amount of delay to kick the first paint.
+        setTimeout(this._updateChildrenLater.bind(this), 100);
     }
 };
 
 ListPicker.prototype._updateChildrenLater = function(timeStamp) {
     if (!this._delayedChildrenConfig)
         return;
+    var fragment = document.createDocumentFragment();
     var startIndex = this._delayedChildrenConfigIndex;
-    for (; this._delayedChildrenConfigIndex < this._delayedChildrenConfig.length && this._delayedChildrenConfigIndex - startIndex < ListPicker.DelayedLayoutThreshold; ++this._delayedChildrenConfigIndex) {
+    for (; this._delayedChildrenConfigIndex < this._delayedChildrenConfig.length; ++this._delayedChildrenConfigIndex) {
         var childConfig = this._delayedChildrenConfig[this._delayedChildrenConfigIndex];
         var item = this._createItemElement(childConfig);
         this._configureItem(item, childConfig, false);
-        this._selectElement.appendChild(item);
+        fragment.appendChild(item);
     }
-    if (this._delayedChildrenConfigIndex < this._delayedChildrenConfig.length)
-        requestAnimationFrame(this._updateChildrenLater.bind(this));
-    else
-        this._delayedChildrenConfig = null;
+    this._selectElement.appendChild(fragment);
     this._selectElement.classList.add("wrap");
+    this._delayedChildrenConfig = null;
 };
 
 ListPicker.prototype._findReusableItem = function(parent, config, startIndex) {
