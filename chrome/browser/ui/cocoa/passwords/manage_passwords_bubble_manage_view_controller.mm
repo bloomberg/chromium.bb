@@ -86,6 +86,10 @@ using namespace password_manager::mac::ui;
 
 @implementation ManagePasswordsBubbleManageViewController
 
+- (NSButton*)defaultButton {
+  return doneButton_;
+}
+
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
   if (([super initWithDelegate:delegate])) {

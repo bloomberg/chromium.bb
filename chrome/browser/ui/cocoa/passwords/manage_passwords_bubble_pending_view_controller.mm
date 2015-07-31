@@ -44,6 +44,10 @@ using namespace password_manager::mac::ui;
   [[nopeButton_ menu] cancelTrackingWithoutAnimation];
 }
 
+- (NSButton*)defaultButton {
+  return saveButton_;
+}
+
 - (void)onSaveClicked:(id)sender {
   model_->OnSaveClicked();
   [delegate_ viewShouldDismiss];
@@ -120,6 +124,9 @@ using namespace password_manager::mac::ui;
     [text addAttribute:NSUnderlineStyleAttributeName
                  value:@(NSUnderlineStyleNone)
                  range:titleBrandLinkRange];
+  } else {
+    // TODO(vasilii): remove if crbug.com/515189 is fixed.
+    [titleView_ setRefusesFirstResponder:YES];
   }
 
   // Force the text to wrap to fit in the bubble size.

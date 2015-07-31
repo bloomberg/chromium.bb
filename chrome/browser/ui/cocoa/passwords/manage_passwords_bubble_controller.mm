@@ -109,6 +109,9 @@
   // Update the window.
   NSWindow* window = [self window];
   [[window contentView] setSubviews:@[ [currentController_ view] ]];
+  NSButton* button = [currentController_ defaultButton];
+  if (button)
+    [window setDefaultButtonCell:[button cell]];
 
   // Update the anchor.
   BrowserWindowController* controller = [BrowserWindowController

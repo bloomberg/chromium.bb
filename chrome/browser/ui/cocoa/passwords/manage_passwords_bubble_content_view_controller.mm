@@ -59,4 +59,8 @@
 - (void)bubbleWillDisappear {
 }
 
+- (NSButton*)defaultButton {
+  return nil;
+}
+
 @end

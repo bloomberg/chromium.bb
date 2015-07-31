@@ -28,6 +28,10 @@ using namespace password_manager::mac::ui;
   return self;
 }
 
+- (NSButton*)defaultButton {
+  return undoBlacklistButton_;
+}
+
 - (void)onDoneClicked:(id)sender {
   model_->OnDoneClicked();
   [delegate_ viewShouldDismiss];

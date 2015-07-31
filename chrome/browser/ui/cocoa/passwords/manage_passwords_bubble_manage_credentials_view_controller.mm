@@ -80,6 +80,10 @@
   [super dealloc];
 }
 
+- (NSButton*)defaultButton {
+  return doneButton_;
+}
+
 - (NSButton*)doneButton {
   return doneButton_.get();
 }

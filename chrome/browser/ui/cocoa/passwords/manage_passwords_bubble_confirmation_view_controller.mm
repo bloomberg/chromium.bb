@@ -32,6 +32,10 @@ using namespace password_manager::mac::ui;
   return self;
 }
 
+- (NSButton*)defaultButton {
+  return okButton_;
+}
+
 - (void)onOKClicked:(id)sender {
   model_->OnOKClicked();
   [delegate_ viewShouldDismiss];

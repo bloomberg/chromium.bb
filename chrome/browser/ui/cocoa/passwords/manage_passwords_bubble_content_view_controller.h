@@ -40,6 +40,9 @@ const CGFloat kUnrelatedControlVerticalPadding = 15;
 - (NSTextField*)addLabel:(NSString*)title toView:(NSView*)view;
 - (void)bubbleWillDisappear;
 
+// Returns the default button for the bubble.
+- (NSButton*)defaultButton;
+
 @property(nonatomic, assign)
     id<ManagePasswordsBubbleContentViewDelegate> delegate;
 

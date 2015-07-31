@@ -27,6 +27,10 @@ using namespace password_manager::mac::ui;
   return self;
 }
 
+- (NSButton*)defaultButton {
+  return confirmButton_;
+}
+
 - (void)onConfirmClicked:(id)sender {
   model_->OnNeverForThisSiteClicked();
   [delegate_ viewShouldDismiss];
