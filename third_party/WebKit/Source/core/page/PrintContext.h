@@ -70,9 +70,9 @@ public:
 
     // Used by layout tests.
     static int pageNumberForElement(Element*, const FloatSize& pageSizeInPixels); // Returns -1 if page isn't found.
-    static String pageProperty(LocalFrame* frame, const char* propertyName, int pageNumber);
-    static bool isPageBoxVisible(LocalFrame* frame, int pageNumber);
-    static String pageSizeAndMarginsInPixels(LocalFrame* frame, int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft);
+    static String pageProperty(LocalFrame*, const char* propertyName, int pageNumber);
+    static bool isPageBoxVisible(LocalFrame*, int pageNumber);
+    static String pageSizeAndMarginsInPixels(LocalFrame*, int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft);
     static int numberOfPages(LocalFrame*, const FloatSize& pageSizeInPixels);
 
     DECLARE_VIRTUAL_TRACE();

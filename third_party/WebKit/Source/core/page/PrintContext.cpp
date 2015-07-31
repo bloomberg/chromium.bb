@@ -137,8 +137,8 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
     unsigned pageCount = ceilf((float)docLogicalHeight / pageLogicalHeight);
     for (unsigned i = 0; i < pageCount; ++i) {
         int pageLogicalTop = blockDirectionEnd > blockDirectionStart ?
-                                blockDirectionStart + i * pageLogicalHeight :
-                                blockDirectionStart - (i + 1) * pageLogicalHeight;
+            blockDirectionStart + i * pageLogicalHeight :
+            blockDirectionStart - (i + 1) * pageLogicalHeight;
 
         int pageLogicalLeft = inlineDirectionEnd > inlineDirectionStart ? inlineDirectionStart : inlineDirectionStart - pageLogicalWidth;
         IntRect pageRect(pageLogicalLeft, pageLogicalTop, pageLogicalWidth, pageLogicalHeight);
@@ -291,7 +291,7 @@ String PrintContext::pageSizeAndMarginsInPixels(LocalFrame* frame, int pageNumbe
     frame->document()->pageSizeAndMarginsInPixels(pageNumber, pageSize, marginTop, marginRight, marginBottom, marginLeft);
 
     return "(" + String::number(pageSize.width()) + ", " + String::number(pageSize.height()) + ") " +
-           String::number(marginTop) + ' ' + String::number(marginRight) + ' ' + String::number(marginBottom) + ' ' + String::number(marginLeft);
+        String::number(marginTop) + ' ' + String::number(marginRight) + ' ' + String::number(marginBottom) + ' ' + String::number(marginLeft);
 }
 
 int PrintContext::numberOfPages(LocalFrame* frame, const FloatSize& pageSizeInPixels)

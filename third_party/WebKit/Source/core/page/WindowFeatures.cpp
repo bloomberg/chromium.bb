@@ -149,20 +149,21 @@ void WindowFeatures::setWindowFeature(const String& keyString, const String& val
     } else if (keyString == "height" || keyString == "innerheight") {
         heightSet = true;
         height = value;
-    } else if (keyString == "menubar")
+    } else if (keyString == "menubar") {
         menuBarVisible = value;
-    else if (keyString == "toolbar")
+    } else if (keyString == "toolbar") {
         toolBarVisible = value;
-    else if (keyString == "location")
+    } else if (keyString == "location") {
         locationBarVisible = value;
-    else if (keyString == "status")
+    } else if (keyString == "status") {
         statusBarVisible = value;
-    else if (keyString == "fullscreen")
+    } else if (keyString == "fullscreen") {
         fullscreen = value;
-    else if (keyString == "scrollbars")
+    } else if (keyString == "scrollbars") {
         scrollbarsVisible = value;
-    else if (value == 1)
+    } else if (value == 1) {
         additionalFeatures.append(keyString);
+    }
 }
 
 WindowFeatures::WindowFeatures(const String& dialogFeaturesString, const IntRect& screenAvailableRect)

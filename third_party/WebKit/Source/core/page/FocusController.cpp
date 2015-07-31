@@ -43,6 +43,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -52,7 +53,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/SpatialNavigation.h"
 #include <limits>
@@ -715,9 +715,10 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
 
     ASSERT(element);
 
-    if (element == document->focusedElement())
+    if (element == document->focusedElement()) {
         // Focus wrapped around to the same node.
         return true;
+    }
 
     if (element->isFrameOwnerElement() && (!isHTMLPlugInElement(*element) || !element->isKeyboardFocusable())) {
         // We focus frames rather than frame owners.

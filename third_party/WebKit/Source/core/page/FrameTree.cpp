@@ -232,9 +232,10 @@ unsigned FrameTree::childCount() const
 
 Frame* FrameTree::child(const AtomicString& name) const
 {
-    for (Frame* child = firstChild(); child; child = child->tree().nextSibling())
+    for (Frame* child = firstChild(); child; child = child->tree().nextSibling()) {
         if (child->tree().name() == name)
             return child;
+    }
     return nullptr;
 }
 
@@ -254,9 +255,10 @@ Frame* FrameTree::find(const AtomicString& name) const
         return nullptr;
 
     // Search subtree starting with this frame first.
-    for (Frame* frame = m_thisFrame; frame; frame = frame->tree().traverseNext(m_thisFrame))
+    for (Frame* frame = m_thisFrame; frame; frame = frame->tree().traverseNext(m_thisFrame)) {
         if (frame->tree().name() == name)
             return frame;
+    }
 
     // Search the entire tree for this page next.
     Page* page = m_thisFrame->page();
@@ -265,9 +267,10 @@ Frame* FrameTree::find(const AtomicString& name) const
     if (!page)
         return nullptr;
 
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->tree().name() == name)
             return frame;
+    }
 
     // Search the entire tree of each of the other pages in this namespace.
     // FIXME: Is random order OK?
@@ -292,9 +295,10 @@ bool FrameTree::isDescendantOf(const Frame* ancestor) const
     if (m_thisFrame->page() != ancestor->page())
         return false;
 
-    for (Frame* frame = m_thisFrame; frame; frame = frame->tree().parent())
+    for (Frame* frame = m_thisFrame; frame; frame = frame->tree().parent()) {
         if (frame == ancestor)
             return true;
+    }
     return false;
 }
 
@@ -388,8 +392,9 @@ static void printFrames(const blink::Frame* frame, const blink::Frame* targetFra
     if (frame == targetFrame) {
         printf("--> ");
         printIndent(indent - 1);
-    } else
+    } else {
         printIndent(indent);
+    }
 
     blink::FrameView* view = frame->isLocalFrame() ? toLocalFrame(frame)->view() : 0;
     printf("Frame %p %dx%d\n", frame, view ? view->width() : 0, view ? view->height() : 0);

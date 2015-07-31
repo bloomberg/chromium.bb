@@ -407,9 +407,9 @@ void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lin
         } else if (field == "id") {
             m_currentlyParsedEventId = valueLength ? AtomicString(&m_receiveBuf[bufPos], valueLength) : "";
         } else if (field == "retry") {
-            if (!valueLength)
+            if (!valueLength) {
                 m_reconnectDelay = defaultReconnectDelay;
-            else {
+            } else {
                 String value(&m_receiveBuf[bufPos], valueLength);
                 bool ok;
                 unsigned long long retry = value.toUInt64(&ok);
