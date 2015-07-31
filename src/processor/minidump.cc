@@ -3999,15 +3999,17 @@ MinidumpLinuxMapsList::MinidumpLinuxMapsList(Minidump *minidump)
 }
 
 MinidumpLinuxMapsList::~MinidumpLinuxMapsList() {
-  for (unsigned int i = 0; i < maps_->size(); i++) {
-    delete (*maps_)[i];
+  if (maps_) {
+    for (unsigned int i = 0; i < maps_->size(); i++) {
+      delete (*maps_)[i];
+    }
+    delete maps_;
   }
-  delete maps_;
 }
 
 const MinidumpLinuxMaps *MinidumpLinuxMapsList::GetLinuxMapsForAddress(
     uint64_t address) const {
-  if (!valid_) {
+  if (!valid_ || (maps_ == NULL)) {
     BPLOG(ERROR) << "Invalid MinidumpLinuxMapsList for GetLinuxMapsForAddress";
     return NULL;
   }
@@ -4029,13 +4031,13 @@ const MinidumpLinuxMaps *MinidumpLinuxMapsList::GetLinuxMapsForAddress(
 
 const MinidumpLinuxMaps *MinidumpLinuxMapsList::GetLinuxMapsAtIndex(
     unsigned int index) const {
-  if (!valid_) {
+  if (!valid_ || (maps_ == NULL)) {
     BPLOG(ERROR) << "Invalid MinidumpLinuxMapsList for GetLinuxMapsAtIndex";
     return NULL;
   }
 
   // Index out of bounds.
-  if (index >= maps_count_) {
+  if (index >= maps_count_ || (maps_ == NULL)) {
     BPLOG(ERROR) << "MinidumpLinuxMapsList index of out range: "
                  << index
                  << "/"
@@ -4047,7 +4049,12 @@ const MinidumpLinuxMaps *MinidumpLinuxMapsList::GetLinuxMapsAtIndex(
 
 bool MinidumpLinuxMapsList::Read(uint32_t expected_size) {
   // Invalidate cached data.
-  delete maps_;
+  if (maps_) {
+    for (unsigned int i = 0; i < maps_->size(); i++) {
+      delete (*maps_)[i];
+    }
+    delete maps_;
+  }
   maps_ = NULL;
   maps_count_ = 0;
 
@@ -4100,7 +4107,7 @@ bool MinidumpLinuxMapsList::Read(uint32_t expected_size) {
 }
 
 void MinidumpLinuxMapsList::Print() {
-  if (!valid_) {
+  if (!valid_ || (maps_ == NULL)) {
     BPLOG(ERROR) << "MinidumpLinuxMapsList cannot print valid data";
     return;
   }

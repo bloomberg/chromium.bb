@@ -901,10 +901,6 @@ class MinidumpLinuxMaps : public MinidumpObject {
   // This caller owns the pointer.
   explicit MinidumpLinuxMaps(Minidump *minidump);
 
-  // Read data about a single mapping from /proc/self/maps and load the data
-  // into this object. The input vector is in the same format as a line from
-  // /proc/self/maps.
-
   // The memory region struct that this class wraps.
   MappedMemoryRegion region_;
 
