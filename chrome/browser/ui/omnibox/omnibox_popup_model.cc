@@ -8,9 +8,9 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/search_engines/template_url.h"

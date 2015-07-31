@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -22,10 +22,6 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
-namespace content {
-class NavigationController;
-}
-
 typedef base::Callback<void(const SkBitmap& bitmap)> BitmapFetchedCallback;
 
 // Interface that allows the omnibox component to interact with its embedder
@@ -38,7 +34,7 @@ class OmniboxClient {
 
   // Returns an AutocompleteProviderClient specific to the embedder context.
   virtual scoped_ptr<AutocompleteProviderClient>
-      CreateAutocompleteProviderClient() = 0;
+  CreateAutocompleteProviderClient() = 0;
 
   // Returns whether there is any associated current page.  For example, during
   // startup or shutdown, the omnibox may exist but have no attached page.
@@ -58,9 +54,6 @@ class OmniboxClient {
 
   // Returns whether paste-and-go functionality is enabled.
   virtual bool IsPasteAndGoEnabled() const = 0;
-
-  // Returns the NavigationController for the current page.
-  virtual content::NavigationController& GetNavigationController() const = 0;
 
   // Returns the session ID of the current page.
   virtual const SessionID& GetSessionID() const = 0;
@@ -107,6 +100,9 @@ class OmniboxClient {
   // are also listening from it being sent from there.
   virtual void OnURLOpenedFromOmnibox(OmniboxLog* log) = 0;
 
+  // Discards the state for all pending and transient navigations.
+  virtual void DiscardNonCommittedNavigations() = 0;
+
   // Performs prerendering for |match|.
   virtual void DoPrerender(const AutocompleteMatch& match) = 0;
 
@@ -116,4 +112,4 @@ class OmniboxClient {
   virtual void DoPreconnect(const AutocompleteMatch& match) = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_

@@ -35,6 +35,7 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
@@ -131,7 +132,7 @@ bool ChromeOmniboxClient::CurrentPageExists() const {
 }
 
 const GURL& ChromeOmniboxClient::GetURL() const {
-  return controller_->GetWebContents()->GetURL();
+  return controller_->GetWebContents()->GetVisibleURL();
 }
 
 bool ChromeOmniboxClient::IsInstantNTP() const {
@@ -151,11 +152,6 @@ bool ChromeOmniboxClient::IsLoading() const {
 
 bool ChromeOmniboxClient::IsPasteAndGoEnabled() const {
   return controller_->command_updater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL);
-}
-
-content::NavigationController&
-    ChromeOmniboxClient::GetNavigationController() const {
-  return controller_->GetWebContents()->GetController();
 }
 
 const SessionID& ChromeOmniboxClient::GetSessionID() const {
@@ -270,6 +266,10 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
       chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
       content::Source<Profile>(profile_),
       content::Details<OmniboxLog>(log));
+}
+
+void ChromeOmniboxClient::DiscardNonCommittedNavigations() {
+  controller_->GetWebContents()->GetController().DiscardNonCommittedEntries();
 }
 
 void ChromeOmniboxClient::DoPrerender(

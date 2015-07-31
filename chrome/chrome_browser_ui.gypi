@@ -2668,7 +2668,6 @@
       'browser/ui/omnibox/alternate_nav_infobar_delegate.h',
       'browser/ui/omnibox/chrome_omnibox_client.cc',
       'browser/ui/omnibox/chrome_omnibox_client.h',
-      'browser/ui/omnibox/omnibox_client.h',
       'browser/ui/omnibox/omnibox_controller.cc',
       'browser/ui/omnibox/omnibox_controller.h',
       'browser/ui/omnibox/omnibox_edit_controller.cc',

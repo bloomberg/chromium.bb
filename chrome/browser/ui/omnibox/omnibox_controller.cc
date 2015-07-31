@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/search/search.h"
 #include "ui/gfx/geometry/rect.h"

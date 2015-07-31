@@ -7,11 +7,15 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
-#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "chrome/common/instant_types.h"
+#include "components/omnibox/browser/omnibox_client.h"
 
 class OmniboxEditController;
 class Profile;
+
+namespace content {
+class NavigationController;
+}
 
 class ChromeOmniboxClient : public OmniboxClient {
  public:
@@ -27,7 +31,6 @@ class ChromeOmniboxClient : public OmniboxClient {
   bool IsSearchResultsPage() const override;
   bool IsLoading() const override;
   bool IsPasteAndGoEnabled() const override;
-  content::NavigationController& GetNavigationController() const override;
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   TemplateURLService* GetTemplateURLService() override;
@@ -44,6 +47,7 @@ class ChromeOmniboxClient : public OmniboxClient {
                        const base::Callback<void(const SkBitmap& bitmap)>&
                            on_bitmap_fetched) override;
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
+  void DiscardNonCommittedNavigations() override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void DoPrerender(const AutocompleteMatch& match) override;
 

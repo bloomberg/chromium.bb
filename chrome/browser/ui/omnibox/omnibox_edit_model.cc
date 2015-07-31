@@ -30,7 +30,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -47,6 +46,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
+#include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -54,7 +54,6 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_fixer/url_fixer.h"
-#include "content/public/browser/navigation_controller.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
@@ -581,9 +580,9 @@ void OmniboxEditModel::StartAutocomplete(
     cursor_position = user_text_.length();
   }
 
-  GURL current_url =
-      (client_->CurrentPageExists() && view_->IsIndicatingQueryRefinement()) ?
-      client_->GetURL() : GURL();
+  GURL current_url;
+  if (client_->CurrentPageExists() && view_->IsIndicatingQueryRefinement())
+    current_url = client_->GetURL();
   input_ = AutocompleteInput(
       user_text_, cursor_position, std::string(), current_url, ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
@@ -1080,7 +1079,7 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // stopped.  If the user presses Escape while stopped, whether editing or not,
   // we clear it.
   if (client_->CurrentPageExists() && !client_->IsLoading()) {
-    client_->GetNavigationController().DiscardNonCommittedEntries();
+    client_->DiscardNonCommittedNavigations();
     view_->Update();
   }
 
