@@ -3157,17 +3157,10 @@ void RenderFrameImpl::willSendRequest(
   // Set the first party for cookies url if it has not been set yet (new
   // requests). For redirects, it is updated by WebURLLoaderImpl.
   if (request.firstPartyForCookies().isEmpty()) {
-    if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel) {
+    if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel)
       request.setFirstPartyForCookies(request.url());
-    } else {
-      // TODO(nasko): When the top-level frame is remote, there is no document.
-      // This is broken and should be fixed to propagate the first party.
-      WebFrame* top = frame->top();
-      if (top->isWebLocalFrame()) {
-        request.setFirstPartyForCookies(
-            frame->top()->document().firstPartyForCookies());
-      }
-    }
+    else
+      request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   }
 
   WebDataSource* provisional_data_source = frame->provisionalDataSource();
