@@ -55,10 +55,10 @@ class NavigatorTestWithBrowserSideNavigation
   }
 
   void TearDown() override {
+    RenderViewHostImplTestHarness::TearDown();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
 #endif
-    RenderViewHostImplTestHarness::TearDown();
   }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(
