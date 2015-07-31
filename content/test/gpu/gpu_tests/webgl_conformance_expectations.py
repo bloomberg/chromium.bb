@@ -78,83 +78,39 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=896) # angle bug ID
 
     # Win / OpenGL failures
-    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/canvas/canvas-test.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/canvas/' +
-        'draw-static-webgl-to-multiple-canvas-test.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/canvas/to-data-url-test.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/context/' +
-        'context-attribute-preserve-drawing-buffer.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/context/'+
         'context-attributes-alpha-depth-stencil-antialias.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/context/premultiplyalpha-test.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/ext-sRGB.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-float.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/variables/gl-pointcoord.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/reading/read-pixels-pack-alignment.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/rendering/point-size.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/rendering/' +
-        'point-with-gl-pointcoord-in-fragment-shader.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/textures/misc/gl-pixelstorei.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/textures/misc/tex-image-canvas-corruption.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('deqp/data/gles2/shaders/conditionals.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/qualification_order.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
 
+    # Win / OpenGL / NVIDIA failures
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+        ['win', 'nvidia', 'opengl'], bug=1007) # angle bug ID
+
     # Win / OpenGL / AMD failures
-    self.Fail('conformance/extensions/oes-texture-half-float-linear.html',
+    self.Fail('conformance/context/premultiplyalpha-test.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/' +
-        'oes-texture-half-float-with-image-data.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+    self.Fail('conformance/extensions/oes-texture-float.html',
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
+    self.Skip('conformance/glsl/misc/shader-struct-scope.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/textures/misc/tex-sub-image-2d.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
     self.Fail('conformance/textures/misc/texture-formats-test.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
     self.Fail('conformance/textures/misc/texture-npot.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
     self.Fail('conformance/more/functions/copyTexImage2D.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
     self.Fail('conformance/more/functions/copyTexSubImage2D.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+        ['win', 'amd', 'opengl'], bug=1113) # angle bug ID
     self.Fail('conformance/more/functions/uniformf.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/more/functions/uniformfBadArgs.html',
@@ -169,27 +125,17 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/more/functions/uniformMatrixBadArgs.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/swizzles.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/misc/' +
-        'shader-with-array-of-structs-containing-arrays.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/misc/' +
-        'shader-with-similar-uniform-array-names.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/state/gl-get-calls.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('deqp/data/gles2/shaders/constants.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/swizzles.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
 
     # Skip all WebGL CTS on OpenGL+Intel
