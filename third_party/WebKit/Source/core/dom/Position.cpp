@@ -219,14 +219,6 @@ int PositionAlgorithm<Strategy>::computeOffsetInContainerNode() const
     return 0;
 }
 
-template <typename Strategy>
-int PositionAlgorithm<Strategy>::offsetForPositionAfterAnchor() const
-{
-    ASSERT(isAfterAnchorOrAfterChildren());
-    ASSERT(!m_isLegacyEditingPosition);
-    return Strategy::lastOffsetForEditing(m_anchorNode.get());
-}
-
 // Neighbor-anchored positions are invalid DOM positions, so they need to be
 // fixed up before handing them off to the Range object.
 template <typename Strategy>
