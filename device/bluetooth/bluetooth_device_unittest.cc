@@ -77,7 +77,7 @@ TEST_F(BluetoothTest, DeviceProperties) {
   BluetoothDevice* device = observer.last_device();
   ASSERT_TRUE(device);
   EXPECT_EQ(0x1F00u, device->GetBluetoothClass());
-  EXPECT_EQ("AA:00:00:00:00:01", device->GetAddress());
+  EXPECT_EQ(kTestDeviceAddress1, device->GetAddress());
   EXPECT_EQ(BluetoothDevice::VENDOR_ID_UNKNOWN, device->GetVendorIDSource());
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());

@@ -25,6 +25,10 @@ void BluetoothTestAndroid::SetUp() {
   ASSERT_TRUE(RegisterNativesImpl(AttachCurrentThread()));
 }
 
+bool BluetoothTestAndroid::PlatformSupportsLowEnergy() {
+  return true;
+}
+
 void BluetoothTestAndroid::InitWithDefaultAdapter() {
   adapter_ =
       BluetoothAdapterAndroid::Create(

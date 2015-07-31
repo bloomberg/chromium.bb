@@ -57,7 +57,7 @@ class Fakes {
 
                     mFakeScanner.mCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(
-                                                       "AA:00:00:00:00:01", "FakeBluetoothDevice"),
+                                                       "01:00:00:90:1E:BE", "FakeBluetoothDevice"),
                                                                 uuids));
                     break;
                 }
@@ -68,14 +68,14 @@ class Fakes {
 
                     mFakeScanner.mCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(
-                                                       "AA:00:00:00:00:01", "FakeBluetoothDevice"),
+                                                       "01:00:00:90:1E:BE", "FakeBluetoothDevice"),
                                                                 uuids));
                     break;
                 }
                 case 3: {
                     ArrayList<ParcelUuid> uuids = null;
                     mFakeScanner.mCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
-                            new FakeScanResult(new FakeBluetoothDevice("AA:00:00:00:00:01", ""),
+                            new FakeScanResult(new FakeBluetoothDevice("01:00:00:90:1E:BE", ""),
                                                                 uuids));
 
                     break;
@@ -83,7 +83,7 @@ class Fakes {
                 case 4: {
                     ArrayList<ParcelUuid> uuids = null;
                     mFakeScanner.mCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
-                            new FakeScanResult(new FakeBluetoothDevice("BB:00:00:00:00:02", ""),
+                            new FakeScanResult(new FakeBluetoothDevice("02:00:00:8B:74:63", ""),
                                                                 uuids));
 
                     break;

@@ -31,33 +31,41 @@ device::BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* uuid) {
 
 BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
     CBPeripheral* peripheral,
-    NSDictionary* advertisementData,
+    NSDictionary* advertisement_data,
     int rssi) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   identifier_ = GetPeripheralIdentifier(peripheral);
   hash_address_ = GetPeripheralHashAddress(peripheral);
-  Update(peripheral, advertisementData, rssi);
+  Update(peripheral, advertisement_data, rssi);
 }
 
 BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {
 }
 
 void BluetoothLowEnergyDeviceMac::Update(CBPeripheral* peripheral,
-                                         NSDictionary* advertisementData,
+                                         NSDictionary* advertisement_data,
                                          int rssi) {
   last_update_time_.reset([[NSDate date] retain]);
   peripheral_.reset([peripheral retain]);
   rssi_ = rssi;
+  NSNumber* connectable =
+      [advertisement_data objectForKey:CBAdvertisementDataIsConnectable];
+  connectable_ = [connectable boolValue];
   ClearServiceData();
-  NSNumber* nbConnectable =
-      [advertisementData objectForKey:CBAdvertisementDataIsConnectable];
-  connectable_ = [nbConnectable boolValue];
-  NSDictionary* serviceData =
-      [advertisementData objectForKey:CBAdvertisementDataServiceDataKey];
-  for (CBUUID* uuid in serviceData) {
-    NSData* data = [serviceData objectForKey:uuid];
-    BluetoothUUID serviceUUID = BluetoothUUIDWithCBUUID(uuid);
-    SetServiceData(serviceUUID, (const char*)[data bytes], [data length]);
+  NSDictionary* service_data =
+      [advertisement_data objectForKey:@"CBAdvertisementDataServiceDataKey"];
+  for (CBUUID* uuid in service_data) {
+    NSData* data = [service_data objectForKey:uuid];
+    BluetoothUUID service_uuid = BluetoothUUIDWithCBUUID(uuid);
+    SetServiceData(service_uuid, static_cast<const char*>([data bytes]),
+                   [data length]);
+  }
+  advertised_uuids_.clear();
+  NSArray* service_uuids =
+      [advertisement_data objectForKey:@"CBAdvertisementDataServiceUUIDsKey"];
+  for (CBUUID* uuid in service_uuids) {
+    advertised_uuids_.push_back(
+        BluetoothUUID(std::string([[uuid UUIDString] UTF8String])));
   }
 }
 
@@ -111,7 +119,7 @@ bool BluetoothLowEnergyDeviceMac::IsConnecting() const {
 }
 
 BluetoothDevice::UUIDList BluetoothLowEnergyDeviceMac::GetUUIDs() const {
-  return std::vector<device::BluetoothUUID>();
+  return advertised_uuids_;
 }
 
 int16 BluetoothLowEnergyDeviceMac::GetInquiryRSSI() const {
