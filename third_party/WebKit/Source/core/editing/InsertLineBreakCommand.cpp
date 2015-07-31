@@ -101,7 +101,7 @@ void InsertLineBreakCommand::doApply()
 
         VisiblePosition endingPosition(positionBeforeNode(nodeToInsert.get()));
         setEndingSelection(VisibleSelection(endingPosition, endingSelection().isDirectional()));
-    } else if (pos.deprecatedEditingOffset() <= caretMinOffset(pos.anchorNode())) {
+    } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
         insertNodeAt(nodeToInsert.get(), pos);
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
