@@ -96,6 +96,66 @@ TEST_F(DataUsageStoreTest, LoadAndStoreToSameBucket) {
   ASSERT_EQ(now.ToInternalValue(), stored_bucket.last_updated_timestamp());
 }
 
+TEST_F(DataUsageStoreTest, StoreSameBucket) {
+  base::Time::Exploded exploded;
+  exploded.year = 2001;
+  exploded.month = 1;
+  exploded.day_of_month = 1;
+  exploded.hour = 0;
+
+  exploded.minute = 0;
+  exploded.second = 0;
+  exploded.millisecond = 0;
+  base::Time time1 = base::Time::FromUTCExploded(exploded);
+
+  exploded.minute = 14;
+  exploded.second = 59;
+  exploded.millisecond = 999;
+  base::Time time2 = base::Time::FromUTCExploded(exploded);
+
+  DataUsageBucket bucket;
+  data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
+
+  bucket.set_last_updated_timestamp(time1.ToInternalValue());
+
+  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
+  ASSERT_EQ(2u, store()->map()->size());
+
+  bucket.set_last_updated_timestamp(time2.ToInternalValue());
+  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
+  ASSERT_EQ(2u, store()->map()->size());
+}
+
+TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
+  base::Time::Exploded exploded;
+  exploded.year = 2001;
+  exploded.month = 1;
+  exploded.day_of_month = 1;
+  exploded.hour = 0;
+
+  exploded.minute = 0;
+  exploded.second = 59;
+  exploded.millisecond = 999;
+  base::Time time1 = base::Time::FromUTCExploded(exploded);
+
+  exploded.minute = 15;
+  exploded.second = 0;
+  exploded.millisecond = 0;
+  base::Time time2 = base::Time::FromUTCExploded(exploded);
+
+  DataUsageBucket bucket;
+  data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
+
+  bucket.set_last_updated_timestamp(time1.ToInternalValue());
+
+  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
+  ASSERT_EQ(2u, store()->map()->size());
+
+  bucket.set_last_updated_timestamp(time2.ToInternalValue());
+  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
+  ASSERT_EQ(3u, store()->map()->size());
+}
+
 TEST_F(DataUsageStoreTest, StoreWithEmptyBuckets) {
   DataUsageBucket bucket;
   data_usage_store()->LoadCurrentDataUsageBucket(&bucket);

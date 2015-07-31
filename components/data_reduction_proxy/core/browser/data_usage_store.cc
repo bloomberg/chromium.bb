@@ -55,7 +55,8 @@ base::Time BucketLowerBoundary(base::Time time) {
   base::Time::Exploded exploded;
   time.UTCExplode(&exploded);
   exploded.minute -= exploded.minute % kDataUsageBucketLengthInMinutes;
-
+  exploded.second = 0;
+  exploded.millisecond = 0;
   return base::Time::FromUTCExploded(exploded);
 }
 
