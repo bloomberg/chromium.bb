@@ -5,9 +5,12 @@
 #include "config.h"
 #include "web/NotificationPermissionClientImpl.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
+#include "modules/notifications/NotificationPermissionCallback.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/modules/notifications/WebNotificationPermissionCallback.h"
 #include "web/WebLocalFrameImpl.h"
@@ -18,8 +21,9 @@ namespace {
 
 class WebNotificationPermissionCallbackImpl : public WebNotificationPermissionCallback {
 public:
-    WebNotificationPermissionCallbackImpl(NotificationPermissionCallback* callback)
-        : m_callback(callback)
+    WebNotificationPermissionCallbackImpl(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, NotificationPermissionCallback* deprecatedCallback)
+        : m_resolver(resolver)
+        , m_deprecatedCallback(deprecatedCallback)
     {
     }
 
@@ -27,12 +31,16 @@ public:
 
     void permissionRequestComplete(WebNotificationPermission permission) override
     {
-        if (m_callback)
-            m_callback->handleEvent(Notification::permissionString(permission));
+        String permissionString = Notification::permissionString(permission);
+        if (m_deprecatedCallback)
+            m_deprecatedCallback->handleEvent(permissionString);
+
+        m_resolver->resolve(permissionString);
     }
 
 private:
-    Persistent<NotificationPermissionCallback> m_callback;
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<NotificationPermissionCallback> m_deprecatedCallback;
 };
 
 } // namespace
@@ -50,14 +58,22 @@ NotificationPermissionClientImpl::~NotificationPermissionClientImpl()
 {
 }
 
-void NotificationPermissionClientImpl::requestPermission(ExecutionContext* context, NotificationPermissionCallback* callback)
+ScriptPromise NotificationPermissionClientImpl::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
 {
+    ASSERT(scriptState);
+
+    ExecutionContext* context = scriptState->executionContext();
     ASSERT(context && context->isDocument());
 
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
 
-    webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->securityOrigin()), new WebNotificationPermissionCallbackImpl(callback));
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->securityOrigin()), new WebNotificationPermissionCallbackImpl(resolver, deprecatedCallback));
+
+    return promise;
 }
 
 } // namespace blink

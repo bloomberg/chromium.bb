@@ -29,6 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://notifications.spec.whatwg.org/#enumdef-notificationpermission
+
+enum NotificationPermission {
+    "default",
+    "denied",
+    "granted"
+};
+
+// https://notifications.spec.whatwg.org/#api
+
 [
     GarbageCollected,
     ActiveDOMObject,
@@ -39,10 +49,10 @@
     RaisesException=Constructor,
     RuntimeEnabled=Notifications,
 ] interface Notification : EventTarget {
-    [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute DOMString permission;
-    [CallWith=ExecutionContext, MeasureAs=NotificationPermissionRequested] static void requestPermission(optional NotificationPermissionCallback callback);
+    [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute NotificationPermission permission;
 
-    // FIXME: Implement the Notification.get() method.
+    // TODO(peter): Only expose requestPermission() on the Window object. See https://crbug.com/442139.
+    [CallWith=ScriptState, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback deprecatedCallback);
 
     attribute EventHandler onclick;
     [MeasureAs=NotificationShowEvent] attribute EventHandler onshow;

@@ -32,6 +32,7 @@
 #include "modules/notifications/Notification.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -286,12 +287,17 @@ WebNotificationPermission Notification::checkPermission(ExecutionContext* contex
     return notificationManager()->checkPermission(WebSecurityOrigin(origin));
 }
 
-void Notification::requestPermission(ExecutionContext* context, NotificationPermissionCallback* callback)
+ScriptPromise Notification::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
 {
-    // FIXME: Assert that this code-path will only be reached for Document environments
-    // when Blink supports [Exposed] annotations on class members in IDL definitions.
-    if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context))
-        permissionClient->requestPermission(context, callback);
+    ExecutionContext* context = scriptState->executionContext();
+    NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context);
+    if (!permissionClient) {
+        // TODO(peter): Assert that this code-path will only be reached for Document environments when Blink
+        // supports [Exposed] annotations on class members in IDL definitions. See https://crbug.com/442139.
+        return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), permission(context)));
+    }
+
+    return permissionClient->requestPermission(scriptState, deprecatedCallback);
 }
 
 bool Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)

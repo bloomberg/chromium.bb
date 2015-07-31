@@ -31,6 +31,7 @@
 #ifndef Notification_h
 #define Notification_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
@@ -101,7 +102,7 @@ public:
     static String permissionString(WebNotificationPermission);
     static String permission(ExecutionContext*);
     static WebNotificationPermission checkPermission(ExecutionContext*);
-    static void requestPermission(ExecutionContext*, NotificationPermissionCallback* = nullptr);
+    static ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*);
 
     // EventTarget interface.
     ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
