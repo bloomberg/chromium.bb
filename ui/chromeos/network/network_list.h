@@ -58,7 +58,6 @@ class UI_CHROMEOS_EXPORT NetworkListView
 
   NetworkListDelegate* delegate_;
 
-  views::Label* scanning_view_;
   views::Label* no_wifi_networks_view_;
   views::Label* no_cellular_networks_view_;
 

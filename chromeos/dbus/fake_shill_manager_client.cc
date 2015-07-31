@@ -185,6 +185,7 @@ void FakeShillManagerClient::SetProperty(const std::string& name,
 void FakeShillManagerClient::RequestScan(const std::string& type,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
+  VLOG(1) << "RequestScan: " << type;
   // For Stub purposes, default to a Wifi scan.
   std::string device_type = shill::kTypeWifi;
   if (!type.empty())
@@ -1031,7 +1032,7 @@ void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
                           shill::kScanningProperty,
                           base::FundamentalValue(false));
   }
-  VLOG(2) << "ScanCompleted";
+  VLOG(1) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }

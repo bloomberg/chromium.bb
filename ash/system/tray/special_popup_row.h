@@ -29,8 +29,8 @@ class ASH_EXPORT SpecialPopupRow : public views::View {
   void SetTextLabel(int string_id, ViewClickListener* listener);
   void SetContent(views::View* view);
 
+  void AddView(views::View* view, bool add_separator);
   void AddButton(TrayPopupHeaderButton* button);
-  void AddThrobber(ThrobberView* throbber);
 
   views::View* content() const { return content_; }
 

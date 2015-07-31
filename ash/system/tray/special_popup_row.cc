@@ -82,26 +82,24 @@ void SpecialPopupRow::SetContent(views::View* view) {
   AddChildViewAt(content_, 0);
 }
 
-void SpecialPopupRow::AddButton(TrayPopupHeaderButton* button) {
+void SpecialPopupRow::AddView(views::View* view, bool add_separator) {
   if (!button_container_) {
     button_container_ = CreatePopupHeaderButtonsContainer();
     AddChildView(button_container_);
   }
-  views::Separator* separator =
-      new views::Separator(views::Separator::VERTICAL);
-  separator->SetColor(ash::kBorderDarkColor);
-  separator->SetBorder(
-      views::Border::CreateEmptyBorder(kSeparatorInset, 0, kSeparatorInset, 0));
-  button_container_->AddChildView(separator);
-  button_container_->AddChildView(button);
+  if (add_separator) {
+    views::Separator* separator =
+        new views::Separator(views::Separator::VERTICAL);
+    separator->SetColor(ash::kBorderDarkColor);
+    separator->SetBorder(views::Border::CreateEmptyBorder(kSeparatorInset, 0,
+                                                          kSeparatorInset, 0));
+    button_container_->AddChildView(separator);
+  }
+  button_container_->AddChildView(view);
 }
 
-void SpecialPopupRow::AddThrobber(ThrobberView* throbber) {
-  if (!button_container_) {
-    button_container_ = CreatePopupHeaderButtonsContainer();
-    AddChildView(button_container_);
-  }
-  button_container_->AddChildView(throbber);
+void SpecialPopupRow::AddButton(TrayPopupHeaderButton* button) {
+  AddView(button, true /* add_separator */);
 }
 
 gfx::Size SpecialPopupRow::GetPreferredSize() const {

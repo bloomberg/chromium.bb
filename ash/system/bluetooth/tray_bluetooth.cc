@@ -200,7 +200,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     throbber_ = new ThrobberView;
     throbber_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
-    footer()->AddThrobber(throbber_);
+    footer()->AddView(throbber_, false /* separator */);
 
     // Do not allow toggling bluetooth in the lock screen.
     ash::SystemTrayDelegate* delegate =

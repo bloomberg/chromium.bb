@@ -31,7 +31,6 @@ namespace ui {
 
 NetworkListView::NetworkListView(NetworkListDelegate* delegate)
     : delegate_(delegate),
-      scanning_view_(NULL),
       no_wifi_networks_view_(NULL),
       no_cellular_networks_view_(NULL) {
   CHECK(delegate_);
@@ -192,14 +191,6 @@ bool NetworkListView::UpdateNetworkListEntries(
         UpdateInfoLabel(message_id, index, &no_wifi_networks_view_);
     if (message_id)
       ++index;
-
-    // "Wifi Scanning"
-    message_id = 0;
-    if (handler->GetScanningByType(NetworkTypePattern::WiFi()))
-      message_id = IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE;
-    needs_relayout |= UpdateInfoLabel(message_id, index, &scanning_view_);
-    if (message_id)
-      ++index;
   }
 
   // Un-highlighted networks
@@ -209,7 +200,7 @@ bool NetworkListView::UpdateNetworkListEntries(
   // No networks or other messages (fallback)
   if (index == 0) {
     needs_relayout |= UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NO_NETWORKS, index,
-                                      &scanning_view_);
+                                      &no_wifi_networks_view_);
   }
 
   return needs_relayout;

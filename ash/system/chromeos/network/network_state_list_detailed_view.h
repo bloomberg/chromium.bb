@@ -32,6 +32,7 @@ class BubbleDelegateView;
 namespace ash {
 class HoverHighlightView;
 class SystemTrayItem;
+class ThrobberView;
 class TrayPopupLabelButton;
 
 namespace tray {
@@ -55,6 +56,9 @@ class NetworkStateListDetailedView
   DetailedViewType GetViewType() const override;
   void Update() override;
 
+  // Called by the WiFi Scanning Throbber when pressed.
+  bool ThrobberPressed(views::View* sender, const ui::Event& event);
+
  protected:
   // Overridden from ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -67,7 +71,6 @@ class NetworkStateListDetailedView
 
   // Create UI components.
   void CreateHeaderEntry();
-  void CreateHeaderButtons();
   void CreateNetworkExtra();
 
   // Update UI components.
@@ -118,6 +121,9 @@ class NetworkStateListDetailedView
   // Track login state.
   user::LoginStatus login_;
 
+  // Track WiFi scanning state.
+  bool wifi_scanning_;
+
   // Child views.
   TrayPopupHeaderButton* info_icon_;
   TrayPopupHeaderButton* button_wifi_;
@@ -130,6 +136,9 @@ class NetworkStateListDetailedView
 
   // A small bubble for displaying network info.
   views::BubbleDelegateView* info_bubble_;
+
+  // WiFi scanning throbber.
+  ThrobberView* scanning_throbber_;
 
   gfx::Image controlled_by_extension_icon_;
 
