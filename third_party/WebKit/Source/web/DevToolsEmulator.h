@@ -36,6 +36,7 @@ public:
     void setScriptEnabled(bool);
     void setDoubleTapToZoomEnabled(bool);
     bool doubleTapToZoomEnabled() const;
+    void setHidePinchScrollbarsNearMinScale(bool);
 
     // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
@@ -76,6 +77,7 @@ private:
 
     bool m_embedderScriptEnabled;
     bool m_scriptExecutionDisabled;
+    bool m_hidePinchScrollbarsNearMinScale;
 };
 
 } // namespace blink

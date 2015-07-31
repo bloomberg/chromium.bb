@@ -815,4 +815,9 @@ void WebSettingsImpl::setUseMobileViewportStyle(bool enabled)
     m_devToolsEmulator->setUseMobileViewportStyle(enabled);
 }
 
+void WebSettingsImpl::setHidePinchScrollbarsNearMinScale(bool enabled)
+{
+    m_devToolsEmulator->setHidePinchScrollbarsNearMinScale(enabled);
+}
+
 } // namespace blink
