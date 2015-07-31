@@ -121,7 +121,10 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
     }
   }
 
-  UpdateEntry(entry);
+  policy()->UpdateEntry(entry, controller_->delegate()->GetWebContents());
+  // Always notify the WebContents that the SSL state changed when a
+  // load is committed, in case the active navigation entry has changed.
+  NotifyDidChangeVisibleSSLState();
 }
 
 void SSLManager::DidDisplayInsecureContent() {
@@ -184,12 +187,16 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
 
-  WebContentsImpl* contents =
-      static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
-  policy()->UpdateEntry(entry, contents);
+  policy()->UpdateEntry(entry, controller_->delegate()->GetWebContents());
 
   if (!entry->GetSSL().Equals(original_ssl_status))
-    contents->DidChangeVisibleSSLState();
+    NotifyDidChangeVisibleSSLState();
+}
+
+void SSLManager::NotifyDidChangeVisibleSSLState() {
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
+  contents->DidChangeVisibleSSLState();
 }
 
 }  // namespace content
