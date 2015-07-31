@@ -259,6 +259,7 @@ wl_event_queue_release(struct wl_event_queue *queue)
 {
 	struct wl_closure *closure;
 	struct wl_proxy *proxy;
+	bool proxy_destroyed;
 
 	while (!wl_list_empty(&queue->event_list)) {
 		closure = container_of(queue->event_list.next,
@@ -268,10 +269,11 @@ wl_event_queue_release(struct wl_event_queue *queue)
 		decrease_closure_args_refcount(closure);
 
 		proxy = closure->proxy;
-		if (proxy->refcount == 1)
-			proxy_destroy(proxy);
-		else
-			--proxy->refcount;
+		proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
+
+		proxy->refcount--;
+		if (proxy_destroyed && !proxy->refcount)
+			free(proxy);
 
 		wl_closure_destroy(closure);
 	}
