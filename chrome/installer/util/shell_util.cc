@@ -1181,7 +1181,7 @@ bool ShortNameFromPath(const base::FilePath& path, base::string16* short_path) {
   DWORD short_length = GetShortPathName(path.value().c_str(), &result[0],
                                         result.size());
   if (short_length == 0 || short_length > result.size()) {
-    PLOG(ERROR) << "Error getting short (8.3) path";
+    PLOG(ERROR) << "Error getting short (8.3) path for " << path.value();
     return false;
   }
 
