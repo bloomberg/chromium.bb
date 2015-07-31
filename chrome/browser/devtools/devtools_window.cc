@@ -732,8 +732,8 @@ DevToolsWindow* DevToolsWindow::Create(
     const std::string& remote_frontend,
     bool can_dock,
     const std::string& settings) {
-  // If developer tools disabled by policy don't open the window.
-  if (profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+  if (profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return nullptr;
 
   if (inspected_web_contents) {
