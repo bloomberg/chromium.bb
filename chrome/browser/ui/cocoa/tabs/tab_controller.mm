@@ -442,12 +442,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   return NO;
 }
 
-// The following methods are invoked from the TabView and are forwarded to the
-// TabStripDragController.
-- (BOOL)tabCanBeDragged:(TabController*)controller {
-  return [[target_ dragController] tabCanBeDragged:controller];
-}
-
 - (void)maybeStartDrag:(NSEvent*)event forTab:(TabController*)tab {
   [[target_ dragController] maybeStartDrag:event forTab:tab];
 }
