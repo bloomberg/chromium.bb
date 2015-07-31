@@ -329,9 +329,14 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
    * granularity.  (Windows.)
    */
   if (!NaClIsAllocPageMultiple(usraddr)) {
-    NaClLog(2, "NaClSysMmap: address not allocation granularity aligned\n");
-    map_result = -NACL_ABI_EINVAL;
-    goto cleanup;
+    if ((NACL_ABI_MAP_FIXED & flags) != 0) {
+      NaClLog(2, "NaClSysMmap: address not allocation granularity aligned\n");
+      map_result = -NACL_ABI_EINVAL;
+      goto cleanup;
+    } else {
+      NaClLog(2, "NaClSysMmap: Force alignment of misaligned hint address\n");
+      usraddr = NaClTruncAllocPage(usraddr);
+    }
   }
   /*
    * Offset should be non-negative (nacl_abi_off_t is signed).  This

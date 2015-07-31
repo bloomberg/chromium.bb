@@ -1,6 +1,8 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+/*
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -51,6 +53,38 @@ int TestBadFiledesc() {
                         0);
   EXPECT(MAP_FAILED == mmap_ptr);
   EXPECT(EBADF == errno);
+  END_TEST();
+}
+
+// Verify that mmap does not fail if a bad hint address is passed, but
+// |MMAP_FIXED| is not specified.
+int TestMmapBadHint() {
+  START_TEST("TestMmapBadHint");
+  void* bad_hint = (void *) 0x123;
+  void* mmap_ptr = mmap(bad_hint,
+                        k64Kbytes,
+                        PROT_READ,
+                        MAP_PRIVATE | MAP_ANONYMOUS,
+                        kAnonymousFiledesc,
+                        0);
+  EXPECT(MAP_FAILED != mmap_ptr);
+  EXPECT(mmap_ptr != bad_hint);
+  EXPECT(munmap(mmap_ptr, k64Kbytes) == 0);
+  END_TEST();
+}
+
+// Verify that mmap does fail if a bad hint address is passed and
+// |MMAP_FIXED| is specified.
+int TestMmapBadHintFixed() {
+  START_TEST("TestMmapBadHintFixed");
+  void* bad_hint = (void *) 0x123;
+  void* mmap_ptr = mmap(bad_hint,
+                        k64Kbytes,
+                        PROT_READ,
+                        MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
+                        kAnonymousFiledesc,
+                        0);
+  EXPECT(MAP_FAILED == mmap_ptr);
   END_TEST();
 }
 
@@ -158,6 +192,8 @@ int main() {
   int fail_count = 0;
   fail_count += TestZeroLengthRegion();
   fail_count += TestBadFiledesc();
+  fail_count += TestMmapBadHint();
+  fail_count += TestMmapBadHintFixed();
   fail_count += TestMmapMunmap();
   fail_count += TestMunmapText();
   fail_count += TestMmapNULL();
