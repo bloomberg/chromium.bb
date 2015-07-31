@@ -24,7 +24,7 @@ namespace {
 void SendPostMessageToWorkerOnMainThread(
     ThreadSafeSender* thread_safe_sender,
     int handle_id,
-    const WebString& message,
+    const base::string16& message,
     scoped_ptr<WebMessagePortChannelArray> channels) {
   thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
       handle_id, message,
@@ -90,7 +90,10 @@ void WebServiceWorkerImpl::postMessage(const WebString& message,
   dispatcher->main_thread_task_runner()->PostTask(
       FROM_HERE, base::Bind(&SendPostMessageToWorkerOnMainThread,
                             thread_safe_sender_, handle_ref_->handle_id(),
-                            message, base::Passed(make_scoped_ptr(channels))));
+                            // We cast WebString to string16 before crossing
+                            // threads for thread-safety.
+                            static_cast<base::string16>(message),
+                            base::Passed(make_scoped_ptr(channels))));
 }
 
 void WebServiceWorkerImpl::terminate() {

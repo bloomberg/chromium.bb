@@ -106,8 +106,10 @@ void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundSyncProvider::unregisterBackgroundSync,
-                 base::Unretained(sync_provider_), periodicity, id, tag,
-                 service_worker_registration,
+                 base::Unretained(sync_provider_), periodicity, id,
+                 // We cast WebString to string16 before crossing threads
+                 // for thread-safety.
+                 static_cast<base::string16>(tag), service_worker_registration,
                  new CallbackThreadAdapter<bool*, blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
@@ -123,8 +125,10 @@ void BackgroundSyncProviderThreadProxy::getRegistration(
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundSyncProvider::getRegistration,
-                 base::Unretained(sync_provider_), periodicity, tag,
-                 service_worker_registration,
+                 base::Unretained(sync_provider_), periodicity,
+                 // We cast WebString to string16 before crossing threads
+                 // for thread-safety.
+                 static_cast<base::string16>(tag), service_worker_registration,
                  new CallbackThreadAdapter<blink::WebSyncRegistration*,
                                            blink::WebSyncError*>(
                      make_scoped_ptr(callbacks),
