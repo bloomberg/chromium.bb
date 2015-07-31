@@ -482,8 +482,11 @@ static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event
         pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);
     webEvent.globalX = event.screenX();
     webEvent.globalY = event.screenY();
-    webEvent.windowX = webEvent.x = pointInRootFrame.x();
-    webEvent.windowY = webEvent.y = pointInRootFrame.y();
+    webEvent.windowX = pointInRootFrame.x();
+    webEvent.windowY = pointInRootFrame.y();
+    IntPoint localPoint = convertAbsoluteLocationForLayoutObject(event.absoluteLocation(), layoutObject);
+    webEvent.x = localPoint.x();
+    webEvent.y = localPoint.y();
 }
 
 WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const MouseEvent& event)
@@ -571,12 +574,16 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     IntPoint screenPoint = roundedIntPoint(touch->screenLocation());
     globalX = screenPoint.x();
     globalY = screenPoint.y();
-    windowX = x = pointInRootFrame.x();
-    windowY = y = pointInRootFrame.y();
+    windowX = pointInRootFrame.x();
+    windowY = pointInRootFrame.y();
 
     button = WebMouseEvent::ButtonLeft;
     modifiers |= WebInputEvent::LeftButtonDown;
     clickCount = (type == MouseDown || type == MouseUp);
+
+    IntPoint localPoint = convertAbsoluteLocationForLayoutObject(touch->absoluteLocation(), *layoutObject);
+    x = localPoint.x();
+    y = localPoint.y();
 }
 
 WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const WheelEvent& event)
