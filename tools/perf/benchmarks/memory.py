@@ -57,3 +57,14 @@ class MemoryLongRunningIdleGmail(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'memory.long_running_idle_gmail'
+
+
+class MemoryLongRunningIdleGmailBackground(perf_benchmark.PerfBenchmark):
+  """Use (recorded) real world web sites and measure memory consumption
+  of long running idle Gmail page in background tab"""
+  test = memory.Memory
+  page_set = page_sets.LongRunningIdleGmailBackgroundPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'memory.long_running_idle_gmail_background'

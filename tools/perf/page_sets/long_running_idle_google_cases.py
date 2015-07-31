@@ -15,6 +15,14 @@ def _CreateIdlePageClass(base_page_cls):
   return DerivedIdlePage
 
 
+def _CreateIdleBackgroundPageClass(base_page_cls):
+  class DerivedIdlePage(base_page_cls):  # pylint: disable=W0232
+    def RunPageInteractions(self, action_runner):
+      action_runner.tab.browser.tabs.New()
+      action_runner.Wait(IDLE_TIME_IN_SECONDS)
+  return DerivedIdlePage
+
+
 class LongRunningIdleGmailPageSet(story.StorySet):
   def __init__(self):
     super(LongRunningIdleGmailPageSet, self).__init__(
@@ -22,3 +30,13 @@ class LongRunningIdleGmailPageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(
         _CreateIdlePageClass(google_pages.GmailPage)(self))
+
+
+class LongRunningIdleGmailBackgroundPageSet(story.StorySet):
+  def __init__(self):
+    # Reuse the wpr of foreground gmail.
+    super(LongRunningIdleGmailBackgroundPageSet, self).__init__(
+        archive_data_file='data/long_running_idle_gmail_page.json',
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    self.AddStory(
+        _CreateIdleBackgroundPageClass(google_pages.GmailPage)(self))
