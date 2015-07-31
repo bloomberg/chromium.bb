@@ -51,18 +51,11 @@ ActiveDOMObject::~ActiveDOMObject()
     if (isMainThread())
         InstanceCounters::decrementCounter(InstanceCounters::ActiveDOMObjectCounter);
 
-    // ActiveDOMObject may be inherited by a sub-class whose life-cycle
-    // exceeds that of the associated ExecutionContext. In those cases,
-    // m_executionContext would/should have been nullified by
-    // ContextLifecycleObserver::contextDestroyed() (which we implement /
-    // inherit). Hence, we should ensure that this is not 0 before use it
-    // here.
-    if (!executionContext())
-        return;
-
     ASSERT(m_suspendIfNeededCalled);
+
+    // Oilpan: not valid to access executionContext() in the destructor.
 #if !ENABLE(OILPAN)
-    ASSERT(executionContext()->isContextThread());
+    ASSERT(!executionContext() || executionContext()->isContextThread());
 #endif
 }
 
