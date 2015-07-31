@@ -488,8 +488,8 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
       layer_tree_host_->CommitAndCreateLayerImplTree();
   LayerImpl* scroll_layer_impl = layer_impl_tree_root->children()[0];
 
-  ScrollbarLayerImplBase* scrollbar_layer_impl =
-      static_cast<PaintedScrollbarLayerImpl*>(scroll_layer_impl->children()[1]);
+  auto* scrollbar_layer_impl =
+      static_cast<ScrollbarLayerImplBase*>(scroll_layer_impl->children()[1]);
 
   // Choose layer bounds to give max_scroll_offset = (8, 8).
   layer_impl_tree_root->SetBounds(gfx::Size(2, 2));
