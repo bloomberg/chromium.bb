@@ -339,4 +339,19 @@ TEST(ToolsSanityTest, AtomicsAreIgnored) {
   EXPECT_EQ(kMagicValue, shared);
 }
 
+#if defined(CFI_ENFORCEMENT)
+TEST(ToolsSanityTest, BadCast) {
+  class A {
+    virtual void f() {}
+  };
+
+  class B {
+    virtual void f() {}
+  };
+
+  A a;
+  EXPECT_DEATH((void)(B*)&a, "ILL_ILLOPN");
+}
+#endif
+
 }  // namespace base

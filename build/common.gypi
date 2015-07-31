@@ -6174,6 +6174,17 @@
         ],
       },
     }],
+    ['cfi_vptr==1 and cfi_diag==0', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'defines': [
+              'CFI_ENFORCEMENT',
+            ],
+          }],
+        ],
+      },
+    }],
     ['cfi_vptr==1', {
       'target_defaults': {
         'target_conditions': [
