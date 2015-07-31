@@ -39,12 +39,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/CharacterNames.h"
 
-// "X11/X.h" defines Complex to 0 and conflicts
-// with Complex value in CodePath enum.
-#ifdef Complex
-#undef Complex
-#endif
-
 class SkCanvas;
 class SkPaint;
 class SkTextBlob;
