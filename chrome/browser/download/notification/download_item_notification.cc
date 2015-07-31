@@ -302,7 +302,7 @@ void DownloadItemNotification::UpdateNotificationData(
         }
 
         notification_->set_progress(0);
-        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
+        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
