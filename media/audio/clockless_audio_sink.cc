@@ -108,11 +108,8 @@ bool ClocklessAudioSink::SetVolume(double volume) {
   return volume == 0.0;
 }
 
-void ClocklessAudioSink::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+OutputDevice* ClocklessAudioSink::GetOutputDevice() {
+  return nullptr;
 }
 
 }  // namespace media

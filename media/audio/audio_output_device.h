@@ -70,12 +70,14 @@
 #include "media/audio/scoped_task_runner_observer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
+#include "media/base/output_device.h"
 
 namespace media {
 
 class MEDIA_EXPORT AudioOutputDevice
     : NON_EXPORTED_BASE(public AudioRendererSink),
       NON_EXPORTED_BASE(public AudioOutputIPCDelegate),
+      NON_EXPORTED_BASE(public OutputDevice),
       NON_EXPORTED_BASE(public ScopedTaskRunnerObserver) {
  public:
   // NOTE: Clients must call Initialize() before using.
@@ -97,6 +99,9 @@ class MEDIA_EXPORT AudioOutputDevice
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
+  OutputDevice* GetOutputDevice() override;
+
+  // OutputDevice implementation
   void SwitchOutputDevice(const std::string& device_id,
                           const GURL& security_origin,
                           const SwitchOutputDeviceCB& callback) override;

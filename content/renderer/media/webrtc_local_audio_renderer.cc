@@ -207,18 +207,10 @@ void WebRtcLocalAudioRenderer::SetVolume(float volume) {
     sink_->SetVolume(volume);
 }
 
-void WebRtcLocalAudioRenderer::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const media::SwitchOutputDeviceCB& callback) {
-  DVLOG(1) << __FUNCTION__
-           << "(" << device_id << ", " << security_origin << ")";
+media::OutputDevice* WebRtcLocalAudioRenderer::GetOutputDevice() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (sink_.get())
-    sink_->SwitchOutputDevice(device_id, security_origin, callback);
-  else
-    callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+  return sink_.get();
 }
 
 base::TimeDelta WebRtcLocalAudioRenderer::GetCurrentRenderTime() const {

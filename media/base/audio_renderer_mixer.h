@@ -40,9 +40,11 @@ class MEDIA_EXPORT AudioRendererMixer
     pause_delay_ = delay;
   }
 
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback);
+  // TODO(guidou): remove this method. The output device of a mixer should
+  // never be switched, as it may result in a discrepancy between the output
+  // parameters of the new device and the output parameters with which the
+  // mixer was initialized. See crbug.com/506507
+  OutputDevice* GetOutputDevice();
 
  private:
   // AudioRendererSink::RenderCallback implementation.

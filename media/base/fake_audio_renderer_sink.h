@@ -12,6 +12,8 @@
 
 namespace media {
 
+class FakeOutputDevice;
+
 class FakeAudioRendererSink : public AudioRendererSink {
  public:
   enum State {
@@ -32,9 +34,7 @@ class FakeAudioRendererSink : public AudioRendererSink {
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
+  OutputDevice* GetOutputDevice() override;
 
   // Attempts to call Render() on the callback provided to
   // Initialize() with |dest| and |audio_delay_milliseconds|.
@@ -57,6 +57,7 @@ class FakeAudioRendererSink : public AudioRendererSink {
 
   State state_;
   RenderCallback* callback_;
+  scoped_ptr<FakeOutputDevice> output_device_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioRendererSink);
 };

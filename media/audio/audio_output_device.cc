@@ -129,6 +129,10 @@ bool AudioOutputDevice::SetVolume(double volume) {
   return true;
 }
 
+OutputDevice* AudioOutputDevice::GetOutputDevice() {
+  return this;
+}
+
 void AudioOutputDevice::SwitchOutputDevice(
     const std::string& device_id,
     const GURL& security_origin,

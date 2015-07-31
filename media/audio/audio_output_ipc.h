@@ -11,20 +11,10 @@
 #include "base/sync_socket.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_export.h"
+#include "media/base/output_device.h"
 #include "url/gurl.h"
 
 namespace media {
-
-// Result of an audio output device switch operation
-enum SwitchOutputDeviceResult {
-  SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS = 0,
-  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND,
-  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED,
-  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE,
-  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
-  SWITCH_OUTPUT_DEVICE_RESULT_LAST =
-      SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
-};
 
 // Current status of the audio output stream in the browser process. Browser
 // sends information about the current playback state and error to the

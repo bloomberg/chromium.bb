@@ -59,11 +59,8 @@ bool AudioOutputStreamSink::SetVolume(double volume) {
   return true;
 }
 
-void AudioOutputStreamSink::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+OutputDevice* AudioOutputStreamSink::GetOutputDevice() {
+  return nullptr;
 }
 
 int AudioOutputStreamSink::OnMoreData(AudioBus* dest,

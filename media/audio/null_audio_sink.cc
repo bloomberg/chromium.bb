@@ -71,11 +71,8 @@ bool NullAudioSink::SetVolume(double volume) {
   return volume == 0.0;
 }
 
-void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
-                                       const GURL& security_origin,
-                                       const SwitchOutputDeviceCB& callback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+OutputDevice* NullAudioSink::GetOutputDevice() {
+  return nullptr;
 }
 
 void NullAudioSink::CallRender() {

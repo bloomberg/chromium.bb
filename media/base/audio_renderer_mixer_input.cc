@@ -95,17 +95,9 @@ bool AudioRendererMixerInput::SetVolume(double volume) {
   return true;
 }
 
-void AudioRendererMixerInput::SwitchOutputDevice(
-    const std::string& device_id,
-    const GURL& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  DVLOG(1) << __FUNCTION__
-           << "(" << device_id << ", " << security_origin << ")";
-  if (mixer_) {
-    mixer_->SwitchOutputDevice(device_id, security_origin, callback);
-  } else {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
-  }
+OutputDevice* AudioRendererMixerInput::GetOutputDevice() {
+  DVLOG(1) << __FUNCTION__;
+  return mixer_->GetOutputDevice();
 }
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,

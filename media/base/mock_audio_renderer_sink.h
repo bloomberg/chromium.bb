@@ -22,12 +22,7 @@ class MockAudioRendererSink : public AudioRendererSink {
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
-  MOCK_METHOD0(SwitchOutputDevice, void());
-  void SwitchOutputDevice(const std::string&,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override {
-    SwitchOutputDevice();
-  }
+  MOCK_METHOD0(GetOutputDevice, OutputDevice*());
 
   void Initialize(const AudioParameters& params,
                   RenderCallback* renderer) override;

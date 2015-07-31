@@ -36,9 +36,7 @@ class MEDIA_EXPORT AudioOutputStreamSink
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
+  OutputDevice* GetOutputDevice() override;
 
   // AudioSourceCallback implementation.
   int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) override;

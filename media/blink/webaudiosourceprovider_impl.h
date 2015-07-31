@@ -48,9 +48,7 @@ class MEDIA_EXPORT WebAudioSourceProviderImpl
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
-  void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
+  OutputDevice* GetOutputDevice() override;
   void Initialize(const AudioParameters& params,
                   RenderCallback* renderer) override;
 

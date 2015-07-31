@@ -256,18 +256,20 @@ void WebMediaPlayerMS::setVolume(double volume) {
 void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
                                  media::WebSetSinkIdCB* web_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::string device_id_str(device_id.utf8());
-  GURL security_origin(frame_->securityOrigin().toString().utf8());
-  DVLOG(1) << __FUNCTION__
-           << "(" << device_id_str << ", " << security_origin << ")";
+  DVLOG(1) << __FUNCTION__;
   media::SwitchOutputDeviceCB callback =
       media::ConvertToSwitchOutputDeviceCB(web_callback);
   if (audio_renderer_.get()) {
-    audio_renderer_->SwitchOutputDevice(device_id_str, security_origin,
+    media::OutputDevice* output_device = audio_renderer_->GetOutputDevice();
+    if (output_device) {
+      std::string device_id_str(device_id.utf8());
+      GURL security_origin(frame_->securityOrigin().toString().utf8());
+      output_device->SwitchOutputDevice(device_id_str, security_origin,
                                         callback);
-  } else {
-    callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+      return;
+    }
   }
+  callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
 }
 
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {

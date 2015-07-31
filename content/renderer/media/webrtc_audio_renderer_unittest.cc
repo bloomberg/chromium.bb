@@ -60,10 +60,7 @@ class FakeAudioOutputDevice
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
-  MOCK_METHOD3(SwitchOutputDevice,
-               void(const std::string&,
-                    const GURL& security_origin,
-                    const media::SwitchOutputDeviceCB& callback));
+  MOCK_METHOD0(GetOutputDevice, media::OutputDevice*());
 
  protected:
   virtual ~FakeAudioOutputDevice() {}
