@@ -132,12 +132,13 @@ void ContentVerifyJob::DoneReading() {
     }
   }
   done_reading_ = true;
-  if (hashes_ready_ && !FinishBlock())
-    DispatchFailureCallback(HASH_MISMATCH);
-
-  if (!failed_ && g_test_observer)
-    g_test_observer->JobFinished(
-        hash_reader_->extension_id(), hash_reader_->relative_path(), failed_);
+  if (hashes_ready_) {
+    if (!FinishBlock())
+      DispatchFailureCallback(HASH_MISMATCH);
+    else if (g_test_observer)
+      g_test_observer->JobFinished(hash_reader_->extension_id(),
+                                   hash_reader_->relative_path(), failed_);
+  }
 }
 
 bool ContentVerifyJob::FinishBlock() {
@@ -182,6 +183,10 @@ void ContentVerifyJob::OnHashesReady(bool success) {
     ScopedElapsedTimer timer(&time_spent_);
     if (!FinishBlock())
       DispatchFailureCallback(HASH_MISMATCH);
+    else if (g_test_observer) {
+      g_test_observer->JobFinished(hash_reader_->extension_id(),
+                                   hash_reader_->relative_path(), failed_);
+    }
   }
 }
 
