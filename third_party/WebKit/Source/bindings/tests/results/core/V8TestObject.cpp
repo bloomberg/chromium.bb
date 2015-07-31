@@ -57,6 +57,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
+#include "core/dom/FlexibleArrayBufferView.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
@@ -6826,6 +6827,48 @@ static void voidMethodArrayBufferViewArgMethodCallback(const v8::FunctionCallbac
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodFlexibleArrayBufferViewArg", "TestObject", 1, info.Length()), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    FlexibleArrayBufferView arrayBufferViewArg;
+    {
+        toFlexibleArrayBufferView(info.GetIsolate(), info[0], arrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
+    }
+    impl->voidMethodFlexibleArrayBufferViewArg(arrayBufferViewArg);
+}
+
+static void voidMethodFlexibleArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodFlexibleArrayBufferViewArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", 1, info.Length()), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    FlexibleFloat32ArrayView typedArrayBufferViewArg;
+    {
+        toFlexibleArrayBufferView(info.GetIsolate(), info[0], typedArrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
+    }
+    impl->voidMethodFlexibleArrayBufferViewTypedArg(typedArrayBufferViewArg);
+}
+
+static void voidMethodFlexibleArrayBufferViewTypedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodFlexibleArrayBufferViewTypedArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -12658,6 +12701,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodArrayBufferArg", TestObjectV8Internal::voidMethodArrayBufferArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodArrayBufferOrNullArg", TestObjectV8Internal::voidMethodArrayBufferOrNullArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodArrayBufferViewArg", TestObjectV8Internal::voidMethodArrayBufferViewArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodFlexibleArrayBufferViewArg", TestObjectV8Internal::voidMethodFlexibleArrayBufferViewArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodFlexibleArrayBufferViewTypedArg", TestObjectV8Internal::voidMethodFlexibleArrayBufferViewTypedArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodFloat32ArrayArg", TestObjectV8Internal::voidMethodFloat32ArrayArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodInt32ArrayArg", TestObjectV8Internal::voidMethodInt32ArrayArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodUint8ArrayArg", TestObjectV8Internal::voidMethodUint8ArrayArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

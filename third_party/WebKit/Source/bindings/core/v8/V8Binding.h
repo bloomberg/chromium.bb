@@ -57,6 +57,7 @@ class EventListener;
 class EventTarget;
 class ExceptionState;
 class ExecutionContext;
+class FlexibleArrayBufferView;
 class Frame;
 class LocalDOMWindow;
 class LocalFrame;
@@ -972,6 +973,11 @@ CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame*, DOMWrapperW
 CORE_EXPORT Frame* toFrameIfNotDetached(v8::Local<v8::Context>);
 
 CORE_EXPORT EventTarget* toEventTarget(v8::Isolate*, v8::Local<v8::Value>);
+
+// If 'storage' is non-null, it must be large enough to copy all bytes in the
+// array buffer view into it.  Use allocateFlexibleArrayBufferStorage(v8Value)
+// to allocate it using alloca() in the callers stack frame.
+CORE_EXPORT void toFlexibleArrayBufferView(v8::Isolate*, v8::Local<v8::Value>, FlexibleArrayBufferView&, void* storage = nullptr);
 
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.

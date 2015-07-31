@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8InternalDictionary.h"
@@ -18,6 +19,7 @@
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/core/v8/V8Uint8Array.h"
+#include "core/dom/FlexibleArrayBufferView.h"
 #include "core/frame/UseCounter.h"
 
 namespace blink {

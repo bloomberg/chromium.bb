@@ -54,6 +54,7 @@ DoNotCheckSecurity=|Setter
 DoNotCheckSignature
 EnforceRange
 Exposed=*
+FlexibleArrayBufferView
 GarbageCollected
 Global=|*
 Immutable

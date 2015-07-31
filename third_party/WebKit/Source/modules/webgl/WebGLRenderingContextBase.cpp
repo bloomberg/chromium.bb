@@ -32,6 +32,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/FlexibleArrayBufferView.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -1655,13 +1656,13 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, D
     bufferSubDataImpl(target, offset, data->byteLength(), data->data());
 }
 
-void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, DOMArrayBufferView* data)
+void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, const FlexibleArrayBufferView& data)
 {
     if (isContextLost())
         return;
     if (!data)
         return;
-    bufferSubDataImpl(target, offset, data->byteLength(), data->baseAddress());
+    bufferSubDataImpl(target, offset, data.byteLength(), data.baseAddressMaybeOnStack());
 }
 
 bool WebGLRenderingContextBase::validateFramebufferTarget(GLenum target)
@@ -4601,12 +4602,12 @@ void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location, 
     webContext()->uniform1f(location->location(), x);
 }
 
-void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
+void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location, const FlexibleFloat32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform1fv", location, v, 1))
+    if (isContextLost() || !validateUniformParameters<WTF::Float32Array>("uniform1fv", location, v, 1))
         return;
 
-    webContext()->uniform1fv(location->location(), v->length(), v->data());
+    webContext()->uniform1fv(location->location(), v.length(), v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location, Vector<GLfloat>& v)
@@ -4630,12 +4631,12 @@ void WebGLRenderingContextBase::uniform1i(const WebGLUniformLocation* location, 
     webContext()->uniform1i(location->location(), x);
 }
 
-void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location, DOMInt32Array* v)
+void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location, const FlexibleInt32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform1iv", location, v, 1))
+    if (isContextLost() || !validateUniformParameters<WTF::Int32Array>("uniform1iv", location, v, 1))
         return;
 
-    webContext()->uniform1iv(location->location(), v->length(), v->data());
+    webContext()->uniform1iv(location->location(), v.length(), v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location, Vector<GLint>& v)
@@ -4659,12 +4660,12 @@ void WebGLRenderingContextBase::uniform2f(const WebGLUniformLocation* location, 
     webContext()->uniform2f(location->location(), x, y);
 }
 
-void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
+void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location, const FlexibleFloat32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform2fv", location, v, 2))
+    if (isContextLost() || !validateUniformParameters<WTF::Float32Array>("uniform2fv", location, v, 2))
         return;
 
-    webContext()->uniform2fv(location->location(), v->length() >> 1, v->data());
+    webContext()->uniform2fv(location->location(), v.length() >> 1, v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location, Vector<GLfloat>& v)
@@ -4688,12 +4689,12 @@ void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location, 
     webContext()->uniform2i(location->location(), x, y);
 }
 
-void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location, DOMInt32Array* v)
+void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location, const FlexibleInt32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform2iv", location, v, 2))
+    if (isContextLost() || !validateUniformParameters<WTF::Int32Array>("uniform2iv", location, v, 2))
         return;
 
-    webContext()->uniform2iv(location->location(), v->length() >> 1, v->data());
+    webContext()->uniform2iv(location->location(), v.length() >> 1, v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location, Vector<GLint>& v)
@@ -4717,12 +4718,12 @@ void WebGLRenderingContextBase::uniform3f(const WebGLUniformLocation* location, 
     webContext()->uniform3f(location->location(), x, y, z);
 }
 
-void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
+void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location, const FlexibleFloat32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform3fv", location, v, 3))
+    if (isContextLost() || !validateUniformParameters<WTF::Float32Array>("uniform3fv", location, v, 3))
         return;
 
-    webContext()->uniform3fv(location->location(), v->length() / 3, v->data());
+    webContext()->uniform3fv(location->location(), v.length() / 3, v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location, Vector<GLfloat>& v)
@@ -4746,12 +4747,12 @@ void WebGLRenderingContextBase::uniform3i(const WebGLUniformLocation* location, 
     webContext()->uniform3i(location->location(), x, y, z);
 }
 
-void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location, DOMInt32Array* v)
+void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location, const FlexibleInt32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform3iv", location, v, 3))
+    if (isContextLost() || !validateUniformParameters<WTF::Int32Array>("uniform3iv", location, v, 3))
         return;
 
-    webContext()->uniform3iv(location->location(), v->length() / 3, v->data());
+    webContext()->uniform3iv(location->location(), v.length() / 3, v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location, Vector<GLint>& v)
@@ -4775,12 +4776,12 @@ void WebGLRenderingContextBase::uniform4f(const WebGLUniformLocation* location, 
     webContext()->uniform4f(location->location(), x, y, z, w);
 }
 
-void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
+void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location, const FlexibleFloat32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform4fv", location, v, 4))
+    if (isContextLost() || !validateUniformParameters<WTF::Float32Array>("uniform4fv", location, v, 4))
         return;
 
-    webContext()->uniform4fv(location->location(), v->length() >> 2, v->data());
+    webContext()->uniform4fv(location->location(), v.length() >> 2, v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location, Vector<GLfloat>& v)
@@ -4804,12 +4805,12 @@ void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location, 
     webContext()->uniform4i(location->location(), x, y, z, w);
 }
 
-void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location, DOMInt32Array* v)
+void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location, const FlexibleInt32ArrayView& v)
 {
-    if (isContextLost() || !validateUniformParameters("uniform4iv", location, v, 4))
+    if (isContextLost() || !validateUniformParameters<WTF::Int32Array>("uniform4iv", location, v, 4))
         return;
 
-    webContext()->uniform4iv(location->location(), v->length() >> 2, v->data());
+    webContext()->uniform4iv(location->location(), v.length() >> 2, v.dataMaybeOnStack());
 }
 
 void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location, Vector<GLint>& v)
@@ -5961,6 +5962,16 @@ bool WebGLRenderingContextBase::validateCapability(const char* functionName, GLe
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid capability");
         return false;
     }
+}
+
+template<typename WTFTypedArray>
+bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, const TypedFlexibleArrayBufferView<WTFTypedArray>& v, GLsizei requiredMinSize)
+{
+    if (!v.dataMaybeOnStack()) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
+        return false;
+    }
+    return validateUniformMatrixParameters(functionName, location, false, v.dataMaybeOnStack(), v.length(), requiredMinSize);
 }
 
 bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, DOMFloat32Array* v, GLsizei requiredMinSize)

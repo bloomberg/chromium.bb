@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/TypedFlexibleArrayBufferView.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/page/Page.h"
@@ -156,7 +157,7 @@ public:
     void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
     void bufferData(GLenum target, DOMArrayBufferView* data, GLenum usage);
     void bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data);
-    void bufferSubData(GLenum target, long long offset, DOMArrayBufferView* data);
+    void bufferSubData(GLenum target, long long offset, const FlexibleArrayBufferView& data);
 
     GLenum checkFramebufferStatus(GLenum target);
     void clear(GLbitfield mask);
@@ -288,28 +289,28 @@ public:
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
 
     void uniform1f(const WebGLUniformLocation*, GLfloat x);
-    void uniform1fv(const WebGLUniformLocation*, DOMFloat32Array* v);
+    void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
     void uniform1fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform1i(const WebGLUniformLocation*, GLint x);
-    void uniform1iv(const WebGLUniformLocation*, DOMInt32Array* v);
+    void uniform1iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
     void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniform2f(const WebGLUniformLocation*, GLfloat x, GLfloat y);
-    void uniform2fv(const WebGLUniformLocation*, DOMFloat32Array* v);
+    void uniform2fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
     void uniform2fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform2i(const WebGLUniformLocation*, GLint x, GLint y);
-    void uniform2iv(const WebGLUniformLocation*, DOMInt32Array* v);
+    void uniform2iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
     void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniform3f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z);
-    void uniform3fv(const WebGLUniformLocation*, DOMFloat32Array* v);
+    void uniform3fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
     void uniform3fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform3i(const WebGLUniformLocation*, GLint x, GLint y, GLint z);
-    void uniform3iv(const WebGLUniformLocation*, DOMInt32Array* v);
+    void uniform3iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
     void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniform4f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void uniform4fv(const WebGLUniformLocation*, DOMFloat32Array* v);
+    void uniform4fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
     void uniform4fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform4i(const WebGLUniformLocation*, GLint x, GLint y, GLint z, GLint w);
-    void uniform4iv(const WebGLUniformLocation*, DOMInt32Array* v);
+    void uniform4iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
     void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniformMatrix2fv(const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array* value);
     void uniformMatrix2fv(const WebGLUniformLocation*, GLboolean transpose, Vector<GLfloat>& value);
@@ -937,6 +938,9 @@ protected:
     bool validateUniformParameters(const char* functionName, const WebGLUniformLocation*, void*, GLsizei, GLsizei mod);
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array*, GLsizei mod);
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, void*, GLsizei, GLsizei mod);
+
+    template<typename WTFTypedArray>
+    bool validateUniformParameters(const char*, const WebGLUniformLocation*,  const TypedFlexibleArrayBufferView<WTFTypedArray>&, GLsizei);
 
     // Helper function to validate the target for bufferData and getBufferParameter.
     virtual bool validateBufferTarget(const char* functionName, GLenum target);

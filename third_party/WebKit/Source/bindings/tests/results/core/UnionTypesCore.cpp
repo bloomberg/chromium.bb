@@ -24,6 +24,7 @@
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
 #include "bindings/tests/idls/core/TestPartialInterface.h"
 #include "bindings/tests/idls/core/TestPartialInterfaceImplementation.h"
+#include "core/dom/FlexibleArrayBufferView.h"
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/StaticNodeList.h"
