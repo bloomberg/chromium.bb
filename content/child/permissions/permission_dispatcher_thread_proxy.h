@@ -36,6 +36,9 @@ class PermissionDispatcherThreadProxy :
   virtual void queryPermission(blink::WebPermissionType type,
                                const blink::WebURL& origin,
                                blink::WebPermissionCallback* callback);
+  virtual void requestPermission(blink::WebPermissionType type,
+                                 const blink::WebURL& origin,
+                                 blink::WebPermissionCallback* callback);
   virtual void revokePermission(blink::WebPermissionType type,
                                 const blink::WebURL& origin,
                                 blink::WebPermissionCallback* callback);

@@ -40,6 +40,9 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   virtual void queryPermission(blink::WebPermissionType type,
                                const blink::WebURL& origin,
                                blink::WebPermissionCallback* callback);
+  virtual void requestPermission(blink::WebPermissionType,
+                                 const blink::WebURL& origin,
+                                 blink::WebPermissionCallback* callback);
   virtual void revokePermission(blink::WebPermissionType,
                                 const blink::WebURL& origin,
                                 blink::WebPermissionCallback* callback);
@@ -53,6 +56,10 @@ class PermissionDispatcher : public blink::WebPermissionClient,
                                 const std::string& origin,
                                 blink::WebPermissionCallback* callback,
                                 int worker_thread_id);
+  void RequestPermissionForWorker(blink::WebPermissionType type,
+                                  const std::string& origin,
+                                  blink::WebPermissionCallback* callback,
+                                  int worker_thread_id);
   void RevokePermissionForWorker(blink::WebPermissionType type,
                                  const std::string& origin,
                                  blink::WebPermissionCallback* callback,
@@ -83,6 +90,10 @@ class PermissionDispatcher : public blink::WebPermissionClient,
                                const std::string& origin,
                                blink::WebPermissionCallback* callback,
                                int worker_thread_id);
+  void RequestPermissionInternal(blink::WebPermissionType type,
+                                const std::string& origin,
+                                blink::WebPermissionCallback* callback,
+                                int worker_thread_id);
   void RevokePermissionInternal(blink::WebPermissionType type,
                                 const std::string& origin,
                                 blink::WebPermissionCallback* callback,

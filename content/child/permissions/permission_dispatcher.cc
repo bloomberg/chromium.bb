@@ -9,6 +9,7 @@
 #include "content/public/common/service_registry.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using blink::WebPermissionObserver;
 
@@ -113,6 +114,14 @@ void PermissionDispatcher::queryPermission(
       type, origin.string().utf8(), callback, kNoWorkerThread);
 }
 
+void PermissionDispatcher::requestPermission(
+    blink::WebPermissionType type,
+    const blink::WebURL& origin,
+    blink::WebPermissionCallback* callback) {
+  RequestPermissionInternal(
+      type, origin.string().utf8(), callback, kNoWorkerThread);
+}
+
 void PermissionDispatcher::revokePermission(
     blink::WebPermissionType type,
     const blink::WebURL& origin,
@@ -152,6 +161,14 @@ void PermissionDispatcher::QueryPermissionForWorker(
     blink::WebPermissionCallback* callback,
     int worker_thread_id) {
   QueryPermissionInternal(type, origin, callback, worker_thread_id);
+}
+
+void PermissionDispatcher::RequestPermissionForWorker(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    blink::WebPermissionCallback* callback,
+    int worker_thread_id) {
+  RequestPermissionInternal(type, origin, callback, worker_thread_id);
 }
 
 void PermissionDispatcher::RevokePermissionForWorker(
@@ -227,6 +244,26 @@ void PermissionDispatcher::QueryPermissionInternal(
   GetPermissionServicePtr()->HasPermission(
       GetPermissionName(type),
       origin,
+      base::Bind(&PermissionDispatcher::OnPermissionResponse,
+                 base::Unretained(this),
+                 request_id));
+}
+
+void PermissionDispatcher::RequestPermissionInternal(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    blink::WebPermissionCallback* callback,
+    int worker_thread_id) {
+  // We need to save the |callback| in an IDMap so if |this| gets deleted, the
+  // callback will not leak. In the case of |this| gets deleted, the
+  // |permission_service_| pipe will be destroyed too so OnQueryPermission will
+  // not be called.
+  int request_id = pending_callbacks_.Add(
+      new CallbackInformation(callback, worker_thread_id));
+  GetPermissionServicePtr()->RequestPermission(
+      GetPermissionName(type),
+      origin,
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&PermissionDispatcher::OnPermissionResponse,
                  base::Unretained(this),
                  request_id));
