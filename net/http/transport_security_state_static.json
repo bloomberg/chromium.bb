@@ -282,6 +282,8 @@
     { "name": "g.co", "include_subdomains": true, "pins": "google" },
     { "name": "googletagmanager.com", "include_subdomains": true, "pins": "google" },
     { "name": "googletagservices.com", "include_subdomains": true, "pins": "google" },
+    { "name": "ggpht.com", "include_subdomains": true, "pins": "google" },
+    { "name": "blogspot.com", "include_subdomains": true, "pins": "google" },
     { "name": "google.ac", "include_subdomains": true, "pins": "google" },
     { "name": "google.ad", "include_subdomains": true, "pins": "google" },
     { "name": "google.ae", "include_subdomains": true, "pins": "google" },
@@ -3585,6 +3587,8 @@
     "CHROME_COM",
     "GVT3_COM",
     "GVT2_COM",
-    "GOOGLE"
+    "GOOGLE",
+    "GGPHT_COM",
+    "BLOGSPOT_COM"
   ]
 }
