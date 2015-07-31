@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import sys
 import unittest
@@ -14,6 +15,15 @@ from pylib import constants
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
 import mock  # pylint: disable=F0401
+
+EMPTY_COVERAGE_STATS_DICT = {
+  'files': {},
+  'patch': {
+    'incremental': {
+      'covered': 0, 'total': 0
+    }
+  }
+}
 
 
 class _EmmaHtmlParserTest(unittest.TestCase):
@@ -223,6 +233,11 @@ class _EmmaHtmlParserTest(unittest.TestCase):
     return_dict = self.parser.GetPackageNameToEmmaFileDict()
     self.assertDictEqual({}, return_dict)
 
+  def testGetPackageNameToEmmaFileDict_badFilePath(self):
+    self.parser._FindElements = mock.Mock(return_value=[])
+    return_dict = self.parser.GetPackageNameToEmmaFileDict()
+    self.assertEqual(return_dict, {})
+
   def testGetLineCoverage_status_basic(self):
     line_coverage = self.GetLineCoverageWithFakeElements([self.covered_tr_html])
     self.assertEqual(line_coverage[0].covered_status,
@@ -284,8 +299,254 @@ class _EmmaHtmlParserTest(unittest.TestCase):
       return self.parser.GetLineCoverage('fake_path')
 
 
+class _EmmaCoverageStatsTest(unittest.TestCase):
+  """Tests for _EmmaCoverageStats."""
+
+  def setUp(self):
+    self.good_source_to_emma = {
+      '/path/to/1/File1.java': '/emma/1.html',
+      '/path/2/File2.java': '/emma/2.html',
+      '/path/2/File3.java': '/emma/3.html'
+    }
+    self.line_coverage = [
+        emma_coverage_stats.LineCoverage(
+            1, '', emma_coverage_stats.COVERED, 1.0),
+        emma_coverage_stats.LineCoverage(
+            2, '', emma_coverage_stats.COVERED, 1.0),
+        emma_coverage_stats.LineCoverage(
+            3, '', emma_coverage_stats.NOT_EXECUTABLE, 1.0),
+        emma_coverage_stats.LineCoverage(
+            4, '', emma_coverage_stats.NOT_COVERED, 1.0),
+        emma_coverage_stats.LineCoverage(
+            5, '', emma_coverage_stats.PARTIALLY_COVERED, 0.85),
+        emma_coverage_stats.LineCoverage(
+            6, '', emma_coverage_stats.PARTIALLY_COVERED, 0.20)
+    ]
+    self.lines_for_coverage = [1, 3, 5, 6]
+    with mock.patch('emma_coverage_stats._EmmaHtmlParser._FindElements',
+                    return_value=[]):
+      self.simple_coverage = emma_coverage_stats._EmmaCoverageStats(
+          'fake_dir', {})
+
+  def testInit(self):
+    coverage_stats = self.simple_coverage
+    self.assertIsInstance(coverage_stats._emma_parser,
+                          emma_coverage_stats._EmmaHtmlParser)
+    self.assertIsInstance(coverage_stats._source_to_emma, dict)
+
+  def testNeedsCoverage_withExistingJavaFile(self):
+    test_file = '/path/to/file/File.java'
+    with mock.patch('os.path.exists', return_value=True):
+      self.assertTrue(
+          emma_coverage_stats._EmmaCoverageStats.NeedsCoverage(test_file))
+
+  def testNeedsCoverage_withNonJavaFile(self):
+    test_file = '/path/to/file/File.c'
+    with mock.patch('os.path.exists', return_value=True):
+      self.assertFalse(
+          emma_coverage_stats._EmmaCoverageStats.NeedsCoverage(test_file))
+
+  def testNeedsCoverage_fileDoesNotExist(self):
+    test_file = '/path/to/file/File.java'
+    with mock.patch('os.path.exists', return_value=False):
+      self.assertFalse(
+          emma_coverage_stats._EmmaCoverageStats.NeedsCoverage(test_file))
+
+  def testGetPackageNameFromFile_basic(self):
+    test_file_text = """// Test Copyright
+    package org.chromium.chrome.browser;
+    import android.graphics.RectF;"""
+    result_package, _ = MockOpenForFunction(
+        emma_coverage_stats._EmmaCoverageStats.GetPackageNameFromFile,
+        [test_file_text], file_path='/path/to/file/File.java')
+    self.assertEqual(result_package, 'org.chromium.chrome.browser.File.java')
+
+  def testGetPackageNameFromFile_noPackageStatement(self):
+    result_package, _ = MockOpenForFunction(
+        emma_coverage_stats._EmmaCoverageStats.GetPackageNameFromFile,
+        ['not a package statement'], file_path='/path/to/file/File.java')
+    self.assertIsNone(result_package)
+
+  def testGetSummaryStatsForLines_basic(self):
+    covered, total = self.simple_coverage.GetSummaryStatsForLines(
+        self.line_coverage)
+    self.assertEqual(covered, 3.05)
+    self.assertEqual(total, 5)
+
+  def testGetSourceFileToEmmaFileDict(self):
+    package_names = {
+      '/path/to/1/File1.java': 'org.fake.one.File1.java',
+      '/path/2/File2.java': 'org.fake.File2.java',
+      '/path/2/File3.java': 'org.fake.File3.java'
+    }
+    package_to_emma = {
+      'org.fake.one.File1.java': '/emma/1.html',
+      'org.fake.File2.java': '/emma/2.html',
+      'org.fake.File3.java': '/emma/3.html'
+    }
+    with mock.patch('os.path.exists', return_value=True):
+      coverage_stats = self.simple_coverage
+      coverage_stats._emma_parser.GetPackageNameToEmmaFileDict = mock.MagicMock(
+          return_value=package_to_emma)
+      coverage_stats.GetPackageNameFromFile = lambda x: package_names[x]
+      result_dict = coverage_stats._GetSourceFileToEmmaFileDict(
+          package_names.keys())
+    self.assertDictEqual(result_dict, self.good_source_to_emma)
+
+  def testGetLineCoverageForFile_basic(self):
+    java_file_path = '/path/to/1/File1.java'
+    line_coverage = emma_coverage_stats.LineCoverage(
+        1, '', emma_coverage_stats.COVERED, 1.0)
+    expected_line_coverage = list(line_coverage)
+    coverage_stats = self.simple_coverage
+    coverage_stats._source_to_emma = self.good_source_to_emma
+    coverage_stats._emma_parser.GetLineCoverage = mock.MagicMock(
+        return_value=expected_line_coverage)
+    coverage_info = coverage_stats._GetLineCoverageForFile(java_file_path)
+    self.assertListEqual(coverage_info, expected_line_coverage)
+
+  def testGetLineCoverageForFile_noInfo(self):
+    with mock.patch('os.path.exists', return_value=False):
+      coverage_info = self.simple_coverage._GetLineCoverageForFile('fake_path')
+    self.assertIsNone(coverage_info)
+
+  def testGetCoverageDictForFile(self):
+    line_coverage = self.line_coverage
+    self.simple_coverage._GetLineCoverageForFile = mock.Mock(
+        return_value=line_coverage)
+    lines = self.lines_for_coverage
+    expected_dict = {
+      'absolute': {
+        'covered': 3.05,
+        'total': 5
+      },
+      'incremental': {
+        'covered': 2.05,
+        'total': 3
+      },
+      'source': [
+        {
+          'line': line_coverage[0].source,
+          'coverage': line_coverage[0].covered_status,
+          'changed': True
+        },
+        {
+          'line': line_coverage[1].source,
+          'coverage': line_coverage[1].covered_status,
+          'changed': False
+        },
+        {
+          'line': line_coverage[2].source,
+          'coverage': line_coverage[2].covered_status,
+          'changed': True
+        },
+        {
+          'line': line_coverage[3].source,
+          'coverage': line_coverage[3].covered_status,
+          'changed': False
+        },
+        {
+          'line': line_coverage[4].source,
+          'coverage': line_coverage[4].covered_status,
+          'changed': True
+        },
+        {
+          'line': line_coverage[5].source,
+          'coverage': line_coverage[5].covered_status,
+          'changed': True
+        }
+      ]
+    }
+    result_dict = self.simple_coverage.GetCoverageDictForFile(
+        line_coverage, lines)
+    self.assertDictEqual(result_dict, expected_dict)
+
+  def testGetCoverageDictForFile_emptyCoverage(self):
+    expected_dict = {
+    'absolute': {'covered': 0, 'total': 0},
+    'incremental': {'covered': 0, 'total': 0},
+    'source': []
+    }
+    self.simple_coverage._GetLineCoverageForFile = mock.Mock(return_value=[])
+    result_dict = self.simple_coverage.GetCoverageDictForFile('fake_dir', {})
+    self.assertDictEqual(result_dict, expected_dict)
+
+  def testGetCoverageDictFor_basic(self):
+    files_for_coverage = {
+      '/path/to/1/File1.java': [1, 3, 4],
+      '/path/2/File2.java': [1, 2]
+    }
+    coverage_info = {
+      '/path/to/1/File1.java': [
+        emma_coverage_stats.LineCoverage(
+            1, '', emma_coverage_stats.COVERED, 1.0),
+        emma_coverage_stats.LineCoverage(
+            2, '', emma_coverage_stats.PARTIALLY_COVERED, 0.5),
+        emma_coverage_stats.LineCoverage(
+            3, '', emma_coverage_stats.NOT_EXECUTABLE, 1.0),
+        emma_coverage_stats.LineCoverage(
+            4, '', emma_coverage_stats.COVERED, 1.0)
+      ],
+      '/path/2/File2.java': [
+        emma_coverage_stats.LineCoverage(
+            1, '', emma_coverage_stats.NOT_COVERED, 1.0),
+        emma_coverage_stats.LineCoverage(
+            2, '', emma_coverage_stats.COVERED, 1.0)
+      ]
+    }
+    expected_dict = {
+      'files': {
+        '/path/2/File2.java': {
+          'absolute': {'covered': 1, 'total': 2},
+          'incremental': {'covered': 1, 'total': 2},
+          'source': [{'changed': True, 'coverage': 0, 'line': ''},
+                     {'changed': True, 'coverage': 1, 'line': ''}]
+        },
+        '/path/to/1/File1.java': {
+          'absolute': {'covered': 2.5, 'total': 3},
+          'incremental': {'covered': 2, 'total': 2},
+          'source': [{'changed': True, 'coverage': 1, 'line': ''},
+                     {'changed': False, 'coverage': 2, 'line': ''},
+                     {'changed': True, 'coverage': -1, 'line': ''},
+                     {'changed': True, 'coverage': 1, 'line': ''}]
+        }
+      },
+      'patch': {'incremental': {'covered': 3, 'total': 4}}
+    }
+    # Return the relevant coverage info for each file. We aren't testing
+    # _GetCoverageStatusForFile here.
+    self.simple_coverage._GetLineCoverageForFile = lambda x: coverage_info[x]
+    result_dict = self.simple_coverage.GetCoverageDict(
+        files_for_coverage)
+    self.assertDictEqual(result_dict, expected_dict)
+
+  def testGetCoverageDict_noCoverage(self):
+    result_dict = self.simple_coverage.GetCoverageDict({})
+    self.assertDictEqual(result_dict, EMPTY_COVERAGE_STATS_DICT)
+
+
+class EmmaCoverageStatsGenerateCoverageReport(unittest.TestCase):
+  """Tests for GenerateCoverageReport."""
+
+  def testGenerateCoverageReport_missingJsonFile(self):
+    with self.assertRaises(IOError):
+      with mock.patch('os.path.exists', return_value=False):
+        emma_coverage_stats.GenerateCoverageReport('', '', '')
+
+  def testGenerateCoverageReport_invalidJsonFile(self):
+    with self.assertRaises(ValueError):
+      with mock.patch('os.path.exists', return_value=True):
+        MockOpenForFunction(emma_coverage_stats.GenerateCoverageReport, [''],
+                            line_coverage_file='', out_file_path='',
+                            coverage_dir='')
+
+
 def MockOpenForFunction(func, side_effects, **kwargs):
   """Allows easy mock open and read for callables that open multiple files.
+
+  Will mock the python open function in a way such that each time read() is
+  called on an open file, the next element in |side_effects| is returned. This
+  makes it easier to test functions that call open() multiple times.
 
   Args:
     func: The callable to invoke once mock files are setup.
@@ -305,4 +566,5 @@ def MockOpenForFunction(func, side_effects, **kwargs):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  # Suppress logging messages.
+  unittest.main(buffer=True)
