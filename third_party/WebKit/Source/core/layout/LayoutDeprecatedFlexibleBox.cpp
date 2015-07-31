@@ -260,14 +260,10 @@ void LayoutDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
     }
 
     updateLayerTransformAfterLayout();
+    updateScrollInfoAfterLayout();
 
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
-
-    // Update our scrollbars if we're overflow:auto/scroll/hidden now that we know if
-    // we overflow or not.
-    if (hasOverflowClip())
-        layer()->scrollableArea()->updateAfterLayout();
 
     clearNeedsLayout();
 }

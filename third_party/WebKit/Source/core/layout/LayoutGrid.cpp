@@ -365,11 +365,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
     }
 
     updateLayerTransformAfterLayout();
-
-    // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
-    // we overflow or not.
-    if (hasOverflowClip())
-        layer()->scrollableArea()->updateAfterLayout();
+    updateScrollInfoAfterLayout();
 
     clearNeedsLayout();
 }
