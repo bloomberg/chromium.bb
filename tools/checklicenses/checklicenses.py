@@ -190,6 +190,26 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/trace-viewer/tracing/third_party/devscripts': [
         'GPL (v2 or later)',
     ],
+    # https://code.google.com/p/webapp-improved/issues/detail?id=103
+    # Apache (v2.0).
+    'third_party/trace-viewer/third_party/webapp2': [
+        'UNKNOWN',
+    ],
+    # https://github.com/Pylons/webob/issues/211
+    # MIT license.
+    'third_party/trace-viewer/third_party/WebOb': [
+        'UNKNOWN',
+    ],
+    # https://bitbucket.org/ianb/paste/issues/12/add-license-headers-to-source-files
+    # MIT license.
+    'third_party/trace-viewer/third_party/Paste': [
+        'UNKNOWN',
+    ],
+    # https://bitbucket.org/gutworth/six/issues/129/add-license-headers-to-source-files
+    # MIT license.
+    'third_party/trace-viewer/third_party/six': [
+        'UNKNOWN',
+    ],
     'third_party/expat/files/lib': [  # http://crbug.com/98121
         'UNKNOWN',
     ],
