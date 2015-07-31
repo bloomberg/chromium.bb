@@ -561,7 +561,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    Position searchStart = createLegacyEditingPosition(start.anchorNode(), start.deprecatedEditingOffset());
+    Position searchStart = createLegacyEditingPosition(start.anchorNode(), start.offsetInContainerNode());
     RangeBoundaryPoint searchEndPoint(boundary);
     searchEndPoint.setToEndOfNode(*boundary);
     Position searchEnd = searchEndPoint.toPosition();
