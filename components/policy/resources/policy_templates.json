@@ -7421,7 +7421,7 @@
       'name': 'HardwareAccelerationModeEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:45-'],
+      'supported_on': ['chrome.*:46-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
