@@ -16,6 +16,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -630,7 +631,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // This test is invalid in --site-per-process mode, as swapped-out is no
   // longer used.
-  if (RenderFrameProxy::IsSwappedOutStateForbidden()) {
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     return;
   }
   LoadHTML("<div>Page A</div>");
@@ -681,7 +682,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
 TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   // This test is invalid in --site-per-process mode, as swapped-out is no
   // longer used.
-  if (RenderFrameProxy::IsSwappedOutStateForbidden()) {
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     return;
   }
 

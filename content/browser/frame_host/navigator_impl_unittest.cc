@@ -15,6 +15,7 @@
 #include "content/browser/streams/stream.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -934,7 +935,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
        SpeculativeRendererReuseSwappedOutRFH) {
   // This test doesn't make sense in --site-per-process where swapped out
   // RenderFrameHost is no longer used.
-  if (RenderFrameHostManager::IsSwappedOutStateForbidden())
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden())
     return;
 
   // Navigate to an initial site.

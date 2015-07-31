@@ -93,18 +93,6 @@ class CONTENT_EXPORT RenderFrameProxy
   // Returns the RenderFrameProxy given a WebFrame.
   static RenderFrameProxy* FromWebFrame(blink::WebFrame* web_frame);
 
-  // Returns true if we are currently in a mode where the swapped out state
-  // should not be used. Currently (as an implementation strategy) swapped out
-  // is forbidden under --site-per-process, but our goal is to eliminate the
-  // mode entirely. In code that deals with the swapped out state, prefer calls
-  // to this function over consulting the switches directly. It will be easier
-  // to grep, and easier to rip out.
-  //
-  // TODO(nasko): When swappedout:// is eliminated entirely, this function (and
-  // its equivalent in RenderFrameHostManager) should be removed and its callers
-  // cleaned up.
-  static bool IsSwappedOutStateForbidden();
-
   ~RenderFrameProxy() override;
 
   // IPC::Sender

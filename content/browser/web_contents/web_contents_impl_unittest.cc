@@ -17,6 +17,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -540,7 +541,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
     contents()->GetMainFrame()->PrepareForCommit();
   }
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
-  if (!RenderFrameHostManager::IsSwappedOutStateForbidden()) {
+  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     // Recycling the rfh is a behavior specific to swappedout://
     EXPECT_EQ(orig_rfh, goback_rfh);
   }
@@ -930,7 +931,7 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
       popup->GetRenderManager()->GetOpenerRoutingID(instance);
   RenderFrameProxyHost* proxy =
       contents()->GetRenderManager()->GetRenderFrameProxyHost(instance);
-  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     EXPECT_TRUE(proxy);
     EXPECT_EQ(proxy->GetRoutingID(), opener_frame_routing_id);
 

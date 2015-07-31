@@ -117,11 +117,6 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(blink::WebFrame* web_frame) {
   return NULL;
 }
 
-// static
-bool RenderFrameProxy::IsSwappedOutStateForbidden() {
-  return SiteIsolationPolicy::AreCrossProcessFramesPossible();
-}
-
 RenderFrameProxy::RenderFrameProxy(int routing_id, int frame_routing_id)
     : routing_id_(routing_id),
       frame_routing_id_(frame_routing_id),
@@ -298,7 +293,7 @@ void RenderFrameProxy::OnDisownOpener() {
   // When there is a RenderFrame for this proxy, tell it to disown its opener.
   // TODO(creis): Remove this when we only have WebRemoteFrames and make sure
   // they know they have an opener.
-  if (!RenderFrameProxy::IsSwappedOutStateForbidden()) {
+  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     RenderFrameImpl* render_frame =
         RenderFrameImpl::FromRoutingID(frame_routing_id_);
     if (render_frame) {

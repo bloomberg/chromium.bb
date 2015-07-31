@@ -46,6 +46,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/pepper_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
@@ -631,7 +632,7 @@ WebFrame* ResolveOpener(int opener_frame_routing_id,
     // TODO(nasko,alexmos): This check won't be needed once swapped-out:// is
     // gone.
     if (opener_proxy->IsMainFrameDetachedFromTree()) {
-      DCHECK(!RenderFrameProxy::IsSwappedOutStateForbidden());
+      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
       return opener_proxy->render_view()->webview()->mainFrame();
     } else {
       return opener_proxy->web_frame();
@@ -753,7 +754,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   // When not using swapped out state, just use the WebRemoteFrame as the main
   // frame.
-  if (proxy && RenderFrameProxy::IsSwappedOutStateForbidden()) {
+  if (proxy && SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     webview()->setMainFrame(proxy->web_frame());
     // Initialize the WebRemoteFrame with information replicated from the
     // browser process.

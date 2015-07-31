@@ -27,4 +27,10 @@ bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
       switches::kSitePerProcess);
 }
 
+// static
+bool SiteIsolationPolicy::IsSwappedOutStateForbidden() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+}
+
 }  // namespace content

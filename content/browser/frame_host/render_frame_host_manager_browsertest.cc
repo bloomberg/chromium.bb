@@ -20,6 +20,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -1223,7 +1224,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SwappedOutViewHasCorrectVisibilityState) {
   // This test is invalid in --site-per-process mode, as swapped-out is no
   // longer used.
-  if (RenderFrameHostManager::IsSwappedOutStateForbidden())
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden())
     return;
   StartServer();
 

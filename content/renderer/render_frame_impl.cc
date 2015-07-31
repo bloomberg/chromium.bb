@@ -706,7 +706,7 @@ RenderFrameImpl::~RenderFrameImpl() {
     // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
     // along with this object.
     if (render_frame_proxy_ &&
-        !RenderFrameProxy::IsSwappedOutStateForbidden()) {
+        !SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
       // The following method calls back into this object and clears
       // |render_frame_proxy_|.
       render_frame_proxy_->frameDetached(
@@ -1125,7 +1125,8 @@ void RenderFrameImpl::OnSwapOut(
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
-  bool swapped_out_forbidden = RenderFrameProxy::IsSwappedOutStateForbidden();
+  bool swapped_out_forbidden =
+      SiteIsolationPolicy::IsSwappedOutStateForbidden();
   bool is_main_frame = !frame_->parent();
 
   // This codepath should only be hit for subframes when in --site-per-process.
@@ -4184,7 +4185,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
                                                            info.urlRequest));
 
   // TODO(nick): Is consulting |is_subframe_| here correct?
-  if (RenderFrameProxy::IsSwappedOutStateForbidden() && is_subframe_) {
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden() && is_subframe_) {
     // There's no reason to ignore navigations on subframes, since the swap out
     // logic no longer applies.
   } else {

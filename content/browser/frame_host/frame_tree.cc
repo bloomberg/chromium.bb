@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/site_isolation_policy.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
@@ -225,7 +226,7 @@ void FrameTree::CreateProxiesForSiteInstance(
   if (!source || !source->IsMainFrame()) {
     RenderViewHostImpl* render_view_host = GetRenderViewHost(site_instance);
     if (!render_view_host) {
-      if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
+      if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
         root()->render_manager()->CreateRenderFrameProxy(site_instance);
       } else {
         root()->render_manager()->CreateRenderFrame(

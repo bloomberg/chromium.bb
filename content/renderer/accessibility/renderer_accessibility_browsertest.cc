@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/render_view_test.h"
@@ -170,7 +171,7 @@ TEST_F(RendererAccessibilityTest,
   // the main frame and it cannot be further navigated.
   // TODO(nasko): Figure out what this behavior looks like when swapped out
   // no longer exists.
-  if (RenderFrameProxy::IsSwappedOutStateForbidden()) {
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     return;
   }
   std::string html =
