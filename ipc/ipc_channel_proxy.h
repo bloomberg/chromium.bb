@@ -157,6 +157,8 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   base::ScopedFD TakeClientFileDescriptor();
 #endif
 
+  void SetAttachmentBrokerEndpoint(bool is_endpoint);
+
  protected:
   class Context;
   // A subclass uses this constructor if it needs to add more information
@@ -217,6 +219,10 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // Create the Channel
     void CreateChannel(scoped_ptr<ChannelFactory> factory);
 
+    void set_attachment_broker_endpoint(bool is_endpoint) {
+      attachment_broker_endpoint_ = is_endpoint;
+    }
+
     // Methods called on the IO thread.
     void OnSendMessage(scoped_ptr<Message> message_ptr);
     void OnAddFilter();
@@ -266,6 +272,10 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // Cached copy of the peer process ID. Set on IPC but read on both IPC and
     // listener threads.
     base::ProcessId peer_pid_;
+
+    // Whether this channel is used as an endpoint for sending and receiving
+    // brokerable attachment messages to/from the broker process.
+    bool attachment_broker_endpoint_;
   };
 
   Context* context() { return context_.get(); }

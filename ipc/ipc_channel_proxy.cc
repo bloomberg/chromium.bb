@@ -32,7 +32,8 @@ ChannelProxy::Context::Context(
       channel_connected_called_(false),
       channel_send_thread_safe_(false),
       message_filter_router_(new MessageFilterRouter()),
-      peer_pid_(base::kNullProcessId) {
+      peer_pid_(base::kNullProcessId),
+      attachment_broker_endpoint_(false) {
   DCHECK(ipc_task_runner_.get());
   // The Listener thread where Messages are handled must be a separate thread
   // to avoid oversubscribing the IO thread. If you trigger this error, you
@@ -58,6 +59,7 @@ void ChannelProxy::Context::CreateChannel(scoped_ptr<ChannelFactory> factory) {
   channel_id_ = factory->GetName();
   channel_ = factory->BuildChannel(this);
   channel_send_thread_safe_ = channel_->IsSendThreadSafe();
+  channel_->set_attachment_broker_endpoint(attachment_broker_endpoint_);
 }
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {
@@ -503,6 +505,10 @@ base::ScopedFD ChannelProxy::TakeClientFileDescriptor() {
   return channel->TakeClientFileDescriptor();
 }
 #endif
+
+void ChannelProxy::SetAttachmentBrokerEndpoint(bool is_endpoint) {
+  context()->set_attachment_broker_endpoint(is_endpoint);
+}
 
 //-----------------------------------------------------------------------------
 
