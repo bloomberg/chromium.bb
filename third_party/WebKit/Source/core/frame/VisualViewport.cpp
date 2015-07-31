@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/frame/PinchViewport.h"
+#include "core/frame/VisualViewport.h"
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -67,7 +67,7 @@ using blink::GraphicsLayerFactory;
 
 namespace blink {
 
-PinchViewport::PinchViewport(FrameHost& owner)
+VisualViewport::VisualViewport(FrameHost& owner)
     : m_frameHost(&owner)
     , m_scale(1)
     , m_topControlsAdjustment(0)
@@ -75,17 +75,17 @@ PinchViewport::PinchViewport(FrameHost& owner)
     reset();
 }
 
-PinchViewport::~PinchViewport()
+VisualViewport::~VisualViewport()
 {
 }
 
-DEFINE_TRACE(PinchViewport)
+DEFINE_TRACE(VisualViewport)
 {
     visitor->trace(m_frameHost);
     ScrollableArea::trace(visitor);
 }
 
-void PinchViewport::setSize(const IntSize& size)
+void VisualViewport::setSize(const IntSize& size)
 {
     // When the main frame is remote, we won't have an associated frame.
     if (!mainFrame())
@@ -99,7 +99,7 @@ void PinchViewport::setSize(const IntSize& size)
         && mainFrame()->settings()
         && mainFrame()->settings()->textAutosizingEnabled();
 
-    TRACE_EVENT2("blink", "PinchViewport::setSize", "width", size.width(), "height", size.height());
+    TRACE_EVENT2("blink", "VisualViewport::setSize", "width", size.width(), "height", size.height());
     m_size = size;
 
     if (m_innerViewportContainerLayer) {
@@ -117,14 +117,14 @@ void PinchViewport::setSize(const IntSize& size)
     }
 }
 
-void PinchViewport::reset()
+void VisualViewport::reset()
 {
     setScaleAndLocation(1, FloatPoint());
 }
 
-void PinchViewport::mainFrameDidChangeSize()
+void VisualViewport::mainFrameDidChangeSize()
 {
-    TRACE_EVENT0("blink", "PinchViewport::mainFrameDidChangeSize");
+    TRACE_EVENT0("blink", "VisualViewport::mainFrameDidChangeSize");
 
     // In unit tests we may not have initialized the layer tree.
     if (m_innerViewportScrollLayer)
@@ -133,7 +133,7 @@ void PinchViewport::mainFrameDidChangeSize()
     clampToBoundaries();
 }
 
-FloatSize PinchViewport::visibleSize() const
+FloatSize VisualViewport::visibleSize() const
 {
     FloatSize scaledSize(m_size);
     scaledSize.expand(0, m_topControlsAdjustment);
@@ -141,12 +141,12 @@ FloatSize PinchViewport::visibleSize() const
     return scaledSize;
 }
 
-FloatRect PinchViewport::visibleRect() const
+FloatRect VisualViewport::visibleRect() const
 {
     return FloatRect(location(), visibleSize());
 }
 
-FloatRect PinchViewport::visibleRectInDocument() const
+FloatRect VisualViewport::visibleRectInDocument() const
 {
     if (!mainFrame() || !mainFrame()->view())
         return FloatRect();
@@ -155,7 +155,7 @@ FloatRect PinchViewport::visibleRectInDocument() const
     return FloatRect(viewLocation, visibleSize());
 }
 
-FloatRect PinchViewport::mainViewToViewportCSSPixels(const FloatRect& rect) const
+FloatRect VisualViewport::mainViewToViewportCSSPixels(const FloatRect& rect) const
 {
     // Note, this is in CSS Pixels so we don't apply scale.
     FloatRect rectInViewport = rect;
@@ -163,7 +163,7 @@ FloatRect PinchViewport::mainViewToViewportCSSPixels(const FloatRect& rect) cons
     return rectInViewport;
 }
 
-FloatPoint PinchViewport::viewportCSSPixelsToRootFrame(const FloatPoint& point) const
+FloatPoint VisualViewport::viewportCSSPixelsToRootFrame(const FloatPoint& point) const
 {
     // Note, this is in CSS Pixels so we don't apply scale.
     FloatPoint pointInRootFrame = point;
@@ -171,27 +171,27 @@ FloatPoint PinchViewport::viewportCSSPixelsToRootFrame(const FloatPoint& point) 
     return pointInRootFrame;
 }
 
-void PinchViewport::setLocation(const FloatPoint& newLocation)
+void VisualViewport::setLocation(const FloatPoint& newLocation)
 {
     setScaleAndLocation(m_scale, newLocation);
 }
 
-void PinchViewport::move(const FloatPoint& delta)
+void VisualViewport::move(const FloatPoint& delta)
 {
     setLocation(m_offset + delta);
 }
 
-void PinchViewport::move(const FloatSize& delta)
+void VisualViewport::move(const FloatSize& delta)
 {
     setLocation(m_offset + delta);
 }
 
-void PinchViewport::setScale(float scale)
+void VisualViewport::setScale(float scale)
 {
     setScaleAndLocation(scale, m_offset);
 }
 
-void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
+void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 {
     bool valuesChanged = false;
 
@@ -227,7 +227,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
     clampToBoundaries();
 }
 
-bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor)
+bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor)
 {
     const float oldPageScale = scale();
     const float newPageScale = frameHost().chromeClient().clampPageScaleFactorToLimits(
@@ -254,7 +254,7 @@ bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoin
         anchorDeltaUnusedByScroll -= toFloatSize(newPosition - oldPosition);
     }
 
-    // Manually bubble any remaining anchor delta up to the pinch viewport.
+    // Manually bubble any remaining anchor delta up to the visual viewport.
     FloatPoint newLocation(location() + anchorDeltaUnusedByScroll);
     setScaleAndLocation(newPageScale, newLocation);
     return true;
@@ -279,9 +279,9 @@ bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoin
 //  +- *horizontalScrollbarLayer (overlay)
 //  +- *verticalScrollbarLayer (overlay)
 //
-void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
+void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
 {
-    TRACE_EVENT1("blink", "PinchViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
+    TRACE_EVENT1("blink", "VisualViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
     if (!currentLayerTreeRoot) {
         if (m_innerViewportScrollLayer)
             m_innerViewportScrollLayer->removeAllChildren();
@@ -339,7 +339,7 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
     m_innerViewportScrollLayer->addChild(currentLayerTreeRoot);
 }
 
-void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
+void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 {
     bool isHorizontal = orientation == WebScrollbar::Horizontal;
     GraphicsLayer* scrollbarGraphicsLayer = isHorizontal ?
@@ -386,9 +386,9 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     scrollbarGraphicsLayer->setContentsRect(IntRect(0, 0, width, height));
 }
 
-void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) const
+void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
-    TRACE_EVENT0("blink", "PinchViewport::registerLayersWithTreeView");
+    TRACE_EVENT0("blink", "VisualViewport::registerLayersWithTreeView");
     ASSERT(layerTreeView);
 
     if (!mainFrame())
@@ -411,24 +411,24 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
         scrollLayer);
 }
 
-void PinchViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) const
+void VisualViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);
 
     layerTreeView->clearViewportLayers();
 }
 
-DoubleRect PinchViewport::visibleContentRectDouble(IncludeScrollbarsInRect) const
+DoubleRect VisualViewport::visibleContentRectDouble(IncludeScrollbarsInRect) const
 {
     return visibleRect();
 }
 
-IntRect PinchViewport::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
+IntRect VisualViewport::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     return enclosingIntRect(visibleContentRectDouble(scrollbarInclusion));
 }
 
-bool PinchViewport::shouldUseIntegerScrollOffset() const
+bool VisualViewport::shouldUseIntegerScrollOffset() const
 {
     LocalFrame* frame = mainFrame();
     if (frame && frame->settings() && !frame->settings()->preferCompositingToLCDTextEnabled())
@@ -437,23 +437,23 @@ bool PinchViewport::shouldUseIntegerScrollOffset() const
     return ScrollableArea::shouldUseIntegerScrollOffset();
 }
 
-int PinchViewport::scrollSize(ScrollbarOrientation orientation) const
+int VisualViewport::scrollSize(ScrollbarOrientation orientation) const
 {
     IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();
     return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
-IntPoint PinchViewport::minimumScrollPosition() const
+IntPoint VisualViewport::minimumScrollPosition() const
 {
     return IntPoint();
 }
 
-IntPoint PinchViewport::maximumScrollPosition() const
+IntPoint VisualViewport::maximumScrollPosition() const
 {
     return flooredIntPoint(maximumScrollPositionDouble());
 }
 
-DoublePoint PinchViewport::maximumScrollPositionDouble() const
+DoublePoint VisualViewport::maximumScrollPositionDouble() const
 {
     if (!mainFrame())
         return IntPoint();
@@ -477,7 +477,7 @@ DoublePoint PinchViewport::maximumScrollPositionDouble() const
     return DoublePoint(maxPosition);
 }
 
-IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float scale)
+IntPoint VisualViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float scale)
 {
     if (!mainFrame() || !mainFrame()->view())
         return IntPoint();
@@ -487,9 +487,9 @@ IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float
     FloatSize scaledSize(m_size);
     scaledSize.scale(1 / scale);
 
-    IntPoint pinchViewportMax = flooredIntPoint(FloatSize(contentsSize()) - scaledSize);
-    IntPoint max = view->maximumScrollPosition() + pinchViewportMax;
-    IntPoint min = view->minimumScrollPosition(); // PinchViewportMin should be (0, 0)
+    IntPoint visualViewportMax = flooredIntPoint(FloatSize(contentsSize()) - scaledSize);
+    IntPoint max = view->maximumScrollPosition() + visualViewportMax;
+    IntPoint min = view->minimumScrollPosition(); // VisualViewportMin should be (0, 0)
 
     IntPoint clamped = offset;
     clamped = clamped.shrunkTo(max);
@@ -497,16 +497,16 @@ IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float
     return clamped;
 }
 
-void PinchViewport::setTopControlsAdjustment(float adjustment)
+void VisualViewport::setTopControlsAdjustment(float adjustment)
 {
     m_topControlsAdjustment = adjustment;
 }
 
-IntRect PinchViewport::scrollableAreaBoundingBox() const
+IntRect VisualViewport::scrollableAreaBoundingBox() const
 {
     // This method should return the bounding box in the parent view's coordinate
-    // space; however, PinchViewport technically isn't a child of any Frames.
-    // Nonetheless, the PinchViewport always occupies the entire main frame so just
+    // space; however, VisualViewport technically isn't a child of any Frames.
+    // Nonetheless, the VisualViewport always occupies the entire main frame so just
     // return that.
     LocalFrame* frame = mainFrame();
 
@@ -516,7 +516,7 @@ IntRect PinchViewport::scrollableAreaBoundingBox() const
     return frame->view()->frameRect();
 }
 
-IntSize PinchViewport::contentsSize() const
+IntSize VisualViewport::contentsSize() const
 {
     LocalFrame* frame = mainFrame();
 
@@ -526,52 +526,52 @@ IntSize PinchViewport::contentsSize() const
     return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 
-void PinchViewport::invalidateScrollbarRect(Scrollbar*, const IntRect&)
+void VisualViewport::invalidateScrollbarRect(Scrollbar*, const IntRect&)
 {
-    // Do nothing. Pinch scrollbars live on the compositor thread and will
+    // Do nothing. Visual scrollbars live on the compositor thread and will
     // be updated when the viewport is synced to the CC.
 }
 
-void PinchViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
+void VisualViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
 {
     setScrollOffset(DoublePoint(offset), scrollType);
 }
 
-void PinchViewport::setScrollOffset(const DoublePoint& offset, ScrollType)
+void VisualViewport::setScrollOffset(const DoublePoint& offset, ScrollType)
 {
     setLocation(toFloatPoint(offset));
 }
 
-GraphicsLayer* PinchViewport::layerForContainer() const
+GraphicsLayer* VisualViewport::layerForContainer() const
 {
     return m_innerViewportContainerLayer.get();
 }
 
-GraphicsLayer* PinchViewport::layerForScrolling() const
+GraphicsLayer* VisualViewport::layerForScrolling() const
 {
     return m_innerViewportScrollLayer.get();
 }
 
-GraphicsLayer* PinchViewport::layerForHorizontalScrollbar() const
+GraphicsLayer* VisualViewport::layerForHorizontalScrollbar() const
 {
     return m_overlayScrollbarHorizontal.get();
 }
 
-GraphicsLayer* PinchViewport::layerForVerticalScrollbar() const
+GraphicsLayer* VisualViewport::layerForVerticalScrollbar() const
 {
     return m_overlayScrollbarVertical.get();
 }
 
-void PinchViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip)
+void VisualViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip)
 {
 }
 
-LocalFrame* PinchViewport::mainFrame() const
+LocalFrame* VisualViewport::mainFrame() const
 {
     return frameHost().page().mainFrame() && frameHost().page().mainFrame()->isLocalFrame() ? frameHost().page().deprecatedLocalMainFrame() : 0;
 }
 
-FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
+FloatPoint VisualViewport::clampOffsetToBoundaries(const FloatPoint& offset)
 {
     FloatPoint clampedOffset(offset);
     clampedOffset = clampedOffset.shrunkTo(FloatPoint(maximumScrollPositionDouble()));
@@ -579,12 +579,12 @@ FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
     return clampedOffset;
 }
 
-void PinchViewport::clampToBoundaries()
+void VisualViewport::clampToBoundaries()
 {
     setLocation(m_offset);
 }
 
-FloatRect PinchViewport::viewportToRootFrame(const FloatRect& rectInViewport) const
+FloatRect VisualViewport::viewportToRootFrame(const FloatRect& rectInViewport) const
 {
     FloatRect rectInRootFrame = rectInViewport;
     rectInRootFrame.scale(1 / scale());
@@ -592,13 +592,13 @@ FloatRect PinchViewport::viewportToRootFrame(const FloatRect& rectInViewport) co
     return rectInRootFrame;
 }
 
-IntRect PinchViewport::viewportToRootFrame(const IntRect& rectInViewport) const
+IntRect VisualViewport::viewportToRootFrame(const IntRect& rectInViewport) const
 {
     // FIXME: How to snap to pixels?
     return enclosingIntRect(viewportToRootFrame(FloatRect(rectInViewport)));
 }
 
-FloatRect PinchViewport::rootFrameToViewport(const FloatRect& rectInRootFrame) const
+FloatRect VisualViewport::rootFrameToViewport(const FloatRect& rectInRootFrame) const
 {
     FloatRect rectInViewport = rectInRootFrame;
     rectInViewport.moveBy(-location());
@@ -606,13 +606,13 @@ FloatRect PinchViewport::rootFrameToViewport(const FloatRect& rectInRootFrame) c
     return rectInViewport;
 }
 
-IntRect PinchViewport::rootFrameToViewport(const IntRect& rectInRootFrame) const
+IntRect VisualViewport::rootFrameToViewport(const IntRect& rectInRootFrame) const
 {
     // FIXME: How to snap to pixels?
     return enclosingIntRect(rootFrameToViewport(FloatRect(rectInRootFrame)));
 }
 
-FloatPoint PinchViewport::viewportToRootFrame(const FloatPoint& pointInViewport) const
+FloatPoint VisualViewport::viewportToRootFrame(const FloatPoint& pointInViewport) const
 {
     FloatPoint pointInRootFrame = pointInViewport;
     pointInRootFrame.scale(1 / scale(), 1 / scale());
@@ -620,7 +620,7 @@ FloatPoint PinchViewport::viewportToRootFrame(const FloatPoint& pointInViewport)
     return pointInRootFrame;
 }
 
-FloatPoint PinchViewport::rootFrameToViewport(const FloatPoint& pointInRootFrame) const
+FloatPoint VisualViewport::rootFrameToViewport(const FloatPoint& pointInRootFrame) const
 {
     FloatPoint pointInViewport = pointInRootFrame;
     pointInViewport.moveBy(-location());
@@ -628,19 +628,19 @@ FloatPoint PinchViewport::rootFrameToViewport(const FloatPoint& pointInRootFrame
     return pointInViewport;
 }
 
-IntPoint PinchViewport::viewportToRootFrame(const IntPoint& pointInViewport) const
+IntPoint VisualViewport::viewportToRootFrame(const IntPoint& pointInViewport) const
 {
     // FIXME: How to snap to pixels?
     return flooredIntPoint(FloatPoint(viewportToRootFrame(FloatPoint(pointInViewport))));
 }
 
-IntPoint PinchViewport::rootFrameToViewport(const IntPoint& pointInRootFrame) const
+IntPoint VisualViewport::rootFrameToViewport(const IntPoint& pointInRootFrame) const
 {
     // FIXME: How to snap to pixels?
     return flooredIntPoint(FloatPoint(rootFrameToViewport(FloatPoint(pointInRootFrame))));
 }
 
-String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)
+String VisualViewport::debugName(const GraphicsLayer* graphicsLayer)
 {
     String name;
     if (graphicsLayer == m_innerViewportContainerLayer.get()) {

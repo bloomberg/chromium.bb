@@ -232,7 +232,7 @@ private:
     bool hasVerticalOverflow() const;
     bool hasScrollableHorizontalOverflow() const;
     bool hasScrollableVerticalOverflow() const;
-    bool pinchViewportSuppliesScrollbars() const;
+    bool visualViewportSuppliesScrollbars() const;
 
     void computeScrollDimensions();
 

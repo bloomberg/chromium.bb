@@ -1822,7 +1822,7 @@ void Internals::setPageScaleFactor(float scaleFactor, ExceptionState& exceptionS
         return;
     }
     Page* page = document->page();
-    page->frameHost().pinchViewport().setScale(scaleFactor);
+    page->frameHost().visualViewport().setScale(scaleFactor);
 }
 
 void Internals::setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor, ExceptionState& exceptionState)
@@ -2430,7 +2430,7 @@ String Internals::selectedTextForClipboard()
 
 void Internals::setVisualViewportOffset(int x, int y)
 {
-    frame()->host()->pinchViewport().setLocation(FloatPoint(x, y));
+    frame()->host()->visualViewport().setLocation(FloatPoint(x, y));
 }
 
 ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)

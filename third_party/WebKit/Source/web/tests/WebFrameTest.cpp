@@ -55,9 +55,9 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -944,7 +944,7 @@ TEST_P(ParameterizedWebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewpo
     EXPECT_TRUE(checkTextAutosizingMultiplier(document, 2.0));
 }
 
-TEST_P(ParameterizedWebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingMultipliers)
+TEST_P(ParameterizedWebFrameTest, VisualViewportSetSizeInvalidatesTextAutosizingMultipliers)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("iframe_reload.html");
@@ -975,7 +975,7 @@ TEST_P(ParameterizedWebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingM
         }
     }
 
-    frameView->page()->frameHost().pinchViewport().setSize(IntSize(200, 200));
+    frameView->page()->frameHost().visualViewport().setSize(IntSize(200, 200));
 
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
@@ -1498,9 +1498,9 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMo
     EXPECT_EQ(viewportWidth, compositor->containerLayer()->size().width());
     EXPECT_EQ(0.0, compositor->containerLayer()->size().height());
 
-    // Two flags PinchVirtualViewportEnabled and ForceZeroLayoutHeight will cause the following
-    // resize of viewport height to be ignored by the outer viewport (the container layer of
-    // LayerCompositor). The height of the pinchViewport, however, is not affected.
+    // The flag ForceZeroLayoutHeight will cause the following resize of viewport
+    // height to be ignored by the outer viewport (the container layer of
+    // LayerCompositor). The height of the visualViewport, however, is not affected.
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     EXPECT_FALSE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
     EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
@@ -1509,9 +1509,9 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMo
     EXPECT_EQ(viewportHeight, compositor->containerLayer()->size().height());
 
     LocalFrame* frame = webViewHelper.webViewImpl()->mainFrameImpl()->frame();
-    PinchViewport& pinchViewport = frame->page()->frameHost().pinchViewport();
-    EXPECT_EQ(viewportHeight, pinchViewport.containerLayer()->size().height());
-    EXPECT_TRUE(pinchViewport.containerLayer()->platformLayer()->masksToBounds());
+    VisualViewport& visualViewport = frame->page()->frameHost().visualViewport();
+    EXPECT_EQ(viewportHeight, visualViewport.containerLayer()->size().height());
+    EXPECT_TRUE(visualViewport.containerLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(compositor->containerLayer()->platformLayer()->masksToBounds());
 }
 
@@ -3132,7 +3132,7 @@ TEST_P(ParameterizedWebFrameTest, CharacterIndexAtPointWithPinchZoom)
 
 
     webViewHelper.webViewImpl()->setPageScaleFactor(2);
-    webViewHelper.webViewImpl()->setPinchViewportOffset(WebFloatPoint(50, 60));
+    webViewHelper.webViewImpl()->setVisualViewportOffset(WebFloatPoint(50, 60));
 
     WebRect baseRect;
     WebRect extentRect;
@@ -3157,10 +3157,10 @@ TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom)
     WebRect oldRect;
     mainFrame->firstRectForCharacterRange(0, 5, oldRect);
 
-    WebFloatPoint pinchOffset(100, 130);
+    WebFloatPoint visualOffset(100, 130);
     float scale = 2;
     webViewHelper.webViewImpl()->setPageScaleFactor(scale);
-    webViewHelper.webViewImpl()->setPinchViewportOffset(pinchOffset);
+    webViewHelper.webViewImpl()->setVisualViewportOffset(visualOffset);
 
     WebRect baseRect;
     WebRect extentRect;
@@ -3168,8 +3168,8 @@ TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom)
     WebRect rect;
     mainFrame->firstRectForCharacterRange(0, 5, rect);
 
-    EXPECT_EQ((oldRect.x - pinchOffset.x) * scale, rect.x);
-    EXPECT_EQ((oldRect.y - pinchOffset.y) * scale, rect.y);
+    EXPECT_EQ((oldRect.x - visualOffset.x) * scale, rect.x);
+    EXPECT_EQ((oldRect.y - visualOffset.y) * scale, rect.y);
     EXPECT_EQ(oldRect.width*scale, rect.width);
     EXPECT_EQ(oldRect.height*scale, rect.height);
 }
@@ -4864,7 +4864,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite)
     }
 }
 
-TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
+TEST_F(WebFrameTest, DisambiguationPopupVisualViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "disambiguation_popup_200_by_800.html";
@@ -4888,19 +4888,19 @@ TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
 
     webViewImpl->setPageScaleFactor(2.0);
 
-    // Scroll pinch viewport to the top of the main frame.
-    PinchViewport& pinchViewport = frame->page()->frameHost().pinchViewport();
-    pinchViewport.setLocation(FloatPoint(0, 0));
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0), pinchViewport.location());
+    // Scroll visual viewport to the top of the main frame.
+    VisualViewport& visualViewport = frame->page()->frameHost().visualViewport();
+    visualViewport.setLocation(FloatPoint(0, 0));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0), visualViewport.location());
 
     // Tap at the top: there is nothing there.
     client.resetTriggered();
     webViewHelper.webView()->handleInputEvent(fatTap(10, 60));
     EXPECT_FALSE(client.triggered());
 
-    // Scroll pinch viewport to the bottom of the main frame.
-    pinchViewport.setLocation(FloatPoint(0, 200));
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 200), pinchViewport.location());
+    // Scroll visual viewport to the bottom of the main frame.
+    visualViewport.setLocation(FloatPoint(0, 200));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 200), visualViewport.location());
 
     // Now the tap with the same coordinates should hit two elements.
     client.resetTriggered();
@@ -6391,7 +6391,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
     EXPECT_POINT_EQ(IntPoint(0, 1900), frameView->maximumScrollPosition());
 
     // Show the top controls by just 1px, since we're zoomed in to 2X, that
-    // should allow an extra 0.5px of scrolling in the pinch viewport. Make
+    // should allow an extra 0.5px of scrolling in the visual viewport. Make
     // sure we're not losing any pixels when applying the adjustment on the
     // main frame.
     webView->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 1.0f / topControlsHeight);

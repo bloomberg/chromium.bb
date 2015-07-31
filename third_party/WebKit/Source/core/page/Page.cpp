@@ -310,7 +310,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
         return;
 
     FrameView* view = deprecatedLocalMainFrame()->view();
-    PinchViewport& viewport = frameHost().pinchViewport();
+    VisualViewport& viewport = frameHost().visualViewport();
 
     if (scale != viewport.scale()) {
         viewport.setScale(scale);
@@ -326,7 +326,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 
 float Page::pageScaleFactor() const
 {
-    return frameHost().pinchViewport().scale();
+    return frameHost().visualViewport().scale();
 }
 
 void Page::setDeviceScaleFactor(float scaleFactor)

@@ -74,12 +74,12 @@ void FullscreenController::didEnterFullScreen()
     if (!m_exitFullscreenPageScaleFactor) {
         m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
         m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
-        m_exitFullscreenPinchViewportOffset = m_webViewImpl->pinchViewportOffset();
+        m_exitFullscreenVisualViewportOffset = m_webViewImpl->visualViewportOffset();
 
         updatePageScaleConstraints(false);
         m_webViewImpl->setPageScaleFactor(1.0f);
         m_webViewImpl->mainFrame()->setScrollOffset(WebSize());
-        m_webViewImpl->setPinchViewportOffset(FloatPoint());
+        m_webViewImpl->setVisualViewportOffset(FloatPoint());
     }
 
     Fullscreen::from(document).didEnterFullScreenForElement(element.get());
@@ -122,7 +122,7 @@ void FullscreenController::didExitFullScreen()
                     updatePageScaleConstraints(true);
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
                     m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
-                    m_webViewImpl->setPinchViewportOffset(m_exitFullscreenPinchViewportOffset);
+                    m_webViewImpl->setVisualViewportOffset(m_exitFullscreenVisualViewportOffset);
                     m_exitFullscreenPageScaleFactor = 0;
                     m_exitFullscreenScrollOffset = IntSize();
                 }

@@ -40,7 +40,7 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/PinchViewport.h"
+#include "core/frame/VisualViewport.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -72,20 +72,20 @@ static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point
 {
     float scale = 1;
     IntSize offset;
-    IntPoint pinchViewport;
+    IntPoint visualViewport;
     FloatSize overscrollOffset;
     if (widget) {
         FrameView* rootView = toFrameView(widget->root());
         if (rootView) {
             scale = rootView->inputEventsScaleFactor();
             offset = rootView->inputEventsOffsetForEmulation();
-            pinchViewport = flooredIntPoint(rootView->page()->frameHost().pinchViewport().visibleRect().location());
+            visualViewport = flooredIntPoint(rootView->page()->frameHost().visualViewport().visibleRect().location());
             overscrollOffset = rootView->page()->frameHost().chromeClient().elasticOverscroll();
         }
     }
     return FloatPoint(
-        (point.x() - offset.width()) / scale + pinchViewport.x() + overscrollOffset.width(),
-        (point.y() - offset.height()) / scale + pinchViewport.y() + overscrollOffset.height());
+        (point.x() - offset.width()) / scale + visualViewport.x() + overscrollOffset.width(),
+        (point.y() - offset.height()) / scale + visualViewport.y() + overscrollOffset.height());
 }
 
 static unsigned toPlatformEventModifiers(int webModifiers)

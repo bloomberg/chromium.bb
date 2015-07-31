@@ -46,7 +46,7 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta)
         return pendingDelta;
 
     float oldOffset = contentOffset();
-    float pageScale = m_frameHost->pinchViewport().scale();
+    float pageScale = m_frameHost->visualViewport().scale();
 
     // Update accumulated vertical scroll and apply it to top controls
     // Compute scroll delta in viewport space by applying page scale

@@ -86,7 +86,7 @@ void PageOverlay::update()
 
     FloatSize size;
     if (m_viewImpl->page())
-        size = m_viewImpl->page()->frameHost().pinchViewport().visibleSize();
+        size = m_viewImpl->page()->frameHost().visualViewport().visibleSize();
     if (size != m_layer->size()) {
         // Triggers re-adding to root layer to ensure that we are on top of
         // scrollbars.
@@ -125,7 +125,7 @@ void PageOverlay::invalidateWebFrame()
         // have to take scrolling into account.
         WebSize size = m_viewImpl->size();
         if (m_viewImpl->page())
-            size = expandedIntSize(m_viewImpl->page()->frameHost().pinchViewport().visibleSize());
+            size = expandedIntSize(m_viewImpl->page()->frameHost().visualViewport().visibleSize());
         WebRect damagedRect(0, 0, size.width, size.height);
         if (m_viewImpl->client())
             m_viewImpl->client()->didInvalidateRect(damagedRect);

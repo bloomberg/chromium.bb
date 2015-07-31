@@ -38,8 +38,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -264,7 +264,7 @@ TEST_F(WebViewTest, SaveImageAt)
     EXPECT_EQ(WebString(), client.result());
 
     webView->setPageScaleFactor(4);
-    webView->setPinchViewportOffset(WebFloatPoint(1, 1));
+    webView->setVisualViewportOffset(WebFloatPoint(1, 1));
 
     client.reset();
     webView->saveImageAt(WebPoint(3, 3));
@@ -328,7 +328,7 @@ TEST_F(WebViewTest, CopyImageAtWithPinchZoom)
     webView->resize(WebSize(400, 400));
     webView->layout();
     webView->setPageScaleFactor(2);
-    webView->setPinchViewportOffset(WebFloatPoint(200, 200));
+    webView->setVisualViewportOffset(WebFloatPoint(200, 200));
 
     uint64_t sequence = Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard);
 
@@ -631,7 +631,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan)
     positiveResult.reset();
 
     // Pan around the zoomed in page so the image is not visible in viewport.
-    webView->setPinchViewportOffset(WebFloatPoint(100, 100));
+    webView->setVisualViewportOffset(WebFloatPoint(100, 100));
     WebHitTestResult negativeResult2 = webView->hitTestResultAt(hitPoint);
     ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
     EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
@@ -691,7 +691,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan)
 
     // Zoom in and pan around the page so the image is not visible in viewport.
     webView->setPageScaleFactor(2.0f);
-    webView->setPinchViewportOffset(WebFloatPoint(100, 100));
+    webView->setVisualViewportOffset(WebFloatPoint(100, 100));
     WebHitTestResult negativeResult2 = webView->hitTestResultForTap(hitPoint, tapArea);
     ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
     EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
@@ -1237,12 +1237,12 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     // Make the page scale and scroll with the given paremeters.
     webViewImpl->setPageScaleFactor(2.0f);
     webViewImpl->mainFrame()->setScrollOffset(WebSize(94, 111));
-    webViewImpl->setPinchViewportOffset(WebFloatPoint(12, 20));
+    webViewImpl->setVisualViewportOffset(WebFloatPoint(12, 20));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
-    EXPECT_EQ(12, webViewImpl->pinchViewportOffset().x);
-    EXPECT_EQ(20, webViewImpl->pinchViewportOffset().y);
+    EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
+    EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
     RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element.get());
@@ -1261,8 +1261,8 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
-    EXPECT_EQ(12, webViewImpl->pinchViewportOffset().x);
-    EXPECT_EQ(20, webViewImpl->pinchViewportOffset().y);
+    EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
+    EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
@@ -2044,7 +2044,7 @@ TEST_F(WebViewTest, SmartClipDataWithPinchZoom)
     webView->resize(WebSize(500, 500));
     webView->layout();
     webView->setPageScaleFactor(1.5);
-    webView->setPinchViewportOffset(WebFloatPoint(167, 100));
+    webView->setVisualViewportOffset(WebFloatPoint(167, 100));
     WebRect cropRect(200, 38, 228, 75);
     webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
     EXPECT_STREQ(kExpectedClipText, clipText.utf8().c_str());
@@ -2680,7 +2680,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
 
     // Test correct conversion of coordinates to viewport space under pinch-zoom.
     webView->setPageScaleFactor(2);
-    webView->setPinchViewportOffset(WebFloatPoint(50, 20));
+    webView->setVisualViewportOffset(WebFloatPoint(50, 20));
     client.reset();
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_TRUE(client.getWasCalled());

@@ -231,16 +231,24 @@ public:
     // On the other hand, zooming affects layout of the page.
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) { setPageScaleFactor(scaleFactor); }
 
-    // Scales the page without affecting layout by using the pinch-to-zoom viewport.
+    // Scales the page without affecting layout by using the visual viewport.
     virtual void setPageScaleFactor(float) = 0;
 
-    // Sets the offset of the pinch-to-zoom viewport within the main frame, in
-    // partial CSS pixels. The offset will be clamped so the pinch viewport
+    // Sets the offset of the visual viewport within the main frame, in
+    // partial CSS pixels. The offset will be clamped so the visual viewport
     // stays within the frame's bounds.
+    virtual void setVisualViewportOffset(const WebFloatPoint&) = 0;
+
+    // TODO(bokan): Renamed to VisualViewport above, remove once chromium
+    // side callers are renamed.
     virtual void setPinchViewportOffset(const WebFloatPoint&) = 0;
 
-    // Gets the pinch viewport's current offset within the page's main frame,
+    // Gets the visual viewport's current offset within the page's main frame,
     // in partial CSS pixels.
+    virtual WebFloatPoint visualViewportOffset() const = 0;
+
+    // TODO(bokan): Renamed to VisualViewport above, remove once chromium
+    // side callers are renamed.
     virtual WebFloatPoint pinchViewportOffset() const = 0;
 
     // Sets the default minimum, and maximum page scale. These will be overridden

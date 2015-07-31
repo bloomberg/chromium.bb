@@ -173,7 +173,12 @@ void WebFrameWidgetImpl::sendResizeEventAndRepaint()
 
 void WebFrameWidgetImpl::resizePinchViewport(const WebSize& newSize)
 {
-    // FIXME: Implement pinch viewport for out-of-process iframes.
+    // TODO(bokan): To Remove.
+}
+
+void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize)
+{
+    // FIXME: Implement visual viewport for out-of-process iframes.
 }
 
 void WebFrameWidgetImpl::updateMainFrameLayoutSize()
@@ -422,7 +427,7 @@ void WebFrameWidgetImpl::scheduleAnimation()
 }
 
 void WebFrameWidgetImpl::applyViewportDeltas(
-    const WebFloatSize& pinchViewportDelta,
+    const WebFloatSize& visualViewportDelta,
     const WebFloatSize& mainFrameDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,

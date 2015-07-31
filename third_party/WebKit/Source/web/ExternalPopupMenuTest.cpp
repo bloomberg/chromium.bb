@@ -8,7 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
-#include "core/frame/PinchViewport.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/layout/LayoutMenuList.h"
@@ -173,7 +173,7 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-TEST_F(ExternalPopupMenuTest, PopupAccountsForPinchViewportOffset)
+TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportOffset)
 {
     registerMockedURLLoad("select_mid_screen.html");
     loadFrame("select_mid_screen.html");
@@ -185,13 +185,13 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForPinchViewportOffset)
     LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
-    PinchViewport& pinchViewport = webView()->page()->frameHost().pinchViewport();
+    VisualViewport& visualViewport = webView()->page()->frameHost().visualViewport();
 
     IntRect rectInDocument = menuList->absoluteBoundingBoxRect();
 
     webView()->setPageScaleFactor(2);
     IntPoint scrollDelta(20, 30);
-    pinchViewport.move(scrollDelta);
+    visualViewport.move(scrollDelta);
 
     menuList->showPopup();
 

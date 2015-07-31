@@ -189,13 +189,13 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
         // scrolling.
         Document* mainFrameDocument = m_page->deprecatedLocalMainFrame()->document();
         Element* fullscreenElement = Fullscreen::fullscreenElementFrom(*mainFrameDocument);
-        WebLayer* pinchViewportScrollLayer = toWebLayer(m_page->frameHost().pinchViewport().scrollLayer());
+        WebLayer* visualViewportScrollLayer = toWebLayer(m_page->frameHost().visualViewport().scrollLayer());
 
-        if (pinchViewportScrollLayer) {
+        if (visualViewportScrollLayer) {
             if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement())
-                toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(false, false);
+                toWebLayer(m_page->frameHost().visualViewport().scrollLayer())->setUserScrollable(false, false);
             else
-                toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(true, true);
+                toWebLayer(m_page->frameHost().visualViewport().scrollLayer())->setUserScrollable(true, true);
         }
 
         scrollingWebLayer->setUserScrollable(frameView->userInputScrollable(HorizontalScrollbar), frameView->userInputScrollable(VerticalScrollbar));
@@ -936,7 +936,7 @@ bool ScrollingCoordinator::isForViewport(ScrollableArea* scrollableArea) const
         isForRootLayer(scrollableArea) :
         isForMainFrame(scrollableArea);
 
-    return isForOuterViewport || scrollableArea == &m_page->frameHost().pinchViewport();
+    return isForOuterViewport || scrollableArea == &m_page->frameHost().visualViewport();
 }
 
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)

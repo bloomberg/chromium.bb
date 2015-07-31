@@ -10,7 +10,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/PinchViewport.h"
+#include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/geometry/DoubleRect.h"
@@ -66,7 +66,7 @@ void moveIntoRect(FloatRect& inner, const IntRect& outer)
     FloatPoint maximumPosition = minimumPosition + outer.size() - inner.size();
 
     // Adjust maximumPosition to the nearest lower integer because
-    // PinchViewport::maximumScrollPosition() does the same.
+    // VisualViewport::maximumScrollPosition() does the same.
     // The value of minumumPosition is already adjusted since it is
     // constructed from an integer point.
     maximumPosition = flooredIntPoint(maximumPosition);
@@ -82,10 +82,10 @@ void moveIntoRect(FloatRect& inner, const IntRect& outer)
 
 RotationViewportAnchor::RotationViewportAnchor(
     FrameView& rootFrameView,
-    PinchViewport& pinchViewport,
+    VisualViewport& visualViewport,
     const FloatSize& anchorInInnerViewCoords,
     PageScaleConstraintsSet& pageScaleConstraintsSet)
-    : ViewportAnchor(rootFrameView, pinchViewport)
+    : ViewportAnchor(rootFrameView, visualViewport)
     , m_anchorInInnerViewCoords(anchorInInnerViewCoords)
     , m_pageScaleConstraintsSet(pageScaleConstraintsSet)
 {
@@ -99,21 +99,21 @@ RotationViewportAnchor::~RotationViewportAnchor()
 
 void RotationViewportAnchor::setAnchor()
 {
-    // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and PinchViewport
+    // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and VisualViewport
     //        respectively. This path should be rewritten without pixel snapping.
     IntRect outerViewRect = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect(IncludeScrollbars);
     IntRect innerViewRect = enclosedIntRect(m_rootFrameView->scrollableArea()->visibleContentRectDouble());
 
-    m_oldPageScaleFactor = m_pinchViewport->scale();
+    m_oldPageScaleFactor = m_visualViewport->scale();
     m_oldMinimumPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().minimumScale;
 
     // Save the absolute location in case we won't find the anchor node, we'll fall back to that.
-    m_pinchViewportInDocument = FloatPoint(m_rootFrameView->scrollableArea()->visibleContentRectDouble().location());
+    m_visualViewportInDocument = FloatPoint(m_rootFrameView->scrollableArea()->visibleContentRectDouble().location());
 
     m_anchorNode.clear();
     m_anchorNodeBounds = LayoutRect();
     m_anchorInNodeCoords = FloatSize();
-    m_normalizedPinchViewportOffset = FloatSize();
+    m_normalizedVisualViewportOffset = FloatSize();
 
     if (innerViewRect.isEmpty())
         return;
@@ -128,10 +128,10 @@ void RotationViewportAnchor::setAnchor()
     // Outer rectangle is used as a scale, we need positive width and height.
     ASSERT(!outerViewRect.isEmpty());
 
-    m_normalizedPinchViewportOffset = innerViewRect.location() - outerViewRect.location();
+    m_normalizedVisualViewportOffset = innerViewRect.location() - outerViewRect.location();
 
     // Normalize by the size of the outer rect
-    m_normalizedPinchViewportOffset.scale(1.0 / outerViewRect.width(), 1.0 / outerViewRect.height());
+    m_normalizedVisualViewportOffset.scale(1.0 / outerViewRect.width(), 1.0 / outerViewRect.height());
 
     FloatSize anchorOffset = innerViewRect.size();
     anchorOffset.scale(m_anchorInInnerViewCoords.width(), m_anchorInInnerViewCoords.height());
@@ -152,31 +152,31 @@ void RotationViewportAnchor::restoreToAnchor()
     float newPageScaleFactor = m_oldPageScaleFactor / m_oldMinimumPageScaleFactor * m_pageScaleConstraintsSet.finalConstraints().minimumScale;
     newPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().clampToConstraints(newPageScaleFactor);
 
-    FloatSize pinchViewportSize = m_pinchViewport->size();
-    pinchViewportSize.scale(1 / newPageScaleFactor);
+    FloatSize visualViewportSize = m_visualViewport->size();
+    visualViewportSize.scale(1 / newPageScaleFactor);
 
     IntPoint mainFrameOrigin;
-    FloatPoint pinchViewportOrigin;
+    FloatPoint visualViewportOrigin;
 
-    computeOrigins(pinchViewportSize, mainFrameOrigin, pinchViewportOrigin);
+    computeOrigins(visualViewportSize, mainFrameOrigin, visualViewportOrigin);
 
     m_rootFrameView->layoutViewportScrollableArea()->setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
 
     // Set scale before location, since location can be clamped on setting scale.
-    m_pinchViewport->setScale(newPageScaleFactor);
-    m_pinchViewport->setLocation(pinchViewportOrigin);
+    m_visualViewport->setScale(newPageScaleFactor);
+    m_visualViewport->setLocation(visualViewportOrigin);
 }
 
-void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const
+void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& visualViewportOffset) const
 {
     IntSize outerSize = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect().size();
 
     // Compute the viewport origins in CSS pixels relative to the document.
-    FloatSize absPinchViewportOffset = m_normalizedPinchViewportOffset;
-    absPinchViewportOffset.scale(outerSize.width(), outerSize.height());
+    FloatSize absVisualViewportOffset = m_normalizedVisualViewportOffset;
+    absVisualViewportOffset.scale(outerSize.width(), outerSize.height());
 
     FloatPoint innerOrigin = getInnerOrigin(innerSize);
-    FloatPoint outerOrigin = innerOrigin - absPinchViewportOffset;
+    FloatPoint outerOrigin = innerOrigin - absVisualViewportOffset;
 
     IntRect outerRect = IntRect(flooredIntPoint(outerOrigin), outerSize);
     FloatRect innerRect = FloatRect(innerOrigin, innerSize);
@@ -188,17 +188,17 @@ void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint
     moveIntoRect(innerRect, outerRect);
 
     mainFrameOffset = outerRect.location();
-    pinchViewportOffset = FloatPoint(innerRect.location() - outerRect.location());
+    visualViewportOffset = FloatPoint(innerRect.location() - outerRect.location());
 }
 
 FloatPoint RotationViewportAnchor::getInnerOrigin(const FloatSize& innerSize) const
 {
     if (!m_anchorNode || !m_anchorNode->inDocument())
-        return m_pinchViewportInDocument;
+        return m_visualViewportInDocument;
 
     const LayoutRect currentNodeBounds = m_anchorNode->boundingBox();
     if (m_anchorNodeBounds == currentNodeBounds)
-        return m_pinchViewportInDocument;
+        return m_visualViewportInDocument;
 
     // Compute the new anchor point relative to the node position
     FloatSize anchorOffsetFromNode(currentNodeBounds.size());

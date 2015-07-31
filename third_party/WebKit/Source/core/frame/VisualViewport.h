@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PinchViewport_h
-#define PinchViewport_h
+#ifndef VisualViewport_h
+#define VisualViewport_h
 
 #include "core/CoreExport.h"
 #include "platform/geometry/FloatPoint.h"
@@ -57,19 +57,19 @@ class IntRect;
 class IntSize;
 class LocalFrame;
 
-// Represents the pinch-to-zoom viewport the user is currently seeing the page through. This
+// Represents the visual viewport the user is currently seeing the page through. This
 // class corresponds to the InnerViewport on the compositor. It is a ScrollableArea; it's
 // offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
 // main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
 // in the outer viewport and can pan within it.
-class CORE_EXPORT PinchViewport final : public NoBaseWillBeGarbageCollectedFinalized<PinchViewport>, public GraphicsLayerClient, public ScrollableArea {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PinchViewport);
+class CORE_EXPORT VisualViewport final : public NoBaseWillBeGarbageCollectedFinalized<VisualViewport>, public GraphicsLayerClient, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 public:
-    static PassOwnPtrWillBeRawPtr<PinchViewport> create(FrameHost& host)
+    static PassOwnPtrWillBeRawPtr<VisualViewport> create(FrameHost& host)
     {
-        return adoptPtrWillBeNoop(new PinchViewport(host));
+        return adoptPtrWillBeNoop(new VisualViewport(host));
     }
-    ~PinchViewport() override;
+    ~VisualViewport() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -87,7 +87,7 @@ public:
         return m_innerViewportScrollLayer.get();
     }
 
-    // Sets the location of the pinch viewport relative to the outer viewport. The
+    // Sets the location of the visual viewport relative to the outer viewport. The
     // coordinates are in partial CSS pixels.
     void setLocation(const FloatPoint&);
     // FIXME: This should be called moveBy
@@ -122,7 +122,7 @@ public:
     void registerLayersWithTreeView(WebLayerTreeView*) const;
     void clearLayersForTreeView(WebLayerTreeView*) const;
 
-    // The portion of the unzoomed frame visible in the inner "pinch" viewport,
+    // The portion of the unzoomed frame visible in the visual viewport,
     // in partial CSS pixels. Relative to the main frame.
     FloatRect visibleRect() const;
 
@@ -144,7 +144,7 @@ public:
     // viewports to account for top controls. However, FrameView includes much
     // more than just scrolling so we can't simply resize it without incurring
     // all sorts of side-effects. Until we can seperate out the scrollability
-    // aspect from FrameView, we use this method to let PinchViewport make the
+    // aspect from FrameView, we use this method to let VisualViewport make the
     // necessary adjustments so that we don't incorrectly clamp scroll offsets
     // coming from the compositor. crbug.com/422328
     void setTopControlsAdjustment(float);
@@ -193,7 +193,7 @@ public:
     GraphicsLayer* layerForVerticalScrollbar() const override;
 
 private:
-    explicit PinchViewport(FrameHost&);
+    explicit VisualViewport(FrameHost&);
 
     // GraphicsLayerClient implementation.
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
@@ -221,7 +221,7 @@ private:
     OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
     OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
 
-    // Offset of the pinch viewport from the main frame's origin, in CSS pixels.
+    // Offset of the visual viewport from the main frame's origin, in CSS pixels.
     FloatPoint m_offset;
     float m_scale;
     IntSize m_size;
@@ -230,4 +230,4 @@ private:
 
 } // namespace blink
 
-#endif // PinchViewport_h
+#endif // VisualViewport_h

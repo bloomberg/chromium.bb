@@ -84,6 +84,11 @@ public:
     BLINK_EXPORT WebString target() const;
     BLINK_EXPORT void setTarget(const WebString&);
 
+    BLINK_EXPORT WebFloatPoint visualViewportScrollOffset() const;
+    BLINK_EXPORT void setVisualViewportScrollOffset(const WebFloatPoint&);
+
+    // TODO(bokan): Renamed to the above versions. Remove once chromium
+    // callers are renamed.
     BLINK_EXPORT WebFloatPoint pinchViewportScrollOffset() const;
     BLINK_EXPORT void setPinchViewportScrollOffset(const WebFloatPoint&);
 

@@ -35,7 +35,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"

@@ -916,8 +916,8 @@ void DeprecatedPaintLayerCompositor::updateOverflowControlsLayers()
     // make the parent for the scrollbars be the viewport container layer.
 #if OS(MACOSX)
     if (m_layoutView.frame()->isMainFrame()) {
-        PinchViewport& pinchViewport = m_layoutView.frameView()->page()->frameHost().pinchViewport();
-        controlsParent = pinchViewport.containerLayer();
+        VisualViewport& visualViewport = m_layoutView.frameView()->page()->frameHost().visualViewport();
+        controlsParent = visualViewport.containerLayer();
     }
 #endif
 

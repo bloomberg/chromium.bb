@@ -35,8 +35,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutListItem.h"
@@ -565,7 +565,7 @@ IntSize TextAutosizer::windowSize() const
 {
     Page * page = m_document->page();
     ASSERT(page);
-    return page->frameHost().pinchViewport().size();
+    return page->frameHost().visualViewport().size();
 }
 
 void TextAutosizer::resetMultipliers()

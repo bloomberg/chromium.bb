@@ -36,7 +36,7 @@
 namespace blink {
 
 class FrameView;
-class PinchViewport;
+class VisualViewport;
 
 // Use derived ViewportAnchor classes to "anchor" the viewport to a location,
 // perform some operation that may move the viewport around, then restore
@@ -45,14 +45,14 @@ class PinchViewport;
 class ViewportAnchor {
     STACK_ALLOCATED();
 protected:
-    ViewportAnchor(FrameView& rootFrameView, PinchViewport& pinchViewport)
+    ViewportAnchor(FrameView& rootFrameView, VisualViewport& visualViewport)
         : m_rootFrameView(&rootFrameView)
-        , m_pinchViewport(&pinchViewport)
+        , m_visualViewport(&visualViewport)
     {
     }
 
     RawPtrWillBeMember<FrameView> m_rootFrameView;
-    RawPtrWillBeMember<PinchViewport> m_pinchViewport;
+    RawPtrWillBeMember<VisualViewport> m_visualViewport;
 };
 
 } // namespace blink

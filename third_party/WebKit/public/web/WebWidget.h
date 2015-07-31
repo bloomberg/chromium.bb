@@ -72,11 +72,15 @@ public:
     // Called to resize the WebWidget.
     virtual void resize(const WebSize&) { }
 
-    // Resizes the unscaled pinch viewport. Normally the unscaled pinch
+    // Resizes the unscaled visual viewport. Normally the unscaled visual
     // viewport is the same size as the main frame. The passed size becomes the
     // size of the viewport when unscaled (i.e. scale = 1). This is used to
     // shrink the visible viewport to allow things like the ChromeOS virtual
     // keyboard to overlay over content but allow scrolling it into view.
+    virtual void resizeVisualViewport(const WebSize&) { }
+
+    // TODO(bokan): Renamed to visual viewport above. Remove once chromium-side
+    // callers are renamed.
     virtual void resizePinchViewport(const WebSize&) { }
 
     // Ends a group of resize events that was started with a call to
@@ -138,7 +142,7 @@ public:
     // Applies viewport related properties during a commit from the compositor
     // thread.
     virtual void applyViewportDeltas(
-        const WebFloatSize& pinchViewportDelta,
+        const WebFloatSize& visualViewportDelta,
         const WebFloatSize& layoutViewportDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,

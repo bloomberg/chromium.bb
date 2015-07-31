@@ -101,6 +101,7 @@ public:
     WebSize size() override;
     void willStartLiveResize() override;
     void resize(const WebSize&) override;
+    void resizeVisualViewport(const WebSize&) override;
     void resizePinchViewport(const WebSize&) override;
     void willEndLiveResize() override;
     void didEnterFullScreen() override;
@@ -122,7 +123,7 @@ public:
     bool hasTouchEventHandlersAt(const WebPoint&) override;
 
     void applyViewportDeltas(
-        const WebFloatSize& pinchViewportDelta,
+        const WebFloatSize& visualViewportDelta,
         const WebFloatSize& layoutViewportDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,
@@ -197,7 +198,9 @@ public:
     void setInitialPageScaleOverride(float) override;
     void setMaximumLegibleScale(float) override;
     void setPageScaleFactor(float) override;
+    void setVisualViewportOffset(const WebFloatPoint&) override;
     void setPinchViewportOffset(const WebFloatPoint&) override;
+    WebFloatPoint visualViewportOffset() const override;
     WebFloatPoint pinchViewportOffset() const override;
     void resetScrollAndScaleState() override;
     void setIgnoreViewportTagScaleLimits(bool) override;
@@ -534,7 +537,7 @@ public:
 private:
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
-    void scrollAndRescaleViewports(float scaleFactor, const IntPoint& mainFrameOrigin, const FloatPoint& pinchViewportOrigin);
+    void scrollAndRescaleViewports(float scaleFactor, const IntPoint& mainFrameOrigin, const FloatPoint& visualViewportOrigin);
 
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();

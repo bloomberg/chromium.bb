@@ -930,7 +930,7 @@ static FloatSize getViewportSize(LocalFrame* frame)
     }
 
     return frame->isMainFrame()
-        ? host->pinchViewport().visibleRect().size()
+        ? host->visualViewport().visibleRect().size()
         : view->visibleContentRect(IncludeScrollbars).size();
 }
 

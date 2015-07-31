@@ -98,14 +98,14 @@ void HistoryItem::setTarget(const String& target)
     m_target = target;
 }
 
-const FloatPoint& HistoryItem::pinchViewportScrollPoint() const
+const FloatPoint& HistoryItem::visualViewportScrollPoint() const
 {
-    return m_pinchViewportScrollPoint;
+    return m_visualViewportScrollPoint;
 }
 
-void HistoryItem::setPinchViewportScrollPoint(const FloatPoint& point)
+void HistoryItem::setVisualViewportScrollPoint(const FloatPoint& point)
 {
-    m_pinchViewportScrollPoint = point;
+    m_visualViewportScrollPoint = point;
 }
 
 const IntPoint& HistoryItem::scrollPoint() const

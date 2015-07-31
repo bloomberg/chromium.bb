@@ -105,7 +105,7 @@ void LayoutFullScreen::updateStyle()
     fullscreenStyle->setPosition(FixedPosition);
     fullscreenStyle->setLeft(Length(0, blink::Fixed));
     fullscreenStyle->setTop(Length(0, blink::Fixed));
-    IntSize viewportSize = document().page()->frameHost().pinchViewport().size();
+    IntSize viewportSize = document().page()->frameHost().visualViewport().size();
     fullscreenStyle->setWidth(Length(viewportSize.width(), blink::Fixed));
     fullscreenStyle->setHeight(Length(viewportSize.height(), blink::Fixed));
 

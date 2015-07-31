@@ -786,9 +786,9 @@ bool LocalFrame::shouldScrollTopControls(const FloatSize& delta) const
     // direction to hide the top controls, only give the delta to the
     // top controls when the frame can scroll.
     DoublePoint maximumScrollPosition =
-        host()->pinchViewport().maximumScrollPositionDouble() +
+        host()->visualViewport().maximumScrollPositionDouble() +
         toDoubleSize(view()->maximumScrollPositionDouble());
-    DoublePoint scrollPosition = host()->pinchViewport()
+    DoublePoint scrollPosition = host()->visualViewport()
         .visibleRectInDocument().location();
     return delta.height() > 0 || scrollPosition.y() < maximumScrollPosition.y();
 }

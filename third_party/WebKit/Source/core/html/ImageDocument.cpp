@@ -35,8 +35,8 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -378,7 +378,7 @@ void ImageDocument::windowSizeChanged(ScaleType type)
         // the scale is minimum.
         // Don't shrink height to fit because we use width=device-width in viewport meta tag,
         // and expect a full-width reading mode for normal-width-huge-height images.
-        int viewportWidth = frame()->host()->pinchViewport().size().width();
+        int viewportWidth = frame()->host()->visualViewport().size().width();
         m_imageElement->setInlineStyleProperty(CSSPropertyMaxWidth, viewportWidth * 10, CSSPrimitiveValue::UnitType::Pixels);
         return;
     }

@@ -70,7 +70,7 @@ private:
 
     float m_exitFullscreenPageScaleFactor;
     IntSize m_exitFullscreenScrollOffset;
-    FloatPoint m_exitFullscreenPinchViewportOffset;
+    FloatPoint m_exitFullscreenVisualViewportOffset;
 
     // If set, the WebView is transitioning to fullscreen for this element.
     RefPtrWillBeMember<Element> m_provisionalFullScreenElement;

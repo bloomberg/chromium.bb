@@ -48,7 +48,7 @@ FrameHost::FrameHost(Page& page)
     : m_page(&page)
     , m_topControls(TopControls::create(*this))
     , m_pageScaleConstraintsSet(PageScaleConstraintsSet::create())
-    , m_pinchViewport(PinchViewport::create(*this))
+    , m_visualViewport(VisualViewport::create(*this))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
     , m_consoleMessageStorage(ConsoleMessageStorage::create())
     , m_subframeCount(0)
@@ -85,9 +85,9 @@ TopControls& FrameHost::topControls() const
     return *m_topControls;
 }
 
-PinchViewport& FrameHost::pinchViewport() const
+VisualViewport& FrameHost::visualViewport() const
 {
-    return *m_pinchViewport;
+    return *m_visualViewport;
 }
 
 PageScaleConstraintsSet& FrameHost::pageScaleConstraintsSet() const
@@ -109,7 +109,7 @@ DEFINE_TRACE(FrameHost)
 {
     visitor->trace(m_page);
     visitor->trace(m_topControls);
-    visitor->trace(m_pinchViewport);
+    visitor->trace(m_visualViewport);
     visitor->trace(m_eventHandlerRegistry);
     visitor->trace(m_consoleMessageStorage);
 }

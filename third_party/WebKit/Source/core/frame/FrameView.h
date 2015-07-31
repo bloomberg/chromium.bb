@@ -694,7 +694,7 @@ private:
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
     void adjustScrollbarOpacity();
     void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
-    bool pinchViewportSuppliesScrollbars() const;
+    bool visualViewportSuppliesScrollbars() const;
 
     IntRect rectToCopyOnScroll() const;
 

@@ -54,8 +54,8 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -242,7 +242,7 @@ void FrameLoader::saveScrollState()
 
     if (ScrollableArea* layoutScrollableArea = m_frame->view()->layoutViewportScrollableArea())
         m_currentItem->setScrollPoint(layoutScrollableArea->scrollPosition());
-    m_currentItem->setPinchViewportScrollPoint(m_frame->host()->pinchViewport().visibleRect().location());
+    m_currentItem->setVisualViewportScrollPoint(m_frame->host()->visualViewport().visibleRect().location());
 
     if (m_frame->isMainFrame())
         m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
@@ -374,7 +374,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
         return;
     m_currentItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
     m_currentItem->setScrollPoint(oldItem->scrollPoint());
-    m_currentItem->setPinchViewportScrollPoint(oldItem->pinchViewportScrollPoint());
+    m_currentItem->setVisualViewportScrollPoint(oldItem->visualViewportScrollPoint());
     m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
     m_currentItem->setStateObject(oldItem->stateObject());
     m_currentItem->setScrollRestorationType(oldItem->scrollRestorationType());
@@ -1123,18 +1123,18 @@ void FrameLoader::restoreScrollPositionAndViewState()
         return;
 
     if (m_frame->isMainFrame() && m_currentItem->pageScaleFactor()) {
-        FloatPoint pinchViewportOffset(m_currentItem->pinchViewportScrollPoint());
+        FloatPoint visualViewportOffset(m_currentItem->visualViewportScrollPoint());
         IntPoint frameScrollOffset(m_currentItem->scrollPoint());
 
         m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), frameScrollOffset);
 
-        // If the pinch viewport's offset is (-1, -1) it means the history item
+        // If the visual viewport's offset is (-1, -1) it means the history item
         // is an old version of HistoryItem so distribute the scroll between
-        // the main frame and the pinch viewport as best as we can.
-        if (pinchViewportOffset.x() == -1 && pinchViewportOffset.y() == -1)
-            pinchViewportOffset = FloatPoint(frameScrollOffset - view->scrollPosition());
+        // the main frame and the visual viewport as best as we can.
+        if (visualViewportOffset.x() == -1 && visualViewportOffset.y() == -1)
+            visualViewportOffset = FloatPoint(frameScrollOffset - view->scrollPosition());
 
-        m_frame->host()->pinchViewport().setLocation(pinchViewportOffset);
+        m_frame->host()->visualViewport().setLocation(visualViewportOffset);
     } else {
         IntPoint adjustedScrollPosition = view->clampScrollPosition(m_currentItem->scrollPoint());
         if (adjustedScrollPosition != view->scrollPosition())

@@ -127,7 +127,7 @@ public:
     String prompt(const String& message, const String& defaultValue) override;
     bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const override;
 
-    // FIXME: ScrollBehaviorSmooth is currently unsupported in PinchViewport.
+    // FIXME: ScrollBehaviorSmooth is currently unsupported in VisualViewport.
     // crbug.com/434497
     void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
     void scrollBy(const ScrollToOptions&) const override;

@@ -55,11 +55,11 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
 #include "core/frame/TopControls.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -794,14 +794,14 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
         bool screencastEnabled = devTools && devTools->screencastEnabled();
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
-            IntRect boundingBox(page()->frameHost().pinchViewport().viewportToRootFrame(IntRect(
+            IntRect boundingBox(page()->frameHost().visualViewport().viewportToRootFrame(IntRect(
                 event.x - event.data.tap.width / 2,
                 event.y - event.data.tap.height / 2,
                 event.data.tap.width,
                 event.data.tap.height)));
 
-            // FIXME: We shouldn't pass details of the PinchViewport offset to render_view_impl.
-            WebSize pinchViewportOffset = flooredIntSize(page()->frameHost().pinchViewport().location());
+            // FIXME: We shouldn't pass details of the VisualViewport offset to render_view_impl.
+            WebSize visualViewportOffset = flooredIntSize(page()->frameHost().visualViewport().location());
 
             if (m_webSettings->multiTargetTapNotificationEnabled()) {
                 Vector<IntRect> goodTargets;
@@ -810,7 +810,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
                 // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
                 // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
                 if (goodTargets.size() >= 2 && m_client
-                    && m_client->didTapMultipleTargets(pinchViewportOffset, boundingBox, goodTargets)) {
+                    && m_client->didTapMultipleTargets(visualViewportOffset, boundingBox, goodTargets)) {
 
                     enableTapHighlights(highlightNodes);
                     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
@@ -922,10 +922,10 @@ bool WebViewImpl::endActiveFlingAnimation()
 
 bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds)
 {
-    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
     WebPoint clampedPoint = targetPosition;
     if (!useAnchor) {
-        clampedPoint = pinchViewport.clampDocumentOffsetAtScale(targetPosition, newScale);
+        clampedPoint = visualViewport.clampDocumentOffsetAtScale(targetPosition, newScale);
         if (!durationInSeconds) {
             setPageScaleFactor(newScale);
 
@@ -1272,7 +1272,7 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPointInRo
 
     scale = clampPageScaleFactorToLimits(scale);
     scroll = mainFrameImpl()->frameView()->rootFrameToContents(scroll);
-    scroll = page()->frameHost().pinchViewport().clampDocumentOffsetAtScale(scroll, scale);
+    scroll = page()->frameHost().visualViewport().clampDocumentOffsetAtScale(scroll, scale);
 }
 
 static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
@@ -1725,10 +1725,15 @@ WebSize WebViewImpl::size()
     return m_size;
 }
 
+void WebViewImpl::resizeVisualViewport(const WebSize& newSize)
+{
+    page()->frameHost().visualViewport().setSize(newSize);
+    page()->frameHost().visualViewport().clampToBoundaries();
+}
+
 void WebViewImpl::resizePinchViewport(const WebSize& newSize)
 {
-    page()->frameHost().pinchViewport().setSize(newSize);
-    page()->frameHost().pinchViewport().clampToBoundaries();
+    resizeVisualViewport(newSize);
 }
 
 void WebViewImpl::performResize()
@@ -1738,7 +1743,7 @@ void WebViewImpl::performResize()
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     updateMainFrameLayoutSize();
 
-    page()->frameHost().pinchViewport().setSize(m_size);
+    page()->frameHost().visualViewport().setSize(m_size);
 
     if (mainFrameImpl()->frameView()) {
         if (!mainFrameImpl()->frameView()->needsLayout())
@@ -1786,11 +1791,11 @@ void WebViewImpl::didUpdateTopControls()
         return;
 
 
-    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
     float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
-    pinchViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
+    visualViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
 
-    // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
+    // Shrink the FrameView by the amount that will maintain the aspect-ratio with the VisualViewport.
     view->setTopControlsViewportAdjustment(topControlsViewportAdjustment / minimumPageScaleFactor());
 }
 
@@ -1830,7 +1835,7 @@ void WebViewImpl::resize(const WebSize& newSize)
     if (!view)
         return;
 
-    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
     bool isRotation = settings()->mainFrameResizesAreOrientationChanges()
         && m_size.width && contentsSize().width() && newSize.width != m_size.width && !m_fullscreenController->isFullscreen();
@@ -1838,10 +1843,10 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     FloatSize viewportAnchorCoords(viewportAnchorCoordX, viewportAnchorCoordY);
     if (isRotation) {
-        RotationViewportAnchor anchor(*view, pinchViewport, viewportAnchorCoords, pageScaleConstraintsSet());
+        RotationViewportAnchor anchor(*view, visualViewport, viewportAnchorCoords, pageScaleConstraintsSet());
         resizeViewWhileAnchored(view);
     } else {
-        ResizeViewportAnchor anchor(*view, pinchViewport);
+        ResizeViewportAnchor anchor(*view, visualViewport);
         resizeViewWhileAnchored(view);
     }
     sendResizeEventAndRepaint();
@@ -2162,7 +2167,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         if (pinchEvent.data.pinchUpdate.zoomDisabled)
             return false;
 
-        if (page()->frameHost().pinchViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
+        if (page()->frameHost().visualViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
             return true;
     }
 
@@ -2873,13 +2878,13 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zo
 {
     focusedNode->document().updateLayoutIgnorePendingStylesheets();
 
-    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
     WebRect caretInViewport, unusedEnd;
     selectionBounds(caretInViewport, unusedEnd);
 
     // 'caretInDocument' is rect encompassing the blinking cursor relative to the root document.
-    IntRect caretInDocument = mainFrameImpl()->frameView()->frameToContents(pinchViewport.viewportToRootFrame(caretInViewport));
+    IntRect caretInDocument = mainFrameImpl()->frameView()->frameToContents(visualViewport.viewportToRootFrame(caretInViewport));
     IntRect textboxRectInDocument = mainFrameImpl()->frameView()->frameToContents(
         focusedNode->document().view()->contentsToRootFrame(pixelSnappedIntRect(focusedNode->Node::boundingBox())));
 
@@ -2904,20 +2909,20 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zo
         newScale = pageScaleFactor();
 
     // If the caret is offscreen, then animate.
-    if (!pinchViewport.visibleRectInDocument().contains(caretInDocument))
+    if (!visualViewport.visibleRectInDocument().contains(caretInDocument))
         needAnimation = true;
 
     // If the box is partially offscreen and it's possible to bring it fully
     // onscreen, then animate.
-    if (pinchViewport.visibleRect().width() >= textboxRectInDocument.width()
-        && pinchViewport.visibleRect().height() >= textboxRectInDocument.height()
-        && !pinchViewport.visibleRectInDocument().contains(textboxRectInDocument))
+    if (visualViewport.visibleRect().width() >= textboxRectInDocument.width()
+        && visualViewport.visibleRect().height() >= textboxRectInDocument.height()
+        && !visualViewport.visibleRectInDocument().contains(textboxRectInDocument))
         needAnimation = true;
 
     if (!needAnimation)
         return;
 
-    FloatSize targetViewportSize = pinchViewport.size();
+    FloatSize targetViewportSize = visualViewport.size();
     targetViewportSize.scale(1 / newScale);
 
     if (textboxRectInDocument.width() <= targetViewportSize.width()) {
@@ -3022,7 +3027,7 @@ float WebViewImpl::pageScaleFactor() const
     if (!page())
         return 1;
 
-    return page()->frameHost().pinchViewport().scale();
+    return page()->frameHost().visualViewport().scale();
 }
 
 float WebViewImpl::clampPageScaleFactorToLimits(float scaleFactor) const
@@ -3030,21 +3035,31 @@ float WebViewImpl::clampPageScaleFactorToLimits(float scaleFactor) const
     return pageScaleConstraintsSet().finalConstraints().clampToConstraints(scaleFactor);
 }
 
-void WebViewImpl::setPinchViewportOffset(const WebFloatPoint& offset)
+void WebViewImpl::setVisualViewportOffset(const WebFloatPoint& offset)
 {
     ASSERT(page());
-    page()->frameHost().pinchViewport().setLocation(offset);
+    page()->frameHost().visualViewport().setLocation(offset);
+}
+
+void WebViewImpl::setPinchViewportOffset(const WebFloatPoint& offset)
+{
+    setVisualViewportOffset(offset);
+}
+
+WebFloatPoint WebViewImpl::visualViewportOffset() const
+{
+    ASSERT(page());
+    return page()->frameHost().visualViewport().visibleRect().location();
 }
 
 WebFloatPoint WebViewImpl::pinchViewportOffset() const
 {
-    ASSERT(page());
-    return page()->frameHost().pinchViewport().visibleRect().location();
+    return visualViewportOffset();
 }
 
 void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
     const IntPoint& mainFrameOrigin,
-    const FloatPoint& pinchViewportOrigin)
+    const FloatPoint& visualViewportOrigin)
 {
     if (!page())
         return;
@@ -3056,21 +3071,21 @@ void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
     if (!view)
         return;
 
-    // Order is important: pinch viewport location is clamped based on
-    // main frame scroll position and pinch viewport scale.
+    // Order is important: visual viewport location is clamped based on
+    // main frame scroll position and visual viewport scale.
 
     view->setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
 
     setPageScaleFactor(scaleFactor);
 
-    page()->frameHost().pinchViewport().setLocation(pinchViewportOrigin);
+    page()->frameHost().visualViewport().setLocation(visualViewportOrigin);
 }
 
 void WebViewImpl::setPageScaleFactorAndLocation(float scaleFactor, const FloatPoint& location)
 {
     ASSERT(page());
 
-    page()->frameHost().pinchViewport().setScaleAndLocation(
+    page()->frameHost().visualViewport().setScaleAndLocation(
         clampPageScaleFactorToLimits(scaleFactor),
         location);
 }
@@ -3083,7 +3098,7 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
     if (scaleFactor == pageScaleFactor())
         return;
 
-    page()->frameHost().pinchViewport().setScale(scaleFactor);
+    page()->frameHost().visualViewport().setScale(scaleFactor);
 }
 
 float WebViewImpl::deviceScaleFactor() const
@@ -3349,7 +3364,7 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScrollAndScaleState()
 {
-    page()->frameHost().pinchViewport().reset();
+    page()->frameHost().visualViewport().reset();
 
     if (!page()->mainFrame()->isLocalFrame())
         return;
@@ -3839,8 +3854,8 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     if (isNewNavigation && !isNavigationWithinPage)
         pageScaleConstraintsSet().setNeedsReset(true);
 
-    // Give the pinch viewport's scroll layer its initial size.
-    page()->frameHost().pinchViewport().mainFrameDidChangeSize();
+    // Give the visual viewport's scroll layer its initial size.
+    page()->frameHost().visualViewport().mainFrameDidChangeSize();
 
     // Make sure link highlight from previous page is cleared.
     m_linkHighlights.clear();
@@ -3903,7 +3918,7 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
         if (frameSize != m_size) {
             m_size = frameSize;
 
-            page()->frameHost().pinchViewport().setSize(m_size);
+            page()->frameHost().visualViewport().setSize(m_size);
             pageScaleConstraintsSet().didChangeViewSize(m_size);
 
             m_client->didAutoResize(m_size);
@@ -4016,7 +4031,7 @@ void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
     if (!m_page->mainFrame()->isLocalFrame())
         return;
 
-    m_page->frameHost().pinchViewport().containerLayer()->addChild(layer);
+    m_page->frameHost().visualViewport().containerLayer()->addChild(layer);
 }
 
 Element* WebViewImpl::focusedElement() const
@@ -4034,7 +4049,7 @@ Element* WebViewImpl::focusedElement() const
 
 HitTestResult WebViewImpl::hitTestResultForViewportPos(const IntPoint& posInViewport)
 {
-    IntPoint rootFramePoint(m_page->frameHost().pinchViewport().viewportToRootFrame(posInViewport));
+    IntPoint rootFramePoint(m_page->frameHost().visualViewport().viewportToRootFrame(posInViewport));
     return hitTestResultForRootFramePos(rootFramePoint);
 }
 
@@ -4092,17 +4107,17 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
     suppressInvalidations(true);
 
-    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
-    pinchViewport.attachToLayerTree(layer, graphicsLayerFactory());
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
+    visualViewport.attachToLayerTree(layer, graphicsLayerFactory());
     if (layer) {
-        m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
-        m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
-        m_rootTransformLayer = pinchViewport.rootGraphicsLayer();
+        m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
+        m_rootLayer = visualViewport.rootGraphicsLayer()->platformLayer();
+        m_rootTransformLayer = visualViewport.rootGraphicsLayer();
         updateRootLayerTransform();
         m_layerTreeView->setRootLayer(*m_rootLayer);
         // We register viewport layers here since there may not be a layer
         // tree view prior to this point.
-        page()->frameHost().pinchViewport().registerLayersWithTreeView(m_layerTreeView);
+        page()->frameHost().visualViewport().registerLayersWithTreeView(m_layerTreeView);
         if (m_pageOverlays)
             m_pageOverlays->update();
 
@@ -4121,7 +4136,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // attempt to paint too early in the next page load.
         m_layerTreeView->setDeferCommits(true);
         m_layerTreeView->clearRootLayer();
-        page()->frameHost().pinchViewport().clearLayersForTreeView(m_layerTreeView);
+        page()->frameHost().visualViewport().clearLayersForTreeView(m_layerTreeView);
     }
 
     suppressInvalidations(false);
@@ -4208,7 +4223,7 @@ void WebViewImpl::initializeLayerTreeView()
 }
 
 void WebViewImpl::applyViewportDeltas(
-    const WebFloatSize& pinchViewportDelta,
+    const WebFloatSize& visualViewportDelta,
     const WebFloatSize& layoutViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
@@ -4222,9 +4237,9 @@ void WebViewImpl::applyViewportDeltas(
 
     topControls().setShownRatio(topControls().shownRatio() + topControlsShownRatioDelta);
 
-    FloatPoint pinchViewportOffset = page()->frameHost().pinchViewport().visibleRect().location();
-    pinchViewportOffset.move(pinchViewportDelta.width, pinchViewportDelta.height);
-    setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta, pinchViewportOffset);
+    FloatPoint visualViewportOffset = page()->frameHost().visualViewport().visibleRect().location();
+    visualViewportOffset.move(visualViewportDelta.width, visualViewportDelta.height);
+    setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta, visualViewportOffset);
 
     if (pageScaleDelta != 1)
         m_doubleTapZoomPending = false;

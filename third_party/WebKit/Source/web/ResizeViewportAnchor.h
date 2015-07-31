@@ -12,7 +12,7 @@
 namespace blink {
 
 class FrameView;
-class PinchViewport;
+class VisualViewport;
 
 // The resize anchor saves the current scroll offset of the visual viewport and
 // restores to that scroll offset so that document location appears exactly
@@ -20,13 +20,13 @@ class PinchViewport;
 class ResizeViewportAnchor : public ViewportAnchor {
     STACK_ALLOCATED();
 public:
-    ResizeViewportAnchor(FrameView& rootFrameView, PinchViewport&);
+    ResizeViewportAnchor(FrameView& rootFrameView, VisualViewport&);
     ~ResizeViewportAnchor();
 
 private:
     // Inner viewport origin in the reference frame of the root document, in CSS
     // pixels.
-    DoublePoint m_pinchViewportInDocument;
+    DoublePoint m_visualViewportInDocument;
 };
 
 } // namespace blink

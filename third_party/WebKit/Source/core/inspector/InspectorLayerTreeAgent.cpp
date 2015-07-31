@@ -263,7 +263,7 @@ DeprecatedPaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCom
 
 GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer()
 {
-    return m_pageAgent->frameHost()->pinchViewport().rootGraphicsLayer();
+    return m_pageAgent->frameHost()->visualViewport().rootGraphicsLayer();
 }
 
 static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)

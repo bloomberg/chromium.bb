@@ -52,8 +52,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
@@ -2072,7 +2072,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         bool domTreeChanged = preDispatchDomTreeVersion != m_frame->document()->domTreeVersion();
         bool styleChanged = preDispatchStyleVersion != m_frame->document()->styleVersion();
 
-        IntPoint tappedPositionInViewport = m_frame->page()->frameHost().pinchViewport().rootFrameToViewport(tappedPosition);
+        IntPoint tappedPositionInViewport = m_frame->page()->frameHost().visualViewport().rootFrameToViewport(tappedPosition);
         m_frame->chromeClient().showUnhandledTapUIIfNeeded(tappedPositionInViewport, tappedNode.get(), domTreeChanged || styleChanged);
     }
     return swallowed;
@@ -2733,7 +2733,7 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
     Element* focusedElement = overrideTargetElement ? overrideTargetElement : doc->focusedElement();
     FrameSelection& selection = m_frame->selection();
     Position start = selection.selection().start();
-    PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
+    VisualViewport& visualViewport = m_frame->page()->frameHost().visualViewport();
 
     if (!overrideTargetElement && start.anchorNode() && (selection.rootEditableElement() || selection.isRange())) {
         IntRect firstRect = m_frame->editor().firstRectForRange(selection.selection().toNormalizedEphemeralRange());
@@ -2745,18 +2745,18 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
     } else if (focusedElement) {
         IntRect clippedRect = focusedElement->boundsInViewportSpace();
         // FIXME: boundsInViewportSpace is actually in the weird scaled but untranslated coordinate space of
-        // the old-style pinch viewport. crbug.com/459591.
-        locationInRootFrame = flooredIntPoint(pinchViewport.viewportCSSPixelsToRootFrame(clippedRect.center()));
+        // the old-style visual viewport. crbug.com/459591.
+        locationInRootFrame = flooredIntPoint(visualViewport.viewportCSSPixelsToRootFrame(clippedRect.center()));
     } else {
         locationInRootFrame = IntPoint(
             rightAligned
-                ? pinchViewport.visibleRect().maxX() - kContextMenuMargin
-                : pinchViewport.location().x() + kContextMenuMargin,
-            pinchViewport.location().y() + kContextMenuMargin);
+                ? visualViewport.visibleRect().maxX() - kContextMenuMargin
+                : visualViewport.location().x() + kContextMenuMargin,
+            visualViewport.location().y() + kContextMenuMargin);
     }
 
     m_frame->view()->setCursor(pointerCursor());
-    IntPoint locationInViewport = pinchViewport.rootFrameToViewport(locationInRootFrame);
+    IntPoint locationInViewport = visualViewport.rootFrameToViewport(locationInRootFrame);
     IntPoint globalPosition = view->hostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize())).location();
 
     Node* targetNode = overrideTargetElement ? overrideTargetElement : doc->focusedElement();

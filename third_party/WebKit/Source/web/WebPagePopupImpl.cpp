@@ -35,8 +35,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
@@ -377,7 +377,7 @@ void WebPagePopupImpl::resize(const WebSize& newSize)
 
     if (m_page) {
         toLocalFrame(m_page->mainFrame())->view()->resize(newSize);
-        m_page->frameHost().pinchViewport().setSize(newSize);
+        m_page->frameHost().visualViewport().setSize(newSize);
     }
 
     m_widgetClient->didInvalidateRect(WebRect(0, 0, newSize.width, newSize.height));

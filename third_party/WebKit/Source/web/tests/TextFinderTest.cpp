@@ -148,8 +148,8 @@ TEST_F(TextFinderTest, FindTextAutosizing)
     WebRect* selectionRect = nullptr;
 
     // Set viewport scale to 20 in order to simulate zoom-in
-    PinchViewport& pinchViewport = document().page()->frameHost().pinchViewport();
-    pinchViewport.setScale(20);
+    VisualViewport& visualViewport = document().page()->frameHost().visualViewport();
+    visualViewport.setScale(20);
 
     // Enforce autosizing
     document().settings()->setTextAutosizingEnabled(true);
@@ -159,16 +159,16 @@ TEST_F(TextFinderTest, FindTextAutosizing)
     // In case of autosizing, scale _should_ change
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     ASSERT_TRUE(textFinder().activeMatch());
-    ASSERT_EQ(1, pinchViewport.scale()); // in this case to 1
+    ASSERT_EQ(1, visualViewport.scale()); // in this case to 1
 
     // Disable autosizing and reset scale to 20
-    pinchViewport.setScale(20);
+    visualViewport.setScale(20);
     document().settings()->setTextAutosizingEnabled(false);
     document().textAutosizer()->updatePageInfo();
 
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     ASSERT_TRUE(textFinder().activeMatch());
-    ASSERT_EQ(20, pinchViewport.scale());
+    ASSERT_EQ(20, visualViewport.scale());
 }
 
 TEST_F(TextFinderTest, FindTextNotFound)

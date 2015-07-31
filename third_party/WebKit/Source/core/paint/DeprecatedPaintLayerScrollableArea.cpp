@@ -694,7 +694,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
     bool autoHorizontalScrollBarChanged = box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
     bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
 
-    if (!pinchViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
+    if (!visualViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
         if (box().hasAutoHorizontalScrollbar())
             setHasHorizontalScrollbar(hasHorizontalOverflow);
         if (box().hasAutoVerticalScrollbar())
@@ -807,8 +807,8 @@ void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedSt
     if (!canHaveOverflowScrollbars(box()))
         return;
 
-    // Avoid drawing two sets of scrollbars when pinch viewport is enabled.
-    if (pinchViewportSuppliesScrollbars()) {
+    // Avoid drawing two sets of scrollbars when one is provided by the visual viewport.
+    if (visualViewportSuppliesScrollbars()) {
         setHasHorizontalScrollbar(false);
         setHasVerticalScrollbar(false);
         return;
@@ -1437,7 +1437,7 @@ void DeprecatedPaintLayerScrollableArea::setTopmostScrollChild(DeprecatedPaintLa
     m_nextTopmostScrollChild = scrollChild;
 }
 
-bool DeprecatedPaintLayerScrollableArea::pinchViewportSuppliesScrollbars() const
+bool DeprecatedPaintLayerScrollableArea::visualViewportSuppliesScrollbars() const
 {
     if (!layer()->isRootLayer())
         return false;

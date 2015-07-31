@@ -352,7 +352,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
 }
 
 // Test that the scrollIntoView correctly scrolls the main frame
-// and pinch viewports such that the given rect is centered in the viewport.
+// and visual viewport such that the given rect is centered in the viewport.
 TEST_F(RootFrameViewportTest, ScrollIntoView)
 {
     IntSize viewportSize(100, 150);
@@ -379,7 +379,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
     EXPECT_POINT_EQ(DoublePoint(25, 25), layoutViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 50), visualViewport->scrollPositionDouble());
 
-    // Reset the pinch viewport's size, scale the page and repeat the test
+    // Reset the visual viewport's size, scale the page and repeat the test
     visualViewport->setViewportSize(IntSize(100, 150));
     visualViewport->setScale(2);
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);

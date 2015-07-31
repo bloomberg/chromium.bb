@@ -37,7 +37,7 @@
 #include "core/dom/Node.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/PinchViewport.h"
+#include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/style/ComputedStyle.h"
@@ -703,8 +703,8 @@ int WebAXObject::hierarchicalLevel() const
 }
 
 // FIXME: This method passes in a point that has page scale applied but assumes that (0, 0)
-// is the top left of the visual viewport. In other words, the point has the PinchViewport
-// scale applied, but not the PinchViewport offset. crbug.com/459591.
+// is the top left of the visual viewport. In other words, the point has the VisualViewport
+// scale applied, but not the VisualViewport offset. crbug.com/459591.
 WebAXObject WebAXObject::hitTest(const WebPoint& point) const
 {
     if (isDetached())

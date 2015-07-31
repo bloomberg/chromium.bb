@@ -137,7 +137,7 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
 LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     // We want to move the rect into the viewport that excludes the scrollbars so we intersect
-    // the pinch viewport with the scrollbar-excluded frameView content rect. However, we don't
+    // the visual viewport with the scrollbar-excluded frameView content rect. However, we don't
     // use visibleContentRect directly since it floors the scroll position. Instead, we use
     // FrameView::scrollPositionDouble and construct a LayoutRect from that (the FrameView size
     // is always integer sized.
@@ -145,15 +145,15 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     LayoutRect frameRectInContent = LayoutRect(
         layoutViewport().scrollPositionDouble(),
         layoutViewport().visibleContentRect().size());
-    LayoutRect pinchRectInContent = LayoutRect(
+    LayoutRect visualRectInContent = LayoutRect(
         layoutViewport().scrollPositionDouble() + toDoubleSize(visualViewport().scrollPositionDouble()),
         visualViewport().visibleContentRect().size());
 
-    LayoutRect viewRectInContent = intersection(pinchRectInContent, frameRectInContent);
+    LayoutRect viewRectInContent = intersection(visualRectInContent, frameRectInContent);
     LayoutRect targetViewport =
         ScrollAlignment::getRectToExpose(viewRectInContent, rectInContent, alignX, alignY);
 
-    // pinchViewport.scrollIntoView will attempt to center the given rect within the viewport
+    // visualViewport.scrollIntoView will attempt to center the given rect within the viewport
     // so to prevent it from adjusting r's coordinates the rect must match the viewport's size
     // i.e. add the subtracted scrollbars from above back in.
     // FIXME: This is hacky and required because getRectToExpose doesn't naturally account

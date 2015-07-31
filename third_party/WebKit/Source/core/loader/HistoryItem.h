@@ -62,8 +62,8 @@ public:
     FormData* formData();
     const AtomicString& formContentType() const;
 
-    const FloatPoint& pinchViewportScrollPoint() const;
-    void setPinchViewportScrollPoint(const FloatPoint&);
+    const FloatPoint& visualViewportScrollPoint() const;
+    void setVisualViewportScrollPoint(const FloatPoint&);
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
 
@@ -108,7 +108,7 @@ private:
     Referrer m_referrer;
     String m_target;
 
-    FloatPoint m_pinchViewportScrollPoint;
+    FloatPoint m_visualViewportScrollPoint;
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
     Vector<String> m_documentStateVector;

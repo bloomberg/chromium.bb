@@ -407,7 +407,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     viewportSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
 
     if (oldRect.size() != newRect.size() && m_frame->isMainFrame())
-        page()->frameHost().pinchViewport().mainFrameDidChangeSize();
+        page()->frameHost().visualViewport().mainFrameDidChangeSize();
 }
 
 Page* FrameView::page() const
@@ -790,7 +790,7 @@ void FrameView::performPreLayoutTasks()
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
     if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
-        ScrollableArea& visualViewport = page()->frameHost().pinchViewport();
+        ScrollableArea& visualViewport = page()->frameHost().visualViewport();
         ScrollableArea* layoutViewport = layoutViewportScrollableArea();
         bool invertScrollOrder = m_frame->settings()->invertViewportScrollOrder();
         ASSERT(layoutViewport);
@@ -2195,7 +2195,7 @@ IntSize FrameView::inputEventsOffsetForEmulation() const
 
 float FrameView::inputEventsScaleFactor() const
 {
-    float pageScale = m_frame->page()->frameHost().pinchViewport().scale();
+    float pageScale = m_frame->page()->frameHost().visualViewport().scale();
     return pageScale * m_inputEventsScaleFactorForEmulation;
 }
 
@@ -2930,7 +2930,7 @@ bool FrameView::isFlippedDocument() const
     return layoutView->hasFlippedBlocksWritingMode();
 }
 
-bool FrameView::pinchViewportSuppliesScrollbars() const
+bool FrameView::visualViewportSuppliesScrollbars() const
 {
     return m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->viewportMetaEnabled();
 }
@@ -3356,8 +3356,8 @@ bool FrameView::shouldIgnoreOverflowHidden() const
 
 void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
 {
-    // Avoid drawing two sets of scrollbars when pinch viewport is enabled.
-    if (pinchViewportSuppliesScrollbars()) {
+    // Avoid drawing two sets of scrollbars when visual viewport is enabled.
+    if (visualViewportSuppliesScrollbars()) {
         setHasHorizontalScrollbar(false);
         setHasVerticalScrollbar(false);
         setScrollOffsetFromUpdateScrollbars(desiredOffset);
@@ -3516,14 +3516,14 @@ FloatPoint FrameView::rootFrameToContents(const FloatPoint& windowPoint) const
 
 IntRect FrameView::viewportToContents(const IntRect& rectInViewport) const
 {
-    IntRect rectInRootFrame = page()->frameHost().pinchViewport().viewportToRootFrame(rectInViewport);
+    IntRect rectInRootFrame = page()->frameHost().visualViewport().viewportToRootFrame(rectInViewport);
     IntRect frameRect = convertFromContainingWindow(rectInRootFrame);
     return frameToContents(frameRect);
 }
 
 IntPoint FrameView::viewportToContents(const IntPoint& pointInViewport) const
 {
-    IntPoint pointInRootFrame = page()->frameHost().pinchViewport().viewportToRootFrame(pointInViewport);
+    IntPoint pointInRootFrame = page()->frameHost().visualViewport().viewportToRootFrame(pointInViewport);
     IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
     return frameToContents(pointInFrame);
 }
@@ -3532,14 +3532,14 @@ IntRect FrameView::contentsToViewport(const IntRect& rectInContents) const
 {
     IntRect rectInFrame = contentsToFrame(rectInContents);
     IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
-    return page()->frameHost().pinchViewport().rootFrameToViewport(rectInRootFrame);
+    return page()->frameHost().visualViewport().rootFrameToViewport(rectInRootFrame);
 }
 
 IntPoint FrameView::contentsToViewport(const IntPoint& pointInContents) const
 {
     IntPoint pointInFrame = contentsToFrame(pointInContents);
     IntPoint pointInRootFrame = convertToContainingWindow(pointInFrame);
-    return page()->frameHost().pinchViewport().rootFrameToViewport(pointInRootFrame);
+    return page()->frameHost().visualViewport().rootFrameToViewport(pointInRootFrame);
 }
 
 IntRect FrameView::contentsToScreen(const IntRect& rect) const
@@ -3554,12 +3554,12 @@ IntRect FrameView::soonToBeRemovedContentsToUnscaledViewport(const IntRect& rect
 {
     IntRect rectInFrame = contentsToFrame(rectInContents);
     IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
-    return enclosingIntRect(page()->frameHost().pinchViewport().mainViewToViewportCSSPixels(rectInRootFrame));
+    return enclosingIntRect(page()->frameHost().visualViewport().mainViewToViewportCSSPixels(rectInRootFrame));
 }
 
 IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(const IntPoint& pointInViewport) const
 {
-    IntPoint pointInRootFrame = flooredIntPoint(page()->frameHost().pinchViewport().viewportCSSPixelsToRootFrame(pointInViewport));
+    IntPoint pointInRootFrame = flooredIntPoint(page()->frameHost().visualViewport().viewportCSSPixelsToRootFrame(pointInViewport));
     IntPoint pointInThisFrame = convertFromContainingWindow(pointInRootFrame);
     return frameToContents(pointInThisFrame);
 }

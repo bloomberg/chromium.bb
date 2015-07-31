@@ -933,7 +933,7 @@ void ChromeClientImpl::ajaxSucceeded(LocalFrame* frame)
 void ChromeClientImpl::registerViewportLayers() const
 {
     if (m_webView->rootGraphicsLayer() && m_webView->layerTreeView())
-        m_webView->page()->frameHost().pinchViewport().registerLayersWithTreeView(m_webView->layerTreeView());
+        m_webView->page()->frameHost().visualViewport().registerLayersWithTreeView(m_webView->layerTreeView());
 }
 
 void ChromeClientImpl::didUpdateTopControls() const

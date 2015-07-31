@@ -6,22 +6,22 @@
 #include "web/ResizeViewportAnchor.h"
 
 #include "core/frame/FrameView.h"
-#include "core/frame/PinchViewport.h"
+#include "core/frame/VisualViewport.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatSize.h"
 
 namespace blink {
 
-ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, PinchViewport& pinchViewport)
-    : ViewportAnchor(rootFrameView, pinchViewport)
-    , m_pinchViewportInDocument(rootFrameView.scrollableArea()->visibleContentRectDouble().location())
+ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, VisualViewport& visualViewport)
+    : ViewportAnchor(rootFrameView, visualViewport)
+    , m_visualViewportInDocument(rootFrameView.scrollableArea()->visibleContentRectDouble().location())
 {
 }
 
 ResizeViewportAnchor::~ResizeViewportAnchor()
 {
-    m_rootFrameView->scrollableArea()->setScrollPosition(m_pinchViewportInDocument, ProgrammaticScroll);
+    m_rootFrameView->scrollableArea()->setScrollPosition(m_visualViewportInDocument, ProgrammaticScroll);
 }
 
 } // namespace blink
