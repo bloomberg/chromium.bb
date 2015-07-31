@@ -230,6 +230,9 @@ _OS_NEGATIVE_FILTER['android:chrome_shell'] = (
         # https://code.google.com/p/chromedriver/issues/detail?id=1171
         'ChromeDriverTests.testOptionsForUninitializedWebDriver',
         # https://code.google.com/p/chromedriver/issues/detail?id=1180
+        'CorrectEventFiringTest.testShouldFireClickEventWhenClicking',
+        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
+        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
         'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
         'BasicMouseInterfaceTest.testDragAndDrop',
         'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
