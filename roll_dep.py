@@ -17,6 +17,8 @@ import sys
 
 NEED_SHELL = sys.platform.startswith('win')
 
+GITILES_REGEX = r'https?://[^/]*\.googlesource\.com/'
+
 
 class Error(Exception):
   pass
@@ -86,27 +88,26 @@ def roll(root, deps_dir, key, reviewers, bug):
     raise Error('No revision to roll!')
 
   commit_range = '%s..%s' % (head[:9], master[:9])
+  upstream_url = check_output(
+      ['git', 'config', 'remote.origin.url'], cwd=full_dir).strip()
 
-  logs = check_output(
-      ['git', 'log', commit_range, '--date=short', '--format=%ad %ae %s'],
-      cwd=full_dir).strip()
-  logs = re.sub(r'(?m)^(\d\d\d\d-\d\d-\d\d [^@]+)@[^ ]+( .*)$', r'\1\2', logs)
-  cmd = 'git log %s --date=short --format=\'%%ad %%ae %%s\'' % commit_range
-  reviewer = 'R=%s\n' % ','.join(reviewers) if reviewers else ''
-  bug = 'BUG=%s\n' % bug if bug else ''
+  log_url = None
+  if re.match(GITILES_REGEX, upstream_url):
+    log_url = '%s/+log/%s..%s' % (upstream_url, head, master)
+
+  msg_args = {
+      'deps_dir': deps_dir,
+      'commit_range': commit_range,
+      'log': '%s\n\n' % log_url if log_url else '',
+      'reviewer': 'R=%s\n' % ','.join(reviewers) if reviewers else '',
+      'bug': 'BUG=%s\n' % bug if bug else '',
+  }
   msg = (
-      'Roll %s/ to %s.\n'
+      'Roll %(deps_dir)s %(commit_range)s\n'
       '\n'
-      '$ %s\n'
-      '%s\n\n'
-      '%s'
-      '%s') % (
-          deps_dir,
-          master,
-          cmd,
-          logs,
-          reviewer,
-          bug)
+      '%(log)s'
+      '%(reviewer)s'
+      '%(bug)s' % msg_args)
 
   print('Commit message:')
   print('\n'.join('    ' + i for i in msg.splitlines()))
