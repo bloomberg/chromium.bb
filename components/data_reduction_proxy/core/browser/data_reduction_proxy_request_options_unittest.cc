@@ -363,6 +363,84 @@ TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
   }
 }
 
+TEST_F(DataReductionProxyRequestOptionsTest, SlowConnectionsFlag) {
+  const struct {
+    bool slow_connections_flag_enabled;
+    bool network_prohibitively_slow;
+    bool auto_lofi_enabled_group;
+
+  } tests[] = {
+      {
+          false, false, false,
+      },
+      {
+          false, true, false,
+      },
+      {
+          true, false, false,
+      },
+      {
+          true, true, false,
+      },
+      {
+          false, false, true,
+      },
+      {
+          false, true, true,
+      },
+      {
+          true, false, true,
+      },
+      {
+          true, true, true,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    test_context_->config()->ResetLoFiStatusForTest();
+    // For the purpose of this test, Lo-Fi header is expected only if LoFi Slow
+    // Connection Flag is enabled or session is part of Lo-Fi enabled field
+    // trial. For both cases, an additional condition is that network must be
+    // prohibitively slow.
+    bool expect_lofi_header = (tests[i].slow_connections_flag_enabled &&
+                               tests[i].network_prohibitively_slow) ||
+                              (!tests[i].slow_connections_flag_enabled &&
+                               tests[i].auto_lofi_enabled_group &&
+                               tests[i].network_prohibitively_slow);
+
+    std::string expected_header;
+    if (!expect_lofi_header) {
+      SetHeaderExpectations(kExpectedSession, kExpectedCredentials,
+                            std::string(), kClientStr, std::string(),
+                            std::string(), std::string(),
+                            std::vector<std::string>(), &expected_header);
+    } else {
+      SetHeaderExpectations(kExpectedSession, kExpectedCredentials,
+                            std::string(), kClientStr, std::string(),
+                            std::string(), "low", std::vector<std::string>(),
+                            &expected_header);
+    }
+
+    if (tests[i].slow_connections_flag_enabled) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+    }
+
+    test_context_->config()->SetIncludedInLoFiEnabledFieldTrial(
+        tests[i].auto_lofi_enabled_group);
+
+    test_context_->config()->SetNetworkProhibitivelySlow(
+        tests[i].network_prohibitively_slow);
+
+    // Force update Lo-Fi status.
+    test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+
+    CreateRequestOptions(kBogusVersion);
+    VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  }
+}
+
 TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
   std::string expected_header;
   SetHeaderExpectations(std::string(), std::string(), kSecureSession,

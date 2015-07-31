@@ -90,6 +90,14 @@ bool IsLoFiCellularOnlyViaFlags() {
                             kDataReductionProxyLoFiValueCellularOnly;
 }
 
+bool IsLoFiSlowConnectionsOnlyViaFlags() {
+  const std::string& lo_fi_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyLoFi);
+  return lo_fi_value == data_reduction_proxy::switches::
+                            kDataReductionProxyLoFiValueSlowConnectionsOnly;
+}
+
 bool IsLoFiDisabledViaFlags() {
   const std::string& lo_fi_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

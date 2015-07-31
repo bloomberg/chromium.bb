@@ -51,6 +51,10 @@ bool IsLoFiAlwaysOnViaFlags();
 // mode only on cellular connections.
 bool IsLoFiCellularOnlyViaFlags();
 
+// Returns true if this client has the command line switch to enable Lo-Fi
+// mode only on slow connections.
+bool IsLoFiSlowConnectionsOnlyViaFlags();
+
 // Returns true if this client has the command line switch to disable Lo-Fi
 // mode.
 bool IsLoFiDisabledViaFlags();

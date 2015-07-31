@@ -267,6 +267,8 @@ class DataReductionProxyConfig
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestMaybeDisableIfVPNTrialEnabled);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiParams);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           AutoLoFiParamsSlowConnectionsFlag);
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;

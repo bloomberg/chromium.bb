@@ -478,9 +478,17 @@ bool DataReductionProxyConfig::ShouldUseLoFiHeaderForRequests() const {
 }
 
 void DataReductionProxyConfig::PopulateAutoLoFiParams() {
-  if (!IsIncludedInLoFiControlFieldTrial() &&
-      !IsIncludedInLoFiEnabledFieldTrial())
+  if (params::IsLoFiSlowConnectionsOnlyViaFlags()) {
+    auto_lofi_minimum_rtt_ = base::TimeDelta::FromMilliseconds(2000);
+    auto_lofi_maximum_kbps_ = 0;
+    auto_lofi_hysteresis_ = base::TimeDelta::FromSeconds(60);
     return;
+  }
+
+  if (!IsIncludedInLoFiControlFieldTrial() &&
+      !IsIncludedInLoFiEnabledFieldTrial()) {
+    return;
+  }
 
   uint64_t auto_lofi_minimum_rtt_msec;
   std::string variation_value = variations::GetVariationParamValue(
@@ -787,20 +795,14 @@ void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
     return;
   }
 
-  if (IsIncludedInLoFiControlFieldTrial()) {
-    lofi_status_ = IsNetworkQualityProhibitivelySlow(network_quality_estimator)
-                       ? LOFI_STATUS_ACTIVE_CONTROL
-                       : LOFI_STATUS_INACTIVE_CONTROL;
-    return;
-  }
-
   // Store the previous state of Lo-Fi, so that change in Lo-Fi status can be
   // recorded properly. This is not needed for the control group, because it
   // is only used to report changes in request headers, and the request headers
   // are never modified in the control group.
   LoFiStatus previous_lofi_status = lofi_status_;
 
-  if (IsIncludedInLoFiEnabledFieldTrial()) {
+  if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
+      IsIncludedInLoFiEnabledFieldTrial()) {
     lofi_status_ = IsNetworkQualityProhibitivelySlow(network_quality_estimator)
                        ? LOFI_STATUS_ACTIVE
                        : LOFI_STATUS_INACTIVE;
@@ -809,6 +811,14 @@ void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
         ShouldUseLoFiHeaderForRequests(lofi_status_));
     return;
   }
+
+  if (IsIncludedInLoFiControlFieldTrial()) {
+    lofi_status_ = IsNetworkQualityProhibitivelySlow(network_quality_estimator)
+                       ? LOFI_STATUS_ACTIVE_CONTROL
+                       : LOFI_STATUS_INACTIVE_CONTROL;
+    return;
+  }
+
   // If Lo-Fi is not enabled through command line and the user is not in
   // Lo-Fi field trials, we set Lo-Fi to permanent off.
   lofi_status_ = LOFI_STATUS_OFF;

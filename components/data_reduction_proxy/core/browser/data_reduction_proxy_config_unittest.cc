@@ -1079,4 +1079,60 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
       &test_network_quality_estimator));
 }
 
+TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
+  DataReductionProxyConfig config(nullptr, nullptr, configurator(),
+                                  event_creator());
+  variations::testing::ClearAllVariationParams();
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+
+  config.PopulateAutoLoFiParams();
+
+  int rtt_msec = 2000;
+  int hysteresis_sec = 60;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(rtt_msec),
+            config.auto_lofi_minimum_rtt_);
+  EXPECT_EQ(0, config.auto_lofi_maximum_kbps_);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(hysteresis_sec),
+            config.auto_lofi_hysteresis_);
+
+  std::map<std::string, std::string> network_quality_estimator_params;
+  TestNetworkQualityEstimator test_network_quality_estimator(
+      network_quality_estimator_params);
+
+  // RTT is higher than threshold. Network is slow.
+  test_network_quality_estimator.SetRTT(
+      base::TimeDelta::FromMilliseconds(rtt_msec + 1));
+  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+
+  // Network quality improved. RTT is lower than the threshold. However,
+  // network should still be marked as slow because of hysteresis.
+  test_network_quality_estimator.SetRTT(
+      base::TimeDelta::FromMilliseconds(rtt_msec - 1));
+  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+
+  // Change the last update time to be older than the hysteresis duration.
+  // Checking network quality afterwards should show that network is no longer
+  // slow.
+  config.network_quality_last_updated_ =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(hysteresis_sec + 1);
+  EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+
+  // Changing the RTT has no effect because of hysteresis.
+  test_network_quality_estimator.SetRTT(
+      base::TimeDelta::FromMilliseconds(rtt_msec + 1));
+  EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+
+  // Change in connection type changes the network quality despite hysteresis.
+  config.connection_type_ = net::NetworkChangeNotifier::CONNECTION_WIFI;
+  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+}
+
 }  // namespace data_reduction_proxy
