@@ -692,28 +692,28 @@ Document* LocalFrame::documentAtPoint(const IntPoint& pointInRootFrame)
     return result.innerNode() ? &result.innerNode()->document() : nullptr;
 }
 
-PassRefPtrWillBeRawPtr<Range> LocalFrame::rangeForPoint(const IntPoint& framePoint)
+EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint)
 {
     VisiblePosition position = visiblePositionForPoint(framePoint);
     if (position.isNull())
-        return nullptr;
+        return EphemeralRange();
 
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
         RefPtrWillBeRawPtr<Range> previousCharacterRange = makeRange(previous, position);
         IntRect rect = editor().firstRectForRange(previousCharacterRange.get());
         if (rect.contains(framePoint))
-            return previousCharacterRange.release();
+            return EphemeralRange(previousCharacterRange.get());
     }
 
     VisiblePosition next = position.next();
     if (RefPtrWillBeRawPtr<Range> nextCharacterRange = makeRange(position, next)) {
         IntRect rect = editor().firstRectForRange(nextCharacterRange.get());
         if (rect.contains(framePoint))
-            return nextCharacterRange.release();
+            return EphemeralRange(nextCharacterRange.get());
     }
 
-    return nullptr;
+    return EphemeralRange();
 }
 
 bool LocalFrame::isURLAllowed(const KURL& url) const

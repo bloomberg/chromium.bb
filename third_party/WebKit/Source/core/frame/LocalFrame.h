@@ -50,7 +50,9 @@ namespace blink {
     class Document;
     class DragImage;
     class Editor;
+    template <typename Traversal> class EditingAlgorithm;
     class Element;
+    template <typename Strategy> class EphemeralRangeTemplate;
     class EventHandler;
     class FloatSize;
     class FrameConsole;
@@ -63,6 +65,7 @@ namespace blink {
     class InstrumentingAgents;
     class LocalDOMWindow;
     class Node;
+    class NodeTraversal;
     class Range;
     class LayoutView;
     class TreeScope;
@@ -158,7 +161,7 @@ namespace blink {
 
         VisiblePosition visiblePositionForPoint(const IntPoint& framePoint);
         Document* documentAtPoint(const IntPoint& windowPoint);
-        PassRefPtrWillBeRawPtr<Range> rangeForPoint(const IntPoint& framePoint);
+        EphemeralRangeTemplate<EditingAlgorithm<NodeTraversal>> rangeForPoint(const IntPoint& framePoint);
 
         bool isURLAllowed(const KURL&) const;
         bool shouldReuseDefaultView(const KURL&) const;

@@ -1144,12 +1144,12 @@ size_t WebLocalFrameImpl::characterIndexForPoint(const WebPoint& pointInViewport
 
     IntPoint point = frame()->view()->viewportToContents(pointInViewport);
     HitTestResult result = frame()->eventHandler().hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active);
-    RefPtrWillBeRawPtr<Range> range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
-    if (!range)
+    const EphemeralRange range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
+    if (range.isNull())
         return kNotFound;
     Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
     ASSERT(editable);
-    return PlainTextRange::create(*editable, *range.get()).start();
+    return PlainTextRange::create(*editable, range).start();
 }
 
 bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebNode& node)

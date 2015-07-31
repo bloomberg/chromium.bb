@@ -120,12 +120,12 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPo
     LocalFrame* frame = result.innerNode()->document().frame();
     FrameView* frameView = frame->view();
 
-    RefPtrWillBeRawPtr<Range> range = frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
-    if (!range)
+    EphemeralRange range = frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
+    if (range.isNull())
         return nil;
 
     // Expand to word under point.
-    VisibleSelection selection(range.get());
+    VisibleSelection selection(range);
     selection.expandUsingGranularity(WordGranularity);
     RefPtrWillBeRawPtr<Range> wordRange = selection.toNormalizedRange();
 
