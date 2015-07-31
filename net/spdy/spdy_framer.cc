@@ -4,13 +4,17 @@
 
 #include "net/spdy/spdy_framer.h"
 
+#include <string.h>
+
 #include <algorithm>
-#include <limits>
+#include <iterator>
 #include <string>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/third_party/valgrind/memcheck.h"
+#include "net/spdy/hpack_constants.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_bitmasks.h"
@@ -552,7 +556,7 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
   DCHECK(visitor_);
   DCHECK(data);
 
-  size_t original_len = len;
+  const size_t original_len = len;
   do {
     previous_state_ = state_;
     switch (state_) {
@@ -560,8 +564,10 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
         goto bottom;
 
       case SPDY_FRAME_COMPLETE:
+        // Should not enter in this state.
+        DCHECK_LT(len, original_len);
         Reset();
-        if (len > 0) {
+        if (len > 0 && !process_single_input_frame_) {
           CHANGE_STATE(SPDY_READING_COMMON_HEADER);
         }
         break;
@@ -680,9 +686,8 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
     }
   } while (state_ != previous_state_);
  bottom:
-  DCHECK(len == 0 || state_ == SPDY_ERROR);
-  if (current_frame_buffer_length_ == 0 &&
-      remaining_data_length_ == 0 &&
+  DCHECK(len == 0 || state_ == SPDY_ERROR || process_single_input_frame_);
+  if (current_frame_buffer_length_ == 0 && remaining_data_length_ == 0 &&
       remaining_control_header_ == 0) {
     DCHECK(state_ == SPDY_READY_FOR_FRAME || state_ == SPDY_ERROR)
         << "State: " << StateToString(state_);
