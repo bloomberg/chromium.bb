@@ -104,6 +104,8 @@ public:
     static WebNotificationPermission checkPermission(ExecutionContext*);
     static ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*);
 
+    static unsigned maxActions();
+
     // EventTarget interface.
     ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
     const AtomicString& interfaceName() const override;

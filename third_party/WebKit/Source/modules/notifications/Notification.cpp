@@ -300,6 +300,11 @@ ScriptPromise Notification::requestPermission(ScriptState* scriptState, Notifica
     return permissionClient->requestPermission(scriptState, deprecatedCallback);
 }
 
+unsigned Notification::maxActions()
+{
+    return notificationManager()->maxActions();
+}
+
 bool Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(executionContext()->isContextThread());
