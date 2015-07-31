@@ -199,57 +199,53 @@ importer.isMediaDirectory = function(entry, volumeInfoProvider) {
 
 /**
  * @param {!DirectoryEntry} directory Presumably the root of a filesystem.
+ * @return {!Promise<!DirectoryEntry>} The found media directory (like 'DCIM').
+ */
+importer.getMediaDirectory = function(directory) {
+  var dirNames = Object.keys(importer.ValidImportRoots_);
+  return Promise.all(dirNames.map(importer.getDirectory_.bind(null, directory)))
+      .then(
+          /**
+           * @param {!Array<!DirectoryEntry>} results
+           * @return {!Promise<!DirectoryEntry>}
+           */
+          function(results) {
+            for (var i = 0; i < results.length; i++) {
+              if (!!results[i] && results[i].isDirectory)
+                return Promise.resolve(results[i]);
+            }
+            // If standard (upper case) forms are not present,
+            // check for a lower-case "DCIM".
+            return importer.getDirectory_(directory, 'dcim')
+                .then(function(directory) {
+                  if (!!directory && directory.isDirectory) {
+                    return Promise.resolve(directory);
+                  } else {
+                    return Promise.reject('Unable to local media directory.');
+                  }
+                });
+          });
+};
+
+/**
+ * @param {!DirectoryEntry} directory Presumably the root of a filesystem.
  * @return {!Promise<boolean>} True if the directory contains a
  *     child media directory (like 'DCIM').
  */
 importer.hasMediaDirectory = function(directory) {
-  /**
-   * @param {boolean} answer
-   * @return {boolean}
-   */
-  var isTrue = function(answer) {
-    return answer;
-  };
-  var dirNames = Object.keys(importer.ValidImportRoots_);
-  return Promise.all(dirNames.map(importer.hasDirectory_.bind(null, directory)))
-      .then(
-          /**
-           * @param {!Array<boolean>} results
-           * @return {!Promise<boolean>}
-           */
-          function(results) {
-            if (results.some(isTrue)) {
-              return Promise.resolve(true);
-            } else {
-              // If standard (upper case) forms are not present,
-              // check for a lower-case "DCIM".
-              return importer.hasDirectory_(directory, 'dcim');
-            }
-          });
+  return importer.getMediaDirectory(directory).then(
+      function(result) {
+        return Promise.resolve(!!result);
+      },
+      function() {
+        return Promise.resolve(false);
+      });
 };
 
 /**
  * @param {!DirectoryEntry} parent
  * @param {string} name
- * @return {!Promise<boolean>} True if parent contains a directory
- *     with the specified name.
- * @private
- */
-importer.hasDirectory_ = function(parent, name) {
-  return importer.getDirectory_(parent, name)
-      .then(
-          function() {
-            return true;
-          },
-          function() {
-            return false;
-          });
-};
-
-/**
- * @param {!DirectoryEntry} parent
- * @param {string} name
- * @return {!Promise<!DirectoryEntry>}
+ * @return {!Promise<DirectoryEntry>}
  * @private
  */
 importer.getDirectory_ = function(parent, name) {
@@ -262,7 +258,7 @@ importer.getDirectory_ = function(parent, name) {
             exclusive: false
           },
           resolve,
-          reject);
+          function() { resolve(null); });
     });
 };
 

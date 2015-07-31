@@ -440,38 +440,11 @@ DeviceHandler.prototype.onMount_ = function(event) {
       .then(
           /**
            * @param {!DirectoryEntry} root
-           * @return {!Promise<!Array<DirectoryEntry>>}
+           * @return {!Promise<!DirectoryEntry>}
            */
           function(root) {
-            return Promise.all([
-                new Promise(
-                  root.getDirectory.bind(root, 'DCIM', {create: false}))
-                .catch(
-                    function() {
-                      return null;
-                    }),
-                new Promise(
-                  root.getDirectory.bind(root, 'dcim', {create: false}))
-                .catch(
-                    function() {
-                      return null;
-                    })]);
-
+            return importer.getMediaDirectory(root);
           })
-      .then(
-          /**
-           * @param {!Array<DirectoryEntry>} results where index 0 is for
-           *     'DCIM' and 1 is for 'dcim'.
-           * @this {DeviceHandler}
-           */
-          function(results) {
-            if (!!results[0] && results[0].isDirectory) {
-              return results[0];  // It's a "DCIM"!
-            } else if (!!results[1] && results[1].isDirectory) {
-              return results[1];  // It's a "dcim"!
-            }
-            return Promise.reject('Unable to local DCIM or dcim directory.');
-          }.bind(this))
       .then(
           /**
            * @param {!DirectoryEntry} directory
