@@ -58266,6 +58266,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="912" label="AudioParamSetTargetAtTime"/>
   <int value="913" label="AudioParamSetValueCurveAtTime"/>
   <int value="914" label="AudioParamCancelScheduledValues"/>
+  <int value="915" label="V8Permissions_Request_Method"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
